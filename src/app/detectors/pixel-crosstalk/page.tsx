@@ -7,82 +7,142 @@ import Link from "next/link";
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function PixelCrosstalkPage() {
-  const [pixelSize, setPixelSize] = useState(6.5);
-  const [diffusionLength, setDiffusionLength] = useState(5);
-  const [absorptionDepth, setAbsorptionDepth] = useState(3);
-  const [backIlluminated, setBackIlluminated] = useState(false);
+  const [pixelPitch, setPixelPitch] = useState(5.0); // µm
+  const [depletionDepth, setDepletionDepth] = useState(10); // µm
+  const [wavelength, setWavelength] = useState(550); // nm
+  const [crosstalkCoeff, setCrosstalkCoeff] = useState(0.03); // electrical crosstalk fraction
 
-  const effectiveDepth = backIlluminated ? absorptionDepth * 1.5 : absorptionDepth;
-  const crosstalk = Math.exp(-pixelSize / diffusionLength) * (1 - Math.exp(-effectiveDepth / diffusionLength));
-  const mtfAtNyquist = 1 / (1 + crosstalk);
-  const chargeSpread = diffusionLength * (1 - Math.exp(-effectiveDepth / diffusionLength));
+  // Optical crosstalk from charge diffusion
+  // Crosstalk increases with absorption depth (longer wavelength = deeper absorption)
+  // Simple model: crosstalk ~ sqrt(absorption_depth / depletion_depth) for partially depleted
+  const absorptionDepth = useMemo(() => {
+    // Si absorption depth approximation (µm) vs wavelength (nm)
+    // Rough fit to Si absorption coefficient data
+    const wl = wavelength;
+    if (wl < 400) return 0.1;
+    if (wl < 500) return 0.5 + (wl - 400) * 0.04;
+    if (wl < 700) return 4.5 + (wl - 500) * 0.08;
+    if (wl < 900) return 20.5 + (wl - 700) * 0.6;
+    return 140.5 + (wl - 900) * 1.5;
+  }, [wavelength]);
+
+  const diffusionCrosstalk = Math.min(0.5, Math.sqrt(absorptionDepth / depletionDepth) * 0.1);
+  const totalCrosstalk = Math.sqrt(diffusionCrosstalk ** 2 + crosstalkCoeff ** 2);
+
+  const mtfCrosstalk = (freq: number) => 1 / (1 + totalCrosstalk * (2 * Math.PI * freq * pixelPitch) ** 2);
 
   const chartData = useMemo(() => {
-    const depths = Array.from({ length: 100 }, (_, i) => 0.5 + i * 0.2);
+    // Crosstalk vs wavelength
+    const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 700 / 300);
+    const absDepths = wls.map(wl => {
+      if (wl < 400) return 0.1;
+      if (wl < 500) return 0.5 + (wl - 400) * 0.04;
+      if (wl < 700) return 4.5 + (wl - 500) * 0.08;
+      if (wl < 900) return 20.5 + (wl - 700) * 0.6;
+      return 140.5 + (wl - 900) * 1.5;
+    });
+    const diffCt = absDepths.map(d => Math.min(0.5, Math.sqrt(d / depletionDepth) * 0.1));
+    const totalCt = diffCt.map(dc => Math.sqrt(dc ** 2 + crosstalkCoeff ** 2));
+
+    // MTF vs spatial frequency
+    const freqs = Array.from({ length: 200 }, (_, i) => i * 1 / (pixelPitch) / 200);
+    const mtf = freqs.map(f => 1 / (1 + totalCrosstalk * (2 * Math.PI * f * pixelPitch) ** 2));
+    const mtfIdeal = freqs.map(f => f <= 1 / (2 * pixelPitch) ? 1 : 0); // Nyquist box
+
     return [
-      { x: depths, y: depths.map(d => Math.exp(-pixelSize / diffusionLength) * (1 - Math.exp(-d / diffusionLength))), type: "scatter" as const, mode: "lines" as const, name: "Crosstalk", line: { color: "#f87171" } },
-      { x: [effectiveDepth], y: [crosstalk], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#60a5fa", size: 12 } },
+      { x: wls, y: diffCt.map(c => c * 100), type: "scatter" as const, mode: "lines" as const,
+        name: "Diffusion Crosstalk", line: { color: "#60a5fa" }, xaxis: "x", yaxis: "y" },
+      { x: wls, y: totalCt.map(c => c * 100), type: "scatter" as const, mode: "lines" as const,
+        name: "Total Crosstalk", line: { color: "#f87171", width: 2 }, xaxis: "x", yaxis: "y" },
+      { x: [wavelength], y: [totalCrosstalk * 100], type: "scatter" as const, mode: "markers" as const,
+        name: "Selected λ", marker: { color: "#fbbf24", size: 10 }, xaxis: "x", yaxis: "y" },
+      { x: freqs, y: mtf, type: "scatter" as const, mode: "lines" as const,
+        name: "MTF (with crosstalk)", line: { color: "#34d399" }, xaxis: "x2", yaxis: "y2" },
+      { x: freqs, y: mtfIdeal, type: "scatter" as const, mode: "lines" as const,
+        name: "Ideal Pixel MTF", line: { color: "#9ca3af", dash: "dash" }, xaxis: "x2", yaxis: "y2" },
     ];
-  }, [pixelSize, diffusionLength, effectiveDepth, crosstalk]);
+  }, [wavelength, pixelPitch, depletionDepth, crosstalkCoeff, totalCrosstalk]);
+
+  const nyquistFreq = 1 / (2 * pixelPitch); // cycles/µm
+  const mtfAtNyquist = mtfCrosstalk(nyquistFreq);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
       <h1 className="text-3xl font-bold mb-2">Pixel Crosstalk Calculator</h1>
-      <p className="text-gray-400 mb-8">Model charge diffusion crosstalk between adjacent pixels based on carrier diffusion length.</p>
+      <p className="text-gray-400 mb-8">Optical and electrical crosstalk in image sensors — diffusion, coupling, and MTF impact.</p>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block">
-          <span className="text-gray-300 text-sm">Pixel Size (µm)</span>
-          <input type="number" value={pixelSize} onChange={e => setPixelSize(+e.target.value)} min={1} max={50} step="any"
+          <span className="text-gray-300 text-sm">Pixel Pitch (µm)</span>
+          <input type="number" value={pixelPitch} onChange={e => setPixelPitch(+e.target.value)} min="0.5" step="0.1"
             className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
         <label className="block">
-          <span className="text-gray-300 text-sm">Diffusion Length (µm)</span>
-          <input type="number" value={diffusionLength} onChange={e => setDiffusionLength(+e.target.value)} min={0.1} max={50} step="any"
+          <span className="text-gray-300 text-sm">Depletion Depth (µm)</span>
+          <input type="number" value={depletionDepth} onChange={e => setDepletionDepth(+e.target.value)} min="1" step="1"
             className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
         <label className="block">
-          <span className="text-gray-300 text-sm">Absorption Depth (µm)</span>
-          <input type="number" value={absorptionDepth} onChange={e => setAbsorptionDepth(+e.target.value)} min={0.1} max={100} step="any"
+          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min="300" max="1100"
             className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
         <label className="block">
-          <span className="text-gray-300 text-sm">Back Illuminated</span>
-          <select value={backIlluminated ? "yes" : "no"} onChange={e => setBackIlluminated(e.target.value === "yes")}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
-            <option value="no">Front</option>
-            <option value="yes">Back</option>
-          </select>
+          <span className="text-gray-300 text-sm">Electrical Crosstalk</span>
+          <input type="number" value={crosstalkCoeff} onChange={e => setCrosstalkCoeff(+e.target.value)} min="0" max="0.5" step="0.01"
+            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Crosstalk</p>
-          <p className="text-2xl font-bold text-red-400">{(crosstalk * 100).toFixed(2)}%</p>
+          <p className="text-sm text-gray-400">Absorption Depth</p>
+          <p className="text-xl font-bold text-blue-400">{absorptionDepth.toFixed(1)} µm</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">MTF at Nyquist</p>
-          <p className="text-2xl font-bold text-blue-400">{(mtfAtNyquist * 100).toFixed(1)}%</p>
+          <p className="text-sm text-gray-400">Diffusion Crosstalk</p>
+          <p className="text-xl font-bold text-green-400">{(diffusionCrosstalk * 100).toFixed(2)}%</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Charge Spread</p>
-          <p className="text-2xl font-bold text-green-400">{chargeSpread.toFixed(2)} µm</p>
+          <p className="text-sm text-gray-400">Total Crosstalk</p>
+          <p className="text-xl font-bold text-red-400">{(totalCrosstalk * 100).toFixed(2)}%</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Illumination</p>
-          <p className="text-2xl font-bold text-yellow-400">{backIlluminated ? "Back" : "Front"}</p>
+          <p className="text-sm text-gray-400">MTF @ Nyquist</p>
+          <p className="text-xl font-bold text-yellow-400">{(mtfAtNyquist * 100).toFixed(1)}%</p>
         </div>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" }, xaxis: { title: "Absorption Depth (µm)", gridcolor: "#374151" },
-          yaxis: { title: "Crosstalk (%)", gridcolor: "#374151", tickformat: ".1%" },
-          margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
+        <p>Optical crosstalk ~ √(d<sub>abs</sub> / d<sub>depl</sub>) (charge diffusion model)</p>
+        <p>Total = √(crosstalk<sub>optical</sub>² + crosstalk<sub>electrical</sub>²)</p>
+        <p>Nyquist frequency: f<sub>N</sub> = 1 / (2 · p), where p = pixel pitch</p>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="bg-gray-900 rounded-lg p-4">
+          <p className="text-gray-400 text-sm mb-2">Crosstalk vs Wavelength</p>
+          <Plot data={chartData} layout={{
+            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+            font: { color: "#9ca3af", size: 11 },
+            xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
+            yaxis: { title: "Crosstalk (%)", gridcolor: "#374151" },
+            margin: { t: 20, r: 20, b: 40, l: 60 }, legend: { bgcolor: "transparent", font: { size: 9 } },
+          }} config={{ responsive: true, displayModeBar: false }} />
+        </div>
+        <div className="bg-gray-900 rounded-lg p-4">
+          <p className="text-gray-400 text-sm mb-2">MTF Degradation</p>
+          <Plot data={chartData.filter((_, i) => i >= 3)} layout={{
+            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+            font: { color: "#9ca3af", size: 11 },
+            xaxis: { title: "Spatial Freq (cycles/µm)", gridcolor: "#374151", anchor: "y2" },
+            yaxis: { title: "MTF", gridcolor: "#374151", anchor: "x2", domain: [0, 1] },
+            xaxis2: { title: "Spatial Freq (cycles/µm)", gridcolor: "#374151", anchor: "y2" },
+            yaxis2: { title: "MTF", gridcolor: "#374151" },
+            margin: { t: 20, r: 20, b: 40, l: 60 }, legend: { bgcolor: "transparent", font: { size: 9 } },
+          }} config={{ responsive: true, displayModeBar: false }} />
+        </div>
       </div>
     </div>
   );

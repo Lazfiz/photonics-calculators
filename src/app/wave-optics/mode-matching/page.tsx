@@ -131,7 +131,6 @@ export default function ModeMatchingPage() {
         // Simplified: just check if w_out ≈ w2 and qpp_r ≈ 0 (output at waist)
         if (Math.abs(w_out - w2) / w2 < 0.005 && Math.abs(qpp_r) / zR2_mm < 0.05) {
           // Compute proper overlap
-          const q2_at_lens = (d_mm - s_test) + 1j; // not right... let me just compute η from w_out
           const eta = 4 * w2 * w2 / ((w_out * w_out + w2 * w2) * (w_out * w_out + w2 * w2)) * w_out * w_out;
           // Simplified: η = (2*w1*w2/(w1²+w2²))² when wavefronts match
           const eta_simple = Math.pow(2 * w_out * w2 / (w_out * w_out + w2 * w2), 2);

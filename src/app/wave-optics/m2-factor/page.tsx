@@ -7,79 +7,89 @@ import Link from "next/link";
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function M2FactorPage() {
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [waistMeasured, setWaistMeasured] = useState(10); // µm (measured 1/e² waist)
-  const [divMeasured, setDivMeasured] = useState(50); // mrad (measured far-field divergence)
-  const [m2, setM2] = useState(1.2);
+  const [wavelength, setWavelength] = useState(1064); // nm
+  const [w0, setW0] = useState(0.5); // mm, measured waist
+  const [theta, setTheta] = useState(2); // mrad, measured divergence
+  const [targetM2, setTargetM2] = useState(1.5);
 
-  // If M² is set, compute what the measured divergence would be
-  const zR_ideal = Math.PI * Math.pow(waistMeasured, 2) / wavelength * 1000; // mm
-  const div_ideal = wavelength / (Math.PI * waistMeasured) * 1000; // mrad
-  const div_from_m2 = div_ideal * m2;
-  const m2_from_meas = (waistMeasured * divMeasured) / (div_ideal * waistMeasured);
+  const calc = useMemo(() => {
+    const lam = wavelength * 1e-6; // mm
+    const w0m = w0; // mm
+    const thetaRad = theta / 1000; // rad
+    const thetaHalf = thetaRad / 2; // half-angle divergence
 
-  // Use slider-driven M² for the chart
-  const effectiveM2 = m2;
-  const effectiveDiv = div_ideal * effectiveM2;
-  const effectiveZR = zR_ideal;
+    // M² = (π * w0 * θ) / λ  (using half-angle divergence, w0 as 1/e² radius)
+    const M2 = (Math.PI * w0m * thetaHalf) / lam;
+    const M2dB = 10 * Math.log10(M2);
+
+    // Diffraction-limited values
+    const thetaDL = lam / (Math.PI * w0m);
+    const w0DL = lam / (Math.PI * thetaHalf);
+
+    // Beam parameter product BPP = w0 * θ
+    const BPP = w0m * thetaHalf;
+
+    return { M2, M2dB, thetaDL, w0DL, BPP };
+  }, [wavelength, w0, theta]);
 
   const chartData = useMemo(() => {
-    const zMax = effectiveZR * 4;
-    const zs = Array.from({ length: 300 }, (_, i) => -zMax + i * 2 * zMax / 300);
+    const lam = wavelength * 1e-6;
+    // Plot beam radius vs z for different M² values
+    const zR = Math.PI * w0 * w0 / lam;
+    const zs = Array.from({ length: 200 }, (_, i) => -3 * zR + i * 0.03 * zR);
+    const M2s = [1, 1.5, 2, 3];
+    const colors = ["#22c55e", "#60a5fa", "#facc15", "#f87171"];
 
-    // Real beam: w(z) = w₀ * sqrt(1 + M⁴ * (z/zR)²)
-    const w_real = zs.map(z => waistMeasured * Math.sqrt(1 + Math.pow(effectiveM2, 2) * Math.pow(z / effectiveZR, 2)));
-    // Ideal beam: w(z) = w₀ * sqrt(1 + (z/zR)²)
-    const w_ideal = zs.map(z => waistMeasured * Math.sqrt(1 + Math.pow(z / effectiveZR, 2)));
+    const traces = M2s.map((M, idx) => {
+      const ws = zs.map(z => w0 * Math.sqrt(1 + (M * z / zR) ** 2));
+      return { x: zs, y: ws, type: "scatter" as const, mode: "lines" as const, name: `M² = ${M}`, line: { color: colors[idx] } };
+    });
 
-    return [
-      { x: zs, y: w_ideal, type: "scatter" as const, mode: "lines" as const, name: "Ideal (M²=1)", line: { color: "#22c55e", dash: "dash" } },
-      { x: zs, y: w_real, type: "scatter" as const, mode: "lines" as const, name: `Real (M²=${effectiveM2.toFixed(2)})`, line: { color: "#60a5fa" } },
-      // Divergence asymptotes
-      { x: [0, zMax], y: [waistMeasured, waistMeasured + effectiveDiv * zMax / 1000], type: "scatter" as const, mode: "lines" as const, name: "Far-field asymptote", line: { color: "#f87171", dash: "dot" } },
-    ];
-  }, [wavelength, waistMeasured, effectiveM2, effectiveZR, effectiveDiv]);
+    return traces;
+  }, [wavelength, w0]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">M² Beam Quality Factor</h1>
-      <p className="text-gray-400 mb-8">Compare real beam quality against the diffraction limit.</p>
+      <h1 className="text-3xl font-bold mb-2">Beam Quality Factor M²</h1>
+      <p className="text-gray-400 mb-8">M² = (π w₀ θ)/λ. M² = 1 for ideal Gaussian, higher for multimode beams.</p>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 font-mono text-sm text-gray-300">
-        <pre>{`w(z) = w₀ · √(1 + M⁴·(z/z_R)²)
-θ_real = M² · λ / (π·w₀)
-BPP_real = M² · λ/π = w₀ · θ_real
-
-M² = 1: diffraction-limited (TEM₀₀)`}</pre>
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <label className="block">
+          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={100}
+            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+        <label className="block">
+          <span className="text-gray-300 text-sm">Waist Radius w₀ (mm)</span>
+          <input type="number" value={w0} onChange={e => setW0(+e.target.value)} min={0.001} step="any"
+            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+        <label className="block">
+          <span className="text-gray-300 text-sm">Divergence θ (mrad, full)</span>
+          <input type="number" value={theta} onChange={e => setTheta(+e.target.value)} min={0.01} step="any"
+            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 mb-6">
-        <label className="block"><span className="text-gray-300 text-sm">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Measured Waist w₀ (µm)</span>
-          <input type="number" value={waistMeasured} onChange={e => setWaistMeasured(+e.target.value)} step="any" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-      </div>
-
-      <label className="block mb-6"><span className="text-gray-300 text-sm">M² Factor: {m2.toFixed(2)}</span>
-        <input type="range" min={1} max={5} step={0.01} value={m2} onChange={e => setM2(+e.target.value)} className="w-full mt-1" /></label>
-
-      <div className="grid gap-4 sm:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Ideal Divergence</p>
-          <p className="text-xl font-bold text-green-400">{div_ideal.toFixed(2)} mrad</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Real Divergence</p>
-          <p className="text-xl font-bold text-blue-400">{effectiveDiv.toFixed(2)} mrad</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">BPP (real)</p>
-          <p className="text-xl font-bold text-orange-400">{(waistMeasured * effectiveDiv / 2).toFixed(3)} mm·mrad</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Rayleigh Range</p>
-          <p className="text-xl font-bold text-purple-400">{effectiveZR.toFixed(2)} mm</p>
+      <div className={`bg-gray-900 border ${calc.M2 <= 1.5 ? "border-green-800" : calc.M2 <= 2 ? "border-yellow-800" : "border-red-800"} rounded-lg p-6 mb-8`}>
+        <div className="grid gap-4 sm:grid-cols-4">
+          <div>
+            <p className="text-sm text-gray-400">M² Factor</p>
+            <p className={`text-3xl font-bold ${calc.M2 <= 1.5 ? "text-green-400" : calc.M2 <= 2 ? "text-yellow-400" : "text-red-400"}`}>{calc.M2.toFixed(2)}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-400">vs Ideal (dB)</p>
+            <p className="text-2xl font-bold text-blue-400">+{calc.M2dB.toFixed(1)} dB</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-400">DL Divergence</p>
+            <p className="text-2xl font-bold text-yellow-400">{(calc.thetaDL * 1000).toFixed(2)} mrad</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-400">BPP</p>
+            <p className="text-2xl font-bold text-green-400">{(calc.BPP * 1e6).toFixed(2)} mm·mrad</p>
+          </div>
         </div>
       </div>
 
@@ -87,8 +97,8 @@ M² = 1: diffraction-limited (TEM₀₀)`}</pre>
         <Plot data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" }, xaxis: { title: "z (mm)", gridcolor: "#374151" },
-          yaxis: { title: "w(z) (µm)", gridcolor: "#374151" },
-          margin: { t: 30, r: 30, b: 50, l: 70 }, showlegend: true, legend: { x: 0, y: 1.15, orientation: "h" },
+          yaxis: { title: "Beam Radius w(z) (mm)", gridcolor: "#374151" },
+          margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { x: 0.7, y: 0.05 },
         }} config={{ responsive: true, displayModeBar: false }} />
       </div>
     </div>
