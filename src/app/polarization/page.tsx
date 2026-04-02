@@ -4,8 +4,17 @@ import Link from "next/link";
 
 const calculators = [
   { name: "Stokes Parameters", href: "/polarization/stokes", desc: "Describe polarization state from intensity measurements" },
-  { name: "Birefringence", href: "/polarization/birefringence", desc: "Ordinary & extraordinary refractive indices, phase retardation" },
   { name: "Jones Calculus", href: "/polarization/jones-calculus", desc: "Matrix formalism for polarized light propagation" },
+  { name: "Jones Matrix Chain", href: "/polarization/jones-chain", desc: "Chain multiple Jones matrices and visualize polarization transformation" },
+  { name: "Mueller Matrix Calculator", href: "/polarization/mueller-matrix", desc: "Chain optical elements using Mueller matrices and compute output Stokes vector" },
+  { name: "Poincaré Sphere", href: "/polarization/poincare-sphere", desc: "Visualize polarization states on the Poincaré sphere" },
+  { name: "Birefringence", href: "/polarization/birefringence", desc: "Ordinary & extraordinary refractive indices, phase retardation" },
+  { name: "Waveplate Order", href: "/polarization/waveplate-order", desc: "Design zero-order and multi-order waveplates" },
+  { name: "Waveplate Thickness", href: "/polarization/waveplate-thickness", desc: "Calculate required crystal thickness for waveplates" },
+  { name: "Retarder Design", href: "/polarization/retarder", desc: "Design waveplate retarders and visualize transformation on Poincaré sphere" },
+  { name: "Extinction Ratio", href: "/polarization/extinction-ratio", desc: "Polarizer contrast and transmission analysis" },
+  { name: "Polarizer Extinction", href: "/polarization/polarizer-extinction", desc: "Extinction ratio, Malus's law, and cascaded polarizer performance" },
+  { name: "PMD", href: "/polarization/pmd", desc: "Polarization mode dispersion in optical fibers" },
 ];
 
 export default function PolarizationPage() {

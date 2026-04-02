@@ -42,7 +42,7 @@ export default function ConnectorReturnLossPage() {
     const lossAngle = angles.map(theta => {
       const thetaRad = (theta * Math.PI) / 180;
       const w = coreRadius; // mode field radius approximation
-      return -10 * Math.log10(Math.exp(-(Math.PI * n1 * w * thetaRad * 1000 / wavelength) ** 2));
+      return -10 * Math.log10(Math.exp(-((Math.PI * n1 * w * thetaRad * 1000 / wavelength) ** 2)));
     });
 
     return [
@@ -55,11 +55,11 @@ export default function ConnectorReturnLossPage() {
   const insertionLossFresnel = -10 * Math.log10(1 - rFresnel * rFresnel);
 
   // Lateral offset loss
-  const latLoss = -10 * Math.log10(Math.exp(-2 * (lateralOffset / coreRadius) ** 2));
+  const latLoss = -10 * Math.log10(Math.exp(-((lateralOffset / coreRadius) ** 2) * 2));
 
   // Angular misalignment loss
   const thetaRad = (angMisalign * Math.PI) / 180;
-  const angLoss = -10 * Math.log10(Math.exp(-(Math.PI * n1 * coreRadius * thetaRad * 1000 / wavelength) ** 2));
+  const angLoss = -10 * Math.log10(Math.exp(-((Math.PI * n1 * coreRadius * thetaRad * 1000 / wavelength) ** 2)));
 
   // Gap phase
   const gapPhase = (4 * Math.PI * n2 * gapNm) / wavelength;

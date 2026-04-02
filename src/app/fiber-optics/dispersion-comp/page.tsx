@@ -70,7 +70,7 @@ export default function DispersionCompPage() {
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
         <p className="text-gray-300">Total dispersion = <span className="text-blue-400 font-mono">{totalDispersion.toFixed(1)} ps/nm</span></p>
         <p className="text-gray-300">Pulse broadening = <span className="text-blue-400 font-mono">{pulseBroadening.toFixed(1)} ps</span></p>
-        <p className="text-gray-300">Max bit rate (NRZ) = <span className={isLlimited ? "text-red-400" : "text-green-400"} className="font-mono">{maxBitRate.toFixed(2)} Gbps</span></p>
+        <p className="text-gray-300">Max bit rate (NRZ) = <span className={`font-mono ${isLlimited ? "text-red-400" : "text-green-400"}`}>{maxBitRate.toFixed(2)} Gbps</span></p>
         <p className="text-gray-300">Dispersion-limited? <span className={isLlimited ? "text-red-400" : "text-green-400"}>{isLlimited ? "YES" : "NO"}</span></p>
         <hr className="border-gray-700 my-2" />
         <p className="text-gray-300">Required DCF length = <span className="text-yellow-400 font-mono">{requiredDCF.toFixed(1)} km</span></p>

@@ -146,9 +146,8 @@ export default function ModeMatchingPage() {
     });
 
     const markers = solutions.map(s => ({
-      x: [s.f], y: [s.overlap], type: "scatter" as const, mode: "markers+text" as const,
+      x: [s.f], y: [s.overlap], type: "scatter" as const, mode: "markers" as const,
       name: `f=${s.f.toFixed(1)}mm`, marker: { color: "#facc15", size: 12 },
-      text: [s.f.toFixed(1)], textposition: "top center" as const,
     }));
 
     return [
