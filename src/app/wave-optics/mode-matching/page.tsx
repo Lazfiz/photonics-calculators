@@ -55,43 +55,9 @@ export default function ModeMatchingPage() {
   // Simpler approach: given d, w1, w2, λ, find f and s.
   // Using: f²·(d-zR2·zR1·...) ... let me just compute numerically.
 
-  // Numerical approach: scan focal lengths to find solutions
+  // Numerical approach: scan focal lengths and positions to find solutions
   const solutions = useMemo(() => {
     const sols: { f: number; s: number; overlap: number }[] = [];
-    for (let f_test = 5; f_test < 2000; f_test += 0.5) {
-      // ABCD from waist1 to waist2: free space s, thin lens f, free space (d-s)
-      // For a given f, solve for s such that output is waist w2
-      // q1 = i*zR1, propagate s: q = i*zR1 + s
-      // After lens: 1/q' = 1/(i*zR1+s) - 1/f = (f - i*zR1 - s) / (f*(i*zR1+s))
-      // q' = f*(i*zR1+s) / (f - s - i*zR1)
-      // Propagate (d-s): q'' = q' + (d-s)
-      // We need Im(q'') = zR2 and Re(q'') = 0
-      
-      // Real part of q' = f*s*(f-s) / ((f-s)² + zR1²) + f*zR1² / ((f-s)² + zR1²) * 0...
-      // Let me use the complex arithmetic directly
-      
-      // q = i*zR1 + s
-      const qr = s; // real part (actually we need to solve for s)
-      // This is getting complex. Let me use the known analytic result:
-      // 
-      // From the Gaussian beam propagation through a thin lens:
-      // s = (f ± sqrt(f² - d·f·(1+(zR2/zR1)²)/(1+...))) ... 
-      //
-      // Actually, let's use the well-known result. For mode matching w1→w2 over distance d:
-      // The required focal length f and lens position s from waist 1 satisfy:
-      //
-      // Let's just numerically solve for s given f.
-      
-      // Quadratic in s: given f, find s such that the output beam has waist w2 at distance d-s from lens.
-      // From Self's paper, rearranging gives a quadratic in s.
-      // 
-      // Let G1 = 1 - d/R1(s) where R1(s) is the wavefront curvature at distance s from waist 1
-      // R1(s) = s(1 + (zR1/s)²)
-      // G2 = 1 - (d-s)/R2_out where R2_out needs to equal the ROC at the output waist location
-      //
-      // OK, simplest correct approach: scan s, compute overlap integral
-    }
-
     // Scan s for each candidate f
     for (let f_test = 5; f_test < 3000; f_test += 1) {
       for (let s_test = 1; s_test < d_mm - 1; s_test += 0.5) {
