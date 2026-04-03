@@ -38,10 +38,10 @@ export default function CoherentAntiStokesRamanPage() {
     // Non-resonant background + resonant CARS signal
     const cars = shifts.map(s => {
       const delta = s - ramanShift;
-      const resonant = 50 * (ramanShift * delta) / (delta ** 2 + 25 ** 2);
+      const resonant = 50 * (ramanShift * delta) / (Math.pow(delta, 2) + Math.pow(25, 2));
       const nonresonant = 10;
       const total = resonant + nonresonant;
-      return total ** 2;
+      return Math.pow(total, 2);
     });
     const maxC = Math.max(...cars);
     const normCars = cars.map(c => c / maxC);
@@ -50,7 +50,7 @@ export default function CoherentAntiStokesRamanPage() {
       { x: shifts, y: normCars, type: "scatter" as const, mode: "lines" as const, name: "CARS Signal", line: { color: "#60a5fa", width: 2 } },
       { x: shifts, y: shifts.map(s => {
         const d = s - ramanShift;
-        return 0.3 * Math.exp(-0.5 * (d / 25) ** 2);
+        return 0.3 * Math.exp(-0.5 * Math.pow(d / 25, 2));
       }), type: "scatter" as const, mode: "lines" as const, name: "Spontaneous Raman", line: { color: "#6b7280", dash: "dash" } },
     ];
   }, [ramanShift]);

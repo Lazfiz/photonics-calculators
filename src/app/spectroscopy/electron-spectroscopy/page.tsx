@@ -37,7 +37,7 @@ export default function ElectronSpectroscopyPage() {
       for (const p of peaks) {
         if (be > p.center - 5 * p.width && be < p.center + 5 * p.width) {
           // Gaussian + exponential tail (asymmetric)
-          const gauss = p.amp * Math.exp(-0.5 * ((be - p.center) / p.width) ** 2);
+          const gauss = p.amp * Math.exp(-0.5 * Math.pow((be - p.center) / p.width, 2));
           const asym = be < p.center ? 0 : p.amp * 0.3 * Math.exp(-(be - p.center) / (p.width * 2));
           intensity += gauss + asym;
         }
@@ -52,7 +52,7 @@ export default function ElectronSpectroscopyPage() {
       { x: bes, y: spectrum, type: "scatter" as const, mode: "lines" as const, name: "XPS Spectrum", line: { color: "#e5e7eb", width: 1.5 } },
       { x: bes, y: bes.map(be => {
         const p = peaks[0];
-        return p.amp * Math.exp(-0.5 * ((be - p.center) / p.width) ** 2);
+        return p.amp * Math.exp(-0.5 * Math.pow((be - p.center) / p.width, 2));
       }), type: "scatter" as const, mode: "lines" as const, name: "C 1s fit", line: { color: "#60a5fa", dash: "dash" } },
     ];
   }, [photonEnergy, fwhm]);

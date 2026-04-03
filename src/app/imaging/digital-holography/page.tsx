@@ -33,7 +33,7 @@ export default function DigitalHolographyPage() {
   const transferFunction = useMemo(() => {
     const freqs = Array.from({ length: 200 }, (_, i) => i * 0.5);
     const cutoffFreq = numericalAperture / lambdaUm;
-    const tf = freqs.map(f => f <= cutoffFreq ? 1.0 : Math.exp(-((f - cutoffFreq) / (cutoffFreq * 0.1)) ** 2));
+    const tf = freqs.map(f => f <= cutoffFreq ? 1.0 : Math.exp(-(((f - cutoffFreq) / (cutoffFreq * 0.1)) ** 2)));
     return [{ x: freqs, y: tf, type: "scatter", mode: "lines" as const, name: "CTF", line: { color: "#60a5fa", width: 2 } }];
   }, [numericalAperture, lambdaUm]);
 

@@ -20,7 +20,7 @@ export default function WavefrontSensingPage() {
   const lambdaUm = wavelengthNm * 1e-3;
   const D = apertureDiameterMm * 1e-3;
   const rmsWaves = rmsWavefrontNm / wavelengthNm;
-  const strehl = Math.exp(-(2 * Math.PI * rmsWaves) ** 2);
+  const strehl = Math.exp(-((2 * Math.PI * rmsWaves) ** 2));
   const maréchalCrit = rmsWaves <= 1 / 14;
   const diffLimit = 1.22 * lambda / D * 1e6; // µm
   const subapDiam = D / Math.sqrt(numSubapertures) * 1e3; // mm
@@ -31,11 +31,11 @@ export default function WavefrontSensingPage() {
 
   const strehlChart = useMemo(() => {
     const rms = Array.from({ length: 40 }, (_, i) => i * 10);
-    const s = rms.map(r => Math.exp(-(2 * Math.PI * r / wavelengthNm) ** 2));
+    const s = rms.map(r => Math.exp(-((2 * Math.PI * r / wavelengthNm) ** 2)));
     return [
       { x: rms, y: s, type: "scatter", mode: "lines" as const, name: "Strehl Ratio", line: { color: "#60a5fa", width: 2 } },
       { x: [rmsWavefrontNm], y: [strehl], type: "scatter", mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
-      { x: [wavelengthNm / 14], y: [Math.exp(-(2 * Math.PI / 14) ** 2)], type: "scatter", mode: "markers" as const, name: "Maréchal", marker: { color: "#34d399", size: 12, symbol: "diamond" } },
+      { x: [wavelengthNm / 14], y: [Math.exp(-((2 * Math.PI / 14) ** 2))], type: "scatter", mode: "markers" as const, name: "Maréchal", marker: { color: "#34d399", size: 12, symbol: "diamond" } },
     ];
   }, [wavelengthNm, rmsWavefrontNm, strehl]);
 

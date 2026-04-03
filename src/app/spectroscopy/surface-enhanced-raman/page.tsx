@@ -45,7 +45,7 @@ export default function SurfaceEnhancedRamanPage() {
     ];
     const normal = shifts.map(s => {
       let y = 0;
-      for (const p of peaks) y += p.amp * Math.exp(-0.5 * ((s - p.pos) / p.width) ** 2);
+      for (const p of peaks) y += p.amp * Math.exp(-0.5 * Math.pow((s - p.pos) / p.width, 2));
       return y * normalIntensity;
     });
     const enhanced = normal.map(y => y * enhancementFactor);

@@ -19,7 +19,7 @@ export default function StimulatedRamanPage() {
     const gamma = linewidth;
     // Stimulated Raman gain profile: Lorentzian
     const gain = detunings.map(d => {
-      const lorentz = gamma ** 2 / (d ** 2 + gamma ** 2);
+      const lorentz = Math.pow(gamma, 2) / (d ** 2 + Math.pow(gamma, 2));
       return lorentz * pumpPower * concentration * pathLength * 1e-3;
     });
     return [

@@ -33,7 +33,7 @@ export default function ShackHartmannPage() {
   const wavefrontSensitivity = angularSensitivity / (2 * Math.PI / lambda) * wavelengthNm; // nm/px
   const dynamicRangeNm = dynamicRangeWaves * wavelengthNm;
   const maxTilt = dynamicRangeWaves * wavelengthNm / subapDiameter; // rad
-  const strehl = Math.exp(-(2 * Math.PI * rmsWaves) ** 2);
+  const strehl = Math.exp(-((2 * Math.PI * rmsWaves) ** 2));
   const samplingRatio = detectorPixelUm / (diffLimit / 2); // Nyquist check
 
   const centroidNoise = useMemo(() => {

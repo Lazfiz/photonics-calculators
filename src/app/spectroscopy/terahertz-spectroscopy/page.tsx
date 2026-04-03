@@ -39,7 +39,7 @@ export default function TerahertzSpectroscopyPage() {
     const spectrum = freqs.map(f => {
       let alpha = absorptionCoeff * f * f;
       for (const feat of features) {
-        alpha += feat.amp * 20 * Math.exp(-0.5 * ((f - feat.center) / feat.width) ** 2);
+        alpha += feat.amp * 20 * Math.exp(-0.5 * Math.pow((f - feat.center) / feat.width, 2));
       }
       return Math.exp(-alpha * sampleThickness);
     });

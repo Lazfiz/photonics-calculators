@@ -34,7 +34,7 @@ export default function NearInfraredPage() {
         // Scale water bands by water content
         const isWater = b.name.includes("O-H");
         const scale = isWater ? waterContent : (1 - waterContent);
-        a += b.eps * scale * pathLength * Math.exp(-0.5 * ((w - b.center) / b.width) ** 2);
+        a += b.eps * scale * pathLength * Math.exp(-0.5 * Math.pow((w - b.center) / b.width, 2));
       }
       // Add scattering baseline
       a += scatteringCoeff * pathLength * Math.pow(1000 / w, 2) * 0.01;

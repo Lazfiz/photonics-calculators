@@ -29,7 +29,7 @@ export default function InfraredSpectroscopyPage() {
     const absorbance = wn.map(w => {
       let a = 0;
       for (const b of bands) {
-        a += b.eps * concentration * pathLength * Math.exp(-0.5 * ((w - b.center) / b.width) ** 2);
+        a += b.eps * concentration * pathLength * Math.exp(-0.5 * Math.pow((w - b.center) / b.width, 2));
       }
       return a;
     });
