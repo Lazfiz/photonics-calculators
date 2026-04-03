@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 export default function ScannedMPEPage() {
   const [wavelength, setWavelength] = useState(532); // nm
@@ -81,9 +80,9 @@ export default function ScannedMPEPage() {
   }, [wavelength, spotDiam, scanWidth]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-gray-100 p-4 md:p-8">
+    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety">
       <div className="max-w-4xl mx-auto">
-        <Link href="/laser-safety" className="text-blue-400 hover:text-blue-300 text-sm mb-4 inline-block">← Back to Laser Safety</Link>
+        
         <h1 className="text-3xl font-bold mb-2">Scanned Beam MPE</h1>
         <p className="text-gray-400 mb-8">Calculate MPE for scanned laser beams based on dwell time per point.</p>
 
@@ -142,7 +141,7 @@ export default function ScannedMPEPage() {
 
         <div className="bg-[#12121a] rounded-xl p-6">
           <h2 className="text-lg font-semibold mb-4">MPE vs Scan Frequency</h2>
-          <Plot
+          <ChartPanel
             data={[
               {
                 x: chartData.freqs, y: chartData.mpeValues, type: "scatter", mode: "lines",
@@ -162,11 +161,11 @@ export default function ScannedMPEPage() {
               font: { color: "#9ca3af" }, legend: { orientation: "h", y: -0.2 },
               margin: { t: 30, r: 70, b: 60, l: 70 },
             }}
-            config={{ responsive: true }}
-            style={{ width: "100%", height: 400 }}
+           
+           
           />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

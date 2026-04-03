@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 export default function PowerDensityPage() {
   const [power, setPower] = useState(1); // W
@@ -56,12 +55,9 @@ export default function PowerDensityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-gray-100 p-4 md:p-8">
+    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety">
       <div className="max-w-4xl mx-auto">
-        <Link href="/laser-safety" className="text-blue-400 hover:text-blue-300 text-sm mb-4 inline-block">
-          ← Back to Laser Safety
-        </Link>
-        <h1 className="text-3xl font-bold mb-2">Power Density Calculator</h1>
+<h1 className="text-3xl font-bold mb-2">Power Density Calculator</h1>
         <p className="text-gray-400 mb-8">Calculate irradiance (W/cm²) from laser power and beam diameter for Gaussian and top-hat profiles.</p>
 
         <div className="bg-[#12121a] rounded-xl p-6 mb-6">
@@ -117,7 +113,7 @@ export default function PowerDensityPage() {
 
         <div className="bg-[#12121a] rounded-xl p-6">
           <h2 className="text-lg font-semibold mb-4">Radial Intensity Profile</h2>
-          <Plot
+          <ChartPanel
             data={[{
               x: chartData.r, y: chartData.intensity, type: "scatter", mode: "lines",
               name: "I(r)", line: { color: "#3b82f6", width: 2 },
@@ -129,11 +125,11 @@ export default function PowerDensityPage() {
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",
               font: { color: "#9ca3af" }, margin: { t: 30, r: 30, b: 50, l: 70 },
             }}
-            config={{ responsive: true }}
-            style={{ width: "100%", height: 400 }}
+           
+           
           />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

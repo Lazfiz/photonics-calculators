@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 export default function InfraredCornealPage() {
   const [wavelength, setWavelength] = useState(10600); // nm (CO2)
@@ -90,9 +89,9 @@ export default function InfraredCornealPage() {
   }, [wavelength]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-gray-100 p-4 md:p-8">
+    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety">
       <div className="max-w-4xl mx-auto">
-        <Link href="/laser-safety" className="text-blue-400 hover:text-blue-300 text-sm mb-4 inline-block">← Back to Laser Safety</Link>
+        
         <h1 className="text-3xl font-bold mb-2">IR Corneal Exposure</h1>
         <p className="text-gray-400 mb-8">Calculate corneal MPE for infrared lasers (1400nm–1mm) per IEC 60825-1.</p>
 
@@ -147,7 +146,7 @@ export default function InfraredCornealPage() {
 
         <div className="bg-[#12121a] rounded-xl p-6">
           <h2 className="text-lg font-semibold mb-4">MPE vs Exposure Time</h2>
-          <Plot
+          <ChartPanel
             data={[{
               x: chartData.times, y: chartData.mpeValues, type: "scatter", mode: "lines",
               name: "MPE (J/cm²)", line: { color: "#ef4444", width: 2 },
@@ -158,11 +157,11 @@ export default function InfraredCornealPage() {
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",
               font: { color: "#9ca3af" }, margin: { t: 30, r: 30, b: 60, l: 70 },
             }}
-            config={{ responsive: true }}
-            style={{ width: "100%", height: 400 }}
+           
+           
           />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

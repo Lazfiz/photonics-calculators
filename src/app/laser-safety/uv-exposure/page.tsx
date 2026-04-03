@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 export default function UVExposurePage() {
   const [wavelength, setWavelength] = useState(254); // nm (UV-C, mercury line)
@@ -58,9 +57,9 @@ export default function UVExposurePage() {
   const fmtSci = (v: number) => v < 1e-4 ? v.toExponential(2) : v < 0.01 ? v.toExponential(2) : v.toFixed(4);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-gray-100 p-4 md:p-8">
+    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety">
       <div className="max-w-4xl mx-auto">
-        <Link href="/laser-safety" className="text-blue-400 hover:text-blue-300 text-sm mb-4 inline-block">← Back to Laser Safety</Link>
+        
         <h1 className="text-3xl font-bold mb-2">UV Exposure Limits</h1>
         <p className="text-gray-400 mb-8">Calculate UV exposure limits based on ICNIRP/ACGIH actinic UV weighting for 180–400 nm.</p>
 
@@ -121,7 +120,7 @@ export default function UVExposurePage() {
 
         <div className="bg-[#12121a] rounded-xl p-6">
           <h2 className="text-lg font-semibold mb-4">Actinic UV Weighting Function S(λ)</h2>
-          <Plot
+          <ChartPanel
             data={[
               {
                 x: chartData.wls, y: chartData.weights, type: "scatter", mode: "lines",
@@ -139,11 +138,11 @@ export default function UVExposurePage() {
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",
               font: { color: "#9ca3af" }, margin: { t: 30, r: 30, b: 50, l: 50 },
             }}
-            config={{ responsive: true }}
-            style={{ width: "100%", height: 400 }}
+           
+           
           />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

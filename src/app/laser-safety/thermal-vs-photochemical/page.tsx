@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 export default function ThermalVsPhotochemicalPage() {
   const [wavelength, setWavelength] = useState(450); // nm
@@ -82,9 +81,9 @@ export default function ThermalVsPhotochemicalPage() {
   }, [exposureTime]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-gray-100 p-4 md:p-8">
+    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety">
       <div className="max-w-4xl mx-auto">
-        <Link href="/laser-safety" className="text-blue-400 hover:text-blue-300 text-sm mb-4 inline-block">← Back to Laser Safety</Link>
+        
         <h1 className="text-3xl font-bold mb-2">Thermal vs Photochemical MPE</h1>
         <p className="text-gray-400 mb-8">Compare thermal and photochemical MPE limits — the more restrictive applies.</p>
 
@@ -130,7 +129,7 @@ export default function ThermalVsPhotochemicalPage() {
             ].map(item => (
               <div key={item.label} className="bg-[#0d0d14] rounded-lg p-4">
                 <p className="text-xs text-gray-500 mb-1">{item.label}</p>
-                <p className="text-xl font-bold" style={{ color: item.color }}>{item.value} <span className="text-sm text-gray-400">{item.unit}</span></p>
+                <p className="text-xl font-bold">{item.value} <span className="text-sm text-gray-400">{item.unit}</span></p>
               </div>
             ))}
           </div>
@@ -141,7 +140,7 @@ export default function ThermalVsPhotochemicalPage() {
 
         <div className="bg-[#12121a] rounded-xl p-6">
           <h2 className="text-lg font-semibold mb-4">MPE vs Wavelength</h2>
-          <Plot
+          <ChartPanel
             data={[
               { x: chartData.wls, y: chartData.thermal, type: "scatter", mode: "lines", name: "Thermal", line: { color: "#ef4444", width: 2 } },
               { x: chartData.wls, y: chartData.photochemical, type: "scatter", mode: "lines", name: "Photochemical", line: { color: "#3b82f6", width: 2, dash: "dash" } },
@@ -153,11 +152,11 @@ export default function ThermalVsPhotochemicalPage() {
               font: { color: "#9ca3af" }, legend: { orientation: "h", y: -0.2 },
               margin: { t: 30, r: 30, b: 60, l: 70 },
             }}
-            config={{ responsive: true }}
-            style={{ width: "100%", height: 400 }}
+           
+           
           />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
