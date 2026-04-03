@@ -89,7 +89,7 @@ export default function ColorCentersPage() {
         <p className="font-mono bg-gray-800 p-2 rounded">Quantum efficiency: η = σ_em / σ_abs | Radiative rate: R = N_excited / τ_rad</p>
         <div className="mt-3 text-xs">
           <p><strong>NV⁻ centers</strong> in diamond: spin qubits, single-photon sources. ZPL at 637 nm, zero-phonon line with phonon sideband.</p>
-          <p><strong>SiV⁻ centers</strong>: ultra-narrow ZPL (~5 nm), high Debye-Waller factor (>0.7).</p>
+          <p><strong>SiV⁻ centers</strong>: ultra-narrow ZPL (~5 nm), high Debye-Waller factor (&gt;0.7).</p>
           <p><strong>Ti:Sapphire</strong>: broad vibronic band (660-1100 nm), tunable laser workhorse.</p>
         </div>
       </div>
