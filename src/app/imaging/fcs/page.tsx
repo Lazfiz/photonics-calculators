@@ -7,13 +7,13 @@ import Link from "next/link";
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FCSPage() {
-  const [w0, setW0] = useState(0.3]; // µm
-  const [z0, setZ0] = useState(1.5]; // µm axial
-  const [tauD, setTauD] = useState(0.05]; // ms diffusion time
-  const [brightness, setBrightness] = useState(30000]; // Hz per molecule
-  const [concentration, setConcentration] = useState(50]; // nM
-  const [tripletFrac, setTripletFrac] = useState(0.1];
-  const [tripletTau, setTripletTau] = useState(0.005]; // ms
+  const [w0, setW0] = useState(0.3); // µm
+  const [z0, setZ0] = useState(1.5); // µm axial
+  const [tauD, setTauD] = useState(0.05); // ms diffusion time
+  const [brightness, setBrightness] = useState(30000); // Hz per molecule
+  const [concentration, setConcentration] = useState(50); // nM
+  const [tripletFrac, setTripletFrac] = useState(0.1);
+  const [tripletTau, setTripletTau] = useState(0.005); // ms
 
   const results = useMemo(() => {
     const kappa = z0 / w0; // structure parameter

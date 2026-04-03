@@ -8,19 +8,20 @@ const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SecondHarmonicPage() {
   const [wavelength, setWavelength] = useState(800); // nm, fundamental
-  const [pulseEnergy, setPulseEnergy] = useState(10]; // nJ
-  const [pulseWidth, setPulseWidth] = useState(100]; // fs
-  const [na, setNa] = useState(0.8];
-  const [n, setN] = useState(1.33];
-  const [chi2, setChi2] = useState(1.0]; // pm/V (effective)
-  const [thickness, setThickness] = useState(100]; // µm, sample thickness
+  const [pulseEnergy, setPulseEnergy] = useState(10); // nJ
+  const [pulseWidth, setPulseWidth] = useState(100); // fs
+  const [na, setNa] = useState(0.8);
+  const [n, setN] = useState(1.33);
+  const [chi2, setChi2] = useState(1.0); // pm/V (effective)
+  const [thickness, setThickness] = useState(100); // µm, sample thickness
 
   const results = useMemo(() => {
     const shgWavelength = wavelength / 2;
     const peakPower = pulseEnergy * 1e-9 / (pulseWidth * 1e-15); // W
     const w0 = 0.61 * wavelength * 1e-9 / na; // beam waist m
     const intensity = 2 * peakPower / (Math.PI * w0 * w0); // W/m²
-    const coherenceLength = shgWavelength * 1e-9 / (4 * Math.abs(n(shgWavelength * 1e-9) - n(wavelength * 1e-9)));
+    const dn = 0.01; // approximate dispersion for biological tissue
+    const coherenceLength = shgWavelength * 1e-9 / (4 * dn);
     const coherenceLengthSafe = isFinite(coherenceLength) && coherenceLength > 0 ? coherenceLength : 5e-6;
     // Simplified SHG power estimate: P_2w ∝ (χ²)² · P² · L² · sinc²(Δk·L/2)
     const P_shg = 1e-12 * (chi2 / 1) ** 2 * (pulseEnergy * 1e-9) ** 2 * (thickness * 1e-6) ** 2 / (w0 * w0);
