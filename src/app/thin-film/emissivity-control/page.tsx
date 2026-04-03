@@ -38,9 +38,7 @@ export default function EmissivityControlPage() {
         ];
       };
 
-      // Low-E: dielectric stack on Ag surface
-      // Ag modeled as high-index for TMM (simplified)
-      const nAg = 0.2 + 8i approximation → use effective R
+      // Low-E: dielectric stack on Ag surface (simplified TMM model)
       for (let p = 0; p < pairs; p++) { addLayer(nH, dH); addLayer(nL, dL); }
 
       const nInc = 1.0;

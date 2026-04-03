@@ -18,6 +18,14 @@ const calculators = [
   { name: "Wavelength Selection", href: "/free-space-comms/wavelength-selection", desc: "Best wavelength comparison for FSO links" },
   { name: "Diversity Reception", href: "/free-space-comms/diversity-reception", desc: "Spatial diversity and combining techniques" },
   { name: "Security", href: "/free-space-comms/security", desc: "FSO security, secrecy capacity, and QKD" },
+  { name: "Lasercom Link Budget", href: "/free-space-comms/lasercom-link", desc: "Full lasercom link with Gaussian beam TX/RX gains and coupling" },
+  { name: "Optical Antenna", href: "/free-space-comms/optical-antenna", desc: "Cassegrain antenna gain, divergence, and beam parameters" },
+  { name: "Acquisition & Tracking", href: "/free-space-comms/acquisition-tracking", desc: "Acquisition probability, scan time, and tracking SNR" },
+  { name: "Point-Ahead Angle", href: "/free-space-comms/point-ahead", desc: "Point-ahead compensation for satellite lasercom links" },
+  { name: "BPSK/QPSK for FSO", href: "/free-space-comms/bpsk-qpsk", desc: "BER, spectral efficiency, and power for coherent FSO modulation" },
+  { name: "Channel Capacity", href: "/free-space-comms/channel-capacity", desc: "Shannon capacity and achievable rates for FSO channels" },
+  { name: "Background Noise", href: "/free-space-comms/background-noise", desc: "Optical background power, photon rate, and noise analysis" },
+  { name: "Eye Safety for FSO", href: "/free-space-comms/eye-safety-fso", desc: "MPE, NOHD, and laser classification per IEC 60825-1" },
 ];
 
 export default function FreeSpaceCommsPage() {
