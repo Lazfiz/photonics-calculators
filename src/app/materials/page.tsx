@@ -23,6 +23,14 @@ const calculators = [
   { name: "Thermal dn/dT", href: "/materials/thermal-dndt", desc: "Temperature-dependent refractive index change" },
   { name: "Material Absorption", href: "/materials/absorption", desc: "Beer-Lambert absorption coefficient calculator" },
   { name: "Birefringence", href: "/materials/birefringence", desc: "Ordinary & extraordinary refractive indices" },
+  { name: "OH Absorption in Silica", href: "/materials/oh-absorption", desc: "Hydroxyl absorption peaks and loss spectra in silica fibers" },
+  { name: "Rare Earth Absorption", href: "/materials/rare-earth-absorption", desc: "Er³⁺, Nd³⁺, Yb³⁺, Tm³⁺, Ho³⁺ absorption cross-sections" },
+  { name: "Semiconductor Bandgap", href: "/materials/semiconductor-bandgap", desc: "Varshni equation: Eg vs temperature for GaAs, Si, GaN, InP, etc." },
+  { name: "Two-Photon Absorption", href: "/materials/two-photon-absorption", desc: "β₂PA coefficient and intensity-dependent transmission" },
+  { name: "Brillouin Scattering", href: "/materials/brillouin-scattering", desc: "SBS frequency shift, gain coefficient, and power threshold" },
+  { name: "Raman Scattering", href: "/materials/raman-scattering", desc: "Raman gain spectra and Stokes shift for optical materials" },
+  { name: "Color Centers", href: "/materials/color-centers", desc: "NV⁻, SiV⁻, F-centers: absorption/emission cross-sections" },
+  { name: "Photorefractive Effect", href: "/materials/photorefractive", desc: "Light-induced index change: Δn, EO coefficients, 2BC gain" },
 ];
 
 export default function MaterialsPage() {
