@@ -120,7 +120,7 @@ export default function SpeckleImagingPage() {
           <p>d_s = 1.22 λz / D — Objective speckle size</p>
           <p>C = σ_I / ⟨I⟩ — Speckle contrast</p>
           <p>C_N = C / √N — Contrast after N averages</p>
-          <p>σ_h > λ → fully developed speckle</p>
+          <p>σ_h &gt; λ → fully developed speckle</p>
           <p>z_R = πw₀² / λ — Rayleigh range</p>
         </div>
       </div>

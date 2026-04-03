@@ -126,7 +126,7 @@ export default function DigitalHolographyPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Key Formulas</h3>
         <div className="space-y-2 text-gray-300 text-sm font-mono">
-          <p>U(x,y,z) = F⁻¹{ F{U(x,y,0)} · H(fx,fy;z) }</p>
+          <p>U(x,y,z) = F⁻¹&#123; F&#123;U(x,y,0)&#125; · H(fx,fy;z) &#125;</p>
           <p>H = exp(−jπλz(fx² + fy²)) — Transfer function</p>
           <p>N_F = a² / (λz) — Fresnel number</p>
           <p>Δx_lat = λ / (2NA),  Δz = λ / NA²</p>
