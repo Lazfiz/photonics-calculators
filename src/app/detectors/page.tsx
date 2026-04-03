@@ -5,6 +5,24 @@ import Link from "next/link";
 const calculators = [
   { name: "NEP Calculator", href: "/detectors/nep", desc: "Noise Equivalent Power from dark current, bandwidth, and responsivity" },
   { name: "Responsivity", href: "/detectors/responsivity", desc: "Photodetector responsivity from quantum efficiency and wavelength" },
+  { name: "Quantum Efficiency", href: "/detectors/quantum-efficiency", desc: "QE vs wavelength curves for Si, InGaAs, CCD, CMOS" },
+  { name: "Spectral Response", href: "/detectors/spectral-response", desc: "Spectral responsivity and QE modeling with temperature" },
+  { name: "Gain-Bandwidth Product", href: "/detectors/gain-bandwidth", desc: "GBW trade-off: open-loop and closed-loop gain vs frequency" },
+  { name: "Saturation & Linearity", href: "/detectors/saturation", desc: "Full well capacity, dynamic range, and nonlinearity" },
+  { name: "Pixel Crosstalk", href: "/detectors/crosstalk", desc: "Charge diffusion and crosstalk between adjacent pixels" },
+  { name: "Modulation Transfer Function", href: "/detectors/modulation-transfer", desc: "Detector MTF: pixel aperture, diffusion, and optical blur" },
+  { name: "Photoresponse Non-Uniformity", href: "/detectors/uniformity", desc: "PRNU and DSNU: spatial sensitivity variations" },
+  { name: "Temporal Noise", href: "/detectors/temporal-noise", desc: "1/f noise, white noise, read noise vs frequency and time" },
+  { name: "Shot Noise", href: "/detectors/shot-noise", desc: "Shot noise from photocurrent and bandwidth" },
+  { name: "Dark Current", href: "/detectors/dark-current", desc: "Dark current from temperature and semiconductor parameters" },
+  { name: "Thermal Noise", href: "/detectors/thermal-noise", desc: "Johnson-Nyquist thermal noise in detector circuits" },
+  { name: "EM Gain", href: "/detectors/em-gain", desc: "Electron multiplying gain and excess noise factor" },
+  { name: "Full Well Capacity", href: "/detectors/full-well", desc: "Pixel full well capacity and charge handling" },
+  { name: "SNDR", href: "/detectors/sndr", desc: "Signal-to-Noise and Distortion Ratio" },
+  { name: "Bandwidth", href: "/detectors/bandwidth", desc: "Detector bandwidth and frequency response" },
+  { name: "CCD vs CMOS", href: "/detectors/ccd-vs-cmos", desc: "Comparison of CCD and CMOS sensor technologies" },
+  { name: "CCD/CMOS Characteristics", href: "/detectors/ccd-cmos", desc: "CCD and CMOS sensor parameter calculator" },
+  { name: "Pixel Crosstalk (legacy)", href: "/detectors/pixel-crosstalk", desc: "Pixel crosstalk and charge spreading model" },
 ];
 
 export default function DetectorsPage() {
