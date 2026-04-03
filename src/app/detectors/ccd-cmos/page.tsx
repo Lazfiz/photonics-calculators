@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import ResultCard from "../../../components/result-card";
 
 export default function CCDvsCMOSPage() {
   const [pixelSize, setPixelSize] = useState(6.5);
@@ -30,71 +29,22 @@ export default function CCDvsCMOSPage() {
   }, [fullWell, readNoiseCCD, readNoiseCMOS, darkCurrent, exposureTime]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
-      <h1 className="text-3xl font-bold mb-2">CCD vs CMOS Comparison</h1>
-      <p className="text-gray-400 mb-8">Compare SNR and dynamic range between CCD and CMOS detectors with configurable parameters.</p>
-
+    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="CCD vs CMOS Comparison" description="Compare SNR and dynamic range between CCD and CMOS detectors.">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Pixel Size (µm)</span>
-          <input type="number" value={pixelSize} onChange={e => setPixelSize(+e.target.value)} min={1} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">CCD Read Noise (e⁻)</span>
-          <input type="number" value={readNoiseCCD} onChange={e => setReadNoiseCCD(+e.target.value)} min={0.5} step="0.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">CMOS Read Noise (e⁻)</span>
-          <input type="number" value={readNoiseCMOS} onChange={e => setReadNoiseCMOS(+e.target.value)} min={0.3} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Full Well Capacity (e⁻)</span>
-          <input type="number" value={fullWell} onChange={e => setFullWell(+e.target.value)} min={1000} step="1000"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Dark Current (e⁻/px/s)</span>
-          <input type="number" value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)} min={0} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Exposure Time (s)</span>
-          <input type="number" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} min={0.001} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pixel Size (µm)</span><input type="number" value={pixelSize} onChange={e => setPixelSize(+e.target.value)} min={1} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">CCD Read Noise (e⁻)</span><input type="number" value={readNoiseCCD} onChange={e => setReadNoiseCCD(+e.target.value)} min={0.5} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">CMOS Read Noise (e⁻)</span><input type="number" value={readNoiseCMOS} onChange={e => setReadNoiseCMOS(+e.target.value)} min={0.3} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Full Well (e⁻)</span><input type="number" value={fullWell} onChange={e => setFullWell(+e.target.value)} min={1000} step="1000" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Dark Current (e⁻/px/s)</span><input type="number" value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)} min={0} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Exposure Time (s)</span><input type="number" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} min={0.001} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">CCD SNR (full well)</p>
-          <p className="text-2xl font-bold text-blue-400">{ccdSNR.toFixed(1)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">CMOS SNR (full well)</p>
-          <p className="text-2xl font-bold text-green-400">{cmosSNR.toFixed(1)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">CCD Dynamic Range</p>
-          <p className="text-2xl font-bold text-yellow-400">{(20 * Math.log10(dynamicRangeCCD)).toFixed(1)} dB</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">CMOS Dynamic Range</p>
-          <p className="text-2xl font-bold text-purple-400">{(20 * Math.log10(dynamicRangeCMOS)).toFixed(1)} dB</p>
-        </div>
+        <ResultCard label="CCD SNR (full well)" value={ccdSNR.toFixed(1)} tone="blue" />
+        <ResultCard label="CMOS SNR (full well)" value={cmosSNR.toFixed(1)} tone="green" />
+        <ResultCard label="CCD Dynamic Range" value={`${(20 * Math.log10(dynamicRangeCCD)).toFixed(1)} dB`} tone="yellow" />
+        <ResultCard label="CMOS Dynamic Range" value={`${(20 * Math.log10(dynamicRangeCMOS)).toFixed(1)} dB`} tone="purple" />
       </div>
-
-      <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" }, xaxis: { title: "Signal (e⁻)", gridcolor: "#374151" },
-          yaxis: { title: "SNR", gridcolor: "#374151" },
-          margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
-      </div>
-    </div>
+      <ChartPanel data={chartData} layout={{ xaxis: { title: "Signal (e⁻)", gridcolor: "#374151" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} />
+    </CalculatorShell>
   );
 }
