@@ -34,9 +34,9 @@ export default function AdaptiveOpticsPage() {
     const corrected = [];
     for (let z = 1; z <= 65; z++) {
       modes.push(z);
-      const sBefore = Math.exp(-(2 * Math.PI * rmsWavefront) ** 2);
+      const sBefore = Math.exp(-((2 * Math.PI * rmsWavefront) ** 2));
       const cRms = rmsWavefront * Math.sqrt(1 - z / (z + 4));
-      strehls.push(Math.exp(-(2 * Math.PI * cRms) ** 2));
+      strehls.push(Math.exp(-((2 * Math.PI * cRms) ** 2)));
       corrected.push(cRms);
     }
     return [

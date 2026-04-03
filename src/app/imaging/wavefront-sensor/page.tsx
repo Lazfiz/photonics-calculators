@@ -24,7 +24,7 @@ export default function WavefrontSensorPage() {
     const numActuators = numLenslets * numLenslets;
     const subapDiam = lensletPitch * 1e-6; // m
     const coherentLength = (0.31 * lam / (numLenslets * 0.1 + 0.01)) * 1e9; // rough r0 estimate, nm
-    const crossTalk = Math.exp(-(lensletPitch / (spotSize * 2)) ** 2) * 100;
+    const crossTalk = Math.exp(-((lensletPitch / (spotSize * 2)) ** 2)) * 100;
     return { spotSize, dynamicRange, sensitivity, fov, minWavefrontRes, numActuators, crossTalk, coherentLength };
   }, [numLenslets, lensletPitch, focalLength, wavelength, pixelSize, sensorSize]);
 

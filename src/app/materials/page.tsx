@@ -4,6 +4,16 @@ import Link from "next/link";
 
 const calculators = [
   { name: "Sellmeier Index", href: "/materials/sellmeier", desc: "Refractive index from Sellmeier dispersion coefficients" },
+  { name: "Schott Glass Catalog", href: "/materials/schott-glass", desc: "n vs λ for common SCHOTT optical glasses" },
+  { name: "Chromatic Dispersion", href: "/materials/chromatic-dispersion", desc: "Material dispersion dn/dλ from Sellmeier coefficients" },
+  { name: "Group Index", href: "/materials/group-index", desc: "Group index n_g vs phase index n for pulse propagation" },
+  { name: "Transparency Range", href: "/materials/transparency-range", desc: "UV to IR transmission range for common optical materials" },
+  { name: "Birefringent Crystals", href: "/materials/birefringent-crystals", desc: "Ordinary & extraordinary refractive indices for calcite, quartz, LiNbO₃, BBO, KDP" },
+  { name: "Nonlinear Index (n₂)", href: "/materials/nonlinear-index", desc: "Kerr nonlinear refractive index for glasses, crystals, semiconductors" },
+  { name: "Thermal Expansion", href: "/materials/thermal-expansion", desc: "CTE values and dimensional change from temperature" },
+  { name: "Photoelastic Constants", href: "/materials/photoelastic", desc: "Stress-optic coefficients p₁₁, p₁₂, p₄₄ for glasses and crystals" },
+  { name: "Verdet Constant", href: "/materials/verdet-constant", desc: "Faraday rotation coefficient for TGG, YIG, paramagnetic glasses" },
+  { name: "Infrared Materials", href: "/materials/infrared-materials", desc: "Ge, Si, ZnSe, chalcogenides — IR refractive index and properties" },
   { name: "Cauchy Model", href: "/materials/cauchy", desc: "Simplified dispersion model n(λ) = A + B/λ² + C/λ⁴" },
   { name: "Abbe Number", href: "/materials/abbe", desc: "Chromatic dispersion measure from refractive indices" },
   { name: "Group Velocity Dispersion", href: "/materials/gvd", desc: "Pulse broadening from material dispersion" },
