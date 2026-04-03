@@ -1,277 +1,90 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import InputSlider from "../../../components/input-slider";
+import ResultCard from "../../../components/result-card";
 
+const wavelengthPresets = [850, 1310, 1550];
 
 export default function CouplingEfficiencyCalculator() {
-  const [sourceNa, setSourceNa] = useState<number>(0.22);
-  const [fiberNa, setFiberNa] = useState<number>(0.12);
-  const [sourceSpotSize, setSourceSpotSize] = useState<number>(50); // μm
-  const [mfd, setMfd] = useState<number>(10.4); // μm (mode field diameter)
-  const [lateralOffset, setLateralOffset] = useState<number>(0); // μm
-  const [angularMisalign, setAngularMisalign] = useState<number>(0); // degrees
-  const [wavelength, setWavelength] = useState<number>(1550); // nm
+  const [sourceNa, setSourceNa] = useState(0.22);
+  const [fiberNa, setFiberNa] = useState(0.12);
+  const [mfd, setMfd] = useState(10.4);
+  const [lateralOffset, setLateralOffset] = useState(0);
+  const [angularMisalign, setAngularMisalign] = useState(0);
+  const [wavelength, setWavelength] = useState(1550);
 
-  // Mode field radius
   const w0 = useMemo(() => mfd / 2, [mfd]);
-
-  // NA mismatch loss
-  const naMismatchLoss = useMemo(() => {
-    if (sourceNa <= fiberNa) return 1; // No loss if source NA <= fiber NA
-    return (fiberNa / sourceNa) ** 2;
-  }, [sourceNa, fiberNa]);
-
-  // Lateral offset coupling factor
-  const lateralCoupling = useMemo(() => {
-    const offset = lateralOffset;
-    return Math.exp(-((offset / w0) ** 2));
-  }, [lateralOffset, w0]);
-
-  // Angular misalignment coupling factor
-  // Using Gaussian beam coupling formula: exp(-(π*n*w0*θ/λ)²)
+  const naMismatchLoss = useMemo(() => (sourceNa <= fiberNa ? 1 : (fiberNa / sourceNa) ** 2), [sourceNa, fiberNa]);
+  const lateralCoupling = useMemo(() => Math.exp(-((lateralOffset / w0) ** 2)), [lateralOffset, w0]);
   const angularCoupling = useMemo(() => {
-    const theta = (angularMisalign * Math.PI) / 180; // Convert to radians
-    const lambda = wavelength * 1e-3; // Convert to μm
-    const n = 1.46; // Assume silica refractive index
+    const theta = (angularMisalign * Math.PI) / 180;
+    const lambda = wavelength * 1e-3;
+    const n = 1.46;
     const exponent = ((Math.PI * n * w0 * theta) / lambda) ** 2;
     return Math.exp(-exponent);
   }, [angularMisalign, w0, wavelength]);
+  const totalCoupling = useMemo(() => naMismatchLoss * lateralCoupling * angularCoupling, [naMismatchLoss, lateralCoupling, angularCoupling]);
+  const lossDb = totalCoupling === 0 ? Infinity : -10 * Math.log10(totalCoupling);
 
-  // Total coupling efficiency (without NA mismatch)
-  const geometricCoupling = useMemo(() => {
-    return lateralCoupling * angularCoupling;
-  }, [lateralCoupling, angularCoupling]);
-
-  // Total coupling efficiency including NA mismatch
-  const totalCoupling = useMemo(() => {
-    return geometricCoupling * naMismatchLoss;
-  }, [geometricCoupling, naMismatchLoss]);
-
-  // Loss in dB
-  const lossDb = useMemo(() => {
-    if (totalCoupling === 0) return Infinity;
-    return -10 * Math.log10(totalCoupling);
-  }, [totalCoupling]);
-
-  // Generate plot data: coupling vs lateral offset
   const plotData = useMemo(() => {
-    const offsets: number[] = [];
-    const efficiencies: number[] = [];
-    
-    for (let offset = 0; offset <= 20; offset += 0.5) {
-      const coupling = Math.exp(-((offset / w0) ** 2)) * angularCoupling * naMismatchLoss;
-      offsets.push(offset);
-      efficiencies.push(coupling * 100);
-    }
-    
-    return {
-      x: offsets,
-      y: efficiencies,
-      type: "scatter" as const,
-      mode: "lines" as const,
-      name: "Coupling Efficiency",
-      line: { color: "#3b82f6", width: 2 },
-    };
-  }, [w0, angularCoupling, naMismatchLoss]);
-
-  // Current point marker
-  const currentMarker = {
-    x: [lateralOffset],
-    y: [totalCoupling * 100],
-    type: "scatter" as const,
-    mode: "markers" as const,
-    name: "Current",
-    marker: { color: "#22c55e", size: 12 },
-  };
-
-  const layout = {
-    title: "Coupling Efficiency vs Lateral Offset",
-    xaxis: { title: "Lateral Offset (μm)", gridcolor: "#374151" },
-    yaxis: { title: "Coupling Efficiency (%)", gridcolor: "#374151", range: [0, 105] },
-    paper_bgcolor: "#111827",
-    plot_bgcolor: "#1f2937",
-    font: { color: "#f3f4f6" },
-    showlegend: false,
-    height: 400,
-  };
+    const offsets = Array.from({ length: 180 }, (_, i) => (i * 20) / 179);
+    const efficiencies = offsets.map((offset) => Math.exp(-((offset / w0) ** 2)) * angularCoupling * naMismatchLoss * 100);
+    return [
+      { x: offsets, y: efficiencies, type: "scatter" as const, mode: "lines", name: "Coupling efficiency", line: { color: "#3b82f6", width: 3 } },
+      { x: [lateralOffset], y: [totalCoupling * 100], type: "scatter" as const, mode: "markers", name: "Current", marker: { color: "#22c55e", size: 12 } },
+    ];
+  }, [w0, angularCoupling, naMismatchLoss, lateralOffset, totalCoupling]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
-
-                
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Input Section */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-300 border-b border-gray-700 pb-2">
-              Source Parameters
-            </h2>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">Source NA</label>
-              <input
-                type="number"
-                value={sourceNa}
-                onChange={(e) => setSourceNa(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none"
-                step="0.01"
-                min="0.01"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Source Spot Size (μm)</label>
-              <input
-                type="number"
-                value={sourceSpotSize}
-                onChange={(e) => setSourceSpotSize(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none"
-                step="1"
-                min="1"
-              />
-            </div>
-
-            <h2 className="text-lg font-semibold text-gray-300 border-b border-gray-700 pb-2 pt-4">
-              Fiber Parameters
-            </h2>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">Fiber NA</label>
-              <input
-                type="number"
-                value={fiberNa}
-                onChange={(e) => setFiberNa(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none"
-                step="0.01"
-                min="0.01"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Mode Field Diameter (μm)</label>
-              <input
-                type="number"
-                value={mfd}
-                onChange={(e) => setMfd(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none"
-                step="0.1"
-                min="1"
-              />
-            </div>
-
-            <h2 className="text-lg font-semibold text-gray-300 border-b border-gray-700 pb-2 pt-4">
-              Misalignment
-            </h2>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">Lateral Offset (μm)</label>
-              <input
-                type="number"
-                value={lateralOffset}
-                onChange={(e) => setLateralOffset(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none"
-                step="0.1"
-                min="0"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Angular Misalignment (°)</label>
-              <input
-                type="number"
-                value={angularMisalign}
-                onChange={(e) => setAngularMisalign(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none"
-                step="0.1"
-                min="0"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
-              <input
-                type="number"
-                value={wavelength}
-                onChange={(e) => setWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none"
-                step="1"
-                min="100"
-              />
-            </div>
-          </div>
-
-          {/* Results Section */}
-          <div className="space-y-4">
-            <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4">Results</h2>
-              
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">NA Mismatch Efficiency:</span>
-                  <span className={`font-mono ${naMismatchLoss < 1 ? "text-yellow-400" : "text-green-400"}`}>
-                    {(naMismatchLoss * 100).toFixed(1)}%
-                  </span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Lateral Offset Efficiency:</span>
-                  <span className="font-mono">{(lateralCoupling * 100).toFixed(1)}%</span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Angular Misalign Efficiency:</span>
-                  <span className="font-mono">{(angularCoupling * 100).toFixed(1)}%</span>
-                </div>
-                
-                <div className="pt-3 border-t border-gray-700">
-                  <div className="flex justify-between text-lg">
-                    <span className="font-medium">Total Coupling:</span>
-                    <span className={`font-mono font-bold ${totalCoupling > 0.5 ? "text-green-400" : totalCoupling > 0.1 ? "text-yellow-400" : "text-red-400"}`}>
-                      {(totalCoupling * 100).toFixed(2)}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-lg mt-2">
-                    <span className="font-medium">Loss:</span>
-                    <span className="font-mono font-bold text-blue-400">
-                      {isFinite(lossDb) ? `${lossDb.toFixed(2)} dB` : "∞ dB"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
-              <h3 className="text-sm font-medium text-gray-400 mb-2">Formulas</h3>
-              <p className="font-mono text-sm">
-                η_lateral = exp(-(offset/w₀)²)
-              </p>
-              <p className="font-mono text-sm mt-1">
-                η_angular = exp(-(π·n·w₀·θ/λ)²)
-              </p>
-              <p className="font-mono text-sm mt-1">
-                η_NA = (NA_fiber/NA_source)² if NA_source &gt; NA_fiber
-              </p>
-            </div>
-
-            <div className="bg-gray-900 rounded-lg p-4 border border-gray-800 text-sm text-gray-400">
-              <p>
-                <strong>Note:</strong> Mode field radius w₀ = MFD/2 = {w0.toFixed(1)} μm
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Plot Section */}
-        <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
-          <ChartPanel data={[plotData, currentMarker]}
-            layout={layout}
-           
-           
-          />
-        </div>
+    <CalculatorShell
+      backHref="/fiber-optics"
+      backLabel="Fiber Optics"
+      title="Fiber Coupling Efficiency"
+      description="Estimate Gaussian-to-fiber coupling loss from NA mismatch, lateral offset, and angular misalignment."
+    >
+      <div className="mb-5 flex flex-wrap gap-2">
+        {wavelengthPresets.map((preset) => (
+          <button key={preset} onClick={() => setWavelength(preset)} className={`rounded-full border px-3 py-1 text-sm transition ${wavelength === preset ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>{preset} nm</button>
+        ))}
       </div>
-    </div>
+
+      <div className="grid gap-4 lg:grid-cols-2 mb-8">
+        <InputSlider label="Source NA" value={sourceNa} onChange={setSourceNa} min={0.05} max={0.5} step={0.01} />
+        <InputSlider label="Fiber NA" value={fiberNa} onChange={setFiberNa} min={0.05} max={0.5} step={0.01} />
+        <InputSlider label="Mode field diameter" value={mfd} onChange={setMfd} min={4} max={30} step={0.1} unit="µm" />
+        <InputSlider label="Lateral offset" value={lateralOffset} onChange={setLateralOffset} min={0} max={20} step={0.1} unit="µm" />
+        <InputSlider label="Angular misalignment" value={angularMisalign} onChange={setAngularMisalign} min={0} max={5} step={0.1} unit="deg" />
+        <InputSlider label="Wavelength" value={wavelength} onChange={setWavelength} min={850} max={1650} step={1} unit="nm" />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
+        <ResultCard label="Total coupling" value={`${(totalCoupling * 100).toFixed(2)}%`} tone={totalCoupling > 0.6 ? "green" : totalCoupling > 0.2 ? "yellow" : "red"} />
+        <ResultCard label="Insertion loss" value={isFinite(lossDb) ? `${lossDb.toFixed(2)} dB` : "∞ dB"} tone="blue" />
+        <ResultCard label="NA mismatch" value={`${(naMismatchLoss * 100).toFixed(1)}%`} tone="purple" />
+        <ResultCard label="Mode radius w₀" value={`${w0.toFixed(2)} µm`} tone="yellow" />
+      </div>
+
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>η<sub>lateral</sub> = exp(-(offset / w₀)²)</p>
+        <p>η<sub>angular</sub> = exp(-(π·n·w₀·θ / λ)²)</p>
+        <p>η<sub>NA</sub> = (NA<sub>fiber</sub> / NA<sub>source</sub>)² when the source overfills the fiber acceptance cone.</p>
+      </div>
+
+      <ChartPanel
+        data={plotData}
+        layout={{
+          paper_bgcolor: "transparent",
+          plot_bgcolor: "transparent",
+          font: { color: "#9ca3af" },
+          xaxis: { title: "Lateral offset (µm)", gridcolor: "#374151" },
+          yaxis: { title: "Coupling efficiency (%)", gridcolor: "#374151", range: [0, 105] },
+          margin: { t: 30, r: 30, b: 50, l: 70 },
+          showlegend: false,
+        }}
+      />
+    </CalculatorShell>
   );
 }
