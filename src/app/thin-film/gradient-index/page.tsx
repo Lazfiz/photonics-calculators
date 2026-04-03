@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function GradientIndexPage() {
   const [nSub, setNSub] = useState(1.52);
@@ -63,24 +62,21 @@ export default function GradientIndexPage() {
   const designR = tmm.R[Math.round(tmm.wls.length / 2)];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/thin-film" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Thin Film</Link>
-      <h1 className="text-3xl font-bold mb-2">Gradient Index Coating</h1>
-      <p className="text-gray-400 mb-8">Continuously graded refractive index coating — broadband AR with no sharp interfaces.</p>
-
+    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Gradient Index Coating" description="Continuously graded refractive index coating — broadband AR with no sharp interfaces.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>substrate</sub></span>
-          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>incident</sub></span>
-          <input type="number" value={nInc} onChange={e => setNInc(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>surface</sub></span>
-          <input type="number" value={nSurface} onChange={e => setNSurface(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Thickness (nm)</span>
-          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Design λ (nm)</span>
-          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Profile</span>
-          <select value={profile} onChange={e => setProfile(e.target.value as "linear" | "cosine" | "exponential")} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
+          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>incident</sub></span>
+          <input type="number" value={nInc} onChange={e => setNInc(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>surface</sub></span>
+          <input type="number" value={nSurface} onChange={e => setNSurface(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Thickness (nm)</span>
+          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Design λ (nm)</span>
+          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Profile</span>
+          <select value={profile} onChange={e => setProfile(e.target.value as "linear" | "cosine" | "exponential")} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="linear">Linear</option>
             <option value="cosine">Cosine</option>
             <option value="exponential">Exponential</option>
@@ -100,24 +96,21 @@ export default function GradientIndexPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-4">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">Formulas</h3>
-        <p className="text-gray-400 text-sm font-mono">n(z) = n<sub>sub</sub> + (n<sub>surf</sub> − n<sub>sub</sub>) · f(z/d)</p>
-        <p className="text-gray-400 text-sm font-mono">f(z/d): linear = z/d, cosine = [1−cos(πz/d)]/2, exp = (n<sub>s</sub>/n<sub>sub</sub>)^(z/d)</p>
-        <p className="text-gray-400 text-sm font-mono">TMM with {50} sublayers, Δδ = 2πn·Δd/λ per sublayer</p>
-      </div>
+                              </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
         <div className="bg-gray-900 rounded-lg p-4">
           <p className="text-sm text-gray-400 mb-2">Index Profile</p>
-          <Plot data={[{ x: tmm.nProfile, y: tmm.depths, type: "scatter", mode: "lines", line: { color: "#a78bfa" } }]} layout={{
+          <ChartPanel data={[{ x: tmm.nProfile, y: tmm.depths, type: "scatter", mode: "lines", line: { color: "#a78bfa" } }]} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af", size: 11 }, xaxis: { title: "Refractive Index", gridcolor: "#374151" },
             yaxis: { title: "Depth (nm)", gridcolor: "#374151" },
             margin: { t: 20, r: 20, b: 40, l: 55 }, height: 280,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <p className="text-sm text-gray-400 mb-2">Reflectance / Transmittance</p>
-          <Plot data={[
+          <ChartPanel data={[
             { x: tmm.wls, y: tmm.R, type: "scatter", mode: "lines", name: "R", line: { color: "#f87171" } },
             { x: tmm.wls, y: T, type: "scatter", mode: "lines", name: "T", line: { color: "#60a5fa" } },
           ]} layout={{
@@ -125,9 +118,9 @@ export default function GradientIndexPage() {
             font: { color: "#9ca3af", size: 11 }, xaxis: { title: "λ (nm)", gridcolor: "#374151" },
             yaxis: { title: "R / T", gridcolor: "#374151", range: [0, 1.05] },
             margin: { t: 20, r: 20, b: 40, l: 45 }, height: 280,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

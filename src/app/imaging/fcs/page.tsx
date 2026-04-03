@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FCSPage() {
   const [w0, setW0] = useState(0.3); // µm
@@ -58,11 +57,8 @@ export default function FCSPage() {
   }, [brightness, results.Veff]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:underline mb-6 inline-block">← Imaging &amp; Microscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">FCS Calculator</h1>
-      <p className="text-gray-400 mb-8">Fluorescence Correlation Spectroscopy — diffusion time, concentration, and confocal volume.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="FCS Calculator" description="Fluorescence Correlation Spectroscopy — diffusion time, concentration, and confocal volume.">
+            
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
@@ -110,13 +106,13 @@ export default function FCSPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">Autocorrelation Curve</h2>
-          <Plot data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Lag time τ (ms)", type: "log", gridcolor: "#333" }, yaxis: { title: "G(τ)", gridcolor: "#333" }, margin: { l: 60, r: 20, t: 20, b: 60 } }} config={{ responsive: true, displayModeBar: false }} style={{ width: "100%", height: "350px" }} />
+          <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Lag time τ (ms)", type: "log", gridcolor: "#333" }, yaxis: { title: "G(τ)", gridcolor: "#333" }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-4">SNR vs Concentration</h2>
-          <Plot data={snrPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Concentration (nM)", gridcolor: "#333" }, yaxis: { title: "SNR (a.u.)", gridcolor: "#333" }, margin: { l: 60, r: 20, t: 20, b: 60 } }} config={{ responsive: true, displayModeBar: false }} style={{ width: "100%", height: "350px" }} />
+          <ChartPanel data={snrPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Concentration (nM)", gridcolor: "#333" }, yaxis: { title: "SNR (a.u.)", gridcolor: "#333" }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

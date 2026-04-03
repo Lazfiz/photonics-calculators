@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function StrayLightRejectionPage() {
   const [strayLightRatio, setStrayLightRatio] = useState(0.001); // 0.1%
@@ -49,18 +48,15 @@ export default function StrayLightRejectionPage() {
   const absorbanceError = Math.abs(measuredAbs - absorbance);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Stray Light Rejection</h1>
-      <p className="text-gray-400 mb-8">Impact of stray light on photometric accuracy. Critical for high-absorbance measurements.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Stray Light Rejection" description="Impact of stray light on photometric accuracy. Critical for high-absorbance measurements.">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Stray Light Ratio</span>
-          <input type="number" value={strayLightRatio} onChange={e => setStrayLightRatio(Math.max(0, +e.target.value))} min={0} step={0.0001} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">True Absorbance</span>
-          <input type="number" value={absorbance} onChange={e => setAbsorbance(+e.target.value)} min={0} step={0.1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Grating Lines (l/mm)</span>
-          <input type="number" value={gratingLines} onChange={e => setGratingLines(+e.target.value)} min={50} step={100} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Stray Light Ratio</span>
+          <input type="number" value={strayLightRatio} onChange={e => setStrayLightRatio(Math.max(0, +e.target.value))} min={0} step={0.0001} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">True Absorbance</span>
+          <input type="number" value={absorbance} onChange={e => setAbsorbance(+e.target.value)} min={0} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Grating Lines (l/mm)</span>
+          <input type="number" value={gratingLines} onChange={e => setGratingLines(+e.target.value)} min={50} step={100} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
@@ -85,7 +81,7 @@ export default function StrayLightRejectionPage() {
         <p>Stray light sources: grating ghosts, scatter from optics, detector crosstalk, higher-order diffraction.</p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         grid: { rows: 1, columns: 2, pattern: "independent" },
         xaxis: { title: "True Absorbance (AU)", gridcolor: "#374151", domain: [0, 0.47] },
@@ -93,7 +89,7 @@ export default function StrayLightRejectionPage() {
         xaxis2: { title: "True Absorbance (AU)", gridcolor: "#374151", domain: [0.53, 1] },
         yaxis2: { title: "Photometric Error (%)", gridcolor: "#374151" },
         height: 500, margin: { t: 30, b: 40 },
-      }} config={{ responsive: true }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

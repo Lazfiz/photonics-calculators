@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface IRMaterial {
   name: string;
@@ -63,11 +62,8 @@ export default function InfraredGlassPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Infrared Optical Materials</h1>
-      <p className="text-gray-400 mb-8">Compare IR transmitting materials. <span className="text-gray-500">n(T) = n₂₅ + (dn/dT)(T - 25°C)</span></p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Infrared Optical Materials" description="Compare IR transmitting materials. n(T) = n₂₅ + (dn/dT)(T - 25°C)">
+            
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-6">
         {Object.keys(MATERIALS).map(key => (
           <button key={key} onClick={() => setMaterial(key as any)} className={`px-3 py-2 rounded text-xs ${material === key ? "bg-blue-600" : "bg-gray-800 hover:bg-gray-700"}`}>{MATERIALS[key].name.split("(")[0].trim()}</button>
@@ -83,14 +79,14 @@ export default function InfraredGlassPage() {
 
       <div className="mb-4">
         <label className="text-sm text-gray-400">Temperature: {temperature}°C</label>
-        <input type="range" min={-50} max={200} value={temperature} onChange={e => setTemperature(+e.target.value)} className="w-full" />
+        <input type="range" min={-50} max={200} value={temperature} onChange={e => setTemperature(+e.target.value)} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Plot data={rangeChart.data} layout={rangeChart.layout} config={plotConfig} />
-        <Plot data={propsChart.data} layout={propsChart.layout} config={plotConfig} />
+        <ChartPanel data={rangeChart.data} layout={rangeChart.layout} config={plotConfig} />
+        <ChartPanel data={propsChart.data} layout={propsChart.layout} config={plotConfig} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface UVMaterial {
   name: string;
@@ -62,11 +61,8 @@ export default function UVMaterialsPage() {
   }, [selected]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">UV Optical Materials</h1>
-      <p className="text-gray-400 mb-8">Deep UV to near-UV materials comparison. <span className="text-gray-500">Sellmeier: n² = 1 + Σ B<sub>i</sub>λ²/(λ² - C<sub>i</sub>)</span></p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="UV Optical Materials" description="Deep UV to near-UV materials comparison. Sellmeier: n² = 1 + Σ Biλ²/(λ² - Ci)">
+            
       <div className="flex flex-wrap gap-2 mb-6">
         {Object.keys(MATERIALS).map(key => (
           <button key={key} onClick={() => toggle(key)} className={`px-3 py-1 rounded text-xs ${selected.includes(key) ? "bg-purple-600" : "bg-gray-800 hover:bg-gray-700"}`}>{MATERIALS[key].name.split("(")[0].trim()}</button>
@@ -74,10 +70,10 @@ export default function UVMaterialsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <Plot data={uvChart.data} layout={uvChart.layout} config={plotConfig} />
-        <Plot data={dispersionChart.data} layout={dispersionChart.layout} config={plotConfig} />
+        <ChartPanel data={uvChart.data} layout={uvChart.layout} config={plotConfig} />
+        <ChartPanel data={dispersionChart.data} layout={dispersionChart.layout} config={plotConfig} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

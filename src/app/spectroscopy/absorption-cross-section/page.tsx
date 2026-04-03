@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function AbsorptionCrossSectionPage() {
   const [extinctionCoeff, setExtinctionCoeff] = useState(50000);
@@ -37,26 +36,23 @@ export default function AbsorptionCrossSectionPage() {
   }, [extinctionCoeff, wavelength, sigmaCm2, sweepParam]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Absorption Cross-Section Calculator</h1>
-      <p className="text-gray-400 mb-8">σ = ε · 1000 / (N_A · ln 10) — convert molar extinction coefficient to molecular cross-section.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Absorption Cross-Section Calculator" description="σ = ε · 1000 / (N_A · ln 10) — convert molar extinction coefficient to molecular cross-section.">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">ε (L·mol⁻¹·cm⁻¹)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">ε (L·mol⁻¹·cm⁻¹)</span>
           <input type="number" value={extinctionCoeff} onChange={e => setExtinctionCoeff(+e.target.value)} min={0} step={1000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Concentration (mol/L)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Concentration (mol/L)</span>
           <input type="number" value={concentration} onChange={e => setConcentration(+e.target.value)} min={0} step={0.0001}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={100} step={1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -91,13 +87,13 @@ export default function AbsorptionCrossSectionPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
           xaxis: { title: sweepParam === "epsilon" ? "ε (L·mol⁻¹·cm⁻¹)" : "Wavelength (nm)", gridcolor: "#1f2937" },
           yaxis: { title: "σ (cm²)", gridcolor: "#1f2937" },
           margin: { t: 30 },
-        }} config={{ responsive: true }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

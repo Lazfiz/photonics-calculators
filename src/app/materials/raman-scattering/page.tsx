@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface RamanMaterial { name: string; shift: number; linewidth: number; gain: number; color: string }
 
@@ -53,11 +52,8 @@ export default function RamanScatteringPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Raman Scattering</h1>
-      <p className="text-gray-400 mb-8">Spontaneous and stimulated Raman scattering cross-sections and gain spectra for common optical materials.</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Raman Scattering" description="Spontaneous and stimulated Raman scattering cross-sections and gain spectra for common optical materials.">
+            
       <div className="mb-6 flex flex-wrap gap-2">
         {Object.entries(MATERIALS).map(([key, m]) => (
           <button key={key} onClick={() => toggle(key)} className={`px-3 py-1.5 rounded text-sm border ${selected.includes(key) ? "border-blue-500 bg-blue-500/20 text-blue-300" : "border-gray-700 text-gray-500"}`}>{m.name}</button>
@@ -66,21 +62,21 @@ export default function RamanScatteringPage() {
 
       <div className="mb-8">
         <label className="block text-sm text-gray-400 mb-1">Pump Wavelength: {pumpWl} nm</label>
-        <input type="range" min={400} max={2000} step={10} value={pumpWl} onChange={e => setPumpWl(+e.target.value)} className="w-full" />
+        <input type="range" min={400} max={2000} step={10} value={pumpWl} onChange={e => setPumpWl(+e.target.value)} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-8 overflow-x-auto">
         <table className="w-full text-sm">
           <thead><tr className="text-gray-500 border-b border-gray-800"><th className="text-left py-2">Material</th><th className="text-right py-2">Shift (cm⁻¹)</th><th className="text-right py-2">Stokes λ (nm)</th><th className="text-right py-2">g_R (×10⁻¹³ m/W)</th><th className="text-right py-2">Δν (cm⁻¹)</th></tr></thead>
           <tbody>
-            {peakGains.map(p => <tr key={p.key} className="border-b border-gray-800/50"><td className="py-2" style={{ color: p.color }}>{p.name}</td><td className="text-right py-2">{p.shift}</td><td className="text-right py-2">{p.stokesWl.toFixed(1)}</td><td className="text-right py-2 font-bold">{p.gain}</td><td className="text-right py-2">{p.linewidth}</td></tr>)}
+            {peakGains.map(p => <tr key={p.key} className="border-b border-gray-800/50"><td className="py-2">{p.name}</td><td className="text-right py-2">{p.shift}</td><td className="text-right py-2">{p.stokesWl.toFixed(1)}</td><td className="text-right py-2 font-bold">{p.gain}</td><td className="text-right py-2">{p.linewidth}</td></tr>)}
           </tbody>
         </table>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <h3 className="text-sm font-bold mb-2">Raman Gain Spectra</h3>
-        <Plot data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Raman Shift (cm⁻¹)", gridcolor: "#374151" }, yaxis: { title: "g_R (×10⁻¹³ m/W)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.25 }, margin: { t: 20, b: 70, l: 60, r: 20 } }} style={{ width: "100%", height: 450 }} />
+        <ChartPanel data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Raman Shift (cm⁻¹)", gridcolor: "#374151" }, yaxis: { title: "g_R (×10⁻¹³ m/W)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.25 }, margin: { t: 20, b: 70, l: 60, r: 20 } }} />
       </div>
 
       <div className="mt-8 bg-gray-900 rounded-lg p-4 text-sm text-gray-400">
@@ -88,6 +84,6 @@ export default function RamanScatteringPage() {
         <p className="font-mono bg-gray-800 p-2 rounded mb-2">g_R(ν̃) = g_R<sub>peak</sub> · exp[−(ν̃ − ν̃₀)² / 2σ²]</p>
         <p className="font-mono bg-gray-800 p-2 rounded">P<sub>S</sub> = g_R · P<sub>p</sub> · L<sub>eff</sub> · A<sub>eff</sub> | SRS threshold ≈ 16·A<sub>eff</sub> / (g_R · L<sub>eff</sub>)</p>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

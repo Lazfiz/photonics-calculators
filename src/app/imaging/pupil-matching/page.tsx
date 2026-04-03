@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function PupilMatchingPage() {
   const [objectiveNA, setObjectiveNA] = useState(0.75);
@@ -34,22 +33,19 @@ export default function PupilMatchingPage() {
   const totalMag = objectiveMag * eyepieceMag;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Imaging</Link>
-      <h1 className="text-3xl font-bold mb-2">Pupil Matching in Microscopy</h1>
-      <p className="text-gray-400 mb-8">Exit pupil = (2·f<sub>tube</sub>·NA)/(M<sub>obj</sub>·M<sub>eyepiece</sub>). Match to eye pupil (2-8mm) for optimal brightness.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Pupil Matching in Microscopy" description="Exit pupil = (2·ftube·NA)/(Mobj·Meyepiece). Match to eye pupil (2-8mm) for optimal brightness.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Objective NA</span>
-          <input type="number" value={objectiveNA} onChange={e => setObjectiveNA(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Objective Mag</span>
-          <input type="number" value={objectiveMag} onChange={e => setObjectiveMag(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Tube Lens f (mm)</span>
-          <input type="number" value={tubeLensFL} onChange={e => setTubeLensFL(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Eyepiece Mag</span>
-          <input type="number" value={eyepieceMag} onChange={e => setEyepieceMag(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Eye Pupil (mm)</span>
-          <input type="number" value={eyePupil} onChange={e => setEyePupil(+e.target.value)} step="0.5" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Objective NA</span>
+          <input type="number" value={objectiveNA} onChange={e => setObjectiveNA(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Objective Mag</span>
+          <input type="number" value={objectiveMag} onChange={e => setObjectiveMag(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Tube Lens f (mm)</span>
+          <input type="number" value={tubeLensFL} onChange={e => setTubeLensFL(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Eyepiece Mag</span>
+          <input type="number" value={eyepieceMag} onChange={e => setEyepieceMag(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Eye Pupil (mm)</span>
+          <input type="number" value={eyePupil} onChange={e => setEyePupil(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">
@@ -59,7 +55,7 @@ export default function PupilMatchingPage() {
         <p className="text-gray-300">Total magnification = <span className="text-blue-400 font-mono">{totalMag}×</span></p>
       </div>
 
-      <Plot data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Objective NA", gridcolor: "#374151" }, yaxis: { title: "Pupil Diameter (mm)", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true, showlegend: true }} className="w-full" style={{ height: 400 }} />
-    </div>
+      <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Objective NA", gridcolor: "#374151" }, yaxis: { title: "Pupil Diameter (mm)", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true, showlegend: true }} />
+    </CalculatorShell>
   );
 }

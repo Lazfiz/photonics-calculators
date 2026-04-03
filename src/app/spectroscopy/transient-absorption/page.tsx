@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function TransientAbsorptionPage() {
   const [pumpWavelength, setPumpWavelength] = useState(400);
@@ -68,49 +67,46 @@ export default function TransientAbsorptionPage() {
   const pumpE = 1240 / pumpWavelength;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Transient Absorption Spectroscopy</h1>
-      <p className="text-gray-400 mb-8">ΔA spectra vs delay time. Decompose into GSB, ESA, and SE contributions across the probe range.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Transient Absorption Spectroscopy" description="ΔA spectra vs delay time. Decompose into GSB, ESA, and SE contributions across the probe range.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Pump Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Pump Wavelength (nm)</span>
           <input type="number" value={pumpWavelength} onChange={e => setPumpWavelength(+e.target.value)} min={200} max={2000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Probe Range Min (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Probe Range Min (nm)</span>
           <input type="number" value={probeRangeMin} onChange={e => setProbeRangeMin(+e.target.value)} min={200} max={2000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Probe Range Max (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Probe Range Max (nm)</span>
           <input type="number" value={probeRangeMax} onChange={e => setProbeRangeMax(+e.target.value)} min={200} max={3000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">GS Absorption Peak (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">GS Absorption Peak (nm)</span>
           <input type="number" value={gsAbsorption} onChange={e => setGsAbsorption(+e.target.value)} min={200} max={3000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">ES Absorption Peak (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">ES Absorption Peak (nm)</span>
           <input type="number" value={esAbsorption} onChange={e => setEsAbsorption(+e.target.value)} min={200} max={3000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">SE Center (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">SE Center (nm)</span>
           <input type="number" value={seCenter} onChange={e => setSeCenter(+e.target.value)} min={200} max={3000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-4">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Delay Times (ps, comma-separated)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Delay Times (ps, comma-separated)</span>
           <input type="text" value={delays} onChange={e => setDelays(e.target.value)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -118,36 +114,36 @@ export default function TransientAbsorptionPage() {
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">ΔA:</span> ΔA = −log₁₀(T_pumped / T_unpumped)</p>
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">ΔA &lt; 0:</span> GSB + SE (more transmission)</p>
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">ΔA &gt; 0:</span> ESA (new absorption from excited state)</p>
-        <p className="text-gray-300 text-sm"><span className="text-blue-400 font-mono">Global analysis:</span> ΔA(λ,t) = Σᵢ Aᵢ(λ) · Cᵢ(t) + ε</p>
+        <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">Global analysis:</span> ΔA(λ,t) = Σᵢ Aᵢ(λ) · Cᵢ(t) + ε</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Info</h3>
-        <p className="text-gray-300 text-sm"><span className="text-green-400">Pump energy:</span> {pumpE.toFixed(2)} eV ({pumpWavelength} nm)</p>
-        <p className="text-gray-300 text-sm"><span className="text-green-400">Probe range:</span> {probeRangeMin}–{probeRangeMax} nm</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">Pump energy:</span> {pumpE.toFixed(2)} eV ({pumpWavelength} nm)</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">Probe range:</span> {probeRangeMin}–{probeRangeMax} nm</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
           title: { text: "Transient Absorption ΔA Spectra", font: { color: "white" } },
           xaxis: { title: "Probe Wavelength (nm)", gridcolor: "#374151" },
           yaxis: { title: "ΔA (a.u.)", gridcolor: "#374151" },
           margin: { t: 40, r: 20, b: 50, l: 60 },
           showlegend: true, legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
-        }} config={{ responsive: true }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={kineticData} layout={{
+        <ChartPanel data={kineticData} layout={{
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
           title: { text: "Kinetic Trace at Ground State Band", font: { color: "white" } },
           xaxis: { title: "Delay (ps)", gridcolor: "#374151" },
           yaxis: { title: "ΔA (a.u.)", gridcolor: "#374151" },
           margin: { t: 40, r: 20, b: 50, l: 60 },
           showlegend: true, legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
-        }} config={{ responsive: true }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

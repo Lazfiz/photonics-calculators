@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function BrewsterTIRPage() {
   const [n1, setN1] = useState(1.0);
@@ -168,13 +167,8 @@ export default function BrewsterTIRPage() {
   }, [n1, n2, brewster, critical]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Brewster Angle &amp; Total Internal Reflection</h1>
-      <p className="text-gray-400 mb-6">
-        θ<sub>B</sub> = arctan(n₂/n₁) &nbsp;|&nbsp; θ<sub>c</sub> = arcsin(n₂/n₁)
-      </p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Brewster Angle &amp; Total Internal Reflection" description="θB = arctan(n₂/n₁) &nbsp;|&nbsp; θc = arcsin(n₂/n₁)">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">n₁ (incident medium)</label>
@@ -219,8 +213,7 @@ export default function BrewsterTIRPage() {
         </ul>
       </div>
 
-      <Plot
-        data={diagram}
+      <ChartPanel data={diagram}
         layout={{
           paper_bgcolor: "transparent", 
           plot_bgcolor: "transparent",
@@ -231,9 +224,9 @@ export default function BrewsterTIRPage() {
           legend: { orientation: "h", y: -0.08, x: 0.5, xanchor: "center", font: { size: 11 } },
           showlegend: true,
         }}
-        config={{ responsive: true, displayModeBar: false }}
-        style={{ width: "100%", height: 400 }}
+       
+       
       />
-    </div>
+    </CalculatorShell>
   );
 }

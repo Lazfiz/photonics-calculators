@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function WideBandpassPage() {
   const [nH, setNH] = useState(2.35);
@@ -64,24 +63,21 @@ export default function WideBandpassPage() {
   const peakWl = tmm.wls[tmm.Tcombined.indexOf(peakT)];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/thin-film" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Thin Film</Link>
-      <h1 className="text-3xl font-bold mb-2">Wide Bandpass Filter</h1>
-      <p className="text-gray-400 mb-8">Cascaded short-pass + long-pass quarter-wave stacks for broad transmission bands.</p>
-
+    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Wide Bandpass Filter" description="Cascaded short-pass + long-pass quarter-wave stacks for broad transmission bands.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>high</sub></span>
-          <input type="number" value={nH} onChange={e => setNH(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>low</sub></span>
-          <input type="number" value={nL} onChange={e => setNL(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>substrate</sub></span>
-          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Short-pass λ (nm)</span>
-          <input type="number" value={shortPassWl} onChange={e => setShortPassWl(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Long-pass λ (nm)</span>
-          <input type="number" value={longPassWl} onChange={e => setLongPassWl(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Pairs per stack</span>
-          <input type="number" value={pairs} onChange={e => setPairs(+e.target.value)} min={1} max={15} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>high</sub></span>
+          <input type="number" value={nH} onChange={e => setNH(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>low</sub></span>
+          <input type="number" value={nL} onChange={e => setNL(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
+          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Short-pass λ (nm)</span>
+          <input type="number" value={shortPassWl} onChange={e => setShortPassWl(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Long-pass λ (nm)</span>
+          <input type="number" value={longPassWl} onChange={e => setLongPassWl(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pairs per stack</span>
+          <input type="number" value={pairs} onChange={e => setPairs(+e.target.value)} min={1} max={15} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
@@ -97,13 +93,10 @@ export default function WideBandpassPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-4">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">Formulas</h3>
-        <p className="text-gray-400 text-sm font-mono">d<sub>QW</sub> = λ<sub>cut</sub>/(4n) — quarter-wave at cutoff</p>
-        <p className="text-gray-400 text-sm font-mono">T<sub>combined</sub> = T<sub>SP</sub> × T<sub>LP</sub> — cascaded stacks</p>
-        <p className="text-gray-400 text-sm font-mono">High-reflection band: Δλ/λ₀ = (4/π) arcsin((nH-nL)/(nH+nL))</p>
-      </div>
+                              </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={[
+        <ChartPanel data={[
           { x: tmm.wls, y: tmm.Tcombined, type: "scatter", mode: "lines", name: "Combined T", line: { color: "#60a5fa", width: 2 } },
           { x: tmm.wls, y: tmm.Rcombined, type: "scatter", mode: "lines", name: "Combined R", line: { color: "#f87171", width: 1 } },
           { x: tmm.wls, y: tmm.Rsp.map(r => 1 - r), type: "scatter", mode: "lines", name: "SP stack T", line: { color: "#a78bfa", width: 1, dash: "dot" } },
@@ -113,8 +106,8 @@ export default function WideBandpassPage() {
           font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
           yaxis: { title: "R / T", gridcolor: "#374151", range: [0, 1.05] },
           margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { orientation: "h", y: 1.12 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

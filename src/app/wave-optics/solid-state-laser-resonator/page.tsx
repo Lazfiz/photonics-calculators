@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SolidStateLaserResonatorPage() {
   const [crystalLength, setCrystalLength] = useState(10); // mm
@@ -116,11 +115,8 @@ export default function SolidStateLaserResonatorPage() {
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-6xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <Link href="/" className="text-blue-400 hover:text-blue-300">← Home</Link>
-        <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300">← Wave Optics</Link>
       </div>
-      <h1 className="text-3xl font-bold mb-2">💎 Solid-State Laser Resonator</h1>
-      <p className="text-gray-400 mb-6">Analyze stability, mode size, threshold, and output power for end-pumped solid-state laser resonators.</p>
-
+            
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Crystal Length (mm)</label>
@@ -163,11 +159,11 @@ export default function SolidStateLaserResonatorPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4 text-center">
           <div className="text-xs text-gray-400">g₁·g₂</div>
-          <div className="text-xl font-bold" style={{ color: isStable ? "#34d399" : "#f87171" }}>{g1g2.toFixed(4)}</div>
+          <div className="text-xl font-bold">{g1g2.toFixed(4)}</div>
         </div>
         <div className="bg-gray-800 rounded-lg p-4 text-center">
           <div className="text-xs text-gray-400">Stable?</div>
-          <div className="text-xl font-bold" style={{ color: isStable ? "#34d399" : "#f87171" }}>{isStable ? "YES" : "NO"}</div>
+          <div className="text-xl font-bold">{isStable ? "YES" : "NO"}</div>
         </div>
         <div className="bg-gray-800 rounded-lg p-4 text-center">
           <div className="text-xs text-gray-400">Beam Waist</div>
@@ -193,15 +189,15 @@ export default function SolidStateLaserResonatorPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-gray-800 rounded-lg p-4">
           <h3 className="font-semibold mb-2">Stability Diagram</h3>
-          <Plot data={stabilityData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "g₁", range: [-1, 2] }, yaxis: { ...plotLayout.yaxis, title: "g₂", range: [-1, 2] }, width: 450, height: 400 }} config={{ responsive: true }} />
+          <ChartPanel data={stabilityData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "g₁", range: [-1, 2] }, yaxis: { ...plotLayout.yaxis, title: "g₂", range: [-1, 2] }, width: 450, height: 400 }} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <h3 className="font-semibold mb-2">Beam Radius Along Cavity</h3>
-          <Plot data={beamProfileData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Position (mm)" }, yaxis: { ...plotLayout.yaxis, title: "Beam Radius (µm)" } }} config={{ responsive: true }} />
+          <ChartPanel data={beamProfileData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Position (mm)" }, yaxis: { ...plotLayout.yaxis, title: "Beam Radius (µm)" } }} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4 md:col-span-2">
           <h3 className="font-semibold mb-2">Output Power vs Pump Power</h3>
-          <Plot data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output (W)" } }} config={{ responsive: true }} />
+          <ChartPanel data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output (W)" } }} />
         </div>
       </div>
     </div>

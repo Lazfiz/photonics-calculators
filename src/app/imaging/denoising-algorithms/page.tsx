@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function DenoisingAlgorithmsPage() {
   const [algorithm, setAlgorithm] = useState<"gaussian" | "median" | "bilateral" | "nlm" | "wavelet" | "deep">("nlm");
@@ -84,11 +83,8 @@ export default function DenoisingAlgorithmsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Imaging</Link>
-      <h1 className="text-3xl font-bold mb-2">Denoising Algorithms</h1>
-      <p className="text-gray-400 mb-6">Compare denoising methods: noise reduction, detail preservation, and SNR improvement tradeoffs.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Denoising Algorithms" description="Compare denoising methods: noise reduction, detail preservation, and SNR improvement tradeoffs.">
+            
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Input Noise σ</p>
@@ -109,10 +105,10 @@ export default function DenoisingAlgorithmsPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Algorithm</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Algorithm</span>
           <select value={algorithm} onChange={e => setAlgorithm(e.target.value as any)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="gaussian">Gaussian Filter</option>
             <option value="median">Median Filter</option>
             <option value="bilateral">Bilateral Filter</option>
@@ -121,85 +117,85 @@ export default function DenoisingAlgorithmsPage() {
             <option value="deep">Deep Learning (DnCNN)</option>
           </select>
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Input Noise Level (σ)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Input Noise Level (σ)</span>
           <input type="number" value={inputNoise} onChange={e => setInputNoise(+e.target.value)} min={1} max={100}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
         {(algorithm === "gaussian" || algorithm === "median") && (
-          <label className="block">
-            <span className="text-gray-300 text-sm">Kernel Size</span>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">Kernel Size</span>
             <select value={filterSize} onChange={e => setFilterSize(+e.target.value)}
-              className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
               {[3, 5, 7, 9, 11].map(s => <option key={s} value={s}>{s}×{s}</option>)}
             </select>
           </label>
         )}
         {algorithm === "bilateral" && <>
-          <label className="block">
-            <span className="text-gray-300 text-sm">Spatial σ</span>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">Spatial σ</span>
             <input type="number" value={sigmaSpatial} onChange={e => setSigmaSpatial(+e.target.value)} min={0.5} max={20} step="0.5"
-              className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
           </label>
-          <label className="block">
-            <span className="text-gray-300 text-sm">Range σ</span>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">Range σ</span>
             <input type="number" value={sigmaRange} onChange={e => setSigmaRange(+e.target.value)} min={1} max={100}
-              className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
           </label>
         </>}
         {algorithm === "nlm" && <>
-          <label className="block">
-            <span className="text-gray-300 text-sm">Patch Size</span>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">Patch Size</span>
             <select value={patchSize} onChange={e => setPatchSize(+e.target.value)}
-              className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
               {[3, 5, 7, 9, 11].map(s => <option key={s} value={s}>{s}×{s}</option>)}
             </select>
           </label>
-          <label className="block">
-            <span className="text-gray-300 text-sm">Search Window</span>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">Search Window</span>
             <select value={searchWindow} onChange={e => setSearchWindow(+e.target.value)}
-              className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
               {[11, 15, 21, 25, 31].map(s => <option key={s} value={s}>{s}×{s}</option>)}
             </select>
           </label>
         </>}
         {algorithm === "wavelet" && <>
-          <label className="block">
-            <span className="text-gray-300 text-sm">Decomposition Level</span>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">Decomposition Level</span>
             <input type="number" value={waveletLevel} onChange={e => setWaveletLevel(+e.target.value)} min={1} max={6}
-              className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
           </label>
-          <label className="block">
-            <span className="text-gray-300 text-sm">Threshold (σ multiples)</span>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">Threshold (σ multiples)</span>
             <input type="number" value={threshold} onChange={e => setThreshold(+e.target.value)} min={0.5} max={10} step="0.5"
-              className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
           </label>
         </>}
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-sm font-semibold mb-2">1D Signal: Before & After Denoising</h3>
-        <Plot data={signalData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+        <ChartPanel data={signalData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
           xaxis: { title: "Sample", gridcolor: "#374151" }, yaxis: { title: "Intensity", gridcolor: "#374151" },
           margin: { t: 30, r: 20, b: 50, l: 50 }, legend: { font: { size: 10 } },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-2">SNR Improvement vs Input Noise</h3>
-          <Plot data={snrCompareData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          <ChartPanel data={snrCompareData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
             xaxis: { title: "Input Noise σ", gridcolor: "#374151" }, yaxis: { title: "SNR Improvement (dB)", gridcolor: "#374151" },
             margin: { t: 30, r: 20, b: 50, l: 70 }, legend: { font: { size: 9 } },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-2">Noise Reduction vs Detail Preservation</h3>
-          <Plot data={tradeoffData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          <ChartPanel data={tradeoffData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
             xaxis: { title: "Noise Reduction (σ units)", gridcolor: "#374151" },
             yaxis: { title: "Detail Preservation (%)", gridcolor: "#374151", range: [60, 100] },
             margin: { t: 30, r: 20, b: 50, l: 70 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
 
@@ -214,6 +210,6 @@ export default function DenoisingAlgorithmsPage() {
           <p><span className="text-blue-400">SSIM:</span> SSIM(x,y) = (2µ_xµ_y + c₁)(2σ_xy + c₂) / (µ_x² + µ_y² + c₁)(σ_x² + σ_y² + c₂)</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface Semiconductor {
   name: string; Eg0: number; alpha: number; beta: number;
@@ -65,11 +64,8 @@ export default function SemiconductorBandgapPage() {
   const visRegion = useMemo(() => [{ x: [380, 750, 750, 380], y: [0, 0, 5, 5], type: "scatter" as const, fill: "toself" as const, fillcolor: "rgba(255,255,255,0.05)", line: { color: "transparent" }, showlegend: false, hoverinfo: "skip" as const }], []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Semiconductor Bandgap</h1>
-      <p className="text-gray-400 mb-8">Bandgap energy and absorption edge vs temperature using the Varshni equation. Direct vs indirect gap materials.</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Semiconductor Bandgap" description="Bandgap energy and absorption edge vs temperature using the Varshni equation. Direct vs indirect gap materials.">
+            
       <div className="mb-6 flex flex-wrap gap-2">
         {Object.entries(SEMICONDUCTORS).map(([key, s]) => (
           <button key={key} onClick={() => toggle(key)} className={`px-3 py-1.5 rounded text-sm border ${selected.includes(key) ? "border-blue-500 bg-blue-500/20 text-blue-300" : "border-gray-700 text-gray-500"}`}>{s.name}{s.direct ? "" : " (ind)"}</button>
@@ -78,14 +74,14 @@ export default function SemiconductorBandgapPage() {
 
       <div className="mb-8">
         <label className="block text-sm text-gray-400 mb-1">Temperature: {temperature} K ({(temperature - 273.15).toFixed(0)} °C)</label>
-        <input type="range" min={10} max={700} step={5} value={temperature} onChange={e => setTemperature(+e.target.value)} className="w-full" />
+        <input type="range" min={10} max={700} step={5} value={temperature} onChange={e => setTemperature(+e.target.value)} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
         {bandgaps.map(b => (
           <div key={b.key}>
             <div className="text-xs text-gray-500">{b.name}</div>
-            <div className="text-lg font-bold" style={{ color: b.color }}>{b.Eg.toFixed(3)} eV</div>
+            <div className="text-lg font-bold">{b.Eg.toFixed(3)} eV</div>
             <div className="text-xs text-gray-500">λ<sub>edge</sub> = {egToWavelength(b.Eg).toFixed(0)} nm | {b.direct ? "Direct" : "Indirect"}</div>
           </div>
         ))}
@@ -93,18 +89,18 @@ export default function SemiconductorBandgapPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-sm font-bold mb-2">Bandgap Energy vs Temperature</h3>
-        <Plot data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Temperature (K)", gridcolor: "#374151" }, yaxis: { title: "E_g (eV)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.25 }, margin: { t: 20, b: 70, l: 60, r: 20 } }} style={{ width: "100%", height: 400 }} />
+        <ChartPanel data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Temperature (K)", gridcolor: "#374151" }, yaxis: { title: "E_g (eV)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.25 }, margin: { t: 20, b: 70, l: 60, r: 20 } }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <h3 className="text-sm font-bold mb-2">Absorption Edge Wavelength vs Temperature</h3>
-        <Plot data={[...wlChart, ...visRegion]} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Temperature (K)", gridcolor: "#374151" }, yaxis: { title: "λ_edge (nm)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.25 }, margin: { t: 20, b: 70, l: 60, r: 20 } }} style={{ width: "100%", height: 400 }} />
+        <ChartPanel data={[...wlChart, ...visRegion]} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Temperature (K)", gridcolor: "#374151" }, yaxis: { title: "λ_edge (nm)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.25 }, margin: { t: 20, b: 70, l: 60, r: 20 } }} />
       </div>
 
       <div className="mt-8 bg-gray-900 rounded-lg p-4 text-sm text-gray-400">
         <p className="font-mono bg-gray-800 p-2 rounded mb-2">E<sub>g</sub>(T) = E<sub>g0</sub> − αT² / (T + β)</p>
         <p className="font-mono bg-gray-800 p-2 rounded">λ<sub>edge</sub> = hc / E<sub>g</sub> = 1239.84 / E<sub>g</sub>(eV) nm</p>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

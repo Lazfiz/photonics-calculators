@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function WaveplateThicknessPage() {
   const [wavelengthNm, setWavelengthNm] = useState(550);
@@ -63,11 +62,8 @@ export default function WaveplateThicknessPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Waveplate Thickness Calculator</h1>
-      <p className="text-gray-400 mb-8">Calculate required crystal thickness for waveplates of any retardance order.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Waveplate Thickness Calculator" description="Calculate required crystal thickness for waveplates of any retardance order.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">d = Δ·λ / (n_e − n_o)</p>
         <p className="text-gray-500 text-xs mt-1">Δ = retardance in waves, λ = wavelength, Δn = birefringence</p>
@@ -83,25 +79,25 @@ export default function WaveplateThicknessPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={300} max={2000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Birefringence (Δn)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Birefringence (Δn)</span>
           <input type="number" value={birefringence} onChange={e => setBirefringence(+e.target.value)} min={0.0001} max={1} step="0.0001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Retardance (waves)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Retardance (waves)</span>
           <input type="number" value={customRetardance} onChange={e => setCustomRetardance(+e.target.value)} min={0.01} max={100} step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Quick Select</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Quick Select</span>
           <select onChange={e => setCustomRetardance(+e.target.value)} value=""
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="" disabled>Select...</option>
             <option value="0.25" onClick={() => setCustomRetardance(0.25)}>Quarter-Wave (0.25λ)</option>
             <option value="0.5" onClick={() => setCustomRetardance(0.5)}>Half-Wave (0.5λ)</option>
@@ -131,14 +127,14 @@ export default function WaveplateThicknessPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
           yaxis: { title: "Retardance (waves)", gridcolor: "#374151" },
           margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

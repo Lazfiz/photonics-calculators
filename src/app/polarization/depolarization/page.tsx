@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
@@ -85,11 +84,8 @@ export default function DepolarizationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:underline mb-6 inline-block">← Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Depolarization</h1>
-      <p className="text-gray-400 mb-6">Calculate depolarization effects via Mueller matrix model or spectral averaging.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Depolarization" description="Calculate depolarization effects via Mueller matrix model or spectral averaging.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Mode</h2>
@@ -123,7 +119,7 @@ export default function DepolarizationPage() {
               <label className="text-sm text-gray-400 block mb-1">Depolarization coefficient (0–1)</label>
               <input type="range" min={0} max={1} step={0.01} value={depCoeff}
                 onChange={(e) => setDepCoeff(parseFloat(e.target.value))}
-                className="w-full" />
+                />
               <div className="flex justify-between text-xs text-gray-500">
                 <span>None (0)</span>
                 <span className="text-white">{depCoeff.toFixed(2)}</span>
@@ -143,7 +139,7 @@ export default function DepolarizationPage() {
                 <label className="text-sm text-gray-400 block mb-1">Bandwidth (nm)</label>
                 <input type="range" min={1} max={500} value={bandwidth}
                   onChange={(e) => setBandwidth(parseFloat(e.target.value))}
-                  className="w-full" />
+                  />
                 <div className="text-center text-xs text-white">{bandwidth} nm</div>
               </div>
             </>
@@ -184,11 +180,11 @@ export default function DepolarizationPage() {
       {spectralMode && results.wavelengths.length > 0 && (
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mt-6">
           <h2 className="text-lg font-semibold mb-4">Stokes Parameters vs Wavelength</h2>
-          <Plot data={[
+          <ChartPanel data={[
             { x: results.wavelengths, y: results.s1vals, name: "S₁", type: "scatter", mode: "lines", line: { color: "#ef4444" } },
             { x: results.wavelengths, y: results.s2vals, name: "S₂", type: "scatter", mode: "lines", line: { color: "#22c55e" } },
             { x: results.wavelengths, y: results.s3vals, name: "S₃", type: "scatter", mode: "lines", line: { color: "#3b82f6" } },
-          ]} layout={{ ...plotLayout, height: 300, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" } }} config={{ displayModeBar: false }} />
+          ]} layout={{ ...plotLayout, height: 300, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" } }} />
         </div>
       )}
 
@@ -202,6 +198,6 @@ export default function DepolarizationPage() {
           <p>Depolarization length: L_dep ∝ λ² / (Δn · Δλ)</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

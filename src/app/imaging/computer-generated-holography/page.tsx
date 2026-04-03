@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function CGHPage() {
   const [wavelengthNm, setWavelengthNm] = useState(633);
@@ -53,11 +52,8 @@ export default function CGHPage() {
   }, [slmWidth, pixelPitchUm, fovX]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Imaging</Link>
-      <h1 className="text-3xl font-bold mb-2">Computer-Generated Holography</h1>
-      <p className="text-gray-400 mb-6">CGH fundamentals: SLM parameters, diffraction efficiency, hologram memory, and reconstruction geometry.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Computer-Generated Holography" description="CGH fundamentals: SLM parameters, diffraction efficiency, hologram memory, and reconstruction geometry.">
+            
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Hologram Memory</p>
@@ -78,35 +74,35 @@ export default function CGHPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={400} max={800} step="10"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Pixel Pitch (µm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Pixel Pitch (µm)</span>
           <input type="number" value={pixelPitchUm} onChange={e => setPixelPitchUm(+e.target.value)} min={1} max={20} step="0.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">SLM Width (px)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">SLM Width (px)</span>
           <input type="number" value={slmWidth} onChange={e => setSlmWidth(+e.target.value)} min={256} max={4096} step="128"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">SLM Height (px)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">SLM Height (px)</span>
           <input type="number" value={slmHeight} onChange={e => setSlmHeight(+e.target.value)} min={256} max={4096} step="128"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Reconstruction Distance (mm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Reconstruction Distance (mm)</span>
           <input type="number" value={reconstructionDistMm} onChange={e => setReconstructionDistMm(+e.target.value)} min={10} max={5000} step="10"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Bit Depth</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Bit Depth</span>
           <select value={bitDepth} onChange={e => setBitDepth(+e.target.value)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value={1}>1 (Binary)</option>
             <option value={4}>4</option>
             <option value={8}>8</option>
@@ -129,17 +125,17 @@ export default function CGHPage() {
       <div className="grid gap-4 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-2">Diffraction Efficiency by Type</h3>
-          <Plot data={efficiencyChart} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, yaxis: { title: "Efficiency", range: [0, 1.1] }, margin: { t: 20, b: 40, l: 50, r: 20 } }} config={{ displayModeBar: false }} />
+          <ChartPanel data={efficiencyChart} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, yaxis: { title: "Efficiency", range: [0, 1.1] }, margin: { t: 20, b: 40, l: 50, r: 20 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-2">FOV vs Pixel Pitch</h3>
-          <Plot data={fovChart} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Pixel Pitch (µm)" }, yaxis: { title: "FOV Width (mm)" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} config={{ displayModeBar: false }} />
+          <ChartPanel data={fovChart} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Pixel Pitch (µm)" }, yaxis: { title: "FOV Width (mm)" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-2">FFT Computational Cost</h3>
-          <Plot data={fftComplexity} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Array Size (px)" }, yaxis: { title: "Operations (M)" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} config={{ displayModeBar: false }} />
+          <ChartPanel data={fftComplexity} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Array Size (px)" }, yaxis: { title: "Operations (M)" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

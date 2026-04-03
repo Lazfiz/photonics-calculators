@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function BrewsterPolarizerPage() {
   const [n1, setN1] = useState(1.0);
@@ -101,11 +100,8 @@ export default function BrewsterPolarizerPage() {
   const TpStack = TpSingle ** numSurfaces;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Brewster Polarizer Design</h1>
-      <p className="text-gray-400 mb-8">Design Brewster-angle polarizers using tilted glass plates. At Brewster&apos;s angle, p-polarized light has zero reflection.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Brewster Polarizer Design" description="Design Brewster-angle polarizers using tilted glass plates. At Brewster&apos;s angle, p-polarized light has zero reflection.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">θ<sub>B</sub> = arctan(n₂/n₁)</p>
         <p className="text-gray-300 text-sm font-mono">R<sub>p</sub>(θ<sub>B</sub>) = 0, T<sub>p</sub>(θ<sub>B</sub>) = 1</p>
@@ -113,20 +109,20 @@ export default function BrewsterPolarizerPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">n₁ (incident)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">n₁ (incident)</span>
           <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.01" min="1" max="5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">n₂ (plate)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">n₂ (plate)</span>
           <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.01" min="1" max="5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Number of Surfaces</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Number of Surfaces</span>
           <input type="number" value={numSurfaces} onChange={e => setNumSurfaces(Math.max(1, +e.target.value))} min="1" max="20"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -161,25 +157,25 @@ export default function BrewsterPolarizerPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Reflectance vs Angle</h3>
-          <Plot data={polarizerData} layout={{
+          <ChartPanel data={polarizerData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Angle (°)", gridcolor: "#374151", range: [0, 90] },
             yaxis: { title: "Reflectance", gridcolor: "#374151", range: [0, 1] },
             margin: { t: 20, r: 20, b: 50, l: 50 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Extinction Ratio (dB)</h3>
-          <Plot data={extData} layout={{
+          <ChartPanel data={extData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Angle (°)", gridcolor: "#374151", range: [0, 90] },
             yaxis: { title: "T<sub>p</sub>/T<sub>s</sub> (dB)", gridcolor: "#374151" },
             margin: { t: 20, r: 20, b: 50, l: 50 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

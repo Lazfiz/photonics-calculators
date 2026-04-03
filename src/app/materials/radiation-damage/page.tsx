@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface Material {
   name: string;
@@ -78,11 +77,8 @@ export default function RadiationDamagePage() {
   }, [selected, thickness]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Radiation Damage Effects</h1>
-      <p className="text-gray-400 mb-4">Radiation-induced absorption and transmission loss in optical materials</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Radiation Damage Effects" description="Radiation-induced absorption and transmission loss in optical materials">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono">
         <p>α_ind = α₁M · Dose &nbsp;|&nbsp; T = exp(-α·d) &nbsp;|&nbsp; Recovery: α(t) = α₀·exp(-t/τ) + α_perm</p>
       </div>
@@ -140,8 +136,7 @@ export default function RadiationDamagePage() {
         </div>
       </div>
 
-      <Plot
-        data={chartData}
+      <ChartPanel data={chartData}
         layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
@@ -150,9 +145,9 @@ export default function RadiationDamagePage() {
           margin: { t: 20, r: 20, b: 50, l: 70 },
           legend: { orientation: "h", y: -0.2 },
         }}
-        config={{ responsive: true, displayModeBar: false }}
-        style={{ width: "100%", height: 500 }}
+       
+       
       />
-    </div>
+    </CalculatorShell>
   );
 }

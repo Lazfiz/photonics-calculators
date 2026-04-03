@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function LiquidCrystalPolarizerPage() {
   const [wavelength, setWavelength] = useState(550);
@@ -89,11 +88,8 @@ export default function LiquidCrystalPolarizerPage() {
   }, [neNo, lambda, mode, twistAngle, twistRad]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Liquid Crystal Polarizer</h1>
-      <p className="text-gray-400 mb-8">Model transmission through twisted nematic (TN), super-twisted nematic (STN), vertically aligned (VA), and electrically controlled birefringence (ECB) LC cells.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Liquid Crystal Polarizer" description="Model transmission through twisted nematic (TN), super-twisted nematic (STN), vertically aligned (VA), and electrically controlled birefringence (ECB) LC cells.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">δ = 2π Δn d / λ, T<sub>TN</sub> = sin²(½π√(1+u²)) / (1+u²)</p>
         <p className="text-gray-300 text-sm font-mono">u = 2Δnd / (λ·√(1 + (φ/2π)²)), T<sub>ECB</sub> = sin²(δ/2)</p>
@@ -108,25 +104,25 @@ export default function LiquidCrystalPolarizerPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10" min="380" max="780"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Δn (birefringence)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Δn (birefringence)</span>
           <input type="number" value={neNo} onChange={e => setNeNo(+e.target.value)} step="0.01" min="0.01" max="0.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Cell Thickness (μm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Cell Thickness (μm)</span>
           <input type="number" value={cellThickness} onChange={e => setCellThickness(+e.target.value)} step="0.5" min="1" max="20"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Twist Angle (°)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Twist Angle (°)</span>
           <input type="number" value={twistAngle} onChange={e => setTwistAngle(+e.target.value)} step="10" min="0" max="270"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -159,25 +155,25 @@ export default function LiquidCrystalPolarizerPage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Spectral Transmission</h3>
-          <Plot data={spectralData} layout={{
+          <ChartPanel data={spectralData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
             yaxis: { title: "Transmission", gridcolor: "#374151", range: [-0.05, 1.05] },
             margin: { t: 20, r: 20, b: 50, l: 50 }, height: 300,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Transmission vs Cell Thickness</h3>
-          <Plot data={thicknessData} layout={{
+          <ChartPanel data={thicknessData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Thickness (μm)", gridcolor: "#374151" },
             yaxis: { title: "Transmission", gridcolor: "#374151", range: [-0.05, 1.05] },
             margin: { t: 20, r: 20, b: 50, l: 50 }, height: 300,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

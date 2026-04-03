@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function UVBlueHazardPage() {
   const [wavelength, setWavelength] = useState(450);
@@ -107,11 +107,8 @@ export default function UVBlueHazardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/laser-safety" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Laser Safety</Link>
-      <h1 className="text-3xl font-bold mb-2">UV / Blue Light Hazard</h1>
-      <p className="text-gray-400 mb-8">Calculates weighted hazard using the blue light B(λ) and UV S(λ) action spectra per IEC 62471 / ICNIRP guidelines.</p>
-
+    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="UV / Blue Light Hazard" description="Calculates weighted hazard using the blue light B(λ) and UV S(λ) action spectra per IEC 62471 / ICNIRP guidelines.">
+            
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
@@ -162,7 +159,7 @@ export default function UVBlueHazardPage() {
         <p className="text-yellow-400 mt-2">⚠ Chronic blue light exposure linked to retinal damage; UV causes photokeratitis</p>
       </div>
 
-      <Plot data={chartData} layout={layout} config={{ responsive: true }} className="w-full h-[400px]" />
-    </div>
+      <ChartPanel data={chartData} layout={layout} className="w-full h-[400px]" />
+    </CalculatorShell>
   );
 }

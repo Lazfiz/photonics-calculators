@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function OpticalDensityPage() {
   const [transmission, setTransmission] = useState(1);
@@ -44,21 +43,18 @@ export default function OpticalDensityPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Optical Density</h1>
-      <p className="text-gray-400 mb-8">Convert between optical density (OD), transmission, and attenuation. Essential for filter selection and absorbance measurements.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Optical Density" description="Convert between optical density (OD), transmission, and attenuation. Essential for filter selection and absorbance measurements.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Absorbance (OD)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Absorbance (OD)</span>
           <input type="number" value={abs} onChange={e => { setAbsorbance(+e.target.value); setInputMode("abs"); }} min={0} max={10} step={0.01}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Transmission (%)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Transmission (%)</span>
           <input type="number" value={trans} onChange={e => { setTransmission(+e.target.value); setInputMode("trans"); }} min={0} max={100} step={0.01}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -81,7 +77,7 @@ export default function OpticalDensityPage() {
         <h3 className="text-lg font-semibold mb-2">Reference Values</h3>
         <div className="grid grid-cols-2 gap-1">
           {odTable.map(r => (
-            <p key={r.od} className="text-gray-300 text-sm">
+            <p key={r.od} className="text-sm text-gray-300">
               OD <span className="text-blue-400">{r.od}</span> → <span className="text-green-400">{r.t}%</span> T
             </p>
           ))}
@@ -89,19 +85,19 @@ export default function OpticalDensityPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm"><span className="text-blue-400 font-mono">OD = −log₁₀(T)</span></p>
-        <p className="text-gray-300 text-sm"><span className="text-green-400 font-mono">T = 10^(−OD)</span></p>
-        <p className="text-gray-300 text-sm"><span className="text-orange-400 font-mono">Attenuation (dB) = 10 × OD</span></p>
+        <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">OD = −log₁₀(T)</span></p>
+        <p className="text-sm text-gray-300"><span className="text-green-400 font-mono">T = 10^(−OD)</span></p>
+        <p className="text-sm text-gray-300"><span className="text-orange-400 font-mono">Attenuation (dB) = 10 × OD</span></p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" }, xaxis: { title: "Optical Density (OD)", gridcolor: "#374151" },
           yaxis: { title: "Percentage (%)", gridcolor: "#374151", range: [-5, 105] },
           margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { x: 0.01, y: 0.99 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

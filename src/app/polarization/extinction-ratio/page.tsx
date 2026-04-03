@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ExtinctionRatioPage() {
   const [erdB, setErdB] = useState(30);
@@ -43,11 +42,8 @@ export default function ExtinctionRatioPage() {
   }, [erdB, inputPower, numPolarizers]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:underline mb-6 inline-block">← Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Extinction Ratio</h1>
-      <p className="text-gray-400 mb-6">Calculate polarizer extinction ratio, transmission, and cascaded performance.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Extinction Ratio" description="Calculate polarizer extinction ratio, transmission, and cascaded performance.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Parameters</h2>
@@ -78,8 +74,7 @@ export default function ExtinctionRatioPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Malus&apos;s Law: Transmission vs Angle</h2>
-          <Plot
-            data={[
+          <ChartPanel data={[
               { type: "scatter" as const, mode: "lines" as const, x: results.angles, y: results.transmitted, name: "Transmitted", line: { color: "#3b82f6" } },
               { type: "scatter" as const, mode: "lines" as const, x: results.angles, y: results.rejected, name: "Rejected", line: { color: "#ef4444" } },
             ]}
@@ -89,26 +84,25 @@ export default function ExtinctionRatioPage() {
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
               legend: { x: 0.02, y: 0.98, bgcolor: "rgba(0,0,0,0)" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">ER vs Wavelength (typical crystal polarizer)</h2>
-          <Plot
-            data={[{ type: "scatter" as const, mode: "lines" as const, x: results.wavelengths, y: results.erVsWavelength, line: { color: "#22c55e" } }]}
+          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.wavelengths, y: results.erVsWavelength, line: { color: "#22c55e" } }]}
             layout={{
               xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Extinction Ratio (dB)", color: "#9ca3af", gridcolor: "#374151" },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

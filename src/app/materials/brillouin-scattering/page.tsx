@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface BrillouinMaterial { name: string; n: number; rho: number; vA: number; p12: number; color: string }
 
@@ -70,11 +69,8 @@ export default function BrillouinScatteringPage() {
   }, [material, linewidth]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Brillouin Scattering</h1>
-      <p className="text-gray-400 mb-8">Stimulated Brillouin scattering (SBS): frequency shift, gain coefficient, and power threshold in optical fibers and bulk materials.</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Brillouin Scattering" description="Stimulated Brillouin scattering (SBS): frequency shift, gain coefficient, and power threshold in optical fibers and bulk materials.">
+            
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Material</label>
@@ -105,12 +101,12 @@ export default function BrillouinScatteringPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-sm font-bold mb-2">Brillouin Frequency Shift vs Wavelength</h3>
-        <Plot data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "ν_B (GHz)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.3, font: { size: 9 } }, margin: { t: 20, b: 80, l: 60, r: 20 } }} style={{ width: "100%", height: 400 }} />
+        <ChartPanel data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "ν_B (GHz)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.3, font: { size: 9 } }, margin: { t: 20, b: 80, l: 60, r: 20 } }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <h3 className="text-sm font-bold mb-2">Brillouin Gain Coefficient vs Wavelength</h3>
-        <Plot data={gainChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "g_B (×10⁻¹¹ m/W)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.3, font: { size: 9 } }, margin: { t: 20, b: 80, l: 60, r: 20 } }} style={{ width: "100%", height: 400 }} />
+        <ChartPanel data={gainChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "g_B (×10⁻¹¹ m/W)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.3, font: { size: 9 } }, margin: { t: 20, b: 80, l: 60, r: 20 } }} />
       </div>
 
       <div className="mt-8 bg-gray-900 rounded-lg p-4 text-sm text-gray-400">
@@ -118,6 +114,6 @@ export default function BrillouinScatteringPage() {
         <p className="font-mono bg-gray-800 p-2 rounded">P<sub>th</sub> ≈ 21·A<sub>eff</sub> / (g_B · L<sub>eff</sub>) | Γ_B = Brillouin linewidth</p>
         <p className="mt-2 text-xs">Acoustic velocity: V_A = {mat.vA} m/s. SBS is a major power limit in narrow-linewidth fiber systems.</p>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

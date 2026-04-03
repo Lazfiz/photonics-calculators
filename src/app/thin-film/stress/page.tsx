@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function StressPage() {
   const [filmStress, setFilmStress] = useState(-200); // MPa
@@ -46,20 +45,17 @@ export default function StressPage() {
   const curvature = 1 / R;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/thin-film" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Thin Film</Link>
-      <h1 className="text-3xl font-bold mb-2">Coating Stress & Curvature</h1>
-      <p className="text-gray-400 mb-8">Stoney's equation: σ = E·t<sub>s</sub>²/(6·R·t<sub>f</sub>). Relates film stress to substrate curvature.</p>
-
+    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Coating Stress & Curvature" description="Stoney's equation: σ = E·ts²/(6·R·tf). Relates film stress to substrate curvature.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Film Stress (MPa, compressive = negative)</span>
-          <input type="number" value={filmStress} onChange={e => setFilmStress(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Film Thickness (nm)</span>
-          <input type="number" value={filmThickness} onChange={e => setFilmThickness(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Substrate Thickness (mm)</span>
-          <input type="number" value={substrateThickness} onChange={e => setSubstrateThickness(+e.target.value)} step="0.1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">E<sub>substrate</sub> (GPa)</span>
-          <input type="number" value={eSubstrate} onChange={e => setESubstrate(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Film Stress (MPa, compressive = negative)</span>
+          <input type="number" value={filmStress} onChange={e => setFilmStress(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Film Thickness (nm)</span>
+          <input type="number" value={filmThickness} onChange={e => setFilmThickness(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Substrate Thickness (mm)</span>
+          <input type="number" value={substrateThickness} onChange={e => setSubstrateThickness(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">E<sub>substrate</sub> (GPa)</span>
+          <input type="number" value={eSubstrate} onChange={e => setESubstrate(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">
@@ -67,7 +63,7 @@ export default function StressPage() {
         <p className="text-gray-300">Curvature (1/R) = <span className="text-blue-400 font-mono">{curvature.toExponential(3)} m⁻¹</span></p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         grid: { rows: 1, columns: 2, pattern: "independent" },
         xaxis: { title: "Film Thickness (nm)", gridcolor: "#374151", domain: [0, 0.47] },
@@ -75,7 +71,7 @@ export default function StressPage() {
         yaxis: { title: "Curvature (m⁻¹)", gridcolor: "#374151" },
         yaxis2: { title: "Curvature (m⁻¹)", gridcolor: "#374151", anchor: "x2" },
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true, showlegend: true
-      }} className="w-full" style={{ height: 400 }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

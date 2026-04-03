@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function AtmosphericAttenuationPage() {
   const [wavelength, setWavelength] = useState(10600); // nm (CO2)
@@ -88,31 +88,28 @@ export default function AtmosphericAttenuationPage() {
   }, [results, distance]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/laser-safety" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Laser Safety</Link>
-      <h1 className="text-3xl font-bold mb-2">Atmospheric Attenuation</h1>
-      <p className="text-gray-400 mb-8">Calculates atmospheric beam attenuation using Beer-Lambert law with water vapor absorption, CO₂ absorption, Rayleigh and Mie scattering. Useful for outdoor laser safety NOHD calculations.</p>
-
+    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Atmospheric Attenuation" description="Calculates atmospheric beam attenuation using Beer-Lambert law with water vapor absorption, CO₂ absorption, Rayleigh and Mie scattering. Useful for outdoor laser safety NOHD calculations.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={200} max={20000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Distance (m)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Distance (m)</span>
           <input type="number" value={distance} onChange={e => setDistance(+e.target.value)} min={1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Relative Humidity (%)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Relative Humidity (%)</span>
           <input type="number" value={humidity} onChange={e => setHumidity(+e.target.value)} min={0} max={100}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Visibility (km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Visibility (km)</span>
           <input type="number" value={visibility} onChange={e => setVisibility(+e.target.value)} min={0.1} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -152,7 +149,7 @@ export default function AtmosphericAttenuationPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Distance (m)", gridcolor: "#374151" },
@@ -160,7 +157,7 @@ export default function AtmosphericAttenuationPage() {
           yaxis2: { title: "Attenuation (dB)", gridcolor: "#374151", overlaying: "y", side: "right", titlefont: { color: "#f87171" }, tickfont: { color: "#f87171" } },
           margin: { t: 30, r: 70, b: 50, l: 70 },
           legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
@@ -173,6 +170,6 @@ export default function AtmosphericAttenuationPage() {
           <p>Attenuation (dB) = −10 log₁₀(T)</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

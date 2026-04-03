@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 // Critical angle and refractive index for X-ray materials
 interface XRayMaterial {
@@ -85,11 +84,8 @@ export default function XRayOpticsPage() {
   }, [selected]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">X-ray Optics Materials</h1>
-      <p className="text-gray-400 mb-4">X-ray refractive index: n = 1 - δ - iβ. For hard X-rays, δ,β ∝ λ² ∝ 1/E².</p>
-      <p className="text-gray-500 text-sm mb-6">Penetration depth: L = λ/(4πβ). Critical angle: θ<sub>c</sub> = √(2δ).</p>
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="X-ray Optics Materials" description="X-ray refractive index: n = 1 - δ - iβ. For hard X-rays, δ,β ∝ λ² ∝ 1/E².">
+                  <p className="text-gray-500 text-sm mb-6">Penetration depth: L = λ/(4πβ). Critical angle: θ<sub>c</sub> = √(2δ).</p>
 
       <div className="flex flex-wrap gap-2 mb-6">
         {Object.keys(MATERIALS).map(key => (
@@ -98,11 +94,11 @@ export default function XRayOpticsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <Plot data={deltaChart.data} layout={deltaChart.layout} config={plotConfig} />
-        <Plot data={betaChart.data} layout={betaChart.layout} config={plotConfig} />
-        <Plot data={penetrationChart.data} layout={penetrationChart.layout} config={plotConfig} />
+        <ChartPanel data={deltaChart.data} layout={deltaChart.layout} config={plotConfig} />
+        <ChartPanel data={betaChart.data} layout={betaChart.layout} config={plotConfig} />
+        <ChartPanel data={penetrationChart.data} layout={penetrationChart.layout} config={plotConfig} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

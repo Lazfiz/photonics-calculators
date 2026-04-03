@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SolitonPage() {
   const [pulseWidth, setPulseWidth] = useState(100); // fs FWHM
@@ -114,11 +113,8 @@ export default function SolitonPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Soliton Propagation</h1>
-      <p className="text-gray-400 mb-8">Fundamental and higher-order soliton dynamics via split-step Fourier simulation.</p>
-
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Soliton Propagation" description="Fundamental and higher-order soliton dynamics via split-step Fourier simulation.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">NLS:</span> i ∂A/∂z = (β₂/2) ∂²A/∂T² − γ|A|²A</p>
         <p><span className="text-blue-400">L<sub>D</sub></span> = T₀² / |β₂|</p>
@@ -128,16 +124,16 @@ export default function SolitonPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Pulse FWHM (fs)</span>
-          <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Peak Power (W)</span>
-          <input type="number" value={peakPower} onChange={e => setPeakPower(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">β₂ (fs²/mm)</span>
-          <input type="number" value={beta2} onChange={e => setBeta2(+e.target.value)} step="any" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">γ (W⁻¹km⁻¹)</span>
-          <input type="number" value={gamma} onChange={e => setGamma(+e.target.value)} step="0.1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Propagation Distance (m)</span>
-          <input type="number" value={distance} onChange={e => setDistance(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse FWHM (fs)</span>
+          <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Peak Power (W)</span>
+          <input type="number" value={peakPower} onChange={e => setPeakPower(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">β₂ (fs²/mm)</span>
+          <input type="number" value={beta2} onChange={e => setBeta2(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">γ (W⁻¹km⁻¹)</span>
+          <input type="number" value={gamma} onChange={e => setGamma(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Propagation Distance (m)</span>
+          <input type="number" value={distance} onChange={e => setDistance(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -160,8 +156,8 @@ export default function SolitonPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={plotLayout} config={{ responsive: true, displayModeBar: false }} />
+        <ChartPanel data={chartData} layout={plotLayout} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

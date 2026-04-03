@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+
 
 export default function ABCDMatrixPage() {
   const [elements, setElements] = useState<Array<{ type: string; p1: string; p2: string }>>([
@@ -79,16 +80,13 @@ export default function ABCDMatrixPage() {
   }, [elements, inputHeight, inputAngle]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">ABCD Matrix Calculator</h1>
-      <p className="text-gray-400 mb-8">Build an optical system from sequential elements and compute the ray transfer matrix.</p>
-
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="ABCD Matrix Calculator" description="Build an optical system from sequential elements and compute the ray transfer matrix.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Input Ray Height (mm)</span>
-          <input type="number" value={inputHeight} onChange={e => setInputHeight(+e.target.value)} step="any" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Input Ray Angle (mrad)</span>
-          <input type="number" value={inputAngle} onChange={e => setInputAngle(+e.target.value)} step="any" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Input Ray Height (mm)</span>
+          <input type="number" value={inputHeight} onChange={e => setInputHeight(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Input Ray Angle (mrad)</span>
+          <input type="number" value={inputAngle} onChange={e => setInputAngle(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="space-y-3 mb-8">
@@ -138,6 +136,6 @@ export default function ABCDMatrixPage() {
           {result.isImaging && <p className="text-sm text-yellow-400 mt-2">✓ Imaging condition (B ≈ 0)</p>}
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

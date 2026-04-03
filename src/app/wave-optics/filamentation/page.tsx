@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FilamentationPage() {
   const [wavelength, setWavelength] = useState(800); // nm
@@ -83,11 +82,8 @@ export default function FilamentationPage() {
   const Bintegral = (2 * Math.PI / (wavelength * 1e-9)) * n2 * 1e-20 * Iclamped * Lfil;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Filamentation Dynamics</h1>
-      <p className="text-gray-400 mb-8">Laser filamentation — balance of Kerr self-focusing, plasma defocusing, and diffraction.</p>
-
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Filamentation Dynamics" description="Laser filamentation — balance of Kerr self-focusing, plasma defocusing, and diffraction.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">P<sub>cr</sub></span> = 3.77 λ² / (8π n₀ n₂)</p>
         <p><span className="text-blue-400">z<sub>sf</sub></span> ≈ 0.367 z<sub>R</sub> √(P/P<sub>cr</sub>) — Marburger formula</p>
@@ -97,18 +93,18 @@ export default function FilamentationPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Pulse Energy (µJ)</span>
-          <input type="number" value={pulseEnergy} onChange={e => setPulseEnergy(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Pulse Duration (fs)</span>
-          <input type="number" value={pulseDuration} onChange={e => setPulseDuration(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Beam Waist (µm)</span>
-          <input type="number" value={beamWaist} onChange={e => setBeamWaist(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n₀</span>
-          <input type="number" value={n0} onChange={e => setN0(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n₂ (×10⁻¹⁶ cm²/W)</span>
-          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
+          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse Energy (µJ)</span>
+          <input type="number" value={pulseEnergy} onChange={e => setPulseEnergy(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse Duration (fs)</span>
+          <input type="number" value={pulseDuration} onChange={e => setPulseDuration(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Beam Waist (µm)</span>
+          <input type="number" value={beamWaist} onChange={e => setBeamWaist(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n₀</span>
+          <input type="number" value={n0} onChange={e => setN0(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n₂ (×10⁻¹⁶ cm²/W)</span>
+          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -151,12 +147,12 @@ export default function FilamentationPage() {
 
       <div className="grid gap-6 lg:grid-cols-2 mb-8">
         <div className="bg-gray-900 rounded-lg p-4">
-          <Plot data={beamData} layout={beamLayout} config={{ responsive: true, displayModeBar: false }} />
+          <ChartPanel data={beamData} layout={beamLayout} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
-          <Plot data={intensityData} layout={intLayout} config={{ responsive: true, displayModeBar: false }} />
+          <ChartPanel data={intensityData} layout={intLayout} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function CoatingStressPage() {
   const [sigmaFilm, setSigmaFilm] = useState(200); // MPa, film stress
@@ -58,27 +57,22 @@ export default function CoatingStressPage() {
   }, [sigmaFilm, eSub, tSub, numLayers]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/thin-film" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Thin Film</Link>
-      <h1 className="text-3xl font-bold mb-2">Coating Stress &amp; Curvature</h1>
-      <p className="text-gray-400 mb-8">
-        Stoney equation: κ = 6σ<sub>f</sub>d<sub>f</sub> / (E<sub>s</sub>t<sub>s</sub>²). 
-        Relates thin-film stress to substrate curvature. Valid for thin films (d<sub>f</sub> ≪ t<sub>s</sub>).
-      </p>
-
+    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Coating Stress &amp; Curvature" description="Stoney equation: κ = 6σfdf / (Ests²). 
+        Relates thin-film stress to substrate curvature. Valid for thin films (df ≪ ts).">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">σ<sub>film</sub> (MPa)</span>
-          <input type="number" value={sigmaFilm} onChange={e => setSigmaFilm(+e.target.value)} step="10" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">d<sub>film</sub> (nm)</span>
-          <input type="number" value={dFilm} onChange={e => setDFilm(+e.target.value)} step="10" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">E<sub>substrate</sub> (GPa)</span>
-          <input type="number" value={eSub} onChange={e => setESub(+e.target.value)} step="1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">ν<sub>substrate</sub></span>
-          <input type="number" value={nuSub} onChange={e => setNuSub(+e.target.value)} step="0.01" min="0" max="0.5" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">t<sub>substrate</sub> (mm)</span>
-          <input type="number" value={tSub} onChange={e => setTSub(+e.target.value)} step="0.1" min="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Number of layers</span>
-          <input type="number" value={numLayers} onChange={e => setNumLayers(Math.max(1, +e.target.value))} min="1" max="100" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">σ<sub>film</sub> (MPa)</span>
+          <input type="number" value={sigmaFilm} onChange={e => setSigmaFilm(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">d<sub>film</sub> (nm)</span>
+          <input type="number" value={dFilm} onChange={e => setDFilm(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">E<sub>substrate</sub> (GPa)</span>
+          <input type="number" value={eSub} onChange={e => setESub(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">ν<sub>substrate</sub></span>
+          <input type="number" value={nuSub} onChange={e => setNuSub(+e.target.value)} step="0.01" min="0" max="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">t<sub>substrate</sub> (mm)</span>
+          <input type="number" value={tSub} onChange={e => setTSub(+e.target.value)} step="0.1" min="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Number of layers</span>
+          <input type="number" value={numLayers} onChange={e => setNumLayers(Math.max(1, +e.target.value))} min="1" max="100" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
@@ -89,22 +83,22 @@ export default function CoatingStressPage() {
       </div>
 
       <h3 className="text-lg font-semibold mb-3 text-gray-200">Curvature vs Number of Layers</h3>
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Number of layers", gridcolor: "#374151" },
         yaxis: { title: "Curvature (m⁻¹)", gridcolor: "#374151", side: "left", color: "#f87171" },
         yaxis2: { title: "Radius (m)", gridcolor: "#374151", side: "right", overlaying: "y", color: "#60a5fa" },
         margin: { t: 20, b: 40, l: 60, r: 60 }, autosize: true,
         legend: { x: 0.02, y: 0.98 },
-      }} className="w-full" style={{ height: 350 }} />
+      }} />
 
       <h3 className="text-lg font-semibold mb-3 mt-6 text-gray-200">Curvature vs Film Thickness</h3>
-      <Plot data={stressThicknessData} layout={{
+      <ChartPanel data={stressThicknessData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Film thickness (nm)", gridcolor: "#374151" },
         yaxis: { title: "Curvature (m⁻¹)", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true,
-      }} className="w-full" style={{ height: 350 }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

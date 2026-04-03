@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function AdhesionTestingPage() {
   const [testMethod, setTestMethod] = useState("scratch");
@@ -120,56 +119,53 @@ export default function AdhesionTestingPage() {
   }, [criticalLoad, tipRadius]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/thin-film" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Thin Film</Link>
-      <h1 className="text-3xl font-bold mb-2">Adhesion Testing</h1>
-      <p className="text-gray-400 mb-8">Model thin film adhesion properties from scratch test, peel test, tape test, and bend test. Calculate adhesion energy, interfacial shear strength, and critical loads.</p>
-
+    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Adhesion Testing" description="Model thin film adhesion properties from scratch test, peel test, tape test, and bend test. Calculate adhesion energy, interfacial shear strength, and critical loads.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Test Method</span>
-          <select value={testMethod} onChange={e => setTestMethod(e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Test Method</span>
+          <select value={testMethod} onChange={e => setTestMethod(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="scratch">Scratch Test</option>
             <option value="peel">Peel Test</option>
             <option value="tape">Tape Test (ASTM D3359)</option>
             <option value="bend">Bend Test</option>
           </select></label>
-        <label className="block"><span className="text-gray-300 text-sm">Film Material</span>
-          <select value={filmMaterial} onChange={e => setFilmMaterial(e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Film Material</span>
+          <select value={filmMaterial} onChange={e => setFilmMaterial(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             {Object.entries(materials).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
           </select></label>
-        <label className="block"><span className="text-gray-300 text-sm">Substrate Material</span>
-          <select value={substrateMaterial} onChange={e => setSubstrateMaterial(e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Substrate Material</span>
+          <select value={substrateMaterial} onChange={e => setSubstrateMaterial(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             {Object.entries(substrates).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
           </select></label>
-        <label className="block"><span className="text-gray-300 text-sm">Film Thickness (nm)</span>
-          <input type="number" value={filmThickness} onChange={e => setFilmThickness(+e.target.value)} step="5" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Film Thickness (nm)</span>
+          <input type="number" value={filmThickness} onChange={e => setFilmThickness(+e.target.value)} step="5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
 
         {(testMethod === "scratch" || testMethod === "all") && (
           <>
-            <label className="block"><span className="text-gray-300 text-sm">Critical Load L<sub>c</sub> (N)</span>
-              <input type="number" value={criticalLoad} onChange={e => setCriticalLoad(+e.target.value)} step="0.5" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-            <label className="block"><span className="text-gray-300 text-sm">Stylus Tip Radius (μm)</span>
-              <input type="number" value={tipRadius} onChange={e => setTipRadius(+e.target.value)} step="10" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-            <label className="block"><span className="text-gray-300 text-sm">Scratch Length (mm)</span>
-              <input type="number" value={scratchLength} onChange={e => setScratchLength(+e.target.value)} step="0.5" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+            <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Critical Load L<sub>c</sub> (N)</span>
+              <input type="number" value={criticalLoad} onChange={e => setCriticalLoad(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+            <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Stylus Tip Radius (μm)</span>
+              <input type="number" value={tipRadius} onChange={e => setTipRadius(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+            <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Scratch Length (mm)</span>
+              <input type="number" value={scratchLength} onChange={e => setScratchLength(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
           </>
         )}
 
         {testMethod === "peel" && (
-          <label className="block"><span className="text-gray-300 text-sm">Peel Force (N/m)</span>
-            <input type="number" value={peelForce} onChange={e => setPeelForce(+e.target.value)} step="0.1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Peel Force (N/m)</span>
+            <input type="number" value={peelForce} onChange={e => setPeelForce(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         )}
 
         {testMethod === "tape" && (
-          <label className="block"><span className="text-gray-300 text-sm">Tape Adhesion Rating</span>
-            <select value={tapeAdhesion} onChange={e => setTapeAdhesion(e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Tape Adhesion Rating</span>
+            <select value={tapeAdhesion} onChange={e => setTapeAdhesion(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
               {Object.entries(tapeRatings).map(([k, v]) => <option key={k} value={k}>{k} - {v.description}</option>)}
             </select></label>
         )}
 
         {testMethod === "bend" && (
-          <label className="block"><span className="text-gray-300 text-sm">Bend Radius (mm)</span>
-            <input type="number" value={bendRadius} onChange={e => setBendRadius(+e.target.value)} step="0.5" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bend Radius (mm)</span>
+            <input type="number" value={bendRadius} onChange={e => setBendRadius(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         )}
       </div>
 
@@ -219,23 +215,23 @@ export default function AdhesionTestingPage() {
       {testMethod === "scratch" && (
         <>
           <h2 className="text-xl font-semibold mb-3 text-gray-200">Adhesion vs Critical Load</h2>
-          <Plot data={sweepData} layout={{
+          <ChartPanel data={sweepData} layout={{
             paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
             xaxis: { title: "Critical Load (N)", gridcolor: "#374151" },
             yaxis: { title: "Adhesion (MPa)", gridcolor: "#374151", side: "left" },
             yaxis2: { title: "Shear (MPa)", gridcolor: "#374151", overlaying: "y", side: "right" },
             margin: { t: 20, b: 40, l: 50, r: 50 }, autosize: true, legend: { x: 0.01, y: 0.99 }
-          }} className="w-full" style={{ height: 350 }} />
+          }} />
 
           <h2 className="text-xl font-semibold mb-3 mt-6 text-gray-200">Adhesion vs Film Thickness</h2>
-          <Plot data={thicknessEffect} layout={{
+          <ChartPanel data={thicknessEffect} layout={{
             paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
             xaxis: { title: "Film Thickness (nm)", gridcolor: "#374151" },
             yaxis: { title: "Adhesion (MPa)", gridcolor: "#374151" },
             margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true
-          }} className="w-full" style={{ height: 300 }} />
+          }} />
         </>
       )}
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function fresnelCoefficients(n1: number, n2: number, thetaI: number) {
   const thetaT = Math.asin((n1 / n2) * Math.sin(thetaI));
@@ -61,11 +60,8 @@ export default function FresnelPolarizationPage() {
   }, [n1, n2]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Fresnel Polarization Calculator</h1>
-      <p className="text-gray-400 mb-8">Compute Fresnel reflection/transmission coefficients and analyze polarization-dependent effects at dielectric interfaces.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Fresnel Polarization Calculator" description="Compute Fresnel reflection/transmission coefficients and analyze polarization-dependent effects at dielectric interfaces.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">rs = (n₁cosθᵢ − n₂cosθₜ)/(n₁cosθᵢ + n₂cosθₜ)</p>
         <p className="text-gray-300 text-sm font-mono">rp = (n₂cosθᵢ − n₁cosθₜ)/(n₂cosθᵢ + n₁cosθₜ)</p>
@@ -73,20 +69,20 @@ export default function FresnelPolarizationPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">n₁ (incident medium)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">n₁ (incident medium)</span>
           <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.01" min="1" max="5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">n₂ (transmission medium)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">n₂ (transmission medium)</span>
           <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.01" min="1" max="5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Angle of Incidence (°)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Angle of Incidence (°)</span>
           <input type="number" value={thetaIDeg} onChange={e => setThetaIDeg(+e.target.value)} min="0" max="89" step="0.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -140,25 +136,25 @@ export default function FresnelPolarizationPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Reflectance & Transmittance vs Angle</h3>
-          <Plot data={chartData} layout={{
+          <ChartPanel data={chartData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Angle of Incidence (°)", gridcolor: "#374151", range: [0, 90] },
             yaxis: { title: "Fraction", gridcolor: "#374151", range: [0, 1] },
             margin: { t: 20, r: 20, b: 50, l: 50 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Phase Difference (δ = arg(r<sub>p</sub>) − arg(r<sub>s</sub>))</h3>
-          <Plot data={phaseData} layout={{
+          <ChartPanel data={phaseData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Angle of Incidence (°)", gridcolor: "#374151", range: [0, 90] },
             yaxis: { title: "Phase (°)", gridcolor: "#374151" },
             margin: { t: 20, r: 20, b: 50, l: 50 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SumFrequencyMicroscopyPage() {
   const [lambda1, setLambda1] = useState(1040);
@@ -46,41 +45,38 @@ export default function SumFrequencyMicroscopyPage() {
   }, [lambda1, lambda2, energySFG]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Imaging</Link>
-      <h1 className="text-3xl font-bold mb-2">Sum-Frequency Generation Microscopy Calculator</h1>
-      <p className="text-gray-400 mb-8">Calculate SFG wavelengths, energies, and beam parameters for sum-frequency generation microscopy.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Sum-Frequency Generation Microscopy Calculator" description="Calculate SFG wavelengths, energies, and beam parameters for sum-frequency generation microscopy.">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Beam 1 λ (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Beam 1 λ (nm)</span>
           <input type="number" value={lambda1} onChange={e => setLambda1(+e.target.value)} min={400} max={1600}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Beam 2 λ (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Beam 2 λ (nm)</span>
           <input type="number" value={lambda2} onChange={e => setLambda2(+e.target.value)} min={400} max={1600}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Numerical Aperture</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Numerical Aperture</span>
           <input type="number" value={na} onChange={e => setNa(+e.target.value)} min={0.1} max={1.7} step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Beam 1 Power (mW)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Beam 1 Power (mW)</span>
           <input type="number" value={power1} onChange={e => setPower1(+e.target.value)} min={1} max={1000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Beam 2 Power (mW)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Beam 2 Power (mW)</span>
           <input type="number" value={power2} onChange={e => setPower2(+e.target.value)} min={1} max={1000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Pulse Width (fs)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Pulse Width (fs)</span>
           <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} min={10} max={1000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -116,12 +112,12 @@ export default function SumFrequencyMicroscopyPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <Plot data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af", size: 11 }, title: { text: "SFG λ vs Beam 2 λ", font: { size: 13 } }, xaxis: { title: "Beam 2 λ (nm)", gridcolor: "#374151" }, yaxis: { title: "SFG λ (nm)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 40, b: 55 } }} style={{ width: "100%", height: 320 }} />
+          <ChartPanel data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af", size: 11 }, title: { text: "SFG λ vs Beam 2 λ", font: { size: 13 } }, xaxis: { title: "Beam 2 λ (nm)", gridcolor: "#374151" }, yaxis: { title: "SFG λ (nm)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 40, b: 55 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <Plot data={energyChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af", size: 11 }, title: { text: "Photon Energy vs Beam 2 λ", font: { size: 13 } }, xaxis: { title: "Beam 2 λ (nm)", gridcolor: "#374151" }, yaxis: { title: "Energy (eV)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 40, b: 55 } }} style={{ width: "100%", height: 320 }} />
+          <ChartPanel data={energyChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af", size: 11 }, title: { text: "Photon Energy vs Beam 2 λ", font: { size: 13 } }, xaxis: { title: "Beam 2 λ (nm)", gridcolor: "#374151" }, yaxis: { title: "Energy (eV)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 40, b: 55 } }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

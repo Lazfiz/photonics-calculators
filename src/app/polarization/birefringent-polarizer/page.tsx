@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function BirefringentPolarizerPage() {
   const [wavelength, setWavelength] = useState(589);
@@ -89,11 +88,8 @@ export default function BirefringentPolarizerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Birefringent Polarizer Design</h1>
-      <p className="text-gray-400 mb-8">Compare Glan, Wollaston, Rochon, and Senarmont polarizer designs using birefringent crystal prisms.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Birefringent Polarizer Design" description="Compare Glan, Wollaston, Rochon, and Senarmont polarizer designs using birefringent crystal prisms.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">Δn = n<sub>o</sub> - n<sub>e</sub>, Wollaston deviation ≈ 2Δn·tan(α)</p>
         <p className="text-gray-300 text-sm font-mono">Walk-off: ρ = arctan(n<sub>o</sub>n<sub>e</sub>√(n<sub>o</sub>²-n<sub>e</sub>²) / (n<sub>o</sub>²cos²θ + n<sub>e</sub>²sin²θ))</p>
@@ -108,25 +104,25 @@ export default function BirefringentPolarizerPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10" min="300" max="2000"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">n<sub>o</sub></span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">n<sub>o</sub></span>
           <input type="number" value={nO} onChange={e => setNO(+e.target.value)} step="0.001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">n<sub>e</sub></span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">n<sub>e</sub></span>
           <input type="number" value={nE} onChange={e => setNE(+e.target.value)} step="0.001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Prism Angle (°)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Prism Angle (°)</span>
           <input type="number" value={prismAngleDeg} onChange={e => setPrismAngleDeg(+e.target.value)} step="1" min="15" max="55"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -161,7 +157,7 @@ export default function BirefringentPolarizerPage() {
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm">{comparisonInfo[cutType].desc}</p>
+        <p className="text-sm text-gray-300">{comparisonInfo[cutType].desc}</p>
         <div className="flex gap-4 mt-2 text-xs text-gray-400">
           <span>FOV: {comparisonInfo[cutType].fov}</span>
           <span>Extinction: {comparisonInfo[cutType].ext}</span>
@@ -171,25 +167,25 @@ export default function BirefringentPolarizerPage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Angular Characteristics</h3>
-          <Plot data={angularData} layout={{
+          <ChartPanel data={angularData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Prism Angle (°)", gridcolor: "#374151" },
             yaxis: { title: "Angle (°)", gridcolor: "#374151" },
             margin: { t: 20, r: 20, b: 50, l: 50 }, height: 300,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Birefringence by Material</h3>
-          <Plot data={materialData} layout={{
+          <ChartPanel data={materialData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "", gridcolor: "#374151" },
             yaxis: { title: "|Δn|", gridcolor: "#374151" },
             margin: { t: 20, r: 20, b: 50, l: 50 }, height: 300,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

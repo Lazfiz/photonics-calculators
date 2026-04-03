@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function BirefringencePage() {
   const [no, setNo] = useState(1.5443); // quartz ordinary
@@ -44,11 +43,8 @@ export default function BirefringencePage() {
   }, [no, ne, thickness]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:underline mb-6 inline-block">← Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Birefringence & Retardation</h1>
-      <p className="text-gray-400 mb-6">Phase retardation from crystal birefringence, thickness, and wavelength.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Birefringence & Retardation" description="Phase retardation from crystal birefringence, thickness, and wavelength.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Crystal Parameters</h2>
@@ -97,8 +93,7 @@ export default function BirefringencePage() {
 
         <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Retardation vs Wavelength</h2>
-          <Plot
-            data={[
+          <ChartPanel data={[
               { type: "scatter", mode: "lines", x: wavelengths.map((p) => p.x), y: wavelengths.map((p) => p.y),
                 line: { color: "#3b82f6", width: 2 }, name: "Retardation (waves)" },
               { type: "scatter", mode: "markers", x: [wavelength], y: [retardationWaves],
@@ -110,12 +105,12 @@ export default function BirefringencePage() {
               paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
               margin: { l: 50, r: 20, t: 20, b: 40 }, showlegend: true,
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "400px" }}
+           
+           
           />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

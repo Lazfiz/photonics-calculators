@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function DispersiveElementPage() {
   const [grooveDensity, setGrooveDensity] = useState(1200); // lines/mm
@@ -55,24 +54,21 @@ export default function DispersiveElementPage() {
   const resolvingPower = order * grooveDensity * 10 * Math.cos(alpha); // per mm of grating width
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Dispersive Element Design</h1>
-      <p className="text-gray-400 mb-8">Diffraction grating parameters: grating equation, angular/linear dispersion, blaze profile.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Dispersive Element Design" description="Diffraction grating parameters: grating equation, angular/linear dispersion, blaze profile.">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Groove Density (l/mm)</span>
-          <input type="number" value={grooveDensity} onChange={e => setGrooveDensity(+e.target.value)} min={50} step={100} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Diffraction Order</span>
-          <input type="number" value={order} onChange={e => setOrder(Math.max(1, +e.target.value))} min={1} max={10} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Incident Angle α (°)</span>
-          <input type="number" value={incidentAngle} onChange={e => setIncidentAngle(+e.target.value)} min={0} max={89} step={1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">λ Min (nm)</span>
-          <input type="number" value={wavelengthMin} onChange={e => setWavelengthMin(+e.target.value)} min={100} step={50} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">λ Max (nm)</span>
-          <input type="number" value={wavelengthMax} onChange={e => setWavelengthMax(+e.target.value)} min={100} step={50} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Blaze λ (nm)</span>
-          <input type="number" value={blazeWavelength} onChange={e => setBlazeWavelength(+e.target.value)} min={100} step={50} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Groove Density (l/mm)</span>
+          <input type="number" value={grooveDensity} onChange={e => setGrooveDensity(+e.target.value)} min={50} step={100} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Diffraction Order</span>
+          <input type="number" value={order} onChange={e => setOrder(Math.max(1, +e.target.value))} min={1} max={10} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Incident Angle α (°)</span>
+          <input type="number" value={incidentAngle} onChange={e => setIncidentAngle(+e.target.value)} min={0} max={89} step={1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">λ Min (nm)</span>
+          <input type="number" value={wavelengthMin} onChange={e => setWavelengthMin(+e.target.value)} min={100} step={50} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">λ Max (nm)</span>
+          <input type="number" value={wavelengthMax} onChange={e => setWavelengthMax(+e.target.value)} min={100} step={50} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Blaze λ (nm)</span>
+          <input type="number" value={blazeWavelength} onChange={e => setBlazeWavelength(+e.target.value)} min={100} step={50} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
@@ -97,7 +93,7 @@ export default function DispersiveElementPage() {
         <p>Higher groove density → higher dispersion, but smaller free spectral range.</p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         grid: { rows: 3, columns: 1, pattern: "independent" },
         xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
@@ -107,7 +103,7 @@ export default function DispersiveElementPage() {
         xaxis3: { title: "Wavelength (nm)", gridcolor: "#374151" },
         yaxis3: { title: "Efficiency (%)", gridcolor: "#374151", range: [0, 110] },
         height: 900, margin: { t: 30, b: 40 },
-      }} config={{ responsive: true }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

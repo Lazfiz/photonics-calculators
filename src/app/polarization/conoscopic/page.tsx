@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ConoscopicPage() {
   const [nO, setNO] = useState(1.658);
@@ -110,11 +109,8 @@ export default function ConoscopicPage() {
   }, [dn, d, lam, maxAngleDeg]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Conoscopic Observation</h1>
-      <p className="text-gray-400 mb-8">Simulate conoscopic interference figures (isochromates and isogyres) for uniaxial and biaxial crystals between crossed polarizers.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Conoscopic Observation" description="Simulate conoscopic interference figures (isochromates and isogyres) for uniaxial and biaxial crystals between crossed polarizers.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">δ(θ) = 2π Δn d sin²θ / λ, I = sin²(δ/2)</p>
         <p className="text-gray-300 text-sm font-mono">Isogyres: dark bands where E-field ∥ polarizer/analyzer</p>
@@ -129,25 +125,25 @@ export default function ConoscopicPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">n<sub>o</sub></span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">n<sub>o</sub></span>
           <input type="number" value={nO} onChange={e => setNO(+e.target.value)} step="0.001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">n<sub>e</sub></span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">n<sub>e</sub></span>
           <input type="number" value={nE} onChange={e => setNE(+e.target.value)} step="0.001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Thickness (mm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Thickness (mm)</span>
           <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} step="0.01" min="0.01" max="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Objective NA</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Objective NA</span>
           <input type="number" value={na} onChange={e => setNA(+e.target.value)} step="0.05" min="0.1" max="1.4"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -180,26 +176,26 @@ export default function ConoscopicPage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Conoscopic Figure (crossed polars)</h3>
-          <Plot data={figureData} layout={{
+          <ChartPanel data={figureData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "#111827",
             font: { color: "#9ca3af" },
             xaxis: { title: "kx (NA)", gridcolor: "#374151", scaleanchor: "y", scaleratio: 1, range: [-na * 1.1, na * 1.1] },
             yaxis: { title: "ky (NA)", gridcolor: "#374151", range: [-na * 1.1, na * 1.1] },
             margin: { t: 20, r: 60, b: 50, l: 50 }, height: 400,
             shapes: [{ type: "circle" as const, xref: "x", yref: "y", x0: -na, y0: -na, x1: na, y1: na, line: { color: "#4b5563", width: 1 } }],
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Retardation vs Aperture Angle</h3>
-          <Plot data={radialData} layout={{
+          <ChartPanel data={radialData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Angle from axis (°)", gridcolor: "#374151" },
             yaxis: { title: "Fringe Order (waves)", gridcolor: "#374151" },
             margin: { t: 20, r: 20, b: 50, l: 50 }, height: 400,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

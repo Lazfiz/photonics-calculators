@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SpectralUnmixingPage() {
   const [numEndmembers, setNumEndmembers] = useState(3);
@@ -92,11 +91,8 @@ export default function SpectralUnmixingPage() {
   const reconstructionError = method === "nnls" ? 0.5 + noiseLevel * 0.08 : method === "cls" ? 1.2 + noiseLevel * 0.15 : 2.5 + noiseLevel * 0.25;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Imaging</Link>
-      <h1 className="text-3xl font-bold mb-2">Spectral Unmixing</h1>
-      <p className="text-gray-400 mb-6">Decompose mixed spectral signals into constituent endmember abundances using linear unmixing methods.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Spectral Unmixing" description="Decompose mixed spectral signals into constituent endmember abundances using linear unmixing methods.">
+            
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Endmembers</p>
@@ -117,39 +113,39 @@ export default function SpectralUnmixingPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Number of Endmembers</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Number of Endmembers</span>
           <input type="number" value={numEndmembers} onChange={e => setNumEndmembers(Math.max(2, Math.min(6, +e.target.value)))} min={2} max={6}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Spectral Bands</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Spectral Bands</span>
           <input type="number" value={numBands} onChange={e => setNumBands(+e.target.value)} min={8} max={256}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Noise Level (%)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Noise Level (%)</span>
           <input type="number" value={noiseLevel} onChange={e => setNoiseLevel(+e.target.value)} min={0} max={30}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Method</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Method</span>
           <select value={method} onChange={e => setMethod(e.target.value as any)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="nnls">NNLS (Non-negative Least Squares)</option>
             <option value="cls">CLS (Constrained Least Squares)</option>
             <option value="vertex">Vertex Component Analysis</option>
           </select>
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Abundance EM1 (fraction)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Abundance EM1 (fraction)</span>
           <input type="number" value={abundance1} onChange={e => setAbundance1(+e.target.value)} min={0} max={1} step="0.05"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Abundance EM2 (fraction)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Abundance EM2 (fraction)</span>
           <input type="number" value={abundance2} onChange={e => setAbundance2(+e.target.value)} min={0} max={1} step="0.05"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -171,26 +167,26 @@ export default function SpectralUnmixingPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-2">Endmember Spectra & Observed Mix</h3>
-          <Plot data={spectralData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          <ChartPanel data={spectralData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
             xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151" },
             margin: { t: 30, r: 20, b: 50, l: 50 }, legend: { font: { size: 9 } },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-2">Estimated vs True Abundances</h3>
-          <Plot data={abundanceData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          <ChartPanel data={abundanceData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
             xaxis: { title: "Endmember" }, yaxis: { title: "Abundance (fraction)", gridcolor: "#374151", range: [0, 1] },
             margin: { t: 30, r: 20, b: 50, l: 60 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-sm font-semibold mb-2">Error vs Noise Level</h3>
-        <Plot data={errorData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+        <ChartPanel data={errorData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
           xaxis: { title: "Noise Level (%)", gridcolor: "#374151" }, yaxis: { title: "Unmixing Error (%)", gridcolor: "#374151" },
           margin: { t: 30, r: 20, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -203,6 +199,6 @@ export default function SpectralUnmixingPage() {
           <p><span className="text-blue-400">Reconstruction error:</span> RMSE = √(Σ(rᵢ − r̂ᵢ)² / N)</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

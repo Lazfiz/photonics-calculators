@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function HarmonicGenerationPage() {
   const [wavelength, setWavelength] = useState(800);
@@ -41,41 +40,38 @@ export default function HarmonicGenerationPage() {
   }, [wavelength, na, pulseWidth]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Imaging</Link>
-      <h1 className="text-3xl font-bold mb-2">Harmonic Generation Microscopy Calculator</h1>
-      <p className="text-gray-400 mb-8">Calculate harmonic wavelengths, peak intensities, and conversion efficiencies for nonlinear harmonic generation microscopy.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Harmonic Generation Microscopy Calculator" description="Calculate harmonic wavelengths, peak intensities, and conversion efficiencies for nonlinear harmonic generation microscopy.">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Fundamental λ (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Fundamental λ (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={400} max={1600}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Numerical Aperture</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Numerical Aperture</span>
           <input type="number" value={na} onChange={e => setNa(+e.target.value)} min={0.1} max={1.7} step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Average Power (mW)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Average Power (mW)</span>
           <input type="number" value={power} onChange={e => setPower(+e.target.value)} min={1} max={500}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Pulse Width (fs)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Pulse Width (fs)</span>
           <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} min={10} max={1000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Rep. Rate (MHz)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Rep. Rate (MHz)</span>
           <input type="number" value={repetitionRate} onChange={e => setRepetitionRate(+e.target.value)} min={1} max={250}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Harmonic Order</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Harmonic Order</span>
           <select value={order} onChange={e => setOrder(+e.target.value)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value={2}>2nd Harmonic (SHG)</option>
             <option value={3}>3rd Harmonic (THG)</option>
           </select>
@@ -113,12 +109,12 @@ export default function HarmonicGenerationPage() {
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <Plot data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, title: { text: "Harmonic Wavelength vs Fundamental", font: { size: 14 } }, xaxis: { title: "Fundamental λ (nm)", gridcolor: "#374151" }, yaxis: { title: "Harmonic λ (nm)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.15 }, margin: { t: 40, b: 50 } }} style={{ width: "100%", height: 350 }} />
+        <ChartPanel data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, title: { text: "Harmonic Wavelength vs Fundamental", font: { size: 14 } }, xaxis: { title: "Fundamental λ (nm)", gridcolor: "#374151" }, yaxis: { title: "Harmonic λ (nm)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.15 }, margin: { t: 40, b: 50 } }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-        <Plot data={efficiencyChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, title: { text: "Conversion Efficiency vs Power", font: { size: 14 } }, xaxis: { title: "Average Power (mW)", gridcolor: "#374151" }, yaxis: { title: "Relative Efficiency", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.15 }, margin: { t: 40, b: 50 } }} style={{ width: "100%", height: 350 }} />
+        <ChartPanel data={efficiencyChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, title: { text: "Conversion Efficiency vs Power", font: { size: 14 } }, xaxis: { title: "Average Power (mW)", gridcolor: "#374151" }, yaxis: { title: "Relative Efficiency", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.15 }, margin: { t: 40, b: 50 } }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

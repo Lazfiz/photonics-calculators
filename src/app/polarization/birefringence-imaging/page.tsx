@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function BirefringenceImagingPage() {
   const [wavelength, setWavelength] = useState(550);
@@ -121,11 +120,8 @@ export default function BirefringenceImagingPage() {
   }, [delta, compensatorRet, polRad, polarizerAngleDeg]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Birefringence Imaging</h1>
-      <p className="text-gray-400 mb-8">Simulate quantitative birefringence imaging with polarizer/analyzer rotation and compensators. Visualize stress-induced birefringence patterns.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Birefringence Imaging" description="Simulate quantitative birefringence imaging with polarizer/analyzer rotation and compensators. Visualize stress-induced birefringence patterns.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">I = sin²(α-β)·cos²(δ/2) + sin²(δ/2)·cos²(2φ+α-β)</p>
         <p className="text-gray-300 text-sm font-mono">δ = 2πΔn·d/λ, Sensitivity ∝ |sin(δ)|</p>
@@ -140,33 +136,33 @@ export default function BirefringenceImagingPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10" min="400" max="700"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Δn</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Δn</span>
           <input type="number" value={dn} onChange={e => { }} step="0.001" disabled
             className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-gray-500" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Thickness (mm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Thickness (mm)</span>
           <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} step="0.01" min="0.001" max="0.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Polarizer (°)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Polarizer (°)</span>
           <input type="number" value={polarizerAngleDeg} onChange={e => setPolarizerAngleDeg(+e.target.value)} step="5" min="0" max="180"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Analyzer (°)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Analyzer (°)</span>
           <input type="number" value={analyzerAngleDeg} onChange={e => setAnalyzerAngleDeg(+e.target.value)} step="5" min="0" max="180"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -199,17 +195,17 @@ export default function BirefringenceImagingPage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Simulated Birefringence Image (stress around hole)</h3>
-          <Plot data={imageData} layout={{
+          <ChartPanel data={imageData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "#111827",
             font: { color: "#9ca3af" },
             xaxis: { title: "x (normalized)", gridcolor: "#374151", scaleanchor: "y", scaleratio: 1 },
             yaxis: { title: "y (normalized)", gridcolor: "#374151" },
             margin: { t: 20, r: 60, b: 50, l: 50 }, height: 400,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Intensity vs Retardation</h3>
-          <Plot data={retardationScan} layout={{
+          <ChartPanel data={retardationScan} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Retardation (waves)", gridcolor: "#374151" },
@@ -217,20 +213,20 @@ export default function BirefringenceImagingPage() {
             yaxis2: { title: "Sensitivity", overlaying: "y", side: "right", gridcolor: "transparent" },
             margin: { t: 20, r: 60, b: 50, l: 50 }, height: 400,
             xref: "x", yref: "y",
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <h3 className="text-sm text-gray-400 mb-2">Intensity vs Analyzer Angle</h3>
-        <Plot data={analyzerScan} layout={{
+        <ChartPanel data={analyzerScan} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Analyzer Angle (°)", gridcolor: "#374151" },
           yaxis: { title: "Intensity", gridcolor: "#374151", range: [-0.05, 1.05] },
           margin: { t: 20, r: 20, b: 50, l: 50 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

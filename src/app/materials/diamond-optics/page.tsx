@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 // Diamond Sellmeier: D. D. Duvvuri, et al.
 const sellmeierN = (wl_um: number) => {
@@ -78,11 +77,8 @@ export default function DiamondOpticsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Diamond Optics</h1>
-      <p className="text-gray-400 mb-8">Diamond — the ultimate optical material. Bandgap: 5.47 eV. n ≈ 2.42.</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Diamond Optics" description="Diamond — the ultimate optical material. Bandgap: 5.47 eV. n ≈ 2.42.">
+            
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 bg-gray-900 rounded-lg">
         <div><div className="text-gray-400 text-xs">n at {wavelength}nm</div><div className="text-2xl font-bold text-blue-400">{n.toFixed(4)}</div></div>
         <div><div className="text-gray-400 text-xs">Thermal Cond.</div><div className="text-2xl font-bold text-red-400">{diamondData.thermalCond.value} W/(m·K)</div></div>
@@ -99,17 +95,17 @@ export default function DiamondOpticsPage() {
 
       <div className="mb-4">
         <label className="text-sm text-gray-400">Wavelength: {wavelength} nm</label>
-        <input type="range" min={200} max={10000} value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full" />
+        <input type="range" min={200} max={10000} value={wavelength} onChange={e => setWavelength(+e.target.value)} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Plot data={dispersionChart.data} layout={dispersionChart.layout} config={plotConfig} />
-        <Plot data={tpaChart.data} layout={tpaChart.layout} config={plotConfig} />
+        <ChartPanel data={dispersionChart.data} layout={dispersionChart.layout} config={plotConfig} />
+        <ChartPanel data={tpaChart.data} layout={tpaChart.layout} config={plotConfig} />
         <div className="lg:col-span-2">
-          <Plot data={compareChart.data} layout={compareChart.layout} config={plotConfig} />
+          <ChartPanel data={compareChart.data} layout={compareChart.layout} config={plotConfig} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

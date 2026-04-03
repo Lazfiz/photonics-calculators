@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function DeconvolutionPage() {
   const [method, setMethod] = useState<"richardson" | "wiener" | "blind" | "tikhonov">("richardson");
@@ -69,11 +68,8 @@ export default function DeconvolutionPage() {
   const improvedLateral = lateralRes / improvementFactor;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Imaging</Link>
-      <h1 className="text-3xl font-bold mb-2">Image Deconvolution</h1>
-      <p className="text-gray-400 mb-6">Compare deconvolution algorithms: OTF analysis, convergence behavior, and resolution recovery.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Image Deconvolution" description="Compare deconvolution algorithms: OTF analysis, convergence behavior, and resolution recovery.">
+            
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Lateral Resolution</p>
@@ -94,72 +90,72 @@ export default function DeconvolutionPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Method</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Method</span>
           <select value={method} onChange={e => setMethod(e.target.value as any)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="richardson">Richardson-Lucy (Iterative)</option>
             <option value="wiener">Wiener Filter</option>
             <option value="tikhonov">Tikhonov (Regularized)</option>
             <option value="blind">Blind Deconvolution</option>
           </select>
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">NA</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">NA</span>
           <input type="number" value={na} onChange={e => setNa(+e.target.value)} min={0.1} max={1.7} step="0.05"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={400} max={800}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Refractive Index</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Refractive Index</span>
           <input type="number" value={refractiveIndex} onChange={e => setRefractiveIndex(+e.target.value)} min={1} max={1.8} step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Iterations</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Iterations</span>
           <input type="number" value={numIterations} onChange={e => setNumIterations(+e.target.value)} min={1} max={100}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Regularization Parameter</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Regularization Parameter</span>
           <input type="number" value={regularization} onChange={e => setRegularization(+e.target.value)} min={0.0001} max={1} step="0.001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Input SNR (dB)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Input SNR (dB)</span>
           <input type="number" value={snrInput} onChange={e => setSnrInput(+e.target.value)} min={1} max={60}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Image Size (px)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Image Size (px)</span>
           <input type="number" value={imageSize} onChange={e => setImageSize(+e.target.value)} min={64} max={4096} step={64}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Z-Slices</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Z-Slices</span>
           <input type="number" value={numZSlices} onChange={e => setNumZSlices(+e.target.value)} min={1} max={200}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-2">OTF / MTF Analysis</h3>
-          <Plot data={mtfData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          <ChartPanel data={mtfData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
             xaxis: { title: "Spatial Frequency (cycles/nm)", gridcolor: "#374151" }, yaxis: { title: "MTF", gridcolor: "#374151", range: [0, 1.1] },
             margin: { t: 30, r: 20, b: 50, l: 50 }, legend: { font: { size: 9 } },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-2">Convergence (Residual vs Iterations)</h3>
-          <Plot data={convergenceData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          <ChartPanel data={convergenceData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
             xaxis: { title: "Iteration", gridcolor: "#374151" }, yaxis: { title: "Residual", gridcolor: "#374151" },
             margin: { t: 30, r: 20, b: 50, l: 60 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
 
@@ -174,6 +170,6 @@ export default function DeconvolutionPage() {
           <p><span className="text-blue-400">Noise amplification:</span> |1/H| → ∞ as |H| → 0</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

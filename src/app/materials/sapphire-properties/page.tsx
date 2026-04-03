@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 // Sapphire (Al₂O₃) - uniaxial crystal, ordinary and extraordinary rays
 const sellmeierNo = (wl_um: number) => {
@@ -74,14 +73,11 @@ export default function SapphirePropertiesPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Sapphire (Al₂O₃) Properties</h1>
-      <p className="text-gray-400 mb-8">Uniaxial crystal. Sellmeier equations for ordinary and extraordinary rays.</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Sapphire (Al₂O₃) Properties" description="Uniaxial crystal. Sellmeier equations for ordinary and extraordinary rays.">
+            
       <div className="mb-4">
         <label className="text-sm text-gray-400">Wavelength: {wavelength} nm</label>
-        <input type="range" min={200} max={4000} value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full" />
+        <input type="range" min={200} max={4000} value={wavelength} onChange={e => setWavelength(+e.target.value)} />
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 bg-gray-900 rounded-lg">
@@ -99,11 +95,11 @@ export default function SapphirePropertiesPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Plot data={dispersionChart.data} layout={dispersionChart.layout} config={plotConfig} />
-        <Plot data={birefChart.data} layout={birefChart.layout} config={plotConfig} />
-        <div className="lg:col-span-2"><Plot data={thermalChart.data} layout={thermalChart.layout} config={plotConfig} /></div>
+        <ChartPanel data={dispersionChart.data} layout={dispersionChart.layout} config={plotConfig} />
+        <ChartPanel data={birefChart.data} layout={birefChart.layout} config={plotConfig} />
+        <div className="lg:col-span-2"><ChartPanel data={thermalChart.data} layout={thermalChart.layout} config={plotConfig} /></div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

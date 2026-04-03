@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function DifferenceFrequencyGenPage() {
   const [pumpWavelength, setPumpWavelength] = useState(1064);
@@ -53,31 +52,28 @@ export default function DifferenceFrequencyGenPage() {
   const quantumEfficiency = signalWavelength / (idlerNm || signalWavelength);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Difference Frequency Generation</h1>
-      <p className="text-gray-400 mb-8">Generate tunable mid-IR via DFG: ω_idler = ω_pump − ω_signal. Essential for IR spectroscopy sources.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Difference Frequency Generation" description="Generate tunable mid-IR via DFG: ω_idler = ω_pump − ω_signal. Essential for IR spectroscopy sources.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Pump Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Pump Wavelength (nm)</span>
           <input type="number" value={pumpWavelength} onChange={e => setPumpWavelength(+e.target.value)} min={300} max={3000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Signal Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Signal Wavelength (nm)</span>
           <input type="number" value={signalWavelength} onChange={e => setSignalWavelength(+e.target.value)} min={300} max={5000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Crystal Length (mm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Crystal Length (mm)</span>
           <input type="number" value={crystalLength} onChange={e => setCrystalLength(+e.target.value)} min={0.1} max={100}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Walk-off Angle (mrad)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Walk-off Angle (mrad)</span>
           <input type="number" value={walkOff} onChange={e => setWalkOff(+e.target.value)} min={0} max={100} step={0.1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -90,14 +86,14 @@ export default function DifferenceFrequencyGenPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Computed Values</h3>
-        <p className="text-gray-300 text-sm"><span className="text-green-400">Idler wavelength:</span> {idlerNm?.toFixed(2) ?? "N/A"} nm</p>
-        <p className="text-gray-300 text-sm"><span className="text-green-400">Idler wavenumber:</span> {idlerWavenumber?.toFixed(1) ?? "N/A"} cm⁻¹</p>
-        <p className="text-gray-300 text-sm"><span className="text-green-400">Quantum efficiency (λ_idler/λ_sig):</span> {quantumEfficiency.toFixed(3)}</p>
-        <p className="text-gray-300 text-sm"><span className="text-green-400">Walk-off length:</span> {(crystalLength * walkOff / 1000).toFixed(3)} mm</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">Idler wavelength:</span> {idlerNm?.toFixed(2) ?? "N/A"} nm</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">Idler wavenumber:</span> {idlerWavenumber?.toFixed(1) ?? "N/A"} cm⁻¹</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">Quantum efficiency (λ_idler/λ_sig):</span> {quantumEfficiency.toFixed(3)}</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">Walk-off length:</span> {(crystalLength * walkOff / 1000).toFixed(3)} mm</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
           title: { text: "DFG: Phase Matching & Tuning", font: { color: "white" } },
           xaxis: { title: "Crystal Length (mm)", gridcolor: "#374151", domain: [0, 0.45] },
@@ -106,8 +102,8 @@ export default function DifferenceFrequencyGenPage() {
           yaxis2: { title: "Idler λ (nm)", gridcolor: "#374151", anchor: "x2" },
           margin: { t: 40, r: 20, b: 50, l: 60 },
           showlegend: true, legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
-        }} config={{ responsive: true }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

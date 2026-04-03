@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FreeElectronLaserPage() {
   const [electronEnergy, setElectronEnergy] = useState(100); // MeV
@@ -106,11 +105,8 @@ export default function FreeElectronLaserPage() {
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-6xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <Link href="/" className="text-blue-400 hover:text-blue-300">← Home</Link>
-        <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300">← Wave Optics</Link>
       </div>
-      <h1 className="text-3xl font-bold mb-2">⚡ Free-Electron Laser</h1>
-      <p className="text-gray-400 mb-6">FEL fundamentals — resonance condition, Pierce parameter, gain length, and power scaling.</p>
-
+            
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Electron Energy (MeV)</label><input type="number" className={inputStyle} value={electronEnergy} onChange={e => setElectronEnergy(+e.target.value)} /></div>
         <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Undulator Period λᵤ (mm)</label><input type="number" className={inputStyle} value={undulatorPeriod} onChange={e => setUndulatorPeriod(+e.target.value)} /></div>
@@ -140,11 +136,11 @@ export default function FreeElectronLaserPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Wavelength vs Electron Energy</h3><Plot data={wlVsE} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "E (MeV)" }, yaxis: { ...plotLayout.yaxis, title: "λ (nm)", type: "log" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Gain Length vs K</h3><Plot data={gainVsK} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "K" }, yaxis: { ...plotLayout.yaxis, title: "L_g (m)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Gain vs Undulator Length</h3><Plot data={gainVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "z (m)" }, yaxis: { ...plotLayout.yaxis, title: "Gain", type: "log" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Power Evolution</h3><Plot data={powerEvolution} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "z (m)" }, yaxis: { ...plotLayout.yaxis, title: "P (W)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4 md:col-span-2"><h3 className="font-semibold mb-2">Harmonic Spectrum</h3><Plot data={spectrumData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "Relative Intensity" }, barmode: "group" }} config={{ responsive: true }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Wavelength vs Electron Energy</h3><ChartPanel data={wlVsE} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "E (MeV)" }, yaxis: { ...plotLayout.yaxis, title: "λ (nm)", type: "log" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Gain Length vs K</h3><ChartPanel data={gainVsK} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "K" }, yaxis: { ...plotLayout.yaxis, title: "L_g (m)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Gain vs Undulator Length</h3><ChartPanel data={gainVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "z (m)" }, yaxis: { ...plotLayout.yaxis, title: "Gain", type: "log" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Power Evolution</h3><ChartPanel data={powerEvolution} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "z (m)" }, yaxis: { ...plotLayout.yaxis, title: "P (W)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4 md:col-span-2"><h3 className="font-semibold mb-2">Harmonic Spectrum</h3><ChartPanel data={spectrumData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "Relative Intensity" }, barmode: "group" }} /></div>
       </div>
     </div>
   );

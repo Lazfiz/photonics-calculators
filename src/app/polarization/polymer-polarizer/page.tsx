@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function PolymerPolarizerPage() {
   const [wavelength, setWavelength] = useState(550);
@@ -89,36 +88,33 @@ export default function PolymerPolarizerPage() {
   }, [Aperp, d]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Polymer (Sheet) Polarizer</h1>
-      <p className="text-gray-400 mb-8">Model iodine-doped PVA film polarizers (e.g., H-sheet). Absorption-based dichroic polarizers with selectable dichroic ratio and film thickness.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Polymer (Sheet) Polarizer" description="Model iodine-doped PVA film polarizers (e.g., H-sheet). Absorption-based dichroic polarizers with selectable dichroic ratio and film thickness.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">T<sub>∥</sub> = exp(-α<sub>∥</sub> · c · d), T<sub>⊥</sub> = exp(-α<sub>⊥</sub> · c · d)</p>
         <p className="text-gray-300 text-sm font-mono">R = α<sub>∥</sub>/α<sub>⊥</sub> (dichroic ratio), Extinction = T<sub>∥</sub>/T<sub>⊥</sub></p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10" min="380" max="780"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Thickness (μm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Thickness (μm)</span>
           <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} step="1" min="5" max="80"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Dichroic Ratio</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Dichroic Ratio</span>
           <input type="number" value={dichroicRatio} onChange={e => setDichroicRatio(+e.target.value)} step="5" min="2" max="100"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Absorption Coeff (μm⁻¹)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Absorption Coeff (μm⁻¹)</span>
           <input type="number" value={absorptionCoeff} onChange={e => setAbsorptionCoeff(+e.target.value)} step="0.01" min="0.01" max="0.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -150,38 +146,38 @@ export default function PolymerPolarizerPage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Spectral Transmission</h3>
-          <Plot data={spectralData} layout={{
+          <ChartPanel data={spectralData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
             yaxis: { title: "Transmission", gridcolor: "#374151", range: [-0.05, 1.05] },
             margin: { t: 20, r: 20, b: 50, l: 50 }, height: 300,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Transmission vs Thickness</h3>
-          <Plot data={thicknessData} layout={{
+          <ChartPanel data={thicknessData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Thickness (μm)", gridcolor: "#374151" },
             yaxis: { title: "Transmission", gridcolor: "#374151", range: [-0.05, 1.05] },
             yaxis2: { title: "Extinction", overlaying: "y", side: "right", gridcolor: "transparent" },
             margin: { t: 20, r: 60, b: 50, l: 50 }, height: 300,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <h3 className="text-sm text-gray-400 mb-2">Extinction & Polarization Efficiency vs Dichroic Ratio</h3>
-        <Plot data={ratioData} layout={{
+        <ChartPanel data={ratioData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Dichroic Ratio", gridcolor: "#374151" },
           yaxis: { title: "Extinction (dB)", gridcolor: "#374151" },
           yaxis2: { title: "Pol. Efficiency", overlaying: "y", side: "right", gridcolor: "transparent", range: [0.9, 1.005] },
           margin: { t: 20, r: 60, b: 50, l: 60 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

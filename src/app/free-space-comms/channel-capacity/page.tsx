@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ChannelCapacityPage() {
   const [bandwidth, setBandwidth] = useState(1); // GHz
@@ -70,10 +69,7 @@ export default function ChannelCapacityPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
-      <Link href="/free-space-comms" className="text-cyan-400 hover:underline text-sm mb-4 inline-block">← Back to Free-Space Comms</Link>
-      <h1 className="text-3xl font-bold mb-6">Channel Capacity</h1>
-      <p className="text-gray-400 mb-6">Shannon capacity, spectral efficiency, and achievable rates for FSO channels.</p>
-
+            
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
           <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
@@ -117,12 +113,12 @@ export default function ChannelCapacityPage() {
             <p><strong className="text-gray-400">Achievable:</strong> R = B × SE<sub>mod</sub> / (1 + FEC%)</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <Plot data={plotData} layout={{
+            <ChartPanel data={plotData} layout={{
               xaxis: { title: "SNR (dB)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Data Rate (Gbps)", color: "#9ca3af", gridcolor: "#374151" },
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",
               margin: { t: 30, r: 20, b: 40, l: 60 }, font: { color: "#9ca3af" }, legend: { font: { size: 9 } },
-            }} config={{ displayModeBar: false }} style={{ width: "100%", height: 320 }} />
+            }} />
           </div>
         </div>
       </div>

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SumFrequencyPage() {
   const [lambda1, setLambda1] = useState(1064); // nm
@@ -71,11 +70,8 @@ export default function SumFrequencyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Sum Frequency Generation (SFG)</h1>
-      <p className="text-gray-400 mb-8">Upconversion via χ⁽²⁾: ω<sub>1</sub> + ω<sub>2</sub> → ω<sub>3</sub> with phase matching.</p>
-
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Sum Frequency Generation (SFG)" description="Upconversion via χ⁽²⁾: ω1 + ω2 → ω3 with phase matching.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">Energy:</span> 1/λ<sub>3</sub> = 1/λ<sub>1</sub> + 1/λ<sub>2</sub></p>
         <p><span className="text-blue-400">Phase match:</span> Δk = k<sub>3</sub> − k<sub>1</sub> − k<sub>2</sub> = 0</p>
@@ -84,18 +80,18 @@ export default function SumFrequencyPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">λ₁ (nm)</span>
-          <input type="number" value={lambda1} onChange={e => setLambda1(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">λ₂ (nm)</span>
-          <input type="number" value={lambda2} onChange={e => setLambda2(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">d<sub>eff</sub> (pm/V)</span>
-          <input type="number" value={deff} onChange={e => setDeff(+e.target.value)} step="0.1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Crystal Length (mm)</span>
-          <input type="number" value={crystalLength} onChange={e => setCrystalLength(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">P₁ (mW)</span>
-          <input type="number" value={power1} onChange={e => setPower1(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">P₂ (mW)</span>
-          <input type="number" value={power2} onChange={e => setPower2(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">λ₁ (nm)</span>
+          <input type="number" value={lambda1} onChange={e => setLambda1(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">λ₂ (nm)</span>
+          <input type="number" value={lambda2} onChange={e => setLambda2(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">d<sub>eff</sub> (pm/V)</span>
+          <input type="number" value={deff} onChange={e => setDeff(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Crystal Length (mm)</span>
+          <input type="number" value={crystalLength} onChange={e => setCrystalLength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">P₁ (mW)</span>
+          <input type="number" value={power1} onChange={e => setPower1(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">P₂ (mW)</span>
+          <input type="number" value={power2} onChange={e => setPower2(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -119,12 +115,12 @@ export default function SumFrequencyPage() {
 
       <div className="grid gap-6 lg:grid-cols-2 mb-8">
         <div className="bg-gray-900 rounded-lg p-4">
-          <Plot data={lengthData} layout={lengthLayout} config={{ responsive: true, displayModeBar: false }} />
+          <ChartPanel data={lengthData} layout={lengthLayout} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
-          <Plot data={tuningData} layout={tuningLayout} config={{ responsive: true, displayModeBar: false }} />
+          <ChartPanel data={tuningData} layout={tuningLayout} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

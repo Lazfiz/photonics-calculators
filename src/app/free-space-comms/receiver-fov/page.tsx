@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ReceiverFovPage() {
   const [wavelength, setWavelength] = useState(1550); // nm
@@ -69,11 +68,8 @@ export default function ReceiverFovPage() {
   }, [wavelength, rxAperture, fovHalfAngle, opticalEfficiency, backgroundType, filterBandwidth]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/free-space-comms" className="text-blue-400 hover:underline mb-6 inline-block">← Free Space Comms</Link>
-      <h1 className="text-3xl font-bold mb-2">Receiver FOV vs Background Noise</h1>
-      <p className="text-gray-400 mb-6">Analyze receiver field of view trade-offs against background radiation noise.</p>
-
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Receiver FOV vs Background Noise" description="Analyze receiver field of view trade-offs against background radiation noise.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Parameters</h2>
@@ -117,33 +113,31 @@ export default function ReceiverFovPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Background Power vs FOV</h2>
-          <Plot
-            data={[{ type: "scatter" as const, mode: "lines" as const, x: results.fovRange, y: results.bgPowerVsFov.map((p) => 10 * Math.log10(p * 1000)), line: { color: "#3b82f6", width: 2 } }]}
+          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.fovRange, y: results.bgPowerVsFov.map((p) => 10 * Math.log10(p * 1000)), line: { color: "#3b82f6", width: 2 } }]}
             layout={{
               xaxis: { title: "Full FOV (mrad)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Background Power (dBm)", color: "#9ca3af", gridcolor: "#374151" },
               margin: { l: 60, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Background Power vs Filter BW</h2>
-          <Plot
-            data={[{ type: "scatter" as const, mode: "lines" as const, x: results.bwRange, y: results.bgPowerVsBw.map((p) => 10 * Math.log10(p * 1000)), line: { color: "#22c55e", width: 2 } }]}
+          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.bwRange, y: results.bgPowerVsBw.map((p) => 10 * Math.log10(p * 1000)), line: { color: "#22c55e", width: 2 } }]}
             layout={{
               xaxis: { title: "Filter Bandwidth (nm)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Background Power (dBm)", color: "#9ca3af", gridcolor: "#374151" },
               margin: { l: 60, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

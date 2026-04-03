@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface Polymer {
   name: string;
@@ -138,11 +137,8 @@ export default function PolymerOpticsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Polymer Optical Materials</h1>
-      <p className="text-gray-400 mb-6">Refractive index, dispersion, and loss data for optical polymers</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Polymer Optical Materials" description="Refractive index, dispersion, and loss data for optical polymers">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Polymer</label>
@@ -177,8 +173,7 @@ export default function PolymerOpticsPage() {
         </div>
       </div>
 
-      <Plot
-        data={chartData}
+      <ChartPanel data={chartData}
         layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
@@ -187,13 +182,12 @@ export default function PolymerOpticsPage() {
           margin: { t: 20, r: 20, b: 50, l: 60 },
           legend: { orientation: "h", y: -0.25 },
         }}
-        config={{ responsive: true, displayModeBar: false }}
-        style={{ width: "100%", height: 450 }}
+       
+       
       />
 
       <h2 className="text-xl font-bold mt-8 mb-4">Optical Attenuation (dB/km)</h2>
-      <Plot
-        data={attenuationData}
+      <ChartPanel data={attenuationData}
         layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
@@ -203,9 +197,9 @@ export default function PolymerOpticsPage() {
           legend: { orientation: "h", y: -0.3 },
           barmode: "group",
         }}
-        config={{ responsive: true, displayModeBar: false }}
-        style={{ width: "100%", height: 400 }}
+       
+       
       />
-    </div>
+    </CalculatorShell>
   );
 }

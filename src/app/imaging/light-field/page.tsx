@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function LightFieldPage() {
   const [na, setNa] = useState(0.2);
@@ -52,11 +51,8 @@ export default function LightFieldPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:underline mb-6 inline-block">← Imaging &amp; Microscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Light Field Microscopy</h1>
-      <p className="text-gray-400 mb-8">Angular resolution, spatial-angular tradeoff, and synthetic aperture parameters.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Light Field Microscopy" description="Angular resolution, spatial-angular tradeoff, and synthetic aperture parameters.">
+            
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
@@ -118,7 +114,7 @@ export default function LightFieldPage() {
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <Plot data={plotData} layout={darkLayout} config={{ responsive: true, displayModeBar: false }} style={{ width: "100%", height: 400 }} />
+        <ChartPanel data={plotData} layout={darkLayout} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
@@ -136,6 +132,6 @@ export default function LightFieldPage() {
           <p>The spatial-angular tradeoff means increasing angular sampling (more rays per microlens) reduces spatial sampling and vice versa. Synthetic aperture techniques can recover resolution by computationally combining views.</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

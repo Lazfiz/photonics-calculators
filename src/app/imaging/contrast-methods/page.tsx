@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ContrastMethodsPage() {
   const [method, setMethod] = useState("phase");
@@ -61,11 +60,8 @@ export default function ContrastMethodsPage() {
   }, [na, wavelength, n, phaseShift, shearAmount, dnSample]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:underline mb-6 inline-block">← Imaging &amp; Microscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Phase Contrast &amp; DIC Calculator</h1>
-      <p className="text-gray-400 mb-8">Contrast calculations for phase contrast and differential interference contrast microscopy.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Phase Contrast &amp; DIC Calculator" description="Contrast calculations for phase contrast and differential interference contrast microscopy.">
+            
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
@@ -122,8 +118,8 @@ export default function ContrastMethodsPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-4">Contrast vs Sample Thickness</h2>
-        <Plot data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Thickness (µm)", gridcolor: "#333" }, yaxis: { title: "Contrast (fraction)", gridcolor: "#333" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} config={{ responsive: true, displayModeBar: false }} style={{ width: "100%", height: "400px" }} />
+        <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Thickness (µm)", gridcolor: "#333" }, yaxis: { title: "Contrast (fraction)", gridcolor: "#333" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

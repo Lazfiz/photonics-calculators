@@ -1,9 +1,8 @@
 "use client";
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 const hc = 1.986446e-25; // J·m
 const c = 3e8;
@@ -103,9 +102,7 @@ export default function OPOCalculator() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6">
-      <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
-      <h1 className="text-3xl font-bold text-cyan-400 mb-2">Optical Parametric Oscillator (OPO) Designer</h1>
-      <p className="text-gray-500 mb-6">Singly-resonant OPO — signal resonant, idler extracted. Quasi-phase-matched (QPM) or birefringent phase matching model.</p>
+            <p className="text-gray-500 mb-6">Singly-resonant OPO — signal resonant, idler extracted. Quasi-phase-matched (QPM) or birefringent phase matching model.</p>
 
       {/* Formulas */}
       <div className="bg-gray-900 rounded-lg p-4 mb-6 border border-gray-800">
@@ -140,15 +137,15 @@ export default function OPOCalculator() {
 
             <p className="text-xs text-gray-500 mb-2">Refractive Indices</p>
             <div className="grid grid-cols-3 gap-2 mb-3">
-              <label className="block">
+              <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
                 <span className="text-xs text-gray-400">nₚ</span>
                 <input type="number" value={nPump} onChange={e => setNPump(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
               </label>
-              <label className="block">
+              <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
                 <span className="text-xs text-gray-400">nₛ</span>
                 <input type="number" value={nSignal} onChange={e => setNSignal(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
               </label>
-              <label className="block">
+              <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
                 <span className="text-xs text-gray-400">nᵢ</span>
                 <input type="number" value={nIdler} onChange={e => setNIdler(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
               </label>
@@ -204,11 +201,11 @@ export default function OPOCalculator() {
 
           {/* Plots */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Plot data={[{ x: gainVsLength.x, y: gainVsLength.y, type: "scatter", mode: "lines", line: { color: "#00e5ff", width: 2 }, name: "g₀" }]} layout={{ ...darkPlot, title: { text: "Gain vs Crystal Length", font: { color: "#ccc" } }, xaxis: { ...axisStyle, title: "Length (mm)" }, yaxis: { ...axisStyle, title: "g₀" }, margin: { t: 40, b: 40 } }} config={{ responsive: true }} style={{ width: "100%", height: 350 }} />
-            <Plot data={[{ x: gainVsPower.x, y: gainVsPower.y, type: "scatter", mode: "lines", line: { color: "#ff9100", width: 2 }, name: "g₀" }]} layout={{ ...darkPlot, title: { text: "Gain vs Pump Power", font: { color: "#ccc" } }, xaxis: { ...axisStyle, title: "Power (W)" }, yaxis: { ...axisStyle, title: "g₀" }, margin: { t: 40, b: 40 } }} config={{ responsive: true }} style={{ width: "100%", height: 350 }} />
+            <ChartPanel data={[{ x: gainVsLength.x, y: gainVsLength.y, type: "scatter", mode: "lines", line: { color: "#00e5ff", width: 2 }, name: "g₀" }]} layout={{ ...darkPlot, title: { text: "Gain vs Crystal Length", font: { color: "#ccc" } }, xaxis: { ...axisStyle, title: "Length (mm)" }, yaxis: { ...axisStyle, title: "g₀" }, margin: { t: 40, b: 40 } }} />
+            <ChartPanel data={[{ x: gainVsPower.x, y: gainVsPower.y, type: "scatter", mode: "lines", line: { color: "#ff9100", width: 2 }, name: "g₀" }]} layout={{ ...darkPlot, title: { text: "Gain vs Pump Power", font: { color: "#ccc" } }, xaxis: { ...axisStyle, title: "Power (W)" }, yaxis: { ...axisStyle, title: "g₀" }, margin: { t: 40, b: 40 } }} />
             {showPhaseMatching && (
               <div className="col-span-2">
-                <Plot data={[{ x: phaseMatchData.x, y: phaseMatchData.y, type: "scatter", mode: "lines", line: { color: "#76ff03", width: 2 }, name: "Δk" }]} layout={{ ...darkPlot, title: { text: "Phase Mismatch vs Crystal Temperature", font: { color: "#ccc" } }, xaxis: { ...axisStyle, title: "Temperature (°C)" }, yaxis: { ...axisStyle, title: "Δk (×10³ m⁻¹)" }, margin: { t: 40, b: 40 } }} config={{ responsive: true }} style={{ width: "100%", height: 350 }} />
+                <ChartPanel data={[{ x: phaseMatchData.x, y: phaseMatchData.y, type: "scatter", mode: "lines", line: { color: "#76ff03", width: 2 }, name: "Δk" }]} layout={{ ...darkPlot, title: { text: "Phase Mismatch vs Crystal Temperature", font: { color: "#ccc" } }, xaxis: { ...axisStyle, title: "Temperature (°C)" }, yaxis: { ...axisStyle, title: "Δk (×10³ m⁻¹)" }, margin: { t: 40, b: 40 } }} />
               </div>
             )}
           </div>

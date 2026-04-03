@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function DiodeLaserResonatorPage() {
   const [cavityLength, setCavityLength] = useState(300); // µm
@@ -105,11 +104,8 @@ export default function DiodeLaserResonatorPage() {
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-6xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <Link href="/" className="text-blue-400 hover:text-blue-300">← Home</Link>
-        <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300">← Wave Optics</Link>
       </div>
-      <h1 className="text-3xl font-bold mb-2">💡 Diode Laser Resonator</h1>
-      <p className="text-gray-400 mb-6">Edge-emitting semiconductor laser design — threshold, L-I characteristics, far-field, and cavity optimization.</p>
-
+            
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Cavity Length (µm)</label><input type="number" className={inputStyle} value={cavityLength} onChange={e => setCavityLength(+e.target.value)} /></div>
         <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Stripe Width (µm)</label><input type="number" className={inputStyle} value={stripeWidth} onChange={e => setStripeWidth(+e.target.value)} /></div>
@@ -140,10 +136,10 @@ export default function DiodeLaserResonatorPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">L-I Curve</h3><Plot data={liData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Current (mA)" }, yaxis: { ...plotLayout.yaxis, title: "Power (mW)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Far-Field Pattern</h3><Plot data={farFieldData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Angle (°)" }, yaxis: { ...plotLayout.yaxis, title: "Intensity (a.u.)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Threshold Gain vs Cavity Length</h3><Plot data={gthVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "L (µm)" }, yaxis: { ...plotLayout.yaxis, title: "g_th (cm⁻¹)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">η_d vs Cavity Length</h3><Plot data={etaVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "L (µm)" }, yaxis: { ...plotLayout.yaxis, title: "η_d (%)" } }} config={{ responsive: true }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">L-I Curve</h3><ChartPanel data={liData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Current (mA)" }, yaxis: { ...plotLayout.yaxis, title: "Power (mW)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Far-Field Pattern</h3><ChartPanel data={farFieldData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Angle (°)" }, yaxis: { ...plotLayout.yaxis, title: "Intensity (a.u.)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Threshold Gain vs Cavity Length</h3><ChartPanel data={gthVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "L (µm)" }, yaxis: { ...plotLayout.yaxis, title: "g_th (cm⁻¹)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">η_d vs Cavity Length</h3><ChartPanel data={etaVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "L (µm)" }, yaxis: { ...plotLayout.yaxis, title: "η_d (%)" } }} /></div>
       </div>
     </div>
   );

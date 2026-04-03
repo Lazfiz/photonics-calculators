@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FourierTransformPage() {
   const [freq1, setFreq1] = useState(10);
@@ -42,24 +41,21 @@ export default function FourierTransformPage() {
   const resolution = 100 / nPoints;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Fourier Transform Basics</h1>
-      <p className="text-gray-400 mb-8">Decompose a composite time-domain signal into its frequency components via DFT.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fourier Transform Basics" description="Decompose a composite time-domain signal into its frequency components via DFT.">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Frequency 1 (Hz)</span>
-          <input type="number" value={freq1} onChange={e => setFreq1(+e.target.value)} min={0.1} step={1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Frequency 2 (Hz)</span>
-          <input type="number" value={freq2} onChange={e => setFreq2(+e.target.value)} min={0.1} step={1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Amplitude 1</span>
-          <input type="number" value={amp1} onChange={e => setAmp1(+e.target.value)} min={0} step={0.1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Amplitude 2</span>
-          <input type="number" value={amp2} onChange={e => setAmp2(+e.target.value)} min={0} step={0.1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Noise Level</span>
-          <input type="number" value={noise} onChange={e => setNoise(+e.target.value)} min={0} step={0.05} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">N Points</span>
-          <input type="number" value={nPoints} onChange={e => setNPoints(Math.max(4, +e.target.value))} min={4} max={1024} step={8} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Frequency 1 (Hz)</span>
+          <input type="number" value={freq1} onChange={e => setFreq1(+e.target.value)} min={0.1} step={1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Frequency 2 (Hz)</span>
+          <input type="number" value={freq2} onChange={e => setFreq2(+e.target.value)} min={0.1} step={1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Amplitude 1</span>
+          <input type="number" value={amp1} onChange={e => setAmp1(+e.target.value)} min={0} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Amplitude 2</span>
+          <input type="number" value={amp2} onChange={e => setAmp2(+e.target.value)} min={0} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Noise Level</span>
+          <input type="number" value={noise} onChange={e => setNoise(+e.target.value)} min={0} step={0.05} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">N Points</span>
+          <input type="number" value={nPoints} onChange={e => setNPoints(Math.max(4, +e.target.value))} min={4} max={1024} step={8} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
@@ -74,12 +70,12 @@ export default function FourierTransformPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm"><span className="text-blue-400 font-mono">X(f) = ∫ x(t)·e^(−j2πft) dt</span></p>
-        <p className="text-gray-300 text-sm"><span className="text-green-400 font-mono">Δf = f_s / N</span> — resolution improves with more points or lower sampling rate.</p>
-        <p className="text-gray-300 text-sm"><span className="text-red-400 font-mono">f_Nyquist = f_s / 2</span> — max detectable frequency.</p>
+        <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">X(f) = ∫ x(t)·e^(−j2πft) dt</span></p>
+        <p className="text-sm text-gray-300"><span className="text-green-400 font-mono">Δf = f_s / N</span> — resolution improves with more points or lower sampling rate.</p>
+        <p className="text-sm text-gray-300"><span className="text-red-400 font-mono">f_Nyquist = f_s / 2</span> — max detectable frequency.</p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         grid: { rows: 2, columns: 1, pattern: "independent" },
         xaxis: { title: "Time (s)", gridcolor: "#374151" },
@@ -87,7 +83,7 @@ export default function FourierTransformPage() {
         xaxis2: { title: "Frequency (Hz)", gridcolor: "#374151" },
         yaxis2: { title: "Magnitude", gridcolor: "#374151" },
         height: 700, margin: { t: 30, b: 40 },
-      }} config={{ responsive: true }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

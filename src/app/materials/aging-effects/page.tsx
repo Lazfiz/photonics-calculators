@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface Material {
   name: string;
@@ -102,11 +101,8 @@ export default function AgingEffectsPage() {
   }, [selected, tempFactor, laserFluence, initialStress]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Aging of Optical Materials</h1>
-      <p className="text-gray-400 mb-4">Long-term degradation: transmission loss, solarization, compaction, stress relaxation</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Aging of Optical Materials" description="Long-term degradation: transmission loss, solarization, compaction, stress relaxation">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono">
         <p>T(t) = 100 - rate·t·A(T) &nbsp;|&nbsp; Solarization: loss ∝ (D-D_th)^0.5 &nbsp;|&nbsp; Compaction: Δρ = rate·F·t</p>
       </div>
@@ -174,8 +170,7 @@ export default function AgingEffectsPage() {
         </div>
       </div>
 
-      <Plot
-        data={chartData}
+      <ChartPanel data={chartData}
         layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
@@ -186,9 +181,9 @@ export default function AgingEffectsPage() {
           margin: { t: 20, r: 100, b: 50, l: 70 },
           legend: { orientation: "h", y: -0.2 },
         }}
-        config={{ responsive: true, displayModeBar: false }}
-        style={{ width: "100%", height: 500 }}
+       
+       
       />
-    </div>
+    </CalculatorShell>
   );
 }

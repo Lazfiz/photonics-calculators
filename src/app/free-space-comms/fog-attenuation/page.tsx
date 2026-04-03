@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FogAttenuationPage() {
   const [visibility, setVisibility] = useState(0.5);
@@ -47,12 +46,9 @@ export default function FogAttenuationPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
-      <Link href="/free-space-comms" className="text-cyan-400 hover:underline text-sm mb-4 inline-block">← Back to Free-Space Comms</Link>
-      <h1 className="text-3xl font-bold mb-6">Fog Attenuation Calculator</h1>
-
+      
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
-        <p className="text-gray-400">Fog is the dominant attenuator for FSO links. Based on the Kim or Kruse model:</p>
-        <p className="text-cyan-300 mt-1 font-mono">β = 3.91 / V · (λ/0.55)^(-q) &nbsp; [dB/km]</p>
+                <p className="text-cyan-300 mt-1 font-mono">β = 3.91 / V · (λ/0.55)^(-q) &nbsp; [dB/km]</p>
         <p className="text-gray-500 mt-1">q depends on visibility V. Total loss = β × L</p>
       </div>
 
@@ -91,12 +87,12 @@ export default function FogAttenuationPage() {
             </div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <Plot data={plotData} layout={{
+            <ChartPanel data={plotData} layout={{
               xaxis: { title: "Visibility (km)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
               yaxis: { title: "Attenuation (dB)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",
               margin: { t: 20, r: 20, b: 50, l: 60 }, font: { color: "#9ca3af" }, legend: { x: 0.02, y: 0.98 },
-            }} config={{ displayModeBar: false }} style={{ width: "100%", height: 300 }} />
+            }} />
           </div>
         </div>
       </div>

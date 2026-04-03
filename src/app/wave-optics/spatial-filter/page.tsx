@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SpatialFilterPage() {
   const [wavelength, setWavelength] = useState(1064); // nm
@@ -63,22 +62,19 @@ export default function SpatialFilterPage() {
   }, [wavelength, inputBeamDiam, focalLength, m2]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Spatial Filter Pinhole Sizing</h1>
-      <p className="text-gray-400 mb-8">Calculate optimal pinhole diameter for spatial filtering.</p>
-
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Spatial Filter Pinhole Sizing" description="Calculate optimal pinhole diameter for spatial filtering.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <label className="block"><span className="text-gray-300 text-sm">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Input beam 1/e² diameter (µm)</span>
-          <input type="number" value={inputBeamDiam} onChange={e => setInputBeamDiam(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
+          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Input beam 1/e² diameter (µm)</span>
+          <input type="number" value={inputBeamDiam} onChange={e => setInputBeamDiam(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Lens focal length (mm)</span>
-          <input type="number" value={focalLength} onChange={e => setFocalLength(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">M² factor</span>
-          <input type="number" value={m2} onChange={e => setM2(Math.max(1, +e.target.value))} step="0.1" min={1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Lens focal length (mm)</span>
+          <input type="number" value={focalLength} onChange={e => setFocalLength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">M² factor</span>
+          <input type="number" value={m2} onChange={e => setM2(Math.max(1, +e.target.value))} step="0.1" min={1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -109,7 +105,7 @@ export default function SpatialFilterPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-8">
-        <Plot data={[{
+        <ChartPanel data={[{
           x: calc.diameters, y: calc.throughput,
           type: "scatter" as const, mode: "lines" as const, name: "Power throughput",
           line: { color: "#60a5fa" },
@@ -117,17 +113,17 @@ export default function SpatialFilterPage() {
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" }, xaxis: { title: "Pinhole diameter (µm)", gridcolor: "#374151" },
           yaxis: { title: "Throughput", gridcolor: "#374151" }, margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={[{ z: calc.z2d, x: calc.xs, y: calc.xs, type: "heatmap" as const, colorscale: "Inferno" }]} layout={{
+        <ChartPanel data={[{ z: calc.z2d, x: calc.xs, y: calc.xs, type: "heatmap" as const, colorscale: "Inferno" }]} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" }, xaxis: { title: "x (µm)", gridcolor: "#374151" },
           yaxis: { title: "y (µm)", gridcolor: "#374151" }, margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function LasercomLinkPage() {
   const [txPower, setTxPower] = useState(20); // dBm
@@ -65,10 +64,7 @@ export default function LasercomLinkPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
-      <Link href="/free-space-comms" className="text-cyan-400 hover:underline text-sm mb-4 inline-block">← Back to Free-Space Comms</Link>
-      <h1 className="text-3xl font-bold mb-6">Lasercom Link Budget</h1>
-      <p className="text-gray-400 mb-6">Full laser communication link budget with Gaussian beam TX/RX antenna gains, spot size, and coupling analysis.</p>
-
+            
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
           <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
@@ -110,13 +106,13 @@ export default function LasercomLinkPage() {
             <p><strong className="text-gray-400">Spot Radius:</strong> w = 2λR / (π D<sub>tx</sub>)</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <Plot data={plotData} layout={{
+            <ChartPanel data={plotData} layout={{
               xaxis: { title: "Range (km)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Rx Power (dBm)", color: "#06b6d4", gridcolor: "#374151" },
               yaxis2: { title: "Spot Radius (cm)", color: "#f59e0b", gridcolor: "#374151", overlaying: "y", side: "right" },
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",
               margin: { t: 30, r: 60, b: 40, l: 60 }, font: { color: "#9ca3af" }, legend: { font: { size: 10 } },
-            }} config={{ displayModeBar: false }} style={{ width: "100%", height: 320 }} />
+            }} />
           </div>
         </div>
       </div>

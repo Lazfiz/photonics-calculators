@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function WavelengthSelectionPage() {
   const [range, setRange] = useState(1);
@@ -64,12 +63,9 @@ export default function WavelengthSelectionPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
-      <Link href="/free-space-comms" className="text-cyan-400 hover:underline text-sm mb-4 inline-block">← Back to Free-Space Comms</Link>
-      <h1 className="text-3xl font-bold mb-6">Wavelength Selection for FSO</h1>
-
+      
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
-        <p className="text-gray-400">Compare common FSO wavelengths across multiple criteria. The tool scores each wavelength and recommends the best fit:</p>
-        <p className="text-gray-500 mt-1">850 nm (VCSEL), 1064 nm, 1310 nm, 1550 nm (eye-safe), 10 μm (CO₂ laser)</p>
+                <p className="text-gray-500 mt-1">850 nm (VCSEL), 1064 nm, 1310 nm, 1550 nm (eye-safe), 10 μm (CO₂ laser)</p>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -100,7 +96,7 @@ export default function WavelengthSelectionPage() {
               {calc.scores.sort((a, b) => b.total - a.total).map((s) => (
                 <div key={s.name} className="flex justify-between items-center">
                   <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                    <span className="w-2 h-2 rounded-full" />
                     {s.name}
                   </span>
                   <span className={s.name === calc.best.name ? "text-green-400 font-bold" : "text-gray-400"}>
@@ -111,13 +107,13 @@ export default function WavelengthSelectionPage() {
             </div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <Plot data={plotData} layout={{
+            <ChartPanel data={plotData} layout={{
               polar: { radialaxis: { visible: true, range: [0, 100], color: "#9ca3af", gridcolor: "#374151" } },
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",
               margin: { t: 30, r: 20, b: 20, l: 20 }, font: { color: "#9ca3af", size: 10 },
               legend: { x: 0.5, y: -0.1, orientation: "h", font: { size: 10 } },
               showlegend: true,
-            }} config={{ displayModeBar: false }} style={{ width: "100%", height: 300 }} />
+            }} />
           </div>
         </div>
       </div>

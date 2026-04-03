@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function PBSPage() {
   const [wavelength, setWavelength] = useState(633);
@@ -73,11 +72,8 @@ export default function PBSPage() {
   }, [cutAngleDeg, criticalO, criticalE]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Polarizing Beamsplitter (PBS) Design</h1>
-      <p className="text-gray-400 mb-8">Design polarizing beamsplitter cubes and prisms based on birefringent crystals with air-gap TIR separation.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Polarizing Beamsplitter (PBS) Design" description="Design polarizing beamsplitter cubes and prisms based on birefringent crystals with air-gap TIR separation.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">θ<sub>c,o</sub> = arcsin(1/n<sub>o</sub>), θ<sub>c,e</sub> = arcsin(1/n<sub>e</sub>)</p>
         <p className="text-gray-300 text-sm font-mono">Ray angle at interface = 90° − θ<sub>cut</sub></p>
@@ -85,25 +81,25 @@ export default function PBSPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="1" min="300" max="2000"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">n<sub>o</sub></span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">n<sub>o</sub></span>
           <input type="number" value={nO} onChange={e => setNO(+e.target.value)} step="0.001" min="1.3" max="2.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">n<sub>e</sub></span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">n<sub>e</sub></span>
           <input type="number" value={nE} onChange={e => setNE(+e.target.value)} step="0.001" min="1.3" max="2.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Cut Angle (°)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Cut Angle (°)</span>
           <input type="number" value={cutAngleDeg} onChange={e => setCutAngleDeg(+e.target.value)} step="0.5" min="30" max="60"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -136,25 +132,25 @@ export default function PBSPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Refractive Indices vs Wavelength</h3>
-          <Plot data={spectralData} layout={{
+          <ChartPanel data={spectralData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
             yaxis: { title: "Refractive Index", gridcolor: "#374151" },
             margin: { t: 20, r: 20, b: 50, l: 50 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">TIR / Transmission vs Cut Angle</h3>
-          <Plot data={angleData} layout={{
+          <ChartPanel data={angleData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Cut Angle (°)", gridcolor: "#374151" },
             yaxis: { title: "Fraction", gridcolor: "#374151", range: [-0.1, 1.1] },
             margin: { t: 20, r: 20, b: 50, l: 50 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

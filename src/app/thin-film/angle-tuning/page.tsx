@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: number, wavelengths: number[], angleDeg: number, pol: "TE" | "TM") {
   const R: number[] = [];
@@ -96,29 +95,24 @@ export default function AngleTuningPage() {
   }, [nH, nL, nSub, nInc, numPairs, designWl]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/thin-film" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Thin Film</Link>
-      <h1 className="text-3xl font-bold mb-2">Angle Tuning of Coatings</h1>
-      <p className="text-gray-400 mb-8">
-        Changing the angle of incidence shifts the spectral response of thin film coatings toward
+    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Angle Tuning of Coatings" description="Changing the angle of incidence shifts the spectral response of thin film coatings toward
         shorter wavelengths (blue shift). TE (s-polarization) and TM (p-polarization) respond differently,
         with TM showing reduced reflectance at Brewster&apos;s angle. The shift follows
-        λ(θ) ≈ λ₀·√(1 − (n₀ sin θ/n<sub>eff</sub>)²).
-      </p>
-
+        λ(θ) ≈ λ₀·√(1 − (n₀ sin θ/neff)²).">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>H</sub></span>
-          <input type="number" value={nH} onChange={e => setNH(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>L</sub></span>
-          <input type="number" value={nL} onChange={e => setNL(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>substrate</sub></span>
-          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>incident</sub></span>
-          <input type="number" value={nInc} onChange={e => setNInc(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Number of pairs (N)</span>
-          <input type="number" value={numPairs} onChange={e => setNumPairs(Math.max(1, +e.target.value))} min="1" max="20" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Design λ₀ (nm)</span>
-          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} step="10" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>H</sub></span>
+          <input type="number" value={nH} onChange={e => setNH(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>L</sub></span>
+          <input type="number" value={nL} onChange={e => setNL(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
+          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>incident</sub></span>
+          <input type="number" value={nInc} onChange={e => setNInc(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Number of pairs (N)</span>
+          <input type="number" value={numPairs} onChange={e => setNumPairs(Math.max(1, +e.target.value))} min="1" max="20" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Design λ₀ (nm)</span>
+          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
@@ -126,24 +120,24 @@ export default function AngleTuningPage() {
         <p className="text-gray-300 text-xs">Solid lines = TE (s-pol), Dashed = TM (p-pol). Each color = different angle.</p>
       </div>
 
-      <Plot data={chartData.mainTraces} layout={{
+      <ChartPanel data={chartData.mainTraces} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         title: { text: "Reflectance vs Wavelength at Various Angles", font: { size: 13 } },
         xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
         yaxis: { title: "Reflectance", gridcolor: "#374151", range: [0, 1.05] },
         margin: { t: 40, b: 40, l: 50, r: 20 }, autosize: true,
         legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0.3)", font: { size: 9 } },
-      }} className="w-full" style={{ height: 350 }} />
+      }} />
 
       <div className="h-6" />
 
-      <Plot data={[{ x: chartData.angleSweep, y: chartData.lambdaShift, type: "scatter" as const, mode: "lines" as const, name: "λ_center(θ)", line: { color: "#a78bfa", width: 2 } }]} layout={{
+      <ChartPanel data={[{ x: chartData.angleSweep, y: chartData.lambdaShift, type: "scatter" as const, mode: "lines" as const, name: "λ_center(θ)", line: { color: "#a78bfa", width: 2 } }]} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         title: { text: "Center Wavelength Shift vs Angle", font: { size: 13 } },
         xaxis: { title: "Angle of incidence (°)", gridcolor: "#374151" },
         yaxis: { title: "λ_center (nm)", gridcolor: "#374151" },
         margin: { t: 40, b: 40, l: 50, r: 20 }, autosize: true,
-      }} className="w-full" style={{ height: 300 }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function factorial(n: number): number {
   if (n <= 1) return 1;
@@ -78,22 +77,19 @@ export default function LaguerreGaussianPage() {
   }, [waist, p, l]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Laguerre-Gaussian Modes</h1>
-      <p className="text-gray-400 mb-8">Donut modes with orbital angular momentum.</p>
-
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Laguerre-Gaussian Modes" description="Donut modes with orbital angular momentum.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <label className="block"><span className="text-gray-300 text-sm">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Beam Waist w₀ (µm)</span>
-          <input type="number" value={waist} onChange={e => setWaist(+e.target.value)} step="any" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
+          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Beam Waist w₀ (µm)</span>
+          <input type="number" value={waist} onChange={e => setWaist(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Radial index p (0–4)</span>
-          <input type="number" value={p} onChange={e => setP(Math.min(4, Math.max(0, +e.target.value)))} min={0} max={4} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Azimuthal index l (−5 to 5)</span>
-          <input type="number" value={l} onChange={e => setL(Math.min(5, Math.max(-5, +e.target.value)))} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Radial index p (0–4)</span>
+          <input type="number" value={p} onChange={e => setP(Math.min(4, Math.max(0, +e.target.value)))} min={0} max={4} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Azimuthal index l (−5 to 5)</span>
+          <input type="number" value={l} onChange={e => setL(Math.min(5, Math.max(-5, +e.target.value)))} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
@@ -118,20 +114,20 @@ export default function LaguerreGaussianPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-8">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" }, xaxis: { title: "x (µm)", gridcolor: "#374151" },
           yaxis: { title: "y (µm)", gridcolor: "#374151" }, margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={radialData} layout={{
+        <ChartPanel data={radialData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" }, xaxis: { title: "r (µm)", gridcolor: "#374151" },
           yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151" }, margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function MultiplePulsePage() {
   const [wavelength, setWavelength] = useState(532);
@@ -106,11 +106,8 @@ export default function MultiplePulsePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/laser-safety" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Laser Safety</Link>
-      <h1 className="text-3xl font-bold mb-2">Multiple Pulse Correction</h1>
-      <p className="text-gray-400 mb-8">Evaluates all three ANSI Z136.1 rules for repetitive pulse exposure and selects the most restrictive MPE.</p>
-
+    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Multiple Pulse Correction" description="Evaluates all three ANSI Z136.1 rules for repetitive pulse exposure and selects the most restrictive MPE.">
+            
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
@@ -187,7 +184,7 @@ export default function MultiplePulsePage() {
         <p className="text-yellow-400 mt-2">⚠ For pulse groups: apply to groups within T<sub>p</sub> if inter-group spacing &gt; T<sub>p</sub></p>
       </div>
 
-      <Plot data={chartData} layout={layout} config={{ responsive: true }} className="w-full h-[400px]" />
-    </div>
+      <ChartPanel data={chartData} layout={layout} className="w-full h-[400px]" />
+    </CalculatorShell>
   );
 }

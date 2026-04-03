@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FluorescenceLifetimePage() {
   const [tau, setTau] = useState(5); // ns
@@ -35,45 +34,42 @@ export default function FluorescenceLifetimePage() {
   }, [tau, tau2, amplitude, multiExp, frac1, tMax]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Fluorescence Lifetime Calculator</h1>
-      <p className="text-gray-400 mb-8">Model single and bi-exponential fluorescence decay curves. Calculate intensity-weighted average lifetimes.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fluorescence Lifetime Calculator" description="Model single and bi-exponential fluorescence decay curves. Calculate intensity-weighted average lifetimes.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">τ₁ (ns)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">τ₁ (ns)</span>
           <input type="number" value={tau} onChange={e => setTau(+e.target.value)} min="0.01" step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Amplitude I₀</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Amplitude I₀</span>
           <input type="number" value={amplitude} onChange={e => setAmplitude(+e.target.value)} min="0.01" step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Time Range (ns)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Time Range (ns)</span>
           <input type="number" value={tMax} onChange={e => setTMax(+e.target.value)} min="1" step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Bi-exponential mode</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Bi-exponential mode</span>
           <select value={multiExp ? "true" : "false"} onChange={e => setMultiExp(e.target.value === "true")}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="false">Single exponential</option>
             <option value="true">Bi-exponential</option>
           </select>
         </label>
         {multiExp && <>
-          <label className="block">
-            <span className="text-gray-300 text-sm">τ₂ (ns)</span>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">τ₂ (ns)</span>
             <input type="number" value={tau2} onChange={e => setTau2(+e.target.value)} min="0.01" step="0.1"
-              className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
           </label>
-          <label className="block">
-            <span className="text-gray-300 text-sm">Fraction f₁ (0–1)</span>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">Fraction f₁ (0–1)</span>
             <input type="number" value={frac1} onChange={e => setFrac1(+e.target.value)} min="0" max="1" step="0.05"
-              className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
           </label>
         </>}
       </div>
@@ -104,13 +100,13 @@ export default function FluorescenceLifetimePage() {
         <p className="text-gray-500">Intensity-weighted avg: ⟨τ⟩_int = (f₁·τ₁² + (1−f₁)·τ₂²) / (f₁·τ₁ + (1−f₁)·τ₂)</p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" },
         xaxis: { title: "Time (ns)", gridcolor: "#374151" },
         yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151" },
         margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { bgcolor: "transparent" },
-      }} config={{ responsive: true, displayModeBar: false }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

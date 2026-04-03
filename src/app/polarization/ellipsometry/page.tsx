@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
@@ -149,11 +148,8 @@ export default function EllipsometryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:underline mb-6 inline-block">← Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Ellipsometry</h1>
-      <p className="text-gray-400 mb-6">Calculate Ψ, Δ from Fresnel equations; model thin film interference in ellipsometry.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Ellipsometry" description="Calculate Ψ, Δ from Fresnel equations; model thin film interference in ellipsometry.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Measured Parameters</h2>
@@ -224,17 +220,17 @@ export default function EllipsometryPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Ψ and Δ vs Angle of Incidence</h2>
-          <Plot data={[
+          <ChartPanel data={[
             { x: angleSweep.angles, y: angleSweep.psiVals, name: "Ψ", type: "scatter", mode: "lines", line: { color: "#3b82f6" } },
             { x: angleSweep.angles, y: angleSweep.deltaVals, name: "Δ", type: "scatter", mode: "lines", line: { color: "#ef4444" } },
-          ]} layout={{ ...plotLayout, height: 300, xaxis: { ...plotLayout.xaxis, title: "Angle (°)" }, yaxis: { ...plotLayout.yaxis, title: "Degrees" } }} config={{ displayModeBar: false }} />
+          ]} layout={{ ...plotLayout, height: 300, xaxis: { ...plotLayout.xaxis, title: "Angle (°)" }, yaxis: { ...plotLayout.yaxis, title: "Degrees" } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Ψ and Δ vs Film Thickness</h2>
-          <Plot data={[
+          <ChartPanel data={[
             { x: thicknessSweep.thicknesses, y: thicknessSweep.psiVals, name: "Ψ", type: "scatter", mode: "lines", line: { color: "#3b82f6" } },
             { x: thicknessSweep.thicknesses, y: thicknessSweep.deltaVals, name: "Δ", type: "scatter", mode: "lines", line: { color: "#ef4444" } },
-          ]} layout={{ ...plotLayout, height: 300, xaxis: { ...plotLayout.xaxis, title: "Thickness (nm)" }, yaxis: { ...plotLayout.yaxis, title: "Degrees" } }} config={{ displayModeBar: false }} />
+          ]} layout={{ ...plotLayout, height: 300, xaxis: { ...plotLayout.xaxis, title: "Thickness (nm)" }, yaxis: { ...plotLayout.yaxis, title: "Degrees" } }} />
         </div>
       </div>
 
@@ -250,6 +246,6 @@ export default function EllipsometryPage() {
           <p>Phase: β = 2π·n₂·d·cosθ₂ / λ</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

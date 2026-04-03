@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ODRequirementsPage() {
   const [power, setPower] = useState(500); // mW
@@ -47,26 +47,23 @@ export default function ODRequirementsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/laser-safety" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Laser Safety</Link>
-      <h1 className="text-3xl font-bold mb-2">Optical Density (OD) Requirements</h1>
-      <p className="text-gray-400 mb-8">Calculate required eyewear OD given beam power, diameter, and MPE. OD = log₁₀(H/MPE).</p>
-
+    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Optical Density (OD) Requirements" description="Calculate required eyewear OD given beam power, diameter, and MPE. OD = log₁₀(H/MPE).">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Beam Power (mW)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Beam Power (mW)</span>
           <input type="number" value={power} onChange={e => setPower(+e.target.value)} min={0.001} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Beam Diameter (mm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Beam Diameter (mm)</span>
           <input type="number" value={beamDiameter} onChange={e => setBeamDiameter(+e.target.value)} min={0.01} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">MPE (mW/cm²)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">MPE (mW/cm²)</span>
           <input type="number" value={mpe} onChange={e => setMpe(+e.target.value)} min={0.0001} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -98,14 +95,14 @@ export default function ODRequirementsPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Optical Density", gridcolor: "#374151" },
           yaxis: { title: "Transmitted Power (W)", type: "log", gridcolor: "#374151" },
           margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 // Two-photon absorption: β₂PA coefficient in cm/GW
 interface TPAMaterial { name: string; beta0: number; Eg_eV: number; lambda_g: number; color: string; type: string }
@@ -58,11 +57,8 @@ export default function TwoPhotonAbsorptionPage() {
   }, [material, wavelength, thickness]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Two-Photon Absorption</h1>
-      <p className="text-gray-400 mb-8">Nonlinear absorption coefficient β₂PA and intensity-dependent transmission. TPA becomes significant at high peak intensities (pulsed lasers).</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Two-Photon Absorption" description="Nonlinear absorption coefficient β₂PA and intensity-dependent transmission. TPA becomes significant at high peak intensities (pulsed lasers).">
+            
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Material</label>
@@ -93,12 +89,12 @@ export default function TwoPhotonAbsorptionPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-sm font-bold mb-2">β₂PA vs Wavelength</h3>
-        <Plot data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "β₂PA (cm/GW)", gridcolor: "#374151", type: "log" }, legend: { orientation: "h", y: -0.25 }, margin: { t: 20, b: 70, l: 60, r: 20 } }} style={{ width: "100%", height: 400 }} />
+        <ChartPanel data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "β₂PA (cm/GW)", gridcolor: "#374151", type: "log" }, legend: { orientation: "h", y: -0.25 }, margin: { t: 20, b: 70, l: 60, r: 20 } }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <h3 className="text-sm font-bold mb-2">Transmission vs Intensity</h3>
-        <Plot data={intensityData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Intensity (GW/cm²)", gridcolor: "#374151", type: "log" }, yaxis: { title: "Transmission (%)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 20, b: 60, l: 60, r: 20 } }} style={{ width: "100%", height: 350 }} />
+        <ChartPanel data={intensityData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Intensity (GW/cm²)", gridcolor: "#374151", type: "log" }, yaxis: { title: "Transmission (%)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 20, b: 60, l: 60, r: 20 } }} />
       </div>
 
       <div className="mt-8 bg-gray-900 rounded-lg p-4 text-sm text-gray-400">
@@ -106,6 +102,6 @@ export default function TwoPhotonAbsorptionPage() {
         <p className="font-mono bg-gray-800 p-2 rounded">L<sub>eff</sub> = [1 − exp(−α₂PA · L)] / α₂PA | α₂PA = β₂PA · I</p>
         <p className="mt-2 text-xs">Bandgap wavelength: λ_g = {mat.lambda_g} nm. Two-photon absorption occurs when 2·ℏ·ω &gt; E_g, i.e., λ &lt; 2·λ_g.</p>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

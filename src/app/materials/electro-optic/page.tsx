@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface EOCrystal {
   name: string;
@@ -111,11 +110,8 @@ export default function ElectroOpticPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Electro-Optic Coefficients</h1>
-      <p className="text-gray-400 mb-6">Pockels effect materials for modulators, Q-switches, and phase shifters</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Electro-Optic Coefficients" description="Pockels effect materials for modulators, Q-switches, and phase shifters">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Material</label>
@@ -174,8 +170,7 @@ export default function ElectroOpticPage() {
         </div>
       </div>
 
-      <Plot
-        data={rChart}
+      <ChartPanel data={rChart}
         layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
@@ -183,13 +178,12 @@ export default function ElectroOpticPage() {
           yaxis: { title: "r₃₃ (pm/V)", gridcolor: "#374151", type: "log" },
           margin: { t: 20, r: 20, b: 80, l: 60 },
         }}
-        config={{ responsive: true, displayModeBar: false }}
-        style={{ width: "100%", height: 400 }}
+       
+       
       />
 
       <h2 className="text-xl font-bold mt-8 mb-4">Figure of Merit: n³ · r₃₃</h2>
-      <Plot
-        data={figureOfMerit}
+      <ChartPanel data={figureOfMerit}
         layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
@@ -197,9 +191,9 @@ export default function ElectroOpticPage() {
           yaxis: { title: "n³·r₃₃ (pm/V)", gridcolor: "#374151" },
           margin: { t: 20, r: 20, b: 80, l: 60 },
         }}
-        config={{ responsive: true, displayModeBar: false }}
-        style={{ width: "100%", height: 400 }}
+       
+       
       />
-    </div>
+    </CalculatorShell>
   );
 }

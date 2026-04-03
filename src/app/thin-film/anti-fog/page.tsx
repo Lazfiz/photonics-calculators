@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function AntiFogPage() {
   const [nCoat, setNCoat] = useState(1.33);
@@ -78,20 +77,17 @@ export default function AntiFogPage() {
   const surfaceEnergy = cosTheta * 72.8; // mN/m, relative to water (γ_water = 72.8 mN/m)
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/thin-film" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Thin Film</Link>
-      <h1 className="text-3xl font-bold mb-2">Anti-Fog Coating Design</h1>
-      <p className="text-gray-400 mb-8">Hydrophilic thin film that spreads condensation into a uniform water layer, minimizing scattering.</p>
-
+    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Anti-Fog Coating Design" description="Hydrophilic thin film that spreads condensation into a uniform water layer, minimizing scattering.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>coating</sub></span>
-          <input type="number" value={nCoat} onChange={e => setNCoat(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>substrate</sub></span>
-          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Coating thickness (nm)</span>
-          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Contact angle (°)</span>
-          <input type="number" value={contactAngle} onChange={e => setContactAngle(+e.target.value)} min={0} max={90} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>coating</sub></span>
+          <input type="number" value={nCoat} onChange={e => setNCoat(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
+          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Coating thickness (nm)</span>
+          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Contact angle (°)</span>
+          <input type="number" value={contactAngle} onChange={e => setContactAngle(+e.target.value)} min={0} max={90} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
@@ -111,14 +107,10 @@ export default function AntiFogPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-4">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">Formulas</h3>
-        <p className="text-gray-400 text-sm font-mono">δ = 2πnd/λ — phase thickness</p>
-        <p className="text-gray-400 text-sm font-mono">γ<sub>SL</sub> = γ<sub>SV</sub> - γ<sub>LV</sub>cos θ — Young&apos;s equation</p>
-        <p className="text-gray-400 text-sm font-mono">θ &lt; 30° → hydrophilic (anti-fog regime)</p>
-        <p className="text-gray-400 text-sm font-mono">n<sub>coat</sub> ≈ √(n<sub>sub</sub>·n<sub>water</sub>) → AR for fogged surface</p>
-      </div>
+                                      </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={[
+        <ChartPanel data={[
           { x: tmm.wls, y: T, type: "scatter", mode: "lines", name: "Dry T", line: { color: "#60a5fa", width: 2 } },
           { x: tmm.wls, y: TwithWater, type: "scatter", mode: "lines", name: "With fog T", line: { color: "#22d3ee", width: 2 } },
           { x: tmm.wls, y: tmm.R, type: "scatter", mode: "lines", name: "Dry R", line: { color: "#f87171", width: 1, dash: "dot" } },
@@ -127,8 +119,8 @@ export default function AntiFogPage() {
           font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
           yaxis: { title: "R / T", gridcolor: "#374151", range: [0, 1.05] },
           margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { orientation: "h", y: 1.12 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

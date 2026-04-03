@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function DyeLaserResonatorPage() {
   const [wavelength, setWavelength] = useState(590); // nm (Rhodamine 6G peak)
@@ -120,11 +119,8 @@ export default function DyeLaserResonatorPage() {
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-6xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <Link href="/" className="text-blue-400 hover:text-blue-300">← Home</Link>
-        <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300">← Wave Optics</Link>
       </div>
-      <h1 className="text-3xl font-bold mb-2">🧪 Dye Laser Resonator</h1>
-      <p className="text-gray-400 mb-6">Tunable dye laser design — gain spectra, triplet dynamics, and jet-stream optimization.</p>
-
+            
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Dye</label>
@@ -142,7 +138,7 @@ export default function DyeLaserResonatorPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">Stable</div><div className="text-xl font-bold" style={{ color: isStable ? "#34d399" : "#f87171" }}>{isStable ? "YES" : "NO"}</div></div>
+        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">Stable</div><div className="text-xl font-bold">{isStable ? "YES" : "NO"}</div></div>
         <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">Beam Waist</div><div className="text-xl font-bold text-blue-400">{beamWaist_um.toFixed(0)} µm</div></div>
         <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">g₀ (small signal)</div><div className="text-xl font-bold text-green-400">{(smallSignalGain * L_m).toFixed(3)}</div></div>
         <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">g_th</div><div className="text-xl font-bold text-red-400">{g_th.toFixed(3)}</div></div>
@@ -160,10 +156,10 @@ export default function DyeLaserResonatorPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Gain Spectrum</h3><Plot data={spectrumData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "Gain (m⁻¹)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Beam Radius in Cavity</h3><Plot data={beamSizeData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Position (mm)" }, yaxis: { ...plotLayout.yaxis, title: "Beam Radius (µm)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Triplet Fraction vs Flow Speed</h3><Plot data={tripletData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Flow Speed (m/s)" }, yaxis: { ...plotLayout.yaxis, title: "Triplet (%)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Output vs Pump</h3><Plot data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output (W)" } }} config={{ responsive: true }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Gain Spectrum</h3><ChartPanel data={spectrumData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "Gain (m⁻¹)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Beam Radius in Cavity</h3><ChartPanel data={beamSizeData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Position (mm)" }, yaxis: { ...plotLayout.yaxis, title: "Beam Radius (µm)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Triplet Fraction vs Flow Speed</h3><ChartPanel data={tripletData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Flow Speed (m/s)" }, yaxis: { ...plotLayout.yaxis, title: "Triplet (%)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Output vs Pump</h3><ChartPanel data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output (W)" } }} /></div>
       </div>
     </div>
   );

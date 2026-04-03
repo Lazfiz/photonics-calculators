@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
@@ -92,11 +91,8 @@ export default function DegreeOfPolarizationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:underline mb-6 inline-block">← Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Degree of Polarization</h1>
-      <p className="text-gray-400 mb-6">Calculate DoP from Stokes parameters, decompose into polarized and unpolarized components.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Degree of Polarization" description="Calculate DoP from Stokes parameters, decompose into polarized and unpolarized components.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Stokes Parameters</h2>
@@ -179,9 +175,9 @@ export default function DegreeOfPolarizationPage() {
               <span className="text-sm text-gray-400 self-center">nm, {retardance} waves</span>
             </div>
           </div>
-          <Plot data={[
+          <ChartPanel data={[
             { x: spectralData.wls, y: spectralData.dopVals, name: "DoP", type: "scatter", mode: "lines", line: { color: "#f59e0b", width: 2 } },
-          ]} layout={{ ...plotLayout, height: 250, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "DoP", range: [0, 1.05] } }} config={{ displayModeBar: false }} />
+          ]} layout={{ ...plotLayout, height: 250, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "DoP", range: [0, 1.05] } }} />
           <div className="mt-2 text-sm text-gray-400">
             Spectrally averaged DoP: <span className="text-white font-bold">{(spectralData.avgDop * 100).toFixed(2)}%</span>
           </div>
@@ -210,6 +206,6 @@ export default function DegreeOfPolarizationPage() {
           <p>Spectral DoP: DoP_avg = √(⟨S₁⟩² + ⟨S₂⟩² + ⟨S₃⟩²) / S₀</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

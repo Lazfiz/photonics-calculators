@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function StitchingPage() {
   const [gridCols, setGridCols] = useState(5);
@@ -91,11 +90,8 @@ export default function StitchingPage() {
   }, [gridCols, gridRows, tileWidth, tileHeight, totalTiles, overlapPercent, efficiency]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Imaging</Link>
-      <h1 className="text-3xl font-bold mb-2">Image Stitching</h1>
-      <p className="text-gray-400 mb-6">Calculate tile grid parameters, overlap, blending profiles, and stitching accuracy for large-area microscopy.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Image Stitching" description="Calculate tile grid parameters, overlap, blending profiles, and stitching accuracy for large-area microscopy.">
+            
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Stitched Size</p>
@@ -116,58 +112,58 @@ export default function StitchingPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Grid Columns</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Grid Columns</span>
           <input type="number" value={gridCols} onChange={e => setGridCols(Math.max(1, +e.target.value))} min={1} max={50}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Grid Rows</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Grid Rows</span>
           <input type="number" value={gridRows} onChange={e => setGridRows(Math.max(1, +e.target.value))} min={1} max={50}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Tile Width (px)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Tile Width (px)</span>
           <input type="number" value={tileWidth} onChange={e => setTileWidth(+e.target.value)} min={64} max={4096}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Tile Height (px)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Tile Height (px)</span>
           <input type="number" value={tileHeight} onChange={e => setTileHeight(+e.target.value)} min={64} max={4096}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Overlap (%)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Overlap (%)</span>
           <input type="number" value={overlapPercent} onChange={e => setOverlapPercent(+e.target.value)} min={0} max={50}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Overlap (px)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Overlap (px)</span>
           <p className="mt-1 text-lg text-gray-300">{overlapPx} px</p>
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Blend Width (px)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Blend Width (px)</span>
           <input type="number" value={blendWidth} onChange={e => setBlendWidth(+e.target.value)} min={0} max={200}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Blend Method</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Blend Method</span>
           <select value={blendMethod} onChange={e => setBlendMethod(e.target.value as any)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="linear">Linear</option>
             <option value="feather">Feather (Cosine)</option>
             <option value="multiband">Multiband</option>
           </select>
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Position Error (px)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Position Error (px)</span>
           <input type="number" value={positionError} onChange={e => setPositionError(+e.target.value)} min={0} max={50} step="0.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Illumination Variation (%)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Illumination Variation (%)</span>
           <input type="number" value={illuminationVar} onChange={e => setIlluminationVar(+e.target.value)} min={0} max={30}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -189,28 +185,28 @@ export default function StitchingPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-2">Blend Weight Profiles</h3>
-          <Plot data={blendProfile} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          <ChartPanel data={blendProfile} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
             xaxis: { title: "Position in overlap", gridcolor: "#374151" }, yaxis: { title: "Weight", gridcolor: "#374151", range: [0, 1.1] },
             margin: { t: 30, r: 20, b: 50, l: 50 }, legend: { font: { size: 10 } },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-2">Error Accumulation Across Grid</h3>
-          <Plot data={errorAccumulation} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          <ChartPanel data={errorAccumulation} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
             xaxis: { title: "Tile Position", gridcolor: "#374151" }, yaxis: { title: "Position Error (px)", gridcolor: "#374151" },
             margin: { t: 30, r: 20, b: 50, l: 60 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-sm font-semibold mb-2">Overlap vs Efficiency Tradeoff</h3>
-        <Plot data={overlapTradeoff} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+        <ChartPanel data={overlapTradeoff} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
           xaxis: { title: "Overlap (%)", gridcolor: "#374151" },
           yaxis: { title: "Efficiency (%)", gridcolor: "#374151", side: "left" },
           yaxis2: { title: "Quality Score", overlaying: "y", side: "right", gridcolor: "#374151" },
           margin: { t: 30, r: 60, b: 50, l: 60 }, legend: { font: { size: 9 } },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -224,6 +220,6 @@ export default function StitchingPage() {
           <p><span className="text-blue-400">Global optimization:</span> min Σᵢⱼ ‖T_i(x_i) − T_j(x_j)‖² for overlapping pairs</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

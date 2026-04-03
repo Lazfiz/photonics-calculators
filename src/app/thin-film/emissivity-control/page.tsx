@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function EmissivityControlPage() {
   const [nH, setNH] = useState(1.9);
@@ -95,22 +94,19 @@ export default function EmissivityControlPage() {
   const E = tmm.R.map(r => 1 - r);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/thin-film" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Thin Film</Link>
-      <h1 className="text-3xl font-bold mb-2">Emissivity Control</h1>
-      <p className="text-gray-400 mb-8">Low-emissivity (Low-E) coating for thermal insulation — Kirchhoff's law: ε = 1 - R.</p>
-
+    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Emissivity Control" description="Low-emissivity (Low-E) coating for thermal insulation — Kirchhoff's law: ε = 1 - R.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>high</sub> (dielectric)</span>
-          <input type="number" value={nH} onChange={e => setNH(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>low</sub> (dielectric)</span>
-          <input type="number" value={nL} onChange={e => setNL(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>substrate</sub></span>
-          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Design λ (nm)</span>
-          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Pairs</span>
-          <input type="number" value={pairs} onChange={e => setPairs(+e.target.value)} min={1} max={20} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>high</sub> (dielectric)</span>
+          <input type="number" value={nH} onChange={e => setNH(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>low</sub> (dielectric)</span>
+          <input type="number" value={nL} onChange={e => setNL(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
+          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Design λ (nm)</span>
+          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pairs</span>
+          <input type="number" value={pairs} onChange={e => setPairs(+e.target.value)} min={1} max={20} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
@@ -126,14 +122,10 @@ export default function EmissivityControlPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-4">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">Formulas</h3>
-        <p className="text-gray-400 text-sm font-mono">ε = 1 - R — Kirchhoff&apos;s law (opaque surface)</p>
-        <p className="text-gray-400 text-sm font-mono">ε<sub>eff</sub> = ∫ B(λ,T)·ε(λ)dλ / ∫ B(λ,T)dλ — Planck-weighted</p>
-        <p className="text-gray-400 text-sm font-mono">B(λ,T) = 2hc²/λ⁵ · 1/(e^(hc/λkT)-1) — Planck function</p>
-        <p className="text-gray-400 text-sm font-mono">U-value ∝ ε · σ · T⁴ — heat transfer relation</p>
-      </div>
+                                      </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={[
+        <ChartPanel data={[
           { x: tmm.wls.map(w => w / 1000), y: tmm.R, type: "scatter", mode: "lines", name: "Reflectance", line: { color: "#60a5fa" } },
           { x: tmm.wls.map(w => w / 1000), y: E, type: "scatter", mode: "lines", name: "Emissivity (ε)", line: { color: "#f87171" } },
         ]} layout={{
@@ -141,8 +133,8 @@ export default function EmissivityControlPage() {
           font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (µm)", gridcolor: "#374151" },
           yaxis: { title: "R / ε", gridcolor: "#374151", range: [0, 1.05] },
           margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

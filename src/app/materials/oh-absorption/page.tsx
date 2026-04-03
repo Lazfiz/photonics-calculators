@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 // OH absorption peaks in silica (wavelength in µm, absorption in dB/km)
 const OH_PEAKS = [
@@ -57,11 +56,8 @@ export default function OHAbsorptionPage() {
   const totalLoss = loss1550 * fiberLength;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">OH Absorption in Silica</h1>
-      <p className="text-gray-400 mb-8">Hydroxyl (OH⁻) absorption peaks in silica fibers and bulk glass. The fundamental OH stretch at 2.72 µm and overtones at 1.38 µm and 0.94 µm dominate loss spectra.</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="OH Absorption in Silica" description="Hydroxyl (OH⁻) absorption peaks in silica fibers and bulk glass. The fundamental OH stretch at 2.72 µm and overtones at 1.38 µm and 0.94 µm dominate loss spectra.">
+            
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Material</label>
@@ -71,7 +67,7 @@ export default function OHAbsorptionPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">OH Concentration Multiplier</label>
-          <input type="range" min={0.01} max={5} step={0.01} value={ohConc} onChange={e => setOhConc(+e.target.value)} className="w-full" />
+          <input type="range" min={0.01} max={5} step={0.01} value={ohConc} onChange={e => setOhConc(+e.target.value)} />
           <div className="text-right text-xs text-gray-500">{ohConc.toFixed(2)}×</div>
         </div>
         <div>
@@ -88,7 +84,7 @@ export default function OHAbsorptionPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (µm)", gridcolor: "#374151" }, yaxis: { title: "Loss (dB/km)", gridcolor: "#374151", type: "log" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 30, b: 60, l: 60, r: 20 } }} style={{ width: "100%", height: 450 }} />
+        <ChartPanel data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (µm)", gridcolor: "#374151" }, yaxis: { title: "Loss (dB/km)", gridcolor: "#374151", type: "log" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 30, b: 60, l: 60, r: 20 } }} />
       </div>
 
       <div className="mt-8 bg-gray-900 rounded-lg p-4">
@@ -105,6 +101,6 @@ export default function OHAbsorptionPage() {
           <p className="font-mono bg-gray-800 p-2 rounded">α<sub>OH</sub>(λ) = Σ A<sub>i</sub> · C<sub>OH</sub> · exp[−(λ − λ<sub>i</sub>)² / 2σ²]</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

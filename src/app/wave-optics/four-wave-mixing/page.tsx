@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FourWaveMixingPage() {
   const [wavelengthPump, setWavelengthPump] = useState(1064); // nm
@@ -72,11 +71,8 @@ export default function FourWaveMixingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Four-Wave Mixing (FWM)</h1>
-      <p className="text-gray-400 mb-8">Degenerate FWM with energy conservation 2ω<sub>p</sub> = ω<sub>s</sub> + ω<sub>i</sub> in fibers and waveguides.</p>
-
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Four-Wave Mixing (FWM)" description="Degenerate FWM with energy conservation 2ωp = ωs + ωi in fibers and waveguides.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">Energy:</span> 2ω<sub>p</sub> = ω<sub>s</sub> + ω<sub>i</sub></p>
         <p><span className="text-blue-400">Momentum:</span> 2β<sub>p</sub> = β<sub>s</sub> + β<sub>i</sub> + Δβ</p>
@@ -86,18 +82,18 @@ export default function FourWaveMixingPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Pump λ (nm)</span>
-          <input type="number" value={wavelengthPump} onChange={e => setWavelengthPump(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Signal λ (nm)</span>
-          <input type="number" value={wavelengthSignal} onChange={e => setWavelengthSignal(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Pump Power (mW)</span>
-          <input type="number" value={pumpPower} onChange={e => setPumpPower(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n₂ (×10⁻¹⁶ cm²/W)</span>
-          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">A<sub>eff</sub> (µm²)</span>
-          <input type="number" value={coreArea} onChange={e => setCoreArea(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Fiber Length (m)</span>
-          <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pump λ (nm)</span>
+          <input type="number" value={wavelengthPump} onChange={e => setWavelengthPump(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Signal λ (nm)</span>
+          <input type="number" value={wavelengthSignal} onChange={e => setWavelengthSignal(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pump Power (mW)</span>
+          <input type="number" value={pumpPower} onChange={e => setPumpPower(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n₂ (×10⁻¹⁶ cm²/W)</span>
+          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">A<sub>eff</sub> (µm²)</span>
+          <input type="number" value={coreArea} onChange={e => setCoreArea(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Fiber Length (m)</span>
+          <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -121,12 +117,12 @@ export default function FourWaveMixingPage() {
 
       <div className="grid gap-6 lg:grid-cols-2 mb-8">
         <div className="bg-gray-900 rounded-lg p-4">
-          <Plot data={chartData} layout={plotLayout} config={{ responsive: true, displayModeBar: false }} />
+          <ChartPanel data={chartData} layout={plotLayout} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
-          <Plot data={bandwidthData} layout={bandwidthLayout} config={{ responsive: true, displayModeBar: false }} />
+          <ChartPanel data={bandwidthData} layout={bandwidthLayout} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

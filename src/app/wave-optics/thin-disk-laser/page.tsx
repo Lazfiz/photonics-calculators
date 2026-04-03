@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ThinDiskLaserPage() {
   const [diskThickness, setDiskThickness] = useState(200); // µm
@@ -95,11 +94,8 @@ export default function ThinDiskLaserPage() {
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-6xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <Link href="/" className="text-blue-400 hover:text-blue-300">← Home</Link>
-        <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300">← Wave Optics</Link>
       </div>
-      <h1 className="text-3xl font-bold mb-2">💿 Thin-Disk Laser Design</h1>
-      <p className="text-gray-400 mb-6">Multi-pass pumped thin-disk laser — absorption, thermal management, and power scaling.</p>
-
+            
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Disk Thickness (µm)</label><input type="number" className={inputStyle} value={diskThickness} onChange={e => setDiskThickness(+e.target.value)} /></div>
         <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Disk Diameter (mm)</label><input type="number" className={inputStyle} value={diskDiameter} onChange={e => setDiskDiameter(+e.target.value)} /></div>
@@ -130,10 +126,10 @@ export default function ThinDiskLaserPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Absorption vs Number of Passes</h3><Plot data={absVsPasses} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Number of Passes" }, yaxis: { ...plotLayout.yaxis, title: "Absorption (%)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Output Power vs Pump</h3><Plot data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output (W)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">ΔT vs Pump Intensity</h3><Plot data={tempData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Intensity (kW/cm²)" }, yaxis: { ...plotLayout.yaxis, title: "ΔT (K)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Thermal Lens f vs Pump</h3><Plot data={thermalLensData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "f_thermal (m)" } }} config={{ responsive: true }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Absorption vs Number of Passes</h3><ChartPanel data={absVsPasses} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Number of Passes" }, yaxis: { ...plotLayout.yaxis, title: "Absorption (%)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Output Power vs Pump</h3><ChartPanel data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output (W)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">ΔT vs Pump Intensity</h3><ChartPanel data={tempData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Intensity (kW/cm²)" }, yaxis: { ...plotLayout.yaxis, title: "ΔT (K)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Thermal Lens f vs Pump</h3><ChartPanel data={thermalLensData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "f_thermal (m)" } }} /></div>
       </div>
     </div>
   );

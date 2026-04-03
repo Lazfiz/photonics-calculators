@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 // Calcite (CaCO₃) - uniaxial negative crystal, very strong birefringence
 // Sellmeier from Ghosh (1999)
@@ -96,25 +95,22 @@ export default function CalcitePropertiesPage() {
   }, [angle, no, ne, walkoff]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Calcite (CaCO₃) Properties</h1>
-      <p className="text-gray-400 mb-8">Uniaxial negative crystal with the largest birefringence of common optical crystals. Δn ≈ 0.172 at 589nm.</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Calcite (CaCO₃) Properties" description="Uniaxial negative crystal with the largest birefringence of common optical crystals. Δn ≈ 0.172 at 589nm.">
+            
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label className="text-sm text-gray-400">Wavelength: {wavelength} nm</label>
-          <input type="range" min={250} max={3000} value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full" />
+          <input type="range" min={250} max={3000} value={wavelength} onChange={e => setWavelength(+e.target.value)} />
         </div>
         <div>
           <label className="text-sm text-gray-400">Angle from optic axis: {angle.toFixed(1)}°</label>
-          <input type="range" min={0} max={90} step={0.5} value={angle} onChange={e => setAngle(+e.target.value)} className="w-full" />
+          <input type="range" min={0} max={90} step={0.5} value={angle} onChange={e => setAngle(+e.target.value)} />
         </div>
       </div>
 
       <div className="mb-4">
         <label className="text-sm text-gray-400">Thickness: {thickness} mm</label>
-        <input type="range" min={0.1} max={20} step={0.1} value={thickness} onChange={e => setThickness(+e.target.value)} className="w-full" />
+        <input type="range" min={0.1} max={20} step={0.1} value={thickness} onChange={e => setThickness(+e.target.value)} />
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 bg-gray-900 rounded-lg">
@@ -132,11 +128,11 @@ export default function CalcitePropertiesPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Plot data={dispersionChart.data} layout={dispersionChart.layout} config={plotConfig} />
-        <Plot data={birefChart.data} layout={birefChart.layout} config={plotConfig} />
-        <div className="lg:col-span-2"><Plot data={walkoffChart.data} layout={walkoffChart.layout} config={plotConfig} /></div>
+        <ChartPanel data={dispersionChart.data} layout={dispersionChart.layout} config={plotConfig} />
+        <ChartPanel data={birefChart.data} layout={birefChart.layout} config={plotConfig} />
+        <div className="lg:col-span-2"><ChartPanel data={walkoffChart.data} layout={walkoffChart.layout} config={plotConfig} /></div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

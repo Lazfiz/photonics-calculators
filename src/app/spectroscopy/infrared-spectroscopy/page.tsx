@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function InfraredSpectroscopyPage() {
   const [wavenumberStart, setWavenumberStart] = useState(400);
@@ -53,31 +52,28 @@ export default function InfraredSpectroscopyPage() {
   const selectedBands = bands.filter(b => b.center >= wavenumberStart && b.center <= wavenumberEnd);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Infrared (IR) Spectroscopy</h1>
-      <p className="text-gray-400 mb-8">Molecular vibrational absorption in the mid-infrared region (400–4000 cm⁻¹).</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Infrared (IR) Spectroscopy" description="Molecular vibrational absorption in the mid-infrared region (400–4000 cm⁻¹).">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Range Start (cm⁻¹)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Range Start (cm⁻¹)</span>
           <input type="number" value={wavenumberStart} onChange={e => setWavenumberStart(+e.target.value)} min={400} max={4000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Range End (cm⁻¹)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Range End (cm⁻¹)</span>
           <input type="number" value={wavenumberEnd} onChange={e => setWavenumberEnd(+e.target.value)} min={400} max={4000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Path Length (cm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Path Length (cm)</span>
           <input type="number" value={pathLength} onChange={e => setPathLength(+e.target.value)} min={0.001} max={10} step={0.001}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Concentration (M)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Concentration (M)</span>
           <input type="number" value={concentration} onChange={e => setConcentration(+e.target.value)} min={0.001} max={10} step={0.01}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -86,18 +82,18 @@ export default function InfraredSpectroscopyPage() {
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Beer-Lambert:</span> A = ε × c × l</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Transmittance:</span> T = 10<sup>−A</sup></p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Wavenumber:</span> ν̃ = 1/λ = ν/c</p>
-        <p className="text-gray-300 text-sm"><span className="text-blue-400 font-mono">Hooke&apos;s law:</span> ν̃ = (1/2πc)√(k/μ)</p>
+        <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">Hooke&apos;s law:</span> ν̃ = (1/2πc)√(k/μ)</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">IR Spectrum</h3>
-        <Plot data={spectrumData} layout={{
+        <ChartPanel data={spectrumData} layout={{
           xaxis: { title: "Wavenumber (cm⁻¹)", gridcolor: "#374151", color: "#9ca3af", autorange: "reversed" },
           yaxis: { title: "Transmittance (%)", gridcolor: "#374151", color: "#9ca3af", range: [0, 105] },
           yaxis2: { title: "Absorbance", overlaying: "y", side: "right", gridcolor: "#374151", color: "#9ca3af" },
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#e5e7eb" }, margin: { t: 20 },
           legend: { orientation: "h", y: -0.2 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
@@ -129,6 +125,6 @@ export default function InfraredSpectroscopyPage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ApodizationPage() {
   const [nPoints, setNPoints] = useState(256);
@@ -56,14 +55,11 @@ export default function ApodizationPage() {
   }, [nPoints]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Apodization Functions</h1>
-      <p className="text-gray-400 mb-8">Window functions and their instrument line shapes (ILS). Trade-off: resolution vs sidelobe suppression.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Apodization Functions" description="Window functions and their instrument line shapes (ILS). Trade-off: resolution vs sidelobe suppression.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Number of Points</span>
-          <input type="number" value={nPoints} onChange={e => setNPoints(Math.max(4, +e.target.value))} min={4} max={2048} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Number of Points</span>
+          <input type="number" value={nPoints} onChange={e => setNPoints(Math.max(4, +e.target.value))} min={4} max={2048} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">
@@ -72,7 +68,7 @@ export default function ApodizationPage() {
         <p className="text-gray-300"><span className="text-red-400 font-mono">Blackman:</span> Worst resolution, best sidelobes (−58 dB)</p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         grid: { rows: 1, columns: 2, pattern: "independent" },
         xaxis: { title: "Point", gridcolor: "#374151", domain: [0, 0.47] },
@@ -80,7 +76,7 @@ export default function ApodizationPage() {
         xaxis2: { title: "Frequency Point", gridcolor: "#374151", domain: [0.53, 1] },
         yaxis2: { title: "ILS (norm)", gridcolor: "#374151", anchor: "x2", range: [-0.05, 1.1] },
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true, showlegend: false
-      }} className="w-full" style={{ height: 400 }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

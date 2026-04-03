@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
@@ -100,11 +99,8 @@ export default function OpticalActivityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:underline mb-6 inline-block">← Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Optical Activity</h1>
-      <p className="text-gray-400 mb-6">Calculate optical rotation from specific rotation, concentration, and path length with wavelength/temperature corrections.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Optical Activity" description="Calculate optical rotation from specific rotation, concentration, and path length with wavelength/temperature corrections.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Sample Selection</h2>
@@ -197,7 +193,7 @@ export default function OpticalActivityPage() {
           </div>
           <div className="flex justify-center gap-4 mt-3 text-xs">
             <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-blue-500 inline-block" /> Input</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-green-500 inline-block border-dashed" style={{ borderStyle: "dashed" }} /> Output</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-green-500 inline-block border-dashed" /> Output</span>
           </div>
         </div>
       </div>
@@ -205,17 +201,17 @@ export default function OpticalActivityPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Rotatory Dispersion (Biot&apos;s Law)</h2>
-          <Plot data={[
+          <ChartPanel data={[
             { x: dispersionData.wls, y: dispersionData.rotations, type: "scatter", mode: "lines", line: { color: "#a855f7" } },
             { x: [wavelength], y: [wavelengthCorrected], type: "scatter", mode: "markers", marker: { color: "#f59e0b", size: 10 } },
-          ]} layout={{ ...plotLayout, height: 250, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "[α] (deg·mL/g·dm)" } }} config={{ displayModeBar: false }} />
+          ]} layout={{ ...plotLayout, height: 250, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "[α] (deg·mL/g·dm)" } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Temperature Dependence</h2>
-          <Plot data={[
+          <ChartPanel data={[
             { x: tempData.temps, y: tempData.rotations, type: "scatter", mode: "lines", line: { color: "#ef4444" } },
             { x: [temperature], y: [tempCorrected], type: "scatter", mode: "markers", marker: { color: "#f59e0b", size: 10 } },
-          ]} layout={{ ...plotLayout, height: 250, xaxis: { ...plotLayout.xaxis, title: "Temperature (°C)" }, yaxis: { ...plotLayout.yaxis, title: "[α] (deg·mL/g·dm)" } }} config={{ displayModeBar: false }} />
+          ]} layout={{ ...plotLayout, height: 250, xaxis: { ...plotLayout.xaxis, title: "Temperature (°C)" }, yaxis: { ...plotLayout.yaxis, title: "[α] (deg·mL/g·dm)" } }} />
         </div>
       </div>
 
@@ -272,6 +268,6 @@ export default function OpticalActivityPage() {
           </table>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

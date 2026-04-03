@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function LineshapeFitPage() {
   const [profile, setProfile] = useState<"voigt" | "gaussian" | "lorentzian">("voigt");
@@ -74,40 +73,37 @@ export default function LineshapeFitPage() {
     : profile === "gaussian" ? fwhmG : fwhmL;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Lineshape Fitting</h1>
-      <p className="text-gray-400 mb-8">Voigt, Gaussian, and Lorentzian line profiles — compare convolution effects on spectral lines.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Lineshape Fitting" description="Voigt, Gaussian, and Lorentzian line profiles — compare convolution effects on spectral lines.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Profile</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Profile</span>
           <select value={profile} onChange={e => setProfile(e.target.value as any)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="voigt">Voigt (pseudo-Voigt)</option>
             <option value="gaussian">Gaussian</option>
             <option value="lorentzian">Lorentzian</option>
           </select>
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Center (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Center (nm)</span>
           <input type="number" value={center} onChange={e => setCenter(+e.target.value)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Gaussian FWHM (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Gaussian FWHM (nm)</span>
           <input type="number" value={fwhmG} onChange={e => setFwhmG(+e.target.value)} step="0.01" min="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Lorentzian FWHM (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Lorentzian FWHM (nm)</span>
           <input type="number" value={fwhmL} onChange={e => setFwhmL(+e.target.value)} step="0.01" min="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Amplitude</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Amplitude</span>
           <input type="number" value={amplitude} onChange={e => setAmplitude(+e.target.value)} step="0.1" min="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -133,12 +129,12 @@ export default function LineshapeFitPage() {
         <p><span className="text-gray-400">FWHM<sub>V</sub> ≈ 0.5346·FWHM<sub>L</sub> + √(0.2166·FWHM<sub>L</sub>² + FWHM<sub>G</sub>²)</span></p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
         yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151" },
         margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { bgcolor: "transparent" },
-      }} config={{ responsive: true, displayModeBar: false }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

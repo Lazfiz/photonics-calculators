@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FluorescenceQuantumYieldPage() {
   const [sampleInt, setSampleInt] = useState(50000);
@@ -30,41 +29,38 @@ export default function FluorescenceQuantumYieldPage() {
   }, [sampleInt, refInt, sampleAbs, refAbs, refQY, qy]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Fluorescence Quantum Yield</h1>
-      <p className="text-gray-400 mb-8">Φ = Φ_ref · (I_s/I_ref) · (A_ref/A_s) · (n_s/n_ref)² — comparative method using a reference standard.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fluorescence Quantum Yield" description="Φ = Φ_ref · (I_s/I_ref) · (A_ref/A_s) · (n_s/n_ref)² — comparative method using a reference standard.">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Sample Integrated Intensity</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Sample Integrated Intensity</span>
           <input type="number" value={sampleInt} onChange={e => setSampleInt(+e.target.value)} min={0} step={1000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Reference Integrated Intensity</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Reference Integrated Intensity</span>
           <input type="number" value={refInt} onChange={e => setRefInt(+e.target.value)} min={0} step={1000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Sample Absorbance (at λ_ex)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Sample Absorbance (at λ_ex)</span>
           <input type="number" value={sampleAbs} onChange={e => setSampleAbs(Math.max(0.001, +e.target.value))} min={0.001} step={0.01}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Reference Absorbance (at λ_ex)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Reference Absorbance (at λ_ex)</span>
           <input type="number" value={refAbs} onChange={e => setRefAbs(Math.max(0.001, +e.target.value))} min={0.001} step={0.01}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Reference Φ (e.g. quinine 0.54)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Reference Φ (e.g. quinine 0.54)</span>
           <input type="number" value={refQY} onChange={e => setRefQY(+e.target.value)} min={0} max={1} step={0.01}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Apply Refractive Index Correction</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Apply Refractive Index Correction</span>
           <select value={useRefrIdx ? "yes" : "no"} onChange={e => setUseRefrIdx(e.target.value === "yes")}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="no">No</option>
             <option value="yes">Yes</option>
           </select>
@@ -73,15 +69,15 @@ export default function FluorescenceQuantumYieldPage() {
 
       {useRefrIdx && (
         <div className="grid gap-4 sm:grid-cols-2 mb-8">
-          <label className="block">
-            <span className="text-gray-300 text-sm">n (sample solvent)</span>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">n (sample solvent)</span>
             <input type="number" value={refrIdxSample} onChange={e => setRefrIdxSample(+e.target.value)} min={1} step={0.01}
-              className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
           </label>
-          <label className="block">
-            <span className="text-gray-300 text-sm">n (reference solvent)</span>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">n (reference solvent)</span>
             <input type="number" value={refrIdxRef} onChange={e => setRefrIdxRef(+e.target.value)} min={1} step={0.01}
-              className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
           </label>
         </div>
       )}
@@ -103,13 +99,13 @@ export default function FluorescenceQuantumYieldPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
           xaxis: { title: "Sample Absorbance", gridcolor: "#1f2937" },
           yaxis: { title: "Quantum Yield", gridcolor: "#1f2937" },
           margin: { t: 30 },
-        }} config={{ responsive: true }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

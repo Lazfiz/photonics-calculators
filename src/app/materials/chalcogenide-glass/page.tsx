@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface ChalcogenideGlass {
   name: string;
@@ -116,11 +115,8 @@ export default function ChalcogenideGlassPage() {
   }, [selected, plotMode]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Chalcogenide Glass Properties</h1>
-      <p className="text-gray-400 mb-6">IR-transparent glasses for thermal imaging, sensing, and nonlinear optics</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Chalcogenide Glass Properties" description="IR-transparent glasses for thermal imaging, sensing, and nonlinear optics">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Glass</label>
@@ -168,8 +164,7 @@ export default function ChalcogenideGlassPage() {
         <p className="text-lg font-bold text-cyan-400">{g.transparencyMin} — {g.transparencyMax} μm</p>
       </div>
 
-      <Plot
-        data={chartData}
+      <ChartPanel data={chartData}
         layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
@@ -179,9 +174,9 @@ export default function ChalcogenideGlassPage() {
           margin: { t: 20, r: 20, b: 50, l: 60 },
           legend: { orientation: "h", y: -0.25 },
         }}
-        config={{ responsive: true, displayModeBar: false }}
-        style={{ width: "100%", height: 500 }}
+       
+       
       />
-    </div>
+    </CalculatorShell>
   );
 }

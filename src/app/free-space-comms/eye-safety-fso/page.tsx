@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function EyeSafetyFsoPage() {
   const [wavelength, setWavelength] = useState(1550); // nm
@@ -113,10 +112,7 @@ export default function EyeSafetyFsoPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
-      <Link href="/free-space-comms" className="text-cyan-400 hover:underline text-sm mb-4 inline-block">← Back to Free-Space Comms</Link>
-      <h1 className="text-3xl font-bold mb-6">Eye Safety for FSO</h1>
-      <p className="text-gray-400 mb-6">MPE, NOHD, and laser classification per IEC 60825-1 / ANSI Z136 for FSO systems.</p>
-
+            
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
           <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
@@ -163,12 +159,12 @@ export default function EyeSafetyFsoPage() {
             <p><strong className="text-gray-400">&gt;1400 nm:</strong> Corneal/lens hazard — generally eye-safe at moderate power</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <Plot data={plotData} layout={{
+            <ChartPanel data={plotData} layout={{
               xaxis: { title: "Distance (m)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
               yaxis: { title: "Irradiance (W/m²)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",
               margin: { t: 20, r: 20, b: 40, l: 70 }, font: { color: "#9ca3af" }, legend: { font: { size: 10 } },
-            }} config={{ displayModeBar: false }} style={{ width: "100%", height: 300 }} />
+            }} />
           </div>
         </div>
       </div>

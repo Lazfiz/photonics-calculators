@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface Material {
   name: string;
@@ -60,11 +59,8 @@ export default function ThermalConductivityPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Thermal Conductivity for Optics</h1>
-      <p className="text-gray-400 mb-4">Heat transport in optical substrates</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Thermal Conductivity for Optics" description="Heat transport in optical substrates">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono">
         <p>R_th = d / (k · A) &nbsp;|&nbsp; ΔT = P · R_th &nbsp;|&nbsp; k(T) = A + BT + CT²</p>
       </div>
@@ -114,8 +110,7 @@ export default function ThermalConductivityPage() {
         </div>
       </div>
 
-      <Plot
-        data={chartData}
+      <ChartPanel data={chartData}
         layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
@@ -125,9 +120,9 @@ export default function ThermalConductivityPage() {
           legend: { orientation: "h", y: -0.2 },
           showlegend: true,
         }}
-        config={{ responsive: true, displayModeBar: false }}
-        style={{ width: "100%", height: 500 }}
+       
+       
       />
-    </div>
+    </CalculatorShell>
   );
 }

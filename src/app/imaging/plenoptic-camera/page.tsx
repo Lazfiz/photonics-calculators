@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function PlenopticCameraPage() {
   const [wavelengthNm, setWavelengthNm] = useState(550);
@@ -58,11 +57,8 @@ export default function PlenopticCameraPage() {
   }, [microLensPitchUm, pixelPitchUm, microLensFocalMm]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Imaging</Link>
-      <h1 className="text-3xl font-bold mb-2">Plenoptic Camera Design</h1>
-      <p className="text-gray-400 mb-6">Light field camera parameters: spatial-angular tradeoff, refocusing range, and data budgets.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Plenoptic Camera Design" description="Light field camera parameters: spatial-angular tradeoff, refocusing range, and data budgets.">
+            
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Spatial Resolution</p>
@@ -83,40 +79,40 @@ export default function PlenopticCameraPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={400} max={800} step="10"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Main Lens f (mm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Main Lens f (mm)</span>
           <input type="number" value={mainLensFocalMm} onChange={e => setMainLensFocalMm(+e.target.value)} min={5} max={200} step="5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Main Lens NA</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Main Lens NA</span>
           <input type="number" value={mainLensNA} onChange={e => setMainLensNA(+e.target.value)} min={0.05} max={0.5} step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Micro-lens f (mm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Micro-lens f (mm)</span>
           <input type="number" value={microLensFocalMm} onChange={e => setMicroLensFocalMm(+e.target.value)} min={0.1} max={5} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Micro-lens Pitch (µm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Micro-lens Pitch (µm)</span>
           <input type="number" value={microLensPitchUm} onChange={e => setMicroLensPitchUm(+e.target.value)} min={50} max={500} step="10"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Pixels per Micro-lens</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Pixels per Micro-lens</span>
           <input type="number" value={pixelsPerMicroLens} onChange={e => setPixelsPerMicroLens(+e.target.value)} min={3} max={30} step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Pixel Pitch (µm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Pixel Pitch (µm)</span>
           <input type="number" value={pixelPitchUm} onChange={e => setPixelPitchUm(+e.target.value)} min={1} max={15} step="0.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -134,17 +130,17 @@ export default function PlenopticCameraPage() {
       <div className="grid gap-4 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-2">Depth Range vs Micro-lens Pitch</h3>
-          <Plot data={depthVsPitch} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Pitch (µm)" }, yaxis: { title: "Depth Range (mm)" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} config={{ displayModeBar: false }} />
+          <ChartPanel data={depthVsPitch} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Pitch (µm)" }, yaxis: { title: "Depth Range (mm)" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-2">Views vs Pixels/Micro-lens</h3>
-          <Plot data={viewsChart} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "px/µ-lens" }, yaxis: { title: "Total Views" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} config={{ displayModeBar: false }} />
+          <ChartPanel data={viewsChart} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "px/µ-lens" }, yaxis: { title: "Total Views" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-2">Spatial-Angular Tradeoff</h3>
-          <Plot data={tradeoffChart} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "px/µ-lens" }, yaxis: { title: "Eff. Spatial Res. (µm)" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} config={{ displayModeBar: false }} />
+          <ChartPanel data={tradeoffChart} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "px/µ-lens" }, yaxis: { title: "Eff. Spatial Res. (µm)" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

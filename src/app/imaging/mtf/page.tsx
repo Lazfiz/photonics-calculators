@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function MTFPage() {
   const [na, setNa] = useState(0.95);
@@ -59,11 +58,8 @@ export default function MTFPage() {
   }, [na, wavelength]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:underline mb-6 inline-block">← Imaging &amp; Microscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Modulation Transfer Function</h1>
-      <p className="text-gray-400 mb-8">Diffraction-limited incoherent MTF with defocus effects.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Modulation Transfer Function" description="Diffraction-limited incoherent MTF with defocus effects.">
+            
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
@@ -103,8 +99,7 @@ export default function MTFPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-4">MTF vs Spatial Frequency (multiple defocus values)</h2>
-        <Plot
-          data={plotData}
+        <ChartPanel data={plotData}
           layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#ccc" },
@@ -113,10 +108,10 @@ export default function MTFPage() {
             legend: { font: { size: 10 } },
             margin: { l: 60, r: 20, t: 20, b: 50 },
           }}
-          config={{ responsive: true, displayModeBar: false }}
-          style={{ width: "100%", height: "400px" }}
+         
+         
         />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function StimulatedRamanPage() {
   const [ramanShift, setRamanShift] = useState(2880);
@@ -42,41 +41,38 @@ export default function StimulatedRamanPage() {
   const maxStokesGain = Math.log(1 + pumpPower * ramanGainCoeff * pathLength * 1e3 / stokesPower) * stokesPower;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Stimulated Raman Scattering (SRS)</h1>
-      <p className="text-gray-400 mb-8">Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Stimulated Raman Scattering (SRS)" description="Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Raman Shift (cm⁻¹)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Raman Shift (cm⁻¹)</span>
           <input type="number" value={ramanShift} onChange={e => setRamanShift(+e.target.value)} min={100} max={4500}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Pump Power (mW)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Pump Power (mW)</span>
           <input type="number" value={pumpPower} onChange={e => setPumpPower(+e.target.value)} min={1} max={1e6}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Stokes Power (mW)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Stokes Power (mW)</span>
           <input type="number" value={stokesPower} onChange={e => setStokesPower(+e.target.value)} min={1} max={1e6}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Path Length (cm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Path Length (cm)</span>
           <input type="number" value={pathLength} onChange={e => setPathLength(+e.target.value)} min={0.001} max={100} step={0.01}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Concentration (M)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Concentration (M)</span>
           <input type="number" value={concentration} onChange={e => setConcentration(+e.target.value)} min={0.001} max={50} step={0.01}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Raman Linewidth (cm⁻¹)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Raman Linewidth (cm⁻¹)</span>
           <input type="number" value={linewidth} onChange={e => setLinewidth(+e.target.value)} min={1} max={100}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -85,41 +81,38 @@ export default function StimulatedRamanPage() {
         <p className="text-gray-300 text-sm mb-1"><span className="text-green-400 font-mono">Stokes gain:</span> dI<sub>s</sub>/dz = g<sub>R</sub> × I<sub>p</sub> × I<sub>s</sub></p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-green-400 font-mono">Pump depletion:</span> dI<sub>p</sub>/dz = −(ω<sub>p</sub>/ω<sub>s</sub>) × g<sub>R</sub> × I<sub>p</sub> × I<sub>s</sub></p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-green-400 font-mono">SRG:</span> ΔI<sub>s</sub>/I<sub>s</sub> = g<sub>R</sub> × I<sub>p</sub> × L</p>
-        <p className="text-gray-300 text-sm"><span className="text-red-400 font-mono">SRL:</span> ΔI<sub>p</sub>/I<sub>p</sub> = −g<sub>R</sub> × I<sub>s</sub> × L</p>
+        <p className="text-sm text-gray-300"><span className="text-red-400 font-mono">SRL:</span> ΔI<sub>p</sub>/I<sub>p</sub> = −g<sub>R</sub> × I<sub>s</sub> × L</p>
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">Raman Gain Coeff.</p>
-          <p className="text-xl font-bold text-green-400">{(ramanGainCoeff * 1e3).toFixed(2)} cm/GW</p>
+                    <p className="text-xl font-bold text-green-400">{(ramanGainCoeff * 1e3).toFixed(2)} cm/GW</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">Max Stokes Gain</p>
-          <p className="text-xl font-bold text-blue-400">{maxStokesGain.toFixed(2)} mW</p>
+                    <p className="text-xl font-bold text-blue-400">{maxStokesGain.toFixed(2)} mW</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">SRG Fraction</p>
-          <p className="text-xl font-bold text-yellow-400">{(ramanGainCoeff * pumpPower * pathLength * 1e3 * 100).toFixed(4)}%</p>
+                    <p className="text-xl font-bold text-yellow-400">{(ramanGainCoeff * pumpPower * pathLength * 1e3 * 100).toFixed(4)}%</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-2">SRS Gain Profile</h3>
-          <Plot data={stimulatedGainData} layout={{
+          <ChartPanel data={stimulatedGainData} layout={{
             xaxis: { title: "Detuning (cm⁻¹)", gridcolor: "#374151", color: "#9ca3af" },
             yaxis: { title: "Gain (a.u.)", gridcolor: "#374151", color: "#9ca3af" },
             paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#e5e7eb" }, margin: { t: 20 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-2">Power Transfer Along Path</h3>
-          <Plot data={powerTransferData} layout={{
+          <ChartPanel data={powerTransferData} layout={{
             xaxis: { title: "Distance (mm)", gridcolor: "#374151", color: "#9ca3af" },
             yaxis: { title: "Power (mW)", gridcolor: "#374151", color: "#9ca3af" },
             paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#e5e7eb" }, margin: { t: 20 },
             legend: { orientation: "h", y: -0.2 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
 
@@ -144,6 +137,6 @@ export default function StimulatedRamanPage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function AnsiIecComparisonPage() {
   const [wavelength, setWavelength] = useState(632);
@@ -74,11 +74,8 @@ export default function AnsiIecComparisonPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/laser-safety" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Laser Safety</Link>
-      <h1 className="text-3xl font-bold mb-2">ANSI vs IEC MPE Comparison</h1>
-      <p className="text-gray-400 mb-8">Compares Maximum Permissible Exposure (ANSI Z136.1) with Accessible Emission Limits (IEC 60825-1) across wavelengths.</p>
-
+    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="ANSI vs IEC MPE Comparison" description="Compares Maximum Permissible Exposure (ANSI Z136.1) with Accessible Emission Limits (IEC 60825-1) across wavelengths.">
+            
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
@@ -121,7 +118,7 @@ export default function AnsiIecComparisonPage() {
         <p>IEC Class 1 AEL: ~7.9×10⁻⁴ × t<sup>0.75</sup> J (into 7mm aperture)</p>
       </div>
 
-      <Plot data={chartData} layout={layout} config={{ responsive: true }} className="w-full h-[400px]" />
-    </div>
+      <ChartPanel data={chartData} layout={layout} className="w-full h-[400px]" />
+    </CalculatorShell>
   );
 }

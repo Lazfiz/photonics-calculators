@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ScanFailurePage() {
   const [power, setPower] = useState(1000); // mW
@@ -69,36 +69,33 @@ export default function ScanFailurePage() {
   }, [results]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/laser-safety" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Laser Safety</Link>
-      <h1 className="text-3xl font-bold mb-2">Scan Failure Analysis</h1>
-      <p className="text-gray-400 mb-8">Analyzes hazard when a scanning laser fails to scan, causing the beam to dwell on a single point. IEC 60825-1 scan failure assessment.</p>
-
+    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Scan Failure Analysis" description="Analyzes hazard when a scanning laser fails to scan, causing the beam to dwell on a single point. IEC 60825-1 scan failure assessment.">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Power (mW)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Power (mW)</span>
           <input type="number" value={power} onChange={e => setPower(+e.target.value)} min={0.1} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Beam Diameter (mm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Beam Diameter (mm)</span>
           <input type="number" value={beamDiam} onChange={e => setBeamDiam(+e.target.value)} min={0.1} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Scan Angle (°)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Scan Angle (°)</span>
           <input type="number" value={scanAngle} onChange={e => setScanAngle(+e.target.value)} min={1} max={360}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Scan Frequency (Hz)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Scan Frequency (Hz)</span>
           <input type="number" value={scanFreq} onChange={e => setScanFreq(+e.target.value)} min={1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Failure Duration (s)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Failure Duration (s)</span>
           <input type="number" value={failDuration} onChange={e => setFailDuration(+e.target.value)} min={1e-6} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -123,14 +120,14 @@ export default function ScanFailurePage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Exposure Time (s)", gridcolor: "#374151", type: "log" },
           yaxis: { title: "Fluence (mJ/cm²)", gridcolor: "#374151", type: "log" },
           margin: { t: 30, r: 30, b: 50, l: 70 },
           legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
@@ -143,6 +140,6 @@ export default function ScanFailurePage() {
           <p>Normal dwell ≈ beam_width / scan_speed</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function StressMeasurementPage() {
   const [radius, setRadius] = useState(25);
@@ -88,30 +87,27 @@ export default function StressMeasurementPage() {
   }, [radius, deflection, poissonRatio, youngsModulus, substrateThickness, nFilm]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/thin-film" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Thin Film</Link>
-      <h1 className="text-3xl font-bold mb-2">Thin Film Stress Measurement</h1>
-      <p className="text-gray-400 mb-8">Calculate film stress from substrate curvature using the Stoney equation. Includes thermal stress decomposition and stored elastic energy.</p>
-
+    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Thin Film Stress Measurement" description="Calculate film stress from substrate curvature using the Stoney equation. Includes thermal stress decomposition and stored elastic energy.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Substrate Radius (mm)</span>
-          <input type="number" value={radius} onChange={e => setRadius(+e.target.value)} step="0.5" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Substrate Thickness (mm)</span>
-          <input type="number" value={substrateThickness} onChange={e => setSubstrateThickness(+e.target.value)} step="0.05" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Film Thickness (nm)</span>
-          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} step="1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>film</sub></span>
-          <input type="number" value={nFilm} onChange={e => setNFilm(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Center Deflection (μm)</span>
-          <input type="number" value={deflection * 1e6} onChange={e => setDeflection(+e.target.value * 1e-6)} step="0.1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">E<sub>substrate</sub> (GPa)</span>
-          <input type="number" value={youngsModulus} onChange={e => setYoungsModulus(+e.target.value)} step="1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">ν<sub>substrate</sub></span>
-          <input type="number" value={poissonRatio} onChange={e => setPoissonRatio(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Deposition Temp (°C)</span>
-          <input type="number" value={depositionTemp} onChange={e => setDepositionTemp(+e.target.value)} step="10" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Measurement Temp (°C)</span>
-          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} step="1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Substrate Radius (mm)</span>
+          <input type="number" value={radius} onChange={e => setRadius(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Substrate Thickness (mm)</span>
+          <input type="number" value={substrateThickness} onChange={e => setSubstrateThickness(+e.target.value)} step="0.05" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Film Thickness (nm)</span>
+          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>film</sub></span>
+          <input type="number" value={nFilm} onChange={e => setNFilm(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Center Deflection (μm)</span>
+          <input type="number" value={deflection * 1e6} onChange={e => setDeflection(+e.target.value * 1e-6)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">E<sub>substrate</sub> (GPa)</span>
+          <input type="number" value={youngsModulus} onChange={e => setYoungsModulus(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">ν<sub>substrate</sub></span>
+          <input type="number" value={poissonRatio} onChange={e => setPoissonRatio(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Deposition Temp (°C)</span>
+          <input type="number" value={depositionTemp} onChange={e => setDepositionTemp(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Measurement Temp (°C)</span>
+          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
@@ -137,13 +133,13 @@ export default function StressMeasurementPage() {
         <p>U = σ²·t<sub>f</sub> / (2E<sub>f</sub>) (elastic energy per area)</p>
       </div>
 
-      <Plot data={sweepData} layout={{
+      <ChartPanel data={sweepData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Film Thickness (nm)", gridcolor: "#374151" },
         yaxis: { title: "Stress (MPa)", gridcolor: "#374151", side: "left" },
         yaxis2: { title: "Energy (mJ/m²)", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 50, r: 50 }, autosize: true, legend: { x: 0.01, y: 0.99 }
-      }} className="w-full" style={{ height: 400 }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

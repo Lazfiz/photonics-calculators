@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function AdaptiveOpticsPage() {
   const [numZernike, setNumZernike] = useState(15);
@@ -46,11 +45,8 @@ export default function AdaptiveOpticsPage() {
   }, [rmsWavefront]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:underline mb-6 inline-block">← Imaging &amp; Microscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Adaptive Optics Calculator</h1>
-      <p className="text-gray-400 mb-8">AO correction performance, Strehl ratio, and deformable mirror requirements.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Adaptive Optics Calculator" description="AO correction performance, Strehl ratio, and deformable mirror requirements.">
+            
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
@@ -94,13 +90,13 @@ export default function AdaptiveOpticsPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-4">Strehl Ratio &amp; Residual RMS vs Zernike Modes</h2>
-        <Plot data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" },
+        <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" },
           xaxis: { title: "Zernike modes corrected", gridcolor: "#333" },
           yaxis: { title: "Strehl ratio", gridcolor: "#333", range: [0, 1] },
           yaxis2: { title: "Residual RMS (λ)", gridcolor: "#333", overlaying: "y", side: "right" },
           legend: { font: { size: 11 } }, margin: { l: 60, r: 60, t: 20, b: 60 }
-        }} config={{ responsive: true, displayModeBar: false }} style={{ width: "100%", height: "400px" }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

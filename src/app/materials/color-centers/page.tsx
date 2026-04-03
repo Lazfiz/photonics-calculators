@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface ColorCenter { name: string; crystal: string; peak_nm: number; fwhm_nm: number; sigma_abs: number; sigma_em: number; color: string; defect: string }
 
@@ -49,11 +48,8 @@ export default function ColorCentersPage() {
   }, [selected]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Color Centers in Crystals</h1>
-      <p className="text-gray-400 mb-8">Point defects and impurity centers: absorption/emission spectra, cross-sections, and ZPL characteristics. Key for quantum emitters and tunable lasers.</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Color Centers in Crystals" description="Point defects and impurity centers: absorption/emission spectra, cross-sections, and ZPL characteristics. Key for quantum emitters and tunable lasers.">
+            
       <div className="mb-6 flex flex-wrap gap-2">
         {Object.entries(COLOR_CENTERS).map(([key, cc]) => (
           <button key={key} onClick={() => toggle(key)} className={`px-3 py-1.5 rounded text-xs border ${selected.includes(key) ? "border-blue-500 bg-blue-500/20 text-blue-300" : "border-gray-700 text-gray-500"}`}>{cc.name} ({cc.crystal.split(" ")[0]})</button>
@@ -62,26 +58,26 @@ export default function ColorCentersPage() {
 
       <div className="mb-8">
         <label className="block text-sm text-gray-400 mb-1">Center Concentration: {concentration.toExponential(2)} m⁻³</label>
-        <input type="range" min={1e20} max={1e27} step={1e22} value={concentration} onChange={e => setConcentration(+e.target.value)} className="w-full" />
+        <input type="range" min={1e20} max={1e27} step={1e22} value={concentration} onChange={e => setConcentration(+e.target.value)} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
         <table className="w-full text-sm">
           <thead><tr className="text-gray-500 border-b border-gray-800"><th className="text-left py-2">Center</th><th className="text-left py-2">Crystal</th><th className="text-right py-2">λ_peak (nm)</th><th className="text-right py-2">FWHM (nm)</th><th className="text-right py-2">σ_abs (cm²)</th><th className="text-right py-2">σ_em (cm²)</th></tr></thead>
           <tbody>
-            {selected.map(key => { const cc = COLOR_CENTERS[key]; return <tr key={key} className="border-b border-gray-800/50"><td className="py-2" style={{ color: cc.color }}>{cc.name}</td><td className="py-2">{cc.crystal}</td><td className="text-right py-2">{cc.peak_nm}</td><td className="text-right py-2">{cc.fwhm_nm}</td><td className="text-right py-2">{cc.sigma_abs.toExponential(1)}</td><td className="text-right py-2">{cc.sigma_em.toExponential(1)}</td></tr>; })}
+            {selected.map(key => { const cc = COLOR_CENTERS[key]; return <tr key={key} className="border-b border-gray-800/50"><td className="py-2">{cc.name}</td><td className="py-2">{cc.crystal}</td><td className="text-right py-2">{cc.peak_nm}</td><td className="text-right py-2">{cc.fwhm_nm}</td><td className="text-right py-2">{cc.sigma_abs.toExponential(1)}</td><td className="text-right py-2">{cc.sigma_em.toExponential(1)}</td></tr>; })}
           </tbody>
         </table>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-sm font-bold mb-2">Absorption Spectra (solid) and Emission Spectra (dashed)</h3>
-        <Plot data={absData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "σ (×10⁻¹⁶ cm²)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.3, font: { size: 9 } }, margin: { t: 20, b: 80, l: 60, r: 20 } }} style={{ width: "100%", height: 400 }} />
+        <ChartPanel data={absData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "σ (×10⁻¹⁶ cm²)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.3, font: { size: 9 } }, margin: { t: 20, b: 80, l: 60, r: 20 } }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <h3 className="text-sm font-bold mb-2">Emission Spectra</h3>
-        <Plot data={emData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "σ (×10⁻¹⁶ cm²)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.3, font: { size: 9 } }, margin: { t: 20, b: 80, l: 60, r: 20 } }} style={{ width: "100%", height: 400 }} />
+        <ChartPanel data={emData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "σ (×10⁻¹⁶ cm²)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.3, font: { size: 9 } }, margin: { t: 20, b: 80, l: 60, r: 20 } }} />
       </div>
 
       <div className="mt-8 bg-gray-900 rounded-lg p-4 text-sm text-gray-400">
@@ -93,6 +89,6 @@ export default function ColorCentersPage() {
           <p><strong>Ti:Sapphire</strong>: broad vibronic band (660-1100 nm), tunable laser workhorse.</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

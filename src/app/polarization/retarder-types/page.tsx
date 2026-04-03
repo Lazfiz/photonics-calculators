@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 const RETARDERS = [
   { name: "Zero-Order Quartz", order: 0, material: "Quartz", retardationAccuracy: "λ/300", bandwidth: "±1%", tempCoeff: 1.0e-5, damage: 500, price: "$$" },
@@ -80,11 +79,8 @@ export default function RetarderTypesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:underline mb-6 inline-block">← Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Retarder Types Comparison</h1>
-      <p className="text-gray-400 mb-6">Compare waveplate and retarder types: bandwidth, accuracy, temperature sensitivity.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Retarder Types Comparison" description="Compare waveplate and retarder types: bandwidth, accuracy, temperature sensitivity.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Parameters</h2>
@@ -112,21 +108,21 @@ export default function RetarderTypesPage() {
 
         <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Retardance Error vs Wavelength</h2>
-          <Plot data={[
+          <ChartPanel data={[
             { x: wavelengthSweep.wls, y: wavelengthSweep.zeroOrder, name: "Zero-Order", type: "scatter", mode: "lines", line: { color: "#3b82f6" } },
             { x: wavelengthSweep.wls, y: wavelengthSweep.multiOrder, name: "Multi-Order", type: "scatter", mode: "lines", line: { color: "#ef4444" } },
             { x: wavelengthSweep.wls, y: wavelengthSweep.achromatic, name: "Achromatic", type: "scatter", mode: "lines", line: { color: "#22c55e" } },
             { x: wavelengthSweep.wls, y: wavelengthSweep.fresnel, name: "Fresnel Rhomb", type: "scatter", mode: "lines", line: { color: "#a855f7" } },
-          ]} layout={{ ...plotLayout, height: 300, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "Error (%)" } }} config={{ displayModeBar: false }} />
+          ]} layout={{ ...plotLayout, height: 300, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "Error (%)" } }} />
         </div>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mt-6">
         <h2 className="text-lg font-semibold mb-4">Temperature Sensitivity</h2>
-        <Plot data={[
+        <ChartPanel data={[
           { x: tempSweep.temps, y: tempSweep.quartz, name: "Quartz (α≈1×10⁻⁵/°C)", type: "scatter", mode: "lines", line: { color: "#3b82f6" } },
           { x: tempSweep.temps, y: tempSweep.polymer, name: "Polymer (α≈1×10⁻⁴/°C)", type: "scatter", mode: "lines", line: { color: "#f59e0b" } },
-        ]} layout={{ ...plotLayout, height: 300, xaxis: { ...plotLayout.xaxis, title: "Temperature (°C)" }, yaxis: { ...plotLayout.yaxis, title: "Retardance Error (%)" } }} config={{ displayModeBar: false }} />
+        ]} layout={{ ...plotLayout, height: 300, xaxis: { ...plotLayout.xaxis, title: "Temperature (°C)" }, yaxis: { ...plotLayout.yaxis, title: "Retardance Error (%)" } }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mt-6">
@@ -171,6 +167,6 @@ export default function RetarderTypesPage() {
           <p>Achromatic condition: (Δn₁ · d₁ + Δn₂ · d₂) / λ = const</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

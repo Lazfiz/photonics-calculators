@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function M2FactorPage() {
   const [wavelength, setWavelength] = useState(1064); // nm
@@ -49,26 +48,23 @@ export default function M2FactorPage() {
   }, [wavelength, w0]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Beam Quality Factor M²</h1>
-      <p className="text-gray-400 mb-8">M² = (π w₀ θ)/λ. M² = 1 for ideal Gaussian, higher for multimode beams.</p>
-
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Beam Quality Factor M²" description="M² = (π w₀ θ)/λ. M² = 1 for ideal Gaussian, higher for multimode beams.">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={100}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Waist Radius w₀ (mm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Waist Radius w₀ (mm)</span>
           <input type="number" value={w0} onChange={e => setW0(+e.target.value)} min={0.001} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Divergence θ (mrad, full)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Divergence θ (mrad, full)</span>
           <input type="number" value={theta} onChange={e => setTheta(+e.target.value)} min={0.01} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -94,13 +90,13 @@ export default function M2FactorPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" }, xaxis: { title: "z (mm)", gridcolor: "#374151" },
           yaxis: { title: "Beam Radius w(z) (mm)", gridcolor: "#374151" },
           margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { x: 0.7, y: 0.05 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

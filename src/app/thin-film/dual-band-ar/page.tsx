@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function DualBandARPage() {
   const [nSub, setNSub] = useState(1.52);
@@ -59,24 +58,21 @@ export default function DualBandARPage() {
   const R2 = r2 >= 0 ? tmm.R[r2] : 0;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/thin-film" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Thin Film</Link>
-      <h1 className="text-3xl font-bold mb-2">Dual-Band AR Coating</h1>
-      <p className="text-gray-400 mb-8">Three-layer anti-reflection coating optimized for two distinct wavelength bands.</p>
-
+    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Dual-Band AR Coating" description="Three-layer anti-reflection coating optimized for two distinct wavelength bands.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>substrate</sub></span>
-          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Band 1 λ (nm)</span>
-          <input type="number" value={wl1} onChange={e => setWl1(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Band 2 λ (nm)</span>
-          <input type="number" value={wl2} onChange={e => setWl2(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>1</sub> (top layer)</span>
-          <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>2</sub> (middle layer)</span>
-          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>3</sub> (bottom layer)</span>
-          <input type="number" value={n3} onChange={e => setN3(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
+          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Band 1 λ (nm)</span>
+          <input type="number" value={wl1} onChange={e => setWl1(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Band 2 λ (nm)</span>
+          <input type="number" value={wl2} onChange={e => setWl2(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>1</sub> (top layer)</span>
+          <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>2</sub> (middle layer)</span>
+          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>3</sub> (bottom layer)</span>
+          <input type="number" value={n3} onChange={e => setN3(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
@@ -94,13 +90,10 @@ export default function DualBandARPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-4">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">Formulas</h3>
-        <p className="text-gray-400 text-sm font-mono">d₁ = λ₁/(4n₁), d₂ = λ₂/(4n₂), d₃ = √(λ₁λ₂)/(4n₃)</p>
-        <p className="text-gray-400 text-sm font-mono">Ideal: n₁ &lt; n₂ &gt; n₃ &lt; n<sub>sub</sub> (impedance matching)</p>
-        <p className="text-gray-400 text-sm font-mono">R via 3-layer TMM at normal incidence</p>
-      </div>
+                              </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={[
+        <ChartPanel data={[
           { x: tmm.wls, y: tmm.R, type: "scatter", mode: "lines", name: "Reflectance", line: { color: "#f87171" } },
           { x: tmm.wls, y: T, type: "scatter", mode: "lines", name: "Transmittance", line: { color: "#60a5fa" } },
         ]} layout={{
@@ -112,8 +105,8 @@ export default function DualBandARPage() {
             { type: "line", x0: wl1, x1: wl1, y0: 0, y1: 1, line: { color: "#fbbf24", width: 1, dash: "dash" } },
             { type: "line", x0: wl2, x1: wl2, y0: 0, y1: 1, line: { color: "#fbbf24", width: 1, dash: "dash" } },
           ],
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function RainAttenuationPage() {
   const [rainRate, setRainRate] = useState(25);
@@ -43,12 +42,9 @@ export default function RainAttenuationPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
-      <Link href="/free-space-comms" className="text-cyan-400 hover:underline text-sm mb-4 inline-block">← Back to Free-Space Comms</Link>
-      <h1 className="text-3xl font-bold mb-6">Rain Attenuation Calculator</h1>
-
+      
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
-        <p className="text-gray-400">Rain attenuation at optical wavelengths is much lower than at microwave/RF. Dominated by Mie scattering from raindrops:</p>
-        <p className="text-cyan-300 mt-1 font-mono">α = k · R^α_coeff &nbsp; [dB/km], &nbsp; Total = α × L</p>
+                <p className="text-cyan-300 mt-1 font-mono">α = k · R^α_coeff &nbsp; [dB/km], &nbsp; Total = α × L</p>
         <p className="text-gray-500 mt-1">R = rain rate (mm/h). k depends on wavelength.</p>
       </div>
 
@@ -83,12 +79,12 @@ export default function RainAttenuationPage() {
             </div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <Plot data={plotData} layout={{
+            <ChartPanel data={plotData} layout={{
               xaxis: { title: "Rain Rate (mm/h)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Attenuation (dB)", color: "#9ca3af", gridcolor: "#374151" },
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",
               margin: { t: 20, r: 20, b: 40, l: 50 }, font: { color: "#9ca3af" }, legend: { x: 0.02, y: 0.98 },
-            }} config={{ displayModeBar: false }} style={{ width: "100%", height: 300 }} />
+            }} />
           </div>
         </div>
       </div>

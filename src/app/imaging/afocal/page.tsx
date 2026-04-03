@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function AfocalPage() {
   const [f1Mm, setF1Mm] = useState(100);
@@ -51,11 +50,8 @@ export default function AfocalPage() {
   }, [f1Mm, f2Mm, separationMm, angularMag, idealSep]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Imaging</Link>
-      <h1 className="text-3xl font-bold mb-2">Afocal System Calculator</h1>
-      <p className="text-gray-400 mb-8">Design and analyze afocal (telescopic) relay systems — Keplerian and Galilean configurations.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Afocal System Calculator" description="Design and analyze afocal (telescopic) relay systems — Keplerian and Galilean configurations.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">M_ang = −f₂ / f₁ &nbsp;(afocal, d = f₁ + f₂)</p>
         <p className="text-gray-300 text-sm font-mono mt-1">d_ideal = f₁ + f₂</p>
@@ -63,25 +59,25 @@ export default function AfocalPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">f₁ (mm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">f₁ (mm)</span>
           <input type="number" value={f1Mm} onChange={e => setF1Mm(+e.target.value)} min={-500} max={5000} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">f₂ (mm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">f₂ (mm)</span>
           <input type="number" value={f2Mm} onChange={e => setF2Mm(+e.target.value)} min={-500} max={5000} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Separation (mm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Separation (mm)</span>
           <input type="number" value={separationMm} onChange={e => setSeparationMm(+e.target.value)} min={0} max={10000} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Input Angle (°)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Input Angle (°)</span>
           <input type="number" value={objectAngleDeg} onChange={e => setObjectAngleDeg(+e.target.value)} min={0.01} max={30} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -119,14 +115,14 @@ export default function AfocalPage() {
       )}
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Separation (mm)", gridcolor: "#374151" },
           yaxis: { title: "Angular Magnification", gridcolor: "#374151" },
           margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

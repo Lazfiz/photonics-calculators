@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface PhotorefractiveMaterial { name: string; n0: number; r33: number; r13: number; epsilon: number; color: string; type: string }
 
@@ -63,11 +62,8 @@ export default function PhotorefractivePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Photorefractive Effect</h1>
-      <p className="text-gray-400 mb-8">Light-induced refractive index changes via space-charge fields in electro-optic materials. Key for holographic storage, phase conjugation, and beam coupling.</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Photorefractive Effect" description="Light-induced refractive index changes via space-charge fields in electro-optic materials. Key for holographic storage, phase conjugation, and beam coupling.">
+            
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Material</label>
@@ -77,7 +73,7 @@ export default function PhotorefractivePage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Applied Field (V/m): {field.toExponential(2)}</label>
-          <input type="range" min={1000} max={100000} step={1000} value={field} onChange={e => setField(+e.target.value)} className="w-full" />
+          <input type="range" min={1000} max={100000} step={1000} value={field} onChange={e => setField(+e.target.value)} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
@@ -101,17 +97,17 @@ export default function PhotorefractivePage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-sm font-bold mb-2">|Δn| vs Applied Field</h3>
-        <Plot data={fieldData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Field (kV/m)", gridcolor: "#374151" }, yaxis: { title: "|Δn| (ppm)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 20, b: 60, l: 60, r: 20 } }} style={{ width: "100%", height: 380 }} />
+        <ChartPanel data={fieldData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Field (kV/m)", gridcolor: "#374151" }, yaxis: { title: "|Δn| (ppm)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 20, b: 60, l: 60, r: 20 } }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-sm font-bold mb-2">Two-Beam Coupling Gain vs Wavelength</h3>
-        <Plot data={wlData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "Γ (cm⁻¹)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 20, b: 60, l: 60, r: 20 } }} style={{ width: "100%", height: 350 }} />
+        <ChartPanel data={wlData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "Γ (cm⁻¹)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 20, b: 60, l: 60, r: 20 } }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <h3 className="text-sm font-bold mb-2">Effective EO Coefficient r₃₃ Comparison</h3>
-        <Plot data={comparisonData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Material", gridcolor: "#374151", tickangle: -30 }, yaxis: { title: "r₃₃ (pm/V)", gridcolor: "#374151" }, margin: { t: 20, b: 80, l: 60, r: 20 } }} style={{ width: "100%", height: 350 }} />
+        <ChartPanel data={comparisonData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Material", gridcolor: "#374151", tickangle: -30 }, yaxis: { title: "r₃₃ (pm/V)", gridcolor: "#374151" }, margin: { t: 20, b: 80, l: 60, r: 20 } }} />
       </div>
 
       <div className="mt-8 bg-gray-900 rounded-lg p-4 text-sm text-gray-400">
@@ -124,6 +120,6 @@ export default function PhotorefractivePage() {
           <p><strong>Semiconductors</strong> (GaAs, InP): fast response, IR-sensitive, lower gain but GHz speeds.</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

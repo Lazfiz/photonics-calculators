@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function CavityModeSpacingPage() {
   const [cavityLength, setCavityLength] = useState(150); // mm
@@ -112,11 +111,8 @@ export default function CavityModeSpacingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Cavity Mode Spacing</h1>
-      <p className="text-gray-400 mb-8">Axial and transverse mode structure of optical resonators.</p>
-
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Cavity Mode Spacing" description="Axial and transverse mode structure of optical resonators.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">FSR</span> = c / (2nL)</p>
         <p><span className="text-blue-400">g₁</span> = 1 − L/R₁, <span className="text-blue-400">g₂</span> = 1 − L/R₂</p>
@@ -125,16 +121,16 @@ export default function CavityModeSpacingPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Cavity Length (mm)</span>
-          <input type="number" value={cavityLength} onChange={e => setCavityLength(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Refractive Index n</span>
-          <input type="number" value={n} onChange={e => setN(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">R₁ (mm, ∞=flat)</span>
-          <input type="number" value={R1} onChange={e => setR1(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">R₂ (mm, ∞=flat)</span>
-          <input type="number" value={R2} onChange={e => setR2(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Cavity Length (mm)</span>
+          <input type="number" value={cavityLength} onChange={e => setCavityLength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Refractive Index n</span>
+          <input type="number" value={n} onChange={e => setN(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">R₁ (mm, ∞=flat)</span>
+          <input type="number" value={R1} onChange={e => setR1(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">R₂ (mm, ∞=flat)</span>
+          <input type="number" value={R2} onChange={e => setR2(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
+          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -159,13 +155,13 @@ export default function CavityModeSpacingPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Mode Spectrum</h3>
-          <Plot data={chartData} layout={layout1} config={{ responsive: true, displayModeBar: false }} />
+          <ChartPanel data={chartData} layout={layout1} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Stability Diagram</h3>
-          <Plot data={[...stabData, { x: [g1], y: [g2], type: "scatter" as const, mode: "markers" as const, marker: { color: "#f87171", size: 12 }, name: "This cavity" }]} layout={layout2} config={{ responsive: true, displayModeBar: false }} />
+          <ChartPanel data={[...stabData, { x: [g1], y: [g2], type: "scatter" as const, mode: "markers" as const, marker: { color: "#f87171", size: 12 }, name: "This cavity" }]} layout={layout2} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

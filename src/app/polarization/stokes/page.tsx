@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 type Preset = "linear-h" | "linear-v" | "linear-45" | "linear-135" | "rcp" | "lcp" | "elliptical";
 
@@ -64,11 +63,8 @@ export default function StokesPage() {
     : { x: [0], y: [0], z: [0] };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:underline mb-6 inline-block">← Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Stokes Parameters</h1>
-      <p className="text-gray-400 mb-6">Analyze polarization state from Stokes vector components with Poincaré sphere visualization.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Stokes Parameters" description="Analyze polarization state from Stokes vector components with Poincaré sphere visualization.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Inputs */}
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
@@ -122,8 +118,7 @@ export default function StokesPage() {
         {/* Poincaré Sphere */}
         <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Poincaré Sphere</h2>
-          <Plot
-            data={[
+          <ChartPanel data={[
               ...poincareTrace.lonLines.map((l) => ({ type: "scatter3d" as const, mode: "lines" as const, x: l.x, y: l.y, z: l.z, line: { color: "#374151", width: 1 }, showlegend: false, hoverinfo: "skip" })),
               ...poincareTrace.latLines.map((l) => ({ type: "scatter3d" as const, mode: "lines" as const, x: l.x, y: l.y, z: l.z, line: { color: "#374151", width: 1 }, showlegend: false, hoverinfo: "skip" })),
               { type: "scatter3d" as const, mode: "markers" as const, x: statePoint.x, y: statePoint.y, z: statePoint.z,
@@ -134,12 +129,12 @@ export default function StokesPage() {
               margin: { l: 0, r: 0, t: 0, b: 0 }, paper_bgcolor: "#111827", font: { color: "#d1d5db" },
               showlegend: true, legend: { x: 0, y: 1, bgcolor: "rgba(0,0,0,0)" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "500px" }}
+           
+           
           />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

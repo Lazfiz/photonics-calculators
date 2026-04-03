@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface PeakConfig {
   center: number;
@@ -74,55 +73,52 @@ export default function SpectralDeconvolutionPage() {
   const peakAreas = peaks.map(pk => pk.amplitude * pk.fwhm * Math.sqrt(Math.PI / (4 * Math.LN2)));
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Spectral Deconvolution</h1>
-      <p className="text-gray-400 mb-8">Decompose overlapping spectral bands into individual Gaussian components.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Deconvolution" description="Decompose overlapping spectral bands into individual Gaussian components.">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Number of Peaks</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Number of Peaks</span>
           <select value={nPeaks} onChange={e => { const n = +e.target.value; setNPeaks(n); setPeaks(defaultPeaks.slice(0, n)); }}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
           </select>
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Noise Level</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Noise Level</span>
           <input type="number" value={noiseLevel} onChange={e => setNoiseLevel(+e.target.value)} min={0} max={1} step={0.01}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">λ Min (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">λ Min (nm)</span>
           <input type="number" value={xMin} onChange={e => setXMin(+e.target.value)} min={100} step={10}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">λ Max (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">λ Max (nm)</span>
           <input type="number" value={xMax} onChange={e => setXMax(+e.target.value)} min={200} step={10}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
       <div className="flex items-center gap-2 mb-6">
         <input type="checkbox" checked={showComponents} onChange={e => setShowComponents(e.target.checked)} className="accent-blue-500" />
-        <span className="text-gray-300 text-sm">Show individual components</span>
+        <span className="text-sm text-gray-300">Show individual components</span>
       </div>
 
       <div className="space-y-3 mb-8">
         {peaks.map((pk, idx) => (
           <div key={idx} className="grid gap-3 grid-cols-3 bg-gray-900 border border-gray-800 rounded-lg p-3">
-            <label className="block">
+            <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
               <span className="text-gray-400 text-xs">Peak {idx + 1} Center (nm)</span>
               <input type="number" value={pk.center} onChange={e => updatePeak(idx, "center", +e.target.value)} min={200} step={1}
                 className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
             </label>
-            <label className="block">
+            <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
               <span className="text-gray-400 text-xs">FWHM (nm)</span>
               <input type="number" value={pk.fwhm} onChange={e => updatePeak(idx, "fwhm", +e.target.value)} min={1} step={1}
                 className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
             </label>
-            <label className="block">
+            <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
               <span className="text-gray-400 text-xs">Amplitude</span>
               <input type="number" value={pk.amplitude} onChange={e => updatePeak(idx, "amplitude", +e.target.value)} min={0} step={0.05}
                 className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
@@ -151,15 +147,15 @@ export default function SpectralDeconvolutionPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
           xaxis: { title: "Wavelength (nm)", gridcolor: "#1f2937" },
           yaxis: { title: "Intensity (a.u.)", gridcolor: "#1f2937" },
           legend: { orientation: "h", y: 1.2, font: { size: 10 } },
           margin: { t: 50 },
           showlegend: true,
-        }} config={{ responsive: true }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

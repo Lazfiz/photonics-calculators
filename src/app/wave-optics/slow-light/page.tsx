@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SlowLightPage() {
   const [nGroup, setNGroup] = useState(10); // group index
@@ -56,22 +55,19 @@ export default function SlowLightPage() {
   }, [nGroup, nBase, bandwidth]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Slow Light Structures</h1>
-      <p className="text-gray-400 mb-8">Group velocity reduction in photonic crystals and EIT media.</p>
-
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Slow Light Structures" description="Group velocity reduction in photonic crystals and EIT media.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Group Index n_g</span>
-          <input type="number" value={nGroup} onChange={e => setNGroup(+e.target.value)} step="any" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Base Index n₀</span>
-          <input type="number" value={nBase} onChange={e => setNBase(+e.target.value)} step="any" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Bandwidth (nm)</span>
-          <input type="number" value={bandwidth} onChange={e => setBandwidth(+e.target.value)} step="any" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Structure Length (mm)</span>
-          <input type="number" value={structureLength} onChange={e => setStructureLength(+e.target.value)} step="any" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Group Index n_g</span>
+          <input type="number" value={nGroup} onChange={e => setNGroup(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Base Index n₀</span>
+          <input type="number" value={nBase} onChange={e => setNBase(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
+          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bandwidth (nm)</span>
+          <input type="number" value={bandwidth} onChange={e => setBandwidth(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Structure Length (mm)</span>
+          <input type="number" value={structureLength} onChange={e => setStructureLength(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
@@ -100,23 +96,23 @@ export default function SlowLightPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="bg-gray-900 rounded-lg p-4">
           <p className="text-sm text-gray-400 mb-2">Delay vs Group Index</p>
-          <Plot data={chartData} layout={{
+          <ChartPanel data={chartData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "n_g", gridcolor: "#374151" },
             yaxis: { title: "Delay (ps)", gridcolor: "#374151" },
             margin: { t: 20, r: 20, b: 40, l: 60 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <p className="text-sm text-gray-400 mb-2">Dispersion n_g(ω)</p>
-          <Plot data={dispData} layout={{
+          <ChartPanel data={dispData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "Frequency (THz)", gridcolor: "#374151" },
             yaxis: { title: "n_g", gridcolor: "#374151" },
             margin: { t: 20, r: 20, b: 40, l: 60 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

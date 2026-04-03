@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FluorescencePage() {
   const [tau, setTau] = useState(3);
@@ -43,32 +42,29 @@ export default function FluorescencePage() {
   const fwhmSpectrumSimple = (tau * 0.441).toFixed(3);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Fluorescence Lifetime</h1>
-      <p className="text-gray-400 mb-8">Exponential decay models for fluorescence. Single and bi-exponential fitting.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fluorescence Lifetime" description="Exponential decay models for fluorescence. Single and bi-exponential fitting.">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">τ₁ (ns)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">τ₁ (ns)</span>
           <input type="number" value={tau} onChange={e => setTau(Math.max(0.01, +e.target.value))} min={0.01} max={100} step={0.1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Bi-exponential</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Bi-exponential</span>
           <input type="checkbox" checked={multiExp} onChange={e => setMultiExp(e.target.checked)}
             className="mt-1 w-5 h-5" />
         </label>
         {multiExp && <>
-          <label className="block">
-            <span className="text-gray-300 text-sm">τ₂ (ns)</span>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">τ₂ (ns)</span>
             <input type="number" value={tau2} onChange={e => setTau2(Math.max(0.01, +e.target.value))} min={0.01} max={100} step={0.1}
-              className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
           </label>
-          <label className="block">
-            <span className="text-gray-300 text-sm">Amplitude₂ (fraction)</span>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">Amplitude₂ (fraction)</span>
             <input type="number" value={amp2} onChange={e => setAmp2(Math.min(1, Math.max(0, +e.target.value)))} min={0} max={1} step={0.05}
-              className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
           </label>
         </>}
       </div>
@@ -85,19 +81,19 @@ export default function FluorescencePage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm"><span className="text-blue-400 font-mono">I(t) = I₀ · e^(−t/τ)</span></p>
-        <p className="text-gray-300 text-sm"><span className="text-green-400 font-mono">Bi-exp: I(t) = a₁·e^(−t/τ₁) + a₂·e^(−t/τ₂)</span></p>
+        <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">I(t) = I₀ · e^(−t/τ)</span></p>
+        <p className="text-sm text-gray-300"><span className="text-green-400 font-mono">Bi-exp: I(t) = a₁·e^(−t/τ₁) + a₂·e^(−t/τ₂)</span></p>
         <p className="text-gray-300 text-sm mt-1">Fourier-limited spectral width: Δν = 1/(2πτ), Δλ = λ²·Δν/c</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" }, xaxis: { title: "Time (ns)", gridcolor: "#374151" },
           yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151", range: [-0.05, 1.1] },
           margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { x: 0.7, y: 0.99 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function AbsorptionPage() {
   const [concentration, setConcentration] = useState(0.01);
@@ -29,31 +28,28 @@ export default function AbsorptionPage() {
   const od = absorbance;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Beer-Lambert Absorption</h1>
-      <p className="text-gray-400 mb-8">A = ε·c·l — absorbance from molar extinction coefficient, concentration, and path length.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Beer-Lambert Absorption" description="A = ε·c·l — absorbance from molar extinction coefficient, concentration, and path length.">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Concentration (mol/L)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Concentration (mol/L)</span>
           <input type="number" value={concentration} onChange={e => setConcentration(+e.target.value)} min={0} step={0.001}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Path Length (cm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Path Length (cm)</span>
           <input type="number" value={pathLength} onChange={e => setPathLength(Math.max(0.001, +e.target.value))} min={0.001} step={0.1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">ε (L·mol⁻¹·cm⁻¹)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">ε (L·mol⁻¹·cm⁻¹)</span>
           <input type="number" value={extinctionCoeff} onChange={e => setExtinctionCoeff(+e.target.value)} min={0} step={100}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Max Conc. for Plot (mol/L)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Max Conc. for Plot (mol/L)</span>
           <input type="number" value={cMax} onChange={e => setCMax(+e.target.value)} min={0.001} step={0.01}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -73,20 +69,20 @@ export default function AbsorptionPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm"><span className="text-blue-400 font-mono">A = ε · c · l</span></p>
-        <p className="text-gray-300 text-sm"><span className="text-green-400 font-mono">T = 10^(−A) = 10^(−εcl)</span></p>
-        <p className="text-gray-300 text-sm">Linear range: A &lt; ~2.0 (T &gt; 1%). Deviations at high concentration.</p>
+        <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">A = ε · c · l</span></p>
+        <p className="text-sm text-gray-300"><span className="text-green-400 font-mono">T = 10^(−A) = 10^(−εcl)</span></p>
+        <p className="text-sm text-gray-300">Linear range: A &lt; ~2.0 (T &gt; 1%). Deviations at high concentration.</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" }, xaxis: { title: "Concentration (mol/L)", gridcolor: "#374151" },
           yaxis: { title: "Absorbance", gridcolor: "#374151", side: "left" },
           yaxis2: { title: "Transmission (%)", gridcolor: "#374151", side: "right", overlaying: "y", range: [0, 105] },
           margin: { t: 30, r: 60, b: 50, l: 70 }, legend: { x: 0.01, y: 0.99 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

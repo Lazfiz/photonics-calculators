@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function PSFCalculatorPage() {
   const [wavelength, setWavelength] = useState(550);
@@ -65,31 +64,28 @@ export default function PSFCalculatorPage() {
   }, [wavelength, na, refractiveIndex, axialFWHM]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Imaging</Link>
-      <h1 className="text-3xl font-bold mb-2">Point Spread Function Calculator</h1>
-      <p className="text-gray-400 mb-8">Visualize the 2D and 1D point spread function (PSF) for a diffraction-limited system.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Point Spread Function Calculator" description="Visualize the 2D and 1D point spread function (PSF) for a diffraction-limited system.">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={300} max={2000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Numerical Aperture</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Numerical Aperture</span>
           <input type="number" value={na} onChange={e => setNa(+e.target.value)} min={0.1} max={1.7} step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Refractive Index</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Refractive Index</span>
           <input type="number" value={refractiveIndex} onChange={e => setRefractiveIndex(+e.target.value)} min={1.0} max={1.8} step="0.001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Oversampling</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Oversampling</span>
           <input type="number" value={oversampling} onChange={e => setOversampling(+e.target.value)} min={1} max={10}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -114,45 +110,41 @@ export default function PSFCalculatorPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Formulas</h3>
-        <p className="text-gray-400 text-sm"><code className="text-blue-400">r<sub>Airy</sub> = 0.61λ / NA</code></p>
-        <p className="text-gray-400 text-sm"><code className="text-green-400">FWHM<sub>lat</sub> = 0.514λ / NA</code></p>
-        <p className="text-gray-400 text-sm"><code className="text-yellow-400">FWHM<sub>ax</sub> = 0.88nλ / NA²</code></p>
-        <p className="text-gray-400 text-sm"><code className="text-purple-400">PSF(r) = |2J₁(kNAr) / (kNAr)|²</code></p>
-      </div>
+                                      </div>
 
       <div className="grid gap-6 lg:grid-cols-2 mb-6">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">2D PSF (Lateral)</h3>
-          <Plot data={psfData} layout={{
+          <ChartPanel data={psfData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "x (nm)", gridcolor: "#374151" },
             yaxis: { title: "y (nm)", gridcolor: "#374151" },
             margin: { t: 10, r: 10, b: 50, l: 60 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Lateral PSF Profile</h3>
-          <Plot data={lateralProfile} layout={{
+          <ChartPanel data={lateralProfile} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Position (nm)", gridcolor: "#374151" },
             yaxis: { title: "Intensity", gridcolor: "#374151", range: [0, 1.1] },
             margin: { t: 30, r: 30, b: 50, l: 70 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <h3 className="text-sm text-gray-400 mb-2">Axial PSF Profile</h3>
-        <Plot data={axialProfile} layout={{
+        <ChartPanel data={axialProfile} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "z (nm)", gridcolor: "#374151" },
           yaxis: { title: "Intensity", gridcolor: "#374151", range: [0, 1.1] },
           margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

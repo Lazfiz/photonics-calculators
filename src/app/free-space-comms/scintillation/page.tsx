@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ScintillationPage() {
   const [wavelength, setWavelength] = useState(1550); // nm
@@ -74,11 +73,8 @@ export default function ScintillationPage() {
   }, [wavelength, distance, cz, apertureDiameter]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/free-space-comms" className="text-blue-400 hover:underline mb-6 inline-block">← Free Space Comms</Link>
-      <h1 className="text-3xl font-bold mb-2">Scintillation Index</h1>
-      <p className="text-gray-400 mb-6">Rytov variance, aperture averaging, and fade probability for atmospheric turbulence.</p>
-
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Scintillation Index" description="Rytov variance, aperture averaging, and fade probability for atmospheric turbulence.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Parameters</h2>
@@ -121,8 +117,7 @@ export default function ScintillationPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">BER with Scintillation (OOK)</h2>
-          <Plot
-            data={[
+          <ChartPanel data={[
               { type: "scatter" as const, mode: "lines" as const, x: results.snrPerBit, y: results.berNoScint, name: "No scintillation", line: { color: "#3b82f6", dash: "dash" } },
               { type: "scatter" as const, mode: "lines" as const, x: results.snrPerBit, y: results.berWithScint, name: "With scintillation", line: { color: "#ef4444", width: 2 } },
             ]}
@@ -132,26 +127,25 @@ export default function ScintillationPage() {
               margin: { l: 60, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
               legend: { x: 0.02, y: 0.98, bgcolor: "rgba(0,0,0,0)" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Rytov Variance vs Distance</h2>
-          <Plot
-            data={[{ type: "scatter" as const, mode: "lines" as const, x: results.distances, y: results.sigmaR2VsDist, line: { color: "#22c55e", width: 2 } }]}
+          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.distances, y: results.sigmaR2VsDist, line: { color: "#22c55e", width: 2 } }]}
             layout={{
               xaxis: { title: "Distance (km)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "σ²R", color: "#9ca3af", gridcolor: "#374151" },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

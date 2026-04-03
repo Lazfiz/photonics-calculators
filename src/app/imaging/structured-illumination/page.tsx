@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function StructuredIlluminationPage() {
   const [na, setNa] = useState(1.4);
@@ -56,11 +55,8 @@ export default function StructuredIlluminationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:underline mb-6 inline-block">← Imaging &amp; Microscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Structured Illumination Microscopy</h1>
-      <p className="text-gray-400 mb-8">SIM resolution enhancement and OTF expansion via patterned illumination.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Structured Illumination Microscopy" description="SIM resolution enhancement and OTF expansion via patterned illumination.">
+            
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
@@ -109,7 +105,7 @@ export default function StructuredIlluminationPage() {
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <Plot data={plotData} layout={darkLayout} config={{ responsive: true, displayModeBar: false }} style={{ width: "100%", height: 400 }} />
+        <ChartPanel data={plotData} layout={darkLayout} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
@@ -125,6 +121,6 @@ export default function StructuredIlluminationPage() {
           <p>The SNR penalty arises because information is redistributed across multiple frequency components; weakly modulated structures require more raw photon budget.</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

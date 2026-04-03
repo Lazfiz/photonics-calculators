@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function PRFCorrectionPage() {
   const [singlePulseMPE, setSinglePulseMPE] = useState(1); // µJ/cm²
@@ -62,11 +62,8 @@ export default function PRFCorrectionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/laser-safety" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Laser Safety</Link>
-      <h1 className="text-3xl font-bold mb-2">PRF Correction Factor</h1>
-      <p className="text-gray-400 mb-8">Calculates the repetitive-pulse correction factor C<sub>p</sub> for pulsed laser MPE per ANSI Z136.1 §8.</p>
-
+    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="PRF Correction Factor" description="Calculates the repetitive-pulse correction factor Cp for pulsed laser MPE per ANSI Z136.1 §8.">
+            
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Single Pulse MPE (µJ/cm²)</label>
@@ -110,7 +107,7 @@ export default function PRFCorrectionPage() {
         <p className="text-yellow-400 mt-2">⚠ When C<sub>p</sub> &lt; C<sub>p</sub>(single pulse), use the single-pulse MPE instead</p>
       </div>
 
-      <Plot data={chartData} layout={layout} config={{ responsive: true }} className="w-full h-[400px]" />
-    </div>
+      <ChartPanel data={chartData} layout={layout} className="w-full h-[400px]" />
+    </CalculatorShell>
   );
 }

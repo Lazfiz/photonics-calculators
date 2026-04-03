@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 // Rare earth ions: Er³⁺, Nd³⁺, Yb³⁺, Tm³⁺, Ho³⁺
 // Absorption cross-section data (simplified Gaussian peaks)
@@ -76,11 +75,8 @@ export default function RareEarthAbsorptionPage() {
   const absorptionPerCm = 1 - Math.exp(-alpha * 0.01);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Rare Earth Absorption Spectra</h1>
-      <p className="text-gray-400 mb-8">Absorption cross-sections for common rare-earth dopants in silica: Er³⁺, Nd³⁺, Yb³⁺, Tm³⁺, Ho³⁺.</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Rare Earth Absorption Spectra" description="Absorption cross-sections for common rare-earth dopants in silica: Er³⁺, Nd³⁺, Yb³⁺, Tm³⁺, Ho³⁺.">
+            
       <div className="mb-6">
         <div className="flex flex-wrap gap-2 mb-4">
           {Object.entries(RARE_EARTHS).map(([key, re]) => (
@@ -108,19 +104,19 @@ export default function RareEarthAbsorptionPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-8">
-        <Plot data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "σ_abs (×10⁻²⁵ m²)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.25 }, margin: { t: 30, b: 70, l: 60, r: 20 } }} style={{ width: "100%", height: 450 }} />
+        <ChartPanel data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "σ_abs (×10⁻²⁵ m²)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.25 }, margin: { t: 30, b: 70, l: 60, r: 20 } }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <h2 className="text-xl font-bold mb-3">Transition Details</h2>
         {selected.map(key => {
           const re = RARE_EARTHS[key];
-          return <div key={key} className="mb-4"><h3 className="text-sm font-bold mb-2" style={{ color: re.color }}>{re.name}</h3>
+          return <div key={key} className="mb-4"><h3 className="text-sm font-bold mb-2">{re.name}</h3>
             <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-gray-500 border-b border-gray-800"><th className="text-left py-1">λ (nm)</th><th className="text-left py-1">Transition</th><th className="text-right py-1">σ (×10⁻²⁵ m²)</th><th className="text-right py-1">FWHM (nm)</th></tr></thead>
               <tbody>{re.peaks.map(p => <tr key={p.wl} className="border-b border-gray-800/50"><td className="py-1">{p.wl}</td><td className="py-1">{p.transition}</td><td className="text-right py-1">{p.sigma * 1e25}</td><td className="text-right py-1">{p.fwhm}</td></tr>)}</tbody></table></div></div>;
         })}
         <div className="mt-4 text-sm text-gray-400 font-mono bg-gray-800 p-2 rounded">α = σ<sub>abs</sub>(λ) · N (m⁻¹) | Beer-Lambert: T = exp(−α · L)</div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

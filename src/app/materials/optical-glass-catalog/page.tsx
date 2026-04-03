@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface GlassEntry {
   name: string;
@@ -65,11 +64,8 @@ export default function OpticalGlassCatalogPage() {
   }, [selected]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Optical Glass Catalog</h1>
-      <p className="text-gray-400 mb-8">Interactive glass map and dispersion curves. <span className="text-gray-500">Sellmeier: n²(λ) = 1 + Σ B<sub>i</sub>λ²/(λ² - C<sub>i</sub>)</span></p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Optical Glass Catalog" description="Interactive glass map and dispersion curves. Sellmeier: n²(λ) = 1 + Σ Biλ²/(λ² - Ci)">
+            
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-3">Select Glasses (click to toggle)</h3>
         <div className="flex flex-wrap gap-2">
@@ -80,8 +76,8 @@ export default function OpticalGlassCatalogPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Plot data={ndVdChart.data} layout={ndVdChart.layout} config={plotConfig} />
-        <Plot data={dispersionChart.data} layout={dispersionChart.layout} config={plotConfig} />
+        <ChartPanel data={ndVdChart.data} layout={ndVdChart.layout} config={plotConfig} />
+        <ChartPanel data={dispersionChart.data} layout={dispersionChart.layout} config={plotConfig} />
       </div>
 
       <div className="overflow-x-auto">
@@ -105,7 +101,7 @@ export default function OpticalGlassCatalogPage() {
           </tbody>
         </table>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

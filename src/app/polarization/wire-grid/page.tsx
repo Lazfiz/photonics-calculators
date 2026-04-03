@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function WireGridPage() {
   const [wavelength, setWavelength] = useState(1.55);
@@ -123,41 +122,38 @@ export default function WireGridPage() {
   }, [lam, sigma, dutyCycle, normalizedSpacing, normalizedDiameter]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Wire Grid Polarizer Calculator</h1>
-      <p className="text-gray-400 mb-8">Model wire grid polarizers — metallic wires on a substrate that reflect E∥ and transmit E⊥.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Wire Grid Polarizer Calculator" description="Model wire grid polarizers — metallic wires on a substrate that reflect E∥ and transmit E⊥.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">E ∥ wires → reflected (conductive grid), E ⊥ wires → transmitted (capacitive grid)</p>
         <p className="text-gray-500 text-xs mt-1">Skin depth: δ = √(2/ωμ₀σ), Grid impedance from Marcuvitz/Chen model</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (μm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (μm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="0.05" min="0.3" max="10"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wire Spacing (μm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wire Spacing (μm)</span>
           <input type="number" value={wireSpacing} onChange={e => setWireSpacing(+e.target.value)} step="0.1" min="0.1" max="10"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wire Diameter (μm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wire Diameter (μm)</span>
           <input type="number" value={wireDiameter} onChange={e => setWireDiameter(+e.target.value)} step="0.05" min="0.01" max="5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Conductivity (S/m)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Conductivity (S/m)</span>
           <input type="number" value={wireConductivity} onChange={e => setWireConductivity(+e.target.value)} step="1e5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Incidence Angle (°)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Incidence Angle (°)</span>
           <input type="number" value={incidenceDeg} onChange={e => setIncidenceDeg(+e.target.value)} min="0" max="80" step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -190,25 +186,25 @@ export default function WireGridPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Spectral Response</h3>
-          <Plot data={spectralData} layout={{
+          <ChartPanel data={spectralData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Wavelength (μm)", gridcolor: "#374151" },
             yaxis: { title: "Transmission / ER", gridcolor: "#374151" },
             margin: { t: 20, r: 20, b: 50, l: 50 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Angular Response</h3>
-          <Plot data={angularData} layout={{
+          <ChartPanel data={angularData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Angle (°)", gridcolor: "#374151" },
             yaxis: { title: "Transmission", gridcolor: "#374151" },
             margin: { t: 20, r: 20, b: 50, l: 50 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

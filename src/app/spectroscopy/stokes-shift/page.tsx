@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function StokesShiftPage() {
   const [absPeak, setAbsPeak] = useState(480);
@@ -31,31 +30,28 @@ export default function StokesShiftPage() {
   }, [absPeak, emPeak, absFWHM, emFWHM]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Stokes Shift Calculator</h1>
-      <p className="text-gray-400 mb-8">Δν̃ = ν̃_abs − ν̃_em — energy difference between absorption and emission maxima.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Stokes Shift Calculator" description="Δν̃ = ν̃_abs − ν̃_em — energy difference between absorption and emission maxima.">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Absorption Peak (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Absorption Peak (nm)</span>
           <input type="number" value={absPeak} onChange={e => setAbsPeak(+e.target.value)} min={200} max={1500} step={1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Emission Peak (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Emission Peak (nm)</span>
           <input type="number" value={emPeak} onChange={e => setEmPeak(+e.target.value)} min={200} max={1500} step={1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Absorption FWHM (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Absorption FWHM (nm)</span>
           <input type="number" value={absFWHM} onChange={e => setAbsFWHM(+e.target.value)} min={1} step={1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Emission FWHM (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Emission FWHM (nm)</span>
           <input type="number" value={emFWHM} onChange={e => setEmFWHM(+e.target.value)} min={1} step={1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -82,14 +78,14 @@ export default function StokesShiftPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
           xaxis: { title: "Wavelength (nm)", gridcolor: "#1f2937" },
           yaxis: { title: "Intensity (a.u.)", gridcolor: "#1f2937" },
           legend: { orientation: "h", y: 1.15 },
           margin: { t: 40 },
-        }} config={{ responsive: true }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

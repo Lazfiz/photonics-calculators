@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function PALMSTORMPage() {
   const [wavelength, setWavelength] = useState(647);
@@ -46,41 +45,38 @@ export default function PALMSTORMPage() {
   }, [localizationPrecision, diffractionLimit]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Imaging</Link>
-      <h1 className="text-3xl font-bold mb-2">PALM/STORM Localization Calculator</h1>
-      <p className="text-gray-400 mb-8">Estimate effective resolution for single-molecule localization microscopy (PALM/STORM) based on localization precision and labeling density.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="PALM/STORM Localization Calculator" description="Estimate effective resolution for single-molecule localization microscopy (PALM/STORM) based on localization precision and labeling density.">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={400} max={900}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Numerical Aperture</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Numerical Aperture</span>
           <input type="number" value={na} onChange={e => setNa(+e.target.value)} min={0.5} max={1.7} step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Localization Precision (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Localization Precision (nm)</span>
           <input type="number" value={localizationPrecision} onChange={e => setLocalizationPrecision(+e.target.value)} min={1} max={100}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Label Density (labels/100nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Label Density (labels/100nm)</span>
           <input type="number" value={labelDensity} onChange={e => setLabelDensity(+e.target.value)} min={0.5} max={50} step="0.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Number of Frames</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Number of Frames</span>
           <input type="number" value={numFrames} onChange={e => setNumFrames(+e.target.value)} min={1000} max={100000} step="1000"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Pixel Size (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Pixel Size (nm)</span>
           <input type="number" value={pixelSize} onChange={e => setPixelSize(+e.target.value)} min={50} max={300} step="10"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -105,29 +101,26 @@ export default function PALMSTORMPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Formulas</h3>
-        <p className="text-gray-400 text-sm"><code className="text-blue-400">d<sub>diff</sub> = 0.61λ / NA</code></p>
-        <p className="text-gray-400 text-sm"><code className="text-green-400">d<sub>eff</sub> ≈ σ<sub>loc</sub> + d<sub>diff</sub> / ρ</code> where ρ = label density</p>
-        <p className="text-gray-400 text-sm"><code className="text-yellow-400">σ<sub>loc</sub> ≈ s / √N</code> (photon-limited)</p>
-      </div>
+                              </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="bg-gray-900 rounded-lg p-4">
-          <Plot data={chartData} layout={{
+          <ChartPanel data={chartData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "Label Density (per 100nm)", gridcolor: "#374151" },
             yaxis: { title: "Effective Resolution (nm)", gridcolor: "#374151" },
             margin: { t: 30, r: 30, b: 50, l: 70 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
-          <Plot data={precisionData} layout={{
+          <ChartPanel data={precisionData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "Localization Precision (nm)", gridcolor: "#374151" },
             yaxis: { title: "Precision / Diffraction (%)", gridcolor: "#374151" },
             margin: { t: 30, r: 30, b: 50, l: 70 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

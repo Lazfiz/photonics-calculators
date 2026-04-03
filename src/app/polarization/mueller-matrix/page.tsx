@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 // Ideal Mueller matrices for common elements
 const ELEMENTS: Record<string, number[][]> = {
@@ -119,11 +118,8 @@ export default function MuellerMatrixPage() {
   }, [inputStokes, outputStokes]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Mueller Matrix Calculator</h1>
-      <p className="text-gray-400 mb-8">Chain optical elements using Mueller matrices and compute output Stokes vector.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Mueller Matrix Calculator" description="Chain optical elements using Mueller matrices and compute output Stokes vector.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">S_out = M_n · M_(n-1) · … · M₁ · S_in</p>
       </div>
@@ -131,11 +127,11 @@ export default function MuellerMatrixPage() {
       <h2 className="text-lg font-semibold mb-3 text-gray-200">Input Stokes Vector</h2>
       <div className="grid gap-4 grid-cols-4 mb-6">
         {STOKES_LABELS.map((label, i) => (
-          <label key={i} className="block">
-            <span className="text-gray-300 text-sm">{label}</span>
+          <label key={i} className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">{label}</span>
             <input type="number" value={inputStokes[i]} onChange={e => {
               const copy = [...inputStokes]; copy[i] = +e.target.value; setInputStokes(copy);
-            }} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            }} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
           </label>
         ))}
       </div>
@@ -187,15 +183,15 @@ export default function MuellerMatrixPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           barmode: "group",
           xaxis: { gridcolor: "#374151" },
           yaxis: { title: "Stokes Parameter", gridcolor: "#374151" },
           margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

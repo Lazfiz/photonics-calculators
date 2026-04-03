@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FourierSelfCombPage() {
   const [repetitionRate, setRepetitionRate] = useState(250); // MHz
@@ -64,31 +63,28 @@ export default function FourierSelfCombPage() {
   const spacingNm = centerWavelength ** 2 * fRep / c;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Fourier Self-Comb Spectroscopy</h1>
-      <p className="text-gray-400 mb-8">Optical frequency comb from a single microresonator. Dual-comb spectroscopy without two separate lasers.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fourier Self-Comb Spectroscopy" description="Optical frequency comb from a single microresonator. Dual-comb spectroscopy without two separate lasers.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Repetition Rate f_rep (MHz)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Repetition Rate f_rep (MHz)</span>
           <input type="number" value={repetitionRate} onChange={e => setRepetitionRate(+e.target.value)} min={1} max={10000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Center Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Center Wavelength (nm)</span>
           <input type="number" value={centerWavelength} onChange={e => setCenterWavelength(+e.target.value)} min={400} max={3000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Optical Bandwidth (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Optical Bandwidth (nm)</span>
           <input type="number" value={bandwidthNm} onChange={e => setBandwidthNm(+e.target.value)} min={1} max={1000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Number of CEO Offsets</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Number of CEO Offsets</span>
           <input type="number" value={combLines} onChange={e => setCombLines(+e.target.value)} min={3} max={100}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -96,26 +92,26 @@ export default function FourierSelfCombPage() {
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Comb teeth:</span> f_n = f_CEO + n · f_rep</p>
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Mode spacing (λ):</span> Δλ = λ₀² · f_rep / c</p>
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Self-comb condition:</span> D₁ ≠ 0, FSR_anomalous = m · f_rep</p>
-        <p className="text-gray-300 text-sm">Microresonator solitons produce equispaced comb lines enabling DCS with a single device.</p>
+        <p className="text-sm text-gray-300">Microresonator solitons produce equispaced comb lines enabling DCS with a single device.</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Computed Values</h3>
-        <p className="text-gray-300 text-sm"><span className="text-green-400">f_rep:</span> {repetitionRate} MHz</p>
-        <p className="text-gray-300 text-sm"><span className="text-green-400">Mode spacing:</span> {spacingNm.toFixed(4)} nm</p>
-        <p className="text-gray-300 text-sm"><span className="text-green-400">Lines in bandwidth:</span> {Math.floor(bandwidthNm / spacingNm)}</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">f_rep:</span> {repetitionRate} MHz</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">Mode spacing:</span> {spacingNm.toFixed(4)} nm</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">Lines in bandwidth:</span> {Math.floor(bandwidthNm / spacingNm)}</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
           title: { text: "Fourier Self-Comb Spectrum", font: { color: "white" } },
           xaxis: { title: "Frequency (THz)", gridcolor: "#374151" },
           yaxis: { title: "Amplitude (a.u.)", gridcolor: "#374151" },
           margin: { t: 40, r: 20, b: 50, l: 60 },
           showlegend: true, legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
-        }} config={{ responsive: true }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

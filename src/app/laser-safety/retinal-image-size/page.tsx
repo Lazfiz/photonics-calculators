@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function RetinalImageSizePage() {
   const [wavelength, setWavelength] = useState(632);
@@ -107,11 +107,8 @@ export default function RetinalImageSizePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/laser-safety" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Laser Safety</Link>
-      <h1 className="text-3xl font-bold mb-2">Retinal Image Size</h1>
-      <p className="text-gray-400 mb-8">Calculates retinal spot size from corneal beam parameters, including diffraction and geometric contributions per ANSI Z136.1.</p>
-
+    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Retinal Image Size" description="Calculates retinal spot size from corneal beam parameters, including diffraction and geometric contributions per ANSI Z136.1.">
+            
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
@@ -165,7 +162,7 @@ export default function RetinalImageSizePage() {
         <p>α<sub>min</sub> = 1.5 mrad (point source threshold) | α<sub>max</sub> = 100 mrad (extended)</p>
       </div>
 
-      <Plot data={chartData} layout={layout} config={{ responsive: true }} className="w-full h-[400px]" />
-    </div>
+      <ChartPanel data={chartData} layout={layout} className="w-full h-[400px]" />
+    </CalculatorShell>
   );
 }

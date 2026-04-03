@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function EnvironmentalStabilityPage() {
   const [nH, setNH] = useState(2.35);
@@ -109,33 +108,28 @@ export default function EnvironmentalStabilityPage() {
   }, [nH, nL, nSub, nInc, numPairs, designWl, humidityPct, tempC]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/thin-film" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Thin Film</Link>
-      <h1 className="text-3xl font-bold mb-2">Environmental Stability</h1>
-      <p className="text-gray-400 mb-8">
-        Environmental factors shift thin film spectral performance. Temperature changes refractive index
+    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Environmental Stability" description="Environmental factors shift thin film spectral performance. Temperature changes refractive index
         (thermo-optic effect, dn/dT) and layer thickness (thermal expansion, CTE). Humidity causes water
         absorption in porous layers (especially SiO₂), changing both n and d. Dense films (TiO₂, Ta₂O₅)
-        are more environmentally stable. Understanding these shifts is critical for field deployment.
-      </p>
-
+        are more environmentally stable. Understanding these shifts is critical for field deployment.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>H</sub> (e.g. TiO₂)</span>
-          <input type="number" value={nH} onChange={e => setNH(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>L</sub> (e.g. SiO₂)</span>
-          <input type="number" value={nL} onChange={e => setNL(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>substrate</sub></span>
-          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>incident</sub></span>
-          <input type="number" value={nInc} onChange={e => setNInc(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Number of pairs (N)</span>
-          <input type="number" value={numPairs} onChange={e => setNumPairs(Math.max(1, +e.target.value))} min="1" max="20" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Design λ₀ (nm)</span>
-          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} step="10" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Temperature (°C)</span>
-          <input type="number" value={tempC} onChange={e => setTempC(+e.target.value)} step="5" min="-50" max="200" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Relative Humidity (%)</span>
-          <input type="number" value={humidityPct} onChange={e => setHumidityPct(Math.min(100, Math.max(0, +e.target.value)))} step="5" min="0" max="100" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>H</sub> (e.g. TiO₂)</span>
+          <input type="number" value={nH} onChange={e => setNH(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>L</sub> (e.g. SiO₂)</span>
+          <input type="number" value={nL} onChange={e => setNL(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
+          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>incident</sub></span>
+          <input type="number" value={nInc} onChange={e => setNInc(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Number of pairs (N)</span>
+          <input type="number" value={numPairs} onChange={e => setNumPairs(Math.max(1, +e.target.value))} min="1" max="20" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Design λ₀ (nm)</span>
+          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Temperature (°C)</span>
+          <input type="number" value={tempC} onChange={e => setTempC(+e.target.value)} step="5" min="-50" max="200" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Relative Humidity (%)</span>
+          <input type="number" value={humidityPct} onChange={e => setHumidityPct(Math.min(100, Math.max(0, +e.target.value)))} step="5" min="0" max="100" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
@@ -145,24 +139,24 @@ export default function EnvironmentalStabilityPage() {
         <p className="text-gray-300 text-xs mt-1">Total center shift: Δλ/λ₀ ≈ (α + dn/dT·n⁻¹)·ΔT + humidity correction</p>
       </div>
 
-      <Plot data={chartData.mainTraces} layout={{
+      <ChartPanel data={chartData.mainTraces} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         title: { text: "Reflectance Under Environmental Conditions", font: { size: 13 } },
         xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
         yaxis: { title: "Reflectance", gridcolor: "#374151", range: [0, 1.05] },
         margin: { t: 40, b: 40, l: 50, r: 20 }, autosize: true,
         legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0.3)", font: { size: 10 } },
-      }} className="w-full" style={{ height: 350 }} />
+      }} />
 
       <div className="h-6" />
 
-      <Plot data={[{ x: chartData.tempRange, y: chartData.shiftVsTemp, type: "scatter" as const, mode: "lines" as const, name: "Δλ_center", line: { color: "#fb923c", width: 2 } }]} layout={{
+      <ChartPanel data={[{ x: chartData.tempRange, y: chartData.shiftVsTemp, type: "scatter" as const, mode: "lines" as const, name: "Δλ_center", line: { color: "#fb923c", width: 2 } }]} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         title: { text: "Center Wavelength Shift vs Temperature", font: { size: 13 } },
         xaxis: { title: "Temperature (°C)", gridcolor: "#374151" },
         yaxis: { title: "Δλ (nm)", gridcolor: "#374151" },
         margin: { t: 40, b: 40, l: 50, r: 20 }, autosize: true,
-      }} className="w-full" style={{ height: 300 }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

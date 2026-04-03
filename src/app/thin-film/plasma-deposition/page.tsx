@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function PlasmaDepositionPage() {
   const [power, setPower] = useState(500);
@@ -83,28 +82,25 @@ export default function PlasmaDepositionPage() {
   }, [power, electrodeGap, gasType]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/thin-film" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Thin Film</Link>
-      <h1 className="text-3xl font-bold mb-2">Plasma Deposition</h1>
-      <p className="text-gray-400 mb-8">Model plasma-enhanced deposition parameters: electron temperature, ion density, sheath voltage, and deposition rate.</p>
-
+    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Plasma Deposition" description="Model plasma-enhanced deposition parameters: electron temperature, ion density, sheath voltage, and deposition rate.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Gas Type</span>
-          <select value={gasType} onChange={e => setGasType(e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Gas Type</span>
+          <select value={gasType} onChange={e => setGasType(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             {Object.entries(gases).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
           </select></label>
-        <label className="block"><span className="text-gray-300 text-sm">RF Power (W)</span>
-          <input type="number" value={power} onChange={e => setPower(+e.target.value)} step="10" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Pressure (Torr)</span>
-          <input type="number" value={pressure} onChange={e => setPressure(+e.target.value)} step="1e-4" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Gas Flow (sccm)</span>
-          <input type="number" value={gasFlow} onChange={e => setGasFlow(+e.target.value)} step="1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Substrate Temp (°C)</span>
-          <input type="number" value={substrateTemp} onChange={e => setSubstrateTemp(+e.target.value)} step="10" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">RF Frequency (MHz)</span>
-          <input type="number" value={frequency} onChange={e => setFrequency(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Electrode Gap (cm)</span>
-          <input type="number" value={electrodeGap} onChange={e => setElectrodeGap(+e.target.value)} step="0.5" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">RF Power (W)</span>
+          <input type="number" value={power} onChange={e => setPower(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pressure (Torr)</span>
+          <input type="number" value={pressure} onChange={e => setPressure(+e.target.value)} step="1e-4" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Gas Flow (sccm)</span>
+          <input type="number" value={gasFlow} onChange={e => setGasFlow(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Substrate Temp (°C)</span>
+          <input type="number" value={substrateTemp} onChange={e => setSubstrateTemp(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">RF Frequency (MHz)</span>
+          <input type="number" value={frequency} onChange={e => setFrequency(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Electrode Gap (cm)</span>
+          <input type="number" value={electrodeGap} onChange={e => setElectrodeGap(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
@@ -126,13 +122,13 @@ export default function PlasmaDepositionPage() {
         <p>λ<sub>D</sub> = 69·√(T<sub>e</sub>/n<sub>e</sub>) [m] (Debye length)</p>
       </div>
 
-      <Plot data={sweepData} layout={{
+      <ChartPanel data={sweepData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Pressure (mTorr)", gridcolor: "#374151", type: "log" },
         yaxis: { title: "Te (eV)", gridcolor: "#374151", side: "left" },
         yaxis2: { title: "Dep Rate (nm/s)", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 50, r: 50 }, autosize: true, legend: { x: 0.01, y: 0.99 }
-      }} className="w-full" style={{ height: 400 }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

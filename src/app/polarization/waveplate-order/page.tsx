@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function WaveplateOrderPage() {
   const [wavelength, setWavelength] = useState(550); // nm
@@ -42,11 +41,8 @@ export default function WaveplateOrderPage() {
   }, [wavelength, birefringence]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:underline mb-6 inline-block">← Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Waveplate Order</h1>
-      <p className="text-gray-400 mb-6">Calculate waveplate order, retardation, and wavelength-dependent performance.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Waveplate Order" description="Calculate waveplate order, retardation, and wavelength-dependent performance.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Parameters</h2>
@@ -80,33 +76,31 @@ export default function WaveplateOrderPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Transmission Between Crossed Polarizers</h2>
-          <Plot
-            data={[{ type: "scatter" as const, mode: "lines" as const, x: results.wls, y: results.transmission, line: { color: "#3b82f6", width: 2 }, fill: "tozeroy", fillcolor: "rgba(59,130,246,0.1)" }]}
+          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.wls, y: results.transmission, line: { color: "#3b82f6", width: 2 }, fill: "tozeroy", fillcolor: "rgba(59,130,246,0.1)" }]}
             layout={{
               xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Transmission", color: "#9ca3af", gridcolor: "#374151", range: [0, 1.05] },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Phase Retardation vs Wavelength</h2>
-          <Plot
-            data={[{ type: "scatter" as const, mode: "lines" as const, x: results.wls, y: results.phaseVsWl, line: { color: "#22c55e", width: 2 } }]}
+          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.wls, y: results.phaseVsWl, line: { color: "#22c55e", width: 2 } }]}
             layout={{
               xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Phase (°)", color: "#9ca3af", gridcolor: "#374151", range: [0, 360] },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

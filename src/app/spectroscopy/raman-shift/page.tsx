@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function RamanShiftPage() {
   const [laserWavelength, setLaserWavelength] = useState(532);
@@ -40,31 +39,28 @@ export default function RamanShiftPage() {
   const frequencyDiffTHz = energyDiffEv * 241.799; // eV to THz
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Raman Shift Calculator</h1>
-      <p className="text-gray-400 mb-8">Convert between Raman shift (cm⁻¹), scattered wavelength, and energy for any excitation laser.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Raman Shift Calculator" description="Convert between Raman shift (cm⁻¹), scattered wavelength, and energy for any excitation laser.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Laser Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Laser Wavelength (nm)</span>
           <input type="number" value={laserWavelength} onChange={e => setLaserWavelength(+e.target.value)} min="200" max="2000"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Raman Shift (cm⁻¹)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Raman Shift (cm⁻¹)</span>
           <input type="number" value={ramanShiftCm} onChange={e => setRamanShiftCm(+e.target.value)} min="0" max="5000"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Plot Range Min (cm⁻¹)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Plot Range Min (cm⁻¹)</span>
           <input type="number" value={minShift} onChange={e => setMinShift(+e.target.value)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Plot Range Max (cm⁻¹)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Plot Range Max (cm⁻¹)</span>
           <input type="number" value={maxShift} onChange={e => setMaxShift(+e.target.value)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -101,13 +97,13 @@ export default function RamanShiftPage() {
         <p><span className="text-red-400">Anti-Stokes:</span> ν̃<sub>as</sub> = ν̃<sub>laser</sub> + Δν̃ → λ<sub>as</sub> = 10⁷ / ν̃<sub>as</sub></p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" },
         xaxis: { title: "Raman Shift (cm⁻¹)", gridcolor: "#374151" },
         yaxis: { title: "Scattered Wavelength (nm)", gridcolor: "#374151" },
         margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { bgcolor: "transparent" },
-      }} config={{ responsive: true, displayModeBar: false }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

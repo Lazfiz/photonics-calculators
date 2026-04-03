@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SlabLaserPage() {
   const [slabWidth, setSlabWidth] = useState(10); // mm
@@ -103,11 +102,8 @@ export default function SlabLaserPage() {
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-6xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <Link href="/" className="text-blue-400 hover:text-blue-300">← Home</Link>
-        <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300">← Wave Optics</Link>
       </div>
-      <h1 className="text-3xl font-bold mb-2">🪨 Slab Laser Design</h1>
-      <p className="text-gray-400 mb-6">Zigzag slab laser geometry — thermal management, mode control, and extraction efficiency.</p>
-
+            
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Slab Width (mm)</label><input type="number" className={inputStyle} value={slabWidth} onChange={e => setSlabWidth(+e.target.value)} /></div>
         <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Slab Height / Thin (mm)</label><input type="number" className={inputStyle} value={slabHeight} onChange={e => setSlabHeight(+e.target.value)} step={0.5} /></div>
@@ -137,10 +133,10 @@ export default function SlabLaserPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Temperature Profile (thin dimension)</h3><Plot data={tempProfile} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "y (mm)" }, yaxis: { ...plotLayout.yaxis, title: "ΔT (K)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Output Power vs Pump</h3><Plot data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output (W)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">η_slope vs Slab Length</h3><Plot data={extractVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Length (mm)" }, yaxis: { ...plotLayout.yaxis, title: "η_slope (%)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Mode Size vs Bounces</h3><Plot data={modeVsBounces} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Bounces" }, yaxis: { ...plotLayout.yaxis, title: "Mode (mm)" } }} config={{ responsive: true }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Temperature Profile (thin dimension)</h3><ChartPanel data={tempProfile} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "y (mm)" }, yaxis: { ...plotLayout.yaxis, title: "ΔT (K)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Output Power vs Pump</h3><ChartPanel data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output (W)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">η_slope vs Slab Length</h3><ChartPanel data={extractVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Length (mm)" }, yaxis: { ...plotLayout.yaxis, title: "η_slope (%)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Mode Size vs Bounces</h3><ChartPanel data={modeVsBounces} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Bounces" }, yaxis: { ...plotLayout.yaxis, title: "Mode (mm)" } }} /></div>
       </div>
     </div>
   );

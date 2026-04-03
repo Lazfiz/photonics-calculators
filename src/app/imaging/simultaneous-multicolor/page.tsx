@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 const COLORS = ["#f87171", "#34d399", "#60a5fa", "#fbbf24", "#a78bfa", "#f472b6"];
 
@@ -80,11 +79,8 @@ export default function SimultaneousMulticolorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Imaging</Link>
-      <h1 className="text-3xl font-bold mb-2">Simultaneous Multicolor Imaging</h1>
-      <p className="text-gray-400 mb-6">Calculate spectral separation, crosstalk, timing budgets, and SNR for multi-channel fluorescence imaging.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Simultaneous Multicolor Imaging" description="Calculate spectral separation, crosstalk, timing budgets, and SNR for multi-channel fluorescence imaging.">
+            
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Effective Pixel</p>
@@ -105,47 +101,47 @@ export default function SimultaneousMulticolorPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Number of Channels (1–6)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Number of Channels (1–6)</span>
           <input type="number" value={numChannels} onChange={e => setNumChannels(Math.max(1, Math.min(6, +e.target.value)))} min={1} max={6}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Base Crosstalk (%)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Base Crosstalk (%)</span>
           <input type="number" value={crosstalk} onChange={e => setCrosstalk(+e.target.value)} min={0} max={50} step="0.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Exposure Time (ms)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Exposure Time (ms)</span>
           <input type="number" value={exposureMs} onChange={e => setExposureMs(+e.target.value)} min={1} step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Pixel Size (µm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Pixel Size (µm)</span>
           <input type="number" value={pixelSize} onChange={e => setPixelSize(+e.target.value)} min={1} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Binning</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Binning</span>
           <select value={binning} onChange={e => setBinning(+e.target.value)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value={1}>1×1</option><option value={2}>2×2</option><option value={4}>4×4</option>
           </select>
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Quantum Efficiency (%)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Quantum Efficiency (%)</span>
           <input type="number" value={quantumEff} onChange={e => setQuantumEff(+e.target.value)} min={10} max={100}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Read Noise (e⁻)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Read Noise (e⁻)</span>
           <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} min={0.1} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Dark Current (e⁻/pix/s)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Dark Current (e⁻/pix/s)</span>
           <input type="number" value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)} min={0} step="0.001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -175,26 +171,26 @@ export default function SimultaneousMulticolorPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-2">Emission Spectra & Separation</h3>
-          <Plot data={spectralData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          <ChartPanel data={spectralData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
             xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151" },
             margin: { t: 30, r: 20, b: 50, l: 50 }, legend: { font: { size: 10 } },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-2">Crosstalk Matrix (%)</h3>
-          <Plot data={crosstalkData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          <ChartPanel data={crosstalkData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
             xaxis: { title: "Detector Channel" }, yaxis: { title: "Dye Channel" },
             margin: { t: 30, r: 80, b: 50, l: 50 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-sm font-semibold mb-2">Frame Rate vs Exposure Time</h3>
-        <Plot data={timingData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+        <ChartPanel data={timingData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
           xaxis: { title: "Exposure (ms)", gridcolor: "#374151" }, yaxis: { title: "Max Frame Rate (fps)", gridcolor: "#374151" },
           margin: { t: 30, r: 20, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -206,6 +202,6 @@ export default function SimultaneousMulticolorPage() {
           <p><span className="text-blue-400">Crosstalk:</span> CT(i,j) = overlap(Emission_i, Filter_j) × 100%</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

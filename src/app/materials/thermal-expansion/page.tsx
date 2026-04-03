@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+
 
 interface Material {
   name: string;
@@ -41,11 +42,8 @@ export default function ThermalExpansionPage() {
   const strain = alpha * 1e-6 * dT;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Thermal Expansion</h1>
-      <p className="text-gray-400 mb-6">ΔL = α · ΔT · L — dimensional change from temperature</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Thermal Expansion" description="ΔL = α · ΔT · L — dimensional change from temperature">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">CTE α (×10⁻⁶/K)</label>
@@ -103,6 +101,6 @@ export default function ThermalExpansionPage() {
           </tbody>
         </table>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

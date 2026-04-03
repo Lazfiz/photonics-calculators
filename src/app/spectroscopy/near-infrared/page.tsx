@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function NearInfraredPage() {
   const [wavelengthStart, setWavelengthStart] = useState(780);
@@ -62,31 +61,28 @@ export default function NearInfraredPage() {
   const region = wavelengthEnd <= 1100 ? "NIR-A (780-1100 nm)" : wavelengthStart >= 1100 && wavelengthEnd <= 1350 ? "NIR-B (1100-1350 nm)" : wavelengthStart >= 1350 ? "NIR-C (1350-2500 nm)" : "Multi-region";
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Near-Infrared (NIR) Spectroscopy</h1>
-      <p className="text-gray-400 mb-8">Overtone and combination band analysis for non-destructive composition measurement.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Near-Infrared (NIR) Spectroscopy" description="Overtone and combination band analysis for non-destructive composition measurement.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength Start (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength Start (nm)</span>
           <input type="number" value={wavelengthStart} onChange={e => setWavelengthStart(+e.target.value)} min={780} max={2500}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength End (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength End (nm)</span>
           <input type="number" value={wavelengthEnd} onChange={e => setWavelengthEnd(+e.target.value)} min={780} max={2500}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Path Length (cm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Path Length (cm)</span>
           <input type="number" value={pathLength} onChange={e => setPathLength(+e.target.value)} min={0.01} max={10} step={0.1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Water Content (fraction)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Water Content (fraction)</span>
           <input type="number" value={waterContent} onChange={e => setWaterContent(+e.target.value)} min={0} max={1} step={0.05}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -95,33 +91,30 @@ export default function NearInfraredPage() {
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Overtone:</span> ν̃<sub>n</sub> ≈ n × ν̃<sub>fundamental</sub> × (1 − χₑ(n²−1))</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Combination:</span> ν̃<sub>comb</sub> = ν̃₁ + ν̃₂</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Intensity:</span> I<sub>n</sub> ∝ 1/n² (anharmonic decay)</p>
-        <p className="text-gray-300 text-sm"><span className="text-blue-400 font-mono">Modified Beer-Lambert:</span> A = εcL + G (scattering term)</p>
+        <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">Modified Beer-Lambert:</span> A = εcL + G (scattering term)</p>
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">Spectral Region</p>
-          <p className="text-lg font-bold text-blue-400">{region}</p>
+                    <p className="text-lg font-bold text-blue-400">{region}</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">Wavenumber Range</p>
-          <p className="text-lg font-bold text-green-400">{(1e7 / wavelengthEnd).toFixed(0)}–{(1e7 / wavelengthStart).toFixed(0)} cm⁻¹</p>
+                    <p className="text-lg font-bold text-green-400">{(1e7 / wavelengthEnd).toFixed(0)}–{(1e7 / wavelengthStart).toFixed(0)} cm⁻¹</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">Scattering</p>
-          <p className="text-lg font-bold text-yellow-400">μ'<sub>s</sub> = {scatteringCoeff}</p>
+                    <p className="text-lg font-bold text-yellow-400">μ'<sub>s</sub> = {scatteringCoeff}</p>
         </div>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">NIR Absorption Spectrum</h3>
-        <Plot data={spectrumData} layout={{
+        <ChartPanel data={spectrumData} layout={{
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151", color: "#9ca3af" },
           yaxis: { title: "Absorbance", gridcolor: "#374151", color: "#9ca3af" },
           yaxis2: { title: "Transmittance %", overlaying: "y", side: "right", gridcolor: "#374151", color: "#9ca3af" },
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#e5e7eb" }, margin: { t: 20 },
           legend: { orientation: "h", y: -0.2 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
@@ -130,11 +123,10 @@ export default function NearInfraredPage() {
           {nirBands.map(b => (
             <div key={b.name} className="bg-gray-800 rounded p-2">
               <span className="text-green-400">{b.name}</span>
-              <p className="text-gray-400">{b.center} nm | ε = {b.eps}</p>
-            </div>
+                          </div>
           ))}
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
@@ -78,11 +77,8 @@ export default function CircularDichroismPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:underline mb-6 inline-block">← Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Circular Dichroism</h1>
-      <p className="text-gray-400 mb-6">Calculate CD parameters: ΔA, Δε, molar ellipticity, and g-factor from absorbance of left and right circularly polarized light.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Circular Dichroism" description="Calculate CD parameters: ΔA, Δε, molar ellipticity, and g-factor from absorbance of left and right circularly polarized light.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Sample Parameters</h2>
@@ -171,9 +167,9 @@ export default function CircularDichroismPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mt-6">
         <h2 className="text-lg font-semibold mb-4">Simulated CD Spectrum (Protein)</h2>
-        <Plot data={[
+        <ChartPanel data={[
           { x: cdSpectrum.wls, y: cdSpectrum.cdVals, type: "scatter", mode: "lines", line: { color: "#3b82f6", width: 2 } },
-        ]} layout={{ ...plotLayout, height: 300, yaxis: { ...plotLayout.yaxis, title: "[θ] (deg·cm²·dmol⁻¹)" } }} config={{ displayModeBar: false }} />
+        ]} layout={{ ...plotLayout, height: 300, yaxis: { ...plotLayout.yaxis, title: "[θ] (deg·cm²·dmol⁻¹)" } }} />
         <div className="flex gap-4 mt-3 text-xs text-gray-400">
           <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-blue-400 inline-block" /> α-helix: negative at 208, 222 nm</span>
           <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-green-400 inline-block" /> β-sheet: negative at 218 nm</span>
@@ -191,6 +187,6 @@ export default function CircularDichroismPage() {
           <p>For proteins: α-helix signature at 208, 222 nm (negative)</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

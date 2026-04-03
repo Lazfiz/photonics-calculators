@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface MOMaterial {
   name: string;
@@ -126,11 +125,8 @@ export default function MagnetoOpticPage() {
   }, [selected, wavelength]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Magneto-Optic Materials</h1>
-      <p className="text-gray-400 mb-6">Faraday rotation, Verdet constants, and isolator design calculations</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Magneto-Optic Materials" description="Faraday rotation, Verdet constants, and isolator design calculations">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Material</label>
@@ -183,8 +179,7 @@ export default function MagnetoOpticPage() {
         <p className="text-sm text-gray-400 mt-1">Type: <span className="text-cyan-400 font-bold">{m.type}</span> | Transparency: <span className="text-cyan-400 font-bold">{m.transparencyMin}–{m.transparencyMax} μm</span></p>
       </div>
 
-      <Plot
-        data={verdetSpectrum}
+      <ChartPanel data={verdetSpectrum}
         layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
@@ -193,13 +188,12 @@ export default function MagnetoOpticPage() {
           margin: { t: 20, r: 20, b: 50, l: 60 },
           legend: { orientation: "h", y: -0.35 },
         }}
-        config={{ responsive: true, displayModeBar: false }}
-        style={{ width: "100%", height: 450 }}
+       
+       
       />
 
       <h2 className="text-xl font-bold mt-8 mb-4">|V| Comparison at {wavelength} nm</h2>
-      <Plot
-        data={comparisonBar}
+      <ChartPanel data={comparisonBar}
         layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
@@ -207,9 +201,9 @@ export default function MagnetoOpticPage() {
           yaxis: { title: "|V| (rad/T·m)", gridcolor: "#374151" },
           margin: { t: 20, r: 20, b: 100, l: 60 },
         }}
-        config={{ responsive: true, displayModeBar: false }}
-        style={{ width: "100%", height: 400 }}
+       
+       
       />
-    </div>
+    </CalculatorShell>
   );
 }

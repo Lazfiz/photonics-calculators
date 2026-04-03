@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 const media = [
   { label: "Air", n: 1.0 },
@@ -49,11 +48,8 @@ export default function ResolutionPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:underline mb-6 inline-block">← Imaging &amp; Microscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Resolution Calculator</h1>
-      <p className="text-gray-400 mb-8">Abbe and Rayleigh lateral resolution limits for diffraction-limited imaging.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Resolution Calculator" description="Abbe and Rayleigh lateral resolution limits for diffraction-limited imaging.">
+            
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
@@ -106,8 +102,7 @@ export default function ResolutionPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-4">Resolution vs NA (different wavelengths)</h2>
-        <Plot
-          data={plotData}
+        <ChartPanel data={plotData}
           layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#ccc" },
@@ -116,10 +111,10 @@ export default function ResolutionPage() {
             legend: { font: { size: 10 }, orientation: "h", y: -0.25 },
             margin: { b: 120, l: 60, r: 20, t: 20 },
           }}
-          config={{ responsive: true, displayModeBar: false }}
-          style={{ width: "100%", height: "400px" }}
+         
+         
         />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

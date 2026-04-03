@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function CoherentAntiStokesRamanPage() {
   const [pumpWavelength, setPumpWavelength] = useState(532);
@@ -70,31 +69,28 @@ export default function CoherentAntiStokesRamanPage() {
   const spectralRes = 1 / (coherenceTime * 2.998e10);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Coherent Anti-Stokes Raman Scattering (CARS)</h1>
-      <p className="text-gray-400 mb-8">Four-wave mixing process for label-free vibrational imaging with chemical specificity.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Coherent Anti-Stokes Raman Scattering (CARS)" description="Four-wave mixing process for label-free vibrational imaging with chemical specificity.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Pump Wavelength ω₁ (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Pump Wavelength ω₁ (nm)</span>
           <input type="number" value={pumpWavelength} onChange={e => setPumpWavelength(+e.target.value)} min={200} max={2000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Stokes Wavelength ω₂ (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Stokes Wavelength ω₂ (nm)</span>
           <input type="number" value={stokesWavelength} onChange={e => setStokesWavelength(+e.target.value)} min={pumpWavelength + 1} max={2000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Raman Shift ν̃ (cm⁻¹)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Raman Shift ν̃ (cm⁻¹)</span>
           <input type="number" value={ramanShift} onChange={e => setRamanShift(+e.target.value)} min={100} max={4500}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Pulse Width (ps)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Pulse Width (ps)</span>
           <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} min={0.01} max={100}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -103,36 +99,32 @@ export default function CoherentAntiStokesRamanPage() {
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Energy conservation:</span> ω<sub>AS</sub> = 2ω₁ − ω₂</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Raman shift:</span> ν̃ = 1/λ₁ − 1/λ₂ (cm⁻¹)</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Third-order susceptibility:</span> χ⁽³⁾ = χ<sub>R</sub> + χ<sub>NR</sub></p>
-        <p className="text-gray-300 text-sm"><span className="text-blue-400 font-mono">CARS intensity:</span> I<sub>CARS</sub> ∝ |χ⁽³⁾|² × I₁² × I₂</p>
+        <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">CARS intensity:</span> I<sub>CARS</sub> ∝ |χ⁽³⁾|² × I₁² × I₂</p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">Anti-Stokes λ</p>
-          <p className="text-xl font-bold text-blue-400">{antiStokesWL ? antiStokesWL.toFixed(1) : "—"} nm</p>
+                    <p className="text-xl font-bold text-blue-400">{antiStokesWL ? antiStokesWL.toFixed(1) : "—"} nm</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">Actual Raman Shift</p>
-          <p className="text-xl font-bold text-green-400">{actualShift.toFixed(0)} cm⁻¹</p>
+                    <p className="text-xl font-bold text-green-400">{actualShift.toFixed(0)} cm⁻¹</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">Spectral Resolution</p>
-          <p className="text-xl font-bold text-yellow-400">{spectralRes.toFixed(1)} cm⁻¹</p>
+                    <p className="text-xl font-bold text-yellow-400">{spectralRes.toFixed(1)} cm⁻¹</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">Coherence Time</p>
-          <p className="text-xl font-bold text-red-400">{(coherenceTime * 1e12).toFixed(1)} ps</p>
+                    <p className="text-xl font-bold text-red-400">{(coherenceTime * 1e12).toFixed(1)} ps</p>
         </div>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">CARS Spectrum (with non-resonant background)</h3>
-        <Plot data={spectrumData} layout={{
+        <ChartPanel data={spectrumData} layout={{
           xaxis: { title: "Raman Shift (cm⁻¹)", gridcolor: "#374151", color: "#9ca3af" },
           yaxis: { title: "Signal (a.u.)", gridcolor: "#374151", color: "#9ca3af" },
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#e5e7eb" }, margin: { t: 20 },
           legend: { orientation: "h", y: -0.2 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
@@ -144,6 +136,6 @@ export default function CoherentAntiStokesRamanPage() {
           <li>• <strong className="text-yellow-400">Disadvantages</strong>: non-resonant background, requires two synchronized lasers</li>
         </ul>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

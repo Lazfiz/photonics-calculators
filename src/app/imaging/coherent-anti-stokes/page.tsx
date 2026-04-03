@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function CoherentAntiStokesPage() {
   const [pumpWavelength, setPumpWavelength] = useState(800);
@@ -52,11 +51,8 @@ export default function CoherentAntiStokesPage() {
   }, [pumpWavelength]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:underline mb-6 inline-block">← Imaging &amp; Microscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">CARS Imaging Calculator</h1>
-      <p className="text-gray-400 mb-8">Coherent Anti-Stokes Raman Scattering: vibrational shift, CARS wavelength, and laser parameters.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="CARS Imaging Calculator" description="Coherent Anti-Stokes Raman Scattering: vibrational shift, CARS wavelength, and laser parameters.">
+            
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
@@ -112,8 +108,8 @@ export default function CoherentAntiStokesPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-4">Raman Shift &amp; CARS λ vs Stokes Wavelength</h2>
-        <Plot data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Stokes λ (nm)", gridcolor: "#333" }, yaxis: { title: "Raman shift (cm⁻¹)", gridcolor: "#333", side: "left" }, yaxis2: { title: "CARS λ (nm)", gridcolor: "#333", side: "right", overlaying: "y" }, legend: { font: { size: 11 } }, margin: { l: 70, r: 60, t: 20, b: 60 } }} config={{ responsive: true, displayModeBar: false }} style={{ width: "100%", height: "400px" }} />
+        <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Stokes λ (nm)", gridcolor: "#333" }, yaxis: { title: "Raman shift (cm⁻¹)", gridcolor: "#333", side: "left" }, yaxis2: { title: "CARS λ (nm)", gridcolor: "#333", side: "right", overlaying: "y" }, legend: { font: { size: 11 } }, margin: { l: 70, r: 60, t: 20, b: 60 } }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

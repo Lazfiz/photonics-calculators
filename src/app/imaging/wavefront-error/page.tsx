@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function WavefrontErrorPage() {
   const [wavelength, setWavelength] = useState(550);
@@ -44,29 +43,26 @@ export default function WavefrontErrorPage() {
   }, [pvRms, numZernike]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/imaging" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Imaging</Link>
-      <h1 className="text-3xl font-bold mb-2">Wavefront Error Analysis</h1>
-      <p className="text-gray-400 mb-8">Analyze wavefront error in waves RMS, compute Strehl ratio, and check diffraction-limited condition.</p>
-
+    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Wavefront Error Analysis" description="Analyze wavefront error in waves RMS, compute Strehl ratio, and check diffraction-limited condition.">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Reference λ (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Reference λ (nm)</span>
           <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={300} max={2000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">RMS Wavefront Error (λ)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">RMS Wavefront Error (λ)</span>
           <input type="number" value={pvRms} onChange={e => setPvRms(+e.target.value)} min={0} max={2} step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Zernike Terms</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Zernike Terms</span>
           <input type="number" value={numZernike} onChange={e => setNumZernike(+e.target.value)} min={1} max={36}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Status</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Status</span>
           <div className={`mt-1 px-3 py-2 rounded text-center font-bold ${isDiffractionLimited ? "bg-green-900 text-green-400 border border-green-700" : "bg-red-900 text-red-400 border border-red-700"}`}>
             {isDiffractionLimited ? "✓ Diffraction Limited" : "✗ Not Diff. Limited"}
           </div>
@@ -94,29 +90,26 @@ export default function WavefrontErrorPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Formulas</h3>
-        <p className="text-gray-400 text-sm"><code className="text-yellow-400">S ≈ exp(-(2πσ)²)</code> where σ = RMS in waves</p>
-        <p className="text-gray-400 text-sm"><code className="text-green-400">Maréchal criterion: σ &lt; λ/14 ≈ 0.071λ</code></p>
-        <p className="text-gray-400 text-sm"><code className="text-purple-400">PV ≈ 2√N × RMS</code> (RMS to PV estimate)</p>
-      </div>
+                              </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="bg-gray-900 rounded-lg p-4">
-          <Plot data={chartData} layout={{
+          <ChartPanel data={chartData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "RMS Wavefront Error (λ)", gridcolor: "#374151" },
             yaxis: { title: "Strehl Ratio", gridcolor: "#374151", range: [0, 1.1] },
             margin: { t: 30, r: 30, b: 50, l: 70 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
-          <Plot data={zernikeData} layout={{
+          <ChartPanel data={zernikeData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "Zernike Term", gridcolor: "#374151" },
             yaxis: { title: "RMS (λ)", gridcolor: "#374151" },
             margin: { t: 30, r: 30, b: 50, l: 70 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

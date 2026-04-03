@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function GeometricLossPage() {
   const [txBeamDivergence, setTxBeamDivergence] = useState(1);
@@ -42,12 +41,9 @@ export default function GeometricLossPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
-      <Link href="/free-space-comms" className="text-cyan-400 hover:underline text-sm mb-4 inline-block">← Back to Free-Space Comms</Link>
-      <h1 className="text-3xl font-bold mb-6">Geometric Spreading Loss</h1>
-
+      
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
-        <p className="text-gray-400">The beam spreads as it propagates. Geometric loss is the ratio of receiver aperture area to beam cross-section:</p>
-        <p className="text-cyan-300 mt-1 font-mono">L_geo = 10·log₁₀(A_rx / A_beam) = 20·log₁₀(d_rx / d_beam)</p>
+                <p className="text-cyan-300 mt-1 font-mono">L_geo = 10·log₁₀(A_rx / A_beam) = 20·log₁₀(d_rx / d_beam)</p>
         <p className="text-gray-500 mt-1">Beam diameter: d = 2R·tan(θ/2)</p>
       </div>
 
@@ -80,13 +76,13 @@ export default function GeometricLossPage() {
             </div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <Plot data={plotData} layout={{
+            <ChartPanel data={plotData} layout={{
               xaxis: { title: "Range (km)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Loss (dB)", color: "#f43f5e", gridcolor: "#374151" },
               yaxis2: { title: "Beam Dia (m)", color: "#06b6d4", gridcolor: "#374151", overlaying: "y", side: "right" },
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",
               margin: { t: 20, r: 60, b: 40, l: 55 }, font: { color: "#9ca3af" }, legend: { x: 0.02, y: 0.98 },
-            }} config={{ displayModeBar: false }} style={{ width: "100%", height: 300 }} />
+            }} />
           </div>
         </div>
       </div>

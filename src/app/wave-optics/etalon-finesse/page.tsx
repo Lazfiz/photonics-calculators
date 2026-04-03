@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function EtalonFinessePage() {
   const [wavelength, setWavelength] = useState(1550); // nm
@@ -48,25 +47,22 @@ export default function EtalonFinessePage() {
   }, [wavelength, refractiveIndex, thickness, reflectivity, wavelengthRange]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Etalon / Fabry-Pérot Analysis</h1>
-      <p className="text-gray-400 mb-8">Detailed etalon transmission, finesse, and spectral properties.</p>
-
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Etalon / Fabry-Pérot Analysis" description="Detailed etalon transmission, finesse, and spectral properties.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <label className="block"><span className="text-gray-300 text-sm">Center wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Refractive index n</span>
-          <input type="number" value={refractiveIndex} onChange={e => setRefractiveIndex(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Center wavelength (nm)</span>
+          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Refractive index n</span>
+          <input type="number" value={refractiveIndex} onChange={e => setRefractiveIndex(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <label className="block"><span className="text-gray-300 text-sm">Thickness (µm)</span>
-          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Mirror reflectivity R</span>
-          <input type="number" value={reflectivity} onChange={e => setReflectivity(+e.target.value)} step="0.01" min={0} max={0.999} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Thickness (µm)</span>
+          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Mirror reflectivity R</span>
+          <input type="number" value={reflectivity} onChange={e => setReflectivity(+e.target.value)} step="0.01" min={0} max={0.999} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
-      <label className="block mb-8"><span className="text-gray-300 text-sm">Wavelength range ± (nm)</span>
-        <input type="number" value={wavelengthRange} onChange={e => setWavelengthRange(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+      <label className="block mb-8"><span className="text-sm text-gray-300">Wavelength range ± (nm)</span>
+        <input type="number" value={wavelengthRange} onChange={e => setWavelengthRange(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -94,7 +90,7 @@ export default function EtalonFinessePage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={[{
+        <ChartPanel data={[{
           x: calc.lambdas, y: calc.transmission,
           type: "scatter" as const, mode: "lines" as const, name: "Transmission",
           line: { color: "#60a5fa" },
@@ -103,8 +99,8 @@ export default function EtalonFinessePage() {
           font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
           yaxis: { title: "Transmission", gridcolor: "#374151", range: [0, 1.05] },
           margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

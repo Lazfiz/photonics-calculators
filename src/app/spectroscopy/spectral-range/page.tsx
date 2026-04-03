@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SpectralRangePage() {
   const [grooveDensity, setGrooveDensity] = useState(1200); // l/mm
@@ -75,24 +74,21 @@ export default function SpectralRangePage() {
   const pixelResolution = spectralRange / detectorPixels;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Spectral Range Calculator</h1>
-      <p className="text-gray-400 mb-8">Spectral coverage, resolution, and dispersion for a grating-based spectrometer.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Range Calculator" description="Spectral coverage, resolution, and dispersion for a grating-based spectrometer.">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Groove Density (l/mm)</span>
-          <input type="number" value={grooveDensity} onChange={e => setGrooveDensity(+e.target.value)} min={50} step={100} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Order</span>
-          <input type="number" value={order} onChange={e => setOrder(Math.max(1, +e.target.value))} min={1} max={10} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Focal Length (mm)</span>
-          <input type="number" value={focalLength} onChange={e => setFocalLength(+e.target.value)} min={10} step={10} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Detector Width (mm)</span>
-          <input type="number" value={detectorWidth} onChange={e => setDetectorWidth(Math.max(0.1, +e.target.value))} min={0.1} step={1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Detector Pixels</span>
-          <input type="number" value={detectorPixels} onChange={e => setDetectorPixels(Math.max(64, +e.target.value))} min={64} step={256} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Central Diff. Angle (°)</span>
-          <input type="number" value={centralAngle} onChange={e => setCentralAngle(+e.target.value)} min={1} max={80} step={1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Groove Density (l/mm)</span>
+          <input type="number" value={grooveDensity} onChange={e => setGrooveDensity(+e.target.value)} min={50} step={100} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Order</span>
+          <input type="number" value={order} onChange={e => setOrder(Math.max(1, +e.target.value))} min={1} max={10} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Focal Length (mm)</span>
+          <input type="number" value={focalLength} onChange={e => setFocalLength(+e.target.value)} min={10} step={10} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Detector Width (mm)</span>
+          <input type="number" value={detectorWidth} onChange={e => setDetectorWidth(Math.max(0.1, +e.target.value))} min={0.1} step={1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Detector Pixels</span>
+          <input type="number" value={detectorPixels} onChange={e => setDetectorPixels(Math.max(64, +e.target.value))} min={64} step={256} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Central Diff. Angle (°)</span>
+          <input type="number" value={centralAngle} onChange={e => setCentralAngle(+e.target.value)} min={1} max={80} step={1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -121,19 +117,19 @@ export default function SpectralRangePage() {
         <p>Higher groove density → narrower range but higher dispersion & resolution.</p>
       </div>
 
-      <Plot data={chartData.rangeVsDensity} layout={{
+      <ChartPanel data={chartData.rangeVsDensity} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Groove Density (l/mm)", gridcolor: "#374151" },
         yaxis: { title: "Spectral Range (nm)", gridcolor: "#374151" },
         height: 400, margin: { t: 30, b: 40 },
-      }} config={{ responsive: true }} />
+      }} />
 
-      <Plot data={[chartData.dispersionVsWl]} layout={{
+      <ChartPanel data={[chartData.dispersionVsWl]} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
         yaxis: { title: "Dispersion (nm/mm)", gridcolor: "#374151" },
         height: 300, margin: { t: 20, b: 40 },
-      }} config={{ responsive: true }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

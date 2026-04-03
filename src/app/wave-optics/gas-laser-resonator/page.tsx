@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function GasLaserResonatorPage() {
   const [tubeDiameter, setTubeDiameter] = useState(6); // mm
@@ -120,11 +119,8 @@ export default function GasLaserResonatorPage() {
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-6xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <Link href="/" className="text-blue-400 hover:text-blue-300">← Home</Link>
-        <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300">← Wave Optics</Link>
       </div>
-      <h1 className="text-3xl font-bold mb-2">🔴 Gas Laser Resonator</h1>
-      <p className="text-gray-400 mb-6">HeNe, CO₂, and Ar⁺ laser resonator design — stability, gain saturation, and optimal output coupling.</p>
-
+            
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Gas Type</label>
@@ -144,7 +140,7 @@ export default function GasLaserResonatorPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">g₁g₂</div><div className="text-xl font-bold" style={{ color: isStable ? "#34d399" : "#f87171" }}>{g1g2.toFixed(4)}</div></div>
+        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">g₁g₂</div><div className="text-xl font-bold">{g1g2.toFixed(4)}</div></div>
         <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">Beam Waist</div><div className="text-xl font-bold text-blue-400">{beamWaist_um.toFixed(0)} µm</div></div>
         <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">Fresnel #</div><div className="text-xl font-bold text-green-400">{Fresnel.toFixed(2)}</div></div>
         <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">R_opt</div><div className="text-xl font-bold text-yellow-400">{Math.min(1, R_opt).toFixed(4)}</div></div>
@@ -162,9 +158,9 @@ export default function GasLaserResonatorPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Output Power vs Gain</h3><Plot data={saturationData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Gain (m⁻¹)" }, yaxis: { ...plotLayout.yaxis, title: "P_out (W)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">P_out vs OC Reflectivity</h3><Plot data={poutVsR} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "R_oc" }, yaxis: { ...plotLayout.yaxis, title: "P_out (W)" } }} config={{ responsive: true }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4 md:col-span-2"><h3 className="font-semibold mb-2">Optimal OC vs Small-Signal Gain</h3><Plot data={optRData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "g₀ (m⁻¹)" }, yaxis: { ...plotLayout.yaxis, title: "R_opt" } }} config={{ responsive: true }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Output Power vs Gain</h3><ChartPanel data={saturationData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Gain (m⁻¹)" }, yaxis: { ...plotLayout.yaxis, title: "P_out (W)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">P_out vs OC Reflectivity</h3><ChartPanel data={poutVsR} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "R_oc" }, yaxis: { ...plotLayout.yaxis, title: "P_out (W)" } }} /></div>
+        <div className="bg-gray-800 rounded-lg p-4 md:col-span-2"><h3 className="font-semibold mb-2">Optimal OC vs Small-Signal Gain</h3><ChartPanel data={optRData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "g₀ (m⁻¹)" }, yaxis: { ...plotLayout.yaxis, title: "R_opt" } }} /></div>
       </div>
     </div>
   );

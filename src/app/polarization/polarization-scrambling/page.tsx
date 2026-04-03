@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function PolarizationScramblingPage() {
   const [numSegments, setNumSegments] = useState(100);
@@ -89,11 +88,8 @@ export default function PolarizationScramblingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:underline mb-6 inline-block">← Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Polarization Scrambling</h1>
-      <p className="text-gray-400 mb-6">Simulate polarization scrambling: how randomizing polarization state reduces residual polarization.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Polarization Scrambling" description="Simulate polarization scrambling: how randomizing polarization state reduces residual polarization.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Scrambler Settings</h2>
@@ -133,33 +129,33 @@ export default function PolarizationScramblingPage() {
             <div className="mb-3">
               <label className="text-sm text-gray-400 block mb-1">Ellipticity</label>
               <input type="range" min={-1} max={1} step={0.01} value={ellipticity}
-                onChange={(e) => setEllipticity(parseFloat(e.target.value))} className="w-full" />
+                onChange={(e) => setEllipticity(parseFloat(e.target.value))} />
             </div>
           )}
         </div>
 
         <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Stokes Parameters vs Time</h2>
-          <Plot data={[
+          <ChartPanel data={[
             { x: data.times, y: data.s1, name: "S₁", type: "scatter", mode: "lines", line: { color: "#ef4444", width: 1 } },
             { x: data.times, y: data.s2, name: "S₂", type: "scatter", mode: "lines", line: { color: "#22c55e", width: 1 } },
             { x: data.times, y: data.s3, name: "S₃", type: "scatter", mode: "lines", line: { color: "#3b82f6", width: 1 } },
-          ]} layout={{ ...plotLayout, height: 300, xaxis: { ...plotLayout.xaxis, title: "Time (ms)" } }} config={{ displayModeBar: false }} />
+          ]} layout={{ ...plotLayout, height: 300, xaxis: { ...plotLayout.xaxis, title: "Time (ms)" } }} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Scrambler Angle vs Time</h2>
-          <Plot data={[
+          <ChartPanel data={[
             { x: data.times, y: data.angles, type: "scatter", mode: "lines", line: { color: "#a855f7" } },
-          ]} layout={{ ...plotLayout, height: 250, xaxis: { ...plotLayout.xaxis, title: "Time (ms)" }, yaxis: { ...plotLayout.yaxis, title: "Angle (°)" } }} config={{ displayModeBar: false }} />
+          ]} layout={{ ...plotLayout, height: 250, xaxis: { ...plotLayout.xaxis, title: "Time (ms)" }, yaxis: { ...plotLayout.yaxis, title: "Angle (°)" } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Residual DoP vs Segments</h2>
-          <Plot data={[
+          <ChartPanel data={[
             { x: data.residualVsN.map((r) => r.n), y: data.residualVsN.map((r) => r.dop), type: "scatter", mode: "lines", line: { color: "#f59e0b" } },
-          ]} layout={{ ...plotLayout, height: 250, xaxis: { ...plotLayout.xaxis, title: "Number of segments" }, yaxis: { ...plotLayout.yaxis, title: "Residual DoP" } }} config={{ displayModeBar: false }} />
+          ]} layout={{ ...plotLayout, height: 250, xaxis: { ...plotLayout.xaxis, title: "Number of segments" }, yaxis: { ...plotLayout.yaxis, title: "Residual DoP" } }} />
         </div>
       </div>
 
@@ -195,7 +191,7 @@ export default function PolarizationScramblingPage() {
           <p>Residual DoP ∝ 1/√N for random scrambling</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SumFrequencyGenPage() {
   const [visWavelength, setVisWavelength] = useState(532);
@@ -58,31 +57,28 @@ export default function SumFrequencyGenPage() {
   const midSfgNm = c / (visFreq + midIrFreq) * 1e9;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Sum Frequency Generation Spectroscopy</h1>
-      <p className="text-gray-400 mb-8">Surface-specific vibrational probe. SFG is forbidden in centrosymmetric media — only surfaces and interfaces contribute.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Sum Frequency Generation Spectroscopy" description="Surface-specific vibrational probe. SFG is forbidden in centrosymmetric media — only surfaces and interfaces contribute.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Visible Beam Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Visible Beam Wavelength (nm)</span>
           <input type="number" value={visWavelength} onChange={e => setVisWavelength(+e.target.value)} min={300} max={1000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">IR Range Min (cm⁻¹)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">IR Range Min (cm⁻¹)</span>
           <input type="number" value={irMinCm} onChange={e => setIrMinCm(+e.target.value)} min={500} max={5000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">IR Range Max (cm⁻¹)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">IR Range Max (cm⁻¹)</span>
           <input type="number" value={irMaxCm} onChange={e => setIrMaxCm(+e.target.value)} min={500} max={5000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Spectral Points</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Spectral Points</span>
           <input type="number" value={resolution} onChange={e => setResolution(+e.target.value)} min={50} max={1000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -90,17 +86,17 @@ export default function SumFrequencyGenPage() {
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">SFG:</span> ω_SFG = ω_vis + ω_IR</p>
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">SFG λ:</span> 1/λ_SFG = 1/λ_vis + ν̃_IR</p>
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">χ⁽²⁾ selection:</span> I_SFG ∝ |χ^(2)_s + χ^(2)_NR + χ^(2)_res|²</p>
-        <p className="text-gray-300 text-sm">SFG probes the second-order susceptibility χ⁽²⁾ which vanishes in centrosymmetric bulk media.</p>
+        <p className="text-sm text-gray-300">SFG probes the second-order susceptibility χ⁽²⁾ which vanishes in centrosymmetric bulk media.</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Reference Values</h3>
-        <p className="text-gray-300 text-sm"><span className="text-green-400">Mid-range SFG λ:</span> {midSfgNm.toFixed(2)} nm</p>
-        <p className="text-gray-300 text-sm"><span className="text-green-400">IR range:</span> {irMinCm}–{irMaxCm} cm⁻¹</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">Mid-range SFG λ:</span> {midSfgNm.toFixed(2)} nm</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">IR range:</span> {irMinCm}–{irMaxCm} cm⁻¹</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
           title: { text: "SFG Vibrational Spectrum", font: { color: "white" } },
           xaxis: { title: "IR Wavenumber (cm⁻¹)", gridcolor: "#374151" },
@@ -108,8 +104,8 @@ export default function SumFrequencyGenPage() {
           yaxis2: { title: "SFG λ (nm)", gridcolor: "#374151", side: "right", overlaying: "y" },
           margin: { t: 40, r: 60, b: 50, l: 60 },
           showlegend: true, legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
-        }} config={{ responsive: true }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

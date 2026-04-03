@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SurfaceEnhancedRamanPage() {
   const [enhancementFactor, setEnhancementFactor] = useState(1e6);
@@ -61,31 +60,28 @@ export default function SurfaceEnhancedRamanPage() {
   const detectionLimit = normalIntensity / enhancementFactor;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Surface-Enhanced Raman Spectroscopy (SERS)</h1>
-      <p className="text-gray-400 mb-8">EM and chemical enhancement mechanisms, hotspots, and detection limit estimation.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Surface-Enhanced Raman Spectroscopy (SERS)" description="EM and chemical enhancement mechanisms, hotspots, and detection limit estimation.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Enhancement Factor G</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Enhancement Factor G</span>
           <input type="number" value={enhancementFactor} onChange={e => setEnhancementFactor(+e.target.value)} min={1} step={1e4}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Normal Raman Intensity (a.u.)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Normal Raman Intensity (a.u.)</span>
           <input type="number" value={normalIntensity} onChange={e => setNormalIntensity(+e.target.value)} min={0.01} step={0.1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Nanoparticle Radius (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Nanoparticle Radius (nm)</span>
           <input type="number" value={nanoparticleRadius} onChange={e => setNanoparticleRadius(+e.target.value)} min={5} max={200}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Laser Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Laser Wavelength (nm)</span>
           <input type="number" value={laserWavelength} onChange={e => setLaserWavelength(+e.target.value)} min={200} max={2000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -94,43 +90,40 @@ export default function SurfaceEnhancedRamanPage() {
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">EM Enhancement:</span> G<sub>EM</sub> = |E<sub>loc</sub>/E<sub>0</sub>|⁴</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Dipole coupling:</span> |E/E₀|² ~ (a/d)³ (sphere gap model)</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Total:</span> G = G<sub>EM</sub> × G<sub>chem</sub></p>
-        <p className="text-gray-300 text-sm"><span className="text-blue-400 font-mono">Detection limit:</span> I<sub>min</sub> = I<sub>normal</sub> / G</p>
+        <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">Detection limit:</span> I<sub>min</sub> = I<sub>normal</sub> / G</p>
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">E-field Enhancement</p>
-          <p className="text-2xl font-bold text-blue-400">{eFieldEnh.toFixed(1)}×</p>
+                    <p className="text-2xl font-bold text-blue-400">{eFieldEnh.toFixed(1)}×</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">SERS Intensity</p>
-          <p className="text-2xl font-bold text-green-400">{sersIntensity.toExponential(2)}</p>
+                    <p className="text-2xl font-bold text-green-400">{sersIntensity.toExponential(2)}</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">Detection Limit Factor</p>
-          <p className="text-2xl font-bold text-yellow-400">{detectionLimit.toExponential(2)}</p>
+                    <p className="text-2xl font-bold text-yellow-400">{detectionLimit.toExponential(2)}</p>
         </div>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">SERS vs Normal Raman Spectrum</h3>
-        <Plot data={spectrumData} layout={{
+        <ChartPanel data={spectrumData} layout={{
           xaxis: { title: "Raman Shift (cm⁻¹)", gridcolor: "#374151", color: "#9ca3af" },
           yaxis: { title: "Normal Intensity", gridcolor: "#374151", color: "#9ca3af", rangemode: "tozero" },
           yaxis2: { title: "SERS Intensity", overlaying: "y", side: "right", gridcolor: "#374151", color: "#9ca3af" },
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#e5e7eb" }, margin: { t: 20 },
           legend: { orientation: "h", y: -0.2 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">EM Enhancement vs Nanoparticle Radius</h3>
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           xaxis: { title: "Nanoparticle Radius (nm)", gridcolor: "#374151", color: "#9ca3af", type: "log" },
           yaxis: { title: "Enhancement Factor", gridcolor: "#374151", color: "#9ca3af", type: "log" },
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#e5e7eb" }, margin: { t: 20 },
           legend: { orientation: "h", y: -0.2 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
@@ -142,6 +135,6 @@ export default function SurfaceEnhancedRamanPage() {
           <li>• <strong className="text-red-400">Single-molecule SERS</strong>: Achievable at hotspots with G &gt; 10⁹</li>
         </ul>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

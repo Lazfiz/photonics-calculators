@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SputteringDepositionPage() {
   const [targetMaterial, setTargetMaterial] = useState("SiO2");
@@ -92,28 +91,25 @@ export default function SputteringDepositionPage() {
   }, [targetMaterial, gasType]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/thin-film" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Thin Film</Link>
-      <h1 className="text-3xl font-bold mb-2">Sputtering Deposition</h1>
-      <p className="text-gray-400 mb-8">Calculate sputter yield, deposition rate, thermalization, and film stress for magnetron sputtering processes.</p>
-
+    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Sputtering Deposition" description="Calculate sputter yield, deposition rate, thermalization, and film stress for magnetron sputtering processes.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Target Material</span>
-          <select value={targetMaterial} onChange={e => setTargetMaterial(e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Target Material</span>
+          <select value={targetMaterial} onChange={e => setTargetMaterial(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             {Object.entries(targets).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
           </select></label>
-        <label className="block"><span className="text-gray-300 text-sm">Sputter Gas</span>
-          <select value={gasType} onChange={e => setGasType(e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Sputter Gas</span>
+          <select value={gasType} onChange={e => setGasType(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             {Object.entries(gasMasses).map(([k]) => <option key={k} value={k}>{k}</option>)}
           </select></label>
-        <label className="block"><span className="text-gray-300 text-sm">Power (W)</span>
-          <input type="number" value={power} onChange={e => setPower(+e.target.value)} step="10" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Pressure (Torr)</span>
-          <input type="number" value={pressure} onChange={e => setPressure(+e.target.value)} step="1e-4" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Target-Substrate Distance (cm)</span>
-          <input type="number" value={targetSubstrateDist} onChange={e => setTargetSubstrateDist(+e.target.value)} step="0.5" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Substrate Temp (°C)</span>
-          <input type="number" value={substrateTemp} onChange={e => setSubstrateTemp(+e.target.value)} step="10" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Power (W)</span>
+          <input type="number" value={power} onChange={e => setPower(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pressure (Torr)</span>
+          <input type="number" value={pressure} onChange={e => setPressure(+e.target.value)} step="1e-4" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Target-Substrate Distance (cm)</span>
+          <input type="number" value={targetSubstrateDist} onChange={e => setTargetSubstrateDist(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Substrate Temp (°C)</span>
+          <input type="number" value={substrateTemp} onChange={e => setSubstrateTemp(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
@@ -137,13 +133,13 @@ export default function SputteringDepositionPage() {
         <p>λ<sub>mfp</sub> ≈ k<sub>T</sub>/P (mean free path)</p>
       </div>
 
-      <Plot data={sweepData} layout={{
+      <ChartPanel data={sweepData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Power (W)", gridcolor: "#374151" },
         yaxis: { title: "Dep Rate (nm/s)", gridcolor: "#374151", side: "left" },
         yaxis2: { title: "Stress (MPa)", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 50, r: 50 }, autosize: true, legend: { x: 0.01, y: 0.99 }
-      }} className="w-full" style={{ height: 400 }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

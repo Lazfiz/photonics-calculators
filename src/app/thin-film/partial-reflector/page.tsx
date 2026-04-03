@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: number, wavelengths: number[]) {
   const R: number[] = [];
@@ -104,26 +103,21 @@ export default function PartialReflectorPage() {
   const Rdesign = (r1 * r1 + r2 * r2 + 2 * r1 * r2) / (1 + r1 * r1 * r2 * r2 + 2 * r1 * r2);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/thin-film" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Thin Film</Link>
-      <h1 className="text-3xl font-bold mb-2">Partial Reflector Design</h1>
-      <p className="text-gray-400 mb-8">
-        Partial reflectors (output couplers, etalon mirrors) provide controlled reflectance between
-        bare substrate and full HR. A single dielectric layer at QWL gives R determined by n<sub>film</sub>.
-        Adjusting the thickness ratio tunes R via thin-film interference.
-      </p>
-
+    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Partial Reflector Design" description="Partial reflectors (output couplers, etalon mirrors) provide controlled reflectance between
+        bare substrate and full HR. A single dielectric layer at QWL gives R determined by nfilm.
+        Adjusting the thickness ratio tunes R via thin-film interference.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>film</sub></span>
-          <input type="number" value={nFilm} onChange={e => setNFilm(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>substrate</sub></span>
-          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>incident</sub></span>
-          <input type="number" value={nInc} onChange={e => setNInc(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Design λ₀ (nm)</span>
-          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} step="10" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Thickness ratio (d / λ₀/4n)</span>
-          <input type="number" value={thicknessRatio} onChange={e => setThicknessRatio(+e.target.value)} step="0.05" min="0.1" max="3" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>film</sub></span>
+          <input type="number" value={nFilm} onChange={e => setNFilm(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
+          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>incident</sub></span>
+          <input type="number" value={nInc} onChange={e => setNInc(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Design λ₀ (nm)</span>
+          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Thickness ratio (d / λ₀/4n)</span>
+          <input type="number" value={thicknessRatio} onChange={e => setThicknessRatio(+e.target.value)} step="0.05" min="0.1" max="3" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
@@ -132,24 +126,24 @@ export default function PartialReflectorPage() {
         <p className="text-gray-300 text-xs mt-2">R = [r₁² + r₂² + 2r₁r₂cos(2δ)] / [1 + r₁²r₂² + 2r₁r₂cos(2δ)] where δ = 2πn<sub>f</sub>d/λ</p>
       </div>
 
-      <Plot data={chartData.mainTraces} layout={{
+      <ChartPanel data={chartData.mainTraces} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         title: { text: "Reflectance vs Wavelength", font: { size: 13 } },
         xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
         yaxis: { title: "Reflectance", gridcolor: "#374151", range: [0, 1.05] },
         margin: { t: 40, b: 40, l: 50, r: 20 }, autosize: true,
         legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0.3)", font: { size: 10 } },
-      }} className="w-full" style={{ height: 350 }} />
+      }} />
 
       <div className="h-6" />
 
-      <Plot data={[{ x: chartData.nRange, y: chartData.R_vs_n, type: "scatter" as const, mode: "lines" as const, name: "R (QWL)", line: { color: "#34d399", width: 2 } }]} layout={{
+      <ChartPanel data={[{ x: chartData.nRange, y: chartData.R_vs_n, type: "scatter" as const, mode: "lines" as const, name: "R (QWL)", line: { color: "#34d399", width: 2 } }]} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         title: { text: "QWL Reflectance vs Film Index", font: { size: 13 } },
         xaxis: { title: "n_film", gridcolor: "#374151" },
         yaxis: { title: "R (at λ₀)", gridcolor: "#374151", range: [0, 1.05] },
         margin: { t: 40, b: 40, l: 50, r: 20 }, autosize: true,
-      }} className="w-full" style={{ height: 350 }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

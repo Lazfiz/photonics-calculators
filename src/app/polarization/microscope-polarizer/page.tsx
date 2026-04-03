@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function MicroscopePolarizerPage() {
   const [na, setNA] = useState(0.95);
@@ -83,11 +82,8 @@ export default function MicroscopePolarizerPage() {
   }, [na, extinctionRatio]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-5xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Polarization</Link>
-      <h1 className="text-3xl font-bold mb-2">Microscope Polarizer Calculator</h1>
-      <p className="text-gray-400 mb-8">Analyze polarization effects in microscopy: extinction, retardance sensitivity, NA degradation, and Michel-Lévy colors.</p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Microscope Polarizer Calculator" description="Analyze polarization effects in microscopy: extinction, retardance sensitivity, NA degradation, and Michel-Lévy colors.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">T = cos²(θ) [Malus&apos;s law], T<sub>cross</sub> = 1/ER</p>
         <p className="text-gray-300 text-sm font-mono">I<sub>ret</sub>(Γ) = sin²(πΓ/λ) [retardance transmission]</p>
@@ -95,30 +91,30 @@ export default function MicroscopePolarizerPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Objective NA</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Objective NA</span>
           <input type="number" value={na} onChange={e => setNA(+e.target.value)} step="0.05" min="0.1" max="1.4"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10" min="380" max="780"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Extinction Ratio</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Extinction Ratio</span>
           <input type="number" value={extinctionRatio} onChange={e => setExtinctionRatio(+e.target.value)} step="100" min="10" max="100000"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Condenser NA</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Condenser NA</span>
           <input type="number" value={condenserNA} onChange={e => setCondenserNA(+e.target.value)} step="0.05" min="0.1" max="1.4"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Analyzer Angle (°)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Analyzer Angle (°)</span>
           <input type="number" value={analyzerDeg} onChange={e => setAnalyzerDeg(+e.target.value)} min="0" max="180" step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -151,29 +147,29 @@ export default function MicroscopePolarizerPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Malus&apos;s Law (Analyzer Rotation)</h3>
-          <Plot data={intensityData} layout={{
+          <ChartPanel data={intensityData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Analyzer Angle (°)", gridcolor: "#374151" },
             yaxis: { title: "Transmission", gridcolor: "#374151", range: [0, 1.05] },
             margin: { t: 20, r: 20, b: 50, l: 50 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Retardance Transmission (Crossed Pol)</h3>
-          <Plot data={retData} layout={{
+          <ChartPanel data={retData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" },
             xaxis: { title: "Retardance (nm)", gridcolor: "#374151" },
             yaxis: { title: "Transmission", gridcolor: "#374151", range: [0, 1.05] },
             margin: { t: 20, r: 20, b: 50, l: 50 },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
 
       <div className="mt-4 bg-gray-900 rounded-lg p-4">
         <h3 className="text-sm text-gray-400 mb-2">NA Degradation of Extinction</h3>
-        <Plot data={naData} layout={{
+        <ChartPanel data={naData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "NA", gridcolor: "#374151", range: [0, 1.5] },
@@ -182,8 +178,8 @@ export default function MicroscopePolarizerPage() {
           margin: { t: 20, r: 50, b: 50, l: 60 },
           showlegend: true,
           legend: { font: { color: "#9ca3af" } },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

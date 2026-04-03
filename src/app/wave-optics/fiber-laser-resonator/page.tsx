@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FiberLaserResonatorPage() {
   const [fiberLength, setFiberLength] = useState(3); // m
@@ -90,11 +89,8 @@ export default function FiberLaserResonatorPage() {
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-6xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <Link href="/" className="text-blue-400 hover:text-blue-300">← Home</Link>
-        <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300">← Wave Optics</Link>
       </div>
-      <h1 className="text-3xl font-bold mb-2">🔬 Fiber Laser Resonator Design</h1>
-      <p className="text-gray-400 mb-6">Design and analyze fiber laser resonators — threshold, slope efficiency, mode field, and gain.</p>
-
+            
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Fiber Length (m)</label>
@@ -166,15 +162,15 @@ export default function FiberLaserResonatorPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-gray-800 rounded-lg p-4">
           <h3 className="font-semibold mb-2">Output Power vs Pump Power</h3>
-          <Plot data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump Power (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output Power (W)" } }} config={{ responsive: true }} />
+          <ChartPanel data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump Power (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output Power (W)" } }} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <h3 className="font-semibold mb-2">Net Round-Trip Gain vs Fiber Length</h3>
-          <Plot data={gainData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Fiber Length (m)" }, yaxis: { ...plotLayout.yaxis, title: "Net Gain" } }} config={{ responsive: true }} />
+          <ChartPanel data={gainData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Fiber Length (m)" }, yaxis: { ...plotLayout.yaxis, title: "Net Gain" } }} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4 md:col-span-2">
           <h3 className="font-semibold mb-2">Mode Field Diameter vs Wavelength</h3>
-          <Plot data={modeData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "MFD (µm)" } }} config={{ responsive: true }} />
+          <ChartPanel data={modeData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "MFD (µm)" } }} />
         </div>
       </div>
     </div>

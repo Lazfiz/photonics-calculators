@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function BeamWaistMatchingPage() {
   const [wavelength, setWavelength] = useState(1550); // nm
@@ -104,11 +103,8 @@ export default function BeamWaistMatchingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Beam Waist Matching</h1>
-      <p className="text-gray-400 mb-8">Find the optimal lens for coupling one Gaussian mode into another.</p>
-
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Beam Waist Matching" description="Find the optimal lens for coupling one Gaussian mode into another.">
+            
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">M</span> = w₀,out / w₀,in (magnification)</p>
         <p><span className="text-blue-400">z<sub>R</sub></span> = π w₀² / λ</p>
@@ -116,14 +112,14 @@ export default function BeamWaistMatchingPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Input Waist w₀,in (µm)</span>
-          <input type="number" value={w0in} onChange={e => setW0in(+e.target.value)} step="any" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Desired Waist w₀,out (µm)</span>
-          <input type="number" value={w0out} onChange={e => setW0out(+e.target.value)} step="any" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Distance d (mm)</span>
-          <input type="number" value={z} onChange={e => setZ(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
+          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Input Waist w₀,in (µm)</span>
+          <input type="number" value={w0in} onChange={e => setW0in(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Desired Waist w₀,out (µm)</span>
+          <input type="number" value={w0out} onChange={e => setW0out(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Distance d (mm)</span>
+          <input type="number" value={z} onChange={e => setZ(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -147,13 +143,13 @@ export default function BeamWaistMatchingPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-8">
         <h3 className="text-sm text-gray-400 mb-2">Mismatch vs Focal Length</h3>
-        <Plot data={chartData} layout={layout1} config={{ responsive: true, displayModeBar: false }} />
+        <ChartPanel data={chartData} layout={layout1} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <h3 className="text-sm text-gray-400 mb-2">Beam Propagation (with optimal lens)</h3>
-        <Plot data={profileData} layout={layout2} config={{ responsive: true, displayModeBar: false }} />
+        <ChartPanel data={profileData} layout={layout2} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

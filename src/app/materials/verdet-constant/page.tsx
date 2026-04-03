@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface Material {
   name: string;
@@ -63,11 +62,8 @@ export default function VerdetConstantPage() {
   }, [selected]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Verdet Constant</h1>
-      <p className="text-gray-400 mb-6">Faraday rotation: θ = V · B · L, where V ∝ 1/λ² for paramagnetic materials</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Verdet Constant" description="Faraday rotation: θ = V · B · L, where V ∝ 1/λ² for paramagnetic materials">
+            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Material</label>
@@ -112,8 +108,7 @@ export default function VerdetConstantPage() {
         </div>
       </div>
 
-      <Plot
-        data={chartData}
+      <ChartPanel data={chartData}
         layout={{
           paper_bgcolor: "transparent",
           plot_bgcolor: "transparent",
@@ -123,9 +118,9 @@ export default function VerdetConstantPage() {
           margin: { t: 20, r: 20, b: 50, l: 60 },
           legend: { orientation: "h", y: -0.25, font: { size: 9 } },
         }}
-        config={{ responsive: true, displayModeBar: false }}
-        style={{ width: "100%", height: 500 }}
+       
+       
       />
-    </div>
+    </CalculatorShell>
   );
 }

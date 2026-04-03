@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface Crystal {
   name: string;
@@ -121,11 +120,8 @@ export default function CrystalBirefringencePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Crystal Birefringence Data</h1>
-      <p className="text-gray-400 mb-6">Δn = |nₒ − nₑ| for uniaxial and birefringent crystals at selected wavelength</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Crystal Birefringence Data" description="Δn = |nₒ − nₑ| for uniaxial and birefringent crystals at selected wavelength">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Crystal</label>
@@ -165,8 +161,7 @@ export default function CrystalBirefringencePage() {
         <p className="text-sm text-gray-400 mt-1">Retardation at {wavelength} nm for 1 mm: <span className="text-amber-400 font-bold">{(c.dn_ne * 1e6 / wavelength).toFixed(1)} waves</span></p>
       </div>
 
-      <Plot
-        data={birefringenceBar}
+      <ChartPanel data={birefringenceBar}
         layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
@@ -174,12 +169,11 @@ export default function CrystalBirefringencePage() {
           yaxis: { title: "Birefringence Δn", gridcolor: "#374151" },
           margin: { t: 20, r: 20, b: 80, l: 60 },
         }}
-        config={{ responsive: true, displayModeBar: false }}
-        style={{ width: "100%", height: 400 }}
+       
+       
       />
 
-      <Plot
-        data={noNeChart}
+      <ChartPanel data={noNeChart}
         layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
@@ -189,9 +183,9 @@ export default function CrystalBirefringencePage() {
           legend: { orientation: "h", y: -0.3 },
           barmode: "group",
         }}
-        config={{ responsive: true, displayModeBar: false }}
-        style={{ width: "100%", height: 400 }}
+       
+       
       />
-    </div>
+    </CalculatorShell>
   );
 }

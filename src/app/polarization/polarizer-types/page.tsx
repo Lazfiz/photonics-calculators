@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 const POLARIZERS = [
   { name: "Glan-Taylor", er: 100000, transmission: 0.95, damageThreshold: 500, aperture: 10, wavelengthRange: "350–2500", coating: "MgF₂", material: "Calcite" },
@@ -84,15 +83,8 @@ export default function PolarizerTypesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/polarization" className="text-blue-400 hover:underline mb-6 inline-block">
-        ← Polarization
-      </Link>
-      <h1 className="text-3xl font-bold mb-2">Polarizer Types Comparison</h1>
-      <p className="text-gray-400 mb-6">
-        Compare extinction ratio, transmission, damage threshold, and other specs across common polarizer types.
-      </p>
-
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Polarizer Types Comparison" description="Compare extinction ratio, transmission, damage threshold, and other specs across common polarizer types.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Options</h2>
@@ -123,18 +115,18 @@ export default function PolarizerTypesPage() {
 
         <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Extinction Ratio (dB)</h2>
-          <Plot data={[erData]} layout={{ ...plotLayout, height: 250, yaxis: { ...plotLayout.yaxis, title: "ER (dB)" } }} config={{ displayModeBar: false }} />
+          <ChartPanel data={[erData]} layout={{ ...plotLayout, height: 250, yaxis: { ...plotLayout.yaxis, title: "ER (dB)" } }} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Transmission (%)</h2>
-          <Plot data={[transData]} layout={{ ...plotLayout, height: 250, yaxis: { ...plotLayout.yaxis, title: "Transmission (%)" } }} config={{ displayModeBar: false }} />
+          <ChartPanel data={[transData]} layout={{ ...plotLayout, height: 250, yaxis: { ...plotLayout.yaxis, title: "Transmission (%)" } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Damage Threshold (W/cm²)</h2>
-          <Plot data={[damageData]} layout={{ ...plotLayout, height: 250, yaxis: { ...plotLayout.yaxis, title: "Damage (W/cm²)" } }} config={{ displayModeBar: false }} />
+          <ChartPanel data={[damageData]} layout={{ ...plotLayout, height: 250, yaxis: { ...plotLayout.yaxis, title: "Damage (W/cm²)" } }} />
         </div>
       </div>
 
@@ -179,6 +171,6 @@ export default function PolarizerTypesPage() {
           <p>ER_cascaded (dB) = ER₁ + ER₂ + ... (in dB)</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

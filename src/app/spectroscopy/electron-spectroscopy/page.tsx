@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ElectronSpectroscopyPage() {
   const [photonEnergy, setPhotonEnergy] = useState(1486.6); // Al Kα
@@ -81,31 +80,28 @@ export default function ElectronSpectroscopyPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
-      <h1 className="text-3xl font-bold mb-2">Electron Spectroscopy (XPS/UPS)</h1>
-      <p className="text-gray-400 mb-8">Photoelectron spectroscopy for surface composition, chemical state, and electronic structure.</p>
-
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Electron Spectroscopy (XPS/UPS)" description="Photoelectron spectroscopy for surface composition, chemical state, and electronic structure.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Photon Energy (eV)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Photon Energy (eV)</span>
           <input type="number" value={photonEnergy} onChange={e => setPhotonEnergy(+e.target.value)} min={10} max={10000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Binding Energy of Interest (eV)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Binding Energy of Interest (eV)</span>
           <input type="number" value={bindingEnergy} onChange={e => setBindingEnergy(+e.target.value)} min={0} max={2000}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Sample Work Function (eV)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Sample Work Function (eV)</span>
           <input type="number" value={workFunction} onChange={e => setWorkFunction(+e.target.value)} min={1} max={6} step={0.1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Peak FWHM (eV)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Peak FWHM (eV)</span>
           <input type="number" value={fwhm} onChange={e => setFwhm(+e.target.value)} min={0.1} max={5} step={0.1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -114,46 +110,42 @@ export default function ElectronSpectroscopyPage() {
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Einstein:</span> E<sub>k</sub> = hν − E<sub>B</sub> − ϕ</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">IMFP (TPP-2M):</span> λ = 1430/(E<sub>k</sub>²) + 0.054√E<sub>k</sub> Å</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Attenuation:</span> I(d) = I₀ exp(−d/λ)</p>
-        <p className="text-gray-300 text-sm"><span className="text-blue-400 font-mono">Info depth:</span> ~3λ (95% signal from this depth)</p>
+        <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">Info depth:</span> ~3λ (95% signal from this depth)</p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">Kinetic Energy</p>
-          <p className="text-xl font-bold text-blue-400">{kineticEnergy.toFixed(1)} eV</p>
+                    <p className="text-xl font-bold text-blue-400">{kineticEnergy.toFixed(1)} eV</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">IMFP (λ)</p>
-          <p className="text-xl font-bold text-green-400">{imfp.toFixed(1)} Å</p>
+                    <p className="text-xl font-bold text-green-400">{imfp.toFixed(1)} Å</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">Info Depth (3λ)</p>
-          <p className="text-xl font-bold text-yellow-400">{infoDepth.toFixed(1)} Å</p>
+                    <p className="text-xl font-bold text-yellow-400">{infoDepth.toFixed(1)} Å</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <p className="text-gray-400 text-xs">Surface Sensitivity</p>
-          <p className="text-xl font-bold text-red-400">{infoDepth < 30 ? "High" : infoDepth < 60 ? "Medium" : "Bulk"}</p>
+                    <p className="text-xl font-bold text-red-400">{infoDepth < 30 ? "High" : infoDepth < 60 ? "Medium" : "Bulk"}</p>
         </div>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Simulated XPS Spectrum</h3>
-        <Plot data={spectrumData} layout={{
+        <ChartPanel data={spectrumData} layout={{
           xaxis: { title: "Binding Energy (eV)", gridcolor: "#374151", color: "#9ca3af", autorange: "reversed" },
           yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151", color: "#9ca3af" },
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#e5e7eb" }, margin: { t: 20 },
           legend: { orientation: "h", y: -0.2 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Surface Sensitivity (IMFP Attenuation)</h3>
-        <Plot data={depthData} layout={{
+        <ChartPanel data={depthData} layout={{
           xaxis: { title: "Depth (Å)", gridcolor: "#374151", color: "#9ca3af" },
           yaxis: { title: "Signal (%)", gridcolor: "#374151", color: "#9ca3af" },
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#e5e7eb" }, margin: { t: 20 },
           legend: { orientation: "h", y: -0.2 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
@@ -162,8 +154,7 @@ export default function ElectronSpectroscopyPage() {
           {xraySources.map(s => (
             <div key={s.name} className={`rounded p-2 ${parseFloat(s.ke) > 0 ? "bg-gray-800" : "bg-red-900/30"}`}>
               <p className="text-green-400 text-sm font-semibold">{s.name}</p>
-              <p className="text-gray-400 text-xs">{s.energy} eV</p>
-              <p className="text-blue-400 text-xs">E<sub>k</sub> = {s.ke} eV</p>
+                            <p className="text-blue-400 text-xs">E<sub>k</sub> = {s.ke} eV</p>
             </div>
           ))}
         </div>
@@ -192,6 +183,6 @@ export default function ElectronSpectroscopyPage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

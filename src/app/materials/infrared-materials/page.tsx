@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface Material {
   name: string;
@@ -124,11 +123,8 @@ export default function InfraredMaterialsPage() {
   }, [selected]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/materials" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Materials</Link>
-      <h1 className="text-3xl font-bold mb-2">Infrared Materials</h1>
-      <p className="text-gray-400 mb-6">Ge, Si, ZnSe, chalcogenides — refractive index and properties for IR optics</p>
-
+    <CalculatorShell backHref="/materials" backLabel="Materials" title="Infrared Materials" description="Ge, Si, ZnSe, chalcogenides — refractive index and properties for IR optics">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Material</label>
@@ -168,11 +164,9 @@ export default function InfraredMaterialsPage() {
           {inRange ? `✓ ${wavelength} nm = ${(wavelength/1000).toFixed(2)} µm is within ${m.name} transmission range` 
                    : `✗ ${wavelength} nm = ${(wavelength/1000).toFixed(2)} µm is outside ${m.name} transmission range (${m.lambdaMin/1000}–${m.lambdaMax/1000} µm)`}
         </p>
-        <p className="text-gray-400 text-sm mt-1">{m.notes}</p>
-      </div>
+              </div>
 
-      <Plot
-        data={chartData}
+      <ChartPanel data={chartData}
         layout={{
           paper_bgcolor: "transparent",
           plot_bgcolor: "transparent",
@@ -183,9 +177,9 @@ export default function InfraredMaterialsPage() {
           legend: { orientation: "h", y: -0.2, font: { size: 9 } },
           shapes: [{ type: "line", x0: wavelength, x1: wavelength, y0: 1.3, y1: 4.5, line: { color: "#ffffff", width: 1, dash: "dashdot" } }],
         }}
-        config={{ responsive: true, displayModeBar: false }}
-        style={{ width: "100%", height: 500 }}
+       
+       
       />
-    </div>
+    </CalculatorShell>
   );
 }
