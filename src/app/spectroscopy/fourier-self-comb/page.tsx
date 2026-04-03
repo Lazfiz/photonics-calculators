@@ -1,0 +1,121 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+
+const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+
+export default function FourierSelfCombPage() {
+  const [repetitionRate, setRepetitionRate] = useState(250); // MHz
+  const [centerWavelength, setCenterWavelength] = useState(1550); // nm
+  const [bandwidthNm, setBandwidthNm] = useState(100);
+  const [combLines, setCombLines] = useState(50);
+
+  const chartData = useMemo(() => {
+    const c = 3e8;
+    const repFreq = repetitionRate * 1e6;
+    const centerFreq = c / (centerWavelength * 1e-9);
+    const deltaLambda = bandwidthNm * 1e-9;
+    const fMin = c / ((centerWavelength + bandwidthNm / 2) * 1e-9);
+    const fMax = c / ((centerWavelength - bandwidthNm / 2) * 1e-9);
+    const fLow = Math.min(fMin, fMax);
+    const fHigh = Math.max(fMin, fMax);
+
+    // Comb teeth: equally spaced by f_rep, centered on f_ceo
+    const fCeos = Array.from({ length: combLines }, (_, i) => {
+      const offset = (i - combLines / 2) * repFreq * 0.3;
+      return centerFreq + offset;
+    });
+
+    // For each CEO offset, plot comb teeth within bandwidth
+    const traces: any[] = [];
+    fCeos.forEach((fCeo, idx) => {
+      const nMin = Math.ceil((fLow - fCeo) / repFreq);
+      const nMax = Math.floor((fHigh - fCeo) / repFreq);
+      const freqs: number[] = [];
+      const amps: number[] = [];
+      for (let n = nMin; n <= nMax; n++) {
+        const f = fCeo + n * repFreq;
+        if (f >= fLow && f <= fHigh) {
+          freqs.push(f / 1e12); // THz
+          // Gaussian envelope
+          const relF = (f - centerFreq) / (repFreq * combLines * 0.15);
+          amps.push(Math.exp(-relF * relF));
+        }
+      }
+      if (freqs.length > 0) {
+        const alpha = idx === Math.floor(combLines / 2) ? 1.0 : 0.15;
+        traces.push({
+          x: freqs, y: amps, type: "scatter", mode: "lines+markers",
+          name: `f_CEO offset ${(idx - combLines / 2) * repFreq * 0.3 / 1e6:.0f} MHz`,
+          line: { color: `rgba(96,165,250,${alpha})`, width: 1 },
+          marker: { size: idx === Math.floor(combLines / 2) ? 4 : 2 },
+          showlegend: idx === Math.floor(combLines / 2),
+        });
+      }
+    });
+
+    return traces;
+  }, [repetitionRate, centerWavelength, bandwidthNm, combLines]);
+
+  const c = 3e8;
+  const fRep = repetitionRate * 1e6;
+  const spacingNm = centerWavelength ** 2 * fRep / c;
+
+  return (
+    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
+      <Link href="/spectroscopy" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Spectroscopy</Link>
+      <h1 className="text-3xl font-bold mb-2">Fourier Self-Comb Spectroscopy</h1>
+      <p className="text-gray-400 mb-8">Optical frequency comb from a single microresonator. Dual-comb spectroscopy without two separate lasers.</p>
+
+      <div className="grid gap-4 sm:grid-cols-2 mb-8">
+        <label className="block">
+          <span className="text-gray-300 text-sm">Repetition Rate f_rep (MHz)</span>
+          <input type="number" value={repetitionRate} onChange={e => setRepetitionRate(+e.target.value)} min={1} max={10000}
+            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+        <label className="block">
+          <span className="text-gray-300 text-sm">Center Wavelength (nm)</span>
+          <input type="number" value={centerWavelength} onChange={e => setCenterWavelength(+e.target.value)} min={400} max={3000}
+            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+        <label className="block">
+          <span className="text-gray-300 text-sm">Optical Bandwidth (nm)</span>
+          <input type="number" value={bandwidthNm} onChange={e => setBandwidthNm(+e.target.value)} min={1} max={1000}
+            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+        <label className="block">
+          <span className="text-gray-300 text-sm">Number of CEO Offsets</span>
+          <input type="number" value={combLines} onChange={e => setCombLines(+e.target.value)} min={3} max={100}
+            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+      </div>
+
+      <div className="bg-gray-900 rounded-lg p-4 mb-6">
+        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Comb teeth:</span> f_n = f_CEO + n · f_rep</p>
+        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Mode spacing (λ):</span> Δλ = λ₀² · f_rep / c</p>
+        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Self-comb condition:</span> D₁ ≠ 0, FSR_anomalous = m · f_rep</p>
+        <p className="text-gray-300 text-sm">Microresonator solitons produce equispaced comb lines enabling DCS with a single device.</p>
+      </div>
+
+      <div className="bg-gray-900 rounded-lg p-4 mb-6">
+        <h3 className="text-lg font-semibold mb-2">Computed Values</h3>
+        <p className="text-gray-300 text-sm"><span className="text-green-400">f_rep:</span> {repetitionRate} MHz</p>
+        <p className="text-gray-300 text-sm"><span className="text-green-400">Mode spacing:</span> {spacingNm.toFixed(4)} nm</p>
+        <p className="text-gray-300 text-sm"><span className="text-green-400">Lines in bandwidth:</span> {Math.floor(bandwidthNm / spacingNm)}</p>
+      </div>
+
+      <div className="bg-gray-900 rounded-lg p-4">
+        <Plot data={chartData} layout={{
+          paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
+          title: { text: "Fourier Self-Comb Spectrum", font: { color: "white" } },
+          xaxis: { title: "Frequency (THz)", gridcolor: "#374151" },
+          yaxis: { title: "Amplitude (a.u.)", gridcolor: "#374151" },
+          margin: { t: 40, r: 20, b: 50, l: 60 },
+          showlegend: true, legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
+        }} config={{ responsive: true }} />
+      </div>
+    </div>
+  );
+}
