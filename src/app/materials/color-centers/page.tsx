@@ -85,8 +85,8 @@ export default function ColorCentersPage() {
       </div>
 
       <div className="mt-8 bg-gray-900 rounded-lg p-4 text-sm text-gray-400">
-        <p className="font-mono bg-gray-800 p-2 rounded mb-2">σ(λ) = σ<sub>peak</sub> · exp[−(λ − λ₀)² / 2σ²] | α = N · σ<sub>abs</sub></p>
-        <p className="font-mono bg-gray-800 p-2 rounded">Quantum efficiency: η = σ<sub>em</sub> / σ<sub>abs</sub> | Radiative rate: R = N<sub>excited</sub> / τ<sub>rad</sub></p>
+        <p className="font-mono bg-gray-800 p-2 rounded mb-2">σ(λ) = σ_peak × exp(-(λ - λ0)² / 2σ²) | α = N × σ_abs</p>
+        <p className="font-mono bg-gray-800 p-2 rounded">Quantum efficiency: η = σ_em / σ_abs | Radiative rate: R = N_excited / τ_rad</p>
         <div className="mt-3 text-xs">
           <p><strong>NV⁻ centers</strong> in diamond: spin qubits, single-photon sources. ZPL at 637 nm, zero-phonon line with phonon sideband.</p>
           <p><strong>SiV⁻ centers</strong>: ultra-narrow ZPL (~5 nm), high Debye-Waller factor (>0.7).</p>

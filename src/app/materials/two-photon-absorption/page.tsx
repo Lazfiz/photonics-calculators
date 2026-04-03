@@ -104,7 +104,7 @@ export default function TwoPhotonAbsorptionPage() {
       <div className="mt-8 bg-gray-900 rounded-lg p-4 text-sm text-gray-400">
         <p className="font-mono bg-gray-800 p-2 rounded mb-2">dI/dz = −β₂PA · I² | T = exp(−β₂PA · I₀ · L<sub>eff</sub>)</p>
         <p className="font-mono bg-gray-800 p-2 rounded">L<sub>eff</sub> = [1 − exp(−α₂PA · L)] / α₂PA | α₂PA = β₂PA · I</p>
-        <p className="mt-2 text-xs">Bandgap wavelength: λ_g = {mat.lambda_g} nm. Two-photon absorption occurs when 2ℏω > E_g, i.e., λ < 2λ_g.</p>
+        <p className="mt-2 text-xs">Bandgap wavelength: λ_g = {mat.lambda_g} nm. Two-photon absorption occurs when 2·ℏ·ω &gt; E_g, i.e., λ &lt; 2·λ_g.</p>
       </div>
     </div>
   );
