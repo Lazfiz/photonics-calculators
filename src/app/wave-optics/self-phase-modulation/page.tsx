@@ -37,11 +37,11 @@ export default function SelfPhaseModulationPage() {
   const timeData = useMemo(() => {
     const t = Array.from({ length: 300 }, (_, i) => (i - 150) * 3 * pulseDuration * 1e-15 / 150);
     const envelope = t.map(ti => {
-      if (pulseShape === "gaussian") return Math.exp(-ti ** 2 / (2 * tau ** 2));
+      if (pulseShape === "gaussian") return Math.exp(-(ti ** 2) / (2 * tau ** 2));
       return 1 / Math.cosh(ti / tau);
     });
     const phase = t.map(ti => {
-      if (pulseShape === "gaussian") return phiMax * Math.exp(-ti ** 2 / (2 * tau ** 2));
+      if (pulseShape === "gaussian") return phiMax * Math.exp(-(ti ** 2) / (2 * tau ** 2));
       return phiMax * (1 / Math.cosh(ti / tau)) ** 2;
     });
     const chirp = t.map((ti, i) => {
@@ -63,9 +63,9 @@ export default function SelfPhaseModulationPage() {
     const spec = omega.map(w => {
       // SPM creates oscillatory structure; approximate with broadened Gaussian
       const broadenedSigma = sigma * broadening;
-      const base = Math.exp(-(w * 1e15) ** 2 / (2 * broadenedSigma ** 2));
+      const base = Math.exp(-((w * 1e15) ** 2) / (2 * broadenedSigma ** 2));
       // Add SPM modulation
-      const modulation = phiMax > 0.5 ? 0.7 + 0.3 * Math.cos(phiMax * Math.exp(-(w * 1e15) ** 2 / (2 * sigma ** 2))) : 1;
+      const modulation = phiMax > 0.5 ? 0.7 + 0.3 * Math.cos(phiMax * Math.exp(-((w * 1e15) ** 2) / (2 * sigma ** 2))) : 1;
       return 10 * Math.log10(base * modulation + 1e-10);
     });
     return [

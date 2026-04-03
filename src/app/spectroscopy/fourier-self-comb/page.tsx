@@ -48,7 +48,7 @@ export default function FourierSelfCombPage() {
         const alpha = idx === Math.floor(combLines / 2) ? 1.0 : 0.15;
         traces.push({
           x: freqs, y: amps, type: "scatter", mode: "lines+markers",
-          name: `f_CEO offset ${(idx - combLines / 2) * repFreq * 0.3 / 1e6:.0f} MHz`,
+          name: `f_CEO offset ${((idx - combLines / 2) * repFreq * 0.3 / 1e6).toFixed(0)} MHz`,
           line: { color: `rgba(96,165,250,${alpha})`, width: 1 },
           marker: { size: idx === Math.floor(combLines / 2) ? 4 : 2 },
           showlegend: idx === Math.floor(combLines / 2),

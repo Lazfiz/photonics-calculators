@@ -44,10 +44,10 @@ export default function AfterpulsingPage() {
       return total;
     });
     return [
-      { x: dt, y: apProb.map(v => v * 100), type: "scatter", mode: "lines",
+      { x: dt, y: apProb.map(v => v * 100), type: "scatter" as const, mode: "lines" as const,
         name: "Single Trap", line: { color: "#60a5fa", width: 2 } },
-      { x: dt, y: apProb2.map(v => v * 100), type: "scatter", mode: "lines",
-        name: `${numTraps} Traps`, line: { color: "#f87171", width: 2, dash: "dash" } },
+      { x: dt, y: apProb2.map(v => v * 100), type: "scatter" as const, mode: "lines" as const,
+        name: `${numTraps} Traps`, line: { color: "#f87171", width: 2, dash: "dash" as const } },
     ];
   }, [trapLifetime, trapEfficiency, numTraps, multiTrap]);
 
@@ -57,12 +57,12 @@ export default function AfterpulsingPage() {
       { x: dt, y: dt.map(d => {
         const ap = trapEfficiency * (1 - (1 - Math.exp(-d / trapLifetime)));
         return countRate * ap;
-      }), type: "scatter", mode: "lines",
+      }), type: "scatter" as const, mode: "lines" as const,
         name: "Afterpulse Rate", line: { color: "#fbbf24", width: 2 }, yaxis: "y" },
       { x: dt, y: dt.map(d => {
         const measured = countRate / (1 + countRate * d * 1e-9);
         return measured / 1e6;
-      }), type: "scatter", mode: "lines",
+      }), type: "scatter" as const, mode: "lines" as const,
         name: "Measured Rate (Mcps)", line: { color: "#34d399", width: 2 }, yaxis: "y2" },
     ];
   }, [trapLifetime, trapEfficiency, countRate]);
@@ -126,21 +126,21 @@ export default function AfterpulsingPage() {
         <p>τ<sub>trap</sub>: 1-10 ns (shallow), 10-100 ns (medium), 100+ ns (deep traps)</p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <Plot data={chartData as any} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" },
-        xaxis: { title: "Dead Time (ns)", gridcolor: "#374151" },
-        yaxis: { title: "Afterpulse Probability (%)", gridcolor: "#374151" },
+        xaxis: { title: { text: "Dead Time (ns)" }, gridcolor: "#374151" },
+        yaxis: { title: { text: "Afterpulse Probability (%)" }, gridcolor: "#374151" },
         margin: { t: 30, r: 20, b: 50, l: 60 }, legend: { bgcolor: "transparent", font: { size: 10 } },
       }} config={{ responsive: true, displayModeBar: false }} />
 
       <h2 className="text-xl font-bold mt-8 mb-4">Rate vs Dead Time</h2>
-      <Plot data={rateVsDeadTime} layout={{
+      <Plot data={rateVsDeadTime as any} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" },
-        xaxis: { title: "Dead Time (ns)", gridcolor: "#374151" },
-        yaxis: { title: "Afterpulse Rate (cps)", gridcolor: "#374151" },
-        yaxis2: { title: "Measured Rate (Mcps)", gridcolor: "#374151", overlaying: "y", side: "right" },
+        xaxis: { title: { text: "Dead Time (ns)" }, gridcolor: "#374151" },
+        yaxis: { title: { text: "Afterpulse Rate (cps)" }, gridcolor: "#374151" },
+        yaxis2: { title: { text: "Measured Rate (Mcps)" }, gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 30, r: 60, b: 50, l: 70 }, legend: { bgcolor: "transparent", font: { size: 10 } },
       }} config={{ responsive: true, displayModeBar: false }} />
     </div>

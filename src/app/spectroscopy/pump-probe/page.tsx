@@ -10,8 +10,8 @@ export default function PumpProbePage() {
   const [pumpWavelength, setPumpWavelength] = useState(400);
   const [probeWavelength, setProbeWavelength] = useState(800);
   const [tau1, setTau1] = useState(0.5); // ps - excited state lifetime
-  const [tau2, setTau2] = useState(5]; // ps - intermediate decay
-  const [tMax, setTMax] = useState(20]; // ps
+  const [tau2, setTau2] = useState(5); // ps - intermediate decay
+  const [tMax, setTMax] = useState(20); // ps
 
   const chartData = useMemo(() => {
     const N = 500;
@@ -84,7 +84,7 @@ export default function PumpProbePage() {
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">GSB:</span> ΔT/T &lt; 0 (ground state depopulated)</p>
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">SE:</span> ΔT/T &lt; 0 (stimulated emission adds to probe)</p>
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">ESA:</span> ΔT/T &gt; 0 (excited state absorbs probe)</p>
-        <p className="text-gray-300 text-sm"><span className="text-blue-400 font-mono">Kinetics:</span> ΔT/T(t) = A₁·e^{−t/τ₁} + A₂·e^{−t/τ₂}</p>
+        <p className="text-gray-300 text-sm"><span className="text-blue-400 font-mono">Kinetics:</span> ΔT/T(t) = A₁·e<sup>-t/τ₁</sup> + A₂·e<sup>-t/τ₂</sup></p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

@@ -19,7 +19,7 @@ export default function PhotonicCrystalFiberCalculator() {
   const effectiveNA = useMemo(() => {
     // Approximate NA for PCF
     const lambda = wavelength * 1e-3; // nm to μm
-    return Math.sqrt(1 - Math.exp(-((2 * Math.PI * holeDiameter / 2) / lambda) ** 2 * Math.log(2)));
+    return Math.sqrt(1 - Math.exp(-(((2 * Math.PI * holeDiameter / 2) / lambda) ** 2 * Math.log(2))));
   }, [holeDiameter, wavelength]);
 
   const vNumber = useMemo(() => {
@@ -67,7 +67,7 @@ export default function PhotonicCrystalFiberCalculator() {
       ratios.push(r);
       const d = r * pitch;
       const lambda = wavelength * 1e-3;
-      const na = Math.sqrt(1 - Math.exp(-((2 * Math.PI * d / 2) / lambda) ** 2 * Math.log(2)));
+      const na = Math.sqrt(1 - Math.exp(-(((2 * Math.PI * d / 2) / lambda) ** 2 * Math.log(2))));
       nas.push(na);
       const w = pitch * (0.65 + 0.434 * (lambda / (2 * pitch)) ** 1.5 + 0.0147 * (lambda / (2 * pitch)) ** 6);
       areas.push(Math.PI * w ** 2);

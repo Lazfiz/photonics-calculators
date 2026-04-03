@@ -9,8 +9,8 @@ const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 type C = { re: number; im: number };
 type M2 = C[][];
 
-function cm(a: C, b: C): C ({ re: a.re * b.re - a.im * b.im, im: a.re * b.im + a.im * b.re });
-function ca(a: C, b: C): C ({ re: a.re + b.re, im: a.im + b.im });
+function cm(a: C, b: C): C { return { re: a.re * b.re - a.im * b.im, im: a.re * b.im + a.im * b.re }; }
+function ca(a: C, b: C): C { return { re: a.re + b.re, im: a.im + b.im }; }
 function cmul2(A: M2, B: M2): M2 {
   return [
     [ca(cm(A[0][0], B[0][0]), cm(A[0][1], B[1][0])), ca(cm(A[0][0], B[0][1]), cm(A[0][1], B[1][1]))],

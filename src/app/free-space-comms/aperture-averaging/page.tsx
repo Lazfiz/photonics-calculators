@@ -11,7 +11,7 @@ export default function ApertureAveragingPage() {
   const [rxDiameter, setRxDiameter] = useState(10); // cm
   const [cn2, setCn2] = useState(1e-15); // refractive index structure parameter m^(-2/3)
   const [range, setRange] = useState(1000); // m
-  const [windSpeed, setWindSpeed] = useState(5]; // m/s
+  const [windSpeed, setWindSpeed] = useState(5); // m/s
 
   // Aperture averaging factor: F_A = (D / (√(λ·L)))^(-7/6) for D >> √(λL)
   // Scintillation reduction with large apertures

@@ -22,7 +22,8 @@ export default function EllipsometryMeasurementPage() {
 
     // Fresnel reflection coefficients ratio
     const tanPsi = Math.tan(psi);
-    const rho = tanPsi * Math.exp(1j) as unknown as number; // use real approximation
+    const rhoRe = tanPsi * Math.cos(delta);
+    const rhoIm = tanPsi * Math.sin(delta);
 
     // Approximate n and k from psi, delta (single layer on substrate, no explicit thickness)
     // Using inverted Fresnel equations for ambient(1.0)/film/substrate:
@@ -38,8 +39,6 @@ export default function EllipsometryMeasurementPage() {
 
     // Pseudo-refractive index (from two-parameter model)
     // <eps> = sin²θ [1 + tan²θ ((1-ρ)/(1+ρ))²]
-    const rhoRe = tanPsi * Math.cos(delta);
-    const rhoIm = tanPsi * Math.sin(delta);
     const denomR = 1 + rhoRe;
     const denomI = rhoIm;
     const numR = 1 - rhoRe;

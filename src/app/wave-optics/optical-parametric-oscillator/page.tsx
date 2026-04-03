@@ -1,24 +1,7 @@
 "use client";
 import { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
-import {
-  Box,
-  Typography,
-  Paper,
-  Grid,
-  TextField,
-  Slider,
-  Divider,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
-  Chip,
-  InputAdornment,
-  FormControlLabel,
-  Checkbox,
-} from "@mui/material";
+import Link from "next/link";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -118,97 +101,118 @@ export default function OPOCalculator() {
   const axisStyle = { gridcolor: "#333", zerolinecolor: "#444", color: "#ccc" };
 
   return (
-    <Box sx={{ p: 3, bgcolor: "#0a0a0a", minHeight: "100vh", color: "#e0e0e0" }}>
-      <Typography variant="h4" gutterBottom sx={{ color: "#00e5ff", fontWeight: 700 }}>
-        Optical Parametric Oscillator (OPO) Designer
-      </Typography>
-      <Typography variant="body2" sx={{ mb: 3, color: "#888" }}>
-        Singly-resonant OPO — signal resonant, idler extracted. Quasi-phase-matched (QPM) or birefringent phase matching model.
-      </Typography>
+    <div className="min-h-screen bg-gray-950 text-white p-6">
+      <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
+      <h1 className="text-3xl font-bold text-cyan-400 mb-2">Optical Parametric Oscillator (OPO) Designer</h1>
+      <p className="text-gray-500 mb-6">Singly-resonant OPO — signal resonant, idler extracted. Quasi-phase-matched (QPM) or birefringent phase matching model.</p>
 
       {/* Formulas */}
-      <Paper sx={{ p: 2, mb: 3, bgcolor: "#111", border: "1px solid #333" }}>
-        <Typography variant="subtitle2" sx={{ color: "#00e5ff", mb: 1 }}>Key Equations</Typography>
-        <Typography variant="body2" sx={{ fontFamily: "monospace", color: "#aaa", lineHeight: 2 }}>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 border border-gray-800">
+        <h3 className="text-cyan-400 font-semibold mb-2">Key Equations</h3>
+        <p className="font-mono text-gray-400 text-sm leading-relaxed">
           ωₚ = ωₛ + ωᵢ &nbsp;|&nbsp; λᵢ = λₚ·λₛ / (λₛ − λₚ)<br />
           γ = (4d_eff / c√(nₚnₛnᵢ)) √(2ωₚωₛIₚ / ε₀cnₚ)<br />
           g₀ ≈ γL · sinh(γL/2)/(γL/2) &nbsp; (plane-wave, low walk-off)<br />
           P_th ≈ π³w²ε₀c·nₚnₛnᵢ / (4d_eff²L²ωₚωₛ)<br />
           Δk = kₚ − kₛ − kᵢ − 2π/Λ (QPM)
-        </Typography>
-      </Paper>
+        </p>
+      </div>
 
-      <Grid container spacing={3}>
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Controls */}
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 2, bgcolor: "#111", border: "1px solid #333" }}>
-            <Typography variant="h6" sx={{ color: "#ff9100", mb: 2 }}>Parameters</Typography>
+        <div className="md:col-span-4">
+          <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
+            <h3 className="text-orange-400 font-semibold mb-4">Parameters</h3>
 
-            <TextField label="Pump λ (nm)" type="number" value={pumpWavelength} onChange={e => setPumpWavelength(+e.target.value)} fullWidth sx={{ mb: 2 }} InputProps={{ inputProps: { step: 1 } }} />
-            <TextField label="Crystal Length (mm)" type="number" value={crystalLength} onChange={e => setCrystalLength(+e.target.value)} fullWidth sx={{ mb: 2 }} InputProps={{ inputProps: { step: 1 } }} />
-            <TextField label="d_eff (pm/V)" type="number" value={dEff} onChange={e => setDEff(+e.target.value)} fullWidth sx={{ mb: 2 }} InputProps={{ inputProps: { step: 0.1 } }} />
+            <label className="block mb-3">
+              <span className="text-sm text-gray-400">Pump λ (nm)</span>
+              <input type="number" value={pumpWavelength} onChange={e => setPumpWavelength(+e.target.value)} step={1} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            </label>
+            <label className="block mb-3">
+              <span className="text-sm text-gray-400">Crystal Length (mm)</span>
+              <input type="number" value={crystalLength} onChange={e => setCrystalLength(+e.target.value)} step={1} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            </label>
+            <label className="block mb-3">
+              <span className="text-sm text-gray-400">d_eff (pm/V)</span>
+              <input type="number" value={dEff} onChange={e => setDEff(+e.target.value)} step={0.1} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            </label>
 
-            <Typography variant="caption" sx={{ color: "#888" }}>Refractive Indices</Typography>
-            <Grid container spacing={1} sx={{ mb: 2 }}>
-              <Grid item xs={4}><TextField label="nₚ" type="number" value={nPump} onChange={e => setNPump(+e.target.value)} size="small" fullWidth /></Grid>
-              <Grid item xs={4}><TextField label="nₛ" type="number" value={nSignal} onChange={e => setNSignal(+e.target.value)} size="small" fullWidth /></Grid>
-              <Grid item xs={4}><TextField label="nᵢ" type="number" value={nIdler} onChange={e => setNIdler(+e.target.value)} size="small" fullWidth /></Grid>
-            </Grid>
+            <p className="text-xs text-gray-500 mb-2">Refractive Indices</p>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <label className="block">
+                <span className="text-xs text-gray-400">nₚ</span>
+                <input type="number" value={nPump} onChange={e => setNPump(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
+              </label>
+              <label className="block">
+                <span className="text-xs text-gray-400">nₛ</span>
+                <input type="number" value={nSignal} onChange={e => setNSignal(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
+              </label>
+              <label className="block">
+                <span className="text-xs text-gray-400">nᵢ</span>
+                <input type="number" value={nIdler} onChange={e => setNIdler(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
+              </label>
+            </div>
 
-            <TextField label="Pump Power (W)" type="number" value={pumpPower} onChange={e => setPumpPower(+e.target.value)} fullWidth sx={{ mb: 2 }} InputProps={{ inputProps: { step: 0.5 } }} />
-            <TextField label="Beam Radius (μm)" type="number" value={beamRadius} onChange={e => setBeamRadius(+e.target.value)} fullWidth sx={{ mb: 2 }} InputProps={{ inputProps: { step: 5 } }} />
-            <TextField label="Walk-off (deg)" type="number" value={walkOff} onChange={e => setWalkOff(+e.target.value)} fullWidth sx={{ mb: 2 }} InputProps={{ inputProps: { step: 0.1 } }} />
+            <label className="block mb-3">
+              <span className="text-sm text-gray-400">Pump Power (W)</span>
+              <input type="number" value={pumpPower} onChange={e => setPumpPower(+e.target.value)} step={0.5} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            </label>
+            <label className="block mb-3">
+              <span className="text-sm text-gray-400">Beam Radius (μm)</span>
+              <input type="number" value={beamRadius} onChange={e => setBeamRadius(+e.target.value)} step={5} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            </label>
+            <label className="block mb-3">
+              <span className="text-sm text-gray-400">Walk-off (deg)</span>
+              <input type="number" value={walkOff} onChange={e => setWalkOff(+e.target.value)} step={0.1} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            </label>
 
-            <FormControlLabel control={<Checkbox checked={showPhaseMatching} onChange={e => setShowPhaseMatching(e.target.checked)} />} label="Phase matching curve" sx={{ color: "#ccc" }} />
-          </Paper>
-        </Grid>
+            <label className="flex items-center gap-2 text-gray-300 mt-4">
+              <input type="checkbox" checked={showPhaseMatching} onChange={e => setShowPhaseMatching(e.target.checked)} className="rounded" />
+              Phase matching curve
+            </label>
+          </div>
+        </div>
 
         {/* Results + Plots */}
-        <Grid item xs={12} md={8}>
+        <div className="md:col-span-8">
           {/* Results table */}
-          <Paper sx={{ p: 2, mb: 3, bgcolor: "#111", border: "1px solid #333" }}>
-            <Typography variant="h6" sx={{ color: "#ff9100", mb: 1 }}>Results</Typography>
-            <TableContainer>
-              <Table size="small">
-                <TableBody>
-                  {[
-                    ["Signal λ", `${signalWavelength.toFixed(1)} nm`],
-                    ["Idler λ", `${Math.abs(idlerWavelength).toFixed(1)} nm`],
-                    ["ωₚump", `${(omegaP / 1e15).toFixed(2)} PHz`],
-                    ["ωₛignal", `${(omegaS / 1e15).toFixed(2)} PHz`],
-                    ["ωᵢdler", `${(omegaI / 1e15).toFixed(2)} PHz`],
-                    ["Parametric gain g₀", `${g0.toFixed(3)}`],
-                    ["Coupling γ", `${gamma.toFixed(1)} m⁻¹`],
-                    ["Est. Threshold", `${thresholdPower < 1000 ? thresholdPower.toFixed(2) + " W" : (thresholdPower / 1000).toFixed(2) + " kW"}`],
-                    ["Above threshold?", pumpPower > thresholdPower ? "✅ Yes" : "❌ No"],
-                    ["Pump Intensity", `${(pumpPower / (Math.PI * (beamRadius * 1e-6) ** 2) / 1e10).toFixed(2)} GW/m²`],
-                  ].map(([label, val], i) => (
-                    <TableRow key={i}>
-                      <TableCell sx={{ color: "#888", border: 0 }}>{label}</TableCell>
-                      <TableCell sx={{ color: "#e0e0e0", fontWeight: 600, border: 0 }}>{val}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
+          <div className="bg-gray-900 rounded-lg p-4 mb-6 border border-gray-800">
+            <h3 className="text-orange-400 font-semibold mb-3">Results</h3>
+            <table className="w-full text-sm">
+              <tbody>
+                {[
+                  ["Signal λ", `${signalWavelength.toFixed(1)} nm`],
+                  ["Idler λ", `${Math.abs(idlerWavelength).toFixed(1)} nm`],
+                  ["ωₚump", `${(omegaP / 1e15).toFixed(2)} PHz`],
+                  ["ωₛignal", `${(omegaS / 1e15).toFixed(2)} PHz`],
+                  ["ωᵢdler", `${(omegaI / 1e15).toFixed(2)} PHz`],
+                  ["Parametric gain g₀", `${g0.toFixed(3)}`],
+                  ["Coupling γ", `${gamma.toFixed(1)} m⁻¹`],
+                  ["Est. Threshold", `${thresholdPower < 1000 ? thresholdPower.toFixed(2) + " W" : (thresholdPower / 1000).toFixed(2) + " kW"}`],
+                  ["Above threshold?", pumpPower > thresholdPower ? "✅ Yes" : "❌ No"],
+                  ["Pump Intensity", `${(pumpPower / (Math.PI * (beamRadius * 1e-6) ** 2) / 1e10).toFixed(2)} GW/m²`],
+                ].map(([label, val], i) => (
+                  <tr key={i}>
+                    <td className="text-gray-500 py-1">{label}</td>
+                    <td className="text-gray-200 font-semibold">{val}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {/* Plots */}
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <Plot data={[{ x: gainVsLength.x, y: gainVsLength.y, type: "scatter", mode: "lines", line: { color: "#00e5ff", width: 2 }, name: "g₀" }]} layout={{ ...darkPlot, title: { text: "Gain vs Crystal Length", font: { color: "#ccc" } }, xaxis: { ...axisStyle, title: "Length (mm)" }, yaxis: { ...axisStyle, title: "g₀" }, margin: { t: 40, b: 40 } }} config={{ responsive: true }} style={{ width: "100%", height: 350 }} />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Plot data={[{ x: gainVsPower.x, y: gainVsPower.y, type: "scatter", mode: "lines", line: { color: "#ff9100", width: 2 }, name: "g₀" }]} layout={{ ...darkPlot, title: { text: "Gain vs Pump Power", font: { color: "#ccc" } }, xaxis: { ...axisStyle, title: "Power (W)" }, yaxis: { ...axisStyle, title: "g₀" }, margin: { t: 40, b: 40 } }} config={{ responsive: true }} style={{ width: "100%", height: 350 }} />
-            </Grid>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Plot data={[{ x: gainVsLength.x, y: gainVsLength.y, type: "scatter", mode: "lines", line: { color: "#00e5ff", width: 2 }, name: "g₀" }]} layout={{ ...darkPlot, title: { text: "Gain vs Crystal Length", font: { color: "#ccc" } }, xaxis: { ...axisStyle, title: "Length (mm)" }, yaxis: { ...axisStyle, title: "g₀" }, margin: { t: 40, b: 40 } }} config={{ responsive: true }} style={{ width: "100%", height: 350 }} />
+            <Plot data={[{ x: gainVsPower.x, y: gainVsPower.y, type: "scatter", mode: "lines", line: { color: "#ff9100", width: 2 }, name: "g₀" }]} layout={{ ...darkPlot, title: { text: "Gain vs Pump Power", font: { color: "#ccc" } }, xaxis: { ...axisStyle, title: "Power (W)" }, yaxis: { ...axisStyle, title: "g₀" }, margin: { t: 40, b: 40 } }} config={{ responsive: true }} style={{ width: "100%", height: 350 }} />
             {showPhaseMatching && (
-              <Grid item xs={12}>
+              <div className="col-span-2">
                 <Plot data={[{ x: phaseMatchData.x, y: phaseMatchData.y, type: "scatter", mode: "lines", line: { color: "#76ff03", width: 2 }, name: "Δk" }]} layout={{ ...darkPlot, title: { text: "Phase Mismatch vs Crystal Temperature", font: { color: "#ccc" } }, xaxis: { ...axisStyle, title: "Temperature (°C)" }, yaxis: { ...axisStyle, title: "Δk (×10³ m⁻¹)" }, margin: { t: 40, b: 40 } }} config={{ responsive: true }} style={{ width: "100%", height: 350 }} />
-              </Grid>
+              </div>
             )}
-          </Grid>
-        </Grid>
-      </Grid>
-    </Box>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

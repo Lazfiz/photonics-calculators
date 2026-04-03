@@ -54,7 +54,7 @@ export default function IndustrialLaserSafetyPage() {
       const bd = beamDia + z * divergence;
       return power / (Math.PI * Math.pow(bd / 20, 2));
     });
-    const diffuse = distances.map(z => z > 0 ? reflectedPower / (Math.PI * z * z) * 1e4 : direct[0] : direct[0]);
+    const diffuse = distances.map(z => z > 0 ? reflectedPower / (Math.PI * z * z) * 1e4 : direct[0]);
     return [
       { x: distances, y: direct, type: "scatter" as const, mode: "lines" as const, name: "Direct beam", line: { color: "#f87171" } },
       { x: distances, y: diffuse, type: "scatter" as const, mode: "lines" as const, name: "Diffuse reflection", line: { color: "#fbbf24" } },

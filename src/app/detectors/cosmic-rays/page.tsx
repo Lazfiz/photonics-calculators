@@ -120,7 +120,7 @@ export default function CosmicRaysPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p>Flux at sea level: ~1 hit/cm²/min (muons, secondary particles)</p>
         <p>N<sub>hits</sub> = Φ · A · t  (Poisson statistics)</p>
-        <p>E<sub>deposited</sub> ≈ 40 e⁻/μm in Si → ~8000 e⁻ for 200μm track (>> typical pixel full well)</p>
+        <p>E<sub>deposited</sub> ≈ 40 e⁻/μm in Si → ~8000 e⁻ for 200μm track (&gt;&gt; typical pixel full well)</p>
         <p>Mitigation: frame subtraction, median filtering, pixel cluster rejection</p>
       </div>
 

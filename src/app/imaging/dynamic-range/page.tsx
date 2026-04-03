@@ -115,11 +115,11 @@ export default function DynamicRangePage() {
             </div>
             <div className="bg-gray-800 rounded p-3">
               <div className="text-xs text-gray-400">Sensor DR</div>
-              <div className="text-xl font-mono text-green-400">{results.drDB.toFixed(1)} dB ({results.drStops.toFixed(1} stops)</div>
+              <div className="text-xl font-mono text-green-400">{results.drDB.toFixed(1)} dB ({results.drStops.toFixed(1)} stops)</div>
             </div>
             <div className="bg-gray-800 rounded p-3">
               <div className="text-xs text-gray-400">System DR (min)</div>
-              <div className="text-xl font-mono text-blue-400">{results.systemDR.toFixed(1} stops</div>
+              <div className="text-xl font-mono text-blue-400">{results.systemDR.toFixed(1)} stops</div>
             </div>
             <div className="bg-gray-800 rounded p-3">
               <div className="text-xs text-gray-400">ADC Limited?</div>

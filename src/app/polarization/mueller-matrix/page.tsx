@@ -170,7 +170,7 @@ export default function MuellerMatrixPage() {
             ))}
           </div>
           <p className="text-xs text-gray-500 mt-2">
-            DOP: {Math.sqrt(outputStokes[1]**2 + outputStokes[2]**2 + outputStokes[3]**2) / Math.max(outputStokes[0], 1e-10) * 100:.1f}%
+            DOP: {(Math.sqrt(outputStokes[1]**2 + outputStokes[2]**2 + outputStokes[3]**2) / Math.max(outputStokes[0], 1e-10) * 100).toFixed(1)}%
           </p>
         </div>
 

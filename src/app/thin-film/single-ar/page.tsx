@@ -25,12 +25,12 @@ export default function SingleARPage() {
       const n0 = nIncident, n1 = nFilm, n2 = nSubstrate;
       const r01 = (n0 * cosTheta - n1 * cosTheta) / (n0 * cosTheta + n1 * cosTheta);
       const r12 = (n1 * cosTheta - n2 * cosTheta) / (n1 * cosTheta + n2 * cosTheta);
-      const r = (r01 + r12 * Math.exp(-2 * 1j * delta)) / (1 + r01 * r12 * Math.exp(-2 * 1j * delta));
-      // Simplified — no complex math in JS, use formula
-      const Rs = Math.pow((n0 * cosTheta - n2 * cosTheta) / (n0 * cosTheta + n2 * cosTheta), 2);
-      // Quarter-wave formula:
-      const ratio = (n0 * n2) / (n1 * n1);
-      return Math.pow((1 - ratio) / (1 + ratio), 2);
+      // Simplified thin-film reflectance using real part of complex formula
+      const cos2d = Math.cos(-2 * delta);
+      const sin2d = Math.sin(-2 * delta);
+      const rRe = (r01 + r12 * cos2d) / (1 + r01 * r12 * cos2d);
+      const rIm = (r12 * sin2d) / (1 + r01 * r12 * cos2d);
+      return rRe * rRe + rIm * rIm;
     });
     return [{ x: wls, y: R, type: "scatter" as const, mode: "lines" as const, name: "Reflectance", line: { color: "#60a5fa" } }];
   }, [nSubstrate, nFilm, nIncident, designWavelength, angle]);

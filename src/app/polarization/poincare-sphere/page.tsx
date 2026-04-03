@@ -50,8 +50,8 @@ export default function PoincareSpherePage() {
     const psi = (thetaDeg * Math.PI) / 180;
     const chi = (chiDeg * Math.PI) / 180;
     return {
-      ex: amplitude * Math.cos(psi) * Math.cos(chi) - 1j * amplitude * Math.sin(psi) * Math.sin(chi),
-      ey: amplitude * Math.sin(psi) * Math.cos(chi) + 1j * amplitude * Math.cos(psi) * Math.sin(chi),
+      ex: amplitude * Math.cos(psi) * Math.cos(chi) - 0 * amplitude * Math.sin(psi) * Math.sin(chi),
+      ey: amplitude * Math.sin(psi) * Math.cos(chi) + 0 * amplitude * Math.cos(psi) * Math.sin(chi),
     };
   }, [thetaDeg, chiDeg, amplitude]);
 

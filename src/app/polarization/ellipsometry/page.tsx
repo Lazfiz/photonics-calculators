@@ -119,12 +119,21 @@ export default function EllipsometryPage() {
       const r23p = (n3 * cosT2 - n2 * cosT3) / (n3 * cosT2 + n2 * cosT3);
 
       const phase = 2 * Math.PI * n2 * d * cosT2 / wavelength;
-      const rp = (r12p + r23p * Math.exp(2j * phase)) / (1 + r12p * r23p * Math.exp(2j * phase));
-      const rs = (r12s + r23s * Math.exp(2j * phase)) / (1 + r12s * r23s * Math.exp(2j * phase));
+      const cosP = Math.cos(2 * phase);
+      const sinP = Math.sin(2 * phase);
+      // rp real/imag parts
+      const rpRe = (r12p + r23p * cosP) / (1 + r12p * r23p * cosP);
+      const rpIm = (r23p * sinP) / (1 + r12p * r23p * cosP);
+      const rsRe = (r12s + r23s * cosP) / (1 + r12s * r23s * cosP);
+      const rsIm = (r23s * sinP) / (1 + r12s * r23s * cosP);
 
-      const ratio = rp / rs;
-      psiVals.push(Math.atan(Math.abs(ratio)) * 180 / Math.PI);
-      deltaVals.push(Math.atan2(ratio.imag, ratio.real) * 180 / Math.PI);
+      // ratio = rp/rs (complex division)
+      const rsMag2 = rsRe * rsRe + rsIm * rsIm;
+      const ratioRe = (rpRe * rsRe + rpIm * rsIm) / rsMag2;
+      const ratioIm = (rpIm * rsRe - rpRe * rsIm) / rsMag2;
+      const ratioMag = Math.sqrt(ratioRe * ratioRe + ratioIm * ratioIm);
+      psiVals.push(Math.atan(ratioMag) * 180 / Math.PI);
+      deltaVals.push(Math.atan2(ratioIm, ratioRe) * 180 / Math.PI);
     }
     return { thicknesses, psiVals, deltaVals };
   }, [incidentAngle, nAmbient, nFilm, nSubstrate, wavelength]);

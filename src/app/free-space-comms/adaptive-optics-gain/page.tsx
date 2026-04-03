@@ -13,7 +13,7 @@ export default function AdaptiveOpticsGainPage() {
   const [r0, setR0] = useState(0); // cm, 0 = auto-calculate
   const [numActuators, setNumActuators] = useState(64); // DM actuators across
   const [bandwidth, setBandwidth] = useState(100); // Hz, AO correction bandwidth
-  const [windSpeed, setWindSpeed] = useState(5]; // m/s
+  const [windSpeed, setWindSpeed] = useState(5); // m/s
   const [strehlTarget, setStrehlTarget] = useState(0.8);
 
   // AO Strehl ratio: S = exp(-σ_φ²)

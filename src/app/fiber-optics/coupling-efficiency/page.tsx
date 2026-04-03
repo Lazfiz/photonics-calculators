@@ -27,7 +27,7 @@ export default function CouplingEfficiencyCalculator() {
   // Lateral offset coupling factor
   const lateralCoupling = useMemo(() => {
     const offset = lateralOffset;
-    return Math.exp(-(offset / w0) ** 2);
+    return Math.exp(-((offset / w0) ** 2));
   }, [lateralOffset, w0]);
 
   // Angular misalignment coupling factor
@@ -62,7 +62,7 @@ export default function CouplingEfficiencyCalculator() {
     const efficiencies: number[] = [];
     
     for (let offset = 0; offset <= 20; offset += 0.5) {
-      const coupling = Math.exp(-(offset / w0) ** 2) * angularCoupling * naMismatchLoss;
+      const coupling = Math.exp(-((offset / w0) ** 2)) * angularCoupling * naMismatchLoss;
       offsets.push(offset);
       efficiencies.push(coupling * 100);
     }

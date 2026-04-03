@@ -95,7 +95,7 @@ export default function DualBandARPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-4">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">Formulas</h3>
         <p className="text-gray-400 text-sm font-mono">d₁ = λ₁/(4n₁), d₂ = λ₂/(4n₂), d₃ = √(λ₁λ₂)/(4n₃)</p>
-        <p className="text-gray-400 text-sm font-mono">Ideal: n₁ < n₂ > n₃ < n<sub>sub</sub> (impedance matching)</p>
+        <p className="text-gray-400 text-sm font-mono">Ideal: n₁ &lt; n₂ &gt; n₃ &lt; n<sub>sub</sub> (impedance matching)</p>
         <p className="text-gray-400 text-sm font-mono">R via 3-layer TMM at normal incidence</p>
       </div>
 

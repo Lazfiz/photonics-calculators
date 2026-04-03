@@ -10,8 +10,8 @@ export default function TimeResolvedPage() {
   const [laserRepRate, setLaserRepRate] = useState(80); // MHz
   const [pulseWidthFs, setPulseWidthFs] = useState(100); // fs
   const [instrumentResponse, setInstrumentResponse] = useState(0.3); // ps
-  const [lifetime, setLifetime] = useState(2]; // ns
-  const [timeRange, setTimeRange] = useState(10]; // ns
+  const [lifetime, setLifetime] = useState(2); // ns
+  const [timeRange, setTimeRange] = useState(10); // ns
 
   const chartData = useMemo(() => {
     const N = 500;

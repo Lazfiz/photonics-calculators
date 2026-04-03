@@ -10,7 +10,7 @@ export default function ScintillationPage() {
   const [wavelength, setWavelength] = useState(1550); // nm
   const [distance, setDistance] = useState(1); // km
   const [cz, setCz] = useState(1.7e-14); // Cn² m^-2/3
-  const [apertureDiameter, setApertureDiameter] = useState(0.1; // m
+  const [apertureDiameter, setApertureDiameter] = useState(0.1); // m
   const [turbulenceModel, setTurbulenceModel] = useState<"weak" | "moderate" | "strong">("weak");
 
   const results = useMemo(() => {

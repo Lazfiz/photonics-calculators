@@ -7,13 +7,13 @@ import dynamic from "next/dynamic";
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FiberDelayLineCalculator() {
-  const [fiberLength, setFiberLength] = useState<number>(100]; // m
+  const [fiberLength, setFiberLength] = useState<number>(100); // m
   const [refractiveIndex, setRefractiveIndex] = useState<number>(1.468);
   const [signalWavelength, setSignalWavelength] = useState<number>(1550); // nm
-  const [inputBitRate, setInputBitRate] = useState<number>(10]; // Gbps
+  const [inputBitRate, setInputBitRate] = useState<number>(10); // Gbps
   const [temperature, setTemperature] = useState<number>(25); // °C
-  const [coefficient, setCoefficient] = useState<number>(0.05]; // ps/(nm·km) dispersion
-  const [spectralWidth, setSpectralWidth] = useState<number>(0.1]; // nm
+  const [coefficient, setCoefficient] = useState<number>(0.05); // ps/(nm·km) dispersion
+  const [spectralWidth, setSpectralWidth] = useState<number>(0.1); // nm
 
   // Propagation time
   const delay = useMemo(() => {

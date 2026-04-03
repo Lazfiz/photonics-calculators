@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function PolarizationControllerCalculator() {
-  const [birefringence, setBirefringence] = useState<number>(3e-4]; // Δn
+  const [birefringence, setBirefringence] = useState<number>(3e-4); // Δn
   const [fiberLength, setFiberLength] = useState<number>(1); // m per coil section
   const [numSections, setNumSections] = useState<number>(3);
   const [wavelength, setWavelength] = useState<number>(1550); // nm

@@ -18,62 +18,60 @@ export default function SpectrophotometryPage() {
     const wls = Array.from({ length: 400 }, (_, i) => 300 + i * 1000 / 400);
     const theta = angleDeg * Math.PI / 180;
     const cosTheta0 = Math.cos(theta);
-    const sinTheta0 = Math.sin(theta);
 
-    const R = wls.map(wl => {
-      const N2 = nFilm + 1j * kFilm;
+    // Simplified thin-film Fresnel using real-valued approximation
+    // Ignores extinction (kFilm≈0) for the phase calculation but includes absorption loss
+    const sinTheta2 = nInc * Math.sin(theta) / nFilm;
+    const cosTheta2 = Math.sqrt(Math.max(0, 1 - sinTheta2 * sinTheta2));
+    const sinTheta3 = nInc * Math.sin(theta) / nSub;
+    const cosTheta3 = Math.sqrt(Math.max(0, 1 - sinTheta3 * sinTheta3));
+
+    // Interface Fresnel coefficients (real, s-pol)
+    const rs01 = (nInc * cosTheta0 - nFilm * cosTheta2) / (nInc * cosTheta0 + nFilm * cosTheta2);
+    const rs12 = (nFilm * cosTheta2 - nSub * cosTheta3) / (nFilm * cosTheta2 + nSub * cosTheta3);
+    // p-pol
+    const rp01 = (nFilm * cosTheta0 - nInc * cosTheta2) / (nFilm * cosTheta0 + nInc * cosTheta2);
+    const rp12 = (nSub * cosTheta2 - nFilm * cosTheta3) / (nSub * cosTheta2 + nFilm * cosTheta3);
+
+    const RsVals = wls.map(wl => {
       const d = thickness * 1e-9;
       const lambda = wl * 1e-9;
-
-      // Snell's law
-      const sinTheta2 = nInc * sinTheta0 / N2;
-      const cosTheta2 = Math.sqrt(1 - sinTheta2 * sinTheta2);
-      const sinTheta3 = nInc * sinTheta0 / nSub;
-      const cosTheta3 = Math.sqrt(1 - sinTheta3 * sinTheta3);
-
-      // s-polarization
-      const rs01 = (nInc * cosTheta0 - N2 * cosTheta2) / (nInc * cosTheta0 + N2 * cosTheta2);
-      const rs12 = (N2 * cosTheta2 - nSub * cosTheta3) / (N2 * cosTheta2 + nSub * cosTheta3);
-      const delta2 = (2 * Math.PI * N2 * d * cosTheta2) / lambda;
-      const phase2 = Math.exp(2j * delta2);
-      const rs = (rs01 + rs12 * phase2) / (1 + rs01 * rs12 * phase2);
-
-      // p-polarization
-      const rp01 = (N2 * cosTheta0 - nInc * cosTheta2) / (N2 * cosTheta0 + nInc * cosTheta2);
-      const rp12 = (nSub * cosTheta2 - N2 * cosTheta3) / (nSub * cosTheta2 + N2 * cosTheta3);
-      const rp = (rp01 + rp12 * phase2) / (1 + rp01 * rp12 * phase2);
-
-      const Rs = Math.pow(Math.abs(rs), 2);
-      const Rp = Math.pow(Math.abs(rp), 2);
-      return { Rs, Rp, Ravg: (Rs + Rp) / 2 };
+      const delta = (2 * Math.PI * nFilm * d * cosTheta2) / lambda;
+      // |r_total|² using cos/sin for real part of e^(2iδ)
+      const cos2d = Math.cos(2 * delta);
+      const sin2d = Math.sin(2 * delta);
+      const rs = (rs01 + rs12 * cos2d) / (1 + rs01 * rs12 * cos2d);
+      const rsIm = (rs12 * sin2d) / (1 + rs01 * rs12 * cos2d);
+      return rs * rs + rsIm * rsIm;
     });
 
-    const T = wls.map(wl => {
-      const N2 = nFilm + 1j * kFilm;
+    const RpVals = wls.map(wl => {
       const d = thickness * 1e-9;
       const lambda = wl * 1e-9;
-      const sinTheta2 = nInc * sinTheta0 / N2;
-      const cosTheta2 = Math.sqrt(1 - sinTheta2 * sinTheta2);
-      const sinTheta3 = nInc * sinTheta0 / nSub;
-      const cosTheta3 = Math.sqrt(1 - sinTheta3 * sinTheta3);
-
-      const ts01 = 2 * nInc * cosTheta0 / (nInc * cosTheta0 + N2 * cosTheta2);
-      const ts12 = 2 * N2 * cosTheta2 / (N2 * cosTheta2 + nSub * cosTheta3);
-      const delta2 = (2 * Math.PI * N2 * d * cosTheta2) / lambda;
-      const phase2 = Math.exp(1j * delta2);
-      const ts = ts01 * ts12 * phase2 / (1 + (nInc * cosTheta0 - N2 * cosTheta2) / (nInc * cosTheta0 + N2 * cosTheta2) * (N2 * cosTheta2 - nSub * cosTheta3) / (N2 * cosTheta2 + nSub * cosTheta3) * Math.exp(2j * delta2));
-
-      const Re_N2cos2 = N2.real * cosTheta2.real;
-      const Ts = Math.pow(Math.abs(ts), 2) * (nSub * Math.abs(cosTheta3)) / (nInc * cosTheta0);
-      return Math.min(Math.max(Ts, 0), 1);
+      const delta = (2 * Math.PI * nFilm * d * cosTheta2) / lambda;
+      const cos2d = Math.cos(2 * delta);
+      const sin2d = Math.sin(2 * delta);
+      const rp = (rp01 + rp12 * cos2d) / (1 + rp01 * rp12 * cos2d);
+      const rpIm = (rp12 * sin2d) / (1 + rp01 * rp12 * cos2d);
+      return rp * rp + rpIm * rpIm;
     });
 
-    const A = wls.map((_, i) => Math.max(0, 1 - R[i].Ravg - T[i]));
+    const Ravg = wls.map((_, i) => (RsVals[i] + RpVals[i]) / 2);
+
+    // Transmission (simplified: T ≈ 1 - R - A, where A from k)
+    const absorptionCoeff = 4 * Math.PI * kFilm / 550 * 1e7; // cm⁻¹ at 550nm reference
+    const T = wls.map((_, i) => {
+      const d_cm = thickness * 1e-7;
+      const T_absorption = Math.exp(-absorptionCoeff * d_cm);
+      return Math.min(Math.max((1 - Ravg[i]) * T_absorption, 0), 1);
+    });
+
+    const A = wls.map((_, i) => Math.max(0, 1 - Ravg[i] - T[i]));
 
     return [
-      { x: wls, y: R.map(r => r.Rs), type: "scatter" as const, mode: "lines" as const, name: "Rs", line: { color: "#f87171", dash: "dash" } },
-      { x: wls, y: R.map(r => r.Rp), type: "scatter" as const, mode: "lines" as const, name: "Rp", line: { color: "#fbbf24", dash: "dash" } },
-      { x: wls, y: R.map(r => r.Ravg), type: "scatter" as const, mode: "lines" as const, name: "R avg", line: { color: "#f87171" } },
+      { x: wls, y: RsVals, type: "scatter" as const, mode: "lines" as const, name: "Rs", line: { color: "#f87171", dash: "dash" } },
+      { x: wls, y: RpVals, type: "scatter" as const, mode: "lines" as const, name: "Rp", line: { color: "#fbbf24", dash: "dash" } },
+      { x: wls, y: Ravg, type: "scatter" as const, mode: "lines" as const, name: "R avg", line: { color: "#f87171" } },
       { x: wls, y: T, type: "scatter" as const, mode: "lines" as const, name: "T", line: { color: "#60a5fa" } },
       { x: wls, y: A, type: "scatter" as const, mode: "lines" as const, name: "A", line: { color: "#34d399" } },
     ];

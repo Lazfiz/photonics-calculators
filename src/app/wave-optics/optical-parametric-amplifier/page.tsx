@@ -1,9 +1,7 @@
 "use client";
 import { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
-import {
-  Box, Typography, Paper, Grid, TextField, Table, TableBody, TableCell, TableContainer, TableRow, Divider, Slider,
-} from "@mui/material";
+import Link from "next/link";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -71,75 +69,93 @@ export default function OPACalculator() {
   const ax = { gridcolor: "#333", zerolinecolor: "#444", color: "#ccc" };
 
   return (
-    <Box sx={{ p: 3, bgcolor: "#0a0a0a", minHeight: "100vh", color: "#e0e0e0" }}>
-      <Typography variant="h4" gutterBottom sx={{ color: "#00e5ff", fontWeight: 700 }}>
-        Optical Parametric Amplifier (OPA) Designer
-      </Typography>
-      <Typography variant="body2" sx={{ mb: 3, color: "#888" }}>
-        Non-collinear or collinear OPA gain analysis. Parametric amplification of a seed signal by a strong pump.
-      </Typography>
+    <div className="min-h-screen bg-gray-950 text-white p-6">
+      <Link href="/wave-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Wave Optics</Link>
+      <h1 className="text-3xl font-bold text-cyan-400 mb-2">Optical Parametric Amplifier (OPA) Designer</h1>
+      <p className="text-gray-500 mb-6">Non-collinear or collinear OPA gain analysis. Parametric amplification of a seed signal by a strong pump.</p>
 
-      <Paper sx={{ p: 2, mb: 3, bgcolor: "#111", border: "1px solid #333" }}>
-        <Typography variant="subtitle2" sx={{ color: "#00e5ff", mb: 1 }}>Key Equations</Typography>
-        <Typography variant="body2" sx={{ fontFamily: "monospace", color: "#aaa", lineHeight: 2 }}>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 border border-gray-800">
+        <h3 className="text-cyan-400 font-semibold mb-2">Key Equations</h3>
+        <p className="font-mono text-gray-400 text-sm leading-relaxed">
           ωₚ = ωₛ + ωᵢ &nbsp;|&nbsp; λᵢ = λₚλₛ/(λₛ − λₚ)<br />
           γ = (2d_eff/c) √(ωₚωₛIₚ / 2ε₀cnₚnₛnᵢ)<br />
           G = 1 + [sinh²(γL)] &nbsp; (undepleted pump)<br />
           G_dB = 10 log₁₀(G)
-        </Typography>
-      </Paper>
+        </p>
+      </div>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 2, bgcolor: "#111", border: "1px solid #333" }}>
-            <Typography variant="h6" sx={{ color: "#ff9100", mb: 2 }}>Parameters</Typography>
-            <TextField label="Pump λ (nm)" type="number" value={pumpWavelength} onChange={e => setPumpWavelength(+e.target.value)} fullWidth sx={{ mb: 2 }} />
-            <TextField label="Signal λ (nm)" type="number" value={signalWavelength} onChange={e => setSignalWavelength(+e.target.value)} fullWidth sx={{ mb: 2 }} />
-            <TextField label="Crystal Length (mm)" type="number" value={crystalLength} onChange={e => setCrystalLength(+e.target.value)} fullWidth sx={{ mb: 2 }} />
-            <TextField label="d_eff (pm/V)" type="number" value={dEff} onChange={e => setDEff(+e.target.value)} fullWidth sx={{ mb: 2 }} />
-            <Grid container spacing={1} sx={{ mb: 2 }}>
-              <Grid item xs={4}><TextField label="nₚ" type="number" value={nPump} onChange={e => setNPump(+e.target.value)} size="small" fullWidth /></Grid>
-              <Grid item xs={4}><TextField label="nₛ" type="number" value={nSignal} onChange={e => setNSignal(+e.target.value)} size="small" fullWidth /></Grid>
-              <Grid item xs={4}><TextField label="nᵢ" type="number" value={nIdler} onChange={e => setNIdler(+e.target.value)} size="small" fullWidth /></Grid>
-            </Grid>
-            <TextField label="Pump Power (W)" type="number" value={pumpPower} onChange={e => setPumpPower(+e.target.value)} fullWidth sx={{ mb: 2 }} />
-            <TextField label="Beam Radius (μm)" type="number" value={beamRadius} onChange={e => setBeamRadius(+e.target.value)} fullWidth sx={{ mb: 2 }} />
-          </Paper>
-        </Grid>
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="md:col-span-4">
+          <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
+            <h3 className="text-orange-400 font-semibold mb-4">Parameters</h3>
+            <label className="block mb-3">
+              <span className="text-sm text-gray-400">Pump λ (nm)</span>
+              <input type="number" value={pumpWavelength} onChange={e => setPumpWavelength(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            </label>
+            <label className="block mb-3">
+              <span className="text-sm text-gray-400">Signal λ (nm)</span>
+              <input type="number" value={signalWavelength} onChange={e => setSignalWavelength(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            </label>
+            <label className="block mb-3">
+              <span className="text-sm text-gray-400">Crystal Length (mm)</span>
+              <input type="number" value={crystalLength} onChange={e => setCrystalLength(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            </label>
+            <label className="block mb-3">
+              <span className="text-sm text-gray-400">d_eff (pm/V)</span>
+              <input type="number" value={dEff} onChange={e => setDEff(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            </label>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <label className="block">
+                <span className="text-xs text-gray-400">nₚ</span>
+                <input type="number" value={nPump} onChange={e => setNPump(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
+              </label>
+              <label className="block">
+                <span className="text-xs text-gray-400">nₛ</span>
+                <input type="number" value={nSignal} onChange={e => setNSignal(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
+              </label>
+              <label className="block">
+                <span className="text-xs text-gray-400">nᵢ</span>
+                <input type="number" value={nIdler} onChange={e => setNIdler(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
+              </label>
+            </div>
+            <label className="block mb-3">
+              <span className="text-sm text-gray-400">Pump Power (W)</span>
+              <input type="number" value={pumpPower} onChange={e => setPumpPower(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            </label>
+            <label className="block mb-3">
+              <span className="text-sm text-gray-400">Beam Radius (μm)</span>
+              <input type="number" value={beamRadius} onChange={e => setBeamRadius(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            </label>
+          </div>
+        </div>
 
-        <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 2, mb: 3, bgcolor: "#111", border: "1px solid #333" }}>
-            <Typography variant="h6" sx={{ color: "#ff9100", mb: 1 }}>Results</Typography>
-            <TableContainer>
-              <Table size="small">
-                <TableBody>
-                  {[
-                    ["Idler λ", `${result.lambdaI.toFixed(1)} nm`],
-                    ["Power Gain G", result.G > 1e6 ? result.G.toExponential(2) : result.G.toFixed(2)],
-                    ["Gain (dB)", `${result.gaindB.toFixed(2)} dB`],
-                    ["Coupling γ", `${result.gamma.toFixed(1)} m⁻¹`],
-                    ["Pump Intensity", `${(pumpPower / (Math.PI * (beamRadius * 1e-6) ** 2) / 1e10).toFixed(2)} GW/m²`],
-                  ].map(([l, v], i) => (
-                    <TableRow key={i}><TableCell sx={{ color: "#888", border: 0 }}>{l}</TableCell><TableCell sx={{ color: "#e0e0e0", fontWeight: 600, border: 0 }}>{v}</TableCell></TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
+        <div className="md:col-span-8">
+          <div className="bg-gray-900 rounded-lg p-4 mb-6 border border-gray-800">
+            <h3 className="text-orange-400 font-semibold mb-3">Results</h3>
+            <table className="w-full text-sm">
+              <tbody>
+                {[
+                  ["Idler λ", `${result.lambdaI.toFixed(1)} nm`],
+                  ["Power Gain G", result.G > 1e6 ? result.G.toExponential(2) : result.G.toFixed(2)],
+                  ["Gain (dB)", `${result.gaindB.toFixed(2)} dB`],
+                  ["Coupling γ", `${result.gamma.toFixed(1)} m⁻¹`],
+                  ["Pump Intensity", `${(pumpPower / (Math.PI * (beamRadius * 1e-6) ** 2) / 1e10).toFixed(2)} GW/m²`],
+                ].map(([l, v], i) => (
+                  <tr key={i}><td className="text-gray-500 py-1">{l}</td><td className="text-gray-200 font-semibold">{v}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <Plot data={[{ x: gainVsLength.x, y: gainVsLength.y, type: "scatter", mode: "lines", line: { color: "#00e5ff", width: 2 } }]} layout={{ ...darkPlot, title: { text: "Gain vs Crystal Length", font: { color: "#ccc" } }, xaxis: { ...ax, title: "Length (mm)" }, yaxis: { ...ax, title: "Gain (dB)" }, margin: { t: 40, b: 40 } }} config={{ responsive: true }} style={{ width: "100%", height: 350 }} />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Plot data={[{ x: gainVsPower.x, y: gainVsPower.y, type: "scatter", mode: "lines", line: { color: "#ff9100", width: 2 } }]} layout={{ ...darkPlot, title: { text: "Gain vs Pump Power", font: { color: "#ccc" } }, xaxis: { ...ax, title: "Power (W)" }, yaxis: { ...ax, title: "Gain (dB)" }, margin: { t: 40, b: 40 } }} config={{ responsive: true }} style={{ width: "100%", height: 350 }} />
-            </Grid>
-            <Grid item xs={12}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Plot data={[{ x: gainVsLength.x, y: gainVsLength.y, type: "scatter", mode: "lines", line: { color: "#00e5ff", width: 2 } }]} layout={{ ...darkPlot, title: { text: "Gain vs Crystal Length", font: { color: "#ccc" } }, xaxis: { ...ax, title: "Length (mm)" }, yaxis: { ...ax, title: "Gain (dB)" }, margin: { t: 40, b: 40 } }} config={{ responsive: true }} style={{ width: "100%", height: 350 }} />
+            <Plot data={[{ x: gainVsPower.x, y: gainVsPower.y, type: "scatter", mode: "lines", line: { color: "#ff9100", width: 2 } }]} layout={{ ...darkPlot, title: { text: "Gain vs Pump Power", font: { color: "#ccc" } }, xaxis: { ...ax, title: "Power (W)" }, yaxis: { ...ax, title: "Gain (dB)" }, margin: { t: 40, b: 40 } }} config={{ responsive: true }} style={{ width: "100%", height: 350 }} />
+            <div className="col-span-2">
               <Plot data={[{ x: gainVsSignal.x, y: gainVsSignal.y, type: "scatter", mode: "lines", line: { color: "#76ff03", width: 2 } }]} layout={{ ...darkPlot, title: { text: "Gain vs Signal Wavelength", font: { color: "#ccc" } }, xaxis: { ...ax, title: "Signal λ (nm)" }, yaxis: { ...ax, title: "Gain (dB)" }, margin: { t: 40, b: 40 } }} config={{ responsive: true }} style={{ width: "100%", height: 350 }} />
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
-    </Box>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

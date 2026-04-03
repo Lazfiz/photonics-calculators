@@ -95,7 +95,7 @@ export default function FiberBraggGratingCalculator() {
           R = (kappaL / Math.sqrt(-gammaSq)) ** 2 * Math.sin(Math.sqrt(-gammaSq)) ** 2;
         }
         // Apply apodization envelope
-        const envelope = Math.exp(-(deltaLambda / (bandwidth * 1.5)) ** 2);
+        const envelope = Math.exp(-((deltaLambda / (bandwidth * 1.5)) ** 2));
         reflections.push(Math.min(1, R * envelope));
       } else {
         // Uniform

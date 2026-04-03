@@ -10,7 +10,7 @@ export default function FadeProbabilityPage() {
   const [wavelength, setWavelength] = useState(1550);
   const [cn2, setCn2] = useState(1e-15);
   const [range, setRange] = useState(1000); // m
-  const [fadeThreshold, setFadeThreshold] = useState(10]; // dB below mean
+  const [fadeThreshold, setFadeThreshold] = useState(10); // dB below mean
   const [rxDiameter, setRxDiameter] = useState(10); // cm
   const [numChannels, setNumChannels] = useState(1);
 
