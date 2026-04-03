@@ -1,6 +1,10 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
+export const metadata: Metadata = {
+  title: "Optical Materials Calculators",
+  description: "Optical materials calculators for refractive index, Sellmeier fits, thermal properties, absorption, and nonlinear material behavior.",
+};
+
 
 const calculators = [
   { name: "Sellmeier Index", href: "/materials/sellmeier", desc: "Refractive index from Sellmeier dispersion coefficients" },

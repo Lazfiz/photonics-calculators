@@ -1,6 +1,10 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
+export const metadata: Metadata = {
+  title: "Fiber Optics Calculators",
+  description: "Fiber optics calculators for coupling, dispersion, bend loss, V-number, nonlinear thresholds, and guided-wave design.",
+};
+
 
 const calculators = [
   { name: "V-Number", href: "/fiber-optics/v-number", desc: "Normalized frequency parameter for fiber mode analysis" },

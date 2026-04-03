@@ -1,6 +1,10 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
+export const metadata: Metadata = {
+  title: "Imaging Calculators",
+  description: "Optical imaging calculators for resolution, PSF, depth of field, microscopy, OCT, and wavefront-driven imaging analysis.",
+};
+
 
 const calculators = [
   { name: "Resolution Calculator", href: "/imaging/resolution", desc: "Abbe and Rayleigh lateral resolution from NA, wavelength, and immersion medium" },

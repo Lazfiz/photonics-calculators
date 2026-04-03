@@ -1,6 +1,10 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
+export const metadata: Metadata = {
+  title: "Laser Safety Calculators",
+  description: "Laser safety calculators for MPE, NOHD, exposure limits, classification, and hazard analysis with clear educational caveats.",
+};
+
 
 const calculators = [
   { name: "MPE Calculator", href: "/laser-safety/mpe", desc: "Maximum Permissible Exposure per IEC 60825-1 / ANSI Z136" },

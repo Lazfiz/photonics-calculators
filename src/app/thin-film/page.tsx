@@ -1,6 +1,10 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
+export const metadata: Metadata = {
+  title: "Thin Film Calculators",
+  description: "Thin-film optics calculators for AR coatings, dielectric stacks, dichroics, reflectors, interference filters, and deposition effects.",
+};
+
 
 const calculators = [
   { name: "Single Layer AR Coating", href: "/thin-film/single-ar", desc: "Quarter-wave antireflection coating design" },

@@ -1,6 +1,10 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
+export const metadata: Metadata = {
+  title: "Free-Space Optical Communications Calculators",
+  description: "Free-space optics calculators for link budgets, pointing loss, scintillation, BER, weather attenuation, and optical comms.",
+};
+
 
 const calculators = [
   { name: "Link Budget", href: "/free-space-comms/link-budget", desc: "Free-space optical link power budget analysis" },

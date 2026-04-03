@@ -1,6 +1,10 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
+export const metadata: Metadata = {
+  title: "Polarization Calculators",
+  description: "Polarization calculators for Jones and Stokes analysis, retarders, birefringence, Mueller matrices, and waveplate design.",
+};
+
 
 const calculators = [
   { name: "Stokes Parameters", href: "/polarization/stokes", desc: "Describe polarization state from intensity measurements" },

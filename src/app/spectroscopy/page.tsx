@@ -1,6 +1,10 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
+export const metadata: Metadata = {
+  title: "Spectroscopy Calculators",
+  description: "Spectroscopy calculators for FTIR, Raman, spectral resolution, calibration, line broadening, and signal analysis.",
+};
+
 
 const calculators = [
   { name: "Spectral Resolution", href: "/spectroscopy/resolution", desc: "Grating spectrometer resolving power and resolution" },

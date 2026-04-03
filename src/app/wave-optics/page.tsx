@@ -1,6 +1,10 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
+export const metadata: Metadata = {
+  title: "Wave Optics Calculators",
+  description: "Wave optics calculators for Gaussian beams, cavities, diffraction, interferometers, nonlinear propagation, and laser resonators.",
+};
+
 
 const calculators = [
   { name: "Gaussian Beam Propagation", href: "/wave-optics/gaussian-beam", desc: "Beam waist, Rayleigh range, divergence, and spot size" },

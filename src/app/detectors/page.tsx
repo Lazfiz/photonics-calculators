@@ -1,6 +1,10 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
+export const metadata: Metadata = {
+  title: "Detectors Calculators",
+  description: "Photonics detector calculators for responsivity, NEP, dark noise, SPADs, avalanche gain, and sensor performance.",
+};
+
 
 const calculators = [
   { name: "NEP Calculator", href: "/detectors/nep", desc: "Noise Equivalent Power from dark current, bandwidth, and responsivity" },
