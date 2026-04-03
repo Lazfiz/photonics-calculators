@@ -23,6 +23,14 @@ const calculators = [
   { name: "CCD vs CMOS", href: "/detectors/ccd-vs-cmos", desc: "Comparison of CCD and CMOS sensor technologies" },
   { name: "CCD/CMOS Characteristics", href: "/detectors/ccd-cmos", desc: "CCD and CMOS sensor parameter calculator" },
   { name: "Pixel Crosstalk (legacy)", href: "/detectors/pixel-crosstalk", desc: "Pixel crosstalk and charge spreading model" },
+  { name: "SPAD Detector", href: "/detectors/spad", desc: "Single-photon avalanche diode: PDE, DCR, dead time, afterpulsing" },
+  { name: "PMT Gain & SNR", href: "/detectors/pmt", desc: "Photomultiplier tube dynode gain and signal-to-noise analysis" },
+  { name: "Photodiode Speed vs Area", href: "/detectors/photodiode-speed", desc: "RC-limited bandwidth and NEP trade-off with detector area" },
+  { name: "Si vs InGaAs", href: "/detectors/si-vs-inge", desc: "Silicon vs InGaAs spectral coverage, QE, and SNR comparison" },
+  { name: "Cooling Benefit", href: "/detectors/cooling-benefit", desc: "Dark current reduction and SNR improvement from TEC/cryogenic cooling" },
+  { name: "Hybrid Detector", href: "/detectors/hybrid-detector", desc: "Photodiode + TIA hybrid noise analysis and NEP optimization" },
+  { name: "EMCCD vs sCMOS", href: "/detectors/electron-multiplying", desc: "Low-light imaging comparison: EM gain vs low read noise" },
+  { name: "ICCD Design", href: "/detectors/intensified-camera", desc: "Intensified CCD: MCP gain, gating, system QE, and SNR" },
 ];
 
 export default function DetectorsPage() {

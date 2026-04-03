@@ -92,7 +92,7 @@ export default function MultiphotonDepthPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
           <h2 className="text-lg font-semibold">Results</h2>
-          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Effective λ (½ excitation)</span><span className="font-mono text-blue-400">{results.lamEff * 1e9.toFixed(0)} nm</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Effective λ (½ excitation)</span><span className="font-mono text-blue-400">{(results.lamEff * 1e9).toFixed(0)} nm</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Lateral resolution</span><span className="font-mono text-green-400">{results.lateralRes.toFixed(1)} nm</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Axial resolution</span><span className="font-mono text-cyan-400">{results.axialRes.toFixed(2)} µm</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Pulse energy</span><span className="font-mono text-yellow-400">{results.pulseEnergy.toFixed(2)} nJ</span></div>
