@@ -104,6 +104,7 @@ export default function MaximumExposurePage() {
 
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety">
+      <LaserSafetyDisclaimer />
       <div className="max-w-4xl mx-auto">
         
         <h1 className="text-3xl font-bold mb-2">Maximum Exposure Duration</h1>

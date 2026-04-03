@@ -29,6 +29,7 @@ export default function BeamExpanderPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Beam Expander Safety" description="Calculate power density reduction from beam expansion. Critical for ensuring safe irradiance levels.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Power (W)</span>

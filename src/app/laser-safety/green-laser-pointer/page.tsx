@@ -63,6 +63,7 @@ export default function GreenLaserPointerPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Green Laser Pointer Safety" description="Safety analysis for 532 nm DPSS green laser pointers — NOHD, flashblindness, retinal hazard, and classification.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Power (mW)</span>
           <input type="number" value={power} onChange={e => setPower(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>

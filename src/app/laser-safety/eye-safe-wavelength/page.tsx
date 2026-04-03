@@ -83,6 +83,7 @@ export default function EyeSafeWavelengthPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Eye-Safe Wavelength Region" description="Identifies the eye-safe wavelength bands (1400–1500 nm, 1500–1800 nm) where corneal absorption protects the retina. Compare your laser&apos;s fluence against spectral MPE.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Pulse Energy (mJ)</span>

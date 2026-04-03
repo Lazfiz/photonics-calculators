@@ -64,6 +64,7 @@ export default function PRFCorrectionPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="PRF Correction Factor" description="Calculates the repetitive-pulse correction factor Cp for pulsed laser MPE per ANSI Z136.1 §8.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Single Pulse MPE (µJ/cm²)</label>

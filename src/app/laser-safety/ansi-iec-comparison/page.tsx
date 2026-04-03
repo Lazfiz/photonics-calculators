@@ -76,6 +76,7 @@ export default function AnsiIecComparisonPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="ANSI vs IEC MPE Comparison" description="Compares Maximum Permissible Exposure (ANSI Z136.1) with Accessible Emission Limits (IEC 60825-1) across wavelengths.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>

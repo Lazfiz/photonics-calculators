@@ -90,6 +90,7 @@ export default function AtmosphericAttenuationPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Atmospheric Attenuation" description="Calculates atmospheric beam attenuation using Beer-Lambert law with water vapor absorption, CO₂ absorption, Rayleigh and Mie scattering. Useful for outdoor laser safety NOHD calculations.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Wavelength (nm)</span>

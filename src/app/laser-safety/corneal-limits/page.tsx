@@ -82,6 +82,7 @@ export default function CornealLimitsPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Corneal Exposure Limits" description="Corneal MPE across UV, visible, and IR spectral regions. Simplified model.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Wavelength (nm)</span>

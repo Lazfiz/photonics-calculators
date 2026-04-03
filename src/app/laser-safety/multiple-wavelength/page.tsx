@@ -57,6 +57,7 @@ export default function MultipleWavelengthPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Multiple Wavelength MPE" description="Calculates additive hazard ratios for multiple laser wavelengths. Sum of ratios must be &lt; 1 for safety per ANSI Z136.1 Section 8.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 mb-6">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Wavelengths (nm, comma-separated)</span>

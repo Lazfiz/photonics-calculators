@@ -75,6 +75,7 @@ export default function AELLimitsPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Accessible Emission Limits (AEL)" description="IEC 60825-1 laser classification AEL thresholds. Simplified model for educational reference.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Wavelength (nm)</span>

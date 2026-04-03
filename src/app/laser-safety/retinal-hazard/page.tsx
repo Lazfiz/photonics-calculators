@@ -63,6 +63,7 @@ export default function RetinalHazardPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Retinal Hazard Calculator" description="Estimate retinal irradiance and image size from corneal laser parameters. Simplified model assuming emmetropic eye.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Corneal Power (mW)</span>

@@ -75,6 +75,7 @@ export default function AversionResponsePage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Aversion Response Time" description="Calculates MPE at the natural aversion/blink response time (0.25 s) and Class 2 limits per ANSI Z136.1 / IEC 60825-1.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Wavelength (nm)</span>

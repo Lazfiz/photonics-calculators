@@ -74,6 +74,7 @@ export default function ThermalLensHazardPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Thermal Lens Hazard" description="Evaluate thermal lensing risk to protective eyewear and optical components from absorbed laser power.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Wavelength (nm)</span>

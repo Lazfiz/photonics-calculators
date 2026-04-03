@@ -64,6 +64,7 @@ export default function BeamDivergenceHazardsPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Beam Divergence Hazards" description="Model Gaussian beam propagation and hazard distance based on beam divergence and MPE limits.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Power (mW)</span>

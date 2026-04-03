@@ -78,6 +78,7 @@ export default function DiffuseReflectionPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Diffuse Reflection Hazard" description="Evaluate hazard from Lambertian (diffuse) reflections off matte surfaces. Uses extended-source MPE.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Power (mW)</span>

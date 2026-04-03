@@ -49,6 +49,7 @@ export default function ODRequirementsPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Optical Density (OD) Requirements" description="Calculate required eyewear OD given beam power, diameter, and MPE. OD = log₁₀(H/MPE).">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Beam Power (mW)</span>

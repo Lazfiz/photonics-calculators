@@ -56,6 +56,7 @@ export default function PowerDensityPage() {
 
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety">
+      <LaserSafetyDisclaimer />
       <div className="max-w-4xl mx-auto">
 <h1 className="text-3xl font-bold mb-2">Power Density Calculator</h1>
         <p className="text-gray-400 mb-8">Calculate irradiance (W/cm²) from laser power and beam diameter for Gaussian and top-hat profiles.</p>

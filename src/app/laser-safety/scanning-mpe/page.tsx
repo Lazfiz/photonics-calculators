@@ -111,6 +111,7 @@ export default function ScanningMPEPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Scanned Beam MPE" description="Calculates the effective MPE for scanning laser beams where dwell time per retinal point is reduced compared to stationary exposure.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>

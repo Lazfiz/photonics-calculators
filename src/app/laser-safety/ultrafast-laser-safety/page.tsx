@@ -60,6 +60,7 @@ export default function UltrafastLaserSafetyPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Ultrafast Laser Safety Calculator" description="Evaluate single-pulse, average-power, and PRF-corrected MPE for femtosecond/picosecond laser systems.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse Energy (µJ)</span>
           <input type="number" value={pulseEnergy} onChange={e => setPulseEnergy(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>

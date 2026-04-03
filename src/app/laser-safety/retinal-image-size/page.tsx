@@ -109,6 +109,7 @@ export default function RetinalImageSizePage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Retinal Image Size" description="Calculates retinal spot size from corneal beam parameters, including diffraction and geometric contributions per ANSI Z136.1.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>

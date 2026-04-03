@@ -66,6 +66,7 @@ export default function MedicalLaserSafetyPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Medical Laser Safety Calculator" description="Analyze irradiance, fluence, thermal relaxation, and OD for medical/surgical laser systems.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Power (mW)</span>
           <input type="number" value={power} onChange={e => setPower(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>

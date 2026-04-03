@@ -71,6 +71,7 @@ export default function ScanFailurePage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Scan Failure Analysis" description="Analyzes hazard when a scanning laser fails to scan, causing the beam to dwell on a single point. IEC 60825-1 scan failure assessment.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Power (mW)</span>

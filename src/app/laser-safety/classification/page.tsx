@@ -49,6 +49,7 @@ export default function ClassificationPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Laser Classification" description="Simplified laser classification per IEC 60825-1. For educational use only.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Power (mW)</span>
           <input type="number" value={power} onChange={e => setPower(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>

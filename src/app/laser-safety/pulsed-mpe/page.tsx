@@ -85,6 +85,7 @@ export default function PulsedMPEPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Pulsed Laser MPE" description="Repetitive pulse MPE with N⁻⁰·²⁵ correction factor. Simplified ANSI Z136 model.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Wavelength (nm)</span>

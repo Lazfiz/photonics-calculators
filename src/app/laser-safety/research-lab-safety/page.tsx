@@ -88,6 +88,7 @@ export default function ResearchLabSafetyPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Research Lab Laser Safety Calculator" description="Evaluate laser hazard zones, OD requirements, beam path analysis, and room coverage for research labs.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Power per beam (mW)</span>
           <input type="number" value={power} onChange={e => setPower(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>

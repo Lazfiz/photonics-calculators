@@ -49,6 +49,7 @@ export default function InfraredHazardPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Infrared Hazard Calculator" description="Assess corneal and retinal IR hazard for 780 nm – 106 µm lasers. Covers IR-A, IR-B, and IR-C regions.">
             
+      <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Wavelength (nm)</span>
