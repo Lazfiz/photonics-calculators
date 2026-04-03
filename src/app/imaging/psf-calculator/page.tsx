@@ -73,7 +73,7 @@ export default function PSFCalculatorPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <label className="block">
           <span className="text-gray-300 text-sm">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={300} max={2000"
+          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={300} max={2000}
             className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
         <label className="block">

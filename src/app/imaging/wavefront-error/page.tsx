@@ -22,7 +22,7 @@ export default function WavefrontErrorPage() {
   const isDiffractionLimited = pvRms < marechalLimit;
 
   // Strehl ratio approximation
-  const strehl = Math.exp(-(2 * Math.PI * pvRms) ** 2);
+  const strehl = Math.exp(-((2 * Math.PI * pvRms) ** 2));
 
   // Encircled energy (approximate)
   const ee80 = 0.8 * (1 - pvRms * 2);
@@ -30,7 +30,7 @@ export default function WavefrontErrorPage() {
   const chartData = useMemo(() => {
     const rms = Array.from({ length: 100 }, (_, i) => i * 0.01);
     return [
-      { x: rms, y: rms.map(r => Math.exp(-(2 * Math.PI * r) ** 2)), type: "scatter", mode: "lines", name: "Strehl Ratio", line: { color: "#34d399" } },
+      { x: rms, y: rms.map(r => Math.exp(-((2 * Math.PI * r) ** 2))), type: "scatter", mode: "lines", name: "Strehl Ratio", line: { color: "#34d399" } },
       { x: [pvRms], y: [strehl], type: "scatter", mode: "markers", name: "Current", marker: { color: "#f87171", size: 12 } },
       { x: [rms[0], rms[rms.length - 1]], y: [0.8, 0.8], type: "scatter", mode: "lines", name: "Maréchal (S=0.8)", line: { color: "#fbbf24", dash: "dash" } },
     ];
@@ -52,7 +52,7 @@ export default function WavefrontErrorPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <label className="block">
           <span className="text-gray-300 text-sm">Reference λ (nm)</span>
-          <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={300} max={2000"
+          <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={300} max={2000}
             className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
         <label className="block">
