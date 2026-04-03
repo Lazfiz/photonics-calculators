@@ -16,14 +16,14 @@ export default function AdaptiveOpticsPage() {
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;
-    const strehlBefore = Math.exp(-(2 * Math.PI * rmsWavefront) ** 2);
+    const strehlBefore = Math.exp(-((2 * Math.PI * rmsWavefront) ** 2));
     const correctedRms = rmsWavefront * Math.sqrt(1 - numZernike / (numZernike + 4));
-    const strehlAfter = Math.exp(-(2 * Math.PI * correctedRms) ** 2);
+    const strehlAfter = Math.exp(-((2 * Math.PI * correctedRms) ** 2));
     const correctionFactor = (rmsWavefront - correctedRms) / rmsWavefront * 100;
     const isoplanaticAngle = 0.31 * (wavelength / 500) / (rmsWavefront + 0.001) * 10; // rough deg
     const fittingError = 0.3 * rmsWavefront / Math.sqrt(dmActuators);
     const residualRms = Math.sqrt(correctedRms ** 2 + fittingError ** 2);
-    const strehlWithFitting = Math.exp(-(2 * Math.PI * residualRms) ** 2);
+    const strehlWithFitting = Math.exp(-((2 * Math.PI * residualRms) ** 2));
     const phaseWrap = wavelength / (2 * dmStroke * 1e3) * 1e3; // waves correctable
     return { strehlBefore, strehlAfter, correctedRms, correctionFactor, fittingError, residualRms, strehlWithFitting, phaseWrap, isoplanaticAngle };
   }, [numZernike, rmsWavefront, wavelength, na, dmStroke, dmActuators]);
