@@ -106,7 +106,7 @@ export default function ApodizationComparisonPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
-        <p><span className="text-blue-400 font-mono">ILS(f) = |FT{w(t)}|</span> — the instrument line shape determines peak shape.</p>
+        <p><span className="text-blue-400 font-mono">ILS(f) = |FT&#123;w(t)&#125;|</span> — the instrument line shape determines peak shape.</p>
         <p>Lower sidelobe level → less ringing, but wider main lobe → lower resolution.</p>
         <p className="text-gray-500">Bandwidth factor: ratio of main lobe width to boxcar. Sidelobe dB: first sidelobe suppression.</p>
       </div>

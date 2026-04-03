@@ -95,7 +95,7 @@ export default function CoherentAntiStokesPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">CARS:</span> ω_as = ω_p − ω_s + ω_p = 2ω_p − ω_s</p>
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">χ⁽³:</span> I_CARS ∝ |χ_NR + Σ R/(Ω−Ω_v + iΓ)|⁴</p>
-        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Thermal:</span> n(Ω) = 1/(e^{ℏΩ/k_BT} − 1)</p>
+        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Thermal:</span> n(Ω) = 1/(e<sup>&#123;ℏΩ/k<sub>B</sub>T&#125;</sup> − 1)</p>
         <p className="text-gray-300 text-sm">CARS is a χ⁽³⁠⁾ four-wave mixing process producing coherent signal at the anti-Stokes frequency.</p>
       </div>
 
