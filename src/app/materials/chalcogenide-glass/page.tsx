@@ -36,7 +36,6 @@ const glasses: Record<string, ChalcogenideGlass> = {
     n2um: 2.792, n4um: 2.778, n10um: 2.732,
     dn_dt: 17, Tg: 180, n2: 23.0,
     transparencyMin: 0.8, transparencyMax: 14.0,
-    B1: 4.7340, B2: 1.0250, C3: 25.40,
     B1: 4.7340, B2: 1.0250, B3: 1.6600,
     C1: 0.0440, C2: 0.1050, C3: 25.40,
   },

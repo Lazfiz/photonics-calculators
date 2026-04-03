@@ -58,7 +58,7 @@ const polymers: Record<string, Polymer> = {
     attenuation_1300: 10, attenuation_1550: 30,
     transparencyMin: 0.2, transparencyMax: 2.0,
     stress_optic: -3.0,
-    B1: 1.3250, B2: 0.0050, C1: 0.0040, C1: 0.0050, C2: 0.0150,
+    B1: 1.3250, B2: 0.0050, C1: 0.0050, C2: 0.0150,
   },
   "SU-8": {
     name: "SU-8", abbreviation: "Epoxy-based photoresist",

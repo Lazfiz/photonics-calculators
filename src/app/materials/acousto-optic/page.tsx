@@ -18,6 +18,8 @@ interface AOMaterial {
   wavelength: number; // measurement wavelength (nm)
 }
 
+const colors = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4", "#f97316", "#14b8a6", "#a855f7"];
+
 const materials: Record<string, AOMaterial> = {
   "TeO₂": {
     name: "TeO₂ (Tellurium Dioxide)", density: 5990, soundVelocity: 617,
