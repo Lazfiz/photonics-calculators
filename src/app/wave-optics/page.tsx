@@ -18,6 +18,14 @@ const calculators = [
   { name: "Spatial Filter Pinhole", href: "/wave-optics/spatial-filter", desc: "Optimal pinhole sizing for spatial filtering" },
   { name: "Etalon Finesse", href: "/wave-optics/etalon-finesse", desc: "Fabry-Pérot transmission, finesse, and spectral analysis" },
   { name: "Ring Resonator", href: "/wave-optics/ring-cavity", desc: "Ring cavity stability, modes, and finesse" },
+  { name: "Attosecond Pulse Generation", href: "/wave-optics/attosecond-pulse", desc: "HHG cutoff, spectrum, and transform-limited duration" },
+  { name: "Carrier-Envelope Phase", href: "/wave-optics/cep-stabilization", desc: "CEP offset effects on few-cycle pulse electric field" },
+  { name: "Pulse Compression", href: "/wave-optics/pulse-compression", desc: "Chirp compensation and transform-limited compression" },
+  { name: "Chirped Pulse Amplification", href: "/wave-optics/chirped-pulse", desc: "CPA stretch-amplify-compress peak power scaling" },
+  { name: "Optical Waveguide Modes", href: "/wave-optics/optical-waveguide", desc: "Slab waveguide V-number, NA, and mode count" },
+  { name: "Coupled Mode Theory", href: "/wave-optics/coupled-mode", desc: "Power exchange between coupled waveguides" },
+  { name: "Photonic Bandgap", href: "/wave-optics/photonic-bandgap", desc: "1D photonic crystal bandgap and reflectivity" },
+  { name: "Slow Light Structures", href: "/wave-optics/slow-light", desc: "Group velocity reduction, delay, and dispersion" },
 ];
 
 export default function WaveOpticsPage() {
