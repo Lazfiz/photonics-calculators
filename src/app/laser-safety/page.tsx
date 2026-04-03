@@ -24,6 +24,14 @@ const calculators = [
   { name: "Required Optical Density", href: "/laser-safety/optical-density", desc: "Minimum OD for laser protective eyewear" },
   { name: "Enclosure Classification", href: "/laser-safety/enclosure-class", desc: "Laser enclosure safety class assessment" },
   { name: "Interlock Time Calculation", href: "/laser-safety/interlock-design", desc: "Required interlock/shutter response time" },
+  { name: "Beam Diameter Conversion", href: "/laser-safety/beam-diameter-conversion", desc: "Convert 1/e², 1/e, and FWHM beam diameters" },
+  { name: "Power Density", href: "/laser-safety/power-density", desc: "Irradiance from power and beam diameter (Gaussian/top-hat)" },
+  { name: "Scanned Beam MPE", href: "/laser-safety/scanned-mpe", desc: "MPE for scanned beams based on dwell time per point" },
+  { name: "Thermal vs Photochemical MPE", href: "/laser-safety/thermal-vs-photochemical", desc: "Compare thermal and photochemical MPE limits" },
+  { name: "Blue Light Hazard", href: "/laser-safety/blue-light-hazard", desc: "Blue-light weighted irradiance and risk group (IEC 62471)" },
+  { name: "UV Exposure Limits", href: "/laser-safety/uv-exposure", desc: "Actinic UV exposure limits (ICNIRP/ACGIH)" },
+  { name: "IR Corneal Exposure", href: "/laser-safety/infrared-corneal", desc: "Corneal MPE for IR lasers (1400nm–1mm)" },
+  { name: "Maximum Exposure Duration", href: "/laser-safety/maximum-exposure", desc: "Max safe exposure time before exceeding MPE" },
 ];
 
 export default function LaserSafetyPage() {
