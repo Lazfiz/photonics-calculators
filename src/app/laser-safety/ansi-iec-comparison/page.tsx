@@ -1,0 +1,127 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+
+const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+
+export default function AnsiIecComparisonPage() {
+  const [wavelength, setWavelength] = useState(632);
+  const [exposureTime, setExposureTime] = useState(0.25);
+  const [pulseEnergy, setPulseEnergy] = useState(1); // µJ
+
+  // ANSI Z136.1 MPE (J/cm²) for intrabeam, 400-700nm, t<0.7s
+  const ansiMPE = (wl: number, t: number) => {
+    const lam = wl / 1000; // µm
+    if (lam >= 0.4 && lam < 0.7) {
+      if (t <= 0.7) return 1.8e-3 * Math.pow(t, 0.75);
+      return 1e-3 * Math.pow(t, 0.75);
+    }
+    if (lam >= 0.7 && lam < 1.05) {
+      const CA = Math.pow(10, 0.02 * (lam - 0.7));
+      return 1.8e-3 * CA * Math.pow(Math.min(t, 0.7), 0.75);
+    }
+    // UV/IR simplified
+    return 1e-3 * Math.pow(t, 0.75);
+  };
+
+  // IEC 60825-1 AEL (approximate Class 1 limits, J)
+  const iecAEL = (wl: number, t: number) => {
+    const lam = wl / 1000;
+    if (lam >= 0.4 && lam < 0.7) {
+      if (t <= 0.7) return 7.9e-4 * Math.pow(t, 0.75); // per 7mm aperture
+      return 3.9e-4 * Math.pow(t, 0.75);
+    }
+    if (lam >= 0.7 && lam < 1.05) {
+      const C4 = Math.pow(10, 0.02 * (lam - 0.7));
+      return 7.9e-4 * C4 * Math.pow(Math.min(t, 0.7), 0.75);
+    }
+    return 7.9e-4 * Math.pow(t, 0.75);
+  };
+
+  const results = useMemo(() => {
+    const mpe_ansi = ansiMPE(wavelength, exposureTime); // J/cm²
+    const ael_iec = iecAEL(wavelength, exposureTime); // J (into 7mm aperture)
+    const mpe_ansi_mJ = mpe_ansi * 1000;
+    const ael_iec_mJ = ael_iec * 1000;
+    const pulse_mJ = pulseEnergy / 1000;
+    const ratio_ansi = mpe_ansi_mJ / pulse_mJ;
+    const ratio_iec = ael_iec_mJ / pulse_mJ;
+
+    return { mpe_ansi_mJ, ael_iec_mJ, pulse_mJ, ratio_ansi, ratio_iec };
+  }, [wavelength, exposureTime, pulseEnergy]);
+
+  const chartData = useMemo(() => {
+    const wls = Array.from({ length: 600 }, (_, i) => 300 + i);
+    const ansiVals = wls.map(w => ansiMPE(w, exposureTime) * 1000);
+    const iecVals = wls.map(w => iecAEL(w, exposureTime) * 1000);
+
+    return [
+      { x: wls, y: ansiVals, type: "scatter" as const, mode: "lines" as const, name: "ANSI Z136.1 MPE (mJ/cm²)", line: { color: "#60a5fa" } },
+      { x: iecVals.map((_, i) => wls[i]), y: iecVals, type: "scatter" as const, mode: "lines" as const, name: "IEC 60825-1 AEL (mJ)", line: { color: "#f472b6" } },
+    ];
+  }, [exposureTime]);
+
+  const layout = {
+    paper_bgcolor: "#030712",
+    plot_bgcolor: "#030712",
+    font: { color: "#9ca3af" },
+    xaxis: { title: "Wavelength (nm)", gridcolor: "#1f2937", color: "#9ca3af" },
+    yaxis: { title: "Exposure Limit (mJ)", gridcolor: "#1f2937", color: "#9ca3af", type: "log" as const },
+    margin: { t: 30, b: 50, l: 60, r: 20 },
+    legend: { font: { color: "#d1d5db" } },
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
+      <Link href="/laser-safety" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Laser Safety</Link>
+      <h1 className="text-3xl font-bold mb-2">ANSI vs IEC MPE Comparison</h1>
+      <p className="text-gray-400 mb-8">Compares Maximum Permissible Exposure (ANSI Z136.1) with Accessible Emission Limits (IEC 60825-1) across wavelengths.</p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div>
+          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
+          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-400 mb-1">Exposure Time (s)</label>
+          <input type="number" step="0.01" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-400 mb-1">Pulse Energy (µJ)</label>
+          <input type="number" step="0.1" value={pulseEnergy} onChange={e => setPulseEnergy(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="bg-gray-900 rounded-lg p-4 text-center">
+          <div className="text-xs text-gray-400">ANSI MPE</div>
+          <div className="text-2xl font-bold text-blue-400">{results.mpe_ansi_mJ.toExponential(2)}</div>
+          <div className="text-xs text-gray-500">mJ/cm²</div>
+        </div>
+        <div className="bg-gray-900 rounded-lg p-4 text-center">
+          <div className="text-xs text-gray-400">IEC AEL</div>
+          <div className="text-2xl font-bold text-pink-400">{results.ael_iec_mJ.toExponential(2)}</div>
+          <div className="text-xs text-gray-500">mJ</div>
+        </div>
+        <div className="bg-gray-900 rounded-lg p-4 text-center">
+          <div className="text-xs text-gray-400">Safety Margin</div>
+          <div className={`text-2xl font-bold ${Math.min(results.ratio_ansi, results.ratio_iec) >= 1 ? "text-green-400" : "text-red-400"}`}>
+            {Math.min(results.ratio_ansi, results.ratio_iec).toFixed(1)}×
+          </div>
+          <div className="text-xs text-gray-500">most restrictive</div>
+        </div>
+      </div>
+
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 font-mono text-sm text-gray-300">
+        <p className="text-gray-500 mb-1">Key Formulas:</p>
+        <p>ANSI (400-700nm, t≤0.7s): MPE = 1.8×10⁻³ × t<sup>0.75</sup> J/cm²</p>
+        <p>ANSI (700-1050nm): MPE = 1.8×10⁻³ × C<sub>A</sub> × t<sup>0.75</sup> J/cm², where C<sub>A</sub> = 10<sup>0.02(λ-0.7)</sup></p>
+        <p>IEC Class 1 AEL: ~7.9×10⁻⁴ × t<sup>0.75</sup> J (into 7mm aperture)</p>
+      </div>
+
+      <Plot data={chartData} layout={layout} config={{ responsive: true }} className="w-full h-[400px]" />
+    </div>
+  );
+}
