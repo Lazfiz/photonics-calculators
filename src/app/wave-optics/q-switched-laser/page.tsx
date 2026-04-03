@@ -10,7 +10,7 @@ const c = 3e8;
 export default function QSwitchedLaserCalculator() {
   const [cavityLength, setCavityLength] = useState(30); // cm
   const [upperStateLifetime, setUpperStateLifetime] = useState(230); // μs (Nd:YAG)
-  const [stimulatedEmissionXs, setStimulatedEmissionXs] = useState(2.8e-19]; // cm² (Nd:YAG)
+  const [stimulatedEmissionXs, setStimulatedEmissionXs] = useState(2.8e-19); // cm² (Nd:YAG)
   const [pumpRate, setPumpRate] = useState(10); // relative
   const [initialLoss, setInitialLoss] = useState(0.8); // fraction
   const [outputCoupling, setOutputCoupling] = useState(0.3); // fraction
