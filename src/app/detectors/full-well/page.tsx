@@ -1,17 +1,15 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import ResultCard from "../../../components/result-card";
 
 export default function FullWellPage() {
   const [fullWell, setFullWell] = useState(20000);
   const [readNoise, setReadNoise] = useState(3);
   const [signal, setSignal] = useState(10000);
 
-  const shotNoise = Math.sqrt(signal);
   const totalNoise = Math.sqrt(signal + readNoise ** 2);
   const snr = signal / totalNoise;
   const saturation = (signal / fullWell) * 100;
@@ -28,56 +26,19 @@ export default function FullWellPage() {
   }, [fullWell, readNoise, signal, snr]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
-      <h1 className="text-3xl font-bold mb-2">Full Well Capacity vs SNR</h1>
-      <p className="text-gray-400 mb-8">Analyze how full well capacity affects signal-to-noise ratio and dynamic range.</p>
-
+    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Full Well Capacity vs SNR" description="Analyze how full well capacity affects signal-to-noise ratio and dynamic range.">
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Full Well Capacity (e⁻)</span>
-          <input type="number" value={fullWell} onChange={e => setFullWell(+e.target.value)} min={1000} step="1000"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Read Noise (e⁻)</span>
-          <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} min={0.5} step="0.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Signal Level (e⁻)</span>
-          <input type="number" value={signal} onChange={e => setSignal(+e.target.value)} min={0} max={fullWell} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Full Well Capacity (e⁻)</span><input type="number" value={fullWell} onChange={e => setFullWell(+e.target.value)} min={1000} step="1000" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read Noise (e⁻)</span><input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} min={0.5} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Signal Level (e⁻)</span><input type="number" value={signal} onChange={e => setSignal(+e.target.value)} min={0} max={fullWell} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Current SNR</p>
-          <p className="text-2xl font-bold text-blue-400">{snr.toFixed(1)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Max SNR (saturation)</p>
-          <p className="text-2xl font-bold text-green-400">{maxSNR.toFixed(1)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Dynamic Range</p>
-          <p className="text-2xl font-bold text-yellow-400">{dynamicRange.toFixed(0)}:1 ({(20 * Math.log10(dynamicRange)).toFixed(1)} dB)</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Saturation</p>
-          <p className={`text-2xl font-bold ${saturation > 90 ? "text-red-400" : "text-green-400"}`}>{saturation.toFixed(1)}%</p>
-        </div>
+        <ResultCard label="Current SNR" value={snr.toFixed(1)} tone="blue" />
+        <ResultCard label="Max SNR" value={maxSNR.toFixed(1)} tone="green" />
+        <ResultCard label="Dynamic Range" value={`${dynamicRange.toFixed(0)}:1`} tone="yellow" subtext={`${(20 * Math.log10(dynamicRange)).toFixed(1)} dB`} />
+        <ResultCard label="Saturation" value={`${saturation.toFixed(1)}%`} tone={saturation > 90 ? "red" : "green"} />
       </div>
-
-      <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" }, xaxis: { title: "Signal (e⁻)", gridcolor: "#374151" },
-          yaxis: { title: "SNR", gridcolor: "#374151" },
-          margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
-      </div>
-    </div>
+      <ChartPanel data={chartData} layout={{ xaxis: { title: "Signal (e⁻)", gridcolor: "#374151" }, yaxis: { title: "SNR", gridcolor: "#374151" }, yaxis2: { title: "Shot Noise (e⁻)", overlaying: "y", side: "right", gridcolor: "#374151" } }} />
+    </CalculatorShell>
   );
 }
