@@ -10,6 +10,14 @@ const calculators = [
   { name: "Michelson Interferometer", href: "/wave-optics/interferometer", desc: "Fringe visibility and intensity for two-beam interference" },
   { name: "M² Beam Quality Factor", href: "/wave-optics/m2-factor", desc: "Real beam quality vs. diffraction limit" },
   { name: "Mode Matching", href: "/wave-optics/mode-matching", desc: "Optimal lens for coupling Gaussian beam modes" },
+  { name: "Hermite-Gaussian Modes", href: "/wave-optics/hermite-gaussian", desc: "TEMmn rectangular higher-order Gaussian modes" },
+  { name: "Laguerre-Gaussian Modes", href: "/wave-optics/laguerre-gaussian", desc: "Donut modes with orbital angular momentum" },
+  { name: "Bessel Beam", href: "/wave-optics/bessel-beam", desc: "Non-diffracting beam profiles and propagation" },
+  { name: "Beam Quality M² Analysis", href: "/wave-optics/beam-quality", desc: "Detailed M² measurement, BPP, and Strehl analysis" },
+  { name: "Diffraction Integral", href: "/wave-optics/diffraction-integral", desc: "Fresnel/Kirchhoff diffraction for circular and slit apertures" },
+  { name: "Spatial Filter Pinhole", href: "/wave-optics/spatial-filter", desc: "Optimal pinhole sizing for spatial filtering" },
+  { name: "Etalon Finesse", href: "/wave-optics/etalon-finesse", desc: "Fabry-Pérot transmission, finesse, and spectral analysis" },
+  { name: "Ring Resonator", href: "/wave-optics/ring-cavity", desc: "Ring cavity stability, modes, and finesse" },
 ];
 
 export default function WaveOpticsPage() {

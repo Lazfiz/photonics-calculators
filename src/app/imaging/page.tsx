@@ -19,6 +19,14 @@ const calculators = [
   { name: "Working Distance", href: "/imaging/working-distance", desc: "Calculate working distance from focal length and extension" },
   { name: "Pupil Matching", href: "/imaging/pupil-matching", desc: "Match exit pupil of illumination to entrance pupil of objective" },
   { name: "Confocal Pinhole Size", href: "/imaging/confocal-pin-hole", desc: "Optimal pinhole diameter for confocal microscopy (Airy units)" },
+  { name: "Two-Photon Microscopy", href: "/imaging/two-photon", desc: "Two-photon excitation wavelength, resolution, and pulse parameters" },
+  { name: "Light Sheet (LSFM)", href: "/imaging/light-sheet", desc: "Light sheet thickness, Rayleigh range, and resolution for SPIM" },
+  { name: "Super-Resolution (STED/PALM)", href: "/imaging/super-resolution", desc: "STED and PALM/STORM resolution beyond the diffraction limit" },
+  { name: "Optical Sectioning", href: "/imaging/optical-sectioning", desc: "Confocal vs widefield optical section thickness" },
+  { name: "Adaptive Optics", href: "/imaging/adaptive-optics", desc: "AO correction, Strehl ratio, and deformable mirror requirements" },
+  { name: "Shack-Hartmann Sensor", href: "/imaging/wavefront-sensor", desc: "Wavefront sensor design: spot size, sensitivity, dynamic range" },
+  { name: "Köhler Illumination", href: "/imaging/illumination", desc: "Illumination design: conjugate planes, fill factor, FOV" },
+  { name: "Phase Contrast / DIC", href: "/imaging/contrast-methods", desc: "Contrast calculations for phase contrast and DIC microscopy" },
 ];
 
 export default function ImagingPage() {
