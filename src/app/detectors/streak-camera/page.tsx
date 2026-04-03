@@ -1,0 +1,86 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+
+const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+
+export default function StreakCameraPage() {
+  const [sweepSpeed, setSweepSpeed] = useState(10); // mm/ns
+  const [slitWidth, setSlitWidth] = useState(50); // µm
+  const [magnification, setMagnification] = useState(1.5);
+  const [ccdPixelSize, setCcdPixelSize] = useState(13); // µm
+  const [temporalResolution, setTemporalResolution] = useState(2); // ps (system limited)
+  const [dynamicRange, setDynamicRange] = useState(1000); // counts
+
+  const results = useMemo(() => {
+    const timePerPixel = (ccdPixelSize / (sweepSpeed * 1e3)) * 1e3; // ps per pixel: µm / (mm/ns) = ns → ps
+    const timePerSlit = (slitWidth / magnification) / (sweepSpeed * 1e3) * 1e3; // ps
+    const effectiveTimeRes = Math.max(temporalResolution, timePerSlit);
+    const totalTimeWindow = 2048 * timePerPixel; // ps (assuming 2048 pixels)
+    const spatialRes = slitWidth / magnification; // µm at photocathode
+    const streakSpeedTime = 1000 / sweepSpeed; // ns/mm → ps/µm
+    return { timePerPixel, timePerSlit, effectiveTimeRes, totalTimeWindow, spatialRes, streakSpeedTime };
+  }, [sweepSpeed, slitWidth, magnification, ccdPixelSize, temporalResolution, dynamicRange]);
+
+  const chartData = useMemo(() => {
+    const speeds = Array.from({ length: 100 }, (_, i) => 1 + i * 0.5);
+    const tpp = speeds.map(s => (ccdPixelSize / (s * 1e3)) * 1e3);
+    const tps = speeds.map(s => (slitWidth / magnification) / (s * 1e3) * 1e3);
+    const eff = speeds.map(s => Math.max(temporalResolution, (slitWidth / magnification) / (s * 1e3) * 1e3));
+    const window = speeds.map(s => 2048 * (ccdPixelSize / (s * 1e3)) * 1e3);
+    return [
+      { x: speeds, y: tpp, type: "scatter", mode: "lines", name: "Time/pixel (ps)", line: { color: "#60a5fa" } },
+      { x: speeds, y: eff, type: "scatter", mode: "lines", name: "Effective time res (ps)", line: { color: "#f87171" } },
+      { x: speeds, y: window, type: "scatter", mode: "lines", name: "Time window (ps)", line: { color: "#34d399" }, yaxis: "y2" },
+    ];
+  }, [sweepSpeed, slitWidth, magnification, ccdPixelSize, temporalResolution]);
+
+  return (
+    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
+      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
+      <h1 className="text-3xl font-bold mb-2">Streak Camera</h1>
+      <p className="text-gray-400 mb-8">Streak camera basics calculator. Models temporal resolution, sweep speed, time window, and spatial resolution trade-offs.</p>
+
+      <div className="grid gap-4 sm:grid-cols-2 mb-8">
+        <label className="block"><span className="text-gray-300 text-sm">Sweep Speed (mm/ns)</span>
+          <input type="number" value={sweepSpeed} onChange={e => setSweepSpeed(+e.target.value)} step="0.5" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block"><span className="text-gray-300 text-sm">Slit Width (µm)</span>
+          <input type="number" value={slitWidth} onChange={e => setSlitWidth(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block"><span className="text-gray-300 text-sm">Magnification</span>
+          <input type="number" value={magnification} onChange={e => setMagnification(+e.target.value)} step="0.1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block"><span className="text-gray-300 text-sm">CCD Pixel Size (µm)</span>
+          <input type="number" value={ccdPixelSize} onChange={e => setCcdPixelSize(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block"><span className="text-gray-300 text-sm">System Temporal Limit (ps)</span>
+          <input type="number" value={temporalResolution} onChange={e => setTemporalResolution(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block"><span className="text-gray-300 text-sm">Dynamic Range (counts)</span>
+          <input type="number" value={dynamicRange} onChange={e => setDynamicRange(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+      </div>
+
+      <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
+        <p className="text-gray-300">Time per pixel = <span className="text-blue-400 font-mono">{results.timePerPixel.toFixed(2)} ps</span></p>
+        <p className="text-gray-300">Time per slit width = <span className="text-blue-400 font-mono">{results.timePerSlit.toFixed(2)} ps</span></p>
+        <p className="text-gray-300">Effective temporal resolution = <span className="text-blue-400 font-mono">{results.effectiveTimeRes.toFixed(2)} ps</span></p>
+        <p className="text-gray-300">Total time window (2048px) = <span className="text-blue-400 font-mono">{(results.totalTimeWindow / 1000).toFixed(2)} ns</span></p>
+        <p className="text-gray-300">Spatial resolution at cathode = <span className="text-blue-400 font-mono">{results.spatialRes.toFixed(1)} µm</span></p>
+      </div>
+
+      <h2 className="text-xl font-semibold mb-2">Key Formulas</h2>
+      <div className="bg-gray-900 rounded p-4 mb-6 space-y-1 text-sm font-mono text-gray-400">
+        <p>Δt<sub>pixel</sub> = p<sub>CCD</sub> / (v<sub>sweep</sub> · M)</p>
+        <p>Δt<sub>slit</sub> = w<sub>slit</sub> / (M · v<sub>sweep</sub>)</p>
+        <p>Δt<sub>eff</sub> = max(Δt<sub>slit</sub>, Δt<sub>system</sub>)</p>
+        <p>T<sub>window</sub> = N<sub>pixels</sub> · Δt<sub>pixel</sub></p>
+      </div>
+
+      <Plot data={chartData} layout={{
+        paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
+        xaxis: { title: "Sweep Speed (mm/ns)", gridcolor: "#374151" },
+        yaxis: { title: "Time Resolution (ps)", gridcolor: "#374151" },
+        yaxis2: { title: "Time Window (ps)", gridcolor: "#374151", overlaying: "y", side: "right" },
+        margin: { t: 20, b: 40, l: 70, r: 80 }, autosize: true, showlegend: true
+      }} className="w-full" style={{ height: 400 }} />
+    </div>
+  );
+}

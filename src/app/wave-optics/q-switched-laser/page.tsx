@@ -15,7 +15,7 @@ export default function QSwitchedLaserCalculator() {
   const [initialLoss, setInitialLoss] = useState(0.8); // fraction
   const [outputCoupling, setOutputCoupling] = useState(0.3); // fraction
   const [crystalLength, setCrystalLength] = useState(5); // cm
-  const [inversionDensity, setInversionDensity] = useState(1e18]; // cm⁻³
+  const [inversionDensity, setInversionDensity] = useState(1e18); // cm⁻³
   const [showBuildup, setShowBuildup] = useState(true);
 
   const roundTripTime = cavityLength * 1e-2 / c;

@@ -14,7 +14,7 @@ export default function InjectionLockingCalculator() {
   const [slavePower, setSlavePower] = useState(1000); // mW
   const [cavityFinesse, setCavityFinesse] = useState(100);
   const [cavityLength, setCavityLength] = useState(15); // cm
-  const [injectionCoupling, setInjectionCoupling] = useState(0.05]; // fraction
+  const [injectionCoupling, setInjectionCoupling] = useState(0.05); // fraction
 
   const roundTripTime = cavityLength * 1e-2 / c;
   const cavityFSR = 1 / roundTripTime;
