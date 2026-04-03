@@ -1,0 +1,162 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+
+const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+
+// Si vs InGaAs detector comparison
+// Si: 400-1100 nm, high QE, low dark current
+// InGaAs: 900-1700 nm (extended to 2600), higher dark current, lower QE at visible
+export default function SiVsInGaAsPage() {
+  const [wavelength, setWavelength] = useState(1550);
+  const [opticalPowerDbm, setOpticalPowerDbm] = useState(-40);
+  const [temperature, setTemperature] = useState(25);
+
+  const powerW = Math.pow(10, opticalPowerDbm / 10) * 1e-3;
+  const photonEnergy = 6.626e-34 * 3e8 / (wavelength * 1e-9);
+  const photonRate = powerW / photonEnergy;
+
+  // Si parameters
+  const siQE = getSiQE(wavelength);
+  const siDarkCurrent = 0.01 * Math.pow(2, (temperature - 25) / 6); // nA
+  const siNoiseFloor = 1e-12; // A/√Hz
+
+  // InGaAs parameters
+  const inGaAsQE = getInGaAsQE(wavelength);
+  const inGaAsDarkCurrent = 5 * Math.pow(2, (temperature - 25) / 5); // nA (InGaAs doubles faster)
+  const inGaAsNoiseFloor = 5e-12; // A/√Hz
+
+  const siResponsivity = siQE * 1.602e-19 * wavelength * 1e-9 / photonEnergy;
+  const inGaAsResponsivity = inGaAsQE * 1.602e-19 * wavelength * 1e-9 / photonEnergy;
+
+  const siSignal = photonRate * siQE * 1.602e-19;
+  const inGaAsSignal = photonRate * inGaAsQE * 1.602e-19;
+
+  const siSNR = siSignal / Math.sqrt(siSignal * 1.602e-19 * 1e6 + siNoiseFloor ** 2 * 1e6 + (siDarkCurrent * 1e-9) ** 2 * 1e6);
+  const inGaAsSNR = inGaAsSignal / Math.sqrt(inGaAsSignal * 1.602e-19 * 1e6 + inGaAsNoiseFloor ** 2 * 1e6 + (inGaAsDarkCurrent * 1e-9) ** 2 * 1e6);
+
+  function getSiQE(wl: number): number {
+    if (wl < 350 || wl > 1100) return 0;
+    if (wl < 500) return 0.6 + 0.3 * (wl - 350) / 150;
+    if (wl < 900) return 0.9;
+    return 0.9 * (1100 - wl) / 200;
+  }
+
+  function getInGaAsQE(wl: number): number {
+    if (wl < 900 || wl > 1700) return 0;
+    if (wl < 1000) return 0.1 * (wl - 900) / 100;
+    if (wl < 1500) return 0.1 + 0.7 * (wl - 1000) / 500;
+    return 0.8 * (1700 - wl) / 200;
+  }
+
+  // Spectral response comparison
+  const spectralData = useMemo(() => {
+    const wls = Array.from({ length: 400 }, (_, i) => 300 + i * 4);
+    return {
+      wls,
+      siQE: wls.map(getSiQE),
+      inGaAsQE: wls.map(getInGaAsQE),
+    };
+  }, []);
+
+  // SNR vs wavelength
+  const snrVsWavelength = useMemo(() => {
+    const wls = Array.from({ length: 200 }, (_, i) => 400 + i * 7);
+    const siSNRs = wls.map(wl => {
+      const pe = 6.626e-34 * 3e8 / (wl * 1e-9);
+      const pr = powerW / pe;
+      const qe = getSiQE(wl);
+      const sig = pr * qe * 1.602e-19;
+      return qe > 0.01 ? sig / Math.sqrt(sig * 1.602e-19 * 1e6 + siNoiseFloor ** 2 * 1e6) : 0;
+    });
+    const inGaAsSNRs = wls.map(wl => {
+      const pe = 6.626e-34 * 3e8 / (wl * 1e-9);
+      const pr = powerW / pe;
+      const qe = getInGaAsQE(wl);
+      const sig = pr * qe * 1.602e-19;
+      return qe > 0.01 ? sig / Math.sqrt(sig * 1.602e-19 * 1e6 + inGaAsNoiseFloor ** 2 * 1e6) : 0;
+    });
+    return { wls, siSNRs, inGaAsSNRs };
+  }, [powerW, siNoiseFloor, inGaAsNoiseFloor]);
+
+  return (
+    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
+      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
+      <h1 className="text-3xl font-bold mb-2">Si vs InGaAs Detector Comparison</h1>
+      <p className="text-gray-400 mb-8">Spectral coverage, quantum efficiency, and SNR comparison between silicon and InGaAs photodetectors.</p>
+
+      <div className="grid gap-4 sm:grid-cols-2 mb-8">
+        <label className="block">
+          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10"
+            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+        <label className="block">
+          <span className="text-gray-300 text-sm">Optical Power (dBm)</span>
+          <input type="number" value={opticalPowerDbm} onChange={e => setOpticalPowerDbm(+e.target.value)} step="1"
+            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+        <label className="block">
+          <span className="text-gray-300 text-sm">Temperature (°C)</span>
+          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} step="5"
+            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">Si QE</p>
+          <p className="text-xl font-bold text-blue-400">{(siQE * 100).toFixed(1)}%</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">InGaAs QE</p>
+          <p className="text-xl font-bold text-orange-400">{(inGaAsQE * 100).toFixed(1)}%</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">Si SNR</p>
+          <p className="text-xl font-bold text-green-400">{siSNR > 0 ? siSNR.toFixed(1) : "N/A"}</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">InGaAs SNR</p>
+          <p className="text-xl font-bold text-yellow-400">{inGaAsSNR > 0 ? inGaAsSNR.toFixed(1) : "N/A"}</p>
+        </div>
+      </div>
+
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
+        <p><strong className="text-blue-400">Si:</strong> 350–1100 nm, QE up to 95%, low dark current (~10 pA)</p>
+        <p><strong className="text-orange-400">InGaAs:</strong> 900–1700 nm, QE up to 85%, higher dark current (~5 nA)</p>
+        <p>InGaAs dark current doubles every ~5°C vs ~6°C for Si</p>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Plot data={[
+          { x: spectralData.wls, y: spectralData.siQE, type: "scatter", mode: "lines",
+            name: "Si", line: { color: "#60a5fa" }, fill: "tozeroy", fillcolor: "rgba(96,165,250,0.1)" },
+          { x: spectralData.wls, y: spectralData.inGaAsQE, type: "scatter", mode: "lines",
+            name: "InGaAs", line: { color: "#fb923c" }, fill: "tozeroy", fillcolor: "rgba(251,146,60,0.1)" },
+        ]} layout={{
+          paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          title: { text: "Quantum Efficiency Spectra", font: { size: 12 } },
+          xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
+          yaxis: { title: "QE", gridcolor: "#374151", range: [0, 1] },
+          margin: { t: 40, r: 20, b: 50, l: 50 }, legend: { bgcolor: "transparent", font: { size: 10 } },
+        }} config={{ responsive: true, displayModeBar: false }} />
+
+        <Plot data={[
+          { x: snrVsWavelength.wls, y: snrVsWavelength.siSNRs, type: "scatter", mode: "lines",
+            name: "Si SNR", line: { color: "#60a5fa" } },
+          { x: snrVsWavelength.wls, y: snrVsWavelength.inGaAsSNRs, type: "scatter", mode: "lines",
+            name: "InGaAs SNR", line: { color: "#fb923c" } },
+        ]} layout={{
+          paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          title: { text: "SNR vs Wavelength", font: { size: 12 } },
+          xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
+          yaxis: { title: "SNR", gridcolor: "#374151", type: "log" },
+          margin: { t: 40, r: 20, b: 50, l: 60 }, legend: { bgcolor: "transparent", font: { size: 10 } },
+        }} config={{ responsive: true, displayModeBar: false }} />
+      </div>
+    </div>
+  );
+}

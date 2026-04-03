@@ -12,8 +12,16 @@ const calculators = [
   { name: "Waveplate Order", href: "/polarization/waveplate-order", desc: "Design zero-order and multi-order waveplates" },
   { name: "Waveplate Thickness", href: "/polarization/waveplate-thickness", desc: "Calculate required crystal thickness for waveplates" },
   { name: "Retarder Design", href: "/polarization/retarder", desc: "Design waveplate retarders and visualize transformation on Poincaré sphere" },
+  { name: "Retarder Types", href: "/polarization/retarder-types", desc: "Compare waveplate types: zero-order, multi-order, achromatic, Fresnel rhomb" },
   { name: "Extinction Ratio", href: "/polarization/extinction-ratio", desc: "Polarizer contrast and transmission analysis" },
   { name: "Polarizer Extinction", href: "/polarization/polarizer-extinction", desc: "Extinction ratio, Malus's law, and cascaded polarizer performance" },
+  { name: "Polarizer Types", href: "/polarization/polarizer-types", desc: "Compare Glan-Taylor, Wollaston, wire grid, sheet polarizers and more" },
+  { name: "Degree of Polarization", href: "/polarization/degree-polarization", desc: "Calculate DoP from Stokes parameters, spectral analysis" },
+  { name: "Depolarization", href: "/polarization/depolarization", desc: "Mueller depolarizer model and spectral depolarization effects" },
+  { name: "Polarization Scrambling", href: "/polarization/polarization-scrambling", desc: "Simulate polarization scrambling and residual DoP reduction" },
+  { name: "Ellipsometry", href: "/polarization/ellipsometry", desc: "Calculate Ψ, Δ from Fresnel equations; thin film modeling" },
+  { name: "Circular Dichroism", href: "/polarization/circular-dichroism", desc: "CD spectra, molar ellipticity, secondary structure estimation" },
+  { name: "Optical Activity", href: "/polarization/optical-activity", desc: "Optical rotation, specific rotation, rotatory dispersion" },
   { name: "PMD", href: "/polarization/pmd", desc: "Polarization mode dispersion in optical fibers" },
 ];
 
