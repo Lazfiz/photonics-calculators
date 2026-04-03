@@ -118,7 +118,6 @@ export default function DyeLaserResonatorPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-6xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/" className="text-blue-400 hover:text-blue-300">← Home</Link>
       </div>
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
