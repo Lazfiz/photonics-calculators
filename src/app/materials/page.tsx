@@ -31,6 +31,14 @@ const calculators = [
   { name: "Raman Scattering", href: "/materials/raman-scattering", desc: "Raman gain spectra and Stokes shift for optical materials" },
   { name: "Color Centers", href: "/materials/color-centers", desc: "NV⁻, SiV⁻, F-centers: absorption/emission cross-sections" },
   { name: "Photorefractive Effect", href: "/materials/photorefractive", desc: "Light-induced index change: Δn, EO coefficients, 2BC gain" },
+  { name: "Optical Glass Catalog", href: "/materials/optical-glass-catalog", desc: "Interactive glass map (n_d vs V_d) with Sellmeier dispersion for SCHOTT/OHARA glasses" },
+  { name: "Infrared Glass Materials", href: "/materials/infrared-glass", desc: "Ge, Si, ZnSe, chalcogenides — IR transmission, dn/dT, thermal properties" },
+  { name: "UV Optical Materials", href: "/materials/uv-materials", desc: "Deep UV materials: fused silica, CaF₂, MgF₂, LiF, sapphire — dispersion & transmission" },
+  { name: "X-ray Optics Materials", href: "/materials/x-ray-optics", desc: "δ, β, penetration depth for Be, diamond, Si, Ni, Au — X-ray refractive index" },
+  { name: "Diamond Optics", href: "/materials/diamond-optics", desc: "Diamond dispersion, thermal conductivity, bandgap — the ultimate optical material" },
+  { name: "Sapphire Properties", href: "/materials/sapphire-properties", desc: "Al₂O₃ uniaxial dispersion, birefringence, thermo-optic, thermal properties" },
+  { name: "Quartz Crystal Properties", href: "/materials/quartz-crystal", desc: "SiO₂ uniaxial dispersion, birefringence, optical activity, piezoelectric" },
+  { name: "Calcite Properties", href: "/materials/calcite-properties", desc: "CaCO₃ extreme birefringence, walk-off angle, beam displacement calculator" },
 ];
 
 export default function MaterialsPage() {

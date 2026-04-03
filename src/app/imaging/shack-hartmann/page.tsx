@@ -10,7 +10,7 @@ export default function ShackHartmannPage() {
   const [wavelengthNm, setWavelengthNm] = useState(632.8);
   const [apertureDiameterMm, setApertureDiameterMm] = useState(8);
   const [lensletPitchUm, setLensletPitchUm] = useState(300);
-  const [lensletFocalMm, setLensletFocalMm] = return 20;
+  const [lensletFocalMm, setLensletFocalMm] = useState(20);
   const [detectorPixelUm, setDetectorPixelUm] = useState(5.5);
   const [rmsWavefrontNm, setRmsWavefrontNm] = useState(150);
   const [dynamicRangeWaves, setDynamicRangeWaves] = useState(5);
@@ -132,7 +132,7 @@ export default function ShackHartmannPage() {
         </label>
         <label className="block">
           <span className="text-gray-300 text-sm">Dynamic Range (waves)</span>
-          <input type="number" value={dynamicRangeWaves} onChange={e => setDynamicRangeWaves(+e.target.value)} min={0.5" max={20} step="0.5"
+          <input type="number" value={dynamicRangeWaves} onChange={e => setDynamicRangeWaves(+e.target.value)} min={0.5} max={20} step="0.5"
             className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>

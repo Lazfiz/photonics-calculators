@@ -42,11 +42,11 @@ export default function DualCombSpectroscopyCalculator() {
         const f1 = centerFreq + m * repRate1Hz;
         const f2 = centerFreq + m * repRate2Hz;
         const beatFreq = Math.abs(f1 - f2) + m * deltaFrep;
-        const amp = Math.exp(-0.5 * (m / (combLines * 0.4)) ** 2);
+        const amp = Math.exp(-0.5 * ((m / (combLines * 0.4)) ** 2));
         s += amp * Math.cos(2 * Math.PI * m * deltaFrep * t);
       }
       // Gaussian envelope
-      const env = Math.exp(-((t - tMax / 2) / (tMax * 0.25)) ** 2);
+      const env = Math.exp(-(((t - tMax / 2) / (tMax * 0.25)) ** 2));
       signal.push(s / (2 * combLines + 1) * env);
       envelope.push(env * 0.3);
     }

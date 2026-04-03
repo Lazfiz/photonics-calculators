@@ -13,7 +13,7 @@ export default function CavityDumpedLaserCalculator() {
   const [roundTripLoss, setRoundTripLoss] = useState(0.02); // per pass
   const [smallSignalGain, setSmallSignalGain] = useState(0.1); // per pass
   const [modeArea, setModeArea] = useState(1e-4); // cm²
-  const [inversionDensity, setInversionDensity] = useState(5e17]; // cm⁻³
+  const [inversionDensity, setInversionDensity] = useState(5e17); // cm⁻³
   const [stimEmissionXs, setStimEmissionXs] = useState(2.8e-19); // cm²
   const [dumpEfficiency, setDumpEfficiency] = useState(0.9); // Bragg cell efficiency
   const [upperStateLifetime, setUpperStateLifetime] = useState(230); // μs

@@ -109,7 +109,7 @@ export default function SpeckleImagingPage() {
         </label>
         <label className="block">
           <span className="text-gray-300 text-sm">Aperture Diameter (mm)</span>
-          <input type="number" value={apertureDiameterMm} onChange={e => setApertureDiameterMm(+e.target.value)} min={1} max={50" step="1"
+          <input type="number" value={apertureDiameterMm} onChange={e => setApertureDiameterMm(+e.target.value)} min={1} max={50} step="1"
             className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>

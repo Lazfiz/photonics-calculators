@@ -100,7 +100,7 @@ export default function PlenopticCameraPage() {
         </label>
         <label className="block">
           <span className="text-gray-300 text-sm">Micro-lens f (mm)</span>
-          <input type="number" value={microLensFocalMm} onChange={e => setMicroLensFocalMm(+e.target.value)} min={0.1} max={5" step="0.1"
+          <input type="number" value={microLensFocalMm} onChange={e => setMicroLensFocalMm(+e.target.value)} min={0.1} max={5} step="0.1"
             className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
         <label className="block">
