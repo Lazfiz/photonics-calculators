@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import ResultCard from "../../../components/result-card";
 
 // Silicon Photodiode Parameters
 // Bandgap: E_g ≈ 1.12 eV at 300K → λ_c ≈ 1100 nm
@@ -105,65 +104,61 @@ export default function SiliconPhotodiodePage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
-      <h1 className="text-3xl font-bold mb-2">Silicon Photodiode</h1>
-      <p className="text-gray-400 mb-8">Si photodiode spectral response, QE, responsivity, dark current, and junction capacitance.</p>
-
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Temperature (K)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Temperature (K)</span>
           <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} min="200" max="400" step="5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Depletion Width (μm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Depletion Width (μm)</span>
           <input type="number" value={depletionWidth} onChange={e => setDepletionWidth(+e.target.value)} min="1" max="500" step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Active Area (mm²)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Active Area (mm²)</span>
           <input type="number" value={area} onChange={e => setArea(+e.target.value)} min="0.01" step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Surface Reflectivity</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Surface Reflectivity</span>
           <input type="number" value={surfaceReflectivity} onChange={e => setSurfaceReflectivity(+e.target.value)} min="0" max="0.5" step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">
         <h2 className="text-lg font-semibold mb-4">Results</h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div><span className="text-gray-400 text-sm">Bandgap E_g</span><div className="text-xl font-mono">{Eg.toFixed(4)} eV</div></div>
-          <div><span className="text-gray-400 text-sm">Cutoff Wavelength</span><div className="text-xl font-mono text-green-400">{cutoffWavelength.toFixed(0)} nm</div></div>
-          <div><span className="text-gray-400 text-sm">Peak QE @ 700nm</span><div className="text-xl font-mono">{(calcQE(700) * 100).toFixed(1)}%</div></div>
-          <div><span className="text-gray-400 text-sm">Peak Responsivity @ 900nm</span><div className="text-xl font-mono">{calcResponsivity(900).toFixed(3)} A/W</div></div>
-          <div><span className="text-gray-400 text-sm">Dark Current</span><div className="text-xl font-mono">{(darkCurrent * 1e9).toFixed(3)} nA</div></div>
-          <div><span className="text-gray-400 text-sm">Junction Capacitance</span><div className="text-xl font-mono">{capPF.toFixed(2)} pF</div></div>
+          <ResultCard label="Bandgap E_g" value="{Eg.toFixed(4)} eV" tone="blue" />
+          <ResultCard label="Cutoff Wavelength" value="{cutoffWavelength.toFixed(0)} nm" tone="blue" />
+          <ResultCard label="Peak QE @ 700nm" value="{(calcQE(700) * 100).toFixed(1)}%" tone="blue" />
+          <ResultCard label="Peak Responsivity @ 900nm" value="{calcResponsivity(900).toFixed(3)} A/W" tone="blue" />
+          <ResultCard label="Dark Current" value="{(darkCurrent * 1e9).toFixed(3)} nA" tone="blue" />
+          <ResultCard label="Junction Capacitance" value="{capPF.toFixed(2)} pF" tone="blue" />
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">Spectral Response</h3>
-          <Plot data={spectralChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+          <ChartPanel data={spectralChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
             yaxis: { title: "QE (%)", gridcolor: "#374151", side: "left" },
             yaxis2: { title: "R (A/W)", overlaying: "y", side: "right", gridcolor: "#374151" },
-            margin: { t: 20, b: 40, l: 60, r: 60 } }} config={{ displayModeBar: false }} style={{ width: "100%", height: 300 }} />
+            margin: { t: 20, b: 40, l: 60, r: 60 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">QE vs Depletion Width</h3>
-          <Plot data={qeVsWidth} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+          <ChartPanel data={qeVsWidth} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "Depletion Width (μm)", gridcolor: "#374151" },
-            yaxis: { title: "QE (%)", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 } }} config={{ displayModeBar: false }} style={{ width: "100%", height: 300 }} />
+            yaxis: { title: "QE (%)", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 } }} />
         </div>
         <div className="md:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">Dark Current vs Temperature</h3>
-          <Plot data={darkVsTemp} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+          <ChartPanel data={darkVsTemp} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "Temperature (K)", gridcolor: "#374151" },
-            yaxis: { title: "I_dark (nA)", type: "log", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 } }} config={{ displayModeBar: false }} style={{ width: "100%", height: 300 }} />
+            yaxis: { title: "I_dark (nA)", type: "log", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 } }} />
         </div>
       </div>
 

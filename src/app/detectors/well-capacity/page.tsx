@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function WellCapacityPage() {
   const [wellCapacity, setWellCapacity] = useState(50000); // e-
@@ -29,23 +28,20 @@ export default function WellCapacityPage() {
   const usableBits = Math.log2(wellCapacity / readNoise);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
-      <h1 className="text-3xl font-bold mb-2">Well Capacity & Dynamic Range</h1>
-      <p className="text-gray-400 mb-8">DR = 20·log₁₀(N<sub>well</sub>/σ<sub>read</sub>). C = N<sub>well</sub>·q/V<sub>swing</sub>. Larger wells → more DR but slower charge transfer.</p>
-
+    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Well Capacity & Dynamic Range" description="DR = 20·log₁₀(Nwell/σread). C = Nwell·q/Vswing. Larger wells → more DR but slower charge transfer.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Well capacity (e⁻)</span>
-          <input type="number" value={wellCapacity} onChange={e => setWellCapacity(+e.target.value)} step="1000" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Read noise (e⁻ rms)</span>
-          <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} step="1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Pixel size (μm)</span>
-          <input type="number" value={pixelSize} onChange={e => setPixelSize(+e.target.value)} step="0.5" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Voltage swing (V)</span>
-          <input type="number" value={voltageSwing} onChange={e => setVoltageSwing(+e.target.value)} step="0.1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Well capacity (e⁻)</span>
+          <input type="number" value={wellCapacity} onChange={e => setWellCapacity(+e.target.value)} step="1000" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read noise (e⁻ rms)</span>
+          <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pixel size (μm)</span>
+          <input type="number" value={pixelSize} onChange={e => setPixelSize(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Voltage swing (V)</span>
+          <input type="number" value={voltageSwing} onChange={e => setVoltageSwing(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
-      <div className="bg-gray-900 rounded p-4 mb-6">
+      <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <p className="text-gray-300">Dynamic range = <span className="text-blue-400 font-mono">{dynamicRange.toFixed(1)} dB</span></p>
         <p className="text-gray-300">Pixel capacitance = <span className="text-blue-400 font-mono">{(capacitance * 1e15).toFixed(2)} fF</span></p>
         <p className="text-gray-300">Full well density = <span className="text-blue-400 font-mono">{fullWellElectronsPerArea.toFixed(0)} e⁻/μm²</span></p>
@@ -53,13 +49,13 @@ export default function WellCapacityPage() {
         <p className="text-gray-300">Min detectable (3σ) = <span className="text-blue-400 font-mono">{minDetectable} e⁻</span></p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Well capacity (e⁻)", gridcolor: "#374151" },
         yaxis: { title: "Dynamic range (dB)", gridcolor: "#374151" },
         yaxis2: { title: "Capacitance (F)", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 70, r: 70 }, autosize: true, showlegend: true
-      }} className="w-full" style={{ height: 400 }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SpectralResponsePage() {
   const [responsivityPeak, setResponsivityPeak] = useState(0.6); // A/W at peak
@@ -39,35 +38,32 @@ export default function SpectralResponsePage() {
   const cutoffLong = peakWavelength + 2.5 * sigma;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
-      <h1 className="text-3xl font-bold mb-2">Spectral Response</h1>
-      <p className="text-gray-400 mb-8">R(λ) = η(λ) · q · λ / (h·c). Responsivity and quantum efficiency as a function of wavelength.</p>
-
+    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Spectral Response" description="R(λ) = η(λ) · q · λ / (h·c). Responsivity and quantum efficiency as a function of wavelength.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Peak Responsivity (A/W)</span>
-          <input type="number" value={responsivityPeak} onChange={e => setResponsivityPeak(+e.target.value)} step={0.01} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Peak Wavelength (nm)</span>
-          <input type="number" value={peakWavelength} onChange={e => setPeakWavelength(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Spectral Bandwidth FWHM (nm)</span>
-          <input type="number" value={bandwidthNm} onChange={e => setBandwidthNm(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Temperature (°C)</span>
-          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Peak Responsivity (A/W)</span>
+          <input type="number" value={responsivityPeak} onChange={e => setResponsivityPeak(+e.target.value)} step={0.01} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Peak Wavelength (nm)</span>
+          <input type="number" value={peakWavelength} onChange={e => setPeakWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Spectral Bandwidth FWHM (nm)</span>
+          <input type="number" value={bandwidthNm} onChange={e => setBandwidthNm(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Temperature (°C)</span>
+          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
-      <div className="bg-gray-900 rounded p-4 mb-6">
+      <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <p className="text-gray-300">Cutoff range: <span className="text-blue-400 font-mono">{cutoffShort.toFixed(0)}–{cutoffLong.toFixed(0)} nm</span></p>
         <p className="text-gray-300 text-sm mt-1">R(λ) = R<sub>peak</sub> · exp(−(λ−λ<sub>peak</sub>)² / 2σ²)</p>
-        <p className="text-gray-300 text-sm">η(λ) = R(λ) · h · c / (q · λ)</p>
+        <p className="text-sm text-gray-300">η(λ) = R(λ) · h · c / (q · λ)</p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
         yaxis: { title: "Responsivity (A/W)", gridcolor: "#374151" },
         yaxis2: { title: "QE (%)", gridcolor: "#374151", overlaying: "y", side: "right", range: [0, 100] },
         margin: { t: 20, b: 40, l: 70, r: 60 }, autosize: true, showlegend: true
-      }} className="w-full" style={{ height: 400 }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

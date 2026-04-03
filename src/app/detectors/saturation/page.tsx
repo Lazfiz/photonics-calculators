@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import ResultCard from "../../../components/result-card";
 
 export default function SaturationPage() {
   const [fullWellCapacity, setFullWellCapacity] = useState(20000); // electrons
@@ -40,21 +39,17 @@ export default function SaturationPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
-      <h1 className="text-3xl font-bold mb-2">Saturation & Linearity</h1>
-      <p className="text-gray-400 mb-8">Detector output vs input charge, showing the linear regime, saturation onset, and full well capacity limits.</p>
-
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Full Well Capacity (e⁻)</span>
-          <input type="number" value={fullWellCapacity} onChange={e => setFullWellCapacity(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Read Noise (e⁻ rms)</span>
-          <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} step={0.1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Bit Depth</span>
-          <select value={bitDepth} onChange={e => setBitDepth(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Full Well Capacity (e⁻)</span>
+          <input type="number" value={fullWellCapacity} onChange={e => setFullWellCapacity(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read Noise (e⁻ rms)</span>
+          <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bit Depth</span>
+          <select value={bitDepth} onChange={e => setBitDepth(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             {[8, 10, 12, 14, 16].map(b => <option key={b} value={b}>{b}-bit</option>)}
           </select></label>
-        <label className="block"><span className="text-gray-300 text-sm">Nonlinearity at Saturation (%)</span>
-          <input type="number" value={nonlinearityPercent} onChange={e => setNonlinearityPercent(+e.target.value)} step={0.1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Nonlinearity at Saturation (%)</span>
+          <input type="number" value={nonlinearityPercent} onChange={e => setNonlinearityPercent(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">
@@ -63,13 +58,13 @@ export default function SaturationPage() {
         <p className="text-gray-300 text-sm mt-1">DR = 20·log₁₀(FWC / σ<sub>read</sub>)</p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Input signal (e⁻)", gridcolor: "#374151" },
         yaxis: { title: "Output signal (e⁻)", gridcolor: "#374151" },
         yaxis2: { title: "Nonlinearity (%)", gridcolor: "#374151", overlaying: "y", side: "right", titlefont: { color: "#f87171" }, tickfont: { color: "#f87171" } },
         margin: { t: 20, b: 40, l: 70, r: 60 }, autosize: true, showlegend: true
-      }} className="w-full" style={{ height: 400 }} />
+      }} />
     </div>
   );
 }

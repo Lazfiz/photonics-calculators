@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function UniformityPage() {
   const [meanSignal, setMeanSignal] = useState(50000); // e-
@@ -57,23 +56,20 @@ export default function UniformityPage() {
   const prnuInDN = prnuNoise / (meanSignal / (Math.pow(2, 16) - 1));
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
-      <h1 className="text-3xl font-bold mb-2">Photoresponse Non-Uniformity</h1>
-      <p className="text-gray-400 mb-8">PRNU measures the spatial variation in pixel sensitivity across the sensor array. σ<sub>PRNU</sub> = PRNU% × mean signal.</p>
-
+    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Photoresponse Non-Uniformity" description="PRNU measures the spatial variation in pixel sensitivity across the sensor array. σPRNU = PRNU% × mean signal.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Mean Signal (e⁻)</span>
-          <input type="number" value={meanSignal} onChange={e => setMeanSignal(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">PRNU (%)</span>
-          <input type="number" value={prnuPercent} onChange={e => setPrnuPercent(+e.target.value)} step={0.1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">DSNU (%)</span>
-          <input type="number" value={dsnuPercent} onChange={e => setDsnuPercent(+e.target.value)} step={0.1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Read Noise (e⁻ rms)</span>
-          <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} step={0.1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Mean Signal (e⁻)</span>
+          <input type="number" value={meanSignal} onChange={e => setMeanSignal(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">PRNU (%)</span>
+          <input type="number" value={prnuPercent} onChange={e => setPrnuPercent(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">DSNU (%)</span>
+          <input type="number" value={dsnuPercent} onChange={e => setDsnuPercent(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read Noise (e⁻ rms)</span>
+          <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
-      <div className="bg-gray-900 rounded p-4 mb-6">
+      <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <p className="text-gray-300">PRNU noise = <span className="text-blue-400 font-mono">{prnuNoise.toFixed(0)} e⁻</span> ({prnuPercent}%)</p>
         <p className="text-gray-300">DSNU noise = <span className="text-blue-400 font-mono">{dsnuNoise.toFixed(0)} e⁻</span></p>
         <p className="text-gray-300">Shot noise = <span className="text-blue-400 font-mono">{shotNoise.toFixed(1)} e⁻</span></p>
@@ -81,19 +77,19 @@ export default function UniformityPage() {
         <p className="text-gray-300 text-sm mt-1">σ<sub>total</sub> = √(σ²<sub>PRNU</sub> + σ²<sub>DSNU</sub> + σ²<sub>shot</sub> + σ²<sub>read</sub>)</p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "x (pixel)", gridcolor: "#374151" },
         yaxis: { title: "y (pixel)", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true
-      }} className="w-full mb-6" style={{ height: 350 }} />
+      }} className="w-full mb-6" />
 
-      <Plot data={histogramData} layout={{
+      <ChartPanel data={histogramData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Pixel value (e⁻)", gridcolor: "#374151" },
         yaxis: { title: "Count", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true, showlegend: true, bargap: 0.05
-      }} className="w-full" style={{ height: 300 }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

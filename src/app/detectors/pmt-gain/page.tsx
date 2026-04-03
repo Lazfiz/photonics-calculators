@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import ResultCard from "../../../components/result-card";
 
 // PMT Gain Calculator
 // Total gain: G = δ^n where δ is per-stage gain, n is number of stages
@@ -89,67 +88,63 @@ export default function PmtGainPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
-      <h1 className="text-3xl font-bold mb-2">PMT Gain Calculator</h1>
-      <p className="text-gray-400 mb-8">Photomultiplier tube gain stages, anode responsivity, SNR analysis, and excess noise.</p>
-
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Number of Dynode Stages</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Number of Dynode Stages</span>
           <input type="number" value={numStages} onChange={e => setNumStages(+e.target.value)} min="6" max="14" step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Stage Voltage (V)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Stage Voltage (V)</span>
           <input type="number" value={stageVoltage} onChange={e => setStageVoltage(+e.target.value)} min="50" max="200" step="5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Photocathode QE</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Photocathode QE</span>
           <input type="number" value={photocathodeQE} onChange={e => setPhotocathodeQE(+e.target.value)} min="0.01" max="0.5" step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Anode Dark Current (nA)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Anode Dark Current (nA)</span>
           <input type="number" value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)} min="0.1" step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min="200" max="900" step="10"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Amplifier Noise (e⁻ rms)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Amplifier Noise (e⁻ rms)</span>
           <input type="number" value={amplifierNoise} onChange={e => setAmplifierNoise(+e.target.value)} min="100" step="100"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">
         <h2 className="text-lg font-semibold mb-4">Results</h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div><span className="text-gray-400 text-sm">Per-Stage Gain δ</span><div className="text-xl font-mono">{perStageGain.toFixed(2)}</div></div>
-          <div><span className="text-gray-400 text-sm">Total Gain G</span><div className="text-xl font-mono text-green-400">{totalGain.toExponential(2)}</div></div>
-          <div><span className="text-gray-400 text-sm">Total Voltage</span><div className="text-xl font-mono">{totalVoltage} V</div></div>
-          <div><span className="text-gray-400 text-sm">Anode Responsivity</span><div className="text-xl font-mono">{anodeResponsivity.toExponential(2)} A/W</div></div>
-          <div><span className="text-gray-400 text-sm">Excess Noise Factor</span><div className="text-xl font-mono">{excessNoiseFactor.toFixed(4)}</div></div>
-          <div><span className="text-gray-400 text-sm">Cathode Dark Current</span><div className="text-xl font-mono">{(cathodeDarkCurrent * 1e15).toFixed(2)} fA</div></div>
+          <ResultCard label="Per-Stage Gain δ" value={perStageGain.toFixed(2)} tone="blue" />
+          <ResultCard label="Total Gain G" value={totalGain.toExponential(2)} tone="blue" />
+          <ResultCard label="Total Voltage" value="{totalVoltage} V" tone="blue" />
+          <ResultCard label="Anode Responsivity" value="{anodeResponsivity.toExponential(2)} A/W" tone="blue" />
+          <ResultCard label="Excess Noise Factor" value={excessNoiseFactor.toFixed(4)} tone="blue" />
+          <ResultCard label="Cathode Dark Current" value="{(cathodeDarkCurrent * 1e15).toFixed(2)} fA" tone="blue" />
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">Total Gain vs Stage Voltage</h3>
-          <Plot data={gainChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+          <ChartPanel data={gainChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "Stage Voltage (V)", gridcolor: "#374151" },
-            yaxis: { title: "Total Gain G", type: "log", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 } }} config={{ displayModeBar: false }} style={{ width: "100%", height: 300 }} />
+            yaxis: { title: "Total Gain G", type: "log", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">SNR vs Photon Flux</h3>
-          <Plot data={snrChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+          <ChartPanel data={snrChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "Photon Flux (photons/s)", gridcolor: "#374151" },
-            yaxis: { title: "Output SNR", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 } }} config={{ displayModeBar: false }} style={{ width: "100%", height: 300 }} />
+            yaxis: { title: "Output SNR", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 } }} />
         </div>
       </div>
 
