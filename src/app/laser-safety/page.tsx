@@ -32,6 +32,14 @@ const calculators = [
   { name: "UV Exposure Limits", href: "/laser-safety/uv-exposure", desc: "Actinic UV exposure limits (ICNIRP/ACGIH)" },
   { name: "IR Corneal Exposure", href: "/laser-safety/infrared-corneal", desc: "Corneal MPE for IR lasers (1400nm–1mm)" },
   { name: "Maximum Exposure Duration", href: "/laser-safety/maximum-exposure", desc: "Max safe exposure time before exceeding MPE" },
+  { name: "AEL Limits", href: "/laser-safety/ael-limits", desc: "Accessible Emission Limits by laser classification (IEC 60825-1)" },
+  { name: "OD Requirements", href: "/laser-safety/od-requirements", desc: "Required optical density for protective eyewear" },
+  { name: "Safe Exposure Duration", href: "/laser-safety/exposure-duration", desc: "Maximum safe CW exposure time before exceeding MPE" },
+  { name: "Beam Divergence Hazards", href: "/laser-safety/beam-divergence-hazards", desc: "Gaussian beam propagation and hazard distance analysis" },
+  { name: "Skin Hazard Assessment", href: "/laser-safety/skin-hazard", desc: "Skin exposure risk evaluation per ANSI Z136.1" },
+  { name: "Safe Viewing Distance", href: "/laser-safety/viewing-distance", desc: "NOHD calculation for direct beam viewing" },
+  { name: "Thermal Lens Hazard", href: "/laser-safety/thermal-lens-hazard", desc: "Thermal lensing risk to protective eyewear" },
+  { name: "Diffuse Reflection Hazard", href: "/laser-safety/diffuse-reflection", desc: "Lambertian reflection hazard with extended-source MPE" },
 ];
 
 export default function LaserSafetyPage() {

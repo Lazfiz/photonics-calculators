@@ -31,6 +31,14 @@ const calculators = [
   { name: "Hybrid Detector", href: "/detectors/hybrid-detector", desc: "Photodiode + TIA hybrid noise analysis and NEP optimization" },
   { name: "EMCCD vs sCMOS", href: "/detectors/electron-multiplying", desc: "Low-light imaging comparison: EM gain vs low read noise" },
   { name: "ICCD Design", href: "/detectors/intensified-camera", desc: "Intensified CCD: MCP gain, gating, system QE, and SNR" },
+  { name: "Detectivity D*", href: "/detectors/detectivity", desc: "Specific detectivity from NEP, area, and bandwidth" },
+  { name: "Avalanche Gain", href: "/detectors/avalanche-gain", desc: "APD multiplication gain and McIntyre excess noise factor" },
+  { name: "Junction Capacitance", href: "/detectors/capacitance", desc: "Photodiode capacitance vs reverse bias and RC bandwidth" },
+  { name: "SPAD Dead Time", href: "/detectors/spad-dead-time", desc: "Dead time effects, pile-up loss, and count rate correction" },
+  { name: "EMCCD Gain", href: "/detectors/emccd-gain", desc: "EMCCD gain stages, excess noise, and SNR vs conventional CCD" },
+  { name: "InGaAs Parameters", href: "/detectors/ingaas-parameters", desc: "InGaAs bandgap, cutoff, QE, and dark current for SWIR" },
+  { name: "Silicon Photodiode", href: "/detectors/silicon-photodiode", desc: "Si photodiode spectral response, QE, and dark current" },
+  { name: "PMT Gain Stages", href: "/detectors/pmt-gain", desc: "PMT dynode gain, anode responsivity, and SNR analysis" },
 ];
 
 export default function DetectorsPage() {
