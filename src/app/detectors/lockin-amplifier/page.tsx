@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import ResultCard from "../../../components/result-card";
 
 // Lock-in amplifier: V_out = V_signal * cos(Δφ) * (2/π) for square-wave demod
 // ENBW = 1/(4*RC) for 1st-order RC output filter
@@ -54,60 +53,44 @@ export default function LockinAmplifierPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
-      <h1 className="text-3xl font-bold mb-2">Lock-in Amplifier</h1>
-      <p className="text-gray-400 mb-8">Phase-sensitive detection — recover signals buried deep in noise.</p>
-
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Signal Frequency (Hz)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Signal Frequency (Hz)</span>
           <input type="number" value={signalFreq} onChange={e => setSignalFreq(+e.target.value)} min="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Reference Frequency (Hz)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Reference Frequency (Hz)</span>
           <input type="number" value={refFreq} onChange={e => setRefFreq(+e.target.value)} min="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Phase Shift (°)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Phase Shift (°)</span>
           <input type="number" value={phaseShift} onChange={e => setPhaseShift(+e.target.value)} min="-180" max="180"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Signal Amplitude (μV)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Signal Amplitude (μV)</span>
           <input type="number" value={signalAmp} onChange={e => setSignalAmp(+e.target.value)} min="0.001" step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Input Noise Density (nV/√Hz)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Input Noise Density (nV/√Hz)</span>
           <input type="number" value={noiseDensity} onChange={e => setNoiseDensity(+e.target.value)} min="0.1" step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Time Constant (s)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Time Constant (s)</span>
           <input type="number" value={timeConstant} onChange={e => setTimeConstant(+e.target.value)} min="0.001" step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Δf (mismatch)</p>
-          <p className="text-xl font-bold text-yellow-400">{deltaF} Hz</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">ENBW</p>
-          <p className="text-xl font-bold text-blue-400">{(enbwActual).toFixed(3)} Hz</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Output Signal</p>
-          <p className="text-xl font-bold text-green-400">{(outputSignal * 1e6).toFixed(2)} μV</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">SNR Improvement</p>
-          <p className="text-xl font-bold text-purple-400">×{snrImprovement.toFixed(1)}</p>
-        </div>
+        <ResultCard label="Δf (mismatch)" value="{deltaF} Hz" tone="yellow" />
+        <ResultCard label="ENBW" value="{(enbwActual).toFixed(3)} Hz" tone="blue" />
+        <ResultCard label="Output Signal" value="{(outputSignal * 1e6).toFixed(2)} μV" tone="green" />
+        <ResultCard label="SNR Improvement" value="×{snrImprovement.toFixed(1)}" tone="purple" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
@@ -116,14 +99,14 @@ export default function LockinAmplifierPage() {
         <p>SNR improvement = √(BW<sub>in</sub> / ENBW) = √({inputNoiseBW.toFixed(0)} / {enbwActual.toFixed(3)}) = ×{snrImprovement.toFixed(1)}</p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" },
         xaxis: { title: "Frequency (Hz)", gridcolor: "#374151", type: "log" },
         yaxis: { title: "Noise Density (nV/√Hz)", gridcolor: "#374151", type: "log" },
         yaxis2: { title: "Transfer", gridcolor: "#374151", overlaying: "y", side: "right", range: [-0.1, 1.2] },
         margin: { t: 30, r: 60, b: 50, l: 80 }, legend: { bgcolor: "transparent", font: { size: 10 } },
-      }} config={{ responsive: true, displayModeBar: false }} />
+      }} />
     </div>
   );
 }

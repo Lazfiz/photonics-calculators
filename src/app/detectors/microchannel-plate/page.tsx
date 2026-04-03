@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import ResultCard from "../../../components/result-card";
 
 export default function MicrochannelPlatePage() {
   const [numPlates, setNumPlates] = useState(2);
@@ -38,23 +37,19 @@ export default function MicrochannelPlatePage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
-      <h1 className="text-3xl font-bold mb-2">Microchannel Plate (MCP)</h1>
-      <p className="text-gray-400 mb-8">Microchannel plate detector calculator. Models electron multiplication in glass capillary arrays, gain, spatial and temporal resolution.</p>
-
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Number of Plates (chevron/Z)</span>
-          <input type="number" value={numPlates} onChange={e => setNumPlates(+e.target.value)} min="1" max="3" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Channel Diameter (µm)</span>
-          <input type="number" value={channelDiameter} onChange={e => setChannelDiameter(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Channel Length (mm)</span>
-          <input type="number" value={channelLength} onChange={e => setChannelLength(+e.target.value)} step="0.1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Open Area Ratio</span>
-          <input type="number" value={openAreaRatio} onChange={e => setOpenAreaRatio(+e.target.value)} step="0.01" min="0" max="1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Bias Angle (°)</span>
-          <input type="number" value={biasAngle} onChange={e => setBiasAngle(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Voltage per Plate (V)</span>
-          <input type="number" value={appliedVoltage} onChange={e => setAppliedVoltage(+e.target.value)} step="50" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Number of Plates (chevron/Z)</span>
+          <input type="number" value={numPlates} onChange={e => setNumPlates(+e.target.value)} min="1" max="3" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Channel Diameter (µm)</span>
+          <input type="number" value={channelDiameter} onChange={e => setChannelDiameter(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Channel Length (mm)</span>
+          <input type="number" value={channelLength} onChange={e => setChannelLength(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Open Area Ratio</span>
+          <input type="number" value={openAreaRatio} onChange={e => setOpenAreaRatio(+e.target.value)} step="0.01" min="0" max="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bias Angle (°)</span>
+          <input type="number" value={biasAngle} onChange={e => setBiasAngle(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Voltage per Plate (V)</span>
+          <input type="number" value={appliedVoltage} onChange={e => setAppliedVoltage(+e.target.value)} step="50" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
@@ -76,12 +71,12 @@ export default function MicrochannelPlatePage() {
         <p>η<sub>eff</sub> = η<sub>cathode</sub> × ε<sub>open</sub></p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Voltage per Plate (V)", gridcolor: "#374151" },
         yaxis: { title: "Gain", type: "log", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 70, r: 60 }, autosize: true, showlegend: true
-      }} className="w-full" style={{ height: 400 }} />
+      }} />
     </div>
   );
 }

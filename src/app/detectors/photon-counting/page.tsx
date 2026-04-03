@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import ResultCard from "../../../components/result-card";
 
 // Photon counting statistics: Poisson distribution P(n) = (μ^n / n!) * e^(-μ)
 // SNR = sqrt(N) for shot-noise limited detection
@@ -58,50 +57,34 @@ export default function PhotonCountingPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
-      <h1 className="text-3xl font-bold mb-2">Photon Counting Statistics</h1>
-      <p className="text-gray-400 mb-8">Poisson statistics for photon counting — understand noise limits and dead time effects.</p>
-
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Mean Counts per Interval</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Mean Counts per Interval</span>
           <input type="number" value={meanCounts} onChange={e => setMeanCounts(+e.target.value)} min="0.1" step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Dead Time (ns)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Dead Time (ns)</span>
           <input type="number" value={deadTime} onChange={e => setDeadTime(+e.target.value)} min="0" step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Incident Count Rate (counts/s)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Incident Count Rate (counts/s)</span>
           <input type="number" value={countRate} onChange={e => setCountRate(+e.target.value)} min="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Integration Time (s)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Integration Time (s)</span>
           <input type="number" value={integrationTime} onChange={e => setIntegrationTime(+e.target.value)} min="0.001" step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">SNR (per interval)</p>
-          <p className="text-xl font-bold text-green-400">{snr.toFixed(1)} ({snrDb.toFixed(1)} dB)</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Relative Error</p>
-          <p className="text-xl font-bold text-yellow-400">{(relativeError * 100).toFixed(2)}%</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Dead Time Loss</p>
-          <p className="text-xl font-bold text-red-400">{deadTimeLoss.toFixed(1)}%</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Total SNR ({integrationTime}s)</p>
-          <p className="text-xl font-bold text-purple-400">{totalSNR.toFixed(0)}</p>
-        </div>
+        <ResultCard label="SNR (per interval)" value="{snr.toFixed(1)} ({snrDb.toFixed(1)} dB)" tone="green" />
+        <ResultCard label="Relative Error" value="{(relativeError * 100).toFixed(2)}%" tone="yellow" />
+        <ResultCard label="Dead Time Loss" value="{deadTimeLoss.toFixed(1)}%" tone="red" />
+        <ResultCard label="Total SNR ({integrationTime}s)" value="{totalSNR.toFixed(0)}" tone="purple" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
@@ -112,24 +95,24 @@ export default function PhotonCountingPage() {
       </div>
 
       <h2 className="text-xl font-bold mb-4">Count Distribution</h2>
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" },
         xaxis: { title: "Counts", gridcolor: "#374151" },
         yaxis: { title: "Probability", gridcolor: "#374151" },
         margin: { t: 30, r: 20, b: 50, l: 60 }, legend: { bgcolor: "transparent", font: { size: 10 } },
         bargap: 0.05,
-      }} config={{ responsive: true, displayModeBar: false }} />
+      }} />
 
       <h2 className="text-xl font-bold mt-8 mb-4">SNR &amp; Error vs Counts</h2>
-      <Plot data={snrVsCounts} layout={{
+      <ChartPanel data={snrVsCounts} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" },
         xaxis: { title: "Number of Counts", gridcolor: "#374151", type: "log" },
         yaxis: { title: "SNR", gridcolor: "#374151" },
         yaxis2: { title: "Relative Error (%)", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 30, r: 60, b: 50, l: 60 }, legend: { bgcolor: "transparent", font: { size: 10 } },
-      }} config={{ responsive: true, displayModeBar: false }} />
+      }} />
     </div>
   );
 }

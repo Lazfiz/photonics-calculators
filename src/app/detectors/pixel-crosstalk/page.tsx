@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import ResultCard from "../../../components/result-card";
 
 export default function PixelCrosstalkPage() {
   const [pixelPitch, setPixelPitch] = useState(5.0); // µm
@@ -68,50 +67,34 @@ export default function PixelCrosstalkPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
-      <h1 className="text-3xl font-bold mb-2">Pixel Crosstalk Calculator</h1>
-      <p className="text-gray-400 mb-8">Optical and electrical crosstalk in image sensors — diffusion, coupling, and MTF impact.</p>
-
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Pixel Pitch (µm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Pixel Pitch (µm)</span>
           <input type="number" value={pixelPitch} onChange={e => setPixelPitch(+e.target.value)} min="0.5" step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Depletion Depth (µm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Depletion Depth (µm)</span>
           <input type="number" value={depletionDepth} onChange={e => setDepletionDepth(+e.target.value)} min="1" step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min="300" max="1100"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Electrical Crosstalk</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Electrical Crosstalk</span>
           <input type="number" value={crosstalkCoeff} onChange={e => setCrosstalkCoeff(+e.target.value)} min="0" max="0.5" step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Absorption Depth</p>
-          <p className="text-xl font-bold text-blue-400">{absorptionDepth.toFixed(1)} µm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Diffusion Crosstalk</p>
-          <p className="text-xl font-bold text-green-400">{(diffusionCrosstalk * 100).toFixed(2)}%</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Total Crosstalk</p>
-          <p className="text-xl font-bold text-red-400">{(totalCrosstalk * 100).toFixed(2)}%</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">MTF @ Nyquist</p>
-          <p className="text-xl font-bold text-yellow-400">{(mtfAtNyquist * 100).toFixed(1)}%</p>
-        </div>
+        <ResultCard label="Absorption Depth" value="{absorptionDepth.toFixed(1)} µm" tone="blue" />
+        <ResultCard label="Diffusion Crosstalk" value="{(diffusionCrosstalk * 100).toFixed(2)}%" tone="green" />
+        <ResultCard label="Total Crosstalk" value="{(totalCrosstalk * 100).toFixed(2)}%" tone="red" />
+        <ResultCard label="MTF @ Nyquist" value="{(mtfAtNyquist * 100).toFixed(1)}%" tone="yellow" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
@@ -123,17 +106,17 @@ export default function PixelCrosstalkPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="bg-gray-900 rounded-lg p-4">
           <p className="text-gray-400 text-sm mb-2">Crosstalk vs Wavelength</p>
-          <Plot data={chartData} layout={{
+          <ChartPanel data={chartData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af", size: 11 },
             xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
             yaxis: { title: "Crosstalk (%)", gridcolor: "#374151" },
             margin: { t: 20, r: 20, b: 40, l: 60 }, legend: { bgcolor: "transparent", font: { size: 9 } },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <p className="text-gray-400 text-sm mb-2">MTF Degradation</p>
-          <Plot data={chartData.filter((_, i) => i >= 3)} layout={{
+          <ChartPanel data={chartData.filter((_, i) => i >= 3)} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af", size: 11 },
             xaxis: { title: "Spatial Freq (cycles/µm)", gridcolor: "#374151", anchor: "y2" },
@@ -141,7 +124,7 @@ export default function PixelCrosstalkPage() {
             xaxis2: { title: "Spatial Freq (cycles/µm)", gridcolor: "#374151", anchor: "y2" },
             yaxis2: { title: "MTF", gridcolor: "#374151" },
             margin: { t: 20, r: 20, b: 40, l: 60 }, legend: { bgcolor: "transparent", font: { size: 9 } },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
     </div>

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import ResultCard from "../../../components/result-card";
 
 export default function ModulationTransferPage() {
   const [pixelPitch, setPixelPitch] = useState(5.4); // μm
@@ -60,19 +59,15 @@ export default function ModulationTransferPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
-      <h1 className="text-3xl font-bold mb-2">Modulation Transfer Function (MTF)</h1>
-      <p className="text-gray-400 mb-8">MTF describes how well the detector preserves contrast at different spatial frequencies. MTF = product of individual component MTFs.</p>
-
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">Pixel Pitch (μm)</span>
-          <input type="number" value={pixelPitch} onChange={e => setPixelPitch(+e.target.value)} step={0.1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Diffusion Length (μm)</span>
-          <input type="number" value={diffusionLength} onChange={e => setDiffusionLength(+e.target.value)} step={0.1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Fill Factor</span>
-          <input type="number" value={fillFactor} onChange={e => setFillFactor(+e.target.value)} step={0.01} min={0.1} max={1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Optical Blur σ (μm)</span>
-          <input type="number" value={opticalBlur} onChange={e => setOpticalBlur(+e.target.value)} step={0.1} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pixel Pitch (μm)</span>
+          <input type="number" value={pixelPitch} onChange={e => setPixelPitch(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Diffusion Length (μm)</span>
+          <input type="number" value={diffusionLength} onChange={e => setDiffusionLength(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Fill Factor</span>
+          <input type="number" value={fillFactor} onChange={e => setFillFactor(+e.target.value)} step={0.01} min={0.1} max={1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Optical Blur σ (μm)</span>
+          <input type="number" value={opticalBlur} onChange={e => setOpticalBlur(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">
@@ -81,13 +76,13 @@ export default function ModulationTransferPage() {
         <p className="text-gray-300 text-sm mt-1">MTF<sub>pixel</sub> = |sinc(π·f/f<sub>N</sub>)| | MTF<sub>diff</sub> = 1/(1+(k·L<sub>d</sub>)²) | MTF<sub>opt</sub> = exp(−½(k·σ)²)</p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Spatial Frequency (lp/mm)", gridcolor: "#374151", range: [0, nyquist * 2] },
         yaxis: { title: "MTF", range: [0, 1.05], gridcolor: "#374151" },
         shapes: [{ type: "line" as const, x0: nyquist, x1: nyquist, y0: 0, y1: 1, line: { color: "#6b7280", width: 1, dash: "dot" } }],
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true, showlegend: true
-      }} className="w-full" style={{ height: 400 }} />
+      }} />
     </div>
   );
 }

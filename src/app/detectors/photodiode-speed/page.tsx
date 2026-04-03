@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+import ResultCard from "../../../components/result-card";
 
 // Photodiode: bandwidth ∝ 1/√(area) due to junction capacitance
 // C_j ∝ A, BW ≈ 1/(2π·R·C_j), responsivity R = η·q·λ/(hc)
@@ -53,60 +52,44 @@ export default function PhotodiodeSpeedPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/detectors" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Detectors</Link>
-      <h1 className="text-3xl font-bold mb-2">Photodiode Speed vs Area</h1>
-      <p className="text-gray-400 mb-8">RC-limited bandwidth and NEP trade-off with detector area.</p>
-
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Quantum Efficiency</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Quantum Efficiency</span>
           <input type="number" value={qe} onChange={e => setQe(+e.target.value)} min="0.01" max="1" step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Capacitance Density (fF/mm²)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Capacitance Density (fF/mm²)</span>
           <input type="number" value={capacitanceDensity} onChange={e => setCapacitanceDensity(+e.target.value)} min="1" step="5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Load Resistance (Ω)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Load Resistance (Ω)</span>
           <input type="number" value={loadResistance} onChange={e => setLoadResistance(+e.target.value)} min="10" step="10"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Area Min (mm²)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Area Min (mm²)</span>
           <input type="number" value={areaMin} onChange={e => setAreaMin(+e.target.value)} min="0.0001" step="0.001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Area Max (mm²)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Area Max (mm²)</span>
           <input type="number" value={areaMax} onChange={e => setAreaMax(+e.target.value)} step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Responsivity</p>
-          <p className="text-xl font-bold text-blue-400">{(responsivity * 1e3).toFixed(2)} mA/W</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">BW @ 1 mm²</p>
-          <p className="text-xl font-bold text-green-400">{(1 / (2 * Math.PI * loadResistance * capacitanceDensity * 1e-15 * 1e-6) / 1e9).toFixed(1)} GHz</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Cap @ 1 mm²</p>
-          <p className="text-xl font-bold text-yellow-400">{capacitanceDensity} fF</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">RC @ 1 mm²</p>
-          <p className="text-xl font-bold text-purple-400">{(loadResistance * capacitanceDensity * 1e-15 * 1e-6 * 1e12).toFixed(2)} ps</p>
-        </div>
+        <ResultCard label="Responsivity" value="{(responsivity * 1e3).toFixed(2)} mA/W" tone="blue" />
+        <ResultCard label="BW @ 1 mm²" value="{(1 / (2 * Math.PI * loadResistance * capacitanceDensity * 1e-15 * 1e-6) / 1e9).toFixed(1)} GHz" tone="green" />
+        <ResultCard label="Cap @ 1 mm²" value="{capacitanceDensity} fF" tone="yellow" />
+        <ResultCard label="RC @ 1 mm²" value="{(loadResistance * capacitanceDensity * 1e-15 * 1e-6 * 1e12).toFixed(2)} ps" tone="purple" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
@@ -117,23 +100,23 @@ export default function PhotodiodeSpeedPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
           title: { text: "Bandwidth & RC Time vs Area", font: { size: 12 } },
           xaxis: { title: "Area (mm²)", gridcolor: "#374151", type: "log" },
           yaxis: { title: "3dB Bandwidth (Hz)", gridcolor: "#374151", type: "log" },
           yaxis2: { title: "RC / Cap", gridcolor: "#374151", overlaying: "y", side: "right", type: "log" },
           margin: { t: 40, r: 60, b: 50, l: 70 }, legend: { bgcolor: "transparent", font: { size: 10 } },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
 
-        <Plot data={[{ x: nepVsArea.areas, y: nepVsArea.nep, type: "scatter" as const, mode: "lines" as const,
+        <ChartPanel data={[{ x: nepVsArea.areas, y: nepVsArea.nep, type: "scatter" as const, mode: "lines" as const,
           name: "NEP", line: { color: "#fbbf24" } }]} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
           title: { text: "NEP vs Area", font: { size: 12 } },
           xaxis: { title: "Area (mm²)", gridcolor: "#374151", type: "log" },
           yaxis: { title: "NEP (pW/√Hz)", gridcolor: "#374151", type: "log" },
           margin: { t: 40, r: 20, b: 50, l: 70 }, legend: { bgcolor: "transparent", font: { size: 10 } },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
     </div>
   );
