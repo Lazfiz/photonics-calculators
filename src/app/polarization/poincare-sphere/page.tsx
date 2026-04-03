@@ -103,8 +103,8 @@ export default function PoincareSpherePage() {
             <ResultRow label="V (S₃)" value={stokes.V.toFixed(4)} />
             <ResultRow label="DOP" value={dop.toFixed(4)} />
             <ResultRow label="Handedness" value={handedness} />
-            <ResultRow label="Jones Ex" value={`${jones.ex.re.toFixed(3)} ${jones.ex.im >= 0 ? "+" : ""}${jones.ex.im.toFixed(3)}j`} />
-            <ResultRow label="Jones Ey" value={`${jones.ey.re.toFixed(3)} ${jones.ey.im >= 0 ? "+" : ""}${jones.ey.im.toFixed(3)}j`} />
+            <ResultRow label="Jones Ex" value={`${jones.ex.toFixed(3)}`} />
+            <ResultRow label="Jones Ey" value={`${jones.ey.toFixed(3)}`} />
           </div>
         </div>
 
