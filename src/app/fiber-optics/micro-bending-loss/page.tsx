@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function MicrobendingLossPage() {
   const [wavelength, setWavelength] = useState(1550); // nm
@@ -125,46 +124,43 @@ export default function MicrobendingLossPage() {
   }, [wavelength, coreRadius, coreNA, rmsAmplitude]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Microbending Loss</h1>
-      <p className="text-gray-400 mb-8">Calculate microbending-induced loss from random perturbations, coating properties, and fiber parameters.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Microbending Loss" description="Calculate microbending-induced loss from random perturbations, coating properties, and fiber parameters.">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Core Radius (µm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Core Radius (µm)</span>
           <input type="number" value={coreRadius} onChange={e => setCoreRadius(+e.target.value)} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Core NA</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Core NA</span>
           <input type="number" value={coreNA} onChange={e => setCoreNA(+e.target.value)} step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Coating Modulus (MPa)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Coating Modulus (MPa)</span>
           <input type="number" value={coatingModulus} onChange={e => setCoatingModulus(+e.target.value)} step="0.1" min={0.1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Correlation Length L_c (µm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Correlation Length L_c (µm)</span>
           <input type="number" value={correlationLength} onChange={e => setCorrelationLength(+e.target.value)} step="10"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">RMS Amplitude (µm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">RMS Amplitude (µm)</span>
           <input type="number" value={rmsAmplitude} onChange={e => setRmsAmplitude(+e.target.value)} step="0.01" min={0.001}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Fiber Length (km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Fiber Length (km)</span>
           <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} step="0.1" min={0.1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -202,30 +198,30 @@ export default function MicrobendingLossPage() {
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">Loss vs Wavelength</h3>
-          <Plot data={wavelengthData} layout={{
+          <ChartPanel data={wavelengthData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             xaxis: { title: "λ (nm)", gridcolor: "#374151", color: "#9ca3af" },
             yaxis: { title: "Loss (dB/km)", gridcolor: "#374151", color: "#9ca3af" },
             font: { color: "#e5e7eb" }, margin: { t: 10, r: 10, b: 40, l: 50 }, height: 200,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">Loss vs RMS Amplitude</h3>
-          <Plot data={amplitudeData} layout={{
+          <ChartPanel data={amplitudeData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             xaxis: { title: "A_rms (µm)", gridcolor: "#374151", color: "#9ca3af" },
             yaxis: { title: "Loss (dB/km)", gridcolor: "#374151", color: "#9ca3af" },
             font: { color: "#e5e7eb" }, margin: { t: 10, r: 10, b: 40, l: 50 }, height: 200,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">Loss vs Correlation Length</h3>
-          <Plot data={correlationData} layout={{
+          <ChartPanel data={correlationData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             xaxis: { title: "L_c (µm)", gridcolor: "#374151", color: "#9ca3af" },
             yaxis: { title: "Loss (dB/km)", gridcolor: "#374151", color: "#9ca3af" },
             font: { color: "#e5e7eb" }, margin: { t: 10, r: 10, b: 40, l: 50 }, height: 200,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
 
@@ -240,6 +236,6 @@ export default function MicrobendingLossPage() {
           <p>Typical: L_c = 100-1000 µm, A_rms = 0.01-0.5 µm</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

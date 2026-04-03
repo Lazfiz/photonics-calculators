@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ModeFieldDiameterPage() {
   const [wavelength, setWavelength] = useState(1550); // nm
@@ -86,11 +85,8 @@ export default function ModeFieldDiameterPage() {
   }, [wavelength, coreRadius, na, coreIndex, claddingIndex]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:underline mb-6 inline-block">← Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Mode Field Diameter</h1>
-      <p className="text-gray-400 mb-6">Calculate MFD, effective area, and spot size for single-mode fibers.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Mode Field Diameter" description="Calculate MFD, effective area, and spot size for single-mode fibers.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Fiber Parameters</h2>
@@ -136,8 +132,7 @@ export default function ModeFieldDiameterPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Mode Intensity Profile</h2>
-          <Plot
-            data={[
+          <ChartPanel data={[
               { type: "scatter" as const, mode: "lines" as const, x: results.r, y: results.intensity, line: { color: "#3b82f6", width: 2 }, fill: "tozeroy", fillcolor: "rgba(59,130,246,0.2)" },
               { type: "scatter" as const, mode: "lines" as const, x: [-coreRadius, -coreRadius], y: [0, 1], line: { color: "#f59e0b", dash: "dash" }, name: "Core", showlegend: false },
               { type: "scatter" as const, mode: "lines" as const, x: [coreRadius, coreRadius], y: [0, 1], line: { color: "#f59e0b", dash: "dash" }, name: "Core", showlegend: false },
@@ -147,56 +142,53 @@ export default function ModeFieldDiameterPage() {
               yaxis: { title: "Normalized Intensity", color: "#9ca3af", gridcolor: "#374151", range: [0, 1.1] },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">MFD vs Wavelength</h2>
-          <Plot
-            data={[{ type: "scatter" as const, mode: "lines" as const, x: results.wavelengths, y: results.mfdVsWl, line: { color: "#22c55e", width: 2 } }]}
+          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.wavelengths, y: results.mfdVsWl, line: { color: "#22c55e", width: 2 } }]}
             layout={{
               xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "MFD (μm)", color: "#9ca3af", gridcolor: "#374151" },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
               shapes: [{ type: "line", x0: wavelength, x1: wavelength, y0: 6, y1: 14, line: { color: "#ef4444", dash: "dot" } }],
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">MFD vs Core Radius</h2>
-          <Plot
-            data={[{ type: "scatter" as const, mode: "lines" as const, x: results.radii, y: results.mfdVsRadius, line: { color: "#f59e0b", width: 2 } }]}
+          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.radii, y: results.mfdVsRadius, line: { color: "#f59e0b", width: 2 } }]}
             layout={{
               xaxis: { title: "Core Radius (μm)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "MFD (μm)", color: "#9ca3af", gridcolor: "#374151" },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
               shapes: [{ type: "line", x0: coreRadius, x1: coreRadius, y0: 6, y1: 14, line: { color: "#ef4444", dash: "dot" } }],
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Bending Loss vs Bend Radius</h2>
-          <Plot
-            data={[{ type: "scatter" as const, mode: "lines" as const, x: results.bendRadii, y: results.bendLoss.map((l) => l * 1000), line: { color: "#ef4444", width: 2 } }]}
+          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.bendRadii, y: results.bendLoss.map((l) => l * 1000), line: { color: "#ef4444", width: 2 } }]}
             layout={{
               xaxis: { title: "Bend Radius (mm)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Bending Loss (dB/turn)", color: "#9ca3af", gridcolor: "#374151" },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

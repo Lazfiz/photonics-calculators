@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
-import dynamic from "next/dynamic";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function RareEarthFiberCalculator() {
   const [dopant, setDopant] = useState<"Er" | "Yb" | "Er/Yb" | "Tm" | "Ho">("Er");
@@ -116,10 +115,7 @@ export default function RareEarthFiberCalculator() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-8">
       <div className="max-w-4xl mx-auto">
-        <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 mb-6 inline-block">← Back to Fiber Optics</Link>
-        <h1 className="text-3xl font-bold mb-2">Rare Earth Fiber Design Calculator</h1>
-        <p className="text-gray-400 mb-8">Design Er³⁺, Yb³⁺, Tm³⁺, Ho³⁺, and co-doped fibers — absorption, gain, optimal length</p>
-
+                
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div>
@@ -200,10 +196,10 @@ export default function RareEarthFiberCalculator() {
 
         <div className="mt-8 grid md:grid-cols-2 gap-8">
           <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-            <Plot data={absSpectrum} layout={layout1} config={{ responsive: true }} className="w-full" />
+            <ChartPanel data={absSpectrum} layout={layout1} />
           </div>
           <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-            <Plot data={gainVsLength} layout={layout2} config={{ responsive: true }} className="w-full" />
+            <ChartPanel data={gainVsLength} layout={layout2} />
           </div>
         </div>
       </div>

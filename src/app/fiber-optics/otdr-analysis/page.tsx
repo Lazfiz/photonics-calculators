@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function OTDRAnalysisPage() {
   const [pulseWidth, setPulseWidth] = useState(100); // ns
@@ -111,41 +110,38 @@ export default function OTDRAnalysisPage() {
   }, [pulseWidth, refractiveIndex]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">OTDR Analysis</h1>
-      <p className="text-gray-400 mb-8">Simulate OTDR traces, calculate spatial resolution, dynamic range, dead zones, and event analysis for fiber characterization.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="OTDR Analysis" description="Simulate OTDR traces, calculate spatial resolution, dynamic range, dead zones, and event analysis for fiber characterization.">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Pulse Width (ns)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Pulse Width (ns)</span>
           <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} min={1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Fiber Length (km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Fiber Length (km)</span>
           <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} min={0.1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Attenuation (dB/km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Attenuation (dB/km)</span>
           <input type="number" value={attenuationCoeff} onChange={e => setAttenuationCoeff(+e.target.value)} step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Refractive Index</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Refractive Index</span>
           <input type="number" value={refractiveIndex} onChange={e => setRefractiveIndex(+e.target.value)} step="0.0001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Backscatter Coeff. (dB)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Backscatter Coeff. (dB)</span>
           <input type="number" value={backscatterCoeff} onChange={e => setBackscatterCoeff(+e.target.value)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Number of Splices</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Number of Splices</span>
           <input type="number" value={numSplices} onChange={e => setNumSplices(+e.target.value)} min={0}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -190,24 +186,24 @@ export default function OTDRAnalysisPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Simulated OTDR Trace</h3>
-        <Plot data={traceData} layout={{
+        <ChartPanel data={traceData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Distance (km)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "Power (dB)", color: "#9ca3af", gridcolor: "#374151", autorange: "reversed" },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 380,
           legend: { x: 0.02, y: 0.02, bgcolor: "transparent", font: { color: "#9ca3af" } },
-        }} config={{ displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Spatial Resolution vs Pulse Width</h3>
-        <Plot data={pulseComparison} layout={{
+        <ChartPanel data={pulseComparison} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Pulse Width (ns)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
           yaxis: { title: "Resolution (m)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 300,
           showlegend: false,
-        }} config={{ displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -221,6 +217,6 @@ export default function OTDRAnalysisPage() {
           <p>Trade-off: Short pulse → better resolution, less range; Long pulse → more range, less resolution</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FiberBandwidthPage() {
   const [fiberType, setFiberType] = useState<"SMF" | "MM62_5" | "MM50">("SMF");
@@ -121,41 +120,38 @@ export default function FiberBandwidthPage() {
   }, [fiberType, wavelength, sourceLinewidth, modalBW, calc.B_total]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Fiber Bandwidth Calculation</h1>
-      <p className="text-gray-400 mb-8">Calculate bandwidth limitations from chromatic dispersion, modal dispersion (MMF), and PMD for various fiber types and link configurations.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Bandwidth Calculation" description="Calculate bandwidth limitations from chromatic dispersion, modal dispersion (MMF), and PMD for various fiber types and link configurations.">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Fiber Type</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Fiber Type</span>
           <select value={fiberType} onChange={e => setFiberType(e.target.value as any)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="SMF">Single-Mode (G.652)</option>
             <option value="MM62_5">MMF 62.5/125 μm</option>
             <option value="MM50">MMF 50/125 μm (OM3/OM4)</option>
           </select>
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Length (km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Length (km)</span>
           <input type="number" value={length} onChange={e => setLength(+e.target.value)} min={0.1} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={800} max={1700}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Source Linewidth (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Source Linewidth (nm)</span>
           <input type="number" value={sourceLinewidth} onChange={e => setSourceLinewidth(+e.target.value)} min={0.01} step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
         {fiberType !== "SMF" && (
-          <label className="block">
-            <span className="text-gray-300 text-sm">Modal BW (MHz·km)</span>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">Modal BW (MHz·km)</span>
             <input type="number" value={modalBW} onChange={e => setModalBW(+e.target.value)} min={100}
-              className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
           </label>
         )}
       </div>
@@ -199,24 +195,24 @@ export default function FiberBandwidthPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Bandwidth vs Distance</h3>
-        <Plot data={bwVsLengthData} layout={{
+        <ChartPanel data={bwVsLengthData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Distance (km)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "Bandwidth (GHz)", color: "#9ca3af", gridcolor: "#374151", range: [0, Math.min(calc.B_total * 2, 100)] },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 380,
           legend: { x: 0.02, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af" } },
-        }} config={{ displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Maximum Reach by Data Rate</h3>
-        <Plot data={reachData} layout={{
+        <ChartPanel data={reachData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Data Rate (Gbps)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "Max Distance (km)", color: "#9ca3af", gridcolor: "#374151" },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 350,
           showlegend: false,
-        }} config={{ displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -231,6 +227,6 @@ export default function FiberBandwidthPage() {
           <p>Rule: Δτ &lt; T_bit/3 for &lt;1dB penalty</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

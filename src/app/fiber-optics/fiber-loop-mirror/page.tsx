@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FiberLoopMirrorPage() {
   const [couplingRatio, setCouplingRatio] = useState(50); // %
@@ -80,36 +79,33 @@ export default function FiberLoopMirrorPage() {
   }, [includePM, wavelength, birefringence, fiberLength]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Fiber Loop Mirror (Sagnac)</h1>
-      <p className="text-gray-400 mb-8">Sagnac fiber loop mirror reflectance, spectral response, and birefringent filter design.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Loop Mirror (Sagnac)" description="Sagnac fiber loop mirror reflectance, spectral response, and birefringent filter design.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Coupling Ratio (%)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Coupling Ratio (%)</span>
           <input type="number" value={couplingRatio} onChange={e => setCouplingRatio(+e.target.value)} min={0} max={100}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Loop Length (m)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Loop Length (m)</span>
           <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} min={0.01} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={400}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Birefringence (Δn)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Birefringence (Δn)</span>
           <input type="number" value={birefringence} onChange={e => setBirefringence(+e.target.value)} min={0} step="1e-8"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
         <label className="block flex items-center gap-2 mt-4">
           <input type="checkbox" checked={includePM} onChange={e => setIncludePM(e.target.checked)}
             className="bg-gray-900 border-gray-700 rounded" />
-          <span className="text-gray-300 text-sm">PM Fiber (comb filter)</span>
+          <span className="text-sm text-gray-300">PM Fiber (comb filter)</span>
         </label>
       </div>
 
@@ -147,7 +143,7 @@ export default function FiberLoopMirrorPage() {
         </div>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" },
         title: { text: "Reflectance vs Coupling Ratio", font: { color: "#e5e7eb", size: 14 } },
@@ -155,18 +151,18 @@ export default function FiberLoopMirrorPage() {
         yaxis: { title: "Reflectance (%)", gridcolor: "#374151", range: [0, 105] },
         legend: { x: 0.6, y: 0.99 },
         margin: { t: 40 },
-      }} style={{ width: "100%", height: 350 }} />
+      }} />
 
       {includePM && spectrumData.length > 0 && (
-        <Plot data={spectrumData} layout={{
+        <ChartPanel data={spectrumData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           title: { text: "Spectral Response (PM Loop Mirror)", font: { color: "#e5e7eb", size: 14 } },
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
           yaxis: { title: "Transmission (%)", gridcolor: "#374151" },
           margin: { t: 40 },
-        }} style={{ width: "100%", height: 350, marginTop: 16 }} />
+        }} />
       )}
-    </div>
+    </CalculatorShell>
   );
 }

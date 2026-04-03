@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function BendLossPage() {
   const [radius, setRadius] = useState(15); // mm
@@ -54,31 +53,28 @@ export default function BendLossPage() {
   }, [radius, wavelength, coreIndex, claddingIndex]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Macro Bending Loss</h1>
-      <p className="text-gray-400 mb-8">Estimate macro-bending loss for single-mode fiber using simplified Marcuse formula.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Macro Bending Loss" description="Estimate macro-bending loss for single-mode fiber using simplified Marcuse formula.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Bend Radius (mm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Bend Radius (mm)</span>
           <input type="number" value={radius} onChange={e => setRadius(+e.target.value)} min={1} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={800} max={1700}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Core Index n₁</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Core Index n₁</span>
           <input type="number" value={coreIndex} onChange={e => setCoreIndex(+e.target.value)} step="0.0001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Cladding Index n₂</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Cladding Index n₂</span>
           <input type="number" value={claddingIndex} onChange={e => setCladdingIndex(+e.target.value)} step="0.0001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -98,13 +94,13 @@ export default function BendLossPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" }, xaxis: { title: "Bend Radius (mm)", gridcolor: "#374151" },
           yaxis: { title: "Loss (dB/m)", gridcolor: "#374151", type: "log" },
           margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

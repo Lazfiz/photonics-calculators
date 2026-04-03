@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function LinkBudgetPage() {
   const [txPower, setTxPower] = useState(0); // dBm
@@ -43,56 +42,53 @@ export default function LinkBudgetPage() {
   }, [calc, margin, rxSensitivity]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Fiber Link Budget</h1>
-      <p className="text-gray-400 mb-8">Total optical link loss budget calculator. Power budget vs. accumulated losses.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Link Budget" description="Total optical link loss budget calculator. Power budget vs. accumulated losses.">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Tx Power (dBm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Tx Power (dBm)</span>
           <input type="number" value={txPower} onChange={e => setTxPower(+e.target.value)} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Rx Sensitivity (dBm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Rx Sensitivity (dBm)</span>
           <input type="number" value={rxSensitivity} onChange={e => setRxSensitivity(+e.target.value)} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Fiber Length (km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Fiber Length (km)</span>
           <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} min={0} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Fiber Attenuation (dB/km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Fiber Attenuation (dB/km)</span>
           <input type="number" value={fiberAttenuation} onChange={e => setFiberAttenuation(+e.target.value)} min={0} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Splices (count)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Splices (count)</span>
           <input type="number" value={spliceCount} onChange={e => setSpliceCount(+e.target.value)} min={0}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Splice Loss (dB each)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Splice Loss (dB each)</span>
           <input type="number" value={spliceLoss} onChange={e => setSpliceLoss(+e.target.value)} min={0} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Connectors (count)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Connectors (count)</span>
           <input type="number" value={connectorCount} onChange={e => setConnectorCount(+e.target.value)} min={0}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Connector Loss (dB each)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Connector Loss (dB each)</span>
           <input type="number" value={connectorLoss} onChange={e => setConnectorLoss(+e.target.value)} min={0} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">System Margin (dB)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">System Margin (dB)</span>
           <input type="number" value={margin} onChange={e => setMargin(+e.target.value)} min={0} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -116,13 +112,13 @@ export default function LinkBudgetPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" }, xaxis: { title: "", gridcolor: "#374151" },
           yaxis: { title: "Power (dBm) / Loss (dB)", gridcolor: "#374151" },
           margin: { t: 30, r: 30, b: 50, l: 70 }, showlegend: false,
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ChromaticDispersionPage() {
   const [dispersionCoeff, setDispersionCoeff] = useState(17); // ps/(nm·km) for SMF
@@ -79,51 +78,48 @@ export default function ChromaticDispersionPage() {
   }, [calc, sourceLineWidth, pulseWidth, modulationBW]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Chromatic Dispersion (CD)</h1>
-      <p className="text-gray-400 mb-8">Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Chromatic Dispersion (CD)" description="Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">D₀ (ps/nm/km) at λ₀</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">D₀ (ps/nm/km) at λ₀</span>
           <input type="number" value={dispersionCoeff} onChange={e => setDispersionCoeff(+e.target.value)} step="0.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Dispersion Slope S₀ (ps/nm²/km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Dispersion Slope S₀ (ps/nm²/km)</span>
           <input type="number" value={dispersionSlope} onChange={e => setDispersionSlope(+e.target.value)} step="0.001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Zero Dispersion Wavelength λ₀ (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Zero Dispersion Wavelength λ₀ (nm)</span>
           <input type="number" value={zeroDispWavelength} onChange={e => setZeroDispWavelength(+e.target.value)} step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Operating Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Operating Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Fiber Length (km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Fiber Length (km)</span>
           <input type="number" value={length} onChange={e => setLength(+e.target.value)} step="1" min={0.1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Source Linewidth (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Source Linewidth (nm)</span>
           <input type="number" value={sourceLineWidth} onChange={e => setSourceLineWidth(+e.target.value)} step="0.01" min={0.001}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Initial Pulse Width (ps)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Initial Pulse Width (ps)</span>
           <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Modulation BW (GHz)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Modulation BW (GHz)</span>
           <input type="number" value={modulationBW} onChange={e => setModulationBW(+e.target.value)} step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -164,25 +160,25 @@ export default function ChromaticDispersionPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Dispersion vs Wavelength</h3>
-        <Plot data={spectralData} layout={{
+        <ChartPanel data={spectralData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151", color: "#9ca3af" },
           yaxis: { title: "D (ps/nm/km)", gridcolor: "#374151", color: "#9ca3af" },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 350,
           legend: { bgcolor: "transparent", font: { color: "#9ca3af" } },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Pulse Broadening & Penalty vs Length</h3>
-        <Plot data={lengthData} layout={{
+        <ChartPanel data={lengthData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Length (km)", gridcolor: "#374151", color: "#9ca3af" },
           yaxis: { title: "Pulse Width (ps)", gridcolor: "#374151", color: "#22c55e" },
           yaxis2: { title: "Penalty (dB)", gridcolor: "#374151", color: "#f97316", overlaying: "y", side: "right" },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 60, b: 40, l: 60 }, height: 350,
           legend: { bgcolor: "transparent", font: { color: "#9ca3af" } },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -197,6 +193,6 @@ export default function ChromaticDispersionPage() {
           <p>SMF-28: D=17 ps/nm/km @1550nm, S=0.056 ps/nm²/km, λ₀=1310nm</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

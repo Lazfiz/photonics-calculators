@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SpliceLossPage() {
   const [lateralOffset, setLateralOffset] = useState(0.5); // µm
@@ -47,31 +46,28 @@ export default function SpliceLossPage() {
   }, [coreDiam]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Fiber Splice Loss</h1>
-      <p className="text-gray-400 mb-8">Estimate splice/connector loss from lateral offset, angular misalignment, and end-face gap for single-mode fiber.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Splice Loss" description="Estimate splice/connector loss from lateral offset, angular misalignment, and end-face gap for single-mode fiber.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Lateral Offset (µm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Lateral Offset (µm)</span>
           <input type="number" value={lateralOffset} onChange={e => setLateralOffset(+e.target.value)} min={0} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Angular Misalignment (°)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Angular Misalignment (°)</span>
           <input type="number" value={angularMisalign} onChange={e => setAngularMisalign(+e.target.value)} min={0} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Mode Field Diameter (µm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Mode Field Diameter (µm)</span>
           <input type="number" value={coreDiam} onChange={e => setCoreDiam(+e.target.value)} min={1} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">End-face Gap (µm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">End-face Gap (µm)</span>
           <input type="number" value={gap} onChange={e => setGap(+e.target.value)} min={0} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -95,7 +91,7 @@ export default function SpliceLossPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Lateral Offset (µm)", gridcolor: "#374151", domain: [0, 0.47] },
@@ -103,8 +99,8 @@ export default function SpliceLossPage() {
           xaxis2: { title: "Angular Misalign (°)", gridcolor: "#374151", anchor: "y2", domain: [0.55, 1] },
           yaxis2: { title: "Loss (dB)", gridcolor: "#374151", color: "#60a5fa", anchor: "x2" },
           margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

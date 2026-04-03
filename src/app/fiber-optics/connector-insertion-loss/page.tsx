@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ConnectorInsertionLossPage() {
   const [connectorType, setConnectorType] = useState<"FC" | "SC" | "LC" | "ST" | "MU" | "MPO">("SC");
@@ -97,62 +96,59 @@ export default function ConnectorInsertionLossPage() {
   }, [connectorType, polishType]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Connector Insertion Loss</h1>
-      <p className="text-gray-400 mb-8">Calculate connector insertion loss from misalignment parameters and build link budgets for different connector types.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Connector Insertion Loss" description="Calculate connector insertion loss from misalignment parameters and build link budgets for different connector types.">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Connector Type</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Connector Type</span>
           <select value={connectorType} onChange={e => setConnectorType(e.target.value as any)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             {["FC", "SC", "LC", "ST", "MU", "MPO"].map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Polish Type</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Polish Type</span>
           <select value={polishType} onChange={e => setPolishType(e.target.value as any)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="PC">PC (Physical Contact)</option>
             <option value="UPC">UPC (Ultra PC)</option>
             <option value="APC">APC (Angled PC)</option>
           </select>
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Number of Connectors</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Number of Connectors</span>
           <input type="number" value={numConnectors} onChange={e => setNumConnectors(+e.target.value)} min={1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Lateral Offset (µm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Lateral Offset (µm)</span>
           <input type="number" value={lateralOffset} onChange={e => setLateralOffset(+e.target.value)} step="0.05" min={0}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Angular Misalign (°)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Angular Misalign (°)</span>
           <input type="number" value={angularMisalign} onChange={e => setAngularMisalign(+e.target.value)} step="0.1" min={0}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">End-face Gap (µm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">End-face Gap (µm)</span>
           <input type="number" value={gapDistance} onChange={e => setGapDistance(+e.target.value)} step="0.01" min={0}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">MFD (µm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">MFD (µm)</span>
           <input type="number" value={fiberCoreDiam} onChange={e => setFiberCoreDiam(+e.target.value)} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Refractive Index</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Refractive Index</span>
           <input type="number" value={refractiveIndex} onChange={e => setRefractiveIndex(+e.target.value)} step="0.001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -193,23 +189,23 @@ export default function ConnectorInsertionLossPage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-3">Loss vs Lateral Offset</h3>
-          <Plot data={offsetData} layout={{
+          <ChartPanel data={offsetData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             xaxis: { title: "Offset (µm)", gridcolor: "#374151", color: "#9ca3af" },
             yaxis: { title: "Loss (dB)", gridcolor: "#374151", color: "#9ca3af" },
             font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 50 }, height: 300,
             shapes: [{ type: "line" as const, x0: lateralOffset, x1: lateralOffset, y0: 0, y1: 5, line: { color: "#fbbf24", dash: "dash" } }],
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-3">Link Budget vs # Connectors</h3>
-          <Plot data={budgetData} layout={{
+          <ChartPanel data={budgetData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             xaxis: { title: "Number of Connectors", gridcolor: "#374151", color: "#9ca3af" },
             yaxis: { title: "Total Loss (dB)", gridcolor: "#374151", color: "#9ca3af" },
             font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 50 }, height: 300,
             legend: { bgcolor: "transparent", font: { color: "#9ca3af" } },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
 
@@ -223,6 +219,6 @@ export default function ConnectorInsertionLossPage() {
           <p>Typical IL: {connectorType}-{polishType} = {calc.typicalLossPer} dB, RL = {calc.typicalRL} dB</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

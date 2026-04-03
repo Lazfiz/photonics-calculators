@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function DispersionCompPage() {
   const [dispersion, setDispersion] = useState(17); // ps/(nm·km) typical SMF at 1550
@@ -45,26 +44,21 @@ export default function DispersionCompPage() {
   const penaltyDb = 10 * Math.log10(Math.max(1e-10, 1 + penaltyLinear));
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Dispersion Compensation</h1>
-      <p className="text-gray-400 mb-8">
-        Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.
-        Total dispersion: D<sub>total</sub> = D · L. Pulse broadening: Δτ = D<sub>total</sub> · Δλ.
-        NRZ bit-rate limit: B ≤ 1/(4Δτ). DCF length: L<sub>DCF</sub> = D·L / |D<sub>DCF</sub>|.
-      </p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Dispersion Compensation" description="Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.
+        Total dispersion: Dtotal = D · L. Pulse broadening: Δτ = Dtotal · Δλ.
+        NRZ bit-rate limit: B ≤ 1/(4Δτ). DCF length: LDCF = D·L / |DDCF|.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">D (ps/nm/km)</span>
-          <input type="number" value={dispersion} onChange={e => setDispersion(+e.target.value)} step="0.1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Fiber length (km)</span>
-          <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} step="1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Source Δλ (nm)</span>
-          <input type="number" value={bwNm} onChange={e => setBwNm(+e.target.value)} step="0.1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Bit rate (Gbps)</span>
-          <input type="number" value={bitRate} onChange={e => setBitRate(+e.target.value)} step="1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">D<sub>DCF</sub> (ps/nm/km)</span>
-          <input type="number" value={compDispersion} onChange={e => setCompDispersion(+e.target.value)} step="1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">D (ps/nm/km)</span>
+          <input type="number" value={dispersion} onChange={e => setDispersion(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Fiber length (km)</span>
+          <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Source Δλ (nm)</span>
+          <input type="number" value={bwNm} onChange={e => setBwNm(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bit rate (Gbps)</span>
+          <input type="number" value={bitRate} onChange={e => setBitRate(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">D<sub>DCF</sub> (ps/nm/km)</span>
+          <input type="number" value={compDispersion} onChange={e => setCompDispersion(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
@@ -78,13 +72,13 @@ export default function DispersionCompPage() {
         <p className="text-gray-300">Est. power penalty = <span className="text-yellow-400 font-mono">{penaltyDb.toFixed(4)} dB</span></p>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Fiber length (km)", gridcolor: "#374151" },
         yaxis: { title: "Pulse broadening (ps)", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true,
         legend: { x: 0.02, y: 0.98 },
-      }} className="w-full" style={{ height: 400 }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

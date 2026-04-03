@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ConnectorReturnLossPage() {
   const [n1, setN1] = useState(1.4677); // SMF-28 core
@@ -80,29 +79,24 @@ export default function ConnectorReturnLossPage() {
   }, [coreRadius]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Connector Return Loss</h1>
-      <p className="text-gray-400 mb-8">
-        Calculates return loss (RL) and insertion loss (IL) for fiber connectors with air gaps, lateral offsets, and angular misalignment.
-        Fresnel: r = (n₁ − n₂)/(n₁ + n₂), RL = −20 log₁₀|r|. Physical contact (PC) eliminates air gap.
-      </p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Connector Return Loss" description="Calculates return loss (RL) and insertion loss (IL) for fiber connectors with air gaps, lateral offsets, and angular misalignment.
+        Fresnel: r = (n₁ − n₂)/(n₁ + n₂), RL = −20 log₁₀|r|. Physical contact (PC) eliminates air gap.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>core</sub></span>
-          <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.0001" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">n<sub>gap medium</sub></span>
-          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.01" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Gap (nm) — 0 for PC/UPC</span>
-          <input type="number" value={gapNm} onChange={e => setGapNm(+e.target.value)} step="10" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Lateral offset (µm)</span>
-          <input type="number" value={lateralOffset} onChange={e => setLateralOffset(+e.target.value)} step="0.1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Angular misalign (°)</span>
-          <input type="number" value={angMisalign} onChange={e => setAngMisalign(+e.target.value)} step="0.1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">λ (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block"><span className="text-gray-300 text-sm">Core radius (µm)</span>
-          <input type="number" value={coreRadius} onChange={e => setCoreRadius(+e.target.value)} step="0.1" className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>core</sub></span>
+          <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.0001" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>gap medium</sub></span>
+          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Gap (nm) — 0 for PC/UPC</span>
+          <input type="number" value={gapNm} onChange={e => setGapNm(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Lateral offset (µm)</span>
+          <input type="number" value={lateralOffset} onChange={e => setLateralOffset(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Angular misalign (°)</span>
+          <input type="number" value={angMisalign} onChange={e => setAngMisalign(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">λ (nm)</span>
+          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Core radius (µm)</span>
+          <input type="number" value={coreRadius} onChange={e => setCoreRadius(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
@@ -115,20 +109,20 @@ export default function ConnectorReturnLossPage() {
       </div>
 
       <h3 className="text-lg font-semibold mb-3 text-gray-200">Return Loss vs Gap Width</h3>
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Gap (µm)", gridcolor: "#374151" },
         yaxis: { title: "Return Loss (dB)", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true,
-      }} className="w-full" style={{ height: 350 }} />
+      }} />
 
       <h3 className="text-lg font-semibold mb-3 mt-6 text-gray-200">Insertion Loss vs Lateral Offset</h3>
-      <Plot data={offsetData} layout={{
+      <ChartPanel data={offsetData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Offset (µm)", gridcolor: "#374151" },
         yaxis: { title: "IL (dB)", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true,
-      }} className="w-full" style={{ height: 350 }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

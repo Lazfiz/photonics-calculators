@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function LowWaterPeakPage() {
   const [fiberType, setFiberType] = useState<"SMF28e" | "SMF28ePlus" | "AllWave" | "TrueWave">("SMF28e");
@@ -71,31 +70,28 @@ export default function LowWaterPeakPage() {
   }, [calc]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Low Water Peak Fiber</h1>
-      <p className="text-gray-400 mb-8">Analyze low water peak (LWP) fibers that reduce the OH⁻ absorption peak at 1383 nm, enabling E-band and full CWDM operation.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Low Water Peak Fiber" description="Analyze low water peak (LWP) fibers that reduce the OH⁻ absorption peak at 1383 nm, enabling E-band and full CWDM operation.">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Fiber Type</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Fiber Type</span>
           <select value={fiberType} onChange={e => setFiberType(e.target.value as any)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="SMF28e">SMF-28e (G.652.C)</option>
             <option value="SMF28ePlus">SMF-28e+ (G.652.D)</option>
             <option value="AllWave">AllWave (OFS)</option>
             <option value="TrueWave">TrueWave REACH</option>
           </select>
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Fiber Length (km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Fiber Length (km)</span>
           <input type="number" value={length} onChange={e => setLength(+e.target.value)} min={0.1} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">WDM Channels</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">WDM Channels</span>
           <input type="number" value={channels} onChange={e => setChannels(+e.target.value)} min={1} max={96}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -121,7 +117,7 @@ export default function LowWaterPeakPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Attenuation Spectrum: Standard vs Low Water Peak</h3>
-        <Plot data={spectrumData} layout={{
+        <ChartPanel data={spectrumData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "Attenuation (dB/km)", color: "#9ca3af", gridcolor: "#374151", range: [0, 1.0] },
@@ -135,17 +131,17 @@ export default function LowWaterPeakPage() {
             { x: 1410, y: 0.92, text: "E-band", showarrow: false, font: { color: "#fbbf24", size: 11 } },
             { x: 1495, y: 0.92, text: "S-band", showarrow: false, font: { color: "#60a5fa", size: 11 } },
           ],
-        }} config={{ displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">CWDM Channel Attenuation (20nm spacing)</h3>
-        <Plot data={cwdmData} layout={{
+        <ChartPanel data={cwdmData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "Attenuation (dB/km)", color: "#9ca3af", gridcolor: "#374151" },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 300,
-        }} config={{ displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -158,6 +154,6 @@ export default function LowWaterPeakPage() {
           <p className="font-mono">ITU-T G.652.C/D specifies max attenuation in 1310-1625nm range</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SRSThresholdPage() {
   const [wavelength, setWavelength] = useState(1550); // nm
@@ -72,11 +71,8 @@ export default function SRSThresholdPage() {
   }, [wavelength, fiberLength, effectiveArea, loss, ramanGain, ramanShift]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:underline mb-6 inline-block">← Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">SRS Threshold Power</h1>
-      <p className="text-gray-400 mb-6">Calculate Stimulated Raman Scattering threshold for optical fibers.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="SRS Threshold Power" description="Calculate Stimulated Raman Scattering threshold for optical fibers.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Fiber Parameters</h2>
@@ -127,47 +123,44 @@ export default function SRSThresholdPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Silica Raman Gain Spectrum</h2>
-          <Plot
-            data={[{ type: "scatter" as const, mode: "lines" as const, x: results.shifts, y: results.gainSpectrum, line: { color: "#22c55e", width: 2 }, fill: "tozeroy", fillcolor: "rgba(34,197,94,0.1)" }]}
+          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.shifts, y: results.gainSpectrum, line: { color: "#22c55e", width: 2 }, fill: "tozeroy", fillcolor: "rgba(34,197,94,0.1)" }]}
             layout={{
               xaxis: { title: "Frequency Shift (THz)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Normalized Gain", color: "#9ca3af", gridcolor: "#374151", range: [0, 1.05] },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Threshold vs Fiber Length</h2>
-          <Plot
-            data={[{ type: "scatter" as const, mode: "lines" as const, x: results.lengths, y: results.thresholdVsLength, line: { color: "#3b82f6", width: 2 } }]}
+          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.lengths, y: results.thresholdVsLength, line: { color: "#3b82f6", width: 2 } }]}
             layout={{
               xaxis: { title: "Fiber Length (km)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "SRS Threshold (mW)", color: "#9ca3af", gridcolor: "#374151" },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Raman Gain vs Pump Power</h2>
-          <Plot
-            data={[{ type: "scatter" as const, mode: "lines" as const, x: results.inputPowers, y: results.ramanGain_dB, line: { color: "#f59e0b", width: 2 } }]}
+          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.inputPowers, y: results.ramanGain_dB, line: { color: "#f59e0b", width: 2 } }]}
             layout={{
               xaxis: { title: "Pump Power (W)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Raman Gain (dB)", color: "#9ca3af", gridcolor: "#374151" },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

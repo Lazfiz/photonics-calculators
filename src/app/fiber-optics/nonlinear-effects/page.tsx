@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function NonlinearEffectsPage() {
   const [power, setPower] = useState(10); // dBm launch power
@@ -98,51 +97,48 @@ export default function NonlinearEffectsPage() {
   }, [power, length, alpha, gamma]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Nonlinear Effects in Fiber</h1>
-      <p className="text-gray-400 mb-8">Calculate SPM, XPM, FWM penalties, SBS/SRS thresholds, and nonlinear phase shift.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Nonlinear Effects in Fiber" description="Calculate SPM, XPM, FWM penalties, SBS/SRS thresholds, and nonlinear phase shift.">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Launch Power (dBm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Launch Power (dBm)</span>
           <input type="number" value={power} onChange={e => setPower(+e.target.value)} step="0.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Fiber Length (km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Fiber Length (km)</span>
           <input type="number" value={length} onChange={e => setLength(+e.target.value)} step="1" min={1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Effective Area A_eff (µm²)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Effective Area A_eff (µm²)</span>
           <input type="number" value={effectiveArea} onChange={e => setEffectiveArea(+e.target.value)} step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Attenuation (dB/km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Attenuation (dB/km)</span>
           <input type="number" value={alpha} onChange={e => setAlpha(+e.target.value)} step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">γ (W⁻¹km⁻¹)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">γ (W⁻¹km⁻¹)</span>
           <input type="number" value={gamma} onChange={e => setGamma(+e.target.value)} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">WDM Channels</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">WDM Channels</span>
           <input type="number" value={numChannels} onChange={e => setNumChannels(+e.target.value)} min={1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Channel Spacing (GHz)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Channel Spacing (GHz)</span>
           <input type="number" value={channelSpacing} onChange={e => setChannelSpacing(+e.target.value)} step="10"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Bit Rate (Gbps)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Bit Rate (Gbps)</span>
           <input type="number" value={bitRate} onChange={e => setBitRate(+e.target.value)} step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -190,22 +186,22 @@ export default function NonlinearEffectsPage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-3">Penalty vs Launch Power</h3>
-          <Plot data={powerData} layout={{
+          <ChartPanel data={powerData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             xaxis: { title: "Launch Power (dBm)", gridcolor: "#374151", color: "#9ca3af" },
             yaxis: { title: "Penalty (dB)", gridcolor: "#374151", color: "#9ca3af" },
             font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 50 }, height: 320,
             legend: { bgcolor: "transparent", font: { color: "#9ca3af", size: 10 } },
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-3">φ_NL vs Distance</h3>
-          <Plot data={lengthData} layout={{
+          <ChartPanel data={lengthData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             xaxis: { title: "Distance (km)", gridcolor: "#374151", color: "#9ca3af" },
             yaxis: { title: "φ_NL (rad)", gridcolor: "#374151", color: "#9ca3af" },
             font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 50 }, height: 320,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
 
@@ -221,6 +217,6 @@ export default function NonlinearEffectsPage() {
           <p>Typical: γ=1.3 W⁻¹km⁻¹ (SMF), A_eff=80µm², n₂=2.6×10⁻²⁰ m²/W</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

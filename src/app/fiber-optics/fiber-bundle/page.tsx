@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FiberBundlePage() {
   const [fiberCount, setFiberCount] = useState(37);
@@ -69,37 +68,34 @@ export default function FiberBundlePage() {
   }, [fiberCladDia, fillFactor]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Fiber Bundle Design</h1>
-      <p className="text-gray-400 mb-8">Calculate bundle geometry, fill factor, étendue, and coupling efficiency for fiber optic bundles.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Bundle Design" description="Calculate bundle geometry, fill factor, étendue, and coupling efficiency for fiber optic bundles.">
+            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Number of Fibers</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Number of Fibers</span>
           <input type="number" value={fiberCount} onChange={e => setFiberCount(+e.target.value)} min={1} step={1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Packing Geometry</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Packing Geometry</span>
           <select value={packing} onChange={e => setPacking(e.target.value as any)}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="hexagonal">Hexagonal</option>
             <option value="square">Square</option>
           </select>
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Fiber Cladding Ø (μm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Fiber Cladding Ø (μm)</span>
           <input type="number" value={fiberCladDia} onChange={e => setFiberCladDia(+e.target.value)} min={1} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Fiber Core Ø (μm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Fiber Core Ø (μm)</span>
           <input type="number" value={fiberCoreDia} onChange={e => setFiberCoreDia(+e.target.value)} min={1} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Fill Factor</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Fill Factor</span>
           <input type="range" value={fillFactor} onChange={e => setFillFactor(+e.target.value)} min={0.5} max={1} step={0.01}
             className="mt-1 w-full" />
           <span className="text-gray-400 text-xs">{(fillFactor * 100).toFixed(0)}%</span>
@@ -137,7 +133,7 @@ export default function FiberBundlePage() {
         </div>
       </div>
 
-      <Plot data={chartData} layout={{
+      <ChartPanel data={chartData} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" },
         xaxis: { title: "Number of Fibers", gridcolor: "#374151" },
@@ -145,7 +141,7 @@ export default function FiberBundlePage() {
         yaxis2: { title: "Fill Factor (%)", overlaying: "y", side: "right", gridcolor: "#374151" },
         legend: { x: 0.01, y: 0.99 },
         margin: { t: 30, r: 60 },
-      }} style={{ width: "100%", height: 400 }} />
-    </div>
+      }} />
+    </CalculatorShell>
   );
 }

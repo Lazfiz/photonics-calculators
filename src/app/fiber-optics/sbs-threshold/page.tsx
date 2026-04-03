@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function SBSThresholdPage() {
   const [wavelength, setWavelength] = useState(1550); // nm
@@ -71,11 +70,8 @@ export default function SBSThresholdPage() {
   }, [wavelength, fiberLength, coreDiameter, effectiveArea, loss, brillouinGain, brillouinBandwidth, laserLinewidth]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-6xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:underline mb-6 inline-block">← Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">SBS Threshold Power</h1>
-      <p className="text-gray-400 mb-6">Calculate Stimulated Brillouin Scattering threshold for optical fibers.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="SBS Threshold Power" description="Calculate Stimulated Brillouin Scattering threshold for optical fibers.">
+            
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Fiber Parameters</h2>
@@ -123,8 +119,7 @@ export default function SBSThresholdPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Backscatter vs Input Power</h2>
-          <Plot
-            data={[
+          <ChartPanel data={[
               { type: "scatter" as const, mode: "lines" as const, x: results.inputPowers, y: results.backscatter, name: "Backscatter", line: { color: "#ef4444", width: 2 } },
               { type: "scatter" as const, mode: "lines" as const, x: results.inputPowers, y: results.inputPowers.map((p) => p * 0.001), name: "Rayleigh", line: { color: "#3b82f6", dash: "dash" } },
             ]}
@@ -134,40 +129,38 @@ export default function SBSThresholdPage() {
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
               legend: { x: 0.02, y: 0.98, bgcolor: "rgba(0,0,0,0)" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Threshold vs Fiber Length</h2>
-          <Plot
-            data={[{ type: "scatter" as const, mode: "lines" as const, x: results.lengths, y: results.thresholdVsLength, line: { color: "#22c55e", width: 2 } }]}
+          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.lengths, y: results.thresholdVsLength, line: { color: "#22c55e", width: 2 } }]}
             layout={{
               xaxis: { title: "Fiber Length (km)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "SBS Threshold (mW)", color: "#9ca3af", gridcolor: "#374151" },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Threshold vs Effective Area</h2>
-          <Plot
-            data={[{ type: "scatter" as const, mode: "lines" as const, x: results.areas, y: results.thresholdVsArea, line: { color: "#f59e0b", width: 2 } }]}
+          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.areas, y: results.thresholdVsArea, line: { color: "#f59e0b", width: 2 } }]}
             layout={{
               xaxis: { title: "Effective Area (μm²)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "SBS Threshold (mW)", color: "#9ca3af", gridcolor: "#374151" },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-            config={{ responsive: true, displayModeBar: false }}
-            style={{ width: "100%", height: "350px" }}
+           
+           
           />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
 

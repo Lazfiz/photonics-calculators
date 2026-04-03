@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function FiberBraggGratingSensorPage() {
   const [gratingPeriod, setGratingPeriod] = useState(535); // nm
@@ -110,51 +109,48 @@ export default function FiberBraggGratingSensorPage() {
   }, [strainSensitivity, tempSensitivity]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Fiber Bragg Grating Sensor</h1>
-      <p className="text-gray-400 mb-8">Calculate FBG wavelength shift for strain and temperature sensing applications.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Bragg Grating Sensor" description="Calculate FBG wavelength shift for strain and temperature sensing applications.">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Grating Period Λ (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Grating Period Λ (nm)</span>
           <input type="number" value={gratingPeriod} onChange={e => setGratingPeriod(+e.target.value)} step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Effective Index n_eff</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Effective Index n_eff</span>
           <input type="number" value={effectiveIndex} onChange={e => setEffectiveIndex(+e.target.value)} step="0.001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Grating Length (mm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Grating Length (mm)</span>
           <input type="number" value={gratingLength} onChange={e => setGratingLength(+e.target.value)} step="0.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Index Modulation Δn</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Index Modulation Δn</span>
           <input type="number" value={indexModulation} onChange={e => setIndexModulation(+e.target.value)} step={1e-5}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Strain (µε)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Strain (µε)</span>
           <input type="number" value={strain} onChange={e => setStrain(+e.target.value)} step="10"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Temperature Change (°C)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Temperature Change (°C)</span>
           <input type="number" value={tempChange} onChange={e => setTempChange(+e.target.value)} step="1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Strain Sensitivity (pm/µε)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Strain Sensitivity (pm/µε)</span>
           <input type="number" value={strainSensitivity} onChange={e => setStrainSensitivity(+e.target.value)} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Temp Sensitivity (pm/°C)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Temp Sensitivity (pm/°C)</span>
           <input type="number" value={tempSensitivity} onChange={e => setTempSensitivity(+e.target.value)} step="0.5"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -196,32 +192,32 @@ export default function FiberBraggGratingSensorPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Reflection Spectrum</h3>
-        <Plot data={spectralData} layout={{
+        <ChartPanel data={spectralData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151", color: "#9ca3af" },
           yaxis: { title: "Reflectivity", gridcolor: "#374151", color: "#9ca3af", range: [0, 1.1] },
           font: { color: "#e5e7eb" }, margin: { t: 10, r: 20, b: 40, l: 50 }, height: 300,
-        }} config={{ responsive: true, displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">Wavelength Shift vs Strain</h3>
-          <Plot data={strainData} layout={{
+          <ChartPanel data={strainData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             xaxis: { title: "Strain (µε)", gridcolor: "#374151", color: "#9ca3af" },
             yaxis: { title: "Δλ (nm)", gridcolor: "#374151", color: "#9ca3af" },
             font: { color: "#e5e7eb" }, margin: { t: 10, r: 10, b: 40, l: 50 }, height: 250,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">Wavelength Shift vs Temperature</h3>
-          <Plot data={tempData} layout={{
+          <ChartPanel data={tempData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             xaxis: { title: "ΔT (°C)", gridcolor: "#374151", color: "#9ca3af" },
             yaxis: { title: "Δλ (nm)", gridcolor: "#374151", color: "#9ca3af" },
             font: { color: "#e5e7eb" }, margin: { t: 10, r: 10, b: 40, l: 50 }, height: 250,
-          }} config={{ responsive: true, displayModeBar: false }} />
+          }} />
         </div>
       </div>
 
@@ -236,6 +232,6 @@ export default function FiberBraggGratingSensorPage() {
           <p>Cross-sensitivity requires compensation techniques (dual-grating, etc.)</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

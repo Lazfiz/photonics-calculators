@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
-import dynamic from "next/dynamic";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function ModeCouplingCalculator() {
   const [couplingLength, setCouplingLength] = useState<number>(1000); // μm
@@ -81,10 +80,7 @@ export default function ModeCouplingCalculator() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-8">
       <div className="max-w-4xl mx-auto">
-        <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 mb-6 inline-block">← Back to Fiber Optics</Link>
-        <h1 className="text-3xl font-bold mb-2">Mode Coupling Calculator</h1>
-        <p className="text-gray-400 mb-8">Analyze power transfer between coupled waveguide modes using coupled-mode theory</p>
-
+                
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div>
@@ -130,7 +126,7 @@ export default function ModeCouplingCalculator() {
         </div>
 
         <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
-          <Plot data={plotData} layout={layout} config={{ responsive: true }} className="w-full" />
+          <ChartPanel data={plotData} layout={layout} />
         </div>
       </div>
     </div>

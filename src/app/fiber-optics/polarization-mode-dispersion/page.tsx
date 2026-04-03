@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function PMDPage() {
   const [pmdCoeff, setPmdCoeff] = useState(0.5); // ps/√km
@@ -76,36 +75,33 @@ export default function PMDPage() {
   }, [calc]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Polarization Mode Dispersion (PMD)</h1>
-      <p className="text-gray-400 mb-8">Calculate PMD-induced differential group delay (DGD), system penalties, and PMD-limited reach using Maxwellian statistics.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Polarization Mode Dispersion (PMD)" description="Calculate PMD-induced differential group delay (DGD), system penalties, and PMD-limited reach using Maxwellian statistics.">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">PMD Coefficient (ps/√km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">PMD Coefficient (ps/√km)</span>
           <input type="number" value={pmdCoeff} onChange={e => setPmdCoeff(+e.target.value)} min={0.01} step="0.01"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Fiber Length (km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Fiber Length (km)</span>
           <input type="number" value={length} onChange={e => setLength(+e.target.value)} min={1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Bit Rate (Gbps)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Bit Rate (Gbps)</span>
           <input type="number" value={bitRate} onChange={e => setBitRate(+e.target.value)} min={0.1} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Fiber Spans</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Fiber Spans</span>
           <input type="number" value={fiberCount} onChange={e => setFiberCount(+e.target.value)} min={1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Outage Prob. (%)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Outage Prob. (%)</span>
           <input type="number" value={probability} onChange={e => setProbability(+e.target.value)} min={90} max={99.999}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -132,7 +128,7 @@ export default function PMDPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">DGD Maxwellian Distribution</h3>
-        <Plot data={distributionData} layout={{
+        <ChartPanel data={distributionData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "DGD (ps)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "Probability Density", color: "#9ca3af", gridcolor: "#374151" },
@@ -140,19 +136,19 @@ export default function PMDPage() {
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 60, b: 40, l: 60 }, height: 380,
           legend: { x: 0.02, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af" } },
           showlegend: true,
-        }} config={{ displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">DGD / Bit Period vs Distance</h3>
-        <Plot data={distData} layout={{
+        <ChartPanel data={distData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Distance (km)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "DGD / Bit Period", color: "#9ca3af", gridcolor: "#374151" },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 350,
           legend: { x: 0.02, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af" } },
           shapes: [{ type: "line" as const, x0: 0, x1: 500, y0: 0.1, y1: 0.1, line: { color: "#f87171", width: 1, dash: "dash" } }],
-        }} config={{ displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -166,6 +162,6 @@ export default function PMDPage() {
           <p>Modern fiber: PMD &lt; 0.1 ps/√km (G.652.D), legacy: up to 2 ps/√km</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

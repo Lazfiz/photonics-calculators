@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function NonzeroDispersionPage() {
   const [wavelength, setWavelength] = useState(1550); // nm
@@ -67,41 +66,38 @@ export default function NonzeroDispersionPage() {
   }, [length, calc]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Non-Zero Dispersion Shifted Fiber (NZ-DSF)</h1>
-      <p className="text-gray-400 mb-8">Design NZ-DSF fibers (G.655) with optimized dispersion for DWDM systems — balancing dispersion and nonlinearity.</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Non-Zero Dispersion Shifted Fiber (NZ-DSF)" description="Design NZ-DSF fibers (G.655) with optimized dispersion for DWDM systems — balancing dispersion and nonlinearity.">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={1300} max={1650}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Link Length (km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Link Length (km)</span>
           <input type="number" value={length} onChange={e => setLength(+e.target.value)} min={1}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">D @ 1550 nm (ps/nm/km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">D @ 1550 nm (ps/nm/km)</span>
           <input type="number" value={dispAt1550} onChange={e => setDispAt1550(+e.target.value)} step="0.1"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Dispersion Slope S₀ (ps/nm²/km)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Dispersion Slope S₀ (ps/nm²/km)</span>
           <input type="number" value={dispSlope} onChange={e => setDispSlope(+e.target.value)} step="0.001"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Channel Spacing (GHz)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Channel Spacing (GHz)</span>
           <input type="number" value={channelSpacing} onChange={e => setChannelSpacing(+e.target.value)} min={25}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Zero Dispersion λ₀ (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Zero Dispersion λ₀ (nm)</span>
           <input type="number" value={zeroDispWl} onChange={e => setZeroDispWl(+e.target.value)} min={1300} max={1550}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
       </div>
 
@@ -127,25 +123,25 @@ export default function NonzeroDispersionPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Chromatic Dispersion vs Wavelength</h3>
-        <Plot data={dispCurveData} layout={{
+        <ChartPanel data={dispCurveData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "D (ps/nm·km)", color: "#9ca3af", gridcolor: "#374151" },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 380,
           legend: { x: 0.02, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af" } },
           shapes: [{ type: "line" as const, x0: 0, x1: 1700, y0: 0, y1: 0, line: { color: "#6b7280", width: 1, dash: "dot" } }],
-        }} config={{ displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Accumulated Dispersion vs Distance</h3>
-        <Plot data={accumulatedData} layout={{
+        <ChartPanel data={accumulatedData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Distance (km)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "Total Dispersion (ps/nm)", color: "#9ca3af", gridcolor: "#374151" },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 350,
           legend: { x: 0.02, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af" } },
-        }} config={{ displayModeBar: false }} />
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -159,6 +155,6 @@ export default function NonzeroDispersionPage() {
           <p>Trade-off: Low D → more FWM; High D → more compensation needed</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

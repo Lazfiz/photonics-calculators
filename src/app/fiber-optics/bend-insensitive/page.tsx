@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function BendInsensitivePage() {
   const [radius, setRadius] = useState(7.5); // mm
@@ -93,23 +92,20 @@ export default function BendInsensitivePage() {
   }, [wavelength, trenchWidth]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
-      <Link href="/fiber-optics" className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">← Back to Fiber Optics</Link>
-      <h1 className="text-3xl font-bold mb-2">Bend-Insensitive Fiber Design</h1>
-      <p className="text-gray-400 mb-8">Design and analyze bend-insensitive fibers with depressed cladding trenches (ITU-T G.657).</p>
-
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Bend-Insensitive Fiber Design" description="Design and analyze bend-insensitive fibers with depressed cladding trenches (ITU-T G.657).">
+            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block">
-          <span className="text-gray-300 text-sm">Bend Radius (mm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Bend Radius (mm)</span>
           <input type="number" value={radius} onChange={e => setRadius(+e.target.value)} min={1} step="any"
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
-          <span className="text-gray-300 text-sm">Wavelength (nm)</span>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Wavelength (nm)</span>
           <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={800} max={1700}
-            className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-gray-300 text-sm flex items-center gap-2">
             Depressed Trench
             <input type="checkbox" checked={hasTrench} onChange={e => setHasTrench(e.target.checked)} className="rounded" />
@@ -117,15 +113,15 @@ export default function BendInsensitivePage() {
         </label>
         {hasTrench && (
           <>
-            <label className="block">
-              <span className="text-gray-300 text-sm">Trench Depth Δ</span>
+            <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+              <span className="text-sm text-gray-300">Trench Depth Δ</span>
               <input type="number" value={trenchDepth} onChange={e => setTrenchDepth(+e.target.value)} min={0.001} max={0.05} step="0.001"
-                className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+                className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
             </label>
-            <label className="block">
-              <span className="text-gray-300 text-sm">Trench Width (μm)</span>
+            <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+              <span className="text-sm text-gray-300">Trench Width (μm)</span>
               <input type="number" value={trenchWidth} onChange={e => setTrenchWidth(+e.target.value)} min={1} max={20}
-                className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white" />
+                className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
             </label>
           </>
         )}
@@ -152,25 +148,25 @@ export default function BendInsensitivePage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Bend Loss vs Radius</h3>
-        <Plot data={chartData} layout={{
+        <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Bend Radius (mm)", color: "#9ca3af", gridcolor: "#374151" },
           yaxis: { title: "Loss (dB/turn)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 350,
           legend: { x: 0.02, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af" } },
-        }} config={{ displayModeBar: false }} />
+        }} />
       </div>
 
       {hasTrench && (
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
           <h3 className="text-lg font-semibold mb-3">Trench Depth Effect on Bend Loss</h3>
-          <Plot data={improvementData} layout={{
+          <ChartPanel data={improvementData} layout={{
             paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             xaxis: { title: "Bend Radius (mm)", color: "#9ca3af", gridcolor: "#374151" },
             yaxis: { title: "BI Fiber Loss (dB/turn)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
             font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 300,
             legend: { x: 0.02, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af" } },
-          }} config={{ displayModeBar: false }} />
+          }} />
         </div>
       )}
 
@@ -183,6 +179,6 @@ export default function BendInsensitivePage() {
           <p>G.657.A: ≤0.75 dB @ R=10mm, G.657.B: ≤0.25 dB @ R=7.5mm</p>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
