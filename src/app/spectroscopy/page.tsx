@@ -24,6 +24,14 @@ const calculators = [
   { name: "Concave Mirror Throughput", href: "/spectroscopy/conc-mirror", desc: "Connes advantage and mirror throughput" },
   { name: "Raman Shift Calculator", href: "/spectroscopy/raman-shift", desc: "Excitation-independent Raman shift conversion" },
   { name: "SNR Averaging", href: "/spectroscopy/snr-averaging", desc: "Co-add scans to improve signal-to-noise" },
+  { name: "Fourier Transform Basics", href: "/spectroscopy/fourier-transform", desc: "DFT decomposition of composite signals" },
+  { name: "Apodization Comparison", href: "/spectroscopy/apodization-comparison", desc: "Compare 9 window functions and their ILS" },
+  { name: "Michelson Interferometer", href: "/spectroscopy/michelson-interferometer", desc: "Interferogram → spectrum via FT" },
+  { name: "Spectral Line Broadening", href: "/spectroscopy/spectral-line-broadening", desc: "Doppler, collisional, Voigt broadening" },
+  { name: "Spectral Calibration", href: "/spectroscopy/spectral-calibration", desc: "Wavelength calibration with emission lines" },
+  { name: "Stray Light Rejection", href: "/spectroscopy/stray-light-rejection", desc: "Stray light impact on photometric accuracy" },
+  { name: "Dispersive Element Design", href: "/spectroscopy/dispersive-element", desc: "Grating equation, dispersion, blaze profile" },
+  { name: "Spectral Range Calculator", href: "/spectroscopy/spectral-range", desc: "Coverage, resolution, dispersion for spectrometers" },
 ];
 
 export default function SpectroscopyPage() {
