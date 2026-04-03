@@ -85,7 +85,7 @@ export default function MichelsonInterferometerPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400 font-mono">I(x) = ∫ B(σ)·cos(2πσx) dσ</span> — interferogram is cosine transform of spectrum.</p>
-        <p><span className="text-green-400 font-mono">B(σ) = FT{I(x)}</span> — spectrum recovered by Fourier transform.</p>
+        <p><span className="text-green-400 font-mono">B(σ) = FT(I(x))</span> — spectrum recovered by Fourier transform.</p>
         <p><span className="text-red-400 font-mono">δσ = 1 / Δx_max</span> — resolution set by maximum OPD.</p>
         <p><span className="text-yellow-400 font-mono">Fellgett advantage:</span> multiplex — all frequencies measured simultaneously.</p>
       </div>

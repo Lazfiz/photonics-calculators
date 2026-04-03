@@ -132,7 +132,7 @@ export default function FreeElectronLaserPage() {
         <h3 className="font-semibold mb-3">Key Formulas</h3>
         <div className="text-sm text-gray-300 space-y-1 font-mono">
           <p>λ_r = λᵤ / (2γ²) · (1 + K²/2)</p>
-          <p>ρ = (1/γ) · [K·I / (17kA·π)]^{1/3} · (1 + K²/2)^{-1/3}</p>
+          <p>ρ = (1/γ) · [K·I / (17kA·π)]^(1/3) · (1 + K²/2)^(-1/3)</p>
           <p>L_g = λᵤ / (4π√3·ρ)</p>
           <p>P_sat ≈ ρ · P_beam</p>
           <p>L_sat ≈ 10·L_g</p>

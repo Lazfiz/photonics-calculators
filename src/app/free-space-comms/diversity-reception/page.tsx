@@ -8,6 +8,13 @@ const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function DiversityReceptionPage() {
   const [numRx, setNumRx] = useState(2);
+  const erf = (x: number) => {
+    const sign = x < 0 ? -1 : 1;
+    const ax = Math.abs(x);
+    const t = 1 / (1 + 0.3275911 * ax);
+    const y = 1 - (((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t) * Math.exp(-ax * ax);
+    return sign * y;
+  };
   const [separation, setSeparation] = useState(10);
   const [c2n, setC2n] = useState(1e-14);
   const [wavelength, setWavelength] = useState(1550);
@@ -43,7 +50,7 @@ export default function DiversityReceptionPage() {
     }
     // Outage probability (simplified log-normal model)
     const threshold = 3; // fade margin in sigma
-    const outage = 0.5 * (1 + Math.erf(-threshold / Math.sqrt(2 * combinedSigma2)));
+    const outage = 0.5 * (1 + erf(-threshold / Math.sqrt(2 * combinedSigma2)));
     return { r0, rhoCorr, sigmaR2, diversityGain, combinedSigma2, outage };
   }, [numRx, separation, c2n, wavelength, range, combineMethod]);
 

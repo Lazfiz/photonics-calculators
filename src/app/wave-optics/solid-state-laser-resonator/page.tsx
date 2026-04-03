@@ -53,6 +53,8 @@ export default function SolidStateLaserResonatorPage() {
   const totalLoss = crystalLoss + outputLoss + (1 - R_hr);
   const sigma_em = 2.8e-23; // m² Nd:YAG
   const tau_f = 230e-6; // s
+  const h = 6.626e-34;
+  const c = 3e8;
   const A_crystal = Math.PI * Math.pow(crystalDiameter / 2 * 1e-3, 2);
   const P_th = totalLoss * h * c / (wavelength * 1e-9 * sigma_em * tau_f) * A_crystal / (2 * L_crystal_cm / 100);
 
@@ -89,9 +91,6 @@ export default function SolidStateLaserResonatorPage() {
     });
     return [{ x: zs.map(z => z * 1000), y: ws, type: "scatter", mode: "lines", name: "Beam Radius", line: { color: "#60a5fa", width: 2 } }];
   }, [isStable, beamWaist, zR, effectiveCavity]);
-
-  const h = 6.626e-34;
-  const c = 3e8;
 
   // Output power vs pump
   const piData = useMemo(() => {

@@ -14,7 +14,7 @@ function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: numbe
     for (const layer of layers) {
       const delta = (2 * Math.PI * layer.n * layer.d) / wl;
       const cosD = Math.cos(delta), sinD = Math.sin(delta), n = layer.n;
-      const a11r = cosD, a12r = 0, a12i = -sinD / n, a21r = 0, a21i = -n * sinD, a22r = cosD;
+      const a11r = cosD, a12r = 0, a12i = -sinD / n, a21r = 0, a21i = -n * sinD, a22r = cosD, a22i = 0;
       const new11r = m11r * a11r + m12r * a21r - m12i * a21i;
       const new11i = m11i * a11r + m12r * a21i + m12i * a21r;
       const new12r = m11r * a12r + m12r * a22r - m12i * a22i;

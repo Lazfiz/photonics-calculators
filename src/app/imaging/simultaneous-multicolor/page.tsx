@@ -203,7 +203,7 @@ export default function SimultaneousMulticolorPage() {
           <p><span className="text-blue-400">Effective pixel:</span> p_eff = p_pixel × binning</p>
           <p><span className="text-blue-400">Max frame rate:</span> f_max = 1000 / (t_exp + t_read)</p>
           <p><span className="text-blue-400">SNR:</span> SNR = S / √(S + σ_read² + I_dark × t_exp)</p>
-          <p><span className="text-blue-400">Crosstalk:</span> CT_{ij} = overlap(Emission_i, Filter_j) × 100%</p>
+          <p><span className="text-blue-400">Crosstalk:</span> CT(i,j) = overlap(Emission_i, Filter_j) × 100%</p>
         </div>
       </div>
     </div>

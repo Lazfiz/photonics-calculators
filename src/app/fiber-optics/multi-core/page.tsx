@@ -25,8 +25,8 @@ export default function MultiCoreFiberCalculator() {
     const k0 = 2 * Math.PI / lambda;
     const u = Math.sqrt(coreIndex ** 2 * k0 ** 2 - (vNumber / (2 * coreRadius)) ** 2);
     const w = Math.sqrt((vNumber / (2 * coreRadius)) ** 2 - claddingIndex ** 2 * k0 ** 2);
-    const K0 = 0.5; // Modified Bessel K0 approx
-    const K1 = 0.6; // Modified Bessel K1 approx
+    const K0 = (x: number) => Math.exp(-Math.abs(x)) / Math.sqrt(Math.abs(x) + 1);
+    const K1 = (x: number) => Math.exp(-Math.abs(x)) / Math.sqrt(Math.abs(x) + 1) * (1 + 1 / (Math.abs(x) + 1));
     const kappa = (w * K0(w) * K1(w) * u) / (coreRadius * K0(u) ** 2);
     return Math.abs(kappa) * 1e-3; // scale to reasonable μm⁻¹
   }, [coreRadius, coreIndex, claddingIndex, wavelength, vNumber]);

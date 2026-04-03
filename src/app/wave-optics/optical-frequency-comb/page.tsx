@@ -10,9 +10,9 @@ export default function OpticalFrequencyCombPage() {
   const [repRate, setRepRate] = useState(250); // MHz
   const [centerWavelength, setCenterWavelength] = useState(1550); // nm
   const [combLines, setCombLines] = useState(50);
+  const c = 3e8;
 
   const chartData = useMemo(() => {
-    const c = 3e8;
     const f0 = c / (centerWavelength * 1e-9);
     const repFreqHz = repRate * 1e6;
     

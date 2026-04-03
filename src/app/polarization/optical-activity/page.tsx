@@ -35,10 +35,10 @@ export default function OpticalActivityPage() {
   const observedRotation = useMemo(() => {
     // [α] = α_obs / (c · l)
     // α_obs = [α] · c · l
-    const [alpha] = specificRotation;
+    const alpha = specificRotation;
     const c = concentration;
     const l = pathLength;
-    return [alpha] * c * l;
+    return alpha * c * l;
   }, [specificRotation, concentration, pathLength]);
 
   // Wavelength dependence (Biot's law: rotation ∝ 1/λ²)

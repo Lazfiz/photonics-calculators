@@ -157,7 +157,7 @@ export default function FiberLaserResonatorPage() {
         <h3 className="font-semibold mb-3">Key Formulas</h3>
         <div className="text-sm text-gray-300 space-y-1 font-mono">
           <p>V = π · d · NA / λ</p>
-          <p>MFD ≈ d · (0.65 + 1.619/V^{3/2} + 2.879/V^6)</p>
+          <p>MFD ≈ d · (0.65 + 1.619/V^(3/2) + 2.879/V^6)</p>
           <p>g_th = δ_rt / (2L), where δ_rt = αL + ln(1/R_oc) + ln(1/R_hr)</p>
           <p>η_slope = η_q · ln(R_oc) / δ_rt, η_q = λ_p / λ_l</p>
         </div>

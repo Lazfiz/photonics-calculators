@@ -98,7 +98,7 @@ export default function JonesChainPage() {
       <p className="text-gray-400 mb-8">Chain Jones matrices to transform input polarization states and visualize the output ellipse.</p>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm font-mono">E_out = M_n · M_{n-1} · … · M₁ · E_in</p>
+        <p className="text-gray-300 text-sm font-mono">E_out = M_n · M_(n-1) · … · M₁ · E_in</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-6">

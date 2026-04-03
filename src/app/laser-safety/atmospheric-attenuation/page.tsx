@@ -51,11 +51,11 @@ export default function AtmosphericAttenuationPage() {
     };
 
     // Rayleigh scattering (dominant at short wavelengths)
-    const rayleigh = 0.0084 * Math.pow(wlMicron, -4) * 0.001; // km⁻¹ (approx)
+    const rayleigh = 0.0084 * Math.pow(wl, -4) * 0.001; // km⁻¹ (approx)
 
     // Mie scattering (aerosols) - simplified
     const visKm = visibility;
-    const mie = 3.91 / visKm * Math.pow(0.55 / wlMicron, 0.585); // km⁻¹
+    const mie = 3.91 / visKm * Math.pow(0.55 / wl, 0.585); // km⁻¹
 
     const alphaH2O = h2oAbsorption(wl, H);
     const alphaCO2 = co2Absorption(wl);

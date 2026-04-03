@@ -17,9 +17,10 @@ function parametricGain({ pumpWavelength, crystalLength, dEff, nPump, nSignal, n
   const gamma = (4 * deff / (c * Math.sqrt(nPump * nSignal * nIdler))) * Math.sqrt(2 * omegaP * omegaS * Ip / (eps0 * c * nPump));
   const walkOffRad = (walkOff * Math.PI) / 180;
   const L = crystalLength * 1e-3;
-  const arg = Math.sqrt((gamma / 2) ** 2 - (walkOffRad / (2 * L)) ** 2);
-  const g0 = arg.real > 0 ? Math.sinh(arg * L) / arg * (gamma / 2) : gamma * L;
-  return { g0: g0.real, gamma: gamma.real };
+  const argSquared = (gamma / 2) ** 2 - (walkOffRad / (2 * L)) ** 2;
+  const arg = argSquared > 0 ? Math.sqrt(argSquared) : 0;
+  const g0 = arg > 1e-12 ? (Math.sinh(arg * L) / arg) * (gamma / 2) : gamma * L;
+  return { g0, gamma };
 }
 
 export default function OPOCalculator() {

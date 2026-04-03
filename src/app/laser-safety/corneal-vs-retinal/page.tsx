@@ -61,7 +61,7 @@ export default function CornealVsRetinalPage() {
     const mpeRetinalIrradiance = mpeCorneal * Math.pow(alpha * fEye * 100, 2) * Math.PI / 4 / Math.pow(retinalSpotUm / 10000, 2);
 
     // Which limit is more restrictive?
-    const corneaLimiting = mpeCorneal * Math.PI * Math.pow(0.1, 2); // power through 1mm aperture
+    const corneaLimitPower = mpeCorneal * Math.PI * Math.pow(0.1, 2); // power through 1mm aperture
     const foveolaArea = Math.PI * Math.pow(retinalSpotUm / 2 * 1e-4, 2); // cm²
     const retinaLimitPower = mpeRetinalIrradiance * foveolaArea;
 

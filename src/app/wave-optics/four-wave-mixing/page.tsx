@@ -27,7 +27,8 @@ export default function FourWaveMixingPage() {
 
   // FWM efficiency estimate
   const gamma = (2 * Math.PI * n2 * 1e-20) / (wavelengthPump * 1e-9 * coreArea * 1e-12); // 1/(W·m)
-  const eta = (gamma * pumpPower * 1e-3) ** 2 * Math.sinc((deltaBeta * fiberLength) ** 2);
+  const sinc = (x: number) => Math.abs(x) < 1e-12 ? 1 : Math.sin(x) / x;
+  const eta = (gamma * pumpPower * 1e-3) ** 2 * sinc((deltaBeta * fiberLength) ** 2);
 
   // Idler power vs fiber length
   const chartData = useMemo(() => {
