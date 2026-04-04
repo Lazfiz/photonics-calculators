@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import ErrorBoundary from "./error-boundary";
 
 interface CalculatorShellProps {
   title: string;
@@ -28,7 +29,9 @@ export default function CalculatorShell({
         </Link>
         <h1 className="text-3xl font-bold mb-2">{title}</h1>
         <p className="text-gray-400 mb-8">{description}</p>
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
       </div>
     </main>
   );

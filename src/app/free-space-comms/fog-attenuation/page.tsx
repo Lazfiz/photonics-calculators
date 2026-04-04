@@ -12,7 +12,7 @@ export default function FogAttenuationPage() {
   const [fogModel, setFogModel] = useState<"kim" | "kruse">("kim");
 
   const calc = useMemo(() => {
-    const V = visibility * 1e3; // km to m
+    const V = visibility; // keep in km — Kim/Kruse thresholds are in km
     let q: number;
     if (fogModel === "kim") {
       q = V < 0.5 ? 0 : V < 1 ? 1.6 : V < 2 ? 0.585 * Math.pow(V, 0.333) : 1.3;
@@ -31,7 +31,7 @@ export default function FogAttenuationPage() {
     const colors = ["#f43f5e", "#06b6d4", "#a78bfa"];
     return lambdas.map((wl, idx) => {
       const attens = vis.map((v) => {
-        const V = v * 1e3;
+        const V = v; // km
         let q: number;
         if (fogModel === "kim") {
           q = V < 0.5 ? 0 : V < 1 ? 1.6 : V < 2 ? 0.585 * Math.pow(V, 0.333) : 1.3;

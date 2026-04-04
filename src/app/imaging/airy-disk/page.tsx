@@ -9,15 +9,15 @@ export default function AiryDiskPage() {
   const [wavelength, setWavelength] = useState(550);
   const [na, setNa] = useState(0.95);
 
-  const airyRadius = 0.61 * (wavelength / 1000) / (2 * na); // mm (rayleigh criterion)
+  const airyRadius = 0.61 * (wavelength / 1000) / na; // mm — first minimum radius: 1.22λ/(2NA) = 0.61λ/NA
   const airyDiameter = 2 * airyRadius;
   const airyRadiusUm = airyRadius * 1000;
-  const resolutionNm = (wavelength / (2 * na)); // Abbe limit
+  const resolutionNm = wavelength / (2 * na); // Abbe diffraction limit
 
   const chartData = useMemo(() => {
     const nas = Array.from({ length: 100 }, (_, i) => 0.1 + i * 0.015);
     return [
-      { x: nas, y: nas.map(n => (0.61 * (wavelength / 1000) / (2 * n)) * 1000), type: "scatter" as const, mode: "lines" as const, name: "Airy Radius", line: { color: "#60a5fa" } },
+      { x: nas, y: nas.map(n => (0.61 * (wavelength / 1000) / n) * 1000), type: "scatter" as const, mode: "lines" as const, name: "Airy Radius", line: { color: "#60a5fa" } },
       { x: nas, y: nas.map(n => wavelength / (2 * n)), type: "scatter" as const, mode: "lines" as const, name: "Abbe Limit", line: { color: "#34d399", dash: "dash" } },
       { x: [na], y: [airyRadiusUm], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
     ];

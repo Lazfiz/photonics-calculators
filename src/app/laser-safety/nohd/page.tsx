@@ -16,10 +16,11 @@ export default function NOHDPage() {
   const [mpe, setMpe] = useState(100);
 
   const nohd = useMemo(() => {
-    const a = (beamDia / 2) / 1000;
-    const phi = (divergence / 1000) * Math.PI / 180;
-    const mpeWm2 = (mpe / 1000) * 1e4;
-    const factor = (1.27 * power) / (mpeWm2 * a ** 2);
+    const a = (beamDia / 2) / 1000; // beam radius in meters
+    const phi = divergence / 1000; // full-angle divergence: mrad → rad (NO conversion to degrees)
+    const powerW = power / 1000; // mW → W
+    const mpeWm2 = (mpe / 1000) * 1e4; // mJ/cm² → W/m²
+    const factor = (1.27 * powerW) / (mpeWm2 * a ** 2);
     if (factor <= 1 || phi <= 0) return 0;
     return (1 / phi) * (Math.sqrt(factor) - 1);
   }, [power, beamDia, divergence, mpe]);
@@ -29,9 +30,10 @@ export default function NOHDPage() {
     const distances = Array.from({ length: 150 }, (_, i) => (i * maxDistance) / 149);
     const irradiances = distances.map((z) => {
       const a = (beamDia / 2) / 1000;
-      const phi = (divergence / 1000) * Math.PI / 180;
+      const phi = divergence / 1000; // mrad → rad
+      const powerW = power / 1000;
       const w = a + z * Math.tan(phi);
-      return (power / (Math.PI * w * w)) * 1e-4;
+      return (powerW / (Math.PI * w * w)) * 1e-4; // W/m² → W/cm²
     });
     return [
       { x: distances, y: irradiances, type: "scatter" as const, mode: "lines", name: "Irradiance", line: { color: "#60a5fa", width: 3 } },
