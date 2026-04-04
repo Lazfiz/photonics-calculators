@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import LaserSafetyDisclaimer from "../../components/laser-safety-disclaimer";
+
 export const metadata: Metadata = {
   title: "Laser Safety Calculators",
-  description: "Laser safety calculators for MPE, NOHD, exposure limits, classification, and hazard analysis with clear educational caveats.",
+  description: "Educational laser safety calculators for MPE, NOHD, exposure limits, classification, and hazard analysis. Do not use as compliance-grade outputs without formal laser safety review.",
 };
 
 
@@ -53,7 +55,14 @@ export default function LaserSafetyPage() {
         ← Back to Calculators
       </Link>
       <h1 className="text-3xl font-bold mb-2">Laser Safety</h1>
-      <p className="text-gray-400 mb-8">Calculators for laser safety analysis — MPE, NOHD, and classification per IEC 60825-1 and ANSI Z136.</p>
+      <p className="text-gray-400 mb-4">Educational calculators for laser safety analysis — MPE, NOHD, and classification concepts with explicit trust boundaries.</p>
+      <LaserSafetyDisclaimer />
+      <div className="mb-8 rounded-xl border border-amber-500/30 bg-amber-950/20 p-4 text-sm leading-6 text-amber-100">
+        <p className="font-semibold text-amber-200">Current decision</p>
+        <p className="mt-2">
+          This category remains <span className="font-semibold">educational-only</span> until the pages are reviewed against the full standards tables and validated through a qualified laser-safety workflow. Unsupported regimes should be disabled rather than approximated.
+        </p>
+      </div>
       <div className="grid gap-4 sm:grid-cols-2">
         {calculators.map((calc) => (
           <Link
