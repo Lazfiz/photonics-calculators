@@ -78,7 +78,7 @@ export default function LasercomLinkPage() {
             ["RX Efficiency", rxEfficiency, setRxEfficiency, 0.1, 1],
             ["Pointing Loss (dB)", pointingLoss, setPointingLoss, 0, 20],
             ["Atmospheric Loss (dB)", atmosLoss, setAtmosLoss, 0, 20],
-          ].map(([label, val, set]) => (
+          ].map(([label, val, set]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} onChange={(e) => set(Number(e.target.value))} step={typeof val === "number" && val < 2 ? 0.01 : 1}

@@ -64,7 +64,7 @@ export default function AdaptiveOpticsPage() {
             ["Aperture Diameter (cm)", diameter, setDiameter],
             ["AO Actuators", aoActuators, setAoActuators],
             ["AO Bandwidth (Hz)", aoBandwidth, setAoBandwidth],
-          ].map(([label, val, set]) => (
+          ].map(([label, val, set]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} onChange={(e) => set(Number(e.target.value))}

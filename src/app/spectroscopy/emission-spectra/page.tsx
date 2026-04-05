@@ -29,7 +29,7 @@ export default function EmissionSpectraPage() {
     const spec = wl.map(w => asymmetricGaussian(w, centerWL, fwhm, peakIntensity, asymmetry));
     const spec2 = nPeaks >= 2 ? wl.map(w => asymmetricGaussian(w, peak2WL, peak2Fwhm, peak2Intensity, asymmetry)) : [];
 
-    const traces = [
+    const traces: Record<string, unknown>[] = [
       { x: wl, y: spec, type: "scatter" as const, mode: "lines" as const, name: "Peak 1", line: { color: "#60a5fa" }, fill: "tozeroy", fillcolor: "rgba(96,165,250,0.15)" },
     ];
     if (nPeaks >= 2) {

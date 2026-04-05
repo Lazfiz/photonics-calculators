@@ -122,7 +122,7 @@ export default function EyeSafetyFsoPage() {
             ["Beam Divergence (mrad)", beamDivergence, setBeamDivergence],
             ["Exposure Time (s)", exposureTime, setExposureTime],
             ["Distance for Check (m)", distance, setDistance],
-          ].map(([label, val, set]) => (
+          ].map(([label, val, set]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} onChange={(e) => set(Number(e.target.value))} step={val < 2 ? 0.01 : 1}
@@ -131,7 +131,7 @@ export default function EyeSafetyFsoPage() {
           ))}
           <div className="text-xs text-gray-500 pt-2 border-t border-gray-800">
             <div className="flex gap-2 flex-wrap">
-              {[["1550nm, 100mW", 1550, 100], ["850nm, 10mW", 850, 10], ["1064nm, 50mW", 1064, 50]].map(([name, w, p]) => (
+              {([["1550nm, 100mW", 1550, 100], ["850nm, 10mW", 850, 10], ["1064nm, 50mW", 1064, 50]]).map(([name, w, p]: any) => (
                 <button key={name} onClick={() => { setWavelength(w); setTxPower(p); }}
                   className="bg-gray-800 hover:bg-gray-700 text-xs px-2 py-1 rounded text-gray-300">{name}</button>
               ))}

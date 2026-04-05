@@ -150,7 +150,7 @@ export default function BrewsterPolarizerPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">F-number (min)</p>
-          <p className="text-2xl font-bold text-purple-400">{1 / (2 * Math.tan(brewsterDeg * Math.PI / 180 + 0.05)).toFixed(1)}</p>
+          <p className="text-2xl font-bold text-purple-400">{(1 / (2 * Math.tan(brewsterDeg * Math.PI / 180 + 0.05))).toFixed(1)}</p>
         </div>
       </div>
 

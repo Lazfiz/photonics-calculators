@@ -24,7 +24,7 @@ export default function EmGainPage() {
     const gains = Array.from({ length: 300 }, (_, i) => 1 + i * 9999 / 300);
     const signals = [1, 5, 10, 50];
     const colors = ["#f87171", "#fbbf24", "#34d399", "#60a5fa"];
-    const traces = signals.map((sig, idx) => ({
+    const traces: Record<string, unknown>[] = signals.map((sig, idx) => ({
       x: gains, y: gains.map(g => { const snrEm = sig / Math.sqrt(sig * excessNoiseFactor + clockInducedCharge + (readNoise / g) ** 2); return snrEm / (sig / Math.sqrt(sig + readNoise ** 2)); }),
       type: "scatter" as const, mode: "lines" as const, name: `${sig} e⁻`, line: { color: colors[idx] },
     }));

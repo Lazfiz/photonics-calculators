@@ -46,8 +46,8 @@ function qeAt(detType: DetType, w: number, fillFactor: number, microlensGain: nu
 
 export default function QuantumEfficiencyPage() {
   const [detType, setDetType] = useState<DetType>("silicon");
-  const [fillFactor, setFillFactor] = useState(detectorPresets.silicon.fill);
-  const [microlensGain, setMicrolensGain] = useState(detectorPresets.silicon.gain);
+  const [fillFactor, setFillFactor] = useState<number>(detectorPresets.silicon.fill);
+  const [microlensGain, setMicrolensGain] = useState<number>(detectorPresets.silicon.gain);
   const [probeWavelength, setProbeWavelength] = useState(850);
 
   const qeModel = useMemo(() => qeAt(detType, probeWavelength, fillFactor, microlensGain), [detType, probeWavelength, fillFactor, microlensGain]);

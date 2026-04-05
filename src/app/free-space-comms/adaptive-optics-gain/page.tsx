@@ -125,7 +125,7 @@ export default function AdaptiveOpticsGainPage() {
             ["AO Bandwidth (Hz)", bandwidth, setBandwidth],
             ["Wind Speed (m/s)", windSpeed, setWindSpeed],
             ["Target Strehl", strehlTarget, setStrehlTarget, 0.01],
-          ].map(([label, val, set, step]) => (
+          ].map(([label, val, set, step]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} onChange={(e) => set(Number(e.target.value))} step={step as number | undefined}
@@ -145,7 +145,7 @@ export default function AdaptiveOpticsGainPage() {
               <div className="flex justify-between"><span className="text-gray-400">σ² temporal</span><span>{calc.sigmaTime2.toFixed(4)}</span></div>
               <div className="flex justify-between"><span className="text-gray-400">σ² total</span><span>{calc.sigmaTotal.toFixed(4)}</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Strehl Ratio</span>
-                <span className={calc.strehl > 0.8 ? "text-green-400" : calc.strehl > 0.5 ? "text-yellow-400" : "text-red-400"} className="font-bold">{calc.strehl.toFixed(4)}</span></div>
+                <span className={`${calc.strehl > 0.8 ? "text-green-400" : calc.strehl > 0.5 ? "text-yellow-400" : "text-red-400"} font-bold`}>{calc.strehl.toFixed(4)}</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Open-loop Strehl</span><span>{calc.strehl_open.toExponential(2)}</span></div>
               <div className="flex justify-between"><span className="text-gray-400">AO Gain</span><span className="text-green-400 font-bold">{calc.gainDB.toFixed(1)} dB</span></div>
               <div className="flex justify-between"><span className="text-gray-400">M² (corrected)</span><span>{calc.M2.toFixed(2)}</span></div>

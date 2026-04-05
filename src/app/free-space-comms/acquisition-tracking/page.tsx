@@ -82,7 +82,7 @@ export default function AcquisitionTrackingPage() {
             ["RX Sensitivity (dBm)", rxSensitivity, setRxSensitivity],
             ["Detector Noise Floor (nW)", detectorNoise, setDetectorNoise],
             ["Tracking Bandwidth (kHz)", bandwidth, setBandwidth],
-          ].map(([label, val, set]) => (
+          ].map(([label, val, set]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} onChange={(e) => set(Number(e.target.value))} step={val < 2 ? 0.1 : 1}

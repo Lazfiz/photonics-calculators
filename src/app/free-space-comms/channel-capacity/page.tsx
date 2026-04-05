@@ -51,7 +51,7 @@ export default function ChannelCapacityPage() {
 
     const modRates: Record<string, number> = { OOK: 0.5, BPSK: 1, QPSK: 2, "8PSK": 3, "16QAM": 4 };
     const colors: Record<string, string> = { OOK: "#ef4444", BPSK: "#f59e0b", QPSK: "#22c55e", "8PSK": "#8b5cf6", "16QAM": "#ec4899" };
-    const traces = [
+    const traces: Record<string, unknown>[] = [
       { x: snrs, y: shannon, type: "scatter" as const, mode: "lines" as const, name: "Shannon", line: { color: "#06b6d4", width: 2, dash: "dash" } },
     ];
 
@@ -85,7 +85,7 @@ export default function ChannelCapacityPage() {
             ["SNR (dB)", snrDB, setSnrDB],
             ["FEC Overhead (%)", fecOverhead, setFecOverhead],
             ["Wavelength (nm)", wavelength, setWavelength],
-          ].map(([label, val, set]) => (
+          ].map(([label, val, set]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} onChange={(e) => set(Number(e.target.value))} step={val < 2 ? 0.1 : 1}

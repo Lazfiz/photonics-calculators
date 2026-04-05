@@ -5,8 +5,8 @@ import Link from "next/link";
 import ErrorBoundary from "./error-boundary";
 
 interface CalculatorShellProps {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
   backHref: string;
   backLabel: string;
   children: ReactNode;
@@ -27,8 +27,8 @@ export default function CalculatorShell({
         <Link href={backHref} className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">
           ← Back to {backLabel}
         </Link>
-        <h1 className="text-3xl font-bold mb-2">{title}</h1>
-        <p className="text-gray-400 mb-8">{description}</p>
+        {title && <h1 className="text-3xl font-bold mb-2">{title}</h1>}
+        {description && <p className="text-gray-400 mb-8">{description}</p>}
         <ErrorBoundary>
           {children}
         </ErrorBoundary>

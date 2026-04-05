@@ -61,7 +61,7 @@ export default function PointAheadPage() {
             ["Relative Velocity (km/s)", relVelocity, setRelVelocity],
             ["Wavelength (nm)", wavelength, setWavelength],
             ["TX Aperture (cm)", txAperture, setTxAperture],
-          ].map(([label, val, set]) => (
+          ].map(([label, val, set]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} onChange={(e) => set(Number(e.target.value))}
@@ -76,7 +76,7 @@ export default function PointAheadPage() {
                 ["LEO-Ground", 500, 7],
                 ["GEO-Ground", 36000, 0.05],
                 ["Deep Space", 2000000, 30],
-              ].map(([name, r, v]) => (
+              ].map(([name, r, v]: any) => (
                 <button key={name} onClick={() => { setRange(r); setRelVelocity(v); }}
                   className="bg-gray-800 hover:bg-gray-700 text-xs px-2 py-1 rounded text-gray-300">{name}</button>
               ))}

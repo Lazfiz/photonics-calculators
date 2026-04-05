@@ -82,8 +82,8 @@ export default function SuperResolutionPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Diffraction limit (axial)</span><span className="font-mono">{results.axialAbbe.toFixed(1)} nm</span></div>
           {results.stedLat && (
             <>
-              <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">STED lateral</span><span className="font-mono text-red-400">{results.stedLat.toFixed(1)} nm</span></div>
-              <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">STED axial</span><span className="font-mono text-orange-400">{results.stedAx.toFixed(1)} nm</span></div>
+              <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">STED lateral</span><span className="font-mono text-red-400">{results.stedLat != null ? results.stedLat.toFixed(1) + " nm" : "—"}</span></div>
+              <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">STED axial</span><span className="font-mono text-orange-400">{results.stedAx != null ? results.stedAx.toFixed(1) + " nm" : "—"}</span></div>
             </>
           )}
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">PALM/STORM lateral</span><span className="font-mono text-blue-400">{results.palmRes.toFixed(1)} nm</span></div>

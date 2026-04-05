@@ -33,7 +33,7 @@ export default function CGHPage() {
   const fftComplexity = useMemo(() => {
     const sizes = [256, 512, 1024, 2048, 4096];
     const ops = sizes.map(n => n * n * Math.log2(n * n));
-    return [{ x: sizes, y: ops / 1e6, type: "bar" as const, name: "FFT Ops (M)", marker: { color: "#60a5fa" } }];
+    return [{ x: sizes, y: ops.map(o => o / 1e6), type: "bar" as const, name: "FFT Ops (M)", marker: { color: "#60a5fa" } }];
   }, []);
 
   const efficiencyChart = useMemo(() => {

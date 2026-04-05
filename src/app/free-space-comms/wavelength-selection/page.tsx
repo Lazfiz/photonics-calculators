@@ -75,7 +75,7 @@ export default function WavelengthSelectionPage() {
             ["Range (km)", range, setRange],
             ["Visibility (km)", visibility, setVisibility],
             ["Data Rate (Gbps)", dataRate, setDataRate],
-          ].map(([label, val, set]) => (
+          ].map(([label, val, set]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} onChange={(e) => set(Number(e.target.value))}

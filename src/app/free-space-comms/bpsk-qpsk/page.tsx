@@ -89,7 +89,7 @@ export default function BpskQpskPage() {
             ["Data Rate (Gbps)", dataRate, setDataRate],
             ["Wavelength (nm)", wavelength, setWavelength],
             ["RX Power (dBm)", rxPower, setRxPower],
-          ].map(([label, val, set]) => (
+          ].map(([label, val, set]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} onChange={(e) => set(Number(e.target.value))} step={val < 2 ? 0.1 : 1}

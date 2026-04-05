@@ -68,7 +68,7 @@ export default function OpticalAntennaPage() {
             ["Central Obscuration Ratio", obscuration, setObscuration],
             ["Aperture Efficiency", efficiency, setEfficiency],
             ["Beam Quality M²", beamQuality, setBeamQuality],
-          ].map(([label, val, set]) => (
+          ].map(([label, val, set]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} onChange={(e) => set(Number(e.target.value))} step={val < 2 ? 0.01 : 1}

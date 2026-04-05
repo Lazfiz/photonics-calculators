@@ -100,7 +100,7 @@ export default function BackgroundNoisePage() {
             ["Optical BW (nm)", rxBandwidth, setRxBandwidth],
             ["RX Area (cm²)", rxArea, setRxArea],
             ["Filter Rejection (dB)", filterRejection, setFilterRejection],
-          ].map(([label, val, set]) => (
+          ].map(([label, val, set]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} onChange={(e) => set(Number(e.target.value))} step={val < 2 ? 0.01 : 1}

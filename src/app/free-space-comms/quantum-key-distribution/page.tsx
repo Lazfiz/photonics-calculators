@@ -136,7 +136,7 @@ export default function QuantumKeyDistributionPage() {
             ["Dark Count Rate (Hz)", darkCountRate, setDarkCountRate],
             ["Pulse Rate (Hz)", repRate, setRepRate],
             ["QBER Threshold", errorTolerance, setErrorTolerance, 0.01],
-          ].map(([label, val, set, step]) => (
+          ].map(([label, val, set, step]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} onChange={(e) => set(Number(e.target.value))} step={step as number | undefined}
@@ -155,7 +155,7 @@ export default function QuantumKeyDistributionPage() {
               <div className="flex justify-between"><span className="text-gray-400">Yield Y_1</span><span>{calc.Y1.toExponential(3)}</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Single-photon Gain Q_1</span><span>{calc.Q1.toExponential(3)}</span></div>
               <div className="flex justify-between"><span className="text-gray-400">QBER</span>
-                <span className={calc.QBER < errorTolerance ? "text-green-400" : "text-red-400"} className="font-bold">{(calc.QBER * 100).toFixed(2)}%</span></div>
+                <span className={`${calc.QBER < errorTolerance ? "text-green-400" : "text-red-400"} font-bold`}>{(calc.QBER * 100).toFixed(2)}%</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Secure Key Rate</span>
                 <span className={`font-bold ${calc.keyRateKbps > 0 ? "text-green-400" : "text-red-400"}`}>
                   {calc.keyRateKbps > 0 ? `${calc.keyRateKbps.toFixed(2)} kbps` : "No secure key"}

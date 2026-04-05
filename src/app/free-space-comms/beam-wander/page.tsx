@@ -42,7 +42,7 @@ export default function BeamWanderPage() {
             ["Path Length (km)", pathLength, setPathLength, 1],
             ["Beam Radius (cm)", beamRadius, setBeamRadius, 2],
             ["Wavelength (nm)", wavelength, setWavelength, 1550],
-          ].map(([label, val, set, def]) => (
+          ].map(([label, val, set, def]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} step={label === "Cn²" ? "1e-16" : undefined}

@@ -3,7 +3,7 @@
 interface ResultCardProps {
   label: string;
   value: string;
-  tone?: "blue" | "green" | "yellow" | "orange" | "purple" | "cyan" | "red";
+  tone?: "blue" | "green" | "yellow" | "orange" | "purple" | "cyan" | "red" | "gray";
   subtext?: string;
 }
 
@@ -15,6 +15,7 @@ const toneMap = {
   purple: "text-purple-400",
   cyan: "text-cyan-400",
   red: "text-red-400",
+  gray: "text-gray-400",
 };
 
 export default function ResultCard({ label, value, tone = "blue", subtext }: ResultCardProps) {

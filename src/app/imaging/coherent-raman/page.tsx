@@ -40,9 +40,9 @@ export default function CoherentRamanPage() {
   }, [mode, pumpWl, wavenumber, pumpPower, stokesPower, pulseWidth, repRate, na]);
 
   const spectrumPlot = useMemo(() => {
-    const wn = [];
-    const cars = [];
-    const srs = [];
+    const wn: number[] = [];
+    const cars: number[] = [];
+    const srs: number[] = [];
     const center = wavenumber;
     for (let w = center - 500; w <= center + 500; w += 5) {
       wn.push(w);

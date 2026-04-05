@@ -33,7 +33,7 @@ export default function ExtendedSourcePage() {
 
     return [
       { x: alphas, y: C6clamped, type: "scatter" as const, mode: "lines" as const, name: "C₆", line: { color: "#f87171" } },
-      { x: [calc.alpha], y: [calc.C6], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#60a5fa", size: 12 } },
+      { x: [alpha], y: [calc.C6], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#60a5fa", size: 12 } },
     ];
   }, [alpha, calc]);
 

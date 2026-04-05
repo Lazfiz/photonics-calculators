@@ -96,7 +96,7 @@ export default function ScintillationIndexPage() {
             ["Wavelength (nm)", wavelength, setWavelength],
             ["C_n² (m⁻²ᐟ³)", cn2, setCn2, 1e-15],
             ["Range (m)", range, setRange],
-          ].map(([label, val, set, step]) => (
+          ].map(([label, val, set, step]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} onChange={(e) => set(Number(e.target.value))} step={step as number | undefined}

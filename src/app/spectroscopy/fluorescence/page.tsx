@@ -20,7 +20,7 @@ export default function FluorescencePage() {
       ? t.map(ti => (1 - amp2) * Math.exp(-ti / tau) + amp2 * Math.exp(-ti / tau2))
       : [];
 
-    const traces = [
+    const traces: Record<string, unknown>[] = [
       { x: t, y: single, type: "scatter" as const, mode: "lines" as const, name: `τ₁ = ${tau} ns`, line: { color: "#60a5fa", width: 2 } },
     ];
 

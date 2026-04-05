@@ -1429,9 +1429,9 @@
     "priority": 50
   },
   {
-    "title": "Brewster Angle &amp; Total Internal Reflection",
+    "title": "Brewster Angle & Total Internal Reflection",
     "href": "/materials/brewster-tir",
-    "description": "θB = arctan(n₂/n₁) &nbsp;|&nbsp; θc = arcsin(n₂/n₁)",
+    "description": "Interactive Brewster-angle and critical-angle explorer with common material presets.",
     "kind": "page",
     "category": "materials",
     "tags": [
@@ -2403,6 +2403,23 @@
       "qe",
       "responsivity",
       "nep"
+    ],
+    "priority": 50
+  },
+  {
+    "title": "Detector Responsivity",
+    "href": "/detectors/responsivity",
+    "description": "Interactive detector responsivity calculator from quantum efficiency and wavelength, with wavelength sweeps and presets.",
+    "kind": "page",
+    "category": "detectors",
+    "tags": [
+      "detectors",
+      "responsivity",
+      "sensor",
+      "noise",
+      "qe",
+      "nep",
+      "detectivity"
     ],
     "priority": 50
   },
@@ -3805,7 +3822,7 @@
   {
     "title": "Fresnel Equations",
     "href": "/materials/fresnel",
-    "description": "Reflection &amp; transmission at a dielectric interface",
+    "description": "Interactive Fresnel reflection and transmission at a dielectric interface with sliders, presets, and angle sweeps.",
     "kind": "page",
     "category": "materials",
     "tags": [
@@ -3850,6 +3867,23 @@
       "mueller",
       "waveplate",
       "polarizer"
+    ],
+    "priority": 50
+  },
+  {
+    "title": "FSO Link Budget",
+    "href": "/free-space-comms/link-budget",
+    "description": "Interactive free-space optical link budget with sliders, presets, and received-power versus range view.",
+    "kind": "page",
+    "category": "free-space-comms",
+    "tags": [
+      "free-space-comms",
+      "link-budget",
+      "fso",
+      "link budget",
+      "fog",
+      "scintillation",
+      "pointing"
     ],
     "priority": 50
   },
@@ -4867,23 +4901,6 @@
     "priority": 50
   },
   {
-    "title": "Link Budget",
-    "href": "/free-space-comms/link-budget",
-    "description": "Open Link Budget.",
-    "kind": "page",
-    "category": "free-space-comms",
-    "tags": [
-      "free-space-comms",
-      "link-budget",
-      "fso",
-      "link budget",
-      "fog",
-      "scintillation",
-      "pointing"
-    ],
-    "priority": 50
-  },
-  {
     "title": "Liquid Crystal Polarizer",
     "href": "/polarization/liquid-crystal-polarizer",
     "description": "Model transmission through twisted nematic (TN), super-twisted nematic (STN), vertically aligned (VA), and electrically controlled birefringence (ECB) LC cells.",
@@ -5656,7 +5673,7 @@
   {
     "title": "Optical Density",
     "href": "/spectroscopy/optical-density",
-    "description": "Convert between optical density (OD), transmission, and attenuation. Essential for filter selection and absorbance measurements.",
+    "description": "Convert optical density, transmission, and attenuation with interactive presets and slider-based exploration.",
     "kind": "page",
     "category": "spectroscopy",
     "tags": [
@@ -6356,7 +6373,7 @@
   {
     "title": "Pointing Loss",
     "href": "/free-space-comms/pointing-loss",
-    "description": "Open Pointing Loss.",
+    "description": "Interactive free-space optical pointing-loss calculator with jitter, misalignment, and aperture coupling.",
     "kind": "page",
     "category": "free-space-comms",
     "tags": [
@@ -6703,7 +6720,7 @@
   {
     "title": "Quantum Efficiency",
     "href": "/detectors/quantum-efficiency",
-    "description": "Open Quantum Efficiency.",
+    "description": "Interactive detector quantum-efficiency explorer with detector presets, fill factor, microlens gain, and wavelength response curves.",
     "kind": "page",
     "category": "detectors",
     "tags": [
@@ -6992,23 +7009,6 @@
       "airy",
       "mtf",
       "psf"
-    ],
-    "priority": 50
-  },
-  {
-    "title": "Responsivity",
-    "href": "/detectors/responsivity",
-    "description": "Open Responsivity.",
-    "kind": "page",
-    "category": "detectors",
-    "tags": [
-      "detectors",
-      "responsivity",
-      "sensor",
-      "noise",
-      "qe",
-      "nep",
-      "detectivity"
     ],
     "priority": 50
   },
@@ -8993,7 +8993,7 @@
   {
     "title": "Wavenumber Converter",
     "href": "/spectroscopy/wavenumber-converter",
-    "description": "Convert between wavelength (nm, µm), wavenumber (cm⁻¹), frequency (Hz), and energy (eV).",
+    "description": "Convert wavelength, wavenumber, frequency, and energy with sliders, presets, and range sweeps.",
     "kind": "page",
     "category": "spectroscopy",
     "tags": [

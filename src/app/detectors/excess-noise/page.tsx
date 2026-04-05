@@ -23,7 +23,7 @@ export default function ExcessNoisePage() {
       { name: "Ge (k≈0.7)", k: 0.7, color: "#fbbf24" },
       { name: "k≈0 (ideal)", k: 0.001, color: "#34d399", dash: "dash" },
     ];
-    const traces = materials.map(mat => ({
+    const traces: Record<string, unknown>[] = materials.map(mat => ({
       x: M, y: M.map(m => mat.k * m + (2 - 1 / m) * (1 - mat.k)),
       type: "scatter" as const, mode: "lines" as const,
       name: mat.name, line: { color: mat.color, width: 2, dash: (mat as any).dash || undefined },

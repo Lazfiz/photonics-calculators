@@ -128,7 +128,7 @@ export default function FadeProbabilityPage() {
             ["Fade Threshold (dB)", fadeThreshold, setFadeThreshold],
             ["RX Diameter (cm)", rxDiameter, setRxDiameter],
             ["Num Channels", numChannels, setNumChannels],
-          ].map(([label, val, set, step]) => (
+          ].map(([label, val, set, step]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} onChange={(e) => set(Number(e.target.value))} step={step as number | undefined}

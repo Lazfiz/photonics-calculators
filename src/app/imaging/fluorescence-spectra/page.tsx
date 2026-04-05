@@ -54,7 +54,7 @@ export default function FluorescenceSpectraPage() {
   }, [data]);
 
   const spectraPlot = useMemo(() => {
-    const traces = [
+    const traces: Record<string, unknown>[] = [
       { x: data.wl, y: data.ex1, name: `${dye1.label} Excitation`, line: { color: "#60a5fa", width: 2 }, type: "scatter", mode: "lines" },
       { x: data.wl, y: data.em1, name: `${dye1.label} Emission`, line: { color: "#4ade80", width: 2 }, type: "scatter", mode: "lines" },
       { x: data.wl, y: data.ex2, name: `${dye2.label} Excitation`, line: { color: "#60a5fa", width: 1, dash: "dash" }, type: "scatter", mode: "lines" },

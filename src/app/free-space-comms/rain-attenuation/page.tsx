@@ -55,7 +55,7 @@ export default function RainAttenuationPage() {
             ["Rain Rate (mm/h)", rainRate, setRainRate],
             ["Wavelength (nm)", wavelength, setWavelength],
             ["Link Range (km)", range, setRange],
-          ].map(([label, val, set]) => (
+          ].map(([label, val, set]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
               <input type="number" value={val} onChange={(e) => set(Number(e.target.value))}

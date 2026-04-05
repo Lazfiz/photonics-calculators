@@ -54,7 +54,7 @@ export default function BirefringenceCalculator() {
     const ellipticities: number[] = [];
     const bGeo: number[] = [];
     const bTotal: number[] = [];
-    const beatLengths: number[] = [];
+    const beatLengths: (number | null)[] = [];
     const delta = (coreIndex - claddingIndex) / coreIndex;
 
     for (let e = 0.7; e <= 1.0; e += 0.005) {

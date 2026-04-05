@@ -9,7 +9,7 @@ interface UVMaterial {
   name: string;
   range: [number, number]; // nm
   nd200: number;
-  solarization: "high" | "medium" | "low";
+  solarization: "high" | "medium" | "low" | "very low";
   B: number[];
   C: number[];
 }

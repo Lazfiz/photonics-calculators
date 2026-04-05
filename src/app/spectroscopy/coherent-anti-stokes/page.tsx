@@ -32,7 +32,7 @@ export default function CoherentAntiStokesPage() {
     const carsIntensity = shifts.map(s => {
       const chiR = R / (s * 100 - vibFreq / 100 / (2 * Math.PI * c / 100) + 0);
       const chi = A_NR + chiR;
-      return Math.pow(chi.real ** 2 + chi.imag ** 2, 2);
+      return Math.pow(chi * chi, 2);
     });
 
     // Spontaneous Raman for comparison
