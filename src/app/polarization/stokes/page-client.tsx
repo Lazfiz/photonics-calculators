@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import InputSlider from "../../../components/input-slider";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
 
@@ -32,14 +33,18 @@ export default function StokesPage() {
     const dolp = Math.sqrt(Q * Q + U * U) / I;
     const docp = Math.abs(V) / I;
     const psi = 0.5 * Math.atan2(U, Q);
-    const chi = 0.5 * Math.asin(Math.min(1, Math.max(-1, V / (I * dop))));
+    const ratioArg = dop === 0 ? 0 : V / (I * dop);
+    const chi = 0.5 * Math.asin(Math.min(1, Math.max(-1, ratioArg)));
     const ar = Math.tan(Math.abs(chi));
     return { dop, dolp, docp, psi: (psi * 180) / Math.PI, chi: (chi * 180) / Math.PI, ar, handedness: V > 0 ? "Right-handed" : V < 0 ? "Left-handed" : "Linear" };
   }, [I, Q, U, V]);
 
   const applyPreset = (p: Preset) => {
     const v = presets[p];
-    setI(v.I); setQ(v.Q); setU(v.U); setV(v.V);
+    setI(v.I);
+    setQ(v.Q);
+    setU(v.U);
+    setV(v.V);
   };
 
   const poincareTrace = useMemo(() => {
@@ -54,12 +59,12 @@ export default function StokesPage() {
   const statePoint = I > 0 ? { x: [Q / I], y: [U / I], z: [V / I] } : { x: [0], y: [0], z: [0] };
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Stokes Parameters" description="Analyze polarization state from Stokes vector components with Poincaré sphere visualization.">
+    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Stokes Parameters" description="Analyze polarization state from Stokes vector components with sliders, presets, and Poincaré sphere visualization.">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Stokes Vector Input</h2>
-          <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Presets</label>
+          <div className="mb-4">
+            <label className="text-sm text-gray-400 block mb-2">Presets</label>
             <div className="flex flex-wrap gap-2">
               {(Object.keys(presets) as Preset[]).map((p) => (
                 <button key={p} onClick={() => applyPreset(p)} className="px-3 py-1 text-xs bg-gray-800 border border-gray-700 rounded hover:border-blue-500 transition">
@@ -68,18 +73,15 @@ export default function StokesPage() {
               ))}
             </div>
           </div>
-          {[
-            { label: "I (Intensity)", val: I, set: setI },
-            { label: "Q", val: Q, set: setQ },
-            { label: "U", val: U, set: setU },
-            { label: "V", val: V, set: setV },
-          ].map(({ label, val, set }) => (
-            <div key={label} className="mb-3">
-              <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <input type="number" step="0.01" value={val} onChange={(e) => set(parseFloat(e.target.value) || 0)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
-            </div>
-          ))}
-          <div className="mt-2 text-sm text-gray-500">S = [{I.toFixed(2)}, {Q.toFixed(2)}, {U.toFixed(2)}, {V.toFixed(2)}]</div>
+
+          <div className="space-y-4">
+            <InputSlider label="I (Intensity)" value={I} onChange={setI} min={0.1} max={2} step={0.01} />
+            <InputSlider label="Q" value={Q} onChange={setQ} min={-1} max={1} step={0.01} />
+            <InputSlider label="U" value={U} onChange={setU} min={-1} max={1} step={0.01} />
+            <InputSlider label="V" value={V} onChange={setV} min={-1} max={1} step={0.01} />
+          </div>
+
+          <div className="mt-4 text-sm text-gray-500">S = [{I.toFixed(2)}, {Q.toFixed(2)}, {U.toFixed(2)}, {V.toFixed(2)}]</div>
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">

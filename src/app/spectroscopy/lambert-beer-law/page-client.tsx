@@ -4,9 +4,13 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
+import InputSlider from "../../../components/input-slider";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
 
+const concentrationPresets = [0.001, 0.01, 0.05, 0.1];
+const pathPresets = [0.1, 1, 5, 10];
+const epsilonPresets = [1000, 10000, 50000, 100000];
 const currentHref = "/spectroscopy/lambert-beer-law";
 
 export default function LambertBeerLawPage() {
@@ -23,7 +27,7 @@ export default function LambertBeerLawPage() {
     const n = 200;
     let xs: number[], ys1: number[];
     if (plotVar === "conc") {
-      const cMax = concentration * 5 || 0.05;
+      const cMax = Math.max(concentration * 5, 0.05);
       xs = Array.from({ length: n }, (_, i) => (i / n) * cMax);
       ys1 = xs.map((c) => extinctionCoeff * c * pathLength);
     } else if (plotVar === "path") {
@@ -44,20 +48,33 @@ export default function LambertBeerLawPage() {
   const xLabel = plotVar === "conc" ? "Concentration (mol/L)" : plotVar === "path" ? "Path Length (cm)" : "ε (L·mol⁻¹·cm⁻¹)";
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Lambert-Beer Law Calculator" description="Comprehensive Beer-Lambert law analysis — A = ε·c·l with interactive parameter sweeps.">
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Lambert-Beer Law Calculator" description="Comprehensive Beer-Lambert law analysis with sliders, presets, and interactive parameter sweeps.">
+      <div className="mb-5 space-y-3">
+        <div className="flex flex-wrap gap-2">
+          {concentrationPresets.map((preset) => (
+            <button key={`c-${preset}`} onClick={() => setConcentration(preset)} className={`rounded-full border px-3 py-1 text-sm transition ${concentration === preset ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>
+              c = {preset}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {pathPresets.map((preset) => (
+            <button key={`l-${preset}`} onClick={() => setPathLength(preset)} className={`rounded-full border px-3 py-1 text-sm transition ${pathLength === preset ? "border-green-400 bg-green-500/15 text-green-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>
+              l = {preset} cm
+            </button>
+          ))}
+          {epsilonPresets.map((preset) => (
+            <button key={`e-${preset}`} onClick={() => setExtinctionCoeff(preset)} className={`rounded-full border px-3 py-1 text-sm transition ${extinctionCoeff === preset ? "border-purple-400 bg-purple-500/15 text-purple-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>
+              ε = {preset.toLocaleString()}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Concentration (mol/L)</span>
-          <input type="number" value={concentration} onChange={e => setConcentration(+e.target.value)} min={0} step={0.001} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Path Length (cm)</span>
-          <input type="number" value={pathLength} onChange={e => setPathLength(Math.max(0.001, +e.target.value))} min={0.001} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">ε (L·mol⁻¹·cm⁻¹)</span>
-          <input type="number" value={extinctionCoeff} onChange={e => setExtinctionCoeff(+e.target.value)} min={0} step={1000} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <InputSlider label="Concentration" value={concentration} onChange={setConcentration} min={0} max={0.2} step={0.001} unit="mol/L" />
+        <InputSlider label="Path Length" value={pathLength} onChange={setPathLength} min={0.1} max={10} step={0.1} unit="cm" />
+        <InputSlider label="Extinction coefficient ε" value={extinctionCoeff} onChange={setExtinctionCoeff} min={0} max={200000} step={1000} unit="L·mol⁻¹·cm⁻¹" />
       </div>
 
       <div className="flex gap-2 mb-6 flex-wrap">
