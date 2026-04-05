@@ -7,6 +7,7 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyCwBounds from "../../../components/laser-safety-cw-bounds";
+import LaserSafetyCwReferences from "../../../components/laser-safety-cw-references";
 import { cwPointSourceNohdPrecheck } from "../../../lib/laser-safety-cw-suite";
 
 const powerPresets = [5, 100, 1000];
@@ -44,6 +45,7 @@ export default function NOHDPage() {
     >
       <LaserSafetyDisclaimer />
       <LaserSafetyCwBounds />
+      <LaserSafetyCwReferences />
 
       <div className="mb-5 flex flex-wrap gap-2">
         {powerPresets.map((preset) => (

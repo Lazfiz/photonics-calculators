@@ -7,6 +7,7 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyCwBounds from "../../../components/laser-safety-cw-bounds";
+import LaserSafetyCwReferences from "../../../components/laser-safety-cw-references";
 import { cornealIrradianceWcm2 } from "../../../lib/laser-safety-cw-suite";
 
 export default function ODRequirementsPage() {
@@ -55,6 +56,7 @@ export default function ODRequirementsPage() {
     >
       <LaserSafetyDisclaimer />
       <LaserSafetyCwBounds />
+      <LaserSafetyCwReferences />
 
       <div className="mb-6 rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-4 text-sm leading-6 text-cyan-100">
         <p className="font-semibold text-cyan-200">Manual mode</p>

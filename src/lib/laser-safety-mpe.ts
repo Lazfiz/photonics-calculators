@@ -1,3 +1,10 @@
+export const laserSafetyReferencePoints = [
+  "ANSI Z136.1 — ocular MPE tables, correction-factor framework (C_A / C_B), limiting apertures, and time-domain rules.",
+  "IEC 60825-1 — product-classification / AEL framework (separate from this bounded pre-check suite).",
+  "OSHA Technical Manual, Section III Chapter 6 — visible blue-light photochemical hazard becomes important for 0.400–0.550 µm exposures greater than 10 s.",
+  "University laser safety manuals (e.g. UC Merced) — useful secondary explanatory summaries of ANSI-style correction factors and branch boundaries.",
+];
+
 export type SupportedMpeResult = {
   status: "supported";
   regime: string;
@@ -5,6 +12,7 @@ export type SupportedMpeResult = {
   radiantExposureMpe_mJcm2: number;
   equivalentIrradianceMpe_mWcm2: number;
   notes: string[];
+  references: string[];
 };
 
 export type UnsupportedMpeResult = {
@@ -13,26 +21,37 @@ export type UnsupportedMpeResult = {
   scope: string;
   reason: string;
   notes: string[];
+  references: string[];
 };
 
 export type EducationalMpeResult = SupportedMpeResult | UnsupportedMpeResult;
 
+function wavelengthUm(wavelengthNm: number) {
+  return wavelengthNm / 1000;
+}
+
 function correctionCa(wavelengthNm: number) {
-  if (wavelengthNm < 700) return 1;
-  if (wavelengthNm < 1050) return Math.pow(10, 0.002 * (wavelengthNm - 700));
-  if (wavelengthNm <= 1400) return 5;
+  const lambdaUm = wavelengthUm(wavelengthNm);
+  if (lambdaUm < 0.7) return 1;
+  if (lambdaUm <= 1.05) return Math.pow(10, 2 * (lambdaUm - 0.7));
   return 1;
+}
+
+function commonNotes() {
+  return [
+    "This calculator is intentionally limited to educational / engineering pre-check use only.",
+    "Do not use it for PPE selection sign-off, controlled-area approval, NOHD/NHZ approval, enclosure/interlock sign-off, or product classification.",
+    "Formal safety decisions still require ANSI Z136.1 / IEC 60825-1 review and CLSO / LSO oversight.",
+    "This bounded suite only supports CW / continuous exposure, small-source / point-source direct-beam logic, and rejects unsupported regimes instead of approximating through them.",
+  ];
 }
 
 export function calculateEducationalContinuousMpe(
   wavelengthNm: number,
   exposureS: number
 ): EducationalMpeResult {
-  const commonNotes = [
-    "This calculator is intentionally quarantined to educational use only.",
-    "Do not use it for PPE selection, hazard sign-off, NHZ/NOHD approval, enclosure/interlock design approval, or product classification.",
-    "For real safety decisions, verify against ANSI Z136.1 / IEC 60825-1 and your CLSO / LSO workflow.",
-  ];
+  const notes = commonNotes();
+  const references = laserSafetyReferencePoints;
 
   if (exposureS <= 0) {
     return {
@@ -40,29 +59,59 @@ export function calculateEducationalContinuousMpe(
       regime: "Invalid input",
       scope: "No result",
       reason: "Exposure time must be greater than zero.",
-      notes: commonNotes,
-    };
-  }
-
-  if (exposureS < 1e-3 || exposureS > 10) {
-    return {
-      status: "unsupported",
-      regime: "Outside short-exposure window",
-      scope: "Quarantined",
-      reason:
-        "This page only exposes the short-exposure educational branch (1 ms to 10 s). Longer-duration photochemical / blue-light corrected branches and sub-millisecond pulse rules are intentionally disabled here.",
-      notes: commonNotes,
+      notes,
+      references,
     };
   }
 
   if (wavelengthNm < 400 || wavelengthNm > 1050) {
     return {
       status: "unsupported",
-      regime: "Outside supported ocular thermal branch",
+      regime: "Outside bounded ocular branch",
       scope: "Quarantined",
       reason:
-        "This page only returns values for a simplified small-source ocular thermal branch from 400 nm to 1050 nm. Corneal/skin regimes, UV, and >1050 nm branches are intentionally disabled rather than approximated.",
-      notes: commonNotes,
+        "The bounded mini-suite only supports 400–1050 nm for a small-source / point-source ocular direct-beam branch. UV, corneal / skin branches, and >1050 nm regimes are intentionally excluded.",
+      notes,
+      references,
+    };
+  }
+
+  if (exposureS < 1e-3) {
+    return {
+      status: "unsupported",
+      regime: "Below bounded short-exposure limit",
+      scope: "Quarantined",
+      reason:
+        "Sub-millisecond cases are intentionally disabled because pulse / short-time rules are outside the bounded CW point-source suite.",
+      notes,
+      references,
+    };
+  }
+
+  if (wavelengthNm <= 550 && exposureS > 10) {
+    return {
+      status: "unsupported",
+      regime: "Visible blue-light photochemical crossover",
+      scope: "Quarantined",
+      reason:
+        "For 400–550 nm exposures longer than 10 s, blue-light photochemical retinal limits become relevant. That C_B-dependent long-duration branch is intentionally disabled in this bounded suite instead of being approximated.",
+      notes: [
+        ...notes,
+        "OSHA's laser-hazard summary explicitly flags blue-light photochemical retinal injury for 0.400–0.550 µm exposures greater than 10 s.",
+      ],
+      references,
+    };
+  }
+
+  if (exposureS > 10) {
+    return {
+      status: "unsupported",
+      regime: "Outside bounded long-duration window",
+      scope: "Quarantined",
+      reason:
+        "This bounded suite currently stops at 10 s. Longer-duration ocular limits require additional standards-table logic and are intentionally not auto-applied here.",
+      notes,
+      references,
     };
   }
 
@@ -71,15 +120,17 @@ export function calculateEducationalContinuousMpe(
   if (wavelengthNm < 700) {
     return {
       status: "supported",
-      regime: wavelengthNm < 500 ? "Visible retinal thermal (blue-light long-duration branch disabled)" : "Visible retinal thermal",
-      scope: "Small-source ocular thermal branch, 1 ms to 10 s",
+      regime: wavelengthNm <= 550 ? "Visible retinal thermal short-exposure branch" : "Visible retinal thermal branch",
+      scope: "CW / small-source / point-source ocular thermal branch, 1 ms to 10 s",
       radiantExposureMpe_mJcm2: thermalBase_mJcm2,
       equivalentIrradianceMpe_mWcm2: thermalBase_mJcm2 / exposureS,
       notes: [
-        ...commonNotes,
-        "Radiant exposure H and equivalent irradiance E are shown separately to avoid mixing energy-limited and power-limited quantities.",
-        "The longer-duration photochemical / C_b-corrected branch is intentionally not auto-applied on this page; blue-light cases remain educational only.",
+        ...notes,
+        "The bounded suite uses the short-duration visible retinal thermal branch for 1 ms to 10 s.",
+        "For 400–550 nm, the longer-duration blue-light photochemical branch (>10 s) is intentionally rejected instead of being merged in approximately.",
+        "Radiant exposure H and equivalent irradiance E are shown separately to avoid energy / power unit confusion.",
       ],
+      references,
     };
   }
 
@@ -88,14 +139,16 @@ export function calculateEducationalContinuousMpe(
 
   return {
     status: "supported",
-    regime: "Near-IR retinal thermal",
-    scope: "Small-source ocular thermal branch, 1 ms to 10 s",
+    regime: "Near-IR retinal thermal branch",
+    scope: "CW / small-source / point-source ocular thermal branch, 1 ms to 10 s",
     radiantExposureMpe_mJcm2: radiantExposure,
     equivalentIrradianceMpe_mWcm2: radiantExposure / exposureS,
     notes: [
-      ...commonNotes,
-      `Applied C_A correction factor: ${ca.toFixed(3)}.`,
-      "This branch still omits extended-source corrections, pulse rules, and limiting-aperture details.",
+      ...notes,
+      `Applied ANSI-style C_A correction factor: ${ca.toFixed(3)}.`,
+      "This bounded suite still excludes extended-source corrections, pulse rules, scan rules, and limiting-aperture edge cases.",
+      "The implementation uses wavelength in µm for the C_A expression: C_A = 10^(2(λ - 0.700)) for 0.700–1.050 µm.",
     ],
+    references,
   };
 }

@@ -7,6 +7,7 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyCwBounds from "../../../components/laser-safety-cw-bounds";
+import LaserSafetyCwReferences from "../../../components/laser-safety-cw-references";
 import { calculateEducationalContinuousMpe } from "../../../lib/laser-safety-mpe";
 
 const wavelengthPresets = [450, 532, 1064];
@@ -59,6 +60,7 @@ export default function MPEPage() {
     >
       <LaserSafetyDisclaimer />
       <LaserSafetyCwBounds />
+      <LaserSafetyCwReferences />
 
       <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-950/20 p-4 text-sm leading-6 text-amber-100">
         <p className="font-semibold text-amber-200">Current scope</p>

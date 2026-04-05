@@ -7,6 +7,7 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyCwBounds from "../../../components/laser-safety-cw-bounds";
+import LaserSafetyCwReferences from "../../../components/laser-safety-cw-references";
 import { cwPointSourceNohdPrecheck } from "../../../lib/laser-safety-cw-suite";
 
 export default function ViewingDistancePage() {
@@ -58,6 +59,7 @@ export default function ViewingDistancePage() {
     >
       <LaserSafetyDisclaimer />
       <LaserSafetyCwBounds />
+      <LaserSafetyCwReferences />
 
       <div className="grid gap-4 lg:grid-cols-2 mb-8">
         <InputSlider label="Power" value={power} onChange={setPower} min={1} max={5000} step={1} unit="mW" />

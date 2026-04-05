@@ -7,6 +7,7 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyCwBounds from "../../../components/laser-safety-cw-bounds";
+import LaserSafetyCwReferences from "../../../components/laser-safety-cw-references";
 import { cwPointSourceOdPrecheck } from "../../../lib/laser-safety-cw-suite";
 
 export default function OpticalDensityPage() {
@@ -47,6 +48,7 @@ export default function OpticalDensityPage() {
     >
       <LaserSafetyDisclaimer />
       <LaserSafetyCwBounds />
+      <LaserSafetyCwReferences />
 
       <div className="grid gap-4 lg:grid-cols-2 mb-8">
         <InputSlider label="Wavelength" value={wavelength} onChange={setWavelength} min={400} max={1050} step={1} unit="nm" />
