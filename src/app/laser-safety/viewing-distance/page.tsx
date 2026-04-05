@@ -1,122 +1,113 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import InputSlider from "../../../components/input-slider";
+import ResultCard from "../../../components/result-card";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-
+import LaserSafetyCwBounds from "../../../components/laser-safety-cw-bounds";
+import { cwPointSourceNohdPrecheck } from "../../../lib/laser-safety-cw-suite";
 
 export default function ViewingDistancePage() {
-  const [power, setPower] = useState(500); // mW
+  const [power, setPower] = useState(500);
   const [wavelength, setWavelength] = useState(532);
-  const [beamDiameter, setBeamDiameter] = useState(2); // mm
-  const [divergence, setDivergence] = useState(0.5); // mrad full angle
-  const [mpeIrrad, setMpeIrrad] = useState(0.0025); // W/cm²
+  const [beamDiameter, setBeamDiameter] = useState(2);
+  const [divergence, setDivergence] = useState(0.5);
+  const [exposure, setExposure] = useState(0.25);
+  const [safetyFactor, setSafetyFactor] = useState(1);
 
-  // Beam diameter at distance z: d(z) = d0 + z * θ (small angle)
-  // Irradiance at z: I(z) = P / (π/4 * d(z)²)
-  const irradianceAtDistance = (z: number) => {
-    const d0 = beamDiameter / 10; // cm
-    const theta = divergence / 1000; // rad
-    const dZ = d0 + z * 100 * theta; // cm (z in m, convert to cm)
-    const area = Math.PI / 4 * dZ * dZ;
-    return (power / 1000) / area; // W/cm²
-  };
-
-  const nohd = useMemo(() => {
-    let z = 0.01;
-    while (z < 100000 && irradianceAtDistance(z) > mpeIrrad) z *= 1.02;
-    return z;
-  }, [power, beamDiameter, divergence, mpeIrrad]);
-
-  const enhd = useMemo(() => {
-    // Enhanced NHOD: assumes 7mm pupil instead of full beam
-    const pupilArea = Math.PI * Math.pow(0.35, 2); // cm² (3.5mm radius)
-    const pupilIrrad = (power / 1000) / pupilArea;
-    if (pupilIrrad <= mpeIrrad) return 0;
-    let z = 0.01;
-    while (z < 100000 && irradianceAtDistance(z) > mpeIrrad) z *= 1.02;
-    return z;
-  }, [power, mpeIrrad]);
+  const result = useMemo(
+    () => cwPointSourceNohdPrecheck({ wavelengthNm: wavelength, exposureS: exposure, powerMw: power, beamDiameterMm: beamDiameter, divergenceMrad: divergence, safetyFactor }),
+    [power, wavelength, beamDiameter, divergence, exposure, safetyFactor]
+  );
 
   const chartData = useMemo(() => {
-    const maxDist = nohd * 1.5;
-    const distances = Array.from({ length: 200 }, (_, i) => maxDist * Math.pow(10, -1.5 + i * 0.018));
+    if (result.status !== "supported") return [];
+    const maxDist = Math.max(result.nohdM * 1.5, 10);
+    const distances = Array.from({ length: 180 }, (_, i) => maxDist * Math.pow(10, -2 + (i / 179) * 2));
     return [
       {
-        x: distances, y: distances.map(irradianceAtDistance),
-        type: "scatter" as const, mode: "lines" as const, name: "Irradiance",
-        line: { color: "#60a5fa" }
+        x: distances,
+        y: distances.map((d) => result.irradianceAtDistance(d)),
+        type: "scatter" as const,
+        mode: "lines" as const,
+        name: "Irradiance",
+        line: { color: "#60a5fa" },
       },
       {
-        x: distances, y: distances.map(() => mpeIrrad),
-        type: "scatter" as const, mode: "lines" as const, name: "MPE",
-        line: { color: "#f87171", dash: "dash" }
-      }
+        x: distances,
+        y: distances.map(() => result.targetIrradianceWcm2),
+        type: "scatter" as const,
+        mode: "lines" as const,
+        name: "Target irradiance",
+        line: { color: "#f87171", dash: "dash" },
+      },
     ];
-  }, [nohd, mpeIrrad, power, beamDiameter, divergence]);
+  }, [result]);
 
   const formatDist = (d: number) =>
-    d >= 1000 ? (d / 1000).toFixed(2) + " km" :
-    d >= 1 ? d.toFixed(1) + " m" :
-    (d * 100).toFixed(1) + " cm";
+    d >= 1000 ? (d / 1000).toFixed(2) + " km" : d >= 1 ? d.toFixed(2) + " m" : (d * 100).toFixed(1) + " cm";
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Safe Viewing Distance Calculator" description="Calculate Nominal Ocular Hazard Distance (NOHD) for direct beam viewing based on beam divergence and MPE.">
-            
+    <CalculatorShell
+      backHref="/laser-safety"
+      backLabel="Laser Safety"
+      title="Safe Viewing Distance (CW point-source pre-check)"
+      description="Simplified direct-beam viewing-distance estimate built from the same bounded CW point-source assumptions as the MPE and NOHD pages."
+    >
       <LaserSafetyDisclaimer />
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Power (mW)</span>
-          <input type="number" value={power} onChange={e => setPower(+e.target.value)} min={0.001} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={180} max={1800}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Beam Diameter (mm)</span>
-          <input type="number" value={beamDiameter} onChange={e => setBeamDiameter(+e.target.value)} min={0.01} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Divergence (mrad)</span>
-          <input type="number" value={divergence} onChange={e => setDivergence(+e.target.value)} min={0.01} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">MPE Irradiance (W/cm²)</span>
-          <input type="number" value={mpeIrrad} onChange={e => setMpeIrrad(+e.target.value)} min={0.00001} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+      <LaserSafetyCwBounds />
+
+      <div className="grid gap-4 lg:grid-cols-2 mb-8">
+        <InputSlider label="Power" value={power} onChange={setPower} min={1} max={5000} step={1} unit="mW" />
+        <InputSlider label="Wavelength" value={wavelength} onChange={setWavelength} min={400} max={1050} step={1} unit="nm" />
+        <InputSlider label="Beam diameter" value={beamDiameter} onChange={setBeamDiameter} min={0.5} max={10} step={0.1} unit="mm" />
+        <InputSlider label="Full-angle divergence" value={divergence} onChange={setDivergence} min={0.1} max={5} step={0.1} unit="mrad" />
+        <InputSlider label="Exposure time" value={exposure} onChange={setExposure} min={0.001} max={10} step={0.001} unit="s" />
+        <InputSlider label="Safety factor" value={safetyFactor} onChange={setSafetyFactor} min={1} max={20} step={1} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">NOHD (Nominal Ocular Hazard Distance)</p>
-          <p className="text-3xl font-bold text-red-400">{formatDist(nohd)}</p>
-          <p className="text-sm text-gray-500 mt-1">Beyond this distance, irradiance falls below MPE</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Beam Diameter at NOHD</p>
-          <p className="text-3xl font-bold text-yellow-400">
-            {(beamDiameter / 10 + nohd * 100 * divergence / 1000).toFixed(1)} cm
-          </p>
-          <p className="text-sm text-gray-500 mt-1">d₀ + NOHD × θ</p>
-        </div>
-      </div>
+      {result.status === "supported" ? (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
+            <ResultCard label="Safe viewing distance" value={formatDist(result.nohdM)} tone="red" subtext="Direct beam" />
+            <ResultCard label="Target irradiance" value={`${result.targetIrradianceWcm2.toExponential(2)} W/cm²`} tone="yellow" />
+            <ResultCard label="Diameter at boundary" value={`${result.diameterAtNohdCm.toFixed(2)} cm`} tone="blue" />
+            <ResultCard label="MPE branch" value={result.mpe.regime} tone="green" subtext={result.mpe.scope} />
+          </div>
 
-      <div className="bg-gray-900 rounded-lg p-4">
-        <ChartPanel data={chartData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" },
-          xaxis: { title: "Distance (m)", type: "log", gridcolor: "#374151" },
-          yaxis: { title: "Irradiance (W/cm²)", type: "log", gridcolor: "#374151" },
-          margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} />
-      </div>
+          <div className="rounded-xl border border-red-900/60 bg-red-950/30 p-4 mb-6 text-sm text-red-100 leading-6">
+            <ul className="list-disc space-y-1 pl-5">
+              {result.mpe.notes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          </div>
+
+          <ChartPanel
+            data={chartData}
+            layout={{
+              paper_bgcolor: "transparent",
+              plot_bgcolor: "transparent",
+              font: { color: "#9ca3af" },
+              xaxis: { title: "Distance (m)", type: "log", gridcolor: "#374151" },
+              yaxis: { title: "Irradiance (W/cm²)", type: "log", gridcolor: "#374151" },
+              margin: { t: 30, r: 30, b: 50, l: 70 },
+            }}
+          />
+        </>
+      ) : (
+        <div className="rounded-xl border border-red-800 bg-red-950/40 p-6 text-red-100">
+          <p className="text-lg font-semibold">Unsupported regime intentionally disabled</p>
+          <p className="mt-2 text-sm leading-6">{result.mpe.reason}</p>
+          <ul className="mt-4 list-disc space-y-1 pl-5 text-sm leading-6 text-red-100/90">
+            {result.mpe.notes.map((note) => (
+              <li key={note}>{note}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </CalculatorShell>
   );
 }

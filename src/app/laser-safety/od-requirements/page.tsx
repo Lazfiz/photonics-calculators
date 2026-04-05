@@ -1,109 +1,99 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import InputSlider from "../../../components/input-slider";
+import ResultCard from "../../../components/result-card";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-
+import LaserSafetyCwBounds from "../../../components/laser-safety-cw-bounds";
+import { cornealIrradianceWcm2 } from "../../../lib/laser-safety-cw-suite";
 
 export default function ODRequirementsPage() {
-  const [power, setPower] = useState(500); // mW
-  const [beamDiameter, setBeamDiameter] = useState(2); // mm
-  const [mpe, setMpe] = useState(1.0); // mW/cm²
+  const [power, setPower] = useState(500);
+  const [beamDiameter, setBeamDiameter] = useState(2);
+  const [validatedMpeIrradiance, setValidatedMpeIrradiance] = useState(0.0025); // W/cm²
+  const [safetyFactor, setSafetyFactor] = useState(1);
 
-  const beamArea = useMemo(() => Math.PI * Math.pow(beamDiameter / 10 / 2, 2), [beamDiameter]); // cm²
-  const irradiance = useMemo(() => power / 1000 / beamArea, [power, beamArea]); // W/cm²
+  const irradiance = useMemo(() => cornealIrradianceWcm2(power, beamDiameter), [power, beamDiameter]);
+  const targetIrradiance = validatedMpeIrradiance / safetyFactor;
   const requiredOD = useMemo(() => {
-    if (irradiance <= 0 || mpe <= 0) return 0;
-    return Math.max(0, Math.log10(irradiance / (mpe / 1000)));
-  }, [irradiance, mpe]);
+    if (irradiance <= 0 || targetIrradiance <= 0) return 0;
+    return Math.max(0, Math.log10(irradiance / targetIrradiance));
+  }, [irradiance, targetIrradiance]);
 
-  const transmittedPower = useMemo(() => {
-    const transmission = Math.pow(10, -requiredOD);
-    return power * transmission;
-  }, [power, requiredOD]);
+  const transmittedPower = useMemo(() => power * Math.pow(10, -requiredOD), [power, requiredOD]);
 
   const chartData = useMemo(() => {
     const ods = Array.from({ length: 100 }, (_, i) => i * 0.1);
     return [
       {
-        x: ods, y: ods.map(od => power / 1000 * Math.pow(10, -od)),
-        type: "scatter" as const, mode: "lines" as const, name: "Transmitted Power",
-        line: { color: "#60a5fa" }
+        x: ods,
+        y: ods.map((od) => (power / 1000) * Math.pow(10, -od)),
+        type: "scatter" as const,
+        mode: "lines" as const,
+        name: "Transmitted power",
+        line: { color: "#60a5fa" },
       },
       {
-        x: ods, y: ods.map(() => mpe / 1000),
-        type: "scatter" as const, mode: "lines" as const, name: "MPE",
-        line: { color: "#f87171", dash: "dash" }
-      }
+        x: ods,
+        y: ods.map(() => targetIrradiance),
+        type: "scatter" as const,
+        mode: "lines" as const,
+        name: "Target irradiance",
+        line: { color: "#f87171", dash: "dash" },
+      },
     ];
-  }, [power, mpe]);
-
-  const odRecommendations = [
-    { od: 2, label: "OD2", desc: "Low-power visible lasers" },
-    { od: 3, label: "OD3", desc: "Class 3B visible" },
-    { od: 5, label: "OD5", desc: "Class 3B/4 IR" },
-    { od: 7, label: "OD7+", desc: "High-power Class 4" },
-  ];
+  }, [power, targetIrradiance]);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Optical Density (OD) Requirements" description="Calculate required eyewear OD given beam power, diameter, and MPE. OD = log₁₀(H/MPE).">
-            
+    <CalculatorShell
+      backHref="/laser-safety"
+      backLabel="Laser Safety"
+      title="OD Requirements (manual validated-MPE mode)"
+      description="Use this only when you already have a validated irradiance limit from a standards-backed calculation. This page is just the attenuation math wrapper."
+    >
       <LaserSafetyDisclaimer />
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Beam Power (mW)</span>
-          <input type="number" value={power} onChange={e => setPower(+e.target.value)} min={0.001} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Beam Diameter (mm)</span>
-          <input type="number" value={beamDiameter} onChange={e => setBeamDiameter(+e.target.value)} min={0.01} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">MPE (mW/cm²)</span>
-          <input type="number" value={mpe} onChange={e => setMpe(+e.target.value)} min={0.0001} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+      <LaserSafetyCwBounds />
+
+      <div className="mb-6 rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-4 text-sm leading-6 text-cyan-100">
+        <p className="font-semibold text-cyan-200">Manual mode</p>
+        <p className="mt-2">
+          This page does <span className="font-semibold">not</span> derive MPE from wavelength/time. It assumes you already obtained a valid irradiance limit from ANSI / IEC tables or a reviewed calculation and just need the OD attenuation math.
+        </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Beam Irradiance</p>
-          <p className="text-2xl font-bold text-yellow-400">{irradiance.toFixed(2)} W/cm²</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Required OD</p>
-          <p className="text-2xl font-bold text-blue-400">OD {requiredOD.toFixed(1)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Transmitted (at required OD)</p>
-          <p className="text-2xl font-bold text-green-400">{transmittedPower < 0.001 ? transmittedPower.toExponential(2) : transmittedPower.toFixed(4)} mW</p>
-        </div>
+      <div className="grid gap-4 lg:grid-cols-2 mb-8">
+        <InputSlider label="Beam power" value={power} onChange={setPower} min={1} max={5000} step={1} unit="mW" />
+        <InputSlider label="Beam diameter" value={beamDiameter} onChange={setBeamDiameter} min={0.5} max={10} step={0.1} unit="mm" />
+        <InputSlider label="Validated MPE irradiance" value={validatedMpeIrradiance} onChange={setValidatedMpeIrradiance} min={0.0001} max={1} step={0.0001} unit="W/cm²" />
+        <InputSlider label="Safety factor" value={safetyFactor} onChange={setSafetyFactor} min={1} max={20} step={1} />
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <h3 className="text-sm font-semibold text-gray-300 mb-3">OD Reference Guide</h3>
-        <div className="space-y-2">
-          {odRecommendations.map(r => (
-            <div key={r.od} className="flex justify-between text-sm">
-              <span className="text-gray-400">{r.label}</span>
-              <span className="text-gray-500">{r.desc}</span>
-            </div>
-          ))}
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
+        <ResultCard label="Beam irradiance" value={`${irradiance.toFixed(3)} W/cm²`} tone="yellow" />
+        <ResultCard label="Target irradiance" value={`${targetIrradiance.toExponential(2)} W/cm²`} tone="blue" subtext="Validated limit / safety factor" />
+        <ResultCard label="Required OD" value={`OD ${requiredOD.toFixed(2)}`} tone="red" />
+        <ResultCard label="Transmitted power" value={`${transmittedPower.toFixed(4)} mW`} tone="green" subtext="At required OD" />
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4">
-        <ChartPanel data={chartData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>OD = log₁₀(E<sub>beam</sub> / E<sub>target</sub>)</p>
+        <p>E<sub>target</sub> = E<sub>validated limit</sub> / safety factor</p>
+        <p>Transmission = 10<sup>-OD</sup></p>
+      </div>
+
+      <ChartPanel
+        data={chartData}
+        layout={{
+          paper_bgcolor: "transparent",
+          plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
-          xaxis: { title: "Optical Density", gridcolor: "#374151" },
-          yaxis: { title: "Transmitted Power (W)", type: "log", gridcolor: "#374151" },
+          xaxis: { title: "Optical density", gridcolor: "#374151" },
+          yaxis: { title: "Transmitted power / target irradiance", type: "log", gridcolor: "#374151" },
           margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} />
-      </div>
+        }}
+      />
     </CalculatorShell>
   );
 }
