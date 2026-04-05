@@ -2,7 +2,8 @@ export const laserSafetyReferencePoints = [
   "ANSI Z136.1 — ocular MPE tables, correction-factor framework (C_A / C_B), limiting apertures, and time-domain rules.",
   "IEC 60825-1 — product-classification / AEL framework (separate from this bounded pre-check suite).",
   "OSHA Technical Manual, Section III Chapter 6 — visible blue-light photochemical hazard becomes important for 0.400–0.550 µm exposures greater than 10 s.",
-  "University laser safety manuals (e.g. UC Merced) — useful secondary explanatory summaries of ANSI-style correction factors and branch boundaries.",
+  "UC Merced Laser Safety Manual (secondary explanatory source): C_B = 1 for 400–450 nm, and C_B = 10^(0.02(λ_nm - 450)) for 450–600 nm; T1 is summarized as T1 = 10 × 10^(0.02(λ_nm - 450)) for 450–500 nm.",
+  "These secondary-source expressions are useful reference anchors, but the bounded suite still rejects the long-duration blue-light branch until the full standards-table logic is implemented and validated.",
 ];
 
 export type SupportedMpeResult = {
@@ -98,6 +99,9 @@ export function calculateEducationalContinuousMpe(
       notes: [
         ...notes,
         "OSHA's laser-hazard summary explicitly flags blue-light photochemical retinal injury for 0.400–0.550 µm exposures greater than 10 s.",
+        "Secondary manual summaries commonly state C_B = 1 for 400–450 nm and C_B = 10^(0.02(λ_nm - 450)) for 450–600 nm.",
+        "Secondary manual summaries also state T1 = 10 × 10^(0.02(λ_nm - 450)) for 450–500 nm, marking the thermal / photochemical crossover region.",
+        "This suite still rejects that branch until the full standards-table implementation is validated against authoritative examples.",
       ],
       references,
     };
