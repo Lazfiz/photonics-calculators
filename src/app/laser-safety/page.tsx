@@ -44,7 +44,6 @@ const educationalReferences: CalcLink[] = [
 const quarantinedTopics: CalcLink[] = [
   { name: "AEL Limits", href: "/laser-safety/ael-limits", desc: "Standards-heavy classification logic — quarantined." },
   { name: "Blue Light Hazard", href: "/laser-safety/blue-light-hazard", desc: "Photochemical / spectral-weighting topic — quarantined." },
-  { name: "Classification", href: "/laser-safety/classification", desc: "Laser class determination is too standards-dependent for current implementation." },
   { name: "Corneal Limits", href: "/laser-safety/corneal-limits", desc: "Corneal limit logic is broader than the bounded suite supports." },
   { name: "Diffuse Reflection", href: "/laser-safety/diffuse-reflection", desc: "Extended-source / Lambertian hazard page — quarantined." },
   { name: "Enclosure Class", href: "/laser-safety/enclosure-class", desc: "Facility/process/policy-heavy topic — quarantined." },
@@ -52,17 +51,11 @@ const quarantinedTopics: CalcLink[] = [
   { name: "Infrared Corneal", href: "/laser-safety/infrared-corneal", desc: "IR corneal branch is standards-heavy and quarantined." },
   { name: "Infrared Hazard", href: "/laser-safety/infrared-hazard", desc: "Broad IR hazard page — quarantined." },
   { name: "Infrared Thermal", href: "/laser-safety/infrared-thermal", desc: "Thermal IR hazard topic — quarantined." },
-  { name: "Interlock Design", href: "/laser-safety/interlock-design", desc: "Operational engineering / process topic — quarantined." },
-  { name: "Lidar Safety", href: "/laser-safety/lidar-safety", desc: "Scanning + pulse + geometry complexity — quarantined." },
   { name: "Maximum Exposure", href: "/laser-safety/maximum-exposure", desc: "Standards-heavy inversion of MPE logic — quarantined." },
-  { name: "Multiple Pulse", href: "/laser-safety/multiple-pulse", desc: "Pulse-train rules are too branch-heavy here." },
   { name: "Multiple Wavelength", href: "/laser-safety/multiple-wavelength", desc: "Additive multi-wavelength hazard logic — quarantined." },
   { name: "PRF Correction", href: "/laser-safety/prf-correction", desc: "Pulse repetition correction logic — quarantined." },
-  { name: "Pulsed MPE", href: "/laser-safety/pulsed-mpe", desc: "Pulsed MPE branch complexity — quarantined." },
   { name: "Retinal Hazard", href: "/laser-safety/retinal-hazard", desc: "Retinal hazard evaluation beyond bounded pre-check scope." },
   { name: "Scan Failure", href: "/laser-safety/scan-failure", desc: "Failure-mode scanning safety topic — quarantined." },
-  { name: "Scanned MPE", href: "/laser-safety/scanned-mpe", desc: "Scanning-beam MPE logic — quarantined." },
-  { name: "Scanning MPE", href: "/laser-safety/scanning-mpe", desc: "Scanning-beam MPE logic — quarantined." },
   { name: "Skin Hazard", href: "/laser-safety/skin-hazard", desc: "Skin hazard branch outside current bounded scope." },
   { name: "Skin MPE", href: "/laser-safety/skin-mpe", desc: "Skin MPE branch outside current bounded scope." },
   { name: "Thermal Lens Hazard", href: "/laser-safety/thermal-lens-hazard", desc: "Protective-filter / lens failure topic — quarantined." },
@@ -153,10 +146,15 @@ export default function LaserSafetyPage() {
 
       <Section
         title="Quarantined / standards-heavy topics"
-        subtitle="These stay visible for reference and discussion, but their current implementations are too standards-dependent to trust operationally."
+        subtitle="These stay visible for reference and discussion, but their current implementations are too standards-dependent to trust operationally. The highest-risk topics are now hidden from landing-page navigation and only accessible by direct URL."
         tone="fuchsia"
         items={quarantinedTopics}
       />
+
+      <div className="mb-10 rounded-xl border border-fuchsia-500/20 bg-fuchsia-950/10 p-4 text-sm leading-6 text-fuchsia-100">
+        <p className="font-semibold text-fuchsia-200">Hidden from nav (still reachable by direct URL)</p>
+        <p className="mt-2">classification, pulsed-mpe, scanned-mpe, scanning-mpe, lidar-safety, interlock-design, and multiple-pulse</p>
+      </div>
     </div>
   );
 }
