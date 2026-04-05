@@ -6,7 +6,7 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { flagshipRelated } from "../../../lib/flagship-related";
+import { getRelatedCalculators } from "../../../lib/related-calculators";
 
 const wavelengthPresets = [532, 1064, 1550];
 const currentHref = "/wave-optics/gaussian-beam";
@@ -73,7 +73,7 @@ export default function GaussianBeamPage() {
         series={series}
       />
 
-      <RelatedCalculatorLinks currentHref={currentHref} items={flagshipRelated[currentHref]} />
+      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
     </CalculatorShell>
   );
 }

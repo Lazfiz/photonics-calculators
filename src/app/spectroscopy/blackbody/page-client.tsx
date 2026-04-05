@@ -6,7 +6,7 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { flagshipRelated } from "../../../lib/flagship-related";
+import { getRelatedCalculators } from "../../../lib/related-calculators";
 
 const currentHref = "/spectroscopy/blackbody";
 const temperaturePresets = [300, 1200, 3000, 5778];
@@ -74,7 +74,7 @@ export default function BlackbodyPage() {
         series={series}
       />
 
-      <RelatedCalculatorLinks currentHref={currentHref} items={flagshipRelated[currentHref]} />
+      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
     </CalculatorShell>
   );
 }

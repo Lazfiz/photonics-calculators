@@ -6,7 +6,7 @@ import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { flagshipRelated } from "../../../lib/flagship-related";
+import { getRelatedCalculators } from "../../../lib/related-calculators";
 
 const currentHref = "/spectroscopy/ftir-resolution";
 
@@ -94,7 +94,7 @@ export default function FtirResolutionPage() {
         <SimpleLineChart title="Apodized interferogram" xLabel="OPD (cm)" yLabel="Signal (a.u.)" series={interferogramSeries} />
       </div>
 
-      <RelatedCalculatorLinks currentHref={currentHref} items={flagshipRelated[currentHref]} />
+      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
     </CalculatorShell>
   );
 }
