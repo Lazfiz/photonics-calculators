@@ -6,6 +6,8 @@ export type SearchItem = {
   description: string;
   kind: "page" | "category";
   category: string;
+  tags: string[];
+  priority: number;
 };
 
 export function getSearchIndex(): SearchItem[] {
