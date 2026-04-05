@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
+import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 
 export default function LidarSafetyPage() {
@@ -76,6 +77,7 @@ export default function LidarSafetyPage() {
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="LiDAR Laser Safety Calculator" description="Analyze pulse energy, PRF-corrected MPE, and NOHD for LiDAR systems (905/1550 nm).">
             
       <LaserSafetyDisclaimer />
+      <LaserSafetyQuarantineBanner />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse Energy (µJ)</span>
           <input type="number" value={pulseEnergy} onChange={e => setPulseEnergy(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>

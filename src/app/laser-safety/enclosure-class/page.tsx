@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
+import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 
 export default function EnclosureClassPage() {
@@ -101,6 +102,7 @@ export default function EnclosureClassPage() {
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Enclosure Classification" description="Determines laser enclosure safety class based on emission through apertures, per IEC 60825-1 and ANSI Z136.1. Evaluates whether the enclosure provides Class 1 protection.">
             
       <LaserSafetyDisclaimer />
+      <LaserSafetyQuarantineBanner />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Laser Power (mW)</span>

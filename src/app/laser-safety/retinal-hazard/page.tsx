@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
+import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 
 export default function RetinalHazardPage() {
@@ -64,6 +65,7 @@ export default function RetinalHazardPage() {
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Retinal Hazard Calculator" description="Estimate retinal irradiance and image size from corneal laser parameters. Simplified model assuming emmetropic eye.">
             
       <LaserSafetyDisclaimer />
+      <LaserSafetyQuarantineBanner />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Corneal Power (mW)</span>

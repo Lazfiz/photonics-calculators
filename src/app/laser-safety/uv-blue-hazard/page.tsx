@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
+import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 
 export default function UVBlueHazardPage() {
@@ -110,6 +111,7 @@ export default function UVBlueHazardPage() {
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="UV / Blue Light Hazard" description="Calculates weighted hazard using the blue light B(λ) and UV S(λ) action spectra per IEC 62471 / ICNIRP guidelines.">
             
       <LaserSafetyDisclaimer />
+      <LaserSafetyQuarantineBanner />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>

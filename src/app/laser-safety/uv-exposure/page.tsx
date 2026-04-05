@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
+import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 export default function UVExposurePage() {
   const [wavelength, setWavelength] = useState(254); // nm (UV-C, mercury line)
@@ -59,6 +60,7 @@ export default function UVExposurePage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety">
       <LaserSafetyDisclaimer />
+      <LaserSafetyQuarantineBanner />
       <div className="max-w-4xl mx-auto">
         
         <h1 className="text-3xl font-bold mb-2">UV Exposure Limits</h1>

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
+import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 export default function InfraredCornealPage() {
   const [wavelength, setWavelength] = useState(10600); // nm (CO2)
@@ -91,6 +92,7 @@ export default function InfraredCornealPage() {
   return (
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety">
       <LaserSafetyDisclaimer />
+      <LaserSafetyQuarantineBanner />
       <div className="max-w-4xl mx-auto">
         
         <h1 className="text-3xl font-bold mb-2">IR Corneal Exposure</h1>

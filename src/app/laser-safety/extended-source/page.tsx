@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
+import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 
 export default function ExtendedSourcePage() {
@@ -40,6 +41,7 @@ export default function ExtendedSourcePage() {
     <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Extended Source Correction (C₆)" description="C₆ angular subtense correction factor for extended source laser hazard evaluation per ANSI Z136.">
             
       <LaserSafetyDisclaimer />
+      <LaserSafetyQuarantineBanner />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Wavelength (nm)</span>
