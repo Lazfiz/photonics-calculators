@@ -1,7 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { calculateEducationalContinuousMpe } from "../src/lib/laser-safety-mpe.ts";
+import {
+  calculateEducationalContinuousMpe,
+  correctionCb,
+  crossoverT1Seconds,
+} from "../src/lib/laser-safety-mpe.ts";
 import {
   cornealIrradianceWcm2,
   cwPointSourceNohdPrecheck,
@@ -26,11 +30,40 @@ test("applies ANSI-style CA factor in the supported NIR branch", () => {
   assert.ok(Math.abs(result.radiantExposureMpe_mJcm2 - 1.8 * expectedCa) < 1e-9);
 });
 
-test("rejects blue-light long-duration branch instead of approximating through it", () => {
-  const result = calculateEducationalContinuousMpe(450, 10.001);
-  assert.equal(result.status, "unsupported");
-  if (result.status !== "unsupported") return;
-  assert.match(result.reason, /blue-light|C_B|photochemical/i);
+test("supports 400-450 nm long-duration branch from 10 to 100 s", () => {
+  const result = calculateEducationalContinuousMpe(440, 20);
+  assert.equal(result.status, "supported");
+  if (result.status !== "supported") return;
+  assert.equal(result.radiantExposureMpe_mJcm2, 10);
+  assert.equal(result.equivalentIrradianceMpe_mWcm2, 0.5);
+});
+
+test("supports 450-500 nm blue-light branch using Cb and T1", () => {
+  const wavelength = 470;
+  const cb = correctionCb(wavelength);
+  const t1 = crossoverT1Seconds(wavelength);
+  assert.ok(t1 && t1 > 10);
+  const result = calculateEducationalContinuousMpe(wavelength, 60);
+  assert.equal(result.status, "supported");
+  if (result.status !== "supported") return;
+  assert.ok(Math.abs(result.radiantExposureMpe_mJcm2 - 10 * cb) < 1e-9);
+  assert.ok(Math.abs(result.equivalentIrradianceMpe_mWcm2 - (10 * cb) / 60) < 1e-9);
+});
+
+test("supports 500-700 nm long-duration constant irradiance branch", () => {
+  const result = calculateEducationalContinuousMpe(532, 600);
+  assert.equal(result.status, "supported");
+  if (result.status !== "supported") return;
+  assert.equal(result.equivalentIrradianceMpe_mWcm2, 1);
+  assert.equal(result.radiantExposureMpe_mJcm2, 600);
+});
+
+test("supports 700-1050 nm long-duration CA-scaled branch", () => {
+  const result = calculateEducationalContinuousMpe(850, 600);
+  assert.equal(result.status, "supported");
+  if (result.status !== "supported") return;
+  const expectedCa = Math.pow(10, 2 * (0.85 - 0.7));
+  assert.ok(Math.abs(result.equivalentIrradianceMpe_mWcm2 - expectedCa) < 1e-9);
 });
 
 test("rejects unsupported wavelengths outside bounded ocular suite", () => {

@@ -2,10 +2,10 @@ import { calculateEducationalContinuousMpe } from "./laser-safety-mpe";
 
 export const cwPointSourceAssumptions = [
   "CW / continuous exposure only (no pulse train, no Q-switch, no ultrafast, no PRF rules).",
-  "Small-source / point-source ocular thermal branch only.",
+  "Small-source / point-source direct-beam ocular branch only.",
   "Supported wavelength window: 400–1050 nm.",
-  "Supported exposure window: 1 ms to 10 s.",
-  "For 400–550 nm, the long-duration blue-light photochemical branch (>10 s) is intentionally rejected instead of approximated.",
+  "Supported exposure window: 1 ms to 3×10^4 s, but only for explicitly implemented ANSI-style table slices.",
+  "The visible long-duration branch is implemented from a secondary ANSI-style manual summary and remains bounded engineering pre-check logic, not compliance-grade standards software.",
   "Direct-beam geometric pre-check only — no extended source, scan failure, diffuse reflection, limiting-aperture, or product-classification logic.",
   "Engineering pre-check only. Formal safety sign-off still requires ANSI Z136.1 / IEC 60825-1 review and CLSO / LSO oversight.",
 ];

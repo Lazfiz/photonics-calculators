@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 type CalcLink = { name: string; href: string; desc: string };
 
 const boundedPrecheckTools: CalcLink[] = [
-  { name: "MPE", href: "/laser-safety/mpe", desc: "Bounded CW point-source MPE pre-check (1 ms to 10 s, 400–1050 nm)." },
+  { name: "MPE", href: "/laser-safety/mpe", desc: "Bounded CW point-source MPE pre-check (1 ms to 3×10^4 s within explicitly implemented table slices, 400–1050 nm)." },
   { name: "NOHD", href: "/laser-safety/nohd", desc: "Direct-beam NOHD pre-check derived from the same bounded MPE branch." },
   { name: "Optical Density", href: "/laser-safety/optical-density", desc: "Required OD pre-check derived from the same bounded MPE branch." },
   { name: "OD Requirements", href: "/laser-safety/od-requirements", desc: "Manual validated-MPE mode for attenuation / eyewear OD math only." },

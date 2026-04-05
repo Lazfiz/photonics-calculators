@@ -54,7 +54,7 @@ export default function OpticalDensityPage() {
         <InputSlider label="Wavelength" value={wavelength} onChange={setWavelength} min={400} max={1050} step={1} unit="nm" />
         <InputSlider label="Beam power" value={power} onChange={setPower} min={1} max={5000} step={1} unit="mW" />
         <InputSlider label="Beam diameter" value={beamDiam} onChange={setBeamDiam} min={0.5} max={10} step={0.1} unit="mm" />
-        <InputSlider label="Exposure time" value={exposure} onChange={setExposure} min={0.001} max={10} step={0.001} unit="s" />
+        <InputSlider label="Exposure time" value={exposure} onChange={setExposure} min={0.001} max={30000} step={0.001} unit="s" />
         <InputSlider label="Safety factor" value={safetyFactor} onChange={setSafetyFactor} min={1} max={20} step={1} />
       </div>
 

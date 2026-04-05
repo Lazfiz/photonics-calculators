@@ -10,8 +10,8 @@ import LaserSafetyCwBounds from "../../../components/laser-safety-cw-bounds";
 import LaserSafetyCwReferences from "../../../components/laser-safety-cw-references";
 import { calculateEducationalContinuousMpe } from "../../../lib/laser-safety-mpe";
 
-const wavelengthPresets = [450, 532, 1064];
-const exposurePresets = [0.001, 0.25, 1, 10];
+const wavelengthPresets = [450, 532, 850, 1050];
+const exposurePresets = [0.001, 0.25, 1, 10, 30, 100, 600, 3600];
 
 export default function MPEPage() {
   const [wavelength, setWavelength] = useState(532);
@@ -20,7 +20,9 @@ export default function MPEPage() {
   const result = useMemo(() => calculateEducationalContinuousMpe(wavelength, exposure), [wavelength, exposure]);
 
   const chartData = useMemo(() => {
-    const times = Array.from({ length: 220 }, (_, i) => Math.pow(10, -3 + (i / 219) * 4)); // 1 ms to 10 s
+    const logMin = -3;
+    const logMax = Math.log10(3e4);
+    const times = Array.from({ length: 240 }, (_, i) => Math.pow(10, logMin + (i / 239) * (logMax - logMin))); // 1 ms to 3×10^4 s
     const radiantExposure = times.map((t) => {
       const sample = calculateEducationalContinuousMpe(wavelength, t);
       return sample.status === "supported" ? sample.radiantExposureMpe_mJcm2 : null;
@@ -56,7 +58,7 @@ export default function MPEPage() {
       backHref="/laser-safety"
       backLabel="Laser Safety"
       title="Maximum Permissible Exposure (MPE)"
-      description="Quarantined educational MPE view: short-exposure small-source ocular thermal branch only (1 ms to 10 s). Unsupported branches are disabled instead of approximated."
+      description="Quarantined educational MPE view: bounded small-source ocular direct-beam branch with explicitly implemented ANSI-style time slices (1 ms to 3×10^4 s). Unsupported regimes are disabled instead of approximated."
     >
       <LaserSafetyDisclaimer />
       <LaserSafetyCwBounds />
@@ -65,9 +67,9 @@ export default function MPEPage() {
       <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-950/20 p-4 text-sm leading-6 text-amber-100">
         <p className="font-semibold text-amber-200">Current scope</p>
         <ul className="mt-2 list-disc space-y-1 pl-5">
-          <li>Supported here: simplified small-source ocular thermal branch for 400–1050 nm and 1 ms to 10 s.</li>
-          <li>Disabled on purpose: long-duration photochemical / blue-light corrected branch, sub-millisecond pulse rules, extended-source corrections, UV, corneal/skin branches, and full standards-table logic.</li>
-          <li>This page now separates radiant exposure <span className="font-semibold">H</span> from equivalent irradiance <span className="font-semibold">E</span> instead of mixing them.</li>
+          <li>Supported here: bounded small-source ocular direct-beam branch for 400–1050 nm and 1 ms to 3×10^4 s, using only the explicitly implemented ANSI-style table slices.</li>
+          <li>Still disabled on purpose: sub-millisecond pulse rules, extended-source corrections, UV, corneal/skin branches, product-classification logic, and broader standards-table edge cases.</li>
+          <li>This page separates radiant exposure <span className="font-semibold">H</span> from equivalent irradiance <span className="font-semibold">E</span> instead of mixing them.</li>
         </ul>
       </div>
 
@@ -87,14 +89,14 @@ export default function MPEPage() {
             onClick={() => setExposure(preset)}
             className={`rounded-full border px-3 py-1 text-sm transition ${exposure === preset ? "border-purple-400 bg-purple-500/15 text-purple-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}
           >
-            {preset < 1 ? `${preset * 1000} ms` : `${preset}s`}
+            {preset < 1 ? `${preset * 1000} ms` : preset < 60 ? `${preset}s` : preset < 3600 ? `${(preset / 60).toFixed(preset % 60 === 0 ? 0 : 1)} min` : `${(preset / 3600).toFixed(preset % 3600 === 0 ? 0 : 1)} h`}
           </button>
         ))}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2 mb-8">
-        <InputSlider label="Wavelength" value={wavelength} onChange={setWavelength} min={400} max={1800} step={1} unit="nm" />
-        <InputSlider label="Exposure time" value={exposure} onChange={setExposure} min={0.001} max={10} step={0.001} unit="s" />
+        <InputSlider label="Wavelength" value={wavelength} onChange={setWavelength} min={400} max={1050} step={1} unit="nm" />
+        <InputSlider label="Exposure time" value={exposure} onChange={setExposure} min={0.001} max={30000} step={0.001} unit="s" />
       </div>
 
       {result.status === "supported" ? (

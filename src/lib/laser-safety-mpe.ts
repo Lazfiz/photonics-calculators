@@ -2,8 +2,8 @@ export const laserSafetyReferencePoints = [
   "ANSI Z136.1 — ocular MPE tables, correction-factor framework (C_A / C_B), limiting apertures, and time-domain rules.",
   "IEC 60825-1 — product-classification / AEL framework (separate from this bounded pre-check suite).",
   "OSHA Technical Manual, Section III Chapter 6 — visible blue-light photochemical hazard becomes important for 0.400–0.550 µm exposures greater than 10 s.",
-  "UC Merced Laser Safety Manual (secondary explanatory source): C_B = 1 for 400–450 nm, and C_B = 10^(0.02(λ_nm - 450)) for 450–600 nm; T1 is summarized as T1 = 10 × 10^(0.02(λ_nm - 450)) for 450–500 nm.",
-  "These secondary-source expressions are useful reference anchors, but the bounded suite still rejects the long-duration blue-light branch until the full standards-table logic is implemented and validated.",
+  "UC Merced Laser Safety Manual (secondary explanatory source, citing ANSI Z136.1-2014 tables 5a-c / 7a-c): C_B = 1 for 400–450 nm, C_B = 10^(0.02(λ_nm - 450)) for 450–600 nm, and T1 = 10 × 10^(0.02(λ_nm - 450)) for 450–500 nm.",
+  "These long-duration visible-branch formulas are implemented here only within the bounded pre-check suite and still require independent validation before any formal safety workflow use.",
 ];
 
 export type SupportedMpeResult = {
@@ -31,11 +31,22 @@ function wavelengthUm(wavelengthNm: number) {
   return wavelengthNm / 1000;
 }
 
-function correctionCa(wavelengthNm: number) {
+export function correctionCa(wavelengthNm: number) {
   const lambdaUm = wavelengthUm(wavelengthNm);
   if (lambdaUm < 0.7) return 1;
   if (lambdaUm <= 1.05) return Math.pow(10, 2 * (lambdaUm - 0.7));
   return 1;
+}
+
+export function correctionCb(wavelengthNm: number) {
+  if (wavelengthNm <= 450) return 1;
+  if (wavelengthNm <= 600) return Math.pow(10, 0.02 * (wavelengthNm - 450));
+  return 1;
+}
+
+export function crossoverT1Seconds(wavelengthNm: number) {
+  if (wavelengthNm < 450 || wavelengthNm > 500) return null;
+  return 10 * Math.pow(10, 0.02 * (wavelengthNm - 450));
 }
 
 function commonNotes() {
@@ -47,112 +58,237 @@ function commonNotes() {
   ];
 }
 
+function supported(
+  regime: string,
+  scope: string,
+  radiantExposureMpe_mJcm2: number,
+  equivalentIrradianceMpe_mWcm2: number,
+  notes: string[]
+): SupportedMpeResult {
+  return {
+    status: "supported",
+    regime,
+    scope,
+    radiantExposureMpe_mJcm2,
+    equivalentIrradianceMpe_mWcm2,
+    notes,
+    references: laserSafetyReferencePoints,
+  };
+}
+
+function unsupported(regime: string, scope: string, reason: string, notes: string[]): UnsupportedMpeResult {
+  return {
+    status: "unsupported",
+    regime,
+    scope,
+    reason,
+    notes,
+    references: laserSafetyReferencePoints,
+  };
+}
+
 export function calculateEducationalContinuousMpe(
   wavelengthNm: number,
   exposureS: number
 ): EducationalMpeResult {
   const notes = commonNotes();
-  const references = laserSafetyReferencePoints;
 
   if (exposureS <= 0) {
-    return {
-      status: "unsupported",
-      regime: "Invalid input",
-      scope: "No result",
-      reason: "Exposure time must be greater than zero.",
-      notes,
-      references,
-    };
+    return unsupported("Invalid input", "No result", "Exposure time must be greater than zero.", notes);
   }
 
   if (wavelengthNm < 400 || wavelengthNm > 1050) {
-    return {
-      status: "unsupported",
-      regime: "Outside bounded ocular branch",
-      scope: "Quarantined",
-      reason:
-        "The bounded mini-suite only supports 400–1050 nm for a small-source / point-source ocular direct-beam branch. UV, corneal / skin branches, and >1050 nm regimes are intentionally excluded.",
-      notes,
-      references,
-    };
+    return unsupported(
+      "Outside bounded ocular branch",
+      "Quarantined",
+      "The bounded mini-suite only supports 400–1050 nm for a small-source / point-source ocular direct-beam branch. UV, corneal / skin branches, and >1050 nm regimes are intentionally excluded.",
+      notes
+    );
   }
 
   if (exposureS < 1e-3) {
-    return {
-      status: "unsupported",
-      regime: "Below bounded short-exposure limit",
-      scope: "Quarantined",
-      reason:
-        "Sub-millisecond cases are intentionally disabled because pulse / short-time rules are outside the bounded CW point-source suite.",
-      notes,
-      references,
-    };
+    return unsupported(
+      "Below bounded short-exposure limit",
+      "Quarantined",
+      "Sub-millisecond cases are intentionally disabled because pulse / short-time rules are outside the bounded CW point-source suite.",
+      notes
+    );
   }
 
-  if (wavelengthNm <= 550 && exposureS > 10) {
-    return {
-      status: "unsupported",
-      regime: "Visible blue-light photochemical crossover",
-      scope: "Quarantined",
-      reason:
-        "For 400–550 nm exposures longer than 10 s, blue-light photochemical retinal limits become relevant. That C_B-dependent long-duration branch is intentionally disabled in this bounded suite instead of being approximated.",
-      notes: [
-        ...notes,
-        "OSHA's laser-hazard summary explicitly flags blue-light photochemical retinal injury for 0.400–0.550 µm exposures greater than 10 s.",
-        "Secondary manual summaries commonly state C_B = 1 for 400–450 nm and C_B = 10^(0.02(λ_nm - 450)) for 450–600 nm.",
-        "Secondary manual summaries also state T1 = 10 × 10^(0.02(λ_nm - 450)) for 450–500 nm, marking the thermal / photochemical crossover region.",
-        "This suite still rejects that branch until the full standards-table implementation is validated against authoritative examples.",
-      ],
-      references,
-    };
-  }
-
-  if (exposureS > 10) {
-    return {
-      status: "unsupported",
-      regime: "Outside bounded long-duration window",
-      scope: "Quarantined",
-      reason:
-        "This bounded suite currently stops at 10 s. Longer-duration ocular limits require additional standards-table logic and are intentionally not auto-applied here.",
-      notes,
-      references,
-    };
+  if (exposureS > 3e4) {
+    return unsupported(
+      "Outside bounded long-duration window",
+      "Quarantined",
+      "This bounded suite currently supports only the ANSI-style table slices up to 3×10^4 s described in the secondary reference summary.",
+      notes
+    );
   }
 
   const thermalBase_mJcm2 = 1.8 * Math.pow(exposureS, 0.75);
 
-  if (wavelengthNm < 700) {
-    return {
-      status: "supported",
-      regime: wavelengthNm <= 550 ? "Visible retinal thermal short-exposure branch" : "Visible retinal thermal branch",
-      scope: "CW / small-source / point-source ocular thermal branch, 1 ms to 10 s",
-      radiantExposureMpe_mJcm2: thermalBase_mJcm2,
-      equivalentIrradianceMpe_mWcm2: thermalBase_mJcm2 / exposureS,
-      notes: [
+  if (wavelengthNm < 400) {
+    return unsupported("Unsupported", "Quarantined", "Unsupported wavelength.", notes);
+  }
+
+  if (wavelengthNm < 450) {
+    if (exposureS <= 10) {
+      return supported(
+        "Visible retinal thermal short-exposure branch",
+        "CW / small-source / point-source ocular branch, 1 ms to 10 s",
+        thermalBase_mJcm2,
+        thermalBase_mJcm2 / exposureS,
+        [
+          ...notes,
+          "For 400–450 nm, the bounded suite uses the ANSI-style 5 µs–10 s thermal branch followed by the long-duration visible branch from the secondary table summary.",
+          "For 10–100 s the summary gives H_MPE = 10 mJ/cm², then for 100–3×10^4 s it gives E_MPE = 0.1 mW/cm².",
+          "Radiant exposure H and equivalent irradiance E are shown separately to avoid energy / power unit confusion.",
+        ]
+      );
+    }
+    if (exposureS <= 100) {
+      const h = 10;
+      return supported(
+        "Visible long-duration branch (400–450 nm)",
+        "CW / small-source / point-source ocular branch, 10 s to 100 s",
+        h,
+        h / exposureS,
+        [
+          ...notes,
+          "Secondary ANSI-style table summary: for 400–450 nm and 10–100 s, H_MPE = 10 mJ/cm².",
+          "This is still treated as a bounded pre-check implementation, not a compliance-grade standards engine.",
+        ]
+      );
+    }
+    const e = 0.1;
+    return supported(
+      "Visible long-duration branch (400–450 nm)",
+      "CW / small-source / point-source ocular branch, 100 s to 3×10^4 s",
+      e * exposureS,
+      e,
+      [
         ...notes,
-        "The bounded suite uses the short-duration visible retinal thermal branch for 1 ms to 10 s.",
-        "For 400–550 nm, the longer-duration blue-light photochemical branch (>10 s) is intentionally rejected instead of being merged in approximately.",
-        "Radiant exposure H and equivalent irradiance E are shown separately to avoid energy / power unit confusion.",
-      ],
-      references,
-    };
+        "Secondary ANSI-style table summary: for 400–450 nm and 100–3×10^4 s, E_MPE = 0.1 mW/cm².",
+        "This branch corresponds to the blue-light / long-duration regime but is still presented only as a bounded engineering pre-check.",
+      ]
+    );
+  }
+
+  if (wavelengthNm < 500) {
+    const cb = correctionCb(wavelengthNm);
+    const t1 = crossoverT1Seconds(wavelengthNm)!;
+
+    if (exposureS <= 10) {
+      return supported(
+        "Visible retinal thermal short-exposure branch",
+        "CW / small-source / point-source ocular branch, 1 ms to 10 s",
+        thermalBase_mJcm2,
+        thermalBase_mJcm2 / exposureS,
+        [
+          ...notes,
+          `For 450–500 nm the secondary ANSI-style summary gives C_B = ${cb.toFixed(3)} and T1 = ${t1.toFixed(3)} s.`,
+          "Radiant exposure H and equivalent irradiance E are shown separately to avoid energy / power unit confusion.",
+        ]
+      );
+    }
+
+    if (exposureS <= t1) {
+      const e = 1;
+      return supported(
+        "Visible crossover branch (450–500 nm)",
+        "CW / small-source / point-source ocular branch, 10 s to T1",
+        e * exposureS,
+        e,
+        [
+          ...notes,
+          `Secondary ANSI-style table summary: for 450–500 nm and 10 s to T1, E_MPE = 1 mW/cm² with T1 = ${t1.toFixed(3)} s.`,
+        ]
+      );
+    }
+
+    if (exposureS <= 100) {
+      const h = 10 * cb;
+      return supported(
+        "Visible blue-light branch (450–500 nm)",
+        "CW / small-source / point-source ocular branch, T1 to 100 s",
+        h,
+        h / exposureS,
+        [
+          ...notes,
+          `Secondary ANSI-style table summary: for 450–500 nm and T1–100 s, H_MPE = 10·C_B = ${h.toFixed(3)} mJ/cm².`,
+          `Implemented with C_B = ${cb.toFixed(3)} and T1 = ${t1.toFixed(3)} s from the secondary ANSI-style source summary.`,
+        ]
+      );
+    }
+
+    const e = 0.1 * cb;
+    return supported(
+      "Visible blue-light branch (450–500 nm)",
+      "CW / small-source / point-source ocular branch, 100 s to 3×10^4 s",
+      e * exposureS,
+      e,
+      [
+        ...notes,
+        `Secondary ANSI-style table summary: for 450–500 nm and 100–3×10^4 s, E_MPE = 0.1·C_B = ${e.toFixed(3)} mW/cm².`,
+        `Implemented with C_B = ${cb.toFixed(3)} and T1 = ${t1.toFixed(3)} s from the secondary ANSI-style source summary.`,
+      ]
+    );
+  }
+
+  if (wavelengthNm < 700) {
+    if (exposureS <= 10) {
+      return supported(
+        "Visible retinal thermal branch",
+        "CW / small-source / point-source ocular branch, 1 ms to 10 s",
+        thermalBase_mJcm2,
+        thermalBase_mJcm2 / exposureS,
+        [
+          ...notes,
+          "For 500–700 nm the secondary ANSI-style summary gives the standard 1 ms–10 s thermal branch and a constant long-duration irradiance branch beyond 10 s.",
+          "Radiant exposure H and equivalent irradiance E are shown separately to avoid energy / power unit confusion.",
+        ]
+      );
+    }
+    const e = 1;
+    return supported(
+      "Visible long-duration branch (500–700 nm)",
+      "CW / small-source / point-source ocular branch, 10 s to 3×10^4 s",
+      e * exposureS,
+      e,
+      [
+        ...notes,
+        "Secondary ANSI-style table summary: for 500–700 nm and 10–3×10^4 s, E_MPE = 1 mW/cm².",
+        "This remains a bounded engineering pre-check implementation, not a full standards engine.",
+      ]
+    );
   }
 
   const ca = correctionCa(wavelengthNm);
-  const radiantExposure = thermalBase_mJcm2 * ca;
 
-  return {
-    status: "supported",
-    regime: "Near-IR retinal thermal branch",
-    scope: "CW / small-source / point-source ocular thermal branch, 1 ms to 10 s",
-    radiantExposureMpe_mJcm2: radiantExposure,
-    equivalentIrradianceMpe_mWcm2: radiantExposure / exposureS,
-    notes: [
+  if (exposureS <= 10) {
+    const radiantExposure = thermalBase_mJcm2 * ca;
+    return supported(
+      "Near-IR retinal thermal branch",
+      "CW / small-source / point-source ocular branch, 1 ms to 10 s",
+      radiantExposure,
+      radiantExposure / exposureS,
+      [
+        ...notes,
+        `Applied ANSI-style C_A correction factor: ${ca.toFixed(3)}.`,
+        "The implementation uses wavelength in µm for the C_A expression: C_A = 10^(2(λ - 0.700)) for 0.700–1.050 µm.",
+      ]
+    );
+  }
+
+  const e = ca;
+  return supported(
+    "Near-IR long-duration branch",
+    "CW / small-source / point-source ocular branch, 10 s to 3×10^4 s",
+    e * exposureS,
+    e,
+    [
       ...notes,
       `Applied ANSI-style C_A correction factor: ${ca.toFixed(3)}.`,
-      "This bounded suite still excludes extended-source corrections, pulse rules, scan rules, and limiting-aperture edge cases.",
-      "The implementation uses wavelength in µm for the C_A expression: C_A = 10^(2(λ - 0.700)) for 0.700–1.050 µm.",
-    ],
-    references,
-  };
+      "Secondary ANSI-style table summary: for 700–1050 nm and 10–3×10^4 s, E_MPE = C_A mW/cm².",
+    ]
+  );
 }

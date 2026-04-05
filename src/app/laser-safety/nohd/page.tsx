@@ -56,7 +56,7 @@ export default function NOHDPage() {
       <div className="grid gap-4 lg:grid-cols-2 mb-8">
         <InputSlider label="Power" value={power} onChange={setPower} min={1} max={5000} step={1} unit="mW" />
         <InputSlider label="Wavelength" value={wavelength} onChange={setWavelength} min={400} max={1050} step={1} unit="nm" />
-        <InputSlider label="Exposure time" value={exposure} onChange={setExposure} min={0.001} max={10} step={0.001} unit="s" />
+        <InputSlider label="Exposure time" value={exposure} onChange={setExposure} min={0.001} max={30000} step={0.001} unit="s" />
         <InputSlider label="Beam diameter" value={beamDia} onChange={setBeamDia} min={0.5} max={10} step={0.1} unit="mm" />
         <InputSlider label="Full-angle divergence" value={divergence} onChange={setDivergence} min={0.1} max={5} step={0.1} unit="mrad" />
         <InputSlider label="Safety factor" value={safetyFactor} onChange={setSafetyFactor} min={1} max={20} step={1} />
