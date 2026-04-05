@@ -8,6 +8,7 @@ type Series = {
   color: string;
   points: Point[];
   dashed?: boolean;
+  showPoints?: boolean;
 };
 
 type AxisScale = "linear" | "log";
@@ -92,11 +93,16 @@ export default function SimpleLineChart({
 
         <g clipPath={`url(#${id}-clip)`}>
           {series.map((s) => {
-            const d = s.points
-              .filter((p): p is { x: number; y: number } => p.y !== null && Number.isFinite(p.x) && Number.isFinite(p.y))
+            const pts = s.points.filter((p): p is { x: number; y: number } => p.y !== null && Number.isFinite(p.x) && Number.isFinite(p.y));
+            const d = pts
               .map((p, idx) => `${idx === 0 ? "M" : "L"} ${xAt(p.x)} ${yAt(p.y)}`)
               .join(" ");
-            return <path key={s.name} d={d} fill="none" stroke={s.color} strokeWidth="3" strokeDasharray={s.dashed ? "8 6" : undefined} />;
+            return (
+              <g key={s.name}>
+                {pts.length >= 2 && <path d={d} fill="none" stroke={s.color} strokeWidth="3" strokeDasharray={s.dashed ? "8 6" : undefined} />}
+                {(s.showPoints || pts.length === 1) && pts.map((p, idx) => <circle key={idx} cx={xAt(p.x)} cy={yAt(p.y)} r="4.5" fill={s.color} />)}
+              </g>
+            );
           })}
         </g>
 
