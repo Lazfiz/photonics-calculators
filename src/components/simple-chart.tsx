@@ -66,15 +66,20 @@ function ResponsiveContainer({ children, className }: { children: (width: number
 function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: Trace[]; layout: Record<string, unknown>; title?: string; className: string }) {
   const chartId = useId().replace(/:/g, "");
 
-  const w = typeof layout.width === "number" ? layout.width : 700;
-  const h = typeof layout.height === "number" ? layout.height : 400;
+  // Use fixed base dimensions for aspect ratio to prevent CLS
+  // The container width changes on mobile, but aspect ratio should stay constant
+  const baseW = 700;
+  const baseH = typeof layout.height === "number" ? layout.height : 400;
+  const w = typeof layout.width === "number" ? layout.width : baseW;
+  const aspectRatio = baseH / baseW;
+  const dynamicH = Math.max(280, Math.round(w * aspectRatio));
   const ml = (layout.margin as Record<string, number>)?.l ?? 60;
   const mr = (layout.margin as Record<string, number>)?.r ?? 20;
   const mt = (layout.margin as Record<string, number>)?.t ?? 30;
   const mb = (layout.margin as Record<string, number>)?.b ?? 50;
 
   const plotW = w - ml - mr;
-  const plotH = h - mt - mb;
+  const plotH = dynamicH - mt - mb;
 
   const xaxis = layout.xaxis as Record<string, unknown> | undefined;
   const yaxis = layout.yaxis as Record<string, unknown> | undefined;
@@ -180,9 +185,6 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
     color: t.line?.color || t.marker?.color || "#60a5fa",
     dash: t.line?.dash,
   }));
-
-  const aspectRatio = h / w;
-  const dynamicH = Math.max(280, Math.round(w * aspectRatio));
 
   return (
     <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim()}>
