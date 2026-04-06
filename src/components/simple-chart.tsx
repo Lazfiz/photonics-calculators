@@ -187,7 +187,9 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
   return (
     <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim()}>
       {title ? <h3 className="text-lg font-semibold mb-3">{title}</h3> : null}
-      <svg viewBox={`0 0 ${w} ${dynamicH}`} className="w-full">
+      <svg viewBox={`0 0 ${w} ${dynamicH}`} className="w-full" role="img" aria-label={title || "Chart"}>
+        <title>{title || "Chart"}</title>
+        <desc>{xLabel ? `${xLabel} vs ${yLabel}` : "Data visualization"}</desc>
         {/* Grid lines */}
         {xTicks.map(v => (
           <line key={`xg${v}`} x1={toSvgX(v)} y1={mt} x2={toSvgX(v)} y2={mt + plotH}

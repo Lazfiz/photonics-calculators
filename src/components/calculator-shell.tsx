@@ -23,8 +23,8 @@ export default function CalculatorShell({
 }: CalculatorShellProps) {
   return (
     <main className="min-h-screen bg-gray-950 text-white p-6">
-      <div className={`${maxWidthClassName} mx-auto`}>
-        <Link href={backHref} className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block">
+      <div className={`${maxWidthClassName} mx-auto`} role="region" aria-label={title || "Calculator"}>
+        <Link href={backHref} className="text-blue-400 hover:text-blue-300 text-sm mb-6 inline-block" aria-label={`Back to ${backLabel}`}>
           ← Back to {backLabel}
         </Link>
         {title && <h1 className="text-3xl font-bold mb-2">{title}</h1>}
