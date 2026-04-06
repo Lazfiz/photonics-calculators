@@ -117,6 +117,7 @@ function scan(dir, prefix = "") {
       const title = extract(content, [
         /export const metadata:[\s\S]*?title:\s*"([^"]+)"/,
         /export const metadata:[\s\S]*?title:\s*'([^']+)'/,
+        /export const metadata:[\s\S]*?title:\s*`([^`]+)`/,
         /<CalculatorShell[\s\S]*?title="([^"]+)"/,
         /title="([^"]+)"/,
         /<h1[^>]*>([^<]+)<\/h1>/,
@@ -125,6 +126,7 @@ function scan(dir, prefix = "") {
       const description = extract(content, [
         /export const metadata:[\s\S]*?description:\s*"([^"]+)"/,
         /export const metadata:[\s\S]*?description:\s*'([^']+)'/,
+        /export const metadata:[\s\S]*?description:\s*`([^`]+)`/,
         /<CalculatorShell[\s\S]*?description="([^"]+)"/,
         /description="([^"]+)"/,
         /<p className="text-gray-400[^"]*">([^<]+)<\/p>/,
