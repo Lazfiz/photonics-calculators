@@ -6,8 +6,15 @@ import ChartPanel from "../../../components/chart-panel";
 
 
 function fresnelCoefficients(n1: number, n2: number, thetaI: number) {
-  const thetaT = Math.asin((n1 / n2) * Math.sin(thetaI));
   const cosI = Math.cos(thetaI);
+  const sinThetaT = (n1 / n2) * Math.sin(thetaI);
+
+  // Total internal reflection
+  if (Math.abs(sinThetaT) > 1) {
+    return { rs: 1, rp: -1, ts: 0, tp: 0, Rs: 1, Rp: 1, Ts: 0, Tp: 0, thetaT: Math.PI / 2 };
+  }
+
+  const thetaT = Math.asin(sinThetaT);
   const cosT = Math.cos(thetaT);
 
   const rs = (n1 * cosI - n2 * cosT) / (n1 * cosI + n2 * cosT);
