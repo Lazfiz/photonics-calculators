@@ -34,9 +34,10 @@ export default function FiberGyroscopePage() {
 
     // Noise
     const P_det = sourcePower * 1e-3 * Math.pow(10, -losses / 10);
-    const shotNoise = Math.sqrt(2 * 6.626e-34 * 3e8 / (lambda * P_det)); // rad/√Hz
+    const hc_over_lambda = 6.626e-34 * 3e8 / (lambda * 1e-9); // photon energy (J)
+    const shotNoise = Math.sqrt(2 * hc_over_lambda / P_det); // rad/√Hz
     const thermalNoise = 1e-7; // rad/√Hz (typical)
-    const RIN_noise = Math.pow(10, sourceRIN / 20) * P_det / (2 * 6.626e-34 * 3e8 / lambda); // simplified
+    const RIN_noise = Math.pow(10, sourceRIN / 20) * P_det / (2 * hc_over_lambda); // simplified
 
     // Angle random walk
     const ARW_shot = shotNoise / scaleFactor; // (rad/s)/√Hz
@@ -64,7 +65,7 @@ export default function FiberGyroscopePage() {
       const lambda = wavelength * 1e-9;
       const sf = 4 * Math.PI * L * A / (lambda * 3e8);
       const P = sourcePower * 1e-3 * Math.pow(10, -losses / 10);
-      const sn = Math.sqrt(2 * 6.626e-34 * 3e8 / (lambda * P));
+      const sn = Math.sqrt(2 * 6.626e-34 * 3e8 / (wavelength * 1e-9 * P));
       return sn / sf * (180 / Math.PI) * 3600;
     });
 
