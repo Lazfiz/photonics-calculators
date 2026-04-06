@@ -61,7 +61,7 @@ export default function InputSlider({ label, value, onChange, min, max, step = 1
           setLocalSlider(v);
           onChange(v);
         }}
-        className="mt-3 w-full accent-blue-500"
+        className="mt-3 w-full accent-blue-500 min-h-[44px] py-2"
       />
       <div className="mt-3 flex items-center gap-3">
         <input
