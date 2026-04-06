@@ -28,9 +28,13 @@ export function circularBeamAreaCm2(beamDiameterMm: number) {
 }
 
 export function cornealIrradianceWcm2(powerMw: number, beamDiameterMm: number) {
-  const powerW = powerMwToW(powerMw);
-  const areaCm2 = circularBeamAreaCm2(beamDiameterMm);
-  return powerW / areaCm2;
+  // ANSI Z136.1: CW ocular hazard uses 7mm limiting aperture (pupil diameter)
+  // For beams smaller than 7mm, all power enters the eye → irradiance = P / A_pupil
+  // For beams larger than 7mm, only the portion passing through the pupil matters
+  const LIMITING_APERTURE_MM = 7;
+  const effectiveDiameterMm = Math.min(beamDiameterMm, LIMITING_APERTURE_MM);
+  const areaCm2 = circularBeamAreaCm2(effectiveDiameterMm);
+  return powerMwToW(powerMw) / areaCm2;
 }
 
 export function cwPointSourceMpe(wavelengthNm: number, exposureS: number) {
@@ -87,9 +91,16 @@ export function cwPointSourceNohdPrecheck(params: {
   const beamDiameterCm = beamDiameterMmToCm(beamDiameterMm);
   const divergenceRad = divergenceMradToRad(divergenceMrad); // full-angle in mrad → rad
 
+  // ANSI Z136.1 NOHD: distance at which beam diameter = max(beam_initial, 7mm limiting aperture)
+  // Irradiance at distance d: I = P / (π/4 × (beam_d + d×θ)²)
+  // Hazard when I < MPE, i.e., beam_d + d×θ > sqrt(4P/(π·MPE))
+  // The beam cannot be smaller than the 7mm pupil, so effective initial diameter = max(beam, 7mm)
+  const LIMITING_APERTURE_CM = 0.7; // 7mm
+  const effectiveBeamDiameterCm = Math.max(beamDiameterCm, LIMITING_APERTURE_CM);
+
   const requiredDiameterCm = Math.sqrt((4 * powerW) / (Math.PI * targetIrradianceWcm2));
-  const nohdM = divergenceRad <= 0 ? 0 : Math.max(0, (requiredDiameterCm - beamDiameterCm) / (100 * divergenceRad));
-  const diameterAtNohdCm = beamDiameterCm + 100 * nohdM * divergenceRad;
+  const nohdM = divergenceRad <= 0 ? 0 : Math.max(0, (requiredDiameterCm - effectiveBeamDiameterCm) / (100 * divergenceRad));
+  const diameterAtNohdCm = effectiveBeamDiameterCm + 100 * nohdM * divergenceRad;
 
   return {
     status: "supported" as const,
@@ -99,7 +110,9 @@ export function cwPointSourceNohdPrecheck(params: {
     diameterAtNohdCm,
     irradianceAtDistance: (distanceM: number) => {
       const diameterCm = beamDiameterCm + 100 * distanceM * divergenceRad;
-      const areaCm2 = (Math.PI / 4) * diameterCm * diameterCm;
+      // At large distances beam exceeds 7mm pupil — use actual beam area
+      const effectiveDiameterCm = Math.max(diameterCm, LIMITING_APERTURE_CM);
+      const areaCm2 = (Math.PI / 4) * effectiveDiameterCm * effectiveDiameterCm;
       return powerW / areaCm2;
     },
   };
