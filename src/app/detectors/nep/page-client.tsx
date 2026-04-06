@@ -16,13 +16,13 @@ export default function NEPPage() {
   const q = 1.602e-19;
 
   const calc = useMemo(() => {
-    const A = detectorArea * 1e-6; // mm² → m²
+    const A_cm2 = detectorArea * 1e-2; // mm² → cm² (Jones = cm·√Hz/W)
     const shotNoiseSq = 2 * q * (darkCurrent * 1e-9) * bandwidth;
     const thermalNoiseSq = 4 * k * temperature * bandwidth / loadResistor;
     const totalNoiseCurrent = Math.sqrt(shotNoiseSq + thermalNoiseSq);
     const nep = totalNoiseCurrent / responsivity; // W (total NEP for bandwidth B)
     const nepSpectral = nep / Math.sqrt(bandwidth); // W/√Hz
-    const detectivity = Math.sqrt(A * bandwidth) / nep; // Jones = √(A·B)/NEP
+    const detectivity = Math.sqrt(A_cm2 * bandwidth) / nep; // Jones = √(A·B)/NEP
     return { nep, nepSpectral, detectivity, totalNoiseCurrent, shotNoiseSq, thermalNoiseSq };
   }, [darkCurrent, responsivity, bandwidth, temperature, loadResistor, detectorArea]);
 
