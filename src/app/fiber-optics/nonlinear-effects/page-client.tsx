@@ -39,15 +39,22 @@ export default function NonlinearEffectsPage() {
     const fwmEfficiency = (gamma * P_lin * L_eff) ** 2 / (1 + (D * 1e-6 * length * deltaF) ** 2);
     const fwmPenalty = numChannels > 2 ? fwmEfficiency * 1e-3 : 0; // simplified
 
-    // SRS (Stimulated Raman Scattering) threshold
-    const srsThreshold = 16 * effectiveArea / (gamma * length); // W (approximate)
-    const srsThreshold_dBm = 10 * Math.log10(srsThreshold) + 30;
+    // SRS (Stimulated Raman Scattering) threshold — Agrawal "Nonlinear Fiber Optics" Eq. 8.1.6
+    // P_th ≈ 16 · A_eff / (g_R · L_eff) where g_R ≈ 1×10⁻¹³ m/W at 1550nm
+    const A_eff_m2 = effectiveArea * 1e-12; // µm² → m²
+    const L_eff_m = L_eff * 1e3; // km → m
+    const g_R = 1e-13; // m/W (Raman gain coefficient at 1550nm)
+    const srsThreshold_W = 16 * A_eff_m2 / (g_R * L_eff_m);
+    const srsThreshold_dBm = 10 * Math.log10(Math.max(srsThreshold_W, 1e-30)) + 30;
     const srsMargin = power - srsThreshold_dBm;
 
-    // SBS (Stimulated Brillouin Scattering) threshold
-    const linewidth = 10; // MHz typical laser
-    const sbsThreshold = 21 * effectiveArea / (gamma * length) * Math.sqrt(1 + linewidth / 20);
-    const sbsThreshold_dBm = 10 * Math.log10(sbsThreshold) + 30;
+    // SBS (Stimulated Brillouin Scattering) threshold — Agrawal Eq. 9.2.3
+    // P_th ≈ 21 · A_eff / (g_B · L_eff) · √(1 + Δν_s/Δν_B)
+    // g_B ≈ 5×10⁻¹¹ m/W, Δν_B ≈ 20 MHz (Brillouin linewidth)
+    const linewidth = 10; // MHz typical laser linewidth
+    const g_B = 5e-11; // m/W (Brillouin gain coefficient for silica)
+    const sbsThreshold_W = 21 * A_eff_m2 / (g_B * L_eff_m) * Math.sqrt(1 + linewidth / 20);
+    const sbsThreshold_dBm = 10 * Math.log10(Math.max(sbsThreshold_W, 1e-30)) + 30;
     const sbsMargin = power - sbsThreshold_dBm;
 
     // Total nonlinear penalty
