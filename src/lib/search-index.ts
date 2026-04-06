@@ -1,15 +1,15 @@
-import searchIndexData from "../generated/search-index.json";
+"use client";
 
-export type SearchItem = {
-  title: string;
-  href: string;
-  description: string;
-  kind: "page" | "category";
-  category: string;
-  tags: string[];
-  priority: number;
-};
+import { useState, useEffect } from "react";
+import type { SearchItem } from "./search-index-types";
 
-export function getSearchIndex(): SearchItem[] {
-  return searchIndexData as SearchItem[];
+export function useSearchIndex(): SearchItem[] {
+  const [searchIndex, setSearchIndex] = useState<SearchItem[]>([]);
+  useEffect(() => {
+    fetch("/search-index.json")
+      .then(r => r.json())
+      .then((data: SearchItem[]) => setSearchIndex(data))
+      .catch(() => {});
+  }, []);
+  return searchIndex;
 }

@@ -6,11 +6,8 @@ import {
   homeCategories,
   totalCalculatorCount,
 } from "../lib/home-categories";
-import { getSearchIndex } from "../lib/search-index";
 
 export default function Home() {
-  const searchIndex = getSearchIndex();
-
   return (
     <main className="min-h-screen bg-[#040712] text-white">
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(96,165,250,0.12),transparent_22%),radial-gradient(circle_at_85%_18%,rgba(192,132,252,0.10),transparent_18%),linear-gradient(180deg,#050816_0%,#040712_100%)]" />
@@ -49,7 +46,7 @@ export default function Home() {
               </Link>
             </div>
 
-            <SiteSearch items={searchIndex} />
+            <SiteSearch />
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">

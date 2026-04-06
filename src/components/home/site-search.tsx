@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { SearchItem } from "../../lib/search-index";
+
+interface SearchItem {
+  title: string;
+  href: string;
+  description: string;
+  kind: "page" | "category";
+  category: string;
+  tags: string[];
+  priority: number;
+}
 
 function scoreItem(item: SearchItem, terms: string[]) {
   const title = item.title.toLowerCase();
@@ -30,10 +39,19 @@ function scoreItem(item: SearchItem, terms: string[]) {
   return score;
 }
 
-export default function SiteSearch({ items }: { items: SearchItem[] }) {
+export default function SiteSearch() {
   const [query, setQuery] = useState("");
+  const [items, setItems] = useState<SearchItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const q = query.trim().toLowerCase();
+
+  // Fetch search index client-side to avoid 229KB in server-rendered HTML
+  useEffect(() => {
+    fetch("/search-index.json")
+      .then(r => r.json())
+      .then((data: SearchItem[]) => setItems(data))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {

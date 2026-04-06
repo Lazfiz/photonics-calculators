@@ -1,5 +1,6 @@
 import type { RelatedCalculatorItem } from "../components/related-calculator-links";
-import { getSearchIndex } from "./search-index";
+import type { SearchItem } from "./search-index-types";
+import searchIndexData from "../generated/search-index.json";
 import { flagshipRelated } from "./flagship-related";
 
 const overrides: Record<string, RelatedCalculatorItem[]> = flagshipRelated;
@@ -16,7 +17,7 @@ function titleWords(text: string) {
 export function getRelatedCalculators(currentHref: string, limit = 4): RelatedCalculatorItem[] {
   if (overrides[currentHref]) return overrides[currentHref].slice(0, limit);
 
-  const items = getSearchIndex();
+  const items = searchIndexData as unknown as SearchItem[];
   const current = items.find((item) => item.href === currentHref);
   if (!current) return [];
 
