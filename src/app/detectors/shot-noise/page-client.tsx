@@ -21,7 +21,7 @@ export default function ShotNoisePage() {
   }, [photocurrent, q, bandwidth]);
 
   const iShot = Math.sqrt(2 * q * photocurrent * bandwidth);
-  const snrVal = photocurrent / iShot;
+  const snrVal = iShot === 0 ? Infinity : photocurrent / iShot;
   const NEP = iShot; // simplified
 
   return (
@@ -35,7 +35,7 @@ export default function ShotNoisePage() {
 
       <div className="bg-gray-900 rounded p-4 mb-6">
         <p className="text-gray-300">Shot noise = <span className="text-blue-400 font-mono">{iShot.toExponential(3)} A</span></p>
-        <p className="text-gray-300">SNR = <span className="text-blue-400 font-mono">{snrVal.toFixed(1)}</span></p>
+        <p className="text-gray-300">SNR = <span className="text-blue-400 font-mono">{snrVal === Infinity ? "∞" : snrVal.toFixed(1)}</span></p>
       </div>
 
       <ChartPanel data={chartData} layout={{
