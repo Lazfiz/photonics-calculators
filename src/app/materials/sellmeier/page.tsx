@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-  title: 'Sellmeier Equation',
-  description: 'Calculate refractive index from Sellmeier coefficients across wavelength.',
+    title: 'Sellmeier Equation',
+  description: 'Calculate refractive index from Sellmeier coefficients across wavelength.'
 };
 
 export default function Page() {

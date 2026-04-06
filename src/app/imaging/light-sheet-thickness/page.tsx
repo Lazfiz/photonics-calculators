@@ -1,107 +1,11 @@
-"use client";
+import type { Metadata } from "next";
+import PageClient from "./page-client";
 
-import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
-import ChartPanel from "../../../components/chart-panel";
+export const metadata: Metadata = {
+    title: 'Light Sheet Thickness Calculator',
+  description: 'Calculate the thickness and propagation characteristics of a Gaussian light sheet for light-sheet fluorescence microscopy (LSFM).',
+};
 
-
-export default function LightSheetThicknessPage() {
-  const [wavelength, setWavelength] = useState(488);
-  const [na, setNa] = useState(0.1);
-  const [sheetLength, setSheetLength] = useState(100);
-  const [gaussianBeamWaist, setGaussianBeamWaist] = useState(0);
-
-  // If gaussianBeamWaist is 0, compute from NA
-  const beamWaist = gaussianBeamWaist > 0 ? gaussianBeamWaist : wavelength / (Math.PI * na);
-  // Rayleigh range
-  const zR = Math.PI * beamWaist * beamWaist / wavelength;
-  // Sheet thickness (FWHM of Gaussian ~ 2.355 × waist for intensity, but commonly 2× waist)
-  const sheetThickness = 2 * beamWaist * 1000; // µm
-  const rayleighRangeUm = zR * 1000;
-
-  const chartData = useMemo(() => {
-    const nas = Array.from({ length: 80 }, (_, i) => 0.01 + i * 0.002);
-    return [
-      { x: nas, y: nas.map(n => 2 * (wavelength / (Math.PI * n)) * 1000), type: "scatter", mode: "lines", name: "Sheet Thickness", line: { color: "#60a5fa" } },
-      { x: nas, y: nas.map(n => (Math.PI * Math.pow(wavelength / (Math.PI * n), 2) / wavelength) * 1000), type: "scatter", mode: "lines", name: "Rayleigh Range", line: { color: "#fbbf24", dash: "dash" } },
-      { x: [na], y: [sheetThickness], type: "scatter", mode: "markers", name: "Current Thickness", marker: { color: "#34d399", size: 12 } },
-    ];
-  }, [wavelength, na, sheetThickness]);
-
-  const profileData = useMemo(() => {
-    const z = Array.from({ length: 200 }, (_, i) => (i - 100) * sheetLength / 100);
-    return [
-      { x: z, y: z.map(zz => Math.exp(-2 * zz * zz / (zR * zR))), type: "scatter", mode: "lines", name: "Intensity Profile", line: { color: "#a78bfa" } },
-    ];
-  }, [sheetLength, zR]);
-
-  return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Light Sheet Thickness Calculator" description="Calculate the thickness and propagation characteristics of a Gaussian light sheet for light-sheet fluorescence microscopy (LSFM).">
-            
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={350} max={800}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Cylinder NA</span>
-          <input type="number" value={na} onChange={e => setNa(+e.target.value)} min={0.01} max={0.5} step="0.005"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Sheet Length (µm)</span>
-          <input type="number" value={sheetLength} onChange={e => setSheetLength(+e.target.value)} min={10} max={500}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Beam Waist override (µm, 0=auto)</span>
-          <input type="number" value={gaussianBeamWaist} onChange={e => setGaussianBeamWaist(+e.target.value)} min={0} max={50} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Beam Waist (w₀)</p>
-          <p className="text-2xl font-bold text-blue-400">{(beamWaist * 1000).toFixed(2)} µm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Sheet Thickness (2w₀)</p>
-          <p className="text-2xl font-bold text-green-400">{sheetThickness.toFixed(2)} µm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Rayleigh Range (z<sub>R</sub>)</p>
-          <p className="text-2xl font-bold text-yellow-400">{rayleighRangeUm.toFixed(1)} µm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Aspect Ratio</p>
-          <p className="text-2xl font-bold text-purple-400">{(2 * zR / beamWaist).toFixed(1)}:1</p>
-        </div>
-      </div>
-
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-        <h3 className="text-lg font-semibold mb-2">Formulas</h3>
-                              </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="bg-gray-900 rounded-lg p-4">
-          <ChartPanel data={chartData} layout={{
-            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-            font: { color: "#9ca3af" }, xaxis: { title: "Cylinder NA", gridcolor: "#374151" },
-            yaxis: { title: "Thickness (µm)", gridcolor: "#374151" },
-            margin: { t: 30, r: 30, b: 50, l: 70 },
-          }} />
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4">
-          <ChartPanel data={profileData} layout={{
-            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-            font: { color: "#9ca3af" }, xaxis: { title: "z (µm)", gridcolor: "#374151" },
-            yaxis: { title: "Normalized Intensity", gridcolor: "#374151", range: [0, 1.1] },
-            margin: { t: 30, r: 30, b: 50, l: 70 },
-          }} />
-        </div>
-      </div>
-    </CalculatorShell>
-  );
+export default function Page() {
+  return <PageClient />;
 }

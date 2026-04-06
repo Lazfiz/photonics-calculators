@@ -1,61 +1,11 @@
-"use client";
+import type { Metadata } from "next";
+import PageClient from "./page-client";
 
-import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
-import ChartPanel from "../../../components/chart-panel";
+export const metadata: Metadata = {
+      title: 'Pupil Matching in Microscopy',
+  description: 'Exit pupil = (2ftubeNA)/(MobjMeyepiece). Match to eye pupil (2-8mm) for optimal brightness.',
+};
 
-
-export default function PupilMatchingPage() {
-  const [objectiveNA, setObjectiveNA] = useState(0.75);
-  const [objectiveMag, setObjectiveMag] = useState(40);
-  const [tubeLensFL, setTubeLensFL] = useState(200); // mm
-  const [eyepieceMag, setEyepieceMag] = useState(10);
-  const [eyePupil, setEyePupil] = useState(4); // mm
-
-  const chartData = useMemo(() => {
-    const nas = Array.from({ length: 200 }, (_, i) => 0.1 + i * 1.4 / 200);
-    // Exit pupil diameter = (2 * tube_lens_FL * NA) / (objective_mag * eyepiece_mag)
-    const exitPupils = nas.map(na => (2 * tubeLensFL * na) / (objectiveMag * eyepieceMag));
-    // Eye pupil match
-    const match = nas.map(na => {
-      const exitP = (2 * tubeLensFL * na) / (objectiveMag * eyepieceMag);
-      return Math.min(1, exitP / eyePupil);
-    });
-    return [
-      { x: nas, y: exitPupils, type: "scatter" as const, mode: "lines" as const, name: "Exit Pupil (mm)", line: { color: "#60a5fa" } },
-      { x: nas, y: nas.map(na => eyePupil), type: "scatter" as const, mode: "lines" as const, name: "Eye Pupil (mm)", line: { color: "#34d399", dash: "dash" } },
-    ];
-  }, [objectiveMag, tubeLensFL, eyepieceMag, eyePupil]);
-
-  const exitPupil = (2 * tubeLensFL * objectiveNA) / (objectiveMag * eyepieceMag);
-  const matchRatio = exitPupil / eyePupil;
-  const optimalNA = (eyePupil * objectiveMag * eyepieceMag) / (2 * tubeLensFL);
-  const totalMag = objectiveMag * eyepieceMag;
-
-  return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Pupil Matching in Microscopy" description="Exit pupil = (2·ftube·NA)/(Mobj·Meyepiece). Match to eye pupil (2-8mm) for optimal brightness.">
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Objective NA</span>
-          <input type="number" value={objectiveNA} onChange={e => setObjectiveNA(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Objective Mag</span>
-          <input type="number" value={objectiveMag} onChange={e => setObjectiveMag(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Tube Lens f (mm)</span>
-          <input type="number" value={tubeLensFL} onChange={e => setTubeLensFL(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Eyepiece Mag</span>
-          <input type="number" value={eyepieceMag} onChange={e => setEyepieceMag(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Eye Pupil (mm)</span>
-          <input type="number" value={eyePupil} onChange={e => setEyePupil(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-      </div>
-
-      <div className="bg-gray-900 rounded p-4 mb-6">
-        <p className="text-gray-300">Exit pupil diameter = <span className="text-blue-400 font-mono">{exitPupil.toFixed(2)} mm</span></p>
-        <p className="text-gray-300">Match ratio = <span className="text-blue-400 font-mono">{(matchRatio * 100).toFixed(0)}%</span></p>
-        <p className="text-gray-300">Optimal NA for eye match = <span className="text-blue-400 font-mono">{optimalNA.toFixed(3)}</span></p>
-        <p className="text-gray-300">Total magnification = <span className="text-blue-400 font-mono">{totalMag}×</span></p>
-      </div>
-
-      <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Objective NA", gridcolor: "#374151" }, yaxis: { title: "Pupil Diameter (mm)", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true, showlegend: true }} />
-    </CalculatorShell>
-  );
+export default function Page() {
+  return <PageClient />;
 }

@@ -1,0 +1,109 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+
+
+export default function RamanShiftPage() {
+  const [laserWavelength, setLaserWavelength] = useState(532);
+  const [ramanShiftCm, setRamanShiftCm] = useState(1000);
+  const [minShift, setMinShift] = useState(100);
+  const [maxShift, setMaxShift] = useState(4000);
+
+  const laserWavenumber = 1e7 / laserWavelength; // cm⁻¹
+  const stokesWavenumber = laserWavenumber - ramanShiftCm;
+  const stokesWavelength = stokesWavenumber > 0 ? 1e7 / stokesWavenumber : 0;
+  const antiStokesWavenumber = laserWavenumber + ramanShiftCm;
+  const antiStokesWavelength = 1e7 / antiStokesWavenumber;
+
+  const stokesEnergyEv = 1.239842e-4 / (stokesWavelength / 1000); // eV from nm
+  const laserEnergyEv = 1.239842e-4 / laserWavelength;
+
+  const chartData = useMemo(() => {
+    const shifts = Array.from({ length: 500 }, (_, i) => minShift + i * (maxShift - minShift) / 500);
+    const stokesWL = shifts.map(s => 1e7 / (laserWavenumber - s));
+    const antiStokesWL = shifts.map(s => 1e7 / (laserWavenumber + s));
+    return [
+      { x: shifts, y: stokesWL, type: "scatter" as const, mode: "lines" as const,
+        name: "Stokes", line: { color: "#34d399" } },
+      { x: shifts, y: antiStokesWL, type: "scatter" as const, mode: "lines" as const,
+        name: "Anti-Stokes", line: { color: "#f87171" } },
+      { x: [ramanShiftCm], y: [stokesWavelength], type: "scatter" as const, mode: "markers" as const,
+        name: "Selected", marker: { color: "#fbbf24", size: 12 } },
+    ];
+  }, [laserWavelength, ramanShiftCm, minShift, maxShift]);
+
+  // Energy difference
+  const energyDiffEv = laserEnergyEv - stokesEnergyEv;
+  const frequencyDiffTHz = energyDiffEv * 241.799; // eV to THz
+
+  return (
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Raman Shift Calculator" description="Convert between Raman shift (cm⁻¹), scattered wavelength, and energy for any excitation laser.">
+            
+      <div className="grid gap-4 sm:grid-cols-2 mb-8">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Laser Wavelength (nm)</span>
+          <input type="number" value={laserWavelength} onChange={e => setLaserWavelength(+e.target.value)} min="200" max="2000"
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Raman Shift (cm⁻¹)</span>
+          <input type="number" value={ramanShiftCm} onChange={e => setRamanShiftCm(+e.target.value)} min="0" max="5000"
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Plot Range Min (cm⁻¹)</span>
+          <input type="number" value={minShift} onChange={e => setMinShift(+e.target.value)}
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Plot Range Max (cm⁻¹)</span>
+          <input type="number" value={maxShift} onChange={e => setMaxShift(+e.target.value)}
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">Stokes Wavelength</p>
+          <p className="text-xl font-bold text-green-400">{stokesWavelength.toFixed(2)} nm</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">Anti-Stokes Wavelength</p>
+          <p className="text-xl font-bold text-red-400">{antiStokesWavelength.toFixed(2)} nm</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">Laser Wavenumber</p>
+          <p className="text-xl font-bold text-blue-400">{laserWavenumber.toFixed(2)} cm⁻¹</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">Stokes Wavenumber</p>
+          <p className="text-xl font-bold text-green-400">{stokesWavenumber.toFixed(2)} cm⁻¹</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">Energy Difference</p>
+          <p className="text-xl font-bold text-yellow-400">{energyDiffEv.toFixed(4)} eV</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">Vibrational Frequency</p>
+          <p className="text-xl font-bold text-purple-400">{frequencyDiffTHz.toFixed(2)} THz</p>
+        </div>
+      </div>
+
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
+        <p>ν̃<sub>laser</sub> = 10⁷ / λ<sub>laser</sub>(nm) cm⁻¹</p>
+        <p><span className="text-green-400">Stokes:</span> ν̃<sub>s</sub> = ν̃<sub>laser</sub> − Δν̃ → λ<sub>s</sub> = 10⁷ / ν̃<sub>s</sub></p>
+        <p><span className="text-red-400">Anti-Stokes:</span> ν̃<sub>as</sub> = ν̃<sub>laser</sub> + Δν̃ → λ<sub>as</sub> = 10⁷ / ν̃<sub>as</sub></p>
+      </div>
+
+      <ChartPanel data={chartData} layout={{
+        paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+        font: { color: "#9ca3af" },
+        xaxis: { title: "Raman Shift (cm⁻¹)", gridcolor: "#374151" },
+        yaxis: { title: "Scattered Wavelength (nm)", gridcolor: "#374151" },
+        margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { bgcolor: "transparent" },
+      }} />
+    </CalculatorShell>
+  );
+}

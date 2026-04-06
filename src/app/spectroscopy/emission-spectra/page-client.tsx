@@ -1,0 +1,127 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import CalculatorShell from "../../../components/calculator-shell";
+import ChartPanel from "../../../components/chart-panel";
+
+
+export default function EmissionSpectraPage() {
+  const [centerWL, setCenterWL] = useState(520);
+  const [fwhm, setFwhm] = useState(35);
+  const [asymmetry, setAsymmetry] = useState(0.3);
+  const [peakIntensity, setPeakIntensity] = useState(1.0);
+  const [nPeaks, setNPeaks] = useState(1);
+  const [peak2WL, setPeak2WL] = useState(560);
+  const [peak2Fwhm, setPeak2Fwhm] = useState(40);
+  const [peak2Intensity, setPeak2Intensity] = useState(0.3);
+
+  const gaussian = (x: number, center: number, width: number, amp: number) =>
+    amp * Math.exp(-4 * Math.log(2) * ((x - center) / width) ** 2);
+
+  const asymmetricGaussian = (x: number, center: number, width: number, amp: number, asym: number) => {
+    const d = x - center;
+    const sigma = d < 0 ? width / 2 : width / (2 * (1 + asym));
+    return amp * Math.exp(-0.5 * (d / sigma) ** 2);
+  };
+
+  const chartData = useMemo(() => {
+    const wl = Array.from({ length: 600 }, (_, i) => 350 + (i / 600) * 400);
+    const spec = wl.map(w => asymmetricGaussian(w, centerWL, fwhm, peakIntensity, asymmetry));
+    const spec2 = nPeaks >= 2 ? wl.map(w => asymmetricGaussian(w, peak2WL, peak2Fwhm, peak2Intensity, asymmetry)) : [];
+
+    const traces: Record<string, unknown>[] = [
+      { x: wl, y: spec, type: "scatter" as const, mode: "lines" as const, name: "Peak 1", line: { color: "#60a5fa" }, fill: "tozeroy", fillcolor: "rgba(96,165,250,0.15)" },
+    ];
+    if (nPeaks >= 2) {
+      traces.push({ x: wl, y: spec2, type: "scatter" as const, mode: "lines" as const, name: "Peak 2", line: { color: "#34d399" }, fill: "tozeroy", fillcolor: "rgba(52,211,153,0.15)" });
+      traces.push({ x: wl, y: spec.map((v, i) => v + spec2[i]), type: "scatter" as const, mode: "lines" as const, name: "Combined", line: { color: "#fbbf24", width: 2 } });
+    }
+
+    // Center of mass
+    const combined = nPeaks >= 2 ? spec.map((v, i) => v + spec2[i]) : spec;
+    const totalInt = combined.reduce((a, b) => a + b, 0);
+    const com = combined.reduce((a, b, i) => a + b * wl[i], 0) / totalInt;
+    const fwhmWl = wl.find((_, i) => combined[i] >= peakIntensity / 2);
+    const fwhmWr = [...wl].reverse().find((_, ri) => combined[combined.length - 1 - ri] >= peakIntensity / 2);
+
+    traces.push({
+      x: [com], y: [peakIntensity * 1.1],
+      type: "scatter" as const, mode: "markers" as const, name: `CoM: ${com.toFixed(1)} nm`,
+      marker: { color: "#f87171", size: 10, symbol: "x" }
+    });
+
+    return traces;
+  }, [centerWL, fwhm, asymmetry, peakIntensity, nPeaks, peak2WL, peak2Fwhm, peak2Intensity]);
+
+  return (
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Emission Spectra Fitting" description="Model photoluminescence emission with asymmetric Gaussian line shapes.">
+            
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Peak 1 Center (nm)</span>
+          <input type="number" value={centerWL} onChange={e => setCenterWL(+e.target.value)} min={300} max={1000} step={1}
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Peak 1 FWHM (nm)</span>
+          <input type="number" value={fwhm} onChange={e => setFwhm(+e.target.value)} min={1} step={1}
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Peak 1 Intensity</span>
+          <input type="number" value={peakIntensity} onChange={e => setPeakIntensity(+e.target.value)} min={0} step={0.1}
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Asymmetry (red-tail)</span>
+          <input type="number" value={asymmetry} onChange={e => setAsymmetry(+e.target.value)} min={0} max={2} step={0.1}
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+        </label>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Number of Peaks</span>
+          <select value={nPeaks} onChange={e => setNPeaks(+e.target.value)}
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            <option value={1}>1</option>
+            <option value={2}>2</option>
+          </select>
+        </label>
+      </div>
+
+      {nPeaks >= 2 && (
+        <div className="grid gap-4 sm:grid-cols-3 mb-8">
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">Peak 2 Center (nm)</span>
+            <input type="number" value={peak2WL} onChange={e => setPeak2WL(+e.target.value)} min={300} step={1}
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+          </label>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">Peak 2 FWHM (nm)</span>
+            <input type="number" value={peak2Fwhm} onChange={e => setPeak2Fwhm(+e.target.value)} min={1} step={1}
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+          </label>
+          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <span className="text-sm text-gray-300">Peak 2 Intensity</span>
+            <input type="number" value={peak2Intensity} onChange={e => setPeak2Intensity(+e.target.value)} min={0} step={0.1}
+              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+          </label>
+        </div>
+      )}
+
+      <div className="bg-gray-900 rounded-lg p-4 mb-6">
+        <p className="text-gray-300 text-sm font-mono text-blue-400">I(λ) = A · exp(−0.5 · ((λ − λ₀)/σ)²)</p>
+        <p className="text-gray-300 text-sm font-mono text-green-400">σ_left = FWHM/2, σ_right = FWHM/(2·(1+α))</p>
+        <p className="text-gray-500 text-xs mt-2">Asymmetric Gaussian models the common red-tailed emission of fluorophores due to vibronic coupling.</p>
+      </div>
+
+      <div className="bg-gray-900 rounded-lg p-4">
+        <ChartPanel data={chartData} layout={{
+          paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          xaxis: { title: "Wavelength (nm)", gridcolor: "#1f2937" },
+          yaxis: { title: "Intensity (a.u.)", gridcolor: "#1f2937" },
+          legend: { orientation: "h", y: 1.15 },
+          margin: { t: 40 },
+        }} />
+      </div>
+    </CalculatorShell>
+  );
+}

@@ -1,62 +1,11 @@
-"use client";
+import type { Metadata } from "next";
+import PageClient from "./page-client";
 
-import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
-import ChartPanel from "../../../components/chart-panel";
-import ResultCard from "../../../components/result-card";
+export const metadata: Metadata = {
+    title: 'Cosmic Ray Detection',
+  description: 'Cosmic ray flux and impact on imaging sensors — estimate hit rates and affected pixels.'
+};
 
-export default function CosmicRaysPage() {
-  const [sensorArea, setSensorArea] = useState(1);
-  const [exposureTime, setExposureTime] = useState(1);
-  const [flux, setFlux] = useState(1);
-  const [pixelSize, setPixelSize] = useState(10);
-  const [energyDeposit, setEnergyDeposit] = useState(40);
-  const [trackLength, setTrackLength] = useState(200);
-  const [numFrames, setNumFrames] = useState(100);
-
-  const fluxPerSec = flux / 60;
-  const expectedHits = fluxPerSec * sensorArea * exposureTime;
-  const totalDeposited = expectedHits * energyDeposit * trackLength;
-  const pixelArea = pixelSize * pixelSize;
-  const pixelFlux = expectedHits * pixelArea * 1e-8 / sensorArea;
-  const cleanFrames = Math.exp(-pixelFlux) * 100;
-
-  const chartData = useMemo(() => {
-    const times = Array.from({ length: 200 }, (_, i) => 0.01 + i * 10 / 200);
-    const hits = times.map(t => fluxPerSec * sensorArea * t);
-    let maxHits = times.map(t => { const mu = fluxPerSec * sensorArea * t; let k = mu; let sum = 0; for (let n = 0; n <= mu + 5 * Math.sqrt(mu); n++) { let lp = n * Math.log(mu) - mu; for (let j = 2; j <= n; j++) lp -= Math.log(j); sum += Math.exp(lp); if (sum >= 0.99) { k = n; break; } } return k; });
-    return [
-      { x: times, y: hits, type: "scatter", mode: "lines", name: "Expected Hits", line: { color: "#60a5fa", width: 2 } },
-      { x: times, y: maxHits, type: "scatter", mode: "lines", name: "99th Percentile", line: { color: "#f87171", width: 2, dash: "dash" } },
-    ];
-  }, [fluxPerSec, sensorArea]);
-
-  const areaVsHits = useMemo(() => {
-    const areas = Array.from({ length: 100 }, (_, i) => 0.01 + i * 10 / 100);
-    return [{ x: areas, y: areas.map(a => fluxPerSec * a * exposureTime), type: "scatter", mode: "lines", name: `Hits per ${exposureTime}s frame`, line: { color: "#34d399", width: 2 } }];
-  }, [fluxPerSec, exposureTime]);
-
-  return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Cosmic Ray Detection" description="Cosmic ray flux and impact on imaging sensors — estimate hit rates and affected pixels.">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Sensor Area (cm²)</span><input type="number" value={sensorArea} onChange={e => setSensorArea(+e.target.value)} min="0.01" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Exposure Time (s)</span><input type="number" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} min="0.001" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Flux (hits/cm²/min)</span><input type="number" value={flux} onChange={e => setFlux(+e.target.value)} min="0.01" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pixel Size (μm)</span><input type="number" value={pixelSize} onChange={e => setPixelSize(+e.target.value)} min="1" step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Energy Deposit (e⁻/μm)</span><input type="number" value={energyDeposit} onChange={e => setEnergyDeposit(+e.target.value)} min="1" step="5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Track Length (μm)</span><input type="number" value={trackLength} onChange={e => setTrackLength(+e.target.value)} min="10" step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Frames for Statistics</span><input type="number" value={numFrames} onChange={e => setNumFrames(+e.target.value)} min="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Expected Hits/Frame" value={expectedHits.toFixed(2)} tone="blue" />
-        <ResultCard label="e⁻ Deposited/Hit" value={(energyDeposit * trackLength).toExponential(2)} tone="red" />
-        <ResultCard label="Clean Pixel Frames" value={`${cleanFrames.toFixed(2)}%`} tone="green" />
-        <ResultCard label={`Hits in ${numFrames} frames`} value={`~${(expectedHits * numFrames).toFixed(0)}`} tone="yellow" />
-      </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>Flux at sea level: ~1 hit/cm²/min</p><p>N_hits = Φ · A · t  (Poisson)</p><p>E_deposited ≈ 40 e⁻/μm in Si → ~8000 e⁻ for 200μm track</p></div>
-      <ChartPanel data={chartData} layout={{ xaxis: { title: "Exposure Time (s)", gridcolor: "#374151" }, yaxis: { title: "Cosmic Ray Hits", gridcolor: "#374151" } }} />
-      <h2 className="text-xl font-bold mt-8 mb-4">Hits vs Sensor Area</h2>
-      <ChartPanel data={areaVsHits} layout={{ xaxis: { title: "Sensor Area (cm²)", gridcolor: "#374151" }, yaxis: { title: "Expected Hits per Frame", gridcolor: "#374151" } }} />
-    </CalculatorShell>
-  );
+export default function Page() {
+  return <PageClient />;
 }
