@@ -1,8 +1,5 @@
 import type { MetadataRoute } from "next";
-import { readdirSync, statSync } from "fs";
-import path from "path";
-
-const appDir = path.join(process.cwd(), "src", "app");
+import searchIndex from "../../public/search-index.json";
 
 function getBaseUrl() {
   const envUrl =
@@ -15,41 +12,23 @@ function getBaseUrl() {
   return envUrl.startsWith("http") ? envUrl : `https://${envUrl}`;
 }
 
-function getRoutes(dir: string, prefix = ""): string[] {
-  const entries = readdirSync(dir);
-  const routes: string[] = [];
-
-  for (const entry of entries) {
-    if (entry.startsWith("_") || entry.startsWith("(")) continue;
-    const fullPath = path.join(dir, entry);
-    const stats = statSync(fullPath);
-
-    if (stats.isDirectory()) {
-      const pagePath = path.join(fullPath, "page.tsx");
-      if (statSafe(pagePath)) {
-        routes.push(`${prefix}/${entry}`);
-      }
-      routes.push(...getRoutes(fullPath, `${prefix}/${entry}`));
-    }
-  }
-
-  return routes;
-}
-
-function statSafe(filePath: string) {
-  try {
-    return statSync(filePath).isFile();
-  } catch {
-    return false;
-  }
+interface SearchItem {
+  href: string;
+  kind: string;
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = getBaseUrl();
-  const routes = ["/", ...getRoutes(appDir)]
-    .filter((route, index, all) => all.indexOf(route) === index)
-    .filter((route) => route !== "/_not-found")
-    .sort();
+  const items = searchIndex as unknown as SearchItem[];
+
+  const routes = [
+    "/",
+    ...new Set(
+      items
+        .map((item) => item.href)
+        .filter((href) => href.startsWith("/") && href !== "/_not-found")
+    ),
+  ].sort();
 
   return routes.map((route) => ({
     url: `${baseUrl}${route}`,
