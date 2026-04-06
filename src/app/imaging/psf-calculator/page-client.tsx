@@ -17,19 +17,18 @@ export default function PSFCalculatorPage() {
   const fwhm = 0.514 * wavelength / na;
   const axialFWHM = 0.88 * refractiveIndex * wavelength / (na * na);
 
-  // Accurate J1(u)/u polynomial approximation (Abramowitz & Stegun 9.5.1)
+  // Accurate J1(u)/u approximation
+  // J1(u)/u = 1/2 - u²/16 + u⁴/384 - ... (Taylor, |u| < 3)
+  // For |u| >= 3: J1(u)/u ≈ √(2/(πu)) · cos(u - 3π/4) / u
   function j1OverU(u: number): number {
-    if (Math.abs(u) < 1e-10) return 0.5;
     const x = Math.abs(u);
-    // Use the small-argument Taylor series for accuracy near center
-    if (x < 3) {
+    if (x < 1e-10) return 0.5;
+    if (x < 4) {
       const x2 = x * x;
-      return 0.5 - x2 / 16 + x2 * x2 / 384 - x2 * x2 * x2 / 18432;
+      return 0.5 - x2 / 16 + x2 * x2 / 384 - x2 * x2 * x2 / 18432 + x2 * x2 * x2 * x2 / 1474560;
     }
-    // Large argument: J1(x)/x ≈ sin(x - 3π/4) / (x√(πx/2)) · √(π/2)
-    // Simplified: sin(x-3π/4) / (x) · correction
-    const j1 = Math.sin(x - 0.75 * Math.PI) / (x * 0.7979);
-    return j1 / x;
+    // Asymptotic: J1(u)/u ≈ √(2/(π·|u|)) · cos(u - 3π/4) / u
+    return Math.sqrt(2 / (Math.PI * x)) * Math.cos(x - 0.75 * Math.PI) / x;
   }
 
   // Generate 2D Airy PSF

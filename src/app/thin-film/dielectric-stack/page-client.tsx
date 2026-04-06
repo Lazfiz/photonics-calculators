@@ -34,7 +34,7 @@ export default function DielectricStackPage() {
         const cH = Math.cos(deltaH), sH = Math.sin(deltaH);
         const nA = A * cH - B * nH * sH;
         const nB = A * sH / nH + B * cH;
-        const nC = C * cH - D * nH * sH;
+        const nC = C * cH + D * nH * sH;
         const nD = C * sH / nH + D * cH;
         A = nA; B = nB; C = nC; D = nD;
 
@@ -42,7 +42,7 @@ export default function DielectricStackPage() {
         const cL = Math.cos(deltaL), sL = Math.sin(deltaL);
         const nA2 = A * cL - B * nL * sL;
         const nB2 = A * sL / nL + B * cL;
-        const nC2 = C * cL - D * nL * sL;
+        const nC2 = C * cL + D * nL * sL;
         const nD2 = C * sL / nL + D * cL;
         A = nA2; B = nB2; C = nC2; D = nD2;
       }

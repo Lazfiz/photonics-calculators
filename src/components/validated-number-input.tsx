@@ -32,12 +32,12 @@ export default function ValidatedNumberInput({
     }
     if (min !== undefined && num < min) {
       setWarning(`Min: ${min}`);
-      onChange(Math.max(num, min));
+      onChange(min);
       return;
     }
     if (max !== undefined && num > max) {
       setWarning(`Max: ${max}`);
-      onChange(Math.min(num, max));
+      onChange(max);
       return;
     }
     setWarning(null);

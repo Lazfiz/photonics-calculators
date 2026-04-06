@@ -55,7 +55,7 @@ export default function AntiFogPage() {
         const cl = Math.cos(delta), sl = Math.sin(delta);
         const nA = A * cl - B * n * sl;
         const nB = A * sl / n + B * cl;
-        const nC = C * cl - D * n * sl;
+        const nC = C * cl + D * n * sl;
         const nD = C * sl / n + D * cl;
         A = nA; B = nB; C = nC; D = nD;
       };
