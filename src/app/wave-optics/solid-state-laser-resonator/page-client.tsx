@@ -43,7 +43,7 @@ export default function SolidStateLaserResonatorPage() {
     const t2 = d * (R1m - d) / (R2m + R1m - 2 * d);
     const w1_sq = (lambda_m / Math.PI) * Math.sqrt(R1m * t1 * (d - t1) / (R1m - d));
     beamWaist = Math.sqrt(Math.max(0, w1_sq)) * 1e6; // µm
-    zR = Math.PI * Math.pow(beamWaist * 1e-6, 2) / lambda_m;
+    zR = Math.PI * Math.pow(beamWaist * 1e-3, 2) / (wavelength * 1e-6); // mm (µm²/nm = mm)
   }
 
   // Threshold

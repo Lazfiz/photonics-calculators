@@ -37,7 +37,7 @@ export default function MacroBendPage() {
   }, [wavelength, coreRadius, na, bendRadius, loss]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Macro Bend Loss" description="Detailed macrobending loss calculation for single-mode fibers based on bend radius and wavelength.">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Macro Bend Loss" description="Quick macrobending loss estimate using empirical heuristic. For physically rigorous results, see Macrobending Loss calculator.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={800} max={2000} />
