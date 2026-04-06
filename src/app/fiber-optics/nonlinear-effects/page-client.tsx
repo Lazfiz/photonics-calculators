@@ -219,8 +219,8 @@ export default function NonlinearEffectsPage() {
           <p>L_eff = (1 - e^(-αL)) / α [effective length]</p>
           <p>φ_NL = γ · P · L_eff [SPM phase shift]</p>
           <p>XPM penalty ≈ (N-1) × 2 × SPM penalty</p>
-          <p>SBS threshold ≈ 21·A_eff / (γ·L) · √(1+Δν/20) [W]</p>
-          <p>SRS threshold ≈ 16·A_eff / (γ·L) [W]</p>
+          <p>SBS threshold ≈ 21·A_eff / (g_B·L_eff) · √(1+Δν/20) [W]</p>
+          <p>SRS threshold ≈ 16·A_eff / (g_R·L_eff) [W]</p>
           <p>Typical: γ=1.3 W⁻¹km⁻¹ (SMF), A_eff=80µm², n₂=2.6×10⁻²⁰ m²/W</p>
         </div>
       </div>

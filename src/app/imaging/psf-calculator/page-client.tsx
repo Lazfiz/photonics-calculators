@@ -125,7 +125,13 @@ export default function PSFCalculatorPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Formulas</h3>
-                                      </div>
+        <div className="text-sm text-gray-300 space-y-1 font-mono">
+          <p>Airy radius: r = 0.61λ / NA</p>
+          <p>Lateral FWHM = 0.514λ / NA</p>
+          <p>Axial FWHM = 0.88nλ / NA²</p>
+          <p>I(r) = [2J₁(πNAr/λ) / (πNAr/λ)]²</p>
+        </div>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2 mb-6">
         <div className="bg-gray-900 rounded-lg p-4">

@@ -107,7 +107,7 @@ export default function DielectricStackPage() {
         <div className="space-y-2 text-sm text-gray-300 font-mono">
           <p>Structure: n₀ | (H L)^N | n_sub</p>
           <p>d_H = λ₀/(4n_H), &nbsp; d_L = λ₀/(4n_L)</p>
-          <p>R_peak ≈ [(nH/nL)^(2N) − q] / [(nH/nL)^(2N) + q]²</p>
+          <p>R_peak ≈ {`{[(nH/nL)^(2N) − q] / [(nH/nL)^(2N) + q]}`}²</p>
           <p>q = n₀·n_sub / n_H²</p>
           <p>Transfer Matrix: M = ∏ M_j, &nbsp; M_j = [[cosδ, iη⁻¹sinδ], [iηsinδ, cosδ]]</p>
         </div>

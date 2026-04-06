@@ -97,7 +97,7 @@ export default function SiteSearch() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Gaussian beam, Raman, MPE, fiber coupling…"
-        className="w-full rounded-xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition focus:border-blue-400"
+        className="w-full rounded-xl border border-white/10 bg-slate-950/80 px-4 py-3 text-base text-white outline-none transition focus:border-blue-400"
       />
       <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
         <span>{q ? `${results.length} ranked result${results.length === 1 ? "" : "s"}` : "Top results and flagship pages"}</span>

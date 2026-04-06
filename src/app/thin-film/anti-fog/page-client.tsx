@@ -117,7 +117,13 @@ export default function AntiFogPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-4">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">Formulas</h3>
-                                      </div>
+        <div className="text-sm text-gray-300 space-y-1 font-mono">
+          <p>TMM: M = [[cos(δ), i·sin(δ)/η], [i·η·sin(δ), cos(δ)]]</p>
+          <p>δ = 2πn·d / λ (phase thickness)</p>
+          <p>R = |r|² where r = (A·n_sub - D·n_inc + i(B·n_sub·n_inc - C·n_inc)) / (...)</p>
+          <p>Surface energy: γ = γ_water · cos(θ_contact)</p>
+        </div>
+      </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <ChartPanel data={[

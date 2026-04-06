@@ -192,7 +192,7 @@ export default function ChromaticDispersionPage() {
           <p>ΔT = |D| · L · Δλ [pulse broadening]</p>
           <p>T_out = √(T_in² + ΔT²) [Gaussian]</p>
           <p>Penalty = 5·log₁₀(1 + (π·D·L·Δλ·B/4)²) [dB]</p>
-          <p>L_D = T₀² / |D| [dispersion length]</p>
+          <p>L_D = T₀² / |β₂| [dispersion length]</p>
           <p>B_max ≈ 0.44 / (|D|·L·Δλ) [Gaussian, THz]</p>
           <p>SMF-28: D=17 ps/nm/km @1550nm, S=0.056 ps/nm²/km, λ₀=1310nm</p>
         </div>

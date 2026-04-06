@@ -96,7 +96,7 @@ export default function PhotodiodeSpeedPage() {
         <p>C<sub>j</sub> = C<sub>d</sub> · A (junction capacitance ∝ area)</p>
         <p>BW<sub>3dB</sub> = 1 / (2π · R · C<sub>j</sub>)</p>
         <p>R = QE · qλ / (hc) (responsivity)</p>
-        <p>NEP = √(4k<sub>B</sub>TR·BW) / R</p>
+        <p>NEP<sub>thermal</sub> = √(4k<sub>B</sub>TR·BW) / R (thermal-noise-limited only)</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
