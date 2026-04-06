@@ -351,7 +351,14 @@ export default function SimpleChart({ data, layout = {}, config = {}, title, cla
 
 // Lazy-loaded Plotly fallback for 3D/special charts
 import dynamic from "next/dynamic";
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+const Plot = dynamic(() => import("react-plotly.js"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[400px] flex items-center justify-center bg-gray-900 border border-gray-800 rounded-lg">
+      <span className="text-gray-500 text-sm animate-pulse">Loading visualizer…</span>
+    </div>
+  ),
+});
 
 function PlotlyFallback({ data, layout, config, title, className }: SimpleChartProps) {
   return (
