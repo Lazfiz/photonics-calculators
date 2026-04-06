@@ -30,6 +30,21 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="bg-gray-950 text-gray-100 antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "Photonics Calculators",
+              description: "541 interactive calculators and simulators for optics, photonics, laser safety, fiber optics, thin films, imaging, and spectroscopy.",
+              applicationCategory: "UtilitiesApplication",
+              operatingSystem: "Any",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+              url: process.env.NEXT_PUBLIC_SITE_URL || "https://photonics-calculators.vercel.app",
+            }),
+          }}
+        />
         {children}
       </body>
     </html>
