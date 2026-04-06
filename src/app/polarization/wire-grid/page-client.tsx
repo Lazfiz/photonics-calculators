@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function WireGridPage() {
   const [wavelength, setWavelength] = useState(1.55);
@@ -130,31 +131,11 @@ export default function WireGridPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (μm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="0.05" min="0.3" max="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wire Spacing (μm)</span>
-          <input type="number" value={wireSpacing} onChange={e => setWireSpacing(+e.target.value)} step="0.1" min="0.1" max="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wire Diameter (μm)</span>
-          <input type="number" value={wireDiameter} onChange={e => setWireDiameter(+e.target.value)} step="0.05" min="0.01" max="5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Conductivity (S/m)</span>
-          <input type="number" value={wireConductivity} onChange={e => setWireConductivity(+e.target.value)} step="1e5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Incidence Angle (°)</span>
-          <input type="number" value={incidenceDeg} onChange={e => setIncidenceDeg(+e.target.value)} min="0" max="80" step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (μm)" value={wavelength} onChange={setWavelength} min={0.3} max={10} step="0.05" />
+        <ValidatedNumberInput label="Wire Spacing (μm)" value={wireSpacing} onChange={setWireSpacing} min={0.1} max={10} step="0.1" />
+        <ValidatedNumberInput label="Wire Diameter (μm)" value={wireDiameter} onChange={setWireDiameter} min={0.01} max={5} step="0.05" />
+        <ValidatedNumberInput label="Conductivity (S/m)" value={wireConductivity} onChange={setWireConductivity} step="1e5" />
+        <ValidatedNumberInput label="Incidence Angle (°)" value={incidenceDeg} onChange={setIncidenceDeg} min={0} max={80} step="1" />
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">

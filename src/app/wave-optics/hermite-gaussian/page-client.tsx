@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 function hermite(n: number, x: number): number {
   if (n === 0) return 1;
@@ -90,16 +91,12 @@ export default function HermiteGaussianPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Hermite-Gaussian Modes (TEMmn)" description="Rectangular higher-order Gaussian beam modes.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Beam Waist w₀ (µm)</span>
-          <input type="number" value={waist} onChange={e => setWaist(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Beam Waist w₀ (µm)" value={waist} onChange={setWaist} step="any" />
       </div>
       <div className="grid gap-4 sm:grid-cols-3 mb-4">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Mode index m (0–5)</span>
-          <input type="number" value={m} onChange={e => setM(Math.min(5, Math.max(0, +e.target.value)))} min={0} max={5} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Mode index n (0–5)</span>
-          <input type="number" value={n} onChange={e => setN(Math.min(5, Math.max(0, +e.target.value)))} min={0} max={5} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Mode index m (0–5)" value={m} onChange={setM} min={0} max={5} />
+        <ValidatedNumberInput label="Mode index n (0–5)" value={n} onChange={setN} min={0} max={5} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Plot</span>
           <select value={plotAxis} onChange={e => setPlotAxis(e.target.value as any)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="both">2D Intensity</option>

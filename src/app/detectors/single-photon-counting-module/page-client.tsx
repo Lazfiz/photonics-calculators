@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SPCMPage() {
   const [deadTime, setDeadTime] = useState(50); // ns
@@ -46,16 +47,11 @@ export default function SPCMPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Dead Time (ns)</span>
-          <input type="number" value={deadTime} onChange={e => setDeadTime(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Dark Count Rate (counts/s)</span>
-          <input type="number" value={darkCountRate} onChange={e => setDarkCountRate(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Quantum Efficiency</span>
-          <input type="number" value={quantumEff} onChange={e => setQuantumEff(+e.target.value)} step="0.01" min="0" max="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Incident Power (W)</span>
-          <input type="number" value={incidentPower} onChange={e => setIncidentPower(+e.target.value)} step="1e-15" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Dead Time (ns)" value={deadTime} onChange={setDeadTime} />
+        <ValidatedNumberInput label="Dark Count Rate (counts/s)" value={darkCountRate} onChange={setDarkCountRate} />
+        <ValidatedNumberInput label="Quantum Efficiency" value={quantumEff} onChange={setQuantumEff} min={0} max={1} step="0.01" />
+        <ValidatedNumberInput label="Incident Power (W)" value={incidentPower} onChange={setIncidentPower} step="1e-15" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">

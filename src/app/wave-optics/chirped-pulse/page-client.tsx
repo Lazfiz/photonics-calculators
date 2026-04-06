@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ChirpedPulsePage() {
   const [pulseEnergy, setPulseEnergy] = useState(1); // mJ
@@ -38,14 +39,10 @@ export default function ChirpedPulsePage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Chirped Pulse Amplification (CPA)" description="Stretch, amplify, compress — bypassing damage thresholds.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse Energy (mJ)</span>
-          <input type="number" value={pulseEnergy} onChange={e => setPulseEnergy(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Input Pulse Duration (fs)</span>
-          <input type="number" value={inputDuration} onChange={e => setInputDuration(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Stretch Ratio</span>
-          <input type="number" value={stretchRatio} onChange={e => setStretchRatio(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Grating Lines (lines/mm)</span>
-          <input type="number" value={gratingLines} onChange={e => setGratingLines(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Pulse Energy (mJ)" value={pulseEnergy} onChange={setPulseEnergy} step="any" />
+        <ValidatedNumberInput label="Input Pulse Duration (fs)" value={inputDuration} onChange={setInputDuration} />
+        <ValidatedNumberInput label="Stretch Ratio" value={stretchRatio} onChange={setStretchRatio} />
+        <ValidatedNumberInput label="Grating Lines (lines/mm)" value={gratingLines} onChange={setGratingLines} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

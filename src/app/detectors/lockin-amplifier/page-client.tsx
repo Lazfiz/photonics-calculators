@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 // Lock-in amplifier: V_out = V_signal * cos(Δφ) * (2/π) for square-wave demod
 // ENBW = 1/(4*RC) for 1st-order RC output filter
@@ -54,36 +55,12 @@ export default function LockinAmplifierPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Signal Frequency (Hz)</span>
-          <input type="number" value={signalFreq} onChange={e => setSignalFreq(+e.target.value)} min="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Reference Frequency (Hz)</span>
-          <input type="number" value={refFreq} onChange={e => setRefFreq(+e.target.value)} min="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Phase Shift (°)</span>
-          <input type="number" value={phaseShift} onChange={e => setPhaseShift(+e.target.value)} min="-180" max="180"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Signal Amplitude (μV)</span>
-          <input type="number" value={signalAmp} onChange={e => setSignalAmp(+e.target.value)} min="0.001" step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Input Noise Density (nV/√Hz)</span>
-          <input type="number" value={noiseDensity} onChange={e => setNoiseDensity(+e.target.value)} min="0.1" step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Time Constant (s)</span>
-          <input type="number" value={timeConstant} onChange={e => setTimeConstant(+e.target.value)} min="0.001" step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Signal Frequency (Hz)" value={signalFreq} onChange={setSignalFreq} min={1} />
+        <ValidatedNumberInput label="Reference Frequency (Hz)" value={refFreq} onChange={setRefFreq} min={1} />
+        <ValidatedNumberInput label="Phase Shift (°)" value={phaseShift} onChange={setPhaseShift} min={-180} max={180} />
+        <ValidatedNumberInput label="Signal Amplitude (μV)" value={signalAmp} onChange={setSignalAmp} min={0.001} step="0.1" />
+        <ValidatedNumberInput label="Input Noise Density (nV/√Hz)" value={noiseDensity} onChange={setNoiseDensity} min={0.1} step="1" />
+        <ValidatedNumberInput label="Time Constant (s)" value={timeConstant} onChange={setTimeConstant} min={0.001} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

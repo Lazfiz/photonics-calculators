@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SNDRPage() {
   const [signalPower, setSignalPower] = useState(1); // W (normalized)
@@ -39,14 +40,10 @@ export default function SNDRPage() {
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="SNDR Calculator" description="Signal-to-Noise-and-Distortion Ratio. SNDR = Psignal/(Pnoise + Pdistortion).">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Signal Power (W)</span>
-          <input type="number" value={signalPower} onChange={e => setSignalPower(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Noise Power (W)</span>
-          <input type="number" value={noisePower} onChange={e => setNoisePower(+e.target.value)} step="0.001" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Distortion Power (W)</span>
-          <input type="number" value={distortionPower} onChange={e => setDistortionPower(+e.target.value)} step="0.0001" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">ADC Bits</span>
-          <input type="number" value={bits} onChange={e => setBits(+e.target.value)} min={1} max={24} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Signal Power (W)" value={signalPower} onChange={setSignalPower} step="0.01" />
+        <ValidatedNumberInput label="Noise Power (W)" value={noisePower} onChange={setNoisePower} step="0.001" />
+        <ValidatedNumberInput label="Distortion Power (W)" value={distortionPower} onChange={setDistortionPower} step="0.0001" />
+        <ValidatedNumberInput label="ADC Bits" value={bits} onChange={setBits} min={1} max={24} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function RegistrationPage() {
   const [transformation, setTransformation] = useState<"rigid" | "affine" | "elastic">("affine");
@@ -130,36 +131,12 @@ export default function RegistrationPage() {
             <option value="elastic">Elastic (B-spline)</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Rotation (°)</span>
-          <input type="number" value={rotationDeg} onChange={e => setRotationDeg(+e.target.value)} min={-180} max={180} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Translation X (px)</span>
-          <input type="number" value={translationX} onChange={e => setTranslationX(+e.target.value)} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Translation Y (px)</span>
-          <input type="number" value={translationY} onChange={e => setTranslationY(+e.target.value)} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Scale Factor</span>
-          <input type="number" value={scaleFactor} onChange={e => setScaleFactor(+e.target.value)} min={0.9} max={1.1} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Shear (°)</span>
-          <input type="number" value={shearDeg} onChange={e => setShearDeg(+e.target.value)} min={-10} max={10} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Noise Level (%)</span>
-          <input type="number" value={noiseLevel} onChange={e => setNoiseLevel(+e.target.value)} min={0} max={30}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Rotation (°)" value={rotationDeg} onChange={setRotationDeg} min={-180} max={180} step="0.5" />
+        <ValidatedNumberInput label="Translation X (px)" value={translationX} onChange={setTranslationX} step="0.5" />
+        <ValidatedNumberInput label="Translation Y (px)" value={translationY} onChange={setTranslationY} step="0.5" />
+        <ValidatedNumberInput label="Scale Factor" value={scaleFactor} onChange={setScaleFactor} min={0.9} max={1.1} step="0.01" />
+        <ValidatedNumberInput label="Shear (°)" value={shearDeg} onChange={setShearDeg} min={-10} max={10} step="0.5" />
+        <ValidatedNumberInput label="Noise Level (%)" value={noiseLevel} onChange={setNoiseLevel} min={0} max={30} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Interpolation</span>
           <select value={interpolation} onChange={e => setInterpolation(e.target.value as any)}
@@ -169,11 +146,7 @@ export default function RegistrationPage() {
             <option value="spline">B-spline</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Control Points</span>
-          <input type="number" value={numControlPoints} onChange={e => setNumControlPoints(+e.target.value)} min={10} max={1000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Control Points" value={numControlPoints} onChange={setNumControlPoints} min={10} max={1000} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">

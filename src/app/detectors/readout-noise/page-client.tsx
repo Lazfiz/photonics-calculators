@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ReadoutNoisePage() {
   const [readNoise, setReadNoise] = useState(10); // e- rms
@@ -31,10 +32,8 @@ export default function ReadoutNoisePage() {
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read noise σ<sub>read</sub> (e⁻ rms)</span>
           <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Dark current (e⁻/s/pixel)</span>
-          <input type="number" value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Exposure time (s)</span>
-          <input type="number" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} step="0.001" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Dark current (e⁻/s/pixel)" value={darkCurrent} onChange={setDarkCurrent} step="0.01" />
+        <ValidatedNumberInput label="Exposure time (s)" value={exposureTime} onChange={setExposureTime} step="0.001" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

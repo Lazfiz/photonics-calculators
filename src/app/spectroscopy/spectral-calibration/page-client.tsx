@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SpectralCalibrationPage() {
   const [pixelCount, setPixelCount] = useState(2048);
@@ -63,18 +64,14 @@ export default function SpectralCalibrationPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Calibration" description="Wavelength calibration using known emission lines and linear/polynomial fitting.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pixel Count</span>
-          <input type="number" value={pixelCount} onChange={e => setPixelCount(Math.max(64, +e.target.value))} min={64} step={256} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Center λ (nm)</span>
-          <input type="number" value={centerWl} onChange={e => setCenterWl(+e.target.value)} min={100} step={50} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Spectral Width (nm)</span>
-          <input type="number" value={spectralWidth} onChange={e => setSpectralWidth(Math.max(1, +e.target.value))} min={1} step={50} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Pixel Count" value={pixelCount} onChange={setPixelCount} min={64} />
+        <ValidatedNumberInput label="Center λ (nm)" value={centerWl} onChange={setCenterWl} min={100} />
+        <ValidatedNumberInput label="Spectral Width (nm)" value={spectralWidth} onChange={setSpectralWidth} min={1} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Line Wavelengths (nm, comma)</span>
           <input type="text" value={lineWls} onChange={e => setLineWls(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Line Names (comma)</span>
           <input type="text" value={lineNames} onChange={e => setLineNames(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pixel Noise (nm)</span>
-          <input type="number" value={pixelNoise} onChange={e => setPixelNoise(Math.max(0, +e.target.value))} min={0} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Pixel Noise (nm)" value={pixelNoise} onChange={setPixelNoise} min={0} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SidePolishedPage() {
   const [remainingClad, setRemainingClad] = useState(2); // μm from core
@@ -66,26 +67,10 @@ export default function SidePolishedPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Side-Polished Fiber" description="Evanescent field interaction, phase matching, and spectral response of side-polished fiber devices.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Remaining Cladding (μm)</span>
-          <input type="number" value={remainingClad} onChange={e => setRemainingClad(+e.target.value)} min={0} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Polish Length (mm)</span>
-          <input type="number" value={polishLength} onChange={e => setPolishLength(+e.target.value)} min={0.1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Overlay Index</span>
-          <input type="number" value={n_overlay} onChange={e => setN_overlay(+e.target.value)} min={1} step="0.0001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={400}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Remaining Cladding (μm)" value={remainingClad} onChange={setRemainingClad} min={0} step="0.1" />
+        <ValidatedNumberInput label="Polish Length (mm)" value={polishLength} onChange={setPolishLength} min={0.1} step="any" />
+        <ValidatedNumberInput label="Overlay Index" value={n_overlay} onChange={setN_overlay} min={1} step="0.0001" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function EtalonFSRPage() {
   const [n, setN] = useState(1.0); // refractive index of gap
@@ -37,14 +38,10 @@ export default function EtalonFSRPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Etalon Free Spectral Range" description="Fabry-Pérot etalon: FSR = λ²/(2nd cos θ). Transmission follows the Airy function.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (gap index)</span>
-          <input type="number" value={n} onChange={e => setN(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Gap d (μm)</span>
-          <input type="number" value={d} onChange={e => setD(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">θ (degrees)</span>
-          <input type="number" value={theta} onChange={e => setTheta(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Mirror R</span>
-          <input type="number" value={R} onChange={e => setR(+e.target.value)} step="0.01" min={0} max={0.999} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="n (gap index)" value={n} onChange={setN} step="0.01" />
+        <ValidatedNumberInput label="Gap d (μm)" value={d} onChange={setD} step="0.1" />
+        <ValidatedNumberInput label="θ (degrees)" value={theta} onChange={setTheta} />
+        <ValidatedNumberInput label="Mirror R" value={R} onChange={setR} min={0} max={0.999} step="0.01" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

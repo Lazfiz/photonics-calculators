@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FOVCalculatorPage() {
   const [sensorW, setSensorW] = useState(13.336);
@@ -29,26 +30,10 @@ export default function FOVCalculatorPage() {
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Field of View Calculator" description="Calculate sample FOV from sensor dimensions and system magnification.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Sensor Width (mm)</span>
-          <input type="number" value={sensorW} onChange={e => setSensorW(+e.target.value)} min={1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Sensor Height (mm)</span>
-          <input type="number" value={sensorH} onChange={e => setSensorH(+e.target.value)} min={1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Magnification (×)</span>
-          <input type="number" value={mag} onChange={e => setMag(+e.target.value)} min={0.5} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pixel Size (µm)</span>
-          <input type="number" value={pixelSize} onChange={e => setPixelSize(+e.target.value)} min={0.5} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Sensor Width (mm)" value={sensorW} onChange={setSensorW} min={1} step="any" />
+        <ValidatedNumberInput label="Sensor Height (mm)" value={sensorH} onChange={setSensorH} min={1} step="any" />
+        <ValidatedNumberInput label="Magnification (×)" value={mag} onChange={setMag} min={0.5} step="any" />
+        <ValidatedNumberInput label="Pixel Size (µm)" value={pixelSize} onChange={setPixelSize} min={0.5} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

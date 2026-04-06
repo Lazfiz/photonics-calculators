@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ThreePhotonMicroscopyPage() {
   const [wavelength, setWavelength] = useState(1300);
@@ -63,49 +64,17 @@ export default function ThreePhotonMicroscopyPage() {
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Three-Photon Microscopy Calculator" description="Calculate resolution, excitation volume, and depth penetration for three-photon excitation microscopy at 1300+ nm.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Excitation λ (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={1000} max={1800}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">NA</span>
-          <input type="number" value={na} onChange={e => setNa(+e.target.value)} min={0.1} max={1.7} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pulse Width (fs)</span>
-          <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} min={10} max={500}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Avg Power (mW)</span>
-          <input type="number" value={avgPower} onChange={e => setAvgPower(+e.target.value)} min={1} max={500}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Excitation λ (nm)" value={wavelength} onChange={setWavelength} min={1000} max={1800} />
+        <ValidatedNumberInput label="NA" value={na} onChange={setNa} min={0.1} max={1.7} step="0.01" />
+        <ValidatedNumberInput label="Pulse Width (fs)" value={pulseWidth} onChange={setPulseWidth} min={10} max={500} />
+        <ValidatedNumberInput label="Avg Power (mW)" value={avgPower} onChange={setAvgPower} min={1} max={500} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Rep. Rate (MHz)</span>
-          <input type="number" value={repRate} onChange={e => setRepRate(+e.target.value)} min={0.01} max={250} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Refractive Index</span>
-          <input type="number" value={refractiveIndex} onChange={e => setRefractiveIndex(+e.target.value)} min={1.0} max={1.8} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Scattering Coeff (cm⁻¹)</span>
-          <input type="number" value={scatteringCoeff} onChange={e => setScatteringCoeff(+e.target.value)} min={10} max={500}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Depth (µm)</span>
-          <input type="number" value={depth} onChange={e => setDepth(+e.target.value)} min={0} max={3000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Rep. Rate (MHz)" value={repRate} onChange={setRepRate} min={0.01} max={250} step="0.01" />
+        <ValidatedNumberInput label="Refractive Index" value={refractiveIndex} onChange={setRefractiveIndex} min={1.0} max={1.8} step="0.01" />
+        <ValidatedNumberInput label="Scattering Coeff (cm⁻¹)" value={scatteringCoeff} onChange={setScatteringCoeff} min={10} max={500} />
+        <ValidatedNumberInput label="Depth (µm)" value={depth} onChange={setDepth} min={0} max={3000} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

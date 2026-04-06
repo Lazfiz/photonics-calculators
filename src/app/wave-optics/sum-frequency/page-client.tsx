@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SumFrequencyPage() {
   const [lambda1, setLambda1] = useState(1064); // nm
@@ -80,18 +81,13 @@ export default function SumFrequencyPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">λ₁ (nm)</span>
-          <input type="number" value={lambda1} onChange={e => setLambda1(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">λ₂ (nm)</span>
-          <input type="number" value={lambda2} onChange={e => setLambda2(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="λ₁ (nm)" value={lambda1} onChange={setLambda1} />
+        <ValidatedNumberInput label="λ₂ (nm)" value={lambda2} onChange={setLambda2} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">d<sub>eff</sub> (pm/V)</span>
           <input type="number" value={deff} onChange={e => setDeff(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Crystal Length (mm)</span>
-          <input type="number" value={crystalLength} onChange={e => setCrystalLength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">P₁ (mW)</span>
-          <input type="number" value={power1} onChange={e => setPower1(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">P₂ (mW)</span>
-          <input type="number" value={power2} onChange={e => setPower2(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} />
+        <ValidatedNumberInput label="P₁ (mW)" value={power1} onChange={setPower1} />
+        <ValidatedNumberInput label="P₂ (mW)" value={power2} onChange={setPower2} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

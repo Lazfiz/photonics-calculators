@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ResetNoisePage() {
   const [capacitance, setCapacitance] = useState(10e-15); // F (10 fF)
@@ -30,10 +31,8 @@ export default function ResetNoisePage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Capacitance (F)</span>
-          <input type="number" value={capacitance} onChange={e => setCapacitance(+e.target.value)} step="1e-15" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Temperature (K)</span>
-          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Capacitance (F)" value={capacitance} onChange={setCapacitance} step="1e-15" />
+        <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} step="1" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

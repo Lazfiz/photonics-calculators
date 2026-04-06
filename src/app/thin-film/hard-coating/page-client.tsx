@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function HardCoatingPage() {
   const [nCoat, setNCoat] = useState(2.1);
@@ -70,12 +71,9 @@ export default function HardCoatingPage() {
           <input type="number" value={nCoat} onChange={e => setNCoat(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
           <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Thickness (nm)</span>
-          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Hardness (HK₀.₀₁)</span>
-          <input type="number" value={hardness} onChange={e => setHardness(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Stress (GPa, negative=tension)</span>
-          <input type="number" value={stressGPa} onChange={e => setStressGPa(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Thickness (nm)" value={thickness} onChange={setThickness} />
+        <ValidatedNumberInput label="Hardness (HK₀.₀₁)" value={hardness} onChange={setHardness} />
+        <ValidatedNumberInput label="Stress (GPa, negative=tension)" value={stressGPa} onChange={setStressGPa} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

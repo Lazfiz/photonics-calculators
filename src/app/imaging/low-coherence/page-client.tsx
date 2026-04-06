@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function LowCoherencePage() {
   const [wavelengthNm, setWavelengthNm] = useState(1300);
@@ -78,46 +79,14 @@ export default function LowCoherencePage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Center Wavelength (nm)</span>
-          <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={600} max={1600} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Bandwidth (nm)</span>
-          <input type="number" value={bandwidthNm} onChange={e => setBandwidthNm(+e.target.value)} min={5} max={300} step="5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Refractive Index</span>
-          <input type="number" value={refractiveIndex} onChange={e => setRefractiveIndex(+e.target.value)} min={1} max={1.8} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Scan Range (mm)</span>
-          <input type="number" value={scanRangeMm} onChange={e => setScanRangeMm(+e.target.value)} min={0.1} max={10} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Mirror Speed (mm/s)</span>
-          <input type="number" value={mirrorSpeedMmPerS} onChange={e => setMirrorSpeedMmPerS(+e.target.value)} min={1} max={200} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">A-scans per B-scan</span>
-          <input type="number" value={numAScans} onChange={e => setNumAScans(+e.target.value)} min={50} max={2000} step="50"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Reference Reflectivity</span>
-          <input type="number" value={referenceReflectivity} onChange={e => setReferenceReflectivity(+e.target.value)} min={0.1} max={1} step="0.05"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Sample Reflectivity</span>
-          <input type="number" value={sampleReflectivity} onChange={e => setSampleReflectivity(+e.target.value)} min={0.0001} max={0.1} step="0.001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Center Wavelength (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={600} max={1600} step="10" />
+        <ValidatedNumberInput label="Bandwidth (nm)" value={bandwidthNm} onChange={setBandwidthNm} min={5} max={300} step="5" />
+        <ValidatedNumberInput label="Refractive Index" value={refractiveIndex} onChange={setRefractiveIndex} min={1} max={1.8} step="0.01" />
+        <ValidatedNumberInput label="Scan Range (mm)" value={scanRangeMm} onChange={setScanRangeMm} min={0.1} max={10} step="0.1" />
+        <ValidatedNumberInput label="Mirror Speed (mm/s)" value={mirrorSpeedMmPerS} onChange={setMirrorSpeedMmPerS} min={1} max={200} step="1" />
+        <ValidatedNumberInput label="A-scans per B-scan" value={numAScans} onChange={setNumAScans} min={50} max={2000} step="50" />
+        <ValidatedNumberInput label="Reference Reflectivity" value={referenceReflectivity} onChange={setReferenceReflectivity} min={0.1} max={1} step="0.05" />
+        <ValidatedNumberInput label="Sample Reflectivity" value={sampleReflectivity} onChange={setSampleReflectivity} min={0.0001} max={0.1} step="0.001" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">

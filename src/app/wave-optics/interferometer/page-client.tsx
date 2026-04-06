@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function InterferometerPage() {
   const [armDiff, setArmDiff] = useState(10); // µm path difference
@@ -53,21 +54,9 @@ export default function InterferometerPage() {
             <option value="mz">Mach-Zehnder</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={100}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Path Difference ΔL (µm)</span>
-          <input type="number" value={armDiff} onChange={e => setArmDiff(+e.target.value)} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Mirror Reflectivity R</span>
-          <input type="number" value={reflectivity} onChange={e => setReflectivity(+e.target.value)} min={0} max={1} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} />
+        <ValidatedNumberInput label="Path Difference ΔL (µm)" value={armDiff} onChange={setArmDiff} step="any" />
+        <ValidatedNumberInput label="Mirror Reflectivity R" value={reflectivity} onChange={setReflectivity} min={0} max={1} step="0.01" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

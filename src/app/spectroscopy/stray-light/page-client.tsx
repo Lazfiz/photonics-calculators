@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function StrayLightPage() {
   const [gratingLines, setGratingLines] = useState(600);
@@ -54,26 +55,10 @@ export default function StrayLightPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Stray Light Rejection" description="Ghost order analysis and stray light estimation for grating-based spectrometers.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Grating (lines/mm)</span>
-          <input type="number" value={gratingLines} onChange={e => setGratingLines(+e.target.value)} min={50} max={3600}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Working Order</span>
-          <input type="number" value={order} onChange={e => setOrder(+e.target.value)} min={1} max={5}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Central λ (nm)</span>
-          <input type="number" value={centralWavelength} onChange={e => setCentralWavelength(+e.target.value)} min={100} max={2000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Scatter Fraction</span>
-          <input type="number" value={scatterFraction} onChange={e => setScatterFraction(+e.target.value)} min={1e-6} max={0.1} step={0.0001}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Grating (lines/mm)" value={gratingLines} onChange={setGratingLines} min={50} max={3600} />
+        <ValidatedNumberInput label="Working Order" value={order} onChange={setOrder} min={1} max={5} />
+        <ValidatedNumberInput label="Central λ (nm)" value={centralWavelength} onChange={setCentralWavelength} min={100} max={2000} />
+        <ValidatedNumberInput label="Scatter Fraction" value={scatterFraction} onChange={setScatterFraction} min={1e-6} max={0.1} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function AntibloomingPage() {
   const [wellCapacity, setWellCapacity] = useState(50000);
@@ -33,10 +34,10 @@ export default function AntibloomingPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Anti-Blooming Design" description="Anti-blooming shunts excess charge to drain when well exceeds threshold. Trade-off: charge dump efficiency vs full well capacity and linearity.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Full well capacity (e⁻)</span><input type="number" value={wellCapacity} onChange={e => setWellCapacity(+e.target.value)} step="1000" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">AB threshold (fraction)</span><input type="number" value={abThreshold} onChange={e => setAbThreshold(+e.target.value)} step="0.05" min="0" max="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Excess charge (e⁻)</span><input type="number" value={excessCharge} onChange={e => setExcessCharge(+e.target.value)} step="1000" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Dump efficiency</span><input type="number" value={chargeDumpEfficiency} onChange={e => setChargeDumpEfficiency(+e.target.value)} step="0.01" min="0" max="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Full well capacity (e⁻)" value={wellCapacity} onChange={setWellCapacity} step="1000" />
+        <ValidatedNumberInput label="AB threshold (fraction)" value={abThreshold} onChange={setAbThreshold} min={0} max={1} step="0.05" />
+        <ValidatedNumberInput label="Excess charge (e⁻)" value={excessCharge} onChange={setExcessCharge} step="1000" />
+        <ValidatedNumberInput label="Dump efficiency" value={chargeDumpEfficiency} onChange={setChargeDumpEfficiency} min={0} max={1} step="0.01" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="AB Threshold" value={`${thresholdElectrons.toFixed(0)} e⁻`} tone="blue" />

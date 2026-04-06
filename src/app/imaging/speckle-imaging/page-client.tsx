@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SpeckleImagingPage() {
   const [wavelengthNm, setWavelengthNm] = useState(532);
@@ -78,36 +79,12 @@ export default function SpeckleImagingPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={400} max={800} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Beam Diameter (mm)</span>
-          <input type="number" value={beamDiameterMm} onChange={e => setBeamDiameterMm(+e.target.value)} min={0.5} max={50} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Surface Roughness (µm)</span>
-          <input type="number" value={surfaceRoughnessUm} onChange={e => setSurfaceRoughnessUm(+e.target.value)} min={0.01} max={10} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Propagation Distance (mm)</span>
-          <input type="number" value={propagationDistMm} onChange={e => setPropagationDistMm(+e.target.value)} min={10} max={2000} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Averages</span>
-          <input type="number" value={numAverages} onChange={e => setNumAverages(+e.target.value)} min={1} max={100} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Aperture Diameter (mm)</span>
-          <input type="number" value={apertureDiameterMm} onChange={e => setApertureDiameterMm(+e.target.value)} min={1} max={50} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={400} max={800} step="10" />
+        <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDiameterMm} onChange={setBeamDiameterMm} min={0.5} max={50} step="0.5" />
+        <ValidatedNumberInput label="Surface Roughness (µm)" value={surfaceRoughnessUm} onChange={setSurfaceRoughnessUm} min={0.01} max={10} step="0.1" />
+        <ValidatedNumberInput label="Propagation Distance (mm)" value={propagationDistMm} onChange={setPropagationDistMm} min={10} max={2000} step="10" />
+        <ValidatedNumberInput label="Number of Averages" value={numAverages} onChange={setNumAverages} min={1} max={100} step="1" />
+        <ValidatedNumberInput label="Aperture Diameter (mm)" value={apertureDiameterMm} onChange={setApertureDiameterMm} min={1} max={50} step="1" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">

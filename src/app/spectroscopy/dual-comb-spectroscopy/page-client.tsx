@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function DualCombSpectroscopyPage() {
   const [repRate1, setRepRate1] = useState(100); // MHz
@@ -56,36 +57,12 @@ export default function DualCombSpectroscopyPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Dual-Comb Spectroscopy Calculator" description="Model dual-comb spectroscopy parameters: resolution, bandwidth, update rate, and multi-heterodyne RF spectrum.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Comb 1 Rep Rate (MHz)</span>
-          <input type="number" value={repRate1} onChange={e => setRepRate1(+e.target.value)} min="10" step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Comb 2 Rep Rate (MHz)</span>
-          <input type="number" value={repRate2} onChange={e => setRepRate2(+e.target.value)} min="10" step="0.0001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Center Wavelength (nm)</span>
-          <input type="number" value={centerWavelength} onChange={e => setCenterWavelength(+e.target.value)} min="400"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Comb Modes</span>
-          <input type="number" value={numModes} onChange={e => setNumModes(+e.target.value)} min="1000" step="10000"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">f_CEO Comb 1 (MHz)</span>
-          <input type="number" value={ceoFreq1} onChange={e => setCeoFreq1(+e.target.value)} min="0" step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">f_CEO Comb 2 (MHz)</span>
-          <input type="number" value={ceoFreq2} onChange={e => setCeoFreq2(+e.target.value)} min="0" step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Comb 1 Rep Rate (MHz)" value={repRate1} onChange={setRepRate1} min={10} step="0.1" />
+        <ValidatedNumberInput label="Comb 2 Rep Rate (MHz)" value={repRate2} onChange={setRepRate2} min={10} step="0.0001" />
+        <ValidatedNumberInput label="Center Wavelength (nm)" value={centerWavelength} onChange={setCenterWavelength} min={400} />
+        <ValidatedNumberInput label="Number of Comb Modes" value={numModes} onChange={setNumModes} min={1000} step="10000" />
+        <ValidatedNumberInput label="f_CEO Comb 1 (MHz)" value={ceoFreq1} onChange={setCeoFreq1} min={0} step="0.1" />
+        <ValidatedNumberInput label="f_CEO Comb 2 (MHz)" value={ceoFreq2} onChange={setCeoFreq2} min={0} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

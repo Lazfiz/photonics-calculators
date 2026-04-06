@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 const materialParams: Record<string, { k: number; n: number; label: string }> = {
   Si: { k: 0.02, n: 3.5, label: "Silicon" },
@@ -59,9 +60,9 @@ export default function AvalancheGainPage() {
         ))}
       </div>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Breakdown Voltage (V)</span><input type="number" value={breakdownVoltage} onChange={e => setBreakdownVoltage(+e.target.value)} min="10" step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bias Voltage (V)</span><input type="number" value={biasVoltage} onChange={e => setBiasVoltage(+e.target.value)} min="1" step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Ionization Ratio k</span><input type="number" value={ionizationRatio} onChange={e => setIonizationRatio(+e.target.value)} min="0.001" max="1" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Breakdown Voltage (V)" value={breakdownVoltage} onChange={setBreakdownVoltage} min={10} step="1" />
+        <ValidatedNumberInput label="Bias Voltage (V)" value={biasVoltage} onChange={setBiasVoltage} min={1} step="1" />
+        <ValidatedNumberInput label="Ionization Ratio k" value={ionizationRatio} onChange={setIonizationRatio} min={0.001} max={1} step="0.01" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="V/V_br" value={voltageRatio.toFixed(4)} tone="blue" />

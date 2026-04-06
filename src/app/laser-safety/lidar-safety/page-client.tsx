@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function LidarSafetyPage() {
   const [pulseEnergy, setPulseEnergy] = useState(10); // µJ
@@ -79,20 +80,13 @@ export default function LidarSafetyPage() {
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse Energy (µJ)</span>
-          <input type="number" value={pulseEnergy} onChange={e => setPulseEnergy(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Rep Rate (kHz)</span>
-          <input type="number" value={repRate} onChange={e => setRepRate(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse Width (ns)</span>
-          <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Beam Diameter (mm)</span>
-          <input type="number" value={beamDia} onChange={e => setBeamDia(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Divergence (mrad)</span>
-          <input type="number" value={divergence} onChange={e => setDivergence(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Scan Range (m)</span>
-          <input type="number" value={scanRange} onChange={e => setScanRange(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Pulse Energy (µJ)" value={pulseEnergy} onChange={setPulseEnergy} />
+        <ValidatedNumberInput label="Rep Rate (kHz)" value={repRate} onChange={setRepRate} />
+        <ValidatedNumberInput label="Pulse Width (ns)" value={pulseWidth} onChange={setPulseWidth} step="0.1" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDia} onChange={setBeamDia} />
+        <ValidatedNumberInput label="Divergence (mrad)" value={divergence} onChange={setDivergence} step="0.1" />
+        <ValidatedNumberInput label="Scan Range (m)" value={scanRange} onChange={setScanRange} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

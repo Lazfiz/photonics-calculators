@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function GouyPhasePage() {
   const [wavelength, setWavelength] = useState(1064); // nm
@@ -41,21 +42,9 @@ export default function GouyPhasePage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Gouy Phase Shift" description="Gouy phase ψ(z) = arctan(z/zᵣ) accumulated by Gaussian beam. Total π phase shift through focus.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Waist Radius w₀ (mm)</span>
-          <input type="number" value={w0} onChange={e => setW0(+e.target.value)} min={0.001} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Distance from Waist z (mm)</span>
-          <input type="number" value={z} onChange={e => setZ(+e.target.value)} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={1} />
+        <ValidatedNumberInput label="Waist Radius w₀ (mm)" value={w0} onChange={setW0} min={0.001} step="any" />
+        <ValidatedNumberInput label="Distance from Waist z (mm)" value={z} onChange={setZ} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

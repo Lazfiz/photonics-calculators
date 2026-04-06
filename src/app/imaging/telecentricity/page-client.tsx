@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function TelecentricityPage() {
   const [magnification, setMagnification] = useState(0.5);
@@ -38,16 +39,11 @@ export default function TelecentricityPage() {
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Telecentric Lens Design" description="Telecentric lenses maintain constant magnification regardless of object distance. Chief rays are parallel to optical axis.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Magnification</span>
-          <input type="number" value={magnification} onChange={e => setMagnification(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Focal Length (mm)</span>
-          <input type="number" value={focalLength} onChange={e => setFocalLength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Object Distance (mm)</span>
-          <input type="number" value={objectDistance} onChange={e => setObjectDistance(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Entrance Pupil (mm)</span>
-          <input type="number" value={pupilDiameter} onChange={e => setPupilDiameter(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Max Field Angle (°)</span>
-          <input type="number" value={maxFieldAngle} onChange={e => setMaxFieldAngle(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Magnification" value={magnification} onChange={setMagnification} step="0.1" />
+        <ValidatedNumberInput label="Focal Length (mm)" value={focalLength} onChange={setFocalLength} />
+        <ValidatedNumberInput label="Object Distance (mm)" value={objectDistance} onChange={setObjectDistance} />
+        <ValidatedNumberInput label="Entrance Pupil (mm)" value={pupilDiameter} onChange={setPupilDiameter} />
+        <ValidatedNumberInput label="Max Field Angle (°)" value={maxFieldAngle} onChange={setMaxFieldAngle} />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

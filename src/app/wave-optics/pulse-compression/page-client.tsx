@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PulseCompressionPage() {
   const [inputDuration, setInputDuration] = useState(100); // fs
@@ -32,14 +33,10 @@ export default function PulseCompressionPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Pulse Compression" description="Transform-limited pulse compression via chirp compensation.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Input Pulse Duration (fs FWHM)</span>
-          <input type="number" value={inputDuration} onChange={e => setInputDuration(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Compression Ratio</span>
-          <input type="number" value={compressionRatio} onChange={e => setCompressionRatio(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Spectral Bandwidth (nm)</span>
-          <input type="number" value={inputBandwidth} onChange={e => setInputBandwidth(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Center Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Input Pulse Duration (fs FWHM)" value={inputDuration} onChange={setInputDuration} />
+        <ValidatedNumberInput label="Compression Ratio" value={compressionRatio} onChange={setCompressionRatio} step="any" />
+        <ValidatedNumberInput label="Spectral Bandwidth (nm)" value={inputBandwidth} onChange={setInputBandwidth} step="any" />
+        <ValidatedNumberInput label="Center Wavelength (nm)" value={wavelength} onChange={setWavelength} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

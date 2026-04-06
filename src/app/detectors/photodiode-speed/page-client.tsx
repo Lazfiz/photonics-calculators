@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 // Photodiode: bandwidth ∝ 1/√(area) due to junction capacitance
 // C_j ∝ A, BW ≈ 1/(2π·R·C_j), responsivity R = η·q·λ/(hc)
@@ -53,36 +54,12 @@ export default function PhotodiodeSpeedPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Quantum Efficiency</span>
-          <input type="number" value={qe} onChange={e => setQe(+e.target.value)} min="0.01" max="1" step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Capacitance Density (fF/mm²)</span>
-          <input type="number" value={capacitanceDensity} onChange={e => setCapacitanceDensity(+e.target.value)} min="1" step="5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Load Resistance (Ω)</span>
-          <input type="number" value={loadResistance} onChange={e => setLoadResistance(+e.target.value)} min="10" step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Area Min (mm²)</span>
-          <input type="number" value={areaMin} onChange={e => setAreaMin(+e.target.value)} min="0.0001" step="0.001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Area Max (mm²)</span>
-          <input type="number" value={areaMax} onChange={e => setAreaMax(+e.target.value)} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="10" />
+        <ValidatedNumberInput label="Quantum Efficiency" value={qe} onChange={setQe} min={0.01} max={1} step="0.01" />
+        <ValidatedNumberInput label="Capacitance Density (fF/mm²)" value={capacitanceDensity} onChange={setCapacitanceDensity} min={1} step="5" />
+        <ValidatedNumberInput label="Load Resistance (Ω)" value={loadResistance} onChange={setLoadResistance} min={10} step="10" />
+        <ValidatedNumberInput label="Area Min (mm²)" value={areaMin} onChange={setAreaMin} min={0.0001} step="0.001" />
+        <ValidatedNumberInput label="Area Max (mm²)" value={areaMax} onChange={setAreaMax} step="1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

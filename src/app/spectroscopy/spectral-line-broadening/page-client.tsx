@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SpectralLineBroadeningPage() {
   const [centerWl, setCenterWl] = useState(500); // nm
@@ -64,18 +65,12 @@ export default function SpectralLineBroadeningPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Line Broadening" description="Doppler, collisional, natural, and Voigt broadening mechanisms.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Center λ (nm)</span>
-          <input type="number" value={centerWl} onChange={e => setCenterWl(+e.target.value)} min={100} step={50} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Temperature (K)</span>
-          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} min={100} step={500} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Molecular Mass (amu)</span>
-          <input type="number" value={molecularMass} onChange={e => setMolecularMass(Math.max(1, +e.target.value))} min={1} step={1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pressure (atm)</span>
-          <input type="number" value={pressure} onChange={e => setPressure(Math.max(0, +e.target.value))} min={0} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Collisional γ (cm⁻¹)</span>
-          <input type="number" value={gammaCol} onChange={e => setGammaCol(Math.max(0, +e.target.value))} min={0} step={0.01} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Natural Width (cm⁻¹)</span>
-          <input type="number" value={naturalWidth} onChange={e => setNaturalWidth(Math.max(0, +e.target.value))} min={0} step={0.0001} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Center λ (nm)" value={centerWl} onChange={setCenterWl} min={100} />
+        <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} min={100} />
+        <ValidatedNumberInput label="Molecular Mass (amu)" value={molecularMass} onChange={setMolecularMass} min={1} />
+        <ValidatedNumberInput label="Pressure (atm)" value={pressure} onChange={setPressure} min={0} />
+        <ValidatedNumberInput label="Collisional γ (cm⁻¹)" value={gammaCol} onChange={setGammaCol} min={0} />
+        <ValidatedNumberInput label="Natural Width (cm⁻¹)" value={naturalWidth} onChange={setNaturalWidth} min={0} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

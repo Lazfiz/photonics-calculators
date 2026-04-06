@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SurfaceEnhancedRamanPage() {
   const [enhancementFactor, setEnhancementFactor] = useState(1e6);
@@ -63,26 +64,10 @@ export default function SurfaceEnhancedRamanPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Surface-Enhanced Raman Spectroscopy (SERS)" description="EM and chemical enhancement mechanisms, hotspots, and detection limit estimation.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Enhancement Factor G</span>
-          <input type="number" value={enhancementFactor} onChange={e => setEnhancementFactor(+e.target.value)} min={1} step={1e4}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Normal Raman Intensity (a.u.)</span>
-          <input type="number" value={normalIntensity} onChange={e => setNormalIntensity(+e.target.value)} min={0.01} step={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Nanoparticle Radius (nm)</span>
-          <input type="number" value={nanoparticleRadius} onChange={e => setNanoparticleRadius(+e.target.value)} min={5} max={200}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Laser Wavelength (nm)</span>
-          <input type="number" value={laserWavelength} onChange={e => setLaserWavelength(+e.target.value)} min={200} max={2000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Enhancement Factor G" value={enhancementFactor} onChange={setEnhancementFactor} min={1} />
+        <ValidatedNumberInput label="Normal Raman Intensity (a.u.)" value={normalIntensity} onChange={setNormalIntensity} min={0.01} />
+        <ValidatedNumberInput label="Nanoparticle Radius (nm)" value={nanoparticleRadius} onChange={setNanoparticleRadius} min={5} max={200} />
+        <ValidatedNumberInput label="Laser Wavelength (nm)" value={laserWavelength} onChange={setLaserWavelength} min={200} max={2000} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

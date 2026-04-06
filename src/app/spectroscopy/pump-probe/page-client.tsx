@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PumpProbePage() {
   const [pumpWavelength, setPumpWavelength] = useState(400);
@@ -48,31 +49,11 @@ export default function PumpProbePage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Pump-Probe Spectroscopy" description="Ultrafast dynamics via time-resolved differential transmission. GSB, SE, and ESA contributions.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pump Wavelength (nm)</span>
-          <input type="number" value={pumpWavelength} onChange={e => setPumpWavelength(+e.target.value)} min={200} max={2000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Probe Wavelength (nm)</span>
-          <input type="number" value={probeWavelength} onChange={e => setProbeWavelength(+e.target.value)} min={200} max={3000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Fast Lifetime τ₁ (ps)</span>
-          <input type="number" value={tau1} onChange={e => setTau1(+e.target.value)} min={0.01} max={100} step={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Slow Decay τ₂ (ps)</span>
-          <input type="number" value={tau2} onChange={e => setTau2(+e.target.value)} min={0.1} max={1000} step={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Max Delay (ps)</span>
-          <input type="number" value={tMax} onChange={e => setTMax(+e.target.value)} min={1} max={1000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} min={200} max={2000} />
+        <ValidatedNumberInput label="Probe Wavelength (nm)" value={probeWavelength} onChange={setProbeWavelength} min={200} max={3000} />
+        <ValidatedNumberInput label="Fast Lifetime τ₁ (ps)" value={tau1} onChange={setTau1} min={0.01} max={100} />
+        <ValidatedNumberInput label="Slow Decay τ₂ (ps)" value={tau2} onChange={setTau2} min={0.1} max={1000} />
+        <ValidatedNumberInput label="Max Delay (ps)" value={tMax} onChange={setTMax} min={1} max={1000} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

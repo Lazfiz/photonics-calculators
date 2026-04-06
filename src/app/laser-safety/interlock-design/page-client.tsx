@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function InterlockDesignPage() {
   const [laserPower, setLaserPower] = useState(5000); // mW
@@ -127,36 +128,12 @@ export default function InterlockDesignPage() {
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Laser Power (mW)</span>
-          <input type="number" value={laserPower} onChange={e => setLaserPower(+e.target.value)} min={0.001} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={180} max={20000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Beam Diameter (mm)</span>
-          <input type="number" value={beamDiam} onChange={e => setBeamDiam(+e.target.value)} min={0.1} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Shutter Response (ms)</span>
-          <input type="number" value={shutterTime} onChange={e => setShutterTime(+e.target.value)} min={0.1} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Human Reaction Time (ms)</span>
-          <input type="number" value={humanResponse} onChange={e => setHumanResponse(+e.target.value)} min={50}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Access Distance (cm)</span>
-          <input type="number" value={accessDistance} onChange={e => setAccessDistance(+e.target.value)} min={10}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Laser Power (mW)" value={laserPower} onChange={setLaserPower} min={0.001} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={20000} />
+        <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDiam} onChange={setBeamDiam} min={0.1} step="0.1" />
+        <ValidatedNumberInput label="Shutter Response (ms)" value={shutterTime} onChange={setShutterTime} min={0.1} step="0.1" />
+        <ValidatedNumberInput label="Human Reaction Time (ms)" value={humanResponse} onChange={setHumanResponse} min={50} />
+        <ValidatedNumberInput label="Access Distance (cm)" value={accessDistance} onChange={setAccessDistance} min={10} />
       </div>
 
       <div className={`bg-gray-900 border rounded-lg p-6 mb-6 ${results.hazardRatio < 1 ? "border-green-700" : "border-red-700"}`}>

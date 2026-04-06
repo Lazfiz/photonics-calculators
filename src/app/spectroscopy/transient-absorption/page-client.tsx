@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function TransientAbsorptionPage() {
   const [pumpWavelength, setPumpWavelength] = useState(400);
@@ -70,36 +71,12 @@ export default function TransientAbsorptionPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Transient Absorption Spectroscopy" description="ΔA spectra vs delay time. Decompose into GSB, ESA, and SE contributions across the probe range.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pump Wavelength (nm)</span>
-          <input type="number" value={pumpWavelength} onChange={e => setPumpWavelength(+e.target.value)} min={200} max={2000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Probe Range Min (nm)</span>
-          <input type="number" value={probeRangeMin} onChange={e => setProbeRangeMin(+e.target.value)} min={200} max={2000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Probe Range Max (nm)</span>
-          <input type="number" value={probeRangeMax} onChange={e => setProbeRangeMax(+e.target.value)} min={200} max={3000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">GS Absorption Peak (nm)</span>
-          <input type="number" value={gsAbsorption} onChange={e => setGsAbsorption(+e.target.value)} min={200} max={3000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">ES Absorption Peak (nm)</span>
-          <input type="number" value={esAbsorption} onChange={e => setEsAbsorption(+e.target.value)} min={200} max={3000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">SE Center (nm)</span>
-          <input type="number" value={seCenter} onChange={e => setSeCenter(+e.target.value)} min={200} max={3000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} min={200} max={2000} />
+        <ValidatedNumberInput label="Probe Range Min (nm)" value={probeRangeMin} onChange={setProbeRangeMin} min={200} max={2000} />
+        <ValidatedNumberInput label="Probe Range Max (nm)" value={probeRangeMax} onChange={setProbeRangeMax} min={200} max={3000} />
+        <ValidatedNumberInput label="GS Absorption Peak (nm)" value={gsAbsorption} onChange={setGsAbsorption} min={200} max={3000} />
+        <ValidatedNumberInput label="ES Absorption Peak (nm)" value={esAbsorption} onChange={setEsAbsorption} min={200} max={3000} />
+        <ValidatedNumberInput label="SE Center (nm)" value={seCenter} onChange={setSeCenter} min={200} max={3000} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-4">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function DichroicPage() {
   const [nH, setNH] = useState(2.35);
@@ -99,12 +100,9 @@ export default function DichroicPage() {
           <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>incident</sub></span>
           <input type="number" value={nInc} onChange={e => setNInc(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pairs (N)</span>
-          <input type="number" value={numPairs} onChange={e => setNumPairs(Math.max(1, +e.target.value))} min="1" max="20" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Design λ₀ (nm)</span>
-          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Angle of incidence (°)</span>
-          <input type="number" value={aoi} onChange={e => setAoi(+e.target.value)} step="1" min="0" max="89" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Pairs (N)" value={numPairs} onChange={setNumPairs} min={1} max={20} />
+        <ValidatedNumberInput label="Design λ₀ (nm)" value={designWl} onChange={setDesignWl} />
+        <ValidatedNumberInput label="Angle of incidence (°)" value={aoi} onChange={setAoi} min={0} max={89} step="1" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">

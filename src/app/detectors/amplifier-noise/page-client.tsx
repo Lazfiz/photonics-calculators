@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function AmplifierNoisePage() {
   const [en, setEn] = useState(5);
@@ -26,9 +27,9 @@ export default function AmplifierNoisePage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Amplifier Noise" description="Input-referred noise sets the detection floor. σ_amp = e_n.">
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Input noise eₙ (e⁻ rms)</span><input type="number" value={en} onChange={e => setEn(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Conversion gain (e⁻/DN)</span><input type="number" value={gain} onChange={e => setGain(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bandwidth (Hz)</span><input type="number" value={bandwidth} onChange={e => setBandwidth(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Input noise eₙ (e⁻ rms)" value={en} onChange={setEn} step="0.5" />
+        <ValidatedNumberInput label="Conversion gain (e⁻/DN)" value={gain} onChange={setGain} step="0.1" />
+        <ValidatedNumberInput label="Bandwidth (Hz)" value={bandwidth} onChange={setBandwidth} />
       </div>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ResultCard label="Noise in DN" value={noiseDn.toFixed(2)} tone="red" />

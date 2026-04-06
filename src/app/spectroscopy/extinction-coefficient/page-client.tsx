@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ExtinctionCoefficientPage() {
   const [absorbance, setAbsorbance] = useState(0.5);
@@ -33,26 +34,10 @@ export default function ExtinctionCoefficientPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Extinction Coefficient" description="Calculate molar and specific extinction coefficients from absorbance measurements. Beer-Lambert law: ε = A / (c·l).">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Absorbance (A)</span>
-          <input type="number" value={absorbance} onChange={e => setAbsorbance(+e.target.value)} min={0} step={0.01}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Concentration (mol/L)</span>
-          <input type="number" value={concentration} onChange={e => setConcentration(+e.target.value)} min={0} step={0.001}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Path Length (cm)</span>
-          <input type="number" value={pathLength} onChange={e => setPathLength(Math.max(0.001, +e.target.value))} min={0.001} step={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Molecular Weight (g/mol)</span>
-          <input type="number" value={molecularWeight} onChange={e => setMolecularWeight(+e.target.value)} min={1} step={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Absorbance (A)" value={absorbance} onChange={setAbsorbance} min={0} />
+        <ValidatedNumberInput label="Concentration (mol/L)" value={concentration} onChange={setConcentration} min={0} />
+        <ValidatedNumberInput label="Path Length (cm)" value={pathLength} onChange={setPathLength} min={0.001} />
+        <ValidatedNumberInput label="Molecular Weight (g/mol)" value={molecularWeight} onChange={setMolecularWeight} min={1} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

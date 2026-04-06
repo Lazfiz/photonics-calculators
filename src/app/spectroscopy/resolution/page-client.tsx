@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ResolutionPage() {
   const [gratingLines, setGratingLines] = useState(1200);
@@ -22,14 +23,10 @@ export default function ResolutionPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Resolution" description="Resolving power and minimum resolvable wavelength for a diffraction grating spectrometer.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Grating (lines/mm)</span>
-          <input type="number" value={gratingLines} onChange={e => setGratingLines(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Grating Width (mm)</span>
-          <input type="number" value={gratingWidth} onChange={e => setGratingWidth(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Diffraction Order</span>
-          <input type="number" value={order} onChange={e => setOrder(+e.target.value)} min={1} max={5} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Grating (lines/mm)" value={gratingLines} onChange={setGratingLines} />
+        <ValidatedNumberInput label="Grating Width (mm)" value={gratingWidth} onChange={setGratingWidth} />
+        <ValidatedNumberInput label="Diffraction Order" value={order} onChange={setOrder} min={1} max={5} />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

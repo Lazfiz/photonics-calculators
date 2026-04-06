@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function GratingEfficiencyPage() {
   const [groovesPerMm, setGroovesPerMm] = useState(1200);
@@ -33,21 +34,9 @@ export default function GratingEfficiencyPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Grating Efficiency Calculator" description="Estimate diffraction grating efficiency based on groove density, blaze angle, and wavelength.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Grooves/mm</span>
-          <input type="number" value={groovesPerMm} onChange={e => setGroovesPerMm(+e.target.value)} min={50} max={6000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Blaze Angle (°)</span>
-          <input type="number" value={blazeAngle} onChange={e => setBlazeAngle(+e.target.value)} min={1} max={89} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={100} max={5000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Grooves/mm" value={groovesPerMm} onChange={setGroovesPerMm} min={50} max={6000} />
+        <ValidatedNumberInput label="Blaze Angle (°)" value={blazeAngle} onChange={setBlazeAngle} min={1} max={89} step="0.1" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} max={5000} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

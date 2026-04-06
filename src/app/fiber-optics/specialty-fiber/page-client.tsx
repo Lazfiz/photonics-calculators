@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 type FiberType = "PM" | "PCF" | "EDF" | "TDF" | "YDF" | "Bi1060" | "Chalcogenide" | "Fluoride";
 
@@ -74,16 +75,8 @@ export default function SpecialtyFiberPage() {
             {Object.entries(fiberDB).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Length (km)</span>
-          <input type="number" value={length} onChange={e => setLength(+e.target.value)} min={0.01} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={400} max={7000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Length (km)" value={length} onChange={setLength} min={0.01} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={7000} />
       </div>
 
       <p className="text-gray-300 mb-6 text-sm italic">{spec.description}</p>

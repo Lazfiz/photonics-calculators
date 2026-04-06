@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PhaseCorrectionPage() {
   const [opdPoints, setOpdPoints] = useState(256);
@@ -47,16 +48,8 @@ export default function PhaseCorrectionPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Phase Correction Methods" description="Compare Mertz, Forman, and power spectrum methods for interferogram phase correction (FTIR).">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">OPD Points</span>
-          <input type="number" value={opdPoints} onChange={e => setOpdPoints(+e.target.value)} min={32} max={2048} step="32"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Phase Noise Level</span>
-          <input type="number" value={phaseNoise} onChange={e => setPhaseNoise(+e.target.value)} min={0} max={2} step="0.05"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="OPD Points" value={opdPoints} onChange={setOpdPoints} min={32} max={2048} step="32" />
+        <ValidatedNumberInput label="Phase Noise Level" value={phaseNoise} onChange={setPhaseNoise} min={0} max={2} step="0.05" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Method</span>
           <select value={method} onChange={e => setMethod(e.target.value as any)}

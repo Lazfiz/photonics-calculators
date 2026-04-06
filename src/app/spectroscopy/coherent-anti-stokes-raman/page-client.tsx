@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function CoherentAntiStokesRamanPage() {
   const [pumpWavelength, setPumpWavelength] = useState(532);
@@ -72,26 +73,10 @@ export default function CoherentAntiStokesRamanPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Coherent Anti-Stokes Raman Scattering (CARS)" description="Four-wave mixing process for label-free vibrational imaging with chemical specificity.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pump Wavelength ω₁ (nm)</span>
-          <input type="number" value={pumpWavelength} onChange={e => setPumpWavelength(+e.target.value)} min={200} max={2000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Stokes Wavelength ω₂ (nm)</span>
-          <input type="number" value={stokesWavelength} onChange={e => setStokesWavelength(+e.target.value)} min={pumpWavelength + 1} max={2000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Raman Shift ν̃ (cm⁻¹)</span>
-          <input type="number" value={ramanShift} onChange={e => setRamanShift(+e.target.value)} min={100} max={4500}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pulse Width (ps)</span>
-          <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} min={0.01} max={100}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Pump Wavelength ω₁ (nm)" value={pumpWavelength} onChange={setPumpWavelength} min={200} max={2000} />
+        <ValidatedNumberInput label="Stokes Wavelength ω₂ (nm)" value={stokesWavelength} onChange={setStokesWavelength} min={pumpWavelength} max={2000} />
+        <ValidatedNumberInput label="Raman Shift ν̃ (cm⁻¹)" value={ramanShift} onChange={setRamanShift} min={100} max={4500} />
+        <ValidatedNumberInput label="Pulse Width (ps)" value={pulseWidth} onChange={setPulseWidth} min={0.01} max={100} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

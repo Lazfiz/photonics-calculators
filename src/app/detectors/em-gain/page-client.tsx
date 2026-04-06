@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function EmGainPage() {
   const [emGain, setEmGain] = useState(100);
@@ -41,11 +42,11 @@ export default function EmGainPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="EMCCD Gain Calculator" description="EM gain — noise analysis, optimal gain, and SNR comparison.">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">EM Gain</span><input type="number" value={emGain} onChange={e => setEmGain(+e.target.value)} min="1" max="10000" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Input Signal (e⁻)</span><input type="number" value={inputSignal} onChange={e => setInputSignal(+e.target.value)} min="0.01" step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">CIC (e⁻/stage)</span><input type="number" value={clockInducedCharge} onChange={e => setClockInducedCharge(+e.target.value)} min="0" step="0.0005" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Excess Noise Factor F</span><input type="number" value={excessNoiseFactor} onChange={e => setExcessNoiseFactor(+e.target.value)} min="1" max="2" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read Noise (e⁻ rms)</span><input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} min="1" step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="EM Gain" value={emGain} onChange={setEmGain} min={1} max={10000} />
+        <ValidatedNumberInput label="Input Signal (e⁻)" value={inputSignal} onChange={setInputSignal} min={0.01} step="0.5" />
+        <ValidatedNumberInput label="CIC (e⁻/stage)" value={clockInducedCharge} onChange={setClockInducedCharge} min={0} step="0.0005" />
+        <ValidatedNumberInput label="Excess Noise Factor F" value={excessNoiseFactor} onChange={setExcessNoiseFactor} min={1} max={2} step="0.01" />
+        <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} min={1} step="1" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ResultCard label="Output Signal" value={`${outputSignal.toFixed(0)} e⁻`} tone="blue" />

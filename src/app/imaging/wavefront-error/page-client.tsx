@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function WavefrontErrorPage() {
   const [wavelength, setWavelength] = useState(550);
@@ -46,21 +47,9 @@ export default function WavefrontErrorPage() {
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Wavefront Error Analysis" description="Analyze wavefront error in waves RMS, compute Strehl ratio, and check diffraction-limited condition.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Reference λ (nm)</span>
-          <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={300} max={2000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">RMS Wavefront Error (λ)</span>
-          <input type="number" value={pvRms} onChange={e => setPvRms(+e.target.value)} min={0} max={2} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Zernike Terms</span>
-          <input type="number" value={numZernike} onChange={e => setNumZernike(+e.target.value)} min={1} max={36}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Reference λ (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={300} max={2000} />
+        <ValidatedNumberInput label="RMS Wavefront Error (λ)" value={pvRms} onChange={setPvRms} min={0} max={2} step="0.01" />
+        <ValidatedNumberInput label="Zernike Terms" value={numZernike} onChange={setNumZernike} min={1} max={36} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Status</span>
           <div className={`mt-1 px-3 py-2 rounded text-center font-bold ${isDiffractionLimited ? "bg-green-900 text-green-400 border border-green-700" : "bg-red-900 text-red-400 border border-red-700"}`}>

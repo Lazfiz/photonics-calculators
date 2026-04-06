@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ModeMatchingPage() {
   const [wavelength, setWavelength] = useState(1550); // nm
@@ -169,12 +170,9 @@ Single thin lens mode matcher: find f and s
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Input waist w₁ (µm)</span>
-          <input type="number" value={w1} onChange={e => setW1(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Target waist w₂ (µm)</span>
-          <input type="number" value={w2} onChange={e => setW2(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Input waist w₁ (µm)" value={w1} onChange={setW1} step="any" />
+        <ValidatedNumberInput label="Target waist w₂ (µm)" value={w2} onChange={setW2} step="any" />
       </div>
 
       <label className="block mb-6"><span className="text-sm text-gray-300">Distance between waists d: {d} mm</span>

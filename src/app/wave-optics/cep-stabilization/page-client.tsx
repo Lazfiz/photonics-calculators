@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function CEPStabilizationPage() {
   const [wavelength, setWavelength] = useState(800);
@@ -40,14 +41,10 @@ export default function CEPStabilizationPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Carrier-Envelope Phase (CEP)" description="CEP offset effects on few-cycle pulse electric field.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse Duration (fs FWHM)</span>
-          <input type="number" value={pulseDuration} onChange={e => setPulseDuration(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">CEP φ₀ (rad)</span>
-          <input type="number" value={cepOffset} onChange={e => setCepOffset(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Display Cycles</span>
-          <input type="number" value={cycles} onChange={e => setCycles(+e.target.value)} min={1} max={10} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Pulse Duration (fs FWHM)" value={pulseDuration} onChange={setPulseDuration} step="any" />
+        <ValidatedNumberInput label="CEP φ₀ (rad)" value={cepOffset} onChange={setCepOffset} step="any" />
+        <ValidatedNumberInput label="Display Cycles" value={cycles} onChange={setCycles} min={1} max={10} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

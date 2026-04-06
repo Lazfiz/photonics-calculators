@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: number, wavelengths: number[], angleDeg: number) {
   const R: number[] = [];
@@ -121,10 +122,8 @@ export default function WavelengthSeparationPage() {
           <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>incident</sub></span>
           <input type="number" value={nInc} onChange={e => setNInc(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pairs per stack (N)</span>
-          <input type="number" value={numPairs} onChange={e => setNumPairs(Math.max(1, +e.target.value))} min="1" max="20" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">λ₁ center (nm)</span>
-          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Pairs per stack (N)" value={numPairs} onChange={setNumPairs} min={1} max={20} />
+        <ValidatedNumberInput label="λ₁ center (nm)" value={designWl} onChange={setDesignWl} step="10" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function DispersionCompPage() {
   const [dispersion, setDispersion] = useState(17); // ps/(nm·km) typical SMF at 1550
@@ -49,14 +50,10 @@ export default function DispersionCompPage() {
         NRZ bit-rate limit: B ≤ 1/(4Δτ). DCF length: LDCF = D·L / |DDCF|.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">D (ps/nm/km)</span>
-          <input type="number" value={dispersion} onChange={e => setDispersion(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Fiber length (km)</span>
-          <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Source Δλ (nm)</span>
-          <input type="number" value={bwNm} onChange={e => setBwNm(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bit rate (Gbps)</span>
-          <input type="number" value={bitRate} onChange={e => setBitRate(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="D (ps/nm/km)" value={dispersion} onChange={setDispersion} step="0.1" />
+        <ValidatedNumberInput label="Fiber length (km)" value={fiberLength} onChange={setFiberLength} step="1" />
+        <ValidatedNumberInput label="Source Δλ (nm)" value={bwNm} onChange={setBwNm} step="0.1" />
+        <ValidatedNumberInput label="Bit rate (Gbps)" value={bitRate} onChange={setBitRate} step="1" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">D<sub>DCF</sub> (ps/nm/km)</span>
           <input type="number" value={compDispersion} onChange={e => setCompDispersion(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>

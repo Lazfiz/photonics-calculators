@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function QSwitchedLaserPage() {
   const [repRate, setRepRate] = useState(10); // kHz
@@ -29,12 +30,9 @@ export default function QSwitchedLaserPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Q-Switched Laser" description="High-energy pulse generation through repetitive Q-switching of a laser cavity.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Rep Rate (kHz)</span>
-          <input type="number" value={repRate} onChange={e => setRepRate(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse Energy (mJ)</span>
-          <input type="number" value={pulseEnergy} onChange={e => setPulseEnergy(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse Width (ns)</span>
-          <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Rep Rate (kHz)" value={repRate} onChange={setRepRate} step="1" />
+        <ValidatedNumberInput label="Pulse Energy (mJ)" value={pulseEnergy} onChange={setPulseEnergy} step="0.1" />
+        <ValidatedNumberInput label="Pulse Width (ns)" value={pulseWidth} onChange={setPulseWidth} step="1" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 grid grid-cols-3 gap-4">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function BendLossPage() {
   const [radius, setRadius] = useState(15); // mm
@@ -56,26 +57,10 @@ export default function BendLossPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Macro Bending Loss" description="Estimate macro-bending loss for single-mode fiber using simplified Marcuse formula.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Bend Radius (mm)</span>
-          <input type="number" value={radius} onChange={e => setRadius(+e.target.value)} min={1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={800} max={1700}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Core Index n₁</span>
-          <input type="number" value={coreIndex} onChange={e => setCoreIndex(+e.target.value)} step="0.0001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Cladding Index n₂</span>
-          <input type="number" value={claddingIndex} onChange={e => setCladdingIndex(+e.target.value)} step="0.0001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Bend Radius (mm)" value={radius} onChange={setRadius} min={1} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={800} max={1700} />
+        <ValidatedNumberInput label="Core Index n₁" value={coreIndex} onChange={setCoreIndex} step="0.0001" />
+        <ValidatedNumberInput label="Cladding Index n₂" value={claddingIndex} onChange={setCladdingIndex} step="0.0001" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

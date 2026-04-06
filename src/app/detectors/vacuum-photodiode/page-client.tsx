@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function VacuumPhotodiodePage() {
   const [quantumEff, setQuantumEff] = useState(0.25);
@@ -54,18 +55,12 @@ export default function VacuumPhotodiodePage() {
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Vacuum Photodiode" description="Vacuum photodiode calculator. Models photoemission, responsivity, dark current (thermionic emission), and frequency response.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Quantum Efficiency</span>
-          <input type="number" value={quantumEff} onChange={e => setQuantumEff(+e.target.value)} step="0.01" min="0" max="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Anode Voltage (V)</span>
-          <input type="number" value={anodeVoltage} onChange={e => setAnodeVoltage(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Cathode Area (mm²)</span>
-          <input type="number" value={cathodeArea} onChange={e => setCathodeArea(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Incident Power (W)</span>
-          <input type="number" value={incidentPower} onChange={e => setIncidentPower(+e.target.value)} step="1e-9" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Load Resistance (Ω)</span>
-          <input type="number" value={loadResistance} onChange={e => setLoadResistance(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Quantum Efficiency" value={quantumEff} onChange={setQuantumEff} min={0} max={1} step="0.01" />
+        <ValidatedNumberInput label="Anode Voltage (V)" value={anodeVoltage} onChange={setAnodeVoltage} />
+        <ValidatedNumberInput label="Cathode Area (mm²)" value={cathodeArea} onChange={setCathodeArea} />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Incident Power (W)" value={incidentPower} onChange={setIncidentPower} step="1e-9" />
+        <ValidatedNumberInput label="Load Resistance (Ω)" value={loadResistance} onChange={setLoadResistance} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 space-y-1">

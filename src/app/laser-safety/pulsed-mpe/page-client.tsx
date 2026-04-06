@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PulsedMPEPage() {
   const [wavelength, setWavelength] = useState(1064);
@@ -89,21 +90,9 @@ export default function PulsedMPEPage() {
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={400} max={1800}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pulse Duration (ns)</span>
-          <input type="number" value={pulseDuration} onChange={e => setPulseDuration(+e.target.value)} min={0.1} max={1e6} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">PRF (Hz)</span>
-          <input type="number" value={prf} onChange={e => setPrf(+e.target.value)} min={1} max={1e6} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={1800} />
+        <ValidatedNumberInput label="Pulse Duration (ns)" value={pulseDuration} onChange={setPulseDuration} min={0.1} max={1e6} step="any" />
+        <ValidatedNumberInput label="PRF (Hz)" value={prf} onChange={setPrf} min={1} max={1e6} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

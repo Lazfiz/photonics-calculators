@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 function fresnelCoefficients(n1: number, n2: number, thetaI: number) {
   const cosI = Math.cos(thetaI);
@@ -77,21 +78,9 @@ export default function FresnelPolarizationPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">n₁ (incident medium)</span>
-          <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.01" min="1" max="5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">n₂ (transmission medium)</span>
-          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.01" min="1" max="5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Angle of Incidence (°)</span>
-          <input type="number" value={thetaIDeg} onChange={e => setThetaIDeg(+e.target.value)} min="0" max="89" step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="n₁ (incident medium)" value={n1} onChange={setN1} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label="n₂ (transmission medium)" value={n2} onChange={setN2} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label="Angle of Incidence (°)" value={thetaIDeg} onChange={setThetaIDeg} min={0} max={89} step="0.5" />
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function RetarderPage() {
   const [retardanceDeg, setRetardanceDeg] = useState(90);
@@ -73,12 +74,9 @@ export default function RetarderPage() {
     <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Waveplate / Retarder" description="Polarization state transformation by a birefringent waveplate with variable retardance and fast-axis orientation.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Retardance (°)</span>
-          <input type="number" value={retardanceDeg} onChange={e => setRetardanceDeg(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Fast Axis (°)</span>
-          <input type="number" value={fastAxisDeg} onChange={e => setFastAxisDeg(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Input Pol. (°)</span>
-          <input type="number" value={inputPolDeg} onChange={e => setInputPolDeg(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Retardance (°)" value={retardanceDeg} onChange={setRetardanceDeg} step="1" />
+        <ValidatedNumberInput label="Fast Axis (°)" value={fastAxisDeg} onChange={setFastAxisDeg} step="1" />
+        <ValidatedNumberInput label="Input Pol. (°)" value={inputPolDeg} onChange={setInputPolDeg} step="1" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 grid grid-cols-2 sm:grid-cols-4 gap-4">

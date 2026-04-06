@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 const MATERIALS: Record<string, { name: string; dndT: number }> = {
   BK7: { name: "BK7", dndT: 3.0e-6 },
@@ -49,21 +50,9 @@ export default function ThermalDnDtPage() {
             {Object.entries(MATERIALS).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Base Temperature (°C)</span>
-          <input type="number" value={baseTemp} onChange={e => setBaseTemp(+e.target.value)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Temperature Change ΔT (°C)</span>
-          <input type="number" value={deltaT} onChange={e => setDeltaT(+e.target.value)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Base Refractive Index n₀</span>
-          <input type="number" value={baseN} onChange={e => setBaseN(+e.target.value)} step="0.001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Base Temperature (°C)" value={baseTemp} onChange={setBaseTemp} />
+        <ValidatedNumberInput label="Temperature Change ΔT (°C)" value={deltaT} onChange={setDeltaT} />
+        <ValidatedNumberInput label="Base Refractive Index n₀" value={baseN} onChange={setBaseN} step="0.001" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

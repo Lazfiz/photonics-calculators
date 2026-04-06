@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function DenoisingAlgorithmsPage() {
   const [algorithm, setAlgorithm] = useState<"gaussian" | "median" | "bilateral" | "nlm" | "wavelet" | "deep">("nlm");
@@ -117,11 +118,7 @@ export default function DenoisingAlgorithmsPage() {
             <option value="deep">Deep Learning (DnCNN)</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Input Noise Level (σ)</span>
-          <input type="number" value={inputNoise} onChange={e => setInputNoise(+e.target.value)} min={1} max={100}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Input Noise Level (σ)" value={inputNoise} onChange={setInputNoise} min={1} max={100} />
         {(algorithm === "gaussian" || algorithm === "median") && (
           <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
             <span className="text-sm text-gray-300">Kernel Size</span>
@@ -132,16 +129,8 @@ export default function DenoisingAlgorithmsPage() {
           </label>
         )}
         {algorithm === "bilateral" && <>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Spatial σ</span>
-            <input type="number" value={sigmaSpatial} onChange={e => setSigmaSpatial(+e.target.value)} min={0.5} max={20} step="0.5"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Range σ</span>
-            <input type="number" value={sigmaRange} onChange={e => setSigmaRange(+e.target.value)} min={1} max={100}
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
+          <ValidatedNumberInput label="Spatial σ" value={sigmaSpatial} onChange={setSigmaSpatial} min={0.5} max={20} step="0.5" />
+          <ValidatedNumberInput label="Range σ" value={sigmaRange} onChange={setSigmaRange} min={1} max={100} />
         </>}
         {algorithm === "nlm" && <>
           <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -160,16 +149,8 @@ export default function DenoisingAlgorithmsPage() {
           </label>
         </>}
         {algorithm === "wavelet" && <>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Decomposition Level</span>
-            <input type="number" value={waveletLevel} onChange={e => setWaveletLevel(+e.target.value)} min={1} max={6}
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Threshold (σ multiples)</span>
-            <input type="number" value={threshold} onChange={e => setThreshold(+e.target.value)} min={0.5} max={10} step="0.5"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
+          <ValidatedNumberInput label="Decomposition Level" value={waveletLevel} onChange={setWaveletLevel} min={1} max={6} />
+          <ValidatedNumberInput label="Threshold (σ multiples)" value={threshold} onChange={setThreshold} min={0.5} max={10} step="0.5" />
         </>}
       </div>
 

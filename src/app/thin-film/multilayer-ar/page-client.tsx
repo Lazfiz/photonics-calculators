@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function MultilayerARPage() {
   const [n1, setN1] = useState(1.38);
@@ -38,16 +39,13 @@ export default function MultilayerARPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Two-Layer AR Coating" description="Design a two-layer anti-reflection coating. Optimal condition: n₂ = n₁√nsub.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n₁ (outer layer)</span>
-          <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n₂ (inner layer)</span>
-          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="n₁ (outer layer)" value={n1} onChange={setN1} step="0.01" />
+        <ValidatedNumberInput label="n₂ (inner layer)" value={n2} onChange={setN2} step="0.01" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
           <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>incident</sub></span>
           <input type="number" value={nInc} onChange={e => setNInc(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Design λ (nm)</span>
-          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Design λ (nm)" value={designWl} onChange={setDesignWl} />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

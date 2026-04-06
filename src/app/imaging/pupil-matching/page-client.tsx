@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PupilMatchingPage() {
   const [objectiveNA, setObjectiveNA] = useState(0.75);
@@ -36,16 +37,11 @@ export default function PupilMatchingPage() {
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Pupil Matching in Microscopy" description="Exit pupil = (2·ftube·NA)/(Mobj·Meyepiece). Match to eye pupil (2-8mm) for optimal brightness.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Objective NA</span>
-          <input type="number" value={objectiveNA} onChange={e => setObjectiveNA(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Objective Mag</span>
-          <input type="number" value={objectiveMag} onChange={e => setObjectiveMag(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Tube Lens f (mm)</span>
-          <input type="number" value={tubeLensFL} onChange={e => setTubeLensFL(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Eyepiece Mag</span>
-          <input type="number" value={eyepieceMag} onChange={e => setEyepieceMag(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Eye Pupil (mm)</span>
-          <input type="number" value={eyePupil} onChange={e => setEyePupil(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Objective NA" value={objectiveNA} onChange={setObjectiveNA} step="0.01" />
+        <ValidatedNumberInput label="Objective Mag" value={objectiveMag} onChange={setObjectiveMag} />
+        <ValidatedNumberInput label="Tube Lens f (mm)" value={tubeLensFL} onChange={setTubeLensFL} />
+        <ValidatedNumberInput label="Eyepiece Mag" value={eyepieceMag} onChange={setEyepieceMag} />
+        <ValidatedNumberInput label="Eye Pupil (mm)" value={eyePupil} onChange={setEyePupil} step="0.5" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

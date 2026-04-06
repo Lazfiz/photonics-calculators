@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function IntensifiedCameraPage() {
   const [gain, setGain] = useState(1000);
@@ -44,12 +45,12 @@ export default function IntensifiedCameraPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Intensified Camera (ICCD)" description="Gain chain: photocathode → MCP → phosphor → fiber optic → CCD. Noise and sensitivity analysis." maxWidthClassName="max-w-5xl">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Photocathode QE</span><input type="number" value={photocathodeQE} onChange={e => setPhotocathodeQE(+e.target.value)} min="0.01" max="1" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">MCP Gain</span><input type="number" value={mcpGain} onChange={e => setMcpGain(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Phosphor Efficiency</span><input type="number" value={phosphorEff} onChange={e => setPhosphorEff(+e.target.value)} min="0.01" max="1" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Fiber Coupling</span><input type="number" value={fiberCoupling} onChange={e => setFiberCoupling(+e.target.value)} min="0.01" max="1" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">CCD QE</span><input type="number" value={ccdQE} onChange={e => setCcdQE(+e.target.value)} min="0.01" max="1" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">CCD Read Noise (e⁻)</span><input type="number" value={ccdReadNoise} onChange={e => setCcdReadNoise(+e.target.value)} min="0.5" step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Photocathode QE" value={photocathodeQE} onChange={setPhotocathodeQE} min={0.01} max={1} step="0.01" />
+        <ValidatedNumberInput label="MCP Gain" value={mcpGain} onChange={setMcpGain} />
+        <ValidatedNumberInput label="Phosphor Efficiency" value={phosphorEff} onChange={setPhosphorEff} min={0.01} max={1} step="0.01" />
+        <ValidatedNumberInput label="Fiber Coupling" value={fiberCoupling} onChange={setFiberCoupling} min={0.01} max={1} step="0.01" />
+        <ValidatedNumberInput label="CCD QE" value={ccdQE} onChange={setCcdQE} min={0.01} max={1} step="0.01" />
+        <ValidatedNumberInput label="CCD Read Noise (e⁻)" value={ccdReadNoise} onChange={setCcdReadNoise} min={0.5} step="0.5" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Electron Gain" value={electronGain.toExponential(2)} tone="blue" />

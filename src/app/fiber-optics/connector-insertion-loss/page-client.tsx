@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ConnectorInsertionLossPage() {
   const [connectorType, setConnectorType] = useState<"FC" | "SC" | "LC" | "ST" | "MU" | "MPO">("SC");
@@ -115,41 +116,13 @@ export default function ConnectorInsertionLossPage() {
             <option value="APC">APC (Angled PC)</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Connectors</span>
-          <input type="number" value={numConnectors} onChange={e => setNumConnectors(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Lateral Offset (µm)</span>
-          <input type="number" value={lateralOffset} onChange={e => setLateralOffset(+e.target.value)} step="0.05" min={0}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Angular Misalign (°)</span>
-          <input type="number" value={angularMisalign} onChange={e => setAngularMisalign(+e.target.value)} step="0.1" min={0}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">End-face Gap (µm)</span>
-          <input type="number" value={gapDistance} onChange={e => setGapDistance(+e.target.value)} step="0.01" min={0}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">MFD (µm)</span>
-          <input type="number" value={fiberCoreDiam} onChange={e => setFiberCoreDiam(+e.target.value)} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Refractive Index</span>
-          <input type="number" value={refractiveIndex} onChange={e => setRefractiveIndex(+e.target.value)} step="0.001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Number of Connectors" value={numConnectors} onChange={setNumConnectors} min={1} />
+        <ValidatedNumberInput label="Lateral Offset (µm)" value={lateralOffset} onChange={setLateralOffset} min={0} step="0.05" />
+        <ValidatedNumberInput label="Angular Misalign (°)" value={angularMisalign} onChange={setAngularMisalign} min={0} step="0.1" />
+        <ValidatedNumberInput label="End-face Gap (µm)" value={gapDistance} onChange={setGapDistance} min={0} step="0.01" />
+        <ValidatedNumberInput label="MFD (µm)" value={fiberCoreDiam} onChange={setFiberCoreDiam} step="0.1" />
+        <ValidatedNumberInput label="Refractive Index" value={refractiveIndex} onChange={setRefractiveIndex} step="0.001" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

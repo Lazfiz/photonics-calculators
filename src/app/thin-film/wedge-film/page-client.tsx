@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function WedgeFilmPage() {
   const [nFilm, setNFilm] = useState(1.5);
@@ -81,10 +82,8 @@ export default function WedgeFilmPage() {
           <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>incident</sub></span>
           <input type="number" value={nInc} onChange={e => setNInc(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Design λ₀ (nm)</span>
-          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wedge angle α (degrees)</span>
-          <input type="number" value={wedgeAngleDeg} onChange={e => setWedgeAngleDeg(+e.target.value)} step="0.001" min="0.001" max="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Design λ₀ (nm)" value={designWl} onChange={setDesignWl} step="10" />
+        <ValidatedNumberInput label="Wedge angle α (degrees)" value={wedgeAngleDeg} onChange={setWedgeAngleDeg} min={0.001} max={10} step="0.001" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">

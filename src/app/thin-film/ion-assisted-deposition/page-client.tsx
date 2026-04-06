@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function IonAssistedDepositionPage() {
   const [ionEnergy, setIonEnergy] = useState(300);
@@ -103,16 +104,11 @@ export default function IonAssistedDepositionPage() {
           <select value={filmMaterial} onChange={e => setFilmMaterial(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             {Object.entries(materials).map(([k, v]) => <option key={k} value={k}>{v.name} ({k})</option>)}
           </select></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Ion Energy (eV)</span>
-          <input type="number" value={ionEnergy} onChange={e => setIonEnergy(+e.target.value)} step="10" min="0" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Ion Current (mA)</span>
-          <input type="number" value={ionCurrent} onChange={e => setIonCurrent(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Deposition Rate (nm/s)</span>
-          <input type="number" value={depositionRate} onChange={e => setDepositionRate(+e.target.value)} step="0.1" min="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Ion Mass (amu)</span>
-          <input type="number" value={ionMass} onChange={e => setIonMass(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Chamber Pressure (Torr)</span>
-          <input type="number" value={chamberPressure} onChange={e => setChamberPressure(+e.target.value)} step="1e-5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Ion Energy (eV)" value={ionEnergy} onChange={setIonEnergy} min={0} step="10" />
+        <ValidatedNumberInput label="Ion Current (mA)" value={ionCurrent} onChange={setIonCurrent} step="1" />
+        <ValidatedNumberInput label="Deposition Rate (nm/s)" value={depositionRate} onChange={setDepositionRate} min={0.01} step="0.1" />
+        <ValidatedNumberInput label="Ion Mass (amu)" value={ionMass} onChange={setIonMass} step="1" />
+        <ValidatedNumberInput label="Chamber Pressure (Torr)" value={chamberPressure} onChange={setChamberPressure} step="1e-5" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">

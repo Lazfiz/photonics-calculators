@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function MicrobendingLossPage() {
   const [wavelength, setWavelength] = useState(1550); // nm
@@ -127,41 +128,13 @@ export default function MicrobendingLossPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Microbending Loss" description="Calculate microbending-induced loss from random perturbations, coating properties, and fiber parameters.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Core Radius (µm)</span>
-          <input type="number" value={coreRadius} onChange={e => setCoreRadius(+e.target.value)} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Core NA</span>
-          <input type="number" value={coreNA} onChange={e => setCoreNA(+e.target.value)} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Coating Modulus (MPa)</span>
-          <input type="number" value={coatingModulus} onChange={e => setCoatingModulus(+e.target.value)} step="0.1" min={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Correlation Length L_c (µm)</span>
-          <input type="number" value={correlationLength} onChange={e => setCorrelationLength(+e.target.value)} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">RMS Amplitude (µm)</span>
-          <input type="number" value={rmsAmplitude} onChange={e => setRmsAmplitude(+e.target.value)} step="0.01" min={0.001}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Fiber Length (km)</span>
-          <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} step="0.1" min={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="10" />
+        <ValidatedNumberInput label="Core Radius (µm)" value={coreRadius} onChange={setCoreRadius} step="0.1" />
+        <ValidatedNumberInput label="Core NA" value={coreNA} onChange={setCoreNA} step="0.01" />
+        <ValidatedNumberInput label="Coating Modulus (MPa)" value={coatingModulus} onChange={setCoatingModulus} min={0.1} step="0.1" />
+        <ValidatedNumberInput label="Correlation Length L_c (µm)" value={correlationLength} onChange={setCorrelationLength} step="10" />
+        <ValidatedNumberInput label="RMS Amplitude (µm)" value={rmsAmplitude} onChange={setRmsAmplitude} min={0.001} step="0.01" />
+        <ValidatedNumberInput label="Fiber Length (km)" value={fiberLength} onChange={setFiberLength} min={0.1} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

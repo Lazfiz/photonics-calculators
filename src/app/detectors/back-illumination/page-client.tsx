@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function BackIlluminationPage() {
   const [fiQE, setFiQE] = useState(0.4);
@@ -38,10 +39,10 @@ export default function BackIlluminationPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Back-Illuminated vs Front-Illuminated" description="Back-illuminated sensors bypass gate structures for higher QE and better blue/UV response.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Front-illuminated peak QE</span><input type="number" value={fiQE} onChange={e => setFiQE(+e.target.value)} step="0.05" min="0" max="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Back-illuminated peak QE</span><input type="number" value={biQE} onChange={e => setBiQE(+e.target.value)} step="0.05" min="0" max="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">CFA transmission</span><input type="number" value={fiCFA} onChange={e => setFiCFA(+e.target.value)} step="0.05" min="0" max="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Microlens fill factor gain</span><input type="number" value={microlensGain} onChange={e => setMicrolensGain(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Front-illuminated peak QE" value={fiQE} onChange={setFiQE} min={0} max={1} step="0.05" />
+        <ValidatedNumberInput label="Back-illuminated peak QE" value={biQE} onChange={setBiQE} min={0} max={1} step="0.05" />
+        <ValidatedNumberInput label="CFA transmission" value={fiCFA} onChange={setFiCFA} min={0} max={1} step="0.05" />
+        <ValidatedNumberInput label="Microlens fill factor gain" value={microlensGain} onChange={setMicrolensGain} step="0.1" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Effective FI QE" value={`${(effectiveFi * 100).toFixed(1)}%`} tone="red" />

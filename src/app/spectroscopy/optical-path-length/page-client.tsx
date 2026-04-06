@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function OpticalPathLengthPage() {
   const [physicalLength, setPhysicalLength] = useState(1);
@@ -38,26 +39,10 @@ export default function OpticalPathLengthPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Optical Path Length Calculator" description="OPL = n · d · N / cos(θ) — effective path through a medium.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Physical Length (cm)</span>
-          <input type="number" value={physicalLength} onChange={e => setPhysicalLength(+e.target.value)} min={0} step={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Refractive Index (n)</span>
-          <input type="number" value={refractiveIndex} onChange={e => setRefractiveIndex(Math.max(1, +e.target.value))} min={1} step={0.01}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Passes</span>
-          <input type="number" value={numPasses} onChange={e => setNumPasses(Math.max(1, +e.target.value))} min={1} step={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Angle of Incidence (°)</span>
-          <input type="number" value={angleDeg} onChange={e => setAngleDeg(+e.target.value)} min={0} max={85} step={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Physical Length (cm)" value={physicalLength} onChange={setPhysicalLength} min={0} />
+        <ValidatedNumberInput label="Refractive Index (n)" value={refractiveIndex} onChange={setRefractiveIndex} min={1} />
+        <ValidatedNumberInput label="Number of Passes" value={numPasses} onChange={setNumPasses} min={1} />
+        <ValidatedNumberInput label="Angle of Incidence (°)" value={angleDeg} onChange={setAngleDeg} min={0} max={85} />
       </div>
 
       <div className="flex gap-2 mb-6">

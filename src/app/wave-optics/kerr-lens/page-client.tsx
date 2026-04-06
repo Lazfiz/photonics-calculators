@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function KerrLensPage() {
   const [wavelength, setWavelength] = useState(800); // nm
@@ -58,18 +59,12 @@ export default function KerrLensPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Beam Waist w₀ (µm)</span>
-          <input type="number" value={beamWaist} onChange={e => setBeamWaist(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n₀ (linear index)</span>
-          <input type="number" value={n0} onChange={e => setN0(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n₂ (×10⁻¹⁶ cm²/W)</span>
-          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Power (W)</span>
-          <input type="number" value={power} onChange={e => setPower(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Crystal Length (mm)</span>
-          <input type="number" value={crystalLength} onChange={e => setCrystalLength(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Beam Waist w₀ (µm)" value={beamWaist} onChange={setBeamWaist} step="any" />
+        <ValidatedNumberInput label="n₀ (linear index)" value={n0} onChange={setN0} step="0.01" />
+        <ValidatedNumberInput label="n₂ (×10⁻¹⁶ cm²/W)" value={n2} onChange={setN2} step="0.1" />
+        <ValidatedNumberInput label="Power (W)" value={power} onChange={setPower} step="any" />
+        <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

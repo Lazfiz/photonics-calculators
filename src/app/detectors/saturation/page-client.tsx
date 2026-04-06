@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SaturationPage() {
   const [fullWellCapacity, setFullWellCapacity] = useState(20000); // electrons
@@ -40,16 +41,13 @@ export default function SaturationPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Full Well Capacity (e⁻)</span>
-          <input type="number" value={fullWellCapacity} onChange={e => setFullWellCapacity(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read Noise (e⁻ rms)</span>
-          <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Full Well Capacity (e⁻)" value={fullWellCapacity} onChange={setFullWellCapacity} />
+        <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bit Depth</span>
           <select value={bitDepth} onChange={e => setBitDepth(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             {[8, 10, 12, 14, 16].map(b => <option key={b} value={b}>{b}-bit</option>)}
           </select></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Nonlinearity at Saturation (%)</span>
-          <input type="number" value={nonlinearityPercent} onChange={e => setNonlinearityPercent(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Nonlinearity at Saturation (%)" value={nonlinearityPercent} onChange={setNonlinearityPercent} />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

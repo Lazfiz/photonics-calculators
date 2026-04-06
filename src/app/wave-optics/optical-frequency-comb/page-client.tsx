@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function OpticalFrequencyCombPage() {
   const [repRate, setRepRate] = useState(250); // MHz
@@ -29,12 +30,9 @@ export default function OpticalFrequencyCombPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Optical Frequency Comb" description="Precision spectroscopy and metrology using a train of equally spaced narrow spectral lines.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Rep Rate (MHz)</span>
-          <input type="number" value={repRate} onChange={e => setRepRate(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Center λ (nm)</span>
-          <input type="number" value={centerWavelength} onChange={e => setCenterWavelength(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Comb Lines</span>
-          <input type="number" value={combLines} onChange={e => setCombLines(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Rep Rate (MHz)" value={repRate} onChange={setRepRate} step="1" />
+        <ValidatedNumberInput label="Center λ (nm)" value={centerWavelength} onChange={setCenterWavelength} step="1" />
+        <ValidatedNumberInput label="Comb Lines" value={combLines} onChange={setCombLines} step="1" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

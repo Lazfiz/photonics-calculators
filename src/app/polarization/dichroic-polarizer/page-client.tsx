@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function DichroicPolarizerPage() {
   const [wavelength, setWavelength] = useState(550);
@@ -75,39 +76,15 @@ export default function DichroicPolarizerPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10" min="300" max="1800"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">n (pass axis)</span>
-          <input type="number" value={nE} onChange={e => setNE(+e.target.value)} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">k (pass axis)</span>
-          <input type="number" value={kE} onChange={e => setKE(+e.target.value)} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">n (absorb axis)</span>
-          <input type="number" value={nO} onChange={e => setNO(+e.target.value)} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={1800} step="10" />
+        <ValidatedNumberInput label="n (pass axis)" value={nE} onChange={setNE} step="0.1" />
+        <ValidatedNumberInput label="k (pass axis)" value={kE} onChange={setKE} step="0.01" />
+        <ValidatedNumberInput label="n (absorb axis)" value={nO} onChange={setNO} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">k (absorb axis)</span>
-          <input type="number" value={kO} onChange={e => setKO(+e.target.value)} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Thickness (mm)</span>
-          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} step="0.01" min="0.01" max="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="k (absorb axis)" value={kO} onChange={setKO} step="0.1" />
+        <ValidatedNumberInput label="Thickness (mm)" value={thickness} onChange={setThickness} min={0.01} max={1} step="0.01" />
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">

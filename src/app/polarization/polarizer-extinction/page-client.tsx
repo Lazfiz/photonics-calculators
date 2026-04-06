@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PolarizerExtinctionPage() {
   const [extinctionRatioDb, setExtinctionRatioDb] = useState(30);
@@ -70,26 +71,10 @@ export default function PolarizerExtinctionPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Extinction Ratio (dB)</span>
-          <input type="number" value={extinctionRatioDb} onChange={e => setExtinctionRatioDb(+e.target.value)} min={0} max={100} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Max Transmission (%)</span>
-          <input type="number" value={transmissionPercent} onChange={e => setTransmissionPercent(+e.target.value)} min={0} max={100} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Analyzer Angle (°)</span>
-          <input type="number" value={angleDeg} onChange={e => setAngleDeg(+e.target.value)} min={0} max={90} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Cascade Count</span>
-          <input type="number" value={numPolarizers} onChange={e => setNumPolarizers(+e.target.value)} min={1} max={10}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Extinction Ratio (dB)" value={extinctionRatioDb} onChange={setExtinctionRatioDb} min={0} max={100} step="0.1" />
+        <ValidatedNumberInput label="Max Transmission (%)" value={transmissionPercent} onChange={setTransmissionPercent} min={0} max={100} step="0.1" />
+        <ValidatedNumberInput label="Analyzer Angle (°)" value={angleDeg} onChange={setAngleDeg} min={0} max={90} step="0.1" />
+        <ValidatedNumberInput label="Cascade Count" value={numPolarizers} onChange={setNumPolarizers} min={1} max={10} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

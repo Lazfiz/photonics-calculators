@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ModulationTransferPage() {
   const [pixelPitch, setPixelPitch] = useState(5.4); // μm
@@ -60,14 +61,10 @@ export default function ModulationTransferPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pixel Pitch (μm)</span>
-          <input type="number" value={pixelPitch} onChange={e => setPixelPitch(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Diffusion Length (μm)</span>
-          <input type="number" value={diffusionLength} onChange={e => setDiffusionLength(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Fill Factor</span>
-          <input type="number" value={fillFactor} onChange={e => setFillFactor(+e.target.value)} step={0.01} min={0.1} max={1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Optical Blur σ (μm)</span>
-          <input type="number" value={opticalBlur} onChange={e => setOpticalBlur(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Pixel Pitch (μm)" value={pixelPitch} onChange={setPixelPitch} />
+        <ValidatedNumberInput label="Diffusion Length (μm)" value={diffusionLength} onChange={setDiffusionLength} />
+        <ValidatedNumberInput label="Fill Factor" value={fillFactor} onChange={setFillFactor} min={0.1} max={1} />
+        <ValidatedNumberInput label="Optical Blur σ (μm)" value={opticalBlur} onChange={setOpticalBlur} />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function EllipsometryMeasurementPage() {
   const [psiDeg, setPsiDeg] = useState(45);
@@ -92,14 +93,10 @@ export default function EllipsometryMeasurementPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Ellipsometry Measurement" description="Analyze ellipsometry data (Ψ, Δ) to extract pseudo-dielectric function, refractive index, and approximate film thickness.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Ψ (degrees)</span>
-          <input type="number" value={psiDeg} onChange={e => setPsiDeg(+e.target.value)} step="0.1" min="0" max="90" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Δ (degrees)</span>
-          <input type="number" value={deltaDeg} onChange={e => setDeltaDeg(+e.target.value)} step="0.1" min="0" max="360" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Angle of Incidence (°)</span>
-          <input type="number" value={aoiDeg} onChange={e => setAoiDeg(+e.target.value)} step="0.5" min="0" max="90" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Ψ (degrees)" value={psiDeg} onChange={setPsiDeg} min={0} max={90} step="0.1" />
+        <ValidatedNumberInput label="Δ (degrees)" value={deltaDeg} onChange={setDeltaDeg} min={0} max={360} step="0.1" />
+        <ValidatedNumberInput label="Angle of Incidence (°)" value={aoiDeg} onChange={setAoiDeg} min={0} max={90} step="0.5" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
           <input type="number" value={nSubstrate} onChange={e => setNSubstrate(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>

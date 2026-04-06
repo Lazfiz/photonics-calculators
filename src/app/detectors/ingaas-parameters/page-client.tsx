@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 const k = 1.381e-23, q = 1.602e-19, h = 6.626e-34, c = 3e8;
 
@@ -50,12 +51,12 @@ export default function IngaasParametersPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="InGaAs Detector Parameters" description="InₓGa₁₋ₓAs bandgap, cutoff wavelength, QE, dark current, NEP for SWIR detectors." maxWidthClassName="max-w-5xl">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Temperature (K)</span><input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} min="200" max="400" step="5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Indium Fraction (x)</span><input type="number" value={indiumFraction} onChange={e => setIndiumFraction(+e.target.value)} min="0" max="1" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Thickness (µm)</span><input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} min="0.1" step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Area (mm²)</span><input type="number" value={area} onChange={e => setArea(+e.target.value)} min="0.01" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bias (V)</span><input type="number" value={biasVoltage} onChange={e => setBiasVoltage(+e.target.value)} min="-5" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Ideality Factor</span><input type="number" value={idealityFactor} onChange={e => setIdealityFactor(+e.target.value)} min="1" max="2" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} min={200} max={400} step="5" />
+        <ValidatedNumberInput label="Indium Fraction (x)" value={indiumFraction} onChange={setIndiumFraction} min={0} max={1} step="0.01" />
+        <ValidatedNumberInput label="Thickness (µm)" value={thickness} onChange={setThickness} min={0.1} step="0.5" />
+        <ValidatedNumberInput label="Area (mm²)" value={area} onChange={setArea} min={0.01} step="0.01" />
+        <ValidatedNumberInput label="Bias (V)" value={biasVoltage} onChange={setBiasVoltage} min={-5} step="0.1" />
+        <ValidatedNumberInput label="Ideality Factor" value={idealityFactor} onChange={setIdealityFactor} min={1} max={2} step="0.1" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Bandgap E_g" value={`${EgT.toFixed(3)} eV`} tone="blue" />

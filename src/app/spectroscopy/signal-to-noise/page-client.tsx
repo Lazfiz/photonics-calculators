@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SignalToNoisePage() {
   const [signalPhotons, setSignalPhotons] = useState(10000);
@@ -52,31 +53,11 @@ export default function SignalToNoisePage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Signal-to-Noise Ratio" description="Detailed SNR model: shot noise, dark current, read noise, and detector noise contributions.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Signal Photons</span>
-          <input type="number" value={signalPhotons} onChange={e => setSignalPhotons(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Dark Current (e⁻)</span>
-          <input type="number" value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)} min={0}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Read Noise (e⁻)</span>
-          <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} min={0}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Detector Noise (e⁻)</span>
-          <input type="number" value={detectorNoise} onChange={e => setDetectorNoise(+e.target.value)} min={0}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300"># Scans (co-adds)</span>
-          <input type="number" value={nScans} onChange={e => setNScans(Math.max(1, +e.target.value))} min={1} max={10000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Signal Photons" value={signalPhotons} onChange={setSignalPhotons} min={1} />
+        <ValidatedNumberInput label="Dark Current (e⁻)" value={darkCurrent} onChange={setDarkCurrent} min={0} />
+        <ValidatedNumberInput label="Read Noise (e⁻)" value={readNoise} onChange={setReadNoise} min={0} />
+        <ValidatedNumberInput label="Detector Noise (e⁻)" value={detectorNoise} onChange={setDetectorNoise} min={0} />
+        <ValidatedNumberInput label="# Scans (co-adds)" value={nScans} onChange={setNScans} min={1} max={10000} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

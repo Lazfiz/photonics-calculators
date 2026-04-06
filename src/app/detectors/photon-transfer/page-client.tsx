@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PhotonTransferPage() {
   const [gain, setGain] = useState(2); // e-/DN
@@ -29,12 +30,9 @@ export default function PhotonTransferPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Conversion gain K (e⁻/DN)</span>
-          <input type="number" value={gain} onChange={e => setGain(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read noise (e⁻)</span>
-          <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Well capacity (e⁻)</span>
-          <input type="number" value={wellCapacity} onChange={e => setWellCapacity(+e.target.value)} step="1000" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Conversion gain K (e⁻/DN)" value={gain} onChange={setGain} step="0.1" />
+        <ValidatedNumberInput label="Read noise (e⁻)" value={readNoise} onChange={setReadNoise} step="1" />
+        <ValidatedNumberInput label="Well capacity (e⁻)" value={wellCapacity} onChange={setWellCapacity} step="1000" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

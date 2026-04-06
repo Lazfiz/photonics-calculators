@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function HybridDetectorPage() {
   const [wavelength, setWavelength] = useState(530);
@@ -41,12 +42,12 @@ export default function HybridDetectorPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Hybrid Detector Design" description="Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization." maxWidthClassName="max-w-5xl">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span><input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Quantum Efficiency</span><input type="number" value={qe} onChange={e => setQe(+e.target.value)} min="0.01" max="1" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">i_n (fA/√Hz)</span><input type="number" value={inputNoiseCurrent} onChange={e => setInputNoiseCurrent(+e.target.value)} min="0.1" step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">e_n (nV/√Hz)</span><input type="number" value={inputNoiseVoltage} onChange={e => setInputNoiseVoltage(+e.target.value)} min="0.1" step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bandwidth (MHz)</span><input type="number" value={bandwidth} onChange={e => setBandwidth(+e.target.value)} min="1" step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">R_f (MΩ)</span><input type="number" value={feedbackResistance} onChange={e => setFeedbackResistance(+e.target.value)} min="0.01" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="10" />
+        <ValidatedNumberInput label="Quantum Efficiency" value={qe} onChange={setQe} min={0.01} max={1} step="0.01" />
+        <ValidatedNumberInput label="i_n (fA/√Hz)" value={inputNoiseCurrent} onChange={setInputNoiseCurrent} min={0.1} step="0.5" />
+        <ValidatedNumberInput label="e_n (nV/√Hz)" value={inputNoiseVoltage} onChange={setInputNoiseVoltage} min={0.1} step="0.5" />
+        <ValidatedNumberInput label="Bandwidth (MHz)" value={bandwidth} onChange={setBandwidth} min={1} step="10" />
+        <ValidatedNumberInput label="R_f (MΩ)" value={feedbackResistance} onChange={setFeedbackResistance} min={0.01} step="0.1" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Responsivity" value={`${(responsivity * 1e3).toFixed(2)} mA/W`} tone="blue" />

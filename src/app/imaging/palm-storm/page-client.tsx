@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PALMSTORMPage() {
   const [wavelength, setWavelength] = useState(647);
@@ -48,36 +49,12 @@ export default function PALMSTORMPage() {
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="PALM/STORM Localization Calculator" description="Estimate effective resolution for single-molecule localization microscopy (PALM/STORM) based on localization precision and labeling density.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={400} max={900}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Numerical Aperture</span>
-          <input type="number" value={na} onChange={e => setNa(+e.target.value)} min={0.5} max={1.7} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Localization Precision (nm)</span>
-          <input type="number" value={localizationPrecision} onChange={e => setLocalizationPrecision(+e.target.value)} min={1} max={100}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Label Density (labels/100nm)</span>
-          <input type="number" value={labelDensity} onChange={e => setLabelDensity(+e.target.value)} min={0.5} max={50} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Frames</span>
-          <input type="number" value={numFrames} onChange={e => setNumFrames(+e.target.value)} min={1000} max={100000} step="1000"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pixel Size (nm)</span>
-          <input type="number" value={pixelSize} onChange={e => setPixelSize(+e.target.value)} min={50} max={300} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={900} />
+        <ValidatedNumberInput label="Numerical Aperture" value={na} onChange={setNa} min={0.5} max={1.7} step="0.01" />
+        <ValidatedNumberInput label="Localization Precision (nm)" value={localizationPrecision} onChange={setLocalizationPrecision} min={1} max={100} />
+        <ValidatedNumberInput label="Label Density (labels/100nm)" value={labelDensity} onChange={setLabelDensity} min={0.5} max={50} step="0.5" />
+        <ValidatedNumberInput label="Number of Frames" value={numFrames} onChange={setNumFrames} min={1000} max={100000} step="1000" />
+        <ValidatedNumberInput label="Pixel Size (nm)" value={pixelSize} onChange={setPixelSize} min={50} max={300} step="10" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

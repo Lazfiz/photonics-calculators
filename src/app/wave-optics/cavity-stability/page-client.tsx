@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function CavityStabilityPage() {
   const [r1, setR1] = useState(1000); // mm, radius of curvature (positive = concave facing inward)
@@ -62,21 +63,9 @@ export default function CavityStabilityPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Cavity Stability Diagram" description="Two-mirror cavity stability: g₁ = 1 - L/R₁, g₂ = 1 - L/R₂. Stable when 0 ≤ g₁g₂ ≤ 1.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">R₁ - Mirror 1 ROC (mm)</span>
-          <input type="number" value={r1} onChange={e => setR1(+e.target.value)} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">R₂ - Mirror 2 ROC (mm)</span>
-          <input type="number" value={r2} onChange={e => setR2(+e.target.value)} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Cavity Length L (mm)</span>
-          <input type="number" value={L} onChange={e => setL(+e.target.value)} min={0.1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="R₁ - Mirror 1 ROC (mm)" value={r1} onChange={setR1} step="any" />
+        <ValidatedNumberInput label="R₂ - Mirror 2 ROC (mm)" value={r2} onChange={setR2} step="any" />
+        <ValidatedNumberInput label="Cavity Length L (mm)" value={L} onChange={setL} min={0.1} step="any" />
       </div>
 
       <div className={`bg-gray-900 border ${calc.stable ? "border-green-800" : "border-red-800"} rounded-lg p-6 mb-8`}>

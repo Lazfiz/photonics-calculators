@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FullWellPage() {
   const [fullWell, setFullWell] = useState(20000);
@@ -28,9 +29,9 @@ export default function FullWellPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Full Well Capacity vs SNR" description="Analyze how full well capacity affects signal-to-noise ratio and dynamic range.">
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Full Well Capacity (e⁻)</span><input type="number" value={fullWell} onChange={e => setFullWell(+e.target.value)} min={1000} step="1000" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read Noise (e⁻)</span><input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} min={0.5} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Signal Level (e⁻)</span><input type="number" value={signal} onChange={e => setSignal(+e.target.value)} min={0} max={fullWell} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Full Well Capacity (e⁻)" value={fullWell} onChange={setFullWell} min={1000} step="1000" />
+        <ValidatedNumberInput label="Read Noise (e⁻)" value={readNoise} onChange={setReadNoise} min={0.5} step="0.5" />
+        <ValidatedNumberInput label="Signal Level (e⁻)" value={signal} onChange={setSignal} min={0} max={fullWell} step="any" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Current SNR" value={snr.toFixed(1)} tone="blue" />

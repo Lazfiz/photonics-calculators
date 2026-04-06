@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function DiodeLaserSafetyPage() {
   const [power, setPower] = useState(500); // mW
@@ -71,18 +72,12 @@ export default function DiodeLaserSafetyPage() {
             
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Power (mW)</span>
-          <input type="number" value={power} onChange={e => setPower(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Beam Diameter (mm)</span>
-          <input type="number" value={beamDia} onChange={e => setBeamDia(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Exposure Time (s)</span>
-          <input type="number" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Slow Axis Divergence (mrad)</span>
-          <input type="number" value={divergenceH} onChange={e => setDivergenceH(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Fast Axis Divergence (mrad)</span>
-          <input type="number" value={divergenceV} onChange={e => setDivergenceV(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Power (mW)" value={power} onChange={setPower} />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDia} onChange={setBeamDia} step="0.1" />
+        <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} step="0.01" />
+        <ValidatedNumberInput label="Slow Axis Divergence (mrad)" value={divergenceH} onChange={setDivergenceH} />
+        <ValidatedNumberInput label="Fast Axis Divergence (mrad)" value={divergenceV} onChange={setDivergenceV} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

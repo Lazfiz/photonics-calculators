@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function StressMeasurementPage() {
   const [radius, setRadius] = useState(25);
@@ -90,24 +91,18 @@ export default function StressMeasurementPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Thin Film Stress Measurement" description="Calculate film stress from substrate curvature using the Stoney equation. Includes thermal stress decomposition and stored elastic energy.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Substrate Radius (mm)</span>
-          <input type="number" value={radius} onChange={e => setRadius(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Substrate Thickness (mm)</span>
-          <input type="number" value={substrateThickness} onChange={e => setSubstrateThickness(+e.target.value)} step="0.05" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Film Thickness (nm)</span>
-          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Substrate Radius (mm)" value={radius} onChange={setRadius} step="0.5" />
+        <ValidatedNumberInput label="Substrate Thickness (mm)" value={substrateThickness} onChange={setSubstrateThickness} step="0.05" />
+        <ValidatedNumberInput label="Film Thickness (nm)" value={thickness} onChange={setThickness} step="1" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>film</sub></span>
           <input type="number" value={nFilm} onChange={e => setNFilm(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Center Deflection (μm)</span>
-          <input type="number" value={deflection * 1e6} onChange={e => setDeflection(+e.target.value * 1e-6)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Center Deflection (μm)" value={deflection} onChange={setDeflection} step="0.1" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">E<sub>substrate</sub> (GPa)</span>
           <input type="number" value={youngsModulus} onChange={e => setYoungsModulus(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">ν<sub>substrate</sub></span>
           <input type="number" value={poissonRatio} onChange={e => setPoissonRatio(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Deposition Temp (°C)</span>
-          <input type="number" value={depositionTemp} onChange={e => setDepositionTemp(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Measurement Temp (°C)</span>
-          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Deposition Temp (°C)" value={depositionTemp} onChange={setDepositionTemp} step="10" />
+        <ValidatedNumberInput label="Measurement Temp (°C)" value={temperature} onChange={setTemperature} step="1" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">

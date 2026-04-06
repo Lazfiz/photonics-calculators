@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function WorkingDistancePage() {
   const [focalLength, setFocalLength] = useState(10);
@@ -24,16 +25,8 @@ export default function WorkingDistancePage() {
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Working Distance Calculator" description="Calculate working distance from objective focal length and magnification.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Objective Focal Length (mm)</span>
-          <input type="number" value={focalLength} onChange={e => setFocalLength(+e.target.value)} min={1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Magnification (×)</span>
-          <input type="number" value={mag} onChange={e => setMag(+e.target.value)} min={0.5} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Objective Focal Length (mm)" value={focalLength} onChange={setFocalLength} min={1} step="any" />
+        <ValidatedNumberInput label="Magnification (×)" value={mag} onChange={setMag} min={0.5} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

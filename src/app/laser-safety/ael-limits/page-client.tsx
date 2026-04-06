@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function AELLimitsPage() {
   const [wavelength, setWavelength] = useState(632);
@@ -79,11 +80,7 @@ export default function AELLimitsPage() {
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={180} max={1800}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={1800} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Classification</span>
           <select value={classification} onChange={e => setClassification(e.target.value)}
@@ -91,11 +88,7 @@ export default function AELLimitsPage() {
             {classOptions.map(c => <option key={c} value={c}>Class {c}</option>)}
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Emission Duration (s)</span>
-          <input type="number" value={emissionDuration} onChange={e => setEmissionDuration(+e.target.value)} min={1e-9} max={100} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Emission Duration (s)" value={emissionDuration} onChange={setEmissionDuration} min={1e-9} max={100} step="any" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">

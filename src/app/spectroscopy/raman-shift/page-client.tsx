@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function RamanShiftPage() {
   const [laserWavelength, setLaserWavelength] = useState(532);
@@ -42,26 +43,10 @@ export default function RamanShiftPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Raman Shift Calculator" description="Convert between Raman shift (cm⁻¹), scattered wavelength, and energy for any excitation laser.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Laser Wavelength (nm)</span>
-          <input type="number" value={laserWavelength} onChange={e => setLaserWavelength(+e.target.value)} min="200" max="2000"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Raman Shift (cm⁻¹)</span>
-          <input type="number" value={ramanShiftCm} onChange={e => setRamanShiftCm(+e.target.value)} min="0" max="5000"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Plot Range Min (cm⁻¹)</span>
-          <input type="number" value={minShift} onChange={e => setMinShift(+e.target.value)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Plot Range Max (cm⁻¹)</span>
-          <input type="number" value={maxShift} onChange={e => setMaxShift(+e.target.value)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Laser Wavelength (nm)" value={laserWavelength} onChange={setLaserWavelength} min={200} max={2000} />
+        <ValidatedNumberInput label="Raman Shift (cm⁻¹)" value={ramanShiftCm} onChange={setRamanShiftCm} min={0} max={5000} />
+        <ValidatedNumberInput label="Plot Range Min (cm⁻¹)" value={minShift} onChange={setMinShift} />
+        <ValidatedNumberInput label="Plot Range Max (cm⁻¹)" value={maxShift} onChange={setMaxShift} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">

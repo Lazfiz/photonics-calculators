@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function DShapedFiberPage() {
   const [cladDia, setCladDia] = useState(125); // μm
@@ -78,26 +79,10 @@ export default function DShapedFiberPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="D-Shaped Fiber" description="Birefringence, evanescent field, and polarization properties of D-shaped (flat) fibers.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Cladding Ø (μm)</span>
-          <input type="number" value={cladDia} onChange={e => setCladDia(+e.target.value)} min={10}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Core Ø (μm)</span>
-          <input type="number" value={coreDia} onChange={e => setCoreDia(+e.target.value)} min={0.1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Flat Depth from Center (μm)</span>
-          <input type="number" value={flatDepth} onChange={e => setFlatDepth(+e.target.value)} min={1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={400}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Cladding Ø (μm)" value={cladDia} onChange={setCladDia} min={10} />
+        <ValidatedNumberInput label="Core Ø (μm)" value={coreDia} onChange={setCoreDia} min={0.1} step="any" />
+        <ValidatedNumberInput label="Flat Depth from Center (μm)" value={flatDepth} onChange={setFlatDepth} min={1} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

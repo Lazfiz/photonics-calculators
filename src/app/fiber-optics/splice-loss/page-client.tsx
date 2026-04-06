@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SpliceLossPage() {
   const [lateralOffset, setLateralOffset] = useState(0.5); // µm
@@ -49,26 +50,10 @@ export default function SpliceLossPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Splice Loss" description="Estimate splice/connector loss from lateral offset, angular misalignment, and end-face gap for single-mode fiber.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Lateral Offset (µm)</span>
-          <input type="number" value={lateralOffset} onChange={e => setLateralOffset(+e.target.value)} min={0} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Angular Misalignment (°)</span>
-          <input type="number" value={angularMisalign} onChange={e => setAngularMisalign(+e.target.value)} min={0} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Mode Field Diameter (µm)</span>
-          <input type="number" value={coreDiam} onChange={e => setCoreDiam(+e.target.value)} min={1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">End-face Gap (µm)</span>
-          <input type="number" value={gap} onChange={e => setGap(+e.target.value)} min={0} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Lateral Offset (µm)" value={lateralOffset} onChange={setLateralOffset} min={0} step="any" />
+        <ValidatedNumberInput label="Angular Misalignment (°)" value={angularMisalign} onChange={setAngularMisalign} min={0} step="any" />
+        <ValidatedNumberInput label="Mode Field Diameter (µm)" value={coreDiam} onChange={setCoreDiam} min={1} step="any" />
+        <ValidatedNumberInput label="End-face Gap (µm)" value={gap} onChange={setGap} min={0} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

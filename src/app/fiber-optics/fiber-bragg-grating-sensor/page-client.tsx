@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FiberBraggGratingSensorPage() {
   const [gratingPeriod, setGratingPeriod] = useState(535); // nm
@@ -112,46 +113,14 @@ export default function FiberBraggGratingSensorPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Bragg Grating Sensor" description="Calculate FBG wavelength shift for strain and temperature sensing applications.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Grating Period Λ (nm)</span>
-          <input type="number" value={gratingPeriod} onChange={e => setGratingPeriod(+e.target.value)} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Effective Index n_eff</span>
-          <input type="number" value={effectiveIndex} onChange={e => setEffectiveIndex(+e.target.value)} step="0.001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Grating Length (mm)</span>
-          <input type="number" value={gratingLength} onChange={e => setGratingLength(+e.target.value)} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Index Modulation Δn</span>
-          <input type="number" value={indexModulation} onChange={e => setIndexModulation(+e.target.value)} step={1e-5}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Strain (µε)</span>
-          <input type="number" value={strain} onChange={e => setStrain(+e.target.value)} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Temperature Change (°C)</span>
-          <input type="number" value={tempChange} onChange={e => setTempChange(+e.target.value)} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Strain Sensitivity (pm/µε)</span>
-          <input type="number" value={strainSensitivity} onChange={e => setStrainSensitivity(+e.target.value)} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Temp Sensitivity (pm/°C)</span>
-          <input type="number" value={tempSensitivity} onChange={e => setTempSensitivity(+e.target.value)} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Grating Period Λ (nm)" value={gratingPeriod} onChange={setGratingPeriod} step="1" />
+        <ValidatedNumberInput label="Effective Index n_eff" value={effectiveIndex} onChange={setEffectiveIndex} step="0.001" />
+        <ValidatedNumberInput label="Grating Length (mm)" value={gratingLength} onChange={setGratingLength} step="0.5" />
+        <ValidatedNumberInput label="Index Modulation Δn" value={indexModulation} onChange={setIndexModulation} />
+        <ValidatedNumberInput label="Strain (µε)" value={strain} onChange={setStrain} step="10" />
+        <ValidatedNumberInput label="Temperature Change (°C)" value={tempChange} onChange={setTempChange} step="1" />
+        <ValidatedNumberInput label="Strain Sensitivity (pm/µε)" value={strainSensitivity} onChange={setStrainSensitivity} step="0.1" />
+        <ValidatedNumberInput label="Temp Sensitivity (pm/°C)" value={tempSensitivity} onChange={setTempSensitivity} step="0.5" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

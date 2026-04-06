@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 // SPAD Dead Time Analysis
 // Non-paralyzable: R_meas = R_true / (1 + R_true · τ_d)
@@ -77,16 +78,8 @@ export default function SpadDeadTimePage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Dead Time (ns)</span>
-          <input type="number" value={deadTime} onChange={e => setDeadTime(+e.target.value)} min="1" step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">True Incident Rate (Mcps)</span>
-          <input type="number" value={trueRate} onChange={e => setTrueRate(+e.target.value)} min="0.01" step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Dead Time (ns)" value={deadTime} onChange={setDeadTime} min={1} step="1" />
+        <ValidatedNumberInput label="True Incident Rate (Mcps)" value={trueRate} onChange={setTrueRate} min={0.01} step="1" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">

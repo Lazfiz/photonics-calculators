@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 interface PeakConfig {
   center: number;
@@ -83,21 +84,9 @@ export default function SpectralDeconvolutionPage() {
             {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Noise Level</span>
-          <input type="number" value={noiseLevel} onChange={e => setNoiseLevel(+e.target.value)} min={0} max={1} step={0.01}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">λ Min (nm)</span>
-          <input type="number" value={xMin} onChange={e => setXMin(+e.target.value)} min={100} step={10}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">λ Max (nm)</span>
-          <input type="number" value={xMax} onChange={e => setXMax(+e.target.value)} min={200} step={10}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Noise Level" value={noiseLevel} onChange={setNoiseLevel} min={0} max={1} />
+        <ValidatedNumberInput label="λ Min (nm)" value={xMin} onChange={setXMin} min={100} />
+        <ValidatedNumberInput label="λ Max (nm)" value={xMax} onChange={setXMax} min={200} />
       </div>
 
       <div className="flex items-center gap-2 mb-6">

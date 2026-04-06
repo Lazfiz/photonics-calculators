@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PixelCrosstalkPage() {
   const [pixelPitch, setPixelPitch] = useState(5.0); // µm
@@ -68,26 +69,10 @@ export default function PixelCrosstalkPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pixel Pitch (µm)</span>
-          <input type="number" value={pixelPitch} onChange={e => setPixelPitch(+e.target.value)} min="0.5" step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Depletion Depth (µm)</span>
-          <input type="number" value={depletionDepth} onChange={e => setDepletionDepth(+e.target.value)} min="1" step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min="300" max="1100"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Electrical Crosstalk</span>
-          <input type="number" value={crosstalkCoeff} onChange={e => setCrosstalkCoeff(+e.target.value)} min="0" max="0.5" step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Pixel Pitch (µm)" value={pixelPitch} onChange={setPixelPitch} min={0.5} step="0.1" />
+        <ValidatedNumberInput label="Depletion Depth (µm)" value={depletionDepth} onChange={setDepletionDepth} min={1} step="1" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={1100} />
+        <ValidatedNumberInput label="Electrical Crosstalk" value={crosstalkCoeff} onChange={setCrosstalkCoeff} min={0} max={0.5} step="0.01" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

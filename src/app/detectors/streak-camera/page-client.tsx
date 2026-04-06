@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function StreakCameraPage() {
   const [sweepSpeed, setSweepSpeed] = useState(10); // mm/ns
@@ -40,18 +41,12 @@ export default function StreakCameraPage() {
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Streak Camera" description="Streak camera basics calculator. Models temporal resolution, sweep speed, time window, and spatial resolution trade-offs.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Sweep Speed (mm/ns)</span>
-          <input type="number" value={sweepSpeed} onChange={e => setSweepSpeed(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Slit Width (µm)</span>
-          <input type="number" value={slitWidth} onChange={e => setSlitWidth(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Magnification</span>
-          <input type="number" value={magnification} onChange={e => setMagnification(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">CCD Pixel Size (µm)</span>
-          <input type="number" value={ccdPixelSize} onChange={e => setCcdPixelSize(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">System Temporal Limit (ps)</span>
-          <input type="number" value={temporalResolution} onChange={e => setTemporalResolution(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Dynamic Range (counts)</span>
-          <input type="number" value={dynamicRange} onChange={e => setDynamicRange(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Sweep Speed (mm/ns)" value={sweepSpeed} onChange={setSweepSpeed} step="0.5" />
+        <ValidatedNumberInput label="Slit Width (µm)" value={slitWidth} onChange={setSlitWidth} />
+        <ValidatedNumberInput label="Magnification" value={magnification} onChange={setMagnification} step="0.1" />
+        <ValidatedNumberInput label="CCD Pixel Size (µm)" value={ccdPixelSize} onChange={setCcdPixelSize} />
+        <ValidatedNumberInput label="System Temporal Limit (ps)" value={temporalResolution} onChange={setTemporalResolution} />
+        <ValidatedNumberInput label="Dynamic Range (counts)" value={dynamicRange} onChange={setDynamicRange} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 space-y-1">

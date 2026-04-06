@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function AdhesionTestingPage() {
   const [testMethod, setTestMethod] = useState("scratch");
@@ -137,23 +138,19 @@ export default function AdhesionTestingPage() {
           <select value={substrateMaterial} onChange={e => setSubstrateMaterial(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             {Object.entries(substrates).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
           </select></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Film Thickness (nm)</span>
-          <input type="number" value={filmThickness} onChange={e => setFilmThickness(+e.target.value)} step="5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Film Thickness (nm)" value={filmThickness} onChange={setFilmThickness} step="5" />
 
         {(testMethod === "scratch" || testMethod === "all") && (
           <>
             <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Critical Load L<sub>c</sub> (N)</span>
               <input type="number" value={criticalLoad} onChange={e => setCriticalLoad(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-            <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Stylus Tip Radius (μm)</span>
-              <input type="number" value={tipRadius} onChange={e => setTipRadius(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-            <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Scratch Length (mm)</span>
-              <input type="number" value={scratchLength} onChange={e => setScratchLength(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+            <ValidatedNumberInput label="Stylus Tip Radius (μm)" value={tipRadius} onChange={setTipRadius} step="10" />
+            <ValidatedNumberInput label="Scratch Length (mm)" value={scratchLength} onChange={setScratchLength} step="0.5" />
           </>
         )}
 
         {testMethod === "peel" && (
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Peel Force (N/m)</span>
-            <input type="number" value={peelForce} onChange={e => setPeelForce(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="Peel Force (N/m)" value={peelForce} onChange={setPeelForce} step="0.1" />
         )}
 
         {testMethod === "tape" && (
@@ -164,8 +161,7 @@ export default function AdhesionTestingPage() {
         )}
 
         {testMethod === "bend" && (
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bend Radius (mm)</span>
-            <input type="number" value={bendRadius} onChange={e => setBendRadius(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="Bend Radius (mm)" value={bendRadius} onChange={setBendRadius} step="0.5" />
         )}
       </div>
 

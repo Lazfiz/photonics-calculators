@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function TemporalNoisePage() {
   const [readNoise, setReadNoise] = useState(5); // e- rms
@@ -55,18 +56,12 @@ export default function TemporalNoisePage() {
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Temporal Noise" description="1/f noise, white (shot) noise, and read noise as functions of frequency and integration time.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read Noise (e⁻ rms)</span>
-          <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Dark Current (e⁻/pix/s)</span>
-          <input type="number" value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)} step={0.01} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Exposure Time (s)</span>
-          <input type="number" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} step={0.001} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">1/f Corner Frequency (Hz)</span>
-          <input type="number" value={kneeFreq} onChange={e => setKneeFreq(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bandwidth (Hz)</span>
-          <input type="number" value={bandwidth} onChange={e => setBandwidth(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Conversion Gain (μV/e⁻)</span>
-          <input type="number" value={conversionGain} onChange={e => setConversionGain(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} />
+        <ValidatedNumberInput label="Dark Current (e⁻/pix/s)" value={darkCurrent} onChange={setDarkCurrent} />
+        <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} />
+        <ValidatedNumberInput label="1/f Corner Frequency (Hz)" value={kneeFreq} onChange={setKneeFreq} />
+        <ValidatedNumberInput label="Bandwidth (Hz)" value={bandwidth} onChange={setBandwidth} />
+        <ValidatedNumberInput label="Conversion Gain (μV/e⁻)" value={conversionGain} onChange={setConversionGain} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

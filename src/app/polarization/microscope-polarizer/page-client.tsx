@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function MicroscopePolarizerPage() {
   const [na, setNA] = useState(0.95);
@@ -91,31 +92,11 @@ export default function MicroscopePolarizerPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Objective NA</span>
-          <input type="number" value={na} onChange={e => setNA(+e.target.value)} step="0.05" min="0.1" max="1.4"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10" min="380" max="780"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Extinction Ratio</span>
-          <input type="number" value={extinctionRatio} onChange={e => setExtinctionRatio(+e.target.value)} step="100" min="10" max="100000"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Condenser NA</span>
-          <input type="number" value={condenserNA} onChange={e => setCondenserNA(+e.target.value)} step="0.05" min="0.1" max="1.4"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Analyzer Angle (°)</span>
-          <input type="number" value={analyzerDeg} onChange={e => setAnalyzerDeg(+e.target.value)} min="0" max="180" step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Objective NA" value={na} onChange={setNA} min={0.1} max={1.4} step="0.05" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={380} max={780} step="10" />
+        <ValidatedNumberInput label="Extinction Ratio" value={extinctionRatio} onChange={setExtinctionRatio} min={10} max={100000} step="100" />
+        <ValidatedNumberInput label="Condenser NA" value={condenserNA} onChange={setCondenserNA} min={0.1} max={1.4} step="0.05" />
+        <ValidatedNumberInput label="Analyzer Angle (°)" value={analyzerDeg} onChange={setAnalyzerDeg} min={0} max={180} step="1" />
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">

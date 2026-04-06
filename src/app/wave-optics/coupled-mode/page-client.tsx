@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function CoupledModePage() {
   const [kappa, setKappa] = useState(0.5); // coupling coeff /mm
@@ -38,14 +39,10 @@ export default function CoupledModePage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Coupled Mode Theory" description="Power exchange between two coupled waveguides.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Coupling Coefficient κ (mm⁻¹)</span>
-          <input type="number" value={kappa} onChange={e => setKappa(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Phase Mismatch Δβ (mm⁻¹)</span>
-          <input type="number" value={deltaBeta} onChange={e => setDeltaBeta(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Interaction Length (mm)</span>
-          <input type="number" value={length} onChange={e => setLength(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Input Power (mW)</span>
-          <input type="number" value={inputPower} onChange={e => setInputPower(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Coupling Coefficient κ (mm⁻¹)" value={kappa} onChange={setKappa} step="any" />
+        <ValidatedNumberInput label="Phase Mismatch Δβ (mm⁻¹)" value={deltaBeta} onChange={setDeltaBeta} step="any" />
+        <ValidatedNumberInput label="Interaction Length (mm)" value={length} onChange={setLength} step="any" />
+        <ValidatedNumberInput label="Input Power (mW)" value={inputPower} onChange={setInputPower} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

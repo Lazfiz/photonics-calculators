@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function IntensifiedCCDPage() {
   const [photocathodeType, setPhotocathodeType] = useState<"s20" | "gaas" | "inagaas" | "s25">("gaas");
@@ -47,11 +48,11 @@ export default function IntensifiedCCDPage() {
         <div className="rounded-lg border border-gray-800 bg-gray-900 p-3"><label className="block text-xs text-gray-400">Phosphor</label><select value={phosphorType} onChange={e => setPhosphorType(e.target.value as any)} className="mt-1 bg-gray-950 border border-gray-700 rounded px-2 py-1 text-sm text-white">{Object.entries(phosphors).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">MCP Gain</span><input type="number" value={mcpGain} onChange={e => setMcpGain(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Fiber Coupling</span><input type="number" value={fiberCoupling} onChange={e => setFiberCoupling(+e.target.value)} min="0.01" max="1" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">CCD Read Noise (e⁻)</span><input type="number" value={ccdReadNoise} onChange={e => setCcdReadNoise(+e.target.value)} min="0.5" step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Gate Width (ns)</span><input type="number" value={gateWidth} onChange={e => setGateWidth(+e.target.value)} min="0.5" step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Signal (photons/pix)</span><input type="number" value={signalPhotons} onChange={e => setSignalPhotons(+e.target.value)} min="0.1" step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="MCP Gain" value={mcpGain} onChange={setMcpGain} />
+        <ValidatedNumberInput label="Fiber Coupling" value={fiberCoupling} onChange={setFiberCoupling} min={0.01} max={1} step="0.01" />
+        <ValidatedNumberInput label="CCD Read Noise (e⁻)" value={ccdReadNoise} onChange={setCcdReadNoise} min={0.5} step="0.5" />
+        <ValidatedNumberInput label="Gate Width (ns)" value={gateWidth} onChange={setGateWidth} min={0.5} step="1" />
+        <ValidatedNumberInput label="Signal (photons/pix)" value={signalPhotons} onChange={setSignalPhotons} min={0.1} step="1" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="PC QE" value={`${(pc.qe * 100).toFixed(0)}%`} tone="blue" subtext={pc.range} />

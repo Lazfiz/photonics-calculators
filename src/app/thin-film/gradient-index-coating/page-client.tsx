@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function GradientIndexCoatingPage() {
   const [n1, setN1] = useState(1.0);
@@ -82,22 +83,17 @@ export default function GradientIndexCoatingPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Gradient Index Coating" description="Gradient-index (GRIN) antireflection coatings use a continuously varying refractive index to suppress Fresnel reflections over a broad bandwidth.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (incident)</span>
-          <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (surface)</span>
-          <input type="number" value={nSurface} onChange={e => setNSurface(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (substrate)</span>
-          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Thickness (nm)</span>
-          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} step="50" min="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="n (incident)" value={n1} onChange={setN1} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="n (surface)" value={nSurface} onChange={setNSurface} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="n (substrate)" value={nSub} onChange={setNSub} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="Thickness (nm)" value={thickness} onChange={setThickness} min={10} step="50" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Index Profile</span>
           <select value={profile} onChange={e => setProfile(e.target.value as "linear" | "cosine" | "exponential")} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="linear">Linear</option>
             <option value="cosine">Cosine ( quintic-like)</option>
             <option value="exponential">Exponential</option>
           </select></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Design Wavelength (nm)</span>
-          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Design Wavelength (nm)" value={designWl} onChange={setDesignWl} step="10" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

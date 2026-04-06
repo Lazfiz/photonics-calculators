@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function BendInsensitivePage() {
   const [radius, setRadius] = useState(7.5); // mm
@@ -95,16 +96,8 @@ export default function BendInsensitivePage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Bend-Insensitive Fiber Design" description="Design and analyze bend-insensitive fibers with depressed cladding trenches (ITU-T G.657).">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Bend Radius (mm)</span>
-          <input type="number" value={radius} onChange={e => setRadius(+e.target.value)} min={1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={800} max={1700}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Bend Radius (mm)" value={radius} onChange={setRadius} min={1} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={800} max={1700} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-gray-300 text-sm flex items-center gap-2">
             Depressed Trench
@@ -113,16 +106,8 @@ export default function BendInsensitivePage() {
         </label>
         {hasTrench && (
           <>
-            <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-              <span className="text-sm text-gray-300">Trench Depth Δ</span>
-              <input type="number" value={trenchDepth} onChange={e => setTrenchDepth(+e.target.value)} min={0.001} max={0.05} step="0.001"
-                className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-            </label>
-            <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-              <span className="text-sm text-gray-300">Trench Width (μm)</span>
-              <input type="number" value={trenchWidth} onChange={e => setTrenchWidth(+e.target.value)} min={1} max={20}
-                className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-            </label>
+            <ValidatedNumberInput label="Trench Depth Δ" value={trenchDepth} onChange={setTrenchDepth} min={0.001} max={0.05} step="0.001" />
+            <ValidatedNumberInput label="Trench Width (μm)" value={trenchWidth} onChange={setTrenchWidth} min={1} max={20} />
           </>
         )}
       </div>

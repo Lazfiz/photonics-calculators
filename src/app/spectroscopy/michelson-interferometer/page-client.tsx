@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function MichelsonInterferometerPage() {
   const [wavelength, setWavelength] = useState(1.0); // μm
@@ -58,14 +59,10 @@ export default function MichelsonInterferometerPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Michelson Interferometer" description="Interferogram → spectrum via Fourier transform. Core of FTIR spectroscopy.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Central λ (μm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(Math.max(0.1, +e.target.value))} min={0.1} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Max OPD (μm)</span>
-          <input type="number" value={maxOPD} onChange={e => setMaxOPD(Math.max(1, +e.target.value))} min={1} step={10} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Spectral Lines</span>
-          <input type="number" value={nLines} onChange={e => setNLines(Math.max(1, +e.target.value))} min={1} max={10} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">N Points</span>
-          <input type="number" value={nPoints} onChange={e => setNPoints(Math.max(8, +e.target.value))} min={8} max={2048} step={16} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Central λ (μm)" value={wavelength} onChange={setWavelength} min={0.1} />
+        <ValidatedNumberInput label="Max OPD (μm)" value={maxOPD} onChange={setMaxOPD} min={1} />
+        <ValidatedNumberInput label="Spectral Lines" value={nLines} onChange={setNLines} min={1} max={10} />
+        <ValidatedNumberInput label="N Points" value={nPoints} onChange={setNPoints} min={8} max={2048} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

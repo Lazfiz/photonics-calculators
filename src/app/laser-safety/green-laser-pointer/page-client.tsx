@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function GreenLaserPointerPage() {
   const [power, setPower] = useState(5); // mW
@@ -65,16 +66,11 @@ export default function GreenLaserPointerPage() {
             
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Power (mW)</span>
-          <input type="number" value={power} onChange={e => setPower(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Beam Diameter (mm)</span>
-          <input type="number" value={beamDia} onChange={e => setBeamDia(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Divergence (mrad)</span>
-          <input type="number" value={divergence} onChange={e => setDivergence(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Viewing Distance (m)</span>
-          <input type="number" value={distance} onChange={e => setDistance(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Power (mW)" value={power} onChange={setPower} step="0.5" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDia} onChange={setBeamDia} step="0.1" />
+        <ValidatedNumberInput label="Divergence (mrad)" value={divergence} onChange={setDivergence} step="0.1" />
+        <ValidatedNumberInput label="Viewing Distance (m)" value={distance} onChange={setDistance} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">

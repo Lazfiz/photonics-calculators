@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function MetalDielectricPage() {
   const [nMetal, setNMetal] = useState(0.5);
@@ -56,18 +57,12 @@ export default function MetalDielectricPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Metal-Dielectric Coatings" description="Metal-dielectric coating design. Explore how a dielectric overcoat modifies the reflectance, transmittance, and absorptance of a thin metal layer.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (metal, real part)</span>
-          <input type="number" value={nMetal} onChange={e => setNMetal(+e.target.value)} step="0.05" min="0" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">k (metal, extinction coeff)</span>
-          <input type="number" value={kMetal} onChange={e => setKMetal(+e.target.value)} step="0.1" min="0" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (dielectric)</span>
-          <input type="number" value={nDielectric} onChange={e => setNDielectric(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Dielectric Thickness (nm)</span>
-          <input type="number" value={dDielectric} onChange={e => setDDielectric(+e.target.value)} step="5" min="0" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Metal Thickness (nm)</span>
-          <input type="number" value={dMetal} onChange={e => setDMetal(+e.target.value)} step="1" min="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (substrate)</span>
-          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="n (metal, real part)" value={nMetal} onChange={setNMetal} min={0} step="0.05" />
+        <ValidatedNumberInput label="k (metal, extinction coeff)" value={kMetal} onChange={setKMetal} min={0} step="0.1" />
+        <ValidatedNumberInput label="n (dielectric)" value={nDielectric} onChange={setNDielectric} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="Dielectric Thickness (nm)" value={dDielectric} onChange={setDDielectric} min={0} step="5" />
+        <ValidatedNumberInput label="Metal Thickness (nm)" value={dMetal} onChange={setDMetal} min={1} step="1" />
+        <ValidatedNumberInput label="n (substrate)" value={nSub} onChange={setNSub} min={0.1} step="0.01" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

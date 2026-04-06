@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function AttosecondPulsePage() {
   const [wavelength, setWavelength] = useState(800); // nm, driving laser
@@ -36,14 +37,10 @@ export default function AttosecondPulsePage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Attosecond Pulse Generation" description="High-harmonic generation and isolated attosecond pulse parameters.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Driving Wavelength λ (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse Duration (fs)</span>
-          <input type="number" value={duration} onChange={e => setDuration(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Peak Intensity (W/cm²)</span>
-          <input type="number" value={intensity} onChange={e => setIntensity(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Cutoff Harmonic Order</span>
-          <input type="number" value={cutoffOrder} onChange={e => setCutoffOrder(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Driving Wavelength λ (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Pulse Duration (fs)" value={duration} onChange={setDuration} step="any" />
+        <ValidatedNumberInput label="Peak Intensity (W/cm²)" value={intensity} onChange={setIntensity} step="any" />
+        <ValidatedNumberInput label="Cutoff Harmonic Order" value={cutoffOrder} onChange={setCutoffOrder} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

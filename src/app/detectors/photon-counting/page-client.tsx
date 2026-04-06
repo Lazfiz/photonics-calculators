@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 // Photon counting statistics: Poisson distribution P(n) = (μ^n / n!) * e^(-μ)
 // SNR = sqrt(N) for shot-noise limited detection
@@ -58,26 +59,10 @@ export default function PhotonCountingPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Mean Counts per Interval</span>
-          <input type="number" value={meanCounts} onChange={e => setMeanCounts(+e.target.value)} min="0.1" step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Dead Time (ns)</span>
-          <input type="number" value={deadTime} onChange={e => setDeadTime(+e.target.value)} min="0" step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Incident Count Rate (counts/s)</span>
-          <input type="number" value={countRate} onChange={e => setCountRate(+e.target.value)} min="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Integration Time (s)</span>
-          <input type="number" value={integrationTime} onChange={e => setIntegrationTime(+e.target.value)} min="0.001" step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Mean Counts per Interval" value={meanCounts} onChange={setMeanCounts} min={0.1} step="1" />
+        <ValidatedNumberInput label="Dead Time (ns)" value={deadTime} onChange={setDeadTime} min={0} step="1" />
+        <ValidatedNumberInput label="Incident Count Rate (counts/s)" value={countRate} onChange={setCountRate} min={1} />
+        <ValidatedNumberInput label="Integration Time (s)" value={integrationTime} onChange={setIntegrationTime} min={0.001} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

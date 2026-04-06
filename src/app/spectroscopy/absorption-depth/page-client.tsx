@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function AbsorptionDepthPage() {
   const [absorptionCoeff, setAbsorptionCoeff] = useState(1000); // cm⁻¹
@@ -73,22 +74,10 @@ export default function AbsorptionDepthPage() {
             <option value="custom">Custom α</option>
           </select>
         </label>
-        {material === "custom" && <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Absorption Coefficient α (cm⁻¹)</span>
-          <input type="number" value={absorptionCoeff} onChange={e => setAbsorptionCoeff(+e.target.value)} min="0.001" step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>}
+        {material === "custom" && <ValidatedNumberInput label="Absorption Coefficient α (cm⁻¹)" value={absorptionCoeff} onChange={setAbsorptionCoeff} min={0.001} step="10" />}
         {material !== "custom" && <>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">λ Min (nm)</span>
-            <input type="number" value={wlMin} onChange={e => setWlMin(+e.target.value)} min="100"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">λ Max (nm)</span>
-            <input type="number" value={wlMax} onChange={e => setWlMax(+e.target.value)} min="200"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
+          <ValidatedNumberInput label="λ Min (nm)" value={wlMin} onChange={setWlMin} min={100} />
+          <ValidatedNumberInput label="λ Max (nm)" value={wlMax} onChange={setWlMax} min={200} />
         </>}
       </div>
 

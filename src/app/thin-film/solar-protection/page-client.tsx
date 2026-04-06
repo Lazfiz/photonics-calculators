@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SolarProtectionPage() {
   const [nH, setNH] = useState(2.35);
@@ -85,14 +86,10 @@ export default function SolarProtectionPage() {
           <input type="number" value={nL} onChange={e => setNL(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
           <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">UV design λ (nm)</span>
-          <input type="number" value={uvWl} onChange={e => setUvWl(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">IR design λ (nm)</span>
-          <input type="number" value={irWl} onChange={e => setIrWl(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">UV Pairs</span>
-          <input type="number" value={uvPairs} onChange={e => setUvPairs(+e.target.value)} min={1} max={15} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">IR Pairs</span>
-          <input type="number" value={irPairs} onChange={e => setIrPairs(+e.target.value)} min={1} max={15} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="UV design λ (nm)" value={uvWl} onChange={setUvWl} />
+        <ValidatedNumberInput label="IR design λ (nm)" value={irWl} onChange={setIrWl} />
+        <ValidatedNumberInput label="UV Pairs" value={uvPairs} onChange={setUvPairs} min={1} max={15} />
+        <ValidatedNumberInput label="IR Pairs" value={irPairs} onChange={setIrPairs} min={1} max={15} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

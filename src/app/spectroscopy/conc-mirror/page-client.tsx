@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ConcMirrorPage() {
   const [radius, setRadius] = useState(50);
@@ -29,26 +30,10 @@ export default function ConcMirrorPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Concave Mirror Throughput" description="Connes advantage and throughput for concave mirror-based spectrometers (e.g., FTIR, concave grating).">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Mirror Radius (mm)</span>
-          <input type="number" value={radius} onChange={e => setRadius(+e.target.value)} min={5} max={500}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={100} max={50000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Mirror Diameter (mm)</span>
-          <input type="number" value={mirrorDiam} onChange={e => setMirrorDiam(+e.target.value)} min={5} max={200}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Slit Width (µm)</span>
-          <input type="number" value={slitWidth} onChange={e => setSlitWidth(+e.target.value)} min={1} max={500}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Mirror Radius (mm)" value={radius} onChange={setRadius} min={5} max={500} />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} max={50000} />
+        <ValidatedNumberInput label="Mirror Diameter (mm)" value={mirrorDiam} onChange={setMirrorDiam} min={5} max={200} />
+        <ValidatedNumberInput label="Slit Width (µm)" value={slitWidth} onChange={setSlitWidth} min={1} max={500} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function AmplitudeSplittingPage() {
   const [n1, setN1] = useState(1.0);
@@ -63,14 +64,10 @@ export default function AmplitudeSplittingPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Amplitude Splitting" description="Multiple-beam interference from amplitude splitting at a thin film. Shows how partial reflections from each interface combine to form interference fringes.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n₁ (incident)</span>
-          <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (film)</span>
-          <input type="number" value={nFilm} onChange={e => setNFilm(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n₂ (substrate)</span>
-          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Thickness (nm)</span>
-          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} step="10" min="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="n₁ (incident)" value={n1} onChange={setN1} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="n (film)" value={nFilm} onChange={setNFilm} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="n₂ (substrate)" value={n2} onChange={setN2} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="Thickness (nm)" value={thickness} onChange={setThickness} min={1} step="10" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

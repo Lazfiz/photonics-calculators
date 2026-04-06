@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function UVHazardPage() {
   const [wavelength, setWavelength] = useState(254);
@@ -50,21 +51,9 @@ export default function UVHazardPage() {
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={200} max={400}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Spectral Irradiance (W/cm²/nm)</span>
-          <input type="number" value={spectralIrr} onChange={e => setSpectralIrr(+e.target.value)} min={0} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Exposure Time (s)</span>
-          <input type="number" value={exposure} onChange={e => setExposure(+e.target.value)} min={1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={400} />
+        <ValidatedNumberInput label="Spectral Irradiance (W/cm²/nm)" value={spectralIrr} onChange={setSpectralIrr} min={0} step="any" />
+        <ValidatedNumberInput label="Exposure Time (s)" value={exposure} onChange={setExposure} min={1} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

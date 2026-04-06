@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function RingCavityPage() {
   const [wavelength, setWavelength] = useState(1064); // nm
@@ -81,22 +82,16 @@ export default function RingCavityPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Ring Resonator Design" description="Ring cavity stability, modes, and spectral analysis.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Round-trip length (mm)</span>
-          <input type="number" value={roundTripLength} onChange={e => setRoundTripLength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Round-trip length (mm)" value={roundTripLength} onChange={setRoundTripLength} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Mirror ROC (mm)</span>
-          <input type="number" value={mirrorR} onChange={e => setMirrorR(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Number of mirrors</span>
-          <input type="number" value={numMirrors} onChange={e => setNumMirrors(Math.max(3, +e.target.value))} min={3} max={6} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Mirror ROC (mm)" value={mirrorR} onChange={setMirrorR} />
+        <ValidatedNumberInput label="Number of mirrors" value={numMirrors} onChange={setNumMirrors} min={3} max={6} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Output coupler R</span>
-          <input type="number" value={outputCouplerR} onChange={e => setOutputCouplerR(+e.target.value)} step="0.01" min={0} max={0.999} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Intracavity loss (per round trip)</span>
-          <input type="number" value={intracavityLoss} onChange={e => setIntracavityLoss(+e.target.value)} step="0.001" min={0} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Output coupler R" value={outputCouplerR} onChange={setOutputCouplerR} min={0} max={0.999} step="0.01" />
+        <ValidatedNumberInput label="Intracavity loss (per round trip)" value={intracavityLoss} onChange={setIntracavityLoss} min={0} step="0.001" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

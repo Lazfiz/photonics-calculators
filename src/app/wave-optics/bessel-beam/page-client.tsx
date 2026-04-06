@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function BesselBeamPage() {
   const [wavelength, setWavelength] = useState(632.8); // nm
@@ -87,12 +88,9 @@ export default function BesselBeamPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Bessel Beam Calculator" description="Non-diffracting beam profiles and propagation.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Cone angle α (rad)</span>
-          <input type="number" value={alpha} onChange={e => setAlpha(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Max radius (µm)</span>
-          <input type="number" value={maxR} onChange={e => setMaxR(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Cone angle α (rad)" value={alpha} onChange={setAlpha} step="any" />
+        <ValidatedNumberInput label="Max radius (µm)" value={maxR} onChange={setMaxR} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

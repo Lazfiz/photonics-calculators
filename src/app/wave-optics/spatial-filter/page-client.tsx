@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SpatialFilterPage() {
   const [wavelength, setWavelength] = useState(1064); // nm
@@ -65,16 +66,12 @@ export default function SpatialFilterPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Spatial Filter Pinhole Sizing" description="Calculate optimal pinhole diameter for spatial filtering.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Input beam 1/e² diameter (µm)</span>
-          <input type="number" value={inputBeamDiam} onChange={e => setInputBeamDiam(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Input beam 1/e² diameter (µm)" value={inputBeamDiam} onChange={setInputBeamDiam} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Lens focal length (mm)</span>
-          <input type="number" value={focalLength} onChange={e => setFocalLength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">M² factor</span>
-          <input type="number" value={m2} onChange={e => setM2(Math.max(1, +e.target.value))} step="0.1" min={1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Lens focal length (mm)" value={focalLength} onChange={setFocalLength} />
+        <ValidatedNumberInput label="M² factor" value={m2} onChange={setM2} min={1} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

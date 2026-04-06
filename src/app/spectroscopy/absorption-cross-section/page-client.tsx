@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function AbsorptionCrossSectionPage() {
   const [extinctionCoeff, setExtinctionCoeff] = useState(50000);
@@ -39,21 +40,9 @@ export default function AbsorptionCrossSectionPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Absorption Cross-Section Calculator" description="σ = ε · 1000 / (N_A · ln 10) — convert molar extinction coefficient to molecular cross-section.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">ε (L·mol⁻¹·cm⁻¹)</span>
-          <input type="number" value={extinctionCoeff} onChange={e => setExtinctionCoeff(+e.target.value)} min={0} step={1000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Concentration (mol/L)</span>
-          <input type="number" value={concentration} onChange={e => setConcentration(+e.target.value)} min={0} step={0.0001}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={100} step={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="ε (L·mol⁻¹·cm⁻¹)" value={extinctionCoeff} onChange={setExtinctionCoeff} min={0} />
+        <ValidatedNumberInput label="Concentration (mol/L)" value={concentration} onChange={setConcentration} min={0} />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} />
       </div>
 
       <div className="flex gap-2 mb-6">

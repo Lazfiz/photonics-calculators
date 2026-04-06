@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function StressPage() {
   const [filmStress, setFilmStress] = useState(-200); // MPa
@@ -48,12 +49,9 @@ export default function StressPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Coating Stress & Curvature" description="Stoney's equation: σ = E·ts²/(6·R·tf). Relates film stress to substrate curvature.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Film Stress (MPa, compressive = negative)</span>
-          <input type="number" value={filmStress} onChange={e => setFilmStress(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Film Thickness (nm)</span>
-          <input type="number" value={filmThickness} onChange={e => setFilmThickness(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Substrate Thickness (mm)</span>
-          <input type="number" value={substrateThickness} onChange={e => setSubstrateThickness(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Film Stress (MPa, compressive = negative)" value={filmStress} onChange={setFilmStress} />
+        <ValidatedNumberInput label="Film Thickness (nm)" value={filmThickness} onChange={setFilmThickness} />
+        <ValidatedNumberInput label="Substrate Thickness (mm)" value={substrateThickness} onChange={setSubstrateThickness} step="0.1" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">E<sub>substrate</sub> (GPa)</span>
           <input type="number" value={eSubstrate} onChange={e => setESubstrate(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
       </div>

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FresnelEquationsPage() {
   const [n1, setN1] = useState(1.0);
@@ -48,12 +49,9 @@ export default function FresnelEquationsPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Fresnel Equations" description="Reflectance vs. angle of incidence at a dielectric interface. Shows s-polarization, p-polarization, Brewster&apos;s angle, and total internal reflection.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n₁ (incident medium)</span>
-          <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n₂ (transmitting medium)</span>
-          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Max Angle (°)</span>
-          <input type="number" value={maxAngle} onChange={e => setMaxAngle(+e.target.value)} step="1" min="1" max="90" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="n₁ (incident medium)" value={n1} onChange={setN1} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="n₂ (transmitting medium)" value={n2} onChange={setN2} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="Max Angle (°)" value={maxAngle} onChange={setMaxAngle} min={1} max={90} step="1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

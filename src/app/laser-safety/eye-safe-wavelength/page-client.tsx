@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function EyeSafeWavelengthPage() {
   const [pulseEnergy, setPulseEnergy] = useState(100); // mJ
@@ -85,26 +86,10 @@ export default function EyeSafeWavelengthPage() {
             
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pulse Energy (mJ)</span>
-          <input type="number" value={pulseEnergy} onChange={e => setPulseEnergy(+e.target.value)} min={0.001} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pulse Width (ns)</span>
-          <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} min={0.1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Repetition Rate (Hz)</span>
-          <input type="number" value={repetitionRate} onChange={e => setRepetitionRate(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Beam Diameter (mm)</span>
-          <input type="number" value={beamDiam} onChange={e => setBeamDiam(+e.target.value)} min={0.1} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Pulse Energy (mJ)" value={pulseEnergy} onChange={setPulseEnergy} min={0.001} step="any" />
+        <ValidatedNumberInput label="Pulse Width (ns)" value={pulseWidth} onChange={setPulseWidth} min={0.1} step="any" />
+        <ValidatedNumberInput label="Repetition Rate (Hz)" value={repetitionRate} onChange={setRepetitionRate} min={1} />
+        <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDiam} onChange={setBeamDiam} min={0.1} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

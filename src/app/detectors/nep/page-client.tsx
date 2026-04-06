@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function NEPPage() {
   const [darkCurrent, setDarkCurrent] = useState(10); // nA
@@ -34,36 +35,12 @@ export default function NEPPage() {
       description="Calculate NEP and specific detectivity D* from detector noise sources: shot noise, thermal (Johnson) noise, and dark current."
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Dark Current (nA)</span>
-          <input type="number" value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Responsivity (A/W)</span>
-          <input type="number" value={responsivity} onChange={e => setResponsivity(+e.target.value)} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Bandwidth (Hz)</span>
-          <input type="number" value={bandwidth} onChange={e => setBandwidth(+e.target.value)} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Temperature (K)</span>
-          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Load Resistor (Ω)</span>
-          <input type="number" value={loadResistor} onChange={e => setLoadResistor(+e.target.value)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Detector Area (mm²)</span>
-          <input type="number" value={detectorArea} onChange={e => setDetectorArea(+e.target.value)} step="any" min={0.001}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Dark Current (nA)" value={darkCurrent} onChange={setDarkCurrent} step="any" />
+        <ValidatedNumberInput label="Responsivity (A/W)" value={responsivity} onChange={setResponsivity} step="any" />
+        <ValidatedNumberInput label="Bandwidth (Hz)" value={bandwidth} onChange={setBandwidth} step="any" />
+        <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} />
+        <ValidatedNumberInput label="Load Resistor (Ω)" value={loadResistor} onChange={setLoadResistor} />
+        <ValidatedNumberInput label="Detector Area (mm²)" value={detectorArea} onChange={setDetectorArea} min={0.001} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">

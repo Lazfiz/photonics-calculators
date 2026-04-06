@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function EnclosureClassPage() {
   const [laserPower, setLaserPower] = useState(5000); // mW
@@ -104,31 +105,11 @@ export default function EnclosureClassPage() {
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Laser Power (mW)</span>
-          <input type="number" value={laserPower} onChange={e => setLaserPower(+e.target.value)} min={0.001} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={180} max={20000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Aperture Size (mm)</span>
-          <input type="number" value={apertureSize} onChange={e => setApertureSize(+e.target.value)} min={0.1} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Exposure Time (s)</span>
-          <input type="number" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} min={1e-9} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Working Distance (cm)</span>
-          <input type="number" value={workingDistance} onChange={e => setWorkingDistance(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Laser Power (mW)" value={laserPower} onChange={setLaserPower} min={0.001} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={20000} />
+        <ValidatedNumberInput label="Aperture Size (mm)" value={apertureSize} onChange={setApertureSize} min={0.1} step="0.1" />
+        <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} min={1e-9} step="any" />
+        <ValidatedNumberInput label="Working Distance (cm)" value={workingDistance} onChange={setWorkingDistance} min={1} />
       </div>
 
       <div className={`bg-gray-900 border rounded-lg p-6 mb-6 ${results.enclosureClass.includes("Class 1") ? "border-green-700" : "border-red-700"}`}>

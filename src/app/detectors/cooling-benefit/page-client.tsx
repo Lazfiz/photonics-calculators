@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 const kB = 8.617e-5;
 
@@ -41,13 +42,13 @@ export default function CoolingBenefitPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Cooling Benefit Calculator" description="Dark current reduction and SNR improvement from thermoelectric (TEC) or cryogenic cooling.">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Si Bandgap (eV)</span><input type="number" value={egSi} onChange={e => setEgSi(+e.target.value)} min="0.5" max="2" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">InGaAs Bandgap (eV)</span><input type="number" value={egInGaAs} onChange={e => setEgInGaAs(+e.target.value)} min="0.3" max="1.5" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Si Dark @ 25°C (e⁻/s)</span><input type="number" value={darkCurrent25Si} onChange={e => setDarkCurrent25Si(+e.target.value)} min="0.001" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">InGaAs Dark @ 25°C (e⁻/s)</span><input type="number" value={darkCurrent25InGaAs} onChange={e => setDarkCurrent25InGaAs(+e.target.value)} min="1" step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read Noise (e⁻)</span><input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} min="0.1" step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Exposure Time (s)</span><input type="number" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} min="0.001" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Cooling Target (°C)</span><input type="number" value={coolTemp} onChange={e => setCoolTemp(+e.target.value)} min="-150" step="5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Si Bandgap (eV)" value={egSi} onChange={setEgSi} min={0.5} max={2} step="0.01" />
+        <ValidatedNumberInput label="InGaAs Bandgap (eV)" value={egInGaAs} onChange={setEgInGaAs} min={0.3} max={1.5} step="0.01" />
+        <ValidatedNumberInput label="Si Dark @ 25°C (e⁻/s)" value={darkCurrent25Si} onChange={setDarkCurrent25Si} min={0.001} step="0.01" />
+        <ValidatedNumberInput label="InGaAs Dark @ 25°C (e⁻/s)" value={darkCurrent25InGaAs} onChange={setDarkCurrent25InGaAs} min={1} step="10" />
+        <ValidatedNumberInput label="Read Noise (e⁻)" value={readNoise} onChange={setReadNoise} min={0.1} step="0.5" />
+        <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} min={0.001} step="0.1" />
+        <ValidatedNumberInput label="Cooling Target (°C)" value={coolTemp} onChange={setCoolTemp} min={-150} step="5" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Si Dark Reduction" value={`×${siReduction.toExponential(1)}`} tone="blue" />

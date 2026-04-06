@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function NonzeroDispersionPage() {
   const [wavelength, setWavelength] = useState(1550); // nm
@@ -69,36 +70,12 @@ export default function NonzeroDispersionPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Non-Zero Dispersion Shifted Fiber (NZ-DSF)" description="Design NZ-DSF fibers (G.655) with optimized dispersion for DWDM systems — balancing dispersion and nonlinearity.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={1300} max={1650}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Link Length (km)</span>
-          <input type="number" value={length} onChange={e => setLength(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">D @ 1550 nm (ps/nm/km)</span>
-          <input type="number" value={dispAt1550} onChange={e => setDispAt1550(+e.target.value)} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Dispersion Slope S₀ (ps/nm²/km)</span>
-          <input type="number" value={dispSlope} onChange={e => setDispSlope(+e.target.value)} step="0.001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Channel Spacing (GHz)</span>
-          <input type="number" value={channelSpacing} onChange={e => setChannelSpacing(+e.target.value)} min={25}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Zero Dispersion λ₀ (nm)</span>
-          <input type="number" value={zeroDispWl} onChange={e => setZeroDispWl(+e.target.value)} min={1300} max={1550}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={1300} max={1650} />
+        <ValidatedNumberInput label="Link Length (km)" value={length} onChange={setLength} min={1} />
+        <ValidatedNumberInput label="D @ 1550 nm (ps/nm/km)" value={dispAt1550} onChange={setDispAt1550} step="0.1" />
+        <ValidatedNumberInput label="Dispersion Slope S₀ (ps/nm²/km)" value={dispSlope} onChange={setDispSlope} step="0.001" />
+        <ValidatedNumberInput label="Channel Spacing (GHz)" value={channelSpacing} onChange={setChannelSpacing} min={25} />
+        <ValidatedNumberInput label="Zero Dispersion λ₀ (nm)" value={zeroDispWl} onChange={setZeroDispWl} min={1300} max={1550} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

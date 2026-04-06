@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FiberGyroscopePage() {
   const [coilDiameter, setCoilDiameter] = useState(100); // mm
@@ -83,31 +84,11 @@ export default function FiberGyroscopePage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Optic Gyroscope (FOG)" description="Sagnac effect, scale factor, angle random walk, and bias stability for fiber optic gyroscopes.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Coil Diameter (mm)</span>
-          <input type="number" value={coilDiameter} onChange={e => setCoilDiameter(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Fiber Length (m)</span>
-          <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={400}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Source Power (mW)</span>
-          <input type="number" value={sourcePower} onChange={e => setSourcePower(+e.target.value)} min={0.01} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Round-trip Losses (dB)</span>
-          <input type="number" value={losses} onChange={e => setLosses(+e.target.value)} min={0} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Coil Diameter (mm)" value={coilDiameter} onChange={setCoilDiameter} min={1} />
+        <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} min={1} />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} />
+        <ValidatedNumberInput label="Source Power (mW)" value={sourcePower} onChange={setSourcePower} min={0.01} step="any" />
+        <ValidatedNumberInput label="Round-trip Losses (dB)" value={losses} onChange={setLosses} min={0} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

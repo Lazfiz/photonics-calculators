@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function OpticalCoherencePage() {
   const [wavelengthNm, setWavelengthNm] = useState(1310);
@@ -75,36 +76,12 @@ export default function OpticalCoherencePage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Center Wavelength (nm)</span>
-          <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={600} max={1600} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Bandwidth FWHM (nm)</span>
-          <input type="number" value={bandwidthNm} onChange={e => setBandwidthNm(+e.target.value)} min={5} max={300} step="5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Refractive Index</span>
-          <input type="number" value={refractiveIndex} onChange={e => setRefractiveIndex(+e.target.value)} min={1} max={1.8} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Source Power (mW)</span>
-          <input type="number" value={sourcePowerMw} onChange={e => setSourcePowerMw(+e.target.value)} min={0.1} max={100} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Sample Reflectivity</span>
-          <input type="number" value={sampleReflectivity} onChange={e => setSampleReflectivity(+e.target.value)} min={0.0001} max={0.1} step="0.001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Coupling Efficiency</span>
-          <input type="number" value={couplingEfficiency} onChange={e => setCouplingEfficiency(+e.target.value)} min={0.1} max={0.9} step="0.05"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Center Wavelength (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={600} max={1600} step="10" />
+        <ValidatedNumberInput label="Bandwidth FWHM (nm)" value={bandwidthNm} onChange={setBandwidthNm} min={5} max={300} step="5" />
+        <ValidatedNumberInput label="Refractive Index" value={refractiveIndex} onChange={setRefractiveIndex} min={1} max={1.8} step="0.01" />
+        <ValidatedNumberInput label="Source Power (mW)" value={sourcePowerMw} onChange={setSourcePowerMw} min={0.1} max={100} step="0.1" />
+        <ValidatedNumberInput label="Sample Reflectivity" value={sampleReflectivity} onChange={setSampleReflectivity} min={0.0001} max={0.1} step="0.001" />
+        <ValidatedNumberInput label="Coupling Efficiency" value={couplingEfficiency} onChange={setCouplingEfficiency} min={0.1} max={0.9} step="0.05" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">

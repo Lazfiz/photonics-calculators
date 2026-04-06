@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function InfraredSpectroscopyPage() {
   const [wavenumberStart, setWavenumberStart] = useState(400);
@@ -55,26 +56,10 @@ export default function InfraredSpectroscopyPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Infrared (IR) Spectroscopy" description="Molecular vibrational absorption in the mid-infrared region (400–4000 cm⁻¹).">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Range Start (cm⁻¹)</span>
-          <input type="number" value={wavenumberStart} onChange={e => setWavenumberStart(+e.target.value)} min={400} max={4000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Range End (cm⁻¹)</span>
-          <input type="number" value={wavenumberEnd} onChange={e => setWavenumberEnd(+e.target.value)} min={400} max={4000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Path Length (cm)</span>
-          <input type="number" value={pathLength} onChange={e => setPathLength(+e.target.value)} min={0.001} max={10} step={0.001}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Concentration (M)</span>
-          <input type="number" value={concentration} onChange={e => setConcentration(+e.target.value)} min={0.001} max={10} step={0.01}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Range Start (cm⁻¹)" value={wavenumberStart} onChange={setWavenumberStart} min={400} max={4000} />
+        <ValidatedNumberInput label="Range End (cm⁻¹)" value={wavenumberEnd} onChange={setWavenumberEnd} min={400} max={4000} />
+        <ValidatedNumberInput label="Path Length (cm)" value={pathLength} onChange={setPathLength} min={0.001} max={10} />
+        <ValidatedNumberInput label="Concentration (M)" value={concentration} onChange={setConcentration} min={0.001} max={10} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

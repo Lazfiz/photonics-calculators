@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function DualBandARPage() {
   const [nSub, setNSub] = useState(1.52);
@@ -63,10 +64,8 @@ export default function DualBandARPage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
           <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Band 1 λ (nm)</span>
-          <input type="number" value={wl1} onChange={e => setWl1(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Band 2 λ (nm)</span>
-          <input type="number" value={wl2} onChange={e => setWl2(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Band 1 λ (nm)" value={wl1} onChange={setWl1} />
+        <ValidatedNumberInput label="Band 2 λ (nm)" value={wl2} onChange={setWl2} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>1</sub> (top layer)</span>
           <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>2</sub> (middle layer)</span>

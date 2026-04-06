@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function OpticalWaveguidePage() {
   const [nCore, setNCore] = useState(1.5);
@@ -53,14 +54,10 @@ export default function OpticalWaveguidePage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Optical Waveguide Modes" description="Slab waveguide mode analysis: V-number, NA, and effective index.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Core Index n₁</span>
-          <input type="number" value={nCore} onChange={e => setNCore(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Cladding Index n₂</span>
-          <input type="number" value={nClad} onChange={e => setNClad(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Core Width (µm)</span>
-          <input type="number" value={coreWidth} onChange={e => setCoreWidth(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Core Index n₁" value={nCore} onChange={setNCore} step="any" />
+        <ValidatedNumberInput label="Cladding Index n₂" value={nClad} onChange={setNClad} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Core Width (µm)" value={coreWidth} onChange={setCoreWidth} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

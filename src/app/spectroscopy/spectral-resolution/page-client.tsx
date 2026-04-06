@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SpectralResolutionPage() {
   const [mode, setMode] = useState("grating");
@@ -48,61 +49,21 @@ export default function SpectralResolutionPage() {
             <option value="fabry-perot">Fabry-Pérot</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Central Wavelength (nm)</span>
-          <input type="number" value={gratingWL} onChange={e => setGratingWL(+e.target.value)} min="100"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Central Wavelength (nm)" value={gratingWL} onChange={setGratingWL} min={100} />
         {mode === "grating" && <>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Groove Density (lines/mm)</span>
-            <input type="number" value={grooveDensity} onChange={e => setGrooveDensity(+e.target.value)} min="10"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Focal Length (mm)</span>
-            <input type="number" value={focalLength} onChange={e => setFocalLength(+e.target.value)} min="10"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Slit Width (μm)</span>
-            <input type="number" value={slitWidth} onChange={e => setSlitWidth(+e.target.value)} min="1"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Diffraction Order</span>
-            <input type="number" value={order} onChange={e => setOrder(+e.target.value)} min="1" max="10"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
+          <ValidatedNumberInput label="Groove Density (lines/mm)" value={grooveDensity} onChange={setGrooveDensity} min={10} />
+          <ValidatedNumberInput label="Focal Length (mm)" value={focalLength} onChange={setFocalLength} min={10} />
+          <ValidatedNumberInput label="Slit Width (μm)" value={slitWidth} onChange={setSlitWidth} min={1} />
+          <ValidatedNumberInput label="Diffraction Order" value={order} onChange={setOrder} min={1} max={10} />
         </>}
         {mode === "prism" && <>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Slit Width (μm)</span>
-            <input type="number" value={slitWidth} onChange={e => setSlitWidth(+e.target.value)} min="1"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Focal Length (mm)</span>
-            <input type="number" value={focalLength} onChange={e => setFocalLength(+e.target.value)} min="10"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Angular Dispersion (rad/nm)</span>
-            <input type="number" value={dispersion} onChange={e => setDispersion(+e.target.value)} min="1e-5" step="0.001"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
+          <ValidatedNumberInput label="Slit Width (μm)" value={slitWidth} onChange={setSlitWidth} min={1} />
+          <ValidatedNumberInput label="Focal Length (mm)" value={focalLength} onChange={setFocalLength} min={10} />
+          <ValidatedNumberInput label="Angular Dispersion (rad/nm)" value={dispersion} onChange={setDispersion} min={1e-5} step="0.001" />
         </>}
         {mode === "fabry-perot" && <>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Finesse ℱ</span>
-            <input type="number" value={finesse} onChange={e => setFinesse(+e.target.value)} min="2" step="1"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">FSR (nm)</span>
-            <input type="number" value={fsrNm} onChange={e => setFsrNm(+e.target.value)} min="0.001" step="0.01"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
+          <ValidatedNumberInput label="Finesse ℱ" value={finesse} onChange={setFinesse} min={2} step="1" />
+          <ValidatedNumberInput label="FSR (nm)" value={fsrNm} onChange={setFsrNm} min={0.001} step="0.01" />
         </>}
       </div>
 

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function StitchingPage() {
   const [gridCols, setGridCols] = useState(5);
@@ -112,40 +113,16 @@ export default function StitchingPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Grid Columns</span>
-          <input type="number" value={gridCols} onChange={e => setGridCols(Math.max(1, +e.target.value))} min={1} max={50}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Grid Rows</span>
-          <input type="number" value={gridRows} onChange={e => setGridRows(Math.max(1, +e.target.value))} min={1} max={50}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Tile Width (px)</span>
-          <input type="number" value={tileWidth} onChange={e => setTileWidth(+e.target.value)} min={64} max={4096}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Tile Height (px)</span>
-          <input type="number" value={tileHeight} onChange={e => setTileHeight(+e.target.value)} min={64} max={4096}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Overlap (%)</span>
-          <input type="number" value={overlapPercent} onChange={e => setOverlapPercent(+e.target.value)} min={0} max={50}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Grid Columns" value={gridCols} onChange={setGridCols} min={1} max={50} />
+        <ValidatedNumberInput label="Grid Rows" value={gridRows} onChange={setGridRows} min={1} max={50} />
+        <ValidatedNumberInput label="Tile Width (px)" value={tileWidth} onChange={setTileWidth} min={64} max={4096} />
+        <ValidatedNumberInput label="Tile Height (px)" value={tileHeight} onChange={setTileHeight} min={64} max={4096} />
+        <ValidatedNumberInput label="Overlap (%)" value={overlapPercent} onChange={setOverlapPercent} min={0} max={50} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Overlap (px)</span>
           <p className="mt-1 text-lg text-gray-300">{overlapPx} px</p>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Blend Width (px)</span>
-          <input type="number" value={blendWidth} onChange={e => setBlendWidth(+e.target.value)} min={0} max={200}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Blend Width (px)" value={blendWidth} onChange={setBlendWidth} min={0} max={200} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Blend Method</span>
           <select value={blendMethod} onChange={e => setBlendMethod(e.target.value as any)}
@@ -155,16 +132,8 @@ export default function StitchingPage() {
             <option value="multiband">Multiband</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Position Error (px)</span>
-          <input type="number" value={positionError} onChange={e => setPositionError(+e.target.value)} min={0} max={50} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Illumination Variation (%)</span>
-          <input type="number" value={illuminationVar} onChange={e => setIlluminationVar(+e.target.value)} min={0} max={30}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Position Error (px)" value={positionError} onChange={setPositionError} min={0} max={50} step="0.5" />
+        <ValidatedNumberInput label="Illumination Variation (%)" value={illuminationVar} onChange={setIlluminationVar} min={0} max={30} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">

@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function RetinalHazardPage() {
   const [power, setPower] = useState(10); // mW
@@ -67,26 +68,10 @@ export default function RetinalHazardPage() {
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Corneal Power (mW)</span>
-          <input type="number" value={power} onChange={e => setPower(+e.target.value)} min={0.01} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Beam Diameter (mm)</span>
-          <input type="number" value={beamDiam} onChange={e => setBeamDiam(+e.target.value)} min={0.1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Corneal Limiting Aperture (mm)</span>
-          <input type="number" value={cornealDiam} onChange={e => setCornealDiam(+e.target.value)} min={1} max={11}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Beam Divergence (mrad)</span>
-          <input type="number" value={divergence} onChange={e => setDivergence(+e.target.value)} min={0.01} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Corneal Power (mW)" value={power} onChange={setPower} min={0.01} step="any" />
+        <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDiam} onChange={setBeamDiam} min={0.1} step="any" />
+        <ValidatedNumberInput label="Corneal Limiting Aperture (mm)" value={cornealDiam} onChange={setCornealDiam} min={1} max={11} />
+        <ValidatedNumberInput label="Beam Divergence (mrad)" value={divergence} onChange={setDivergence} min={0.01} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

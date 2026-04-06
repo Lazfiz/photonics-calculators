@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PixelFovPage() {
   const [pixelSizeUm, setPixelSizeUm] = useState(6.5);
@@ -45,16 +46,8 @@ export default function PixelFovPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pixel Size (µm)</span>
-          <input type="number" value={pixelSizeUm} onChange={e => setPixelSizeUm(+e.target.value)} min={1} max={50} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Focal Length (mm)</span>
-          <input type="number" value={focalLengthMm} onChange={e => setFocalLengthMm(+e.target.value)} min={1} max={10000} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Pixel Size (µm)" value={pixelSizeUm} onChange={setPixelSizeUm} min={1} max={50} step="0.1" />
+        <ValidatedNumberInput label="Focal Length (mm)" value={focalLengthMm} onChange={setFocalLengthMm} min={1} max={10000} step="0.1" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Binning</span>
           <select value={binning} onChange={e => setBinning(+e.target.value)}

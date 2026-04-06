@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function LiquidCrystalPolarizerPage() {
   const [wavelength, setWavelength] = useState(550);
@@ -104,26 +105,10 @@ export default function LiquidCrystalPolarizerPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10" min="380" max="780"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Δn (birefringence)</span>
-          <input type="number" value={neNo} onChange={e => setNeNo(+e.target.value)} step="0.01" min="0.01" max="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Cell Thickness (μm)</span>
-          <input type="number" value={cellThickness} onChange={e => setCellThickness(+e.target.value)} step="0.5" min="1" max="20"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Twist Angle (°)</span>
-          <input type="number" value={twistAngle} onChange={e => setTwistAngle(+e.target.value)} step="10" min="0" max="270"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={380} max={780} step="10" />
+        <ValidatedNumberInput label="Δn (birefringence)" value={neNo} onChange={setNeNo} min={0.01} max={0.5} step="0.01" />
+        <ValidatedNumberInput label="Cell Thickness (μm)" value={cellThickness} onChange={setCellThickness} min={1} max={20} step="0.5" />
+        <ValidatedNumberInput label="Twist Angle (°)" value={twistAngle} onChange={setTwistAngle} min={0} max={270} step="10" />
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">

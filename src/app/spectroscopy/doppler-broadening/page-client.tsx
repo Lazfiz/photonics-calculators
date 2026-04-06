@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function DopplerBroadeningPage() {
   const [wavelength, setWavelength] = useState(632.8);
@@ -35,21 +36,9 @@ export default function DopplerBroadeningPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Doppler Broadening Calculator" description="Calculate Doppler (thermal) line broadening FWHM from gas temperature and atomic/molecular mass.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={100} max={5000} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Temperature (K)</span>
-          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} min={10} max={10000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Mass (amu)</span>
-          <input type="number" value={mass} onChange={e => setMass(+e.target.value)} min={1} max={300} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} max={5000} step="any" />
+        <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} min={10} max={10000} />
+        <ValidatedNumberInput label="Mass (amu)" value={mass} onChange={setMass} min={1} max={300} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

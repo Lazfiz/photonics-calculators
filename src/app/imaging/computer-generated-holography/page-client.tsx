@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function CGHPage() {
   const [wavelengthNm, setWavelengthNm] = useState(633);
@@ -74,31 +75,11 @@ export default function CGHPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={400} max={800} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pixel Pitch (µm)</span>
-          <input type="number" value={pixelPitchUm} onChange={e => setPixelPitchUm(+e.target.value)} min={1} max={20} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">SLM Width (px)</span>
-          <input type="number" value={slmWidth} onChange={e => setSlmWidth(+e.target.value)} min={256} max={4096} step="128"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">SLM Height (px)</span>
-          <input type="number" value={slmHeight} onChange={e => setSlmHeight(+e.target.value)} min={256} max={4096} step="128"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Reconstruction Distance (mm)</span>
-          <input type="number" value={reconstructionDistMm} onChange={e => setReconstructionDistMm(+e.target.value)} min={10} max={5000} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={400} max={800} step="10" />
+        <ValidatedNumberInput label="Pixel Pitch (µm)" value={pixelPitchUm} onChange={setPixelPitchUm} min={1} max={20} step="0.5" />
+        <ValidatedNumberInput label="SLM Width (px)" value={slmWidth} onChange={setSlmWidth} min={256} max={4096} step="128" />
+        <ValidatedNumberInput label="SLM Height (px)" value={slmHeight} onChange={setSlmHeight} min={256} max={4096} step="128" />
+        <ValidatedNumberInput label="Reconstruction Distance (mm)" value={reconstructionDistMm} onChange={setReconstructionDistMm} min={10} max={5000} step="10" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Bit Depth</span>
           <select value={bitDepth} onChange={e => setBitDepth(+e.target.value)}

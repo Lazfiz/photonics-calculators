@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function CoherentAntiStokesPage() {
   const [pumpWavelength, setPumpWavelength] = useState(532);
@@ -66,26 +67,10 @@ export default function CoherentAntiStokesPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Coherent Anti-Stokes Raman Spectroscopy (CARS)" description="Four-wave mixing process: ω_CARS = ω_pump − ω_Stokes + ω_probe. Coherent, directional signal above fluorescence.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pump Wavelength (nm)</span>
-          <input type="number" value={pumpWavelength} onChange={e => setPumpWavelength(+e.target.value)} min={200} max={2000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Stokes Wavelength (nm)</span>
-          <input type="number" value={stokesWavelength} onChange={e => setStokesWavelength(+e.target.value)} min={200} max={3000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Temperature (K)</span>
-          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} min={4} max={5000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Max Raman Shift (cm⁻¹)</span>
-          <input type="number" value={maxShift} onChange={e => setMaxShift(+e.target.value)} min={100} max={5000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} min={200} max={2000} />
+        <ValidatedNumberInput label="Stokes Wavelength (nm)" value={stokesWavelength} onChange={setStokesWavelength} min={200} max={3000} />
+        <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} min={4} max={5000} />
+        <ValidatedNumberInput label="Max Raman Shift (cm⁻¹)" value={maxShift} onChange={setMaxShift} min={100} max={5000} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

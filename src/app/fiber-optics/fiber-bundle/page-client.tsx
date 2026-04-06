@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FiberBundlePage() {
   const [fiberCount, setFiberCount] = useState(37);
@@ -71,11 +72,7 @@ export default function FiberBundlePage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Bundle Design" description="Calculate bundle geometry, fill factor, étendue, and coupling efficiency for fiber optic bundles.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Fibers</span>
-          <input type="number" value={fiberCount} onChange={e => setFiberCount(+e.target.value)} min={1} step={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Number of Fibers" value={fiberCount} onChange={setFiberCount} min={1} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Packing Geometry</span>
           <select value={packing} onChange={e => setPacking(e.target.value as any)}
@@ -84,16 +81,8 @@ export default function FiberBundlePage() {
             <option value="square">Square</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Fiber Cladding Ø (μm)</span>
-          <input type="number" value={fiberCladDia} onChange={e => setFiberCladDia(+e.target.value)} min={1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Fiber Core Ø (μm)</span>
-          <input type="number" value={fiberCoreDia} onChange={e => setFiberCoreDia(+e.target.value)} min={1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Fiber Cladding Ø (μm)" value={fiberCladDia} onChange={setFiberCladDia} min={1} step="any" />
+        <ValidatedNumberInput label="Fiber Core Ø (μm)" value={fiberCoreDia} onChange={setFiberCoreDia} min={1} step="any" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Fill Factor</span>
           <input type="range" value={fillFactor} onChange={e => setFillFactor(+e.target.value)} min={0.5} max={1} step={0.01}

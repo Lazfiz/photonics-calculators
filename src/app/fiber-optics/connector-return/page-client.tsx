@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ConnectorReturnLossPage() {
   const [n1, setN1] = useState(1.4677); // SMF-28 core
@@ -87,16 +88,11 @@ export default function ConnectorReturnLossPage() {
           <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.0001" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>gap medium</sub></span>
           <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Gap (nm) — 0 for PC/UPC</span>
-          <input type="number" value={gapNm} onChange={e => setGapNm(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Lateral offset (µm)</span>
-          <input type="number" value={lateralOffset} onChange={e => setLateralOffset(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Angular misalign (°)</span>
-          <input type="number" value={angMisalign} onChange={e => setAngMisalign(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">λ (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Core radius (µm)</span>
-          <input type="number" value={coreRadius} onChange={e => setCoreRadius(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Gap (nm) — 0 for PC/UPC" value={gapNm} onChange={setGapNm} step="10" />
+        <ValidatedNumberInput label="Lateral offset (µm)" value={lateralOffset} onChange={setLateralOffset} step="0.1" />
+        <ValidatedNumberInput label="Angular misalign (°)" value={angMisalign} onChange={setAngMisalign} step="0.1" />
+        <ValidatedNumberInput label="λ (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Core radius (µm)" value={coreRadius} onChange={setCoreRadius} step="0.1" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">

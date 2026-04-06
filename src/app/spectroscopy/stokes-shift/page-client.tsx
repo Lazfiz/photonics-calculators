@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function StokesShiftPage() {
   const [absPeak, setAbsPeak] = useState(480);
@@ -33,26 +34,10 @@ export default function StokesShiftPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Stokes Shift Calculator" description="Δν̃ = ν̃_abs − ν̃_em — energy difference between absorption and emission maxima.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Absorption Peak (nm)</span>
-          <input type="number" value={absPeak} onChange={e => setAbsPeak(+e.target.value)} min={200} max={1500} step={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Emission Peak (nm)</span>
-          <input type="number" value={emPeak} onChange={e => setEmPeak(+e.target.value)} min={200} max={1500} step={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Absorption FWHM (nm)</span>
-          <input type="number" value={absFWHM} onChange={e => setAbsFWHM(+e.target.value)} min={1} step={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Emission FWHM (nm)</span>
-          <input type="number" value={emFWHM} onChange={e => setEmFWHM(+e.target.value)} min={1} step={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Absorption Peak (nm)" value={absPeak} onChange={setAbsPeak} min={200} max={1500} />
+        <ValidatedNumberInput label="Emission Peak (nm)" value={emPeak} onChange={setEmPeak} min={200} max={1500} />
+        <ValidatedNumberInput label="Absorption FWHM (nm)" value={absFWHM} onChange={setAbsFWHM} min={1} />
+        <ValidatedNumberInput label="Emission FWHM (nm)" value={emFWHM} onChange={setEmFWHM} min={1} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

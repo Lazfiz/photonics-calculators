@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PolymerPolarizerPage() {
   const [wavelength, setWavelength] = useState(550);
@@ -96,26 +97,10 @@ export default function PolymerPolarizerPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10" min="380" max="780"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Thickness (μm)</span>
-          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} step="1" min="5" max="80"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Dichroic Ratio</span>
-          <input type="number" value={dichroicRatio} onChange={e => setDichroicRatio(+e.target.value)} step="5" min="2" max="100"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Absorption Coeff (μm⁻¹)</span>
-          <input type="number" value={absorptionCoeff} onChange={e => setAbsorptionCoeff(+e.target.value)} step="0.01" min="0.01" max="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={380} max={780} step="10" />
+        <ValidatedNumberInput label="Thickness (μm)" value={thickness} onChange={setThickness} min={5} max={80} step="1" />
+        <ValidatedNumberInput label="Dichroic Ratio" value={dichroicRatio} onChange={setDichroicRatio} min={2} max={100} step="5" />
+        <ValidatedNumberInput label="Absorption Coeff (μm⁻¹)" value={absorptionCoeff} onChange={setAbsorptionCoeff} min={0.01} max={0.5} step="0.01" />
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">

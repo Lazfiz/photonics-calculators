@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function GainBandwidthPage() {
   const [gainDC, setGainDC] = useState(1000);
@@ -33,9 +34,9 @@ export default function GainBandwidthPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Gain-Bandwidth Product" description="GBW = A₀ · f₋₃dB. The product of DC gain and bandwidth is constant for a single-pole system.">
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">DC Gain (V/V)</span><input type="number" value={gainDC} onChange={e => setGainDC(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">GBW Product (Hz)</span><input type="number" value={gbwProduct} onChange={e => setGbwProduct(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Feedback β</span><input type="number" value={feedbackFraction} onChange={e => setFeedbackFraction(+e.target.value)} step={0.001} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="DC Gain (V/V)" value={gainDC} onChange={setGainDC} />
+        <ValidatedNumberInput label="GBW Product (Hz)" value={gbwProduct} onChange={setGbwProduct} />
+        <ValidatedNumberInput label="Feedback β" value={feedbackFraction} onChange={setFeedbackFraction} />
       </div>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ResultCard label="Open-loop f₋₃dB" value={f3dB.toExponential(2) + " Hz"} tone="blue" />

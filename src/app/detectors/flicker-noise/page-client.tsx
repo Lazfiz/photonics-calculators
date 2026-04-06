@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FlickerNoisePage() {
   const [kf, setKf] = useState(1e-24);
@@ -26,11 +27,11 @@ export default function FlickerNoisePage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="1/f Flicker Noise" description="Flicker noise: S_v(f) = K_f · I^α / f. Noise spectral density falls as 1/f.">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">K_f (A²·Hz)</span><input type="number" value={kf} onChange={e => setKf(+e.target.value)} step="1e-25" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Current (A)</span><input type="number" value={current} onChange={e => setCurrent(+e.target.value)} step="1e-7" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Exponent α</span><input type="number" value={alpha} onChange={e => setAlpha(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">f_low (Hz)</span><input type="number" value={fLow} onChange={e => setFLow(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">f_high (Hz)</span><input type="number" value={fHigh} onChange={e => setFHigh(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="K_f (A²·Hz)" value={kf} onChange={setKf} step="1e-25" />
+        <ValidatedNumberInput label="Current (A)" value={current} onChange={setCurrent} step="1e-7" />
+        <ValidatedNumberInput label="Exponent α" value={alpha} onChange={setAlpha} step="0.1" />
+        <ValidatedNumberInput label="f_low (Hz)" value={fLow} onChange={setFLow} />
+        <ValidatedNumberInput label="f_high (Hz)" value={fHigh} onChange={setFHigh} />
       </div>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ResultCard label="1/f Noise (rms)" value={flickerNoiseRms.toExponential(3) + " A"} tone="blue" />

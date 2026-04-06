@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SumFrequencyMicroscopyPage() {
   const [lambda1, setLambda1] = useState(1040);
@@ -48,36 +49,12 @@ export default function SumFrequencyMicroscopyPage() {
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Sum-Frequency Generation Microscopy Calculator" description="Calculate SFG wavelengths, energies, and beam parameters for sum-frequency generation microscopy.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Beam 1 λ (nm)</span>
-          <input type="number" value={lambda1} onChange={e => setLambda1(+e.target.value)} min={400} max={1600}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Beam 2 λ (nm)</span>
-          <input type="number" value={lambda2} onChange={e => setLambda2(+e.target.value)} min={400} max={1600}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Numerical Aperture</span>
-          <input type="number" value={na} onChange={e => setNa(+e.target.value)} min={0.1} max={1.7} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Beam 1 Power (mW)</span>
-          <input type="number" value={power1} onChange={e => setPower1(+e.target.value)} min={1} max={1000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Beam 2 Power (mW)</span>
-          <input type="number" value={power2} onChange={e => setPower2(+e.target.value)} min={1} max={1000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pulse Width (fs)</span>
-          <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} min={10} max={1000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Beam 1 λ (nm)" value={lambda1} onChange={setLambda1} min={400} max={1600} />
+        <ValidatedNumberInput label="Beam 2 λ (nm)" value={lambda2} onChange={setLambda2} min={400} max={1600} />
+        <ValidatedNumberInput label="Numerical Aperture" value={na} onChange={setNa} min={0.1} max={1.7} step="0.01" />
+        <ValidatedNumberInput label="Beam 1 Power (mW)" value={power1} onChange={setPower1} min={1} max={1000} />
+        <ValidatedNumberInput label="Beam 2 Power (mW)" value={power2} onChange={setPower2} min={1} max={1000} />
+        <ValidatedNumberInput label="Pulse Width (fs)" value={pulseWidth} onChange={setPulseWidth} min={10} max={1000} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

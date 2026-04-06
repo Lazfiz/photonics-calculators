@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function DarkCurrentPage() {
   const [darkCurrent25, setDarkCurrent25] = useState(0.1);
@@ -32,10 +33,10 @@ export default function DarkCurrentPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Dark Current vs Temperature" description="Silicon detector dark current — exponential doubling model. I_dark(T) = I₀ · 2^((T−T₀)/T_d).">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Dark Current at 25°C (e⁻/pix/s)</span><input type="number" value={darkCurrent25} onChange={e => setDarkCurrent25(+e.target.value)} min="0.001" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Doubling Temperature (°C)</span><input type="number" value={tempFactor} onChange={e => setTempFactor(+e.target.value)} min="3" max="12" step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read Noise (e⁻)</span><input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} min="0.1" step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Exposure Time (s)</span><input type="number" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} min="0.001" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Dark Current at 25°C (e⁻/pix/s)" value={darkCurrent25} onChange={setDarkCurrent25} min={0.001} step="0.01" />
+        <ValidatedNumberInput label="Doubling Temperature (°C)" value={tempFactor} onChange={setTempFactor} min={3} max={12} step="0.5" />
+        <ValidatedNumberInput label="Read Noise (e⁻)" value={readNoise} onChange={setReadNoise} min={0.1} step="0.5" />
+        <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} min={0.001} step="0.1" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label={`Dark @ ${tempMin}°C`} value={dcAtMin.toExponential(2) + " e⁻/s"} tone="blue" />

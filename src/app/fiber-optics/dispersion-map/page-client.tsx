@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function DispersionMapPage() {
   const [lengthSMF, setLengthSMF] = useState(80);
@@ -38,36 +39,12 @@ export default function DispersionMapPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Dispersion Map Calculator" description="Design a dispersion map for a fiber link using SMF and DCF segments.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">SMF Length (km)</span>
-          <input type="number" value={lengthSMF} onChange={e => setLengthSMF(+e.target.value)} min={0} max={500}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">SMF Dispersion (ps/nm/km)</span>
-          <input type="number" value={dispSMF} onChange={e => setDispSMF(+e.target.value)} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">SMF Slope (ps/nm²/km)</span>
-          <input type="number" value={slopeSMF} onChange={e => setSlopeSMF(+e.target.value)} step="0.001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">DCF Length (km)</span>
-          <input type="number" value={lengthDCF} onChange={e => setLengthDCF(+e.target.value)} min={0} max={100}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">DCF Dispersion (ps/nm/km)</span>
-          <input type="number" value={dispDCF} onChange={e => setDispDCF(+e.target.value)} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">DCF Slope (ps/nm²/km)</span>
-          <input type="number" value={slopeDCF} onChange={e => setSlopeDCF(+e.target.value)} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="SMF Length (km)" value={lengthSMF} onChange={setLengthSMF} min={0} max={500} />
+        <ValidatedNumberInput label="SMF Dispersion (ps/nm/km)" value={dispSMF} onChange={setDispSMF} step="0.1" />
+        <ValidatedNumberInput label="SMF Slope (ps/nm²/km)" value={slopeSMF} onChange={setSlopeSMF} step="0.001" />
+        <ValidatedNumberInput label="DCF Length (km)" value={lengthDCF} onChange={setLengthDCF} min={0} max={100} />
+        <ValidatedNumberInput label="DCF Dispersion (ps/nm/km)" value={dispDCF} onChange={setDispDCF} step="1" />
+        <ValidatedNumberInput label="DCF Slope (ps/nm²/km)" value={slopeDCF} onChange={setSlopeDCF} step="0.01" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

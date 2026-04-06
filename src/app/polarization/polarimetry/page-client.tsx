@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PolarimetryPage() {
   const [s0, setS0] = useState(1);
@@ -116,26 +117,10 @@ export default function PolarimetryPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">S₀ (total intensity)</span>
-          <input type="number" value={s0} onChange={e => setS0(Math.max(0, +e.target.value))} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">S₁ (H−V)</span>
-          <input type="number" value={s1} onChange={e => setS1(+e.target.value)} step="0.1" min="-1" max="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">S₂ (+45°−−45°)</span>
-          <input type="number" value={s2} onChange={e => setS2(+e.target.value)} step="0.1" min="-1" max="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">S₃ (RCP−LCP)</span>
-          <input type="number" value={s3} onChange={e => setS3(+e.target.value)} step="0.1" min="-1" max="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="S₀ (total intensity)" value={s0} onChange={setS0} step="0.1" />
+        <ValidatedNumberInput label="S₁ (H−V)" value={s1} onChange={setS1} min={-1} max={1} step="0.1" />
+        <ValidatedNumberInput label="S₂ (+45°−−45°)" value={s2} onChange={setS2} min={-1} max={1} step="0.1" />
+        <ValidatedNumberInput label="S₃ (RCP−LCP)" value={s3} onChange={setS3} min={-1} max={1} step="0.1" />
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">

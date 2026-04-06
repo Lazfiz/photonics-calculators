@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function BandwidthPage() {
   const [bandwidth, setBandwidth] = useState(1e6);
@@ -37,10 +38,10 @@ export default function BandwidthPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Bandwidth vs Noise Trade-off" description="Noise increases with √Δf. Wider bandwidth = faster response but more noise.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bandwidth (Hz)</span><input type="number" value={bandwidth} onChange={e => setBandwidth(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Capacitance (pF)</span><input type="number" value={capacitance * 1e12} onChange={e => setCapacitance(+e.target.value * 1e-12)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Resistance (Ω)</span><input type="number" value={resistance} onChange={e => setResistance(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Transimpedance (V/A)</span><input type="number" value={transimpedance} onChange={e => setTransimpedance(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Bandwidth (Hz)" value={bandwidth} onChange={setBandwidth} />
+        <ValidatedNumberInput label="Capacitance (pF)" value={capacitance} onChange={setCapacitance} />
+        <ValidatedNumberInput label="Resistance (Ω)" value={resistance} onChange={setResistance} />
+        <ValidatedNumberInput label="Transimpedance (V/A)" value={transimpedance} onChange={setTransimpedance} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="RC 3dB BW" value={bw3dB.toExponential(3) + " Hz"} tone="blue" />

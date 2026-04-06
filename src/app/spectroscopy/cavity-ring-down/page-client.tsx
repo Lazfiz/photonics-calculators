@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function CavityRingDownPage() {
   const [mirrorReflectivity, setMirrorReflectivity] = useState(99.99); // %
@@ -60,26 +61,10 @@ export default function CavityRingDownPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Cavity Ring-Down Spectroscopy" description="Model CRDS ring-down time, sensitivity, and finesse. Visualize exponential decay with and without sample absorption.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Mirror Reflectivity R (%)</span>
-          <input type="number" value={mirrorReflectivity} onChange={e => setMirrorReflectivity(+e.target.value)} min="90" max="99.9999" step="0.001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Cavity Length (cm)</span>
-          <input type="number" value={cavityLength} onChange={e => setCavityLength(+e.target.value)} min="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Additional Round-Trip Loss (%)</span>
-          <input type="number" value={baseLoss} onChange={e => setBaseLoss(+e.target.value)} min="0" step="0.001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Sample Absorbance (per pass)</span>
-          <input type="number" value={sampleAbsorbance} onChange={e => setSampleAbsorbance(+e.target.value)} min="0" step="0.0001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Mirror Reflectivity R (%)" value={mirrorReflectivity} onChange={setMirrorReflectivity} min={90} max={99.9999} step="0.001" />
+        <ValidatedNumberInput label="Cavity Length (cm)" value={cavityLength} onChange={setCavityLength} min={1} />
+        <ValidatedNumberInput label="Additional Round-Trip Loss (%)" value={baseLoss} onChange={setBaseLoss} min={0} step="0.001" />
+        <ValidatedNumberInput label="Sample Absorbance (per pass)" value={sampleAbsorbance} onChange={setSampleAbsorbance} min={0} step="0.0001" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

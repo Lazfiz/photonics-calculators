@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ExcessNoisePage() {
   const [gain, setGain] = useState(100);
@@ -43,9 +44,9 @@ export default function ExcessNoisePage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Excess Noise Factor" description="APD excess noise vs gain — McIntyre model for different semiconductor materials." maxWidthClassName="max-w-5xl">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Multiplication Gain (M)</span><input type="number" value={gain} onChange={e => setGain(+e.target.value)} min="1" step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Ionization Ratio k</span><input type="number" value={kFactor} onChange={e => setKFactor(+e.target.value)} min="0.001" max="1" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Quantum Efficiency</span><input type="number" value={quantumEff} onChange={e => setQuantumEff(+e.target.value)} min="0.01" max="1" step="0.05" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Multiplication Gain (M)" value={gain} onChange={setGain} min={1} step="10" />
+        <ValidatedNumberInput label="Ionization Ratio k" value={kFactor} onChange={setKFactor} min={0.001} max={1} step="0.01" />
+        <ValidatedNumberInput label="Quantum Efficiency" value={quantumEff} onChange={setQuantumEff} min={0.01} max={1} step="0.05" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Excess Noise F" value={excessNoise.toFixed(3)} tone="red" />

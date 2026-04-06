@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 // SPAD: Single-Photon Avalanche Diode
 // PDE = η · P_geiger · P_quench
@@ -52,36 +53,12 @@ export default function SPADPage() {
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="SPAD Detector Calculator" description="Single-photon avalanche diode — PDE, DCR, dead time, afterpulsing, and SNR analysis.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Peak PDE</span>
-          <input type="number" value={pde} onChange={e => setPde(+e.target.value)} min="0.01" max="1" step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Dark Count Rate (counts/s)</span>
-          <input type="number" value={dcr} onChange={e => setDcr(+e.target.value)} min="1" step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Dead Time (ns)</span>
-          <input type="number" value={deadTime} onChange={e => setDeadTime(+e.target.value)} min="1" step="5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Afterpulsing Probability</span>
-          <input type="number" value={afterpulseProb} onChange={e => setAfterpulseProb(+e.target.value)} min="0" max="0.5" step="0.005"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Optical Power (dBm)</span>
-          <input type="number" value={opticalPower} onChange={e => setOpticalPower(+e.target.value)} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Peak PDE" value={pde} onChange={setPde} min={0.01} max={1} step="0.01" />
+        <ValidatedNumberInput label="Dark Count Rate (counts/s)" value={dcr} onChange={setDcr} min={1} step="10" />
+        <ValidatedNumberInput label="Dead Time (ns)" value={deadTime} onChange={setDeadTime} min={1} step="5" />
+        <ValidatedNumberInput label="Afterpulsing Probability" value={afterpulseProb} onChange={setAfterpulseProb} min={0} max={0.5} step="0.005" />
+        <ValidatedNumberInput label="Optical Power (dBm)" value={opticalPower} onChange={setOpticalPower} step="1" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="10" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

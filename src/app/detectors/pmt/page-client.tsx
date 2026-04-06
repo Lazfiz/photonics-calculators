@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 // PMT: Photomultiplier Tube
 // Gain = δ^n where δ = secondary emission ratio, n = number of dynodes
@@ -50,36 +51,12 @@ export default function PMTPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Dynodes</span>
-          <input type="number" value={numDynodes} onChange={e => setNumDynodes(+e.target.value)} min="4" max="14" step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Secondary Emission Ratio (δ)</span>
-          <input type="number" value={secondaryEmission} onChange={e => setSecondaryEmission(+e.target.value)} min="1.5" max="6" step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Quantum Efficiency</span>
-          <input type="number" value={qe} onChange={e => setQe(+e.target.value)} min="0.01" max="0.5" step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Dark Current (nA)</span>
-          <input type="number" value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)} min="0.01" step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Photon Rate (photons/s)</span>
-          <input type="number" value={photonRate} onChange={e => setPhotonRate(+e.target.value)} step="1e5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Bandwidth (MHz)</span>
-          <input type="number" value={bandwidth / 1e6} onChange={e => setBandwidth(+e.target.value * 1e6)} min="1" step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Number of Dynodes" value={numDynodes} onChange={setNumDynodes} min={4} max={14} step="1" />
+        <ValidatedNumberInput label="Secondary Emission Ratio (δ)" value={secondaryEmission} onChange={setSecondaryEmission} min={1.5} max={6} step="0.1" />
+        <ValidatedNumberInput label="Quantum Efficiency" value={qe} onChange={setQe} min={0.01} max={0.5} step="0.01" />
+        <ValidatedNumberInput label="Dark Current (nA)" value={darkCurrent} onChange={setDarkCurrent} min={0.01} step="0.1" />
+        <ValidatedNumberInput label="Photon Rate (photons/s)" value={photonRate} onChange={setPhotonRate} step="1e5" />
+        <ValidatedNumberInput label="Bandwidth (MHz)" value={bandwidth} onChange={setBandwidth} min={1} step="10" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

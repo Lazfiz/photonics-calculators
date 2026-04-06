@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function TwoDimensionalSpectroscopyPage() {
   const [excitationCenter, setExcitationCenter] = useState(12500); // cm⁻¹
@@ -61,26 +62,10 @@ export default function TwoDimensionalSpectroscopyPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Two-Dimensional (2D) Spectroscopy" description="Correlates excitation and detection frequencies via three-pulse photon echo. Reveals coupling, energy transfer, and homogeneous vs inhomogeneous broadening.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Excitation Center (cm⁻¹)</span>
-          <input type="number" value={excitationCenter} onChange={e => setExcitationCenter(+e.target.value)} min={1000} max={30000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Coupling (cm⁻¹)</span>
-          <input type="number" value={coupling} onChange={e => setCoupling(+e.target.value)} min={0} max={1000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Inhomogeneous Width (cm⁻¹)</span>
-          <input type="number" value={linewidth} onChange={e => setLinewidth(+e.target.value)} min={1} max={500}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Dephasing Time T₂ (fs)</span>
-          <input type="number" value={t2} onChange={e => setT2(+e.target.value)} min={10} max={10000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Excitation Center (cm⁻¹)" value={excitationCenter} onChange={setExcitationCenter} min={1000} max={30000} />
+        <ValidatedNumberInput label="Coupling (cm⁻¹)" value={coupling} onChange={setCoupling} min={0} max={1000} />
+        <ValidatedNumberInput label="Inhomogeneous Width (cm⁻¹)" value={linewidth} onChange={setLinewidth} min={1} max={500} />
+        <ValidatedNumberInput label="Dephasing Time T₂ (fs)" value={t2} onChange={setT2} min={10} max={10000} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

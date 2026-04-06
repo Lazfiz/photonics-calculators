@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function TaperedFiberPage() {
   const [inputDia, setInputDia] = useState(125); // μm
@@ -62,31 +63,11 @@ export default function TaperedFiberPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Tapered Fiber Design" description="Design adiabatic fiber tapers for mode conversion, evanescent field enhancement, and coupler fabrication.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Input Cladding Ø (μm)</span>
-          <input type="number" value={inputDia} onChange={e => setInputDia(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Output (Waist) Ø (μm)</span>
-          <input type="number" value={outputDia} onChange={e => setOutputDia(+e.target.value)} min={0.1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Taper Length (mm)</span>
-          <input type="number" value={taperLength} onChange={e => setTaperLength(+e.target.value)} min={0.1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Core Ø (μm)</span>
-          <input type="number" value={coreDia} onChange={e => setCoreDia(+e.target.value)} min={0.1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={400} step={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Input Cladding Ø (μm)" value={inputDia} onChange={setInputDia} min={1} />
+        <ValidatedNumberInput label="Output (Waist) Ø (μm)" value={outputDia} onChange={setOutputDia} min={0.1} step="any" />
+        <ValidatedNumberInput label="Taper Length (mm)" value={taperLength} onChange={setTaperLength} min={0.1} step="any" />
+        <ValidatedNumberInput label="Core Ø (μm)" value={coreDia} onChange={setCoreDia} min={0.1} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

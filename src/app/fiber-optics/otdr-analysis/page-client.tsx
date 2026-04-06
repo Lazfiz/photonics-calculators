@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function OTDRAnalysisPage() {
   const [pulseWidth, setPulseWidth] = useState(100); // ns
@@ -113,36 +114,12 @@ export default function OTDRAnalysisPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="OTDR Analysis" description="Simulate OTDR traces, calculate spatial resolution, dynamic range, dead zones, and event analysis for fiber characterization.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pulse Width (ns)</span>
-          <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Fiber Length (km)</span>
-          <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} min={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Attenuation (dB/km)</span>
-          <input type="number" value={attenuationCoeff} onChange={e => setAttenuationCoeff(+e.target.value)} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Refractive Index</span>
-          <input type="number" value={refractiveIndex} onChange={e => setRefractiveIndex(+e.target.value)} step="0.0001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Backscatter Coeff. (dB)</span>
-          <input type="number" value={backscatterCoeff} onChange={e => setBackscatterCoeff(+e.target.value)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Splices</span>
-          <input type="number" value={numSplices} onChange={e => setNumSplices(+e.target.value)} min={0}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Pulse Width (ns)" value={pulseWidth} onChange={setPulseWidth} min={1} />
+        <ValidatedNumberInput label="Fiber Length (km)" value={fiberLength} onChange={setFiberLength} min={0.1} />
+        <ValidatedNumberInput label="Attenuation (dB/km)" value={attenuationCoeff} onChange={setAttenuationCoeff} step="0.01" />
+        <ValidatedNumberInput label="Refractive Index" value={refractiveIndex} onChange={setRefractiveIndex} step="0.0001" />
+        <ValidatedNumberInput label="Backscatter Coeff. (dB)" value={backscatterCoeff} onChange={setBackscatterCoeff} />
+        <ValidatedNumberInput label="Number of Splices" value={numSplices} onChange={setNumSplices} min={0} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

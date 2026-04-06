@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function MicroBendPage() {
   const [wavelength, setWavelength] = useState(1550);
@@ -37,26 +38,10 @@ export default function MicroBendPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Micro Bend Loss" description="Calculate microbending loss from periodic perturbations in fiber geometry.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={800} max={2000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Perturbation Period (mm)</span>
-          <input type="number" value={period} onChange={e => setPeriod(+e.target.value)} min={0.1} max={10} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Amplitude (µm)</span>
-          <input type="number" value={amplitude} onChange={e => setAmplitude(+e.target.value)} min={0.1} max={10} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Affected Length (m)</span>
-          <input type="number" value={length} onChange={e => setLength(+e.target.value)} min={1} max={1000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={800} max={2000} />
+        <ValidatedNumberInput label="Perturbation Period (mm)" value={period} onChange={setPeriod} min={0.1} max={10} step="0.1" />
+        <ValidatedNumberInput label="Amplitude (µm)" value={amplitude} onChange={setAmplitude} min={0.1} max={10} step="0.1" />
+        <ValidatedNumberInput label="Affected Length (m)" value={length} onChange={setLength} min={1} max={1000} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

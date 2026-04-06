@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 // PMT Gain Calculator
 // Total gain: G = δ^n where δ is per-stage gain, n is number of stages
@@ -89,36 +90,12 @@ export default function PmtGainPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Dynode Stages</span>
-          <input type="number" value={numStages} onChange={e => setNumStages(+e.target.value)} min="6" max="14" step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Stage Voltage (V)</span>
-          <input type="number" value={stageVoltage} onChange={e => setStageVoltage(+e.target.value)} min="50" max="200" step="5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Photocathode QE</span>
-          <input type="number" value={photocathodeQE} onChange={e => setPhotocathodeQE(+e.target.value)} min="0.01" max="0.5" step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Anode Dark Current (nA)</span>
-          <input type="number" value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)} min="0.1" step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min="200" max="900" step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Amplifier Noise (e⁻ rms)</span>
-          <input type="number" value={amplifierNoise} onChange={e => setAmplifierNoise(+e.target.value)} min="100" step="100"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Number of Dynode Stages" value={numStages} onChange={setNumStages} min={6} max={14} step="1" />
+        <ValidatedNumberInput label="Stage Voltage (V)" value={stageVoltage} onChange={setStageVoltage} min={50} max={200} step="5" />
+        <ValidatedNumberInput label="Photocathode QE" value={photocathodeQE} onChange={setPhotocathodeQE} min={0.01} max={0.5} step="0.01" />
+        <ValidatedNumberInput label="Anode Dark Current (nA)" value={darkCurrent} onChange={setDarkCurrent} min={0.1} step="0.1" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={900} step="10" />
+        <ValidatedNumberInput label="Amplifier Noise (e⁻ rms)" value={amplifierNoise} onChange={setAmplifierNoise} min={100} step="100" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">

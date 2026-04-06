@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function GeigerModeAPDPage() {
   const [breakdownVoltage, setBreakdownVoltage] = useState(150);
@@ -37,12 +38,12 @@ export default function GeigerModeAPDPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Geiger-Mode APD" description="SPAD: breakdown voltage, overbias, temperature effects, PDE, and dark count rate.">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Breakdown Voltage (V)</span><input type="number" value={breakdownVoltage} onChange={e => setBreakdownVoltage(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Overbias (V)</span><input type="number" value={overbias} onChange={e => setOverbias(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Temperature (°C)</span><input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Vbr Temp Coeff (mV/°C)</span><input type="number" value={tempCoeff} onChange={e => setTempCoeff(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Dead Time (ns)</span><input type="number" value={deadTime} onChange={e => setDeadTime(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">DCR @25°C (cps)</span><input type="number" value={darkCountRate} onChange={e => setDarkCountRate(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Breakdown Voltage (V)" value={breakdownVoltage} onChange={setBreakdownVoltage} />
+        <ValidatedNumberInput label="Overbias (V)" value={overbias} onChange={setOverbias} step="0.1" />
+        <ValidatedNumberInput label="Temperature (°C)" value={temperature} onChange={setTemperature} />
+        <ValidatedNumberInput label="Vbr Temp Coeff (mV/°C)" value={tempCoeff} onChange={setTempCoeff} />
+        <ValidatedNumberInput label="Dead Time (ns)" value={deadTime} onChange={setDeadTime} />
+        <ValidatedNumberInput label="DCR @25°C (cps)" value={darkCountRate} onChange={setDarkCountRate} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ResultCard label="Vbr Shift" value={`${results.bvShift.toFixed(2)} V`} tone="red" />

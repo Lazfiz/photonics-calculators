@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function BoxcarIntegratorPage() {
   const [gateWidth, setGateWidth] = useState(100);
@@ -45,12 +46,12 @@ export default function BoxcarIntegratorPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Boxcar Integrator" description="Gated signal averaging — recover repetitive signals from noise.">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Gate Width (ns)</span><input type="number" value={gateWidth} onChange={e => setGateWidth(+e.target.value)} min="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse Width (ns)</span><input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} min="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Signal Peak (mV)</span><input type="number" value={signalPeak} onChange={e => setSignalPeak(+e.target.value)} min="0.001" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Noise RMS (mV)</span><input type="number" value={noiseRms} onChange={e => setNoiseRms(+e.target.value)} min="0.01" step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Rep Rate (Hz)</span><input type="number" value={repRate} onChange={e => setRepRate(+e.target.value)} min="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Averages</span><input type="number" value={averages} onChange={e => setAverages(+e.target.value)} min="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Gate Width (ns)" value={gateWidth} onChange={setGateWidth} min={1} />
+        <ValidatedNumberInput label="Pulse Width (ns)" value={pulseWidth} onChange={setPulseWidth} min={10} />
+        <ValidatedNumberInput label="Signal Peak (mV)" value={signalPeak} onChange={setSignalPeak} min={0.001} step="0.1" />
+        <ValidatedNumberInput label="Noise RMS (mV)" value={noiseRms} onChange={setNoiseRms} min={0.01} step="0.5" />
+        <ValidatedNumberInput label="Rep Rate (Hz)" value={repRate} onChange={setRepRate} min={1} />
+        <ValidatedNumberInput label="Averages" value={averages} onChange={setAverages} min={1} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Single-shot SNR" value={snrPerGate.toFixed(3)} tone="red" />

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FluorescenceLifetimePage() {
   const [tau, setTau] = useState(5); // ns
@@ -37,21 +38,9 @@ export default function FluorescenceLifetimePage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fluorescence Lifetime Calculator" description="Model single and bi-exponential fluorescence decay curves. Calculate intensity-weighted average lifetimes.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">τ₁ (ns)</span>
-          <input type="number" value={tau} onChange={e => setTau(+e.target.value)} min="0.01" step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Amplitude I₀</span>
-          <input type="number" value={amplitude} onChange={e => setAmplitude(+e.target.value)} min="0.01" step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Time Range (ns)</span>
-          <input type="number" value={tMax} onChange={e => setTMax(+e.target.value)} min="1" step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="τ₁ (ns)" value={tau} onChange={setTau} min={0.01} step="0.1" />
+        <ValidatedNumberInput label="Amplitude I₀" value={amplitude} onChange={setAmplitude} min={0.01} step="0.1" />
+        <ValidatedNumberInput label="Time Range (ns)" value={tMax} onChange={setTMax} min={1} step="1" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Bi-exponential mode</span>
           <select value={multiExp ? "true" : "false"} onChange={e => setMultiExp(e.target.value === "true")}
@@ -61,16 +50,8 @@ export default function FluorescenceLifetimePage() {
           </select>
         </label>
         {multiExp && <>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">τ₂ (ns)</span>
-            <input type="number" value={tau2} onChange={e => setTau2(+e.target.value)} min="0.01" step="0.1"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Fraction f₁ (0–1)</span>
-            <input type="number" value={frac1} onChange={e => setFrac1(+e.target.value)} min="0" max="1" step="0.05"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
+          <ValidatedNumberInput label="τ₂ (ns)" value={tau2} onChange={setTau2} min={0.01} step="0.1" />
+          <ValidatedNumberInput label="Fraction f₁ (0–1)" value={frac1} onChange={setFrac1} min={0} max={1} step="0.05" />
         </>}
       </div>
 

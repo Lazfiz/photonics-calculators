@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 function factorial(n: number): number {
   if (n <= 1) return 1;
@@ -80,16 +81,12 @@ export default function LaguerreGaussianPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Laguerre-Gaussian Modes" description="Donut modes with orbital angular momentum.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Beam Waist w₀ (µm)</span>
-          <input type="number" value={waist} onChange={e => setWaist(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Beam Waist w₀ (µm)" value={waist} onChange={setWaist} step="any" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Radial index p (0–4)</span>
-          <input type="number" value={p} onChange={e => setP(Math.min(4, Math.max(0, +e.target.value)))} min={0} max={4} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Azimuthal index l (−5 to 5)</span>
-          <input type="number" value={l} onChange={e => setL(Math.min(5, Math.max(-5, +e.target.value)))} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Radial index p (0–4)" value={p} onChange={setP} min={0} max={4} />
+        <ValidatedNumberInput label="Azimuthal index l (−5 to 5)" value={l} onChange={setL} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SlowLightPage() {
   const [nGroup, setNGroup] = useState(10); // group index
@@ -58,16 +59,11 @@ export default function SlowLightPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Slow Light Structures" description="Group velocity reduction in photonic crystals and EIT media.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Group Index n_g</span>
-          <input type="number" value={nGroup} onChange={e => setNGroup(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Base Index n₀</span>
-          <input type="number" value={nBase} onChange={e => setNBase(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bandwidth (nm)</span>
-          <input type="number" value={bandwidth} onChange={e => setBandwidth(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Structure Length (mm)</span>
-          <input type="number" value={structureLength} onChange={e => setStructureLength(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Group Index n_g" value={nGroup} onChange={setNGroup} step="any" />
+        <ValidatedNumberInput label="Base Index n₀" value={nBase} onChange={setNBase} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Bandwidth (nm)" value={bandwidth} onChange={setBandwidth} step="any" />
+        <ValidatedNumberInput label="Structure Length (mm)" value={structureLength} onChange={setStructureLength} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

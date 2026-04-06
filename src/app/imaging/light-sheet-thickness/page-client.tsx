@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function LightSheetThicknessPage() {
   const [wavelength, setWavelength] = useState(488);
@@ -39,26 +40,10 @@ export default function LightSheetThicknessPage() {
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Light Sheet Thickness Calculator" description="Calculate the thickness and propagation characteristics of a Gaussian light sheet for light-sheet fluorescence microscopy (LSFM).">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={350} max={800}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Cylinder NA</span>
-          <input type="number" value={na} onChange={e => setNa(+e.target.value)} min={0.01} max={0.5} step="0.005"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Sheet Length (µm)</span>
-          <input type="number" value={sheetLength} onChange={e => setSheetLength(+e.target.value)} min={10} max={500}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Beam Waist override (µm, 0=auto)</span>
-          <input type="number" value={gaussianBeamWaist} onChange={e => setGaussianBeamWaist(+e.target.value)} min={0} max={50} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={350} max={800} />
+        <ValidatedNumberInput label="Cylinder NA" value={na} onChange={setNa} min={0.01} max={0.5} step="0.005" />
+        <ValidatedNumberInput label="Sheet Length (µm)" value={sheetLength} onChange={setSheetLength} min={10} max={500} />
+        <ValidatedNumberInput label="Beam Waist override (µm, 0=auto)" value={gaussianBeamWaist} onChange={setGaussianBeamWaist} min={0} max={50} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

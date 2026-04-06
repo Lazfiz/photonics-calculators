@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FabryPerotFilterPage() {
   const [nCavity, setNCavity] = useState(1.5);
@@ -38,14 +39,10 @@ export default function FabryPerotFilterPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Fabry-Pérot Filter" description="Fabry-Pérot etalon/filter transmission based on the Airy function. Explore how mirror reflectance and cavity spacing control spectral selectivity.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (cavity)</span>
-          <input type="number" value={nCavity} onChange={e => setNCavity(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Cavity Spacing (nm)</span>
-          <input type="number" value={spacing} onChange={e => setSpacing(+e.target.value)} step="10" min="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Mirror Reflectance</span>
-          <input type="number" value={reflectance} onChange={e => setReflectance(+e.target.value)} step="0.01" min="0" max="0.999" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Center Wavelength (nm)</span>
-          <input type="number" value={wlCenter} onChange={e => setWlCenter(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="n (cavity)" value={nCavity} onChange={setNCavity} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="Cavity Spacing (nm)" value={spacing} onChange={setSpacing} min={1} step="10" />
+        <ValidatedNumberInput label="Mirror Reflectance" value={reflectance} onChange={setReflectance} min={0} max={0.999} step="0.01" />
+        <ValidatedNumberInput label="Center Wavelength (nm)" value={wlCenter} onChange={setWlCenter} step="10" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

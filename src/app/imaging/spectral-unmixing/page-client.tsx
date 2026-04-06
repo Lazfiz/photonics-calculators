@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SpectralUnmixingPage() {
   const [numEndmembers, setNumEndmembers] = useState(3);
@@ -113,21 +114,9 @@ export default function SpectralUnmixingPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Endmembers</span>
-          <input type="number" value={numEndmembers} onChange={e => setNumEndmembers(Math.max(2, Math.min(6, +e.target.value)))} min={2} max={6}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Spectral Bands</span>
-          <input type="number" value={numBands} onChange={e => setNumBands(+e.target.value)} min={8} max={256}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Noise Level (%)</span>
-          <input type="number" value={noiseLevel} onChange={e => setNoiseLevel(+e.target.value)} min={0} max={30}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Number of Endmembers" value={numEndmembers} onChange={setNumEndmembers} min={2} max={6} />
+        <ValidatedNumberInput label="Spectral Bands" value={numBands} onChange={setNumBands} min={8} max={256} />
+        <ValidatedNumberInput label="Noise Level (%)" value={noiseLevel} onChange={setNoiseLevel} min={0} max={30} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Method</span>
           <select value={method} onChange={e => setMethod(e.target.value as any)}
@@ -137,16 +126,8 @@ export default function SpectralUnmixingPage() {
             <option value="vertex">Vertex Component Analysis</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Abundance EM1 (fraction)</span>
-          <input type="number" value={abundance1} onChange={e => setAbundance1(+e.target.value)} min={0} max={1} step="0.05"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Abundance EM2 (fraction)</span>
-          <input type="number" value={abundance2} onChange={e => setAbundance2(+e.target.value)} min={0} max={1} step="0.05"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Abundance EM1 (fraction)" value={abundance1} onChange={setAbundance1} min={0} max={1} step="0.05" />
+        <ValidatedNumberInput label="Abundance EM2 (fraction)" value={abundance2} onChange={setAbundance2} min={0} max={1} step="0.05" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">

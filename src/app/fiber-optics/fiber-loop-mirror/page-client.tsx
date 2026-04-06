@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FiberLoopMirrorPage() {
   const [couplingRatio, setCouplingRatio] = useState(50); // %
@@ -82,26 +83,10 @@ export default function FiberLoopMirrorPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Loop Mirror (Sagnac)" description="Sagnac fiber loop mirror reflectance, spectral response, and birefringent filter design.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Coupling Ratio (%)</span>
-          <input type="number" value={couplingRatio} onChange={e => setCouplingRatio(+e.target.value)} min={0} max={100}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Loop Length (m)</span>
-          <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} min={0.01} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={400}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Birefringence (Δn)</span>
-          <input type="number" value={birefringence} onChange={e => setBirefringence(+e.target.value)} min={0} step="1e-8"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Coupling Ratio (%)" value={couplingRatio} onChange={setCouplingRatio} min={0} max={100} />
+        <ValidatedNumberInput label="Loop Length (m)" value={fiberLength} onChange={setFiberLength} min={0.01} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} />
+        <ValidatedNumberInput label="Birefringence (Δn)" value={birefringence} onChange={setBirefringence} min={0} step="1e-8" />
         <label className="block flex items-center gap-2 mt-4">
           <input type="checkbox" checked={includePM} onChange={e => setIncludePM(e.target.checked)}
             className="bg-gray-900 border-gray-700 rounded" />

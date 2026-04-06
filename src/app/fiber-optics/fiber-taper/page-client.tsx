@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FiberTaperPage() {
   const [pullLength, setPullLength] = useState(5000); // μm total
@@ -58,31 +59,11 @@ export default function FiberTaperPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Taper Calculation" description="Calculate fiber taper waist diameter, evanescent field, and coupling parameters from pull length.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pull Length (μm)</span>
-          <input type="number" value={pullLength} onChange={e => setPullLength(+e.target.value)} min={0}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Heater Width (mm)</span>
-          <input type="number" value={heaterWidth} onChange={e => setHeaterWidth(+e.target.value)} min={0.1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Initial Cladding Ø (μm)</span>
-          <input type="number" value={initialDia} onChange={e => setInitialDia(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Core Ø (μm)</span>
-          <input type="number" value={coreDia} onChange={e => setCoreDia(+e.target.value)} min={0.1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={400}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Pull Length (μm)" value={pullLength} onChange={setPullLength} min={0} />
+        <ValidatedNumberInput label="Heater Width (mm)" value={heaterWidth} onChange={setHeaterWidth} min={0.1} step="any" />
+        <ValidatedNumberInput label="Initial Cladding Ø (μm)" value={initialDia} onChange={setInitialDia} min={1} />
+        <ValidatedNumberInput label="Core Ø (μm)" value={coreDia} onChange={setCoreDia} min={0.1} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function CavityModeSpacingPage() {
   const [cavityLength, setCavityLength] = useState(150); // mm
@@ -121,16 +122,11 @@ export default function CavityModeSpacingPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Cavity Length (mm)</span>
-          <input type="number" value={cavityLength} onChange={e => setCavityLength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Refractive Index n</span>
-          <input type="number" value={n} onChange={e => setN(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">R₁ (mm, ∞=flat)</span>
-          <input type="number" value={R1} onChange={e => setR1(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">R₂ (mm, ∞=flat)</span>
-          <input type="number" value={R2} onChange={e => setR2(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Cavity Length (mm)" value={cavityLength} onChange={setCavityLength} />
+        <ValidatedNumberInput label="Refractive Index n" value={n} onChange={setN} step="0.01" />
+        <ValidatedNumberInput label="R₁ (mm, ∞=flat)" value={R1} onChange={setR1} />
+        <ValidatedNumberInput label="R₂ (mm, ∞=flat)" value={R2} onChange={setR2} />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

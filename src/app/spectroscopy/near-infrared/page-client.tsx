@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function NearInfraredPage() {
   const [wavelengthStart, setWavelengthStart] = useState(780);
@@ -64,26 +65,10 @@ export default function NearInfraredPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Near-Infrared (NIR) Spectroscopy" description="Overtone and combination band analysis for non-destructive composition measurement.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength Start (nm)</span>
-          <input type="number" value={wavelengthStart} onChange={e => setWavelengthStart(+e.target.value)} min={780} max={2500}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength End (nm)</span>
-          <input type="number" value={wavelengthEnd} onChange={e => setWavelengthEnd(+e.target.value)} min={780} max={2500}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Path Length (cm)</span>
-          <input type="number" value={pathLength} onChange={e => setPathLength(+e.target.value)} min={0.01} max={10} step={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Water Content (fraction)</span>
-          <input type="number" value={waterContent} onChange={e => setWaterContent(+e.target.value)} min={0} max={1} step={0.05}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength Start (nm)" value={wavelengthStart} onChange={setWavelengthStart} min={780} max={2500} />
+        <ValidatedNumberInput label="Wavelength End (nm)" value={wavelengthEnd} onChange={setWavelengthEnd} min={780} max={2500} />
+        <ValidatedNumberInput label="Path Length (cm)" value={pathLength} onChange={setPathLength} min={0.01} max={10} />
+        <ValidatedNumberInput label="Water Content (fraction)" value={waterContent} onChange={setWaterContent} min={0} max={1} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

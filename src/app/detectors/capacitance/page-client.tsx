@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 const gradingExponent: Record<string, number> = { abrupt: 0.5, graded: 0.33, hyperabrupt: 0.75 };
 
@@ -45,11 +46,11 @@ export default function CapacitancePage() {
         ))}
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Zero-Bias Cap (pF)</span><input type="number" value={zeroBiasCap} onChange={e => setZeroBiasCap(+e.target.value)} min="0.1" step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Built-in Voltage (V)</span><input type="number" value={builtInVoltage} onChange={e => setBuiltInVoltage(+e.target.value)} min="0.1" step="0.05" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Reverse Bias (V)</span><input type="number" value={reverseBias} onChange={e => setReverseBias(+e.target.value)} min="0" step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Load R (Ω)</span><input type="number" value={loadResistance} onChange={e => setLoadResistance(+e.target.value)} min="1" step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Series R (Ω)</span><input type="number" value={seriesResistance} onChange={e => setSeriesResistance(+e.target.value)} min="0" step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Zero-Bias Cap (pF)" value={zeroBiasCap} onChange={setZeroBiasCap} min={0.1} step="0.5" />
+        <ValidatedNumberInput label="Built-in Voltage (V)" value={builtInVoltage} onChange={setBuiltInVoltage} min={0.1} step="0.05" />
+        <ValidatedNumberInput label="Reverse Bias (V)" value={reverseBias} onChange={setReverseBias} min={0} step="0.5" />
+        <ValidatedNumberInput label="Load R (Ω)" value={loadResistance} onChange={setLoadResistance} min={1} step="10" />
+        <ValidatedNumberInput label="Series R (Ω)" value={seriesResistance} onChange={setSeriesResistance} min={0} step="1" />
       </div>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ResultCard label="Junction Capacitance" value={`${capacitance.toFixed(2)} pF`} tone="green" />

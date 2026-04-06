@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FourierSelfCombPage() {
   const [repetitionRate, setRepetitionRate] = useState(250); // MHz
@@ -66,26 +67,10 @@ export default function FourierSelfCombPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fourier Self-Comb Spectroscopy" description="Optical frequency comb from a single microresonator. Dual-comb spectroscopy without two separate lasers.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Repetition Rate f_rep (MHz)</span>
-          <input type="number" value={repetitionRate} onChange={e => setRepetitionRate(+e.target.value)} min={1} max={10000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Center Wavelength (nm)</span>
-          <input type="number" value={centerWavelength} onChange={e => setCenterWavelength(+e.target.value)} min={400} max={3000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Optical Bandwidth (nm)</span>
-          <input type="number" value={bandwidthNm} onChange={e => setBandwidthNm(+e.target.value)} min={1} max={1000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of CEO Offsets</span>
-          <input type="number" value={combLines} onChange={e => setCombLines(+e.target.value)} min={3} max={100}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Repetition Rate f_rep (MHz)" value={repetitionRate} onChange={setRepetitionRate} min={1} max={10000} />
+        <ValidatedNumberInput label="Center Wavelength (nm)" value={centerWavelength} onChange={setCenterWavelength} min={400} max={3000} />
+        <ValidatedNumberInput label="Optical Bandwidth (nm)" value={bandwidthNm} onChange={setBandwidthNm} min={1} max={1000} />
+        <ValidatedNumberInput label="Number of CEO Offsets" value={combLines} onChange={setCombLines} min={3} max={100} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

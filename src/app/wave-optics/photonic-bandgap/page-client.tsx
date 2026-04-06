@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PhotonicBandgapPage() {
   const [latticeConst, setLatticeConst] = useState(500); // nm
@@ -48,16 +49,11 @@ export default function PhotonicBandgapPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Photonic Bandgap" description="1D photonic crystal band structure and reflectivity.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Lattice Constant a (nm)</span>
-          <input type="number" value={latticeConst} onChange={e => setLatticeConst(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">High Index n₁</span>
-          <input type="number" value={nHigh} onChange={e => setNHigh(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Low Index n₂</span>
-          <input type="number" value={nLow} onChange={e => setNLow(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Fill Fraction</span>
-          <input type="number" value={fillFraction} onChange={e => setFillFraction(+e.target.value)} step="any" min={0} max={1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Number of Periods</span>
-          <input type="number" value={numPeriods} onChange={e => setNumPeriods(+e.target.value)} min={1} max={100} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Lattice Constant a (nm)" value={latticeConst} onChange={setLatticeConst} />
+        <ValidatedNumberInput label="High Index n₁" value={nHigh} onChange={setNHigh} step="any" />
+        <ValidatedNumberInput label="Low Index n₂" value={nLow} onChange={setNLow} step="any" />
+        <ValidatedNumberInput label="Fill Fraction" value={fillFraction} onChange={setFillFraction} min={0} max={1} step="any" />
+        <ValidatedNumberInput label="Number of Periods" value={numPeriods} onChange={setNumPeriods} min={1} max={100} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

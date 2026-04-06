@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FiberLaserSafetyPage() {
   const [power, setPower] = useState(1000); // mW
@@ -44,18 +45,12 @@ export default function FiberLaserSafetyPage() {
             
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Input Power (mW)</span>
-          <input type="number" value={power} onChange={e => setPower(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Fiber Core Diameter (µm)</span>
-          <input type="number" value={fiberCoreDia} onChange={e => setFiberCoreDia(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Fiber Length (m)</span>
-          <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Attenuation (dB/km)</span>
-          <input type="number" value={attenuation} onChange={e => setAttenuation(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Numerical Aperture (NA)</span>
-          <input type="number" value={na} onChange={e => setNa(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Input Power (mW)" value={power} onChange={setPower} />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Fiber Core Diameter (µm)" value={fiberCoreDia} onChange={setFiberCoreDia} />
+        <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} />
+        <ValidatedNumberInput label="Attenuation (dB/km)" value={attenuation} onChange={setAttenuation} step="0.1" />
+        <ValidatedNumberInput label="Numerical Aperture (NA)" value={na} onChange={setNa} step="0.01" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

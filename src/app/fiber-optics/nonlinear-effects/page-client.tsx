@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function NonlinearEffectsPage() {
   const [power, setPower] = useState(10); // dBm launch power
@@ -107,46 +108,14 @@ export default function NonlinearEffectsPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Nonlinear Effects in Fiber" description="Calculate SPM, XPM, FWM penalties, SBS/SRS thresholds, and nonlinear phase shift.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Launch Power (dBm)</span>
-          <input type="number" value={power} onChange={e => setPower(+e.target.value)} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Fiber Length (km)</span>
-          <input type="number" value={length} onChange={e => setLength(+e.target.value)} step="1" min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Effective Area A_eff (µm²)</span>
-          <input type="number" value={effectiveArea} onChange={e => setEffectiveArea(+e.target.value)} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Attenuation (dB/km)</span>
-          <input type="number" value={alpha} onChange={e => setAlpha(+e.target.value)} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">γ (W⁻¹km⁻¹)</span>
-          <input type="number" value={gamma} onChange={e => setGamma(+e.target.value)} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">WDM Channels</span>
-          <input type="number" value={numChannels} onChange={e => setNumChannels(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Channel Spacing (GHz)</span>
-          <input type="number" value={channelSpacing} onChange={e => setChannelSpacing(+e.target.value)} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Bit Rate (Gbps)</span>
-          <input type="number" value={bitRate} onChange={e => setBitRate(+e.target.value)} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Launch Power (dBm)" value={power} onChange={setPower} step="0.5" />
+        <ValidatedNumberInput label="Fiber Length (km)" value={length} onChange={setLength} min={1} step="1" />
+        <ValidatedNumberInput label="Effective Area A_eff (µm²)" value={effectiveArea} onChange={setEffectiveArea} step="1" />
+        <ValidatedNumberInput label="Attenuation (dB/km)" value={alpha} onChange={setAlpha} step="0.01" />
+        <ValidatedNumberInput label="γ (W⁻¹km⁻¹)" value={gamma} onChange={setGamma} step="0.1" />
+        <ValidatedNumberInput label="WDM Channels" value={numChannels} onChange={setNumChannels} min={1} />
+        <ValidatedNumberInput label="Channel Spacing (GHz)" value={channelSpacing} onChange={setChannelSpacing} step="10" />
+        <ValidatedNumberInput label="Bit Rate (Gbps)" value={bitRate} onChange={setBitRate} step="1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

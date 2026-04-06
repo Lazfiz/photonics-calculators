@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ThermalEvaporationPage() {
   const [material, setMaterial] = useState("SiO2");
@@ -106,16 +107,11 @@ export default function ThermalEvaporationPage() {
           <select value={material} onChange={e => setMaterial(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             {Object.entries(materials).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
           </select></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Source Temp (°C)</span>
-          <input type="number" value={sourceTemp} onChange={e => setSourceTemp(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Source-Substrate Dist (cm)</span>
-          <input type="number" value={sourceSubstrateDist} onChange={e => setSourceSubstrateDist(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Source Diameter (cm)</span>
-          <input type="number" value={sourceDiameter} onChange={e => setSourceDiameter(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Chamber Pressure (Torr)</span>
-          <input type="number" value={chamberPressure} onChange={e => setChamberPressure(+e.target.value)} step="1e-7" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Substrate Temp (°C)</span>
-          <input type="number" value={substrateTemp} onChange={e => setSubstrateTemp(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Source Temp (°C)" value={sourceTemp} onChange={setSourceTemp} step="10" />
+        <ValidatedNumberInput label="Source-Substrate Dist (cm)" value={sourceSubstrateDist} onChange={setSourceSubstrateDist} step="1" />
+        <ValidatedNumberInput label="Source Diameter (cm)" value={sourceDiameter} onChange={setSourceDiameter} step="0.5" />
+        <ValidatedNumberInput label="Chamber Pressure (Torr)" value={chamberPressure} onChange={setChamberPressure} step="1e-7" />
+        <ValidatedNumberInput label="Substrate Temp (°C)" value={substrateTemp} onChange={setSubstrateTemp} step="10" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">

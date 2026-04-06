@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function CosmicRaysPage() {
   const [sensorArea, setSensorArea] = useState(1);
@@ -39,13 +40,13 @@ export default function CosmicRaysPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Cosmic Ray Detection" description="Cosmic ray flux and impact on imaging sensors — estimate hit rates and affected pixels.">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Sensor Area (cm²)</span><input type="number" value={sensorArea} onChange={e => setSensorArea(+e.target.value)} min="0.01" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Exposure Time (s)</span><input type="number" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} min="0.001" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Flux (hits/cm²/min)</span><input type="number" value={flux} onChange={e => setFlux(+e.target.value)} min="0.01" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pixel Size (μm)</span><input type="number" value={pixelSize} onChange={e => setPixelSize(+e.target.value)} min="1" step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Energy Deposit (e⁻/μm)</span><input type="number" value={energyDeposit} onChange={e => setEnergyDeposit(+e.target.value)} min="1" step="5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Track Length (μm)</span><input type="number" value={trackLength} onChange={e => setTrackLength(+e.target.value)} min="10" step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Frames for Statistics</span><input type="number" value={numFrames} onChange={e => setNumFrames(+e.target.value)} min="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Sensor Area (cm²)" value={sensorArea} onChange={setSensorArea} min={0.01} step="0.1" />
+        <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} min={0.001} step="0.1" />
+        <ValidatedNumberInput label="Flux (hits/cm²/min)" value={flux} onChange={setFlux} min={0.01} step="0.1" />
+        <ValidatedNumberInput label="Pixel Size (μm)" value={pixelSize} onChange={setPixelSize} min={1} step="1" />
+        <ValidatedNumberInput label="Energy Deposit (e⁻/μm)" value={energyDeposit} onChange={setEnergyDeposit} min={1} step="5" />
+        <ValidatedNumberInput label="Track Length (μm)" value={trackLength} onChange={setTrackLength} min={10} step="10" />
+        <ValidatedNumberInput label="Frames for Statistics" value={numFrames} onChange={setNumFrames} min={1} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Expected Hits/Frame" value={expectedHits.toFixed(2)} tone="blue" />

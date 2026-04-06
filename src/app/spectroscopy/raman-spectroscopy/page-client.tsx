@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function RamanSpectroscopyPage() {
   const [laserWavelength, setLaserWavelength] = useState(532);
@@ -45,16 +46,8 @@ export default function RamanSpectroscopyPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Raman Spectroscopy" description="Stokes and anti-Stokes wavelength shift vs Raman shift. Inelastic scattering fundamentals.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Laser Wavelength (nm)</span>
-          <input type="number" value={laserWavelength} onChange={e => setLaserWavelength(+e.target.value)} min={200} max={2000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Max Raman Shift (cm⁻¹)</span>
-          <input type="number" value={maxShift} onChange={e => setMaxShift(+e.target.value)} min={100} max={5000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Laser Wavelength (nm)" value={laserWavelength} onChange={setLaserWavelength} min={200} max={2000} />
+        <ValidatedNumberInput label="Max Raman Shift (cm⁻¹)" value={maxShift} onChange={setMaxShift} min={100} max={5000} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

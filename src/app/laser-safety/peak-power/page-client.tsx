@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PeakPowerPage() {
   const [avgPower, setAvgPower] = useState(10);
@@ -29,21 +30,9 @@ export default function PeakPowerPage() {
             
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Average Power (W)</span>
-          <input type="number" value={avgPower} onChange={e => setAvgPower(+e.target.value)} min={0.001} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Repetition Rate (Hz)</span>
-          <input type="number" value={repRate} onChange={e => setRepRate(+e.target.value)} min={1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Duty Cycle (%)</span>
-          <input type="number" value={dutyCycle} onChange={e => setDutyCycle(+e.target.value)} min={0.001} max={100} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Average Power (W)" value={avgPower} onChange={setAvgPower} min={0.001} step="any" />
+        <ValidatedNumberInput label="Repetition Rate (Hz)" value={repRate} onChange={setRepRate} min={1} step="any" />
+        <ValidatedNumberInput label="Duty Cycle (%)" value={dutyCycle} onChange={setDutyCycle} min={0.001} max={100} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

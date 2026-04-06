@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ApodizationPage() {
   const [nPoints, setNPoints] = useState(256);
@@ -58,8 +59,7 @@ export default function ApodizationPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Apodization Functions" description="Window functions and their instrument line shapes (ILS). Trade-off: resolution vs sidelobe suppression.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Number of Points</span>
-          <input type="number" value={nPoints} onChange={e => setNPoints(Math.max(4, +e.target.value))} min={4} max={2048} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Number of Points" value={nPoints} onChange={setNPoints} min={4} max={2048} />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

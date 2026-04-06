@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ElectronMultiplyingPage() {
   const [signalElectrons, setSignalElectrons] = useState(10);
@@ -36,12 +37,12 @@ export default function ElectronMultiplyingPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="EMCCD vs sCMOS" description="Compare electron-multiplying CCD with sCMOS for low-light imaging." maxWidthClassName="max-w-5xl">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Signal (e⁻/pix/frame)</span><input type="number" value={signalElectrons} onChange={e => setSignalElectrons(+e.target.value)} min="0.1" step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Dark Current (e⁻/pix/frame)</span><input type="number" value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)} min="0" step="0.001" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">EMCCD Read Noise (e⁻)</span><input type="number" value={emccdReadNoise} onChange={e => setEmccdReadNoise(+e.target.value)} min="1" step="5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">sCMOS Read Noise (e⁻)</span><input type="number" value={scmosReadNoise} onChange={e => setScmosReadNoise(+e.target.value)} min="0.1" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">EM Gain</span><input type="number" value={emGain} onChange={e => setEmGain(+e.target.value)} min="1" step="50" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Exposure Time (s)</span><input type="number" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} min="0.001" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Signal (e⁻/pix/frame)" value={signalElectrons} onChange={setSignalElectrons} min={0.1} step="1" />
+        <ValidatedNumberInput label="Dark Current (e⁻/pix/frame)" value={darkCurrent} onChange={setDarkCurrent} min={0} step="0.001" />
+        <ValidatedNumberInput label="EMCCD Read Noise (e⁻)" value={emccdReadNoise} onChange={setEmccdReadNoise} min={1} step="5" />
+        <ValidatedNumberInput label="sCMOS Read Noise (e⁻)" value={scmosReadNoise} onChange={setScmosReadNoise} min={0.1} step="0.1" />
+        <ValidatedNumberInput label="EM Gain" value={emGain} onChange={setEmGain} min={1} step="50" />
+        <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} min={0.001} step="0.01" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="EMCCD SNR" value={emccdSNR.toFixed(2)} tone="blue" />

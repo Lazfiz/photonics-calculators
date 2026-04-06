@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function MagnificationPage() {
   const [objFocal, setObjFocal] = useState(10);
@@ -27,21 +28,9 @@ export default function MagnificationPage() {
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Total Magnification Calculator" description="Calculate total system magnification from objective, tube lens, and camera adapter lens.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Objective Focal Length (mm)</span>
-          <input type="number" value={objFocal} onChange={e => setObjFocal(+e.target.value)} min={1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Tube Lens Focal Length (mm)</span>
-          <input type="number" value={tubeFocal} onChange={e => setTubeFocal(+e.target.value)} min={50} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Camera Adapter Focal Length (mm)</span>
-          <input type="number" value={camFocal} onChange={e => setCamFocal(+e.target.value)} min={10} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Objective Focal Length (mm)" value={objFocal} onChange={setObjFocal} min={1} step="any" />
+        <ValidatedNumberInput label="Tube Lens Focal Length (mm)" value={tubeFocal} onChange={setTubeFocal} min={50} step="any" />
+        <ValidatedNumberInput label="Camera Adapter Focal Length (mm)" value={camFocal} onChange={setCamFocal} min={10} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

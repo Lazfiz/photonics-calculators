@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PlenopticCameraPage() {
   const [wavelengthNm, setWavelengthNm] = useState(550);
@@ -79,41 +80,13 @@ export default function PlenopticCameraPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={400} max={800} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Main Lens f (mm)</span>
-          <input type="number" value={mainLensFocalMm} onChange={e => setMainLensFocalMm(+e.target.value)} min={5} max={200} step="5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Main Lens NA</span>
-          <input type="number" value={mainLensNA} onChange={e => setMainLensNA(+e.target.value)} min={0.05} max={0.5} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Micro-lens f (mm)</span>
-          <input type="number" value={microLensFocalMm} onChange={e => setMicroLensFocalMm(+e.target.value)} min={0.1} max={5} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Micro-lens Pitch (µm)</span>
-          <input type="number" value={microLensPitchUm} onChange={e => setMicroLensPitchUm(+e.target.value)} min={50} max={500} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pixels per Micro-lens</span>
-          <input type="number" value={pixelsPerMicroLens} onChange={e => setPixelsPerMicroLens(+e.target.value)} min={3} max={30} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pixel Pitch (µm)</span>
-          <input type="number" value={pixelPitchUm} onChange={e => setPixelPitchUm(+e.target.value)} min={1} max={15} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={400} max={800} step="10" />
+        <ValidatedNumberInput label="Main Lens f (mm)" value={mainLensFocalMm} onChange={setMainLensFocalMm} min={5} max={200} step="5" />
+        <ValidatedNumberInput label="Main Lens NA" value={mainLensNA} onChange={setMainLensNA} min={0.05} max={0.5} step="0.01" />
+        <ValidatedNumberInput label="Micro-lens f (mm)" value={microLensFocalMm} onChange={setMicroLensFocalMm} min={0.1} max={5} step="0.1" />
+        <ValidatedNumberInput label="Micro-lens Pitch (µm)" value={microLensPitchUm} onChange={setMicroLensPitchUm} min={50} max={500} step="10" />
+        <ValidatedNumberInput label="Pixels per Micro-lens" value={pixelsPerMicroLens} onChange={setPixelsPerMicroLens} min={3} max={30} step="1" />
+        <ValidatedNumberInput label="Pixel Pitch (µm)" value={pixelPitchUm} onChange={setPixelPitchUm} min={1} max={15} step="0.5" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">

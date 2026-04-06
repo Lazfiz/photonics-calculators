@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PBSPage() {
   const [wavelength, setWavelength] = useState(633);
@@ -81,11 +82,7 @@ export default function PBSPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="1" min="300" max="2000"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={2000} step="1" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">n<sub>o</sub></span>
           <input type="number" value={nO} onChange={e => setNO(+e.target.value)} step="0.001" min="1.3" max="2.5"
@@ -96,11 +93,7 @@ export default function PBSPage() {
           <input type="number" value={nE} onChange={e => setNE(+e.target.value)} step="0.001" min="1.3" max="2.5"
             className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Cut Angle (°)</span>
-          <input type="number" value={cutAngleDeg} onChange={e => setCutAngleDeg(+e.target.value)} step="0.5" min="30" max="60"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Cut Angle (°)" value={cutAngleDeg} onChange={setCutAngleDeg} min={30} max={60} step="0.5" />
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">

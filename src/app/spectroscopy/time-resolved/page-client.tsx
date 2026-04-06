@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function TimeResolvedPage() {
   const [laserRepRate, setLaserRepRate] = useState(80); // MHz
@@ -61,31 +62,11 @@ export default function TimeResolvedPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Time-Resolved Spectroscopy" description="TCSPC and streak camera fundamentals. IRF convolution, temporal resolution, and decay analysis.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Laser Rep Rate (MHz)</span>
-          <input type="number" value={laserRepRate} onChange={e => setLaserRepRate(+e.target.value)} min={1} max={1000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pulse Width (fs)</span>
-          <input type="number" value={pulseWidthFs} onChange={e => setPulseWidthFs(+e.target.value)} min={5} max={10000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Instrument Response (ps)</span>
-          <input type="number" value={instrumentResponse} onChange={e => setInstrumentResponse(+e.target.value)} min={0.01} max={10} step={0.01}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Fluorescence Lifetime (ns)</span>
-          <input type="number" value={lifetime} onChange={e => setLifetime(+e.target.value)} min={0.01} max={1000} step={0.01}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Time Range (ns)</span>
-          <input type="number" value={timeRange} onChange={e => setTimeRange(+e.target.value)} min={0.1} max={1000} step={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Laser Rep Rate (MHz)" value={laserRepRate} onChange={setLaserRepRate} min={1} max={1000} />
+        <ValidatedNumberInput label="Pulse Width (fs)" value={pulseWidthFs} onChange={setPulseWidthFs} min={5} max={10000} />
+        <ValidatedNumberInput label="Instrument Response (ps)" value={instrumentResponse} onChange={setInstrumentResponse} min={0.01} max={10} />
+        <ValidatedNumberInput label="Fluorescence Lifetime (ns)" value={lifetime} onChange={setLifetime} min={0.01} max={1000} />
+        <ValidatedNumberInput label="Time Range (ns)" value={timeRange} onChange={setTimeRange} min={0.1} max={1000} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

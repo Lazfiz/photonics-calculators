@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function MicrowaveSpectroscopyPage() {
   const [moleculeType, setMoleculeType] = useState("linear");
@@ -83,26 +84,10 @@ export default function MicrowaveSpectroscopyPage() {
             <option value="symmetric">Symmetric Top</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Bond Length (Å)</span>
-          <input type="number" value={bondLength} onChange={e => setBondLength(+e.target.value)} min={0.5} max={5} step={0.001}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Reduced Mass (amu)</span>
-          <input type="number" value={reducedMass} onChange={e => setReducedMass(+e.target.value)} min={1} max={200} step={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Dipole Moment (D)</span>
-          <input type="number" value={dipoleMoment} onChange={e => setDipoleMoment(+e.target.value)} min={0} max={20} step={0.01}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Temperature (K)</span>
-          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} min={10} max={1000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Bond Length (Å)" value={bondLength} onChange={setBondLength} min={0.5} max={5} />
+        <ValidatedNumberInput label="Reduced Mass (amu)" value={reducedMass} onChange={setReducedMass} min={1} max={200} />
+        <ValidatedNumberInput label="Dipole Moment (D)" value={dipoleMoment} onChange={setDipoleMoment} min={0} max={20} />
+        <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} min={10} max={1000} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

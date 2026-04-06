@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 const sensors = {
   ccd: { readNoise: 3, darkCurrent: 0.001, wellCapacity: 100000, pixelSize: 15, qe: 0.95, frameRate: 10 },
@@ -40,9 +41,9 @@ export default function CcdVsCmosPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="CCD vs CMOS Sensor Comparison" description="Compare sensor architectures — SNR, dynamic range, and performance metrics.">
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Signal (e⁻)</span><input type="number" value={signal} onChange={e => setSignal(+e.target.value)} min="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Exposure Time (s)</span><input type="number" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} min="0.001" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Dark Current (e⁻/pix/s)</span><input type="number" value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)} min="0" step="0.001" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Signal (e⁻)" value={signal} onChange={setSignal} min={1} />
+        <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} min={0.001} step="0.1" />
+        <ValidatedNumberInput label="Dark Current (e⁻/pix/s)" value={darkCurrent} onChange={setDarkCurrent} min={0} step="0.001" />
       </div>
       <div className="overflow-x-auto mb-8">
         <table className="w-full text-sm">

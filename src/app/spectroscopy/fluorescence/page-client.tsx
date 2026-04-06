@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FluorescencePage() {
   const [tau, setTau] = useState(3);
@@ -45,27 +46,15 @@ export default function FluorescencePage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fluorescence Lifetime" description="Exponential decay models for fluorescence. Single and bi-exponential fitting.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">τ₁ (ns)</span>
-          <input type="number" value={tau} onChange={e => setTau(Math.max(0.01, +e.target.value))} min={0.01} max={100} step={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="τ₁ (ns)" value={tau} onChange={setTau} min={0.01} max={100} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Bi-exponential</span>
           <input type="checkbox" checked={multiExp} onChange={e => setMultiExp(e.target.checked)}
             className="mt-1 w-5 h-5" />
         </label>
         {multiExp && <>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">τ₂ (ns)</span>
-            <input type="number" value={tau2} onChange={e => setTau2(Math.max(0.01, +e.target.value))} min={0.01} max={100} step={0.1}
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Amplitude₂ (fraction)</span>
-            <input type="number" value={amp2} onChange={e => setAmp2(Math.min(1, Math.max(0, +e.target.value)))} min={0} max={1} step={0.05}
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
+          <ValidatedNumberInput label="τ₂ (ns)" value={tau2} onChange={setTau2} min={0.01} max={100} />
+          <ValidatedNumberInput label="Amplitude₂ (fraction)" value={amp2} onChange={setAmp2} min={0} max={1} />
         </>}
       </div>
 

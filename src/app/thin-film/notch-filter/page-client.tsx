@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function NotchFilterPage() {
   const [nH, setNH] = useState(2.35);
@@ -76,12 +77,9 @@ export default function NotchFilterPage() {
           <input type="number" value={nL} onChange={e => setNL(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
           <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Notch λ (nm)</span>
-          <input type="number" value={notchWl} onChange={e => setNotchWl(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Mirror Pairs</span>
-          <input type="number" value={mirrorPairs} onChange={e => setMirrorPairs(+e.target.value)} min={1} max={15} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Cavity n</span>
-          <input type="number" value={spacerN} onChange={e => setSpacerN(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Notch λ (nm)" value={notchWl} onChange={setNotchWl} />
+        <ValidatedNumberInput label="Mirror Pairs" value={mirrorPairs} onChange={setMirrorPairs} min={1} max={15} />
+        <ValidatedNumberInput label="Cavity n" value={spacerN} onChange={setSpacerN} step="0.01" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

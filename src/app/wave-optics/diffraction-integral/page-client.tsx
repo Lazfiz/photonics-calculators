@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function DiffractionIntegralPage() {
   const [wavelength, setWavelength] = useState(632.8); // nm
@@ -81,8 +82,7 @@ export default function DiffractionIntegralPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Diffraction Integral Calculator" description="Fresnel/Kirchhoff diffraction patterns.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Aperture</span>
           <select value={apertureType} onChange={e => setApertureType(e.target.value as any)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="circular">Circular (radius)</option>
@@ -91,10 +91,8 @@ export default function DiffractionIntegralPage() {
         </label>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Aperture size (µm)</span>
-          <input type="number" value={apertureSize} onChange={e => setApertureSize(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Propagation distance (mm)</span>
-          <input type="number" value={propDist} onChange={e => setPropDist(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Aperture size (µm)" value={apertureSize} onChange={setApertureSize} />
+        <ValidatedNumberInput label="Propagation distance (mm)" value={propDist} onChange={setPropDist} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

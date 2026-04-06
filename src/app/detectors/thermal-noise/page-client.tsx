@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ThermalNoisePage() {
   const [resistance, setResistance] = useState(1000); // Ohms
@@ -25,12 +26,9 @@ export default function ThermalNoisePage() {
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Johnson (Thermal) Noise" description="vn = √(4kBTRΔf). Thermal noise voltage across a resistor.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Resistance (Ω)</span>
-          <input type="number" value={resistance} onChange={e => setResistance(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Temperature (K)</span>
-          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bandwidth (Hz)</span>
-          <input type="number" value={bandwidth} onChange={e => setBandwidth(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Resistance (Ω)" value={resistance} onChange={setResistance} />
+        <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} />
+        <ValidatedNumberInput label="Bandwidth (Hz)" value={bandwidth} onChange={setBandwidth} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

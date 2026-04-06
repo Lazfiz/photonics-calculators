@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ImageDistancePage() {
   const [objectDistMm, setObjectDistMm] = useState(200);
@@ -54,16 +55,8 @@ export default function ImageDistancePage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Object Distance (mm)</span>
-          <input type="number" value={objectDistMm} onChange={e => setObjectDistMm(+e.target.value)} min={1} max={10000} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Focal Length (mm)</span>
-          <input type="number" value={focalLengthMm} onChange={e => setFocalLengthMm(+e.target.value)} min={1} max={5000} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Object Distance (mm)" value={objectDistMm} onChange={setObjectDistMm} min={1} max={10000} step="0.1" />
+        <ValidatedNumberInput label="Focal Length (mm)" value={focalLengthMm} onChange={setFocalLengthMm} min={1} max={5000} step="0.1" />
       </div>
 
       {valid ? (

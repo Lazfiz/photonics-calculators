@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function BirefringenceImagingPage() {
   const [wavelength, setWavelength] = useState(550);
@@ -136,34 +137,18 @@ export default function BirefringenceImagingPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10" min="400" max="700"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={700} step="10" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Δn</span>
           <input type="number" value={dn} onChange={e => { }} step="0.001" disabled
             className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-gray-500" />
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Thickness (mm)</span>
-          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} step="0.01" min="0.001" max="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Polarizer (°)</span>
-          <input type="number" value={polarizerAngleDeg} onChange={e => setPolarizerAngleDeg(+e.target.value)} step="5" min="0" max="180"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Thickness (mm)" value={thickness} onChange={setThickness} min={0.001} max={0.5} step="0.01" />
+        <ValidatedNumberInput label="Polarizer (°)" value={polarizerAngleDeg} onChange={setPolarizerAngleDeg} min={0} max={180} step="5" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Analyzer (°)</span>
-          <input type="number" value={analyzerAngleDeg} onChange={e => setAnalyzerAngleDeg(+e.target.value)} step="5" min="0" max="180"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Analyzer (°)" value={analyzerAngleDeg} onChange={setAnalyzerAngleDeg} min={0} max={180} step="5" />
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">

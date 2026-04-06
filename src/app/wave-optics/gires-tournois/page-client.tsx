@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function GiresTournoisPage() {
   const [reflectivity, setReflectivity] = useState(0.7);
@@ -118,16 +119,11 @@ export default function GiresTournoisPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Front Surface R₁</span>
-          <input type="number" value={reflectivity} onChange={e => setReflectivity(+e.target.value)} step="0.01" min="0.01" max="0.99" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Coating Thickness (nm)</span>
-          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Refractive Index n</span>
-          <input type="number" value={n} onChange={e => setN(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Center λ (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Plot Bandwidth (nm)</span>
-          <input type="number" value={bandwidth} onChange={e => setBandwidth(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Front Surface R₁" value={reflectivity} onChange={setReflectivity} min={0.01} max={0.99} step="0.01" />
+        <ValidatedNumberInput label="Coating Thickness (nm)" value={thickness} onChange={setThickness} />
+        <ValidatedNumberInput label="Refractive Index n" value={n} onChange={setN} step="0.01" />
+        <ValidatedNumberInput label="Center λ (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Plot Bandwidth (nm)" value={bandwidth} onChange={setBandwidth} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

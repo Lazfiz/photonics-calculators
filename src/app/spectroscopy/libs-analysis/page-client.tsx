@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function LibsAnalysisPage() {
   const [temperature, setTemperature] = useState(10000); // K
@@ -46,26 +47,10 @@ export default function LibsAnalysisPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="LIBS Analysis Calculator" description="Laser-Induced Breakdown Spectroscopy: model plasma line broadening (Stark + Doppler) and estimate plasma conditions.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Plasma Temperature T (K)</span>
-          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} min="1000" step="1000"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Electron Density Nₑ (cm⁻³)</span>
-          <input type="number" value={electronDensity} onChange={e => setElectronDensity(+e.target.value)} step="1e16"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Line Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min="100"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Display Range (nm half-width)</span>
-          <input type="number" value={spectralRange} onChange={e => setSpectralRange(+e.target.value)} min="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Plasma Temperature T (K)" value={temperature} onChange={setTemperature} min={1000} step="1000" />
+        <ValidatedNumberInput label="Electron Density Nₑ (cm⁻³)" value={electronDensity} onChange={setElectronDensity} step="1e16" />
+        <ValidatedNumberInput label="Line Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} />
+        <ValidatedNumberInput label="Display Range (nm half-width)" value={spectralRange} onChange={setSpectralRange} min={1} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function MacrobendingLossPage() {
   const [bendRadius, setBendRadius] = useState(15); // mm
@@ -114,36 +115,12 @@ export default function MacrobendingLossPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Macrobending Loss" description="Detailed macrobending loss calculation using the curvature radiation model for single-mode fiber.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Bend Radius (mm)</span>
-          <input type="number" value={bendRadius} onChange={e => setBendRadius(+e.target.value)} step="0.5" min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Core Radius (µm)</span>
-          <input type="number" value={coreRadius} onChange={e => setCoreRadius(+e.target.value)} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Core NA</span>
-          <input type="number" value={coreNA} onChange={e => setCoreNA(+e.target.value)} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Cladding Radius (µm)</span>
-          <input type="number" value={claddingRadius} onChange={e => setCladdingRadius(+e.target.value)} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Bends</span>
-          <input type="number" value={numBends} onChange={e => setNumBends(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Bend Radius (mm)" value={bendRadius} onChange={setBendRadius} min={1} step="0.5" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
+        <ValidatedNumberInput label="Core Radius (µm)" value={coreRadius} onChange={setCoreRadius} step="0.1" />
+        <ValidatedNumberInput label="Core NA" value={coreNA} onChange={setCoreNA} step="0.01" />
+        <ValidatedNumberInput label="Cladding Radius (µm)" value={claddingRadius} onChange={setCladdingRadius} step="0.5" />
+        <ValidatedNumberInput label="Number of Bends" value={numBends} onChange={setNumBends} min={1} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

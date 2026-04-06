@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 const kB = 8.617e-5;
 
@@ -34,10 +35,10 @@ export default function DarkNoiseTemperaturePage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Dark Noise vs Temperature" description="Temperature dependence of dark current and dark noise in photodiodes/CCDs.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Dark Current at 25°C (nA)</span><input type="number" value={darkCurrent25} onChange={e => setDarkCurrent25(+e.target.value)} min="0.001" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bandgap (eV)</span><input type="number" value={eg} onChange={e => setEg(+e.target.value)} min="0.5" max="2" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Area (mm²)</span><input type="number" value={area} onChange={e => setArea(+e.target.value)} min="0.01" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Bandwidth (Hz)</span><input type="number" value={bandwidth} onChange={e => setBandwidth(+e.target.value)} min="0.1" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Dark Current at 25°C (nA)" value={darkCurrent25} onChange={setDarkCurrent25} min={0.001} step="0.1" />
+        <ValidatedNumberInput label="Bandgap (eV)" value={eg} onChange={setEg} min={0.5} max={2} step="0.01" />
+        <ValidatedNumberInput label="Area (mm²)" value={area} onChange={setArea} min={0.01} step="0.1" />
+        <ValidatedNumberInput label="Bandwidth (Hz)" value={bandwidth} onChange={setBandwidth} min={0.1} step="0.1" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Dark @ 25°C" value={`${darkCurrentAtT(25).toFixed(3)} nA`} tone="blue" />

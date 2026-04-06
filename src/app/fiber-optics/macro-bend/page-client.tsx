@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function MacroBendPage() {
   const [wavelength, setWavelength] = useState(1550);
@@ -39,26 +40,10 @@ export default function MacroBendPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Macro Bend Loss" description="Detailed macrobending loss calculation for single-mode fibers based on bend radius and wavelength.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={800} max={2000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Bend Radius (mm)</span>
-          <input type="number" value={bendRadius} onChange={e => setBendRadius(+e.target.value)} min={1} max={100}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Core Radius (µm)</span>
-          <input type="number" value={coreRadius} onChange={e => setCoreRadius(+e.target.value)} min={2} max={15} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Numerical Aperture</span>
-          <input type="number" value={na} onChange={e => setNa(+e.target.value)} min={0.05} max={0.5} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={800} max={2000} />
+        <ValidatedNumberInput label="Bend Radius (mm)" value={bendRadius} onChange={setBendRadius} min={1} max={100} />
+        <ValidatedNumberInput label="Core Radius (µm)" value={coreRadius} onChange={setCoreRadius} min={2} max={15} step="0.1" />
+        <ValidatedNumberInput label="Numerical Aperture" value={na} onChange={setNa} min={0.05} max={0.5} step="0.01" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function AtmosphericAttenuationPage() {
   const [wavelength, setWavelength] = useState(10600); // nm (CO2)
@@ -92,26 +93,10 @@ export default function AtmosphericAttenuationPage() {
             
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={200} max={20000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Distance (m)</span>
-          <input type="number" value={distance} onChange={e => setDistance(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Relative Humidity (%)</span>
-          <input type="number" value={humidity} onChange={e => setHumidity(+e.target.value)} min={0} max={100}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Visibility (km)</span>
-          <input type="number" value={visibility} onChange={e => setVisibility(+e.target.value)} min={0.1} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={20000} />
+        <ValidatedNumberInput label="Distance (m)" value={distance} onChange={setDistance} min={1} />
+        <ValidatedNumberInput label="Relative Humidity (%)" value={humidity} onChange={setHumidity} min={0} max={100} />
+        <ValidatedNumberInput label="Visibility (km)" value={visibility} onChange={setVisibility} min={0.1} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

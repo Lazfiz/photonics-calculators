@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SolitonPage() {
   const [pulseWidth, setPulseWidth] = useState(100); // fs FWHM
@@ -124,16 +125,11 @@ export default function SolitonPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse FWHM (fs)</span>
-          <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Peak Power (W)</span>
-          <input type="number" value={peakPower} onChange={e => setPeakPower(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">β₂ (fs²/mm)</span>
-          <input type="number" value={beta2} onChange={e => setBeta2(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">γ (W⁻¹km⁻¹)</span>
-          <input type="number" value={gamma} onChange={e => setGamma(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Propagation Distance (m)</span>
-          <input type="number" value={distance} onChange={e => setDistance(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Pulse FWHM (fs)" value={pulseWidth} onChange={setPulseWidth} />
+        <ValidatedNumberInput label="Peak Power (W)" value={peakPower} onChange={setPeakPower} />
+        <ValidatedNumberInput label="β₂ (fs²/mm)" value={beta2} onChange={setBeta2} step="any" />
+        <ValidatedNumberInput label="γ (W⁻¹km⁻¹)" value={gamma} onChange={setGamma} step="0.1" />
+        <ValidatedNumberInput label="Propagation Distance (m)" value={distance} onChange={setDistance} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PMDPage() {
   const [pmdCoeff, setPmdCoeff] = useState(0.5); // ps/√km
@@ -78,31 +79,11 @@ export default function PMDPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Polarization Mode Dispersion (PMD)" description="Calculate PMD-induced differential group delay (DGD), system penalties, and PMD-limited reach using Maxwellian statistics.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">PMD Coefficient (ps/√km)</span>
-          <input type="number" value={pmdCoeff} onChange={e => setPmdCoeff(+e.target.value)} min={0.01} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Fiber Length (km)</span>
-          <input type="number" value={length} onChange={e => setLength(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Bit Rate (Gbps)</span>
-          <input type="number" value={bitRate} onChange={e => setBitRate(+e.target.value)} min={0.1} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Fiber Spans</span>
-          <input type="number" value={fiberCount} onChange={e => setFiberCount(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Outage Prob. (%)</span>
-          <input type="number" value={probability} onChange={e => setProbability(+e.target.value)} min={90} max={99.999}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="PMD Coefficient (ps/√km)" value={pmdCoeff} onChange={setPmdCoeff} min={0.01} step="0.01" />
+        <ValidatedNumberInput label="Fiber Length (km)" value={length} onChange={setLength} min={1} />
+        <ValidatedNumberInput label="Bit Rate (Gbps)" value={bitRate} onChange={setBitRate} min={0.1} step="0.1" />
+        <ValidatedNumberInput label="Fiber Spans" value={fiberCount} onChange={setFiberCount} min={1} />
+        <ValidatedNumberInput label="Outage Prob. (%)" value={probability} onChange={setProbability} min={90} max={99.999} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

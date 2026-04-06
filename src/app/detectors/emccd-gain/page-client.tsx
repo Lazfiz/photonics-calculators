@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 const alpha = 0.015; const vThreshold = 30;
 const excessNoise = Math.sqrt(2);
@@ -45,13 +46,13 @@ export default function EmccdGainPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="EMCCD Gain Calculator" description="EM gain stages, excess noise (F=√2), and SNR advantage over conventional CCD." maxWidthClassName="max-w-5xl">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">EM Stages</span><input type="number" value={numStages} onChange={e => setNumStages(+e.target.value)} min="100" max="1000" step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Clock Voltage (V)</span><input type="number" value={clockVoltage} onChange={e => setClockVoltage(+e.target.value)} min="30" max="60" step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Conv. Read Noise (e⁻)</span><input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} min="1" step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">EM Read Noise (e⁻)</span><input type="number" value={emReadNoise} onChange={e => setEmReadNoise(+e.target.value)} min="0.1" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Dark Current (e⁻/s)</span><input type="number" value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)} min="0" step="0.0001" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Exposure (s)</span><input type="number" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} min="0.001" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Signal (e⁻/pix)</span><input type="number" value={signalPhotons} onChange={e => setSignalPhotons(+e.target.value)} min="0" step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="EM Stages" value={numStages} onChange={setNumStages} min={100} max={1000} step="1" />
+        <ValidatedNumberInput label="Clock Voltage (V)" value={clockVoltage} onChange={setClockVoltage} min={30} max={60} step="1" />
+        <ValidatedNumberInput label="Conv. Read Noise (e⁻)" value={readNoise} onChange={setReadNoise} min={1} step="1" />
+        <ValidatedNumberInput label="EM Read Noise (e⁻)" value={emReadNoise} onChange={setEmReadNoise} min={0.1} step="0.1" />
+        <ValidatedNumberInput label="Dark Current (e⁻/s)" value={darkCurrent} onChange={setDarkCurrent} min={0} step="0.0001" />
+        <ValidatedNumberInput label="Exposure (s)" value={exposureTime} onChange={setExposureTime} min={0.001} step="0.1" />
+        <ValidatedNumberInput label="Signal (e⁻/pix)" value={signalPhotons} onChange={setSignalPhotons} min={0} step="1" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ResultCard label="Per-Stage Gain" value={perStageGain.toFixed(4)} tone="blue" />

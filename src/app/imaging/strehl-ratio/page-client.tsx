@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function StrehlRatioPage() {
   const [wavelengthNm, setWavelengthNm] = useState(550);
@@ -53,18 +54,8 @@ export default function StrehlRatioPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={300} max={2000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">
-            WFE {mode === "wfe" ? "RMS" : "PV"} (nm)
-          </span>
-          <input type="number" value={wfeNm} onChange={e => setWfeNm(+e.target.value)} min={0} max={500} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={300} max={2000} />
+        <ValidatedNumberInput label="WFE (nm)" value={wfeNm} onChange={setWfeNm} min={0} max={500} step="0.1" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Input Mode</span>
           <select value={mode} onChange={e => setMode(e.target.value as "wfe" | "pv")}

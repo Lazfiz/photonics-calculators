@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function TwoPhotonExcitationPage() {
   const [exWavelength, setExWavelength] = useState(550);
@@ -36,31 +37,11 @@ export default function TwoPhotonExcitationPage() {
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Two-Photon Excitation Calculator" description="Calculate two-photon excitation wavelength, peak power, and pulse energy from laser parameters.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">1P Excitation λ (nm)</span>
-          <input type="number" value={exWavelength} onChange={e => setExWavelength(+e.target.value)} min={300} max={900}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Objective NA</span>
-          <input type="number" value={objectiveNA} onChange={e => setObjectiveNA(+e.target.value)} min={0.1} max={1.5} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pulse Width (fs)</span>
-          <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} min={10} max={500}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Avg Power (mW)</span>
-          <input type="number" value={avgPower} onChange={e => setAvgPower(+e.target.value)} min={0.1} max={2000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Rep Rate (MHz)</span>
-          <input type="number" value={repRate} onChange={e => setRepRate(+e.target.value)} min={1} max={250}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="1P Excitation λ (nm)" value={exWavelength} onChange={setExWavelength} min={300} max={900} />
+        <ValidatedNumberInput label="Objective NA" value={objectiveNA} onChange={setObjectiveNA} min={0.1} max={1.5} step="0.01" />
+        <ValidatedNumberInput label="Pulse Width (fs)" value={pulseWidth} onChange={setPulseWidth} min={10} max={500} />
+        <ValidatedNumberInput label="Avg Power (mW)" value={avgPower} onChange={setAvgPower} min={0.1} max={2000} />
+        <ValidatedNumberInput label="Rep Rate (MHz)" value={repRate} onChange={setRepRate} min={1} max={250} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

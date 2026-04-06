@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PlasmaDepositionPage() {
   const [power, setPower] = useState(500);
@@ -89,18 +90,12 @@ export default function PlasmaDepositionPage() {
           <select value={gasType} onChange={e => setGasType(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             {Object.entries(gases).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
           </select></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">RF Power (W)</span>
-          <input type="number" value={power} onChange={e => setPower(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pressure (Torr)</span>
-          <input type="number" value={pressure} onChange={e => setPressure(+e.target.value)} step="1e-4" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Gas Flow (sccm)</span>
-          <input type="number" value={gasFlow} onChange={e => setGasFlow(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Substrate Temp (°C)</span>
-          <input type="number" value={substrateTemp} onChange={e => setSubstrateTemp(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">RF Frequency (MHz)</span>
-          <input type="number" value={frequency} onChange={e => setFrequency(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Electrode Gap (cm)</span>
-          <input type="number" value={electrodeGap} onChange={e => setElectrodeGap(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="RF Power (W)" value={power} onChange={setPower} step="10" />
+        <ValidatedNumberInput label="Pressure (Torr)" value={pressure} onChange={setPressure} step="1e-4" />
+        <ValidatedNumberInput label="Gas Flow (sccm)" value={gasFlow} onChange={setGasFlow} step="1" />
+        <ValidatedNumberInput label="Substrate Temp (°C)" value={substrateTemp} onChange={setSubstrateTemp} step="10" />
+        <ValidatedNumberInput label="RF Frequency (MHz)" value={frequency} onChange={setFrequency} step="0.01" />
+        <ValidatedNumberInput label="Electrode Gap (cm)" value={electrodeGap} onChange={setElectrodeGap} step="0.5" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">

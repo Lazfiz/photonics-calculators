@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 // Silicon Photodiode Parameters
 // Bandgap: E_g ≈ 1.12 eV at 300K → λ_c ≈ 1100 nm
@@ -105,26 +106,10 @@ export default function SiliconPhotodiodePage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Temperature (K)</span>
-          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} min="200" max="400" step="5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Depletion Width (μm)</span>
-          <input type="number" value={depletionWidth} onChange={e => setDepletionWidth(+e.target.value)} min="1" max="500" step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Active Area (mm²)</span>
-          <input type="number" value={area} onChange={e => setArea(+e.target.value)} min="0.01" step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Surface Reflectivity</span>
-          <input type="number" value={surfaceReflectivity} onChange={e => setSurfaceReflectivity(+e.target.value)} min="0" max="0.5" step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} min={200} max={400} step="5" />
+        <ValidatedNumberInput label="Depletion Width (μm)" value={depletionWidth} onChange={setDepletionWidth} min={1} max={500} step="1" />
+        <ValidatedNumberInput label="Active Area (mm²)" value={area} onChange={setArea} min={0.01} step="0.1" />
+        <ValidatedNumberInput label="Surface Reflectivity" value={surfaceReflectivity} onChange={setSurfaceReflectivity} min={0} max={0.5} step="0.01" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">

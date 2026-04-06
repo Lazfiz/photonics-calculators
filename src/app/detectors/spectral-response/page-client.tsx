@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SpectralResponsePage() {
   const [responsivityPeak, setResponsivityPeak] = useState(0.6); // A/W at peak
@@ -41,14 +42,10 @@ export default function SpectralResponsePage() {
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Spectral Response" description="R(λ) = η(λ) · q · λ / (h·c). Responsivity and quantum efficiency as a function of wavelength.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Peak Responsivity (A/W)</span>
-          <input type="number" value={responsivityPeak} onChange={e => setResponsivityPeak(+e.target.value)} step={0.01} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Peak Wavelength (nm)</span>
-          <input type="number" value={peakWavelength} onChange={e => setPeakWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Spectral Bandwidth FWHM (nm)</span>
-          <input type="number" value={bandwidthNm} onChange={e => setBandwidthNm(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Temperature (°C)</span>
-          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Peak Responsivity (A/W)" value={responsivityPeak} onChange={setResponsivityPeak} />
+        <ValidatedNumberInput label="Peak Wavelength (nm)" value={peakWavelength} onChange={setPeakWavelength} />
+        <ValidatedNumberInput label="Spectral Bandwidth FWHM (nm)" value={bandwidthNm} onChange={setBandwidthNm} />
+        <ValidatedNumberInput label="Temperature (°C)" value={temperature} onChange={setTemperature} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

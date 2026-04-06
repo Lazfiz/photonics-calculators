@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SputteringDepositionPage() {
   const [targetMaterial, setTargetMaterial] = useState("SiO2");
@@ -102,14 +103,10 @@ export default function SputteringDepositionPage() {
           <select value={gasType} onChange={e => setGasType(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             {Object.entries(gasMasses).map(([k]) => <option key={k} value={k}>{k}</option>)}
           </select></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Power (W)</span>
-          <input type="number" value={power} onChange={e => setPower(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pressure (Torr)</span>
-          <input type="number" value={pressure} onChange={e => setPressure(+e.target.value)} step="1e-4" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Target-Substrate Distance (cm)</span>
-          <input type="number" value={targetSubstrateDist} onChange={e => setTargetSubstrateDist(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Substrate Temp (°C)</span>
-          <input type="number" value={substrateTemp} onChange={e => setSubstrateTemp(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Power (W)" value={power} onChange={setPower} step="10" />
+        <ValidatedNumberInput label="Pressure (Torr)" value={pressure} onChange={setPressure} step="1e-4" />
+        <ValidatedNumberInput label="Target-Substrate Distance (cm)" value={targetSubstrateDist} onChange={setTargetSubstrateDist} step="0.5" />
+        <ValidatedNumberInput label="Substrate Temp (°C)" value={substrateTemp} onChange={setSubstrateTemp} step="10" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">

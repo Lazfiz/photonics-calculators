@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function Reconstruction3DPage() {
   const [numSlices, setNumSlices] = useState(100);
@@ -86,36 +87,12 @@ export default function Reconstruction3DPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Z-Slices</span>
-          <input type="number" value={numSlices} onChange={e => setNumSlices(+e.target.value)} min={10} max={1000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Z-Step (µm)</span>
-          <input type="number" value={sliceSpacing} onChange={e => setSliceSpacing(+e.target.value)} min={0.05} max={10} step="0.05"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">XY Resolution (µm)</span>
-          <input type="number" value={xyResolution} onChange={e => setXyResolution(+e.target.value)} min={0.01} max={5} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Numerical Aperture</span>
-          <input type="number" value={na} onChange={e => setNa(+e.target.value)} min={0.1} max={1.7} step="0.05"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={400} max={800}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Refractive Index</span>
-          <input type="number" value={refractiveIndex} onChange={e => setRefractiveIndex(+e.target.value)} min={1} max={1.8} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Number of Z-Slices" value={numSlices} onChange={setNumSlices} min={10} max={1000} />
+        <ValidatedNumberInput label="Z-Step (µm)" value={sliceSpacing} onChange={setSliceSpacing} min={0.05} max={10} step="0.05" />
+        <ValidatedNumberInput label="XY Resolution (µm)" value={xyResolution} onChange={setXyResolution} min={0.01} max={5} step="0.01" />
+        <ValidatedNumberInput label="Numerical Aperture" value={na} onChange={setNa} min={0.1} max={1.7} step="0.05" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={400} max={800} />
+        <ValidatedNumberInput label="Refractive Index" value={refractiveIndex} onChange={setRefractiveIndex} min={1} max={1.8} step="0.01" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Method</span>
           <select value={method} onChange={e => setMethod(e.target.value as any)}
@@ -125,11 +102,7 @@ export default function Reconstruction3DPage() {
             <option value="lightsheet">Light Sheet</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Views</span>
-          <input type="number" value={numViews} onChange={e => setNumViews(+e.target.value)} min={1} max={6}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Number of Views" value={numViews} onChange={setNumViews} min={1} max={6} />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 mb-6">

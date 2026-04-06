@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 type WindowFn = "boxcar" | "hanning" | "hamming" | "blackman" | "blackman-harris" | "nuttall" | "gaussian" | "triangular" | "kaiser";
 
@@ -86,10 +87,8 @@ export default function ApodizationComparisonPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Apodization Comparison" description="Compare 9 window functions and their instrument line shapes (ILS). Select windows to overlay.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">N Points</span>
-          <input type="number" value={nPoints} onChange={e => setNPoints(Math.max(16, +e.target.value))} min={16} max={2048} step={64} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">View Range (dB)</span>
-          <input type="number" value={viewDb} onChange={e => setViewDb(+e.target.value)} min={-120} max={-10} step={-5} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="N Points" value={nPoints} onChange={setNPoints} min={16} max={2048} />
+        <ValidatedNumberInput label="View Range (dB)" value={viewDb} onChange={setViewDb} min={-120} max={-10} />
       </div>
 
       <div className="flex flex-wrap gap-2 mb-8">

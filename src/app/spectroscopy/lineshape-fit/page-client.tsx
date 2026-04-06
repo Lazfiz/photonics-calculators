@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function LineshapeFitPage() {
   const [profile, setProfile] = useState<"voigt" | "gaussian" | "lorentzian">("voigt");
@@ -85,26 +86,10 @@ export default function LineshapeFitPage() {
             <option value="lorentzian">Lorentzian</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Center (nm)</span>
-          <input type="number" value={center} onChange={e => setCenter(+e.target.value)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Gaussian FWHM (nm)</span>
-          <input type="number" value={fwhmG} onChange={e => setFwhmG(+e.target.value)} step="0.01" min="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Lorentzian FWHM (nm)</span>
-          <input type="number" value={fwhmL} onChange={e => setFwhmL(+e.target.value)} step="0.01" min="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Amplitude</span>
-          <input type="number" value={amplitude} onChange={e => setAmplitude(+e.target.value)} step="0.1" min="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Center (nm)" value={center} onChange={setCenter} />
+        <ValidatedNumberInput label="Gaussian FWHM (nm)" value={fwhmG} onChange={setFwhmG} min={0.01} step="0.01" />
+        <ValidatedNumberInput label="Lorentzian FWHM (nm)" value={fwhmL} onChange={setFwhmL} min={0.01} step="0.01" />
+        <ValidatedNumberInput label="Amplitude" value={amplitude} onChange={setAmplitude} min={0.01} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

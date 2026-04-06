@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function OrthoconoscopicPage() {
   const [nO, setNO] = useState(1.658);
@@ -104,29 +105,13 @@ export default function OrthoconoscopicPage() {
           <input type="number" value={nE} onChange={e => setNE(+e.target.value)} step="0.001"
             className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Thickness (mm)</span>
-          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} step="0.01" min="0.001" max="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="10" min="400" max="700"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Thickness (mm)" value={thickness} onChange={setThickness} min={0.001} max={1} step="0.01" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={700} step="10" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Stage Rotation (°)</span>
-          <input type="number" value={rotAngleDeg} onChange={e => setRotAngleDeg(+e.target.value)} step="5" min="0" max="360"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Polarizer Angle (°)</span>
-          <input type="number" value={polarizerAngleDeg} onChange={e => setPolarizerAngleDeg(+e.target.value)} step="5" min="0" max="90"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Stage Rotation (°)" value={rotAngleDeg} onChange={setRotAngleDeg} min={0} max={360} step="5" />
+        <ValidatedNumberInput label="Polarizer Angle (°)" value={polarizerAngleDeg} onChange={setPolarizerAngleDeg} min={0} max={90} step="5" />
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function JacquinotPage() {
   const [maxOPD, setMaxOPD] = useState(1.0); // cm
@@ -27,10 +28,8 @@ export default function JacquinotPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Jacquinot Advantage" description="FTIR throughput advantage over dispersive instruments. G = 2π/(ν̃·2L) where L = max OPD.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Max OPD (cm)</span>
-          <input type="number" value={maxOPD} onChange={e => setMaxOPD(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavenumber (cm⁻¹)</span>
-          <input type="number" value={wavenumber} onChange={e => setWavenumber(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Max OPD (cm)" value={maxOPD} onChange={setMaxOPD} step="0.1" />
+        <ValidatedNumberInput label="Wavenumber (cm⁻¹)" value={wavenumber} onChange={setWavenumber} />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function OpticalParametricPage() {
   const [pumpWavelength, setPumpWavelength] = useState(532); // nm
@@ -93,21 +94,15 @@ export default function OpticalParametricPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pump λ (nm)</span>
-          <input type="number" value={pumpWavelength} onChange={e => setPumpWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Signal λ (nm)</span>
-          <input type="number" value={signalWavelength} onChange={e => setSignalWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Pump λ (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
+        <ValidatedNumberInput label="Signal λ (nm)" value={signalWavelength} onChange={setSignalWavelength} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">d<sub>eff</sub> (pm/V)</span>
           <input type="number" value={deff} onChange={e => setDeff(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Crystal Length (mm)</span>
-          <input type="number" value={crystalLength} onChange={e => setCrystalLength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pump Power (mW)</span>
-          <input type="number" value={pumpPower} onChange={e => setPumpPower(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pump Waist (µm)</span>
-          <input type="number" value={pumpWaist} onChange={e => setPumpWaist(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} />
+        <ValidatedNumberInput label="Pump Power (mW)" value={pumpPower} onChange={setPumpPower} />
+        <ValidatedNumberInput label="Pump Waist (µm)" value={pumpWaist} onChange={setPumpWaist} />
         {mode === "OPO" && (
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Round-trip Loss (%)</span>
-            <input type="number" value={lossRoundTrip} onChange={e => setLossRoundTrip(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="Round-trip Loss (%)" value={lossRoundTrip} onChange={setLossRoundTrip} step="0.5" />
         )}
       </div>
 

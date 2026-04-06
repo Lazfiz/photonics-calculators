@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 const COLORS = ["#f87171", "#34d399", "#60a5fa", "#fbbf24", "#a78bfa", "#f472b6"];
 
@@ -101,26 +102,10 @@ export default function SimultaneousMulticolorPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Channels (1–6)</span>
-          <input type="number" value={numChannels} onChange={e => setNumChannels(Math.max(1, Math.min(6, +e.target.value)))} min={1} max={6}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Base Crosstalk (%)</span>
-          <input type="number" value={crosstalk} onChange={e => setCrosstalk(+e.target.value)} min={0} max={50} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Exposure Time (ms)</span>
-          <input type="number" value={exposureMs} onChange={e => setExposureMs(+e.target.value)} min={1} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pixel Size (µm)</span>
-          <input type="number" value={pixelSize} onChange={e => setPixelSize(+e.target.value)} min={1} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Number of Channels (1–6)" value={numChannels} onChange={setNumChannels} min={1} max={6} />
+        <ValidatedNumberInput label="Base Crosstalk (%)" value={crosstalk} onChange={setCrosstalk} min={0} max={50} step="0.5" />
+        <ValidatedNumberInput label="Exposure Time (ms)" value={exposureMs} onChange={setExposureMs} min={1} step="1" />
+        <ValidatedNumberInput label="Pixel Size (µm)" value={pixelSize} onChange={setPixelSize} min={1} step="0.1" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Binning</span>
           <select value={binning} onChange={e => setBinning(+e.target.value)}
@@ -128,21 +113,9 @@ export default function SimultaneousMulticolorPage() {
             <option value={1}>1×1</option><option value={2}>2×2</option><option value={4}>4×4</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Quantum Efficiency (%)</span>
-          <input type="number" value={quantumEff} onChange={e => setQuantumEff(+e.target.value)} min={10} max={100}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Read Noise (e⁻)</span>
-          <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} min={0.1} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Dark Current (e⁻/pix/s)</span>
-          <input type="number" value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)} min={0} step="0.001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Quantum Efficiency (%)" value={quantumEff} onChange={setQuantumEff} min={10} max={100} />
+        <ValidatedNumberInput label="Read Noise (e⁻)" value={readNoise} onChange={setReadNoise} min={0.1} step="0.1" />
+        <ValidatedNumberInput label="Dark Current (e⁻/pix/s)" value={darkCurrent} onChange={setDarkCurrent} min={0} step="0.001" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">

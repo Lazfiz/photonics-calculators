@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function WellCapacityPage() {
   const [wellCapacity, setWellCapacity] = useState(50000); // e-
@@ -31,14 +32,10 @@ export default function WellCapacityPage() {
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Well Capacity & Dynamic Range" description="DR = 20·log₁₀(Nwell/σread). C = Nwell·q/Vswing. Larger wells → more DR but slower charge transfer.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Well capacity (e⁻)</span>
-          <input type="number" value={wellCapacity} onChange={e => setWellCapacity(+e.target.value)} step="1000" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read noise (e⁻ rms)</span>
-          <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pixel size (μm)</span>
-          <input type="number" value={pixelSize} onChange={e => setPixelSize(+e.target.value)} step="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Voltage swing (V)</span>
-          <input type="number" value={voltageSwing} onChange={e => setVoltageSwing(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Well capacity (e⁻)" value={wellCapacity} onChange={setWellCapacity} step="1000" />
+        <ValidatedNumberInput label="Read noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} step="1" />
+        <ValidatedNumberInput label="Pixel size (μm)" value={pixelSize} onChange={setPixelSize} step="0.5" />
+        <ValidatedNumberInput label="Voltage swing (V)" value={voltageSwing} onChange={setVoltageSwing} step="0.1" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

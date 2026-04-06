@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SelfPhaseModulationPage() {
   const [wavelength, setWavelength] = useState(800); // nm
@@ -111,18 +112,12 @@ export default function SelfPhaseModulationPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse Energy (nJ)</span>
-          <input type="number" value={pulseEnergy} onChange={e => setPulseEnergy(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse Duration FWHM (fs)</span>
-          <input type="number" value={pulseDuration} onChange={e => setPulseDuration(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Beam Waist (µm)</span>
-          <input type="number" value={beamWaist} onChange={e => setBeamWaist(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n₂ (×10⁻¹⁶ cm²/W)</span>
-          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Medium Length (mm)</span>
-          <input type="number" value={mediumLength} onChange={e => setMediumLength(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Pulse Energy (nJ)" value={pulseEnergy} onChange={setPulseEnergy} step="any" />
+        <ValidatedNumberInput label="Pulse Duration FWHM (fs)" value={pulseDuration} onChange={setPulseDuration} />
+        <ValidatedNumberInput label="Beam Waist (µm)" value={beamWaist} onChange={setBeamWaist} />
+        <ValidatedNumberInput label="n₂ (×10⁻¹⁶ cm²/W)" value={n2} onChange={setN2} step="0.1" />
+        <ValidatedNumberInput label="Medium Length (mm)" value={mediumLength} onChange={setMediumLength} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

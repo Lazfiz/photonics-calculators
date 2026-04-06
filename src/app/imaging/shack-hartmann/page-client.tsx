@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ShackHartmannPage() {
   const [wavelengthNm, setWavelengthNm] = useState(632.8);
@@ -96,41 +97,13 @@ export default function ShackHartmannPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min={400} max={1100} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Aperture (mm)</span>
-          <input type="number" value={apertureDiameterMm} onChange={e => setApertureDiameterMm(+e.target.value)} min={1} max={100} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Lenslet Pitch (µm)</span>
-          <input type="number" value={lensletPitchUm} onChange={e => setLensletPitchUm(+e.target.value)} min={50} max={1000} step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Lenslet f (mm)</span>
-          <input type="number" value={lensletFocalMm} onChange={e => setLensletFocalMm(+e.target.value)} min={1} max={100} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Detector Pixel (µm)</span>
-          <input type="number" value={detectorPixelUm} onChange={e => setDetectorPixelUm(+e.target.value)} min={1} max={20} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">RMS Wavefront (nm)</span>
-          <input type="number" value={rmsWavefrontNm} onChange={e => setRmsWavefrontNm(+e.target.value)} min={1} max={2000} step="5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Dynamic Range (waves)</span>
-          <input type="number" value={dynamicRangeWaves} onChange={e => setDynamicRangeWaves(+e.target.value)} min={0.5} max={20} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={400} max={1100} step="10" />
+        <ValidatedNumberInput label="Aperture (mm)" value={apertureDiameterMm} onChange={setApertureDiameterMm} min={1} max={100} step="1" />
+        <ValidatedNumberInput label="Lenslet Pitch (µm)" value={lensletPitchUm} onChange={setLensletPitchUm} min={50} max={1000} step="10" />
+        <ValidatedNumberInput label="Lenslet f (mm)" value={lensletFocalMm} onChange={setLensletFocalMm} min={1} max={100} step="1" />
+        <ValidatedNumberInput label="Detector Pixel (µm)" value={detectorPixelUm} onChange={setDetectorPixelUm} min={1} max={20} step="0.5" />
+        <ValidatedNumberInput label="RMS Wavefront (nm)" value={rmsWavefrontNm} onChange={setRmsWavefrontNm} min={1} max={2000} step="5" />
+        <ValidatedNumberInput label="Dynamic Range (waves)" value={dynamicRangeWaves} onChange={setDynamicRangeWaves} min={0.5} max={20} step="0.5" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">

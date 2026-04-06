@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 // Mueller matrix utilities
 function multiply(A: number[][], B: number[][]): number[][] {
@@ -198,7 +199,7 @@ export default function MuellerPolarimetryPage() {
           </select>
           <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
             <span className="text-sm text-gray-300">{element1 === "retarder" ? "Retardance (°)" : element1 === "depolarizer" ? "Depolarization %" : "Angle (°)"}</span>
-            <input type="number" value={param1} onChange={e => setParam1(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+            <input type="number" value={param1} onChange={e => setParam1(+e.target.value)} step="1" min={0} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
           </label>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -211,7 +212,7 @@ export default function MuellerPolarimetryPage() {
           </select>
           <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
             <span className="text-sm text-gray-300">{element2 === "retarder" ? "Retardance (°)" : element2 === "depolarizer" ? "Depolarization %" : "Angle (°)"}</span>
-            <input type="number" value={param2} onChange={e => setParam2(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+            <input type="number" value={param2} onChange={e => setParam2(+e.target.value)} step="1" min={0} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
           </label>
         </div>
       </div>

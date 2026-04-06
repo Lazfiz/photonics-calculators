@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function STEDResolutionPage() {
   const [wavelength, setWavelength] = useState(640);
@@ -41,21 +42,9 @@ export default function STEDResolutionPage() {
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="STED Super-Resolution Calculator" description="Calculate STED (Stimulated Emission Depletion) microscopy resolution based on saturation intensity and depletion parameters.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Excitation λ (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={400} max={800}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Numerical Aperture</span>
-          <input type="number" value={na} onChange={e => setNa(+e.target.value)} min={0.5} max={1.7} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Depletion λ (nm)</span>
-          <input type="number" value={depletionWavelength} onChange={e => setDepletionWavelength(+e.target.value)} min={500} max={900}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Excitation λ (nm)" value={wavelength} onChange={setWavelength} min={400} max={800} />
+        <ValidatedNumberInput label="Numerical Aperture" value={na} onChange={setNa} min={0.5} max={1.7} step="0.01" />
+        <ValidatedNumberInput label="Depletion λ (nm)" value={depletionWavelength} onChange={setDepletionWavelength} min={500} max={900} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">I<sub>dep</sub> / I<sub>sat</sub></span>
           <input type="number" value={saturationFactor} onChange={e => setSaturationFactor(+e.target.value)} min={1} max={200}

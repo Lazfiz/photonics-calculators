@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function CrosstalkPage() {
   const [pixelPitch, setPixelPitch] = useState(5.4);
@@ -33,10 +34,10 @@ export default function CrosstalkPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Pixel Crosstalk" description="Optical and electrical crosstalk between adjacent pixels due to charge diffusion.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pixel Pitch (μm)</span><input type="number" value={pixelPitch} onChange={e => setPixelPitch(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Diffusion Length (μm)</span><input type="number" value={diffusionLength} onChange={e => setDiffusionLength(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Absorption Depth (μm)</span><input type="number" value={absorptionDepth} onChange={e => setAbsorptionDepth(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Depletion Width (μm)</span><input type="number" value={depletionWidth} onChange={e => setDepletionWidth(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Pixel Pitch (μm)" value={pixelPitch} onChange={setPixelPitch} />
+        <ValidatedNumberInput label="Diffusion Length (μm)" value={diffusionLength} onChange={setDiffusionLength} />
+        <ValidatedNumberInput label="Absorption Depth (μm)" value={absorptionDepth} onChange={setAbsorptionDepth} />
+        <ValidatedNumberInput label="Depletion Width (μm)" value={depletionWidth} onChange={setDepletionWidth} />
       </div>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ResultCard label="Crosstalk to Neighbor" value={`${crosstalkToNeighbor.toFixed(2)}%`} tone="red" />

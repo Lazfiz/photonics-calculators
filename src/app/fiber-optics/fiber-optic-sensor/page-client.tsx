@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 type SensorType = "fbg" | "mach_zehnder" | "fabry_perot" | "evanescent";
 
@@ -133,34 +134,14 @@ export default function FiberOpticSensorPage() {
             <option value="evanescent">Evanescent Field</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={400}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Temperature (°C)</span>
-          <input type="number" value={temperature} onChange={e => setTemperature(+e.target.value)} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Strain (με)</span>
-          <input type="number" value={strain} onChange={e => setStrain(+e.target.value)} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} />
+        <ValidatedNumberInput label="Temperature (°C)" value={temperature} onChange={setTemperature} step="any" />
+        <ValidatedNumberInput label="Strain (με)" value={strain} onChange={setStrain} step="any" />
         {sensorType === "mach_zehnder" && (
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Gauge Length (mm)</span>
-            <input type="number" value={gaugeLength} onChange={e => setGaugeLength(+e.target.value)} min={0.1} step="any"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
+          <ValidatedNumberInput label="Gauge Length (mm)" value={gaugeLength} onChange={setGaugeLength} min={0.1} step="any" />
         )}
         {sensorType === "fabry_perot" && (
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Cavity Length (μm)</span>
-            <input type="number" value={cavityLength} onChange={e => setCavityLength(+e.target.value)} min={0.1} step="any"
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
+          <ValidatedNumberInput label="Cavity Length (μm)" value={cavityLength} onChange={setCavityLength} min={0.1} step="any" />
         )}
       </div>
 

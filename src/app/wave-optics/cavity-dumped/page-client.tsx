@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function CavityDumpedLaserPage() {
   const [repRate, setRepRate] = useState(80); // MHz
@@ -26,12 +27,9 @@ export default function CavityDumpedLaserPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Cavity-Dumped Laser" description="Energy extraction from a laser cavity using fast Q-switching or intracavity modulation.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Rep Rate (MHz)</span>
-          <input type="number" value={repRate} onChange={e => setRepRate(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Pulse Energy (μJ)</span>
-          <input type="number" value={pulseEnergy} onChange={e => setPulseEnergy(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Cavity Length (m)</span>
-          <input type="number" value={cavityLength} onChange={e => setCavityLength(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Rep Rate (MHz)" value={repRate} onChange={setRepRate} step="1" />
+        <ValidatedNumberInput label="Pulse Energy (μJ)" value={pulseEnergy} onChange={setPulseEnergy} step="1" />
+        <ValidatedNumberInput label="Cavity Length (m)" value={cavityLength} onChange={setCavityLength} step="0.1" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FiberCharacterizationPage() {
   const [wavelength, setWavelength] = useState(1550);
@@ -87,36 +88,12 @@ export default function FiberCharacterizationPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Characterization" description="Comprehensive fiber parameter calculation: V-number, MFD, effective area, nonlinear coefficient, dispersion, and confinement.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={800} max={1700}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Core Index n₁</span>
-          <input type="number" value={coreIndex} onChange={e => setCoreIndex(+e.target.value)} step="0.0001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Cladding Index n₂</span>
-          <input type="number" value={claddingIndex} onChange={e => setCladdingIndex(+e.target.value)} step="0.0001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Core Radius (μm)</span>
-          <input type="number" value={coreRadius} onChange={e => setCoreRadius(+e.target.value)} min={1} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Cutoff Wavelength (nm)</span>
-          <input type="number" value={cutoffWavelength} onChange={e => setCutoffWavelength(+e.target.value)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Attenuation (dB/km)</span>
-          <input type="number" value={attenuation} onChange={e => setAttenuation(+e.target.value)} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={800} max={1700} />
+        <ValidatedNumberInput label="Core Index n₁" value={coreIndex} onChange={setCoreIndex} step="0.0001" />
+        <ValidatedNumberInput label="Cladding Index n₂" value={claddingIndex} onChange={setCladdingIndex} step="0.0001" />
+        <ValidatedNumberInput label="Core Radius (μm)" value={coreRadius} onChange={setCoreRadius} min={1} step="0.1" />
+        <ValidatedNumberInput label="Cutoff Wavelength (nm)" value={cutoffWavelength} onChange={setCutoffWavelength} />
+        <ValidatedNumberInput label="Attenuation (dB/km)" value={attenuation} onChange={setAttenuation} step="0.01" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FourierTransformPage() {
   const [freq1, setFreq1] = useState(10);
@@ -44,18 +45,12 @@ export default function FourierTransformPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fourier Transform Basics" description="Decompose a composite time-domain signal into its frequency components via DFT.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Frequency 1 (Hz)</span>
-          <input type="number" value={freq1} onChange={e => setFreq1(+e.target.value)} min={0.1} step={1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Frequency 2 (Hz)</span>
-          <input type="number" value={freq2} onChange={e => setFreq2(+e.target.value)} min={0.1} step={1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Amplitude 1</span>
-          <input type="number" value={amp1} onChange={e => setAmp1(+e.target.value)} min={0} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Amplitude 2</span>
-          <input type="number" value={amp2} onChange={e => setAmp2(+e.target.value)} min={0} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Noise Level</span>
-          <input type="number" value={noise} onChange={e => setNoise(+e.target.value)} min={0} step={0.05} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">N Points</span>
-          <input type="number" value={nPoints} onChange={e => setNPoints(Math.max(4, +e.target.value))} min={4} max={1024} step={8} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Frequency 1 (Hz)" value={freq1} onChange={setFreq1} min={0.1} />
+        <ValidatedNumberInput label="Frequency 2 (Hz)" value={freq2} onChange={setFreq2} min={0.1} />
+        <ValidatedNumberInput label="Amplitude 1" value={amp1} onChange={setAmp1} min={0} />
+        <ValidatedNumberInput label="Amplitude 2" value={amp2} onChange={setAmp2} min={0} />
+        <ValidatedNumberInput label="Noise Level" value={noise} onChange={setNoise} min={0} />
+        <ValidatedNumberInput label="N Points" value={nPoints} onChange={setNPoints} min={4} max={1024} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

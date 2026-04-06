@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ABCDMatrixPage() {
   const [elements, setElements] = useState<Array<{ type: string; p1: string; p2: string }>>([
@@ -83,10 +84,8 @@ export default function ABCDMatrixPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="ABCD Matrix Calculator" description="Build an optical system from sequential elements and compute the ray transfer matrix.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Input Ray Height (mm)</span>
-          <input type="number" value={inputHeight} onChange={e => setInputHeight(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Input Ray Angle (mrad)</span>
-          <input type="number" value={inputAngle} onChange={e => setInputAngle(+e.target.value)} step="any" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Input Ray Height (mm)" value={inputHeight} onChange={setInputHeight} step="any" />
+        <ValidatedNumberInput label="Input Ray Angle (mrad)" value={inputAngle} onChange={setInputAngle} step="any" />
       </div>
 
       <div className="space-y-3 mb-8">

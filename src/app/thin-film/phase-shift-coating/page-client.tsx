@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PhaseShiftCoatingPage() {
   const [n1, setN1] = useState(1.0);
@@ -47,16 +48,11 @@ export default function PhaseShiftCoatingPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Phase Shift Coatings" description="Phase shift accumulated in thin film coatings. Explore how film thickness and refractive index affect the optical phase of reflected and transmitted light.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (incident medium)</span>
-          <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (film)</span>
-          <input type="number" value={nFilm} onChange={e => setNFilm(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (substrate)</span>
-          <input type="number" value={nSubstrate} onChange={e => setNSubstrate(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Design Wavelength (nm)</span>
-          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Fractional Thickness (QW)</span>
-          <input type="number" value={fractionalThickness} onChange={e => setFractionalThickness(+e.target.value)} step="0.05" min="0.05" max="3" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="n (incident medium)" value={n1} onChange={setN1} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="n (film)" value={nFilm} onChange={setNFilm} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="n (substrate)" value={nSubstrate} onChange={setNSubstrate} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="Design Wavelength (nm)" value={designWl} onChange={setDesignWl} step="10" />
+        <ValidatedNumberInput label="Fractional Thickness (QW)" value={fractionalThickness} onChange={setFractionalThickness} min={0.05} max={3} step="0.05" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

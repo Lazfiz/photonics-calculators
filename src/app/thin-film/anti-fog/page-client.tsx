@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function AntiFogPage() {
   const [nCoat, setNCoat] = useState(1.33);
@@ -94,10 +95,8 @@ export default function AntiFogPage() {
           <input type="number" value={nCoat} onChange={e => setNCoat(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
           <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Coating thickness (nm)</span>
-          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Contact angle (°)</span>
-          <input type="number" value={contactAngle} onChange={e => setContactAngle(+e.target.value)} min={0} max={90} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Coating thickness (nm)" value={thickness} onChange={setThickness} />
+        <ValidatedNumberInput label="Contact angle (°)" value={contactAngle} onChange={setContactAngle} min={0} max={90} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

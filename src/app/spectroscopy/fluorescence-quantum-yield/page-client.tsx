@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FluorescenceQuantumYieldPage() {
   const [sampleInt, setSampleInt] = useState(50000);
@@ -32,31 +33,11 @@ export default function FluorescenceQuantumYieldPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fluorescence Quantum Yield" description="Φ = Φ_ref · (I_s/I_ref) · (A_ref/A_s) · (n_s/n_ref)² — comparative method using a reference standard.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Sample Integrated Intensity</span>
-          <input type="number" value={sampleInt} onChange={e => setSampleInt(+e.target.value)} min={0} step={1000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Reference Integrated Intensity</span>
-          <input type="number" value={refInt} onChange={e => setRefInt(+e.target.value)} min={0} step={1000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Sample Absorbance (at λ_ex)</span>
-          <input type="number" value={sampleAbs} onChange={e => setSampleAbs(Math.max(0.001, +e.target.value))} min={0.001} step={0.01}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Reference Absorbance (at λ_ex)</span>
-          <input type="number" value={refAbs} onChange={e => setRefAbs(Math.max(0.001, +e.target.value))} min={0.001} step={0.01}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Reference Φ (e.g. quinine 0.54)</span>
-          <input type="number" value={refQY} onChange={e => setRefQY(+e.target.value)} min={0} max={1} step={0.01}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Sample Integrated Intensity" value={sampleInt} onChange={setSampleInt} min={0} />
+        <ValidatedNumberInput label="Reference Integrated Intensity" value={refInt} onChange={setRefInt} min={0} />
+        <ValidatedNumberInput label="Sample Absorbance (at λ_ex)" value={sampleAbs} onChange={setSampleAbs} min={0.001} />
+        <ValidatedNumberInput label="Reference Absorbance (at λ_ex)" value={refAbs} onChange={setRefAbs} min={0.001} />
+        <ValidatedNumberInput label="Reference Φ (e.g. quinine 0.54)" value={refQY} onChange={setRefQY} min={0} max={1} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Apply Refractive Index Correction</span>
           <select value={useRefrIdx ? "yes" : "no"} onChange={e => setUseRefrIdx(e.target.value === "yes")}
@@ -69,16 +50,8 @@ export default function FluorescenceQuantumYieldPage() {
 
       {useRefrIdx && (
         <div className="grid gap-4 sm:grid-cols-2 mb-8">
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">n (sample solvent)</span>
-            <input type="number" value={refrIdxSample} onChange={e => setRefrIdxSample(+e.target.value)} min={1} step={0.01}
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">n (reference solvent)</span>
-            <input type="number" value={refrIdxRef} onChange={e => setRefrIdxRef(+e.target.value)} min={1} step={0.01}
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
+          <ValidatedNumberInput label="n (sample solvent)" value={refrIdxSample} onChange={setRefrIdxSample} min={1} />
+          <ValidatedNumberInput label="n (reference solvent)" value={refrIdxRef} onChange={setRefrIdxRef} min={1} />
         </div>
       )}
 

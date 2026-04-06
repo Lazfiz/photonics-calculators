@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function OpticalPowerPage() {
   const [focalLengthMm, setFocalLengthMm] = useState(100);
@@ -44,11 +45,7 @@ export default function OpticalPowerPage() {
 
       <h2 className="text-xl font-semibold mb-4 text-gray-200">Simple Lens</h2>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Focal Length (mm)</span>
-          <input type="number" value={focalLengthMm} onChange={e => setFocalLengthMm(+e.target.value)} min={1} max={5000} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Focal Length (mm)" value={focalLengthMm} onChange={setFocalLengthMm} min={1} max={5000} step="0.1" />
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 flex flex-col justify-center">
           <p className="text-sm text-gray-400">Optical Power</p>
           <p className="text-2xl font-bold text-blue-400">{diopters.toFixed(2)} D</p>
@@ -57,16 +54,8 @@ export default function OpticalPowerPage() {
 
       <h2 className="text-xl font-semibold mb-4 text-gray-200">Simplified Eye Model</h2>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Cornea Power (D)</span>
-          <input type="number" value={corneaPower} onChange={e => setCorneaPower(+e.target.value)} min={30} max={50} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Lens Power (D)</span>
-          <input type="number" value={lensPower} onChange={e => setLensPower(+e.target.value)} min={10} max={35} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Cornea Power (D)" value={corneaPower} onChange={setCorneaPower} min={30} max={50} step="0.1" />
+        <ValidatedNumberInput label="Lens Power (D)" value={lensPower} onChange={setLensPower} min={10} max={35} step="0.1" />
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 flex flex-col justify-center">
           <p className="text-sm text-gray-400">Total Eye Power</p>
           <p className="text-2xl font-bold text-green-400">{totalEye.toFixed(1)} D</p>

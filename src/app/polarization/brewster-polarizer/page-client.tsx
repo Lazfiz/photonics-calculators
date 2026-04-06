@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function BrewsterPolarizerPage() {
   const [n1, setN1] = useState(1.0);
@@ -109,21 +110,9 @@ export default function BrewsterPolarizerPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">n₁ (incident)</span>
-          <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.01" min="1" max="5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">n₂ (plate)</span>
-          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.01" min="1" max="5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Surfaces</span>
-          <input type="number" value={numSurfaces} onChange={e => setNumSurfaces(Math.max(1, +e.target.value))} min="1" max="20"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="n₁ (incident)" value={n1} onChange={setN1} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label="n₂ (plate)" value={n2} onChange={setN2} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label="Number of Surfaces" value={numSurfaces} onChange={setNumSurfaces} min={1} max={20} />
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function M2FactorPage() {
   const [wavelength, setWavelength] = useState(1064); // nm
@@ -51,21 +52,9 @@ export default function M2FactorPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Beam Quality Factor M²" description="M² = (π w₀ θ)/λ. M² = 1 for ideal Gaussian, higher for multimode beams.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={100}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Waist Radius w₀ (mm)</span>
-          <input type="number" value={w0} onChange={e => setW0(+e.target.value)} min={0.001} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Divergence θ (mrad, full)</span>
-          <input type="number" value={theta} onChange={e => setTheta(+e.target.value)} min={0.01} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} />
+        <ValidatedNumberInput label="Waist Radius w₀ (mm)" value={w0} onChange={setW0} min={0.001} step="any" />
+        <ValidatedNumberInput label="Divergence θ (mrad, full)" value={theta} onChange={setTheta} min={0.01} step="any" />
       </div>
 
       <div className={`bg-gray-900 border ${calc.M2 <= 1.5 ? "border-green-800" : calc.M2 <= 2 ? "border-yellow-800" : "border-red-800"} rounded-lg p-6 mb-8`}>

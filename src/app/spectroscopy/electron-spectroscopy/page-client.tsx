@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ElectronSpectroscopyPage() {
   const [photonEnergy, setPhotonEnergy] = useState(1486.6); // Al Kα
@@ -83,26 +84,10 @@ export default function ElectronSpectroscopyPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Electron Spectroscopy (XPS/UPS)" description="Photoelectron spectroscopy for surface composition, chemical state, and electronic structure.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Photon Energy (eV)</span>
-          <input type="number" value={photonEnergy} onChange={e => setPhotonEnergy(+e.target.value)} min={10} max={10000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Binding Energy of Interest (eV)</span>
-          <input type="number" value={bindingEnergy} onChange={e => setBindingEnergy(+e.target.value)} min={0} max={2000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Sample Work Function (eV)</span>
-          <input type="number" value={workFunction} onChange={e => setWorkFunction(+e.target.value)} min={1} max={6} step={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Peak FWHM (eV)</span>
-          <input type="number" value={fwhm} onChange={e => setFwhm(+e.target.value)} min={0.1} max={5} step={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Photon Energy (eV)" value={photonEnergy} onChange={setPhotonEnergy} min={10} max={10000} />
+        <ValidatedNumberInput label="Binding Energy of Interest (eV)" value={bindingEnergy} onChange={setBindingEnergy} min={0} max={2000} />
+        <ValidatedNumberInput label="Sample Work Function (eV)" value={workFunction} onChange={setWorkFunction} min={1} max={6} />
+        <ValidatedNumberInput label="Peak FWHM (eV)" value={fwhm} onChange={setFwhm} min={0.1} max={5} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

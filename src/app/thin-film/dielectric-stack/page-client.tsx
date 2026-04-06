@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function DielectricStackPage() {
   const [nH, setNH] = useState(2.35);
@@ -73,18 +74,12 @@ export default function DielectricStackPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Dielectric Stack Theory" description="Quarter-wave dielectric stack reflectance. Alternating high/low index layers create high-reflectance mirrors — the basis of dielectric mirrors and VCSELs.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (high index)</span>
-          <input type="number" value={nH} onChange={e => setNH(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (low index)</span>
-          <input type="number" value={nL} onChange={e => setNL(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (substrate)</span>
-          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n (incident)</span>
-          <input type="number" value={nInc} onChange={e => setNInc(+e.target.value)} step="0.01" min="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Number of HL Pairs</span>
-          <input type="number" value={numPairs} onChange={e => setNumPairs(Math.max(1, Math.min(20, +e.target.value)))} step="1" min="1" max="20" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Design Wavelength (nm)</span>
-          <input type="number" value={designWl} onChange={e => setDesignWl(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="n (high index)" value={nH} onChange={setNH} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="n (low index)" value={nL} onChange={setNL} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="n (substrate)" value={nSub} onChange={setNSub} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="n (incident)" value={nInc} onChange={setNInc} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="Number of HL Pairs" value={numPairs} onChange={setNumPairs} min={1} max={20} step="1" />
+        <ValidatedNumberInput label="Design Wavelength (nm)" value={designWl} onChange={setDesignWl} step="10" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

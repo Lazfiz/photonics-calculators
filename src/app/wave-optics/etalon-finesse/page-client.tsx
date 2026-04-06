@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function EtalonFinessePage() {
   const [wavelength, setWavelength] = useState(1550); // nm
@@ -50,16 +51,12 @@ export default function EtalonFinessePage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Etalon / Fabry-Pérot Analysis" description="Detailed etalon transmission, finesse, and spectral properties.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Center wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Refractive index n</span>
-          <input type="number" value={refractiveIndex} onChange={e => setRefractiveIndex(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Center wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Refractive index n" value={refractiveIndex} onChange={setRefractiveIndex} step="0.01" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Thickness (µm)</span>
-          <input type="number" value={thickness} onChange={e => setThickness(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Mirror reflectivity R</span>
-          <input type="number" value={reflectivity} onChange={e => setReflectivity(+e.target.value)} step="0.01" min={0} max={0.999} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Thickness (µm)" value={thickness} onChange={setThickness} />
+        <ValidatedNumberInput label="Mirror reflectivity R" value={reflectivity} onChange={setReflectivity} min={0} max={0.999} step="0.01" />
       </div>
       <label className="block mb-8"><span className="text-sm text-gray-300">Wavelength range ± (nm)</span>
         <input type="number" value={wavelengthRange} onChange={e => setWavelengthRange(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>

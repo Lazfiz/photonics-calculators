@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function ChromaticDispersionPage() {
   const [dispersionCoeff, setDispersionCoeff] = useState(17); // ps/(nm·km) for SMF
@@ -85,46 +86,14 @@ export default function ChromaticDispersionPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Chromatic Dispersion (CD)" description="Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">D₀ (ps/nm/km) at λ₀</span>
-          <input type="number" value={dispersionCoeff} onChange={e => setDispersionCoeff(+e.target.value)} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Dispersion Slope S₀ (ps/nm²/km)</span>
-          <input type="number" value={dispersionSlope} onChange={e => setDispersionSlope(+e.target.value)} step="0.001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Zero Dispersion Wavelength λ₀ (nm)</span>
-          <input type="number" value={zeroDispWavelength} onChange={e => setZeroDispWavelength(+e.target.value)} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Operating Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Fiber Length (km)</span>
-          <input type="number" value={length} onChange={e => setLength(+e.target.value)} step="1" min={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Source Linewidth (nm)</span>
-          <input type="number" value={sourceLineWidth} onChange={e => setSourceLineWidth(+e.target.value)} step="0.01" min={0.001}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Initial Pulse Width (ps)</span>
-          <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Modulation BW (GHz)</span>
-          <input type="number" value={modulationBW} onChange={e => setModulationBW(+e.target.value)} step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="D₀ (ps/nm/km) at λ₀" value={dispersionCoeff} onChange={setDispersionCoeff} step="0.5" />
+        <ValidatedNumberInput label="Dispersion Slope S₀ (ps/nm²/km)" value={dispersionSlope} onChange={setDispersionSlope} step="0.001" />
+        <ValidatedNumberInput label="Zero Dispersion Wavelength λ₀ (nm)" value={zeroDispWavelength} onChange={setZeroDispWavelength} step="1" />
+        <ValidatedNumberInput label="Operating Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
+        <ValidatedNumberInput label="Fiber Length (km)" value={length} onChange={setLength} min={0.1} step="1" />
+        <ValidatedNumberInput label="Source Linewidth (nm)" value={sourceLineWidth} onChange={setSourceLineWidth} min={0.001} step="0.01" />
+        <ValidatedNumberInput label="Initial Pulse Width (ps)" value={pulseWidth} onChange={setPulseWidth} step="1" />
+        <ValidatedNumberInput label="Modulation BW (GHz)" value={modulationBW} onChange={setModulationBW} step="1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">

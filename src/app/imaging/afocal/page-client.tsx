@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function AfocalPage() {
   const [f1Mm, setF1Mm] = useState(100);
@@ -59,26 +60,10 @@ export default function AfocalPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">f₁ (mm)</span>
-          <input type="number" value={f1Mm} onChange={e => setF1Mm(+e.target.value)} min={-500} max={5000} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">f₂ (mm)</span>
-          <input type="number" value={f2Mm} onChange={e => setF2Mm(+e.target.value)} min={-500} max={5000} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Separation (mm)</span>
-          <input type="number" value={separationMm} onChange={e => setSeparationMm(+e.target.value)} min={0} max={10000} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Input Angle (°)</span>
-          <input type="number" value={objectAngleDeg} onChange={e => setObjectAngleDeg(+e.target.value)} min={0.01} max={30} step="0.1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="f₁ (mm)" value={f1Mm} onChange={setF1Mm} min={-500} max={5000} step="0.1" />
+        <ValidatedNumberInput label="f₂ (mm)" value={f2Mm} onChange={setF2Mm} min={-500} max={5000} step="0.1" />
+        <ValidatedNumberInput label="Separation (mm)" value={separationMm} onChange={setSeparationMm} min={0} max={10000} step="0.1" />
+        <ValidatedNumberInput label="Input Angle (°)" value={objectAngleDeg} onChange={setObjectAngleDeg} min={0.01} max={30} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-8">

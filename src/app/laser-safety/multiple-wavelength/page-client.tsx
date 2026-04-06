@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function MultipleWavelengthPage() {
   const [wavelengths, setWavelengths] = useState("532, 650, 808");
@@ -71,11 +72,7 @@ export default function MultipleWavelengthPage() {
           <input type="text" value={powers} onChange={e => setPowers(e.target.value)}
             className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Exposure Time (s)</span>
-          <input type="number" value={exposure} onChange={e => setExposure(+e.target.value)} min={1e-9} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Exposure Time (s)" value={exposure} onChange={setExposure} min={1e-9} step="any" />
       </div>
 
       {results && (

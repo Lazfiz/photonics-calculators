@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function PenetrationDepthPage() {
   const [wavelengthNm, setWavelengthNm] = useState(800);
@@ -60,26 +61,10 @@ export default function PenetrationDepthPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Penetration Depth Calculator" description="Calculate optical penetration depth from complex refractive index ñ = n + ik. Includes oblique incidence via Snell&apos;s law.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength λ₀ (nm)</span>
-          <input type="number" value={wavelengthNm} onChange={e => setWavelengthNm(+e.target.value)} min="100" step="10"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Refractive Index n</span>
-          <input type="number" value={refractiveIndexN} onChange={e => setRefractiveIndexN(+e.target.value)} min="0.1" step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Extinction Coefficient k</span>
-          <input type="number" value={extinctionCoeffK} onChange={e => setExtinctionCoeffK(+e.target.value)} min="0" step="0.001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Angle of Incidence (°)</span>
-          <input type="number" value={angleDeg} onChange={e => setAngleDeg(+e.target.value)} min="0" max="90" step="1"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Wavelength λ₀ (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={100} step="10" />
+        <ValidatedNumberInput label="Refractive Index n" value={refractiveIndexN} onChange={setRefractiveIndexN} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="Extinction Coefficient k" value={extinctionCoeffK} onChange={setExtinctionCoeffK} min={0} step="0.001" />
+        <ValidatedNumberInput label="Angle of Incidence (°)" value={angleDeg} onChange={setAngleDeg} min={0} max={90} step="1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">

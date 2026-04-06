@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function SpectralRangePage() {
   const [grooveDensity, setGrooveDensity] = useState(1200); // l/mm
@@ -77,18 +78,12 @@ export default function SpectralRangePage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Range Calculator" description="Spectral coverage, resolution, and dispersion for a grating-based spectrometer.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Groove Density (l/mm)</span>
-          <input type="number" value={grooveDensity} onChange={e => setGrooveDensity(+e.target.value)} min={50} step={100} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Order</span>
-          <input type="number" value={order} onChange={e => setOrder(Math.max(1, +e.target.value))} min={1} max={10} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Focal Length (mm)</span>
-          <input type="number" value={focalLength} onChange={e => setFocalLength(+e.target.value)} min={10} step={10} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Detector Width (mm)</span>
-          <input type="number" value={detectorWidth} onChange={e => setDetectorWidth(Math.max(0.1, +e.target.value))} min={0.1} step={1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Detector Pixels</span>
-          <input type="number" value={detectorPixels} onChange={e => setDetectorPixels(Math.max(64, +e.target.value))} min={64} step={256} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Central Diff. Angle (°)</span>
-          <input type="number" value={centralAngle} onChange={e => setCentralAngle(+e.target.value)} min={1} max={80} step={1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Groove Density (l/mm)" value={grooveDensity} onChange={setGrooveDensity} min={50} />
+        <ValidatedNumberInput label="Order" value={order} onChange={setOrder} min={1} max={10} />
+        <ValidatedNumberInput label="Focal Length (mm)" value={focalLength} onChange={setFocalLength} min={10} />
+        <ValidatedNumberInput label="Detector Width (mm)" value={detectorWidth} onChange={setDetectorWidth} min={0.1} />
+        <ValidatedNumberInput label="Detector Pixels" value={detectorPixels} onChange={setDetectorPixels} min={64} />
+        <ValidatedNumberInput label="Central Diff. Angle (°)" value={centralAngle} onChange={setCentralAngle} min={1} max={80} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

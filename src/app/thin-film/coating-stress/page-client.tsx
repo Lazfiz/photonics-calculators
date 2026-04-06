@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function CoatingStressPage() {
   const [sigmaFilm, setSigmaFilm] = useState(200); // MPa, film stress
@@ -71,8 +72,7 @@ export default function CoatingStressPage() {
           <input type="number" value={nuSub} onChange={e => setNuSub(+e.target.value)} step="0.01" min="0" max="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">t<sub>substrate</sub> (mm)</span>
           <input type="number" value={tSub} onChange={e => setTSub(+e.target.value)} step="0.1" min="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Number of layers</span>
-          <input type="number" value={numLayers} onChange={e => setNumLayers(Math.max(1, +e.target.value))} min="1" max="100" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Number of layers" value={numLayers} onChange={setNumLayers} min={1} max={100} />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function AfterpulsingPage() {
   const [trapLifetime, setTrapLifetime] = useState(20);
@@ -51,11 +52,11 @@ export default function AfterpulsingPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Afterpulsing in APDs" description="Afterpulse probability, trap dynamics, and dead time trade-offs in avalanche photodiodes.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Primary Trap Lifetime (ns)</span><input type="number" value={trapLifetime} onChange={e => setTrapLifetime(+e.target.value)} min="0.1" step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Trap Efficiency</span><input type="number" value={trapEfficiency} onChange={e => setTrapEfficiency(+e.target.value)} min="0.001" max="1" step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Dead Time (ns)</span><input type="number" value={deadTime} onChange={e => setDeadTime(+e.target.value)} min="1" step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Count Rate (Mcps)</span><input type="number" value={countRate / 1e6} onChange={e => setCountRate(+e.target.value * 1e6)} min="0.01" step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Number of Trap Species</span><input type="number" value={numTraps} onChange={e => setNumTraps(+e.target.value)} min="1" max="5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Primary Trap Lifetime (ns)" value={trapLifetime} onChange={setTrapLifetime} min={0.1} step="1" />
+        <ValidatedNumberInput label="Trap Efficiency" value={trapEfficiency} onChange={setTrapEfficiency} min={0.001} max={1} step="0.01" />
+        <ValidatedNumberInput label="Dead Time (ns)" value={deadTime} onChange={setDeadTime} min={1} step="1" />
+        <ValidatedNumberInput label="Count Rate (Mcps)" value={countRate} onChange={setCountRate} min={0.01} step="0.1" />
+        <ValidatedNumberInput label="Number of Trap Species" value={numTraps} onChange={setNumTraps} min={1} max={5} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Afterpulse Prob" value={`${(afterpulseProb * 100).toFixed(3)}%`} tone="red" />

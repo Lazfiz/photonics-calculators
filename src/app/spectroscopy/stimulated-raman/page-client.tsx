@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function StimulatedRamanPage() {
   const [ramanShift, setRamanShift] = useState(2880);
@@ -44,36 +45,12 @@ export default function StimulatedRamanPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Stimulated Raman Scattering (SRS)" description="Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Raman Shift (cm⁻¹)</span>
-          <input type="number" value={ramanShift} onChange={e => setRamanShift(+e.target.value)} min={100} max={4500}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Pump Power (mW)</span>
-          <input type="number" value={pumpPower} onChange={e => setPumpPower(+e.target.value)} min={1} max={1e6}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Stokes Power (mW)</span>
-          <input type="number" value={stokesPower} onChange={e => setStokesPower(+e.target.value)} min={1} max={1e6}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Path Length (cm)</span>
-          <input type="number" value={pathLength} onChange={e => setPathLength(+e.target.value)} min={0.001} max={100} step={0.01}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Concentration (M)</span>
-          <input type="number" value={concentration} onChange={e => setConcentration(+e.target.value)} min={0.001} max={50} step={0.01}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Raman Linewidth (cm⁻¹)</span>
-          <input type="number" value={linewidth} onChange={e => setLinewidth(+e.target.value)} min={1} max={100}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Raman Shift (cm⁻¹)" value={ramanShift} onChange={setRamanShift} min={100} max={4500} />
+        <ValidatedNumberInput label="Pump Power (mW)" value={pumpPower} onChange={setPumpPower} min={1} max={1e6} />
+        <ValidatedNumberInput label="Stokes Power (mW)" value={stokesPower} onChange={setStokesPower} min={1} max={1e6} />
+        <ValidatedNumberInput label="Path Length (cm)" value={pathLength} onChange={setPathLength} min={0.001} max={100} />
+        <ValidatedNumberInput label="Concentration (M)" value={concentration} onChange={setConcentration} min={0.001} max={50} />
+        <ValidatedNumberInput label="Raman Linewidth (cm⁻¹)" value={linewidth} onChange={setLinewidth} min={1} max={100} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

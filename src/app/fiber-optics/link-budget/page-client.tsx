@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function LinkBudgetPage() {
   const [txPower, setTxPower] = useState(0); // dBm
@@ -45,51 +46,15 @@ export default function LinkBudgetPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Link Budget" description="Total optical link loss budget calculator. Power budget vs. accumulated losses.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Tx Power (dBm)</span>
-          <input type="number" value={txPower} onChange={e => setTxPower(+e.target.value)} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Rx Sensitivity (dBm)</span>
-          <input type="number" value={rxSensitivity} onChange={e => setRxSensitivity(+e.target.value)} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Fiber Length (km)</span>
-          <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} min={0} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Fiber Attenuation (dB/km)</span>
-          <input type="number" value={fiberAttenuation} onChange={e => setFiberAttenuation(+e.target.value)} min={0} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Splices (count)</span>
-          <input type="number" value={spliceCount} onChange={e => setSpliceCount(+e.target.value)} min={0}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Splice Loss (dB each)</span>
-          <input type="number" value={spliceLoss} onChange={e => setSpliceLoss(+e.target.value)} min={0} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Connectors (count)</span>
-          <input type="number" value={connectorCount} onChange={e => setConnectorCount(+e.target.value)} min={0}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Connector Loss (dB each)</span>
-          <input type="number" value={connectorLoss} onChange={e => setConnectorLoss(+e.target.value)} min={0} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">System Margin (dB)</span>
-          <input type="number" value={margin} onChange={e => setMargin(+e.target.value)} min={0} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Tx Power (dBm)" value={txPower} onChange={setTxPower} step="any" />
+        <ValidatedNumberInput label="Rx Sensitivity (dBm)" value={rxSensitivity} onChange={setRxSensitivity} step="any" />
+        <ValidatedNumberInput label="Fiber Length (km)" value={fiberLength} onChange={setFiberLength} min={0} step="any" />
+        <ValidatedNumberInput label="Fiber Attenuation (dB/km)" value={fiberAttenuation} onChange={setFiberAttenuation} min={0} step="any" />
+        <ValidatedNumberInput label="Splices (count)" value={spliceCount} onChange={setSpliceCount} min={0} />
+        <ValidatedNumberInput label="Splice Loss (dB each)" value={spliceLoss} onChange={setSpliceLoss} min={0} step="any" />
+        <ValidatedNumberInput label="Connectors (count)" value={connectorCount} onChange={setConnectorCount} min={0} />
+        <ValidatedNumberInput label="Connector Loss (dB each)" value={connectorLoss} onChange={setConnectorLoss} min={0} step="any" />
+        <ValidatedNumberInput label="System Margin (dB)" value={margin} onChange={setMargin} min={0} step="any" />
       </div>
 
       <div className={`bg-gray-900 border ${calc.feasible ? "border-green-800" : "border-red-800"} rounded-lg p-6 mb-8`}>

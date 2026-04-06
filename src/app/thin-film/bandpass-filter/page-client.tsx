@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function BandpassFilterPage() {
   const [nH, setNH] = useState(2.35);
@@ -75,14 +76,10 @@ export default function BandpassFilterPage() {
           <input type="number" value={nL} onChange={e => setNL(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
           <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Center λ (nm)</span>
-          <input type="number" value={centerWl} onChange={e => setCenterWl(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Mirror Pairs</span>
-          <input type="number" value={cavityPairs} onChange={e => setCavityPairs(+e.target.value)} min={1} max={15} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Cavities</span>
-          <input type="number" value={cavities} onChange={e => setCavities(+e.target.value)} min={1} max={6} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Spacer n</span>
-          <input type="number" value={spacerN} onChange={e => setSpacerN(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Center λ (nm)" value={centerWl} onChange={setCenterWl} />
+        <ValidatedNumberInput label="Mirror Pairs" value={cavityPairs} onChange={setCavityPairs} min={1} max={15} />
+        <ValidatedNumberInput label="Cavities" value={cavities} onChange={setCavities} min={1} max={6} />
+        <ValidatedNumberInput label="Spacer n" value={spacerN} onChange={setSpacerN} step="0.01" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function UniformityPage() {
   const [meanSignal, setMeanSignal] = useState(50000); // e-
@@ -59,14 +60,10 @@ export default function UniformityPage() {
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Photoresponse Non-Uniformity" description="PRNU measures the spatial variation in pixel sensitivity across the sensor array. σPRNU = PRNU% × mean signal.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Mean Signal (e⁻)</span>
-          <input type="number" value={meanSignal} onChange={e => setMeanSignal(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">PRNU (%)</span>
-          <input type="number" value={prnuPercent} onChange={e => setPrnuPercent(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">DSNU (%)</span>
-          <input type="number" value={dsnuPercent} onChange={e => setDsnuPercent(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read Noise (e⁻ rms)</span>
-          <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} step={0.1} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Mean Signal (e⁻)" value={meanSignal} onChange={setMeanSignal} />
+        <ValidatedNumberInput label="PRNU (%)" value={prnuPercent} onChange={setPrnuPercent} />
+        <ValidatedNumberInput label="DSNU (%)" value={dsnuPercent} onChange={setDsnuPercent} />
+        <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

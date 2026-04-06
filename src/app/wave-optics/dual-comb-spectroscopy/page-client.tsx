@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function DualCombSpectroscopyPage() {
   const [repRate1, setRepRate1] = useState(250); // MHz
@@ -29,12 +30,9 @@ export default function DualCombSpectroscopyPage() {
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Dual-Comb Spectroscopy" description="High-resolution spectroscopy using two frequency combs with slightly different repetition rates.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Rep Rate 1 (MHz)</span>
-          <input type="number" value={repRate1} onChange={e => setRepRate1(+e.target.value)} step="0.001" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Rep Rate 2 (MHz)</span>
-          <input type="number" value={repRate2} onChange={e => setRepRate2(+e.target.value)} step="0.001" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Center λ (nm)</span>
-          <input type="number" value={centerWavelength} onChange={e => setCenterWavelength(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+        <ValidatedNumberInput label="Rep Rate 1 (MHz)" value={repRate1} onChange={setRepRate1} step="0.001" />
+        <ValidatedNumberInput label="Rep Rate 2 (MHz)" value={repRate2} onChange={setRepRate2} step="0.001" />
+        <ValidatedNumberInput label="Center λ (nm)" value={centerWavelength} onChange={setCenterWavelength} step="1" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

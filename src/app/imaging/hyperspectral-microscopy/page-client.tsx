@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function HyperspectralMicroscopyPage() {
   const [startNm, setStartNm] = useState(400);
@@ -92,26 +93,10 @@ export default function HyperspectralMicroscopyPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Start Wavelength (nm)</span>
-          <input type="number" value={startNm} onChange={e => setStartNm(+e.target.value)} min={300} max={1000}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">End Wavelength (nm)</span>
-          <input type="number" value={endNm} onChange={e => setEndNm(+e.target.value)} min={400} max={1200}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Spectral Bands</span>
-          <input type="number" value={spectralBands} onChange={e => setSpectralBands(+e.target.value)} min={4} max={512}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Spatial Pixels (×)</span>
-          <input type="number" value={spatialPixels} onChange={e => setSpatialPixels(+e.target.value)} min={64} max={4096} step={64}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Start Wavelength (nm)" value={startNm} onChange={setStartNm} min={300} max={1000} />
+        <ValidatedNumberInput label="End Wavelength (nm)" value={endNm} onChange={setEndNm} min={400} max={1200} />
+        <ValidatedNumberInput label="Spectral Bands" value={spectralBands} onChange={setSpectralBands} min={4} max={512} />
+        <ValidatedNumberInput label="Spatial Pixels (×)" value={spatialPixels} onChange={setSpatialPixels} min={64} max={4096} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Bit Depth</span>
           <select value={bitDepth} onChange={e => setBitDepth(+e.target.value)}
@@ -119,26 +104,10 @@ export default function HyperspectralMicroscopyPage() {
             <option value={8}>8-bit</option><option value={12}>12-bit</option><option value={14}>14-bit</option><option value={16}>16-bit</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Exposure per Band (ms)</span>
-          <input type="number" value={exposureMs} onChange={e => setExposureMs(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Number of Frames</span>
-          <input type="number" value={numFrames} onChange={e => setNumFrames(+e.target.value)} min={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">SNR (dB)</span>
-          <input type="number" value={snrDb} onChange={e => setSnrDb(+e.target.value)} min={0} max={60}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Compression Ratio</span>
-          <input type="number" value={compression} onChange={e => setCompression(+e.target.value)} min={1} max={100} step="0.5"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Exposure per Band (ms)" value={exposureMs} onChange={setExposureMs} min={1} />
+        <ValidatedNumberInput label="Number of Frames" value={numFrames} onChange={setNumFrames} min={1} />
+        <ValidatedNumberInput label="SNR (dB)" value={snrDb} onChange={setSnrDb} min={0} max={60} />
+        <ValidatedNumberInput label="Compression Ratio" value={compression} onChange={setCompression} min={1} max={100} step="0.5" />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 mb-6">

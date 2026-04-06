@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function FiberBandwidthPage() {
   const [fiberType, setFiberType] = useState<"SMF" | "MM62_5" | "MM50">("SMF");
@@ -132,27 +133,11 @@ export default function FiberBandwidthPage() {
             <option value="MM50">MMF 50/125 μm (OM3/OM4)</option>
           </select>
         </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Length (km)</span>
-          <input type="number" value={length} onChange={e => setLength(+e.target.value)} min={0.1} step="any"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Wavelength (nm)</span>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} min={800} max={1700}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Source Linewidth (nm)</span>
-          <input type="number" value={sourceLinewidth} onChange={e => setSourceLinewidth(+e.target.value)} min={0.01} step="0.01"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Length (km)" value={length} onChange={setLength} min={0.1} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={800} max={1700} />
+        <ValidatedNumberInput label="Source Linewidth (nm)" value={sourceLinewidth} onChange={setSourceLinewidth} min={0.01} step="0.01" />
         {fiberType !== "SMF" && (
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Modal BW (MHz·km)</span>
-            <input type="number" value={modalBW} onChange={e => setModalBW(+e.target.value)} min={100}
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
+          <ValidatedNumberInput label="Modal BW (MHz·km)" value={modalBW} onChange={setModalBW} min={100} />
         )}
       </div>
 

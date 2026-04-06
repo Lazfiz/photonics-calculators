@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
+import ValidatedNumberInput from "../../../components/validated-number-input";
 
 export default function EmissionSpectraPage() {
   const [centerWL, setCenterWL] = useState(520);
@@ -57,26 +58,10 @@ export default function EmissionSpectraPage() {
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Emission Spectra Fitting" description="Model photoluminescence emission with asymmetric Gaussian line shapes.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Peak 1 Center (nm)</span>
-          <input type="number" value={centerWL} onChange={e => setCenterWL(+e.target.value)} min={300} max={1000} step={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Peak 1 FWHM (nm)</span>
-          <input type="number" value={fwhm} onChange={e => setFwhm(+e.target.value)} min={1} step={1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Peak 1 Intensity</span>
-          <input type="number" value={peakIntensity} onChange={e => setPeakIntensity(+e.target.value)} min={0} step={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Asymmetry (red-tail)</span>
-          <input type="number" value={asymmetry} onChange={e => setAsymmetry(+e.target.value)} min={0} max={2} step={0.1}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-        </label>
+        <ValidatedNumberInput label="Peak 1 Center (nm)" value={centerWL} onChange={setCenterWL} min={300} max={1000} />
+        <ValidatedNumberInput label="Peak 1 FWHM (nm)" value={fwhm} onChange={setFwhm} min={1} />
+        <ValidatedNumberInput label="Peak 1 Intensity" value={peakIntensity} onChange={setPeakIntensity} min={0} />
+        <ValidatedNumberInput label="Asymmetry (red-tail)" value={asymmetry} onChange={setAsymmetry} min={0} max={2} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Number of Peaks</span>
           <select value={nPeaks} onChange={e => setNPeaks(+e.target.value)}
@@ -89,21 +74,9 @@ export default function EmissionSpectraPage() {
 
       {nPeaks >= 2 && (
         <div className="grid gap-4 sm:grid-cols-3 mb-8">
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Peak 2 Center (nm)</span>
-            <input type="number" value={peak2WL} onChange={e => setPeak2WL(+e.target.value)} min={300} step={1}
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Peak 2 FWHM (nm)</span>
-            <input type="number" value={peak2Fwhm} onChange={e => setPeak2Fwhm(+e.target.value)} min={1} step={1}
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Peak 2 Intensity</span>
-            <input type="number" value={peak2Intensity} onChange={e => setPeak2Intensity(+e.target.value)} min={0} step={0.1}
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
+          <ValidatedNumberInput label="Peak 2 Center (nm)" value={peak2WL} onChange={setPeak2WL} min={300} />
+          <ValidatedNumberInput label="Peak 2 FWHM (nm)" value={peak2Fwhm} onChange={setPeak2Fwhm} min={1} />
+          <ValidatedNumberInput label="Peak 2 Intensity" value={peak2Intensity} onChange={setPeak2Intensity} min={0} />
         </div>
       )}
 
