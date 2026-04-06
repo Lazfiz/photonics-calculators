@@ -14,8 +14,9 @@ export default function GreenLaserPointerPage() {
   const [divergence, setDivergence] = useState(1.2); // mrad
   const [distance, setDistance] = useState(10); // m
 
-  // MPE for 532nm, 0.25s exposure (aversion response)
-  const mpeWcm2 = 2.5; // W/cm² for visible CW, 0.25s (IEC simplified)
+  // MPE for visible CW, 0.25s aversion response: H_MPE = 1.8e-3 × t^0.75 J/cm²
+  // At t=0.25s: E = 1.8e-3 × 0.25^-0.25 ≈ 2.55 mW/cm² (ANSI Z136.1)
+  const mpeWcm2 = 1.8e-3 * Math.pow(0.25, -0.25); // ~2.55e-3 W/cm² = 2.55 mW/cm²
   const beamAreaCm2 = Math.PI * Math.pow(beamDia / 20, 2);
   const powerDensity0 = (power / 1000) / beamAreaCm2; // W/cm² at aperture
 
@@ -104,7 +105,7 @@ export default function GreenLaserPointerPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-8">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">Formulas</h3>
         <div className="text-xs text-gray-400 space-y-1">
-          <p>MPE<sub>vis</sub> = 2.5 W/cm² (CW, 0.25s, 400–700 nm)</p>
+          <p>MPE<sub>vis</sub> = 1.8×10⁻³ × t⁻⁰·²⁵ W/cm² (400–700 nm, ANSI Z136.1)</p>
           <p>d(z) = d₀ + z × φ</p>
           <p>E(z) = P / (π(d(z)/2)²)</p>
           <p>NOHD = (1/φ)(√(1.27P/(MPE·a²)) − 1)</p>

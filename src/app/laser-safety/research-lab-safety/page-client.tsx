@@ -16,8 +16,10 @@ export default function ResearchLabSafetyPage() {
   const [labLength, setLabLength] = useState(5); // m
   const [labWidth, setLabWidth] = useState(4); // m
 
-  // MPE
-  const mpeWcm2 = wavelength <= 700 ? 2.5 : (wavelength <= 1400 ? 0.1 : 0.01);
+  // MPE: retinal hazard (400-1400nm) in W/cm² — ANSI Z136.1 simplified
+  // Visible (400-700nm): ~1.8e-3 × t^-0.25 W/cm²; Near-IR (700-1400nm): C_A × 1e-3 W/cm²
+  // Far-IR (>1400nm): corneal hazard, ~0.1 W/cm² (order of magnitude)
+  const mpeWcm2 = wavelength <= 700 ? 1.8e-3 : (wavelength <= 1400 ? 1e-3 : 0.1);
 
   const beamAreaCm2 = Math.PI * Math.pow(beamDia / 20, 2);
   const powerDensity = (power / 1000) / beamAreaCm2;

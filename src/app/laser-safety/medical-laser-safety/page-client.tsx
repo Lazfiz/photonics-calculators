@@ -15,13 +15,14 @@ export default function MedicalLaserSafetyPage() {
   const [beamDia, setBeamDia] = useState(1); // mm (delivery fiber/handpiece)
   const [treatmentArea, setTreatmentArea] = useState(1); // cm²
 
-  // MPE based on wavelength region
+  // MPE based on wavelength region (ANSI Z136.1 simplified)
+  // Retinal hazard (400-1400nm): mW/cm² scale; Corneal hazard (>1400nm): W/cm² scale
   const mpe = useMemo(() => {
-    if (wavelength < 400) return 0.003; // UV, W/cm²
-    if (wavelength <= 700) return 2.5 / Math.sqrt(exposureTime); // visible
-    if (wavelength <= 1400) return 0.1 / Math.sqrt(exposureTime); // IR-A retinal
-    if (wavelength <= 3000) return 0.1; // IR-B
-    return 0.1; // IR-C (CO2) - simplified
+    if (wavelength < 400) return 0.003; // UV, W/cm² (corneal)
+    if (wavelength <= 700) return 1.8e-3 * Math.pow(exposureTime, -0.25); // visible retinal, W/cm²
+    if (wavelength <= 1400) return 1e-3; // IR-A retinal, W/cm² (long exposure, C_A≈1 at 700nm)
+    if (wavelength <= 3000) return 0.56 * Math.pow(exposureTime, -0.25); // IR-B corneal
+    return 0.1 * Math.pow(exposureTime, -0.25); // IR-C (CO2) corneal
   }, [wavelength, exposureTime]);
 
   const spotAreaCm2 = Math.PI * Math.pow(spotSize / 20, 2);
@@ -54,9 +55,9 @@ export default function MedicalLaserSafetyPage() {
     const times = Array.from({ length: 80 }, (_, i) => 0.001 + i * 0.5); // 1ms to 40s
     const fluences = times.map(t => powerDensity * t);
     const mpeFluences = times.map(t => {
-      if (wavelength <= 700) return (2.5 / Math.sqrt(t)) * t;
-      if (wavelength <= 1400) return (0.1 / Math.sqrt(t)) * t;
-      return 0.1 * t;
+      if (wavelength <= 700) return 1.8e-3 * Math.pow(t, 0.75);
+      if (wavelength <= 1400) return 1e-3 * t;
+      return 0.56 * Math.pow(t, 0.75);
     });
     return [
       { x: times.map(t => t * 1000), y: fluences, type: "scatter" as const, mode: "lines" as const, name: "Your fluence", line: { color: "#60a5fa" } },
@@ -111,8 +112,9 @@ export default function MedicalLaserSafetyPage() {
           <p>E = P / A<sub>spot</sub></p>
           <p>F = E × t (fluence)</p>
           <p>τ<sub>tr</sub> = d² / (16α) where α ≈ 1.3 × 10<sup>−3</sup> cm²/s (skin)</p>
-          <p>MPE<sub>IR-C</sub> = 0.1 W/cm²</p>
-          <p>MPE<sub>vis</sub> = 2.5 / √t W/cm²</p>
+          <p>MPE<sub>IR-C</sub> = 0.1 × t<sup>−0.25</sup> W/cm² (corneal, 1mm aperture)</p>
+          <p>MPE<sub>vis</sub> = 1.8×10⁻³ × t<sup>−0.25</sup> W/cm² (retinal, ANSI Z136.1)</p>
+          <p>MPE<sub>IR-A</sub> ≈ 1×10⁻³ W/cm² (long exposure)</p>
         </div>
       </div>
 

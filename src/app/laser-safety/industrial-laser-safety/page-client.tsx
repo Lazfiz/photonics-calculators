@@ -17,7 +17,8 @@ export default function IndustrialLaserSafetyPage() {
   const [exposureTime, setExposureTime] = useState(10); // s (accidental)
 
   const reflectedPower = power * materialReflectivity / 100;
-  const mpeWcm2 = wavelength <= 1400 ? 0.1 / Math.sqrt(exposureTime) : 0.1;
+  // MPE: retinal hazard (≤1400nm) ~1 mW/cm²; corneal (>1400nm) ~0.1 W/cm² (ANSI Z136.1 simplified)
+  const mpeWcm2 = wavelength <= 1400 ? 1e-3 : 0.1;
   const beamAreaCm2 = Math.PI * Math.pow(beamDia / 20, 2);
   const directIrradiance = power / beamAreaCm2;
   const reflectedIrradiance = reflectedPower / beamAreaCm2;
