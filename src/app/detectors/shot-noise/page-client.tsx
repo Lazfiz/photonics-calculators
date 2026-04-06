@@ -22,7 +22,7 @@ export default function ShotNoisePage() {
 
   const iShot = Math.sqrt(2 * q * photocurrent * bandwidth);
   const snrVal = iShot === 0 ? Infinity : photocurrent / iShot;
-  const NEP = iShot; // simplified
+  const snrPower = iShot === 0 ? Infinity : Math.pow(snrVal, 2);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
@@ -34,8 +34,10 @@ export default function ShotNoisePage() {
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">
-        <p className="text-gray-300">Shot noise = <span className="text-blue-400 font-mono">{iShot.toExponential(3)} A</span></p>
-        <p className="text-gray-300">SNR = <span className="text-blue-400 font-mono">{snrVal === Infinity ? "∞" : snrVal.toFixed(1)}</span></p>
+        <p className="text-gray-300">Shot noise current = <span className="text-blue-400 font-mono">{iShot.toExponential(3)} A</span></p>
+        <p className="text-gray-300">SNR (amplitude) = <span className="text-blue-400 font-mono">{snrVal === Infinity ? "∞" : snrVal.toFixed(1)}</span></p>
+        <p className="text-gray-300">SNR (power) = <span className="text-blue-400 font-mono">{snrPower === Infinity ? "∞" : snrPower.toFixed(1)}</span></p>
+        <p className="text-sm text-gray-500 mt-2">Note: NEP = noise current / responsivity (see NEP calculator for full analysis)</p>
       </div>
 
       <ChartPanel data={chartData} layout={{
