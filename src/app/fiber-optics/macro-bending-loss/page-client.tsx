@@ -5,15 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function MacrobendingLossPage() {
-  const [bendRadius, setBendRadius] = useState(15); // mm
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [coreRadius, setCoreRadius] = useState(4.1); // µm
-  const [coreNA, setCoreNA] = useState(0.12);
-  const [claddingRadius, setCladdingRadius] = useState(62.5); // µm
-  const [coatingIndex, setCoatingIndex] = useState(1.48);
-  const [numBends, setNumBends] = useState(1);
+  const [bendRadius, setBendRadius] = useURLState("bendRadius", 15); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1); // µm
+  const [coreNA, setCoreNA] = useURLState("coreNA", 0.12);
+  const [claddingRadius, setCladdingRadius] = useURLState("claddingRadius", 62.5); // µm
+  const [coatingIndex, setCoatingIndex] = useURLState("coatingIndex", 1.48);
+  const [numBends, setNumBends] = useURLState("numBends", 1);
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-3; // µm

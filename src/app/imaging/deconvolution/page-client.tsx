@@ -5,17 +5,18 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function DeconvolutionPage() {
   const [method, setMethod] = useState<"richardson" | "wiener" | "blind" | "tikhonov">("richardson");
-  const [na, setNa] = useState(1.4);
-  const [wavelengthNm, setWavelengthNm] = useState(550);
-  const [refractiveIndex, setRefractiveIndex] = useState(1.515);
-  const [numIterations, setNumIterations] = useState(15);
-  const [regularization, setRegularization] = useState(0.01);
-  const [snrInput, setSnrInput] = useState(30);
-  const [imageSize, setImageSize] = useState(512);
-  const [numZSlices, setNumZSlices] = useState(30);
+  const [na, setNa] = useURLState("na", 1.4);
+  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 550);
+  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.515);
+  const [numIterations, setNumIterations] = useURLState("numIterations", 15);
+  const [regularization, setRegularization] = useURLState("regularization", 0.01);
+  const [snrInput, setSnrInput] = useURLState("snrInput", 30);
+  const [imageSize, setImageSize] = useURLState("imageSize", 512);
+  const [numZSlices, setNumZSlices] = useURLState("numZSlices", 30);
 
   const lateralRes = 0.61 * wavelengthNm / na;
   const axialRes = 2 * refractiveIndex * wavelengthNm / (na ** 2);

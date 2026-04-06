@@ -3,13 +3,14 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function ModeCouplingCalculator() {
-  const [couplingLength, setCouplingLength] = useState<number>(1000); // μm
-  const [couplingCoeff, setCouplingCoeff] = useState<number>(0.5); // mm⁻¹
-  const [propConstDiff, setPropConstDiff] = useState<number>(0.1); // mm⁻¹
-  const [inputPower, setInputPower] = useState<number>(1); // mW
+  const [couplingLength, setCouplingLength] = useURLState("couplingLength", 1000); // μm
+  const [couplingCoeff, setCouplingCoeff] = useURLState("couplingCoeff", 0.5); // mm⁻¹
+  const [propConstDiff, setPropConstDiff] = useURLState("propConstDiff", 0.1); // mm⁻¹
+  const [inputPower, setInputPower] = useURLState("inputPower", 1); // mW
 
   const kappa = couplingCoeff; // mm⁻¹
   const deltaBeta = propConstDiff; // mm⁻¹

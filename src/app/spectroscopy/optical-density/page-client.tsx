@@ -7,13 +7,14 @@ import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
+import { useURLState } from "../../../hooks/use-url-state";
 
 const odPresets = [0.1, 0.3, 1, 2, 3, 4, 6];
 const currentHref = "/spectroscopy/optical-density";
 
 export default function OpticalDensityPage() {
-  const [transmission, setTransmission] = useState(1);
-  const [absorbance, setAbsorbance] = useState(2);
+  const [transmission, setTransmission] = useURLState("transmission", 1);
+  const [absorbance, setAbsorbance] = useURLState("absorbance", 2);
   const [inputMode, setInputMode] = useState<"trans" | "abs">("abs");
 
   const abs = inputMode === "abs" ? absorbance : -Math.log10(Math.max(transmission, 1e-9) / 100);

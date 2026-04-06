@@ -3,16 +3,17 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function FreeElectronLaserPage() {
-  const [electronEnergy, setElectronEnergy] = useState(100); // MeV
-  const [undulatorPeriod, setUndulatorPeriod] = useState(30); // mm
-  const [undulatorK, setUndulatorK] = useState(1.5);
-  const [undulatorLength, setUndulatorLength] = useState(2); // m
-  const [beamCurrent, setBeamCurrent] = useState(100); // A
-  const [beamEmittance, setBeamEmittance] = useState(5); // mm-mrad
-  const [energySpread, setEnergySpread] = useState(0.001); // relative
+  const [electronEnergy, setElectronEnergy] = useURLState("electronEnergy", 100); // MeV
+  const [undulatorPeriod, setUndulatorPeriod] = useURLState("undulatorPeriod", 30); // mm
+  const [undulatorK, setUndulatorK] = useURLState("undulatorK", 1.5);
+  const [undulatorLength, setUndulatorLength] = useURLState("undulatorLength", 2); // m
+  const [beamCurrent, setBeamCurrent] = useURLState("beamCurrent", 100); // A
+  const [beamEmittance, setBeamEmittance] = useURLState("beamEmittance", 5); // mm-mrad
+  const [energySpread, setEnergySpread] = useURLState("energySpread", 0.001); // relative
 
   const c = 2.998e8;
   const m_e = 0.511; // MeV/c²

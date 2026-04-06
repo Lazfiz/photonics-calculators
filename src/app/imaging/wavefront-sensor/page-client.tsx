@@ -3,15 +3,16 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function WavefrontSensorPage() {
-  const [numLenslets, setNumLenslets] = useState(12);
-  const [lensletPitch, setLensletPitch] = useState(150); // µm
-  const [focalLength, setFocalLength] = useState(18); // mm
-  const [wavelength, setWavelength] = useState(550);
-  const [pixelSize, setPixelSize] = useState(5.5); // µm
-  const [sensorSize, setSensorSize] = useState(6.5); // mm
+  const [numLenslets, setNumLenslets] = useURLState("numLenslets", 12);
+  const [lensletPitch, setLensletPitch] = useURLState("lensletPitch", 150); // µm
+  const [focalLength, setFocalLength] = useURLState("focalLength", 18); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 550);
+  const [pixelSize, setPixelSize] = useURLState("pixelSize", 5.5); // µm
+  const [sensorSize, setSensorSize] = useURLState("sensorSize", 6.5); // mm
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;

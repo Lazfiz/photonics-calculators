@@ -4,9 +4,10 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function BeamDiameterConversionPage() {
-  const [inputValue, setInputValue] = useState(1);
+  const [inputValue, setInputValue] = useURLState("inputValue", 1);
   const [inputType, setInputType] = useState<"1e2" | "1e" | "fwhm">("1e2");
 
   // Gaussian beam relationships:

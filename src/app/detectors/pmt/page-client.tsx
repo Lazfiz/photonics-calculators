@@ -5,18 +5,19 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 // PMT: Photomultiplier Tube
 // Gain = δ^n where δ = secondary emission ratio, n = number of dynodes
 // SNR = signal_electrons / sqrt(signal_electrons + gain^2 * (dark + noise))
 export default function PMTPage() {
-  const [numDynodes, setNumDynodes] = useState(10);
-  const [secondaryEmission, setSecondaryEmission] = useState(3.5);
-  const [qe, setQe] = useState(0.25);
-  const [darkCurrent, setDarkCurrent] = useState(1); // nA
-  const [anodeResistance, setAnodeResistance] = useState(50); // Ohm
-  const [photonRate, setPhotonRate] = useState(1e6); // photons/s
-  const [bandwidth, setBandwidth] = useState(100e6); // Hz
+  const [numDynodes, setNumDynodes] = useURLState("numDynodes", 10);
+  const [secondaryEmission, setSecondaryEmission] = useURLState("secondaryEmission", 3.5);
+  const [qe, setQe] = useURLState("qe", 0.25);
+  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 1); // nA
+  const [anodeResistance, setAnodeResistance] = useURLState("anodeResistance", 50); // Ohm
+  const [photonRate, setPhotonRate] = useURLState("photonRate", 1e6); // photons/s
+  const [bandwidth, setBandwidth] = useURLState("bandwidth", 100e6); // Hz
 
   const gain = Math.pow(secondaryEmission, numDynodes);
   const signalElectrons = photonRate * qe;

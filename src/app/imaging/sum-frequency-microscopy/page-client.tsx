@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function SumFrequencyMicroscopyPage() {
-  const [lambda1, setLambda1] = useState(1040);
-  const [lambda2, setLambda2] = useState(800);
-  const [na, setNa] = useState(0.8);
-  const [power1, setPower1] = useState(100);
-  const [power2, setPower2] = useState(50);
-  const [pulseWidth, setPulseWidth] = useState(150);
+  const [lambda1, setLambda1] = useURLState("lambda1", 1040);
+  const [lambda2, setLambda2] = useURLState("lambda2", 800);
+  const [na, setNa] = useURLState("na", 0.8);
+  const [power1, setPower1] = useURLState("power1", 100);
+  const [power2, setPower2] = useURLState("power2", 50);
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 150);
 
   // SFG wavelength: 1/λ_SFG = 1/λ1 + 1/λ2
   const lambdaSFG = (lambda1 * lambda2) / (lambda1 + lambda2);

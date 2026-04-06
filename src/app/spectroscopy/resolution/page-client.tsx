@@ -4,12 +4,13 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function ResolutionPage() {
-  const [gratingLines, setGratingLines] = useState(1200);
-  const [gratingWidth, setGratingWidth] = useState(50);
-  const [order, setOrder] = useState(1);
-  const [wavelength, setWavelength] = useState(550);
+  const [gratingLines, setGratingLines] = useURLState("gratingLines", 1200);
+  const [gratingWidth, setGratingWidth] = useURLState("gratingWidth", 50);
+  const [order, setOrder] = useURLState("order", 1);
+  const [wavelength, setWavelength] = useURLState("wavelength", 550);
 
   const resolvingPower = gratingLines * gratingWidth * order / 1e6; // N*m*order where N = lines/mm * width_mm / 1000
   // Actually: R = mN where N = total illuminated lines = lines/mm * width_mm

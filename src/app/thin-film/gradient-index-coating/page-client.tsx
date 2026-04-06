@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function GradientIndexCoatingPage() {
-  const [n1, setN1] = useState(1.0);
-  const [nSurface, setNSurface] = useState(1.23);
-  const [nSub, setNSub] = useState(1.52);
-  const [thickness, setThickness] = useState(500);
+  const [n1, setN1] = useURLState("n1", 1.0);
+  const [nSurface, setNSurface] = useURLState("nSurface", 1.23);
+  const [nSub, setNSub] = useURLState("nSub", 1.52);
+  const [thickness, setThickness] = useURLState("thickness", 500);
   const [profile, setProfile] = useState<"linear" | "cosine" | "exponential">("cosine");
-  const [designWl, setDesignWl] = useState(550);
+  const [designWl, setDesignWl] = useURLState("designWl", 550);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 2);

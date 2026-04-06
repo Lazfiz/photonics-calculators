@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function AttosecondPulsePage() {
-  const [wavelength, setWavelength] = useState(800); // nm, driving laser
-  const [duration, setDuration] = useState(5); // fs, driving pulse
-  const [intensity, setIntensity] = useState(2e14); // W/cm²
-  const [cutoffOrder, setCutoffOrder] = useState(50);
+  const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm, driving laser
+  const [duration, setDuration] = useURLState("duration", 5); // fs, driving pulse
+  const [intensity, setIntensity] = useURLState("intensity", 2e14); // W/cm²
+  const [cutoffOrder, setCutoffOrder] = useURLState("cutoffOrder", 50);
 
   const photonEnergy = 1240 / wavelength; // eV
   const cutoffEnergy = 3.17 * photonEnergy + 0; // Up = Ip negligible for display

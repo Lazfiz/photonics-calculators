@@ -5,22 +5,23 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 const COLORS = ["#f87171", "#34d399", "#60a5fa", "#fbbf24", "#a78bfa", "#f472b6"];
 
 export default function SimultaneousMulticolorPage() {
-  const [numChannels, setNumChannels] = useState(3);
+  const [numChannels, setNumChannels] = useURLState("numChannels", 3);
   const [excitationNm, setExcitationNm] = useState([488, 561, 640]);
   const [emissionCenter, setEmissionCenter] = useState([525, 580, 680]);
   const [emissionBW, setEmissionBW] = useState([30, 30, 30]);
-  const [crosstalk, setCrosstalk] = useState(5);
-  const [frameRate, setFrameRate] = useState(30);
-  const [pixelSize, setPixelSize] = useState(6.5);
-  const [binning, setBinning] = useState(1);
-  const [readNoise, setReadNoise] = useState(1.5);
-  const [darkCurrent, setDarkCurrent] = useState(0.01);
-  const [quantumEff, setQuantumEff] = useState(90);
-  const [exposureMs, setExposureMs] = useState(20);
+  const [crosstalk, setCrosstalk] = useURLState("crosstalk", 5);
+  const [frameRate, setFrameRate] = useURLState("frameRate", 30);
+  const [pixelSize, setPixelSize] = useURLState("pixelSize", 6.5);
+  const [binning, setBinning] = useURLState("binning", 1);
+  const [readNoise, setReadNoise] = useURLState("readNoise", 1.5);
+  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 0.01);
+  const [quantumEff, setQuantumEff] = useURLState("quantumEff", 90);
+  const [exposureMs, setExposureMs] = useURLState("exposureMs", 20);
 
   const effectivePixel = pixelSize * binning;
   const maxFramerate = 1000 / (exposureMs + 2);

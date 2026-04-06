@@ -3,15 +3,16 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function ComputationalImagingPage() {
-  const [na, setNa] = useState(0.8);
-  const [wavelength, setWavelength] = useState(550);
-  const [numViews, setNumViews] = useState(25);
-  const [photonCount, setPhotonCount] = useState(1000);
-  const [bgNoise, setBgNoise] = useState(10);
-  const [readNoise, setReadNoise] = useState(2);
+  const [na, setNa] = useURLState("na", 0.8);
+  const [wavelength, setWavelength] = useURLState("wavelength", 550);
+  const [numViews, setNumViews] = useURLState("numViews", 25);
+  const [photonCount, setPhotonCount] = useURLState("photonCount", 1000);
+  const [bgNoise, setBgNoise] = useURLState("bgNoise", 10);
+  const [readNoise, setReadNoise] = useURLState("readNoise", 2);
 
   const results = useMemo(() => {
     const lambda_um = wavelength * 1e-3;

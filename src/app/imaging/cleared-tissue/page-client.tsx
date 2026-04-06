@@ -3,16 +3,17 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function ClearedTissuePage() {
-  const [na, setNa] = useState(1.2);
-  const [wavelength, setWavelength] = useState(680);
-  const [nMedium, setNMedium] = useState(1.52);
-  const [tissueThickness, setTissueThickness] = useState(1000);
-  const [absorptionCoeff, setAbsorptionCoeff] = useState(0.01);
-  const [scatteringCoeff, setScatteringCoeff] = useState(0.02);
-  const [objectiveWD, setObjectiveWD] = useState(3000);
+  const [na, setNa] = useURLState("na", 1.2);
+  const [wavelength, setWavelength] = useURLState("wavelength", 680);
+  const [nMedium, setNMedium] = useURLState("nMedium", 1.52);
+  const [tissueThickness, setTissueThickness] = useURLState("tissueThickness", 1000);
+  const [absorptionCoeff, setAbsorptionCoeff] = useURLState("absorptionCoeff", 0.01);
+  const [scatteringCoeff, setScatteringCoeff] = useURLState("scatteringCoeff", 0.02);
+  const [objectiveWD, setObjectiveWD] = useURLState("objectiveWD", 3000);
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;

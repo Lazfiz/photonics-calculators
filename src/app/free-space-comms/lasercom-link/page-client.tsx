@@ -3,18 +3,19 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function LasercomLinkPage() {
-  const [txPower, setTxPower] = useState(20); // dBm
-  const [txAperture, setTxAperture] = useState(5); // cm
-  const [rxAperture, setRxAperture] = useState(10); // cm
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [range, setRange] = useState(500); // km
-  const [txEfficiency, setTxEfficiency] = useState(0.8);
-  const [rxEfficiency, setRxEfficiency] = useState(0.7);
-  const [pointingLoss, setPointingLoss] = useState(3); // dB
-  const [atmosLoss, setAtmosLoss] = useState(2); // dB
+  const [txPower, setTxPower] = useURLState("txPower", 20); // dBm
+  const [txAperture, setTxAperture] = useURLState("txAperture", 5); // cm
+  const [rxAperture, setRxAperture] = useURLState("rxAperture", 10); // cm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [range, setRange] = useURLState("range", 500); // km
+  const [txEfficiency, setTxEfficiency] = useURLState("txEfficiency", 0.8);
+  const [rxEfficiency, setRxEfficiency] = useURLState("rxEfficiency", 0.7);
+  const [pointingLoss, setPointingLoss] = useURLState("pointingLoss", 3); // dB
+  const [atmosLoss, setAtmosLoss] = useURLState("atmosLoss", 2); // dB
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-9;

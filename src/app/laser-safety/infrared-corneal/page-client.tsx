@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function InfraredCornealPage() {
-  const [wavelength, setWavelength] = useState(10600); // nm (CO2)
-  const [exposureTime, setExposureTime] = useState(10); // seconds
-  const [beamDiam, setBeamDiam] = useState(1); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 10600); // nm (CO2)
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // seconds
+  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 1); // mm
 
   // IR corneal MPE (IEC 60825-1)
   // For 1400nm to 1mm wavelength, corneal limits apply (not retinal):

@@ -5,17 +5,18 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function SpectralResolutionPage() {
   const [mode, setMode] = useState("grating");
-  const [grooveDensity, setGrooveDensity] = useState(1200);
-  const [focalLength, setFocalLength] = useState(500);
-  const [slitWidth, setSlitWidth] = useState(25);
-  const [order, setOrder] = useState(1);
-  const [gratingWL, setGratingWL] = useState(500);
-  const [dispersion, setDispersion] = useState(0.02);
-  const [finesse, setFinesse] = useState(50);
-  const [fsrNm, setFsrNm] = useState(0.05);
+  const [grooveDensity, setGrooveDensity] = useURLState("grooveDensity", 1200);
+  const [focalLength, setFocalLength] = useURLState("focalLength", 500);
+  const [slitWidth, setSlitWidth] = useURLState("slitWidth", 25);
+  const [order, setOrder] = useURLState("order", 1);
+  const [gratingWL, setGratingWL] = useURLState("gratingWL", 500);
+  const [dispersion, setDispersion] = useURLState("dispersion", 0.02);
+  const [finesse, setFinesse] = useURLState("finesse", 50);
+  const [fsrNm, setFsrNm] = useURLState("fsrNm", 0.05);
 
   const gratingResNm = (slitWidth * 1e-3) / (focalLength * grooveDensity * order) * gratingWL;
   const currentRes = mode === "grating" ? gratingResNm : mode === "fabry-perot" ? fsrNm / finesse : (slitWidth * 1e-3) / (focalLength * dispersion);

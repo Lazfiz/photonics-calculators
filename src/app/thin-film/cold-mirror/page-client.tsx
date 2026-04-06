@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: number, wavelengths: number[]) {
   const R: number[] = [];
@@ -36,12 +37,12 @@ function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: numbe
 }
 
 export default function ColdMirrorPage() {
-  const [nH, setNH] = useState(2.35);
-  const [nL, setNL] = useState(1.45);
-  const [nSub, setNSub] = useState(1.52);
-  const [nInc, setNInc] = useState(1.0);
-  const [numPairs, setNumPairs] = useState(7);
-  const [designWl, setDesignWl] = useState(700);
+  const [nH, setNH] = useURLState("nH", 2.35);
+  const [nL, setNL] = useURLState("nL", 1.45);
+  const [nSub, setNSub] = useURLState("nSub", 1.52);
+  const [nInc, setNInc] = useURLState("nInc", 1.0);
+  const [numPairs, setNumPairs] = useURLState("numPairs", 7);
+  const [designWl, setDesignWl] = useURLState("designWl", 700);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 1200 / 500);

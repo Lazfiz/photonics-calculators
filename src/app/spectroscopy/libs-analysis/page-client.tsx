@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function LibsAnalysisPage() {
-  const [temperature, setTemperature] = useState(10000); // K
-  const [electronDensity, setElectronDensity] = useState(1e17); // cm⁻³
-  const [wavelength, setWavelength] = useState(500); // nm
-  const [spectralRange, setSpectralRange] = useState(50); // nm half-width
+  const [temperature, setTemperature] = useURLState("temperature", 10000); // K
+  const [electronDensity, setElectronDensity] = useURLState("electronDensity", 1e17); // cm⁻³
+  const [wavelength, setWavelength] = useURLState("wavelength", 500); // nm
+  const [spectralRange, setSpectralRange] = useURLState("spectralRange", 50); // nm half-width
 
   // Stark broadening FWHM (nm) - simplified
   const starkWidth = 2 * 1e-16 * electronDensity; // rough: ~2w_e, w_e ~ 1e-16 * Ne for typical transitions

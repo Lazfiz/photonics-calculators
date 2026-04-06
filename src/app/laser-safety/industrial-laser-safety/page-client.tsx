@@ -6,15 +6,16 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function IndustrialLaserSafetyPage() {
-  const [power, setPower] = useState(4000); // W
-  const [wavelength, setWavelength] = useState(1070); // nm fiber laser
-  const [beamDia, setBeamDia] = useState(5); // mm at exit
-  const [divergence, setDivergence] = useState(2); // mrad
-  const [materialReflectivity, setMaterialReflectivity] = useState(30); // %
-  const [workingDistance, setWorkingDistance] = useState(0.3); // m
-  const [exposureTime, setExposureTime] = useState(10); // s (accidental)
+  const [power, setPower] = useURLState("power", 4000); // W
+  const [wavelength, setWavelength] = useURLState("wavelength", 1070); // nm fiber laser
+  const [beamDia, setBeamDia] = useURLState("beamDia", 5); // mm at exit
+  const [divergence, setDivergence] = useURLState("divergence", 2); // mrad
+  const [materialReflectivity, setMaterialReflectivity] = useURLState("materialReflectivity", 30); // %
+  const [workingDistance, setWorkingDistance] = useURLState("workingDistance", 0.3); // m
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // s (accidental)
 
   const reflectedPower = power * materialReflectivity / 100;
   // MPE: retinal hazard (≤1400nm) ~1 mW/cm²; corneal (>1400nm) ~0.1 W/cm² (ANSI Z136.1 simplified)

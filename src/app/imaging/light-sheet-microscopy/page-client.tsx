@@ -3,15 +3,16 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function LightSheetMicroscopyPage() {
-  const [naDet, setNaDet] = useState(0.8);
-  const [naIll, setNaIll] = useState(0.1);
-  const [wavelength, setWavelength] = useState(488);
-  const [n, setN] = useState(1.33);
-  const [sampleThickness, setSampleThickness] = useState(200);
-  const [tiltAngle, setTiltAngle] = useState(45);
+  const [naDet, setNaDet] = useURLState("naDet", 0.8);
+  const [naIll, setNaIll] = useURLState("naIll", 0.1);
+  const [wavelength, setWavelength] = useURLState("wavelength", 488);
+  const [n, setN] = useURLState("n", 1.33);
+  const [sampleThickness, setSampleThickness] = useURLState("sampleThickness", 200);
+  const [tiltAngle, setTiltAngle] = useURLState("tiltAngle", 45);
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;

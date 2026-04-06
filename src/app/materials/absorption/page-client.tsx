@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 const MATERIALS: Record<string, { name: string; alpha0: number; lambda0: number; type: string }> = {
   FusedSilica: { name: "Fused Silica", alpha0: 0.2, lambda0: 1550, type: "glass" },
@@ -17,8 +18,8 @@ const MATERIALS: Record<string, { name: string; alpha0: number; lambda0: number;
 
 export default function AbsorptionPage() {
   const [material, setMaterial] = useState<keyof typeof MATERIALS>("FusedSilica");
-  const [wavelength, setWavelength] = useState(1550);
-  const [thickness, setThickness] = useState(10); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [thickness, setThickness] = useURLState("thickness", 10); // mm
 
   const calc = useMemo(() => {
     const mat = MATERIALS[material];

@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 interface Material {
@@ -51,10 +52,10 @@ function dnFromRadiation(mat: Material, doseMrad: number): number {
 
 export default function RadiationDamagePage() {
   const [selected, setSelected] = useState("Fused Silica");
-  const [dose, setDose] = useState(100);
-  const [thickness, setThickness] = useState(10);
-  const [timeAfter, setTimeAfter] = useState(24);
-  const [neutronFluence, setNeutronFluence] = useState(1e14);
+  const [dose, setDose] = useURLState("dose", 100);
+  const [thickness, setThickness] = useURLState("thickness", 10);
+  const [timeAfter, setTimeAfter] = useURLState("timeAfter", 24);
+  const [neutronFluence, setNeutronFluence] = useURLState("neutronFluence", 1e14);
 
   const mat = materials[selected];
   const alphaInduced = useMemo(() => inducedAbsorption(mat, dose), [mat, dose]);

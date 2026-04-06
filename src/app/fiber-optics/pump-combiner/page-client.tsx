@@ -3,18 +3,19 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function PumpCombinerCalculator() {
-  const [numPumpPorts, setNumPumpPorts] = useState<number>(6);
-  const [pumpWavelength, setPumpWavelength] = useState<number>(976); // nm
-  const [pumpPowerPerPort, setPumpPowerPerPort] = useState<number>(300); // W
-  const [combinerEfficiency, setCombinerEfficiency] = useState<number>(98); // %
-  const [signalInsertionLoss, setSignalInsertionLoss] = useState<number>(0.1); // dB
-  const [pumpNA, setPumpNA] = useState<number>(0.46);
-  const [signalNA, setSignalNA] = useState<number>(0.06);
-  const [fiberModeField, setFiberModeField] = useState<number>(10.4); // µm
-  const [pumpFiberCore, setPumpFiberCore] = useState<number>(105); // µm
+  const [numPumpPorts, setNumPumpPorts] = useURLState("numPumpPorts", 6);
+  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 976); // nm
+  const [pumpPowerPerPort, setPumpPowerPerPort] = useURLState("pumpPowerPerPort", 300); // W
+  const [combinerEfficiency, setCombinerEfficiency] = useURLState("combinerEfficiency", 98); // %
+  const [signalInsertionLoss, setSignalInsertionLoss] = useURLState("signalInsertionLoss", 0.1); // dB
+  const [pumpNA, setPumpNA] = useURLState("pumpNA", 0.46);
+  const [signalNA, setSignalNA] = useURLState("signalNA", 0.06);
+  const [fiberModeField, setFiberModeField] = useURLState("fiberModeField", 10.4); // µm
+  const [pumpFiberCore, setPumpFiberCore] = useURLState("pumpFiberCore", 105); // µm
 
   // Total pump power
   const totalPumpPower = numPumpPorts * pumpPowerPerPort;

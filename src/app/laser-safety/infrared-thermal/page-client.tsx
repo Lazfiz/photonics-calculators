@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function InfraredThermalPage() {
-  const [wavelength, setWavelength] = useState(10600);
-  const [exposureTime, setExposureTime] = useState(10);
-  const [beamDiam, setBeamDiam] = useState(5); // mm
-  const [power, setPower] = useState(10); // W
+  const [wavelength, setWavelength] = useURLState("wavelength", 10600);
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10);
+  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 5); // mm
+  const [power, setPower] = useURLState("power", 10); // W
 
   // IR thermal limits:
   // 1400nm - 1mm (far IR): corneal/thermal hazard dominates

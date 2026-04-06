@@ -3,17 +3,18 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function MultiphotonDepthPage() {
-  const [na, setNa] = useState(0.8);
-  const [wavelength, setWavelength] = useState(800);
-  const [n, setN] = useState(1.33);
-  const [pulseWidth, setPulseWidth] = useState(100);
-  const [repRate, setRepRate] = useState(80);
-  const [avgPower, setAvgPower] = useState(20);
-  const [absorption, setAbsorption] = useState(0.02);
-  const [scattering, setScattering] = useState(0.1);
+  const [na, setNa] = useURLState("na", 0.8);
+  const [wavelength, setWavelength] = useURLState("wavelength", 800);
+  const [n, setN] = useURLState("n", 1.33);
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100);
+  const [repRate, setRepRate] = useURLState("repRate", 80);
+  const [avgPower, setAvgPower] = useURLState("avgPower", 20);
+  const [absorption, setAbsorption] = useURLState("absorption", 0.02);
+  const [scattering, setScattering] = useURLState("scattering", 0.1);
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;

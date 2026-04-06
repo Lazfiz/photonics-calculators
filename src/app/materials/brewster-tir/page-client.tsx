@@ -7,6 +7,7 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
+import { useURLState } from "../../../hooks/use-url-state";
 
 const interfacePresets = [
   { label: "Air → Glass", n1: 1.0, n2: 1.5 },
@@ -17,8 +18,8 @@ const interfacePresets = [
 const currentHref = "/materials/brewster-tir";
 
 export default function BrewsterTIRPage() {
-  const [n1, setN1] = useState(1.0);
-  const [n2, setN2] = useState(1.5);
+  const [n1, setN1] = useURLState("n1", 1.0);
+  const [n2, setN2] = useURLState("n2", 1.5);
 
   const brewster = useMemo(() => (Math.atan(n2 / n1) * 180) / Math.PI, [n1, n2]);
   const critical = useMemo(() => {

@@ -3,14 +3,15 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function DepthOfFieldPage() {
-  const [na, setNa] = useState(0.4);
-  const [wavelength, setWavelength] = useState(550);
-  const [magnification, setMagnification] = useState(40);
-  const [pixelSize, setPixelSize] = useState(6.5);
-  const [n, setN] = useState(1.52);
+  const [na, setNa] = useURLState("na", 0.4);
+  const [wavelength, setWavelength] = useURLState("wavelength", 550);
+  const [magnification, setMagnification] = useURLState("magnification", 40);
+  const [pixelSize, setPixelSize] = useURLState("pixelSize", 6.5);
+  const [n, setN] = useURLState("n", 1.52);
 
   const results = useMemo(() => {
     const lambda_um = wavelength * 1e-3; // nm → µm

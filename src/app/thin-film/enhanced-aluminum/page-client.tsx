@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 // Aluminum optical constants (simplified)
 function aluminumN(wlNm: number): { n: number; k: number } {
@@ -22,12 +23,12 @@ function aluminumN(wlNm: number): { n: number; k: number } {
 }
 
 export default function EnhancedAluminumPage() {
-  const [nSub, setNSub] = useState(1.52);
-  const [alThick, setAlThick] = useState(80);
-  const [nProtect, setNProtect] = useState(1.38);
-  const [protectThick, setProtectThick] = useState(25);
-  const [designWl, setDesignWl] = useState(550);
-  const [adhesionThick, setAdhesionThick] = useState(3);
+  const [nSub, setNSub] = useURLState("nSub", 1.52);
+  const [alThick, setAlThick] = useURLState("alThick", 80);
+  const [nProtect, setNProtect] = useURLState("nProtect", 1.38);
+  const [protectThick, setProtectThick] = useURLState("protectThick", 25);
+  const [designWl, setDesignWl] = useURLState("designWl", 550);
+  const [adhesionThick, setAdhesionThick] = useURLState("adhesionThick", 3);
 
   const tmm = useMemo(() => {
     const N = 400;

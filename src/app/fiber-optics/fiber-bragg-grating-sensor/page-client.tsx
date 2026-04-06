@@ -5,17 +5,18 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function FiberBraggGratingSensorPage() {
-  const [gratingPeriod, setGratingPeriod] = useState(535); // nm
-  const [effectiveIndex, setEffectiveIndex] = useState(1.468);
-  const [gratingLength, setGratingLength] = useState(10); // mm
-  const [indexModulation, setIndexModulation] = useState(1e-4);
-  const [strain, setStrain] = useState(0); // µε (microstrain)
-  const [temperature, setTemperature] = useState(25); // °C
-  const [tempChange, setTempChange] = useState(0); // °C change from reference
-  const [strainSensitivity, setStrainSensitivity] = useState(1.2); // pm/µε
-  const [tempSensitivity, setTempSensitivity] = useState(10); // pm/°C
+  const [gratingPeriod, setGratingPeriod] = useURLState("gratingPeriod", 535); // nm
+  const [effectiveIndex, setEffectiveIndex] = useURLState("effectiveIndex", 1.468);
+  const [gratingLength, setGratingLength] = useURLState("gratingLength", 10); // mm
+  const [indexModulation, setIndexModulation] = useURLState("indexModulation", 1e-4);
+  const [strain, setStrain] = useURLState("strain", 0); // µε (microstrain)
+  const [temperature, setTemperature] = useURLState("temperature", 25); // °C
+  const [tempChange, setTempChange] = useURLState("tempChange", 0); // °C change from reference
+  const [strainSensitivity, setStrainSensitivity] = useURLState("strainSensitivity", 1.2); // pm/µε
+  const [tempSensitivity, setTempSensitivity] = useURLState("tempSensitivity", 10); // pm/°C
 
   const calc = useMemo(() => {
     // Bragg wavelength

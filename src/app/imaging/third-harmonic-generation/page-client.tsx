@@ -3,16 +3,17 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function ThirdHarmonicGenerationPage() {
-  const [wavelength, setWavelength] = useState(1200);
-  const [na, setNa] = useState(0.8);
-  const [n, setN] = useState(1.33);
-  const [pulseWidth, setPulseWidth] = useState(100);
-  const [avgPower, setAvgPower] = useState(30);
-  const [repRate, setRepRate] = useState(80);
-  const [chi3, setChi3] = useState(1);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1200);
+  const [na, setNa] = useURLState("na", 0.8);
+  const [n, setN] = useURLState("n", 1.33);
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100);
+  const [avgPower, setAvgPower] = useURLState("avgPower", 30);
+  const [repRate, setRepRate] = useURLState("repRate", 80);
+  const [chi3, setChi3] = useURLState("chi3", 1);
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;

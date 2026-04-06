@@ -7,12 +7,13 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function InfraredHazardPage() {
-  const [wavelength, setWavelength] = useState(10600);
-  const [power, setPower] = useState(50);
-  const [beamDia, setBeamDia] = useState(5);
-  const [exposure, setExposure] = useState(10);
+  const [wavelength, setWavelength] = useURLState("wavelength", 10600);
+  const [power, setPower] = useURLState("power", 50);
+  const [beamDia, setBeamDia] = useURLState("beamDia", 5);
+  const [exposure, setExposure] = useURLState("exposure", 10);
 
   const area = Math.PI * Math.pow(beamDia / 2, 2);
   const irradiance = power / area;

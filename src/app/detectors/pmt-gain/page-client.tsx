@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 // PMT Gain Calculator
 // Total gain: G = δ^n where δ is per-stage gain, n is number of stages
@@ -14,12 +15,12 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 // Equivalent input noise: NEP = √(2qI_d) / (η·G·R_λ)
 
 export default function PmtGainPage() {
-  const [numStages, setNumStages] = useState(10);
-  const [stageVoltage, setStageVoltage] = useState(100); // V per stage
-  const [photocathodeQE, setPhotocathodeQE] = useState(0.25);
-  const [darkCurrent, setDarkCurrent] = useState(1); // nA at anode
-  const [wavelength, setWavelength] = useState(400); // nm
-  const [amplifierNoise, setAmplifierNoise] = useState(1000); // e- rms
+  const [numStages, setNumStages] = useURLState("numStages", 10);
+  const [stageVoltage, setStageVoltage] = useURLState("stageVoltage", 100); // V per stage
+  const [photocathodeQE, setPhotocathodeQE] = useURLState("photocathodeQE", 0.25);
+  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 1); // nA at anode
+  const [wavelength, setWavelength] = useURLState("wavelength", 400); // nm
+  const [amplifierNoise, setAmplifierNoise] = useURLState("amplifierNoise", 1000); // e- rms
 
   const q = 1.602e-19;
   const h = 6.626e-34;

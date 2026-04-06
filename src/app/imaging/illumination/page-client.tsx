@@ -3,15 +3,16 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function IlluminationPage() {
-  const [objMag, setObjMag] = useState(40);
-  const [objNa, setObjNa] = useState(0.95);
-  const [tubeFocal, setTubeFocal] = useState(160); // mm
-  const [condenserNa, setCondenserNa] = useState(0.9);
-  const [fieldDiaphragm, setFieldDiaphragm] = useState(20); // mm
-  const [condenserFocal, setCondenserFocal] = useState(40); // mm
+  const [objMag, setObjMag] = useURLState("objMag", 40);
+  const [objNa, setObjNa] = useURLState("objNa", 0.95);
+  const [tubeFocal, setTubeFocal] = useURLState("tubeFocal", 160); // mm
+  const [condenserNa, setCondenserNa] = useURLState("condenserNa", 0.9);
+  const [fieldDiaphragm, setFieldDiaphragm] = useURLState("fieldDiaphragm", 20); // mm
+  const [condenserFocal, setCondenserFocal] = useURLState("condenserFocal", 40); // mm
 
   const results = useMemo(() => {
     const objFocal = tubeFocal / objMag;

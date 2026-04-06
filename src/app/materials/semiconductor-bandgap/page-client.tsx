@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 interface Semiconductor {
@@ -34,7 +35,7 @@ function egToWavelength(eg: number) {
 
 export default function SemiconductorBandgapPage() {
   const [selected, setSelected] = useState<string[]>(["GaAs", "InP", "Si", "GaN", "InGaAs"]);
-  const [temperature, setTemperature] = useState(300);
+  const [temperature, setTemperature] = useURLState("temperature", 300);
 
   const toggle = (key: string) => setSelected(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
 

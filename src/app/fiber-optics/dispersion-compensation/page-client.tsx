@@ -3,16 +3,17 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function DispersionCompensationPage() {
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [fiberLength, setFiberLength] = useState(80); // km
-  const [dispersionParam, setDispersionParam] = useState(17); // ps/(nm·km)
-  const [slope, setSlope] = useState(0.08); // ps/(nm²·km)
-  const [zeroDispWavelength, setZeroDispWavelength] = useState(1310); // nm
-  const [bitRate, setBitRate] = useState(10); // Gbps
-  const [dcfRatio, setDcfRatio] = useState(0.2); // DCF length ratio
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 80); // km
+  const [dispersionParam, setDispersionParam] = useURLState("dispersionParam", 17); // ps/(nm·km)
+  const [slope, setSlope] = useURLState("slope", 0.08); // ps/(nm²·km)
+  const [zeroDispWavelength, setZeroDispWavelength] = useURLState("zeroDispWavelength", 1310); // nm
+  const [bitRate, setBitRate] = useURLState("bitRate", 10); // Gbps
+  const [dcfRatio, setDcfRatio] = useURLState("dcfRatio", 0.2); // DCF length ratio
 
   const results = useMemo(() => {
     const lambda0 = zeroDispWavelength;

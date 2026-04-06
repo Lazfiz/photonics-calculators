@@ -5,17 +5,18 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function Reconstruction3DPage() {
-  const [numSlices, setNumSlices] = useState(100);
-  const [sliceSpacing, setSliceSpacing] = useState(0.5);
-  const [xyResolution, setXyResolution] = useState(0.2);
-  const [na, setNa] = useState(1.0);
-  const [wavelengthNm, setWavelengthNm] = useState(550);
-  const [refractiveIndex, setRefractiveIndex] = useState(1.33);
+  const [numSlices, setNumSlices] = useURLState("numSlices", 100);
+  const [sliceSpacing, setSliceSpacing] = useURLState("sliceSpacing", 0.5);
+  const [xyResolution, setXyResolution] = useURLState("xyResolution", 0.2);
+  const [na, setNa] = useURLState("na", 1.0);
+  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 550);
+  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.33);
   const [method, setMethod] = useState<"widefield" | "confocal" | "lightsheet">("confocal");
-  const [wobble, setWobble] = useState(1);
-  const [numViews, setNumViews] = useState(1);
+  const [wobble, setWobble] = useURLState("wobble", 1);
+  const [numViews, setNumViews] = useURLState("numViews", 1);
 
   const axialRes = (2 * refractiveIndex * wavelengthNm) / (na ** 2) * 1000; // nm
   const lateralRes = (0.61 * wavelengthNm) / na * 1000; // nm

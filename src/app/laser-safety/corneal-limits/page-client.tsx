@@ -7,10 +7,11 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function CornealLimitsPage() {
-  const [wavelength, setWavelength] = useState(800);
-  const [exposure, setExposure] = useState(1); // s
+  const [wavelength, setWavelength] = useURLState("wavelength", 800);
+  const [exposure, setExposure] = useURLState("exposure", 1); // s
 
   const calc = useMemo(() => {
     const lam = wavelength / 1000; // µm

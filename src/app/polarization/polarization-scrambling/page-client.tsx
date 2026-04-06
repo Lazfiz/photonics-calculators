@@ -3,16 +3,17 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function PolarizationScramblingPage() {
-  const [numSegments, setNumSegments] = useState(100);
+  const [numSegments, setNumSegments] = useURLState("numSegments", 100);
   const [sweepMode, setSweepMode] = useState<"uniform" | "gaussian" | "random">("uniform");
   const [inputPol, setInputPol] = useState<"linear" | "circular" | "elliptical">("linear");
-  const [sweepRate, setSweepRate] = useState(100); // Hz
-  const [detectionRate, setDetectionRate] = useState(10000); // Hz
+  const [sweepRate, setSweepRate] = useURLState("sweepRate", 100); // Hz
+  const [detectionRate, setDetectionRate] = useURLState("detectionRate", 10000); // Hz
 
-  const [ellipticity, setEllipticity] = useState(0.5); // for elliptical input
+  const [ellipticity, setEllipticity] = useURLState("ellipticity", 0.5); // for elliptical input
 
   // Simulate polarization scrambling
   const data = useMemo(() => {

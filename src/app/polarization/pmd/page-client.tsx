@@ -3,14 +3,15 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function PMDPage() {
-  const [dgdPsPerSqrtKm, setDgdPsPerSqrtKm] = useState(0.5);
-  const [fiberLength, setFiberLength] = useState(100); // km
-  const [bitRate, setBitRate] = useState(10); // Gbps
-  const [channelCount, setChannelCount] = useState(40);
-  const [channelSpacing, setChannelSpacing] = useState(100); // GHz
+  const [dgdPsPerSqrtKm, setDgdPsPerSqrtKm] = useURLState("dgdPsPerSqrtKm", 0.5);
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 100); // km
+  const [bitRate, setBitRate] = useURLState("bitRate", 10); // Gbps
+  const [channelCount, setChannelCount] = useURLState("channelCount", 40);
+  const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 100); // GHz
 
   const results = useMemo(() => {
     const meanDGD = dgdPsPerSqrtKm * Math.sqrt(fiberLength);

@@ -7,6 +7,7 @@ import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
+import { useURLState } from "../../../hooks/use-url-state";
 
 const detectorPresets = {
   silicon: { label: "Silicon (Si)", fill: 0.95, gain: 1.0 },
@@ -48,7 +49,7 @@ export default function QuantumEfficiencyPage() {
   const [detType, setDetType] = useState<DetType>("silicon");
   const [fillFactor, setFillFactor] = useState<number>(detectorPresets.silicon.fill);
   const [microlensGain, setMicrolensGain] = useState<number>(detectorPresets.silicon.gain);
-  const [probeWavelength, setProbeWavelength] = useState(850);
+  const [probeWavelength, setProbeWavelength] = useURLState("probeWavelength", 850);
 
   const qeModel = useMemo(() => qeAt(detType, probeWavelength, fillFactor, microlensGain), [detType, probeWavelength, fillFactor, microlensGain]);
 

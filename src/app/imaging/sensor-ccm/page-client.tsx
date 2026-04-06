@@ -3,17 +3,18 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function SensorCCMPage() {
-  const [wellCapacity, setWellCapacity] = useState(80000);
-  const [readNoise, setReadNoise] = useState(8);
-  const [darkCurrent, setDarkCurrent] = useState(0.005);
-  const [exposureTime, setExposureTime] = useState(1000);
-  const [quantumEfficiency, setQuantumEfficiency] = useState(0.92);
+  const [wellCapacity, setWellCapacity] = useURLState("wellCapacity", 80000);
+  const [readNoise, setReadNoise] = useURLState("readNoise", 8);
+  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 0.005);
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 1000);
+  const [quantumEfficiency, setQuantumEfficiency] = useURLState("quantumEfficiency", 0.92);
   const [coolingTemp, setCoolingTemp] = useState(-70);
-  const [bitDepth, setBitDepth] = useState(16);
-  const [pixelPitch, setPixelPitch] = useState(16);
+  const [bitDepth, setBitDepth] = useURLState("bitDepth", 16);
+  const [pixelPitch, setPixelPitch] = useURLState("pixelPitch", 16);
 
   const results = useMemo(() => {
     const darkElectrons = darkCurrent * exposureTime / 1000;

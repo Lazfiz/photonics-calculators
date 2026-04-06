@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function WireGridPage() {
-  const [wavelength, setWavelength] = useState(1.55);
-  const [wireSpacing, setWireSpacing] = useState(1.0);
-  const [wireDiameter, setWireDiameter] = useState(0.2);
-  const [wireConductivity, setWireConductivity] = useState(4.1e7);
-  const [incidenceDeg, setIncidenceDeg] = useState(0);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1.55);
+  const [wireSpacing, setWireSpacing] = useURLState("wireSpacing", 1.0);
+  const [wireDiameter, setWireDiameter] = useURLState("wireDiameter", 0.2);
+  const [wireConductivity, setWireConductivity] = useURLState("wireConductivity", 4.1e7);
+  const [incidenceDeg, setIncidenceDeg] = useURLState("incidenceDeg", 0);
 
   const thetaI = incidenceDeg * Math.PI / 180;
   const period = wireSpacing * 1e-6; // m

@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function BlueLightHazardPage() {
-  const [wavelength, setWavelength] = useState(450); // nm
-  const [power, setPower] = useState(1); // W
-  const [beamDiam, setBeamDiam] = useState(2); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 450); // nm
+  const [power, setPower] = useURLState("power", 1); // W
+  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 2); // mm
 
   // Blue light hazard (IEC 62471 / IEC 60825-1)
   // Weighting function B(λ) peaks at 435-440 nm

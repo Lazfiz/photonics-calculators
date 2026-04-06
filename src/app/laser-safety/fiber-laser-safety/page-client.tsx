@@ -6,14 +6,15 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function FiberLaserSafetyPage() {
-  const [power, setPower] = useState(1000); // mW
-  const [wavelength, setWavelength] = useState(1064); // nm
-  const [fiberCoreDia, setFiberCoreDia] = useState(10); // µm
-  const [fiberLength, setFiberLength] = useState(10); // m
-  const [attenuation, setAttenuation] = useState(0.2); // dB/km
-  const [na, setNa] = useState(0.12);
+  const [power, setPower] = useURLState("power", 1000); // mW
+  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
+  const [fiberCoreDia, setFiberCoreDia] = useURLState("fiberCoreDia", 10); // µm
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // m
+  const [attenuation, setAttenuation] = useURLState("attenuation", 0.2); // dB/km
+  const [na, setNa] = useURLState("na", 0.12);
 
   const divergenceRad = useMemo(() => Math.asin(Math.min(na, 1)), [na]);
   const divergenceMrad = divergenceRad * 1000;

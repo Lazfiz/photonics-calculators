@@ -3,17 +3,18 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function AcquisitionTrackingPage() {
-  const [fov, setFov] = useState(1); // mrad
-  const [uncertainty, setUncertainty] = useState(5); // mrad 3σ
-  const [scanRate, setScanRate] = useState(10); // deg/s
-  const [beaconPower, setBeaconPower] = useState(0); // dBm
-  const [wavelength, setWavelength] = useState(1550); // nm
+  const [fov, setFov] = useURLState("fov", 1); // mrad
+  const [uncertainty, setUncertainty] = useURLState("uncertainty", 5); // mrad 3σ
+  const [scanRate, setScanRate] = useURLState("scanRate", 10); // deg/s
+  const [beaconPower, setBeaconPower] = useURLState("beaconPower", 0); // dBm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [rxSensitivity, setRxSensitivity] = useState(-40); // dBm
-  const [detectorNoise, setDetectorNoise] = useState(100); // nW
-  const [bandwidth, setBandwidth] = useState(1); // kHz
+  const [detectorNoise, setDetectorNoise] = useURLState("detectorNoise", 100); // nW
+  const [bandwidth, setBandwidth] = useURLState("bandwidth", 1); // kHz
 
   const calc = useMemo(() => {
     // Acquisition probability (Gaussian uncertainty in circular FOV)

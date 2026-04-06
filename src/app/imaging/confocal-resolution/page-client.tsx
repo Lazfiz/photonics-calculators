@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function ConfocalResolutionPage() {
-  const [wavelength, setWavelength] = useState(550);
-  const [na, setNa] = useState(1.4);
-  const [pinholeAU, setPinholeAU] = useState(1.0);
-  const [refractiveIndex, setRefractiveIndex] = useState(1.518);
+  const [wavelength, setWavelength] = useURLState("wavelength", 550);
+  const [na, setNa] = useURLState("na", 1.4);
+  const [pinholeAU, setPinholeAU] = useURLState("pinholeAU", 1.0);
+  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.518);
 
   // Lateral resolution (confocal ~0.4× widefield)
   const widefieldLateral = 0.61 * wavelength / na;

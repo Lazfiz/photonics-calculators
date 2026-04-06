@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function DualCombSpectroscopyPage() {
-  const [repRate1, setRepRate1] = useState(100); // MHz
-  const [repRate2, setRepRate2] = useState(100.001); // MHz
-  const [ceoFreq1, setCeoFreq1] = useState(20); // MHz
-  const [ceoFreq2, setCeoFreq2] = useState(20.1); // MHz
-  const [centerWavelength, setCenterWavelength] = useState(1550); // nm
-  const [numModes, setNumModes] = useState(200000);
+  const [repRate1, setRepRate1] = useURLState("repRate1", 100); // MHz
+  const [repRate2, setRepRate2] = useURLState("repRate2", 100.001); // MHz
+  const [ceoFreq1, setCeoFreq1] = useURLState("ceoFreq1", 20); // MHz
+  const [ceoFreq2, setCeoFreq2] = useURLState("ceoFreq2", 20.1); // MHz
+  const [centerWavelength, setCenterWavelength] = useURLState("centerWavelength", 1550); // nm
+  const [numModes, setNumModes] = useURLState("numModes", 200000);
 
   const c = 3e8;
   const frep1Hz = repRate1 * 1e6;

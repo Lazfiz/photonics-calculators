@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function PolymerPolarizerPage() {
-  const [wavelength, setWavelength] = useState(550);
-  const [thickness, setThickness] = useState(25); // μm
-  const [dichroicRatio, setDichroicRatio] = useState(40);
-  const [absorptionCoeff, setAbsorptionCoeff] = useState(0.08); // μm⁻¹ for extraordinary
-  const [iodineConc, setIodineConc] = useState(1.0);
+  const [wavelength, setWavelength] = useURLState("wavelength", 550);
+  const [thickness, setThickness] = useURLState("thickness", 25); // μm
+  const [dichroicRatio, setDichroicRatio] = useURLState("dichroicRatio", 40);
+  const [absorptionCoeff, setAbsorptionCoeff] = useURLState("absorptionCoeff", 0.08); // μm⁻¹ for extraordinary
+  const [iodineConc, setIodineConc] = useURLState("iodineConc", 1.0);
 
   // Dichroic ratio R = A_para / A_perp
   // Transmission of absorbed polarization: T_perp = exp(-A_perp * c * d)

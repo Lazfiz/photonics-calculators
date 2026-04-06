@@ -6,13 +6,14 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function GreenLaserPointerPage() {
-  const [power, setPower] = useState(5); // mW
-  const [wavelength, setWavelength] = useState(532); // nm
-  const [beamDia, setBeamDia] = useState(1.5); // mm
-  const [divergence, setDivergence] = useState(1.2); // mrad
-  const [distance, setDistance] = useState(10); // m
+  const [power, setPower] = useURLState("power", 5); // mW
+  const [wavelength, setWavelength] = useURLState("wavelength", 532); // nm
+  const [beamDia, setBeamDia] = useURLState("beamDia", 1.5); // mm
+  const [divergence, setDivergence] = useURLState("divergence", 1.2); // mrad
+  const [distance, setDistance] = useURLState("distance", 10); // m
 
   // MPE for visible CW, 0.25s aversion response: H_MPE = 1.8e-3 × t^0.75 J/cm²
   // At t=0.25s: E = 1.8e-3 × 0.25^-0.25 ≈ 2.55 mW/cm² (ANSI Z136.1)

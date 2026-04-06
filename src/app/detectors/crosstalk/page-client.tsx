@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function CrosstalkPage() {
-  const [pixelPitch, setPixelPitch] = useState(5.4);
-  const [diffusionLength, setDiffusionLength] = useState(2.0);
-  const [absorptionDepth, setAbsorptionDepth] = useState(3.0);
-  const [depletionWidth, setDepletionWidth] = useState(2.0);
+  const [pixelPitch, setPixelPitch] = useURLState("pixelPitch", 5.4);
+  const [diffusionLength, setDiffusionLength] = useURLState("diffusionLength", 2.0);
+  const [absorptionDepth, setAbsorptionDepth] = useURLState("absorptionDepth", 3.0);
+  const [depletionWidth, setDepletionWidth] = useURLState("depletionWidth", 2.0);
 
   const chartData = useMemo(() => {
     const N = 50; const x: number[] = []; const y: number[] = []; const z: number[] = [];

@@ -5,15 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function FluorescenceQuantumYieldPage() {
-  const [sampleInt, setSampleInt] = useState(50000);
-  const [refInt, setRefInt] = useState(80000);
-  const [sampleAbs, setSampleAbs] = useState(0.1);
-  const [refAbs, setRefAbs] = useState(0.1);
-  const [refQY, setRefQY] = useState(0.54);
-  const [refrIdxSample, setRefrIdxSample] = useState(1.33);
-  const [refrIdxRef, setRefrIdxRef] = useState(1.33);
+  const [sampleInt, setSampleInt] = useURLState("sampleInt", 50000);
+  const [refInt, setRefInt] = useURLState("refInt", 80000);
+  const [sampleAbs, setSampleAbs] = useURLState("sampleAbs", 0.1);
+  const [refAbs, setRefAbs] = useURLState("refAbs", 0.1);
+  const [refQY, setRefQY] = useURLState("refQY", 0.54);
+  const [refrIdxSample, setRefrIdxSample] = useURLState("refrIdxSample", 1.33);
+  const [refrIdxRef, setRefrIdxRef] = useURLState("refrIdxRef", 1.33);
   const [useRefrIdx, setUseRefrIdx] = useState(false);
 
   const qy = useRefrIdx

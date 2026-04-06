@@ -3,17 +3,18 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function SBSThresholdPage() {
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [fiberLength, setFiberLength] = useState(10); // km
-  const [coreDiameter, setCoreDiameter] = useState(9); // μm
-  const [effectiveArea, setEffectiveArea] = useState(80); // μm²
-  const [loss, setLoss] = useState(0.2); // dB/km
-  const [brillouinGain, setBrillouinGain] = useState(5e-11); // m/W
-  const [brillouinBandwidth, setBrillouinBandwidth] = useState(35); // MHz
-  const [laserLinewidth, setLaserLinewidth] = useState(1); // MHz
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // km
+  const [coreDiameter, setCoreDiameter] = useURLState("coreDiameter", 9); // μm
+  const [effectiveArea, setEffectiveArea] = useURLState("effectiveArea", 80); // μm²
+  const [loss, setLoss] = useURLState("loss", 0.2); // dB/km
+  const [brillouinGain, setBrillouinGain] = useURLState("brillouinGain", 5e-11); // m/W
+  const [brillouinBandwidth, setBrillouinBandwidth] = useURLState("brillouinBandwidth", 35); // MHz
+  const [laserLinewidth, setLaserLinewidth] = useURLState("laserLinewidth", 1); // MHz
 
   const results = useMemo(() => {
     const wl = wavelength * 1e-9;

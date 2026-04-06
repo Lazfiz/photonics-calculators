@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 interface Crystal {
@@ -85,7 +86,7 @@ const colors = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899"
 
 export default function CrystalBirefringencePage() {
   const [selected, setSelected] = useState("Calcite");
-  const [wavelength, setWavelength] = useState(589);
+  const [wavelength, setWavelength] = useURLState("wavelength", 589);
 
   const c = crystals[selected];
 

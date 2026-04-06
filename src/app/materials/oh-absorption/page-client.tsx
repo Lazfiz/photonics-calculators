@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 // OH absorption peaks in silica (wavelength in µm, absorption in dB/km)
@@ -32,8 +33,8 @@ function ohAbsorption(wl_um: number, ohConc: number): number {
 
 export default function OHAbsorptionPage() {
   const [material, setMaterial] = useState<keyof typeof MATERIALS>("StandardSMF");
-  const [ohConc, setOhConc] = useState(1.0);
-  const [fiberLength, setFiberLength] = useState(10); // km
+  const [ohConc, setOhConc] = useURLState("ohConc", 1.0);
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // km
 
   const mat = MATERIALS[material];
 

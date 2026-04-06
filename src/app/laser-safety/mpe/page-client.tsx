@@ -11,13 +11,14 @@ import LaserSafetyCwReferences from "../../../components/laser-safety-cw-referen
 import LaserSafetyCwScope from "../../../components/laser-safety-cw-scope";
 import LaserSafetySuiteLinks from "../../../components/laser-safety-suite-links";
 import { calculateEducationalContinuousMpe } from "../../../lib/laser-safety-mpe";
+import { useURLState } from "../../../hooks/use-url-state";
 
 const wavelengthPresets = [450, 532, 850, 1050];
 const exposurePresets = [0.001, 0.25, 1, 10, 30, 100, 600, 3600];
 
 export default function MPEPage() {
-  const [wavelength, setWavelength] = useState(532);
-  const [exposure, setExposure] = useState(0.25);
+  const [wavelength, setWavelength] = useURLState("wavelength", 532);
+  const [exposure, setExposure] = useURLState("exposure", 0.25);
 
   const result = useMemo(() => calculateEducationalContinuousMpe(wavelength, exposure), [wavelength, exposure]);
 

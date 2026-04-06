@@ -3,15 +3,16 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function VNumberCalculator() {
-  const [coreRadius, setCoreRadius] = useState<number>(4.5); // μm
-  const [wavelength, setWavelength] = useState<number>(1550); // nm
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.5); // μm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [inputMode, setInputMode] = useState<"na" | "indices">("na");
-  const [na, setNa] = useState<number>(0.12);
-  const [coreIndex, setCoreIndex] = useState<number>(1.468);
-  const [claddingIndex, setCladdingIndex] = useState<number>(1.463);
+  const [na, setNa] = useURLState("na", 0.12);
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.468);
+  const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.463);
 
   // Calculate NA from indices if in that mode
   const effectiveNA = useMemo(() => {

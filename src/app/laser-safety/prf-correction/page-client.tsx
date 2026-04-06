@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function PRFCorrectionPage() {
-  const [singlePulseMPE, setSinglePulseMPE] = useState(1); // µJ/cm²
-  const [prf, setPrf] = useState(1000); // Hz
-  const [exposureDuration, setExposureDuration] = useState(10); // s
+  const [singlePulseMPE, setSinglePulseMPE] = useURLState("singlePulseMPE", 1); // µJ/cm²
+  const [prf, setPrf] = useURLState("prf", 1000); // Hz
+  const [exposureDuration, setExposureDuration] = useURLState("exposureDuration", 10); // s
 
   // For repetitive pulses, MPE is reduced by correction factor Cₚ
   // Cₚ = N^(-0.25) for N pulses in the exposure window

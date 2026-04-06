@@ -3,18 +3,19 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function PhotoacousticPage() {
-  const [laserWavelength, setLaserWavelength] = useState(750); // nm
-  const [pulseEnergy, setPulseEnergy] = useState(10); // mJ
-  const [pulseWidth, setPulseWidth] = useState(5); // ns
-  const [fluence, setFluence] = useState(20); // mJ/cm²
-  const [repetitionRate, setRepetitionRate] = useState(20); // Hz
-  const [absorptionCoeff, setAbsorptionCoeff] = useState(5); // cm⁻¹ (µa)
-  const [scatteringCoeff, setScatteringCoeff] = useState(100); // cm⁻¹ (µs')
-  const [gruneisen, setGruneisen] = useState(0.8); // Grüneisen parameter
-  const [detectorFreq, setDetectorFreq] = useState(5); // MHz
+  const [laserWavelength, setLaserWavelength] = useURLState("laserWavelength", 750); // nm
+  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 10); // mJ
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 5); // ns
+  const [fluence, setFluence] = useURLState("fluence", 20); // mJ/cm²
+  const [repetitionRate, setRepetitionRate] = useURLState("repetitionRate", 20); // Hz
+  const [absorptionCoeff, setAbsorptionCoeff] = useURLState("absorptionCoeff", 5); // cm⁻¹ (µa)
+  const [scatteringCoeff, setScatteringCoeff] = useURLState("scatteringCoeff", 100); // cm⁻¹ (µs')
+  const [gruneisen, setGruneisen] = useURLState("gruneisen", 0.8); // Grüneisen parameter
+  const [detectorFreq, setDetectorFreq] = useURLState("detectorFreq", 5); // MHz
 
   const results = useMemo(() => {
     const reducedScattering = scatteringCoeff * (1 - 0.1); // ~g=0.9

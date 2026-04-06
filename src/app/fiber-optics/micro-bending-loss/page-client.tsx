@@ -5,15 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function MicrobendingLossPage() {
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [coreRadius, setCoreRadius] = useState(4.1); // µm
-  const [coreNA, setCoreNA] = useState(0.12);
-  const [coatingModulus, setCoatingModulus] = useState(0.5); // MPa (soft coating)
-  const [correlationLength, setCorrelationLength] = useState(500); // µm
-  const [rmsAmplitude, setRmsAmplitude] = useState(0.1); // µm
-  const [fiberLength, setFiberLength] = useState(1); // km
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1); // µm
+  const [coreNA, setCoreNA] = useURLState("coreNA", 0.12);
+  const [coatingModulus, setCoatingModulus] = useURLState("coatingModulus", 0.5); // MPa (soft coating)
+  const [correlationLength, setCorrelationLength] = useURLState("correlationLength", 500); // µm
+  const [rmsAmplitude, setRmsAmplitude] = useURLState("rmsAmplitude", 0.1); // µm
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 1); // km
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-3; // µm

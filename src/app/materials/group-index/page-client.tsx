@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 interface Material {
@@ -43,7 +44,7 @@ function groupIndex(m: Material, lamUm: number) {
 const colors = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899"];
 
 export default function GroupIndexPage() {
-  const [wavelength, setWavelength] = useState(1550);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
   const [selected, setSelected] = useState("Fused Silica");
 
   const n = useMemo(() => sellmeier(materials[selected], wavelength / 1000), [selected, wavelength]);

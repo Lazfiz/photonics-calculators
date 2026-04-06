@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function DispersiveElementPage() {
-  const [grooveDensity, setGrooveDensity] = useState(1200); // lines/mm
-  const [order, setOrder] = useState(1);
-  const [incidentAngle, setIncidentAngle] = useState(45); // degrees
-  const [wavelengthMin, setWavelengthMin] = useState(400); // nm
-  const [wavelengthMax, setWavelengthMax] = useState(700); // nm
-  const [blazeWavelength, setBlazeWavelength] = useState(550); // nm
+  const [grooveDensity, setGrooveDensity] = useURLState("grooveDensity", 1200); // lines/mm
+  const [order, setOrder] = useURLState("order", 1);
+  const [incidentAngle, setIncidentAngle] = useURLState("incidentAngle", 45); // degrees
+  const [wavelengthMin, setWavelengthMin] = useURLState("wavelengthMin", 400); // nm
+  const [wavelengthMax, setWavelengthMax] = useURLState("wavelengthMax", 700); // nm
+  const [blazeWavelength, setBlazeWavelength] = useURLState("blazeWavelength", 550); // nm
 
   const chartData = useMemo(() => {
     const d = 1e6 / grooveDensity; // μm per groove

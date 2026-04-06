@@ -5,10 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function ApodizationPage() {
-  const [nPoints, setNPoints] = useState(256);
-  const [peakWidth, setPeakWidth] = useState(5); // spectral resolution in points
+  const [nPoints, setNPoints] = useURLState("nPoints", 256);
+  const [peakWidth, setPeakWidth] = useURLState("peakWidth", 5); // spectral resolution in points
 
   const chartData = useMemo(() => {
     const N = nPoints;

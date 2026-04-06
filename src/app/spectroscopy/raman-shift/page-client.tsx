@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function RamanShiftPage() {
-  const [laserWavelength, setLaserWavelength] = useState(532);
-  const [ramanShiftCm, setRamanShiftCm] = useState(1000);
-  const [minShift, setMinShift] = useState(100);
-  const [maxShift, setMaxShift] = useState(4000);
+  const [laserWavelength, setLaserWavelength] = useURLState("laserWavelength", 532);
+  const [ramanShiftCm, setRamanShiftCm] = useURLState("ramanShiftCm", 1000);
+  const [minShift, setMinShift] = useURLState("minShift", 100);
+  const [maxShift, setMaxShift] = useURLState("maxShift", 4000);
 
   const laserWavenumber = 1e7 / laserWavelength; // cm⁻¹
   const stokesWavenumber = laserWavenumber - ramanShiftCm;

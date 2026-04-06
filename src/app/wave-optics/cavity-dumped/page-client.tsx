@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function CavityDumpedLaserPage() {
-  const [repRate, setRepRate] = useState(80); // MHz
-  const [pulseEnergy, setPulseEnergy] = useState(10); // μJ
-  const [cavityLength, setCavityLength] = useState(1.5); // m
+  const [repRate, setRepRate] = useURLState("repRate", 80); // MHz
+  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 10); // μJ
+  const [cavityLength, setCavityLength] = useURLState("cavityLength", 1.5); // m
 
   const chartData = useMemo(() => {
     const t = Array.from({ length: 200 }, (_, i) => i * 0.5);

@@ -3,15 +3,16 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function FadeProbabilityPage() {
-  const [wavelength, setWavelength] = useState(1550);
-  const [cn2, setCn2] = useState(1e-15);
-  const [range, setRange] = useState(1000); // m
-  const [fadeThreshold, setFadeThreshold] = useState(10); // dB below mean
-  const [rxDiameter, setRxDiameter] = useState(10); // cm
-  const [numChannels, setNumChannels] = useState(1);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [cn2, setCn2] = useURLState("cn2", 1e-15);
+  const [range, setRange] = useURLState("range", 1000); // m
+  const [fadeThreshold, setFadeThreshold] = useURLState("fadeThreshold", 10); // dB below mean
+  const [rxDiameter, setRxDiameter] = useURLState("rxDiameter", 10); // cm
+  const [numChannels, setNumChannels] = useURLState("numChannels", 1);
 
   // Fade probability based on log-normal model for weak turbulence
   // P(I < I_T) = 0.5 * erfc(σ_I² / (2√2)) for weak turbulence

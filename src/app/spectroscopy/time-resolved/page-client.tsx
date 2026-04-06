@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function TimeResolvedPage() {
-  const [laserRepRate, setLaserRepRate] = useState(80); // MHz
-  const [pulseWidthFs, setPulseWidthFs] = useState(100); // fs
-  const [instrumentResponse, setInstrumentResponse] = useState(0.3); // ps
-  const [lifetime, setLifetime] = useState(2); // ns
-  const [timeRange, setTimeRange] = useState(10); // ns
+  const [laserRepRate, setLaserRepRate] = useURLState("laserRepRate", 80); // MHz
+  const [pulseWidthFs, setPulseWidthFs] = useURLState("pulseWidthFs", 100); // fs
+  const [instrumentResponse, setInstrumentResponse] = useURLState("instrumentResponse", 0.3); // ps
+  const [lifetime, setLifetime] = useURLState("lifetime", 2); // ns
+  const [timeRange, setTimeRange] = useURLState("timeRange", 10); // ns
 
   const chartData = useMemo(() => {
     const N = 500;

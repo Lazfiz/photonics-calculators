@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function FullWellPage() {
-  const [fullWell, setFullWell] = useState(20000);
-  const [readNoise, setReadNoise] = useState(3);
-  const [signal, setSignal] = useState(10000);
+  const [fullWell, setFullWell] = useURLState("fullWell", 20000);
+  const [readNoise, setReadNoise] = useURLState("readNoise", 3);
+  const [signal, setSignal] = useURLState("signal", 10000);
 
   const totalNoise = Math.sqrt(signal + readNoise ** 2);
   const snr = signal / totalNoise;

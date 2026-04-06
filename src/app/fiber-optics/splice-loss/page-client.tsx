@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function SpliceLossPage() {
-  const [lateralOffset, setLateralOffset] = useState(0.5); // µm
-  const [angularMisalign, setAngularMisalign] = useState(0.5); // degrees
-  const [coreDiam, setCoreDiam] = useState(9); // µm (SMF-28 mode field)
-  const [gap, setGap] = useState(0); // µm
+  const [lateralOffset, setLateralOffset] = useURLState("lateralOffset", 0.5); // µm
+  const [angularMisalign, setAngularMisalign] = useURLState("angularMisalign", 0.5); // degrees
+  const [coreDiam, setCoreDiam] = useURLState("coreDiam", 9); // µm (SMF-28 mode field)
+  const [gap, setGap] = useURLState("gap", 0); // µm
 
   const calc = useMemo(() => {
     const d = lateralOffset; // µm

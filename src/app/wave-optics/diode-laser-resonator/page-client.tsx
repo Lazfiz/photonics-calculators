@@ -3,17 +3,18 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function DiodeLaserResonatorPage() {
-  const [cavityLength, setCavityLength] = useState(300); // µm
-  const [stripeWidth, setStripeWidth] = useState(3); // µm
+  const [cavityLength, setCavityLength] = useURLState("cavityLength", 300); // µm
+  const [stripeWidth, setStripeWidth] = useURLState("stripeWidth", 3); // µm
   const [activeThickness, setActiveThickness] = useState(0.1); // µm
-  const [wavelength, setWavelength] = useState(980); // nm
-  const [n_eff, setN_eff] = useState(3.4);
-  const [alpha_i, setAlpha_i] = useState(10); // cm^-1 internal loss
-  const [mirrorR1, setMirrorR1] = useState(0.32); // cleaved facet
-  const [mirrorR2, setMirrorR2] = useState(0.32);
+  const [wavelength, setWavelength] = useURLState("wavelength", 980); // nm
+  const [n_eff, setN_eff] = useURLState("n_eff", 3.4);
+  const [alpha_i, setAlpha_i] = useURLState("alpha_i", 10); // cm^-1 internal loss
+  const [mirrorR1, setMirrorR1] = useURLState("mirrorR1", 0.32); // cleaved facet
+  const [mirrorR2, setMirrorR2] = useURLState("mirrorR2", 0.32);
 
   const L_cm = cavityLength * 1e-4;
   const lambda_m = wavelength * 1e-9;

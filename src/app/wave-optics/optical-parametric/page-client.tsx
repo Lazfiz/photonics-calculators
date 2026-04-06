@@ -5,16 +5,17 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function OpticalParametricPage() {
-  const [pumpWavelength, setPumpWavelength] = useState(532); // nm
-  const [signalWavelength, setSignalWavelength] = useState(1064); // nm
-  const [deff, setDeff] = useState(14.0); // pm/V (PPLN)
-  const [crystalLength, setCrystalLength] = useState(20); // mm
-  const [pumpPower, setPumpPower] = useState(1000); // mW
-  const [pumpWaist, setPumpWaist] = useState(50); // µm
-  const [pumpPowerW, setPumpPowerW] = useState(1000); // mW for OPO threshold
-  const [lossRoundTrip, setLossRoundTrip] = useState(5); // %
+  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 532); // nm
+  const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 1064); // nm
+  const [deff, setDeff] = useURLState("deff", 14.0); // pm/V (PPLN)
+  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 20); // mm
+  const [pumpPower, setPumpPower] = useURLState("pumpPower", 1000); // mW
+  const [pumpWaist, setPumpWaist] = useURLState("pumpWaist", 50); // µm
+  const [pumpPowerW, setPumpPowerW] = useURLState("pumpPowerW", 1000); // mW for OPO threshold
+  const [lossRoundTrip, setLossRoundTrip] = useURLState("lossRoundTrip", 5); // %
   const [mode, setMode] = useState<"OPA" | "OPO">("OPA");
 
   // Idler wavelength: 1/λi = 1/λp - 1/λs

@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 /**
  * Laser Classification per IEC 60825-1:2014 (default)
@@ -44,10 +45,10 @@ type LaserClass = {
 };
 
 export default function ClassificationPage() {
-  const [power, setPower] = useState(10); // mW
-  const [wavelength, setWavelength] = useState(1550); // nm
+  const [power, setPower] = useURLState("power", 10); // mW
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [emission, setEmission] = useState<"CW" | "pulse">("CW");
-  const [pulseDuration, setPulseDuration] = useState(0.001); // s
+  const [pulseDuration, setPulseDuration] = useURLState("pulseDuration", 0.001); // s
 
   const classification = useMemo((): LaserClass => {
     const P_W = power / 1000;

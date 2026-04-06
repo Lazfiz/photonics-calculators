@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function TerahertzSpectroscopyPage() {
-  const [freqStart, setFreqStart] = useState(0.1);
-  const [freqEnd, setFreqEnd] = useState(5);
-  const [temperature, setTemperature] = useState(293);
-  const [sampleThickness, setSampleThickness] = useState(0.1);
-  const [refractiveIndex, setRefractiveIndex] = useState(1.5);
-  const [absorptionCoeff, setAbsorptionCoeff] = useState(5);
+  const [freqStart, setFreqStart] = useURLState("freqStart", 0.1);
+  const [freqEnd, setFreqEnd] = useURLState("freqEnd", 5);
+  const [temperature, setTemperature] = useURLState("temperature", 293);
+  const [sampleThickness, setSampleThickness] = useURLState("sampleThickness", 0.1);
+  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.5);
+  const [absorptionCoeff, setAbsorptionCoeff] = useURLState("absorptionCoeff", 5);
 
   const transmissionData = useMemo(() => {
     const freqs = Array.from({ length: 500 }, (_, i) => freqStart + (i / 500) * (freqEnd - freqStart));

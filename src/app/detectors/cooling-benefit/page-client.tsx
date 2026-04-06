@@ -5,16 +5,17 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 const kB = 8.617e-5;
 
 export default function CoolingBenefitPage() {
-  const [egSi, setEgSi] = useState(1.12);
-  const [egInGaAs, setEgInGaAs] = useState(0.75);
-  const [darkCurrent25Si, setDarkCurrent25Si] = useState(0.1);
-  const [darkCurrent25InGaAs, setDarkCurrent25InGaAs] = useState(1000);
-  const [readNoise, setReadNoise] = useState(3);
-  const [exposureTime, setExposureTime] = useState(1);
+  const [egSi, setEgSi] = useURLState("egSi", 1.12);
+  const [egInGaAs, setEgInGaAs] = useURLState("egInGaAs", 0.75);
+  const [darkCurrent25Si, setDarkCurrent25Si] = useURLState("darkCurrent25Si", 0.1);
+  const [darkCurrent25InGaAs, setDarkCurrent25InGaAs] = useURLState("darkCurrent25InGaAs", 1000);
+  const [readNoise, setReadNoise] = useURLState("readNoise", 3);
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 1);
   const [coolTemp, setCoolTemp] = useState(-40);
 
   const darkCurrentAtT = (T_C: number, I0: number, Eg: number) => {

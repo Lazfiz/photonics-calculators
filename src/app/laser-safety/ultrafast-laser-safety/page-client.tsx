@@ -6,14 +6,15 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function UltrafastLaserSafetyPage() {
-  const [pulseEnergy, setPulseEnergy] = useState(1); // µJ
-  const [repRate, setRepRate] = useState(80); // MHz
-  const [pulseWidth, setPulseWidth] = useState(100); // fs
-  const [wavelength, setWavelength] = useState(800); // nm
-  const [beamDia, setBeamDia] = useState(2); // mm
-  const [divergence, setDivergence] = useState(1); // mrad
+  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 1); // µJ
+  const [repRate, setRepRate] = useURLState("repRate", 80); // MHz
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100); // fs
+  const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm
+  const [beamDia, setBeamDia] = useURLState("beamDia", 2); // mm
+  const [divergence, setDivergence] = useURLState("divergence", 1); // mrad
 
   const avgPower = pulseEnergy * 1e-6 * repRate * 1e6; // W
   const peakPower = pulseEnergy * 1e-6 / (pulseWidth * 1e-15); // W

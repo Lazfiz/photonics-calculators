@@ -3,16 +3,17 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function MultiCoreFiberCalculator() {
-  const [numCores, setNumCores] = useState<number>(7);
-  const [corePitch, setCorePitch] = useState<number>(45); // μm
-  const [coreRadius, setCoreRadius] = useState<number>(4.5); // μm
-  const [coreIndex, setCoreIndex] = useState<number>(1.468);
-  const [claddingIndex, setCladdingIndex] = useState<number>(1.463);
-  const [wavelength, setWavelength] = useState<number>(1550); // nm
-  const [fiberLength, setFiberLength] = useState<number>(10); // km
+  const [numCores, setNumCores] = useURLState("numCores", 7);
+  const [corePitch, setCorePitch] = useURLState("corePitch", 45); // μm
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.5); // μm
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.468);
+  const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.463);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // km
 
   const na = Math.sqrt(coreIndex ** 2 - claddingIndex ** 2);
   const vNumber = (2 * Math.PI * coreRadius * na) / wavelength;

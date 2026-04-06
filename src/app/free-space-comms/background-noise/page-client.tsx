@@ -3,15 +3,16 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function BackgroundNoisePage() {
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [rxFOV, setRxFOV] = useState(1); // mrad
-  const [rxBandwidth, setRxBandwidth] = useState(1); // nm optical
-  const [rxArea, setRxArea] = useState(78.5); // cm² (10cm diameter)
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [rxFOV, setRxFOV] = useURLState("rxFOV", 1); // mrad
+  const [rxBandwidth, setRxBandwidth] = useURLState("rxBandwidth", 1); // nm optical
+  const [rxArea, setRxArea] = useURLState("rxArea", 78.5); // cm² (10cm diameter)
   const [backgroundType, setBackgroundType] = useState<"day-sky" | "night-sky" | "solar-direct" | "urban-glow">("day-sky");
-  const [filterRejection, setFilterRejection] = useState(30); // dB
+  const [filterRejection, setFilterRejection] = useURLState("filterRejection", 30); // dB
 
   const backgroundRadiance: Record<string, number> = {
     "day-sky": 50, // W/m²/sr/μm

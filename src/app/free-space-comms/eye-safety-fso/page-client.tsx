@@ -3,14 +3,15 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function EyeSafetyFsoPage() {
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [txPower, setTxPower] = useState(100); // mW
-  const [beamDivergence, setBeamDivergence] = useState(0.5); // mrad
-  const [exposureTime, setExposureTime] = useState(10); // seconds
-  const [distance, setDistance] = useState(2); // meters (NOHD calc)
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [txPower, setTxPower] = useURLState("txPower", 100); // mW
+  const [beamDivergence, setBeamDivergence] = useURLState("beamDivergence", 0.5); // mrad
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // seconds
+  const [distance, setDistance] = useURLState("distance", 2); // meters (NOHD calc)
 
   // MPE and corneal irradiance calculations
   const calc = useMemo(() => {

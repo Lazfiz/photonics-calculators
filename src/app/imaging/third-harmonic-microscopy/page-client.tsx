@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function ThirdHarmonicMicroscopyPage() {
-  const [wavelength, setWavelength] = useState(1200);
-  const [na, setNa] = useState(0.8);
-  const [power, setPower] = useState(100);
-  const [pulseWidth, setPulseWidth] = useState(100);
-  const [repRate, setRepRate] = useState(80);
-  const [refractiveIndex, setRefractiveIndex] = useState(1.33);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1200);
+  const [na, setNa] = useURLState("na", 0.8);
+  const [power, setPower] = useURLState("power", 100);
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100);
+  const [repRate, setRepRate] = useURLState("repRate", 80);
+  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.33);
 
   const thgWavelength = wavelength / 3;
   const energyPerPulse = (power * 1000 / repRate) * 1e-9;

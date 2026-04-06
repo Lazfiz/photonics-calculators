@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function EllipsometryMeasurementPage() {
-  const [psiDeg, setPsiDeg] = useState(45);
-  const [deltaDeg, setDeltaDeg] = useState(120);
-  const [aoiDeg, setAoiDeg] = useState(70);
-  const [wavelength, setWavelength] = useState(633);
-  const [nSubstrate, setNSubstrate] = useState(1.52);
+  const [psiDeg, setPsiDeg] = useURLState("psiDeg", 45);
+  const [deltaDeg, setDeltaDeg] = useURLState("deltaDeg", 120);
+  const [aoiDeg, setAoiDeg] = useURLState("aoiDeg", 70);
+  const [wavelength, setWavelength] = useURLState("wavelength", 633);
+  const [nSubstrate, setNSubstrate] = useURLState("nSubstrate", 1.52);
 
   const results = useMemo(() => {
     const psi = psiDeg * Math.PI / 180;

@@ -3,13 +3,14 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function ScintillationPage() {
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [distance, setDistance] = useState(1); // km
-  const [cz, setCz] = useState(1.7e-14); // Cn² m^-2/3
-  const [apertureDiameter, setApertureDiameter] = useState(0.1); // m
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [distance, setDistance] = useURLState("distance", 1); // km
+  const [cz, setCz] = useURLState("cz", 1.7e-14); // Cn² m^-2/3
+  const [apertureDiameter, setApertureDiameter] = useURLState("apertureDiameter", 0.1); // m
   const [turbulenceModel, setTurbulenceModel] = useState<"weak" | "moderate" | "strong">("weak");
 
   const results = useMemo(() => {

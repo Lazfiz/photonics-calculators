@@ -5,15 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function MetalDielectricPage() {
-  const [nMetal, setNMetal] = useState(0.5);
-  const [kMetal, setKMetal] = useState(3.0);
-  const [nDielectric, setNDielectric] = useState(2.1);
-  const [dDielectric, setDDielectric] = useState(50);
-  const [dMetal, setDMetal] = useState(10);
-  const [nSub, setNSub] = useState(1.52);
-  const [designWl, setDesignWl] = useState(550);
+  const [nMetal, setNMetal] = useURLState("nMetal", 0.5);
+  const [kMetal, setKMetal] = useURLState("kMetal", 3.0);
+  const [nDielectric, setNDielectric] = useURLState("nDielectric", 2.1);
+  const [dDielectric, setDDielectric] = useURLState("dDielectric", 50);
+  const [dMetal, setDMetal] = useURLState("dMetal", 10);
+  const [nSub, setNSub] = useURLState("nSub", 1.52);
+  const [designWl, setDesignWl] = useURLState("designWl", 550);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 2);

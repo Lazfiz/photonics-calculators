@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function EmGainPage() {
-  const [emGain, setEmGain] = useState(100);
-  const [inputSignal, setInputSignal] = useState(10);
-  const [clockInducedCharge, setClockInducedCharge] = useState(0.001);
-  const [excessNoiseFactor, setExcessNoiseFactor] = useState(1.4);
-  const [readNoise, setReadNoise] = useState(50);
+  const [emGain, setEmGain] = useURLState("emGain", 100);
+  const [inputSignal, setInputSignal] = useURLState("inputSignal", 10);
+  const [clockInducedCharge, setClockInducedCharge] = useURLState("clockInducedCharge", 0.001);
+  const [excessNoiseFactor, setExcessNoiseFactor] = useURLState("excessNoiseFactor", 1.4);
+  const [readNoise, setReadNoise] = useURLState("readNoise", 50);
 
   const gainStages = 604;
   const gainPerStage = Math.pow(emGain, 1 / gainStages);

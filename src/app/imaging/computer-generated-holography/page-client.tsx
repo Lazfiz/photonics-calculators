@@ -5,17 +5,18 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function CGHPage() {
-  const [wavelengthNm, setWavelengthNm] = useState(633);
-  const [pixelPitchUm, setPixelPitchUm] = useState(8);
-  const [slmWidth, setSlmWidth] = useState(1920);
-  const [slmHeight, setSlmHeight] = useState(1080);
-  const [reconstructionDistMm, setReconstructionDistMm] = useState(500);
-  const [objectPoints, setObjectPoints] = useState(1000);
-  const [bitDepth, setBitDepth] = useState(8);
-  const [fillFactor, setFillFactor] = useState(0.9);
-  const [diffractionEfficiency, setDiffractionEfficiency] = useState(0.4);
+  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 633);
+  const [pixelPitchUm, setPixelPitchUm] = useURLState("pixelPitchUm", 8);
+  const [slmWidth, setSlmWidth] = useURLState("slmWidth", 1920);
+  const [slmHeight, setSlmHeight] = useURLState("slmHeight", 1080);
+  const [reconstructionDistMm, setReconstructionDistMm] = useURLState("reconstructionDistMm", 500);
+  const [objectPoints, setObjectPoints] = useURLState("objectPoints", 1000);
+  const [bitDepth, setBitDepth] = useURLState("bitDepth", 8);
+  const [fillFactor, setFillFactor] = useURLState("fillFactor", 0.9);
+  const [diffractionEfficiency, setDiffractionEfficiency] = useURLState("diffractionEfficiency", 0.4);
 
   const lambda = wavelengthNm * 1e-9;
   const lambdaUm = wavelengthNm * 1e-3;

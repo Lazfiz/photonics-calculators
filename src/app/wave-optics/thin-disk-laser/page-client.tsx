@@ -3,19 +3,20 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function ThinDiskLaserPage() {
-  const [diskThickness, setDiskThickness] = useState(200); // µm
-  const [diskDiameter, setDiskDiameter] = useState(10); // mm
-  const [wavelength, setWavelength] = useState(1030); // nm
-  const [numPasses, setNumPasses] = useState(16);
-  const [pumpSpotDiameter, setPumpSpotDiameter] = useState(3); // mm
-  const [R_oc, setR_oc] = useState(0.97);
-  const [alpha_disk, setAlpha_disk] = useState(0.01); // cm^-1
-  const [pumpWavelength, setPumpWavelength] = useState(940); // nm
-  const [Yb_concentration, setYb_concentration] = useState(10); // at.%
-  const [T_disk, setT_disk] = useState(25); // °C surface temp rise
+  const [diskThickness, setDiskThickness] = useURLState("diskThickness", 200); // µm
+  const [diskDiameter, setDiskDiameter] = useURLState("diskDiameter", 10); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1030); // nm
+  const [numPasses, setNumPasses] = useURLState("numPasses", 16);
+  const [pumpSpotDiameter, setPumpSpotDiameter] = useURLState("pumpSpotDiameter", 3); // mm
+  const [R_oc, setR_oc] = useURLState("R_oc", 0.97);
+  const [alpha_disk, setAlpha_disk] = useURLState("alpha_disk", 0.01); // cm^-1
+  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 940); // nm
+  const [Yb_concentration, setYb_concentration] = useURLState("Yb_concentration", 10); // at.%
+  const [T_disk, setT_disk] = useURLState("T_disk", 25); // °C surface temp rise
 
   const diskThick_cm = diskThickness * 1e-4;
   const pumpArea = Math.PI * Math.pow(pumpSpotDiameter / 2 * 1e-3, 2);

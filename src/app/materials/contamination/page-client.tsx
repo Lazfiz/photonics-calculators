@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 interface Material {
@@ -66,9 +67,9 @@ function contaminationGrowth(baseRate: number, time: number, cleaning: number): 
 export default function ContaminationPage() {
   const [selectedMat, setSelectedMat] = useState("Fused Silica");
   const [selectedCont, setSelectedCont] = useState("Dust (ambient)");
-  const [ppm, setPpm] = useState(10);
-  const [wavelength, setWavelength] = useState(1064);
-  const [exposureDays, setExposureDays] = useState(90);
+  const [ppm, setPpm] = useURLState("ppm", 10);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1064);
+  const [exposureDays, setExposureDays] = useURLState("exposureDays", 90);
 
   const mat = materials[selectedMat];
   const cont = contaminants[selectedCont];

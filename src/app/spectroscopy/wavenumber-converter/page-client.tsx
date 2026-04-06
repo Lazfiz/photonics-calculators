@@ -7,6 +7,7 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
+import { useURLState } from "../../../hooks/use-url-state";
 
 const rangePresets = [
   { label: "Visible", min: 400, max: 700 },
@@ -18,10 +19,10 @@ const singlePresets = [532, 632.8, 1064, 1550, 3400, 10600];
 const currentHref = "/spectroscopy/wavenumber-converter";
 
 export default function WavenumberConverterPage() {
-  const [wavelengthMin, setWavelengthMin] = useState(400);
-  const [wavelengthMax, setWavelengthMax] = useState(4000);
+  const [wavelengthMin, setWavelengthMin] = useURLState("wavelengthMin", 400);
+  const [wavelengthMax, setWavelengthMax] = useURLState("wavelengthMax", 4000);
   const [mode, setMode] = useState<"wl-to-wn" | "wn-to-wl">("wl-to-wn");
-  const [singleValue, setSingleValue] = useState(1000);
+  const [singleValue, setSingleValue] = useURLState("singleValue", 1000);
 
   const wnMin = 1e7 / wavelengthMax;
   const wnMax = 1e7 / wavelengthMin;

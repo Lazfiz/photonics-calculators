@@ -3,18 +3,19 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function FiberLaserCalculator() {
-  const [pumpPower, setPumpPower] = useState<number>(100); // W
-  const [pumpWavelength, setPumpWavelength] = useState<number>(976); // nm
-  const [laserWavelength, setLaserWavelength] = useState<number>(1064); // nm
-  const [fiberLength, setFiberLength] = useState<number>(5); // m
-  const [absorptionCoeff, setAbsorptionCoeff] = useState<number>(1.5); // dB/m
-  const [slopeEfficiency, setSlopeEfficiency] = useState<number>(80); // %
-  const [thresholdPower, setThresholdPower] = useState<number>(2); // W
-  const [outputCoupling, setOutputCoupling] = useState<number>(10); // %
-  const [cavityLoss, setCavityLoss] = useState<number>(0.5); // dB (round-trip)
+  const [pumpPower, setPumpPower] = useURLState("pumpPower", 100); // W
+  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 976); // nm
+  const [laserWavelength, setLaserWavelength] = useURLState("laserWavelength", 1064); // nm
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 5); // m
+  const [absorptionCoeff, setAbsorptionCoeff] = useURLState("absorptionCoeff", 1.5); // dB/m
+  const [slopeEfficiency, setSlopeEfficiency] = useURLState("slopeEfficiency", 80); // %
+  const [thresholdPower, setThresholdPower] = useURLState("thresholdPower", 2); // W
+  const [outputCoupling, setOutputCoupling] = useURLState("outputCoupling", 10); // %
+  const [cavityLoss, setCavityLoss] = useURLState("cavityLoss", 0.5); // dB (round-trip)
 
   // Quantum efficiency
   const quantumEfficiency = useMemo(() => {

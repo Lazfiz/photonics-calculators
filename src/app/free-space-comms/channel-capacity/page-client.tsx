@@ -3,14 +3,15 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function ChannelCapacityPage() {
-  const [bandwidth, setBandwidth] = useState(1); // GHz
-  const [snrDB, setSnrDB] = useState(20);
+  const [bandwidth, setBandwidth] = useURLState("bandwidth", 1); // GHz
+  const [snrDB, setSnrDB] = useURLState("snrDB", 20);
   const [modulation, setModulation] = useState<"OOK" | "BPSK" | "QPSK" | "8PSK" | "16QAM">("QPSK");
-  const [fecOverhead, setFecOverhead] = useState(7); // % overhead
-  const [wavelength, setWavelength] = useState(1550); // nm
+  const [fecOverhead, setFecOverhead] = useURLState("fecOverhead", 7); // % overhead
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
 
   const calc = useMemo(() => {
     const B = bandwidth * 1e9; // Hz

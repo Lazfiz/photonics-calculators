@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 const RETARDERS = [
@@ -17,10 +18,10 @@ const RETARDERS = [
 ];
 
 export default function RetarderTypesPage() {
-  const [wavelength, setWavelength] = useState(550);
-  const [retardance, setRetardance] = useState(0.25); // waves
-  const [temperature, setTemperature] = useState(25);
-  const [thickness, setThickness] = useState(0.1); // mm for quartz
+  const [wavelength, setWavelength] = useURLState("wavelength", 550);
+  const [retardance, setRetardance] = useURLState("retardance", 0.25); // waves
+  const [temperature, setTemperature] = useURLState("temperature", 25);
+  const [thickness, setThickness] = useURLState("thickness", 0.1); // mm for quartz
 
   const dnQuartz = 0.0091; // at 550nm
   const dnMgF2 = 0.012; // at 550nm

@@ -3,16 +3,17 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function DynamicRangePage() {
-  const [fullWellCapacity, setFullWellCapacity] = useState(30000);
-  const [readNoise, setReadNoise] = useState(2);
-  const [darkCurrent, setDarkCurrent] = useState(0.05);
-  const [exposureTime, setExposureTime] = useState(100);
-  const [bitDepth, setBitDepth] = useState(14);
-  const [prnu, setPrnu] = useState(0.01);
-  const [dsnu, setDsnu] = useState(0.005);
+  const [fullWellCapacity, setFullWellCapacity] = useURLState("fullWellCapacity", 30000);
+  const [readNoise, setReadNoise] = useURLState("readNoise", 2);
+  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 0.05);
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 100);
+  const [bitDepth, setBitDepth] = useURLState("bitDepth", 14);
+  const [prnu, setPrnu] = useURLState("prnu", 0.01);
+  const [dsnu, setDsnu] = useURLState("dsnu", 0.005);
 
   const results = useMemo(() => {
     const darkElectrons = darkCurrent * exposureTime / 1000;

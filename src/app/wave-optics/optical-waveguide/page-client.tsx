@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function OpticalWaveguidePage() {
-  const [nCore, setNCore] = useState(1.5);
-  const [nClad, setNClad] = useState(1.45);
-  const [wavelength, setWavelength] = useState(1550);
-  const [coreWidth, setCoreWidth] = useState(10); // µm
+  const [nCore, setNCore] = useURLState("nCore", 1.5);
+  const [nClad, setNClad] = useURLState("nClad", 1.45);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [coreWidth, setCoreWidth] = useURLState("coreWidth", 10); // µm
 
   const NA = Math.sqrt(nCore * nCore - nClad * nClad);
   const vNumber = Math.PI * coreWidth * NA / wavelength;

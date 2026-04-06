@@ -5,15 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function ConnectorReturnLossPage() {
-  const [n1, setN1] = useState(1.4677); // SMF-28 core
-  const [n2, setN2] = useState(1.0); // air gap
-  const [gapNm, setGapNm] = useState(0); // nm gap
-  const [angMisalign, setAngMisalign] = useState(0); // degrees
-  const [lateralOffset, setLateralOffset] = useState(0); // µm
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [coreRadius, setCoreRadius] = useState(4.1); // µm
+  const [n1, setN1] = useURLState("n1", 1.4677); // SMF-28 core
+  const [n2, setN2] = useURLState("n2", 1.0); // air gap
+  const [gapNm, setGapNm] = useURLState("gapNm", 0); // nm gap
+  const [angMisalign, setAngMisalign] = useURLState("angMisalign", 0); // degrees
+  const [lateralOffset, setLateralOffset] = useURLState("lateralOffset", 0); // µm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1); // µm
 
   const chartData = useMemo(() => {
     const gaps = Array.from({ length: 200 }, (_, i) => i * 10000 / 200); // 0 to 10 µm

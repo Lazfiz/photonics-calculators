@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 interface Material {
@@ -60,11 +61,11 @@ function stressBirefringence(mat: Material, initialStress: number, hours: number
 
 export default function AgingEffectsPage() {
   const [selected, setSelected] = useState("Fused Silica");
-  const [hours, setHours] = useState(8760); // 1 year
-  const [tempFactor, setTempFactor] = useState(1);
-  const [uvDose, setUvDose] = useState(10);
-  const [laserFluence, setLaserFluence] = useState(0.1);
-  const [initialStress, setInitialStress] = useState(5); // nm/cm
+  const [hours, setHours] = useURLState("hours", 8760); // 1 year
+  const [tempFactor, setTempFactor] = useURLState("tempFactor", 1);
+  const [uvDose, setUvDose] = useURLState("uvDose", 10);
+  const [laserFluence, setLaserFluence] = useURLState("laserFluence", 0.1);
+  const [initialStress, setInitialStress] = useURLState("initialStress", 5); // nm/cm
 
   const mat = materials[selected];
   const trans = useMemo(() => transmissionAfter(mat, hours, tempFactor), [mat, hours, tempFactor]);

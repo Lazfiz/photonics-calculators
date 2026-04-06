@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function HardCoatingPage() {
-  const [nCoat, setNCoat] = useState(2.1);
-  const [nSub, setNSub] = useState(1.52);
-  const [designWl, setDesignWl] = useState(550);
-  const [thickness, setThickness] = useState(200);
-  const [hardness, setHardness] = useState(1200);
-  const [stressGPa, setStressGPa] = useState(0.5);
+  const [nCoat, setNCoat] = useURLState("nCoat", 2.1);
+  const [nSub, setNSub] = useURLState("nSub", 1.52);
+  const [designWl, setDesignWl] = useURLState("designWl", 550);
+  const [thickness, setThickness] = useURLState("thickness", 200);
+  const [hardness, setHardness] = useURLState("hardness", 1200);
+  const [stressGPa, setStressGPa] = useURLState("stressGPa", 0.5);
 
   // Hard coatings: SiO₂, Al₂O₃, Si₃N₄, TiO₂, diamond-like carbon
   // Key properties: hardness, Young's modulus, stress, adhesion

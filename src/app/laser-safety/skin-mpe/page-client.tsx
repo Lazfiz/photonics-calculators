@@ -7,10 +7,11 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function SkinMPEPage() {
-  const [wavelength, setWavelength] = useState(1064);
-  const [exposure, setExposure] = useState(10);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1064);
+  const [exposure, setExposure] = useURLState("exposure", 10);
 
   const mpe = useMemo(() => {
     const lam = wavelength / 1000;

@@ -6,12 +6,13 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function BandwidthPage() {
-  const [bandwidth, setBandwidth] = useState(1e6);
-  const [capacitance, setCapacitance] = useState(10e-12);
-  const [resistance, setResistance] = useState(50);
-  const [transimpedance, setTransimpedance] = useState(1e3);
+  const [bandwidth, setBandwidth] = useURLState("bandwidth", 1e6);
+  const [capacitance, setCapacitance] = useURLState("capacitance", 10e-12);
+  const [resistance, setResistance] = useURLState("resistance", 50);
+  const [transimpedance, setTransimpedance] = useURLState("transimpedance", 1e3);
   const [q] = useState(1.6e-19);
   const [kB] = useState(1.381e-23);
   const [temperature] = useState(300);

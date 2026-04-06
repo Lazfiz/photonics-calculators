@@ -3,15 +3,16 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function PointingErrorPage() {
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [distance, setDistance] = useState(1); // km
-  const [txAperture, setTxAperture] = useState(0.05); // m
-  const [rxAperture, setRxAperture] = useState(0.2); // m
-  const [jitterAzimuth, setJitterAzimuth] = useState(1); // μrad RMS
-  const [jitterElevation, setJitterElevation] = useState(1); // μrad RMS
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [distance, setDistance] = useURLState("distance", 1); // km
+  const [txAperture, setTxAperture] = useURLState("txAperture", 0.05); // m
+  const [rxAperture, setRxAperture] = useURLState("rxAperture", 0.2); // m
+  const [jitterAzimuth, setJitterAzimuth] = useURLState("jitterAzimuth", 1); // μrad RMS
+  const [jitterElevation, setJitterElevation] = useURLState("jitterElevation", 1); // μrad RMS
 
   const results = useMemo(() => {
     const wl = wavelength * 1e-9;

@@ -3,13 +3,14 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function BirefringencePage() {
-  const [no, setNo] = useState(1.5443); // quartz ordinary
-  const [ne, setNe] = useState(1.5534); // quartz extraordinary
-  const [thickness, setThickness] = useState(1.0); // mm
-  const [wavelength, setWavelength] = useState(550); // nm
+  const [no, setNo] = useURLState("no", 1.5443); // quartz ordinary
+  const [ne, setNe] = useURLState("ne", 1.5534); // quartz extraordinary
+  const [thickness, setThickness] = useURLState("thickness", 1.0); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 550); // nm
 
   const delta = useMemo(() => {
     const d_m = thickness * 1e-3;

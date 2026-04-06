@@ -7,12 +7,13 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function RetinalHazardPage() {
-  const [power, setPower] = useState(10); // mW
-  const [beamDiam, setBeamDiam] = useState(2); // mm
-  const [cornealDiam, setCornealDiam] = useState(7); // mm
-  const [divergence, setDivergence] = useState(1); // mrad
+  const [power, setPower] = useURLState("power", 10); // mW
+  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 2); // mm
+  const [cornealDiam, setCornealDiam] = useURLState("cornealDiam", 7); // mm
+  const [divergence, setDivergence] = useURLState("divergence", 1); // mrad
 
   const calc = useMemo(() => {
     const P = power * 1e-3; // W

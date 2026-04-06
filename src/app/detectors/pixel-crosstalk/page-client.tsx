@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function PixelCrosstalkPage() {
-  const [pixelPitch, setPixelPitch] = useState(5.0); // µm
-  const [depletionDepth, setDepletionDepth] = useState(10); // µm
-  const [wavelength, setWavelength] = useState(550); // nm
-  const [crosstalkCoeff, setCrosstalkCoeff] = useState(0.03); // electrical crosstalk fraction
+  const [pixelPitch, setPixelPitch] = useURLState("pixelPitch", 5.0); // µm
+  const [depletionDepth, setDepletionDepth] = useURLState("depletionDepth", 10); // µm
+  const [wavelength, setWavelength] = useURLState("wavelength", 550); // nm
+  const [crosstalkCoeff, setCrosstalkCoeff] = useURLState("crosstalkCoeff", 0.03); // electrical crosstalk fraction
 
   // Optical crosstalk from charge diffusion
   // Crosstalk increases with absorption depth (longer wavelength = deeper absorption)

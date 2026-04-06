@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 const POLARIZERS = [
@@ -18,8 +19,8 @@ const POLARIZERS = [
 
 export default function PolarizerTypesPage() {
   const [selected, setSelected] = useState<string[]>(POLARIZERS.map((p) => p.name));
-  const [inputPower, setInputPower] = useState(10); // mW
-  const [wavelength, setWavelength] = useState(550);
+  const [inputPower, setInputPower] = useURLState("inputPower", 10); // mW
+  const [wavelength, setWavelength] = useURLState("wavelength", 550);
 
   const toggle = (name: string) =>
     setSelected((s) => (s.includes(name) ? s.filter((n) => n !== name) : [...s, name]));

@@ -5,16 +5,17 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function WavefrontSensingPage() {
-  const [wavelengthNm, setWavelengthNm] = useState(632.8);
-  const [apertureDiameterMm, setApertureDiameterMm] = useState(10);
-  const [numZernikeTerms, setNumZernikeTerms] = useState(15);
-  const [rmsWavefrontNm, setRmsWavefrontNm] = useState(100);
-  const [numSubapertures, setNumSubapertures] = useState(64);
-  const [detectorPixelSizeUm, setDetectorPixelSizeUm] = useState(5.5);
-  const [focalLengthMm, setFocalLengthMm] = useState(100);
-  const [sensingWavelengthNm, setSensingWavelengthNm] = useState(632.8);
+  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 632.8);
+  const [apertureDiameterMm, setApertureDiameterMm] = useURLState("apertureDiameterMm", 10);
+  const [numZernikeTerms, setNumZernikeTerms] = useURLState("numZernikeTerms", 15);
+  const [rmsWavefrontNm, setRmsWavefrontNm] = useURLState("rmsWavefrontNm", 100);
+  const [numSubapertures, setNumSubapertures] = useURLState("numSubapertures", 64);
+  const [detectorPixelSizeUm, setDetectorPixelSizeUm] = useURLState("detectorPixelSizeUm", 5.5);
+  const [focalLengthMm, setFocalLengthMm] = useURLState("focalLengthMm", 100);
+  const [sensingWavelengthNm, setSensingWavelengthNm] = useURLState("sensingWavelengthNm", 632.8);
 
   const lambda = wavelengthNm * 1e-9;
   const lambdaUm = wavelengthNm * 1e-3;

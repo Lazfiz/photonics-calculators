@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function AntiFogPage() {
-  const [nCoat, setNCoat] = useState(1.33);
-  const [nSub, setNSub] = useState(1.52);
-  const [designWl, setDesignWl] = useState(550);
-  const [thickness, setThickness] = useState(120);
-  const [contactAngle, setContactAngle] = useState(15);
+  const [nCoat, setNCoat] = useURLState("nCoat", 1.33);
+  const [nSub, setNSub] = useURLState("nSub", 1.52);
+  const [designWl, setDesignWl] = useURLState("designWl", 550);
+  const [thickness, setThickness] = useURLState("thickness", 120);
+  const [contactAngle, setContactAngle] = useURLState("contactAngle", 15);
 
   // Anti-fog principle: hydrophilic coating → low contact angle → uniform water film
   // Optically: thin film acts as partial AR at visible wavelengths

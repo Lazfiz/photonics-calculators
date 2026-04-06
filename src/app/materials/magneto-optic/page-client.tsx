@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 interface MOMaterial {
@@ -91,9 +92,9 @@ function verdetAt(m: MOMaterial, lambdaNm: number): number {
 
 export default function MagnetoOpticPage() {
   const [selected, setSelected] = useState("TGG");
-  const [wavelength, setWavelength] = useState(633);
-  const [fieldStrength, setFieldStrength] = useState(0.5); // Tesla
-  const [length, setLength] = useState(20); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 633);
+  const [fieldStrength, setFieldStrength] = useURLState("fieldStrength", 0.5); // Tesla
+  const [length, setLength] = useURLState("length", 20); // mm
 
   const m = materials[selected];
   const V = verdetAt(m, wavelength);

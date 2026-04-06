@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function SpectrophotometryPage() {
-  const [nFilm, setNFilm] = useState(1.46);
-  const [kFilm, setKFilm] = useState(0.001);
-  const [nSub, setNSub] = useState(1.52);
-  const [thickness, setThickness] = useState(100);
-  const [angleDeg, setAngleDeg] = useState(0);
-  const [nInc, setNInc] = useState(1.0);
+  const [nFilm, setNFilm] = useURLState("nFilm", 1.46);
+  const [kFilm, setKFilm] = useURLState("kFilm", 0.001);
+  const [nSub, setNSub] = useURLState("nSub", 1.52);
+  const [thickness, setThickness] = useURLState("thickness", 100);
+  const [angleDeg, setAngleDeg] = useURLState("angleDeg", 0);
+  const [nInc, setNInc] = useURLState("nInc", 1.0);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 400 }, (_, i) => 300 + i * 1000 / 400);

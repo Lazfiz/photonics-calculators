@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function DifferenceFrequencyGenPage() {
-  const [pumpWavelength, setPumpWavelength] = useState(1064);
-  const [signalWavelength, setSignalWavelength] = useState(1550);
-  const [crystalLength, setCrystalLength] = useState(20); // mm
-  const [walkOff, setWalkOff] = useState(0.5); // mrad
+  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 1064);
+  const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 1550);
+  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 20); // mm
+  const [walkOff, setWalkOff] = useURLState("walkOff", 0.5); // mrad
 
   const chartData = useMemo(() => {
     const c = 3e8;

@@ -7,14 +7,15 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
+import { useURLState } from "../../../hooks/use-url-state";
 
 const currentHref = "/spectroscopy/ftir-resolution";
 
 export default function FtirResolutionPage() {
-  const [maxOPD, setMaxOPD] = useState(1.0);
-  const [spectralRange, setSpectralRange] = useState(4000);
+  const [maxOPD, setMaxOPD] = useURLState("maxOPD", 1.0);
+  const [spectralRange, setSpectralRange] = useURLState("spectralRange", 4000);
   const [apodization, setApodization] = useState<"boxcar" | "nortonbeermedium" | "blackmanharris" | "happgenzel">("boxcar");
-  const [mirrorVelocity, setMirrorVelocity] = useState(1.0);
+  const [mirrorVelocity, setMirrorVelocity] = useURLState("mirrorVelocity", 1.0);
 
   const apodFactors: Record<string, number> = {
     boxcar: 0.60,

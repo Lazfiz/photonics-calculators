@@ -5,17 +5,18 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function PlenopticCameraPage() {
-  const [wavelengthNm, setWavelengthNm] = useState(550);
-  const [mainLensFocalMm, setMainLensFocalMm] = useState(50);
-  const [mainLensNA, setMainLensNA] = useState(0.2);
-  const [microLensFocalMm, setMicroLensFocalMm] = useState(0.5);
-  const [microLensPitchUm, setMicroLensPitchUm] = useState(150);
-  const [pixelPitchUm, setPixelPitchUm] = useState(5.5);
-  const [pixelsPerMicroLens, setPixelsPerMicroLens] = useState(15);
-  const [sensorWidthPx, setSensorWidthPx] = useState(4000);
-  const [sensorHeightPx, setSensorHeightPx] = useState(3000);
+  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 550);
+  const [mainLensFocalMm, setMainLensFocalMm] = useURLState("mainLensFocalMm", 50);
+  const [mainLensNA, setMainLensNA] = useURLState("mainLensNA", 0.2);
+  const [microLensFocalMm, setMicroLensFocalMm] = useURLState("microLensFocalMm", 0.5);
+  const [microLensPitchUm, setMicroLensPitchUm] = useURLState("microLensPitchUm", 150);
+  const [pixelPitchUm, setPixelPitchUm] = useURLState("pixelPitchUm", 5.5);
+  const [pixelsPerMicroLens, setPixelsPerMicroLens] = useURLState("pixelsPerMicroLens", 15);
+  const [sensorWidthPx, setSensorWidthPx] = useURLState("sensorWidthPx", 4000);
+  const [sensorHeightPx, setSensorHeightPx] = useURLState("sensorHeightPx", 3000);
 
   const lambdaUm = wavelengthNm * 1e-3;
   const fNumber = 1 / (2 * mainLensNA);

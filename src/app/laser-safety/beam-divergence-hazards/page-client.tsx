@@ -6,12 +6,13 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function BeamDivergenceHazardsPage() {
-  const [power, setPower] = useState(1000); // mW
-  const [wavelength, setWavelength] = useState(1064);
-  const [beamWaist, setBeamWaist] = useState(1); // mm
-  const [divergence, setDivergence] = useState(1); // mrad
+  const [power, setPower] = useURLState("power", 1000); // mW
+  const [wavelength, setWavelength] = useURLState("wavelength", 1064);
+  const [beamWaist, setBeamWaist] = useURLState("beamWaist", 1); // mm
+  const [divergence, setDivergence] = useURLState("divergence", 1); // mrad
 
   // Beam radius at distance z: w(z) = w0 * sqrt(1 + (z/zR)^2)
   // Rayleigh range: zR = π * w0² / λ

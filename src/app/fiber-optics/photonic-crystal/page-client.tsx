@@ -3,13 +3,14 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function PhotonicCrystalFiberCalculator() {
-  const [pitch, setPitch] = useState<number>(4.5); // μm (Λ)
-  const [holeDiameter, setHoleDiameter] = useState<number>(2.7); // μm (d)
-  const [coreIndex, setCoreIndex] = useState<number>(1.45);
-  const [wavelength, setWavelength] = useState<number>(1550); // nm
+  const [pitch, setPitch] = useURLState("pitch", 4.5); // μm (Λ)
+  const [holeDiameter, setHoleDiameter] = useURLState("holeDiameter", 2.7); // μm (d)
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.45);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
 
   // d/Λ ratio
   const dOverLambda = holeDiameter / pitch;

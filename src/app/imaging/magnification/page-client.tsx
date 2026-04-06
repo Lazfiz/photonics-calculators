@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function MagnificationPage() {
-  const [objFocal, setObjFocal] = useState(10);
-  const [tubeFocal, setTubeFocal] = useState(200);
-  const [camFocal, setCamFocal] = useState(50);
+  const [objFocal, setObjFocal] = useURLState("objFocal", 10);
+  const [tubeFocal, setTubeFocal] = useURLState("tubeFocal", 200);
+  const [camFocal, setCamFocal] = useURLState("camFocal", 50);
 
   const objMag = tubeFocal / objFocal;
   const camMag = 250 / camFocal; // standard near point

@@ -7,13 +7,14 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
+import { useURLState } from "../../../hooks/use-url-state";
 
 const wavelengthPresets = [532, 1064, 1550];
 const currentHref = "/wave-optics/gaussian-beam";
 
 export default function GaussianBeamPage() {
-  const [wavelength, setWavelength] = useState(1550);
-  const [waist, setWaist] = useState(10); // µm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [waist, setWaist] = useURLState("waist", 10); // µm
 
   const zR = Math.PI * waist ** 2 / wavelength; // mm (µm²/nm = mm)
   const divergence = wavelength / (Math.PI * waist); // mrad (nm/µm = mrad)

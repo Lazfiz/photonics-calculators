@@ -4,12 +4,13 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
+import { useURLState } from "../../../hooks/use-url-state";
 
 
 export default function CornealVsRetinalPage() {
-  const [wavelength, setWavelength] = useState(800);
-  const [exposureTime, setExposureTime] = useState(10);
-  const [beamDiam, setBeamDiam] = useState(3); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 800);
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10);
+  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 3); // mm
 
   // Corneal MPE: limits irradiance at the front surface of the eye
   // Retinal MPE: limits irradiance at the retina (much lower due to focusing)

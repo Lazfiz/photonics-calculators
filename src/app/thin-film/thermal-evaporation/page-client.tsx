@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function ThermalEvaporationPage() {
   const [material, setMaterial] = useState("SiO2");
-  const [sourceTemp, setSourceTemp] = useState(1400);
-  const [sourceSubstrateDist, setSourceSubstrateDist] = useState(30);
-  const [sourceDiameter, setSourceDiameter] = useState(2);
-  const [chamberPressure, setChamberPressure] = useState(1e-6);
-  const [substrateTemp, setSubstrateTemp] = useState(100);
+  const [sourceTemp, setSourceTemp] = useURLState("sourceTemp", 1400);
+  const [sourceSubstrateDist, setSourceSubstrateDist] = useURLState("sourceSubstrateDist", 30);
+  const [sourceDiameter, setSourceDiameter] = useURLState("sourceDiameter", 2);
+  const [chamberPressure, setChamberPressure] = useURLState("chamberPressure", 1e-6);
+  const [substrateTemp, setSubstrateTemp] = useURLState("substrateTemp", 100);
 
   const materials: Record<string, { M: number; density: number; dHvap: number; A: number; B: number; n: number; name: string }> = {
     SiO2: { M: 60.08, density: 2.2, dHvap: 450, A: 5.5, B: 26000, n: 1.46, name: "SiO₂" },

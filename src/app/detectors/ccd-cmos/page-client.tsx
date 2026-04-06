@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function CCDvsCMOSPage() {
-  const [pixelSize, setPixelSize] = useState(6.5);
-  const [readNoiseCCD, setReadNoiseCCD] = useState(3);
-  const [readNoiseCMOS, setReadNoiseCMOS] = useState(1.5);
-  const [fullWell, setFullWell] = useState(20000);
-  const [darkCurrent, setDarkCurrent] = useState(0.01);
-  const [exposureTime, setExposureTime] = useState(1);
+  const [pixelSize, setPixelSize] = useURLState("pixelSize", 6.5);
+  const [readNoiseCCD, setReadNoiseCCD] = useURLState("readNoiseCCD", 3);
+  const [readNoiseCMOS, setReadNoiseCMOS] = useURLState("readNoiseCMOS", 1.5);
+  const [fullWell, setFullWell] = useURLState("fullWell", 20000);
+  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 0.01);
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 1);
 
   const darkNoise = Math.sqrt(darkCurrent * exposureTime);
   const ccdSNR = fullWell > 0 ? fullWell / Math.sqrt(fullWell + readNoiseCCD ** 2 + darkNoise ** 2) : 0;

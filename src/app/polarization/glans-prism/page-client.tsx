@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function GlansPrismPage() {
-  const [wavelength, setWavelength] = useState(589);
-  const [nO, setNO] = useState(1.658);
-  const [nE, setNE] = useState(1.486);
-  const [cutAngleDeg, setCutAngleDeg] = useState(38.3);
+  const [wavelength, setWavelength] = useURLState("wavelength", 589);
+  const [nO, setNO] = useURLState("nO", 1.658);
+  const [nE, setNE] = useURLState("nE", 1.486);
+  const [cutAngleDeg, setCutAngleDeg] = useURLState("cutAngleDeg", 38.3);
   const [prismType, setPrismType] = useState<"taylor" | "thompson">("taylor");
 
   const cutAngle = cutAngleDeg * Math.PI / 180;

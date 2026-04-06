@@ -5,15 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 
 export default function CoherentRamanMicroscopyPage() {
-  const [pumpWavelength, setPumpWavelength] = useState(800);
-  const [ramanShift, setRamanShift] = useState(2850);
-  const [na, setNa] = useState(1.0);
-  const [pumpPower, setPumpPower] = useState(100);
-  const [stokesPower, setStokesPower] = useState(80);
-  const [pulseWidth, setPulseWidth] = useState(5);
-  const [repRate, setRepRate] = useState(20);
+  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 800);
+  const [ramanShift, setRamanShift] = useURLState("ramanShift", 2850);
+  const [na, setNa] = useURLState("na", 1.0);
+  const [pumpPower, setPumpPower] = useURLState("pumpPower", 100);
+  const [stokesPower, setStokesPower] = useURLState("stokesPower", 80);
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 5);
+  const [repRate, setRepRate] = useURLState("repRate", 20);
 
   const stokesWavelength = 1 / (1 / (pumpWavelength * 1e-3) - ramanShift / 1e7) * 1e3;
   const energyPump = 1240 / pumpWavelength;
