@@ -20,7 +20,7 @@ const toneMap = {
 
 export default function ResultCard({ label, value, tone = "blue", subtext }: ResultCardProps) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4" role="status" aria-label={`${label}: ${value}`}>
+    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4" role="group" aria-label={`${label}: ${value}`}>
       <p className="text-sm text-gray-400">{label}</p>
       <p className={`text-xl font-bold ${toneMap[tone]}`}>{value}</p>
       {subtext ? <p className="text-sm text-gray-500 mt-1">{subtext}</p> : null}

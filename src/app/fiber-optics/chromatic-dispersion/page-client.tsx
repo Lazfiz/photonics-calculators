@@ -35,7 +35,11 @@ export default function ChromaticDispersionPage() {
 
     // Dispersion length
     const T0 = pulseWidth / (2 * Math.sqrt(Math.LN2)); // ps, 1/e half-width
-    const LD = T0 ** 2 / Math.abs(D) / 1000; // km (convert D to ps²/km)
+    // LD = T0²/|β₂| where β₂ = -λ²·D/(2πc) in ps²/km
+    const lambda_m = wavelength * 1e-9; // nm → m
+    const c_ms = 2.998e8; // m/s
+    const beta2 = -(lambda_m ** 2 * D) / (2 * Math.PI * c_ms) * 1e24; // ps²/km
+    const LD = beta2 !== 0 ? T0 ** 2 / Math.abs(beta2) : Infinity; // km
 
     // Maximum data rate (3dB bandwidth limited by dispersion)
     // B_max ≈ 0.44 / (|D| · L · Δλ) [THz] for Gaussian
@@ -58,7 +62,7 @@ export default function ChromaticDispersionPage() {
       x: [zeroDispWavelength, zeroDispWavelength], y: [-5, 30], type: "scatter" as const, mode: "lines" as const,
       name: "λ₀", line: { color: "#fbbf24", dash: "dash" },
     }];
-  }, [dispersionCoeff, dispersionSlope, zeroDispWavelength, wavelength, calc]);
+  }, [calc.D, zeroDispWavelength, wavelength]);
 
   const lengthData = useMemo(() => {
     const lengths = Array.from({ length: 100 }, (_, i) => (i + 1) * 2);
@@ -75,7 +79,7 @@ export default function ChromaticDispersionPage() {
       { x: lengths, y: broadening, type: "scatter" as const, mode: "lines" as const, name: "Pulse Width (ps)", line: { color: "#22c55e" }, yaxis: "y" },
       { x: lengths, y: penalty, type: "scatter" as const, mode: "lines" as const, name: "Penalty (dB)", line: { color: "#f97316" }, yaxis: "y2" },
     ];
-  }, [calc, sourceLineWidth, pulseWidth, modulationBW]);
+  }, [calc.D, sourceLineWidth, pulseWidth, modulationBW]);
 
   return (
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Chromatic Dispersion (CD)" description="Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface InputSliderProps {
   label: string;
@@ -16,10 +16,9 @@ export default function InputSlider({ label, value, onChange, min, max, step = 1
   const [localText, setLocalText] = useState<string | null>(null);
   const [localSlider, setLocalSlider] = useState(value);
 
-  // Sync slider when parent value changes externally
-  if (localSlider !== value && localText === null) {
-    setLocalSlider(value);
-  }
+  useEffect(() => {
+    if (localText === null) setLocalSlider(value);
+  }, [value, localText]);
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const text = e.target.value;

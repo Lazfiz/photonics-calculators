@@ -2,9 +2,7 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-
-// Dynamic Plotly import - only loaded when needed
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+import { PlotlyChart } from "./plotly-chart";
 
 interface ChartPanelProps {
   data: Record<string, unknown>[];
@@ -28,7 +26,7 @@ class ChartErrorBoundary extends React.Component<
       return (
         <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className ?? ""}`.trim()}>
           {title ? <h3 className="text-lg font-semibold mb-3">{title}</h3> : null}
-          <Plot
+          <PlotlyChart
             data={data as any[]}
             layout={{
               paper_bgcolor: "transparent",
@@ -67,7 +65,7 @@ export default function ChartPanel({ data, layout = {}, config = {}, title, clas
     return (
       <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim()}>
         {title ? <h3 className="text-lg font-semibold mb-3">{title}</h3> : null}
-        <Plot
+        <PlotlyChart
           data={data as any[]}
           layout={{
             paper_bgcolor: "transparent",

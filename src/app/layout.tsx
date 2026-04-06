@@ -1,5 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#030712",
+};
 
 export const metadata: Metadata = {
   title: {
@@ -8,6 +15,9 @@ export const metadata: Metadata = {
   },
   description: "Free interactive calculators and simulators for optics, photonics, laser safety, fiber optics, thin films, imaging, spectroscopy, and more.",
   keywords: ["photonics", "optics", "calculators", "laser", "fiber optics", "spectroscopy", "thin film"],
+  alternates: {
+    canonical: process.env.NEXT_PUBLIC_SITE_URL || "https://photonics-calculators.vercel.app",
+  },
   openGraph: {
     title: "Photonics Calculators",
     description: "541 interactive photonics, optics & laser tools — free and open source.",

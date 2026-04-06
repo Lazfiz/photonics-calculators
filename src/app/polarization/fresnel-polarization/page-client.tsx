@@ -24,8 +24,9 @@ function fresnelCoefficients(n1: number, n2: number, thetaI: number) {
 
   const Rs = rs * rs;
   const Rp = rp * rp;
-  const Ts = (n2 * cosT) / (n1 * cosI) * ts * ts;
-  const Tp = (n2 * cosT) / (n1 * cosI) * tp * tp;
+  const cosISafe = Math.max(cosI, 1e-10); // guard grazing incidence division
+  const Ts = (n2 * cosT) / cosISafe * ts * ts;
+  const Tp = (n2 * cosT) / cosISafe * tp * tp;
 
   return { rs, rp, ts, tp, Rs, Rp, Ts, Tp, thetaT };
 }

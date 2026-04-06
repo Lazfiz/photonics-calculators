@@ -17,74 +17,46 @@ export default function DielectricStackPage() {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 2);
     // Transfer matrix method for alternating H/L quarter-wave stack
     const R = wls.map(wl => {
-      // Characteristic matrix for each layer
-      // M_j = [[cos(δ), i·sin(δ)/η], [i·η·sin(δ), cos(δ)]]
-      // For normal incidence: η = n for TE
+      // Transfer matrix method: M = [[A, iB], [iC, D]] where A,B,C,D are real
+      // For lossless dielectric at normal incidence: η = n (TE)
+      // Single layer: M_j = [[cos(δ), i·sin(δ)/n], [i·n·sin(δ), cos(δ)]]
       const dH = designWl / (4 * nH);
       const dL = designWl / (4 * nL);
       const deltaH = (2 * Math.PI * nH * dH) / wl;
       const deltaL = (2 * Math.PI * nL * dL) / wl;
 
-      // Build matrix product: (H L)^numPairs
-      let Mr = 1, Mi = 0, Nr = 0, Ni = 0;
-      // Start with identity
+      // Track all 4 real elements of the 2x2 characteristic matrix
+      let A = 1, B = 0, C = 0, D = 1;
+
       for (let p = 0; p < numPairs; p++) {
-        // Multiply by H layer
+        // H layer matrix multiplication
         const cH = Math.cos(deltaH), sH = Math.sin(deltaH);
-        const eHr = Mr, eHi = Mi;
-        const fHr = Nr, fHi = Ni;
-        Mr = eHr * cH + fHr * (-sH / nH);
-        Mi = eHi * cH + fHi * (-sH / nH);
-        Nr = eHr * (nH * sH) + fHr * cH;
-        Ni = eHi * (nH * sH) + fHi * cH;
-        // Multiply by L layer
+        const nA = A * cH - B * nH * sH;
+        const nB = A * sH / nH + B * cH;
+        const nC = C * cH - D * nH * sH;
+        const nD = C * sH / nH + D * cH;
+        A = nA; B = nB; C = nC; D = nD;
+
+        // L layer matrix multiplication
         const cL = Math.cos(deltaL), sL = Math.sin(deltaL);
-        const eLr = Mr, eLi = Mi;
-        const fLr = Nr, fLi = Ni;
-        Mr = eLr * cL + fLr * (-sL / nL);
-        Mi = eLi * cL + fLi * (-sL / nL);
-        Nr = eLr * (nL * sL) + fLr * cL;
-        Ni = eLi * (nL * sL) + fLi * cL;
+        const nA2 = A * cL - B * nL * sL;
+        const nB2 = A * sL / nL + B * cL;
+        const nC2 = C * cL - D * nL * sL;
+        const nD2 = C * sL / nL + D * cL;
+        A = nA2; B = nB2; C = nC2; D = nD2;
       }
 
-      // Reflection from admittance: Y = C/B, r = (nInc - Y)/(nInc + Y)
-      // B = M11 + M12*nSub, C = M21 + M22*nSub
-      // M = [[Mr, Mi], [Nr, Ni]] where real=M11, imag=M12 etc.
-      const Br = Mr;              // M11 (real)
-      const Bi = Ni * nSub;       // M12 * nSub (imaginary * real = imaginary)
-      const Cr = Nr * nSub;       // M21 * nSub (imaginary * real = imaginary)
-      const Ci = Mr;              // wait — let me redo this properly
-      // M11 = Mr (real), M12 = Mi (imaginary)
-      // M21 = Nr (imaginary), M22 = Mr (real) — for quarter-wave, cos(δ) is shared
-      // Actually: M = [[Mr, Mi], [Nr, Mr]] only if cos is the same, which it's not
-      // Let me use the correct mapping:
-      // The matrix is stored as: M11 = Mr, M12 = i*Mi, M21 = i*Nr, M22 = Mr (approx)
-      // More precisely from the multiplication loop:
-      // Mr = M11_real, Mi = M12_imag, Nr = M21_imag, and M22_real needs tracking
-      // Looking at the code: after loop, Mr=M11_real, Mi=M12_imag, Nr=M21_imag
-      // M22_real should be tracked too. Let me add M22r tracking.
+      // Y = (M21 + M22·nSub) / (M11 + M12·nSub) = (iC + iD·nSub) / (A + iB·nSub)
+      const Bn = B * nSub;
+      const Cn = C + D * nSub;
+      const denom = A * A + Bn * Bn;
+      const Yr = Cn * Bn / denom;
+      const Yi = Cn * A / denom;
 
-      // Actually the loop multiplies correctly but only tracks 4 values.
-      // Let me just use what we have. For a symmetric (HL)^N stack at normal incidence:
-      // The matrix is [[A, iB], [iC, D]] where A=D (reciprocal)
-      // So M22_real ≈ Mr
-      const B_real = Mr;         // M11*nSub_real = M11*nSub (nSub is real)
-      const B_imag = Mi * nSub;  // M12*nSub (M12 is purely imaginary)
-      const C_real = Nr * nSub;  // M21*nSub (M21 is purely imaginary)  
-      const C_imag = Mr;         // M22*nSub (M22≈M11 for reciprocal stack)
-
-      // Y = C/B
-      const denom = B_real * B_real + B_imag * B_imag;
-      const Y_real = (C_real * B_real + C_imag * B_imag) / denom;
-      const Y_imag = (C_imag * B_real - C_real * B_imag) / denom;
-
-      // r = (nInc - Y)/(nInc + Y), R = |r|^2
-      const num_r = nInc - Y_real;
-      const num_i = -Y_imag;
-      const den_r = nInc + Y_real;
-      const den_i = Y_imag;
-      const R_val = (num_r * num_r + num_i * num_i) / (den_r * den_r + den_i * den_i);
-      return R_val;
+      // r = (nInc - Y)/(nInc + Y), R = |r|²
+      const nr = nInc - Yr, ni = -Yi;
+      const dr = nInc + Yr, di = Yi;
+      return (nr * nr + ni * ni) / (dr * dr + di * di);
     });
     return [
       { x: wls, y: R, type: "scatter" as const, mode: "lines" as const, name: "Reflectance", line: { color: "#60a5fa" } },
