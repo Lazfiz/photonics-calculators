@@ -119,7 +119,7 @@ export default function AnsiIecComparisonPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6 font-mono text-sm text-gray-300">
         <p className="text-gray-500 mb-1">Key Formulas:</p>
         <p>ANSI (400-700nm, t≤0.7s): MPE = 1.8×10⁻³ × t<sup>0.75</sup> J/cm²</p>
-        <p>ANSI (700-1050nm): MPE = 1.8×10⁻³ × C<sub>A</sub> × t<sup>0.75</sup> J/cm², where C<sub>A</sub> = 10<sup>0.02(λ-0.7)</sup></p>
+        <p>ANSI (700-1050nm): MPE = 1.8×10⁻³ × C<sub>A</sub> × t<sup>0.75</sup> J/cm², where C<sub>A</sub> = 10<sup>0.002(λ-700)</sup></p>
         <p>IEC Class 1 AEL: ~7.9×10⁻⁴ × t<sup>0.75</sup> J (into 7mm aperture)</p>
       </div>
 

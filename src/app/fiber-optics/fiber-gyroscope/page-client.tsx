@@ -22,11 +22,11 @@ export default function FiberGyroscopePage() {
     const N = 1; // number of turns (effective for Sagnac)
     const L = fiberLength;
 
-    // Sagnac effect: Δφ = 8πNAΩ / (λc)
-    // Scale factor: S = 4πLA / (λc) (rad/s per rad/s)
+    // Sagnac effect: Δφ = 4πLRΩ / (λc) where L = total fiber length, R = coil radius
+    // Scale factor: S = 4πLR / (λc) (rad/s per rad/s)
     const c = 3e8;
-    const scaleFactor = 4 * Math.PI * L * A / (lambda * c); // rad/(rad/s)
-    const sagnacConst = 8 * Math.PI * L * A / (lambda * c); // Δφ = sagnacConst × Ω
+    const scaleFactor = 4 * Math.PI * L * R / (lambda * c); // rad/(rad/s)
+    const sagnacConst = 4 * Math.PI * L * R / (lambda * c); // Δφ = sagnacConst × Ω
 
     // For Earth rotation: Ω = 15°/h = 7.27e-5 rad/s
     const earthRotation = 7.27e-5;
@@ -134,8 +134,8 @@ export default function FiberGyroscopePage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Formulas</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
-          <p>Sagnac: Δφ = 8πNALΩ / (λc)</p>
-          <p>Scale factor: S = 4πLA / (λc)</p>
+          <p>Sagnac: Δφ = 4πLRΩ / (λc)</p>
+          <p>Scale factor: S = 4πLR / (λc)</p>
           <p>Shot noise: σ_φ = √(2hc / (λP_det))</p>
           <p>ARW = σ_φ / S [rad/s/√Hz]</p>
           <p>Min detectable: Ω_min = σ_φ × λc / (8πLA)</p>

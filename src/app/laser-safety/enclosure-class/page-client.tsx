@@ -52,7 +52,7 @@ export default function EnclosureClassPage() {
 
     // Accessible Emission Limit (AEL) for Class 1
     // Class 1 AEL: emission ≤ MPE at closest point of human access
-    const class1AEL = mpeIrr * Math.PI * 0.1 * 0.1; // W (7mm limiting aperture)
+    const class1AEL = mpeIrr * Math.PI * 0.35 * 0.35; // W (7mm limiting aperture, r=3.5mm=0.35cm)
 
     // Determine enclosure class
     const emissionPower = powerThroughAperture;
