@@ -13,13 +13,12 @@ export default function AttenuationPage() {
     // Wavelength-dependent attenuation model (dB/km)
     // Rayleigh scattering ~ λ⁻⁴, IR absorption exponential, OH peak at 1383nm
     const wlUm = wl / 1000; // nm → µm
-    // Rayleigh coefficient differs by fiber type (Ge doping level affects scattering)
-    // SMF-28: lower Ge → A_R ≈ 0.78 dB/km·µm⁴
-    // DSF: higher Ge → A_R ≈ 0.85 dB/km·µm⁴
-    // NZ-DSF: moderate Ge → A_R ≈ 0.82 dB/km·µm⁴
-    const aRayleigh = type === "SMF28" ? 0.78 :
-                     type === "DSF" ? 0.85 : 0.82;
-    const rayleigh = aRayleigh * Math.pow(1.55 / wlUm, 4);
+    // Rayleigh scattering: α_R = A_R / λ^4 (Agrawal, Fiber-Optic Communication Systems)
+    // A_R in dB/(km·µm⁴), λ in µm → gives dB/km
+    // SMF-28: A_R ≈ 0.80, DSF: A_R ≈ 0.87, NZ-DSF: A_R ≈ 0.83
+    const aRayleigh = type === "SMF28" ? 0.80 :
+                     type === "DSF" ? 0.87 : 0.83;
+    const rayleigh = aRayleigh / Math.pow(wlUm, 4);
     // IR absorption (fundamental silica property — same for all types)
     const irAbsorption = 6e10 * Math.exp(-48 / wlUm);
     // OH peak at 1383nm — NZ-DSF typically low-water-peak
