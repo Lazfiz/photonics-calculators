@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useId } from "react";
+import { useMemo, useId, useRef, useState, useEffect } from "react";
 
 interface Trace {
   x?: (number | string)[];
@@ -43,25 +43,28 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-export default function SimpleChart({ data, layout = {}, config = {}, title, className = "" }: SimpleChartProps) {
-  // Check if any trace uses 3D or special types that need Plotly
-  const needsPlotly = useMemo(() => {
-    return data.some(t =>
-      t.type === "scatter3d" ||
-      t.type === "surface" ||
-      t.type === "heatmap" ||
-      t.type === "contour" ||
-      t.type === "scatterpolar" ||
-      t.type === "scattergl" ||
-      t.type === "pie"
-    );
-  }, [data]);
+/** Wraps children and reports container width via ResizeObserver */
+function ResponsiveContainer({ children, className }: { children: (width: number) => React.ReactNode; className: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) setWidth(entry.contentRect.width);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <div ref={ref} className={className}>
+      {children(width > 0 ? width : 700)}
+    </div>
+  );
+}
 
-  // If we need Plotly for 3D/special charts, fall back
-  if (needsPlotly) {
-    // Dynamic import to avoid bundling Plotly for simple charts
-    return <PlotlyFallback data={data} layout={layout} config={config} title={title} className={className} />;
-  }
+function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: Trace[]; layout: Record<string, unknown>; title?: string; className: string }) {
+  const chartId = useId().replace(/:/g, "");
 
   const w = typeof layout.width === "number" ? layout.width : 700;
   const h = typeof layout.height === "number" ? layout.height : 400;
@@ -77,16 +80,10 @@ export default function SimpleChart({ data, layout = {}, config = {}, title, cla
   const yaxis = layout.yaxis as Record<string, unknown> | undefined;
   const showLegend = layout.showlegend !== false && data.length > 1;
 
-  // Compute scales
-  // Handle title being string or { text: string }
   const xLabel = typeof xaxis?.title === "string" ? xaxis.title : (xaxis?.title as Record<string, string>)?.text || "";
   const yLabel = typeof yaxis?.title === "string" ? yaxis.title : (yaxis?.title as Record<string, string>)?.text || "";
   const gridColor = (xaxis?.gridcolor as string) || (yaxis?.gridcolor as string) || "#1f2937";
   const textColor = "#9ca3af";
-
-  // Get all x/y values across traces
-  // Unique ID for this chart instance (prevents clipPath collisions across multiple charts)
-  const chartId = useId().replace(/:/g, "");
 
   const allX = data.flatMap(t => ((t.x ?? []) as (number | string)[]).slice(0, 10000).map(Number)).filter(n => !isNaN(n));
   const allY = data.flatMap(t => ((t.y ?? []) as (number | string)[]).slice(0, 10000).map(Number)).filter(n => !isNaN(n));
@@ -98,13 +95,11 @@ export default function SimpleChart({ data, layout = {}, config = {}, title, cla
   let yMin = Math.min(...allY);
   let yMax = Math.max(...allY);
 
-  // Apply ranges if specified
   const xRange = xaxis?.range as number[] | undefined;
   const yRange = yaxis?.range as number[] | undefined;
   if (xRange) { xMin = xRange[0]; xMax = xRange[1]; }
   if (yRange) { yMin = yRange[0]; yMax = yRange[1]; }
 
-  // Log scale support — save raw bounds for tick generation
   const xLog = xaxis?.type === "log";
   const yLog = yaxis?.type === "log";
   const rawXMin = xMin, rawXMax = xMax, rawYMin = yMin, rawYMax = yMax;
@@ -128,7 +123,6 @@ export default function SimpleChart({ data, layout = {}, config = {}, title, cla
     return mt + plotH - ((n - yMin) / (yMax - yMin)) * plotH;
   };
 
-  // Compute nice tick values
   function niceTicks(min: number, max: number, count: number, log: boolean): number[] {
     if (log) {
       const lo = Math.ceil(Math.log10(Math.max(min, 1e-10)));
@@ -164,7 +158,6 @@ export default function SimpleChart({ data, layout = {}, config = {}, title, cla
     return v.toFixed(2);
   }
 
-  // Build paths for each trace
   const paths = data.map(trace => {
     const tx = trace.x ?? [];
     const ty = trace.y ?? [];
@@ -179,22 +172,22 @@ export default function SimpleChart({ data, layout = {}, config = {}, title, cla
     return points;
   });
 
-  // For bar charts
   const barTraces = data.filter(t => t.type === "bar");
   const lineTraces = data.filter(t => t.type !== "bar");
 
-  // Build legend items
   const legendItems = data.filter(t => t.name).map(t => ({
     name: t.name!,
     color: t.line?.color || t.marker?.color || "#60a5fa",
     dash: t.line?.dash,
   }));
 
-  // Responsive wrapper
+  const aspectRatio = h / w;
+  const dynamicH = Math.round(w * aspectRatio);
+
   return (
     <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim()}>
       {title ? <h3 className="text-lg font-semibold mb-3">{title}</h3> : null}
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ maxWidth: w }}>
+      <svg viewBox={`0 0 ${w} ${dynamicH}`} className="w-full">
         {/* Grid lines */}
         {xTicks.map(v => (
           <line key={`xg${v}`} x1={toSvgX(v)} y1={mt} x2={toSvgX(v)} y2={mt + plotH}
@@ -223,7 +216,7 @@ export default function SimpleChart({ data, layout = {}, config = {}, title, cla
 
         {/* X axis label */}
         {xLabel && (
-          <text x={ml + plotW / 2} y={h - 4} textAnchor="middle" fill={textColor} fontSize={13}>
+          <text x={ml + plotW / 2} y={dynamicH - 4} textAnchor="middle" fill={textColor} fontSize={13}>
             {xLabel}
           </text>
         )}
@@ -266,19 +259,16 @@ export default function SimpleChart({ data, layout = {}, config = {}, title, cla
           const dash = getDash(trace.line?.dash);
           const mode = trace.mode || "lines";
           const showFill = trace.fill && trace.fill !== "none";
-          const fillDir = trace.fill; // "tozeroy", "toself", etc.
+          const fillDir = trace.fill;
 
-          // Build SVG path
           const d = pts.join(" L");
 
-          // Fill path (tozeroy = fill to bottom)
           const fillPath = showFill && fillDir === "tozeroy" && pts.length > 0
             ? `M${pts[0]} L${pts.join(" L")} L${pts[pts.length - 1].split(",")[0]},${mt + plotH} L${pts[0].split(",")[0]},${mt + plotH} Z`
             : showFill && fillDir === "toself" && pts.length > 0
             ? `M${pts[0]} L${pts.join(" L")} Z`
             : null;
 
-          // Clip path to plot area
           const clipId = `${chartId}-clip-${ti}`;
           return (
             <g key={`trace${ti}`} clipPath={`url(#${clipId})`}>
@@ -314,6 +304,46 @@ export default function SimpleChart({ data, layout = {}, config = {}, title, cla
         )}
       </svg>
     </div>
+  );
+}
+
+export default function SimpleChart({ data, layout = {}, config = {}, title, className = "" }: SimpleChartProps) {
+  const needsPlotly = useMemo(() => {
+    return data.some(t =>
+      t.type === "scatter3d" ||
+      t.type === "surface" ||
+      t.type === "heatmap" ||
+      t.type === "contour" ||
+      t.type === "scatterpolar" ||
+      t.type === "scattergl" ||
+      t.type === "pie"
+    );
+  }, [data]);
+
+  if (needsPlotly) {
+    return <PlotlyFallback data={data} layout={layout} config={config} title={title} className={className} />;
+  }
+
+  const layoutWidth = typeof layout.width === "number" ? layout.width : undefined;
+  const wrapperClassName = `bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim();
+
+  // If a fixed width is specified, render directly (no ResizeObserver needed)
+  if (layoutWidth) {
+    return <SimpleChartInner data={data} layout={layout} title={title} className={className} />;
+  }
+
+  // Responsive: measure container width and pass it as viewBox width
+  return (
+    <ResponsiveContainer className={wrapperClassName}>
+      {(containerWidth) => (
+        <SimpleChartInner
+          data={data}
+          layout={{ ...layout, width: containerWidth }}
+          title={title}
+          className=""
+        />
+      )}
+    </ResponsiveContainer>
   );
 }
 
