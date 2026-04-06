@@ -48,7 +48,10 @@ class ChartErrorBoundary extends React.Component<
   }
 }
 
-function needsPlotly(data: Record<string, unknown>[]): boolean {
+function needsPlotly(data: Record<string, unknown>[], layout: Record<string, unknown>): boolean {
+  if (!data || data.length === 0) return false;
+  // Check layout for dual Y-axis
+  if (layout.yaxis2) return true;
   return data.some(t => {
     const type = t.type as string | undefined;
     return type === "scatter3d" || type === "surface" || type === "heatmap" ||
@@ -60,7 +63,7 @@ function needsPlotly(data: Record<string, unknown>[]): boolean {
 const SimpleChart = dynamic(() => import("./simple-chart").then(m => ({ default: m.default })), { ssr: false });
 
 export default function ChartPanel({ data, layout = {}, config = {}, title, className = "" }: ChartPanelProps) {
-  if (needsPlotly(data)) {
+  if (needsPlotly(data, layout)) {
     return (
       <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim()}>
         {title ? <h3 className="text-lg font-semibold mb-3">{title}</h3> : null}

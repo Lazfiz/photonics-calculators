@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useId } from "react";
 
 interface Trace {
   x?: (number | string)[];
@@ -85,13 +85,13 @@ export default function SimpleChart({ data, layout = {}, config = {}, title, cla
   const textColor = "#9ca3af";
 
   // Get all x/y values across traces
-  // Guard: skip rendering if no data
-  if (!data || data.length === 0) return null;
+  // Unique ID for this chart instance (prevents clipPath collisions across multiple charts)
+  const chartId = useId().replace(/:/g, "");
 
   const allX = data.flatMap(t => ((t.x ?? []) as (number | string)[]).slice(0, 10000).map(Number)).filter(n => !isNaN(n));
   const allY = data.flatMap(t => ((t.y ?? []) as (number | string)[]).slice(0, 10000).map(Number)).filter(n => !isNaN(n));
 
-  if (allX.length === 0 && allY.length === 0) return null;
+  if (allX.length === 0 || allY.length === 0) return null;
 
   let xMin = Math.min(...allX);
   let xMax = Math.max(...allX);
@@ -104,9 +104,10 @@ export default function SimpleChart({ data, layout = {}, config = {}, title, cla
   if (xRange) { xMin = xRange[0]; xMax = xRange[1]; }
   if (yRange) { yMin = yRange[0]; yMax = yRange[1]; }
 
-  // Log scale support
+  // Log scale support — save raw bounds for tick generation
   const xLog = xaxis?.type === "log";
   const yLog = yaxis?.type === "log";
+  const rawXMin = xMin, rawXMax = xMax, rawYMin = yMin, rawYMax = yMax;
   if (xLog) { xMin = Math.log10(Math.max(xMin, 1e-10)); xMax = Math.log10(Math.max(xMax, 1e-10)); }
   if (yLog) { yMin = Math.log10(Math.max(yMin, 1e-10)); yMax = Math.log10(Math.max(yMax, 1e-10)); }
 
@@ -152,8 +153,8 @@ export default function SimpleChart({ data, layout = {}, config = {}, title, cla
     return ticks;
   }
 
-  const xTicks = niceTicks(xMin, xMax, 6, xLog);
-  const yTicks = niceTicks(yMin, yMax, 6, yLog);
+  const xTicks = niceTicks(rawXMin, rawXMax, 6, xLog);
+  const yTicks = niceTicks(rawYMin, rawYMax, 6, yLog);
 
   function formatTick(v: number): string {
     if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(1) + "M";
@@ -278,7 +279,7 @@ export default function SimpleChart({ data, layout = {}, config = {}, title, cla
             : null;
 
           // Clip path to plot area
-          const clipId = `clip-${ti}`;
+          const clipId = `${chartId}-clip-${ti}`;
           return (
             <g key={`trace${ti}`} clipPath={`url(#${clipId})`}>
               <clipPath id={clipId}>
