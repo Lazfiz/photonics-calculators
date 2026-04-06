@@ -43,16 +43,16 @@ export default function BraggReflectorPage() {
       const rH = (1 - nH) / (1 + nH);
       const rL = (1 - nL) / (1 + nL);
       // Simplified: use effective reflectance formula for N pairs
-      // R = ((nH^(2N)*nSub - nInc^2)/(nH^(2N)*nSub + nInc^2))^2
-      const nInc = 1.0;
+      // Effective admittance at design wavelength (Macleod)
+      // Y = (nH/nL)^(2N) · nSub
       const ratio = Math.pow(nH / nL, 2 * pairs);
-      const reff = (ratio - nSub) / (ratio + nSub);
-      // Wavelength dependence: scale delta
+      const Y = ratio * nSub;
+      const reff = (nInc - Y) / (nInc + Y);
+
+      // Wavelength-dependent modulation (Airy-like approximation)
       const f = designWavelength / wl;
-      const r = (reff * Math.sin(pairs * Math.PI * f)) / (1 + reff * reff * Math.pow(Math.sin(pairs * Math.PI * f), 2));
-      // More accurate: R(λ) = (r0 + r1*exp(2iδ)) / (1 + r0*r1*exp(2iδ)) pattern
-      // Simplified approximation:
-      const R_approx = Math.pow(reff * Math.sin(pairs * Math.PI * f) / Math.sqrt(1 + reff * reff * Math.pow(Math.sin(pairs * Math.PI * f), 2)), 2);
+      const sinTerm = Math.sin(pairs * Math.PI * f);
+      const R_approx = reff * reff * sinTerm * sinTerm / (1 - reff * reff + reff * reff * sinTerm * sinTerm);
       return R_approx;
     });
     return [{ x: wls, y: R, type: "scatter" as const, mode: "lines" as const, name: "Reflectance", line: { color: "#60a5fa" } }];
