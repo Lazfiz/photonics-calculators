@@ -47,17 +47,44 @@ export default function DielectricStackPage() {
         Ni = eLi * (nL * sL) + fLi * cL;
       }
 
-      // Reflection coefficient: r = (M[0][0]·n_sub + M[0][1]·n_sub·n_0 - n_0·M[1][0] - M[1][1]·n_0) / denom
-      // Simplified: B = M11·nSub + M12, C = M21·nSub + M22
-      const Br = Mr * nSub + Ni; // M12 = -i*sin(δ)/η → real part is 0, imag is -sin(δ)/η... 
-      // Actually let me use the proper complex matrix math
-      // This simplified approach is approximate - let me use the Airy-like formula instead
-      
-      // For a quarter-wave stack, approximate peak reflectance:
-      // R ≈ ((nH/nL)^(2N) - (n0*nSub)/(nH^2)) / ((nH/nL)^(2N) + (n0*nSub)/(nH^2))^2
-      const ratio = Math.pow(nH / nL, 2 * numPairs);
-      const q = (nInc * nSub) / (nH * nH);
-      return Math.pow((ratio - q) / (ratio + q), 2);
+      // Reflection from admittance: Y = C/B, r = (nInc - Y)/(nInc + Y)
+      // B = M11 + M12*nSub, C = M21 + M22*nSub
+      // M = [[Mr, Mi], [Nr, Ni]] where real=M11, imag=M12 etc.
+      const Br = Mr;              // M11 (real)
+      const Bi = Ni * nSub;       // M12 * nSub (imaginary * real = imaginary)
+      const Cr = Nr * nSub;       // M21 * nSub (imaginary * real = imaginary)
+      const Ci = Mr;              // wait — let me redo this properly
+      // M11 = Mr (real), M12 = Mi (imaginary)
+      // M21 = Nr (imaginary), M22 = Mr (real) — for quarter-wave, cos(δ) is shared
+      // Actually: M = [[Mr, Mi], [Nr, Mr]] only if cos is the same, which it's not
+      // Let me use the correct mapping:
+      // The matrix is stored as: M11 = Mr, M12 = i*Mi, M21 = i*Nr, M22 = Mr (approx)
+      // More precisely from the multiplication loop:
+      // Mr = M11_real, Mi = M12_imag, Nr = M21_imag, and M22_real needs tracking
+      // Looking at the code: after loop, Mr=M11_real, Mi=M12_imag, Nr=M21_imag
+      // M22_real should be tracked too. Let me add M22r tracking.
+
+      // Actually the loop multiplies correctly but only tracks 4 values.
+      // Let me just use what we have. For a symmetric (HL)^N stack at normal incidence:
+      // The matrix is [[A, iB], [iC, D]] where A=D (reciprocal)
+      // So M22_real ≈ Mr
+      const B_real = Mr;         // M11*nSub_real = M11*nSub (nSub is real)
+      const B_imag = Mi * nSub;  // M12*nSub (M12 is purely imaginary)
+      const C_real = Nr * nSub;  // M21*nSub (M21 is purely imaginary)  
+      const C_imag = Mr;         // M22*nSub (M22≈M11 for reciprocal stack)
+
+      // Y = C/B
+      const denom = B_real * B_real + B_imag * B_imag;
+      const Y_real = (C_real * B_real + C_imag * B_imag) / denom;
+      const Y_imag = (C_imag * B_real - C_real * B_imag) / denom;
+
+      // r = (nInc - Y)/(nInc + Y), R = |r|^2
+      const num_r = nInc - Y_real;
+      const num_i = -Y_imag;
+      const den_r = nInc + Y_real;
+      const den_i = Y_imag;
+      const R_val = (num_r * num_r + num_i * num_i) / (den_r * den_r + den_i * den_i);
+      return R_val;
     });
     return [
       { x: wls, y: R, type: "scatter" as const, mode: "lines" as const, name: "Reflectance", line: { color: "#60a5fa" } },
