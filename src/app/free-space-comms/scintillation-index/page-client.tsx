@@ -20,10 +20,10 @@ export default function ScintillationIndexPage() {
     const L = range;
     const isPlane = waveType === "plane";
 
-    // Rytov variance
+    // Rytov variance (Andrews & Phillips)
     const sigmaR2 = isPlane
       ? 1.23 * cn2 * Math.pow(k, 7 / 6) * Math.pow(L, 11 / 6)
-      : 0.5 * 1.23 * cn2 * Math.pow(k, 7 / 6) * Math.pow(L, 11 / 6);
+      : 0.496 * cn2 * Math.pow(k, 7 / 6) * Math.pow(L, 11 / 6);
 
     // Fried parameter
     const r0 = Math.pow(0.423 * Math.pow(k, 2) * cn2 * L, -3 / 5) * 1e2; // cm
@@ -59,7 +59,7 @@ export default function ScintillationIndexPage() {
     const lambda = wavelength * 1e-9;
     const k = 2 * Math.PI / lambda;
     const isPlane = waveType === "plane";
-    const coeff = isPlane ? 1.23 : 0.5 * 1.23;
+    const coeff = isPlane ? 1.23 : 0.496;
 
     const weak = ranges.map((L) => coeff * cn2 * Math.pow(k, 7 / 6) * Math.pow(L, 11 / 6));
     const strong = weak.map((sr) => sr <= 1 ? sr : 1 + 1.86 * Math.pow(sr, -1 / 6));
@@ -75,7 +75,7 @@ export default function ScintillationIndexPage() {
     const lambda = wavelength * 1e-9;
     const k = 2 * Math.PI / lambda;
     const isPlane = waveType === "plane";
-    const coeff = isPlane ? 1.23 : 0.5 * 1.23;
+    const coeff = isPlane ? 1.23 : 0.496;
     const L = range;
 
     const vals = cn2vals.map((c) => {

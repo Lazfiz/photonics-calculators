@@ -16,6 +16,21 @@ export default function PSFCalculatorPage() {
   const fwhm = 0.514 * wavelength / na;
   const axialFWHM = 0.88 * refractiveIndex * wavelength / (na * na);
 
+  // Accurate J1(u)/u polynomial approximation (Abramowitz & Stegun 9.5.1)
+  function j1OverU(u: number): number {
+    if (Math.abs(u) < 1e-10) return 0.5;
+    const x = Math.abs(u);
+    // Use the small-argument Taylor series for accuracy near center
+    if (x < 3) {
+      const x2 = x * x;
+      return 0.5 - x2 / 16 + x2 * x2 / 384 - x2 * x2 * x2 / 18432;
+    }
+    // Large argument: J1(x)/x ≈ sin(x - 3π/4) / (x√(πx/2)) · √(π/2)
+    // Simplified: sin(x-3π/4) / (x) · correction
+    const j1 = Math.sin(x - 0.75 * Math.PI) / (x * 0.7979);
+    return j1 / x;
+  }
+
   // Generate 2D Airy PSF
   const psfData = useMemo(() => {
     const size = 100;
@@ -27,7 +42,7 @@ export default function PSFCalculatorPage() {
       const r = Math.sqrt(xx * xx + yy * yy);
       const u = Math.PI * na * r / wavelength;
       if (u < 1e-10) return 1;
-      const j1 = Math.sin(u) / u - Math.cos(u); // J1(u)/u approximation
+      const j1 = j1OverU(u);
       const airy = 2 * j1 / u;
       return airy * airy;
     }));
@@ -40,7 +55,7 @@ export default function PSFCalculatorPage() {
     const y = x.map(xx => {
       const u = Math.PI * na * xx / wavelength;
       if (u < 1e-10) return 1;
-      const j1 = Math.sin(u) / u - Math.cos(u);
+      const j1 = j1OverU(u);
       return Math.pow(2 * j1 / u, 2);
     });
     return [

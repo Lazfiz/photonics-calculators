@@ -11,7 +11,8 @@ export default function AnsiIecComparisonPage() {
   const [exposureTime, setExposureTime] = useState(0.25);
   const [pulseEnergy, setPulseEnergy] = useState(1); // µJ
 
-  // ANSI Z136.1 MPE (J/cm²) for intrabeam, 400-700nm, t<0.7s
+  // ANSI Z136.1 MPE (J/cm²) for intrabeam, 400-700nm
+  // Returns radiant exposure in J/cm²
   const ansiMPE = (wl: number, t: number) => {
     const lam = wl / 1000; // µm
     if (lam >= 0.4 && lam < 0.7) {
@@ -26,40 +27,43 @@ export default function AnsiIecComparisonPage() {
     return 1e-3 * Math.pow(t, 0.75);
   };
 
-  // IEC 60825-1 AEL (approximate Class 1 limits, J)
-  const iecAEL = (wl: number, t: number) => {
+  // IEC 60825-1 AEL (J into 7mm aperture). Convert to J/cm² for comparison.
+  const pupilArea = Math.PI * 0.35 * 0.35; // cm² (7mm diameter)
+  const iecMPE = (wl: number, t: number) => {
     const lam = wl / 1000;
     if (lam >= 0.4 && lam < 0.7) {
-      if (t <= 0.7) return 7.9e-4 * Math.pow(t, 0.75); // per 7mm aperture
-      return 3.9e-4 * Math.pow(t, 0.75);
+      if (t <= 0.7) return 7.9e-4 * Math.pow(t, 0.75) / pupilArea;
+      return 3.9e-4 * Math.pow(t, 0.75) / pupilArea;
     }
     if (lam >= 0.7 && lam < 1.05) {
       const C4 = Math.pow(10, 0.02 * (lam - 0.7));
-      return 7.9e-4 * C4 * Math.pow(Math.min(t, 0.7), 0.75);
+      return 7.9e-4 * C4 * Math.pow(Math.min(t, 0.7), 0.75) / pupilArea;
     }
-    return 7.9e-4 * Math.pow(t, 0.75);
+    return 7.9e-4 * Math.pow(t, 0.75) / pupilArea;
   };
 
   const results = useMemo(() => {
     const mpe_ansi = ansiMPE(wavelength, exposureTime); // J/cm²
-    const ael_iec = iecAEL(wavelength, exposureTime); // J (into 7mm aperture)
+    const mpe_iec = iecMPE(wavelength, exposureTime); // J/cm² (converted from AEL)
     const mpe_ansi_mJ = mpe_ansi * 1000;
-    const ael_iec_mJ = ael_iec * 1000;
+    const mpe_iec_mJ = mpe_iec * 1000;
     const pulse_mJ = pulseEnergy / 1000;
-    const ratio_ansi = mpe_ansi_mJ / pulse_mJ;
-    const ratio_iec = ael_iec_mJ / pulse_mJ;
+    // Convert pulse energy to J/cm² via 7mm pupil for comparison
+    const pulse_Jcm2 = (pulseEnergy * 1e-6) / pupilArea;
+    const ratio_ansi = mpe_ansi / pulse_Jcm2;
+    const ratio_iec = mpe_iec / pulse_Jcm2;
 
-    return { mpe_ansi_mJ, ael_iec_mJ, pulse_mJ, ratio_ansi, ratio_iec };
+    return { mpe_ansi_mJ, mpe_iec_mJ, pulse_mJ, ratio_ansi, ratio_iec };
   }, [wavelength, exposureTime, pulseEnergy]);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 600 }, (_, i) => 300 + i);
     const ansiVals = wls.map(w => ansiMPE(w, exposureTime) * 1000);
-    const iecVals = wls.map(w => iecAEL(w, exposureTime) * 1000);
+    const iecVals = wls.map(w => iecMPE(w, exposureTime) * 1000);
 
     return [
       { x: wls, y: ansiVals, type: "scatter" as const, mode: "lines" as const, name: "ANSI Z136.1 MPE (mJ/cm²)", line: { color: "#60a5fa" } },
-      { x: iecVals.map((_, i) => wls[i]), y: iecVals, type: "scatter" as const, mode: "lines" as const, name: "IEC 60825-1 AEL (mJ)", line: { color: "#f472b6" } },
+      { x: iecVals.map((_, i) => wls[i]), y: iecVals, type: "scatter" as const, mode: "lines" as const, name: "IEC 60825-1 AEL (mJ/cm²)", line: { color: "#f472b6" } },
     ];
   }, [exposureTime]);
 
@@ -99,9 +103,9 @@ export default function AnsiIecComparisonPage() {
           <div className="text-xs text-gray-500">mJ/cm²</div>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">IEC AEL</div>
-          <div className="text-2xl font-bold text-pink-400">{results.ael_iec_mJ.toExponential(2)}</div>
-          <div className="text-xs text-gray-500">mJ</div>
+          <div className="text-xs text-gray-400">IEC MPE (converted)</div>
+          <div className="text-2xl font-bold text-pink-400">{results.mpe_iec_mJ.toExponential(2)}</div>
+          <div className="text-xs text-gray-500">mJ/cm²</div>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
           <div className="text-xs text-gray-400">Safety Margin</div>

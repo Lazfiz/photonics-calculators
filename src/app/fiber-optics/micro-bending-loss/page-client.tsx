@@ -21,8 +21,8 @@ export default function MicrobendingLossPage() {
     const n2 = Math.sqrt(n1 * n1 - coreNA * coreNA);
     const V = coreNA * 2 * Math.PI * a / lambda;
     
-    // Mode field diameter approximation
-    const w = a * (0.65 + 1.619 / Math.pow(coreNA, 1.5) + 2.879 / Math.pow(coreNA, 6));
+    // Mode field diameter approximation (Marcuse, V-parameterized)
+    const w = a * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
     
     // Propagation constant difference
     const beta = n1 * 2 * Math.PI / lambda;

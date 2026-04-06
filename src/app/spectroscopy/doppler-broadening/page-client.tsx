@@ -15,7 +15,9 @@ export default function DopplerBroadeningPage() {
   const amu = 1.661e-27;
   const m = mass * amu;
 
-  const deltaNuD = (wavelength * 1e-9) / c * Math.sqrt(8 * kB * temperature * Math.log(2) / m); // Hz
+  // Doppler FWHM: Δν_D = (ν₀/c)·√(8kT·ln2/m) = (1/λ)·√(8kT·ln2/m)
+  const nu0 = c / (wavelength * 1e-9); // center frequency Hz
+  const deltaNuD = (nu0 / c) * Math.sqrt(8 * kB * temperature * Math.log(2) / m); // Hz
   const fwhmNm = deltaNuD * (wavelength * 1e-9) ** 2 / c * 1e9; // nm
   const deltaNuHz = deltaNuD / Math.PI; // HWHM in Hz
 

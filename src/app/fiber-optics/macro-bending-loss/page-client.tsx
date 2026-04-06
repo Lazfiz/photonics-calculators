@@ -20,8 +20,8 @@ export default function MacrobendingLossPage() {
     const n1 = 1.468; // core
     const n2 = Math.sqrt(n1 * n1 - coreNA * coreNA); // cladding
     const a = coreRadius; // µm
-    const w = a * (0.65 + 1.619 / Math.pow(coreNA, 1.5) + 2.879 / Math.pow(coreNA, 6)); // MFD approx
     const V = coreNA * 2 * Math.PI * a / lambda;
+    const w = a * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6)); // Marcuse MFD (V-parameterized)
 
     // Marcuse formula for pure bend loss (dB/m)
     // α_bend = (π^(1/2) · a² / (2·R·w²)) · (u²/w²)^(2·V²) · exp(-2R·(β - n_clad·k)²/(β·V²))
@@ -78,10 +78,11 @@ export default function MacrobendingLossPage() {
       const b1 = n1 * 2 * Math.PI / lam;
       const b2 = n2 * 2 * Math.PI / lam;
       const db = b1 - b2;
-      const wm = a * (0.65 + 1.619 / Math.pow(coreNA, 1.5) + 2.879 / Math.pow(coreNA, 6));
+      const V = coreNA * 2 * Math.PI * a / lam;
+      const w = a * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
       const l = radii.map(r => {
         const R = r * 1e3;
-        return (Math.sqrt(Math.PI) / 2) * Math.pow(wm / R, 0.5) * Math.pow(wm * db, 1.5) * Math.exp(-R * db) * 4.343;
+        return (Math.sqrt(Math.PI) / 2) * Math.pow(w / R, 0.5) * Math.pow(w * db, 1.5) * Math.exp(-R * db) * 4.343;
       });
       return { x: radii, y: l, type: "scatter" as const, mode: "lines" as const, name: `${wl}nm`, line: { width: 2 } };
     });
@@ -94,7 +95,8 @@ export default function MacrobendingLossPage() {
     const n1 = 1.468;
     const n2 = Math.sqrt(n1 * n1 - coreNA * coreNA);
     const a = coreRadius;
-    const w = a * (0.65 + 1.619 / Math.pow(coreNA, 1.5) + 2.879 / Math.pow(coreNA, 6));
+    const baseV = coreNA * 2 * Math.PI * a / (wavelength * 1e-3);
+    const w = a * (0.65 + 1.619 / Math.pow(baseV, 1.5) + 2.879 / Math.pow(baseV, 6));
 
     const loss = wavelengths.map(wl => {
       const lam = wl * 1e-3;

@@ -64,7 +64,7 @@ export default function ApertureAveragingPage() {
     });
 
     const sigmaI2_plane = FA_plane.map((fa) => 1.23 * cn2 * Math.pow(k, 7 / 6) * Math.pow(L, 11 / 6) * fa);
-    const sigmaI2_sphere = FA_sphere.map((fa) => 0.5 * 1.23 * cn2 * Math.pow(k, 7 / 6) * Math.pow(L, 11 / 6) * fa);
+    const sigmaI2_sphere = FA_sphere.map((fa) => 0.496 * cn2 * Math.pow(k, 7 / 6) * Math.pow(L, 11 / 6) * fa);
 
     return [
       { x: diameters, y: FA_plane, type: "scatter", mode: "lines", name: "F_A (plane)", line: { color: "#06b6d4" } },

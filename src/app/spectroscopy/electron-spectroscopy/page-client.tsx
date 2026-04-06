@@ -57,10 +57,10 @@ export default function ElectronSpectroscopyPage() {
   }, [photonEnergy, fwhm]);
 
   const depthData = useMemo(() => {
-    const depths = Array.from({ length: 200 }, (_, i) => (i / 200) * 100);
+    const depths = Array.from({ length: 200 }, (_, i) => (i / 200) * 100); // nm
     // IMFP (inelastic mean free path) - universal curve
     const ke = kineticEnergy;
-    const lambda = 1430 / (ke * ke) + 0.054 * Math.sqrt(ke); // TPP-2M simplified (Å)
+    const lambda = 143 / (ke * ke) + 0.054 * Math.sqrt(ke); // TPP-2M simplified (nm, Seah-Dench)
     const attenuation = depths.map(d => Math.exp(-d / lambda));
     return [
       { x: depths, y: attenuation.map(a => a * 100), type: "scatter" as const, mode: "lines" as const, name: "Signal", line: { color: "#60a5fa", width: 2 } },
@@ -68,7 +68,7 @@ export default function ElectronSpectroscopyPage() {
     ];
   }, [kineticEnergy]);
 
-  const imfp = 1430 / (kineticEnergy * kineticEnergy) + 0.054 * Math.sqrt(kineticEnergy);
+  const imfp = 143 / (kineticEnergy * kineticEnergy) + 0.054 * Math.sqrt(kineticEnergy); // nm
   const infoDepth = 3 * imfp;
   const fermiDirac = 1 / (1 + Math.exp(0));
 
@@ -108,7 +108,7 @@ export default function ElectronSpectroscopyPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Formulas</h3>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Einstein:</span> E<sub>k</sub> = hν − E<sub>B</sub> − ϕ</p>
-        <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">IMFP (TPP-2M):</span> λ = 1430/(E<sub>k</sub>²) + 0.054√E<sub>k</sub> Å</p>
+        <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">IMFP (TPP-2M):</span> λ = 143/(E<sub>k</sub>²) + 0.054√E<sub>k</sub> nm</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Attenuation:</span> I(d) = I₀ exp(−d/λ)</p>
         <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">Info depth:</span> ~3λ (95% signal from this depth)</p>
       </div>
@@ -141,7 +141,7 @@ export default function ElectronSpectroscopyPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Surface Sensitivity (IMFP Attenuation)</h3>
         <ChartPanel data={depthData} layout={{
-          xaxis: { title: "Depth (Å)", gridcolor: "#374151", color: "#9ca3af" },
+          xaxis: { title: "Depth (nm)", gridcolor: "#374151", color: "#9ca3af" },
           yaxis: { title: "Signal (%)", gridcolor: "#374151", color: "#9ca3af" },
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#e5e7eb" }, margin: { t: 20 },
           legend: { orientation: "h", y: -0.2 },
