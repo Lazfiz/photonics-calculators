@@ -29,8 +29,8 @@ export default function ChromaticDispersionPage() {
 
     // Dispersion-induced power penalty (for NRZ)
     // Penalty ≈ 5·log10(1 + (π·D·L·Δλ·B)² / 4)
-    const B = modulationBW * 1e3; // MHz
-    const penaltyArg = (Math.PI * Math.abs(D) * length * sourceLineWidth * B) / 4;
+    const B_THz = modulationBW * 1e-3; // GHz → THz (ps × THz = dimensionless)
+    const penaltyArg = (Math.PI * Math.abs(D) * length * sourceLineWidth * B_THz) / 4;
     const penalty = 5 * Math.log10(1 + penaltyArg ** 2); // dB
 
     // Dispersion length
@@ -67,8 +67,8 @@ export default function ChromaticDispersionPage() {
       return Math.sqrt(pulseWidth ** 2 + dt ** 2);
     });
     const penalty = lengths.map(l => {
-      const B = modulationBW * 1e3;
-      const arg = (Math.PI * Math.abs(calc.D) * l * sourceLineWidth * B) / 4;
+      const B_THz = modulationBW * 1e-3;
+      const arg = (Math.PI * Math.abs(calc.D) * l * sourceLineWidth * B_THz) / 4;
       return 5 * Math.log10(1 + arg ** 2);
     });
     return [
