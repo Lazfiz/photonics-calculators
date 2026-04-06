@@ -182,12 +182,12 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
   }));
 
   const aspectRatio = h / w;
-  const dynamicH = Math.round(w * aspectRatio);
+  const dynamicH = Math.max(280, Math.round(w * aspectRatio));
 
   return (
     <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim()}>
       {title ? <h3 className="text-lg font-semibold mb-3">{title}</h3> : null}
-      <svg viewBox={`0 0 ${w} ${dynamicH}`} className="w-full" role="img" aria-label={title || "Chart"}>
+      <svg viewBox={`0 0 ${w} ${dynamicH}`} className="w-full" preserveAspectRatio="xMidYMin meet" role="img" aria-label={title || "Chart"}>
         <title>{title || "Chart"}</title>
         <desc>{xLabel ? `${xLabel} vs ${yLabel}` : "Data visualization"}</desc>
         {/* Grid lines */}

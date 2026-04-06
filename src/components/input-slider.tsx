@@ -73,7 +73,7 @@ export default function InputSlider({ label, value, onChange, min, max, step = 1
           step={step}
           onChange={handleNumberChange}
           onBlur={handleBlur}
-          className="w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white"
+          className="w-full bg-gray-950 border border-gray-700 rounded px-3 py-3 min-h-[44px] text-white"
         />
         <span className="text-xs text-gray-500 whitespace-nowrap">
           {min}–{max}{unit ? ` ${unit}` : ""}
