@@ -22,21 +22,23 @@ export default function AntiFogPage() {
     const d = thickness; // nm
 
     const R = wls.map(wl => {
+      // Transfer matrix for single layer: M = [[cos(δ), i·sin(δ)/η], [i·η·sin(δ), cos(δ)]]
+      // Decompose into real/imaginary: M11=cos(δ), M12=i·sin(δ)/η, M21=i·η·sin(δ), M22=cos(δ)
+      // r = (M11·nSub + M12·nSub·nInc - nInc·M21 - M22·nInc) / (M11·nSub + M12·nSub·nInc + nInc·M21 + M22·nInc)
+      // Numerator: (cos(δ)·nSub - nInc·cos(δ)) + i·(sin(δ)/η·nSub·nInc - nInc·η·sin(δ))
+      // Denominator: (cos(δ)·nSub + nInc·cos(δ)) + i·(sin(δ)/η·nSub·nInc + nInc·η·sin(δ))
       const delta = (2 * Math.PI * nCoat * d) / wl;
       const c = Math.cos(delta), s = Math.sin(delta);
-
-      // Single layer: substrate interface
-      // Fresnel: r = (r12 + r23·exp(2iδ)) / (1 + r12·r23·exp(2iδ))
-      // Using transfer matrix instead for real-valued calculation
-
-      // Complex Fresnel not needed — use transfer matrix instead
       const eta = nCoat;
-      const M = [[c, -s / eta], [s * eta, c]] as [number, number][];
-
       const nInc = 1.0;
-      const rNum = M[0][0]*nSub + M[0][1]*nSub*nInc - M[1][0] - M[1][1]*nInc;
-      const rDen = M[0][0]*nSub + M[0][1]*nSub*nInc + M[1][0] + M[1][1]*nInc;
-      return (rNum / rDen) ** 2;
+
+      // Real and imaginary parts of numerator and denominator
+      const numR = c * nSub - nInc * c; // cos(δ)·(nSub - nInc)
+      const numI = (s / eta) * nSub * nInc - nInc * eta * s; // sin(δ)·nInc·(nSub/eta - eta)
+      const denR = c * nSub + nInc * c; // cos(δ)·(nSub + nInc)
+      const denI = (s / eta) * nSub * nInc + nInc * eta * s; // sin(δ)·nInc·(nSub/eta + eta)
+
+      return (numR * numR + numI * numI) / (denR * denR + denI * denI);
     });
 
     // With water layer on top (fog): n_water ≈ 1.33
@@ -44,23 +46,31 @@ export default function AntiFogPage() {
       const delta1 = (2 * Math.PI * nCoat * d) / wl;
       const delta2 = (2 * Math.PI * 1.33 * 1000) / wl; // 1µm water film
 
-      let M = [[1, 0], [0, 1]] as [number, number][];
+      // Track complex matrix as 4 real values: [[A, iB], [iC, D]]
+      let A = 1, B = 0, C = 0, D = 1;
+
+      // Add layer: M_layer = [[cos(δ), i·sin(δ)/n], [i·n·sin(δ), cos(δ)]]
       const addLayer = (n: number, delta: number) => {
-        const c = Math.cos(delta), s = Math.sin(delta);
-        const L: [number, number][] = [[c, -s / n], [s * n, c]];
-        M = [
-          [M[0][0]*L[0][0]+M[0][1]*L[1][0], M[0][0]*L[0][1]+M[0][1]*L[1][1]],
-          [M[1][0]*L[0][0]+M[1][1]*L[1][0], M[1][0]*L[0][1]+M[1][1]*L[1][1]],
-        ];
+        const cl = Math.cos(delta), sl = Math.sin(delta);
+        const nA = A * cl - B * n * sl;
+        const nB = A * sl / n + B * cl;
+        const nC = C * cl - D * n * sl;
+        const nD = C * sl / n + D * cl;
+        A = nA; B = nB; C = nC; D = nD;
       };
 
-      addLayer(1.33, delta2); // water
-      addLayer(nCoat, delta1); // coating
+      addLayer(1.33, delta2); // water (from air side)
+      addLayer(nCoat, delta1); // coating (from water side)
 
+      // r = (A·nSub + iB·nSub·nInc - iC·nInc - D·nInc) / (A·nSub + iB·nSub·nInc + iC·nInc + D·nInc)
       const nInc = 1.0;
-      const num = M[0][0]*nSub + M[0][1]*nSub*nInc - M[1][0] - M[1][1]*nInc;
-      const den = M[0][0]*nSub + M[0][1]*nSub*nInc + M[1][0] + M[1][1]*nInc;
-      return (num / den) ** 2;
+      const BnSub = B * nSub * nInc;
+      const CnInc = C * nInc;
+      const numR = A * nSub - D * nInc;
+      const numI = BnSub - CnInc;
+      const denR = A * nSub + D * nInc;
+      const denI = BnSub + CnInc;
+      return (numR * numR + numI * numI) / (denR * denR + denI * denI);
     });
 
     return { wls, R, RwithWater };
