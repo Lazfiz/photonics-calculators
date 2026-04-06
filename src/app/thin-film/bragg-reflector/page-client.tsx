@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 
 export default function BraggReflectorPage() {
+  const [nInc, setNInc] = useState(1.0);
   const [nH, setNH] = useState(2.35);
   const [nL, setNL] = useState(1.45);
   const [nSub, setNSub] = useState(1.52);
@@ -55,14 +56,16 @@ export default function BraggReflectorPage() {
       return R_approx;
     });
     return [{ x: wls, y: R, type: "scatter" as const, mode: "lines" as const, name: "Reflectance", line: { color: "#60a5fa" } }];
-  }, [nH, nL, nSub, designWavelength, pairs]);
+  }, [nInc, nH, nL, nSub, designWavelength, pairs]);
 
-  const peakR = Math.pow((Math.pow(nH / nL, 2 * pairs) - nSub) / (Math.pow(nH / nL, 2 * pairs) + nSub), 2);
+  const peakR = Math.pow((nInc - Math.pow(nH / nL, 2 * pairs) * nSub) / (nInc + Math.pow(nH / nL, 2 * pairs) * nSub), 2);
 
   return (
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Bragg Reflector" description="Dielectric distributed Bragg reflector — reflectance spectrum and stopband design.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>incident</sub></span>
+          <input type="number" value={nInc} onChange={e => setNInc(+e.target.value)} step="0.01" min="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>high</sub></span>
           <input type="number" value={nH} onChange={e => setNH(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>low</sub></span>
