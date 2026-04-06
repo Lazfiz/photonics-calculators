@@ -14,6 +14,12 @@ interface InputSliderProps {
 
 export default function InputSlider({ label, value, onChange, min, max, step = 1, unit }: InputSliderProps) {
   const [localText, setLocalText] = useState<string | null>(null);
+  const [localSlider, setLocalSlider] = useState(value);
+
+  // Sync slider when parent value changes externally
+  if (localSlider !== value && localText === null) {
+    setLocalSlider(value);
+  }
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const text = e.target.value;
@@ -26,33 +32,40 @@ export default function InputSlider({ label, value, onChange, min, max, step = 1
 
   const handleBlur = () => {
     setLocalText(null);
-    // Ensure final value is clamped
     const clamped = Math.min(Math.max(value, min), max);
     if (clamped !== value) onChange(clamped);
   };
 
   const displayValue = localText !== null ? localText : value;
 
+  const sliderId = `slider-range-${label.replace(/\s+/g, "-").toLowerCase()}`;
+
   return (
-    <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+    <div className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm text-gray-300">{label}</span>
+        <label htmlFor={sliderId} className="text-sm text-gray-300">{label}</label>
         <span className="text-sm font-medium text-blue-300">
           {value}
           {unit ? ` ${unit}` : ""}
         </span>
       </div>
       <input
+        id={sliderId}
         type="range"
-        value={value}
+        value={localSlider}
         min={min}
         max={max}
         step={step}
-        onChange={(e) => onChange(Number(e.target.value))}
+        onChange={(e) => {
+          const v = Number(e.target.value);
+          setLocalSlider(v);
+          onChange(v);
+        }}
         className="mt-3 w-full accent-blue-500"
       />
       <div className="mt-3 flex items-center gap-3">
         <input
+          aria-label={`${label} exact value`}
           type="number"
           value={displayValue}
           min={min}
@@ -66,6 +79,6 @@ export default function InputSlider({ label, value, onChange, min, max, step = 1
           {min}–{max}{unit ? ` ${unit}` : ""}
         </span>
       </div>
-    </label>
+    </div>
   );
 }
