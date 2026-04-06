@@ -31,7 +31,7 @@ export default function LaguerreGaussianPage() {
   const [l, setL] = useState(1);
 
   const w0 = waist;
-  const zR = Math.PI * w0 * w0 / wavelength * 1000;
+  const zR = Math.PI * w0 * w0 / wavelength; // mm (µm²/nm = mm)
   const absL = Math.abs(l);
   const orbitalAngularMomentum = l; // ℏ per photon
 

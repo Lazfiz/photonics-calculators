@@ -14,12 +14,13 @@ export default function BeamQualityPage() {
   const calc = useMemo(() => {
     // From measured data
     const lambdaMm = wavelength * 1e-6; // mm
-    const w0real = Math.sqrt(m2) * Math.sqrt(lambdaMm * zRmeas / Math.PI); // µm
+    const w0realMm = Math.sqrt(m2) * Math.sqrt(lambdaMm * zRmeas / Math.PI); // mm
+    const w0real = w0realMm * 1000; // µm — consistent with w0meas
     const zRreal = zRmeas / m2; // mm for M²=1 equivalent
-    const divergenceReal = wavelength / (Math.PI * w0real) * 1000; // mrad
+    const divergenceReal = wavelength / (Math.PI * w0real); // mrad (nm/µm = mrad)
     const divergenceMeas = m2 * divergenceReal;
-    const bpp = w0real * divergenceReal / 2; // mm·mrad
-    const bppMeas = w0meas * divergenceMeas / 2;
+    const bpp = w0real * divergenceReal / 1000; // mm·mrad (µm × mrad / 1000)
+    const bppMeas = w0meas * divergenceMeas / 1000;
     const strehl = m2 <= 1 ? 1 : 1 / (m2 * m2);
 
     // Beam propagation w(z) for measured and ideal

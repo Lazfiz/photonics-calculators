@@ -32,7 +32,7 @@ export default function HermiteGaussianPage() {
   const [plotAxis, setPlotAxis] = useState<"x" | "y" | "both">("both");
 
   const w0 = waist; // µm
-  const zR = Math.PI * w0 * w0 / wavelength * 1000; // mm
+  const zR = Math.PI * w0 * w0 / wavelength; // mm (µm²/nm = mm)
 
   const chartData = useMemo(() => {
     const extent = w0 * 4;

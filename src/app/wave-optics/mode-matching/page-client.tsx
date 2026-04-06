@@ -11,7 +11,7 @@ export default function ModeMatchingPage() {
   const [w2, setW2] = useState(200); // µm target beam waist
   const [d, setD] = useState(200); // mm distance between waists
 
-  const lam = wavelength * 1e-6; // µm
+  const lam = wavelength * 1e-3; // µm (nm → µm)
   const zR1 = Math.PI * w1 * w1 / lam; // µm
   const zR2 = Math.PI * w2 * w2 / lam; // µm
   const d_mm = d; // mm

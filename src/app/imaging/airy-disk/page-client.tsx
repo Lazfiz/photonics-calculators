@@ -14,15 +14,15 @@ export default function AiryDiskPage() {
   const [wavelength, setWavelength] = useState(550);
   const [na, setNa] = useState(0.95);
 
-  const airyRadius = 0.61 * (wavelength / 1000) / na;
-  const airyDiameter = 2 * airyRadius;
-  const airyRadiusUm = airyRadius * 1000;
+  const airyRadius = 0.61 * (wavelength / 1000) / na; // µm (nm→µm / NA)
+  const airyDiameter = 2 * airyRadius; // µm
+  const airyRadiusUm = airyRadius;
   const resolutionNm = wavelength / (2 * na);
 
   const series = useMemo(() => {
     const nas = Array.from({ length: 100 }, (_, i) => 0.1 + i * 0.015);
     return [
-      { name: "Airy radius", color: "#60a5fa", points: nas.map((x) => ({ x, y: (0.61 * (wavelength / 1000) / x) * 1000 })) },
+      { name: "Airy radius", color: "#60a5fa", points: nas.map((x) => ({ x, y: 0.61 * (wavelength / 1000) / x })) },
       { name: "Abbe limit", color: "#34d399", dashed: true, points: nas.map((x) => ({ x, y: wavelength / (2 * x) / 1000 })) },
       { name: "Current", color: "#f87171", showPoints: true, points: [{ x: na, y: airyRadiusUm }] },
     ];
@@ -37,7 +37,7 @@ export default function AiryDiskPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Airy radius" value={`${airyRadiusUm.toFixed(2)} µm`} tone="blue" />
-        <ResultCard label="Airy diameter" value={`${(airyDiameter * 1000).toFixed(2)} µm`} tone="green" />
+        <ResultCard label="Airy diameter" value={`${airyDiameter.toFixed(3)} µm`} tone="green" />
         <ResultCard label="Abbe limit" value={`${resolutionNm.toFixed(1)} nm`} tone="yellow" />
         <ResultCard label="Resolution (lp/mm)" value={`${(1000 / airyDiameter).toFixed(0)}`} tone="purple" />
       </div>

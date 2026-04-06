@@ -15,9 +15,9 @@ export default function GaussianBeamPage() {
   const [wavelength, setWavelength] = useState(1550);
   const [waist, setWaist] = useState(10); // µm
 
-  const zR = (Math.PI * waist ** 2 / wavelength) * 1000; // mm
-  const divergence = (wavelength / (Math.PI * waist)) * 1000; // mrad
-  const bpp = (waist / 1000) * divergence / 2; // mm·mrad
+  const zR = Math.PI * waist ** 2 / wavelength; // mm (µm²/nm = mm)
+  const divergence = wavelength / (Math.PI * waist); // mrad (nm/µm = mrad)
+  const bpp = (waist / 1000) * divergence; // mm·mrad (waist_mm × divergence_mrad)
 
   const series = useMemo(() => {
     const zMax = Math.max(zR * 4, 1);

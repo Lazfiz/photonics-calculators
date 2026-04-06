@@ -10,14 +10,23 @@ export default function AttenuationPage() {
   const [length, setLength] = useState(50); // km
 
   const getAttenuation = (wl: number, type: string) => {
-    // Simplified attenuation model (dB/km)
+    // Wavelength-dependent attenuation model (dB/km)
     // Rayleigh scattering ~ λ⁻⁴, IR absorption exponential, OH peak at 1383nm
-    const rayleigh = type === "SMF28" ? 0.85 * Math.pow(1.55 / (wl / 1000), 4) * 0.19 :
-                     type === "DSF" ? 0.85 * Math.pow(1.55 / (wl / 1000), 4) * 0.19 :
-                     0.85 * Math.pow(1.55 / (wl / 1000), 4) * 0.19;
-    const irAbsorption = 6e10 * Math.exp(-48 / (wl / 1000));
-    const ohPeak = 0.5 * Math.exp(-0.5 * Math.pow((wl - 1383) / 8, 2));
-    const uvAbsorption = 1e-3 * Math.exp(4.63 * (1.55 - wl / 1000));
+    const wlUm = wl / 1000; // nm → µm
+    // Rayleigh coefficient differs by fiber type (Ge doping level affects scattering)
+    // SMF-28: lower Ge → A_R ≈ 0.78 dB/km·µm⁴
+    // DSF: higher Ge → A_R ≈ 0.85 dB/km·µm⁴
+    // NZ-DSF: moderate Ge → A_R ≈ 0.82 dB/km·µm⁴
+    const aRayleigh = type === "SMF28" ? 0.78 :
+                     type === "DSF" ? 0.85 : 0.82;
+    const rayleigh = aRayleigh * Math.pow(1.55 / wlUm, 4);
+    // IR absorption (fundamental silica property — same for all types)
+    const irAbsorption = 6e10 * Math.exp(-48 / wlUm);
+    // OH peak at 1383nm — NZ-DSF typically low-water-peak
+    const ohPeak = type === "NZDSF" ? 0.15 * Math.exp(-0.5 * Math.pow((wl - 1383) / 8, 2)) :
+                   0.4 * Math.exp(-0.5 * Math.pow((wl - 1383) / 8, 2));
+    // UV absorption edge
+    const uvAbsorption = 1e-3 * Math.exp(4.63 * (1.55 - wlUm));
     return rayleigh + irAbsorption + ohPeak + uvAbsorption;
   };
 
