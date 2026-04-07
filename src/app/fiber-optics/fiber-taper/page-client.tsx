@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function FiberTaperPage() {
-  const [pullLength, setPullLength] = useState(5000); // μm total
-  const [heaterWidth, setHeaterWidth] = useState(2); // mm
-  const [initialDia, setInitialDia] = useState(125); // μm
-  const [coreDia, setCoreDia] = useState(8.2); // μm
-  const [wavelength, setWavelength] = useState(1550); // nm
+  const [pullLength, setPullLength] = useURLState("pullLength", 5000); // μm total
+  const [heaterWidth, setHeaterWidth] = useURLState("heaterWidth", 2); // mm
+  const [initialDia, setInitialDia] = useURLState("initialDia", 125); // μm
+  const [coreDia, setCoreDia] = useURLState("coreDia", 8.2); // μm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [taperType, setTaperType] = useState<"symmetric" | "asymmetric">("symmetric");
 
   const calc = useMemo(() => {

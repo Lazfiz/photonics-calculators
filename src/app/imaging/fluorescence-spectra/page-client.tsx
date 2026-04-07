@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 // Simplified spectral shapes using Gaussian approximation
 function gaussian(x: number, center: number, fwhm: number, amp: number) {
   const sigma = fwhm / (2 * Math.sqrt(2 * Math.LN2));
@@ -19,10 +20,10 @@ const fluorophores = [
 ];
 
 export default function FluorescenceSpectraPage() {
-  const [dye1Idx, setDye1Idx] = useState(0);
-  const [dye2Idx, setDye2Idx] = useState(2);
-  const [filterCenter, setFilterCenter] = useState(525);
-  const [filterBW, setFilterBW] = useState(30);
+  const [dye1Idx, setDye1Idx] = useURLState("dye1Idx", 0);
+  const [dye2Idx, setDye2Idx] = useURLState("dye2Idx", 2);
+  const [filterCenter, setFilterCenter] = useURLState("filterCenter", 525);
+  const [filterBW, setFilterBW] = useURLState("filterBW", 30);
   const [showOverlap, setShowOverlap] = useState(true);
 
   const dye1 = fluorophores[dye1Idx];

@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function BendLossPage() {
-  const [radius, setRadius] = useState(15); // mm
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [coreIndex, setCoreIndex] = useState(1.4682);
-  const [claddingIndex, setCladdingIndex] = useState(1.4629);
+  const [radius, setRadius] = useURLState("radius", 15); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4682);
+  const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.4629);
 
   const calc = useMemo(() => {
     const R = radius * 1e-3; // m

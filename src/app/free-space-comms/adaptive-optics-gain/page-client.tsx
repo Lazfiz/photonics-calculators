@@ -3,15 +3,16 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function AdaptiveOpticsGainPage() {
-  const [wavelength, setWavelength] = useState(1550);
-  const [cn2, setCn2] = useState(1e-15);
-  const [range, setRange] = useState(1000); // m
-  const [r0, setR0] = useState(0); // cm, 0 = auto-calculate
-  const [numActuators, setNumActuators] = useState(64); // DM actuators across
-  const [bandwidth, setBandwidth] = useState(100); // Hz, AO correction bandwidth
-  const [windSpeed, setWindSpeed] = useState(5); // m/s
-  const [strehlTarget, setStrehlTarget] = useState(0.8);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [cn2, setCn2] = useURLState("cn2", 1e-15);
+  const [range, setRange] = useURLState("range", 1000); // m
+  const [r0, setR0] = useURLState("r0", 0); // cm, 0 = auto-calculate
+  const [numActuators, setNumActuators] = useURLState("numActuators", 64); // DM actuators across
+  const [bandwidth, setBandwidth] = useURLState("bandwidth", 100); // Hz, AO correction bandwidth
+  const [windSpeed, setWindSpeed] = useURLState("windSpeed", 5); // m/s
+  const [strehlTarget, setStrehlTarget] = useURLState("strehlTarget", 0.8);
 
   // AO Strehl ratio: S = exp(-σ_φ²)
   // σ_φ² = σ_fitting² + σ_temporal² + σ_WFS²

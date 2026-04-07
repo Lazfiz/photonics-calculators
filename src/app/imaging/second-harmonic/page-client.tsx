@@ -3,14 +3,15 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function SecondHarmonicPage() {
-  const [wavelength, setWavelength] = useState(800); // nm, fundamental
-  const [pulseEnergy, setPulseEnergy] = useState(10); // nJ
-  const [pulseWidth, setPulseWidth] = useState(100); // fs
-  const [na, setNa] = useState(0.8);
-  const [n, setN] = useState(1.33);
-  const [chi2, setChi2] = useState(1.0); // pm/V (effective)
-  const [thickness, setThickness] = useState(100); // µm, sample thickness
+  const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm, fundamental
+  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 10); // nJ
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100); // fs
+  const [na, setNa] = useURLState("na", 0.8);
+  const [n, setN] = useURLState("n", 1.33);
+  const [chi2, setChi2] = useURLState("chi2", 1.0); // pm/V (effective)
+  const [thickness, setThickness] = useURLState("thickness", 100); // µm, sample thickness
 
   const results = useMemo(() => {
     const shgWavelength = wavelength / 2;

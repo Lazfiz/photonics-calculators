@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function FluorescencePage() {
-  const [tau, setTau] = useState(3);
+  const [tau, setTau] = useURLState("tau", 3);
   const [multiExp, setMultiExp] = useState(false);
-  const [tau2, setTau2] = useState(10);
-  const [amp2, setAmp2] = useState(0.3);
+  const [tau2, setTau2] = useURLState("tau2", 10);
+  const [amp2, setAmp2] = useURLState("amp2", 0.3);
 
   const chartData = useMemo(() => {
     const tMax = Math.max(tau, multiExp ? tau2 : 0) * 6;

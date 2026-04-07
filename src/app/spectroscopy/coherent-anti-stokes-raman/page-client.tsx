@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function CoherentAntiStokesRamanPage() {
-  const [pumpWavelength, setPumpWavelength] = useState(532);
-  const [stokesWavelength, setStokesWavelength] = useState(630);
-  const [ramanShift, setRamanShift] = useState(2880);
-  const [pulseWidth, setPulseWidth] = useState(5);
-  const [peakPower, setPeakPower] = useState(1e6);
+  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 532);
+  const [stokesWavelength, setStokesWavelength] = useURLState("stokesWavelength", 630);
+  const [ramanShift, setRamanShift] = useURLState("ramanShift", 2880);
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 5);
+  const [peakPower, setPeakPower] = useURLState("peakPower", 1e6);
 
   const calcAntiStokesWL = () => {
     const invP = 1e7 / pumpWavelength;

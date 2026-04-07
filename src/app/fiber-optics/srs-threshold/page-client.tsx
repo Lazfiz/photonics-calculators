@@ -3,13 +3,14 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function SRSThresholdPage() {
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [fiberLength, setFiberLength] = useState(10); // km
-  const [effectiveArea, setEffectiveArea] = useState(80); // μm²
-  const [loss, setLoss] = useState(0.2); // dB/km
-  const [ramanGain, setRamanGain] = useState(1e-13); // m/W
-  const [ramanShift, setRamanShift] = useState(13.2); // THz
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // km
+  const [effectiveArea, setEffectiveArea] = useURLState("effectiveArea", 80); // μm²
+  const [loss, setLoss] = useURLState("loss", 0.2); // dB/km
+  const [ramanGain, setRamanGain] = useURLState("ramanGain", 1e-13); // m/W
+  const [ramanShift, setRamanShift] = useURLState("ramanShift", 13.2); // THz
 
   const results = useMemo(() => {
     const wl = wavelength * 1e-9;

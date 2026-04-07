@@ -5,9 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function JacquinotPage() {
-  const [maxOPD, setMaxOPD] = useState(1.0); // cm
-  const [wavenumber, setWavenumber] = useState(1000); // cm⁻¹
+  const [maxOPD, setMaxOPD] = useURLState("maxOPD", 1.0); // cm
+  const [wavenumber, setWavenumber] = useURLState("wavenumber", 1000); // cm⁻¹
 
   const chartData = useMemo(() => {
     const wns = Array.from({ length: 300 }, (_, i) => 400 + i * 3600 / 300);

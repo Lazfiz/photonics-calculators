@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function ChannelPMTPage() {
-  const [numChannels, setNumChannels] = useState(16);
-  const [channelGain, setChannelGain] = useState(1e4);
-  const [quantumEff, setQuantumEff] = useState(0.25);
-  const [darkCountRate, setDarkCountRate] = useState(500);
-  const [collectionEff, setCollectionEff] = useState(0.9);
-  const [transitTimeSpread, setTransitTimeSpread] = useState(200);
+  const [numChannels, setNumChannels] = useURLState("numChannels", 16);
+  const [channelGain, setChannelGain] = useURLState("channelGain", 1e4);
+  const [quantumEff, setQuantumEff] = useURLState("quantumEff", 0.25);
+  const [darkCountRate, setDarkCountRate] = useURLState("darkCountRate", 500);
+  const [collectionEff, setCollectionEff] = useURLState("collectionEff", 0.9);
+  const [transitTimeSpread, setTransitTimeSpread] = useURLState("transitTimeSpread", 200);
 
   const results = useMemo(() => {
     const totalGain = channelGain * numChannels;

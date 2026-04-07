@@ -5,10 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function AmplifierNoisePage() {
-  const [en, setEn] = useState(5);
-  const [gain, setGain] = useState(2);
-  const [bandwidth, setBandwidth] = useState(1e6);
+  const [en, setEn] = useURLState("en", 5);
+  const [gain, setGain] = useURLState("gain", 2);
+  const [bandwidth, setBandwidth] = useURLState("bandwidth", 1e6);
 
   const chartData = useMemo(() => {
     const enVals = Array.from({ length: 200 }, (_, i) => 0.5 + (i / 200) * 49.5);

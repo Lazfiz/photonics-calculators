@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function WellCapacityPage() {
-  const [wellCapacity, setWellCapacity] = useState(50000); // e-
-  const [readNoise, setReadNoise] = useState(5); // e- rms
-  const [pixelSize, setPixelSize] = useState(5); // μm
-  const [voltageSwing, setVoltageSwing] = useState(1.5); // V
+  const [wellCapacity, setWellCapacity] = useURLState("wellCapacity", 50000); // e-
+  const [readNoise, setReadNoise] = useURLState("readNoise", 5); // e- rms
+  const [pixelSize, setPixelSize] = useURLState("pixelSize", 5); // μm
+  const [voltageSwing, setVoltageSwing] = useURLState("voltageSwing", 1.5); // V
 
   const chartData = useMemo(() => {
     const wells = Array.from({ length: 200 }, (_, i) => 1000 + (i / 200) * 199000);

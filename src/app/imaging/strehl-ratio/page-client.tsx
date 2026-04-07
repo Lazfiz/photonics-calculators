@@ -5,9 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function StrehlRatioPage() {
-  const [wavelengthNm, setWavelengthNm] = useState(550);
-  const [wfeNm, setWfeNm] = useState(20);
+  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 550);
+  const [wfeNm, setWfeNm] = useURLState("wfeNm", 20);
   const [mode, setMode] = useState<"wfe" | "pv">("wfe");
 
   const wfeMeters = wfeNm * 1e-9;

@@ -3,17 +3,18 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function SolidStateLaserResonatorPage() {
-  const [crystalLength, setCrystalLength] = useState(10); // mm
-  const [crystalDiameter, setCrystalDiameter] = useState(3); // mm
-  const [wavelength, setWavelength] = useState(1064); // nm
+  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 10); // mm
+  const [crystalDiameter, setCrystalDiameter] = useURLState("crystalDiameter", 3); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
   const [R1, setR1] = useState(-100); // mm (HR, concave)
-  const [R2, setR2] = useState(200); // mm (OC, concave or flat=inf)
-  const [L_cav, setL_cav] = useState(150); // mm cavity length
-  const [R_oc, setR_oc] = useState(0.95);
-  const [R_hr, setR_hr] = useState(0.999);
-  const [alpha_c, setAlpha_c] = useState(0.001); // cm^-1 crystal loss
-  const [n_crystal, setN_crystal] = useState(1.82); // Nd:YAG
+  const [R2, setR2] = useURLState("R2", 200); // mm (OC, concave or flat=inf)
+  const [L_cav, setL_cav] = useURLState("L_cav", 150); // mm cavity length
+  const [R_oc, setR_oc] = useURLState("R_oc", 0.95);
+  const [R_hr, setR_hr] = useURLState("R_hr", 0.999);
+  const [alpha_c, setAlpha_c] = useURLState("alpha_c", 0.001); // cm^-1 crystal loss
+  const [n_crystal, setN_crystal] = useURLState("n_crystal", 1.82); // Nd:YAG
 
   const L_crystal_cm = crystalLength / 10;
   const n = n_crystal;

@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 // Silicon Photodiode Parameters
 // Bandgap: E_g ≈ 1.12 eV at 300K → λ_c ≈ 1100 nm
 // QE: η = (1-R)·(1 - exp(-α·d)) with wavelength-dependent α
@@ -13,11 +14,11 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 // Responsivity: R = η·q·λ/(h·c)
 
 export default function SiliconPhotodiodePage() {
-  const [temperature, setTemperature] = useState(293); // K
-  const [depletionWidth, setDepletionWidth] = useState(10); // μm
-  const [area, setArea] = useState(1); // mm²
-  const [reverseBias, setReverseBias] = useState(5); // V
-  const [surfaceReflectivity, setSurfaceReflectivity] = useState(0.05);
+  const [temperature, setTemperature] = useURLState("temperature", 293); // K
+  const [depletionWidth, setDepletionWidth] = useURLState("depletionWidth", 10); // μm
+  const [area, setArea] = useURLState("area", 1); // mm²
+  const [reverseBias, setReverseBias] = useURLState("reverseBias", 5); // V
+  const [surfaceReflectivity, setSurfaceReflectivity] = useURLState("surfaceReflectivity", 0.05);
 
   const k = 1.381e-23;
   const q = 1.602e-19;

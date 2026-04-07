@@ -7,6 +7,7 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
+import { useURLState } from "../../../hooks/use-url-state";
 function snellAngle(nFrom: number, nTo: number, thetaFrom: number) {
   const sinTheta = (nFrom / nTo) * Math.sin(thetaFrom);
   if (Math.abs(sinTheta) > 1) return null;
@@ -55,11 +56,11 @@ const substratePresets = [1.45, 1.52, 1.76];
 const currentHref = "/thin-film/single-ar";
 
 export default function SingleARPage() {
-  const [nSubstrate, setNSubstrate] = useState(1.52);
-  const [nFilm, setNFilm] = useState(1.38);
-  const [nIncident, setNIncident] = useState(1.0);
-  const [designWavelength, setDesignWavelength] = useState(550);
-  const [angle, setAngle] = useState(0);
+  const [nSubstrate, setNSubstrate] = useURLState("nSubstrate", 1.52);
+  const [nFilm, setNFilm] = useURLState("nFilm", 1.38);
+  const [nIncident, setNIncident] = useURLState("nIncident", 1.0);
+  const [designWavelength, setDesignWavelength] = useURLState("designWavelength", 550);
+  const [angle, setAngle] = useURLState("angle", 0);
 
   const theta0 = (angle * Math.PI) / 180;
   const theta1 = snellAngle(nIncident, nFilm, theta0);

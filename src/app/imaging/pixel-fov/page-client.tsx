@@ -5,10 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function PixelFovPage() {
-  const [pixelSizeUm, setPixelSizeUm] = useState(6.5);
-  const [focalLengthMm, setFocalLengthMm] = useState(50);
-  const [binning, setBinning] = useState(1);
+  const [pixelSizeUm, setPixelSizeUm] = useURLState("pixelSizeUm", 6.5);
+  const [focalLengthMm, setFocalLengthMm] = useURLState("focalLengthMm", 50);
+  const [binning, setBinning] = useURLState("binning", 1);
 
   const effectivePixelUm = pixelSizeUm * binning;
   const pixelSizeMm = effectivePixelUm / 1000;

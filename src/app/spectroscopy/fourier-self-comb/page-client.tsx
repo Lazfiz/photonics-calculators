@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function FourierSelfCombPage() {
-  const [repetitionRate, setRepetitionRate] = useState(250); // MHz
-  const [centerWavelength, setCenterWavelength] = useState(1550); // nm
-  const [bandwidthNm, setBandwidthNm] = useState(100);
-  const [combLines, setCombLines] = useState(50);
+  const [repetitionRate, setRepetitionRate] = useURLState("repetitionRate", 250); // MHz
+  const [centerWavelength, setCenterWavelength] = useURLState("centerWavelength", 1550); // nm
+  const [bandwidthNm, setBandwidthNm] = useURLState("bandwidthNm", 100);
+  const [combLines, setCombLines] = useURLState("combLines", 50);
 
   const chartData = useMemo(() => {
     const c = 3e8;

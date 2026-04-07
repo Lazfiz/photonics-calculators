@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function PolarimetryPage() {
-  const [s0, setS0] = useState(1);
-  const [s1, setS1] = useState(0.5);
-  const [s2, setS2] = useState(0.3);
-  const [s3, setS3] = useState(0.2);
-  const [analyzerAngleDeg, setAnalyzerAngleDeg] = useState(0);
-  const [retarderDeg, setRetarderDeg] = useState(0);
+  const [s0, setS0] = useURLState("s0", 1);
+  const [s1, setS1] = useURLState("s1", 0.5);
+  const [s2, setS2] = useURLState("s2", 0.3);
+  const [s3, setS3] = useURLState("s3", 0.2);
+  const [analyzerAngleDeg, setAnalyzerAngleDeg] = useURLState("analyzerAngleDeg", 0);
+  const [retarderDeg, setRetarderDeg] = useURLState("retarderDeg", 0);
 
   const analyzerAngle = analyzerAngleDeg * Math.PI / 180;
   const retardance = retarderDeg * Math.PI / 180;

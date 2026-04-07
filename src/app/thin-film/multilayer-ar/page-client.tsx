@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function MultilayerARPage() {
-  const [n1, setN1] = useState(1.38);
-  const [n2, setN2] = useState(2.1);
-  const [nSub, setNSub] = useState(1.52);
-  const [nInc, setNInc] = useState(1.0);
-  const [designWl, setDesignWl] = useState(550);
+  const [n1, setN1] = useURLState("n1", 1.38);
+  const [n2, setN2] = useURLState("n2", 2.1);
+  const [nSub, setNSub] = useURLState("nSub", 1.52);
+  const [nInc, setNInc] = useURLState("nInc", 1.0);
+  const [designWl, setDesignWl] = useURLState("designWl", 550);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 500 / 300);

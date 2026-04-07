@@ -3,11 +3,12 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function BpskQpskPage() {
-  const [ebn0dB, setEbn0dB] = useState(10);
+  const [ebn0dB, setEbn0dB] = useURLState("ebn0dB", 10);
   const [modulation, setModulation] = useState<"BPSK" | "QPSK" | "OQPSK">("BPSK");
-  const [dataRate, setDataRate] = useState(1); // Gbps
-  const [wavelength, setWavelength] = useState(1550); // nm
+  const [dataRate, setDataRate] = useURLState("dataRate", 1); // Gbps
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [rxPower, setRxPower] = useState(-30); // dBm
 
   const calc = useMemo(() => {

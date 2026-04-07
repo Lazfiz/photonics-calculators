@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function FlickerNoisePage() {
-  const [kf, setKf] = useState(1e-24);
-  const [current, setCurrent] = useState(1e-6);
-  const [alpha, setAlpha] = useState(1);
-  const [fLow, setFLow] = useState(1);
-  const [fHigh, setFHigh] = useState(1e6);
+  const [kf, setKf] = useURLState("kf", 1e-24);
+  const [current, setCurrent] = useURLState("current", 1e-6);
+  const [alpha, setAlpha] = useURLState("alpha", 1);
+  const [fLow, setFLow] = useURLState("fLow", 1);
+  const [fHigh, setFHigh] = useURLState("fHigh", 1e6);
 
   const chartData = useMemo(() => {
     const freqs = Array.from({ length: 200 }, (_, i) => Math.pow(1e8, i / 200));

@@ -5,15 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function OpticalCoherencePage() {
-  const [wavelengthNm, setWavelengthNm] = useState(1310);
-  const [bandwidthNm, setBandwidthNm] = useState(100);
-  const [refractiveIndex, setRefractiveIndex] = useState(1.33);
-  const [coherenceLengthMm, setCoherenceLengthMm] = useState(0.015);
-  const [sourcePowerMw, setSourcePowerMw] = useState(10);
-  const [sampleReflectivity, setSampleReflectivity] = useState(0.01);
-  const [couplingEfficiency, setCouplingEfficiency] = useState(0.6);
-  const [detectorResponsivity, setDetectorResponsivity] = useState(0.8);
+  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 1310);
+  const [bandwidthNm, setBandwidthNm] = useURLState("bandwidthNm", 100);
+  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.33);
+  const [coherenceLengthMm, setCoherenceLengthMm] = useURLState("coherenceLengthMm", 0.015);
+  const [sourcePowerMw, setSourcePowerMw] = useURLState("sourcePowerMw", 10);
+  const [sampleReflectivity, setSampleReflectivity] = useURLState("sampleReflectivity", 0.01);
+  const [couplingEfficiency, setCouplingEfficiency] = useURLState("couplingEfficiency", 0.6);
+  const [detectorResponsivity, setDetectorResponsivity] = useURLState("detectorResponsivity", 0.8);
 
   const wavelengthM = wavelengthNm * 1e-9;
   const bandwidthM = bandwidthNm * 1e-9;

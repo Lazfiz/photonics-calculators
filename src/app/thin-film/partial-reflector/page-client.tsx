@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: number, wavelengths: number[]) {
   const R: number[] = [];
   for (const wl of wavelengths) {
@@ -34,11 +35,11 @@ function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: numbe
 }
 
 export default function PartialReflectorPage() {
-  const [nFilm, setNFilm] = useState(1.7);
-  const [nSub, setNSub] = useState(1.52);
-  const [nInc, setNInc] = useState(1.0);
-  const [thicknessRatio, setThicknessRatio] = useState(1.0); // ratio to QWL
-  const [designWl, setDesignWl] = useState(550);
+  const [nFilm, setNFilm] = useURLState("nFilm", 1.7);
+  const [nSub, setNSub] = useURLState("nSub", 1.52);
+  const [nInc, setNInc] = useURLState("nInc", 1.0);
+  const [thicknessRatio, setThicknessRatio] = useURLState("thicknessRatio", 1.0); // ratio to QWL
+  const [designWl, setDesignWl] = useURLState("designWl", 550);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 600 / 500);

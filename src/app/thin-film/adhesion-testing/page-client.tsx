@@ -5,17 +5,18 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function AdhesionTestingPage() {
   const [testMethod, setTestMethod] = useState("scratch");
   const [filmMaterial, setFilmMaterial] = useState("SiO2");
   const [substrateMaterial, setSubstrateMaterial] = useState("glass");
-  const [filmThickness, setFilmThickness] = useState(100);
-  const [criticalLoad, setCriticalLoad] = useState(10);
-  const [scratchLength, setScratchLength] = useState(3);
-  const [tipRadius, setTipRadius] = useState(200);
-  const [peelForce, setPeelForce] = useState(5);
+  const [filmThickness, setFilmThickness] = useURLState("filmThickness", 100);
+  const [criticalLoad, setCriticalLoad] = useURLState("criticalLoad", 10);
+  const [scratchLength, setScratchLength] = useURLState("scratchLength", 3);
+  const [tipRadius, setTipRadius] = useURLState("tipRadius", 200);
+  const [peelForce, setPeelForce] = useURLState("peelForce", 5);
   const [tapeAdhesion, setTapeAdhesion] = useState("5B");
-  const [bendRadius, setBendRadius] = useState(5);
+  const [bendRadius, setBendRadius] = useURLState("bendRadius", 5);
 
   const materials: Record<string, { n: number; hardness: number; modulus: number; name: string }> = {
     SiO2: { n: 1.46, hardness: 8, modulus: 70, name: "SiO₂" },

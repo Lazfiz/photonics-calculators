@@ -5,15 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function EmissionSpectraPage() {
-  const [centerWL, setCenterWL] = useState(520);
-  const [fwhm, setFwhm] = useState(35);
-  const [asymmetry, setAsymmetry] = useState(0.3);
-  const [peakIntensity, setPeakIntensity] = useState(1.0);
-  const [nPeaks, setNPeaks] = useState(1);
-  const [peak2WL, setPeak2WL] = useState(560);
-  const [peak2Fwhm, setPeak2Fwhm] = useState(40);
-  const [peak2Intensity, setPeak2Intensity] = useState(0.3);
+  const [centerWL, setCenterWL] = useURLState("centerWL", 520);
+  const [fwhm, setFwhm] = useURLState("fwhm", 35);
+  const [asymmetry, setAsymmetry] = useURLState("asymmetry", 0.3);
+  const [peakIntensity, setPeakIntensity] = useURLState("peakIntensity", 1.0);
+  const [nPeaks, setNPeaks] = useURLState("nPeaks", 1);
+  const [peak2WL, setPeak2WL] = useURLState("peak2WL", 560);
+  const [peak2Fwhm, setPeak2Fwhm] = useURLState("peak2Fwhm", 40);
+  const [peak2Intensity, setPeak2Intensity] = useURLState("peak2Intensity", 0.3);
 
   const gaussian = (x: number, center: number, width: number, amp: number) =>
     amp * Math.exp(-4 * Math.log(2) * ((x - center) / width) ** 2);

@@ -3,14 +3,15 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function FiberDelayLineCalculator() {
-  const [fiberLength, setFiberLength] = useState(100); // m
-  const [refractiveIndex, setRefractiveIndex] = useState(1.468);
-  const [signalWavelength, setSignalWavelength] = useState(1550); // nm
-  const [inputBitRate, setInputBitRate] = useState(10); // Gbps
-  const [temperature, setTemperature] = useState(25); // °C
-  const [coefficient, setCoefficient] = useState(0.05); // ps/(nm·km) dispersion
-  const [spectralWidth, setSpectralWidth] = useState(0.1); // nm
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 100); // m
+  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.468);
+  const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 1550); // nm
+  const [inputBitRate, setInputBitRate] = useURLState("inputBitRate", 10); // Gbps
+  const [temperature, setTemperature] = useURLState("temperature", 25); // °C
+  const [coefficient, setCoefficient] = useURLState("coefficient", 0.05); // ps/(nm·km) dispersion
+  const [spectralWidth, setSpectralWidth] = useURLState("spectralWidth", 0.1); // nm
 
   // Propagation time
   const delay = useMemo(() => {

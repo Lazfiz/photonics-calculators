@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function SelfPhaseModulationPage() {
-  const [wavelength, setWavelength] = useState(800); // nm
-  const [pulseEnergy, setPulseEnergy] = useState(1); // nJ
-  const [pulseDuration, setPulseDuration] = useState(100); // fs (FWHM → 1/e intensity half-width)
-  const [beamWaist, setBeamWaist] = useState(50); // µm
-  const [n2, setN2] = useState(3.2); // ×10⁻¹⁶ cm²/W
-  const [mediumLength, setMediumLength] = useState(2); // mm
-  const [n0, setN0] = useState(1.76); // Ti:Sapphire crystal
+  const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm
+  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 1); // nJ
+  const [pulseDuration, setPulseDuration] = useURLState("pulseDuration", 100); // fs (FWHM → 1/e intensity half-width)
+  const [beamWaist, setBeamWaist] = useURLState("beamWaist", 50); // µm
+  const [n2, setN2] = useURLState("n2", 3.2); // ×10⁻¹⁶ cm²/W
+  const [mediumLength, setMediumLength] = useURLState("mediumLength", 2); // mm
+  const [n0, setN0] = useURLState("n0", 1.76); // Ti:Sapphire crystal
   const [pulseShape, setPulseShape] = useState<"gaussian" | "sech">("gaussian");
 
   const tau = pulseDuration * 1e-15 / (2 * Math.sqrt(Math.LN2)); // 1/e half-width for Gaussian FWHM

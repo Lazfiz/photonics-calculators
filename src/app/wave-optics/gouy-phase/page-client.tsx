@@ -5,10 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function GouyPhasePage() {
-  const [wavelength, setWavelength] = useState(1064); // nm
-  const [w0, setW0] = useState(0.5); // mm, beam waist
-  const [z, setZ] = useState(100); // mm, distance from waist
+  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
+  const [w0, setW0] = useURLState("w0", 0.5); // mm, beam waist
+  const [z, setZ] = useURLState("z", 100); // mm, distance from waist
 
   const calc = useMemo(() => {
     const lam = wavelength * 1e-6; // mm

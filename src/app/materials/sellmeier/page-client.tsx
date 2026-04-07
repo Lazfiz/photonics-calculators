@@ -7,6 +7,7 @@ import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
+import { useURLState } from "../../../hooks/use-url-state";
 interface Material {
   name: string;
   B1: number; B2: number; B3: number;
@@ -34,7 +35,7 @@ function sellmeier(m: Material, lambdaUm: number): number {
 }
 
 export default function SellmeierPage() {
-  const [wavelength, setWavelength] = useState(1550);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
   const [selected, setSelected] = useState("Fused Silica");
   const [compareAll, setCompareAll] = useState(true);
 

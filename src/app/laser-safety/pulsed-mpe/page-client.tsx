@@ -7,10 +7,11 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function PulsedMPEPage() {
-  const [wavelength, setWavelength] = useState(1064);
-  const [pulseDuration, setPulseDuration] = useState(10); // ns
-  const [prf, setPrf] = useState(10); // Hz
+  const [wavelength, setWavelength] = useURLState("wavelength", 1064);
+  const [pulseDuration, setPulseDuration] = useURLState("pulseDuration", 10); // ns
+  const [prf, setPrf] = useURLState("prf", 10); // Hz
 
   const calc = useMemo(() => {
     const lam = wavelength / 1000; // µm

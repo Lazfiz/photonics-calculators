@@ -3,14 +3,15 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function SensorCMOSPage() {
-  const [pixelPitch, setPixelPitch] = useState(6.5);
-  const [wellCapacity, setWellCapacity] = useState(25000);
-  const [readNoise, setReadNoise] = useState(1.5);
-  const [darkCurrent, setDarkCurrent] = useState(0.1);
-  const [conversionGain, setConversionGain] = useState(2.5);
-  const [quantumEfficiency, setQuantumEfficiency] = useState(0.7);
-  const [exposureTime, setExposureTime] = useState(100);
+  const [pixelPitch, setPixelPitch] = useURLState("pixelPitch", 6.5);
+  const [wellCapacity, setWellCapacity] = useURLState("wellCapacity", 25000);
+  const [readNoise, setReadNoise] = useURLState("readNoise", 1.5);
+  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 0.1);
+  const [conversionGain, setConversionGain] = useURLState("conversionGain", 2.5);
+  const [quantumEfficiency, setQuantumEfficiency] = useURLState("quantumEfficiency", 0.7);
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 100);
 
   const results = useMemo(() => {
     const fullWellElectrons = wellCapacity;

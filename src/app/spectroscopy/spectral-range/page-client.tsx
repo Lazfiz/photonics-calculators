@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function SpectralRangePage() {
-  const [grooveDensity, setGrooveDensity] = useState(1200); // l/mm
-  const [order, setOrder] = useState(1);
-  const [focalLength, setFocalLength] = useState(100); // mm
-  const [detectorWidth, setDetectorWidth] = useState(25.6); // mm
-  const [detectorPixels, setDetectorPixels] = useState(2048);
-  const [centralAngle, setCentralAngle] = useState(10); // degrees (diffraction angle at center)
+  const [grooveDensity, setGrooveDensity] = useURLState("grooveDensity", 1200); // l/mm
+  const [order, setOrder] = useURLState("order", 1);
+  const [focalLength, setFocalLength] = useURLState("focalLength", 100); // mm
+  const [detectorWidth, setDetectorWidth] = useURLState("detectorWidth", 25.6); // mm
+  const [detectorPixels, setDetectorPixels] = useURLState("detectorPixels", 2048);
+  const [centralAngle, setCentralAngle] = useURLState("centralAngle", 10); // degrees (diffraction angle at center)
 
   const chartData = useMemo(() => {
     const d = 1e6 / grooveDensity; // μm

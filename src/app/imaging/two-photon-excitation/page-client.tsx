@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function TwoPhotonExcitationPage() {
-  const [exWavelength, setExWavelength] = useState(550);
-  const [objectiveNA, setObjectiveNA] = useState(0.8);
-  const [pulseWidth, setPulseWidth] = useState(100);
-  const [avgPower, setAvgPower] = useState(10);
-  const [repRate, setRepRate] = useState(80);
+  const [exWavelength, setExWavelength] = useURLState("exWavelength", 550);
+  const [objectiveNA, setObjectiveNA] = useURLState("objectiveNA", 0.8);
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100);
+  const [avgPower, setAvgPower] = useURLState("avgPower", 10);
+  const [repRate, setRepRate] = useURLState("repRate", 80);
 
   const twoPhotonEx = 2 * exWavelength;
   const peakPower = avgPower / (repRate * 1e6 * pulseWidth * 1e-15);

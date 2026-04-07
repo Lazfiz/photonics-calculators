@@ -3,16 +3,17 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function FiberAmplifierCalculator() {
   const [amplifierType, setAmplifierType] = useState<"EDFA" | "YDFA">("EDFA");
-  const [fiberLength, setFiberLength] = useState(10); // m
-  const [pumpPower, setPumpPower] = useState(200); // mW
-  const [pumpWavelength, setPumpWavelength] = useState(980); // nm
-  const [signalWavelength, setSignalWavelength] = useState(1550); // nm
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // m
+  const [pumpPower, setPumpPower] = useURLState("pumpPower", 200); // mW
+  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 980); // nm
+  const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 1550); // nm
   const [inputPower, setInputPower] = useState<number>(-10); // dBm
-  const [erbiumConc, setErbiumConc] = useState(1e24); // ions/m³
-  const [coreRadius, setCoreRadius] = useState(2.2); // µm
-  const [overlap, setOverlap] = useState(0.8); // Γ factor
+  const [erbiumConc, setErbiumConc] = useURLState("erbiumConc", 1e24); // ions/m³
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 2.2); // µm
+  const [overlap, setOverlap] = useURLState("overlap", 0.8); // Γ factor
 
   // Emission and absorption cross-sections (approximate)
   const crossSections = useMemo(() => {

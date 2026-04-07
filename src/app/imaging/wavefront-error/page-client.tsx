@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function WavefrontErrorPage() {
-  const [wavelength, setWavelength] = useState(550);
-  const [pvRms, setPvRms] = useState(0.25);
-  const [wavelengthNm, setWavelengthNm] = useState(550);
-  const [numZernike, setNumZernike] = useState(6);
+  const [wavelength, setWavelength] = useURLState("wavelength", 550);
+  const [pvRms, setPvRms] = useURLState("pvRms", 0.25);
+  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 550);
+  const [numZernike, setNumZernike] = useURLState("numZernike", 6);
 
   // Wavefront error in waves and nm
   const wfErrorWaves = pvRms;

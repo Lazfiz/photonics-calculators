@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function PumpProbePage() {
-  const [pumpWavelength, setPumpWavelength] = useState(400);
-  const [probeWavelength, setProbeWavelength] = useState(800);
-  const [tau1, setTau1] = useState(0.5); // ps - excited state lifetime
-  const [tau2, setTau2] = useState(5); // ps - intermediate decay
-  const [tMax, setTMax] = useState(20); // ps
+  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 400);
+  const [probeWavelength, setProbeWavelength] = useURLState("probeWavelength", 800);
+  const [tau1, setTau1] = useURLState("tau1", 0.5); // ps - excited state lifetime
+  const [tau2, setTau2] = useURLState("tau2", 5); // ps - intermediate decay
+  const [tMax, setTMax] = useURLState("tMax", 20); // ps
 
   const chartData = useMemo(() => {
     const N = 500;

@@ -5,15 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function ChromaticDispersionPage() {
-  const [dispersionCoeff, setDispersionCoeff] = useState(17); // ps/(nm·km) for SMF
-  const [dispersionSlope, setDispersionSlope] = useState(0.056); // ps/(nm²·km)
-  const [zeroDispWavelength, setZeroDispWavelength] = useState(1310); // nm
-  const [length, setLength] = useState(80); // km
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [sourceLineWidth, setSourceLineWidth] = useState(0.1); // nm (laser)
-  const [pulseWidth, setPulseWidth] = useState(50); // ps (initial pulse)
-  const [modulationBW, setModulationBW] = useState(10); // GHz (signal bandwidth)
+  const [dispersionCoeff, setDispersionCoeff] = useURLState("dispersionCoeff", 17); // ps/(nm·km) for SMF
+  const [dispersionSlope, setDispersionSlope] = useURLState("dispersionSlope", 0.056); // ps/(nm²·km)
+  const [zeroDispWavelength, setZeroDispWavelength] = useURLState("zeroDispWavelength", 1310); // nm
+  const [length, setLength] = useURLState("length", 80); // km
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [sourceLineWidth, setSourceLineWidth] = useURLState("sourceLineWidth", 0.1); // nm (laser)
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 50); // ps (initial pulse)
+  const [modulationBW, setModulationBW] = useURLState("modulationBW", 10); // GHz (signal bandwidth)
 
   const calc = useMemo(() => {
     // Dispersion at operating wavelength

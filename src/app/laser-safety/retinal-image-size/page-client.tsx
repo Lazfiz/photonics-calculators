@@ -4,12 +4,13 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function RetinalImageSizePage() {
-  const [wavelength, setWavelength] = useState(632);
-  const [beamDiam, setBeamDiam] = useState(2); // mm at cornea
-  const [beamDivergence, setBeamDivergence] = useState(1); // mrad
-  const [viewingDistance, setViewingDistance] = useState(100); // cm
-  const [eyeLength, setEyeLength] = useState(17); // mm (standard)
+  const [wavelength, setWavelength] = useURLState("wavelength", 632);
+  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 2); // mm at cornea
+  const [beamDivergence, setBeamDivergence] = useURLState("beamDivergence", 1); // mrad
+  const [viewingDistance, setViewingDistance] = useURLState("viewingDistance", 100); // cm
+  const [eyeLength, setEyeLength] = useURLState("eyeLength", 17); // mm (standard)
 
   // Retinal image size depends on:
   // - Beam diameter at cornea

@@ -7,6 +7,7 @@ import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
+import { useURLState } from "../../../hooks/use-url-state";
 const presets = [
   { label: "Tight pointing", wavelength: 1550, txBeamWaist: 2.5, jitterRMS: 0.5, misalign: 0.2, rxAperture: 10 },
   { label: "Moderate jitter", wavelength: 1550, txBeamWaist: 2.5, jitterRMS: 2, misalign: 1, rxAperture: 10 },
@@ -15,11 +16,11 @@ const presets = [
 const currentHref = "/free-space-comms/pointing-loss";
 
 export default function PointingLossPage() {
-  const [wavelength, setWavelength] = useState(1550);
-  const [txBeamWaist, setTxBeamWaist] = useState(2.5);
-  const [jitterRMS, setJitterRMS] = useState(1);
-  const [misalign, setMisalign] = useState(0);
-  const [rxAperture, setRxAperture] = useState(10);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [txBeamWaist, setTxBeamWaist] = useURLState("txBeamWaist", 2.5);
+  const [jitterRMS, setJitterRMS] = useURLState("jitterRMS", 1);
+  const [misalign, setMisalign] = useURLState("misalign", 0);
+  const [rxAperture, setRxAperture] = useURLState("rxAperture", 10);
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-9;

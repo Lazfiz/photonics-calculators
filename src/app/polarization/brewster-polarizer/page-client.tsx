@@ -5,10 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function BrewsterPolarizerPage() {
-  const [n1, setN1] = useState(1.0);
-  const [n2, setN2] = useState(1.52);
-  const [numSurfaces, setNumSurfaces] = useState(1);
+  const [n1, setN1] = useURLState("n1", 1.0);
+  const [n2, setN2] = useURLState("n2", 1.52);
+  const [numSurfaces, setNumSurfaces] = useURLState("numSurfaces", 1);
 
   const brewsterDeg = Math.atan(n2 / n1) * 180 / Math.PI;
   const criticalDeg = n1 < n2 ? 90 : Math.asin(n2 / n1) * 180 / Math.PI;

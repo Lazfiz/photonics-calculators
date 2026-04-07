@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function HybridDetectorPage() {
-  const [wavelength, setWavelength] = useState(530);
-  const [qe, setQe] = useState(0.9);
-  const [inputNoiseCurrent, setInputNoiseCurrent] = useState(5);
-  const [inputNoiseVoltage, setInputNoiseVoltage] = useState(5);
-  const [bandwidth, setBandwidth] = useState(100);
-  const [feedbackResistance, setFeedbackResistance] = useState(1);
+  const [wavelength, setWavelength] = useURLState("wavelength", 530);
+  const [qe, setQe] = useURLState("qe", 0.9);
+  const [inputNoiseCurrent, setInputNoiseCurrent] = useURLState("inputNoiseCurrent", 5);
+  const [inputNoiseVoltage, setInputNoiseVoltage] = useURLState("inputNoiseVoltage", 5);
+  const [bandwidth, setBandwidth] = useURLState("bandwidth", 100);
+  const [feedbackResistance, setFeedbackResistance] = useURLState("feedbackResistance", 1);
 
   const responsivity = qe * 1.602e-19 * wavelength * 1e-9 / (6.626e-34 * 3e8);
   const bwHz = bandwidth * 1e6;

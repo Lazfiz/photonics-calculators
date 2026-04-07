@@ -11,15 +11,16 @@ import LaserSafetyCwReferences from "../../../components/laser-safety-cw-referen
 import LaserSafetyCwScope from "../../../components/laser-safety-cw-scope";
 import LaserSafetySuiteLinks from "../../../components/laser-safety-suite-links";
 import { cwPointSourceNohdPrecheck } from "../../../lib/laser-safety-cw-suite";
+import { useURLState } from "../../../hooks/use-url-state";
 const powerPresets = [5, 100, 1000];
 
 export default function NOHDPage() {
-  const [power, setPower] = useState(100);
-  const [wavelength, setWavelength] = useState(532);
-  const [exposure, setExposure] = useState(0.25);
-  const [beamDia, setBeamDia] = useState(2);
-  const [divergence, setDivergence] = useState(1);
-  const [safetyFactor, setSafetyFactor] = useState(1);
+  const [power, setPower] = useURLState("power", 100);
+  const [wavelength, setWavelength] = useURLState("wavelength", 532);
+  const [exposure, setExposure] = useURLState("exposure", 0.25);
+  const [beamDia, setBeamDia] = useURLState("beamDia", 2);
+  const [divergence, setDivergence] = useURLState("divergence", 1);
+  const [safetyFactor, setSafetyFactor] = useURLState("safetyFactor", 1);
 
   const result = useMemo(
     () => cwPointSourceNohdPrecheck({ wavelengthNm: wavelength, exposureS: exposure, powerMw: power, beamDiameterMm: beamDia, divergenceMrad: divergence, safetyFactor }),

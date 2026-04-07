@@ -3,11 +3,12 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function BeamWanderPage() {
-  const [cn2, setCn2] = useState(1e-15);
-  const [pathLength, setPathLength] = useState(1);
-  const [beamRadius, setBeamRadius] = useState(2);
-  const [wavelength, setWavelength] = useState(1550);
+  const [cn2, setCn2] = useURLState("cn2", 1e-15);
+  const [pathLength, setPathLength] = useURLState("pathLength", 1);
+  const [beamRadius, setBeamRadius] = useURLState("beamRadius", 2);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
 
   const calc = useMemo(() => {
     const L = pathLength * 1e3;

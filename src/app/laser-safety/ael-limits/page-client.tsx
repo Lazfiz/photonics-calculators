@@ -7,10 +7,11 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function AELLimitsPage() {
-  const [wavelength, setWavelength] = useState(632);
+  const [wavelength, setWavelength] = useURLState("wavelength", 632);
   const [classification, setClassification] = useState<string>("3B");
-  const [emissionDuration, setEmissionDuration] = useState(0.25);
+  const [emissionDuration, setEmissionDuration] = useURLState("emissionDuration", 0.25);
 
   const classOptions = ["1", "2", "3R", "3B", "4"] as const;
 

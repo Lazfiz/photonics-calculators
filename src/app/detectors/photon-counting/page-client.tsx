@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 // Photon counting statistics: Poisson distribution P(n) = (μ^n / n!) * e^(-μ)
 // SNR = sqrt(N) for shot-noise limited detection
 // Dead time corrections for high count rates
 export default function PhotonCountingPage() {
-  const [meanCounts, setMeanCounts] = useState(100); // expected counts per interval
-  const [deadTime, setDeadTime] = useState(50); // ns
-  const [countRate, setCountRate] = useState(1e6); // counts/s
-  const [integrationTime, setIntegrationTime] = useState(1); // s
+  const [meanCounts, setMeanCounts] = useURLState("meanCounts", 100); // expected counts per interval
+  const [deadTime, setDeadTime] = useURLState("deadTime", 50); // ns
+  const [countRate, setCountRate] = useURLState("countRate", 1e6); // counts/s
+  const [integrationTime, setIntegrationTime] = useURLState("integrationTime", 1); // s
 
   const actualMean = meanCounts;
   const snr = Math.sqrt(actualMean);

@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function LinearModeAPDPage() {
-  const [gain, setGain] = useState(100);
-  const [excessNoiseFactor, setExcessNoiseFactor] = useState(2.5);
-  const [quantumEff, setQuantumEff] = useState(0.8);
-  const [bandwidth, setBandwidth] = useState(100e6); // Hz
-  const [darkCurrent, setDarkCurrent] = useState(10e-9); // A (unmultiplied)
-  const [wavelength, setWavelength] = useState(800); // nm
-  const [incidentPower, setIncidentPower] = useState(1e-9); // W
+  const [gain, setGain] = useURLState("gain", 100);
+  const [excessNoiseFactor, setExcessNoiseFactor] = useURLState("excessNoiseFactor", 2.5);
+  const [quantumEff, setQuantumEff] = useURLState("quantumEff", 0.8);
+  const [bandwidth, setBandwidth] = useURLState("bandwidth", 100e6); // Hz
+  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 10e-9); // A (unmultiplied)
+  const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm
+  const [incidentPower, setIncidentPower] = useURLState("incidentPower", 1e-9); // W
 
   const results = useMemo(() => {
     const h = 6.626e-34;

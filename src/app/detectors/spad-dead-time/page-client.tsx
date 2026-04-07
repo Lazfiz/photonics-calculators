@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 // SPAD Dead Time Analysis
 // Non-paralyzable: R_meas = R_true / (1 + R_true · τ_d)
 // Paralyzable: R_meas = R_true · exp(-R_true · τ_d)
@@ -13,8 +14,8 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 // Pile-up correction, count rate loss, optimal dead time
 
 export default function SpadDeadTimePage() {
-  const [deadTime, setDeadTime] = useState(25); // ns
-  const [trueRate, setTrueRate] = useState(10); // Mcps (Mcountrate/s)
+  const [deadTime, setDeadTime] = useURLState("deadTime", 25); // ns
+  const [trueRate, setTrueRate] = useURLState("trueRate", 10); // Mcps (Mcountrate/s)
   const [mode, setMode] = useState<"nonparalyzable" | "paralyzable">("nonparalyzable");
 
   const tau = deadTime * 1e-9; // s

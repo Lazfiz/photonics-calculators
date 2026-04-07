@@ -5,10 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function InjectionLockingPage() {
-  const [masterPower, setMasterPower] = useState(10); // mW
-  const [slavePower, setSlavePower] = useState(1000); // mW
-  const [lockingBW, setLockingBW] = useState(10); // MHz
+  const [masterPower, setMasterPower] = useURLState("masterPower", 10); // mW
+  const [slavePower, setSlavePower] = useURLState("slavePower", 1000); // mW
+  const [lockingBW, setLockingBW] = useURLState("lockingBW", 10); // MHz
 
   const chartData = useMemo(() => {
     const f = Array.from({ length: 200 }, (_, i) => -50 + i * 0.5); // MHz offset

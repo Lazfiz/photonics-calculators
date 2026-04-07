@@ -6,11 +6,12 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function AtmosphericAttenuationPage() {
-  const [wavelength, setWavelength] = useState(10600); // nm (CO2)
-  const [distance, setDistance] = useState(1000); // m
-  const [humidity, setHumidity] = useState(50); // %
-  const [visibility, setVisibility] = useState(23); // km (standard)
+  const [wavelength, setWavelength] = useURLState("wavelength", 10600); // nm (CO2)
+  const [distance, setDistance] = useURLState("distance", 1000); // m
+  const [humidity, setHumidity] = useURLState("humidity", 50); // %
+  const [visibility, setVisibility] = useURLState("visibility", 23); // km (standard)
 
   // Beer-Lambert: T = exp(-α * L)
   // α depends on wavelength, humidity (H2O absorption), and scattering

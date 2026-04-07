@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 interface Glass {
   name: string;
   B1: number; B2: number; B3: number;
@@ -62,7 +63,7 @@ function sellmeier(g: Glass, lambdaUm: number): number {
 const colors = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4", "#f97316", "#14b8a6", "#a855f7"];
 
 export default function SchottGlassPage() {
-  const [wavelength, setWavelength] = useState(587.6);
+  const [wavelength, setWavelength] = useURLState("wavelength", 587.6);
   const [selected, setSelected] = useState("N-BK7");
 
   const n = useMemo(() => sellmeier(glasses[selected], wavelength / 1000), [selected, wavelength]);

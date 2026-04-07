@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function SolitonPage() {
-  const [pulseWidth, setPulseWidth] = useState(100); // fs FWHM
-  const [peakPower, setPeakPower] = useState(5000); // W
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100); // fs FWHM
+  const [peakPower, setPeakPower] = useURLState("peakPower", 5000); // W
   const [beta2, setBeta2] = useState(-11.83); // fs²/mm (silica @ 1550nm)
-  const [gamma, setGamma] = useState(1.3); // 1/(W·km)
-  const [distance, setDistance] = useState(50); // m
+  const [gamma, setGamma] = useURLState("gamma", 1.3); // 1/(W·km)
+  const [distance, setDistance] = useURLState("distance", 50); // m
 
   // Soliton order and parameters
   const t0 = pulseWidth / (2 * Math.sqrt(Math.LN2)); // 1/e half-width from FWHM

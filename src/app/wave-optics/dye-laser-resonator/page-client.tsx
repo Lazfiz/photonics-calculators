@@ -3,16 +3,17 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function DyeLaserResonatorPage() {
-  const [wavelength, setWavelength] = useState(590); // nm (Rhodamine 6G peak)
+  const [wavelength, setWavelength] = useURLState("wavelength", 590); // nm (Rhodamine 6G peak)
   const [dyeName, setDyeName] = useState("Rhodamine 6G");
-  const [cavityLength, setCavityLength] = useState(150); // mm
-  const [R1, setR1] = useState(50); // mm (HR, strongly curved)
-  const [R2, setR2] = useState(100); // mm (OC)
-  const [R_oc, setR_oc] = useState(0.85);
-  const [flowSpeed, setFlowSpeed] = useState(5); // m/s
-  const [concentration, setConcentration] = useState(1e-4); // M
-  const [pumpWavelength, setPumpWavelength] = useState(532); // nm
+  const [cavityLength, setCavityLength] = useURLState("cavityLength", 150); // mm
+  const [R1, setR1] = useURLState("R1", 50); // mm (HR, strongly curved)
+  const [R2, setR2] = useURLState("R2", 100); // mm (OC)
+  const [R_oc, setR_oc] = useURLState("R_oc", 0.85);
+  const [flowSpeed, setFlowSpeed] = useURLState("flowSpeed", 5); // m/s
+  const [concentration, setConcentration] = useURLState("concentration", 1e-4); // M
+  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 532); // nm
 
   const dyeParams: Record<string, { sigma_em: number; tau: number; sigma_abs_peak: number; lambda_max: number; quantum_yield: number }> = {
     "Rhodamine 6G": { sigma_em: 3e-20, tau: 3.5e-9, sigma_abs_peak: 4.5e-20, lambda_max: 590, quantum_yield: 0.95 },

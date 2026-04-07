@@ -3,13 +3,14 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function BirefringenceCalculator() {
-  const [coreIndex, setCoreIndex] = useState(1.468);
-  const [claddingIndex, setCladdingIndex] = useState(1.463);
-  const [coreRadius, setCoreRadius] = useState(4.5); // μm
-  const [ellipticity, setEllipticity] = useState(0.98); // b/a ratio
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [stressAnisotropy, setStressAnisotropy] = useState(0); // nm
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.468);
+  const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.463);
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.5); // μm
+  const [ellipticity, setEllipticity] = useURLState("ellipticity", 0.98); // b/a ratio
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [stressAnisotropy, setStressAnisotropy] = useURLState("stressAnisotropy", 0); // nm
 
   // V-number
   const na = Math.sqrt(coreIndex ** 2 - claddingIndex ** 2);

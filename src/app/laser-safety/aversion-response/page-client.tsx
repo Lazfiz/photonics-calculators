@@ -6,10 +6,11 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function AversionResponsePage() {
-  const [wavelength, setWavelength] = useState(632);
-  const [beamDiam, setBeamDiam] = useState(2);
-  const [divergence, setDivergence] = useState(1);
+  const [wavelength, setWavelength] = useURLState("wavelength", 632);
+  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 2);
+  const [divergence, setDivergence] = useURLState("divergence", 1);
 
   // Aversion response time ~0.25s (blink reflex for visible 400-700nm)
   // For intrabeam: NOHD = (1/φ) * sqrt( (P * MPE_t) / (π * (MPE / t)) ) simplified

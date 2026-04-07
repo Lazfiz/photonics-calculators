@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function BandpassFilterPage() {
-  const [nH, setNH] = useState(2.35);
-  const [nL, setNL] = useState(1.45);
-  const [nSub, setNSub] = useState(1.52);
-  const [centerWl, setCenterWl] = useState(1550);
-  const [cavityPairs, setCavityPairs] = useState(3);
-  const [cavities, setCavities] = useState(2);
-  const [spacerN, setSpacerN] = useState(2.1);
+  const [nH, setNH] = useURLState("nH", 2.35);
+  const [nL, setNL] = useURLState("nL", 1.45);
+  const [nSub, setNSub] = useURLState("nSub", 1.52);
+  const [centerWl, setCenterWl] = useURLState("centerWl", 1550);
+  const [cavityPairs, setCavityPairs] = useURLState("cavityPairs", 3);
+  const [cavities, setCavities] = useURLState("cavities", 2);
+  const [spacerN, setSpacerN] = useURLState("spacerN", 2.1);
 
   const tmm = useMemo(() => {
     const N = 500;

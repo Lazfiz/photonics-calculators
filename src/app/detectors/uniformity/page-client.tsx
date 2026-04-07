@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function UniformityPage() {
-  const [meanSignal, setMeanSignal] = useState(50000); // e-
-  const [prnuPercent, setPrnuPercent] = useState(1.0); // %
-  const [dsnuPercent, setDsnuPercent] = useState(0.3); // %
-  const [readNoise, setReadNoise] = useState(5); // e-
-  const [arraySize, setArraySize] = useState(1920); // pixels per side
+  const [meanSignal, setMeanSignal] = useURLState("meanSignal", 50000); // e-
+  const [prnuPercent, setPrnuPercent] = useURLState("prnuPercent", 1.0); // %
+  const [dsnuPercent, setDsnuPercent] = useURLState("dsnuPercent", 0.3); // %
+  const [readNoise, setReadNoise] = useURLState("readNoise", 5); // e-
+  const [arraySize, setArraySize] = useURLState("arraySize", 1920); // pixels per side
 
   const chartData = useMemo(() => {
     const N = 80;

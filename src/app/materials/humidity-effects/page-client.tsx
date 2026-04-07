@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 interface Material {
   name: string;
   // Water absorption rate (μg/cm²/day at given RH)
@@ -55,8 +56,8 @@ function surfaceScattering(mat: Material, rh: number, days: number): number {
 
 export default function HumidityEffectsPage() {
   const [selected, setSelected] = useState("Fused Silica");
-  const [rh, setRh] = useState(60);
-  const [exposureDays, setExposureDays] = useState(30);
+  const [rh, setRh] = useURLState("rh", 60);
+  const [exposureDays, setExposureDays] = useURLState("exposureDays", 30);
 
   const mat = materials[selected];
   const water = useMemo(() => waterAbsorption(mat, rh, exposureDays), [mat, rh, exposureDays]);

@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function MicroscopePolarizerPage() {
-  const [na, setNA] = useState(0.95);
-  const [wavelength, setWavelength] = useState(550);
-  const [condenserNA, setCondenserNA] = useState(0.9);
-  const [extinctionRatio, setExtinctionRatio] = useState(1000);
-  const [analyzerDeg, setAnalyzerDeg] = useState(90);
+  const [na, setNA] = useURLState("na", 0.95);
+  const [wavelength, setWavelength] = useURLState("wavelength", 550);
+  const [condenserNA, setCondenserNA] = useURLState("condenserNA", 0.9);
+  const [extinctionRatio, setExtinctionRatio] = useURLState("extinctionRatio", 1000);
+  const [analyzerDeg, setAnalyzerDeg] = useURLState("analyzerDeg", 90);
 
   const analyzerRad = analyzerDeg * Math.PI / 180;
 

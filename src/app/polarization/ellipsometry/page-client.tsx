@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-center py-1 border-b border-gray-800">
@@ -13,16 +14,16 @@ function ResultRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function EllipsometryPage() {
-  const [psiDeg, setPsiDeg] = useState(45);
-  const [deltaDeg, setDeltaDeg] = useState(90);
-  const [incidentAngle, setIncidentAngle] = useState(60);
-  const [nSubstrate, setNSubstrate] = useState(3.88); // Si
-  const [kSubstrate, setKSubstrate] = useState(0.02);
-  const [nAmbient, setNAmbient] = useState(1.0);
-  const [nFilm, setNFilm] = useState(1.46); // SiO2
-  const [kFilm, setKFilm] = useState(0);
-  const [filmThickness, setFilmThickness] = useState(100); // nm
-  const [wavelength, setWavelength] = useState(632.8); // nm HeNe
+  const [psiDeg, setPsiDeg] = useURLState("psiDeg", 45);
+  const [deltaDeg, setDeltaDeg] = useURLState("deltaDeg", 90);
+  const [incidentAngle, setIncidentAngle] = useURLState("incidentAngle", 60);
+  const [nSubstrate, setNSubstrate] = useURLState("nSubstrate", 3.88); // Si
+  const [kSubstrate, setKSubstrate] = useURLState("kSubstrate", 0.02);
+  const [nAmbient, setNAmbient] = useURLState("nAmbient", 1.0);
+  const [nFilm, setNFilm] = useURLState("nFilm", 1.46); // SiO2
+  const [kFilm, setKFilm] = useURLState("kFilm", 0);
+  const [filmThickness, setFilmThickness] = useURLState("filmThickness", 100); // nm
+  const [wavelength, setWavelength] = useURLState("wavelength", 632.8); // nm HeNe
 
   // Compute ρ = tan(ψ) · e^(iΔ)
   const rho = useMemo(() => {

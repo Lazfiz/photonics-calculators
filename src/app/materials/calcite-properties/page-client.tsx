@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 // Calcite (CaCO₃) - uniaxial negative crystal, very strong birefringence
 // Sellmeier from Ghosh (1999)
 const sellmeierNo = (wl_um: number) => {
@@ -32,9 +33,9 @@ const calcite = {
 };
 
 export default function CalcitePropertiesPage() {
-  const [wavelength, setWavelength] = useState(589);
-  const [thickness, setThickness] = useState(1); // mm
-  const [angle, setAngle] = useState(0); // degrees from optic axis
+  const [wavelength, setWavelength] = useURLState("wavelength", 589);
+  const [thickness, setThickness] = useURLState("thickness", 1); // mm
+  const [angle, setAngle] = useURLState("angle", 0); // degrees from optic axis
 
   const no = useMemo(() => sellmeierNo(wavelength / 1000), [wavelength]);
   const ne = useMemo(() => sellmeierNe(wavelength / 1000), [wavelength]);
