@@ -35,19 +35,6 @@ function scoreKeyword(item: KeywordItem, terms: string[]): number {
   return score;
 }
 
-// --- Semantic search module (isolated, loaded lazily via dynamic import) ---
-// This function is the ONLY thing that touches the AI model.
-// It returns results or null. Never throws to caller.
-async function semanticSearch(query: string, keywordHrefs: Set<string>): Promise<{ href: string; title: string }[] | null> {
-  try {
-    // Dynamic import — only pulls in code when actually called
-    const { performSemanticSearch } = await import("./semantic-search-module");
-    return await performSemanticSearch(query, keywordHrefs);
-  } catch {
-    return null;
-  }
-}
-
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<KeywordItem[]>([]);
@@ -55,6 +42,8 @@ export default function SearchPage() {
   const [aiLabel, setAiLabel] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const inputRef = useRef<HTMLInputElement>(null);
+  const workerRef = useRef<Worker | null>(null);
+  const aiReadyRef = useRef(false);
   const q = query.trim().toLowerCase();
   const terms = q.length > 0 ? q.split(/\s+/).filter(Boolean) : [];
 
@@ -72,6 +61,51 @@ export default function SearchPage() {
     if (qParam) setQuery(qParam);
   }, []);
 
+  // Set up worker — following HuggingFace official pattern
+  useEffect(() => {
+    if (!workerRef.current) {
+      workerRef.current = new Worker(new URL("./worker.ts", import.meta.url), {
+        type: "module",
+      });
+
+      workerRef.current.onmessage = (event) => {
+        const { type, message, results, count } = event.data;
+        if (type === "status") {
+          setAiLabel(message);
+        } else if (type === "ready") {
+          aiReadyRef.current = true;
+          setAiLabel(`✓ AI (${count} indexed)`);
+        } else if (type === "results") {
+          setResults((prev) => {
+            const existingHrefs = new Set(prev.map((r) => r.href));
+            const newResults = (results || [])
+              .filter((r: any) => !existingHrefs.has(r.href))
+              .map((r: any) => ({ href: r.href, title: r.title }));
+            return [...prev, ...newResults].slice(0, 12);
+          });
+          setAiLabel("AI enhanced");
+        } else if (type === "error") {
+          console.warn("[semantic-search]", message);
+          setAiLabel("");
+        }
+      };
+
+      workerRef.current.onerror = (err) => {
+        console.warn("[worker error]", err);
+        setAiLabel("");
+      };
+
+      // Init the model
+      workerRef.current.postMessage({ type: "init" });
+    }
+
+    return () => {
+      workerRef.current?.terminate();
+      workerRef.current = null;
+    };
+  }, []);
+
+  // Search
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (terms.length === 0) { setResults([]); setAiLabel(""); return; }
@@ -82,21 +116,11 @@ export default function SearchPage() {
       .sort((a, b) => b.score - a.score);
     setResults(kw.map(({ item }) => ({ href: item.href, title: item.title, description: item.description, category: item.category })));
 
-    // Semantic: fire and forget — never blocks keyword results
-    if (q.length < 10) { setAiLabel(""); return; }
-    setAiLabel("AI searching...");
+    if (q.length < 10 || !aiReadyRef.current || !workerRef.current) return;
     debounceRef.current = setTimeout(() => {
-      const kwHrefs = new Set(kw.map((r) => r.item.href));
-      semanticSearch(q, kwHrefs).then((semResults) => {
-        if (!semResults || semResults.length === 0) { setAiLabel(""); return; }
-        setResults(prev => {
-          const existingHrefs = new Set(prev.map(r => r.href));
-          const newResults = semResults.filter(r => !existingHrefs.has(r.href));
-          return [...prev, ...newResults].slice(0, 12);
-        });
-        setAiLabel("AI enhanced");
-      });
-    }, 600);
+      const kwHrefs = kw.map((r) => r.item.href);
+      workerRef.current?.postMessage({ type: "search", payload: q, excludeHrefs: kwHrefs });
+    }, 500);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [q, terms, items]);
 
@@ -128,7 +152,7 @@ export default function SearchPage() {
           />
           {aiLabel && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <span className="text-xs text-blue-400 animate-pulse">{aiLabel}</span>
+              <span className="text-xs text-blue-400">{aiLabel}</span>
             </div>
           )}
         </div>

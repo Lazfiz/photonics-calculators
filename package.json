@@ -12,6 +12,7 @@
     "test": "tsx --test tests/*.test.ts"
   },
   "dependencies": {
+    "@huggingface/transformers": "^4.0.1",
     "next": "16.2.2",
     "plotly.js": "^3.4.0",
     "plotly.js-dist-min": "^3.4.0",
