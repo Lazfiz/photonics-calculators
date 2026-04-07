@@ -1,5 +1,5 @@
 // Web Worker for semantic search — runs in isolated thread.
-// Loads @huggingface/transformers from CDN via importScripts (classic worker).
+// Loads @huggingface/transformers from CDN.
 // If ANY step fails, keyword search still works on the main thread.
 
 interface EmbeddingEntry {
@@ -22,48 +22,69 @@ function cosineSimilarity(a: number[], b: number[]): number {
   return dot / (Math.sqrt(na) * Math.sqrt(nb) + 1e-9);
 }
 
+async function loadScript(url: string): Promise<void> {
+  // Load a script into the worker context
+  const response = await fetch(url);
+  const code = await response.text();
+  // Use Function constructor to execute in worker global scope
+  const fn = new Function(code);
+  fn();
+}
+
 async function init(): Promise<void> {
   if (isReady) return;
 
-  // Load @huggingface/transformers from CDN into the worker
-  // Using the IIFE bundle which exposes window.Transformers
-  importScripts("https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1/dist/transformers.min.js");
+  self.postMessage({ type: "status", message: "Downloading AI model..." });
 
-  const { pipeline } = (self as any).Transformers;
-  if (!pipeline) {
-    self.postMessage({ type: "error", message: "Transformers.pipeline not found" });
-    return;
+  try {
+    // Load transformers.js from CDN
+    await loadScript("https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1/dist/transformers.min.js");
+
+    const Transformers = (self as any).Transformers;
+    if (!Transformers || !Transformers.pipeline) {
+      self.postMessage({ type: "error", message: "Transformers.pipeline not available after load" });
+      return;
+    }
+
+    self.postMessage({ type: "status", message: "Loading embedding model..." });
+
+    embedder = await Transformers.pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
+      dtype: "fp32",
+    });
+
+    self.postMessage({ type: "status", message: "Loading embeddings..." });
+
+    const res = await fetch("/search-embeddings.json");
+    embeddings = await res.json();
+
+    isReady = true;
+    self.postMessage({ type: "ready", count: embeddings.length });
+  } catch (err: any) {
+    self.postMessage({ type: "error", message: err?.message || "Unknown error loading model" });
   }
-
-  embedder = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
-    dtype: "fp32",
-  });
-
-  const res = await fetch("/search-embeddings.json");
-  embeddings = await res.json();
-
-  isReady = true;
-  self.postMessage({ type: "ready", count: embeddings.length });
 }
 
 async function search(query: string): Promise<void> {
   if (!isReady || !embedder) return;
 
-  const output = await embedder(query, { pooling: "mean", normalize: true });
-  const queryEmb = Array.from(output.data) as number[];
+  try {
+    const output = await embedder(query, { pooling: "mean", normalize: true });
+    const queryEmb = Array.from(output.data) as number[];
 
-  // Score all embeddings
-  const scored = embeddings
-    .map((entry) => ({
-      href: entry.href,
-      title: entry.title,
-      score: cosineSimilarity(queryEmb, entry.embedding),
-    }))
-    .filter((r) => r.score > 0.25)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 20); // return more than needed, main thread will merge
+    const scored = embeddings
+      .map((entry) => ({
+        href: entry.href,
+        title: entry.title,
+        score: cosineSimilarity(queryEmb, entry.embedding),
+      }))
+      .filter((r) => r.score > 0.25)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 20);
 
-  self.postMessage({ type: "results", results: scored });
+    self.postMessage({ type: "results", results: scored });
+  } catch (err: any) {
+    self.postMessage({ type: "error", message: err?.message || "Search failed" });
+  }
 }
 
 self.addEventListener("message", async (event: MessageEvent) => {

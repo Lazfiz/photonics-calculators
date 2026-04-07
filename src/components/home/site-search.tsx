@@ -49,6 +49,7 @@ export default function SiteSearch() {
   const [items, setItems] = useState<SearchItem[]>([]);
   const [semanticResults, setSemanticResults] = useState<SemanticResult[] | null>(null);
   const [aiStatus, setAiStatus] = useState<"idle" | "loading" | "ready">("idle");
+  const [aiMessage, setAiMessage] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const aiReadyRef = useRef(false);
@@ -77,12 +78,16 @@ export default function SiteSearch() {
         if (type === "ready") {
           aiReadyRef.current = true;
           setAiStatus("ready");
+          setAiMessage("");
         } else if (type === "results") {
           setSemanticResults(results);
+        } else if (type === "status") {
+          setAiMessage(message);
         } else if (type === "error") {
           console.warn("[semantic-search]", message);
           aiReadyRef.current = false;
           setAiStatus("idle");
+          setAiMessage("");
         }
       };
 
@@ -186,7 +191,7 @@ export default function SiteSearch() {
           className="w-full rounded-xl border border-white/10 bg-slate-950/80 pl-12 pr-24 py-3 text-base text-white placeholder-gray-500 outline-none transition focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-          {aiStatus === "loading" && <span className="text-xs text-blue-400 animate-pulse">AI loading</span>}
+          {aiStatus === "loading" && <span className="text-xs text-blue-400 animate-pulse">{aiMessage || "AI loading"}</span>}
           {aiStatus === "ready" && <span className="text-xs text-green-400">✓ AI</span>}
           <kbd className="hidden sm:inline-flex items-center rounded border border-gray-600 px-1.5 py-0.5 text-xs text-gray-400">⌘K</kbd>
         </div>
