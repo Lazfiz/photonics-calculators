@@ -15,9 +15,6 @@ interface CalculatorShellProps {
 
 function ShareButton() {
   const [copied, setCopied] = useState(false);
-  const hasParams = typeof window !== "undefined" && window.location.search.length > 0;
-
-  if (!hasParams) return null;
 
   return (
     <button
@@ -27,7 +24,7 @@ function ShareButton() {
         setTimeout(() => setCopied(false), 2000);
       }}
       className="shrink-0 mt-1 inline-flex items-center gap-1.5 rounded-lg border border-gray-700 bg-gray-900 px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:border-gray-500 transition-colors"
-      title="Copy URL with current settings"
+      title="Copy URL"
     >
       {copied ? (
         <>

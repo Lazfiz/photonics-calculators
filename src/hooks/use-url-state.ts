@@ -3,38 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
- * URL-synced state for calculator inputs.
+ * URL-aware state: reads from URL on mount, writes on explicit share.
+ * Does NOT update URL on every change (avoids Next.js re-render loop).
  *
- * Uses window.history.replaceState (not router.replace) to avoid
- * triggering Next.js re-renders on URL changes.
- *
- * - Reads initial value from URL search params on mount
- * - Writes to URL on change (defaults omitted for clean URLs)
- * - Multiple calls batch into a single replaceState via microtask
- *
- * Usage: const [wavelength, setWavelength] = useURLState("wavelength", 532);
+ * Usage:
+ *   const [wl, setWl] = useURLState("wavelength", 532);
+ *   // setWl(1064) → updates state only, no URL change
+ *   // On mount: reads ?wavelength=1064 from URL if present
  */
-
-let batchedParams: URLSearchParams | null = null;
-let batchScheduled = false;
-
-function scheduleFlush() {
-  if (batchScheduled) return;
-  batchScheduled = true;
-  queueMicrotask(() => {
-    batchScheduled = false;
-    if (typeof window === "undefined" || !batchedParams) return;
-    try {
-      const qs = batchedParams.toString();
-      const url = qs
-        ? window.location.pathname + "?" + qs
-        : window.location.pathname;
-      window.history.replaceState(null, "", url);
-    } catch {
-      // ignore
-    }
-  });
-}
 
 export function useURLState(
   key: string,
@@ -48,35 +24,40 @@ export function useURLState<T extends number | string>(
   key: string,
   defaultValue: T
 ): [T, (value: T | ((prev: T) => T)) => void] {
-  const [value, setValue] = useState(() => {
-    if (typeof window === "undefined") return defaultValue;
+  const [value, setValue] = useState<T>(defaultValue);
+
+  // Read URL params once on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const raw = params.get(key);
-    if (raw === null) return defaultValue;
+    if (raw === null) return;
     if (typeof defaultValue === "number") {
       const n = Number(raw);
-      return isNaN(n) ? defaultValue : (n as T);
+      if (!isNaN(n)) setValue(n as T);
+    } else {
+      setValue(raw as T);
     }
-    return raw as T;
-  });
+  }, [key, defaultValue]);
 
-  const update = useCallback(
-    (next: T | ((prev: T) => T)) => {
-      setValue((prev) => {
-        const val =
-          typeof next === "function" ? (next as (p: T) => T)(prev) : next;
-        if (typeof window !== "undefined") {
-          if (!batchedParams)
-            batchedParams = new URLSearchParams(window.location.search);
-          if (val === defaultValue) batchedParams.delete(key);
-          else batchedParams.set(key, String(val));
-          scheduleFlush();
-        }
-        return val;
-      });
-    },
-    [key, defaultValue]
-  );
+  return [value, setValue];
+}
 
-  return [value, update];
+/**
+ * Get current state as URL params string (for share button).
+ * Call this from a click handler — reads all input values and builds a URL.
+ *
+ * Usage:
+ *   const wl = ...; const power = ...; const dia = ...;
+ *   const url = buildShareURL({ wavelength: wl, power, beamDia: dia });
+ *   navigator.clipboard.writeText(url);
+ */
+export function buildShareURL(params: Record<string, number | string>): string {
+  if (typeof window === "undefined") return "";
+  const url = new URL(window.location.href);
+  url.search = "";
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
+  }
+  return url.toString();
 }
