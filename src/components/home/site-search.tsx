@@ -128,9 +128,8 @@ export default function SiteSearch() {
               </Link>
             ))}
           </div>
-          <div className="border-t border-white/5 px-4 py-2 text-xs text-gray-600 flex justify-between">
-            <span>{results.length} result{results.length !== 1 ? "s" : ""}</span>
-            <Link href="/search?q={encodeURIComponent(query)}" className="text-blue-400 hover:text-blue-300">AI search →</Link>
+          <div className="border-t border-white/5 px-4 py-2 text-xs text-gray-600">
+            {results.length} result{results.length !== 1 ? "s" : ""}
           </div>
         </div>
       )}
