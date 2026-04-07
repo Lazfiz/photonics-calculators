@@ -3,19 +3,16 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function CoherentAntiStokesPage() {
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 800);
-  const [stokesWavelength, setStokesWavelength] = useURLState("stokesWavelength", 1040);
-  const [na, setNa] = useURLState("na", 0.8);
-  const [n, setN] = useURLState("n", 1.33);
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100);
-  const [pumpPower, setPumpPower] = useURLState("pumpPower", 50);
-  const [stokesPower, setStokesPower] = useURLState("stokesPower", 30);
-  const [repRate, setRepRate] = useURLState("repRate", 80);
-  const [linewidth, setLinewidth] = useURLState("linewidth", 10);
+  const [pumpWavelength, setPumpWavelength] = useState(800);
+  const [stokesWavelength, setStokesWavelength] = useState(1040);
+  const [na, setNa] = useState(0.8);
+  const [n, setN] = useState(1.33);
+  const [pulseWidth, setPulseWidth] = useState(100);
+  const [pumpPower, setPumpPower] = useState(50);
+  const [stokesPower, setStokesPower] = useState(30);
+  const [repRate, setRepRate] = useState(80);
+  const [linewidth, setLinewidth] = useState(10);
 
   const results = useMemo(() => {
     const lamP = pumpWavelength * 1e-9;

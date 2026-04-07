@@ -5,15 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function ScanningMPEPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 532);
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 0.5); // mm at retina image
-  const [scanRate, setScanRate] = useURLState("scanRate", 100); // Hz
-  const [scanAngle, setScanAngle] = useURLState("scanAngle", 30); // degrees
-  const [workingDistance, setWorkingDistance] = useURLState("workingDistance", 100); // cm
+  const [wavelength, setWavelength] = useState(532);
+  const [beamDiam, setBeamDiam] = useState(0.5); // mm at retina image
+  const [scanRate, setScanRate] = useState(100); // Hz
+  const [scanAngle, setScanAngle] = useState(30); // degrees
+  const [workingDistance, setWorkingDistance] = useState(100); // cm
 
   // Scanning MPE: when a beam scans across the pupil, dwell time per point is reduced
   // t_dwell = beam_diam / (scan_speed) at the cornea

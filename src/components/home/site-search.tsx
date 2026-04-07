@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface SearchItem {
   title: string;
@@ -13,13 +13,7 @@ interface SearchItem {
   priority: number;
 }
 
-interface EmbeddingItem {
-  href: string;
-  title: string;
-  embedding: number[];
-}
-
-function scoreKeyword(item: SearchItem, terms: string[]): number {
+function scoreItem(item: SearchItem, terms: string[]) {
   const title = item.title.toLowerCase();
   const desc = item.description.toLowerCase();
   const href = item.href.toLowerCase();
@@ -27,6 +21,7 @@ function scoreKeyword(item: SearchItem, terms: string[]): number {
   const tags = item.tags.map((tag) => tag.toLowerCase());
   const titleWords = title.split(/[^a-z0-9]+/).filter(Boolean);
   let score = item.priority;
+
   for (const term of terms) {
     if (title === term) score += 400;
     if (title.startsWith(term)) score += 220;
@@ -39,71 +34,17 @@ function scoreKeyword(item: SearchItem, terms: string[]): number {
     if (href.includes(term)) score += 60;
     if (desc.includes(term)) score += 50;
   }
+
   return score;
-}
-
-function cosineSimilarity(a: number[], b: number[]): number {
-  let dot = 0, na = 0, nb = 0;
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    na += a[i] * a[i];
-    nb += b[i] * b[i];
-  }
-  return dot / (Math.sqrt(na) * Math.sqrt(nb) + 1e-10);
-}
-
-// Global references — loaded lazily via CDN script
-let embeddingsCache: EmbeddingItem[] | null = null;
-let modelReady = false;
-let modelLoading = false;
-
-async function loadEmbeddings(): Promise<EmbeddingItem[]> {
-  if (embeddingsCache) return embeddingsCache;
-  const res = await fetch("/search-embeddings.json");
-  embeddingsCache = await res.json();
-  return embeddingsCache!;
-}
-
-// Declare the global injected by the semantic-search-loader script
-declare global {
-  interface Window {
-    __semanticSearchEmbed: (text: string) => Promise<number[] | null>;
-    __semanticSearchReady: boolean;
-  }
-}
-
-async function embedQuery(text: string): Promise<number[] | null> {
-  try {
-    if (window.__semanticSearchEmbed) {
-      return window.__semanticSearchEmbed(text);
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function scoreSemantic(embeddings: EmbeddingItem[], queryEmbedding: number[], hrefSet: Set<string>): Map<string, number> {
-  const scores = new Map<string, number>();
-  for (const item of embeddings) {
-    if (!hrefSet.has(item.href)) continue;
-    const sim = cosineSimilarity(queryEmbedding, item.embedding);
-    scores.set(item.href, sim);
-  }
-  return scores;
 }
 
 export default function SiteSearch() {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<SearchItem[]>([]);
-  const [modelStatus, setModelStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
-  const [results, setResults] = useState<SearchItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const q = query.trim().toLowerCase();
   const terms = q.length > 0 ? q.split(/\s+/).filter(Boolean) : [];
 
-  // Fetch keyword search index
   useEffect(() => {
     fetch("/search-index.json")
       .then((r) => r.json())
@@ -111,7 +52,6 @@ export default function SiteSearch() {
       .catch(() => {});
   }, []);
 
-  // Cmd+K / Ctrl+K shortcut
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -127,113 +67,14 @@ export default function SiteSearch() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  // Lazy-load semantic model when first needed
-  const ensureModel = useCallback(async () => {
-    if (modelStatus === "ready") return;
-    if (modelStatus === "loading" || modelStatus === "error") return;
-
-    setModelStatus("loading");
-    modelLoading = true;
-
-    try {
-      // Load embeddings in parallel with model init
-      const embPromise = loadEmbeddings();
-
-      // Load the semantic search model via dynamic script injection
-      // This avoids bundling @huggingface/transformers with Next.js
-      if (!document.getElementById("semantic-search-loader")) {
-        const script = document.createElement("script");
-        script.id = "semantic-search-loader";
-        script.src = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1/dist/transformers.min.js";
-        script.onload = async () => {
-          try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const hf = (window as any).Transformers;
-            if (!hf || !hf.pipeline) {
-              setModelStatus("error");
-              return;
-            }
-            const extractor = await hf.pipeline(
-              "feature-extraction",
-              "Xenova/all-MiniLM-L6-v2",
-              { dtype: "fp32" }
-            );
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (window as any).__semanticSearchEmbed = async (text: string) => {
-              const output = await extractor(text, { pooling: "mean", normalize: true });
-              const data = output.tolist ? output.tolist()[0] : Array.from(output.data);
-              return data;
-            };
-            window.__semanticSearchReady = true;
-            await embPromise;
-            setModelStatus("ready");
-          } catch (err) {
-            console.warn("Semantic model init failed:", err);
-            setModelStatus("error");
-          }
-        };
-        script.onerror = () => setModelStatus("error");
-        document.head.appendChild(script);
-      }
-    } catch {
-      setModelStatus("error");
-    }
-  }, [modelStatus]);
-
-  // Debounced search with semantic fallback
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (terms.length === 0) {
-      setResults([]);
-      return;
-    }
-
-    // Instant keyword results
-    const keywordResults = items
-      .map((item) => ({ item, score: scoreKeyword(item, terms) }))
-      .filter(({ score }) => score > 0)
-      .sort((a, b) => b.score - a.score)
-      .map(({ item }) => item);
-    setResults(keywordResults.slice(0, 12));
-
-    // Try semantic after 500ms for longer queries
-    if (q.length < 8) return;
-
-    debounceRef.current = setTimeout(async () => {
-      if (modelStatus === "idle") {
-        await ensureModel();
-      }
-      if (modelStatus !== "ready") return;
-
-      try {
-        const embeddings = await loadEmbeddings();
-        const queryEmbedding = await embedQuery(q);
-        if (!queryEmbedding) return;
-
-        const hrefSet = new Set(items.map((i) => i.href));
-        const semanticScores = scoreSemantic(embeddings, queryEmbedding, hrefSet);
-
-        // Add semantic matches not already in keyword results
-        const hrefSet2 = new Set(keywordResults.map((i) => i.href));
-        const semanticResults: SearchItem[] = [];
-        for (const item of items) {
-          const semScore = semanticScores.get(item.href) ?? 0;
-          if (semScore > 0.3 && !hrefSet2.has(item.href)) {
-            semanticResults.push(item);
-          }
-        }
-        semanticResults.sort((a, b) => (semanticScores.get(b.href) ?? 0) - (semanticScores.get(a.href) ?? 0));
-
-        setResults([...keywordResults, ...semanticResults].slice(0, 12));
-      } catch {
-        // Keyword results still showing
-      }
-    }, 500);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [q, items, modelStatus, terms, ensureModel]);
+  const results = terms.length > 0
+    ? items
+        .map((item) => ({ item, score: scoreItem(item, terms) }))
+        .filter(({ score }) => score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map(({ item }) => item)
+        .slice(0, 12)
+    : [];
 
   const categoryColor: Record<string, string> = {
     "wave-optics": "text-blue-400",
@@ -260,17 +101,9 @@ export default function SiteSearch() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search 524 calculators... (Ctrl+K)"
-          className="w-full rounded-xl border border-white/10 bg-slate-950/80 pl-12 pr-24 py-3 text-base text-white placeholder-gray-500 outline-none transition focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+          className="w-full rounded-xl border border-white/10 bg-slate-950/80 pl-12 pr-16 py-3 text-base text-white placeholder-gray-500 outline-none transition focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
         />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-          {modelStatus === "loading" && (
-            <span className="text-xs text-blue-400 animate-pulse">AI loading</span>
-          )}
-          {modelStatus === "ready" && (
-            <span className="text-xs text-green-400">✓ AI</span>
-          )}
-          <kbd className="hidden sm:inline-flex items-center rounded border border-gray-600 px-1.5 py-0.5 text-xs text-gray-400">⌘K</kbd>
-        </div>
+        <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center rounded border border-gray-600 px-1.5 py-0.5 text-xs text-gray-400">⌘K</kbd>
       </div>
 
       {results.length > 0 && (
@@ -280,7 +113,7 @@ export default function SiteSearch() {
               <Link
                 key={item.href + idx}
                 href={item.href}
-                onClick={() => { setQuery(""); setResults([]); }}
+                onClick={() => { setQuery(""); }}
                 className="flex items-start gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors"
               >
                 <div className="min-w-0 flex-1">
@@ -296,7 +129,7 @@ export default function SiteSearch() {
             ))}
           </div>
           <div className="border-t border-white/5 px-4 py-2 text-xs text-gray-600">
-            {modelStatus === "ready" ? "semantic + keyword search" : "keyword search • type more for AI results"}
+            {results.length} result{results.length !== 1 ? "s" : ""}
           </div>
         </div>
       )}

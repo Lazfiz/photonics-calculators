@@ -5,17 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function IntensifiedCameraPage() {
-  const [gain, setGain] = useURLState("gain", 1000);
-  const [photocathodeQE, setPhotocathodeQE] = useURLState("photocathodeQE", 0.25);
-  const [mcpGain, setMcpGain] = useURLState("mcpGain", 1e4);
-  const [phosphorEff, setPhosphorEff] = useURLState("phosphorEff", 0.15);
-  const [fiberCoupling, setFiberCoupling] = useURLState("fiberCoupling", 0.5);
-  const [ccdQE, setCcdQE] = useURLState("ccdQE", 0.5);
-  const [ccdReadNoise, setCcdReadNoise] = useURLState("ccdReadNoise", 10);
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
+  const [gain, setGain] = useState(1000);
+  const [photocathodeQE, setPhotocathodeQE] = useState(0.25);
+  const [mcpGain, setMcpGain] = useState(1e4);
+  const [phosphorEff, setPhosphorEff] = useState(0.15);
+  const [fiberCoupling, setFiberCoupling] = useState(0.5);
+  const [ccdQE, setCcdQE] = useState(0.5);
+  const [ccdReadNoise, setCcdReadNoise] = useState(10);
+  const [wavelength, setWavelength] = useState(550);
 
   const totalGain = photocathodeQE * mcpGain * phosphorEff * fiberCoupling * ccdQE * gain;
   const electronGain = mcpGain * phosphorEff * fiberCoupling;

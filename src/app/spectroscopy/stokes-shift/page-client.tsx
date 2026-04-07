@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function StokesShiftPage() {
-  const [absPeak, setAbsPeak] = useURLState("absPeak", 480);
-  const [emPeak, setEmPeak] = useURLState("emPeak", 520);
-  const [absFWHM, setAbsFWHM] = useURLState("absFWHM", 30);
-  const [emFWHM, setEmFWHM] = useURLState("emFWHM", 40);
+  const [absPeak, setAbsPeak] = useState(480);
+  const [emPeak, setEmPeak] = useState(520);
+  const [absFWHM, setAbsFWHM] = useState(30);
+  const [emFWHM, setEmFWHM] = useState(40);
 
   const stokesShiftNm = emPeak - absPeak;
   const stokesShiftCm = (1e7 / absPeak - 1e7 / emPeak);

@@ -3,19 +3,16 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function RareEarthDopedFiberCalculator() {
   const [dopantType, setDopantType] = useState<"Er" | "Yb" | "ErYb" | "Tm" | "Nd">("Er");
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 5); // m
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 2.5); // μm
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.462);
-  const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.457);
-  const [dopantConcentration, setDopantConcentration] = useURLState("dopantConcentration", 1000); // ppm by weight
-  const [pumpPower, setPumpPower] = useURLState("pumpPower", 200); // mW
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 980); // nm
-  const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 1550); // nm
+  const [fiberLength, setFiberLength] = useState(5); // m
+  const [coreRadius, setCoreRadius] = useState(2.5); // μm
+  const [coreIndex, setCoreIndex] = useState(1.462);
+  const [claddingIndex, setCladdingIndex] = useState(1.457);
+  const [dopantConcentration, setDopantConcentration] = useState(1000); // ppm by weight
+  const [pumpPower, setPumpPower] = useState(200); // mW
+  const [pumpWavelength, setPumpWavelength] = useState(980); // nm
+  const [signalWavelength, setSignalWavelength] = useState(1550); // nm
 
   // Dopant properties
   const dopantParams = {

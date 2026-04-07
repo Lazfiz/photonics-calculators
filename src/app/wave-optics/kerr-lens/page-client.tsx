@@ -5,15 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function KerrLensPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm
-  const [beamWaist, setBeamWaist] = useURLState("beamWaist", 50); // µm
-  const [n2, setN2] = useURLState("n2", 3.2); // ×10⁻¹⁶ cm²/W (Ti:Sapphire)
-  const [power, setPower] = useURLState("power", 1); // W
-  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 2); // mm
-  const [n0, setN0] = useURLState("n0", 1.76); // refractive index
+  const [wavelength, setWavelength] = useState(800); // nm
+  const [beamWaist, setBeamWaist] = useState(50); // µm
+  const [n2, setN2] = useState(3.2); // ×10⁻¹⁶ cm²/W (Ti:Sapphire)
+  const [power, setPower] = useState(1); // W
+  const [crystalLength, setCrystalLength] = useState(2); // mm
+  const [n0, setN0] = useState(1.76); // refractive index
 
   const k = 2 * Math.PI / (wavelength * 1e-3); // 1/µm
   const Pcr = 3.77 * Math.pow(wavelength * 1e-3, 2) / (8 * Math.PI * n0 * n2 * 1e-4); // critical power in W (n2 in cm²/W → µm²/W)

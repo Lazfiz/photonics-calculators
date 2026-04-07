@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function BeamQualityPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [m2, setM2] = useURLState("m2", 1.0);
-  const [w0meas, setW0meas] = useURLState("w0meas", 50); // µm measured waist
-  const [zRmeas, setZRmeas] = useURLState("zRmeas", 7.4); // mm measured Rayleigh range
+  const [wavelength, setWavelength] = useState(1064); // nm
+  const [m2, setM2] = useState(1.0);
+  const [w0meas, setW0meas] = useState(50); // µm measured waist
+  const [zRmeas, setZRmeas] = useState(7.4); // mm measured Rayleigh range
 
   const calc = useMemo(() => {
     // From measured data

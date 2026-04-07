@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function ModeMatchingPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [w1, setW1] = useURLState("w1", 50); // µm input beam waist
-  const [w2, setW2] = useURLState("w2", 200); // µm target beam waist
-  const [d, setD] = useURLState("d", 200); // mm distance between waists
+  const [wavelength, setWavelength] = useState(1550); // nm
+  const [w1, setW1] = useState(50); // µm input beam waist
+  const [w2, setW2] = useState(200); // µm target beam waist
+  const [d, setD] = useState(200); // mm distance between waists
 
   const lam = wavelength * 1e-3; // µm (nm → µm)
   const zR1 = Math.PI * w1 * w1 / lam; // µm

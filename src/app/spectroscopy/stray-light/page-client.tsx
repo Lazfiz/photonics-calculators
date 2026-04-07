@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function StrayLightPage() {
-  const [gratingLines, setGratingLines] = useURLState("gratingLines", 600);
-  const [order, setOrder] = useURLState("order", 1);
-  const [centralWavelength, setCentralWavelength] = useURLState("centralWavelength", 600);
-  const [scatterFraction, setScatterFraction] = useURLState("scatterFraction", 0.001);
+  const [gratingLines, setGratingLines] = useState(600);
+  const [order, setOrder] = useState(1);
+  const [centralWavelength, setCentralWavelength] = useState(600);
+  const [scatterFraction, setScatterFraction] = useState(0.001);
 
   const chartData = useMemo(() => {
     // Stray light rejection across wavelengths

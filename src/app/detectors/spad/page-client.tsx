@@ -6,18 +6,16 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 // SPAD: Single-Photon Avalanche Diode
 // PDE = η · P_geiger · P_quench
 // Afterpulsing probability, dead time, DCR model
 export default function SPADPage() {
-  const [pde, setPde] = useURLState("pde", 0.4); // peak PDE
-  const [dcr, setDcr] = useURLState("dcr", 100); // dark count rate per second
-  const [deadTime, setDeadTime] = useURLState("deadTime", 50); // ns
-  const [afterpulseProb, setAfterpulseProb] = useURLState("afterpulseProb", 0.02); // probability
+  const [pde, setPde] = useState(0.4); // peak PDE
+  const [dcr, setDcr] = useState(100); // dark count rate per second
+  const [deadTime, setDeadTime] = useState(50); // ns
+  const [afterpulseProb, setAfterpulseProb] = useState(0.02); // probability
   const [opticalPower, setOpticalPower] = useState(-60); // dBm
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [wavelength, setWavelength] = useState(1550); // nm
   const [temp, setTemp] = useState(-20); // °C
 
   const powerW = Math.pow(10, opticalPower / 10) * 1e-3;

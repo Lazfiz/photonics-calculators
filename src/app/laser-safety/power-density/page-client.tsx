@@ -4,11 +4,9 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function PowerDensityPage() {
-  const [power, setPower] = useURLState("power", 1); // W
-  const [diameter, setDiameter] = useURLState("diameter", 1); // mm (1/e²)
+  const [power, setPower] = useState(1); // W
+  const [diameter, setDiameter] = useState(1); // mm (1/e²)
   const [beamProfile, setBeamProfile] = useState<"gaussian" | "tophat">("gaussian");
 
   // Power density (irradiance): E = P / A

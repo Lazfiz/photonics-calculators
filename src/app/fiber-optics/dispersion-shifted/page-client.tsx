@@ -3,16 +3,13 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function DispersionShiftedCalculator() {
   const [fiberType, setFiberType] = useState<"DSF" | "NZDSF+" | "NZDSF-" | "DCF">("NZDSF+");
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.2);
-  const [deltaProfile, setDeltaProfile] = useURLState("deltaProfile", 0.008); // relative index difference
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 80); // km
-  const [bitRate, setBitRate] = useURLState("bitRate", 10); // Gbps
+  const [wavelength, setWavelength] = useState(1550);
+  const [coreRadius, setCoreRadius] = useState(4.2);
+  const [deltaProfile, setDeltaProfile] = useState(0.008); // relative index difference
+  const [fiberLength, setFiberLength] = useState(80); // km
+  const [bitRate, setBitRate] = useState(10); // Gbps
 
   // Dispersion parameters per fiber type
   const params = {

@@ -5,18 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function LinkBudgetPage() {
-  const [txPower, setTxPower] = useURLState("txPower", 0); // dBm
+  const [txPower, setTxPower] = useState(0); // dBm
   const [rxSensitivity, setRxSensitivity] = useState(-28); // dBm
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 50); // km
-  const [fiberAttenuation, setFiberAttenuation] = useURLState("fiberAttenuation", 0.2); // dB/km
-  const [spliceCount, setSpliceCount] = useURLState("spliceCount", 10);
-  const [spliceLoss, setSpliceLoss] = useURLState("spliceLoss", 0.1); // dB each
-  const [connectorCount, setConnectorCount] = useURLState("connectorCount", 2);
-  const [connectorLoss, setConnectorLoss] = useURLState("connectorLoss", 0.5); // dB each
-  const [margin, setMargin] = useURLState("margin", 3); // dB system margin
+  const [fiberLength, setFiberLength] = useState(50); // km
+  const [fiberAttenuation, setFiberAttenuation] = useState(0.2); // dB/km
+  const [spliceCount, setSpliceCount] = useState(10);
+  const [spliceLoss, setSpliceLoss] = useState(0.1); // dB each
+  const [connectorCount, setConnectorCount] = useState(2);
+  const [connectorLoss, setConnectorLoss] = useState(0.5); // dB each
+  const [margin, setMargin] = useState(3); // dB system margin
 
   const calc = useMemo(() => {
     const fiberLoss = fiberLength * fiberAttenuation;

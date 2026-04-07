@@ -3,13 +3,10 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function RainAttenuationPage() {
-  const [rainRate, setRainRate] = useURLState("rainRate", 25);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [range, setRange] = useURLState("range", 1);
+  const [rainRate, setRainRate] = useState(25);
+  const [wavelength, setWavelength] = useState(1550);
+  const [range, setRange] = useState(1);
   const [polarization, setPolarization] = useState<"h" | "v">("h");
 
   const calc = useMemo(() => {

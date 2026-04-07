@@ -3,18 +3,15 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function RareEarthFiberCalculator() {
   const [dopant, setDopant] = useState<"Er" | "Yb" | "Er/Yb" | "Tm" | "Ho">("Er");
-  const [dopantConcentration, setDopantConcentration] = useURLState("dopantConcentration", 1e24); // ions/m³
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 5); // m
-  const [coreDiameter, setCoreDiameter] = useURLState("coreDiameter", 4.4); // µm
-  const [numericalAperture, setNumericalAperture] = useURLState("numericalAperture", 0.16);
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 980); // nm
-  const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 1550); // nm
-  const [overlapFactor, setOverlapFactor] = useURLState("overlapFactor", 0.75);
+  const [dopantConcentration, setDopantConcentration] = useState(1e24); // ions/m³
+  const [fiberLength, setFiberLength] = useState(5); // m
+  const [coreDiameter, setCoreDiameter] = useState(4.4); // µm
+  const [numericalAperture, setNumericalAperture] = useState(0.16);
+  const [pumpWavelength, setPumpWavelength] = useState(980); // nm
+  const [signalWavelength, setSignalWavelength] = useState(1550); // nm
+  const [overlapFactor, setOverlapFactor] = useState(0.75);
 
   // Dopant properties
   const dopantInfo = useMemo(() => {

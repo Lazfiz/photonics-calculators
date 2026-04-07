@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function PBSPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 633);
-  const [nO, setNO] = useURLState("nO", 1.6557);
-  const [nE, setNE] = useURLState("nE", 1.4852);
-  const [cutAngleDeg, setCutAngleDeg] = useURLState("cutAngleDeg", 42.5);
+  const [wavelength, setWavelength] = useState(633);
+  const [nO, setNO] = useState(1.6557);
+  const [nE, setNE] = useState(1.4852);
+  const [cutAngleDeg, setCutAngleDeg] = useState(42.5);
 
   const cutAngle = cutAngleDeg * Math.PI / 180;
   const lamUm = wavelength / 1000;

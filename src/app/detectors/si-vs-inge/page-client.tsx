@@ -5,15 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 // Si vs InGaAs detector comparison
 // Si: 400-1100 nm, high QE, low dark current
 // InGaAs: 900-1700 nm (extended to 2600), higher dark current, lower QE at visible
 export default function SiVsInGaAsPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [wavelength, setWavelength] = useState(1550);
   const [opticalPowerDbm, setOpticalPowerDbm] = useState(-40);
-  const [temperature, setTemperature] = useURLState("temperature", 25);
+  const [temperature, setTemperature] = useState(25);
 
   const powerW = Math.pow(10, opticalPowerDbm / 10) * 1e-3;
   const photonEnergy = 6.626e-34 * 3e8 / (wavelength * 1e-9);

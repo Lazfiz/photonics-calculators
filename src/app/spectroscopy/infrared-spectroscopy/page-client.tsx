@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function InfraredSpectroscopyPage() {
-  const [wavenumberStart, setWavenumberStart] = useURLState("wavenumberStart", 400);
-  const [wavenumberEnd, setWavenumberEnd] = useURLState("wavenumberEnd", 4000);
-  const [pathLength, setPathLength] = useURLState("pathLength", 0.01);
-  const [concentration, setConcentration] = useURLState("concentration", 0.1);
+  const [wavenumberStart, setWavenumberStart] = useState(400);
+  const [wavenumberEnd, setWavenumberEnd] = useState(4000);
+  const [pathLength, setPathLength] = useState(0.01);
+  const [concentration, setConcentration] = useState(0.1);
 
   // Common IR absorption bands
   const bands = [

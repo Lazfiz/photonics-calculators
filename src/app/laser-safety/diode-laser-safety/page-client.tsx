@@ -6,15 +6,13 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function DiodeLaserSafetyPage() {
-  const [power, setPower] = useURLState("power", 500); // mW
-  const [wavelength, setWavelength] = useURLState("wavelength", 808); // nm
-  const [beamDia, setBeamDia] = useURLState("beamDia", 1); // mm (fast axis)
-  const [divergenceH, setDivergenceH] = useURLState("divergenceH", 10); // mrad slow axis
-  const [divergenceV, setDivergenceV] = useURLState("divergenceV", 30); // mrad fast axis
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 0.25); // s (aversion)
+  const [power, setPower] = useState(500); // mW
+  const [wavelength, setWavelength] = useState(808); // nm
+  const [beamDia, setBeamDia] = useState(1); // mm (fast axis)
+  const [divergenceH, setDivergenceH] = useState(10); // mrad slow axis
+  const [divergenceV, setDivergenceV] = useState(30); // mrad fast axis
+  const [exposureTime, setExposureTime] = useState(0.25); // s (aversion)
 
   // MPE simplified for retinal hazard region (400-1400 nm)
   const mpe = useMemo(() => {

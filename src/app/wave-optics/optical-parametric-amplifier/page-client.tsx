@@ -2,9 +2,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 const c = 3e8;
 const eps0 = 8.854e-12;
 
@@ -26,15 +23,15 @@ function opaGain({ pumpWavelength, signalWavelength, crystalLength, dEff, nPump,
 }
 
 export default function OPACalculator() {
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 532);
-  const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 1064);
-  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 15);
-  const [dEff, setDEff] = useURLState("dEff", 2.0);
-  const [nPump, setNPump] = useURLState("nPump", 1.65);
-  const [nSignal, setNSignal] = useURLState("nSignal", 1.53);
-  const [nIdler, setNIdler] = useURLState("nIdler", 1.53);
-  const [pumpPower, setPumpPower] = useURLState("pumpPower", 10);
-  const [beamRadius, setBeamRadius] = useURLState("beamRadius", 50);
+  const [pumpWavelength, setPumpWavelength] = useState(532);
+  const [signalWavelength, setSignalWavelength] = useState(1064);
+  const [crystalLength, setCrystalLength] = useState(15);
+  const [dEff, setDEff] = useState(2.0);
+  const [nPump, setNPump] = useState(1.65);
+  const [nSignal, setNSignal] = useState(1.53);
+  const [nIdler, setNIdler] = useState(1.53);
+  const [pumpPower, setPumpPower] = useState(10);
+  const [beamRadius, setBeamRadius] = useState(50);
 
   const result = useMemo(() => opaGain({ pumpWavelength, signalWavelength, crystalLength, dEff, nPump, nSignal, nIdler, pumpPower, beamRadius }), [pumpWavelength, signalWavelength, crystalLength, dEff, nPump, nSignal, nIdler, pumpPower, beamRadius]);
 

@@ -5,12 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function DopplerBroadeningPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 632.8);
-  const [temperature, setTemperature] = useURLState("temperature", 300);
-  const [mass, setMass] = useURLState("mass", 20.18); // Neon in amu
+  const [wavelength, setWavelength] = useState(632.8);
+  const [temperature, setTemperature] = useState(300);
+  const [mass, setMass] = useState(20.18); // Neon in amu
 
   const c = 3e8;
   const kB = 1.381e-23;

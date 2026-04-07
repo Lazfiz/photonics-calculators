@@ -5,18 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function StressMeasurementPage() {
-  const [radius, setRadius] = useURLState("radius", 25);
-  const [thickness, setThickness] = useURLState("thickness", 100);
-  const [nFilm, setNFilm] = useURLState("nFilm", 1.46);
-  const [deflection, setDeflection] = useURLState("deflection", 1e-6);
-  const [poissonRatio, setPoissonRatio] = useURLState("poissonRatio", 0.22);
-  const [youngsModulus, setYoungsModulus] = useURLState("youngsModulus", 70);
-  const [substrateThickness, setSubstrateThickness] = useURLState("substrateThickness", 0.5);
-  const [temperature, setTemperature] = useURLState("temperature", 25);
-  const [depositionTemp, setDepositionTemp] = useURLState("depositionTemp", 200);
+  const [radius, setRadius] = useState(25);
+  const [thickness, setThickness] = useState(100);
+  const [nFilm, setNFilm] = useState(1.46);
+  const [deflection, setDeflection] = useState(1e-6);
+  const [poissonRatio, setPoissonRatio] = useState(0.22);
+  const [youngsModulus, setYoungsModulus] = useState(70);
+  const [substrateThickness, setSubstrateThickness] = useState(0.5);
+  const [temperature, setTemperature] = useState(25);
+  const [depositionTemp, setDepositionTemp] = useState(200);
 
   const results = useMemo(() => {
     const R = radius * 1e-3; // m

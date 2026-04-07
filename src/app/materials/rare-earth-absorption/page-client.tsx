@@ -3,9 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 // Rare earth ions: Er³⁺, Nd³⁺, Yb³⁺, Tm³⁺, Ho³⁺
 // Absorption cross-section data (simplified Gaussian peaks)
 interface REPeak { wl: number; sigma: number; fwhm: number; transition: string }
@@ -53,8 +50,8 @@ function absorptionCrossSection(wl: number, peaks: REPeak[]): number {
 
 export default function RareEarthAbsorptionPage() {
   const [selected, setSelected] = useState<string[]>(["Er3", "Nd3", "Yb3"]);
-  const [concentration, setConcentration] = useURLState("concentration", 1e25); // ions/m³
-  const [pumpWl, setPumpWl] = useURLState("pumpWl", 980);
+  const [concentration, setConcentration] = useState(1e25); // ions/m³
+  const [pumpWl, setPumpWl] = useState(980);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 400 }, (_, i) => 400 + i * 4);

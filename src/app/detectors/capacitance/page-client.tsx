@@ -5,17 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 const gradingExponent: Record<string, number> = { abrupt: 0.5, graded: 0.33, hyperabrupt: 0.75 };
 
 export default function CapacitancePage() {
-  const [zeroBiasCap, setZeroBiasCap] = useURLState("zeroBiasCap", 10);
-  const [builtInVoltage, setBuiltInVoltage] = useURLState("builtInVoltage", 0.6);
-  const [reverseBias, setReverseBias] = useURLState("reverseBias", 5);
+  const [zeroBiasCap, setZeroBiasCap] = useState(10);
+  const [builtInVoltage, setBuiltInVoltage] = useState(0.6);
+  const [reverseBias, setReverseBias] = useState(5);
   const [gradingProfile, setGradingProfile] = useState<"abrupt" | "graded" | "hyperabrupt">("abrupt");
-  const [loadResistance, setLoadResistance] = useURLState("loadResistance", 50);
-  const [seriesResistance, setSeriesResistance] = useURLState("seriesResistance", 10);
+  const [loadResistance, setLoadResistance] = useState(50);
+  const [seriesResistance, setSeriesResistance] = useState(10);
 
   const m = gradingExponent[gradingProfile];
   const capacitance = zeroBiasCap / Math.pow(1 + reverseBias / builtInVoltage, m);

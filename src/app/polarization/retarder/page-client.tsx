@@ -5,12 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function RetarderPage() {
-  const [retardanceDeg, setRetardanceDeg] = useURLState("retardanceDeg", 90);
-  const [fastAxisDeg, setFastAxisDeg] = useURLState("fastAxisDeg", 0);
-  const [inputPolDeg, setInputPolDeg] = useURLState("inputPolDeg", 45);
+  const [retardanceDeg, setRetardanceDeg] = useState(90);
+  const [fastAxisDeg, setFastAxisDeg] = useState(0);
+  const [inputPolDeg, setInputPolDeg] = useState(45);
 
   const chartData = useMemo(() => {
     const retardanceRad = retardanceDeg * Math.PI / 180;

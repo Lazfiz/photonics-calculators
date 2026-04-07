@@ -3,9 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 interface EOCrystal {
   name: string;
   crystalSystem: string;
@@ -76,9 +73,9 @@ const colors = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899"
 
 export default function ElectroOpticPage() {
   const [selected, setSelected] = useState("LiNbO₃");
-  const [voltage, setVoltage] = useURLState("voltage", 1000);
-  const [gap, setGap] = useURLState("gap", 20); // μm
-  const [wavelength, setWavelength] = useURLState("wavelength", 633);
+  const [voltage, setVoltage] = useState(1000);
+  const [gap, setGap] = useState(20); // μm
+  const [wavelength, setWavelength] = useState(633);
 
   const m = materials[selected];
 

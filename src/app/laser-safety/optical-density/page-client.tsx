@@ -11,14 +11,12 @@ import LaserSafetyCwReferences from "../../../components/laser-safety-cw-referen
 import LaserSafetyCwScope from "../../../components/laser-safety-cw-scope";
 import LaserSafetySuiteLinks from "../../../components/laser-safety-suite-links";
 import { cwPointSourceOdPrecheck } from "../../../lib/laser-safety-cw-suite";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function OpticalDensityPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 532);
-  const [power, setPower] = useURLState("power", 500);
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 3);
-  const [exposure, setExposure] = useURLState("exposure", 0.25);
-  const [safetyFactor, setSafetyFactor] = useURLState("safetyFactor", 10);
+  const [wavelength, setWavelength] = useState(532);
+  const [power, setPower] = useState(500);
+  const [beamDiam, setBeamDiam] = useState(3);
+  const [exposure, setExposure] = useState(0.25);
+  const [safetyFactor, setSafetyFactor] = useState(10);
 
   const result = useMemo(
     () => cwPointSourceOdPrecheck({ wavelengthNm: wavelength, exposureS: exposure, powerMw: power, beamDiameterMm: beamDiam, safetyFactor }),

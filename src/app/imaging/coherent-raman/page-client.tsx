@@ -3,18 +3,15 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function CoherentRamanPage() {
   const [mode, setMode] = useState<"CARS" | "SRS">("CARS");
-  const [pumpWl, setPumpWl] = useURLState("pumpWl", 800); // nm
-  const [wavenumber, setWavenumber] = useURLState("wavenumber", 2850); // cm⁻¹ (CH stretch)
-  const [pumpPower, setPumpPower] = useURLState("pumpPower", 50); // mW
-  const [stokesPower, setStokesPower] = useURLState("stokesPower", 50); // mW
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 2); // ps
-  const [repRate, setRepRate] = useURLState("repRate", 80); // MHz
-  const [na, setNa] = useURLState("na", 1.0);
+  const [pumpWl, setPumpWl] = useState(800); // nm
+  const [wavenumber, setWavenumber] = useState(2850); // cm⁻¹ (CH stretch)
+  const [pumpPower, setPumpPower] = useState(50); // mW
+  const [stokesPower, setStokesPower] = useState(50); // mW
+  const [pulseWidth, setPulseWidth] = useState(2); // ps
+  const [repRate, setRepRate] = useState(80); // MHz
+  const [na, setNa] = useState(1.0);
 
   const results = useMemo(() => {
     const deltaNu = wavenumber; // cm⁻¹

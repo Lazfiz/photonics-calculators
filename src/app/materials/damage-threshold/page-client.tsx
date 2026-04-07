@@ -3,9 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 interface Material {
   name: string;
   // LIDT in J/cm² at various pulse durations (ns), reference 1064nm
@@ -50,11 +47,11 @@ function peakIntensity(power: number, diameter: number) {
 
 export default function DamageThresholdPage() {
   const [selected, setSelected] = useState("Fused Silica");
-  const [pulseDuration, setPulseDuration] = useURLState("pulseDuration", 10);
-  const [energy, setEnergy] = useURLState("energy", 0.5);
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 1);
+  const [pulseDuration, setPulseDuration] = useState(10);
+  const [energy, setEnergy] = useState(0.5);
+  const [beamDiam, setBeamDiam] = useState(1);
   const [isCW, setIsCW] = useState(false);
-  const [cwPower, setCwPower] = useURLState("cwPower", 100);
+  const [cwPower, setCwPower] = useState(100);
   const [useCoating, setUseCoating] = useState(true);
 
   const mat = materials[selected];

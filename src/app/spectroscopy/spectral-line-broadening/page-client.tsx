@@ -5,15 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function SpectralLineBroadeningPage() {
-  const [centerWl, setCenterWl] = useURLState("centerWl", 500); // nm
-  const [temperature, setTemperature] = useURLState("temperature", 5000); // K
-  const [molecularMass, setMolecularMass] = useURLState("molecularMass", 20); // amu
-  const [pressure, setPressure] = useURLState("pressure", 1); // atm
-  const [gammaCol, setGammaCol] = useURLState("gammaCol", 0.1); // cm⁻¹ FWHM collisional
-  const [naturalWidth, setNaturalWidth] = useURLState("naturalWidth", 0.001); // cm⁻¹
+  const [centerWl, setCenterWl] = useState(500); // nm
+  const [temperature, setTemperature] = useState(5000); // K
+  const [molecularMass, setMolecularMass] = useState(20); // amu
+  const [pressure, setPressure] = useState(1); // atm
+  const [gammaCol, setGammaCol] = useState(0.1); // cm⁻¹ FWHM collisional
+  const [naturalWidth, setNaturalWidth] = useState(0.001); // cm⁻¹
 
   const chartData = useMemo(() => {
     const sigma0 = 1e7 / centerWl; // cm⁻¹

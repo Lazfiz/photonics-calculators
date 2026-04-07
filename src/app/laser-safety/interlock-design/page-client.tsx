@@ -7,15 +7,13 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function InterlockDesignPage() {
-  const [laserPower, setLaserPower] = useURLState("laserPower", 5000); // mW
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 5); // mm
-  const [shutterTime, setShutterTime] = useURLState("shutterTime", 50); // ms (shutter response)
-  const [humanResponse, setHumanResponse] = useURLState("humanResponse", 200); // ms (reaction time)
-  const [accessDistance, setAccessDistance] = useURLState("accessDistance", 50); // cm (distance to hazard)
+  const [laserPower, setLaserPower] = useState(5000); // mW
+  const [wavelength, setWavelength] = useState(1064); // nm
+  const [beamDiam, setBeamDiam] = useState(5); // mm
+  const [shutterTime, setShutterTime] = useState(50); // ms (shutter response)
+  const [humanResponse, setHumanResponse] = useState(200); // ms (reaction time)
+  const [accessDistance, setAccessDistance] = useState(50); // cm (distance to hazard)
 
   const results = useMemo(() => {
     const P = laserPower / 1000; // W

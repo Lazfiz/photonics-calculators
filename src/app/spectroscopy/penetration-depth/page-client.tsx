@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function PenetrationDepthPage() {
-  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 800);
-  const [refractiveIndexN, setRefractiveIndexN] = useURLState("refractiveIndexN", 1.5);
-  const [extinctionCoeffK, setExtinctionCoeffK] = useURLState("extinctionCoeffK", 0.001);
-  const [angleDeg, setAngleDeg] = useURLState("angleDeg", 0);
+  const [wavelengthNm, setWavelengthNm] = useState(800);
+  const [refractiveIndexN, setRefractiveIndexN] = useState(1.5);
+  const [extinctionCoeffK, setExtinctionCoeffK] = useState(0.001);
+  const [angleDeg, setAngleDeg] = useState(0);
 
   const angleRad = (angleDeg * Math.PI) / 180;
   const wavelengthM = wavelengthNm * 1e-9;

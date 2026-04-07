@@ -5,17 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function ThreePhotonMicroscopyPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1300);
-  const [na, setNa] = useURLState("na", 0.8);
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100);
-  const [repRate, setRepRate] = useURLState("repRate", 1);
-  const [avgPower, setAvgPower] = useURLState("avgPower", 100);
-  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.33);
-  const [scatteringCoeff, setScatteringCoeff] = useURLState("scatteringCoeff", 60);
-  const [depth, setDepth] = useURLState("depth", 500);
+  const [wavelength, setWavelength] = useState(1300);
+  const [na, setNa] = useState(0.8);
+  const [pulseWidth, setPulseWidth] = useState(100);
+  const [repRate, setRepRate] = useState(1);
+  const [avgPower, setAvgPower] = useState(100);
+  const [refractiveIndex, setRefractiveIndex] = useState(1.33);
+  const [scatteringCoeff, setScatteringCoeff] = useState(60);
+  const [depth, setDepth] = useState(500);
 
   const onePhotonEquiv = wavelength / 3;
   const twoPhotonEquiv = wavelength / 2;

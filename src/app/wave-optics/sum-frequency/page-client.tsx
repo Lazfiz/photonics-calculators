@@ -5,16 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function SumFrequencyPage() {
-  const [lambda1, setLambda1] = useURLState("lambda1", 1064); // nm
-  const [lambda2, setLambda2] = useURLState("lambda2", 1550); // nm
-  const [deff, setDeff] = useURLState("deff", 2.0); // pm/V (KTP)
-  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 10); // mm
-  const [power1, setPower1] = useURLState("power1", 100); // mW
-  const [power2, setPower2] = useURLState("power2", 50); // mW
-  const [beamWaist, setBeamWaist] = useURLState("beamWaist", 30); // µm
+  const [lambda1, setLambda1] = useState(1064); // nm
+  const [lambda2, setLambda2] = useState(1550); // nm
+  const [deff, setDeff] = useState(2.0); // pm/V (KTP)
+  const [crystalLength, setCrystalLength] = useState(10); // mm
+  const [power1, setPower1] = useState(100); // mW
+  const [power2, setPower2] = useState(50); // mW
+  const [beamWaist, setBeamWaist] = useState(30); // µm
 
   // Sum frequency: 1/λ_sum = 1/λ1 + 1/λ2
   const lambdaSum = 1 / (1 / lambda1 + 1 / lambda2);

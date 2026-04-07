@@ -5,18 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function ConnectorInsertionLossPage() {
   const [connectorType, setConnectorType] = useState<"FC" | "SC" | "LC" | "ST" | "MU" | "MPO">("SC");
   const [polishType, setPolishType] = useState<"PC" | "UPC" | "APC">("UPC");
-  const [numConnectors, setNumConnectors] = useURLState("numConnectors", 4);
-  const [fiberCoreDiam, setFiberCoreDiam] = useURLState("fiberCoreDiam", 9); // µm MFD
-  const [lateralOffset, setLateralOffset] = useURLState("lateralOffset", 0.3); // µm
-  const [angularMisalign, setAngularMisalign] = useURLState("angularMisalign", 0.3); // degrees
-  const [gapDistance, setGapDistance] = useURLState("gapDistance", 0.05); // µm
-  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.468);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [numConnectors, setNumConnectors] = useState(4);
+  const [fiberCoreDiam, setFiberCoreDiam] = useState(9); // µm MFD
+  const [lateralOffset, setLateralOffset] = useState(0.3); // µm
+  const [angularMisalign, setAngularMisalign] = useState(0.3); // degrees
+  const [gapDistance, setGapDistance] = useState(0.05); // µm
+  const [refractiveIndex, setRefractiveIndex] = useState(1.468);
+  const [wavelength, setWavelength] = useState(1550); // nm
 
   // Typical connector losses by type
   const typicalLoss: Record<string, Record<string, number>> = {

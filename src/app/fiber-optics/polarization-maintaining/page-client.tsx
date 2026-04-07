@@ -3,17 +3,14 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function PMFiberCalculator() {
   const [fiberType, setFiberType] = useState<"PANDA" | "Bowtie" | "Elliptical">("PANDA");
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.5); // μm
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.468);
-  const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.463);
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 1000); // m
-  const [extinctionRatio, setExtinctionRatio] = useURLState("extinctionRatio", 30); // dB
+  const [wavelength, setWavelength] = useState(1550); // nm
+  const [coreRadius, setCoreRadius] = useState(4.5); // μm
+  const [coreIndex, setCoreIndex] = useState(1.468);
+  const [claddingIndex, setCladdingIndex] = useState(1.463);
+  const [fiberLength, setFiberLength] = useState(1000); // m
+  const [extinctionRatio, setExtinctionRatio] = useState(30); // dB
 
   // Birefringence estimates per fiber type
   const birefringenceMap = { PANDA: 3.5e-4, Bowtie: 5.0e-4, Elliptical: 1.0e-4 };

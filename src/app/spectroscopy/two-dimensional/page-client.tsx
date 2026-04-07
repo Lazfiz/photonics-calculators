@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function TwoDimensionalSpectroscopyPage() {
-  const [excitationCenter, setExcitationCenter] = useURLState("excitationCenter", 12500); // cm⁻¹
-  const [coupling, setCoupling] = useURLState("coupling", 100); // cm⁻¹
-  const [linewidth, setLinewidth] = useURLState("linewidth", 50); // cm⁻¹
-  const [t2, setT2] = useURLState("t2", 200); // fs, dephasing time
+  const [excitationCenter, setExcitationCenter] = useState(12500); // cm⁻¹
+  const [coupling, setCoupling] = useState(100); // cm⁻¹
+  const [linewidth, setLinewidth] = useState(50); // cm⁻¹
+  const [t2, setT2] = useState(200); // fs, dephasing time
 
   const chartData = useMemo(() => {
     const N = 100;

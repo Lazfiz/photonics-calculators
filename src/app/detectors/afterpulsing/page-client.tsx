@@ -5,14 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function AfterpulsingPage() {
-  const [trapLifetime, setTrapLifetime] = useURLState("trapLifetime", 20);
-  const [trapEfficiency, setTrapEfficiency] = useURLState("trapEfficiency", 0.05);
-  const [deadTime, setDeadTime] = useURLState("deadTime", 50);
-  const [countRate, setCountRate] = useURLState("countRate", 1e6);
-  const [numTraps, setNumTraps] = useURLState("numTraps", 3);
+  const [trapLifetime, setTrapLifetime] = useState(20);
+  const [trapEfficiency, setTrapEfficiency] = useState(0.05);
+  const [deadTime, setDeadTime] = useState(50);
+  const [countRate, setCountRate] = useState(1e6);
+  const [numTraps, setNumTraps] = useState(3);
 
   const trapReleaseFrac = 1 - Math.exp(-deadTime / trapLifetime);
   const afterpulseProb = trapEfficiency * (1 - trapReleaseFrac);

@@ -5,8 +5,6 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 // Silver optical constants (simplified Drude)
 function silverN(wlNm: number): { n: number; k: number } {
   const wl = wlNm / 1000; // μm
@@ -22,12 +20,12 @@ function silverN(wlNm: number): { n: number; k: number } {
 }
 
 export default function ProtectedSilverPage() {
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [agThickness, setAgThickness] = useURLState("agThickness", 80);
-  const [nProtect, setNProtect] = useURLState("nProtect", 1.38);
-  const [protectThick, setProtectThick] = useURLState("protectThick", 50);
-  const [nAdhesion, setNAdhesion] = useURLState("nAdhesion", 2.35);
-  const [adhesionThick, setAdhesionThick] = useURLState("adhesionThick", 10);
+  const [nSub, setNSub] = useState(1.52);
+  const [agThickness, setAgThickness] = useState(80);
+  const [nProtect, setNProtect] = useState(1.38);
+  const [protectThick, setProtectThick] = useState(50);
+  const [nAdhesion, setNAdhesion] = useState(2.35);
+  const [adhesionThick, setAdhesionThick] = useState(10);
 
   const tmm = useMemo(() => {
     const N = 400;

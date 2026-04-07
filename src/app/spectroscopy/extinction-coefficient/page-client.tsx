@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function ExtinctionCoefficientPage() {
-  const [absorbance, setAbsorbance] = useURLState("absorbance", 0.5);
-  const [concentration, setConcentration] = useURLState("concentration", 0.01);
-  const [pathLength, setPathLength] = useURLState("pathLength", 1);
-  const [molecularWeight, setMolecularWeight] = useURLState("molecularWeight", 100);
+  const [absorbance, setAbsorbance] = useState(0.5);
+  const [concentration, setConcentration] = useState(0.01);
+  const [pathLength, setPathLength] = useState(1);
+  const [molecularWeight, setMolecularWeight] = useState(100);
 
   const extinctionCoeff = absorbance / (concentration * pathLength); // L·mol⁻¹·cm⁻¹
   const molarExtCoeff = extinctionCoeff;

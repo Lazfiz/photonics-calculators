@@ -5,15 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function PhaseShiftCoatingPage() {
-  const [n1, setN1] = useURLState("n1", 1.0);
-  const [nFilm, setNFilm] = useURLState("nFilm", 1.38);
-  const [nSubstrate, setNSubstrate] = useURLState("nSubstrate", 1.52);
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
-  const [numLayers, setNumLayers] = useURLState("numLayers", 5);
-  const [fractionalThickness, setFractionalThickness] = useURLState("fractionalThickness", 0.5);
+  const [n1, setN1] = useState(1.0);
+  const [nFilm, setNFilm] = useState(1.38);
+  const [nSubstrate, setNSubstrate] = useState(1.52);
+  const [designWl, setDesignWl] = useState(550);
+  const [numLayers, setNumLayers] = useState(5);
+  const [fractionalThickness, setFractionalThickness] = useState(0.5);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 2);

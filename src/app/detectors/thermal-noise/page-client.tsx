@@ -5,12 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function ThermalNoisePage() {
-  const [resistance, setResistance] = useURLState("resistance", 1000); // Ohms
-  const [temperature, setTemperature] = useURLState("temperature", 300); // K
-  const [bandwidth, setBandwidth] = useURLState("bandwidth", 1e6); // Hz
+  const [resistance, setResistance] = useState(1000); // Ohms
+  const [temperature, setTemperature] = useState(300); // K
+  const [bandwidth, setBandwidth] = useState(1e6); // Hz
   const [kB] = useState(1.381e-23); // J/K
 
   const chartData = useMemo(() => {

@@ -5,15 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function StimulatedRamanPage() {
-  const [ramanShift, setRamanShift] = useURLState("ramanShift", 2880);
-  const [pumpPower, setPumpPower] = useURLState("pumpPower", 100);
-  const [stokesPower, setStokesPower] = useURLState("stokesPower", 50);
-  const [pathLength, setPathLength] = useURLState("pathLength", 0.1);
-  const [concentration, setConcentration] = useURLState("concentration", 0.1);
-  const [linewidth, setLinewidth] = useURLState("linewidth", 10);
+  const [ramanShift, setRamanShift] = useState(2880);
+  const [pumpPower, setPumpPower] = useState(100);
+  const [stokesPower, setStokesPower] = useState(50);
+  const [pathLength, setPathLength] = useState(0.1);
+  const [concentration, setConcentration] = useState(0.1);
+  const [linewidth, setLinewidth] = useState(10);
 
   const stimulatedGainData = useMemo(() => {
     const detunings = Array.from({ length: 400 }, (_, i) => -50 + (i / 400) * 100);

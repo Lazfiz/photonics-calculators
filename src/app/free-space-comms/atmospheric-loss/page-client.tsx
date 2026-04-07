@@ -3,16 +3,13 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function AtmosphericLossPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [visibility, setVisibility] = useURLState("visibility", 23); // km
-  const [altitude, setAltitude] = useURLState("altitude", 0); // km
-  const [humidity, setHumidity] = useURLState("humidity", 50); // %
-  const [temperature, setTemperature] = useURLState("temperature", 20); // °C
-  const [linkLength, setLinkLength] = useURLState("linkLength", 1); // km
+  const [wavelength, setWavelength] = useState(1550);
+  const [visibility, setVisibility] = useState(23); // km
+  const [altitude, setAltitude] = useState(0); // km
+  const [humidity, setHumidity] = useState(50); // %
+  const [temperature, setTemperature] = useState(20); // °C
+  const [linkLength, setLinkLength] = useState(1); // km
 
   // Beer-Lambert atmospheric attenuation model
   // α = α_molecular + α_aerosol + α_haze

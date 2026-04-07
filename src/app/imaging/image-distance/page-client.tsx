@@ -5,11 +5,9 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function ImageDistancePage() {
-  const [objectDistMm, setObjectDistMm] = useURLState("objectDistMm", 200);
-  const [focalLengthMm, setFocalLengthMm] = useURLState("focalLengthMm", 50);
+  const [objectDistMm, setObjectDistMm] = useState(200);
+  const [focalLengthMm, setFocalLengthMm] = useState(50);
 
   const f = focalLengthMm;
   const o = objectDistMm;

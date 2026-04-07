@@ -5,15 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function MultiplePulsePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 532);
-  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 0.1); // µJ
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 10); // ns
-  const [prf, setPrf] = useURLState("prf", 10000); // Hz
-  const [numPulses, setNumPulses] = useURLState("numPulses", 1000);
+  const [wavelength, setWavelength] = useState(532);
+  const [pulseEnergy, setPulseEnergy] = useState(0.1); // µJ
+  const [pulseWidth, setPulseWidth] = useState(10); // ns
+  const [prf, setPrf] = useState(10000); // Hz
+  const [numPulses, setNumPulses] = useState(1000);
 
   // Multiple pulse rules (ANSI Z136.1 §8):
   // 1. Single pulse MPE: H(τ) where τ = pulse width

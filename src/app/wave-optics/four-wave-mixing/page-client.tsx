@@ -5,16 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function FourWaveMixingPage() {
-  const [wavelengthPump, setWavelengthPump] = useURLState("wavelengthPump", 1064); // nm
-  const [wavelengthSignal, setWavelengthSignal] = useURLState("wavelengthSignal", 1550); // nm
-  const [pumpPower, setPumpPower] = useURLState("pumpPower", 100); // mW
-  const [n2, setN2] = useURLState("n2", 3.2); // ×10⁻¹⁶ cm²/W
-  const [coreArea, setCoreArea] = useURLState("coreArea", 50); // µm²
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // m
-  const [chi3, setChi3] = useURLState("chi3", 2.7); // ×10⁻²² m²/V² (silica)
+  const [wavelengthPump, setWavelengthPump] = useState(1064); // nm
+  const [wavelengthSignal, setWavelengthSignal] = useState(1550); // nm
+  const [pumpPower, setPumpPower] = useState(100); // mW
+  const [n2, setN2] = useState(3.2); // ×10⁻¹⁶ cm²/W
+  const [coreArea, setCoreArea] = useState(50); // µm²
+  const [fiberLength, setFiberLength] = useState(10); // m
+  const [chi3, setChi3] = useState(2.7); // ×10⁻²² m²/V² (silica)
 
   // Phase matching: 2ωp = ωs + ωi → 1/λi = 2/λp - 1/λs
   const lambdaI = 1 / (2 / wavelengthPump - 1 / wavelengthSignal);

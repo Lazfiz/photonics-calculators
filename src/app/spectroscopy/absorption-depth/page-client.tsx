@@ -5,12 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function AbsorptionDepthPage() {
-  const [absorptionCoeff, setAbsorptionCoeff] = useURLState("absorptionCoeff", 1000); // cm⁻¹
-  const [wlMin, setWlMin] = useURLState("wlMin", 300);
-  const [wlMax, setWlMax] = useURLState("wlMax", 1200);
+  const [absorptionCoeff, setAbsorptionCoeff] = useState(1000); // cm⁻¹
+  const [wlMin, setWlMin] = useState(300);
+  const [wlMax, setWlMax] = useState(1200);
   const [material, setMaterial] = useState("silicon");
 
   // α(λ) models for common materials (cm⁻¹) - approximate

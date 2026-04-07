@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function CoupledModePage() {
-  const [kappa, setKappa] = useURLState("kappa", 0.5); // coupling coeff /mm
-  const [deltaBeta, setDeltaBeta] = useURLState("deltaBeta", 0); // phase mismatch /mm
-  const [length, setLength] = useURLState("length", 10); // mm
-  const [inputPower, setInputPower] = useURLState("inputPower", 1); // mW
+  const [kappa, setKappa] = useState(0.5); // coupling coeff /mm
+  const [deltaBeta, setDeltaBeta] = useState(0); // phase mismatch /mm
+  const [length, setLength] = useState(10); // mm
+  const [inputPower, setInputPower] = useState(1); // mW
 
   const kappaSq = kappa * kappa;
   const deltaSq = deltaBeta * deltaBeta;

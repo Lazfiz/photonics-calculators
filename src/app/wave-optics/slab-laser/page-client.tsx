@@ -3,20 +3,17 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function SlabLaserPage() {
-  const [slabWidth, setSlabWidth] = useURLState("slabWidth", 10); // mm
-  const [slabHeight, setSlabHeight] = useURLState("slabHeight", 2); // mm (thin direction)
-  const [slabLength, setSlabLength] = useURLState("slabLength", 50); // mm (propagation)
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [n_crystal, setN_crystal] = useURLState("n_crystal", 1.82);
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 808); // nm
-  const [R_oc, setR_oc] = useURLState("R_oc", 0.90);
-  const [alpha_scatter, setAlpha_scatter] = useURLState("alpha_scatter", 0.002); // cm^-1
-  const [bounces, setBounces] = useURLState("bounces", 8);
-  const [thermalLoad, setThermalLoad] = useURLState("thermalLoad", 5); // W/cm³
+  const [slabWidth, setSlabWidth] = useState(10); // mm
+  const [slabHeight, setSlabHeight] = useState(2); // mm (thin direction)
+  const [slabLength, setSlabLength] = useState(50); // mm (propagation)
+  const [wavelength, setWavelength] = useState(1064); // nm
+  const [n_crystal, setN_crystal] = useState(1.82);
+  const [pumpWavelength, setPumpWavelength] = useState(808); // nm
+  const [R_oc, setR_oc] = useState(0.90);
+  const [alpha_scatter, setAlpha_scatter] = useState(0.002); // cm^-1
+  const [bounces, setBounces] = useState(8);
+  const [thermalLoad, setThermalLoad] = useState(5); // W/cm³
 
   const h = 6.626e-34; const c = 3e8;
   const lambda_m = wavelength * 1e-9;

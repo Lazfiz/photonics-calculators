@@ -5,14 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function LiquidCrystalPolarizerPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [neNo, setNeNo] = useURLState("neNo", 0.2); // Δn = ne - no
-  const [cellThickness, setCellThickness] = useURLState("cellThickness", 5); // μm
-  const [twistAngle, setTwistAngle] = useURLState("twistAngle", 90);
-  const [preTiltDeg, setPreTiltDeg] = useURLState("preTiltDeg", 2);
+  const [wavelength, setWavelength] = useState(550);
+  const [neNo, setNeNo] = useState(0.2); // Δn = ne - no
+  const [cellThickness, setCellThickness] = useState(5); // μm
+  const [twistAngle, setTwistAngle] = useState(90);
+  const [preTiltDeg, setPreTiltDeg] = useState(2);
   const [mode, setMode] = useState<"tn" | "stn" | "van" | "ecb">("tn");
 
   const preTilt = preTiltDeg * Math.PI / 180;

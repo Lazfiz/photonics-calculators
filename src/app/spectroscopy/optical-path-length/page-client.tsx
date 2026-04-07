@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function OpticalPathLengthPage() {
-  const [physicalLength, setPhysicalLength] = useURLState("physicalLength", 1);
-  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.5);
-  const [numPasses, setNumPasses] = useURLState("numPasses", 1);
-  const [angleDeg, setAngleDeg] = useURLState("angleDeg", 0);
+  const [physicalLength, setPhysicalLength] = useState(1);
+  const [refractiveIndex, setRefractiveIndex] = useState(1.5);
+  const [numPasses, setNumPasses] = useState(1);
+  const [angleDeg, setAngleDeg] = useState(0);
   const [sweepParam, setSweepParam] = useState<"n" | "angle" | "passes">("n");
 
   const angleRad = (angleDeg * Math.PI) / 180;

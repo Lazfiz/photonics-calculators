@@ -7,15 +7,13 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function DiffuseReflectionPage() {
-  const [power, setPower] = useURLState("power", 5000); // mW
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064);
-  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 5); // mm
-  const [surfaceReflectance, setSurfaceReflectance] = useURLState("surfaceReflectance", 0.1); // 10%
-  const [viewingDistance, setViewingDistance] = useURLState("viewingDistance", 0.5); // m
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // s
+  const [power, setPower] = useState(5000); // mW
+  const [wavelength, setWavelength] = useState(1064);
+  const [beamDiameter, setBeamDiameter] = useState(5); // mm
+  const [surfaceReflectance, setSurfaceReflectance] = useState(0.1); // 10%
+  const [viewingDistance, setViewingDistance] = useState(0.5); // m
+  const [exposureTime, setExposureTime] = useState(10); // s
 
   // Diffuse (Lambertian) reflection: radiance L = (ρ * P) / (π * A_beam)
   // where ρ = reflectance, P = power, A_beam = beam area on surface

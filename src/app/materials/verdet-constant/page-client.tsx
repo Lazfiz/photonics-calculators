@@ -3,9 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 interface Material {
   name: string;
   // Verdet constant at reference wavelength
@@ -39,10 +36,10 @@ function verdetConstant(m: Material, lambda: number): number {
 const colors = ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#8b5cf6", "#ec4899", "#06b6d4", "#6b7280", "#14b8a6", "#a855f7", "#f97316"];
 
 export default function VerdetConstantPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 633);
+  const [wavelength, setWavelength] = useState(633);
   const [selected, setSelected] = useState("TGG");
-  const [length, setLength] = useURLState("length", 20); // mm
-  const [field, setField] = useURLState("field", 1); // Tesla
+  const [length, setLength] = useState(20); // mm
+  const [field, setField] = useState(1); // Tesla
 
   const m = materials[selected];
   const V = useMemo(() => verdetConstant(m, wavelength), [m, wavelength]);

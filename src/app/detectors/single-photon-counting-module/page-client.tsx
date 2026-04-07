@@ -5,14 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function SPCMPage() {
-  const [deadTime, setDeadTime] = useURLState("deadTime", 50); // ns
-  const [darkCountRate, setDarkCountRate] = useURLState("darkCountRate", 100); // counts/s
-  const [quantumEff, setQuantumEff] = useURLState("quantumEff", 0.65);
-  const [incidentPower, setIncidentPower] = useURLState("incidentPower", 1e-12); // W
-  const [wavelength, setWavelength] = useURLState("wavelength", 550); // nm
+  const [deadTime, setDeadTime] = useState(50); // ns
+  const [darkCountRate, setDarkCountRate] = useState(100); // counts/s
+  const [quantumEff, setQuantumEff] = useState(0.65);
+  const [incidentPower, setIncidentPower] = useState(1e-12); // W
+  const [wavelength, setWavelength] = useState(550); // nm
 
   const results = useMemo(() => {
     const h = 6.626e-34;

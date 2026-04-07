@@ -3,15 +3,12 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function GeometricLossPage() {
-  const [txBeamDivergence, setTxBeamDivergence] = useURLState("txBeamDivergence", 1);
-  const [range, setRange] = useURLState("range", 1);
-  const [txAperture, setTxAperture] = useURLState("txAperture", 5);
-  const [rxAperture, setRxAperture] = useURLState("rxAperture", 10);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [txBeamDivergence, setTxBeamDivergence] = useState(1);
+  const [range, setRange] = useState(1);
+  const [txAperture, setTxAperture] = useState(5);
+  const [rxAperture, setRxAperture] = useState(10);
+  const [wavelength, setWavelength] = useState(1550);
 
   const calc = useMemo(() => {
     const theta = txBeamDivergence * 1e-3; // mrad to rad

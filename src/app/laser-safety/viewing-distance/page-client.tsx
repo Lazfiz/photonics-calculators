@@ -11,15 +11,13 @@ import LaserSafetyCwReferences from "../../../components/laser-safety-cw-referen
 import LaserSafetyCwScope from "../../../components/laser-safety-cw-scope";
 import LaserSafetySuiteLinks from "../../../components/laser-safety-suite-links";
 import { cwPointSourceNohdPrecheck } from "../../../lib/laser-safety-cw-suite";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function ViewingDistancePage() {
-  const [power, setPower] = useURLState("power", 500);
-  const [wavelength, setWavelength] = useURLState("wavelength", 532);
-  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 2);
-  const [divergence, setDivergence] = useURLState("divergence", 0.5);
-  const [exposure, setExposure] = useURLState("exposure", 0.25);
-  const [safetyFactor, setSafetyFactor] = useURLState("safetyFactor", 1);
+  const [power, setPower] = useState(500);
+  const [wavelength, setWavelength] = useState(532);
+  const [beamDiameter, setBeamDiameter] = useState(2);
+  const [divergence, setDivergence] = useState(0.5);
+  const [exposure, setExposure] = useState(0.25);
+  const [safetyFactor, setSafetyFactor] = useState(1);
 
   const result = useMemo(
     () => cwPointSourceNohdPrecheck({ wavelengthNm: wavelength, exposureS: exposure, powerMw: power, beamDiameterMm: beamDiameter, divergenceMrad: divergence, safetyFactor }),

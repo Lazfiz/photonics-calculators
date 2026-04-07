@@ -5,11 +5,9 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function PhaseCorrectionPage() {
-  const [opdPoints, setOpdPoints] = useURLState("opdPoints", 256);
-  const [phaseNoise, setPhaseNoise] = useURLState("phaseNoise", 0.3);
+  const [opdPoints, setOpdPoints] = useState(256);
+  const [phaseNoise, setPhaseNoise] = useState(0.3);
   const [method, setMethod] = useState<"mertz" | "forman" | "power">("mertz");
 
   const x = Array.from({ length: opdPoints }, (_, i) => -1 + (2 * i) / (opdPoints - 1));

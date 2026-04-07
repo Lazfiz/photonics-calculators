@@ -2,9 +2,6 @@
 
 import { useState } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 interface Material {
   name: string;
   n2_cm2_W: number; // nonlinear index in cm²/W
@@ -31,9 +28,9 @@ const materials: Material[] = [
 ];
 
 export default function NonlinearIndexPage() {
-  const [n2, setN2] = useURLState("n2", 2.6e-16);
-  const [intensity, setIntensity] = useURLState("intensity", 1e12); // W/cm²
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [n2, setN2] = useState(2.6e-16);
+  const [intensity, setIntensity] = useState(1e12); // W/cm²
+  const [wavelength, setWavelength] = useState(1550);
 
   const dn = n2 * intensity;
   const gamma = (2 * Math.PI * n2) / (wavelength * 1e-9 * 1e-4); // convert nm to m, cm²/W to m²/W → 1/(W·m)

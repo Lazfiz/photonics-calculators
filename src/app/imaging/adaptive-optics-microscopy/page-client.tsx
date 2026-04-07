@@ -3,16 +3,13 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function AdaptiveOpticsMicroscopyPage() {
-  const [na, setNa] = useURLState("na", 1.4);
-  const [wavelength, setWavelength] = useURLState("wavelength", 800);
-  const [numModes, setNumModes] = useURLState("numModes", 15);
-  const [rmsWavefrontError, setRmsWavefrontError] = useURLState("rmsWavefrontError", 0.5);
-  const [correctionEfficiency, setCorrectionEfficiency] = useURLState("correctionEfficiency", 0.85);
-  const [tissueScattering, setTissueScattering] = useURLState("tissueScattering", 0.3);
+  const [na, setNa] = useState(1.4);
+  const [wavelength, setWavelength] = useState(800);
+  const [numModes, setNumModes] = useState(15);
+  const [rmsWavefrontError, setRmsWavefrontError] = useState(0.5);
+  const [correctionEfficiency, setCorrectionEfficiency] = useState(0.85);
+  const [tissueScattering, setTissueScattering] = useState(0.3);
 
   const results = useMemo(() => {
     const lambda_um = wavelength * 1e-3;

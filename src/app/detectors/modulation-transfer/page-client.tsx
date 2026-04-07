@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function ModulationTransferPage() {
-  const [pixelPitch, setPixelPitch] = useURLState("pixelPitch", 5.4); // μm
-  const [diffusionLength, setDiffusionLength] = useURLState("diffusionLength", 1.5); // μm
-  const [fillFactor, setFillFactor] = useURLState("fillFactor", 0.95);
-  const [opticalBlur, setOpticalBlur] = useURLState("opticalBlur", 0); // μm Gaussian sigma
+  const [pixelPitch, setPixelPitch] = useState(5.4); // μm
+  const [diffusionLength, setDiffusionLength] = useState(1.5); // μm
+  const [fillFactor, setFillFactor] = useState(0.95);
+  const [opticalBlur, setOpticalBlur] = useState(0); // μm Gaussian sigma
 
   const chartData = useMemo(() => {
     const nyquist = 1000 / (2 * pixelPitch); // cycles/mm

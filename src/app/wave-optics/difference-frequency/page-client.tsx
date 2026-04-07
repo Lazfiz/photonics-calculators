@@ -5,16 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function DifferenceFrequencyPage() {
-  const [lambdaPump, setLambdaPump] = useURLState("lambdaPump", 1064); // nm
-  const [lambdaSignal, setLambdaSignal] = useURLState("lambdaSignal", 1550); // nm
-  const [deff, setDeff] = useURLState("deff", 14.0); // pm/V (PPLN)
-  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 20); // mm
-  const [pumpPower, setPumpPower] = useURLState("pumpPower", 500); // mW
-  const [signalPower, setSignalPower] = useURLState("signalPower", 10); // mW
-  const [beamWaist, setBeamWaist] = useURLState("beamWaist", 40); // µm
+  const [lambdaPump, setLambdaPump] = useState(1064); // nm
+  const [lambdaSignal, setLambdaSignal] = useState(1550); // nm
+  const [deff, setDeff] = useState(14.0); // pm/V (PPLN)
+  const [crystalLength, setCrystalLength] = useState(20); // mm
+  const [pumpPower, setPumpPower] = useState(500); // mW
+  const [signalPower, setSignalPower] = useState(10); // mW
+  const [beamWaist, setBeamWaist] = useState(40); // µm
 
   // DFG: 1/λ_DFG = 1/λ_pump - 1/λ_signal
   const lambdaDFG = 1 / (1 / lambdaPump - 1 / lambdaSignal);

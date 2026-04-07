@@ -3,9 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 interface PhotorefractiveMaterial { name: string; n0: number; r33: number; r13: number; epsilon: number; color: string; type: string }
 
 const MATERIALS: Record<string, PhotorefractiveMaterial> = {
@@ -34,8 +31,8 @@ function twoBeamCouplingGain(mat: PhotorefractiveMaterial, E_field: number, wave
 
 export default function PhotorefractivePage() {
   const [material, setMaterial] = useState<keyof typeof MATERIALS>("BaTiO3");
-  const [field, setField] = useURLState("field", 10000); // V/m
-  const [wavelength, setWavelength] = useURLState("wavelength", 532);
+  const [field, setField] = useState(10000); // V/m
+  const [wavelength, setWavelength] = useState(532);
   const [pol, setPol] = useState<"e" | "o">("e");
 
   const mat = MATERIALS[material];

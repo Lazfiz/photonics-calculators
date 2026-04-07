@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function STEDResolutionPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 640);
-  const [na, setNa] = useURLState("na", 1.4);
-  const [depletionWavelength, setDepletionWavelength] = useURLState("depletionWavelength", 775);
-  const [saturationFactor, setSaturationFactor] = useURLState("saturationFactor", 30);
+  const [wavelength, setWavelength] = useState(640);
+  const [na, setNa] = useState(1.4);
+  const [depletionWavelength, setDepletionWavelength] = useState(775);
+  const [saturationFactor, setSaturationFactor] = useState(30);
 
   // Confocal resolution
   const confocalRes = 0.4 * wavelength / na;

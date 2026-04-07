@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function BendInsensitivePage() {
-  const [radius, setRadius] = useURLState("radius", 7.5); // mm
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [trenchDepth, setTrenchDepth] = useURLState("trenchDepth", 0.018); // Δ (trench relative index)
-  const [trenchWidth, setTrenchWidth] = useURLState("trenchWidth", 5); // μm
+  const [radius, setRadius] = useState(7.5); // mm
+  const [wavelength, setWavelength] = useState(1550); // nm
+  const [trenchDepth, setTrenchDepth] = useState(0.018); // Δ (trench relative index)
+  const [trenchWidth, setTrenchWidth] = useState(5); // μm
   const [hasTrench, setHasTrench] = useState(true);
 
   // Standard SMF parameters

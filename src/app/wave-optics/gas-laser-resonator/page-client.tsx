@@ -3,17 +3,14 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function GasLaserResonatorPage() {
-  const [tubeDiameter, setTubeDiameter] = useURLState("tubeDiameter", 6); // mm
-  const [tubeLength, setTubeLength] = useURLState("tubeLength", 500); // mm
-  const [wavelength, setWavelength] = useURLState("wavelength", 632.8); // nm (HeNe default)
-  const [R1, setR1] = useURLState("R1", 1000); // mm HR
-  const [R2, setR2] = useURLState("R2", 5000); // mm OC (high radius = low output coupling)
-  const [R_oc, setR_oc] = useURLState("R_oc", 0.99); // OC reflectivity
-  const [pressure, setPressure] = useURLState("pressure", 3); // Torr
+  const [tubeDiameter, setTubeDiameter] = useState(6); // mm
+  const [tubeLength, setTubeLength] = useState(500); // mm
+  const [wavelength, setWavelength] = useState(632.8); // nm (HeNe default)
+  const [R1, setR1] = useState(1000); // mm HR
+  const [R2, setR2] = useState(5000); // mm OC (high radius = low output coupling)
+  const [R_oc, setR_oc] = useState(0.99); // OC reflectivity
+  const [pressure, setPressure] = useState(3); // Torr
   const [gasType, setGasType] = useState("HeNe");
 
   const gasParams: Record<string, { sigma: number; tau: number; I_sat: number; A_gain: number; alpha: number }> = {

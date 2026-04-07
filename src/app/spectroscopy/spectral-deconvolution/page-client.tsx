@@ -5,8 +5,6 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 interface PeakConfig {
   center: number;
   fwhm: number;
@@ -14,10 +12,10 @@ interface PeakConfig {
 }
 
 export default function SpectralDeconvolutionPage() {
-  const [nPeaks, setNPeaks] = useURLState("nPeaks", 3);
-  const [noiseLevel, setNoiseLevel] = useURLState("noiseLevel", 0.02);
-  const [xMin, setXMin] = useURLState("xMin", 400);
-  const [xMax, setXMax] = useURLState("xMax", 700);
+  const [nPeaks, setNPeaks] = useState(3);
+  const [noiseLevel, setNoiseLevel] = useState(0.02);
+  const [xMin, setXMin] = useState(400);
+  const [xMax, setXMax] = useState(700);
   const [showComponents, setShowComponents] = useState(true);
 
   const defaultPeaks: PeakConfig[] = [

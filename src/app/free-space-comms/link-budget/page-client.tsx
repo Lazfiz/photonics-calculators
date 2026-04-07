@@ -7,8 +7,6 @@ import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
-import { useURLState } from "../../../hooks/use-url-state";
-
 const presets = [
   { label: "Short urban", txPower: 10, txGain: 25, range: 1, rxGain: 30, wavelength: 1550, atmosphere: 3, misc: 2 },
   { label: "Campus", txPower: 15, txGain: 30, range: 2, rxGain: 35, wavelength: 1550, atmosphere: 4, misc: 2 },
@@ -17,13 +15,13 @@ const presets = [
 const currentHref = "/free-space-comms/link-budget";
 
 export default function LinkBudgetPage() {
-  const [txPower, setTxPower] = useURLState("txPower", 10);
-  const [txGain, setTxGain] = useURLState("txGain", 30);
-  const [range, setRange] = useURLState("range", 1);
-  const [rxGain, setRxGain] = useURLState("rxGain", 40);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [atmosphere, setAtmosphere] = useURLState("atmosphere", 3);
-  const [misc, setMisc] = useURLState("misc", 2);
+  const [txPower, setTxPower] = useState(10);
+  const [txGain, setTxGain] = useState(30);
+  const [range, setRange] = useState(1);
+  const [rxGain, setRxGain] = useState(40);
+  const [wavelength, setWavelength] = useState(1550);
+  const [atmosphere, setAtmosphere] = useState(3);
+  const [misc, setMisc] = useState(2);
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-9;

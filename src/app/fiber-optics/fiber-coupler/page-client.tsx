@@ -3,15 +3,12 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function FiberCouplerCalculator() {
-  const [couplingLength, setCouplingLength] = useURLState("couplingLength", 10); // mm
-  const [couplingCoeff, setCouplingCoeff] = useURLState("couplingCoeff", 0.5); // 1/mm
-  const [excessLoss, setExcessLoss] = useURLState("excessLoss", 0.1); // dB
-  const [inputPower, setInputPower] = useURLState("inputPower", 0); // dBm
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [couplingLength, setCouplingLength] = useState(10); // mm
+  const [couplingCoeff, setCouplingCoeff] = useState(0.5); // 1/mm
+  const [excessLoss, setExcessLoss] = useState(0.1); // dB
+  const [inputPower, setInputPower] = useState(0); // dBm
+  const [wavelength, setWavelength] = useState(1550); // nm
   const [type, setType] = useState<"directional" | "star">("directional");
 
   // Power splitting ratio for directional coupler

@@ -5,8 +5,6 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 // Mueller matrix utilities
 function multiply(A: number[][], B: number[][]): number[][] {
   const result: number[][] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
@@ -77,11 +75,11 @@ function depolarizer(d: number): number[][] {
 export default function MuellerPolarimetryPage() {
   const [inputS, setInputS] = useState([1, 1, 0, 0]); // H linear
   const [element1, setElement1] = useState<"polarizer" | "retarder" | "rotator" | "depolarizer">("retarder");
-  const [param1, setParam1] = useURLState("param1", 90); // retardance or angle
+  const [param1, setParam1] = useState(90); // retardance or angle
   const [element2, setElement2] = useState<"polarizer" | "retarder" | "rotator" | "depolarizer">("polarizer");
-  const [param2, setParam2] = useURLState("param2", 0);
+  const [param2, setParam2] = useState(0);
   const [showAnalyzer, setShowAnalyzer] = useState(true);
-  const [analyzerAngle, setAnalyzerAngle] = useURLState("analyzerAngle", 45);
+  const [analyzerAngle, setAnalyzerAngle] = useState(45);
 
   const outputS = useMemo(() => {
     let M: number[][] = [

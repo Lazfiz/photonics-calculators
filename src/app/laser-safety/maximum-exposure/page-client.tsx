@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function MaximumExposurePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 632); // nm
-  const [power, setPower] = useURLState("power", 0.001); // W
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 2); // mm
-  const [mpeValue, setMpeValue] = useURLState("mpeValue", 1.8); // mJ/cm²
+  const [wavelength, setWavelength] = useState(632); // nm
+  const [power, setPower] = useState(0.001); // W
+  const [beamDiam, setBeamDiam] = useState(2); // mm
+  const [mpeValue, setMpeValue] = useState(1.8); // mJ/cm²
 
   // Maximum exposure duration calculator
   // Given a laser's irradiance, how long can you be safely exposed?

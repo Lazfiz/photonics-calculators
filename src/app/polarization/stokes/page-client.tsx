@@ -6,8 +6,6 @@ import ChartPanel from "../../../components/chart-panel";
 import InputSlider from "../../../components/input-slider";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
-import { useURLState } from "../../../hooks/use-url-state";
-
 type Preset = "linear-h" | "linear-v" | "linear-45" | "linear-135" | "rcp" | "lcp" | "elliptical";
 
 const presets: Record<Preset, { I: number; Q: number; U: number; V: number; label: string }> = {
@@ -23,10 +21,10 @@ const presets: Record<Preset, { I: number; Q: number; U: number; V: number; labe
 const currentHref = "/polarization/stokes";
 
 export default function StokesPage() {
-  const [I, setI] = useURLState("I", 1);
-  const [Q, setQ] = useURLState("Q", 0.5);
-  const [U, setU] = useURLState("U", 0.3);
-  const [V, setV] = useURLState("V", 0.2);
+  const [I, setI] = useState(1);
+  const [Q, setQ] = useState(0.5);
+  const [U, setU] = useState(0.3);
+  const [V, setV] = useState(0.2);
 
   const results = useMemo(() => {
     if (I <= 0) return null;

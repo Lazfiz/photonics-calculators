@@ -5,18 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function DenoisingAlgorithmsPage() {
   const [algorithm, setAlgorithm] = useState<"gaussian" | "median" | "bilateral" | "nlm" | "wavelet" | "deep">("nlm");
-  const [inputNoise, setInputNoise] = useURLState("inputNoise", 20);
-  const [filterSize, setFilterSize] = useURLState("filterSize", 3);
-  const [sigmaSpatial, setSigmaSpatial] = useURLState("sigmaSpatial", 2);
-  const [sigmaRange, setSigmaRange] = useURLState("sigmaRange", 10);
-  const [waveletLevel, setWaveletLevel] = useURLState("waveletLevel", 3);
-  const [threshold, setThreshold] = useURLState("threshold", 3);
-  const [patchSize, setPatchSize] = useURLState("patchSize", 7);
-  const [searchWindow, setSearchWindow] = useURLState("searchWindow", 21);
+  const [inputNoise, setInputNoise] = useState(20);
+  const [filterSize, setFilterSize] = useState(3);
+  const [sigmaSpatial, setSigmaSpatial] = useState(2);
+  const [sigmaRange, setSigmaRange] = useState(10);
+  const [waveletLevel, setWaveletLevel] = useState(3);
+  const [threshold, setThreshold] = useState(3);
+  const [patchSize, setPatchSize] = useState(7);
+  const [searchWindow, setSearchWindow] = useState(21);
 
   // Simulate SNR improvement for each method
   const methodParams: Record<string, { base: number; scale: number; min: number }> = {

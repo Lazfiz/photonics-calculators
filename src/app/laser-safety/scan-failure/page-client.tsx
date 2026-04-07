@@ -7,14 +7,12 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function ScanFailurePage() {
-  const [power, setPower] = useURLState("power", 1000); // mW
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 5); // mm
-  const [scanAngle, setScanAngle] = useURLState("scanAngle", 60); // degrees total
-  const [scanFreq, setScanFreq] = useURLState("scanFreq", 20); // Hz
-  const [failDuration, setFailDuration] = useURLState("failDuration", 0.01); // s
+  const [power, setPower] = useState(1000); // mW
+  const [beamDiam, setBeamDiam] = useState(5); // mm
+  const [scanAngle, setScanAngle] = useState(60); // degrees total
+  const [scanFreq, setScanFreq] = useState(20); // Hz
+  const [failDuration, setFailDuration] = useState(0.01); // s
 
   const results = useMemo(() => {
     const P = power / 1000; // W

@@ -3,9 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 // Diamond Sellmeier: D. D. Duvvuri, et al.
 const sellmeierN = (wl_um: number) => {
   const l2 = wl_um * wl_um;
@@ -36,7 +33,7 @@ const diamondData = {
 };
 
 export default function DiamondOpticsPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 589);
+  const [wavelength, setWavelength] = useState(589);
 
   const n = useMemo(() => diamondN(wavelength), [wavelength]);
 

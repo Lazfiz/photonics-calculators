@@ -5,8 +5,6 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 function fresnelCoefficients(n1: number, n2: number, thetaI: number) {
   const cosI = Math.cos(thetaI);
   const sinThetaT = (n1 / n2) * Math.sin(thetaI);
@@ -34,9 +32,9 @@ function fresnelCoefficients(n1: number, n2: number, thetaI: number) {
 }
 
 export default function FresnelPolarizationPage() {
-  const [n1, setN1] = useURLState("n1", 1.0);
-  const [n2, setN2] = useURLState("n2", 1.52);
-  const [thetaIDeg, setThetaIDeg] = useURLState("thetaIDeg", 30);
+  const [n1, setN1] = useState(1.0);
+  const [n2, setN2] = useState(1.52);
+  const [thetaIDeg, setThetaIDeg] = useState(30);
 
   const thetaI = thetaIDeg * Math.PI / 180;
   const result = fresnelCoefficients(n1, n2, thetaI);

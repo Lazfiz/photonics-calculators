@@ -5,15 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function SupercontinuumPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm pump
-  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 10); // nJ
-  const [pulseDuration, setPulseDuration] = useURLState("pulseDuration", 100); // fs
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // cm
-  const [coreDiameter, setCoreDiameter] = useURLState("coreDiameter", 2); // µm (PCF)
-  const [gamma, setGamma] = useURLState("gamma", 100); // W⁻¹km⁻¹
+  const [wavelength, setWavelength] = useState(1064); // nm pump
+  const [pulseEnergy, setPulseEnergy] = useState(10); // nJ
+  const [pulseDuration, setPulseDuration] = useState(100); // fs
+  const [fiberLength, setFiberLength] = useState(10); // cm
+  const [coreDiameter, setCoreDiameter] = useState(2); // µm (PCF)
+  const [gamma, setGamma] = useState(100); // W⁻¹km⁻¹
   const [beta2, setBeta2] = useState(-10); // ps²/km (anomalous)
 
   const peakPower = pulseEnergy * 1e-9 / (pulseDuration * 1e-15); // W

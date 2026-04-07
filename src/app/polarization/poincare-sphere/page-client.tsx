@@ -3,13 +3,10 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function PoincareSpherePage() {
-  const [thetaDeg, setThetaDeg] = useURLState("thetaDeg", 45);
-  const [chiDeg, setChiDeg] = useURLState("chiDeg", 15);
-  const [amplitude, setAmplitude] = useURLState("amplitude", 1);
+  const [thetaDeg, setThetaDeg] = useState(45);
+  const [chiDeg, setChiDeg] = useState(15);
+  const [amplitude, setAmplitude] = useState(1);
 
   const stokes = useMemo(() => {
     const psi = (thetaDeg * Math.PI) / 180;

@@ -5,15 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function IonAssistedDepositionPage() {
-  const [ionEnergy, setIonEnergy] = useURLState("ionEnergy", 300);
-  const [ionCurrent, setIonCurrent] = useURLState("ionCurrent", 50);
-  const [depositionRate, setDepositionRate] = useURLState("depositionRate", 0.5);
-  const [ionMass, setIonMass] = useURLState("ionMass", 40);
+  const [ionEnergy, setIonEnergy] = useState(300);
+  const [ionCurrent, setIonCurrent] = useState(50);
+  const [depositionRate, setDepositionRate] = useState(0.5);
+  const [ionMass, setIonMass] = useState(40);
   const [filmMaterial, setFilmMaterial] = useState("SiO2");
-  const [chamberPressure, setChamberPressure] = useURLState("chamberPressure", 2e-4);
+  const [chamberPressure, setChamberPressure] = useState(2e-4);
 
   const materials: Record<string, { density: number; packingDensity: number; n: number; name: string }> = {
     SiO2: { density: 2.2, packingDensity: 0.95, n: 1.46, name: "Silicon Dioxide" },

@@ -7,13 +7,11 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function ThermalLensHazardPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 808);
-  const [power, setPower] = useURLState("power", 2000); // mW
-  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 5); // mm
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 1); // s
+  const [wavelength, setWavelength] = useState(808);
+  const [power, setPower] = useState(2000); // mW
+  const [beamDiameter, setBeamDiameter] = useState(5); // mm
+  const [exposureTime, setExposureTime] = useState(1); // s
 
   // Thermal lensing hazard: when a lens (eyewear, optics) absorbs laser energy
   // Temperature rise: ΔT = (α * I * t) / (ρ * Cp * d)
@@ -21,8 +19,8 @@ export default function ThermalLensHazardPage() {
   // Thermal stress: σ = E * α_th * ΔT / (1 - ν)
   // Lens damage occurs when ΔT > threshold or σ > fracture stress
 
-  const [absorption, setAbsorption] = useURLState("absorption", 0.001); // 0.1% absorption
-  const [thickness, setThickness] = useURLState("thickness", 3); // mm
+  const [absorption, setAbsorption] = useState(0.001); // 0.1% absorption
+  const [thickness, setThickness] = useState(3); // mm
 
   const beamArea = useMemo(() => Math.PI * Math.pow(beamDiameter / 20, 2), [beamDiameter]); // cm²
   const irradiance = useMemo(() => power / 1000 / beamArea, [power, beamArea]); // W/cm²

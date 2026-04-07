@@ -5,15 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function PlasmaDepositionPage() {
-  const [power, setPower] = useURLState("power", 500);
-  const [pressure, setPressure] = useURLState("pressure", 5e-3);
-  const [gasFlow, setGasFlow] = useURLState("gasFlow", 30);
-  const [substrateTemp, setSubstrateTemp] = useURLState("substrateTemp", 300);
-  const [frequency, setFrequency] = useURLState("frequency", 13.56);
-  const [electrodeGap, setElectrodeGap] = useURLState("electrodeGap", 5);
+  const [power, setPower] = useState(500);
+  const [pressure, setPressure] = useState(5e-3);
+  const [gasFlow, setGasFlow] = useState(30);
+  const [substrateTemp, setSubstrateTemp] = useState(300);
+  const [frequency, setFrequency] = useState(13.56);
+  const [electrodeGap, setElectrodeGap] = useState(5);
   const [gasType, setGasType] = useState("Ar/O2");
 
   const gases: Record<string, { mw: number; gamma: number; ionizationE: number; name: string }> = {

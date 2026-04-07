@@ -5,17 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 const k = 1.381e-23, q = 1.602e-19, h = 6.626e-34, c = 3e8;
 
 export default function IngaasParametersPage() {
-  const [temperature, setTemperature] = useURLState("temperature", 293);
-  const [indiumFraction, setIndiumFraction] = useURLState("indiumFraction", 0.53);
-  const [thickness, setThickness] = useURLState("thickness", 3);
-  const [area, setArea] = useURLState("area", 0.1);
-  const [biasVoltage, setBiasVoltage] = useURLState("biasVoltage", 0.5);
-  const [idealityFactor, setIdealityFactor] = useURLState("idealityFactor", 1.2);
+  const [temperature, setTemperature] = useState(293);
+  const [indiumFraction, setIndiumFraction] = useState(0.53);
+  const [thickness, setThickness] = useState(3);
+  const [area, setArea] = useState(0.1);
+  const [biasVoltage, setBiasVoltage] = useState(0.5);
+  const [idealityFactor, setIdealityFactor] = useState(1.2);
 
   const Eg = 0.36 + 0.63 * indiumFraction + 0.43 * indiumFraction ** 2;
   const EgT = Eg - 2.7e-4 * (temperature - 300) * (Eg - 0.5) / Eg;

@@ -6,16 +6,14 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function ResearchLabSafetyPage() {
-  const [power, setPower] = useURLState("power", 500); // mW
-  const [wavelength, setWavelength] = useURLState("wavelength", 780); // nm (Ti:Sapph)
-  const [beamDia, setBeamDia] = useURLState("beamDia", 1.5); // mm
-  const [divergence, setDivergence] = useURLState("divergence", 1.5); // mrad
-  const [numBeams, setNumBeams] = useURLState("numBeams", 1); // multiple beam paths
-  const [labLength, setLabLength] = useURLState("labLength", 5); // m
-  const [labWidth, setLabWidth] = useURLState("labWidth", 4); // m
+  const [power, setPower] = useState(500); // mW
+  const [wavelength, setWavelength] = useState(780); // nm (Ti:Sapph)
+  const [beamDia, setBeamDia] = useState(1.5); // mm
+  const [divergence, setDivergence] = useState(1.5); // mrad
+  const [numBeams, setNumBeams] = useState(1); // multiple beam paths
+  const [labLength, setLabLength] = useState(5); // m
+  const [labWidth, setLabWidth] = useState(4); // m
 
   // MPE: retinal hazard (400-1400nm) in W/cm² — ANSI Z136.1 simplified
   // Visible (400-700nm): ~1.8e-3 × t^-0.25 W/cm²; Near-IR (700-1400nm): C_A × 1e-3 W/cm²

@@ -5,15 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function MicrochannelPlatePage() {
-  const [numPlates, setNumPlates] = useURLState("numPlates", 2);
-  const [channelDiameter, setChannelDiameter] = useURLState("channelDiameter", 10); // µm
-  const [channelLength, setChannelLength] = useURLState("channelLength", 0.5); // mm
+  const [numPlates, setNumPlates] = useState(2);
+  const [channelDiameter, setChannelDiameter] = useState(10); // µm
+  const [channelLength, setChannelLength] = useState(0.5); // mm
   const [openAreaRatio, setOpenAreaRatio] = useState(0.6);
-  const [biasAngle, setBiasAngle] = useURLState("biasAngle", 8); // degrees
-  const [appliedVoltage, setAppliedVoltage] = useURLState("appliedVoltage", 1000); // V per plate
+  const [biasAngle, setBiasAngle] = useState(8); // degrees
+  const [appliedVoltage, setAppliedVoltage] = useState(1000); // V per plate
 
   const results = useMemo(() => {
     const ldr = channelLength * 1000 / channelDiameter; // L/D ratio

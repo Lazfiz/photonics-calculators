@@ -5,14 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function SignalToNoisePage() {
-  const [signalPhotons, setSignalPhotons] = useURLState("signalPhotons", 10000);
-  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 100);
-  const [readNoise, setReadNoise] = useURLState("readNoise", 10);
-  const [nScans, setNScans] = useURLState("nScans", 1);
-  const [detectorNoise, setDetectorNoise] = useURLState("detectorNoise", 50);
+  const [signalPhotons, setSignalPhotons] = useState(10000);
+  const [darkCurrent, setDarkCurrent] = useState(100);
+  const [readNoise, setReadNoise] = useState(10);
+  const [nScans, setNScans] = useState(1);
+  const [detectorNoise, setDetectorNoise] = useState(50);
 
   const snr = useMemo(() => {
     const S = signalPhotons;

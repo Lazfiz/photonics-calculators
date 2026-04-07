@@ -3,14 +3,11 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function OpticalSectioningPage() {
-  const [na, setNa] = useURLState("na", 1.4);
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [n, setN] = useURLState("n", 1.52);
-  const [pinholeAu, setPinholeAu] = useURLState("pinholeAu", 1.0);
+  const [na, setNa] = useState(1.4);
+  const [wavelength, setWavelength] = useState(550);
+  const [n, setN] = useState(1.52);
+  const [pinholeAu, setPinholeAu] = useState(1.0);
   const [method, setMethod] = useState("confocal");
 
   const results = useMemo(() => {

@@ -3,15 +3,12 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function OpticalAntennaPage() {
-  const [aperture, setAperture] = useURLState("aperture", 10); // cm
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [obscuration, setObscuration] = useURLState("obscuration", 0.15); // fraction
-  const [efficiency, setEfficiency] = useURLState("efficiency", 0.75);
-  const [beamQuality, setBeamQuality] = useURLState("beamQuality", 1.1); // M²
+  const [aperture, setAperture] = useState(10); // cm
+  const [wavelength, setWavelength] = useState(1550); // nm
+  const [obscuration, setObscuration] = useState(0.15); // fraction
+  const [efficiency, setEfficiency] = useState(0.75);
+  const [beamQuality, setBeamQuality] = useState(1.1); // M²
 
   const calc = useMemo(() => {
     const D = aperture * 1e-2;

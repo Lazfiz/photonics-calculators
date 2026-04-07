@@ -3,15 +3,12 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function AtmospherePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [distance, setDistance] = useURLState("distance", 1); // km
-  const [visibility, setVisibility] = useURLState("visibility", 23); // km
-  const [altitude, setAltitude] = useURLState("altitude", 0); // m
-  const [humidity, setHumidity] = useURLState("humidity", 50); // %
+  const [wavelength, setWavelength] = useState(1550); // nm
+  const [distance, setDistance] = useState(1); // km
+  const [visibility, setVisibility] = useState(23); // km
+  const [altitude, setAltitude] = useState(0); // m
+  const [humidity, setHumidity] = useState(50); // %
 
   const results = useMemo(() => {
     const wl = wavelength / 1000; // μm

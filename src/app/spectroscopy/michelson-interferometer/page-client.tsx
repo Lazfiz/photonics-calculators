@@ -5,14 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function MichelsonInterferometerPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1.0); // μm
-  const [maxOPD, setMaxOPD] = useURLState("maxOPD", 100); // μm
-  const [nPoints, setNPoints] = useURLState("nPoints", 256);
-  const [nLines, setNLines] = useURLState("nLines", 3);
-  const [sourceWidth, setSourceWidth] = useURLState("sourceWidth", 0.05); // μm bandwidth
+  const [wavelength, setWavelength] = useState(1.0); // μm
+  const [maxOPD, setMaxOPD] = useState(100); // μm
+  const [nPoints, setNPoints] = useState(256);
+  const [nLines, setNLines] = useState(3);
+  const [sourceWidth, setSourceWidth] = useState(0.05); // μm bandwidth
 
   const chartData = useMemo(() => {
     const N = nPoints;

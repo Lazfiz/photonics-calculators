@@ -3,16 +3,13 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function ReceiverFovPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [rxAperture, setRxAperture] = useURLState("rxAperture", 0.2); // m
-  const [fovHalfAngle, setFovHalfAngle] = useURLState("fovHalfAngle", 5); // mrad
-  const [opticalEfficiency, setOpticalEfficiency] = useURLState("opticalEfficiency", 0.7);
+  const [wavelength, setWavelength] = useState(1550); // nm
+  const [rxAperture, setRxAperture] = useState(0.2); // m
+  const [fovHalfAngle, setFovHalfAngle] = useState(5); // mrad
+  const [opticalEfficiency, setOpticalEfficiency] = useState(0.7);
   const [backgroundType, setBackgroundType] = useState<"day-sky" | "night-sky" | "urban" | "moonlit">("day-sky");
-  const [filterBandwidth, setFilterBandwidth] = useURLState("filterBandwidth", 1); // nm
+  const [filterBandwidth, setFilterBandwidth] = useState(1); // nm
 
   const backgroundRadiance: Record<string, number> = {
     "day-sky": 150, // W/m²/sr/μm

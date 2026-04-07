@@ -11,13 +11,11 @@ import LaserSafetyCwReferences from "../../../components/laser-safety-cw-referen
 import LaserSafetyCwScope from "../../../components/laser-safety-cw-scope";
 import LaserSafetySuiteLinks from "../../../components/laser-safety-suite-links";
 import { cornealIrradianceWcm2 } from "../../../lib/laser-safety-cw-suite";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function ODRequirementsPage() {
-  const [power, setPower] = useURLState("power", 500);
-  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 2);
-  const [validatedMpeIrradiance, setValidatedMpeIrradiance] = useURLState("validatedMpeIrradiance", 0.0025); // W/cm²
-  const [safetyFactor, setSafetyFactor] = useURLState("safetyFactor", 1);
+  const [power, setPower] = useState(500);
+  const [beamDiameter, setBeamDiameter] = useState(2);
+  const [validatedMpeIrradiance, setValidatedMpeIrradiance] = useState(0.0025); // W/cm²
+  const [safetyFactor, setSafetyFactor] = useState(1);
 
   const irradiance = useMemo(() => cornealIrradianceWcm2(power, beamDiameter), [power, beamDiameter]);
   const targetIrradiance = validatedMpeIrradiance / safetyFactor;

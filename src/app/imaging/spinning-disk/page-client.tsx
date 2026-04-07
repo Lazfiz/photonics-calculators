@@ -3,17 +3,14 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function SpinningDiskPage() {
-  const [na, setNa] = useURLState("na", 0.8);
-  const [wavelength, setWavelength] = useURLState("wavelength", 488);
-  const [n, setN] = useURLState("n", 1.33);
-  const [pinholeDiam, setPinholeDiam] = useURLState("pinholeDiam", 50);
-  const [numPins, setNumPins] = useURLState("numPins", 20000);
-  const [diskRPM, setDiskRPM] = useURLState("diskRPM", 5000);
-  const [cameraExposure, setCameraExposure] = useURLState("cameraExposure", 100);
+  const [na, setNa] = useState(0.8);
+  const [wavelength, setWavelength] = useState(488);
+  const [n, setN] = useState(1.33);
+  const [pinholeDiam, setPinholeDiam] = useState(50);
+  const [numPins, setNumPins] = useState(20000);
+  const [diskRPM, setDiskRPM] = useState(5000);
+  const [cameraExposure, setCameraExposure] = useState(100);
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;

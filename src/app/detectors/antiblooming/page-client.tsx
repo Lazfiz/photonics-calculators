@@ -5,13 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function AntibloomingPage() {
-  const [wellCapacity, setWellCapacity] = useURLState("wellCapacity", 50000);
-  const [abThreshold, setAbThreshold] = useURLState("abThreshold", 0.8);
-  const [excessCharge, setExcessCharge] = useURLState("excessCharge", 20000);
-  const [chargeDumpEfficiency, setChargeDumpEfficiency] = useURLState("chargeDumpEfficiency", 0.99);
+  const [wellCapacity, setWellCapacity] = useState(50000);
+  const [abThreshold, setAbThreshold] = useState(0.8);
+  const [excessCharge, setExcessCharge] = useState(20000);
+  const [chargeDumpEfficiency, setChargeDumpEfficiency] = useState(0.99);
 
   const chartData = useMemo(() => {
     const incidentElectrons = Array.from({ length: 200 }, (_, i) => (i + 1) * 1000);

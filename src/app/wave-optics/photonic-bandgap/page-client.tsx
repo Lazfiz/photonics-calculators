@@ -5,14 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function PhotonicBandgapPage() {
-  const [latticeConst, setLatticeConst] = useURLState("latticeConst", 500); // nm
-  const [nHigh, setNHigh] = useURLState("nHigh", 3.4); // Si
-  const [nLow, setNLow] = useURLState("nLow", 1.45); // SiO2
-  const [fillFraction, setFillFraction] = useURLState("fillFraction", 0.3); // filling fraction
-  const [numPeriods, setNumPeriods] = useURLState("numPeriods", 10);
+  const [latticeConst, setLatticeConst] = useState(500); // nm
+  const [nHigh, setNHigh] = useState(3.4); // Si
+  const [nLow, setNLow] = useState(1.45); // SiO2
+  const [fillFraction, setFillFraction] = useState(0.3); // filling fraction
+  const [numPeriods, setNumPeriods] = useState(10);
 
   const a = latticeConst * 1e-9; // m
   const lambdaBragg = 2 * (nHigh * fillFraction + nLow * (1 - fillFraction)) * a * 1e9; // nm, quarter-wave

@@ -5,12 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function UVExposurePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 254); // nm (UV-C, mercury line)
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 8); // hours
-  const [beamArea, setBeamArea] = useURLState("beamArea", 1); // cm²
+  const [wavelength, setWavelength] = useState(254); // nm (UV-C, mercury line)
+  const [exposureTime, setExposureTime] = useState(8); // hours
+  const [beamArea, setBeamArea] = useState(1); // cm²
 
   // UV exposure limits (ICNIRP / ACGIH TLV)
   // For UV (180-400nm):

@@ -5,15 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function LongPassPage() {
-  const [nH, setNH] = useURLState("nH", 2.35);
-  const [nL, setNL] = useURLState("nL", 1.45);
-  const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [nInc, setNInc] = useURLState("nInc", 1.0);
-  const [numPairs, setNumPairs] = useURLState("numPairs", 5);
-  const [designWl, setDesignWl] = useURLState("designWl", 500);
+  const [nH, setNH] = useState(2.35);
+  const [nL, setNL] = useState(1.45);
+  const [nSub, setNSub] = useState(1.52);
+  const [nInc, setNInc] = useState(1.0);
+  const [numPairs, setNumPairs] = useState(5);
+  const [designWl, setDesignWl] = useState(500);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 700 / 500);

@@ -3,15 +3,12 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function ModeFieldDiameterPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.5); // μm
-  const [na, setNa] = useURLState("na", 0.14);
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4682);
-  const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.4629);
+  const [wavelength, setWavelength] = useState(1550); // nm
+  const [coreRadius, setCoreRadius] = useState(4.5); // μm
+  const [na, setNa] = useState(0.14);
+  const [coreIndex, setCoreIndex] = useState(1.4682);
+  const [claddingIndex, setCladdingIndex] = useState(1.4629);
   const [fiberType, setFiberType] = useState<"smf28" | "smf28e" | "smf28e+">("smf28");
 
   const presets = {

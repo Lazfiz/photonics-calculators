@@ -5,16 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function CosmicRaysPage() {
-  const [sensorArea, setSensorArea] = useURLState("sensorArea", 1);
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 1);
-  const [flux, setFlux] = useURLState("flux", 1);
-  const [pixelSize, setPixelSize] = useURLState("pixelSize", 10);
-  const [energyDeposit, setEnergyDeposit] = useURLState("energyDeposit", 40);
-  const [trackLength, setTrackLength] = useURLState("trackLength", 200);
-  const [numFrames, setNumFrames] = useURLState("numFrames", 100);
+  const [sensorArea, setSensorArea] = useState(1);
+  const [exposureTime, setExposureTime] = useState(1);
+  const [flux, setFlux] = useState(1);
+  const [pixelSize, setPixelSize] = useState(10);
+  const [energyDeposit, setEnergyDeposit] = useState(40);
+  const [trackLength, setTrackLength] = useState(200);
+  const [numFrames, setNumFrames] = useState(100);
 
   const fluxPerSec = flux / 60;
   const expectedHits = fluxPerSec * sensorArea * exposureTime;

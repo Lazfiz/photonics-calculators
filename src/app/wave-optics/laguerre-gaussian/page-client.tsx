@@ -5,8 +5,6 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 function factorial(n: number): number {
   if (n <= 1) return 1;
   let r = 1;
@@ -27,10 +25,10 @@ function laguerreL(p: number, l: number, x: number): number {
 }
 
 export default function LaguerreGaussianPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [waist, setWaist] = useURLState("waist", 50);
-  const [p, setP] = useURLState("p", 0);
-  const [l, setL] = useURLState("l", 1);
+  const [wavelength, setWavelength] = useState(1550);
+  const [waist, setWaist] = useState(50);
+  const [p, setP] = useState(0);
+  const [l, setL] = useState(1);
 
   const w0 = waist;
   const zR = Math.PI * w0 * w0 / wavelength; // mm (µm²/nm = mm)

@@ -3,16 +3,13 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function AdaptiveOpticsPage() {
-  const [c2n, setC2n] = useURLState("c2n", 1e-14);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [range, setRange] = useURLState("range", 1);
-  const [diameter, setDiameter] = useURLState("diameter", 10);
-  const [aoActuators, setAoActuators] = useURLState("aoActuators", 127);
-  const [aoBandwidth, setAoBandwidth] = useURLState("aoBandwidth", 500);
+  const [c2n, setC2n] = useState(1e-14);
+  const [wavelength, setWavelength] = useState(1550);
+  const [range, setRange] = useState(1);
+  const [diameter, setDiameter] = useState(10);
+  const [aoActuators, setAoActuators] = useState(127);
+  const [aoBandwidth, setAoBandwidth] = useState(500);
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-9;

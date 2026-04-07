@@ -6,12 +6,10 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function PeakPowerPage() {
-  const [avgPower, setAvgPower] = useURLState("avgPower", 10);
-  const [repRate, setRepRate] = useURLState("repRate", 80e6);
-  const [dutyCycle, setDutyCycle] = useURLState("dutyCycle", 0.1);
+  const [avgPower, setAvgPower] = useState(10);
+  const [repRate, setRepRate] = useState(80e6);
+  const [dutyCycle, setDutyCycle] = useState(0.1);
 
   const pulseEnergy = (avgPower / repRate) * 1e6; // µJ
   const peakPower = dutyCycle > 0 ? avgPower / dutyCycle : 0;

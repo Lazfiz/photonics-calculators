@@ -7,11 +7,9 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function UVHazardPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 254);
-  const [spectralIrr, setSpectralIrr] = useURLState("spectralIrr", 0.01);
+  const [wavelength, setWavelength] = useState(254);
+  const [spectralIrr, setSpectralIrr] = useState(0.01);
   const [exposure, setExposure] = useState(8 * 3600);
 
   // ACGIH UV hazard weighting function (simplified)

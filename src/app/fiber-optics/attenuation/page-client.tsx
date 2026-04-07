@@ -5,11 +5,9 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
-
 export default function AttenuationPage() {
   const [fiberType, setFiberType] = useState<"SMF28" | "DSF" | "NZDSF">("SMF28");
-  const [length, setLength] = useURLState("length", 50); // km
+  const [length, setLength] = useState(50); // km
 
   const getAttenuation = (wl: number, type: string) => {
     // Wavelength-dependent attenuation model (dB/km)

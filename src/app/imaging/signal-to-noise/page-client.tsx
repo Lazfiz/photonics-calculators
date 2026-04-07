@@ -3,18 +3,15 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function SignalToNoisePage() {
-  const [signalPhotons, setSignalPhotons] = useURLState("signalPhotons", 5000);
-  const [backgroundPhotons, setBackgroundPhotons] = useURLState("backgroundPhotons", 500);
-  const [quantumEfficiency, setQuantumEfficiency] = useURLState("quantumEfficiency", 0.7);
-  const [readNoise, setReadNoise] = useURLState("readNoise", 1.5);
-  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 0.1);
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 100);
-  const [binning, setBinning] = useURLState("binning", 1);
-  const [numFrames, setNumFrames] = useURLState("numFrames", 1);
+  const [signalPhotons, setSignalPhotons] = useState(5000);
+  const [backgroundPhotons, setBackgroundPhotons] = useState(500);
+  const [quantumEfficiency, setQuantumEfficiency] = useState(0.7);
+  const [readNoise, setReadNoise] = useState(1.5);
+  const [darkCurrent, setDarkCurrent] = useState(0.1);
+  const [exposureTime, setExposureTime] = useState(100);
+  const [binning, setBinning] = useState(1);
+  const [numFrames, setNumFrames] = useState(1);
 
   const results = useMemo(() => {
     const signalE = signalPhotons * quantumEfficiency * binning * binning;

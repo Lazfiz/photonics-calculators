@@ -3,17 +3,14 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
-
-
 export default function PolarizationControllerCalculator() {
-  const [birefringence, setBirefringence] = useURLState("birefringence", 3e-4); // Δn
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 1); // m per coil section
-  const [numSections, setNumSections] = useURLState("numSections", 3);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [inputAzimuth, setInputAzimuth] = useURLState("inputAzimuth", 0); // degrees
-  const [inputEllipticity, setInputEllipticity] = useURLState("inputEllipticity", 0); // degrees (0=linear)
-  const [coilRadii, setCoilRadii] = useURLState("coilRadii", 15); // mm
+  const [birefringence, setBirefringence] = useState(3e-4); // Δn
+  const [fiberLength, setFiberLength] = useState(1); // m per coil section
+  const [numSections, setNumSections] = useState(3);
+  const [wavelength, setWavelength] = useState(1550); // nm
+  const [inputAzimuth, setInputAzimuth] = useState(0); // degrees
+  const [inputEllipticity, setInputEllipticity] = useState(0); // degrees (0=linear)
+  const [coilRadii, setCoilRadii] = useState(15); // mm
 
   // Phase retardation per section
   const phasePerSection = useMemo(() => {
