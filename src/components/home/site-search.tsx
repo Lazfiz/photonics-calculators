@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface SearchItem {
   title: string;
@@ -52,24 +52,10 @@ function cosineSimilarity(a: number[], b: number[]): number {
   return dot / (Math.sqrt(na) * Math.sqrt(nb) + 1e-10);
 }
 
-// Lazy-loaded transformers pipeline
-let pipelinePromise: Promise<any> | null = null;
+// Global references — loaded lazily via CDN script
 let embeddingsCache: EmbeddingItem[] | null = null;
-
-function getPipeline() {
-  if (!pipelinePromise) {
-    pipelinePromise = import("@huggingface/transformers").then(async ({ pipeline, env }) => {
-      // Use WASM backend with browser cache for faster subsequent loads
-      const extractor = await pipeline(
-        "feature-extraction",
-        "Xenova/all-MiniLM-L6-v2",
-        { dtype: "fp32" }
-      );
-      return extractor;
-    });
-  }
-  return pipelinePromise;
-}
+let modelReady = false;
+let modelLoading = false;
 
 async function loadEmbeddings(): Promise<EmbeddingItem[]> {
   if (embeddingsCache) return embeddingsCache;
@@ -78,15 +64,20 @@ async function loadEmbeddings(): Promise<EmbeddingItem[]> {
   return embeddingsCache!;
 }
 
+// Declare the global injected by the semantic-search-loader script
+declare global {
+  interface Window {
+    __semanticSearchEmbed: (text: string) => Promise<number[] | null>;
+    __semanticSearchReady: boolean;
+  }
+}
+
 async function embedQuery(text: string): Promise<number[] | null> {
   try {
-    const extractor = await getPipeline();
-    const output = await extractor(text, { pooling: "mean", normalize: true });
-    // output is a Tensor, convert to array
-    const data = output.tolist ? output.tolist()[0] : Array.from(output.data);
-    // Normalize
-    const norm = Math.sqrt(data.reduce((s: number, v: number) => s + v * v, 0));
-    return norm > 0 ? data.map((v: number) => v / norm) : data;
+    if (window.__semanticSearchEmbed) {
+      return window.__semanticSearchEmbed(text);
+    }
+    return null;
   } catch {
     return null;
   }
@@ -136,43 +127,94 @@ export default function SiteSearch() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  // Hybrid search: keyword (instant) + semantic (deferred)
-  const runSearch = useCallback(
-    async (searchTerms: string[], rawQuery: string) => {
-      if (items.length === 0) return;
+  // Lazy-load semantic model when first needed
+  const ensureModel = useCallback(async () => {
+    if (modelStatus === "ready") return;
+    if (modelStatus === "loading" || modelStatus === "error") return;
 
-      // Instant keyword results
-      const keywordScored = items
-        .map((item) => ({ item, score: scoreKeyword(item, searchTerms) }))
-        .filter(({ score }) => score > 0)
-        .sort((a, b) => b.score - a.score)
-        .map(({ item }) => item);
-      setResults(keywordScored.slice(0, 12));
+    setModelStatus("loading");
+    modelLoading = true;
 
-      // Skip semantic for very short queries (keyword is better)
-      if (rawQuery.length < 8 || searchTerms.length === 0) return;
+    try {
+      // Load embeddings in parallel with model init
+      const embPromise = loadEmbeddings();
 
-      // Lazy-load semantic model
-      if (modelStatus === "idle") {
-        setModelStatus("loading");
-        // Load embeddings and model in parallel
-        Promise.all([loadEmbeddings(), getPipeline()])
-          .then(() => setModelStatus("ready"))
-          .catch(() => setModelStatus("error"));
+      // Load the semantic search model via dynamic script injection
+      // This avoids bundling @huggingface/transformers with Next.js
+      if (!document.getElementById("semantic-search-loader")) {
+        const script = document.createElement("script");
+        script.id = "semantic-search-loader";
+        script.src = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1/dist/transformers.min.js";
+        script.onload = async () => {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const hf = (window as any).Transformers;
+            if (!hf || !hf.pipeline) {
+              setModelStatus("error");
+              return;
+            }
+            const extractor = await hf.pipeline(
+              "feature-extraction",
+              "Xenova/all-MiniLM-L6-v2",
+              { dtype: "fp32" }
+            );
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (window as any).__semanticSearchEmbed = async (text: string) => {
+              const output = await extractor(text, { pooling: "mean", normalize: true });
+              const data = output.tolist ? output.tolist()[0] : Array.from(output.data);
+              return data;
+            };
+            window.__semanticSearchReady = true;
+            await embPromise;
+            setModelStatus("ready");
+          } catch (err) {
+            console.warn("Semantic model init failed:", err);
+            setModelStatus("error");
+          }
+        };
+        script.onerror = () => setModelStatus("error");
+        document.head.appendChild(script);
       }
+    } catch {
+      setModelStatus("error");
+    }
+  }, [modelStatus]);
 
+  // Debounced search with semantic fallback
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (terms.length === 0) {
+      setResults([]);
+      return;
+    }
+
+    // Instant keyword results
+    const keywordResults = items
+      .map((item) => ({ item, score: scoreKeyword(item, terms) }))
+      .filter(({ score }) => score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map(({ item }) => item);
+    setResults(keywordResults.slice(0, 12));
+
+    // Try semantic after 500ms for longer queries
+    if (q.length < 8) return;
+
+    debounceRef.current = setTimeout(async () => {
+      if (modelStatus === "idle") {
+        await ensureModel();
+      }
       if (modelStatus !== "ready") return;
 
       try {
         const embeddings = await loadEmbeddings();
-        const queryEmbedding = await embedQuery(rawQuery);
+        const queryEmbedding = await embedQuery(q);
         if (!queryEmbedding) return;
 
         const hrefSet = new Set(items.map((i) => i.href));
         const semanticScores = scoreSemantic(embeddings, queryEmbedding, hrefSet);
 
-        // Merge: semantic boosts keyword results + surfaces new ones
-        const hrefSet2 = new Set(keywordScored.map((i) => i.href));
+        // Add semantic matches not already in keyword results
+        const hrefSet2 = new Set(keywordResults.map((i) => i.href));
         const semanticResults: SearchItem[] = [];
         for (const item of items) {
           const semScore = semanticScores.get(item.href) ?? 0;
@@ -182,39 +224,16 @@ export default function SiteSearch() {
         }
         semanticResults.sort((a, b) => (semanticScores.get(b.href) ?? 0) - (semanticScores.get(a.href) ?? 0));
 
-        // Merge: keyword first, then semantic additions
-        const merged = [...keywordScored, ...semanticResults].slice(0, 12);
-        setResults(merged);
+        setResults([...keywordResults, ...semanticResults].slice(0, 12));
       } catch {
-        // Semantic search failed — keyword results are still showing
+        // Keyword results still showing
       }
-    },
-    [items, modelStatus]
-  );
+    }, 500);
 
-  // Debounced search
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (terms.length === 0) {
-      setResults([]);
-      return;
-    }
-    // Show keyword results immediately
-    const keywordResults = items
-      .map((item) => ({ item, score: scoreKeyword(item, terms) }))
-      .filter(({ score }) => score > 0)
-      .sort((a, b) => b.score - a.score)
-      .map(({ item }) => item);
-    setResults(keywordResults.slice(0, 12));
-
-    // Then try semantic after 400ms
-    debounceRef.current = setTimeout(() => {
-      runSearch(terms, q);
-    }, 400);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [q, items, runSearch, terms]);
+  }, [q, items, modelStatus, terms, ensureModel]);
 
   const categoryColor: Record<string, string> = {
     "wave-optics": "text-blue-400",
@@ -231,7 +250,6 @@ export default function SiteSearch() {
 
   return (
     <div className="relative w-full max-w-2xl mx-auto">
-      {/* Search input */}
       <div className="relative">
         <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -255,7 +273,6 @@ export default function SiteSearch() {
         </div>
       </div>
 
-      {/* Results dropdown */}
       {results.length > 0 && (
         <div className="absolute z-50 mt-2 w-full rounded-xl border border-white/8 bg-white/[0.02] backdrop-blur-xl shadow-2xl shadow-black/50 overflow-hidden">
           <div className="max-h-96 overflow-y-auto py-2">
