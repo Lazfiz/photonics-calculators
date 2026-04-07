@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function SpatialFilterPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [inputBeamDiam, setInputBeamDiam] = useURLState("inputBeamDiam", 1000); // µm (1/e²)
-  const [focalLength, setFocalLength] = useURLState("focalLength", 50); // mm
-  const [m2, setM2] = useURLState("m2", 1.0);
+  const [wavelength, setWavelength] = useState(1064); // nm
+  const [inputBeamDiam, setInputBeamDiam] = useState(1000); // µm (1/e²)
+  const [focalLength, setFocalLength] = useState(50); // mm
+  const [m2, setM2] = useState(1.0);
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-3; // µm

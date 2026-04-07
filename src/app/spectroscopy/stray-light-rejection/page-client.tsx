@@ -5,13 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function StrayLightRejectionPage() {
-  const [strayLightRatio, setStrayLightRatio] = useURLState("strayLightRatio", 0.001); // 0.1%
-  const [absorbance, setAbsorbance] = useURLState("absorbance", 3.0);
-  const [resolution, setResolution] = useURLState("resolution", 4); // cm⁻¹
-  const [filterOrder, setFilterOrder] = useURLState("filterOrder", 3);
-  const [gratingLines, setGratingLines] = useURLState("gratingLines", 1200); // lines/mm
+  const [strayLightRatio, setStrayLightRatio] = useState(0.001); // 0.1%
+  const [absorbance, setAbsorbance] = useState(3.0);
+  const [resolution, setResolution] = useState(4); // cm⁻¹
+  const [filterOrder, setFilterOrder] = useState(3);
+  const [gratingLines, setGratingLines] = useState(1200); // lines/mm
 
   const chartData = useMemo(() => {
     const absRange = Array.from({ length: 200 }, (_, i) => i * 0.05);

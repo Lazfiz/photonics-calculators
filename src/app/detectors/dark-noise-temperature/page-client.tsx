@@ -5,15 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 const kB = 8.617e-5;
 
 export default function DarkNoiseTemperaturePage() {
-  const [darkCurrent25, setDarkCurrent25] = useURLState("darkCurrent25", 0.5);
-  const [eg, setEg] = useURLState("eg", 1.12);
-  const [area, setArea] = useURLState("area", 1);
-  const [bandwidth, setBandwidth] = useURLState("bandwidth", 1);
-  const [readNoise, setReadNoise] = useURLState("readNoise", 2);
+  const [darkCurrent25, setDarkCurrent25] = useState(0.5);
+  const [eg, setEg] = useState(1.12);
+  const [area, setArea] = useState(1);
+  const [bandwidth, setBandwidth] = useState(1);
+  const [readNoise, setReadNoise] = useState(2);
 
   const darkCurrentAtT = (Tc: number) => {
     const T = Tc + 273.15; const Tref = 298.15;

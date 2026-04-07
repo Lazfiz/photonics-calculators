@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-center py-1 border-b border-gray-800">
@@ -14,12 +13,12 @@ function ResultRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function CircularDichroismPage() {
-  const [absL, setAbsL] = useURLState("absL", 0.5);
-  const [absR, setAbsR] = useURLState("absR", 0.4);
-  const [pathLength, setPathLength] = useURLState("pathLength", 1.0); // cm
-  const [concentration, setConcentration] = useURLState("concentration", 1.0); // mM
-  const [wavelength, setWavelength] = useURLState("wavelength", 220); // nm
-  const [temperature, setTemperature] = useURLState("temperature", 25); // °C
+  const [absL, setAbsL] = useState(0.5);
+  const [absR, setAbsR] = useState(0.4);
+  const [pathLength, setPathLength] = useState(1.0); // cm
+  const [concentration, setConcentration] = useState(1.0); // mM
+  const [wavelength, setWavelength] = useState(220); // nm
+  const [temperature, setTemperature] = useState(25); // °C
 
   // CD calculations
   const results = useMemo(() => {

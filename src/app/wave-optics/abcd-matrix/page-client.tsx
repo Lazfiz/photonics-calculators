@@ -4,13 +4,12 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function ABCDMatrixPage() {
   const [elements, setElements] = useState<Array<{ type: string; p1: string; p2: string }>>([
     { type: "free-space", p1: "100", p2: "" },
   ]);
-  const [inputHeight, setInputHeight] = useURLState("inputHeight", 1);
-  const [inputAngle, setInputAngle] = useURLState("inputAngle", 0);
+  const [inputHeight, setInputHeight] = useState(1);
+  const [inputAngle, setInputAngle] = useState(0);
 
   const typeOptions = [
     { value: "free-space", label: "Free Space", p1: "Distance d (mm)", p2: "" },

@@ -5,13 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function EmissivityControlPage() {
-  const [nH, setNH] = useURLState("nH", 1.9);
-  const [nL, setNL] = useURLState("nL", 1.1);
-  const [nSub, setNSub] = useURLState("nSub", 3.5);
-  const [designWl, setDesignWl] = useURLState("designWl", 10000);
-  const [pairs, setPairs] = useURLState("pairs", 5);
+  const [nH, setNH] = useState(1.9);
+  const [nL, setNL] = useState(1.1);
+  const [nSub, setNSub] = useState(3.5);
+  const [designWl, setDesignWl] = useState(10000);
+  const [pairs, setPairs] = useState(5);
   const [lowESilver] = useState(0.02);
 
   // Kirchhoff's law: emissivity = absorptance at thermal equilibrium

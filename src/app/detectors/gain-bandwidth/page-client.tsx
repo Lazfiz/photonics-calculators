@@ -5,11 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function GainBandwidthPage() {
-  const [gainDC, setGainDC] = useURLState("gainDC", 1000);
-  const [gbwProduct, setGbwProduct] = useURLState("gbwProduct", 1e6);
-  const [feedbackFraction, setFeedbackFraction] = useURLState("feedbackFraction", 0.01);
+  const [gainDC, setGainDC] = useState(1000);
+  const [gbwProduct, setGbwProduct] = useState(1e6);
+  const [feedbackFraction, setFeedbackFraction] = useState(0.01);
 
   const f3dB = gbwProduct / gainDC;
   const closedLoopGain = 1 / feedbackFraction;

@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function PALMSTORMPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 647);
-  const [na, setNa] = useURLState("na", 1.49);
-  const [localizationPrecision, setLocalizationPrecision] = useURLState("localizationPrecision", 20);
-  const [labelDensity, setLabelDensity] = useURLState("labelDensity", 5);
-  const [numFrames, setNumFrames] = useURLState("numFrames", 20000);
-  const [pixelSize, setPixelSize] = useURLState("pixelSize", 100);
+  const [wavelength, setWavelength] = useState(647);
+  const [na, setNa] = useState(1.49);
+  const [localizationPrecision, setLocalizationPrecision] = useState(20);
+  const [labelDensity, setLabelDensity] = useState(5);
+  const [numFrames, setNumFrames] = useState(20000);
+  const [pixelSize, setPixelSize] = useState(100);
 
   // Nyquist sampling
   const nyquist = wavelength / (2 * na * 2);

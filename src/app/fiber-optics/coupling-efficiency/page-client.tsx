@@ -7,17 +7,16 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
-import { useURLState } from "../../../hooks/use-url-state";
 const wavelengthPresets = [850, 1310, 1550];
 const currentHref = "/fiber-optics/coupling-efficiency";
 
 export default function CouplingEfficiencyCalculator() {
-  const [sourceNa, setSourceNa] = useURLState("sourceNa", 0.22);
-  const [fiberNa, setFiberNa] = useURLState("fiberNa", 0.12);
-  const [mfd, setMfd] = useURLState("mfd", 10.4);
-  const [lateralOffset, setLateralOffset] = useURLState("lateralOffset", 0);
-  const [angularMisalign, setAngularMisalign] = useURLState("angularMisalign", 0);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [sourceNa, setSourceNa] = useState(0.22);
+  const [fiberNa, setFiberNa] = useState(0.12);
+  const [mfd, setMfd] = useState(10.4);
+  const [lateralOffset, setLateralOffset] = useState(0);
+  const [angularMisalign, setAngularMisalign] = useState(0);
+  const [wavelength, setWavelength] = useState(1550);
 
   const w0 = useMemo(() => mfd / 2, [mfd]);
   const naMismatchLoss = useMemo(() => (sourceNa <= fiberNa ? 1 : (fiberNa / sourceNa) ** 2), [sourceNa, fiberNa]);

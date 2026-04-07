@@ -3,11 +3,10 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function WavelengthSelectionPage() {
-  const [range, setRange] = useURLState("range", 1);
-  const [visibility, setVisibility] = useURLState("visibility", 2);
-  const [dataRate, setDataRate] = useURLState("dataRate", 10);
+  const [range, setRange] = useState(1);
+  const [visibility, setVisibility] = useState(2);
+  const [dataRate, setDataRate] = useState(10);
   const [eyeSafety, setEyeSafety] = useState(true);
   const [costBudget, setCostBudget] = useState<"low" | "mid" | "high">("mid");
 

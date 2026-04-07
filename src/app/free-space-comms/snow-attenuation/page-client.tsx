@@ -3,11 +3,10 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function SnowAttenuationPage() {
-  const [snowRate, setSnowRate] = useURLState("snowRate", 5);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [range, setRange] = useURLState("range", 1);
+  const [snowRate, setSnowRate] = useState(5);
+  const [wavelength, setWavelength] = useState(1550);
+  const [range, setRange] = useState(1);
   const [snowType, setSnowType] = useState<"dry" | "wet">("dry");
 
   const calc = useMemo(() => {

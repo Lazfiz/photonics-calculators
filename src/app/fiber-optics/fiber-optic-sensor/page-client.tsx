@@ -5,18 +5,17 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 type SensorType = "fbg" | "mach_zehnder" | "fabry_perot" | "evanescent";
 
 export default function FiberOpticSensorPage() {
   const [sensorType, setSensorType] = useState<SensorType>("fbg");
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [temperature, setTemperature] = useURLState("temperature", 25); // °C
-  const [strain, setStrain] = useURLState("strain", 0); // με
-  const [pressure, setPressure] = useURLState("pressure", 101.325); // kPa
-  const [gaugeLength, setGaugeLength] = useURLState("gaugeLength", 10); // mm (for MZI)
-  const [cavityLength, setCavityLength] = useURLState("cavityLength", 20); // μm (for FP)
-  const [n_eff, setN_eff] = useURLState("n_eff", 1.468);
+  const [wavelength, setWavelength] = useState(1550); // nm
+  const [temperature, setTemperature] = useState(25); // °C
+  const [strain, setStrain] = useState(0); // με
+  const [pressure, setPressure] = useState(101.325); // kPa
+  const [gaugeLength, setGaugeLength] = useState(10); // mm (for MZI)
+  const [cavityLength, setCavityLength] = useState(20); // μm (for FP)
+  const [n_eff, setN_eff] = useState(1.468);
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-9;

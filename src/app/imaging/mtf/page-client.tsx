@@ -3,11 +3,10 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function MTFPage() {
-  const [na, setNa] = useURLState("na", 0.95);
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [defocus, setDefocus] = useURLState("defocus", 0);
+  const [na, setNa] = useState(0.95);
+  const [wavelength, setWavelength] = useState(550);
+  const [defocus, setDefocus] = useState(0);
 
   const mtfCurve = useMemo(() => {
     const lambda_um = wavelength * 1e-3;

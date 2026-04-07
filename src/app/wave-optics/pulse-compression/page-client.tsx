@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function PulseCompressionPage() {
-  const [inputDuration, setInputDuration] = useURLState("inputDuration", 100); // fs
-  const [compressionRatio, setCompressionRatio] = useURLState("compressionRatio", 10);
-  const [inputBandwidth, setInputBandwidth] = useURLState("inputBandwidth", 10); // nm at 800nm
-  const [wavelength, setWavelength] = useURLState("wavelength", 800);
+  const [inputDuration, setInputDuration] = useState(100); // fs
+  const [compressionRatio, setCompressionRatio] = useState(10);
+  const [inputBandwidth, setInputBandwidth] = useState(10); // nm at 800nm
+  const [wavelength, setWavelength] = useState(800);
 
   const outputDuration = inputDuration / compressionRatio;
   const tlDuration = 0.44 * Math.pow(wavelength * 1e-9, 2) / (3e8 * inputBandwidth * 1e-9) * 1e15; // fs

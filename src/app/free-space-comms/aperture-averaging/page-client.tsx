@@ -3,13 +3,12 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function ApertureAveragingPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [rxDiameter, setRxDiameter] = useURLState("rxDiameter", 10); // cm
-  const [cn2, setCn2] = useURLState("cn2", 1e-15); // refractive index structure parameter m^(-2/3)
-  const [range, setRange] = useURLState("range", 1000); // m
-  const [windSpeed, setWindSpeed] = useURLState("windSpeed", 5); // m/s
+  const [wavelength, setWavelength] = useState(1550);
+  const [rxDiameter, setRxDiameter] = useState(10); // cm
+  const [cn2, setCn2] = useState(1e-15); // refractive index structure parameter m^(-2/3)
+  const [range, setRange] = useState(1000); // m
+  const [windSpeed, setWindSpeed] = useState(5); // m/s
 
   // Aperture averaging factor: F_A = (D / (√(λ·L)))^(-7/6) for D >> √(λL)
   // Scintillation reduction with large apertures

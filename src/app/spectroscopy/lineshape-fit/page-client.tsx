@@ -5,13 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function LineshapeFitPage() {
   const [profile, setProfile] = useState<"voigt" | "gaussian" | "lorentzian">("voigt");
-  const [center, setCenter] = useURLState("center", 500);
-  const [fwhmG, setFwhmG] = useURLState("fwhmG", 0.5);
-  const [fwhmL, setFwhmL] = useURLState("fwhmL", 0.3);
-  const [amplitude, setAmplitude] = useURLState("amplitude", 1.0);
+  const [center, setCenter] = useState(500);
+  const [fwhmG, setFwhmG] = useState(0.5);
+  const [fwhmL, setFwhmL] = useState(0.3);
+  const [amplitude, setAmplitude] = useState(1.0);
 
   const gaussian = (x: number, x0: number, sigma: number) =>
     Math.exp(-0.5 * Math.pow((x - x0) / sigma, 2));

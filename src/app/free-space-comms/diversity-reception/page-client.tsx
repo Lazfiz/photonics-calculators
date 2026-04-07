@@ -3,9 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function DiversityReceptionPage() {
-  const [numRx, setNumRx] = useURLState("numRx", 2);
+  const [numRx, setNumRx] = useState(2);
   const erf = (x: number) => {
     const sign = x < 0 ? -1 : 1;
     const ax = Math.abs(x);
@@ -13,10 +12,10 @@ export default function DiversityReceptionPage() {
     const y = 1 - (((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t) * Math.exp(-ax * ax);
     return sign * y;
   };
-  const [separation, setSeparation] = useURLState("separation", 10);
-  const [c2n, setC2n] = useURLState("c2n", 1e-14);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [range, setRange] = useURLState("range", 1);
+  const [separation, setSeparation] = useState(10);
+  const [c2n, setC2n] = useState(1e-14);
+  const [wavelength, setWavelength] = useState(1550);
+  const [range, setRange] = useState(1);
   const [combineMethod, setCombineMethod] = useState<"sc" | "egc" | "mrc">("mrc");
 
   const calc = useMemo(() => {

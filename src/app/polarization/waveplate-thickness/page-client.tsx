@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function WaveplateThicknessPage() {
-  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 550);
-  const [birefringence, setBirefringence] = useURLState("birefringence", 0.0092); // quartz at 550nm
-  const [order, setOrder] = useURLState("order", 1);
-  const [customRetardance, setCustomRetardance] = useURLState("customRetardance", 0.25); // waves
+  const [wavelengthNm, setWavelengthNm] = useState(550);
+  const [birefringence, setBirefringence] = useState(0.0092); // quartz at 550nm
+  const [order, setOrder] = useState(1);
+  const [customRetardance, setCustomRetardance] = useState(0.25); // waves
 
   const lambdaM = wavelengthNm * 1e-9;
   const deltaWaves = customRetardance;

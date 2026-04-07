@@ -5,13 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function AmplitudeSplittingPage() {
-  const [n1, setN1] = useURLState("n1", 1.0);
-  const [nFilm, setNFilm] = useURLState("nFilm", 1.38);
-  const [n2, setN2] = useURLState("n2", 1.52);
-  const [thickness, setThickness] = useURLState("thickness", 200);
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
+  const [n1, setN1] = useState(1.0);
+  const [nFilm, setNFilm] = useState(1.38);
+  const [n2, setN2] = useState(1.52);
+  const [thickness, setThickness] = useState(200);
+  const [wavelength, setWavelength] = useState(550);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 2);

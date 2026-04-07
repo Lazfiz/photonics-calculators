@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function DarkCurrentPage() {
-  const [darkCurrent25, setDarkCurrent25] = useURLState("darkCurrent25", 0.1);
-  const [tempFactor, setTempFactor] = useURLState("tempFactor", 6);
+  const [darkCurrent25, setDarkCurrent25] = useState(0.1);
+  const [tempFactor, setTempFactor] = useState(6);
   const [tempMin, setTempMin] = useState(-80);
-  const [tempMax, setTempMax] = useURLState("tempMax", 40);
-  const [readNoise, setReadNoise] = useURLState("readNoise", 5);
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 1);
+  const [tempMax, setTempMax] = useState(40);
+  const [readNoise, setReadNoise] = useState(5);
+  const [exposureTime, setExposureTime] = useState(1);
 
   const darkCurrentAtT = (T: number) => darkCurrent25 * Math.pow(2, (T - 25) / tempFactor);
 

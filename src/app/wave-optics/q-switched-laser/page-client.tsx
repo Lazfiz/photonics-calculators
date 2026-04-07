@@ -5,11 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function QSwitchedLaserPage() {
-  const [repRate, setRepRate] = useURLState("repRate", 10); // kHz
-  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 1); // mJ
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 10); // ns
+  const [repRate, setRepRate] = useState(10); // kHz
+  const [pulseEnergy, setPulseEnergy] = useState(1); // mJ
+  const [pulseWidth, setPulseWidth] = useState(10); // ns
 
   const chartData = useMemo(() => {
     const t = Array.from({ length: 200 }, (_, i) => i * pulseWidth * 0.1); // ns

@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function FiberCharacterizationPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4682);
-  const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.4629);
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1); // μm
-  const [cutoffWavelength, setCutoffWavelength] = useURLState("cutoffWavelength", 1260); // nm
-  const [attenuation, setAttenuation] = useURLState("attenuation", 0.2); // dB/km
+  const [wavelength, setWavelength] = useState(1550);
+  const [coreIndex, setCoreIndex] = useState(1.4682);
+  const [claddingIndex, setCladdingIndex] = useState(1.4629);
+  const [coreRadius, setCoreRadius] = useState(4.1); // μm
+  const [cutoffWavelength, setCutoffWavelength] = useState(1260); // nm
+  const [attenuation, setAttenuation] = useState(0.2); // dB/km
 
   const calc = useMemo(() => {
     const n1 = coreIndex;

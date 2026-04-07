@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-center py-1 border-b border-gray-800">
@@ -14,19 +13,19 @@ function ResultRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function DepolarizationPage() {
-  const [s0in, setS0in] = useURLState("s0in", 1);
-  const [s1in, setS1in] = useURLState("s1in", 1);
-  const [s2in, setS2in] = useURLState("s2in", 0);
-  const [s3in, setS3in] = useURLState("s3in", 0);
-  const [depCoeff, setDepCoeff] = useURLState("depCoeff", 0.1); // depolarization coefficient 0-1
+  const [s0in, setS0in] = useState(1);
+  const [s1in, setS1in] = useState(1);
+  const [s2in, setS2in] = useState(0);
+  const [s3in, setS3in] = useState(0);
+  const [depCoeff, setDepCoeff] = useState(0.1); // depolarization coefficient 0-1
 
   // Depolarization via Mueller matrix for partial depolarizer
   // M_dep = diag(1, 1-d, 1-d, 1-d) where d is depolarization power
   // Alternative model: spectral depolarization (averaging over wavelengths)
 
   const [spectralMode, setSpectralMode] = useState(false);
-  const [centerWavelength, setCenterWavelength] = useURLState("centerWavelength", 550);
-  const [bandwidth, setBandwidth] = useURLState("bandwidth", 100);
+  const [centerWavelength, setCenterWavelength] = useState(550);
+  const [bandwidth, setBandwidth] = useState(100);
 
   const results = useMemo(() => {
     if (spectralMode) {

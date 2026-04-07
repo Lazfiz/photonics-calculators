@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function FabryPerotFilterPage() {
-  const [nCavity, setNCavity] = useURLState("nCavity", 1.5);
-  const [spacing, setSpacing] = useURLState("spacing", 500);
-  const [reflectance, setReflectance] = useURLState("reflectance", 0.8);
-  const [wlCenter, setWlCenter] = useURLState("wlCenter", 550);
+  const [nCavity, setNCavity] = useState(1.5);
+  const [spacing, setSpacing] = useState(500);
+  const [reflectance, setReflectance] = useState(0.8);
+  const [wlCenter, setWlCenter] = useState(550);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => wlCenter - 50 + i * 0.2);

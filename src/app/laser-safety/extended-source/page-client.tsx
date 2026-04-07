@@ -7,10 +7,9 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function ExtendedSourcePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064);
-  const [alpha, setAlpha] = useURLState("alpha", 50); // mrad angular subtense
+  const [wavelength, setWavelength] = useState(1064);
+  const [alpha, setAlpha] = useState(50); // mrad angular subtense
 
   const calc = useMemo(() => {
     const lam = wavelength / 1000; // µm

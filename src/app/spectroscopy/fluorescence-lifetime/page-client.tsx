@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function FluorescenceLifetimePage() {
-  const [tau, setTau] = useURLState("tau", 5); // ns
-  const [amplitude, setAmplitude] = useURLState("amplitude", 1);
+  const [tau, setTau] = useState(5); // ns
+  const [amplitude, setAmplitude] = useState(1);
   const [multiExp, setMultiExp] = useState(false);
-  const [tau2, setTau2] = useURLState("tau2", 1);
-  const [frac1, setFrac1] = useURLState("frac1", 0.7);
-  const [tMax, setTMax] = useURLState("tMax", 30);
+  const [tau2, setTau2] = useState(1);
+  const [frac1, setFrac1] = useState(0.7);
+  const [tMax, setTMax] = useState(30);
 
   const decay = (t: number) => {
     if (!multiExp) return amplitude * Math.exp(-t / tau);

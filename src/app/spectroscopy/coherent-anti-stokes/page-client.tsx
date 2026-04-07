@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function CoherentAntiStokesPage() {
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 532);
-  const [stokesWavelength, setStokesWavelength] = useURLState("stokesWavelength", 630);
-  const [temperature, setTemperature] = useURLState("temperature", 300);
-  const [maxShift, setMaxShift] = useURLState("maxShift", 4000);
+  const [pumpWavelength, setPumpWavelength] = useState(532);
+  const [stokesWavelength, setStokesWavelength] = useState(630);
+  const [temperature, setTemperature] = useState(300);
+  const [maxShift, setMaxShift] = useState(4000);
 
   const chartData = useMemo(() => {
     const c = 3e8;

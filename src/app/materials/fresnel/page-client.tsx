@@ -7,7 +7,6 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
-import { useURLState } from "../../../hooks/use-url-state";
 interface FresnelResult {
   Rs: number;
   Rp: number;
@@ -38,9 +37,9 @@ const interfacePresets = [
 const currentHref = "/materials/fresnel";
 
 export default function FresnelPage() {
-  const [n1, setN1] = useURLState("n1", 1.0);
-  const [n2, setN2] = useURLState("n2", 1.5);
-  const [angle, setAngle] = useURLState("angle", 45);
+  const [n1, setN1] = useState(1.0);
+  const [n2, setN2] = useState(1.5);
+  const [angle, setAngle] = useState(45);
 
   const result = useMemo(() => fresnel(n1, n2, (angle * Math.PI) / 180), [n1, n2, angle]);
   const brewster = Math.atan(n2 / n1) * 180 / Math.PI;

@@ -3,13 +3,12 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function LightSheetPage() {
-  const [naDet, setNaDet] = useURLState("naDet", 0.8);
-  const [naIll, setNaIll] = useURLState("naIll", 0.1);
-  const [wavelength, setWavelength] = useURLState("wavelength", 488);
-  const [n, setN] = useURLState("n", 1.33);
-  const [gaussSigma, setGaussSigma] = useURLState("gaussSigma", 0);
+  const [naDet, setNaDet] = useState(0.8);
+  const [naIll, setNaIll] = useState(0.1);
+  const [wavelength, setWavelength] = useState(488);
+  const [n, setN] = useState(1.33);
+  const [gaussSigma, setGaussSigma] = useState(0);
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;

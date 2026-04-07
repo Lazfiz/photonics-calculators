@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function OrthoconoscopicPage() {
-  const [nO, setNO] = useURLState("nO", 1.658);
-  const [nE, setNE] = useURLState("nE", 1.486);
-  const [thickness, setThickness] = useURLState("thickness", 0.05); // mm
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [rotAngleDeg, setRotAngleDeg] = useURLState("rotAngleDeg", 0); // stage rotation
-  const [polarizerAngleDeg, setPolarizerAngleDeg] = useURLState("polarizerAngleDeg", 0);
+  const [nO, setNO] = useState(1.658);
+  const [nE, setNE] = useState(1.486);
+  const [thickness, setThickness] = useState(0.05); // mm
+  const [wavelength, setWavelength] = useState(550);
+  const [rotAngleDeg, setRotAngleDeg] = useState(0); // stage rotation
+  const [polarizerAngleDeg, setPolarizerAngleDeg] = useState(0);
 
   const dn = Math.abs(nO - nE);
   const d = thickness;

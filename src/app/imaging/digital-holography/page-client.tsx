@@ -5,16 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function DigitalHolographyPage() {
-  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 532);
-  const [pixelSizeUm, setPixelSizeUm] = useURLState("pixelSizeUm", 6.5);
-  const [sensorWidth, setSensorWidth] = useURLState("sensorWidth", 2048);
-  const [sensorHeight, setSensorHeight] = useURLState("sensorHeight", 2048);
-  const [propagationDistanceMm, setPropagationDistanceMm] = useURLState("propagationDistanceMm", 100);
-  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.0);
-  const [objectSizeUm, setObjectSizeUm] = useURLState("objectSizeUm", 500);
-  const [numericalAperture, setNumericalAperture] = useURLState("numericalAperture", 0.1);
+  const [wavelengthNm, setWavelengthNm] = useState(532);
+  const [pixelSizeUm, setPixelSizeUm] = useState(6.5);
+  const [sensorWidth, setSensorWidth] = useState(2048);
+  const [sensorHeight, setSensorHeight] = useState(2048);
+  const [propagationDistanceMm, setPropagationDistanceMm] = useState(100);
+  const [refractiveIndex, setRefractiveIndex] = useState(1.0);
+  const [objectSizeUm, setObjectSizeUm] = useState(500);
+  const [numericalAperture, setNumericalAperture] = useState(0.1);
 
   const lambda = wavelengthNm * 1e-9;
   const lambdaUm = wavelengthNm * 1e-3;

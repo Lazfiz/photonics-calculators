@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function CoatingStressPage() {
-  const [sigmaFilm, setSigmaFilm] = useURLState("sigmaFilm", 200); // MPa, film stress
-  const [dFilm, setDFilm] = useURLState("dFilm", 500); // nm
-  const [eSub, setESub] = useURLState("eSub", 70); // GPa, substrate Young's modulus
-  const [nuSub, setNuSub] = useURLState("nuSub", 0.17); // Poisson's ratio
-  const [tSub, setTSub] = useURLState("tSub", 1.0); // mm, substrate thickness
-  const [numLayers, setNumLayers] = useURLState("numLayers", 10);
+  const [sigmaFilm, setSigmaFilm] = useState(200); // MPa, film stress
+  const [dFilm, setDFilm] = useState(500); // nm
+  const [eSub, setESub] = useState(70); // GPa, substrate Young's modulus
+  const [nuSub, setNuSub] = useState(0.17); // Poisson's ratio
+  const [tSub, setTSub] = useState(1.0); // mm, substrate thickness
+  const [numLayers, setNumLayers] = useState(10);
 
   const chartData = useMemo(() => {
     const layers = Array.from({ length: 20 }, (_, i) => i + 1);

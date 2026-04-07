@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
-import { useURLState } from "../../../hooks/use-url-state";
 interface Material {
   name: string;
   p11: number; // Brewster coefficients
@@ -30,8 +29,8 @@ const materials: Material[] = [
 ];
 
 export default function PhotoelasticPage() {
-  const [stress, setStress] = useURLState("stress", 100); // MPa
-  const [wavelength, setWavelength] = useURLState("wavelength", 633); // nm
+  const [stress, setStress] = useState(100); // MPa
+  const [wavelength, setWavelength] = useState(633); // nm
   const [selected, setSelected] = useState("Fused Silica");
 
   const m = materials.find(x => x.name === selected)!;

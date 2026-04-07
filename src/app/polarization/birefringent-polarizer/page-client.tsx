@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function BirefringentPolarizerPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 589);
-  const [nO, setNO] = useURLState("nO", 1.658);
-  const [nE, setNE] = useURLState("nE", 1.486);
-  const [prismAngleDeg, setPrismAngleDeg] = useURLState("prismAngleDeg", 38.3);
+  const [wavelength, setWavelength] = useState(589);
+  const [nO, setNO] = useState(1.658);
+  const [nE, setNE] = useState(1.486);
+  const [prismAngleDeg, setPrismAngleDeg] = useState(38.3);
   const [cutType, setCutType] = useState<"glan" | "wollaston" | "rochon" | "senarmont">("wollaston");
 
   const prismAngle = prismAngleDeg * Math.PI / 180;

@@ -7,12 +7,11 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
-import { useURLState } from "../../../hooks/use-url-state";
 const currentHref = "/imaging/airy-disk";
 
 export default function AiryDiskPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [na, setNa] = useURLState("na", 0.95);
+  const [wavelength, setWavelength] = useState(550);
+  const [na, setNa] = useState(0.95);
 
   const airyRadius = 0.61 * (wavelength / 1000) / na; // µm (nm→µm / NA)
   const airyDiameter = 2 * airyRadius; // µm

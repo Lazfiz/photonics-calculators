@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function ConcMirrorPage() {
-  const [radius, setRadius] = useURLState("radius", 50);
-  const [wavelength, setWavelength] = useURLState("wavelength", 600);
-  const [mirrorDiam, setMirrorDiam] = useURLState("mirrorDiam", 25);
-  const [slitWidth, setSlitWidth] = useURLState("slitWidth", 50); // µm
+  const [radius, setRadius] = useState(50);
+  const [wavelength, setWavelength] = useState(600);
+  const [mirrorDiam, setMirrorDiam] = useState(25);
+  const [slitWidth, setSlitWidth] = useState(50); // µm
 
   const finesse = Math.PI * Math.sqrt(Math.max(0, 0.99)) / (1 - 0.99);
   const resolvingPower = finesse * (2 * radius) / slitWidth;

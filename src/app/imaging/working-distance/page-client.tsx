@@ -5,10 +5,9 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function WorkingDistancePage() {
-  const [focalLength, setFocalLength] = useURLState("focalLength", 10);
-  const [mag, setMag] = useURLState("mag", 20);
+  const [focalLength, setFocalLength] = useState(10);
+  const [mag, setMag] = useState(20);
 
   const wd = focalLength * (1 + 1 / mag);
 

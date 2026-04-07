@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function FOVCalculatorPage() {
-  const [sensorW, setSensorW] = useURLState("sensorW", 13.336);
-  const [sensorH, setSensorH] = useURLState("sensorH", 10.016);
-  const [mag, setMag] = useURLState("mag", 20);
-  const [pixelSize, setPixelSize] = useURLState("pixelSize", 6.5);
+  const [sensorW, setSensorW] = useState(13.336);
+  const [sensorH, setSensorH] = useState(10.016);
+  const [mag, setMag] = useState(20);
+  const [pixelSize, setPixelSize] = useState(6.5);
 
   const fovW = sensorW / mag;
   const fovH = sensorH / mag;

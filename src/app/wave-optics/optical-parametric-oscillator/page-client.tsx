@@ -2,7 +2,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 const hc = 1.986446e-25; // J·m
 const c = 3e8;
 
@@ -22,15 +21,15 @@ function parametricGain({ pumpWavelength, crystalLength, dEff, nPump, nSignal, n
 }
 
 export default function OPOCalculator() {
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 532);
-  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 20);
-  const [dEff, setDEff] = useURLState("dEff", 2.0);
-  const [nPump, setNPump] = useURLState("nPump", 1.65);
-  const [nSignal, setNSignal] = useURLState("nSignal", 1.53);
-  const [nIdler, setNIdler] = useURLState("nIdler", 1.53);
-  const [pumpPower, setPumpPower] = useURLState("pumpPower", 5);
-  const [beamRadius, setBeamRadius] = useURLState("beamRadius", 50);
-  const [walkOff, setWalkOff] = useURLState("walkOff", 0.5);
+  const [pumpWavelength, setPumpWavelength] = useState(532);
+  const [crystalLength, setCrystalLength] = useState(20);
+  const [dEff, setDEff] = useState(2.0);
+  const [nPump, setNPump] = useState(1.65);
+  const [nSignal, setNSignal] = useState(1.53);
+  const [nIdler, setNIdler] = useState(1.53);
+  const [pumpPower, setPumpPower] = useState(5);
+  const [beamRadius, setBeamRadius] = useState(50);
+  const [walkOff, setWalkOff] = useState(0.5);
   const [showPhaseMatching, setShowPhaseMatching] = useState(true);
 
   const signalWavelength = pumpWavelength < 2 * pumpWavelength ? pumpWavelength * 1.2 : pumpWavelength / 2;

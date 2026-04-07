@@ -5,16 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function NonlinearEffectsPage() {
-  const [power, setPower] = useURLState("power", 10); // dBm launch power
-  const [length, setLength] = useURLState("length", 80); // km
-  const [effectiveArea, setEffectiveArea] = useURLState("effectiveArea", 80); // µm²
-  const [alpha, setAlpha] = useURLState("alpha", 0.2); // dB/km attenuation
-  const [gamma, setGamma] = useURLState("gamma", 1.3); // W⁻¹km⁻¹ nonlinear coeff
-  const [bitRate, setBitRate] = useURLState("bitRate", 10); // Gbps
-  const [numChannels, setNumChannels] = useURLState("numChannels", 1);
-  const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 100); // GHz
+  const [power, setPower] = useState(10); // dBm launch power
+  const [length, setLength] = useState(80); // km
+  const [effectiveArea, setEffectiveArea] = useState(80); // µm²
+  const [alpha, setAlpha] = useState(0.2); // dB/km attenuation
+  const [gamma, setGamma] = useState(1.3); // W⁻¹km⁻¹ nonlinear coeff
+  const [bitRate, setBitRate] = useState(10); // Gbps
+  const [numChannels, setNumChannels] = useState(1);
+  const [channelSpacing, setChannelSpacing] = useState(100); // GHz
 
   const calc = useMemo(() => {
     const P_lin = Math.pow(10, power / 10) * 1e-3; // W

@@ -5,15 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function SidePolishedPage() {
-  const [remainingClad, setRemainingClad] = useURLState("remainingClad", 2); // μm from core
-  const [coreDia, setCoreDia] = useURLState("coreDia", 8.2); // μm
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [n_core, setN_core] = useURLState("n_core", 1.4682);
-  const [n_clad, setN_clad] = useURLState("n_clad", 1.4629);
-  const [n_overlay, setN_overlay] = useURLState("n_overlay", 1.46); // overlay refractive index
-  const [polishLength, setPolishLength] = useURLState("polishLength", 10); // mm
+  const [remainingClad, setRemainingClad] = useState(2); // μm from core
+  const [coreDia, setCoreDia] = useState(8.2); // μm
+  const [wavelength, setWavelength] = useState(1550); // nm
+  const [n_core, setN_core] = useState(1.4682);
+  const [n_clad, setN_clad] = useState(1.4629);
+  const [n_overlay, setN_overlay] = useState(1.46); // overlay refractive index
+  const [polishLength, setPolishLength] = useState(10); // mm
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-3; // μm

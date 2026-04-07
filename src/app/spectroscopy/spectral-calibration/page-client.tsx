@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function SpectralCalibrationPage() {
-  const [pixelCount, setPixelCount] = useURLState("pixelCount", 2048);
-  const [centerWl, setCenterWl] = useURLState("centerWl", 600); // nm
-  const [spectralWidth, setSpectralWidth] = useURLState("spectralWidth", 300); // nm total range
+  const [pixelCount, setPixelCount] = useState(2048);
+  const [centerWl, setCenterWl] = useState(600); // nm
+  const [spectralWidth, setSpectralWidth] = useState(300); // nm total range
   const [lineWls, setLineWls] = useState("589.0,589.6,632.8,543.5,546.1");
   const [lineNames, setLineNames] = useState("Na D2,Na D1,HeNe,Green,Mercury");
-  const [pixelNoise, setPixelNoise] = useURLState("pixelNoise", 0.5); // nm
+  const [pixelNoise, setPixelNoise] = useState(0.5); // nm
 
   const chartData = useMemo(() => {
     const wls = lineWls.split(",").map(Number);

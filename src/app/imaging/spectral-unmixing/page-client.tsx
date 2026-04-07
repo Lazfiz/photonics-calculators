@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function SpectralUnmixingPage() {
-  const [numEndmembers, setNumEndmembers] = useURLState("numEndmembers", 3);
-  const [numBands, setNumBands] = useURLState("numBands", 32);
-  const [noiseLevel, setNoiseLevel] = useURLState("noiseLevel", 5);
+  const [numEndmembers, setNumEndmembers] = useState(3);
+  const [numBands, setNumBands] = useState(32);
+  const [noiseLevel, setNoiseLevel] = useState(5);
   const [method, setMethod] = useState<"nnls" | "cls" | "vertex">("nnls");
-  const [abundance1, setAbundance1] = useURLState("abundance1", 0.6);
-  const [abundance2, setAbundance2] = useURLState("abundance2", 0.3);
+  const [abundance1, setAbundance1] = useState(0.6);
+  const [abundance2, setAbundance2] = useState(0.3);
 
   const abundance3 = Math.max(0, 1 - abundance1 - abundance2);
   const abundances = [abundance1, abundance2, abundance3, ...Array(6).fill(0)].slice(0, numEndmembers);

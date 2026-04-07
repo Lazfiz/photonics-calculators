@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function DichroicPolarizerPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [nE, setNE] = useURLState("nE", 2.4);
-  const [kE, setKE] = useURLState("kE", 0.01); // extinction coeff extraordinary
-  const [nO, setNO] = useURLState("nO", 1.6);
-  const [kO, setKO] = useURLState("kO", 2.0); // extinction coeff ordinary (absorbing)
-  const [thickness, setThickness] = useURLState("thickness", 0.1); // mm
+  const [wavelength, setWavelength] = useState(550);
+  const [nE, setNE] = useState(2.4);
+  const [kE, setKE] = useState(0.01); // extinction coeff extraordinary
+  const [nO, setNO] = useState(1.6);
+  const [kO, setKO] = useState(2.0); // extinction coeff ordinary (absorbing)
+  const [thickness, setThickness] = useState(0.1); // mm
 
   // Dichroic polarizer: one polarization strongly absorbed (high k), other passes
   // T = exp(-4π k d / λ)

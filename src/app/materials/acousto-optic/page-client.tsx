@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 interface AOMaterial {
   name: string;
   density: number; // kg/m³
@@ -83,8 +82,8 @@ const materials: Record<string, AOMaterial> = {
 
 export default function AcoustoOpticPage() {
   const [selected, setSelected] = useState("TeO₂");
-  const [frequency, setFrequency] = useURLState("frequency", 100); // MHz
-  const [wavelength, setWavelength] = useURLState("wavelength", 633); // nm
+  const [frequency, setFrequency] = useState(100); // MHz
+  const [wavelength, setWavelength] = useState(633); // nm
 
   const m = materials[selected];
 

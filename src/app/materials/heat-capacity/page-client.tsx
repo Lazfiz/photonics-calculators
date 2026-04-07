@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 interface Material {
   name: string;
   Cp300: number; // J/(g·K) at 300K
@@ -68,10 +67,10 @@ function heatRequired(mat: Material, mass: number, T1: number, T2: number): numb
 
 export default function HeatCapacityPage() {
   const [selected, setSelected] = useState("Fused Silica");
-  const [temp, setTemp] = useURLState("temp", 300);
-  const [mass, setMass] = useURLState("mass", 10);
-  const [tempFrom, setTempFrom] = useURLState("tempFrom", 20);
-  const [tempTo, setTempTo] = useURLState("tempTo", 200);
+  const [temp, setTemp] = useState(300);
+  const [mass, setMass] = useState(10);
+  const [tempFrom, setTempFrom] = useState(20);
+  const [tempTo, setTempTo] = useState(200);
 
   const mat = materials[selected];
   const cp = useMemo(() => cpAt(mat, temp), [mat, temp]);

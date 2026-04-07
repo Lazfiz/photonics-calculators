@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function TemporalNoisePage() {
-  const [readNoise, setReadNoise] = useURLState("readNoise", 5); // e- rms
-  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 0.1); // e-/pixel/s
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 0.01); // s
-  const [kneeFreq, setKneeFreq] = useURLState("kneeFreq", 1000); // Hz (1/f corner)
-  const [bandwidth, setBandwidth] = useURLState("bandwidth", 1e6); // Hz
-  const [conversionGain, setConversionGain] = useURLState("conversionGain", 2.0); // μV/e-
+  const [readNoise, setReadNoise] = useState(5); // e- rms
+  const [darkCurrent, setDarkCurrent] = useState(0.1); // e-/pixel/s
+  const [exposureTime, setExposureTime] = useState(0.01); // s
+  const [kneeFreq, setKneeFreq] = useState(1000); // Hz (1/f corner)
+  const [bandwidth, setBandwidth] = useState(1e6); // Hz
+  const [conversionGain, setConversionGain] = useState(2.0); // μV/e-
 
   const chartData = useMemo(() => {
     // Noise PSD vs frequency

@@ -5,13 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function EtalonFinessePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.5);
-  const [thickness, setThickness] = useURLState("thickness", 100); // µm
-  const [reflectivity, setReflectivity] = useURLState("reflectivity", 0.8); // mirror R
-  const [wavelengthRange, setWavelengthRange] = useURLState("wavelengthRange", 5); // nm around center
+  const [wavelength, setWavelength] = useState(1550); // nm
+  const [refractiveIndex, setRefractiveIndex] = useState(1.5);
+  const [thickness, setThickness] = useState(100); // µm
+  const [reflectivity, setReflectivity] = useState(0.8); // mirror R
+  const [wavelengthRange, setWavelengthRange] = useState(5); // nm around center
 
   const calc = useMemo(() => {
     const lambda0 = wavelength; // nm

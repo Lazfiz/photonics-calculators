@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function SpectralResponsePage() {
-  const [responsivityPeak, setResponsivityPeak] = useURLState("responsivityPeak", 0.6); // A/W at peak
-  const [peakWavelength, setPeakWavelength] = useURLState("peakWavelength", 700); // nm
-  const [bandwidthNm, setBandwidthNm] = useURLState("bandwidthNm", 300); // spectral bandwidth
-  const [temperature, setTemperature] = useURLState("temperature", 25); // °C
+  const [responsivityPeak, setResponsivityPeak] = useState(0.6); // A/W at peak
+  const [peakWavelength, setPeakWavelength] = useState(700); // nm
+  const [bandwidthNm, setBandwidthNm] = useState(300); // spectral bandwidth
+  const [temperature, setTemperature] = useState(25); // °C
 
   // Spectral response R(λ) = R_peak * gaussian-like shape
   const chartData = useMemo(() => {

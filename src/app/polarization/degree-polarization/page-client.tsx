@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-center py-1 border-b border-gray-800">
@@ -14,15 +13,15 @@ function ResultRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function DegreeOfPolarizationPage() {
-  const [s0, setS0] = useURLState("s0", 1);
-  const [s1, setS1] = useURLState("s1", 0.8);
-  const [s2, setS2] = useURLState("s2", 0.3);
-  const [s3, setS3] = useURLState("s3", 0.2);
+  const [s0, setS0] = useState(1);
+  const [s1, setS1] = useState(0.8);
+  const [s2, setS2] = useState(0.3);
+  const [s3, setS3] = useState(0.2);
 
   const [spectralMode, setSpectralMode] = useState(false);
-  const [centerWl, setCenterWl] = useURLState("centerWl", 550);
-  const [bandwidth, setBandwidth] = useURLState("bandwidth", 100);
-  const [retardance, setRetardance] = useURLState("retardance", 5); // waves at center
+  const [centerWl, setCenterWl] = useState(550);
+  const [bandwidth, setBandwidth] = useState(100);
+  const [retardance, setRetardance] = useState(5); // waves at center
 
   const results = useMemo(() => {
     const polIntensity = Math.sqrt(s1 ** 2 + s2 ** 2 + s3 ** 2);

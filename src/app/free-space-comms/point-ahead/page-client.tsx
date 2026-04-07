@@ -3,12 +3,11 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function PointAheadPage() {
-  const [range, setRange] = useURLState("range", 40000); // km (LEO)
-  const [relVelocity, setRelVelocity] = useURLState("relVelocity", 7); // km/s
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [txAperture, setTxAperture] = useURLState("txAperture", 10); // cm
+  const [range, setRange] = useState(40000); // km (LEO)
+  const [relVelocity, setRelVelocity] = useState(7); // km/s
+  const [wavelength, setWavelength] = useState(1550); // nm
+  const [txAperture, setTxAperture] = useState(10); // cm
 
   const calc = useMemo(() => {
     const R = range * 1e3; // m

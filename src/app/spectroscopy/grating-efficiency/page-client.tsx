@@ -5,11 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function GratingEfficiencyPage() {
-  const [groovesPerMm, setGroovesPerMm] = useURLState("groovesPerMm", 1200);
-  const [blazeAngle, setBlazeAngle] = useURLState("blazeAngle", 17.5);
-  const [wavelength, setWavelength] = useURLState("wavelength", 500);
+  const [groovesPerMm, setGroovesPerMm] = useState(1200);
+  const [blazeAngle, setBlazeAngle] = useState(17.5);
+  const [wavelength, setWavelength] = useState(500);
 
   const blazeRad = blazeAngle * Math.PI / 180;
   const blazeWavelength = (2 / groovesPerMm) * Math.sin(blazeRad) * 1000; // nm in Littrow

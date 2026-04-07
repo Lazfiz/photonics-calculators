@@ -6,12 +6,11 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function EyeSafeWavelengthPage() {
-  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 100); // mJ
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 10); // ns
-  const [repetitionRate, setRepetitionRate] = useURLState("repetitionRate", 10); // Hz
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 5); // mm
+  const [pulseEnergy, setPulseEnergy] = useState(100); // mJ
+  const [pulseWidth, setPulseWidth] = useState(10); // ns
+  const [repetitionRate, setRepetitionRate] = useState(10); // Hz
+  const [beamDiam, setBeamDiam] = useState(5); // mm
 
   const results = useMemo(() => {
     const E = pulseEnergy / 1000; // J

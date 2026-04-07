@@ -5,15 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function IntensifiedCCDPage() {
   const [photocathodeType, setPhotocathodeType] = useState<"s20" | "gaas" | "inagaas" | "s25">("gaas");
-  const [mcpGain, setMcpGain] = useURLState("mcpGain", 1e4);
+  const [mcpGain, setMcpGain] = useState(1e4);
   const [phosphorType, setPhosphorType] = useState<"p43" | "p46" | "p20">("p43");
-  const [fiberCoupling, setFiberCoupling] = useURLState("fiberCoupling", 0.6);
-  const [ccdReadNoise, setCcdReadNoise] = useURLState("ccdReadNoise", 5);
-  const [gateWidth, setGateWidth] = useURLState("gateWidth", 10);
-  const [signalPhotons, setSignalPhotons] = useURLState("signalPhotons", 100);
+  const [fiberCoupling, setFiberCoupling] = useState(0.6);
+  const [ccdReadNoise, setCcdReadNoise] = useState(5);
+  const [gateWidth, setGateWidth] = useState(10);
+  const [signalPhotons, setSignalPhotons] = useState(100);
 
   const photocathodes = { s20: { qe: 0.2, label: "S20 (multialkali)", range: "300-850nm" }, gaas: { qe: 0.35, label: "GaAs", range: "300-900nm" }, inagaas: { qe: 0.15, label: "InGaAs", range: "900-1700nm" }, s25: { qe: 0.25, label: "S25 (ERMA)", range: "200-900nm" } };
   const phosphors = { p43: { eff: 0.15, decay: 1.2, label: "P43 (Gd₂O₂S:Tb)" }, p46: { eff: 0.25, decay: 0.08, label: "P46 (Y₂O₂S:Tb)" }, p20: { eff: 0.12, decay: 0.06, label: "P20 (Y₂SiO₅:Ce)" } };

@@ -3,17 +3,16 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function FiberLaserResonatorPage() {
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 3); // m
-  const [coreDiameter, setCoreDiameter] = useURLState("coreDiameter", 10); // µm
-  const [NA, setNA] = useURLState("NA", 0.12);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 976); // nm
-  const [R_oc, setR_oc] = useURLState("R_oc", 0.96); // output coupler reflectivity
-  const [R_hr, setR_hr] = useURLState("R_hr", 0.999); // high reflector
-  const [alpha, setAlpha] = useURLState("alpha", 0.05); // dB/m background loss
-  const [gainPerMeter, setGainPerMeter] = useURLState("gainPerMeter", 1.5); // m^-1 small-signal gain coeff
+  const [fiberLength, setFiberLength] = useState(3); // m
+  const [coreDiameter, setCoreDiameter] = useState(10); // µm
+  const [NA, setNA] = useState(0.12);
+  const [wavelength, setWavelength] = useState(1064); // nm
+  const [pumpWavelength, setPumpWavelength] = useState(976); // nm
+  const [R_oc, setR_oc] = useState(0.96); // output coupler reflectivity
+  const [R_hr, setR_hr] = useState(0.999); // high reflector
+  const [alpha, setAlpha] = useState(0.05); // dB/m background loss
+  const [gainPerMeter, setGainPerMeter] = useState(1.5); // m^-1 small-signal gain coeff
 
   const coreRadius = coreDiameter / 2;
   const Vnumber = (Math.PI * coreDiameter * NA) / wavelength;

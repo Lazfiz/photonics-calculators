@@ -4,11 +4,10 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function AnsiIecComparisonPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 632);
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 0.25);
-  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 1); // µJ
+  const [wavelength, setWavelength] = useState(632);
+  const [exposureTime, setExposureTime] = useState(0.25);
+  const [pulseEnergy, setPulseEnergy] = useState(1); // µJ
 
   // ANSI Z136.1 MPE (J/cm²) for intrabeam, 400-700nm
   // Returns radiant exposure in J/cm²

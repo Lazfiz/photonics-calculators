@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 interface IRMaterial {
   name: string;
   range: [number, number]; // µm
@@ -29,7 +28,7 @@ const MATERIALS: Record<string, IRMaterial> = {
 
 export default function InfraredGlassPage() {
   const [material, setMaterial] = useState<keyof typeof MATERIALS>("Germanium");
-  const [temperature, setTemperature] = useURLState("temperature", 25);
+  const [temperature, setTemperature] = useState(25);
 
   const mat = MATERIALS[material];
 

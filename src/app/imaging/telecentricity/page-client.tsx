@@ -5,13 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function TelecentricityPage() {
-  const [magnification, setMagnification] = useURLState("magnification", 0.5);
-  const [focalLength, setFocalLength] = useURLState("focalLength", 50); // mm
-  const [objectDistance, setObjectDistance] = useURLState("objectDistance", 200); // mm
-  const [pupilDiameter, setPupilDiameter] = useURLState("pupilDiameter", 10); // mm
-  const [maxFieldAngle, setMaxFieldAngle] = useURLState("maxFieldAngle", 5); // degrees
+  const [magnification, setMagnification] = useState(0.5);
+  const [focalLength, setFocalLength] = useState(50); // mm
+  const [objectDistance, setObjectDistance] = useState(200); // mm
+  const [pupilDiameter, setPupilDiameter] = useState(10); // mm
+  const [maxFieldAngle, setMaxFieldAngle] = useState(5); // degrees
 
   const chartData = useMemo(() => {
     const angles = Array.from({ length: 200 }, (_, i) => (i * maxFieldAngle) / 200);

@@ -5,18 +5,17 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 // Lock-in amplifier: V_out = V_signal * cos(Δφ) * (2/π) for square-wave demod
 // ENBW = 1/(4*RC) for 1st-order RC output filter
 // SNR improvement = sqrt(B_in / B_out)
 export default function LockinAmplifierPage() {
-  const [signalFreq, setSignalFreq] = useURLState("signalFreq", 1000); // Hz
-  const [refFreq, setRefFreq] = useURLState("refFreq", 1000); // Hz
-  const [phaseShift, setPhaseShift] = useURLState("phaseShift", 0); // degrees
-  const [signalAmp, setSignalAmp] = useURLState("signalAmp", 1); // μV
-  const [noiseDensity, setNoiseDensity] = useURLState("noiseDensity", 10); // nV/√Hz
-  const [timeConstant, setTimeConstant] = useURLState("timeConstant", 1); // seconds
-  const [filterOrder, setFilterOrder] = useURLState("filterOrder", 1); // 1 or 2
+  const [signalFreq, setSignalFreq] = useState(1000); // Hz
+  const [refFreq, setRefFreq] = useState(1000); // Hz
+  const [phaseShift, setPhaseShift] = useState(0); // degrees
+  const [signalAmp, setSignalAmp] = useState(1); // μV
+  const [noiseDensity, setNoiseDensity] = useState(10); // nV/√Hz
+  const [timeConstant, setTimeConstant] = useState(1); // seconds
+  const [filterOrder, setFilterOrder] = useState(1); // 1 or 2
 
   const deltaF = Math.abs(signalFreq - refFreq);
   const phaseRad = (phaseShift * Math.PI) / 180;

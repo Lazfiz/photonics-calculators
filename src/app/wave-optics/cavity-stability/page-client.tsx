@@ -5,11 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function CavityStabilityPage() {
-  const [r1, setR1] = useURLState("r1", 1000); // mm, radius of curvature (positive = concave facing inward)
-  const [r2, setR2] = useURLState("r2", 1000);
-  const [L, setL] = useURLState("L", 500); // mm, cavity length
+  const [r1, setR1] = useState(1000); // mm, radius of curvature (positive = concave facing inward)
+  const [r2, setR2] = useState(1000);
+  const [L, setL] = useState(500); // mm, cavity length
 
   const calc = useMemo(() => {
     const g1 = 1 - L / r1;

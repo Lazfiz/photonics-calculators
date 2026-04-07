@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function SumFrequencyGenPage() {
-  const [visWavelength, setVisWavelength] = useURLState("visWavelength", 532);
-  const [irMinCm, setIrMinCm] = useURLState("irMinCm", 2800);
-  const [irMaxCm, setIrMaxCm] = useURLState("irMaxCm", 3800);
-  const [resolution, setResolution] = useURLState("resolution", 200);
+  const [visWavelength, setVisWavelength] = useState(532);
+  const [irMinCm, setIrMinCm] = useState(2800);
+  const [irMaxCm, setIrMaxCm] = useState(3800);
+  const [resolution, setResolution] = useState(200);
 
   const chartData = useMemo(() => {
     const c = 3e8;

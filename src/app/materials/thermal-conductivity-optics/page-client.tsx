@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 interface Material {
   name: string;
   k300: number; // W/(m·K) at 300K
@@ -38,10 +37,10 @@ function temperatureRise(m: Material, power: number, thickness: number, area: nu
 
 export default function ThermalConductivityPage() {
   const [selected, setSelected] = useState("Fused Silica");
-  const [temp, setTemp] = useURLState("temp", 300);
-  const [thickness, setThickness] = useURLState("thickness", 10);
-  const [area, setArea] = useURLState("area", 100);
-  const [power, setPower] = useURLState("power", 1);
+  const [temp, setTemp] = useState(300);
+  const [thickness, setThickness] = useState(10);
+  const [area, setArea] = useState(100);
+  const [power, setPower] = useState(1);
 
   const k = useMemo(() => kAt(materials[selected], temp), [selected, temp]);
   const dT = useMemo(() => temperatureRise(materials[selected], power, thickness * 1e-3, area * 1e-6), [selected, power, thickness, area]);

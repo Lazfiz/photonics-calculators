@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
-import { useURLState } from "../../../hooks/use-url-state";
 interface Material {
   name: string;
   alpha: number; // CTE in 10⁻⁶/K
@@ -33,9 +32,9 @@ const materials: Material[] = [
 ];
 
 export default function ThermalExpansionPage() {
-  const [alpha, setAlpha] = useURLState("alpha", 7.1);
-  const [dT, setDT] = useURLState("dT", 100); // temperature change in °C
-  const [length, setLength] = useURLState("length", 100); // mm
+  const [alpha, setAlpha] = useState(7.1);
+  const [dT, setDT] = useState(100); // temperature change in °C
+  const [length, setLength] = useState(100); // mm
 
   const dL = alpha * 1e-6 * dT * length; // mm
   const strain = alpha * 1e-6 * dT;

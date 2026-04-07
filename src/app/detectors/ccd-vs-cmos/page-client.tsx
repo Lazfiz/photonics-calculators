@@ -5,7 +5,6 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 const sensors = {
   ccd: { readNoise: 3, darkCurrent: 0.001, wellCapacity: 100000, pixelSize: 15, qe: 0.95, frameRate: 10 },
   cmos_sci: { readNoise: 1.5, darkCurrent: 0.01, wellCapacity: 50000, pixelSize: 6.5, qe: 0.90, frameRate: 100 },
@@ -17,9 +16,9 @@ const sensorColors = ["text-blue-400", "text-green-400", "text-yellow-400", "tex
 const plotColors = ["#60a5fa", "#34d399", "#fbbf24", "#c084fc"];
 
 export default function CcdVsCmosPage() {
-  const [signal, setSignal] = useURLState("signal", 10000);
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 1);
-  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 0.01);
+  const [signal, setSignal] = useState(10000);
+  const [exposureTime, setExposureTime] = useState(1);
+  const [darkCurrent, setDarkCurrent] = useState(0.01);
 
   const calcSNR = (sig: number, rn: number, dc: number, t: number, wc: number) => {
     const dark = dc * t;

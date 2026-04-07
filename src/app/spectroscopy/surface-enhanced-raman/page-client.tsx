@@ -5,13 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function SurfaceEnhancedRamanPage() {
-  const [enhancementFactor, setEnhancementFactor] = useURLState("enhancementFactor", 1e6);
-  const [normalIntensity, setNormalIntensity] = useURLState("normalIntensity", 1);
-  const [hotspotDensity, setHotspotDensity] = useURLState("hotspotDensity", 0.01);
-  const [nanoparticleRadius, setNanoparticleRadius] = useURLState("nanoparticleRadius", 50);
-  const [laserWavelength, setLaserWavelength] = useURLState("laserWavelength", 633);
+  const [enhancementFactor, setEnhancementFactor] = useState(1e6);
+  const [normalIntensity, setNormalIntensity] = useState(1);
+  const [hotspotDensity, setHotspotDensity] = useState(0.01);
+  const [nanoparticleRadius, setNanoparticleRadius] = useState(50);
+  const [laserWavelength, setLaserWavelength] = useState(633);
 
   const chartData = useMemo(() => {
     // Enhancement vs nanoparticle size for different gaps

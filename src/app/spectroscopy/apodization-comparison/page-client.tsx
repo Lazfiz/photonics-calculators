@@ -5,7 +5,6 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 type WindowFn = "boxcar" | "hanning" | "hamming" | "blackman" | "blackman-harris" | "nuttall" | "gaussian" | "triangular" | "kaiser";
 
 const windowDefs: Record<WindowFn, { label: string; color: string; sidelobeDb: number; bw: number }> = {
@@ -44,7 +43,7 @@ function factorial(n: number): number { let r = 1; for (let i = 2; i <= n; i++) 
 
 export default function ApodizationComparisonPage() {
   const [selected, setSelected] = useState<Set<WindowFn>>(new Set(["boxcar", "hanning", "blackman", "blackman-harris", "gaussian"]));
-  const [nPoints, setNPoints] = useURLState("nPoints", 512);
+  const [nPoints, setNPoints] = useState(512);
   const [viewDb, setViewDb] = useState(-80);
 
   const toggle = (w: WindowFn) => {

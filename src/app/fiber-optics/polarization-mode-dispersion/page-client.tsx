@@ -5,13 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function PMDPage() {
-  const [pmdCoeff, setPmdCoeff] = useURLState("pmdCoeff", 0.5); // ps/√km
-  const [length, setLength] = useURLState("length", 100); // km
-  const [bitRate, setBitRate] = useURLState("bitRate", 10); // Gbps
-  const [fiberCount, setFiberCount] = useURLState("fiberCount", 1); // number of fiber spans
-  const [probability, setProbability] = useURLState("probability", 99.9); // % Q outage probability
+  const [pmdCoeff, setPmdCoeff] = useState(0.5); // ps/√km
+  const [length, setLength] = useState(100); // km
+  const [bitRate, setBitRate] = useState(10); // Gbps
+  const [fiberCount, setFiberCount] = useState(1); // number of fiber spans
+  const [probability, setProbability] = useState(99.9); // % Q outage probability
 
   const calc = useMemo(() => {
     const DGD_rms = pmdCoeff * Math.sqrt(length); // ps

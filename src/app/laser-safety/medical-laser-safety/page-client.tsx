@@ -6,14 +6,13 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function MedicalLaserSafetyPage() {
-  const [power, setPower] = useURLState("power", 10000); // mW (10W)
-  const [wavelength, setWavelength] = useURLState("wavelength", 10600); // nm CO2
-  const [spotSize, setSpotSize] = useURLState("spotSize", 0.2); // mm
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 0.1); // s
-  const [beamDia, setBeamDia] = useURLState("beamDia", 1); // mm (delivery fiber/handpiece)
-  const [treatmentArea, setTreatmentArea] = useURLState("treatmentArea", 1); // cm²
+  const [power, setPower] = useState(10000); // mW (10W)
+  const [wavelength, setWavelength] = useState(10600); // nm CO2
+  const [spotSize, setSpotSize] = useState(0.2); // mm
+  const [exposureTime, setExposureTime] = useState(0.1); // s
+  const [beamDia, setBeamDia] = useState(1); // mm (delivery fiber/handpiece)
+  const [treatmentArea, setTreatmentArea] = useState(1); // cm²
 
   // MPE based on wavelength region (ANSI Z136.1 simplified)
   // Retinal hazard (400-1400nm): mW/cm² scale; Corneal hazard (>1400nm): W/cm² scale

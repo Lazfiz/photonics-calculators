@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function ElectronMultiplyingPage() {
-  const [signalElectrons, setSignalElectrons] = useURLState("signalElectrons", 10);
-  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 0.001);
-  const [emccdReadNoise, setEmccdReadNoise] = useURLState("emccdReadNoise", 60);
-  const [scmosReadNoise, setScmosReadNoise] = useURLState("scmosReadNoise", 1.5);
-  const [emGain, setEmGain] = useURLState("emGain", 1000);
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 0.1);
+  const [signalElectrons, setSignalElectrons] = useState(10);
+  const [darkCurrent, setDarkCurrent] = useState(0.001);
+  const [emccdReadNoise, setEmccdReadNoise] = useState(60);
+  const [scmosReadNoise, setScmosReadNoise] = useState(1.5);
+  const [emGain, setEmGain] = useState(1000);
+  const [exposureTime, setExposureTime] = useState(0.1);
 
   const enf2 = 2 - 1 / emGain;
   const emccdSNR = signalElectrons / Math.sqrt(signalElectrons * enf2 + darkCurrent * enf2 + (emccdReadNoise / emGain) ** 2);

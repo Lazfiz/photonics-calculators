@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function PSFCalculatorPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [na, setNa] = useURLState("na", 1.4);
-  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.518);
-  const [oversampling, setOversampling] = useURLState("oversampling", 4);
+  const [wavelength, setWavelength] = useState(550);
+  const [na, setNa] = useState(1.4);
+  const [refractiveIndex, setRefractiveIndex] = useState(1.518);
+  const [oversampling, setOversampling] = useState(4);
 
   // PSF parameters
   const airyRadiusNm = 0.61 * wavelength / na;

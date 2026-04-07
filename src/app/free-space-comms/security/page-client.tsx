@@ -3,15 +3,14 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function SecurityPage() {
-  const [dataRate, setDataRate] = useURLState("dataRate", 10);
-  const [linkRange, setLinkRange] = useURLState("linkRange", 1);
-  const [txPower, setTxPower] = useURLState("txPower", 10);
-  const [rxAperture, setRxAperture] = useURLState("rxAperture", 10);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [eveDistance, setEveDistance] = useURLState("eveDistance", 10);
-  const [eveAperture, setEveAperture] = useURLState("eveAperture", 20);
+  const [dataRate, setDataRate] = useState(10);
+  const [linkRange, setLinkRange] = useState(1);
+  const [txPower, setTxPower] = useState(10);
+  const [rxAperture, setRxAperture] = useState(10);
+  const [wavelength, setWavelength] = useState(1550);
+  const [eveDistance, setEveDistance] = useState(10);
+  const [eveAperture, setEveAperture] = useState(20);
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-9;

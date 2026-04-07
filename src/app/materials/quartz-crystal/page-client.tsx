@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 // Crystalline Quartz (SiO₂) - uniaxial positive crystal
 // Sellmeier from Ghosh (1999)
 const sellmeierNo = (wl_um: number) => {
@@ -32,7 +31,7 @@ const quartz = {
 };
 
 export default function QuartzCrystalPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 589);
+  const [wavelength, setWavelength] = useState(589);
 
   const no = useMemo(() => sellmeierNo(wavelength / 1000), [wavelength]);
   const ne = useMemo(() => sellmeierNe(wavelength / 1000), [wavelength]);

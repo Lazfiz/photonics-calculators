@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 interface RamanMaterial { name: string; shift: number; linewidth: number; gain: number; color: string }
 
 // Raman gain spectra: shift in cm⁻¹, linewidth in cm⁻¹, peak gain in 10⁻¹³ m/W
@@ -29,7 +28,7 @@ function shiftToWavelength(pump_nm: number, shift_cm: number): number {
 
 export default function RamanScatteringPage() {
   const [selected, setSelected] = useState<string[]>(["FusedSilica", "CS2", "Benzene", "As2S3"]);
-  const [pumpWl, setPumpWl] = useURLState("pumpWl", 1064);
+  const [pumpWl, setPumpWl] = useState(1064);
 
   const toggle = (key: string) => setSelected(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
 

@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function HarmonicGenerationPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 800);
-  const [na, setNa] = useURLState("na", 0.8);
-  const [power, setPower] = useURLState("power", 50);
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100);
-  const [repetitionRate, setRepetitionRate] = useURLState("repetitionRate", 80);
-  const [order, setOrder] = useURLState("order", 2);
+  const [wavelength, setWavelength] = useState(800);
+  const [na, setNa] = useState(0.8);
+  const [power, setPower] = useState(50);
+  const [pulseWidth, setPulseWidth] = useState(100);
+  const [repetitionRate, setRepetitionRate] = useState(80);
+  const [order, setOrder] = useState(2);
 
   const harmonicWavelength = wavelength / order;
   const peakPower = (power * 1000) / (pulseWidth * 1e-12) / 1e6; // in MW

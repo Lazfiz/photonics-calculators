@@ -5,11 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function ShotNoisePage() {
-  const [photocurrent, setPhotocurrent] = useURLState("photocurrent", 1e-6); // A
-  const [q, setQ] = useURLState("q", 1.6e-19); // C
-  const [bandwidth, setBandwidth] = useURLState("bandwidth", 1e6); // Hz
+  const [photocurrent, setPhotocurrent] = useState(1e-6); // A
+  const [q, setQ] = useState(1.6e-19); // C
+  const [bandwidth, setBandwidth] = useState(1e6); // Hz
 
   const chartData = useMemo(() => {
     const currents = Array.from({ length: 200 }, (_, i) => 1e-9 * Math.pow(1000, i / 200)); // 1nA to 1mA

@@ -5,17 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function HyperspectralMicroscopyPage() {
-  const [startNm, setStartNm] = useURLState("startNm", 400);
-  const [endNm, setEndNm] = useURLState("endNm", 720);
-  const [spectralBands, setSpectralBands] = useURLState("spectralBands", 32);
-  const [spatialPixels, setSpatialPixels] = useURLState("spatialPixels", 256);
-  const [bitDepth, setBitDepth] = useURLState("bitDepth", 16);
-  const [exposureMs, setExposureMs] = useURLState("exposureMs", 100);
-  const [numFrames, setNumFrames] = useURLState("numFrames", 10);
-  const [snrDb, setSnrDb] = useURLState("snrDb", 40);
-  const [compression, setCompression] = useURLState("compression", 1);
+  const [startNm, setStartNm] = useState(400);
+  const [endNm, setEndNm] = useState(720);
+  const [spectralBands, setSpectralBands] = useState(32);
+  const [spatialPixels, setSpatialPixels] = useState(256);
+  const [bitDepth, setBitDepth] = useState(16);
+  const [exposureMs, setExposureMs] = useState(100);
+  const [numFrames, setNumFrames] = useState(10);
+  const [snrDb, setSnrDb] = useState(40);
+  const [compression, setCompression] = useState(1);
 
   const bandwidthNm = (endNm - startNm) / spectralBands;
   const dataSizeMb = (spatialPixels * spatialPixels * spectralBands * bitDepth * numFrames) / (8 * 1024 * 1024);

@@ -5,11 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function FresnelEquationsPage() {
-  const [n1, setN1] = useURLState("n1", 1.0);
-  const [n2, setN2] = useURLState("n2", 1.52);
-  const [maxAngle, setMaxAngle] = useURLState("maxAngle", 90);
+  const [n1, setN1] = useState(1.0);
+  const [n2, setN2] = useState(1.52);
+  const [maxAngle, setMaxAngle] = useState(90);
 
   const chartData = useMemo(() => {
     const angles = Array.from({ length: 180 }, (_, i) => (i * maxAngle) / 179);

@@ -5,17 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function StitchingPage() {
-  const [gridCols, setGridCols] = useURLState("gridCols", 5);
-  const [gridRows, setGridRows] = useURLState("gridRows", 5);
-  const [tileWidth, setTileWidth] = useURLState("tileWidth", 512);
-  const [tileHeight, setTileHeight] = useURLState("tileHeight", 512);
-  const [overlapPercent, setOverlapPercent] = useURLState("overlapPercent", 10);
-  const [blendWidth, setBlendWidth] = useURLState("blendWidth", 50);
+  const [gridCols, setGridCols] = useState(5);
+  const [gridRows, setGridRows] = useState(5);
+  const [tileWidth, setTileWidth] = useState(512);
+  const [tileHeight, setTileHeight] = useState(512);
+  const [overlapPercent, setOverlapPercent] = useState(10);
+  const [blendWidth, setBlendWidth] = useState(50);
   const [blendMethod, setBlendMethod] = useState<"linear" | "feather" | "multiband">("linear");
-  const [positionError, setPositionError] = useURLState("positionError", 5);
-  const [illuminationVar, setIlluminationVar] = useURLState("illuminationVar", 5);
+  const [positionError, setPositionError] = useState(5);
+  const [illuminationVar, setIlluminationVar] = useState(5);
 
   const overlapPx = Math.round(tileWidth * overlapPercent / 100);
   const stitchedWidth = gridCols * tileWidth - (gridCols - 1) * overlapPx;

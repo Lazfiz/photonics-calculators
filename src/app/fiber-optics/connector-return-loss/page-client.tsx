@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function ConnectorReturnLossPage() {
   const [connectorType, setConnectorType] = useState("pc");
-  const [n1, setN1] = useURLState("n1", 1.4682);
-  const [n2, setN2] = useURLState("n2", 1.0);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [n1, setN1] = useState(1.4682);
+  const [n2, setN2] = useState(1.0);
+  const [wavelength, setWavelength] = useState(1550);
 
   const fresnelRL = -10 * Math.log10(Math.pow((n1 - n2) / (n1 + n2), 2));
   const connectorRL: Record<string, number> = { pc: 40, upc: 50, apc: 60, flat: 14 };

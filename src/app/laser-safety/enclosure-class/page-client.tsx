@@ -7,13 +7,12 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function EnclosureClassPage() {
-  const [laserPower, setLaserPower] = useURLState("laserPower", 5000); // mW
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [apertureSize, setApertureSize] = useURLState("apertureSize", 5); // mm (largest opening)
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 100); // s (inspection/maintenance)
-  const [workingDistance, setWorkingDistance] = useURLState("workingDistance", 30); // cm (to aperture)
+  const [laserPower, setLaserPower] = useState(5000); // mW
+  const [wavelength, setWavelength] = useState(1064); // nm
+  const [apertureSize, setApertureSize] = useState(5); // mm (largest opening)
+  const [exposureTime, setExposureTime] = useState(100); // s (inspection/maintenance)
+  const [workingDistance, setWorkingDistance] = useState(30); // cm (to aperture)
 
   const results = useMemo(() => {
     const P = laserPower / 1000; // W

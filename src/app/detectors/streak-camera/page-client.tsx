@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function StreakCameraPage() {
-  const [sweepSpeed, setSweepSpeed] = useURLState("sweepSpeed", 10); // mm/ns
-  const [slitWidth, setSlitWidth] = useURLState("slitWidth", 50); // µm
-  const [magnification, setMagnification] = useURLState("magnification", 1.5);
-  const [ccdPixelSize, setCcdPixelSize] = useURLState("ccdPixelSize", 13); // µm
-  const [temporalResolution, setTemporalResolution] = useURLState("temporalResolution", 2); // ps (system limited)
-  const [dynamicRange, setDynamicRange] = useURLState("dynamicRange", 1000); // counts
+  const [sweepSpeed, setSweepSpeed] = useState(10); // mm/ns
+  const [slitWidth, setSlitWidth] = useState(50); // µm
+  const [magnification, setMagnification] = useState(1.5);
+  const [ccdPixelSize, setCcdPixelSize] = useState(13); // µm
+  const [temporalResolution, setTemporalResolution] = useState(2); // ps (system limited)
+  const [dynamicRange, setDynamicRange] = useState(1000); // counts
 
   const results = useMemo(() => {
     const timePerPixel = (ccdPixelSize / (sweepSpeed * 1e3)) * 1e3; // ps per pixel: µm / (mm/ns) = ns → ps

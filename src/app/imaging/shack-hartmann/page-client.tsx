@@ -5,18 +5,17 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function ShackHartmannPage() {
-  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 632.8);
-  const [apertureDiameterMm, setApertureDiameterMm] = useURLState("apertureDiameterMm", 8);
-  const [lensletPitchUm, setLensletPitchUm] = useURLState("lensletPitchUm", 300);
-  const [lensletFocalMm, setLensletFocalMm] = useURLState("lensletFocalMm", 20);
-  const [detectorPixelUm, setDetectorPixelUm] = useURLState("detectorPixelUm", 5.5);
-  const [rmsWavefrontNm, setRmsWavefrontNm] = useURLState("rmsWavefrontNm", 150);
-  const [dynamicRangeWaves, setDynamicRangeWaves] = useURLState("dynamicRangeWaves", 5);
-  const [numSubapertures, setNumSubapertures] = useURLState("numSubapertures", 0);
-  const [readNoiseE, setReadNoiseE] = useURLState("readNoiseE", 2);
-  const [darkCurrentEPx, setDarkCurrentEPx] = useURLState("darkCurrentEPx", 0.1);
+  const [wavelengthNm, setWavelengthNm] = useState(632.8);
+  const [apertureDiameterMm, setApertureDiameterMm] = useState(8);
+  const [lensletPitchUm, setLensletPitchUm] = useState(300);
+  const [lensletFocalMm, setLensletFocalMm] = useState(20);
+  const [detectorPixelUm, setDetectorPixelUm] = useState(5.5);
+  const [rmsWavefrontNm, setRmsWavefrontNm] = useState(150);
+  const [dynamicRangeWaves, setDynamicRangeWaves] = useState(5);
+  const [numSubapertures, setNumSubapertures] = useState(0);
+  const [readNoiseE, setReadNoiseE] = useState(2);
+  const [darkCurrentEPx, setDarkCurrentEPx] = useState(0.1);
 
   const lambda = wavelengthNm * 1e-9;
   const D = apertureDiameterMm * 1e-3;

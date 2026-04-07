@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function SNDRPage() {
-  const [signalPower, setSignalPower] = useURLState("signalPower", 1); // W (normalized)
-  const [noisePower, setNoisePower] = useURLState("noisePower", 0.01);
-  const [distortionPower, setDistortionPower] = useURLState("distortionPower", 0.001);
-  const [bits, setBits] = useURLState("bits", 12);
+  const [signalPower, setSignalPower] = useState(1); // W (normalized)
+  const [noisePower, setNoisePower] = useState(0.01);
+  const [distortionPower, setDistortionPower] = useState(0.001);
+  const [bits, setBits] = useState(12);
 
   const chartData = useMemo(() => {
     const bitRange = Array.from({ length: 14 }, (_, i) => i + 4);

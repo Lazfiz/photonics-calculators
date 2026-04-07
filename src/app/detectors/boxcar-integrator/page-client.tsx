@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function BoxcarIntegratorPage() {
-  const [gateWidth, setGateWidth] = useURLState("gateWidth", 100);
-  const [repRate, setRepRate] = useURLState("repRate", 1000);
-  const [signalPeak, setSignalPeak] = useURLState("signalPeak", 1);
-  const [noiseRms, setNoiseRms] = useURLState("noiseRms", 5);
-  const [averages, setAverages] = useURLState("averages", 100);
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 500);
+  const [gateWidth, setGateWidth] = useState(100);
+  const [repRate, setRepRate] = useState(1000);
+  const [signalPeak, setSignalPeak] = useState(1);
+  const [noiseRms, setNoiseRms] = useState(5);
+  const [averages, setAverages] = useState(100);
+  const [pulseWidth, setPulseWidth] = useState(500);
 
   const dutyCycle = gateWidth / pulseWidth;
   const samplesPerGate = Math.max(1, Math.round(gateWidth / 10));

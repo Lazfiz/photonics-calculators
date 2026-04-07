@@ -5,16 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function SpeckleImagingPage() {
-  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 532);
-  const [beamDiameterMm, setBeamDiameterMm] = useURLState("beamDiameterMm", 5);
-  const [surfaceRoughnessUm, setSurfaceRoughnessUm] = useURLState("surfaceRoughnessUm", 1.0);
-  const [propagationDistMm, setPropagationDistMm] = useURLState("propagationDistMm", 200);
-  const [apertureDiameterMm, setApertureDiameterMm] = useURLState("apertureDiameterMm", 10);
-  const [numAverages, setNumAverages] = useURLState("numAverages", 10);
-  const [speckleContrast, setSpeckleContrast] = useURLState("speckleContrast", 1.0);
-  const [scatteringParticles, setScatteringParticles] = useURLState("scatteringParticles", 100);
+  const [wavelengthNm, setWavelengthNm] = useState(532);
+  const [beamDiameterMm, setBeamDiameterMm] = useState(5);
+  const [surfaceRoughnessUm, setSurfaceRoughnessUm] = useState(1.0);
+  const [propagationDistMm, setPropagationDistMm] = useState(200);
+  const [apertureDiameterMm, setApertureDiameterMm] = useState(10);
+  const [numAverages, setNumAverages] = useState(10);
+  const [speckleContrast, setSpeckleContrast] = useState(1.0);
+  const [scatteringParticles, setScatteringParticles] = useState(100);
 
   const lambda = wavelengthNm * 1e-9;
   const lambdaUm = wavelengthNm * 1e-3;

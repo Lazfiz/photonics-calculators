@@ -7,15 +7,14 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function LidarSafetyPage() {
-  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 10); // µJ
-  const [repRate, setRepRate] = useURLState("repRate", 200); // kHz
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 5); // ns
-  const [wavelength, setWavelength] = useURLState("wavelength", 905); // nm
-  const [beamDia, setBeamDia] = useURLState("beamDia", 3); // mm
-  const [divergence, setDivergence] = useURLState("divergence", 3); // mrad
-  const [scanRange, setScanRange] = useURLState("scanRange", 100); // m
+  const [pulseEnergy, setPulseEnergy] = useState(10); // µJ
+  const [repRate, setRepRate] = useState(200); // kHz
+  const [pulseWidth, setPulseWidth] = useState(5); // ns
+  const [wavelength, setWavelength] = useState(905); // nm
+  const [beamDia, setBeamDia] = useState(3); // mm
+  const [divergence, setDivergence] = useState(3); // mrad
+  const [scanRange, setScanRange] = useState(100); // m
 
   const avgPower = pulseEnergy * 1e-6 * repRate * 1e3; // W
   const prf = repRate * 1e3; // Hz

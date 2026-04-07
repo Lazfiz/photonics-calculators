@@ -7,14 +7,13 @@ import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
-import { useURLState } from "../../../hooks/use-url-state";
 const wavelengthPresets = [405, 532, 850, 1310, 1550];
 const qePresets = [0.2, 0.5, 0.8, 0.95];
 const currentHref = "/detectors/responsivity";
 
 export default function ResponsivityPage() {
-  const [quantumEfficiency, setQuantumEfficiency] = useURLState("quantumEfficiency", 0.8);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [quantumEfficiency, setQuantumEfficiency] = useState(0.8);
+  const [wavelength, setWavelength] = useState(1550);
 
   const q = 1.602e-19, h = 6.626e-34, c = 3e8;
   const responsivity = (quantumEfficiency * q * wavelength * 1e-9) / (h * c);

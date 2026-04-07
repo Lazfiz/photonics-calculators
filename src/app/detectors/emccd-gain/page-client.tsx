@@ -5,18 +5,17 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 const alpha = 0.015; const vThreshold = 30;
 const excessNoise = Math.sqrt(2);
 
 export default function EmccdGainPage() {
-  const [numStages, setNumStages] = useURLState("numStages", 604);
-  const [clockVoltage, setClockVoltage] = useURLState("clockVoltage", 40);
-  const [readNoise, setReadNoise] = useURLState("readNoise", 100);
-  const [emReadNoise, setEmReadNoise] = useURLState("emReadNoise", 1);
-  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 0.001);
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 1);
-  const [signalPhotons, setSignalPhotons] = useURLState("signalPhotons", 50);
+  const [numStages, setNumStages] = useState(604);
+  const [clockVoltage, setClockVoltage] = useState(40);
+  const [readNoise, setReadNoise] = useState(100);
+  const [emReadNoise, setEmReadNoise] = useState(1);
+  const [darkCurrent, setDarkCurrent] = useState(0.001);
+  const [exposureTime, setExposureTime] = useState(1);
+  const [signalPhotons, setSignalPhotons] = useState(50);
 
   const perStageGain = 1 + alpha * Math.max(0, clockVoltage - vThreshold);
   const totalGain = Math.pow(perStageGain, numStages);

@@ -5,11 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function AbsorptionCrossSectionPage() {
-  const [extinctionCoeff, setExtinctionCoeff] = useURLState("extinctionCoeff", 50000);
-  const [concentration, setConcentration] = useURLState("concentration", 0.001);
-  const [wavelength, setWavelength] = useURLState("wavelength", 400);
+  const [extinctionCoeff, setExtinctionCoeff] = useState(50000);
+  const [concentration, setConcentration] = useState(0.001);
+  const [wavelength, setWavelength] = useState(400);
   const [sweepParam, setSweepParam] = useState<"epsilon" | "lambda">("epsilon");
 
   const NA = 6.022e23;

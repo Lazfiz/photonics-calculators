@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function DispersionCompPage() {
-  const [dispersion, setDispersion] = useURLState("dispersion", 17); // ps/(nm·km) typical SMF at 1550
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 80); // km
-  const [bwNm, setBwNm] = useURLState("bwNm", 0.5); // source spectral width nm
-  const [bitRate, setBitRate] = useURLState("bitRate", 10); // Gbps
+  const [dispersion, setDispersion] = useState(17); // ps/(nm·km) typical SMF at 1550
+  const [fiberLength, setFiberLength] = useState(80); // km
+  const [bwNm, setBwNm] = useState(0.5); // source spectral width nm
+  const [bitRate, setBitRate] = useState(10); // Gbps
   const [compDispersion, setCompDispersion] = useState(-17); // ps/(nm·km) DCF
-  const [targetResidual, setTargetResidual] = useURLState("targetResidual", 1); // ps/nm max residual
+  const [targetResidual, setTargetResidual] = useState(1); // ps/nm max residual
 
   const totalDispersion = dispersion * fiberLength; // ps/nm
   const pulseBroadening = totalDispersion * bwNm; // ps

@@ -3,14 +3,13 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function SuperResolutionPage() {
-  const [na, setNa] = useURLState("na", 1.4);
-  const [wavelength, setWavelength] = useURLState("wavelength", 580);
-  const [n, setN] = useURLState("n", 1.52);
-  const [stedDepletion, setStedDepletion] = useURLState("stedDepletion", 0); // 0=off, percentage
-  const [stedWavelength, setStedWavelength] = useURLState("stedWavelength", 775);
-  const [palmPhotons, setPalmPhotons] = useURLState("palmPhotons", 5000);
+  const [na, setNa] = useState(1.4);
+  const [wavelength, setWavelength] = useState(580);
+  const [n, setN] = useState(1.52);
+  const [stedDepletion, setStedDepletion] = useState(0); // 0=off, percentage
+  const [stedWavelength, setStedWavelength] = useState(775);
+  const [palmPhotons, setPalmPhotons] = useState(5000);
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;

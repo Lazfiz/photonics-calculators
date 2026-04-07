@@ -5,13 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function ChirpedPulsePage() {
-  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 1); // mJ
-  const [inputDuration, setInputDuration] = useURLState("inputDuration", 30); // fs
-  const [stretchRatio, setStretchRatio] = useURLState("stretchRatio", 1000);
-  const [gratingLines, setGratingLines] = useURLState("gratingLines", 1740); // lines/mm
-  const [centralWavelength, setCentralWavelength] = useURLState("centralWavelength", 800);
+  const [pulseEnergy, setPulseEnergy] = useState(1); // mJ
+  const [inputDuration, setInputDuration] = useState(30); // fs
+  const [stretchRatio, setStretchRatio] = useState(1000);
+  const [gratingLines, setGratingLines] = useState(1740); // lines/mm
+  const [centralWavelength, setCentralWavelength] = useState(800);
 
   const stretchedDuration = inputDuration * stretchRatio; // ps
   const peakPowerIn = pulseEnergy * 1e-3 / (inputDuration * 1e-15) / 1e9; // GW

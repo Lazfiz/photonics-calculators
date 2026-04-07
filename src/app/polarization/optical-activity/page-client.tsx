@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-center py-1 border-b border-gray-800">
@@ -14,11 +13,11 @@ function ResultRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function OpticalActivityPage() {
-  const [specificRotation, setSpecificRotation] = useURLState("specificRotation", 66.5); // [α] for sucrose at 589nm
-  const [concentration, setConcentration] = useURLState("concentration", 10); // g/100mL
-  const [pathLength, setPathLength] = useURLState("pathLength", 1.0); // dm
-  const [temperature, setTemperature] = useURLState("temperature", 20); // °C
-  const [wavelength, setWavelength] = useURLState("wavelength", 589); // nm (Na D-line)
+  const [specificRotation, setSpecificRotation] = useState(66.5); // [α] for sucrose at 589nm
+  const [concentration, setConcentration] = useState(10); // g/100mL
+  const [pathLength, setPathLength] = useState(1.0); // dm
+  const [temperature, setTemperature] = useState(20); // °C
+  const [wavelength, setWavelength] = useState(589); // nm (Na D-line)
   const [sample, setSample] = useState<"sucrose" | "glucose" | "fructose" | "custom">("sucrose");
 
   // Sample presets

@@ -3,13 +3,12 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function TIRFPage() {
-  const [na, setNa] = useURLState("na", 1.49);
-  const [n1, setN1] = useURLState("n1", 1.518); // glass
-  const [n2, setN2] = useURLState("n2", 1.33); // water/buffer
-  const [wavelength, setWavelength] = useURLState("wavelength", 488);
-  const [angleOffset, setAngleOffset] = useURLState("angleOffset", 0.1); // degrees beyond critical
+  const [na, setNa] = useState(1.49);
+  const [n1, setN1] = useState(1.518); // glass
+  const [n2, setN2] = useState(1.33); // water/buffer
+  const [wavelength, setWavelength] = useState(488);
+  const [angleOffset, setAngleOffset] = useState(0.1); // degrees beyond critical
 
   const results = useMemo(() => {
     const thetaC = Math.asin(n2 / n1) * (180 / Math.PI);

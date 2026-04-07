@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 function qfunc(x: number): number {
   // Approximation of Q(x)
   return 0.5 * erfc(x / Math.sqrt(2));
@@ -19,8 +18,8 @@ function erfc(x: number): number {
 }
 
 export default function BERPage() {
-  const [photons, setPhotons] = useURLState("photons", 100);
-  const [darkCount, setDarkCount] = useURLState("darkCount", 100);
+  const [photons, setPhotons] = useState(100);
+  const [darkCount, setDarkCount] = useState(100);
   const [modulation, setModulation] = useState<"OOK" | "DPSK">("OOK");
 
   const snr = photons / (1 + darkCount / photons);

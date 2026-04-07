@@ -5,13 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function DoubleRefractionPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 589);
-  const [nO, setNO] = useURLState("nO", 1.658);
-  const [nE, setNE] = useURLState("nE", 1.486);
-  const [thickness, setThickness] = useURLState("thickness", 10); // mm
-  const [angleOfIncidence, setAngleOfIncidence] = useURLState("angleOfIncidence", 0);
+  const [wavelength, setWavelength] = useState(589);
+  const [nO, setNO] = useState(1.658);
+  const [nE, setNE] = useState(1.486);
+  const [thickness, setThickness] = useState(10); // mm
+  const [angleOfIncidence, setAngleOfIncidence] = useState(0);
 
   const dn = nO - nE;
   const d = thickness; // mm

@@ -5,7 +5,6 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 const materialParams: Record<string, { k: number; n: number; label: string }> = {
   Si: { k: 0.02, n: 3.5, label: "Silicon" },
   InGaAs: { k: 0.45, n: 2.5, label: "InGaAs" },
@@ -13,9 +12,9 @@ const materialParams: Record<string, { k: number; n: number; label: string }> = 
 };
 
 export default function AvalancheGainPage() {
-  const [breakdownVoltage, setBreakdownVoltage] = useURLState("breakdownVoltage", 150);
-  const [biasVoltage, setBiasVoltage] = useURLState("biasVoltage", 140);
-  const [ionizationRatio, setIonizationRatio] = useURLState("ionizationRatio", 0.02);
+  const [breakdownVoltage, setBreakdownVoltage] = useState(150);
+  const [biasVoltage, setBiasVoltage] = useState(140);
+  const [ionizationRatio, setIonizationRatio] = useState(0.02);
   const [material, setMaterial] = useState<"Si" | "InGaAs" | "Ge">("Si");
 
   const handleMaterialChange = (m: "Si" | "InGaAs" | "Ge") => {

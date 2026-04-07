@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function MacroBendPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [bendRadius, setBendRadius] = useURLState("bendRadius", 15);
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.5);
-  const [na, setNa] = useURLState("na", 0.14);
+  const [wavelength, setWavelength] = useState(1550);
+  const [bendRadius, setBendRadius] = useState(15);
+  const [coreRadius, setCoreRadius] = useState(4.5);
+  const [na, setNa] = useState(0.14);
 
   const loss = useMemo(() => {
     const lambda = wavelength * 1e-9;

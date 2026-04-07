@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 const media = [
   { label: "Air", n: 1.0 },
   { label: "Water", n: 1.33 },
@@ -12,10 +11,10 @@ const media = [
 ];
 
 export default function ResolutionPage() {
-  const [na, setNa] = useURLState("na", 0.95);
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [mediumIdx, setMediumIdx] = useURLState("mediumIdx", 2);
-  const [customN, setCustomN] = useURLState("customN", 1.5);
+  const [na, setNa] = useState(0.95);
+  const [wavelength, setWavelength] = useState(550);
+  const [mediumIdx, setMediumIdx] = useState(2);
+  const [customN, setCustomN] = useState(1.5);
 
   const n = mediumIdx === 3 ? customN : media[mediumIdx].n;
 

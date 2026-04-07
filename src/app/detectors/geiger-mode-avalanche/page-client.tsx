@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function GeigerModeAPDPage() {
-  const [breakdownVoltage, setBreakdownVoltage] = useURLState("breakdownVoltage", 150);
-  const [overbias, setOverbias] = useURLState("overbias", 2);
-  const [temperature, setTemperature] = useURLState("temperature", 25);
-  const [tempCoeff, setTempCoeff] = useURLState("tempCoeff", 50);
-  const [deadTime, setDeadTime] = useURLState("deadTime", 100);
-  const [darkCountRate, setDarkCountRate] = useURLState("darkCountRate", 1000);
+  const [breakdownVoltage, setBreakdownVoltage] = useState(150);
+  const [overbias, setOverbias] = useState(2);
+  const [temperature, setTemperature] = useState(25);
+  const [tempCoeff, setTempCoeff] = useState(50);
+  const [deadTime, setDeadTime] = useState(100);
+  const [darkCountRate, setDarkCountRate] = useState(1000);
 
   const results = useMemo(() => {
     const bvShift = tempCoeff * 1e-3 * (temperature - 25);

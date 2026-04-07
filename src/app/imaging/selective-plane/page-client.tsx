@@ -3,12 +3,11 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function SelectivePlanePage() {
-  const [naIll, setNaIll] = useURLState("naIll", 0.05);
-  const [wavelength, setWavelength] = useURLState("wavelength", 488);
-  const [n, setN] = useURLState("n", 1.45);
-  const [naDet, setNaDet] = useURLState("naDet", 1.0);
+  const [naIll, setNaIll] = useState(0.05);
+  const [wavelength, setWavelength] = useState(488);
+  const [n, setN] = useState(1.45);
+  const [naDet, setNaDet] = useState(1.0);
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;

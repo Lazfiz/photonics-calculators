@@ -5,11 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function ExcessNoisePage() {
-  const [gain, setGain] = useURLState("gain", 100);
-  const [kFactor, setKFactor] = useURLState("kFactor", 0.02);
-  const [quantumEff, setQuantumEff] = useURLState("quantumEff", 0.8);
+  const [gain, setGain] = useState(100);
+  const [kFactor, setKFactor] = useState(0.02);
+  const [quantumEff, setQuantumEff] = useState(0.8);
 
   const excessNoise = kFactor * gain + (2 - 1 / gain) * (1 - kFactor);
   const totalNoise = Math.sqrt(excessNoise * gain * quantumEff);

@@ -5,10 +5,9 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function RamanSpectroscopyPage() {
-  const [laserWavelength, setLaserWavelength] = useURLState("laserWavelength", 532);
-  const [maxShift, setMaxShift] = useURLState("maxShift", 4000);
+  const [laserWavelength, setLaserWavelength] = useState(532);
+  const [maxShift, setMaxShift] = useState(4000);
 
   const chartData = useMemo(() => {
     const shifts = Array.from({ length: 500 }, (_, i) => (i / 500) * maxShift);

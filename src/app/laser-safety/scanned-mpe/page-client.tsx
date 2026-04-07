@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function ScannedMPEPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 532); // nm
-  const [scanFreq, setScanFreq] = useURLState("scanFreq", 1000); // Hz
-  const [spotDiam, setSpotDiam] = useURLState("spotDiam", 0.5); // mm (1/e²)
-  const [scanWidth, setScanWidth] = useURLState("scanWidth", 50); // mm total scan width
+  const [wavelength, setWavelength] = useState(532); // nm
+  const [scanFreq, setScanFreq] = useState(1000); // Hz
+  const [spotDiam, setSpotDiam] = useState(0.5); // mm (1/e²)
+  const [scanWidth, setScanWidth] = useState(50); // mm total scan width
 
   // For scanned beams, the MPE is modified:
   // If a point on the retina is exposed for less than 10s,

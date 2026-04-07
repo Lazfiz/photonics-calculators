@@ -4,14 +4,13 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function NEPPage() {
-  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 10); // nA
-  const [responsivity, setResponsivity] = useURLState("responsivity", 0.8); // A/W
-  const [bandwidth, setBandwidth] = useURLState("bandwidth", 1); // Hz
-  const [temperature, setTemperature] = useURLState("temperature", 300); // K
-  const [loadResistor, setLoadResistor] = useURLState("loadResistor", 50); // Ω
-  const [detectorArea, setDetectorArea] = useURLState("detectorArea", 1); // mm²
+  const [darkCurrent, setDarkCurrent] = useState(10); // nA
+  const [responsivity, setResponsivity] = useState(0.8); // A/W
+  const [bandwidth, setBandwidth] = useState(1); // Hz
+  const [temperature, setTemperature] = useState(300); // K
+  const [loadResistor, setLoadResistor] = useState(50); // Ω
+  const [detectorArea, setDetectorArea] = useState(1); // mm²
 
   const k = 1.381e-23;
   const q = 1.602e-19;

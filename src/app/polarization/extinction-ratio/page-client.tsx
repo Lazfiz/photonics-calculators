@@ -3,11 +3,10 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function ExtinctionRatioPage() {
-  const [erdB, setErdB] = useURLState("erdB", 30);
-  const [inputPower, setInputPower] = useURLState("inputPower", 1); // mW
-  const [numPolarizers, setNumPolarizers] = useURLState("numPolarizers", 1);
+  const [erdB, setErdB] = useState(30);
+  const [inputPower, setInputPower] = useState(1); // mW
+  const [numPolarizers, setNumPolarizers] = useState(1);
 
   const results = useMemo(() => {
     const ratio = Math.pow(10, erdB / 10);

@@ -3,14 +3,13 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function FiberBraggGratingCalculator() {
-  const [braggWavelength, setBraggWavelength] = useURLState("braggWavelength", 1550); // nm
-  const [effectiveIndex, setEffectiveIndex] = useURLState("effectiveIndex", 1.468);
-  const [gratingLength, setGratingLength] = useURLState("gratingLength", 10); // mm
-  const [indexModulation, setIndexModulation] = useURLState("indexModulation", 1e-4); // Δn
+  const [braggWavelength, setBraggWavelength] = useState(1550); // nm
+  const [effectiveIndex, setEffectiveIndex] = useState(1.468);
+  const [gratingLength, setGratingLength] = useState(10); // mm
+  const [indexModulation, setIndexModulation] = useState(1e-4); // Δn
   const [gratingType, setGratingType] = useState<"uniform" | "apodized" | "chirped">("uniform");
-  const [chirpRate, setChirpRate] = useURLState("chirpRate", 0.1); // nm/mm
+  const [chirpRate, setChirpRate] = useState(0.1); // nm/mm
 
   // Grating period
   const gratingPeriod = useMemo(() => {

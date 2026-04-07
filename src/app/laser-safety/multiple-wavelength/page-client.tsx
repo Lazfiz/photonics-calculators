@@ -7,11 +7,10 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function MultipleWavelengthPage() {
   const [wavelengths, setWavelengths] = useState("532, 650, 808");
   const [powers, setPowers] = useState("100, 50, 200");
-  const [exposure, setExposure] = useURLState("exposure", 0.25);
+  const [exposure, setExposure] = useState(0.25);
 
   const results = useMemo(() => {
     const wls = wavelengths.split(",").map(s => parseFloat(s.trim())).filter(n => !isNaN(n));

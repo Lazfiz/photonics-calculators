@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function M2FactorPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [w0, setW0] = useURLState("w0", 0.5); // mm, measured waist
-  const [theta, setTheta] = useURLState("theta", 2); // mrad, measured divergence
-  const [targetM2, setTargetM2] = useURLState("targetM2", 1.5);
+  const [wavelength, setWavelength] = useState(1064); // nm
+  const [w0, setW0] = useState(0.5); // mm, measured waist
+  const [theta, setTheta] = useState(2); // mrad, measured divergence
+  const [targetM2, setTargetM2] = useState(1.5);
 
   const calc = useMemo(() => {
     const lam = wavelength * 1e-6; // mm

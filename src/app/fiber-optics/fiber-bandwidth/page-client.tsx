@@ -5,13 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function FiberBandwidthPage() {
   const [fiberType, setFiberType] = useState<"SMF" | "MM62_5" | "MM50">("SMF");
-  const [length, setLength] = useURLState("length", 10); // km
-  const [wavelength, setWavelength] = useURLState("wavelength", 1310); // nm
-  const [sourceLinewidth, setSourceLinewidth] = useURLState("sourceLinewidth", 0.1); // nm
-  const [modalBW, setModalBW] = useURLState("modalBW", 500); // MHz·km for MMF
+  const [length, setLength] = useState(10); // km
+  const [wavelength, setWavelength] = useState(1310); // nm
+  const [sourceLinewidth, setSourceLinewidth] = useState(0.1); // nm
+  const [modalBW, setModalBW] = useState(500); // MHz·km for MMF
 
   const calc = useMemo(() => {
     // Chromatic dispersion coefficients

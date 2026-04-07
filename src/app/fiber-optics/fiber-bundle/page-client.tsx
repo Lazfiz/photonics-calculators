@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function FiberBundlePage() {
-  const [fiberCount, setFiberCount] = useURLState("fiberCount", 37);
-  const [fiberCoreDia, setFiberCoreDia] = useURLState("fiberCoreDia", 62.5); // μm
-  const [fiberCladDia, setFiberCladDia] = useURLState("fiberCladDia", 125); // μm
-  const [fillFactor, setFillFactor] = useURLState("fillFactor", 0.85);
+  const [fiberCount, setFiberCount] = useState(37);
+  const [fiberCoreDia, setFiberCoreDia] = useState(62.5); // μm
+  const [fiberCladDia, setFiberCladDia] = useState(125); // μm
+  const [fillFactor, setFillFactor] = useState(0.85);
   const [packing, setPacking] = useState<"hexagonal" | "square">("hexagonal");
 
   const calc = useMemo(() => {

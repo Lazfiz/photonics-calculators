@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 interface Material {
   name: string;
   B1: number; B2: number; B3: number;
@@ -99,7 +98,7 @@ function sellmeier(m: Material, lamUm: number): number {
 const colors = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4", "#f97316"];
 
 export default function InfraredMaterialsPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 10600);
+  const [wavelength, setWavelength] = useState(10600);
   const [selected, setSelected] = useState("ZnSe");
 
   const m = materials[selected];

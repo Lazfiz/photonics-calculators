@@ -5,18 +5,17 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function RegistrationPage() {
   const [transformation, setTransformation] = useState<"rigid" | "affine" | "elastic">("affine");
-  const [imageSize, setImageSize] = useURLState("imageSize", 512);
-  const [rotationDeg, setRotationDeg] = useURLState("rotationDeg", 2);
-  const [translationX, setTranslationX] = useURLState("translationX", 5);
-  const [translationY, setTranslationY] = useURLState("translationY", 3);
-  const [scaleFactor, setScaleFactor] = useURLState("scaleFactor", 1.02);
-  const [shearDeg, setShearDeg] = useURLState("shearDeg", 0.5);
-  const [noiseLevel, setNoiseLevel] = useURLState("noiseLevel", 5);
+  const [imageSize, setImageSize] = useState(512);
+  const [rotationDeg, setRotationDeg] = useState(2);
+  const [translationX, setTranslationX] = useState(5);
+  const [translationY, setTranslationY] = useState(3);
+  const [scaleFactor, setScaleFactor] = useState(1.02);
+  const [shearDeg, setShearDeg] = useState(0.5);
+  const [noiseLevel, setNoiseLevel] = useState(5);
   const [interpolation, setInterpolation] = useState<"linear" | "cubic" | "spline">("cubic");
-  const [numControlPoints, setNumControlPoints] = useURLState("numControlPoints", 100);
+  const [numControlPoints, setNumControlPoints] = useState(100);
 
   // Calculate RMSE and CC
   const pixelSizeNm = 100;

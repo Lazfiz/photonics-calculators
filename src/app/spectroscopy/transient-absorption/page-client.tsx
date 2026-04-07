@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function TransientAbsorptionPage() {
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 400);
-  const [probeRangeMin, setProbeRangeMin] = useURLState("probeRangeMin", 400);
-  const [probeRangeMax, setProbeRangeMax] = useURLState("probeRangeMax", 800);
-  const [gsAbsorption, setGsAbsorption] = useURLState("gsAbsorption", 550); // nm, ground state
-  const [esAbsorption, setEsAbsorption] = useURLState("esAbsorption", 650); // nm, excited state
-  const [seCenter, setSeCenter] = useURLState("seCenter", 480); // nm, stimulated emission
+  const [pumpWavelength, setPumpWavelength] = useState(400);
+  const [probeRangeMin, setProbeRangeMin] = useState(400);
+  const [probeRangeMax, setProbeRangeMax] = useState(800);
+  const [gsAbsorption, setGsAbsorption] = useState(550); // nm, ground state
+  const [esAbsorption, setEsAbsorption] = useState(650); // nm, excited state
+  const [seCenter, setSeCenter] = useState(480); // nm, stimulated emission
   const [delays, setDelays] = useState("0.1,0.5,1,2,5,10"); // ps
 
   const chartData = useMemo(() => {

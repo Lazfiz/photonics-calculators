@@ -3,11 +3,10 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function FRAPPage() {
-  const [w0, setW0] = useURLState("w0", 1.0); // µm, bleach spot radius
-  const [tauHalf, setTauHalf] = useURLState("tauHalf", 2.0); // s, half-recovery time
-  const [mobileFrac, setMobileFrac] = useURLState("mobileFrac", 0.7);
+  const [w0, setW0] = useState(1.0); // µm, bleach spot radius
+  const [tauHalf, setTauHalf] = useState(2.0); // s, half-recovery time
+  const [mobileFrac, setMobileFrac] = useState(0.7);
   const [fitModel, setFitModel] = useState<"single" | "uniform">("single");
 
   const results = useMemo(() => {

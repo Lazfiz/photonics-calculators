@@ -5,13 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function NearInfraredPage() {
-  const [wavelengthStart, setWavelengthStart] = useURLState("wavelengthStart", 780);
-  const [wavelengthEnd, setWavelengthEnd] = useURLState("wavelengthEnd", 2500);
-  const [pathLength, setPathLength] = useURLState("pathLength", 1);
-  const [waterContent, setWaterContent] = useURLState("waterContent", 0.8);
-  const [scatteringCoeff, setScatteringCoeff] = useURLState("scatteringCoeff", 10);
+  const [wavelengthStart, setWavelengthStart] = useState(780);
+  const [wavelengthEnd, setWavelengthEnd] = useState(2500);
+  const [pathLength, setPathLength] = useState(1);
+  const [waterContent, setWaterContent] = useState(0.8);
+  const [scatteringCoeff, setScatteringCoeff] = useState(10);
 
   // NIR overtone/combination bands
   const nirBands = [

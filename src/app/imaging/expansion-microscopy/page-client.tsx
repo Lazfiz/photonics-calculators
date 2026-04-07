@@ -3,14 +3,13 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function ExpansionMicroscopyPage() {
-  const [magnification, setMagnification] = useURLState("magnification", 4);
-  const [originalRes, setOriginalRes] = useURLState("originalRes", 250);
-  const [probeSize, setProbeSize] = useURLState("probeSize", 10);
-  const [labelLinkerLen, setLabelLinkerLen] = useURLState("labelLinkerLen", 15);
-  const [gelThickness, setGelThickness] = useURLState("gelThickness", 50);
-  const [na, setNa] = useURLState("na", 1.2);
+  const [magnification, setMagnification] = useState(4);
+  const [originalRes, setOriginalRes] = useState(250);
+  const [probeSize, setProbeSize] = useState(10);
+  const [labelLinkerLen, setLabelLinkerLen] = useState(15);
+  const [gelThickness, setGelThickness] = useState(50);
+  const [na, setNa] = useState(1.2);
 
   const results = useMemo(() => {
     const effectiveRes = originalRes / magnification;

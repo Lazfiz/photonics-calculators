@@ -3,11 +3,10 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function FogAttenuationPage() {
-  const [visibility, setVisibility] = useURLState("visibility", 0.5);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [range, setRange] = useURLState("range", 1);
+  const [visibility, setVisibility] = useState(0.5);
+  const [wavelength, setWavelength] = useState(1550);
+  const [range, setRange] = useState(1);
   const [fogModel, setFogModel] = useState<"kim" | "kruse">("kim");
 
   const calc = useMemo(() => {

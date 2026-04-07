@@ -3,14 +3,13 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function AdaptiveOpticsPage() {
-  const [numZernike, setNumZernike] = useURLState("numZernike", 15);
-  const [rmsWavefront, setRmsWavefront] = useURLState("rmsWavefront", 0.5); // waves
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [na, setNa] = useURLState("na", 1.0);
-  const [dmStroke, setDmStroke] = useURLState("dmStroke", 5); // µm
-  const [dmActuators, setDmActuators] = useURLState("dmActuators", 32);
+  const [numZernike, setNumZernike] = useState(15);
+  const [rmsWavefront, setRmsWavefront] = useState(0.5); // waves
+  const [wavelength, setWavelength] = useState(550);
+  const [na, setNa] = useState(1.0);
+  const [dmStroke, setDmStroke] = useState(5); // µm
+  const [dmActuators, setDmActuators] = useState(32);
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;

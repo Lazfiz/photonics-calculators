@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function SaturationPage() {
-  const [fullWellCapacity, setFullWellCapacity] = useURLState("fullWellCapacity", 20000); // electrons
-  const [readNoise, setReadNoise] = useURLState("readNoise", 5); // electrons rms
-  const [bitDepth, setBitDepth] = useURLState("bitDepth", 16);
-  const [nonlinearityPercent, setNonlinearityPercent] = useURLState("nonlinearityPercent", 0.5); // % deviation at saturation
+  const [fullWellCapacity, setFullWellCapacity] = useState(20000); // electrons
+  const [readNoise, setReadNoise] = useState(5); // electrons rms
+  const [bitDepth, setBitDepth] = useState(16);
+  const [nonlinearityPercent, setNonlinearityPercent] = useState(0.5); // % deviation at saturation
 
   const chartData = useMemo(() => {
     const input = Array.from({ length: 300 }, (_, i) => (i / 300) * fullWellCapacity * 1.2);

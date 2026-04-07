@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function CavityRingDownPage() {
-  const [mirrorReflectivity, setMirrorReflectivity] = useURLState("mirrorReflectivity", 99.99); // %
-  const [cavityLength, setCavityLength] = useURLState("cavityLength", 100); // cm
-  const [baseLoss, setBaseLoss] = useURLState("baseLoss", 0); // % additional round-trip loss
-  const [sampleAbsorbance, setSampleAbsorbance] = useURLState("sampleAbsorbance", 0.001); // per pass
+  const [mirrorReflectivity, setMirrorReflectivity] = useState(99.99); // %
+  const [cavityLength, setCavityLength] = useState(100); // cm
+  const [baseLoss, setBaseLoss] = useState(0); // % additional round-trip loss
+  const [sampleAbsorbance, setSampleAbsorbance] = useState(0.001); // per pass
 
   const R = mirrorReflectivity / 100;
   const L = cavityLength / 100; // meters

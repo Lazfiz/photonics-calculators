@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function EtalonFSRPage() {
-  const [n, setN] = useURLState("n", 1.0); // refractive index of gap
-  const [d, setD] = useURLState("d", 10); // gap in μm
-  const [theta, setTheta] = useURLState("theta", 0); // angle in degrees
-  const [R, setR] = useURLState("R", 0.8); // mirror reflectance
+  const [n, setN] = useState(1.0); // refractive index of gap
+  const [d, setD] = useState(10); // gap in μm
+  const [theta, setTheta] = useState(0); // angle in degrees
+  const [R, setR] = useState(0.8); // mirror reflectance
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => 1500 + i * 0.002); // μm range for FSR calc

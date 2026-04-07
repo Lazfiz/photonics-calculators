@@ -5,11 +5,10 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function InterferometerPage() {
-  const [armDiff, setArmDiff] = useURLState("armDiff", 10); // µm path difference
-  const [wavelength, setWavelength] = useURLState("wavelength", 633); // nm
-  const [reflectivity, setReflectivity] = useURLState("reflectivity", 0.9); // mirror R
+  const [armDiff, setArmDiff] = useState(10); // µm path difference
+  const [wavelength, setWavelength] = useState(633); // nm
+  const [reflectivity, setReflectivity] = useState(0.9); // mirror R
   const [type, setType] = useState<"michelson" | "mz">("michelson");
 
   const calc = useMemo(() => {

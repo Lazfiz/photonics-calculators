@@ -5,16 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 // Photodiode: bandwidth ∝ 1/√(area) due to junction capacitance
 // C_j ∝ A, BW ≈ 1/(2π·R·C_j), responsivity R = η·q·λ/(hc)
 export default function PhotodiodeSpeedPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [qe, setQe] = useURLState("qe", 0.8);
-  const [capacitanceDensity, setCapacitanceDensity] = useURLState("capacitanceDensity", 50); // fF/mm²
-  const [loadResistance, setLoadResistance] = useURLState("loadResistance", 50); // Ohm
-  const [areaMin, setAreaMin] = useURLState("areaMin", 0.001); // mm²
-  const [areaMax, setAreaMax] = useURLState("areaMax", 10); // mm²
+  const [wavelength, setWavelength] = useState(1550);
+  const [qe, setQe] = useState(0.8);
+  const [capacitanceDensity, setCapacitanceDensity] = useState(50); // fF/mm²
+  const [loadResistance, setLoadResistance] = useState(50); // Ohm
+  const [areaMin, setAreaMin] = useState(0.001); // mm²
+  const [areaMax, setAreaMax] = useState(10); // mm²
 
   const responsivity = qe * 1.602e-19 * wavelength * 1e-9 / (6.626e-34 * 3e8);
 

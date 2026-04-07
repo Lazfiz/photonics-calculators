@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function PolarizerExtinctionPage() {
-  const [extinctionRatioDb, setExtinctionRatioDb] = useURLState("extinctionRatioDb", 30);
-  const [transmissionPercent, setTransmissionPercent] = useURLState("transmissionPercent", 95);
-  const [numPolarizers, setNumPolarizers] = useURLState("numPolarizers", 2);
-  const [angleDeg, setAngleDeg] = useURLState("angleDeg", 0);
+  const [extinctionRatioDb, setExtinctionRatioDb] = useState(30);
+  const [transmissionPercent, setTransmissionPercent] = useState(95);
+  const [numPolarizers, setNumPolarizers] = useState(2);
+  const [angleDeg, setAngleDeg] = useState(0);
 
   const T_parallel = transmissionPercent / 100;
   const ER_linear = Math.pow(10, extinctionRatioDb / 10);

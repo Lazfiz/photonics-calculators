@@ -7,12 +7,11 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function SkinHazardPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064);
-  const [power, setPower] = useURLState("power", 1000); // mW
-  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 5); // mm
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // s
+  const [wavelength, setWavelength] = useState(1064);
+  const [power, setPower] = useState(1000); // mW
+  const [beamDiameter, setBeamDiameter] = useState(5); // mm
+  const [exposureTime, setExposureTime] = useState(10); // s
 
   // Skin MPE per ANSI Z136.1 (simplified)
   // 400-700nm: same as corneal MPE for most cases

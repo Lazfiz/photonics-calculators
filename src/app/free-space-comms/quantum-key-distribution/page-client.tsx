@@ -3,16 +3,15 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function QuantumKeyDistributionPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [wavelength, setWavelength] = useState(1550);
   const [txPower, setTxPower] = useState(-10); // dBm (weak coherent source)
-  const [range, setRange] = useURLState("range", 50); // km
-  const [fiberLoss, setFiberLoss] = useURLState("fiberLoss", 0.2); // dB/km
-  const [detectorEfficiency, setDetectorEfficiency] = useURLState("detectorEfficiency", 0.15);
-  const [darkCountRate, setDarkCountRate] = useURLState("darkCountRate", 100); // Hz
-  const [repRate, setRepRate] = useURLState("repRate", 1e9); // Hz (pulse repetition)
-  const [errorTolerance, setErrorTolerance] = useURLState("errorTolerance", 0.11); // QBER threshold ~11%
+  const [range, setRange] = useState(50); // km
+  const [fiberLoss, setFiberLoss] = useState(0.2); // dB/km
+  const [detectorEfficiency, setDetectorEfficiency] = useState(0.15);
+  const [darkCountRate, setDarkCountRate] = useState(100); // Hz
+  const [repRate, setRepRate] = useState(1e9); // Hz (pulse repetition)
+  const [errorTolerance, setErrorTolerance] = useState(0.11); // QBER threshold ~11%
 
   // QKD Key Rate: R = 0.5 * f_clock * Y * (1 - h(e)) * η
   // where Y = yield, e = QBER, h = binary entropy, η = efficiency

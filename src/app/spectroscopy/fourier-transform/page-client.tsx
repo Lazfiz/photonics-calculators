@@ -5,14 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function FourierTransformPage() {
-  const [freq1, setFreq1] = useURLState("freq1", 10);
-  const [freq2, setFreq2] = useURLState("freq2", 25);
-  const [amp1, setAmp1] = useURLState("amp1", 1.0);
-  const [amp2, setAmp2] = useURLState("amp2", 0.5);
-  const [noise, setNoise] = useURLState("noise", 0.1);
-  const [nPoints, setNPoints] = useURLState("nPoints", 256);
+  const [freq1, setFreq1] = useState(10);
+  const [freq2, setFreq2] = useState(25);
+  const [amp1, setAmp1] = useState(1.0);
+  const [amp2, setAmp2] = useState(0.5);
+  const [noise, setNoise] = useState(0.1);
+  const [nPoints, setNPoints] = useState(256);
 
   const chartData = useMemo(() => {
     const N = nPoints;

@@ -5,12 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
-import { useURLState } from "../../../hooks/use-url-state";
 export default function ConcentrationPage() {
-  const [absorbance, setAbsorbance] = useURLState("absorbance", 0.5);
-  const [pathLength, setPathLength] = useURLState("pathLength", 1);
-  const [extinctionCoeff, setExtinctionCoeff] = useURLState("extinctionCoeff", 50000);
-  const [cMax, setCMax] = useURLState("cMax", 0.05);
+  const [absorbance, setAbsorbance] = useState(0.5);
+  const [pathLength, setPathLength] = useState(1);
+  const [extinctionCoeff, setExtinctionCoeff] = useState(50000);
+  const [cMax, setCMax] = useState(0.05);
 
   const concentration = absorbance / (extinctionCoeff * pathLength);
   const molarity = concentration;

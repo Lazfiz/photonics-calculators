@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 interface ColorCenter { name: string; crystal: string; peak_nm: number; fwhm_nm: number; sigma_abs: number; sigma_em: number; color: string; defect: string }
 
 const COLOR_CENTERS: Record<string, ColorCenter> = {
@@ -26,7 +25,7 @@ function gaussian(wl: number, peak: number, fwhm: number, sigma: number): number
 
 export default function ColorCentersPage() {
   const [selected, setSelected] = useState<string[]>(["NV_Center", "SiV_Center", "Ti_Sapphire", "Cr3_Ruby"]);
-  const [concentration, setConcentration] = useURLState("concentration", 1e24);
+  const [concentration, setConcentration] = useState(1e24);
 
   const toggle = (key: string) => setSelected(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
 

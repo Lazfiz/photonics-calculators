@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
 interface Material {
   name: string;
   type: string;
@@ -39,7 +38,7 @@ const typeColors: Record<string, string> = {
 };
 
 export default function TransparencyRangePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [wavelength, setWavelength] = useState(1550);
 
   const results = useMemo(() => {
     return Object.entries(materials).map(([key, m]) => {
