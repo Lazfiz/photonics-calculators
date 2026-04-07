@@ -1,13 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-
-interface EmbeddingEntry {
-  href: string;
-  title: string;
-  embedding: number[];
-}
 
 interface KeywordItem {
   title: string;
@@ -16,24 +10,6 @@ interface KeywordItem {
   category: string;
   tags: string[];
   priority: number;
-}
-
-interface SearchResult {
-  href: string;
-  title: string;
-  description?: string;
-  category?: string;
-  semanticScore?: number;
-}
-
-function cosineSimilarity(a: number[], b: number[]): number {
-  let dot = 0, na = 0, nb = 0;
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    na += a[i] * a[i];
-    nb += b[i] * b[i];
-  }
-  return dot / (Math.sqrt(na) * Math.sqrt(nb) + 1e-9);
 }
 
 function scoreKeyword(item: KeywordItem, terms: string[]): number {
@@ -59,19 +35,29 @@ function scoreKeyword(item: KeywordItem, terms: string[]): number {
   return score;
 }
 
+// --- Semantic search module (isolated, loaded lazily via dynamic import) ---
+// This function is the ONLY thing that touches the AI model.
+// It returns results or null. Never throws to caller.
+async function semanticSearch(query: string, keywordHrefs: Set<string>): Promise<{ href: string; title: string }[] | null> {
+  try {
+    // Dynamic import — only pulls in code when actually called
+    const { performSemanticSearch } = await import("./semantic-search-module");
+    return await performSemanticSearch(query, keywordHrefs);
+  } catch {
+    return null;
+  }
+}
+
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<KeywordItem[]>([]);
-  const [embeddings, setEmbeddings] = useState<EmbeddingEntry[] | null>(null);
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [modelStatus, setModelStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
-  const [embedFn, setEmbedFn] = useState<((text: string) => Promise<number[] | null>) | null>(null);
+  const [results, setResults] = useState<{ href: string; title: string; description?: string; category?: string }[]>([]);
+  const [aiLabel, setAiLabel] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const inputRef = useRef<HTMLInputElement>(null);
   const q = query.trim().toLowerCase();
   const terms = q.length > 0 ? q.split(/\s+/).filter(Boolean) : [];
 
-  // Load keyword index
   useEffect(() => {
     fetch("/search-index.json")
       .then((r) => r.json())
@@ -79,7 +65,6 @@ export default function SearchPage() {
       .catch(() => {});
   }, []);
 
-  // Focus input on mount, read ?q= from URL
   useEffect(() => {
     inputRef.current?.focus();
     const params = new URLSearchParams(window.location.search);
@@ -87,73 +72,33 @@ export default function SearchPage() {
     if (qParam) setQuery(qParam);
   }, []);
 
-  // Lazy-load semantic model
-  const loadModel = useCallback(async () => {
-    if (modelStatus !== "idle") return;
-    setModelStatus("loading");
-    try {
-      // Load transformers.js from CDN
-      if (!(window as any).Transformers) {
-        await new Promise<void>((resolve, reject) => {
-          const script = document.createElement("script");
-          script.src = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1/dist/transformers.min.js";
-          script.onload = () => resolve();
-          script.onerror = () => reject(new Error("Failed to load transformers.js"));
-          document.head.appendChild(script);
-        });
-      }
-      const { pipeline } = (window as any).Transformers;
-      const extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { dtype: "fp32" });
-
-      const fn = async (text: string): Promise<number[] | null> => {
-        try {
-          const output = await extractor(text, { pooling: "mean", normalize: true });
-          return Array.from(output.data) as number[];
-        } catch { return null; }
-      };
-      setEmbedFn(() => fn);
-
-      // Load embeddings
-      const embs = await (await fetch("/search-embeddings.json")).json();
-      setEmbeddings(embs);
-      setModelStatus("ready");
-    } catch (err: any) {
-      console.warn("Semantic search init failed:", err);
-      setModelStatus("error");
-    }
-  }, [modelStatus]);
-
-  // Search
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (terms.length === 0) { setResults([]); return; }
+    if (terms.length === 0) { setResults([]); setAiLabel(""); return; }
 
-    // Keyword results immediately
     const kw = items
       .map((item) => ({ item, score: scoreKeyword(item, terms) }))
       .filter(({ score }) => score > 0)
-      .sort((a, b) => b.score - a.score)
-      .map(({ item }) => ({ href: item.href, title: item.title, description: item.description, category: item.category }));
-    setResults(kw.slice(0, 12));
+      .sort((a, b) => b.score - a.score);
+    setResults(kw.map(({ item }) => ({ href: item.href, title: item.title, description: item.description, category: item.category })));
 
-    // Semantic for longer queries
-    if (q.length < 8) return;
-    debounceRef.current = setTimeout(async () => {
-      if (modelStatus === "idle") await loadModel();
-      if (!embedFn || !embeddings) return;
-      const queryEmb = await embedFn(q);
-      if (!queryEmb) return;
-      const kwHrefs = new Set(kw.map((r) => r.href));
-      const semResults = embeddings
-        .filter((e) => !kwHrefs.has(e.href))
-        .map((e) => ({ href: e.href, title: e.title, semanticScore: cosineSimilarity(queryEmb, e.embedding) }))
-        .filter((r) => r.semanticScore > 0.3)
-        .sort((a, b) => b.semanticScore - a.semanticScore)
-        .map((r) => ({ href: r.href, title: r.title }));
-      setResults([...kw.slice(0, 12), ...semResults].slice(0, 12));
-    }, 500);
+    // Semantic: fire and forget — never blocks keyword results
+    if (q.length < 10) { setAiLabel(""); return; }
+    setAiLabel("AI searching...");
+    debounceRef.current = setTimeout(() => {
+      const kwHrefs = new Set(kw.map((r) => r.item.href));
+      semanticSearch(q, kwHrefs).then((semResults) => {
+        if (!semResults || semResults.length === 0) { setAiLabel(""); return; }
+        setResults(prev => {
+          const existingHrefs = new Set(prev.map(r => r.href));
+          const newResults = semResults.filter(r => !existingHrefs.has(r.href));
+          return [...prev, ...newResults].slice(0, 12);
+        });
+        setAiLabel("AI enhanced");
+      });
+    }, 600);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [q, terms, items, embeddings, embedFn, modelStatus, loadModel]);
+  }, [q, terms, items]);
 
   const categoryColor: Record<string, string> = {
     "wave-optics": "text-blue-400", "fiber-optics": "text-cyan-400",
@@ -181,10 +126,11 @@ export default function SearchPage() {
             className="w-full rounded-xl border border-white/10 bg-slate-950/80 px-4 py-3 text-base text-white placeholder-gray-500 outline-none focus:border-blue-400"
             autoFocus
           />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-            {modelStatus === "loading" && <span className="text-xs text-blue-400 animate-pulse">AI loading</span>}
-            {modelStatus === "ready" && <span className="text-xs text-green-400">✓ AI</span>}
-          </div>
+          {aiLabel && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <span className="text-xs text-blue-400 animate-pulse">{aiLabel}</span>
+            </div>
+          )}
         </div>
         {results.length > 0 && (
           <div className="space-y-1">
