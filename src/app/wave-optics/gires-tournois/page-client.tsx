@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function GiresTournoisPage() {
-  const [reflectivity, setReflectivity] = useState(0.7);
-  const [thickness, setThickness] = useState(500); // nm
-  const [n, setN] = useState(2.3); // refractive index of coating
-  const [wavelength, setWavelength] = useState(1550); // nm center
-  const [bandwidth, setBandwidth] = useState(100); // nm range to plot
+  const [reflectivity, setReflectivity] = useURLState("reflectivity", 0.7);
+  const [thickness, setThickness] = useURLState("thickness", 500); // nm
+  const [n, setN] = useURLState("n", 2.3); // refractive index of coating
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm center
+  const [bandwidth, setBandwidth] = useURLState("bandwidth", 100); // nm range to plot
 
   // Gires-Tournois interferometer: high-reflectivity back surface (R₂≈1), partial front surface R₁
   // Phase response: φ(δ) = -2 arctan[(1-√R₁)/(1+√R₁) · tan(δ/2)]

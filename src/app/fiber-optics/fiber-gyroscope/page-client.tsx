@@ -5,15 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function FiberGyroscopePage() {
-  const [coilDiameter, setCoilDiameter] = useState(100); // mm
-  const [fiberLength, setFiberLength] = useState(500); // m
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [n_core, setN_core] = useState(1.468);
-  const [sourcePower, setSourcePower] = useState(10); // mW
+  const [coilDiameter, setCoilDiameter] = useURLState("coilDiameter", 100); // mm
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 500); // m
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [n_core, setN_core] = useURLState("n_core", 1.468);
+  const [sourcePower, setSourcePower] = useURLState("sourcePower", 10); // mW
   const [detectorNoise, setDetectorNoise] = useState(-150); // dBm/√Hz
   const [sourceRIN, setSourceRIN] = useState(-160); // dB/Hz
-  const [losses, setLosses] = useState(3); // dB total round-trip
+  const [losses, setLosses] = useURLState("losses", 3); // dB total round-trip
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-9;

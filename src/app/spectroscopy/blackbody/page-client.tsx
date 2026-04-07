@@ -7,11 +7,12 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
+import { useURLState } from "../../../hooks/use-url-state";
 const currentHref = "/spectroscopy/blackbody";
 const temperaturePresets = [300, 1200, 3000, 5778];
 
 export default function BlackbodyPage() {
-  const [temperature, setTemperature] = useState(5778);
+  const [temperature, setTemperature] = useURLState("temperature", 5778);
 
   const series = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => 100 + i * 4); // nm

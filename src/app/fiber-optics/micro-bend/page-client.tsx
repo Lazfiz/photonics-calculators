@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function MicroBendPage() {
-  const [wavelength, setWavelength] = useState(1550);
-  const [period, setPeriod] = useState(1);
-  const [amplitude, setAmplitude] = useState(1);
-  const [length, setLength] = useState(100);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [period, setPeriod] = useURLState("period", 1);
+  const [amplitude, setAmplitude] = useURLState("amplitude", 1);
+  const [length, setLength] = useURLState("length", 100);
 
   const loss = useMemo(() => {
     const lambda = wavelength * 1e-9;

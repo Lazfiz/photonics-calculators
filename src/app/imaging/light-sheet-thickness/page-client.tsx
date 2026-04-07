@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function LightSheetThicknessPage() {
-  const [wavelength, setWavelength] = useState(488);
-  const [na, setNa] = useState(0.1);
-  const [sheetLength, setSheetLength] = useState(100);
-  const [gaussianBeamWaist, setGaussianBeamWaist] = useState(0);
+  const [wavelength, setWavelength] = useURLState("wavelength", 488);
+  const [na, setNa] = useURLState("na", 0.1);
+  const [sheetLength, setSheetLength] = useURLState("sheetLength", 100);
+  const [gaussianBeamWaist, setGaussianBeamWaist] = useURLState("gaussianBeamWaist", 0);
 
   // If gaussianBeamWaist is 0, compute from NA
   const beamWaist = gaussianBeamWaist > 0 ? gaussianBeamWaist : wavelength / (Math.PI * na);

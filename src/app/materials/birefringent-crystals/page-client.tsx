@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 interface Crystal {
   name: string;
   // Sellmeier coefficients for ordinary ray
@@ -73,7 +74,7 @@ function sellmeier(B1: number, B2: number, B3: number, C1: number, C2: number, C
 const colors = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899"];
 
 export default function BirefringentCrystalsPage() {
-  const [wavelength, setWavelength] = useState(589);
+  const [wavelength, setWavelength] = useURLState("wavelength", 589);
   const [selected, setSelected] = useState("Quartz");
 
   const c = crystals[selected];

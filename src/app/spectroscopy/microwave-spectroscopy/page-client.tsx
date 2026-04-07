@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function MicrowaveSpectroscopyPage() {
   const [moleculeType, setMoleculeType] = useState("linear");
-  const [bondLength, setBondLength] = useState(1.128); // N₂-like, in Å
-  const [reducedMass, setReducedMass] = useState(14); // amu
-  const [temperature, setTemperature] = useState(293);
-  const [dipoleMoment, setDipoleMoment] = useState(1.47); // Debye (CO)
+  const [bondLength, setBondLength] = useURLState("bondLength", 1.128); // N₂-like, in Å
+  const [reducedMass, setReducedMass] = useURLState("reducedMass", 14); // amu
+  const [temperature, setTemperature] = useURLState("temperature", 293);
+  const [dipoleMoment, setDipoleMoment] = useURLState("dipoleMoment", 1.47); // Debye (CO)
 
   const calcRotationalConstants = () => {
     // B = h / (8π²cI) in cm⁻¹

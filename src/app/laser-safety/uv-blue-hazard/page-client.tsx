@@ -5,10 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function UVBlueHazardPage() {
-  const [wavelength, setWavelength] = useState(450);
-  const [exposureTime, setExposureTime] = useState(10000);
-  const [spectralPower, setSpectralPower] = useState(1); // mW/nm
+  const [wavelength, setWavelength] = useURLState("wavelength", 450);
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10000);
+  const [spectralPower, setSpectralPower] = useURLState("spectralPower", 1); // mW/nm
 
   // Blue light hazard function B(λ) and UV hazard function S(λ)
   // Weighted radiance: L_B = ∫ L(λ) × B(λ) dλ

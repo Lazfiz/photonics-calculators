@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function BirefringenceImagingPage() {
-  const [wavelength, setWavelength] = useState(550);
-  const [nO, setNO] = useState(1.658);
-  const [nE, setNE] = useState(1.486);
-  const [thickness, setThickness] = useState(0.05); // mm
-  const [polarizerAngleDeg, setPolarizerAngleDeg] = useState(0);
-  const [analyzerAngleDeg, setAnalyzerAngleDeg] = useState(90); // crossed by default
+  const [wavelength, setWavelength] = useURLState("wavelength", 550);
+  const [nO, setNO] = useURLState("nO", 1.658);
+  const [nE, setNE] = useURLState("nE", 1.486);
+  const [thickness, setThickness] = useURLState("thickness", 0.05); // mm
+  const [polarizerAngleDeg, setPolarizerAngleDeg] = useURLState("polarizerAngleDeg", 0);
+  const [analyzerAngleDeg, setAnalyzerAngleDeg] = useURLState("analyzerAngleDeg", 90); // crossed by default
   const [compensator, setCompensator] = useState<"none" | "lambda/4" | "lambda" | "sensitive">("none");
 
   const dn = Math.abs(nO - nE);

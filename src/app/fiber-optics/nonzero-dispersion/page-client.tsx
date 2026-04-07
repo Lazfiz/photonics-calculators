@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function NonzeroDispersionPage() {
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [length, setLength] = useState(80); // km
-  const [dispSlope, setDispSlope] = useState(0.05); // ps/(nm²·km)
-  const [dispAt1550, setDispAt1550] = useState(4.5); // ps/(nm·km) - typical NZ-DSF
-  const [zeroDispWl, setZeroDispWl] = useState(1450); // nm
-  const [channelSpacing, setChannelSpacing] = useState(100); // GHz
-  const [channels, setChannels] = useState(40);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [length, setLength] = useURLState("length", 80); // km
+  const [dispSlope, setDispSlope] = useURLState("dispSlope", 0.05); // ps/(nm²·km)
+  const [dispAt1550, setDispAt1550] = useURLState("dispAt1550", 4.5); // ps/(nm·km) - typical NZ-DSF
+  const [zeroDispWl, setZeroDispWl] = useURLState("zeroDispWl", 1450); // nm
+  const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 100); // GHz
+  const [channels, setChannels] = useURLState("channels", 40);
 
   const calc = useMemo(() => {
     const lam = wavelength;

@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function RingCavityPage() {
-  const [wavelength, setWavelength] = useState(1064); // nm
-  const [roundTripLength, setRoundTripLength] = useState(300); // mm
-  const [mirrorR, setMirrorR] = useState(1000); // mm, curved mirror ROC
-  const [numMirrors, setNumMirrors] = useState(3);
-  const [outputCouplerR, setOutputCouplerR] = useState(0.95);
-  const [intracavityLoss, setIntracavityLoss] = useState(0.01); // per round trip
+  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
+  const [roundTripLength, setRoundTripLength] = useURLState("roundTripLength", 300); // mm
+  const [mirrorR, setMirrorR] = useURLState("mirrorR", 1000); // mm, curved mirror ROC
+  const [numMirrors, setNumMirrors] = useURLState("numMirrors", 3);
+  const [outputCouplerR, setOutputCouplerR] = useURLState("outputCouplerR", 0.95);
+  const [intracavityLoss, setIntracavityLoss] = useURLState("intracavityLoss", 0.01); // per round trip
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-6; // mm

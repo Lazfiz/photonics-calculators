@@ -4,10 +4,11 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function ThermalVsPhotochemicalPage() {
-  const [wavelength, setWavelength] = useState(450); // nm
-  const [exposureTime, setExposureTime] = useState(1); // seconds
-  const [spotSize, setSpotSize] = useState(1); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 450); // nm
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 1); // seconds
+  const [spotSize, setSpotSize] = useURLState("spotSize", 1); // mm
 
   // IEC 60825-1 distinguishes thermal and photochemical MPEs.
   // The applicable MPE is the MORE RESTRICTIVE of the two.

@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function GainTemperaturePage() {
-  const [gainRef, setGainRef] = useState(100);
-  const [tempRef, setTempRef] = useState(25);
-  const [tempCoeff, setTempCoeff] = useState(0.003);
+  const [gainRef, setGainRef] = useURLState("gainRef", 100);
+  const [tempRef, setTempRef] = useURLState("tempRef", 25);
+  const [tempCoeff, setTempCoeff] = useURLState("tempCoeff", 0.003);
   const [tempMin, setTempMin] = useState(-40);
-  const [tempMax, setTempMax] = useState(80);
+  const [tempMax, setTempMax] = useURLState("tempMax", 80);
   const [detectorType, setDetectorType] = useState<"apd" | "pmt">("apd");
   const [pmtCoeff, setPmtCoeff] = useState(-0.003);
 

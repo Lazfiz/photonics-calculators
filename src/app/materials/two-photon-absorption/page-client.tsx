@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 // Two-photon absorption: β₂PA coefficient in cm/GW
 interface TPAMaterial { name: string; beta0: number; Eg_eV: number; lambda_g: number; color: string; type: string }
 
@@ -27,9 +28,9 @@ function tpaBeta(mat: TPAMaterial, wavelength_nm: number): number {
 
 export default function TwoPhotonAbsorptionPage() {
   const [material, setMaterial] = useState<keyof typeof TPA_MATERIALS>("FusedSilica");
-  const [wavelength, setWavelength] = useState(800);
-  const [intensity, setIntensity] = useState(100); // GW/cm²
-  const [thickness, setThickness] = useState(1); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 800);
+  const [intensity, setIntensity] = useURLState("intensity", 100); // GW/cm²
+  const [thickness, setThickness] = useURLState("thickness", 1); // mm
 
   const mat = TPA_MATERIALS[material];
   const beta = tpaBeta(mat, wavelength);

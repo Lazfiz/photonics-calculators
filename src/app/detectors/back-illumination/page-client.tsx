@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function BackIlluminationPage() {
-  const [fiQE, setFiQE] = useState(0.4);
-  const [biQE, setBiQE] = useState(0.95);
-  const [fiCFA, setFiCFA] = useState(0.25);
-  const [microlensGain, setMicrolensGain] = useState(1.3);
+  const [fiQE, setFiQE] = useURLState("fiQE", 0.4);
+  const [biQE, setBiQE] = useURLState("biQE", 0.95);
+  const [fiCFA, setFiCFA] = useURLState("fiCFA", 0.25);
+  const [microlensGain, setMicrolensGain] = useURLState("microlensGain", 1.3);
 
   const chartData = useMemo(() => {
     const wavelengths = Array.from({ length: 200 }, (_, i) => 300 + (i / 200) * 700);

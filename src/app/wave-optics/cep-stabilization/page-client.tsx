@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function CEPStabilizationPage() {
-  const [wavelength, setWavelength] = useState(800);
-  const [pulseDuration, setPulseDuration] = useState(5); // fs
-  const [cepOffset, setCepOffset] = useState(0); // rad
-  const [cycles, setCycles] = useState(2);
+  const [wavelength, setWavelength] = useURLState("wavelength", 800);
+  const [pulseDuration, setPulseDuration] = useURLState("pulseDuration", 5); // fs
+  const [cepOffset, setCepOffset] = useURLState("cepOffset", 0); // rad
+  const [cycles, setCycles] = useURLState("cycles", 2);
 
   const period = wavelength * 1e-9 / 3e8 * 1e15; // fs
   const carrierFreq = 1 / period; // PHz

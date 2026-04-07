@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 type FiberType = "PM" | "PCF" | "EDF" | "TDF" | "YDF" | "Bi1060" | "Chalcogenide" | "Fluoride";
 
 const fiberDB: Record<FiberType, {
@@ -23,8 +24,8 @@ const fiberDB: Record<FiberType, {
 
 export default function SpecialtyFiberPage() {
   const [fiber, setFiber] = useState<FiberType>("PM");
-  const [length, setLength] = useState(10);
-  const [wavelength, setWavelength] = useState(1550);
+  const [length, setLength] = useURLState("length", 10);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
 
   const spec = fiberDB[fiber];
 

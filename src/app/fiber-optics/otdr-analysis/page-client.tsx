@@ -5,16 +5,17 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function OTDRAnalysisPage() {
-  const [pulseWidth, setPulseWidth] = useState(100); // ns
-  const [fiberLength, setFiberLength] = useState(50); // km
-  const [attenuationCoeff, setAttenuationCoeff] = useState(0.2); // dB/km
-  const [refractiveIndex, setRefractiveIndex] = useState(1.4682);
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100); // ns
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 50); // km
+  const [attenuationCoeff, setAttenuationCoeff] = useURLState("attenuationCoeff", 0.2); // dB/km
+  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.4682);
   const [backscatterCoeff, setBackscatterCoeff] = useState(-79); // dB (typical SMF)
-  const [connectorLoss, setConnectorLoss] = useState(0.5); // dB
-  const [spliceLoss, setSpliceLoss] = useState(0.1); // dB
-  const [numSplices, setNumSplices] = useState(5);
-  const [eventAtKm, setEventAtKm] = useState(25); // km
+  const [connectorLoss, setConnectorLoss] = useURLState("connectorLoss", 0.5); // dB
+  const [spliceLoss, setSpliceLoss] = useURLState("spliceLoss", 0.1); // dB
+  const [numSplices, setNumSplices] = useURLState("numSplices", 5);
+  const [eventAtKm, setEventAtKm] = useURLState("eventAtKm", 25); // km
 
   const calc = useMemo(() => {
     const c = 3e8;

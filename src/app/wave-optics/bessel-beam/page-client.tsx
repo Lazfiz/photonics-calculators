@@ -5,10 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function BesselBeamPage() {
-  const [wavelength, setWavelength] = useState(632.8); // nm
-  const [alpha, setAlpha] = useState(0.01); // NA-like parameter (rad)
-  const [maxR, setMaxR] = useState(200); // µm
+  const [wavelength, setWavelength] = useURLState("wavelength", 632.8); // nm
+  const [alpha, setAlpha] = useURLState("alpha", 0.01); // NA-like parameter (rad)
+  const [maxR, setMaxR] = useURLState("maxR", 200); // µm
 
   const besselArg = (r: number) => alpha * r;
   // Approximate J0 and J1 using series

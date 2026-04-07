@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function PupilMatchingPage() {
-  const [objectiveNA, setObjectiveNA] = useState(0.75);
-  const [objectiveMag, setObjectiveMag] = useState(40);
-  const [tubeLensFL, setTubeLensFL] = useState(200); // mm
-  const [eyepieceMag, setEyepieceMag] = useState(10);
-  const [eyePupil, setEyePupil] = useState(4); // mm
+  const [objectiveNA, setObjectiveNA] = useURLState("objectiveNA", 0.75);
+  const [objectiveMag, setObjectiveMag] = useURLState("objectiveMag", 40);
+  const [tubeLensFL, setTubeLensFL] = useURLState("tubeLensFL", 200); // mm
+  const [eyepieceMag, setEyepieceMag] = useURLState("eyepieceMag", 10);
+  const [eyePupil, setEyePupil] = useURLState("eyePupil", 4); // mm
 
   const chartData = useMemo(() => {
     const nas = Array.from({ length: 200 }, (_, i) => 0.1 + i * 1.4 / 200);

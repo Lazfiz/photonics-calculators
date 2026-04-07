@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function SputteringDepositionPage() {
   const [targetMaterial, setTargetMaterial] = useState("SiO2");
-  const [power, setPower] = useState(300);
-  const [pressure, setPressure] = useState(3e-3);
-  const [targetSubstrateDist, setTargetSubstrateDist] = useState(10);
-  const [substrateTemp, setSubstrateTemp] = useState(200);
+  const [power, setPower] = useURLState("power", 300);
+  const [pressure, setPressure] = useURLState("pressure", 3e-3);
+  const [targetSubstrateDist, setTargetSubstrateDist] = useURLState("targetSubstrateDist", 10);
+  const [substrateTemp, setSubstrateTemp] = useURLState("substrateTemp", 200);
   const [gasType, setGasType] = useState("Ar");
 
   const targets: Record<string, { M1: number; M2: number; density: number; Us: number; name: string; n: number }> = {

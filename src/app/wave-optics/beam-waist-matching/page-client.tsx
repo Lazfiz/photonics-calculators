@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function BeamWaistMatchingPage() {
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [w0in, setW0in] = useState(100); // µm input waist
-  const [w0out, setW0out] = useState(200); // µm desired output waist
-  const [z, setZ] = useState(500); // mm distance between waists
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [w0in, setW0in] = useURLState("w0in", 100); // µm input waist
+  const [w0out, setW0out] = useURLState("w0out", 200); // µm desired output waist
+  const [z, setZ] = useURLState("z", 500); // mm distance between waists
 
   // Calculate required lens focal length for mode matching
   // Using ABCD matrix approach

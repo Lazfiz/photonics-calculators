@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 const dyes = [
   { label: "GFP", onePhoton: 488 },
   { label: "YFP", onePhoton: 514 },
@@ -14,13 +15,13 @@ const dyes = [
 ];
 
 export default function TwoPhotonPage() {
-  const [dyeIdx, setDyeIdx] = useState(0);
-  const [customWl, setCustomWl] = useState(500);
-  const [na, setNa] = useState(1.0);
-  const [avgPower, setAvgPower] = useState(20);
-  const [repRate, setRepRate] = useState(80);
-  const [pulseWidth, setPulseWidth] = useState(100);
-  const [n, setN] = useState(1.33);
+  const [dyeIdx, setDyeIdx] = useURLState("dyeIdx", 0);
+  const [customWl, setCustomWl] = useURLState("customWl", 500);
+  const [na, setNa] = useURLState("na", 1.0);
+  const [avgPower, setAvgPower] = useURLState("avgPower", 20);
+  const [repRate, setRepRate] = useURLState("repRate", 80);
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100);
+  const [n, setN] = useURLState("n", 1.33);
 
   const onePhotonWl = dyeIdx === 6 ? customWl : dyes[dyeIdx].onePhoton;
   const twoPhotonWl = onePhotonWl * 2;

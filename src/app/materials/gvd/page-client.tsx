@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 const MATERIALS: Record<string, { name: string; B: number[]; C: number[] }> = {
   BK7: { name: "BK7", B: [1.03961212, 0.231792344, 1.01046945], C: [0.00600069867, 0.0200179144, 103.560653] },
   FusedSilica: { name: "Fused Silica", B: [0.6961663, 0.4079426, 0.8974794], C: [0.0684043, 0.1162414, 9.896161] },
@@ -21,7 +22,7 @@ const sellmeierN = (wl_um: number, B: number[], C: number[]) => {
 // We compute d²n/dλ² numerically
 export default function GVDPage() {
   const [material, setMaterial] = useState<keyof typeof MATERIALS>("BK7");
-  const [wavelength, setWavelength] = useState(800); // nm
+  const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm
 
   const calc = useMemo(() => {
     const mat = MATERIALS[material];

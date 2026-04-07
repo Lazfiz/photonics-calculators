@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function InterferenceConditionsPage() {
-  const [nFilm, setNFilm] = useState(1.38);
-  const [thickness, setThickness] = useState(100);
-  const [nIncident, setNIncident] = useState(1.0);
-  const [nSubstrate, setNSubstrate] = useState(1.52);
-  const [phaseShiftPi, setPhaseShiftPi] = useState(1); // 0 or π phase shift at one interface
+  const [nFilm, setNFilm] = useURLState("nFilm", 1.38);
+  const [thickness, setThickness] = useURLState("thickness", 100);
+  const [nIncident, setNIncident] = useURLState("nIncident", 1.0);
+  const [nSubstrate, setNSubstrate] = useURLState("nSubstrate", 1.52);
+  const [phaseShiftPi, setPhaseShiftPi] = useURLState("phaseShiftPi", 1); // 0 or π phase shift at one interface
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 2);

@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function DualBandARPage() {
-  const [nSub, setNSub] = useState(1.52);
-  const [wl1, setWl1] = useState(450);
-  const [wl2, setWl2] = useState(1064);
-  const [n1, setN1] = useState(1.38);
-  const [n2, setN2] = useState(2.1);
-  const [n3, setN3] = useState(1.65);
+  const [nSub, setNSub] = useURLState("nSub", 1.52);
+  const [wl1, setWl1] = useURLState("wl1", 450);
+  const [wl2, setWl2] = useURLState("wl2", 1064);
+  const [n1, setN1] = useURLState("n1", 1.38);
+  const [n2, setN2] = useURLState("n2", 2.1);
+  const [n3, setN3] = useURLState("n3", 1.65);
 
   const tmm = useMemo(() => {
     const N = 500;

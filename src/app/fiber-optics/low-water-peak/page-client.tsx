@@ -5,10 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function LowWaterPeakPage() {
   const [fiberType, setFiberType] = useState<"SMF28e" | "SMF28ePlus" | "AllWave" | "TrueWave">("SMF28e");
-  const [length, setLength] = useState(100); // km
-  const [channels, setChannels] = useState(40);
+  const [length, setLength] = useURLState("length", 100); // km
+  const [channels, setChannels] = useURLState("channels", 40);
 
   const getAttenuation = (wl: number, type: string) => {
     const rayleigh = 0.85 * Math.pow(1.55 / (wl / 1000), 4) * 0.19;

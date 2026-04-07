@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 interface Material {
   name: string;
   cte0: number; // CTE at T0 (×10⁻⁶ /K)
@@ -41,9 +42,9 @@ function thermalExpansion(m: Material, L0: number, T1: number, T2: number) {
 
 export default function CTEPage() {
   const [selected, setSelected] = useState("Fused Silica");
-  const [length, setLength] = useState(100);
-  const [tempStart, setTempStart] = useState(20);
-  const [tempEnd, setTempEnd] = useState(200);
+  const [length, setLength] = useURLState("length", 100);
+  const [tempStart, setTempStart] = useURLState("tempStart", 20);
+  const [tempEnd, setTempEnd] = useURLState("tempEnd", 200);
 
   const cte = useMemo(() => cteAt(materials[selected], (tempStart + tempEnd) / 2), [selected, tempStart, tempEnd]);
   const deltaL = useMemo(() => thermalExpansion(materials[selected], length, tempStart, tempEnd), [selected, length, tempStart, tempEnd]);

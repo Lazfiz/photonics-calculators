@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 function hermite(n: number, x: number): number {
   if (n === 0) return 1;
   if (n === 1) return 2 * x;
@@ -25,10 +26,10 @@ function factorial(n: number): number {
 }
 
 export default function HermiteGaussianPage() {
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [waist, setWaist] = useState(50); // µm
-  const [m, setM] = useState(0);
-  const [n, setN] = useState(0);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [waist, setWaist] = useURLState("waist", 50); // µm
+  const [m, setM] = useURLState("m", 0);
+  const [n, setN] = useURLState("n", 0);
   const [plotAxis, setPlotAxis] = useState<"x" | "y" | "both">("both");
 
   const w0 = waist; // µm

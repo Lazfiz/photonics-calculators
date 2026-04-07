@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function StressPage() {
   const [filmStress, setFilmStress] = useState(-200); // MPa
-  const [filmThickness, setFilmThickness] = useState(500); // nm
-  const [substrateThickness, setSubstrateThickness] = useState(1); // mm
-  const [eSubstrate, setESubstrate] = useState(70); // GPa (glass ~70)
-  const [nuSubstrate, setNuSubstrate] = useState(0.22); // Poisson's ratio
+  const [filmThickness, setFilmThickness] = useURLState("filmThickness", 500); // nm
+  const [substrateThickness, setSubstrateThickness] = useURLState("substrateThickness", 1); // mm
+  const [eSubstrate, setESubstrate] = useURLState("eSubstrate", 70); // GPa (glass ~70)
+  const [nuSubstrate, setNuSubstrate] = useURLState("nuSubstrate", 0.22); // Poisson's ratio
 
   const chartData = useMemo(() => {
     const thicknesses = Array.from({ length: 200 }, (_, i) => 100 + i * 4900 / 200);

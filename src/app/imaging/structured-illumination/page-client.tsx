@@ -3,11 +3,12 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function StructuredIlluminationPage() {
-  const [na, setNa] = useState(1.4);
-  const [wavelength, setWavelength] = useState(488);
-  const [modulationDepth, setModulationDepth] = useState(0.8);
-  const [patternOrders, setPatternOrders] = useState(3);
+  const [na, setNa] = useURLState("na", 1.4);
+  const [wavelength, setWavelength] = useURLState("wavelength", 488);
+  const [modulationDepth, setModulationDepth] = useURLState("modulationDepth", 0.8);
+  const [patternOrders, setPatternOrders] = useURLState("patternOrders", 3);
 
   const results = useMemo(() => {
     const lambda_um = wavelength * 1e-3;

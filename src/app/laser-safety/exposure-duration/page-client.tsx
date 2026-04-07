@@ -6,11 +6,12 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function ExposureDurationPage() {
-  const [wavelength, setWavelength] = useState(532);
-  const [power, setPower] = useState(100); // mW
-  const [beamDiameter, setBeamDiameter] = useState(3); // mm
-  const [aperture, setAperture] = useState(7); // mm (pupil)
+  const [wavelength, setWavelength] = useURLState("wavelength", 532);
+  const [power, setPower] = useURLState("power", 100); // mW
+  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 3); // mm
+  const [aperture, setAperture] = useURLState("aperture", 7); // mm (pupil)
 
   const lam = wavelength / 1000; // µm
 

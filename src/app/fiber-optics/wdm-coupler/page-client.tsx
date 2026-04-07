@@ -3,12 +3,13 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function WDMCouplerCalculator() {
-  const [channelCount, setChannelCount] = useState(8);
-  const [channelSpacing, setChannelSpacing] = useState(0.8); // nm
-  const [centerWavelength, setCenterWavelength] = useState(1550); // nm
-  const [passbandWidth, setPassbandWidth] = useState(0.4); // nm
-  const [insertionLoss, setInsertionLoss] = useState(0.5); // dB
+  const [channelCount, setChannelCount] = useURLState("channelCount", 8);
+  const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 0.8); // nm
+  const [centerWavelength, setCenterWavelength] = useURLState("centerWavelength", 1550); // nm
+  const [passbandWidth, setPassbandWidth] = useURLState("passbandWidth", 0.4); // nm
+  const [insertionLoss, setInsertionLoss] = useURLState("insertionLoss", 0.5); // dB
   const [isolation, setIsolation] = useState<number>(25); // dB
   const [couplerType, setCouplerType] = useState<"thinFilm" | "fbg" | "awg" | "mzi">("thinFilm");
 

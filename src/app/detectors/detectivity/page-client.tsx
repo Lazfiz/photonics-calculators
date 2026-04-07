@@ -5,17 +5,18 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 const h = 6.626e-34, c = 3e8, q = 1.602e-19, kB = 1.381e-23;
 
 export default function DetectivityPage() {
-  const [wavelength, setWavelength] = useState(850);
-  const [qe, setQe] = useState(0.7);
-  const [darkCurrent, setDarkCurrent] = useState(1);
-  const [area, setArea] = useState(1);
-  const [bandwidth, setBandwidth] = useState(1);
-  const [temperature, setTemperature] = useState(293);
-  const [loadResistance, setLoadResistance] = useState(50);
-  const [excessNoiseFactor, setExcessNoiseFactor] = useState(1);
+  const [wavelength, setWavelength] = useURLState("wavelength", 850);
+  const [qe, setQe] = useURLState("qe", 0.7);
+  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 1);
+  const [area, setArea] = useURLState("area", 1);
+  const [bandwidth, setBandwidth] = useURLState("bandwidth", 1);
+  const [temperature, setTemperature] = useURLState("temperature", 293);
+  const [loadResistance, setLoadResistance] = useURLState("loadResistance", 50);
+  const [excessNoiseFactor, setExcessNoiseFactor] = useURLState("excessNoiseFactor", 1);
 
   const lambda = wavelength * 1e-9;
   const responsivity = qe * lambda * q / (h * c);

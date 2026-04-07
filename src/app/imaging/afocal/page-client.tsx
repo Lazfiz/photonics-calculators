@@ -5,11 +5,12 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function AfocalPage() {
-  const [f1Mm, setF1Mm] = useState(100);
-  const [f2Mm, setF2Mm] = useState(200);
-  const [separationMm, setSeparationMm] = useState(300); // f1 + f2 for afocal
-  const [objectAngleDeg, setObjectAngleDeg] = useState(2);
+  const [f1Mm, setF1Mm] = useURLState("f1Mm", 100);
+  const [f2Mm, setF2Mm] = useURLState("f2Mm", 200);
+  const [separationMm, setSeparationMm] = useURLState("separationMm", 300); // f1 + f2 for afocal
+  const [objectAngleDeg, setObjectAngleDeg] = useURLState("objectAngleDeg", 2);
 
   // Afocal: separation d = f1 + f2
   const idealSep = f1Mm + f2Mm;

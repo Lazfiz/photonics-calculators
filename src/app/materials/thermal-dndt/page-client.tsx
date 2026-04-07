@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 const MATERIALS: Record<string, { name: string; dndT: number }> = {
   BK7: { name: "BK7", dndT: 3.0e-6 },
   FusedSilica: { name: "Fused Silica", dndT: 1.0e-5 },
@@ -16,9 +17,9 @@ const MATERIALS: Record<string, { name: string; dndT: number }> = {
 
 export default function ThermalDnDtPage() {
   const [material, setMaterial] = useState<keyof typeof MATERIALS>("FusedSilica");
-  const [baseTemp, setBaseTemp] = useState(20); // °C
-  const [deltaT, setDeltaT] = useState(50); // °C change
-  const [baseN, setBaseN] = useState(1.458);
+  const [baseTemp, setBaseTemp] = useURLState("baseTemp", 20); // °C
+  const [deltaT, setDeltaT] = useURLState("deltaT", 50); // °C change
+  const [baseN, setBaseN] = useURLState("baseN", 1.458);
 
   const calc = useMemo(() => {
     const mat = MATERIALS[material];

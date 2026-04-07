@@ -5,10 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function OpticalFrequencyCombPage() {
-  const [repRate, setRepRate] = useState(250); // MHz
-  const [centerWavelength, setCenterWavelength] = useState(1550); // nm
-  const [combLines, setCombLines] = useState(50);
+  const [repRate, setRepRate] = useURLState("repRate", 250); // MHz
+  const [centerWavelength, setCenterWavelength] = useURLState("centerWavelength", 1550); // nm
+  const [combLines, setCombLines] = useURLState("combLines", 50);
   const c = 3e8;
 
   const chartData = useMemo(() => {

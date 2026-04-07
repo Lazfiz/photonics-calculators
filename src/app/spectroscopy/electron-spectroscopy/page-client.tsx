@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function ElectronSpectroscopyPage() {
-  const [photonEnergy, setPhotonEnergy] = useState(1486.6); // Al Kα
-  const [bindingEnergy, setBindingEnergy] = useState(285); // C 1s
-  const [workFunction, setWorkFunction] = useState(4.5);
-  const [analyzerWorkFunction, setAnalyzerWorkFunction] = useState(4.2);
-  const [fwhm, setFwhm] = useState(1.2);
-  const [temperature, setTemperature] = useState(300);
+  const [photonEnergy, setPhotonEnergy] = useURLState("photonEnergy", 1486.6); // Al Kα
+  const [bindingEnergy, setBindingEnergy] = useURLState("bindingEnergy", 285); // C 1s
+  const [workFunction, setWorkFunction] = useURLState("workFunction", 4.5);
+  const [analyzerWorkFunction, setAnalyzerWorkFunction] = useURLState("analyzerWorkFunction", 4.2);
+  const [fwhm, setFwhm] = useURLState("fwhm", 1.2);
+  const [temperature, setTemperature] = useURLState("temperature", 300);
 
   const kineticEnergy = photonEnergy - bindingEnergy - workFunction;
   const alFermi = 1486.6;

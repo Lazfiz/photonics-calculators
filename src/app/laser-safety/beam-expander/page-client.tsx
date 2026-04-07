@@ -6,10 +6,11 @@ import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function BeamExpanderPage() {
-  const [power, setPower] = useState(1);
-  const [beamDia, setBeamDia] = useState(2);
-  const [expansion, setExpansion] = useState(5);
+  const [power, setPower] = useURLState("power", 1);
+  const [beamDia, setBeamDia] = useURLState("beamDia", 2);
+  const [expansion, setExpansion] = useURLState("expansion", 5);
 
   const outputDia = beamDia * expansion;
   const inputIrr = (power * 4) / (Math.PI * beamDia * beamDia);

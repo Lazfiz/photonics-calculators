@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function DiffractionIntegralPage() {
-  const [wavelength, setWavelength] = useState(632.8); // nm
+  const [wavelength, setWavelength] = useURLState("wavelength", 632.8); // nm
   const [apertureType, setApertureType] = useState<"circular" | "slit">("circular");
-  const [apertureSize, setApertureSize] = useState(100); // µm
-  const [propDist, setPropDist] = useState(50); // mm
-  const [observationSize, setObservationSize] = useState(500); // µm
+  const [apertureSize, setApertureSize] = useURLState("apertureSize", 100); // µm
+  const [propDist, setPropDist] = useURLState("propDist", 50); // mm
+  const [observationSize, setObservationSize] = useURLState("observationSize", 500); // µm
 
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-3; // µm

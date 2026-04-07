@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 // Sapphire (Al₂O₃) - uniaxial crystal, ordinary and extraordinary rays
 const sellmeierNo = (wl_um: number) => {
   const l2 = wl_um * wl_um;
@@ -29,7 +30,7 @@ const sapphire = {
 };
 
 export default function SapphirePropertiesPage() {
-  const [wavelength, setWavelength] = useState(589);
+  const [wavelength, setWavelength] = useURLState("wavelength", 589);
 
   const no = useMemo(() => sellmeierNo(wavelength / 1000), [wavelength]);
   const ne = useMemo(() => sellmeierNe(wavelength / 1000), [wavelength]);

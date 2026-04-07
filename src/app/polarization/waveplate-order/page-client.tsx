@@ -3,10 +3,11 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function WaveplateOrderPage() {
-  const [wavelength, setWavelength] = useState(550); // nm
-  const [birefringence, setBirefringence] = useState(0.009); // Δn
-  const [thickness, setThickness] = useState(100); // μm
+  const [wavelength, setWavelength] = useURLState("wavelength", 550); // nm
+  const [birefringence, setBirefringence] = useURLState("birefringence", 0.009); // Δn
+  const [thickness, setThickness] = useURLState("thickness", 100); // μm
 
   const results = useMemo(() => {
     const ret = birefringence * thickness * 1e3; // nm retardation

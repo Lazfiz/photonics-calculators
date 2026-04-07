@@ -5,12 +5,13 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function WedgeFilmPage() {
-  const [nFilm, setNFilm] = useState(1.5);
-  const [nSub, setNSub] = useState(1.52);
-  const [nInc, setNInc] = useState(1.0);
-  const [designWl, setDesignWl] = useState(550);
-  const [wedgeAngleDeg, setWedgeAngleDeg] = useState(0.1); // degrees
+  const [nFilm, setNFilm] = useURLState("nFilm", 1.5);
+  const [nSub, setNSub] = useURLState("nSub", 1.52);
+  const [nInc, setNInc] = useURLState("nInc", 1.0);
+  const [designWl, setDesignWl] = useURLState("designWl", 550);
+  const [wedgeAngleDeg, setWedgeAngleDeg] = useURLState("wedgeAngleDeg", 0.1); // degrees
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 600 / 500);

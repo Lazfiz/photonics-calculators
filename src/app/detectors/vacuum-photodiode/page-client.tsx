@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function VacuumPhotodiodePage() {
-  const [quantumEff, setQuantumEff] = useState(0.25);
-  const [anodeVoltage, setAnodeVoltage] = useState(100); // V
-  const [cathodeArea, setCathodeArea] = useState(100); // mm²
-  const [wavelength, setWavelength] = useState(300); // nm (UV)
-  const [incidentPower, setIncidentPower] = useState(1e-6); // W
-  const [loadResistance, setLoadResistance] = useState(50); // Ω
-  const [temperature, setTemperature] = useState(25); // °C
+  const [quantumEff, setQuantumEff] = useURLState("quantumEff", 0.25);
+  const [anodeVoltage, setAnodeVoltage] = useURLState("anodeVoltage", 100); // V
+  const [cathodeArea, setCathodeArea] = useURLState("cathodeArea", 100); // mm²
+  const [wavelength, setWavelength] = useURLState("wavelength", 300); // nm (UV)
+  const [incidentPower, setIncidentPower] = useURLState("incidentPower", 1e-6); // W
+  const [loadResistance, setLoadResistance] = useURLState("loadResistance", 50); // Ω
+  const [temperature, setTemperature] = useURLState("temperature", 25); // °C
 
   const results = useMemo(() => {
     const h = 6.626e-34;

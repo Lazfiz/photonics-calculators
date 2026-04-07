@@ -5,14 +5,15 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function TaperedFiberPage() {
-  const [inputDia, setInputDia] = useState(125); // μm
-  const [outputDia, setOutputDia] = useState(20); // μm
-  const [taperLength, setTaperLength] = useState(20); // mm
-  const [coreDia, setCoreDia] = useState(9); // μm
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [n1, setN1] = useState(1.4682);
-  const [n2, setN2] = useState(1.4629);
+  const [inputDia, setInputDia] = useURLState("inputDia", 125); // μm
+  const [outputDia, setOutputDia] = useURLState("outputDia", 20); // μm
+  const [taperLength, setTaperLength] = useURLState("taperLength", 20); // mm
+  const [coreDia, setCoreDia] = useURLState("coreDia", 9); // μm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [n1, setN1] = useURLState("n1", 1.4682);
+  const [n2, setN2] = useURLState("n2", 1.4629);
 
   const calc = useMemo(() => {
     const taperRatio = outputDia / inputDia;

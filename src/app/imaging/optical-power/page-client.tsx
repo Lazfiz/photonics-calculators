@@ -5,10 +5,11 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function OpticalPowerPage() {
-  const [focalLengthMm, setFocalLengthMm] = useState(100);
-  const [corneaPower, setCorneaPower] = useState(43);
-  const [lensPower, setLensPower] = useState(19);
+  const [focalLengthMm, setFocalLengthMm] = useURLState("focalLengthMm", 100);
+  const [corneaPower, setCorneaPower] = useURLState("corneaPower", 43);
+  const [lensPower, setLensPower] = useURLState("lensPower", 19);
 
   const diopters = 1000 / focalLengthMm; // D = 1/f (f in meters)
   const totalEye = corneaPower + lensPower - (corneaPower * lensPower) / 1000; // reduced vergence approx

@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 interface BrillouinMaterial { name: string; n: number; rho: number; vA: number; p12: number; color: string }
 
 // Brillouin shift: ν_B = 2nV_A/λ
@@ -37,10 +38,10 @@ function brillouinGain(mat: BrillouinMaterial, lambda_nm: number, linewidth_MHz:
 
 export default function BrillouinScatteringPage() {
   const [material, setMaterial] = useState<keyof typeof MATERIALS>("SMF28");
-  const [wavelength, setWavelength] = useState(1550);
-  const [linewidth, setLinewidth] = useState(30); // MHz
-  const [pumpPower, setPumpPower] = useState(10); // mW
-  const [fiberLength, setFiberLength] = useState(10); // km
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [linewidth, setLinewidth] = useURLState("linewidth", 30); // MHz
+  const [pumpPower, setPumpPower] = useURLState("pumpPower", 10); // mW
+  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // km
 
   const mat = MATERIALS[material];
   const vB = brillouinShift(mat.n, mat.vA, wavelength);

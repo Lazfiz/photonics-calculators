@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function SecondHarmonicMicroscopyPage() {
-  const [wavelength, setWavelength] = useState(800);
-  const [na, setNa] = useState(0.8);
-  const [power, setPower] = useState(50);
-  const [pulseWidth, setPulseWidth] = useState(100);
-  const [repRate, setRepRate] = useState(80);
-  const [thickness, setThickness] = useState(1);
+  const [wavelength, setWavelength] = useURLState("wavelength", 800);
+  const [na, setNa] = useURLState("na", 0.8);
+  const [power, setPower] = useURLState("power", 50);
+  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100);
+  const [repRate, setRepRate] = useURLState("repRate", 80);
+  const [thickness, setThickness] = useURLState("thickness", 1);
 
   const shgWavelength = wavelength / 2;
   const energyPerPulse = (power * 1000 / repRate) * 1e-9;

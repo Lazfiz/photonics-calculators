@@ -7,15 +7,16 @@ import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
+import { useURLState } from "../../../hooks/use-url-state";
 const concentrationPresets = [0.001, 0.01, 0.05, 0.1];
 const pathPresets = [0.1, 1, 5, 10];
 const epsilonPresets = [1000, 10000, 50000, 100000];
 const currentHref = "/spectroscopy/lambert-beer-law";
 
 export default function LambertBeerLawPage() {
-  const [concentration, setConcentration] = useState(0.01);
-  const [pathLength, setPathLength] = useState(1);
-  const [extinctionCoeff, setExtinctionCoeff] = useState(50000);
+  const [concentration, setConcentration] = useURLState("concentration", 0.01);
+  const [pathLength, setPathLength] = useURLState("pathLength", 1);
+  const [extinctionCoeff, setExtinctionCoeff] = useURLState("extinctionCoeff", 50000);
   const [plotVar, setPlotVar] = useState<"conc" | "path" | "epsilon">("conc");
 
   const absorbance = extinctionCoeff * concentration * pathLength;

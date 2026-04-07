@@ -5,13 +5,14 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function ParametricAmplificationPage() {
-  const [wavelength, setWavelength] = useState(1550); // nm
-  const [pumpPower, setPumpPower] = useState(500); // mW
-  const [chi2, setChi2] = useState(2.0); // pm/V
-  const [crystalLength, setCrystalLength] = useState(20); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [pumpPower, setPumpPower] = useURLState("pumpPower", 500); // mW
+  const [chi2, setChi2] = useURLState("chi2", 2.0); // pm/V
+  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 20); // mm
   const [pumpDepletion, setPumpDepletion] = useState(false);
-  const [walkoff, setWalkoff] = useState(0.1); // mrad
+  const [walkoff, setWalkoff] = useURLState("walkoff", 0.1); // mrad
 
   // Parametric gain
   const lambdaP = wavelength;

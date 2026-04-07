@@ -5,15 +5,16 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function LowCoherencePage() {
-  const [wavelengthNm, setWavelengthNm] = useState(1300);
-  const [bandwidthNm, setBandwidthNm] = useState(80);
-  const [refractiveIndex, setRefractiveIndex] = useState(1.4);
-  const [scanRangeMm, setScanRangeMm] = useState(2);
-  const [mirrorSpeedMmPerS, setMirrorSpeedMmPerS] = useState(50);
-  const [numAScans, setNumAScans] = useState(500);
-  const [referenceReflectivity, setReferenceReflectivity] = useState(0.9);
-  const [sampleReflectivity, setSampleReflectivity] = useState(0.004);
+  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 1300);
+  const [bandwidthNm, setBandwidthNm] = useURLState("bandwidthNm", 80);
+  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.4);
+  const [scanRangeMm, setScanRangeMm] = useURLState("scanRangeMm", 2);
+  const [mirrorSpeedMmPerS, setMirrorSpeedMmPerS] = useURLState("mirrorSpeedMmPerS", 50);
+  const [numAScans, setNumAScans] = useURLState("numAScans", 500);
+  const [referenceReflectivity, setReferenceReflectivity] = useURLState("referenceReflectivity", 0.9);
+  const [sampleReflectivity, setSampleReflectivity] = useURLState("sampleReflectivity", 0.004);
 
   const lambda0 = wavelengthNm * 1e-9;
   const dLambda = bandwidthNm * 1e-9;

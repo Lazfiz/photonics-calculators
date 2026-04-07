@@ -3,15 +3,16 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { useURLState } from "../../../hooks/use-url-state";
 export default function ContrastMethodsPage() {
   const [method, setMethod] = useState("phase");
-  const [na, setNa] = useState(1.4);
-  const [wavelength, setWavelength] = useState(550);
-  const [n, setN] = useState(1.52);
-  const [phaseShift, setPhaseShift] = useState(0.25); // waves for phase contrast
-  const [shearAmount, setShearAmount] = useState(0.2); // λ for DIC
-  const [sampleThickness, setSampleThickness] = useState(5); // µm
-  const [dnSample, setDnSample] = useState(0.005); // Δn for sample
+  const [na, setNa] = useURLState("na", 1.4);
+  const [wavelength, setWavelength] = useURLState("wavelength", 550);
+  const [n, setN] = useURLState("n", 1.52);
+  const [phaseShift, setPhaseShift] = useURLState("phaseShift", 0.25); // waves for phase contrast
+  const [shearAmount, setShearAmount] = useURLState("shearAmount", 0.2); // λ for DIC
+  const [sampleThickness, setSampleThickness] = useURLState("sampleThickness", 5); // µm
+  const [dnSample, setDnSample] = useURLState("dnSample", 0.005); // Δn for sample
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;
