@@ -75,6 +75,7 @@ export default function SiteSearch() {
 
       worker.onmessage = (event: MessageEvent) => {
         const { type, results, message, count } = event.data;
+        console.log("[worker]", type, message);
         if (type === "ready") {
           aiReadyRef.current = true;
           setAiStatus("ready");
@@ -83,18 +84,21 @@ export default function SiteSearch() {
           setSemanticResults(results);
         } else if (type === "status") {
           setAiMessage(message);
+          if (aiStatus === "idle") setAiStatus("loading");
         } else if (type === "error") {
           console.warn("[semantic-search]", message);
+          setAiMessage(`Error: ${message}`);
           aiReadyRef.current = false;
           setAiStatus("idle");
-          setAiMessage("");
         }
       };
 
-      worker.onerror = () => {
+      worker.onerror = (err) => {
+        console.warn("[worker] onerror", err);
         aiReadyRef.current = false;
         workerRef.current = null;
         setAiStatus("idle");
+        setAiMessage(`Worker error: ${err.message}`);
       };
 
       worker.postMessage({ type: "init" });
