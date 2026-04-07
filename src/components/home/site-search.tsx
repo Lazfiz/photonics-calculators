@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface SearchItem {
   title: string;
@@ -13,13 +13,7 @@ interface SearchItem {
   priority: number;
 }
 
-interface SemanticResult {
-  href: string;
-  title: string;
-  score: number;
-}
-
-function scoreItem(item: SearchItem, terms: string[]): number {
+function scoreItem(item: SearchItem, terms: string[]) {
   const title = item.title.toLowerCase();
   const desc = item.description.toLowerCase();
   const href = item.href.toLowerCase();
@@ -47,17 +41,10 @@ function scoreItem(item: SearchItem, terms: string[]): number {
 export default function SiteSearch() {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<SearchItem[]>([]);
-  const [semanticResults, setSemanticResults] = useState<SemanticResult[] | null>(null);
-  const [aiStatus, setAiStatus] = useState<"idle" | "loading" | "ready">("idle");
-  const [aiMessage, setAiMessage] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const workerRef = useRef<Worker | null>(null);
-  const aiReadyRef = useRef(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const q = query.trim().toLowerCase();
   const terms = q.length > 0 ? q.split(/\s+/).filter(Boolean) : [];
 
-  // Load keyword search index
   useEffect(() => {
     fetch("/search-index.json")
       .then((r) => r.json())
@@ -65,106 +52,29 @@ export default function SiteSearch() {
       .catch(() => {});
   }, []);
 
-  // Lazy-init semantic worker on first focus
-  const initWorker = useCallback(() => {
-    if (workerRef.current || aiReadyRef.current || aiStatus !== "idle") return;
-    try {
-      const worker = new Worker("/search-worker.js");
-      workerRef.current = worker;
-      setAiStatus("loading");
-
-      worker.onmessage = (event: MessageEvent) => {
-        const { type, results, message, count } = event.data;
-        console.log("[worker]", type, message);
-        if (type === "ready") {
-          aiReadyRef.current = true;
-          setAiStatus("ready");
-          setAiMessage("");
-        } else if (type === "results") {
-          setSemanticResults(results);
-        } else if (type === "status") {
-          setAiMessage(message);
-          if (aiStatus === "idle") setAiStatus("loading");
-        } else if (type === "error") {
-          console.warn("[semantic-search]", message);
-          setAiMessage(`Error: ${message}`);
-          aiReadyRef.current = false;
-          setAiStatus("idle");
-        }
-      };
-
-      worker.onerror = (err) => {
-        console.warn("[worker] onerror", err);
-        aiReadyRef.current = false;
-        workerRef.current = null;
-        setAiStatus("idle");
-        setAiMessage(`Worker error: ${err.message}`);
-      };
-
-      worker.postMessage({ type: "init" });
-    } catch {
-      // Worker creation failed — keyword search still works
-      setAiStatus("idle");
-    }
-  }, [aiStatus]);
-
-  // Debounced semantic search
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (terms.length === 0) {
-      setSemanticResults(null);
-      return;
-    }
-    // Only try semantic for longer queries
-    if (q.length < 10 || !aiReadyRef.current || !workerRef.current) return;
-    debounceRef.current = setTimeout(() => {
-      workerRef.current?.postMessage({ type: "search", payload: q });
-    }, 500);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [q, terms]);
-
-  // Merge keyword + semantic
-  const results = (() => {
-    if (terms.length === 0) return [];
-
-    const keywordResults = items
-      .map((item) => ({ item, score: scoreItem(item, terms) }))
-      .filter(({ score }) => score > 0)
-      .sort((a, b) => b.score - a.score)
-      .map(({ item }) => item);
-
-    if (!semanticResults || semanticResults.length === 0) {
-      return keywordResults.slice(0, 12);
-    }
-
-    // Add semantic-only results that keyword missed
-    const keywordHrefs = new Set(keywordResults.map((i) => i.href));
-    const semanticOnly = semanticResults
-      .filter((r) => !keywordHrefs.has(r.href) && r.score > 0.3)
-      .map((r) => {
-        const item = items.find((i) => i.href === r.href);
-        return item ? { item, semScore: r.score } : null;
-      })
-      .filter(Boolean) as { item: SearchItem; semScore: number }[];
-
-    return [...keywordResults, ...semanticOnly.map((s) => s.item)].slice(0, 12);
-  })();
-
-  // Keyboard shortcuts
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         inputRef.current?.focus();
       }
-      if (event.key === "Escape") { inputRef.current?.blur(); setQuery(""); }
+      if (event.key === "Escape") {
+        inputRef.current?.blur();
+        setQuery("");
+      }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  // Cleanup worker
-  useEffect(() => () => { workerRef.current?.terminate(); }, []);
+  const results = terms.length > 0
+    ? items
+        .map((item) => ({ item, score: scoreItem(item, terms) }))
+        .filter(({ score }) => score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map(({ item }) => item)
+        .slice(0, 12)
+    : [];
 
   const categoryColor: Record<string, string> = {
     "wave-optics": "text-blue-400",
@@ -190,23 +100,22 @@ export default function SiteSearch() {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onFocus={initWorker}
           placeholder="Search 524 calculators... (Ctrl+K)"
-          className="w-full rounded-xl border border-white/10 bg-slate-950/80 pl-12 pr-24 py-3 text-base text-white placeholder-gray-500 outline-none transition focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+          className="w-full rounded-xl border border-white/10 bg-slate-950/80 pl-12 pr-16 py-3 text-base text-white placeholder-gray-500 outline-none transition focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
         />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-          {aiStatus === "loading" && <span className="text-xs text-blue-400 animate-pulse">{aiMessage || "AI loading"}</span>}
-          {aiStatus === "ready" && <span className="text-xs text-green-400">✓ AI</span>}
-          <kbd className="hidden sm:inline-flex items-center rounded border border-gray-600 px-1.5 py-0.5 text-xs text-gray-400">⌘K</kbd>
-        </div>
+        <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center rounded border border-gray-600 px-1.5 py-0.5 text-xs text-gray-400">⌘K</kbd>
       </div>
 
       {results.length > 0 && (
         <div className="absolute z-50 mt-2 w-full rounded-xl border border-white/8 bg-white/[0.02] backdrop-blur-xl shadow-2xl shadow-black/50 overflow-hidden">
           <div className="max-h-96 overflow-y-auto py-2">
             {results.map((item, idx) => (
-              <Link key={item.href + idx} href={item.href} onClick={() => setQuery("")}
-                className="flex items-start gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors">
+              <Link
+                key={item.href + idx}
+                href={item.href}
+                onClick={() => { setQuery(""); }}
+                className="flex items-start gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors"
+              >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-white truncate">{item.title}</span>
@@ -219,9 +128,9 @@ export default function SiteSearch() {
               </Link>
             ))}
           </div>
-          <div className="border-t border-white/5 px-4 py-2 text-xs text-gray-600">
-            {results.length} result{results.length !== 1 ? "s" : ""}
-            {semanticResults && semanticResults.length > 0 && <span className="text-cyan-400/50 ml-2">semantic + keyword</span>}
+          <div className="border-t border-white/5 px-4 py-2 text-xs text-gray-600 flex justify-between">
+            <span>{results.length} result{results.length !== 1 ? "s" : ""}</span>
+            <Link href="/search?q={encodeURIComponent(query)}" className="text-blue-400 hover:text-blue-300">AI search →</Link>
           </div>
         </div>
       )}
