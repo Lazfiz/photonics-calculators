@@ -8,6 +8,8 @@ import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quaran
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { correctionCa } from "../../../lib/laser-safety-mpe";
+
 export default function PulsedMPEPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1064);
   const [pulseDuration, setPulseDuration] = useURLState("pulseDuration", 10); // ns
@@ -16,26 +18,28 @@ export default function PulsedMPEPage() {
   const calc = useMemo(() => {
     const lam = wavelength / 1000; // µm
     const t = pulseDuration * 1e-9; // s
-    // Single pulse MPE (simplified ANSI Z136)
+    const CA = correctionCa(wavelength);
+
+    // Single pulse MPE (simplified ANSI Z136.1 Table 5a)
+    // 400-700 nm: H_MPE = 1.8e-3 * t^0.75 J/cm² (for 18µs ≤ t ≤ 10s)
+    // 700-1050 nm: H_MPE = 1.8e-3 * C_A * t^0.75 J/cm²
     let mpeSingle: number;
     if (lam >= 0.4 && lam < 0.7) {
-      mpeSingle = 5e-3 * Math.pow(t, 0.75); // J/cm²
+      mpeSingle = 1.8e-3 * Math.pow(t, 0.75); // J/cm²
     } else if (lam >= 0.7 && lam < 1.05) {
-      const CA = Math.pow(10, 0.02 * (lam - 0.7));
-      mpeSingle = 5e-3 * CA * Math.pow(t, 0.75);
+      mpeSingle = 1.8e-3 * CA * Math.pow(t, 0.75);
     } else if (lam >= 1.05 && lam < 1.4) {
-      mpeSingle = 5e-3 * Math.pow(t, 0.75);
+      mpeSingle = 1.8e-3 * Math.pow(t, 0.75);
     } else {
       mpeSingle = 1e-2; // conservative
     }
 
-    // Average power MPE (CW equivalent)
+    // Average power MPE (CW equivalent, 0.25s thermal averaging)
     let mpeCW: number;
     if (lam >= 0.4 && lam < 0.7) {
-      mpeCW = 1.8 * Math.pow(0.25, 0.75) * 1e-3; // J/cm² for 0.25s
+      mpeCW = 1.8e-3 * Math.pow(0.25, 0.75); // J/cm² for 0.25s
     } else if (lam >= 0.7 && lam < 1.05) {
-      const CA = Math.pow(10, 0.02 * (lam - 0.7));
-      mpeCW = 1.8 * CA * Math.pow(0.25, 0.75) * 1e-3;
+      mpeCW = 1.8e-3 * CA * Math.pow(0.25, 0.75);
     } else {
       mpeCW = 0.01 * 0.25; // W/cm² * s
     }
@@ -54,21 +58,22 @@ export default function PulsedMPEPage() {
     const Tavg = 0.25;
     const t = pulseDuration * 1e-9;
     const lam = wavelength / 1000;
+    const CA = correctionCa(wavelength);
 
     let mpeSingle: number;
     if (lam >= 0.4 && lam < 0.7) {
-      mpeSingle = 5e-3 * Math.pow(t, 0.75);
+      mpeSingle = 1.8e-3 * Math.pow(t, 0.75);
     } else if (lam >= 0.7 && lam < 1.05) {
-      mpeSingle = 5e-3 * Math.pow(10, 0.02 * (lam - 0.7)) * Math.pow(t, 0.75);
+      mpeSingle = 1.8e-3 * CA * Math.pow(t, 0.75);
     } else {
       mpeSingle = 1e-2;
     }
 
     let mpeCW: number;
     if (lam >= 0.4 && lam < 0.7) {
-      mpeCW = 1.8 * Math.pow(0.25, 0.75) * 1e-3;
+      mpeCW = 1.8e-3 * Math.pow(0.25, 0.75);
     } else if (lam >= 0.7 && lam < 1.05) {
-      mpeCW = 1.8 * Math.pow(10, 0.02 * (lam - 0.7)) * Math.pow(0.25, 0.75) * 1e-3;
+      mpeCW = 1.8e-3 * CA * Math.pow(0.25, 0.75);
     } else {
       mpeCW = 0.01 * 0.25;
     }
