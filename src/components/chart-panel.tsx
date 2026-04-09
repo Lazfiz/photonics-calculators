@@ -48,8 +48,7 @@ class ChartErrorBoundary extends React.Component<
 
 function needsPlotly(data: Record<string, unknown>[], layout: Record<string, unknown>): boolean {
   if (!data || data.length === 0) return false;
-  // Check layout for dual Y-axis
-  if (layout.yaxis2) return true;
+  // Only route to Plotly for truly complex chart types that SVG can't handle
   return data.some(t => {
     const type = t.type as string | undefined;
     return type === "scatter3d" || type === "surface" || type === "heatmap" ||

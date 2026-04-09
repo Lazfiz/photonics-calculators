@@ -83,49 +83,85 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
 
   const xaxis = layout.xaxis as Record<string, unknown> | undefined;
   const yaxis = layout.yaxis as Record<string, unknown> | undefined;
+  const yaxis2 = layout.yaxis2 as Record<string, unknown> | undefined;
+  const hasDualY = !!yaxis2;
   const showLegend = layout.showlegend !== false && data.length > 1;
 
   const xLabel = typeof xaxis?.title === "string" ? xaxis.title : (xaxis?.title as Record<string, string>)?.text || "";
   const yLabel = typeof yaxis?.title === "string" ? yaxis.title : (yaxis?.title as Record<string, string>)?.text || "";
+  const y2Label = typeof yaxis2?.title === "string" ? yaxis2.title : (yaxis2?.title as Record<string, string>)?.text || "";
   const gridColor = (xaxis?.gridcolor as string) || (yaxis?.gridcolor as string) || "#1f2937";
   const textColor = "#9ca3af";
 
+  // Determine which traces use yaxis2
+  const y2TraceIndices = new Set<number>();
+  if (hasDualY) {
+    data.forEach((t, i) => {
+      if ((t as Record<string, unknown>).yaxis === "y2") y2TraceIndices.add(i);
+    });
+    // If no traces explicitly reference y2, assign by convention:
+    // traces after the first that have a different scale
+    if (y2TraceIndices.size === 0 && data.length > 1) {
+      for (let i = 1; i < data.length; i++) y2TraceIndices.add(i);
+    }
+  }
+
   const allX = data.flatMap(t => ((t.x ?? []) as (number | string)[]).slice(0, 10000).map(Number)).filter(n => !isNaN(n));
-  const allY = data.flatMap(t => ((t.y ?? []) as (number | string)[]).slice(0, 10000).map(Number)).filter(n => !isNaN(n));
+  const allY1 = data.flatMap((t, i) => y2TraceIndices.has(i) ? [] : ((t.y ?? []) as (number | string)[]).slice(0, 10000).map(Number)).filter(n => !isNaN(n));
+  const allY2 = data.flatMap((t, i) => y2TraceIndices.has(i) ? ((t.y ?? []) as (number | string)[]).slice(0, 10000).map(Number) : []).filter(n => !isNaN(n));
+  const allY = hasDualY ? [...allY1, ...allY2] : allY1;
 
   if (allX.length === 0 || allY.length === 0) return null;
 
   let xMin = Math.min(...allX);
   let xMax = Math.max(...allX);
-  let yMin = Math.min(...allY);
-  let yMax = Math.max(...allY);
+  let yMin = allY1.length > 0 ? Math.min(...allY1) : 0;
+  let yMax = allY1.length > 0 ? Math.max(...allY1) : 1;
+  let y2Min = allY2.length > 0 ? Math.min(...allY2) : 0;
+  let y2Max = allY2.length > 0 ? Math.max(...allY2) : 1;
 
   const xRange = xaxis?.range as number[] | undefined;
   const yRange = yaxis?.range as number[] | undefined;
+  const y2Range = yaxis2?.range as number[] | undefined;
   if (xRange) { xMin = xRange[0]; xMax = xRange[1]; }
   if (yRange) { yMin = yRange[0]; yMax = yRange[1]; }
+  if (y2Range) { y2Min = y2Range[0]; y2Max = y2Range[1]; }
 
   const xLog = xaxis?.type === "log";
   const yLog = yaxis?.type === "log";
+  const y2Log = (yaxis2?.type as string) === "log";
   const rawXMin = xMin, rawXMax = xMax, rawYMin = yMin, rawYMax = yMax;
+  const rawY2Min = y2Min, rawY2Max = y2Max;
   if (xLog) { xMin = Math.log10(Math.max(xMin, 1e-10)); xMax = Math.log10(Math.max(xMax, 1e-10)); }
   if (yLog) { yMin = Math.log10(Math.max(yMin, 1e-10)); yMax = Math.log10(Math.max(yMax, 1e-10)); }
+  if (y2Log) { y2Min = Math.log10(Math.max(y2Min, 1e-10)); y2Max = Math.log10(Math.max(y2Max, 1e-10)); }
 
   const xSpan = xMax - xMin || 1;
   const ySpan = yMax - yMin || 1;
+  const y2Span = y2Max - y2Min || 1;
   const pad = 0.05;
   xMin -= xSpan * pad; xMax += xSpan * pad;
   yMin -= ySpan * pad; yMax += ySpan * pad;
+  y2Min -= y2Span * pad; y2Max += y2Span * pad;
+
+  // Extra right margin for dual Y axis
+  const effectiveMr = hasDualY ? Math.max(mr, 70) : mr;
+  const effectivePlotW = w - ml - effectiveMr;
 
   const toSvgX = (v: number) => {
     let n = v;
     if (xLog) n = Math.log10(Math.max(n, 1e-10));
-    return ml + ((n - xMin) / (xMax - xMin)) * plotW;
+    return ml + ((n - xMin) / (xMax - xMin)) * effectivePlotW;
   };
   const toSvgY = (v: number) => {
     let n = v;
     if (yLog) n = Math.log10(Math.max(n, 1e-10));
     return mt + plotH - ((n - yMin) / (yMax - yMin)) * plotH;
+  };
+  const toSvgY2 = (v: number) => {
+    let n = v;
+    if (y2Log) n = Math.log10(Math.max(n, 1e-10));
+    return mt + plotH - ((n - y2Min) / (y2Max - y2Min)) * plotH;
   };
 
   function niceTicks(min: number, max: number, count: number, log: boolean): number[] {
@@ -154,6 +190,7 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
 
   const xTicks = niceTicks(rawXMin, rawXMax, 6, xLog);
   const yTicks = niceTicks(rawYMin, rawYMax, 6, yLog);
+  const y2Ticks = hasDualY ? niceTicks(rawY2Min, rawY2Max, 6, y2Log) : [];
 
   function formatTick(v: number): string {
     if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(1) + "M";
@@ -163,16 +200,17 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
     return v.toFixed(2);
   }
 
-  const paths = data.map(trace => {
+  const paths = data.map((trace, ti) => {
     const tx = trace.x ?? [];
     const ty = trace.y ?? [];
     if (tx.length === 0 || ty.length === 0) return null;
     const points: string[] = [];
+    const yMap = y2TraceIndices.has(ti) ? toSvgY2 : toSvgY;
     for (let i = 0; i < Math.min(tx.length, ty.length); i++) {
       const xv = Number(tx[i]);
       const yv = Number(ty[i]);
       if (isNaN(xv) || isNaN(yv)) continue;
-      points.push(`${toSvgX(xv)},${toSvgY(yv)}`);
+      points.push(`${toSvgX(xv)},${yMap(yv)}`);
     }
     return points;
   });
@@ -186,6 +224,9 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
     dash: t.line?.dash,
   }));
 
+  const plotWRef = effectivePlotW;
+  const plotHRef = plotH;
+
   return (
     <div className={`bg-gray-900 border border-gray-800 rounded-lg p-4 ${className}`.trim()}>
       {title ? <h3 className="text-lg font-semibold mb-3">{title}</h3> : null}
@@ -194,17 +235,20 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
         <desc>{xLabel ? `${xLabel} vs ${yLabel}` : "Data visualization"}</desc>
         {/* Grid lines */}
         {xTicks.map(v => (
-          <line key={`xg${v}`} x1={toSvgX(v)} y1={mt} x2={toSvgX(v)} y2={mt + plotH}
+          <line key={`xg${v}`} x1={toSvgX(v)} y1={mt} x2={toSvgX(v)} y2={mt + plotHRef}
             stroke={gridColor} strokeWidth={0.5} />
         ))}
         {yTicks.map(v => (
-          <line key={`yg${v}`} x1={ml} y1={toSvgY(v)} x2={ml + plotW} y2={toSvgY(v)}
+          <line key={`yg${v}`} x1={ml} y1={toSvgY(v)} x2={ml + plotWRef} y2={toSvgY(v)}
             stroke={gridColor} strokeWidth={0.5} />
         ))}
 
         {/* Axes */}
-        <line x1={ml} y1={mt} x2={ml} y2={mt + plotH} stroke="#4b5563" strokeWidth={1} />
-        <line x1={ml} y1={mt + plotH} x2={ml + plotW} y2={mt + plotH} stroke="#4b5563" strokeWidth={1} />
+        <line x1={ml} y1={mt} x2={ml} y2={mt + plotHRef} stroke="#4b5563" strokeWidth={1} />
+        <line x1={ml} y1={mt + plotHRef} x2={ml + plotWRef} y2={mt + plotHRef} stroke="#4b5563" strokeWidth={1} />
+        {hasDualY && (
+          <line x1={ml + plotWRef} y1={mt} x2={ml + plotWRef} y2={mt + plotHRef} stroke="#4b5563" strokeWidth={1} />
+        )}
 
         {/* X tick labels */}
         {xTicks.map(v => (
@@ -227,9 +271,21 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
 
         {/* Y axis label */}
         {yLabel && (
-          <text x={14} y={mt + plotH / 2} textAnchor="middle" fill={textColor} fontSize={13}
-            transform={`rotate(-90, 14, ${mt + plotH / 2})`}>
+          <text x={14} y={mt + plotHRef / 2} textAnchor="middle" fill={textColor} fontSize={13}
+            transform={`rotate(-90, 14, ${mt + plotHRef / 2})`}>
             {yLabel}
+          </text>
+        )}
+
+        {/* Y2 axis (right) */}
+        {hasDualY && y2Ticks.map(v => (
+          <text key={`y2l${v}`} x={ml + plotWRef + 8} y={toSvgY2(v) + 4} textAnchor="start"
+            fill="#f97316" fontSize={11}>{formatTick(v)}</text>
+        ))}
+        {hasDualY && y2Label && (
+          <text x={w - 8} y={mt + plotHRef / 2} textAnchor="middle" fill="#f97316" fontSize={13}
+            transform={`rotate(90, ${w - 8}, ${mt + plotHRef / 2})`}>
+            {y2Label}
           </text>
         )}
 
@@ -239,7 +295,7 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
           const ty = trace.y ?? [];
           if (tx.length === 0 || ty.length === 0) return null;
           const color = trace.marker?.color || ["#60a5fa", "#f97316", "#10b981", "#8b5cf6", "#ef4444", "#06b6d4"][ti % 6];
-          const barW = Math.max(2, (plotW / Math.max(tx.length, 1)) * 0.6);
+          const barW = Math.max(2, (plotWRef / Math.max(tx.length, 1)) * 0.6);
           return tx.map((xv, i) => {
             const x = Number(xv), y = Number(ty[i]);
             if (isNaN(x) || isNaN(y)) return null;
@@ -268,7 +324,7 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
           const d = pts.join(" L");
 
           const fillPath = showFill && fillDir === "tozeroy" && pts.length > 0
-            ? `M${pts[0]} L${pts.join(" L")} L${pts[pts.length - 1].split(",")[0]},${mt + plotH} L${pts[0].split(",")[0]},${mt + plotH} Z`
+            ? `M${pts[0]} L${pts.join(" L")} L${pts[pts.length - 1].split(",")[0]},${mt + plotHRef} L${pts[0].split(",")[0]},${mt + plotHRef} Z`
             : showFill && fillDir === "toself" && pts.length > 0
             ? `M${pts[0]} L${pts.join(" L")} Z`
             : null;
@@ -277,7 +333,7 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
           return (
             <g key={`trace${ti}`} clipPath={`url(#${clipId})`}>
               <clipPath id={clipId}>
-                <rect x={ml} y={mt} width={plotW} height={plotH} />
+                <rect x={ml} y={mt} width={plotWRef} height={plotHRef} />
               </clipPath>
               {fillPath && (
                 <path d={fillPath} fill={hexToRgba(typeof color === "string" ? color : "#60a5fa", 0.15)} stroke="none" />
@@ -296,7 +352,7 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
 
         {/* Legend */}
         {showLegend && (
-          <g transform={`translate(${ml + plotW - 10}, ${mt + 5})`}>
+          <g transform={`translate(${ml + plotWRef - 10}, ${mt + 5})`}>
             {legendItems.map((item, i) => (
               <g key={i} transform={`translate(0, ${i * 18})`}>
                 <line x1={-60} y1={0} x2={-40} y2={0} stroke={item.color} strokeWidth={2}
