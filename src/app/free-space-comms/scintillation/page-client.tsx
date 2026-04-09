@@ -91,7 +91,7 @@ export default function ScintillationPage() {
           ))}
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Quick Presets</label>
-            <div className="flex gap-2">
+            <div role="group" aria-label="Options" className="flex gap-2">
               {(["weak", "moderate", "strong"] as const).map((m) => (
                 <button key={m} onClick={() => { setCz(m === "weak" ? 1.7e-14 : m === "moderate" ? 5e-14 : 1.7e-13); setTurbulenceModel(m); }}
                   className={`px-3 py-1 text-xs rounded border transition ${turbulenceModel === m ? "bg-blue-600 border-blue-500" : "bg-gray-800 border-gray-700 hover:border-blue-500"}`}>

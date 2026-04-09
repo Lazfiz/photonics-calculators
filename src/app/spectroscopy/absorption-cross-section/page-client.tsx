@@ -45,7 +45,7 @@ export default function AbsorptionCrossSectionPage() {
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} />
       </div>
 
-      <div className="flex gap-2 mb-6">
+      <div role="group" aria-label="Options" className="flex gap-2 mb-6">
         <button onClick={() => setSweepParam("epsilon")} className={`px-3 py-1 rounded text-sm ${sweepParam === "epsilon" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300"}`}>Sweep ε</button>
         <button onClick={() => setSweepParam("lambda")} className={`px-3 py-1 rounded text-sm ${sweepParam === "lambda" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300"}`}>Sweep λ</button>
       </div>

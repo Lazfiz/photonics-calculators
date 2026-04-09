@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Dispersion Compensation',
   description: 'GVD and TOD compensation analysis for fiber optic links.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Dispersion Compensation',
+  description: 'GVD and TOD compensation analysis for fiber optic links.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Dispersion Compensation',
+  'GVD and TOD compensation analysis for fiber optic links.',
+  'https://photonics-calculators.vercel.app/fiber-optics/dispersion-compensation',
+  { category: 'Fiber Optics`,
+  `GVD and TOD compensation analysis for fiber optic links.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Dispersion Compensation',
+  'GVD and TOD compensation analysis for fiber optic links.',
+  'https://photonics-calculators.vercel.app/fiber-optics/dispersion-compensation',
+  { category: 'Fiber Optics`,
+  `https://photonics-calculators.vercel.app/fiber-optics/dispersion-compensation`,
+  { category: `Fiber Optics` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

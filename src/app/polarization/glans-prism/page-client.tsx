@@ -86,7 +86,7 @@ export default function GlansPrismPage() {
         <p className="text-gray-300 text-sm font-mono">Glan-Taylor: n<sub>gap</sub> = 1 (air), Glan-Thompson: n<sub>gap</sub> ≈ 1.54 (cement)</p>
       </div>
 
-      <div className="flex gap-4 mb-6">
+      <div role="group" aria-label="Options" className="flex gap-4 mb-6">
         <button onClick={() => setPrismType("taylor")} className={`text-sm px-4 py-2 rounded ${prismType === "taylor" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 border border-gray-600"}`}>Glan-Taylor (Air)</button>
         <button onClick={() => setPrismType("thompson")} className={`text-sm px-4 py-2 rounded ${prismType === "thompson" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 border border-gray-600"}`}>Glan-Thompson (Cement)</button>
       </div>

@@ -78,7 +78,7 @@ export default function InfraredGlassPage() {
 
       <div className="mb-4">
         <label className="text-sm text-gray-400">Temperature: {temperature}°C</label>
-        <input type="range" min={-50} max={200} value={temperature} onChange={e => setTemperature(+e.target.value)} />
+        <input type="range" aria-label="Temperature: {temperature}°C" min={-50} max={200} value={temperature} onChange={e => setTemperature(+e.target.value)} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

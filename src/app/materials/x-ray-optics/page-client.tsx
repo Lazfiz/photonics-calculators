@@ -87,7 +87,7 @@ export default function XRayOpticsPage() {
     <CalculatorShell backHref="/materials" backLabel="Materials" title="X-ray Optics Materials" description="X-ray refractive index: n = 1 - δ - iβ. For hard X-rays, δ,β ∝ λ² ∝ 1/E².">
                   <p className="text-gray-500 text-sm mb-6">Penetration depth: L = λ/(4πβ). Critical angle: θ<sub>c</sub> = √(2δ).</p>
 
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div role="group" aria-label="Options" className="flex flex-wrap gap-2 mb-6">
         {Object.keys(MATERIALS).map(key => (
           <button key={key} onClick={() => toggle(key)} className={`px-3 py-1 rounded text-xs ${selected.includes(key) ? "bg-blue-600" : "bg-gray-800 hover:bg-gray-700"}`}>{MATERIALS[key].name.split("(")[0].trim()}</button>
         ))}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
       title: 'Detectivity (D*)',
   description: 'Specific detectivity from NEP, area, and bandwidth. D* = (Af) / NEP',
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Detectivity (D*)',
+  description: 'Specific detectivity from NEP, area, and bandwidth. D* = (Af) / NEP',
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Detectivity (D*)',
+  'Specific detectivity from NEP, area, and bandwidth. D* = (Af) / NEP',
+  'https://photonics-calculators.vercel.app/detectors/detectivity',
+  { category: 'Detectors`,
+  `Specific detectivity from NEP, area, and bandwidth. D* = (Af) / NEP',
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Detectivity (D*)',
+  'Specific detectivity from NEP, area, and bandwidth. D* = (Af) / NEP',
+  'https://photonics-calculators.vercel.app/detectors/detectivity',
+  { category: 'Detectors`,
+  `https://photonics-calculators.vercel.app/detectors/detectivity`,
+  { category: `Detectors` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

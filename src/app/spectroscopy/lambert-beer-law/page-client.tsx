@@ -77,7 +77,7 @@ export default function LambertBeerLawPage() {
         <InputSlider label="Extinction coefficient ε" value={extinctionCoeff} onChange={setExtinctionCoeff} min={0} max={200000} step={1000} unit="L·mol⁻¹·cm⁻¹" />
       </div>
 
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div role="group" aria-label="Options" className="flex gap-2 mb-6 flex-wrap">
         {(["conc", "path", "epsilon"] as const).map((v) => (
           <button key={v} onClick={() => setPlotVar(v)} className={`px-3 py-1 rounded text-sm ${plotVar === v ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300"}`}>
             {v === "conc" ? "Sweep Concentration" : v === "path" ? "Sweep Path Length" : "Sweep ε"}

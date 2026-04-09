@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Fiber Optic Sensors',
   description: 'Calculate sensitivity, resolution, and response for FBG, MZI, Fabry-Pérot, and evanescent fiber sensors.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Fiber Optic Sensors',
+  description: 'Calculate sensitivity, resolution, and response for FBG, MZI, Fabry-Pérot, and evanescent fiber sensors.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Fiber Optic Sensors',
+  'Calculate sensitivity, resolution, and response for FBG, MZI, Fabry-Pérot, and evanescent fiber sensors.',
+  'https://photonics-calculators.vercel.app/fiber-optics/fiber-optic-sensor',
+  { category: 'Fiber Optics`,
+  `Calculate sensitivity, resolution, and response for FBG, MZI, Fabry-Pérot, and evanescent fiber sensors.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Fiber Optic Sensors',
+  'Calculate sensitivity, resolution, and response for FBG, MZI, Fabry-Pérot, and evanescent fiber sensors.',
+  'https://photonics-calculators.vercel.app/fiber-optics/fiber-optic-sensor',
+  { category: 'Fiber Optics`,
+  `https://photonics-calculators.vercel.app/fiber-optics/fiber-optic-sensor`,
+  { category: `Fiber Optics` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

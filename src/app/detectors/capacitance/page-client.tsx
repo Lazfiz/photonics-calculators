@@ -40,7 +40,7 @@ export default function CapacitancePage() {
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Junction Capacitance" description="Photodiode junction capacitance vs reverse bias, doping profile, and RC bandwidth impact." maxWidthClassName="max-w-5xl">
-      <div className="flex gap-2 mb-6">
+      <div role="group" aria-label="Options" className="flex gap-2 mb-6">
         {(["abrupt", "graded", "hyperabrupt"] as const).map(p => (
           <button key={p} onClick={() => setGradingProfile(p)} className={`px-4 py-2 rounded text-sm font-medium capitalize ${gradingProfile === p ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}>{p}</button>
         ))}

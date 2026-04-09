@@ -128,7 +128,7 @@ export default function BirefringenceImagingPage() {
         <p className="text-gray-300 text-sm font-mono">δ = 2πΔn·d/λ, Sensitivity ∝ |sin(δ)|</p>
       </div>
 
-      <div className="flex gap-4 mb-6">
+      <div role="group" aria-label="Options" className="flex gap-4 mb-6">
         {(["none", "lambda/4", "lambda", "sensitive"] as const).map(c => (
           <button key={c} onClick={() => setCompensator(c)} className={`text-sm px-4 py-2 rounded ${compensator === c ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 border border-gray-600"}`}>
             {c === "none" ? "No Comp." : c === "lambda/4" ? "λ/4" : c === "lambda" ? "λ" : "Sensitive"}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'CCD vs CMOS Comparison',
   description: 'Compare SNR and dynamic range between CCD and CMOS detectors.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `CCD vs CMOS Comparison',
+  description: 'Compare SNR and dynamic range between CCD and CMOS detectors.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'CCD vs CMOS Comparison',
+  'Compare SNR and dynamic range between CCD and CMOS detectors.',
+  'https://photonics-calculators.vercel.app/detectors/ccd-cmos',
+  { category: 'Detectors`,
+  `Compare SNR and dynamic range between CCD and CMOS detectors.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'CCD vs CMOS Comparison',
+  'Compare SNR and dynamic range between CCD and CMOS detectors.',
+  'https://photonics-calculators.vercel.app/detectors/ccd-cmos',
+  { category: 'Detectors`,
+  `https://photonics-calculators.vercel.app/detectors/ccd-cmos`,
+  { category: `Detectors` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

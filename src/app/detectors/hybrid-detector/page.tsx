@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Hybrid Detector Design',
   description: 'Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Hybrid Detector Design',
+  description: 'Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Hybrid Detector Design',
+  'Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.',
+  'https://photonics-calculators.vercel.app/detectors/hybrid-detector',
+  { category: 'Detectors`,
+  `Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Hybrid Detector Design',
+  'Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.',
+  'https://photonics-calculators.vercel.app/detectors/hybrid-detector',
+  { category: 'Detectors`,
+  `https://photonics-calculators.vercel.app/detectors/hybrid-detector`,
+  { category: `Detectors` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

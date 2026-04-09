@@ -61,7 +61,7 @@ export default function RamanScatteringPage() {
 
       <div className="mb-8">
         <label className="block text-sm text-gray-400 mb-1">Pump Wavelength: {pumpWl} nm</label>
-        <input type="range" min={400} max={2000} step={10} value={pumpWl} onChange={e => setPumpWl(+e.target.value)} />
+        <input type="range" aria-label="Pump Wavelength: {pumpWl} nm" min={400} max={2000} step={10} value={pumpWl} onChange={e => setPumpWl(+e.target.value)} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-8 overflow-x-auto">

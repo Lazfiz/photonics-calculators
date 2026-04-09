@@ -68,7 +68,7 @@ export default function OpticalGlassCatalogPage() {
             
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-3">Select Glasses (click to toggle)</h3>
-        <div className="flex flex-wrap gap-2">
+        <div role="group" aria-label="Options" className="flex flex-wrap gap-2">
           {Object.entries(CATALOG).map(([key, g]) => (
             <button key={key} onClick={() => toggleGlass(key)} className={`px-3 py-1 rounded text-sm ${selected.includes(key) ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>{g.name}</button>
           ))}

@@ -106,7 +106,7 @@ export default function SelfPhaseModulationPage() {
         <p><span className="text-blue-400">Broadening:</span> Δω<sub>SPM</sub> / Δω<sub>TL</sub> ≈ √(1 + (4 ln2/π) φ<sub>max</sub>²)</p>
       </div>
 
-      <div className="flex gap-2 mb-6">
+      <div role="group" aria-label="Options" className="flex gap-2 mb-6">
         <button onClick={() => setPulseShape("gaussian")} className={`px-4 py-2 rounded ${pulseShape === "gaussian" ? "bg-blue-600" : "bg-gray-800"}`}>Gaussian</button>
         <button onClick={() => setPulseShape("sech")} className={`px-4 py-2 rounded ${pulseShape === "sech" ? "bg-blue-600" : "bg-gray-800"}`}>Sech²</button>
       </div>

@@ -89,7 +89,7 @@ export default function DepolarizationPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Mode</h2>
-          <div className="flex gap-3 mb-4">
+          <div role="group" aria-label="Options" className="flex gap-3 mb-4">
             <button onClick={() => setSpectralMode(false)}
               className={`px-4 py-2 rounded text-sm ${!spectralMode ? "bg-blue-600" : "bg-gray-800 border border-gray-700"}`}>
               Mueller Depolarizer
@@ -120,7 +120,7 @@ export default function DepolarizationPage() {
             </div>
             <div className="mb-3">
               <label className="text-sm text-gray-400 block mb-1">Bandwidth (nm)</label>
-              <input type="range" min={1} max={500} value={bandwidth}
+              <input type="range" aria-label="Bandwidth (nm)" min={1} max={500} value={bandwidth}
                 onChange={(e) => setBandwidth(parseFloat(e.target.value))}
                 />
               <div className="text-center text-xs text-white">{bandwidth} nm</div>

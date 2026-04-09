@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Atmospheric Transmission',
   description: 'Molecular and aerosol extinction for free-space optical links.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Atmospheric Transmission',
+  description: 'Molecular and aerosol extinction for free-space optical links.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Atmospheric Transmission',
+  'Molecular and aerosol extinction for free-space optical links.',
+  'https://photonics-calculators.vercel.app/free-space-comms/atmosphere',
+  { category: 'Free Space Comms`,
+  `Molecular and aerosol extinction for free-space optical links.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Atmospheric Transmission',
+  'Molecular and aerosol extinction for free-space optical links.',
+  'https://photonics-calculators.vercel.app/free-space-comms/atmosphere',
+  { category: 'Free Space Comms`,
+  `https://photonics-calculators.vercel.app/free-space-comms/atmosphere`,
+  { category: `Free Space Comms` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

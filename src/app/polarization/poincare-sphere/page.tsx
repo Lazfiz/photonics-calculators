@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Poincaré Sphere',
   description: 'Interactive visualization of polarization states on the Poincaré sphere.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Poincaré Sphere',
+  description: 'Interactive visualization of polarization states on the Poincaré sphere.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Poincaré Sphere',
+  'Interactive visualization of polarization states on the Poincaré sphere.',
+  'https://photonics-calculators.vercel.app/polarization/poincare-sphere',
+  { category: 'Polarization`,
+  `Interactive visualization of polarization states on the Poincaré sphere.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Poincaré Sphere',
+  'Interactive visualization of polarization states on the Poincaré sphere.',
+  'https://photonics-calculators.vercel.app/polarization/poincare-sphere',
+  { category: 'Polarization`,
+  `https://photonics-calculators.vercel.app/polarization/poincare-sphere`,
+  { category: `Polarization` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

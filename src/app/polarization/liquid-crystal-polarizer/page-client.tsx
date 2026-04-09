@@ -96,7 +96,7 @@ export default function LiquidCrystalPolarizerPage() {
         <p className="text-gray-300 text-sm font-mono">u = 2Δnd / (λ·√(1 + (φ/2π)²)), T<sub>ECB</sub> = sin²(δ/2)</p>
       </div>
 
-      <div className="flex gap-4 mb-6">
+      <div role="group" aria-label="Options" className="flex gap-4 mb-6">
         {(["tn", "stn", "van", "ecb"] as const).map(m => (
           <button key={m} onClick={() => setMode(m)} className={`text-sm px-4 py-2 rounded ${mode === m ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 border border-gray-600"}`}>
             {m === "tn" ? "TN (90°)" : m === "stn" ? "STN" : m === "van" ? "VA" : "ECB"}

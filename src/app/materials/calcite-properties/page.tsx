@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Calcite (CaCO₃) Properties',
   description: 'Uniaxial negative crystal with the largest birefringence of common optical crystals. n 0.172 at 589nm.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Calcite (CaCO₃) Properties',
+  description: 'Uniaxial negative crystal with the largest birefringence of common optical crystals. n 0.172 at 589nm.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Calcite (CaCO₃) Properties',
+  'Uniaxial negative crystal with the largest birefringence of common optical crystals. n 0.172 at 589nm.',
+  'https://photonics-calculators.vercel.app/materials/calcite-properties',
+  { category: 'Materials`,
+  `Uniaxial negative crystal with the largest birefringence of common optical crystals. n 0.172 at 589nm.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Calcite (CaCO₃) Properties',
+  'Uniaxial negative crystal with the largest birefringence of common optical crystals. n 0.172 at 589nm.',
+  'https://photonics-calculators.vercel.app/materials/calcite-properties',
+  { category: 'Materials`,
+  `https://photonics-calculators.vercel.app/materials/calcite-properties`,
+  { category: `Materials` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

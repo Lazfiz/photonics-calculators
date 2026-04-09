@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Photoacoustic Imaging Calculator',
   description: 'Imaging depth, resolution, and signal estimation for photoacoustic microscopy/tomography.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Photoacoustic Imaging Calculator',
+  description: 'Imaging depth, resolution, and signal estimation for photoacoustic microscopy/tomography.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Photoacoustic Imaging Calculator',
+  'Imaging depth, resolution, and signal estimation for photoacoustic microscopy/tomography.',
+  'https://photonics-calculators.vercel.app/imaging/photoacoustic',
+  { category: 'Imaging`,
+  `Imaging depth, resolution, and signal estimation for photoacoustic microscopy/tomography.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Photoacoustic Imaging Calculator',
+  'Imaging depth, resolution, and signal estimation for photoacoustic microscopy/tomography.',
+  'https://photonics-calculators.vercel.app/imaging/photoacoustic',
+  { category: 'Imaging`,
+  `https://photonics-calculators.vercel.app/imaging/photoacoustic`,
+  { category: `Imaging` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

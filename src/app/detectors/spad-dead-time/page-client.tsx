@@ -68,7 +68,7 @@ export default function SpadDeadTimePage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="SPAD Dead Time" description="Dead time effects on measured count rates, pile-up loss, and correction for SPAD detectors.">
             
-      <div className="flex gap-2 mb-6">
+      <div role="group" aria-label="Options" className="flex gap-2 mb-6">
         {(["nonparalyzable", "paralyzable"] as const).map(m => (
           <button key={m} onClick={() => setMode(m)}
             className={`px-4 py-2 rounded text-sm font-medium capitalize ${mode === m ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}>

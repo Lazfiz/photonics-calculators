@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'InGaAs Detector Parameters',
   description: 'InₓGa₋ₓAs bandgap, cutoff wavelength, QE, dark current, NEP for SWIR detectors.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `InGaAs Detector Parameters',
+  description: 'InₓGa₋ₓAs bandgap, cutoff wavelength, QE, dark current, NEP for SWIR detectors.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'InGaAs Detector Parameters',
+  'InₓGa₋ₓAs bandgap, cutoff wavelength, QE, dark current, NEP for SWIR detectors.',
+  'https://photonics-calculators.vercel.app/detectors/ingaas-parameters',
+  { category: 'Detectors`,
+  `InₓGa₋ₓAs bandgap, cutoff wavelength, QE, dark current, NEP for SWIR detectors.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'InGaAs Detector Parameters',
+  'InₓGa₋ₓAs bandgap, cutoff wavelength, QE, dark current, NEP for SWIR detectors.',
+  'https://photonics-calculators.vercel.app/detectors/ingaas-parameters',
+  { category: 'Detectors`,
+  `https://photonics-calculators.vercel.app/detectors/ingaas-parameters`,
+  { category: `Detectors` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

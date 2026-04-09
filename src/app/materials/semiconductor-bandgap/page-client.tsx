@@ -73,7 +73,7 @@ export default function SemiconductorBandgapPage() {
 
       <div className="mb-8">
         <label className="block text-sm text-gray-400 mb-1">Temperature: {temperature} K ({(temperature - 273.15).toFixed(0)} °C)</label>
-        <input type="range" min={10} max={700} step={5} value={temperature} onChange={e => setTemperature(+e.target.value)} />
+        <input type="range" aria-label="Temperature: {temperature} K ({(temperature - 273.15).toFixed(0)} °C)" min={10} max={700} step={5} value={temperature} onChange={e => setTemperature(+e.target.value)} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">

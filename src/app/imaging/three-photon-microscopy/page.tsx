@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Three-Photon Microscopy Calculator',
   description: 'Calculate resolution, excitation volume, and depth penetration for three-photon excitation microscopy at 1300+ nm.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Three-Photon Microscopy Calculator',
+  description: 'Calculate resolution, excitation volume, and depth penetration for three-photon excitation microscopy at 1300+ nm.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Three-Photon Microscopy Calculator',
+  'Calculate resolution, excitation volume, and depth penetration for three-photon excitation microscopy at 1300+ nm.',
+  'https://photonics-calculators.vercel.app/imaging/three-photon-microscopy',
+  { category: 'Imaging`,
+  `Calculate resolution, excitation volume, and depth penetration for three-photon excitation microscopy at 1300+ nm.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Three-Photon Microscopy Calculator',
+  'Calculate resolution, excitation volume, and depth penetration for three-photon excitation microscopy at 1300+ nm.',
+  'https://photonics-calculators.vercel.app/imaging/three-photon-microscopy',
+  { category: 'Imaging`,
+  `https://photonics-calculators.vercel.app/imaging/three-photon-microscopy`,
+  { category: `Imaging` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

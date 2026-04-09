@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Fiber Bragg Grating Sensor',
   description: 'Calculate FBG wavelength shift for strain and temperature sensing applications.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Fiber Bragg Grating Sensor',
+  description: 'Calculate FBG wavelength shift for strain and temperature sensing applications.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Fiber Bragg Grating Sensor',
+  'Calculate FBG wavelength shift for strain and temperature sensing applications.',
+  'https://photonics-calculators.vercel.app/fiber-optics/fiber-bragg-grating-sensor',
+  { category: 'Fiber Optics`,
+  `Calculate FBG wavelength shift for strain and temperature sensing applications.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Fiber Bragg Grating Sensor',
+  'Calculate FBG wavelength shift for strain and temperature sensing applications.',
+  'https://photonics-calculators.vercel.app/fiber-optics/fiber-bragg-grating-sensor',
+  { category: 'Fiber Optics`,
+  `https://photonics-calculators.vercel.app/fiber-optics/fiber-bragg-grating-sensor`,
+  { category: `Fiber Optics` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

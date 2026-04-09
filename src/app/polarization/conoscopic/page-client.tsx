@@ -117,7 +117,7 @@ export default function ConoscopicPage() {
         <p className="text-gray-300 text-sm font-mono">Isogyres: dark bands where E-field ∥ polarizer/analyzer</p>
       </div>
 
-      <div className="flex gap-4 mb-6">
+      <div role="group" aria-label="Options" className="flex gap-4 mb-6">
         {(["uniaxial_pos", "uniaxial_neg", "biaxial"] as const).map(t => (
           <button key={t} onClick={() => setCrystalType(t)} className={`text-sm px-4 py-2 rounded ${crystalType === t ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 border border-gray-600"}`}>
             {t === "uniaxial_pos" ? "Uniaxial (+)" : t === "uniaxial_neg" ? "Uniaxial (−)" : "Biaxial"}

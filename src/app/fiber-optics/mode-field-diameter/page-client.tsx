@@ -92,7 +92,7 @@ export default function ModeFieldDiameterPage() {
           <h2 className="text-lg font-semibold mb-4">Fiber Parameters</h2>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Fiber Presets</label>
-            <div className="flex gap-2">
+            <div role="group" aria-label="Options" className="flex gap-2">
               {(["smf28", "smf28e", "smf28e+"] as const).map((p) => (
                 <button key={p} onClick={() => applyPreset(p)}
                   className={`px-3 py-1 text-xs rounded border transition ${fiberType === p ? "bg-blue-600 border-blue-500" : "bg-gray-800 border-gray-700 hover:border-blue-500"}`}>

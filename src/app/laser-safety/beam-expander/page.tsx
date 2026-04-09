@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Beam Expander Safety',
   description: 'Calculate power density reduction from beam expansion. Critical for ensuring safe irradiance levels.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Beam Expander Safety',
+  description: 'Calculate power density reduction from beam expansion. Critical for ensuring safe irradiance levels.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Beam Expander Safety',
+  'Calculate power density reduction from beam expansion. Critical for ensuring safe irradiance levels.',
+  'https://photonics-calculators.vercel.app/laser-safety/beam-expander',
+  { category: 'Laser Safety`,
+  `Calculate power density reduction from beam expansion. Critical for ensuring safe irradiance levels.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Beam Expander Safety',
+  'Calculate power density reduction from beam expansion. Critical for ensuring safe irradiance levels.',
+  'https://photonics-calculators.vercel.app/laser-safety/beam-expander',
+  { category: 'Laser Safety`,
+  `https://photonics-calculators.vercel.app/laser-safety/beam-expander`,
+  { category: `Laser Safety` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

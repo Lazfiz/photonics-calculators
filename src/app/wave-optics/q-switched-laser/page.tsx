@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Q-Switched Laser',
   description: 'High-energy pulse generation through repetitive Q-switching of a laser cavity.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Q-Switched Laser',
+  description: 'High-energy pulse generation through repetitive Q-switching of a laser cavity.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Q-Switched Laser',
+  'High-energy pulse generation through repetitive Q-switching of a laser cavity.',
+  'https://photonics-calculators.vercel.app/wave-optics/q-switched-laser',
+  { category: 'Wave Optics`,
+  `High-energy pulse generation through repetitive Q-switching of a laser cavity.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Q-Switched Laser',
+  'High-energy pulse generation through repetitive Q-switching of a laser cavity.',
+  'https://photonics-calculators.vercel.app/wave-optics/q-switched-laser',
+  { category: 'Wave Optics`,
+  `https://photonics-calculators.vercel.app/wave-optics/q-switched-laser`,
+  { category: `Wave Optics` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Fiber Characterization',
   description: 'Comprehensive fiber parameter calculation: V-number, MFD, effective area, nonlinear coefficient, dispersion, and confinement.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Fiber Characterization',
+  description: 'Comprehensive fiber parameter calculation: V-number, MFD, effective area, nonlinear coefficient, dispersion, and confinement.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Fiber Characterization',
+  'Comprehensive fiber parameter calculation: V-number, MFD, effective area, nonlinear coefficient, dispersion, and confinement.',
+  'https://photonics-calculators.vercel.app/fiber-optics/fiber-characterization',
+  { category: 'Fiber Optics`,
+  `Comprehensive fiber parameter calculation: V-number, MFD, effective area, nonlinear coefficient, dispersion, and confinement.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Fiber Characterization',
+  'Comprehensive fiber parameter calculation: V-number, MFD, effective area, nonlinear coefficient, dispersion, and confinement.',
+  'https://photonics-calculators.vercel.app/fiber-optics/fiber-characterization',
+  { category: 'Fiber Optics`,
+  `https://photonics-calculators.vercel.app/fiber-optics/fiber-characterization`,
+  { category: `Fiber Optics` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

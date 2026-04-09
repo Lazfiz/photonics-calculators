@@ -88,7 +88,7 @@ export default function OpticalParametricPage() {
         <p><span className="text-blue-400">Δν<sub>BW</sub></span> ≈ 1/(L · |1/v<sub>g,p</sub> − 1/v<sub>g,s</sub>|)</p>
       </div>
 
-      <div className="flex gap-2 mb-6">
+      <div role="group" aria-label="Options" className="flex gap-2 mb-6">
         <button onClick={() => setMode("OPA")} className={`px-4 py-2 rounded ${mode === "OPA" ? "bg-blue-600" : "bg-gray-800"}`}>OPA Mode</button>
         <button onClick={() => setMode("OPO")} className={`px-4 py-2 rounded ${mode === "OPO" ? "bg-blue-600" : "bg-gray-800"}`}>OPO Mode</button>
       </div>

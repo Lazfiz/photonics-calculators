@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Optical Frequency Comb',
   description: 'Precision spectroscopy and metrology using a train of equally spaced narrow spectral lines.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Optical Frequency Comb',
+  description: 'Precision spectroscopy and metrology using a train of equally spaced narrow spectral lines.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Optical Frequency Comb',
+  'Precision spectroscopy and metrology using a train of equally spaced narrow spectral lines.',
+  'https://photonics-calculators.vercel.app/wave-optics/optical-frequency-comb',
+  { category: 'Wave Optics`,
+  `Precision spectroscopy and metrology using a train of equally spaced narrow spectral lines.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Optical Frequency Comb',
+  'Precision spectroscopy and metrology using a train of equally spaced narrow spectral lines.',
+  'https://photonics-calculators.vercel.app/wave-optics/optical-frequency-comb',
+  { category: 'Wave Optics`,
+  `https://photonics-calculators.vercel.app/wave-optics/optical-frequency-comb`,
+  { category: `Wave Optics` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

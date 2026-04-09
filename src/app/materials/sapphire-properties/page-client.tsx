@@ -76,7 +76,7 @@ export default function SapphirePropertiesPage() {
             
       <div className="mb-4">
         <label className="text-sm text-gray-400">Wavelength: {wavelength} nm</label>
-        <input type="range" min={200} max={4000} value={wavelength} onChange={e => setWavelength(+e.target.value)} />
+        <input type="range" aria-label="Wavelength: {wavelength} nm" min={200} max={4000} value={wavelength} onChange={e => setWavelength(+e.target.value)} />
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 bg-gray-900 rounded-lg">

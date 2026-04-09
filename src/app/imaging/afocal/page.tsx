@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Afocal System Calculator',
   description: 'Design and analyze afocal (telescopic) relay systems — Keplerian and Galilean configurations.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Afocal System Calculator',
+  description: 'Design and analyze afocal (telescopic) relay systems — Keplerian and Galilean configurations.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Afocal System Calculator',
+  'Design and analyze afocal (telescopic) relay systems — Keplerian and Galilean configurations.',
+  'https://photonics-calculators.vercel.app/imaging/afocal',
+  { category: 'Imaging`,
+  `Design and analyze afocal (telescopic) relay systems — Keplerian and Galilean configurations.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Afocal System Calculator',
+  'Design and analyze afocal (telescopic) relay systems — Keplerian and Galilean configurations.',
+  'https://photonics-calculators.vercel.app/imaging/afocal',
+  { category: 'Imaging`,
+  `https://photonics-calculators.vercel.app/imaging/afocal`,
+  { category: `Imaging` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Optical Density (CW point-source pre-check)',
   description: 'Bounded CW point-source optical-density pre-check derived from the same MPE branch as the MPE page.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Optical Density (CW point-source pre-check)',
+  description: 'Bounded CW point-source optical-density pre-check derived from the same MPE branch as the MPE page.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Optical Density (CW point-source pre-check)',
+  'Bounded CW point-source optical-density pre-check derived from the same MPE branch as the MPE page.',
+  'https://photonics-calculators.vercel.app/laser-safety/optical-density',
+  { category: 'Laser Safety`,
+  `Bounded CW point-source optical-density pre-check derived from the same MPE branch as the MPE page.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Optical Density (CW point-source pre-check)',
+  'Bounded CW point-source optical-density pre-check derived from the same MPE branch as the MPE page.',
+  'https://photonics-calculators.vercel.app/laser-safety/optical-density',
+  { category: 'Laser Safety`,
+  `https://photonics-calculators.vercel.app/laser-safety/optical-density`,
+  { category: `Laser Safety` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

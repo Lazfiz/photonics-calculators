@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Contamination Effects',
   description: 'Particle contamination impact on optical surfaces',
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Contamination Effects',
+  description: 'Particle contamination impact on optical surfaces',
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Contamination Effects',
+  'Particle contamination impact on optical surfaces',
+  'https://photonics-calculators.vercel.app/materials/contamination',
+  { category: 'Materials`,
+  `Particle contamination impact on optical surfaces',
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Contamination Effects',
+  'Particle contamination impact on optical surfaces',
+  'https://photonics-calculators.vercel.app/materials/contamination',
+  { category: 'Materials`,
+  `https://photonics-calculators.vercel.app/materials/contamination`,
+  { category: `Materials` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

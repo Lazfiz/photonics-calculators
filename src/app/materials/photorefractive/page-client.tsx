@@ -77,7 +77,7 @@ export default function PhotorefractivePage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Polarization</label>
-          <div className="flex gap-2">
+          <div role="group" aria-label="Options" className="flex gap-2">
             <button onClick={() => setPol("e")} className={`px-4 py-2 rounded ${pol === "e" ? "bg-blue-600" : "bg-gray-800"}`}>Extraordinary</button>
             <button onClick={() => setPol("o")} className={`px-4 py-2 rounded ${pol === "o" ? "bg-blue-600" : "bg-gray-800"}`}>Ordinary</button>
           </div>

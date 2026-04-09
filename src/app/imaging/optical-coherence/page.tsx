@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Optical Coherence Theory',
   description: 'Temporal coherence, coherence length, axial resolution, and SNR estimation for OCT systems.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Optical Coherence Theory',
+  description: 'Temporal coherence, coherence length, axial resolution, and SNR estimation for OCT systems.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Optical Coherence Theory',
+  'Temporal coherence, coherence length, axial resolution, and SNR estimation for OCT systems.',
+  'https://photonics-calculators.vercel.app/imaging/optical-coherence',
+  { category: 'Imaging`,
+  `Temporal coherence, coherence length, axial resolution, and SNR estimation for OCT systems.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Optical Coherence Theory',
+  'Temporal coherence, coherence length, axial resolution, and SNR estimation for OCT systems.',
+  'https://photonics-calculators.vercel.app/imaging/optical-coherence',
+  { category: 'Imaging`,
+  `https://photonics-calculators.vercel.app/imaging/optical-coherence`,
+  { category: `Imaging` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

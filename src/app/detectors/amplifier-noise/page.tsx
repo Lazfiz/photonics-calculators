@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Amplifier Noise',
   description: 'Input-referred noise sets the detection floor. _amp = e_n.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Amplifier Noise',
+  description: 'Input-referred noise sets the detection floor. _amp = e_n.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Amplifier Noise',
+  'Input-referred noise sets the detection floor. _amp = e_n.',
+  'https://photonics-calculators.vercel.app/detectors/amplifier-noise',
+  { category: 'Detectors`,
+  `Input-referred noise sets the detection floor. _amp = e_n.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Amplifier Noise',
+  'Input-referred noise sets the detection floor. _amp = e_n.',
+  'https://photonics-calculators.vercel.app/detectors/amplifier-noise',
+  { category: 'Detectors`,
+  `https://photonics-calculators.vercel.app/detectors/amplifier-noise`,
+  { category: `Detectors` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

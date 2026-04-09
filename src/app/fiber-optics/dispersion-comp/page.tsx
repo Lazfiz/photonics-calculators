@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
       title: 'Dispersion Compensation',
   description: 'Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.',
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Dispersion Compensation',
+  description: 'Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.',
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Dispersion Compensation',
+  'Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.',
+  'https://photonics-calculators.vercel.app/fiber-optics/dispersion-comp',
+  { category: 'Fiber Optics`,
+  `Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.',
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Dispersion Compensation',
+  'Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.',
+  'https://photonics-calculators.vercel.app/fiber-optics/dispersion-comp',
+  { category: 'Fiber Optics`,
+  `https://photonics-calculators.vercel.app/fiber-optics/dispersion-comp`,
+  { category: `Fiber Optics` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

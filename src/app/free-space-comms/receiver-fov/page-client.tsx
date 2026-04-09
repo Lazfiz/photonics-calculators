@@ -87,7 +87,7 @@ export default function ReceiverFovPage() {
           ))}
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Background Type</label>
-            <div className="flex flex-wrap gap-2">
+            <div role="group" aria-label="Options" className="flex flex-wrap gap-2">
               {(["day-sky", "night-sky", "urban", "moonlit"] as const).map((t) => (
                 <button key={t} onClick={() => setBackgroundType(t)}
                   className={`px-3 py-1 text-xs rounded border transition ${backgroundType === t ? "bg-blue-600 border-blue-500" : "bg-gray-800 border-gray-700 hover:border-blue-500"}`}>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Macro Bending Loss',
   description: 'Estimate macro-bending loss for single-mode fiber using simplified Marcuse formula.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Macro Bending Loss',
+  description: 'Estimate macro-bending loss for single-mode fiber using simplified Marcuse formula.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Macro Bending Loss',
+  'Estimate macro-bending loss for single-mode fiber using simplified Marcuse formula.',
+  'https://photonics-calculators.vercel.app/fiber-optics/bend-loss',
+  { category: 'Fiber Optics`,
+  `Estimate macro-bending loss for single-mode fiber using simplified Marcuse formula.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Macro Bending Loss',
+  'Estimate macro-bending loss for single-mode fiber using simplified Marcuse formula.',
+  'https://photonics-calculators.vercel.app/fiber-optics/bend-loss',
+  { category: 'Fiber Optics`,
+  `https://photonics-calculators.vercel.app/fiber-optics/bend-loss`,
+  { category: `Fiber Optics` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

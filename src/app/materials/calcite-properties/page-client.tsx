@@ -99,17 +99,17 @@ export default function CalcitePropertiesPage() {
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label className="text-sm text-gray-400">Wavelength: {wavelength} nm</label>
-          <input type="range" min={250} max={3000} value={wavelength} onChange={e => setWavelength(+e.target.value)} />
+          <input type="range" aria-label="Wavelength: {wavelength} nm" min={250} max={3000} value={wavelength} onChange={e => setWavelength(+e.target.value)} />
         </div>
         <div>
           <label className="text-sm text-gray-400">Angle from optic axis: {angle.toFixed(1)}°</label>
-          <input type="range" min={0} max={90} step={0.5} value={angle} onChange={e => setAngle(+e.target.value)} />
+          <input type="range" aria-label="Angle from optic axis: {angle.toFixed(1)}°" min={0} max={90} step={0.5} value={angle} onChange={e => setAngle(+e.target.value)} />
         </div>
       </div>
 
       <div className="mb-4">
         <label className="text-sm text-gray-400">Thickness: {thickness} mm</label>
-        <input type="range" min={0.1} max={20} step={0.1} value={thickness} onChange={e => setThickness(+e.target.value)} />
+        <input type="range" aria-label="Thickness: {thickness} mm" min={0.1} max={20} step={0.1} value={thickness} onChange={e => setThickness(+e.target.value)} />
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 bg-gray-900 rounded-lg">

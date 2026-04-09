@@ -45,7 +45,7 @@ export default function OpticalPathLengthPage() {
         <ValidatedNumberInput label="Angle of Incidence (°)" value={angleDeg} onChange={setAngleDeg} min={0} max={85} />
       </div>
 
-      <div className="flex gap-2 mb-6">
+      <div role="group" aria-label="Options" className="flex gap-2 mb-6">
         {(["n", "angle", "passes"] as const).map(p => (
           <button key={p} onClick={() => setSweepParam(p)}
             className={`px-3 py-1 rounded text-sm ${sweepParam === p ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300"}`}>

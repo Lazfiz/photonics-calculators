@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'SNDR Calculator',
   description: 'Signal-to-Noise-and-Distortion Ratio. SNDR = Psignal/(Pnoise + Pdistortion).',
 };
+const jsonLd = generateCalculatorJsonLd(
+  `SNDR Calculator',
+  description: 'Signal-to-Noise-and-Distortion Ratio. SNDR = Psignal/(Pnoise + Pdistortion).',
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'SNDR Calculator',
+  'Signal-to-Noise-and-Distortion Ratio. SNDR = Psignal/(Pnoise + Pdistortion).',
+  'https://photonics-calculators.vercel.app/detectors/sndr',
+  { category: 'Detectors`,
+  `Signal-to-Noise-and-Distortion Ratio. SNDR = Psignal/(Pnoise + Pdistortion).',
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'SNDR Calculator',
+  'Signal-to-Noise-and-Distortion Ratio. SNDR = Psignal/(Pnoise + Pdistortion).',
+  'https://photonics-calculators.vercel.app/detectors/sndr',
+  { category: 'Detectors`,
+  `https://photonics-calculators.vercel.app/detectors/sndr`,
+  { category: `Detectors` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }

@@ -104,7 +104,7 @@ export default function OpticalActivityPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Sample Selection</h2>
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div role="group" aria-label="Options" className="flex flex-wrap gap-2 mb-4">
             {(["sucrose", "glucose", "fructose", "custom"] as const).map((s) => (
               <button key={s} onClick={() => handleSampleChange(s)}
                 className={`px-3 py-1 text-xs rounded ${sample === s ? "bg-blue-600" : "bg-gray-800 border border-gray-700 hover:border-blue-500"}`}>

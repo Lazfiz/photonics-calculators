@@ -96,7 +96,7 @@ export default function BirefringentPolarizerPage() {
         <p className="text-gray-300 text-sm font-mono">Walk-off: ρ = arctan(n<sub>o</sub>n<sub>e</sub>√(n<sub>o</sub>²-n<sub>e</sub>²) / (n<sub>o</sub>²cos²θ + n<sub>e</sub>²sin²θ))</p>
       </div>
 
-      <div className="flex flex-wrap gap-4 mb-6">
+      <div role="group" aria-label="Options" className="flex flex-wrap gap-4 mb-6">
         {(["glan", "wollaston", "rochon", "senarmont"] as const).map(t => (
           <button key={t} onClick={() => setCutType(t)} className={`text-sm px-4 py-2 rounded ${cutType === t ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 border border-gray-600"}`}>
             {t.charAt(0).toUpperCase() + t.slice(1)}

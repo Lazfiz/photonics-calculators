@@ -95,7 +95,7 @@ export default function PolarizationScramblingPage() {
           <h2 className="text-lg font-semibold mb-4">Scrambler Settings</h2>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Sweep mode</label>
-            <div className="flex gap-2">
+            <div role="group" aria-label="Options" className="flex gap-2">
               {(["uniform", "gaussian", "random"] as const).map((m) => (
                 <button key={m} onClick={() => setSweepMode(m)}
                   className={`px-3 py-1 text-xs rounded ${sweepMode === m ? "bg-blue-600" : "bg-gray-800 border border-gray-700"}`}>
@@ -114,7 +114,7 @@ export default function PolarizationScramblingPage() {
           </div>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Input polarization</label>
-            <div className="flex gap-2">
+            <div role="group" aria-label="Options" className="flex gap-2">
               {(["linear", "circular", "elliptical"] as const).map((p) => (
                 <button key={p} onClick={() => setInputPol(p)}
                   className={`px-3 py-1 text-xs rounded ${inputPol === p ? "bg-blue-600" : "bg-gray-800 border border-gray-700"}`}>
@@ -126,7 +126,7 @@ export default function PolarizationScramblingPage() {
           {inputPol === "elliptical" && (
             <div className="mb-3">
               <label className="text-sm text-gray-400 block mb-1">Ellipticity</label>
-              <input type="range" min={-1} max={1} step={0.01} value={ellipticity}
+              <input type="range" aria-label="Ellipticity" min={-1} max={1} step={0.01} value={ellipticity}
                 onChange={(e) => setEllipticity(parseFloat(e.target.value))} />
             </div>
           )}

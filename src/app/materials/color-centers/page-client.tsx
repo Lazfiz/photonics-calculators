@@ -57,7 +57,7 @@ export default function ColorCentersPage() {
 
       <div className="mb-8">
         <label className="block text-sm text-gray-400 mb-1">Center Concentration: {concentration.toExponential(2)} m⁻³</label>
-        <input type="range" min={1e20} max={1e27} step={1e22} value={concentration} onChange={e => setConcentration(+e.target.value)} />
+        <input type="range" aria-label="Center Concentration: {concentration.toExponential(2)} m⁻³" min={1e20} max={1e27} step={1e22} value={concentration} onChange={e => setConcentration(+e.target.value)} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">

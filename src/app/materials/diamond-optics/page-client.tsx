@@ -94,7 +94,7 @@ export default function DiamondOpticsPage() {
 
       <div className="mb-4">
         <label className="text-sm text-gray-400">Wavelength: {wavelength} nm</label>
-        <input type="range" min={200} max={10000} value={wavelength} onChange={e => setWavelength(+e.target.value)} />
+        <input type="range" aria-label="Wavelength: {wavelength} nm" min={200} max={10000} value={wavelength} onChange={e => setWavelength(+e.target.value)} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

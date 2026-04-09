@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
@@ -6,7 +7,34 @@ export const metadata: Metadata = {
     title: 'Stimulated Raman Scattering (SRS)',
   description: 'Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.'
 };
+const jsonLd = generateCalculatorJsonLd(
+  `Stimulated Raman Scattering (SRS)',
+  description: 'Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.'
+};
 
+
+const jsonLd = generateCalculatorJsonLd(
+  'Stimulated Raman Scattering (SRS)',
+  'Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.',
+  'https://photonics-calculators.vercel.app/spectroscopy/stimulated-raman',
+  { category: 'Spectroscopy`,
+  `Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.'
+};
+
+
+const jsonLd = generateCalculatorJsonLd(
+  'Stimulated Raman Scattering (SRS)',
+  'Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.',
+  'https://photonics-calculators.vercel.app/spectroscopy/stimulated-raman',
+  { category: 'Spectroscopy`,
+  `https://photonics-calculators.vercel.app/spectroscopy/stimulated-raman`,
+  { category: `Spectroscopy` }
+);
 export default function Page() {
-  return <PageClient />;
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <PageClient />
+    </>
+  );
 }
