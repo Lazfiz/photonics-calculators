@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/polarization/birefringence",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/polarization/birefringence' },
     title: 'Birefringence & Retardation',
   description: 'Phase retardation from crystal birefringence, thickness, and wavelength.'
 };

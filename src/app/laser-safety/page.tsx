@@ -3,8 +3,7 @@ import Link from "next/link";
 import LaserSafetyDisclaimer from "../../components/laser-safety-disclaimer";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/laser-safety",
-  title: "Laser Safety Calculators",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety' },  title: "Laser Safety Calculators",
   description:
     "Educational laser safety calculators with explicit trust boundaries. Separate bounded CW point-source pre-check tools from general educational references and quarantined standards-heavy topics.",
 };

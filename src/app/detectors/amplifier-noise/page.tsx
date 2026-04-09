@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/detectors/amplifier-noise",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/amplifier-noise' },
     title: 'Amplifier Noise',
   description: 'Input-referred noise sets the detection floor. _amp = e_n.'
 };

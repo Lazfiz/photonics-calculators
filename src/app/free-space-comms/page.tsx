@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/free-space-comms",
-  title: "Free-Space Optical Communications Calculators",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms' },  title: "Free-Space Optical Communications Calculators",
   description: "Free-space optics calculators for link budgets, pointing loss, scintillation, BER, weather attenuation, and optical comms.",
 };
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/detectors/nep",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/nep' },
     title: 'Noise Equivalent Power (NEP) & Detectivity (D*)',
   description: 'Calculate NEP and specific detectivity D* from detector noise sources: shot noise, thermal (Johnson) noise, and dark current.'
 };

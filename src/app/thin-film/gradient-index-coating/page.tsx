@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/thin-film/gradient-index-coating",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/gradient-index-coating' },
     title: 'Gradient Index Coating',
   description: 'Gradient-index (GRIN) antireflection coatings use a continuously varying refractive index to suppress Fresnel reflections over a broad bandwidth.'
 };

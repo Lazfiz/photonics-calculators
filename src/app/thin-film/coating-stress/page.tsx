@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/thin-film/coating-stress",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/coating-stress' },
       title: 'Coating Stress amp; Curvature',
   description: 'Stoney equation: κ = 6fdf / (Ests²).',
 };

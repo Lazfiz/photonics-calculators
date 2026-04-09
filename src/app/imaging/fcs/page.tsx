@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/imaging/fcs",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/fcs' },
     title: 'FCS Calculator',
   description: 'Fluorescence Correlation Spectroscopy — diffusion time, concentration, and confocal volume.'
 };

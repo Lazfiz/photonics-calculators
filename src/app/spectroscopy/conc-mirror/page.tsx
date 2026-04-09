@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/spectroscopy/conc-mirror",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/conc-mirror' },
     title: 'Concave Mirror Throughput',
   description: 'Connes advantage and throughput for concave mirror-based spectrometers (e.g., FTIR, concave grating).',
 };

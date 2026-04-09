@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/wave-optics/ring-cavity",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/wave-optics/ring-cavity' },
     title: 'Ring Resonator Design',
   description: 'Ring cavity stability, modes, and spectral analysis.'
 };

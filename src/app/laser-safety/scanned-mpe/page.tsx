@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/laser-safety/scanned-mpe",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/scanned-mpe' },
     title: 'Scanned Beam MPE',
   description: 'Interactive Scanned Beam MPE calculator for photonics and optical engineering.'
 };

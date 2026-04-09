@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/imaging/palm-storm",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/palm-storm' },
     title: 'PALM/STORM Localization Calculator',
   description: 'Estimate effective resolution for single-molecule localization microscopy (PALM/STORM) based on localization precision and labeling density.'
 };

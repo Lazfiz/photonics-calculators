@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/imaging/computational-imaging",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/computational-imaging' },
     title: 'Computational Imaging',
   description: 'Multi-view fusion, resolution scaling, and SNR improvement through computational techniques.'
 };

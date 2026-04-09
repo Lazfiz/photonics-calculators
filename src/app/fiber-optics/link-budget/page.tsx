@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/fiber-optics/link-budget",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/link-budget' },
     title: 'Fiber Link Budget',
   description: 'Total optical link loss budget calculator. Power budget vs. accumulated losses.'
 };

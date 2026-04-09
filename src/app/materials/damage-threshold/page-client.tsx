@@ -86,7 +86,7 @@ export default function DamageThresholdPage() {
         <p>LIDT(τ) = LIDT_ref · (τ/τ_ref)^0.5 &nbsp;|&nbsp; F = E/A &nbsp;|&nbsp; I = P/A</p>
       </div>
 
-      {pulseMode ? (
+      {!isCW ? (
       <div className="flex gap-4 mb-6">
         <div>
           <ValidatedNumberInput label="Pulse duration (s)" value={pulseDuration} onChange={setPulseDuration} min={0.001} step="0.1" />

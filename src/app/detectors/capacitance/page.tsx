@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/detectors/capacitance",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/capacitance' },
     title: 'Junction Capacitance',
   description: 'Photodiode junction capacitance vs reverse bias, doping profile, and RC bandwidth impact.'
 };

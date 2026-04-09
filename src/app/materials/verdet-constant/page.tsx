@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/materials/verdet-constant",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/verdet-constant' },
       title: 'Verdet Constant',
   description: 'Faraday rotation: = V B L, where V ∝ 1/² for paramagnetic materials',
 };

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/spectroscopy/ftir-resolution",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/ftir-resolution' },
     title: 'FTIR Resolution Calculator',
   description: 'FTIR spectral resolution from maximum OPD, apodization, and scan parameters.'
 };

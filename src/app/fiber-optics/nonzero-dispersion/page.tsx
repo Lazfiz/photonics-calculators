@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/fiber-optics/nonzero-dispersion",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/nonzero-dispersion' },
     title: 'Non-Zero Dispersion Shifted Fiber (NZ-DSF)',
   description: 'Design NZ-DSF fibers (G.655) with optimized dispersion for DWDM systems — balancing dispersion and nonlinearity.'
 };

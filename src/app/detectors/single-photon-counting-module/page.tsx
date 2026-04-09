@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/detectors/single-photon-counting-module",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/single-photon-counting-module' },
     title: 'Single Photon Counting Module',
   description: 'Interactive Single Photon Counting Module calculator for photonics and optical engineering.'
 };

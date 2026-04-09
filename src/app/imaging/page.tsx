@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/imaging",
-  title: "Imaging Calculators",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging' },  title: "Imaging Calculators",
   description: "Optical imaging calculators for resolution, PSF, depth of field, microscopy, OCT, and wavefront-driven imaging analysis.",
 };
 

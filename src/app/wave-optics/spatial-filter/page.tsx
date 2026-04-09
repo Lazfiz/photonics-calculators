@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/wave-optics/spatial-filter",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/wave-optics/spatial-filter' },
     title: 'Spatial Filter Pinhole Sizing',
   description: 'Calculate optimal pinhole diameter for spatial filtering.'
 };

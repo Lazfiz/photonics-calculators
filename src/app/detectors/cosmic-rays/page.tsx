@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/detectors/cosmic-rays",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/cosmic-rays' },
     title: 'Cosmic Ray Detection',
   description: 'Cosmic ray flux and impact on imaging sensors — estimate hit rates and affected pixels.'
 };

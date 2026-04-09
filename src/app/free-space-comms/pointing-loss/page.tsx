@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/free-space-comms/pointing-loss",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/pointing-loss' },
     title: 'Pointing Loss',
   description: 'Interactive free-space optical pointing-loss calculator with jitter, misalignment, and aperture coupling.'
 };

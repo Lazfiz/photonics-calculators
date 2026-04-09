@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/fiber-optics/fiber-bundle",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/fiber-bundle' },
     title: 'Fiber Bundle Design',
   description: 'Calculate bundle geometry, fill factor, étendue, and coupling efficiency for fiber optic bundles.'
 };

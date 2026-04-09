@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/detectors/uniformity",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/uniformity' },
     title: 'Photoresponse Non-Uniformity',
   description: 'PRNU measures the spatial variation in pixel sensitivity across the sensor array. PRNU = PRNU% mean signal.'
 };

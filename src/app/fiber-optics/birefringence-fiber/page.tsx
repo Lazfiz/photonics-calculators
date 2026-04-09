@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/fiber-optics/birefringence-fiber",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/birefringence-fiber' },
     title: 'Birefringence Fiber',
   description: 'Interactive Birefringence Fiber calculator for photonics and optical engineering.'
 };

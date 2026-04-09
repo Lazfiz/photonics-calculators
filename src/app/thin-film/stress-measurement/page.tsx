@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/thin-film/stress-measurement",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/stress-measurement' },
     title: 'Thin Film Stress Measurement',
   description: 'Calculate film stress from substrate curvature using the Stoney equation. Includes thermal stress decomposition and stored elastic energy.'
 };

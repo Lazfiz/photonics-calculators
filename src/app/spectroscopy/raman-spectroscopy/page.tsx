@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/spectroscopy/raman-spectroscopy",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/raman-spectroscopy' },
     title: 'Raman Spectroscopy',
   description: 'Stokes and anti-Stokes wavelength shift vs Raman shift. Inelastic scattering fundamentals.'
 };

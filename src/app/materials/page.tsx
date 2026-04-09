@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/materials",
-  title: "Optical Materials Calculators",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials' },  title: "Optical Materials Calculators",
   description: "Optical materials calculators for refractive index, Sellmeier fits, thermal properties, absorption, and nonlinear material behavior.",
 };
 

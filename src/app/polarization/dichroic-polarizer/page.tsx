@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/polarization/dichroic-polarizer",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/polarization/dichroic-polarizer' },
     title: 'Dichroic Polarizer',
   description: 'Model absorption-based dichroic polarizers using complex refractive indices. One polarization state is strongly absorbed while the other transmits.'
 };

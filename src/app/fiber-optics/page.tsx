@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/fiber-optics",
-  title: "Fiber Optics Calculators",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics' },  title: "Fiber Optics Calculators",
   description: "Fiber optics calculators for coupling, dispersion, bend loss, V-number, nonlinear thresholds, and guided-wave design.",
 };
 

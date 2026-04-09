@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/thin-film/bandpass-filter",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/bandpass-filter' },
     title: 'Bandpass Filter',
   description: 'Fabry-Perot bandpass — multi-cavity design with quarter-wave mirrors and half-wave spacers.'
 };

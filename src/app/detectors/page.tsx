@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/detectors",
-  title: "Detectors Calculators",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors' },  title: "Detectors Calculators",
   description: "Photonics detector calculators for responsivity, NEP, dark noise, SPADs, avalanche gain, and sensor performance.",
 };
 

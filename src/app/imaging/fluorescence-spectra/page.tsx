@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/imaging/fluorescence-spectra",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/fluorescence-spectra' },
     title: 'Fluorescence Spectra Overlap Calculator',
   description: 'Compare excitation/emission spectra, spectral overlap, and filter crosstalk.'
 };

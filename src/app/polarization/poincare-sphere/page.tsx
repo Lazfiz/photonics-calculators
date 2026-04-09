@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
-    canonical: "https://photonics-calculators.vercel.app/polarization/poincare-sphere",
+    alternates: { canonical: 'https://photonics-calculators.vercel.app/polarization/poincare-sphere' },
     title: 'Poincaré Sphere',
   description: 'Interactive visualization of polarization states on the Poincaré sphere.'
 };
