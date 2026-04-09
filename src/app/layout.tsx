@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -12,6 +13,11 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://photonics-calculato
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/icon-192.png",
+  },
+  manifest: "/manifest.json",
   title: {
     default: "Photonics Calculators - 541 Interactive Optics Tools",
     template: "%s | Photonics Calculators",
@@ -66,6 +72,7 @@ export default function RootLayout({
           }}
         />
         {children}
+        <Analytics />
       </body>
     </html>
   );
