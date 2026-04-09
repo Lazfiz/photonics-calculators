@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface AOMaterial {
   name: string;
   density: number; // kg/m³
@@ -131,13 +132,11 @@ export default function AcoustoOpticPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">RF Frequency (MHz)</label>
-          <input type="number" value={frequency} onChange={e => setFrequency(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={10} max={3000} />
+          <ValidatedNumberInput label="RF Frequency (MHz)" value={frequency} onChange={setFrequency} min={10} max={3000} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Optical Wavelength (nm)</label>
-          <input type="number" value={wavelength} onChange={e => setWavelength(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={300} max={15000} />
+          <ValidatedNumberInput label="Optical Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={15000} />
         </div>
       </div>
 

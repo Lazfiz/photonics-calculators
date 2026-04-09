@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface Material {
   name: string;
   // Verdet constant at reference wavelength
@@ -73,18 +74,15 @@ export default function VerdetConstantPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-          <input type="number" value={wavelength} onChange={e => setWavelength(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={400} max={5000} />
+          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={5000} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Magnetic field B (T)</label>
-          <input type="number" value={field} onChange={e => setField(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0.01} max={10} step={0.1} />
+          <ValidatedNumberInput label="Magnetic field B (T)" value={field} onChange={setField} min={0.01} max={10} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Length (mm)</label>
-          <input type="number" value={length} onChange={e => setLength(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0.1} max={200} />
+          <ValidatedNumberInput label="Length (mm)" value={length} onChange={setLength} min={0.1} max={200} />
         </div>
       </div>
 

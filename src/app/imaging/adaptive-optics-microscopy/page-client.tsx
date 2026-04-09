@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function AdaptiveOpticsMicroscopyPage() {
   const [na, setNa] = useURLState("na", 1.4);
   const [wavelength, setWavelength] = useURLState("wavelength", 800);
@@ -60,33 +61,27 @@ export default function AdaptiveOpticsMicroscopyPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Numerical Aperture (NA)</label>
-            <input type="number" step={0.01} min={0.1} max={1.8} value={na} onChange={e => setNa(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Numerical Aperture (NA)" value={na} onChange={setNa} min={0.1} max={1.8} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-            <input type="number" step={1} min={200} max={2000} value={wavelength} onChange={e => setWavelength(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={2000} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Total Zernike Modes</label>
-            <input type="number" step={1} min={1} max={65} value={numModes} onChange={e => setNumModes(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Total Zernike Modes" value={numModes} onChange={setNumModes} min={1} max={65} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">RMS Wavefront Error (µm)</label>
-            <input type="number" step={0.05} min={0.01} max={5} value={rmsWavefrontError} onChange={e => setRmsWavefrontError(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="RMS Wavefront Error (µm)" value={rmsWavefrontError} onChange={setRmsWavefrontError} min={0.01} max={5} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Correction Efficiency</label>
-            <input type="number" step={0.05} min={0} max={1} value={correctionEfficiency} onChange={e => setCorrectionEfficiency(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Correction Efficiency" value={correctionEfficiency} onChange={setCorrectionEfficiency} min={0} max={1} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Tissue Scattering (µm⁻¹)</label>
-            <input type="number" step={0.05} min={0} max={5} value={tissueScattering} onChange={e => setTissueScattering(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Tissue Scattering (µm⁻¹)" value={tissueScattering} onChange={setTissueScattering} min={0} max={5} />
           </div>
         </div>
 

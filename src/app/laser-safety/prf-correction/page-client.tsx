@@ -5,7 +5,8 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function PRFCorrectionPage() {
   const [singlePulseMPE, setSinglePulseMPE] = useURLState("singlePulseMPE", 1); // µJ/cm²
   const [prf, setPrf] = useURLState("prf", 1000); // Hz
@@ -69,15 +70,15 @@ export default function PRFCorrectionPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Single Pulse MPE (µJ/cm²)</label>
-          <input type="number" step="0.1" value={singlePulseMPE} onChange={e => setSinglePulseMPE(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Single Pulse MPE (µJ/cm²)" value={singlePulseMPE} onChange={setSinglePulseMPE} step="0.1" />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Pulse Repetition Rate (Hz)</label>
-          <input type="number" value={prf} onChange={e => setPrf(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Pulse Repetition Rate (Hz)" value={prf} onChange={setPrf} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Exposure Duration (s)</label>
-          <input type="number" step="1" value={exposureDuration} onChange={e => setExposureDuration(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Exposure Duration (s)" value={exposureDuration} onChange={setExposureDuration} step="1" />
         </div>
       </div>
 

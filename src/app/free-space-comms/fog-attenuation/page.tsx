@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/free-space-comms/fog-attenuation",
     title: 'Fog Attenuation',
   description: 'Interactive Fog Attenuation calculator for photonics and optical engineering.'
 };

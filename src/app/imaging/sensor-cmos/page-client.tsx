@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function SensorCMOSPage() {
   const [pixelPitch, setPixelPitch] = useURLState("pixelPitch", 6.5);
   const [wellCapacity, setWellCapacity] = useURLState("wellCapacity", 25000);
@@ -68,38 +69,31 @@ export default function SensorCMOSPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Pixel Pitch (µm)</label>
-            <input type="number" step={0.1} min={0.5} max={50} value={pixelPitch} onChange={e => setPixelPitch(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Pixel Pitch (µm)" value={pixelPitch} onChange={setPixelPitch} min={0.5} max={50} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Full Well Capacity (e⁻)</label>
-            <input type="number" step={100} min={100} max={200000} value={wellCapacity} onChange={e => setWellCapacity(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Full Well Capacity (e⁻)" value={wellCapacity} onChange={setWellCapacity} min={100} max={200000} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Read Noise (e⁻ rms)</label>
-            <input type="number" step={0.1} min={0.1} max={50} value={readNoise} onChange={e => setReadNoise(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} min={0.1} max={50} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Dark Current (e⁻/s/pixel)</label>
-            <input type="number" step={0.01} min={0} max={100} value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Dark Current (e⁻/s/pixel)" value={darkCurrent} onChange={setDarkCurrent} min={0} max={100} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Conversion Gain (e⁻/DN)</label>
-            <input type="number" step={0.1} min={0.1} max={100} value={conversionGain} onChange={e => setConversionGain(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Conversion Gain (e⁻/DN)" value={conversionGain} onChange={setConversionGain} min={0.1} max={100} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Quantum Efficiency</label>
-            <input type="number" step={0.01} min={0.01} max={1} value={quantumEfficiency} onChange={e => setQuantumEfficiency(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Quantum Efficiency" value={quantumEfficiency} onChange={setQuantumEfficiency} min={0.01} max={1} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Exposure Time (ms)</label>
-            <input type="number" step={1} min={1} max={10000} value={exposureTime} onChange={e => setExposureTime(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Exposure Time (ms)" value={exposureTime} onChange={setExposureTime} min={1} max={10000} />
           </div>
         </div>
 

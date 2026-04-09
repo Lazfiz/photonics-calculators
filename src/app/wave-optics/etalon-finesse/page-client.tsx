@@ -58,8 +58,7 @@ export default function EtalonFinessePage() {
         <ValidatedNumberInput label="Thickness (µm)" value={thickness} onChange={setThickness} />
         <ValidatedNumberInput label="Mirror reflectivity R" value={reflectivity} onChange={setReflectivity} min={0} max={0.999} step="0.01" />
       </div>
-      <label className="block mb-8"><span className="text-sm text-gray-300">Wavelength range ± (nm)</span>
-        <input type="number" value={wavelengthRange} onChange={e => setWavelengthRange(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+      <ValidatedNumberInput label="Wavelength range ± (nm)" value={wavelengthRange} onChange={setWavelengthRange} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">

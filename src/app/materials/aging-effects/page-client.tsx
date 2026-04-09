@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface Material {
   name: string;
   // Transmission loss rate at 1064nm (% per 1000h at max spec conditions)
@@ -116,29 +117,24 @@ export default function AgingEffectsPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Operating time (hours)</label>
-          <input type="number" value={hours} onChange={e => setHours(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={1} />
+          <ValidatedNumberInput label="Operating time (hours)" value={hours} onChange={setHours} min={1} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Temp acceleration factor</label>
-          <input type="number" value={tempFactor} onChange={e => setTempFactor(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={1} step="0.1" />
+          <ValidatedNumberInput label="Temp acceleration factor" value={tempFactor} onChange={setTempFactor} min={1} step="0.1" />
           <span className="text-xs text-gray-500">Arrhenius: exp(-Ea/k·Δ(1/T))</span>
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">UV dose (kJ/cm²)</label>
-          <input type="number" value={uvDose} onChange={e => setUvDose(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0} step="0.1" />
+          <ValidatedNumberInput label="Arrhenius: exp(-Ea/k·Δ(1/T))" value={uvDose} onChange={setUvDose} min={0} step="0.1" />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Laser fluence (J/cm²/pulse)</label>
-          <input type="number" value={laserFluence} onChange={e => setLaserFluence(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0} step="0.01" />
+          <ValidatedNumberInput label="Laser fluence (J/cm²/pulse)" value={laserFluence} onChange={setLaserFluence} min={0} step="0.01" />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Initial stress (nm/cm)</label>
-          <input type="number" value={initialStress} onChange={e => setInitialStress(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0} />
+          <ValidatedNumberInput label="Initial stress (nm/cm)" value={initialStress} onChange={setInitialStress} min={0} />
         </div>
       </div>
 

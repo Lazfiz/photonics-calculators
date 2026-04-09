@@ -7,7 +7,8 @@ import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 const rangePresets = [
   { label: "Visible", min: 400, max: 700 },
   { label: "NIR", min: 700, max: 2500 },
@@ -68,7 +69,7 @@ export default function WavenumberConverterPage() {
         <div className="flex gap-4 items-end mb-4 flex-wrap">
           <div className="min-w-[220px] flex-1">
             <label className="text-sm text-gray-300">{mode === "wl-to-wn" ? "Wavelength (nm)" : "Wavenumber (cm⁻¹)"}</label>
-            <input type="number" value={singleValue} onChange={e => setSingleValue(+e.target.value)} min={0.001} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label={mode === "wl-to-wn" ? "Wavelength (nm)" : "Wavenumber (cm⁻¹)"} value={singleValue} onChange={setSingleValue} min={0.001} />
           </div>
           <button onClick={() => setMode(mode === "wl-to-wn" ? "wn-to-wl" : "wl-to-wn")} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm text-white">⇄</button>
           <div className="min-w-[220px] flex-1 bg-gray-800 rounded px-3 py-2">

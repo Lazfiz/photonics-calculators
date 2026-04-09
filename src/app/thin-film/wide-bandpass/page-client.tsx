@@ -68,11 +68,11 @@ export default function WideBandpassPage() {
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>high</sub></span>
-          <input type="number" value={nH} onChange={e => setNH(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="nhigh" value={nH} onChange={setNH} step="0.01" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>low</sub></span>
-          <input type="number" value={nL} onChange={e => setNL(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="nlow" value={nL} onChange={setNL} step="0.01" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
-          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="nsubstrate" value={nSub} onChange={setNSub} step="0.01" /></label>
         <ValidatedNumberInput label="Short-pass λ (nm)" value={shortPassWl} onChange={setShortPassWl} />
         <ValidatedNumberInput label="Long-pass λ (nm)" value={longPassWl} onChange={setLongPassWl} />
         <ValidatedNumberInput label="Pairs per stack" value={pairs} onChange={setPairs} min={1} max={15} />

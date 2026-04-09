@@ -88,7 +88,7 @@ export default function FourWaveMixingPage() {
         <ValidatedNumberInput label="Pump Power (mW)" value={pumpPower} onChange={setPumpPower} />
         <ValidatedNumberInput label="n₂ (×10⁻¹⁶ cm²/W)" value={n2} onChange={setN2} step="0.1" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">A<sub>eff</sub> (µm²)</span>
-          <input type="number" value={coreArea} onChange={e => setCoreArea(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="Aeff (µm²)" value={coreArea} onChange={setCoreArea} /></label>
         <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} />
       </div>
 

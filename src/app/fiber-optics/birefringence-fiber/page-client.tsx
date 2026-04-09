@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function BirefringenceCalculator() {
   const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.468);
   const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.463);
@@ -100,33 +101,27 @@ export default function BirefringenceCalculator() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium mb-2">Core Index n₁</label>
-              <input type="number" value={coreIndex} onChange={(e) => setCoreIndex(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.0001" />
+              <ValidatedNumberInput label="Core Index n₁" value={coreIndex} onChange={setCoreIndex} step="0.0001" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Cladding Index n₂</label>
-              <input type="number" value={claddingIndex} onChange={(e) => setCladdingIndex(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.0001" />
+              <ValidatedNumberInput label="Cladding Index n₂" value={claddingIndex} onChange={setCladdingIndex} step="0.0001" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Core Radius (μm)</label>
-              <input type="number" value={coreRadius} onChange={(e) => setCoreRadius(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.1" min="0.1" />
+              <ValidatedNumberInput label="Core Radius (μm)" value={coreRadius} onChange={setCoreRadius} min={0.1} step="0.1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Core Ellipticity (b/a)</label>
-              <input type="number" value={ellipticity} onChange={(e) => setEllipticity(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.01" min="0.5" max="1" />
+              <ValidatedNumberInput label="Core Ellipticity (b/a)" value={ellipticity} onChange={setEllipticity} min={0.5} max={1} step="0.01" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Stress Anisotropy Δn_stress (nm)</label>
-              <input type="number" value={stressAnisotropy} onChange={(e) => setStressAnisotropy(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="1" />
+              <ValidatedNumberInput label="Stress Anisotropy Δn_stress (nm)" value={stressAnisotropy} onChange={setStressAnisotropy} step="1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
-              <input type="number" value={wavelength} onChange={(e) => setWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="1" min="100" />
+              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} step="1" />
             </div>
           </div>
 

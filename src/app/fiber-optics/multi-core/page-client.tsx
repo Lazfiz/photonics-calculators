@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function MultiCoreFiberCalculator() {
   const [numCores, setNumCores] = useURLState("numCores", 7);
   const [corePitch, setCorePitch] = useURLState("corePitch", 45); // μm
@@ -111,32 +112,26 @@ export default function MultiCoreFiberCalculator() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Core Pitch (μm)</label>
-              <input type="number" value={corePitch} onChange={(e) => setCorePitch(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="1" min="10" />
+              <ValidatedNumberInput label="Core Pitch (μm)" value={corePitch} onChange={setCorePitch} min={10} step="1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Core Radius (μm)</label>
-              <input type="number" value={coreRadius} onChange={(e) => setCoreRadius(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.1" />
+              <ValidatedNumberInput label="Core Radius (μm)" value={coreRadius} onChange={setCoreRadius} step="0.1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Core / Cladding Index</label>
               <div className="grid grid-cols-2 gap-2">
-                <input type="number" value={coreIndex} onChange={(e) => setCoreIndex(Number(e.target.value))}
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none text-sm" step="0.0001" />
-                <input type="number" value={claddingIndex} onChange={(e) => setCladdingIndex(Number(e.target.value))}
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none text-sm" step="0.0001" />
+                <ValidatedNumberInput label="Core / Cladding Index" value={coreIndex} onChange={setCoreIndex} step="0.0001" />
+                <ValidatedNumberInput label="claddingIndex" value={claddingIndex} onChange={setCladdingIndex} step="0.0001" />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
-              <input type="number" value={wavelength} onChange={(e) => setWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="1" />
+              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Fiber Length (km)</label>
-              <input type="number" value={fiberLength} onChange={(e) => setFiberLength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="1" />
+              <ValidatedNumberInput label="Fiber Length (km)" value={fiberLength} onChange={setFiberLength} step="1" />
             </div>
           </div>
 

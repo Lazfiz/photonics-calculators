@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function ComputationalImagingPage() {
   const [na, setNa] = useURLState("na", 0.8);
   const [wavelength, setWavelength] = useURLState("wavelength", 550);
@@ -56,33 +57,27 @@ export default function ComputationalImagingPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Numerical Aperture (NA)</label>
-            <input type="number" step={0.01} min={0.1} max={1.8} value={na} onChange={e => setNa(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Numerical Aperture (NA)" value={na} onChange={setNa} min={0.1} max={1.8} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-            <input type="number" step={1} min={200} max={2000} value={wavelength} onChange={e => setWavelength(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={2000} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Number of Views</label>
-            <input type="number" step={1} min={1} max={200} value={numViews} onChange={e => setNumViews(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Number of Views" value={numViews} onChange={setNumViews} min={1} max={200} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Photons per Pixel (single view)</label>
-            <input type="number" step={10} min={1} max={100000} value={photonCount} onChange={e => setPhotonCount(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Photons per Pixel (single view)" value={photonCount} onChange={setPhotonCount} min={1} max={100000} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Background Noise (e⁻)</label>
-            <input type="number" step={1} min={0} max={1000} value={bgNoise} onChange={e => setBgNoise(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Background Noise (e⁻)" value={bgNoise} onChange={setBgNoise} min={0} max={1000} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Read Noise (e⁻ rms)</label>
-            <input type="number" step={0.1} min={0} max={50} value={readNoise} onChange={e => setReadNoise(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} min={0} max={50} />
           </div>
         </div>
 

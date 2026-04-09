@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function ThermalVsPhotochemicalPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 450); // nm
   const [exposureTime, setExposureTime] = useURLState("exposureTime", 1); // seconds
@@ -103,18 +104,15 @@ export default function ThermalVsPhotochemicalPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-              <input type="number" value={wavelength} onChange={e => setWavelength(parseFloat(e.target.value) || 400)}
-                step="1" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Exposure Time (s)</label>
-              <input type="number" value={exposureTime} onChange={e => setExposureTime(Math.max(1e-6, parseFloat(e.target.value) || 1e-6))}
-                step="any" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} step="any" />
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Spot Size (mm)</label>
-              <input type="number" value={spotSize} onChange={e => setSpotSize(Math.max(0.01, parseFloat(e.target.value) || 0.01))}
-                step="0.1" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Spot Size (mm)" value={spotSize} onChange={setSpotSize} step="0.1" />
             </div>
           </div>
         </div>

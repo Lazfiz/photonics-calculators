@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function RareEarthFiberCalculator() {
   const [dopant, setDopant] = useState<"Er" | "Yb" | "Er/Yb" | "Tm" | "Ho">("Er");
   const [dopantConcentration, setDopantConcentration] = useURLState("dopantConcentration", 1e24); // ions/m³
@@ -138,28 +139,23 @@ export default function RareEarthFiberCalculator() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Dopant Concentration (ions/m³)</label>
-              <input type="number" value={dopantConcentration} onChange={(e) => setDopantConcentration(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="1e23" />
+              <ValidatedNumberInput label="Dopant Concentration (ions/m³)" value={dopantConcentration} onChange={setDopantConcentration} step="1e23" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Fiber Length (m)</label>
-              <input type="number" value={fiberLength} onChange={(e) => setFiberLength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Core Diameter (µm)</label>
-              <input type="number" value={coreDiameter} onChange={(e) => setCoreDiameter(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.1" />
+              <ValidatedNumberInput label="Core Diameter (µm)" value={coreDiameter} onChange={setCoreDiameter} step="0.1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Numerical Aperture</label>
-              <input type="number" value={numericalAperture} onChange={(e) => setNumericalAperture(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.01" />
+              <ValidatedNumberInput label="Numerical Aperture" value={numericalAperture} onChange={setNumericalAperture} step="0.01" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Overlap Factor Γ</label>
-              <input type="number" value={overlapFactor} onChange={(e) => setOverlapFactor(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.05" />
+              <ValidatedNumberInput label="Overlap Factor Γ" value={overlapFactor} onChange={setOverlapFactor} step="0.05" />
             </div>
           </div>
 

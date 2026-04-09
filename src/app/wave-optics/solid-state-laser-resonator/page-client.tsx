@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function SolidStateLaserResonatorPage() {
   const [crystalLength, setCrystalLength] = useURLState("crystalLength", 10); // mm
   const [crystalDiameter, setCrystalDiameter] = useURLState("crystalDiameter", 3); // mm
@@ -118,39 +119,39 @@ export default function SolidStateLaserResonatorPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Crystal Length (mm)</label>
-          <input type="number" className={inputStyle} value={crystalLength} onChange={e => setCrystalLength(+e.target.value)} />
+          <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Crystal Diameter (mm)</label>
-          <input type="number" className={inputStyle} value={crystalDiameter} onChange={e => setCrystalDiameter(+e.target.value)} />
+          <ValidatedNumberInput label="Crystal Diameter (mm)" value={crystalDiameter} onChange={setCrystalDiameter} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Wavelength (nm)</label>
-          <input type="number" className={inputStyle} value={wavelength} onChange={e => setWavelength(+e.target.value)} />
+          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">R₁ (HR mirror, mm)</label>
-          <input type="number" className={inputStyle} value={R1} onChange={e => setR1(+e.target.value)} />
+          <ValidatedNumberInput label="R₁ (HR mirror, mm)" value={R1} onChange={setR1} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">R₂ (OC mirror, mm)</label>
-          <input type="number" className={inputStyle} value={R2} onChange={e => setR2(+e.target.value)} />
+          <ValidatedNumberInput label="R₂ (OC mirror, mm)" value={R2} onChange={setR2} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Cavity Length (mm)</label>
-          <input type="number" className={inputStyle} value={L_cav} onChange={e => setL_cav(+e.target.value)} />
+          <ValidatedNumberInput label="Cavity Length (mm)" value={L_cav} onChange={setL_cav} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">OC Reflectivity</label>
-          <input type="number" className={inputStyle} value={R_oc} onChange={e => setR_oc(+e.target.value)} step={0.01} />
+          <ValidatedNumberInput label="OC Reflectivity" value={R_oc} onChange={setR_oc} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">HR Reflectivity</label>
-          <input type="number" className={inputStyle} value={R_hr} onChange={e => setR_hr(+e.target.value)} step={0.001} />
+          <ValidatedNumberInput label="HR Reflectivity" value={R_hr} onChange={setR_hr} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Crystal Index</label>
-          <input type="number" className={inputStyle} value={n_crystal} onChange={e => setN_crystal(+e.target.value)} step={0.01} />
+          <ValidatedNumberInput label="Crystal Index" value={n_crystal} onChange={setN_crystal} />
         </div>
       </div>
 

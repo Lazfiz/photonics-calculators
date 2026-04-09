@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface PhotorefractiveMaterial { name: string; n0: number; r33: number; r13: number; epsilon: number; color: string; type: string }
 
 const MATERIALS: Record<string, PhotorefractiveMaterial> = {
@@ -72,11 +73,7 @@ export default function PhotorefractivePage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Applied Field (V/m): {field.toExponential(2)}</label>
-          <input type="range" min={1000} max={100000} step={1000} value={field} onChange={e => setField(+e.target.value)} />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full bg-gray-800 rounded px-3 py-2" />
+          <ValidatedNumberInput label="Applied Field (V/m): {field.toExponential(2)}" value={wavelength} onChange={setWavelength} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Polarization</label>

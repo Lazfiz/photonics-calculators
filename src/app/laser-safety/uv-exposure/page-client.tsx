@@ -5,7 +5,8 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function UVExposurePage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 254); // nm (UV-C, mercury line)
   const [exposureTime, setExposureTime] = useURLState("exposureTime", 8); // hours
@@ -81,18 +82,15 @@ export default function UVExposurePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-              <input type="number" value={wavelength} onChange={e => setWavelength(parseFloat(e.target.value) || 200)}
-                step="1" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Exposure Time (hours)</label>
-              <input type="number" value={exposureTime} onChange={e => setExposureTime(Math.max(0.001, parseFloat(e.target.value) || 0.001))}
-                step="0.5" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Exposure Time (hours)" value={exposureTime} onChange={setExposureTime} step="0.5" />
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Beam/Source Area (cm²)</label>
-              <input type="number" value={beamArea} onChange={e => setBeamArea(Math.max(0.01, parseFloat(e.target.value) || 0.01))}
-                step="0.1" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Beam/Source Area (cm²)" value={beamArea} onChange={setBeamArea} step="0.1" />
             </div>
           </div>
         </div>

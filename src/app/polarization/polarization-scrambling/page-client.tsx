@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function PolarizationScramblingPage() {
   const [numSegments, setNumSegments] = useURLState("numSegments", 100);
   const [sweepMode, setSweepMode] = useState<"uniform" | "gaussian" | "random">("uniform");
@@ -105,13 +106,11 @@ export default function PolarizationScramblingPage() {
           </div>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Number of segments</label>
-            <input type="number" value={numSegments} onChange={(e) => setNumSegments(parseInt(e.target.value) || 1)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Number of segments" value={numSegments} onChange={setNumSegments} />
           </div>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Sweep rate (Hz)</label>
-            <input type="number" value={sweepRate} onChange={(e) => setSweepRate(parseFloat(e.target.value) || 1)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Sweep rate (Hz)" value={sweepRate} onChange={setSweepRate} />
           </div>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Input polarization</label>

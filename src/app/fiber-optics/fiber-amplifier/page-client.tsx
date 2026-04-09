@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function FiberAmplifierCalculator() {
   const [amplifierType, setAmplifierType] = useState<"EDFA" | "YDFA">("EDFA");
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // m
@@ -150,39 +151,32 @@ export default function FiberAmplifierCalculator() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Fiber Length (m)</label>
-              <input type="number" value={fiberLength} onChange={(e) => setFiberLength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Pump Power (mW)</label>
-              <input type="number" value={pumpPower} onChange={(e) => setPumpPower(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Pump Power (mW)" value={pumpPower} onChange={setPumpPower} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Pump Wavelength (nm)</label>
-              <input type="number" value={pumpWavelength} onChange={(e) => setPumpWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Signal Wavelength (nm)</label>
-              <input type="number" value={signalWavelength} onChange={(e) => setSignalWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Signal Wavelength (nm)" value={signalWavelength} onChange={setSignalWavelength} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Input Signal Power (dBm)</label>
-              <input type="number" value={inputPower} onChange={(e) => setInputPower(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Input Signal Power (dBm)" value={inputPower} onChange={setInputPower} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Dopant Conc. (ions/m³)</label>
-                <input type="number" value={erbiumConc} onChange={(e) => setErbiumConc(Number(e.target.value))}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="1e23" />
+                <ValidatedNumberInput label="Dopant Conc. (ions/m³)" value={erbiumConc} onChange={setErbiumConc} step="1e23" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Overlap Factor Γ</label>
-                <input type="number" value={overlap} onChange={(e) => setOverlap(Number(e.target.value))}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.05" />
+                <ValidatedNumberInput label="Overlap Factor Γ" value={overlap} onChange={setOverlap} step="0.05" />
               </div>
             </div>
           </div>

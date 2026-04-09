@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface Material {
   name: string;
   alpha: number; // CTE in 10⁻⁶/K
@@ -46,18 +47,15 @@ export default function ThermalExpansionPage() {
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">CTE α (×10⁻⁶/K)</label>
-          <input type="number" value={alpha} onChange={e => setAlpha(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white font-mono" step={0.1} />
+          <ValidatedNumberInput label="CTE α (×10⁻⁶/K)" value={alpha} onChange={setAlpha} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Temperature change ΔT (°C)</label>
-          <input type="number" value={dT} onChange={e => setDT(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" />
+          <ValidatedNumberInput label="Temperature change ΔT (°C)" value={dT} onChange={setDT} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Length L (mm)</label>
-          <input type="number" value={length} onChange={e => setLength(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" />
+          <ValidatedNumberInput label="Length L (mm)" value={length} onChange={setLength} />
         </div>
       </div>
 

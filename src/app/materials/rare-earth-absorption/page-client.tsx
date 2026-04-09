@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 // Rare earth ions: Er³⁺, Nd³⁺, Yb³⁺, Tm³⁺, Ho³⁺
 // Absorption cross-section data (simplified Gaussian peaks)
 interface REPeak { wl: number; sigma: number; fwhm: number; transition: string }
@@ -87,11 +88,11 @@ export default function RareEarthAbsorptionPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Concentration (ions/m³)</label>
-          <input type="number" value={concentration} onChange={e => setConcentration(+e.target.value)} className="w-full bg-gray-800 rounded px-3 py-2" step={1e23} />
+          <ValidatedNumberInput label="Concentration (ions/m³)" value={concentration} onChange={setConcentration} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Probe Wavelength (nm)</label>
-          <input type="number" value={pumpWl} onChange={e => setPumpWl(+e.target.value)} className="w-full bg-gray-800 rounded px-3 py-2" step={10} />
+          <ValidatedNumberInput label="Probe Wavelength (nm)" value={pumpWl} onChange={setPumpWl} />
         </div>
         <div className="flex items-end">
           <div className="bg-gray-900 rounded-lg p-3 w-full">

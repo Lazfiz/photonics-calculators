@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/thin-film",
   title: "Thin Film Calculators",
   description: "Thin-film optics calculators for AR coatings, dielectric stacks, dichroics, reflectors, interference filters, and deposition effects.",
 };

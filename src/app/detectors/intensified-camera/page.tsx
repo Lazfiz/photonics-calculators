@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/detectors/intensified-camera",
     title: 'Intensified Camera (ICCD)',
   description: 'Gain chain: photocathode MCP phosphor fiber optic CCD. Noise and sensitivity analysis.'
 };

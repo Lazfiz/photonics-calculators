@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function FiberLaserCalculator() {
   const [pumpPower, setPumpPower] = useURLState("pumpPower", 100); // W
   const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 976); // nm
@@ -108,49 +109,40 @@ export default function FiberLaserCalculator() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium mb-2">Pump Power (W)</label>
-              <input type="number" value={pumpPower} onChange={(e) => setPumpPower(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Pump Power (W)" value={pumpPower} onChange={setPumpPower} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Pump Wavelength (nm)</label>
-              <input type="number" value={pumpWavelength} onChange={(e) => setPumpWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Laser Wavelength (nm)</label>
-              <input type="number" value={laserWavelength} onChange={(e) => setLaserWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Laser Wavelength (nm)" value={laserWavelength} onChange={setLaserWavelength} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Fiber Length (m)</label>
-              <input type="number" value={fiberLength} onChange={(e) => setFiberLength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Absorption Coefficient (dB/m)</label>
-              <input type="number" value={absorptionCoeff} onChange={(e) => setAbsorptionCoeff(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.1" />
+              <ValidatedNumberInput label="Absorption Coefficient (dB/m)" value={absorptionCoeff} onChange={setAbsorptionCoeff} step="0.1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Slope Efficiency (%)</label>
-              <input type="number" value={slopeEfficiency} onChange={(e) => setSlopeEfficiency(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Slope Efficiency (%)" value={slopeEfficiency} onChange={setSlopeEfficiency} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Threshold Power (W)</label>
-              <input type="number" value={thresholdPower} onChange={(e) => setThresholdPower(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.1" />
+              <ValidatedNumberInput label="Threshold Power (W)" value={thresholdPower} onChange={setThresholdPower} step="0.1" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Output Coupling (%)</label>
-                <input type="number" value={outputCoupling} onChange={(e) => setOutputCoupling(Number(e.target.value))}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+                <ValidatedNumberInput label="Output Coupling (%)" value={outputCoupling} onChange={setOutputCoupling} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Cavity Loss (dB)</label>
-                <input type="number" value={cavityLoss} onChange={(e) => setCavityLoss(Number(e.target.value))}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.1" />
+                <ValidatedNumberInput label="Cavity Loss (dB)" value={cavityLoss} onChange={setCavityLoss} step="0.1" />
               </div>
             </div>
           </div>

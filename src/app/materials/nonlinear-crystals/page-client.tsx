@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface NLCrystal {
   name: string;
   type: string;
@@ -167,13 +168,11 @@ export default function NonlinearCrystalsPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Pump λ (nm)</label>
-          <input type="number" value={pumpWavelength} onChange={e => setPumpWavelength(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={300} max={5000} />
+          <ValidatedNumberInput label="Pump λ (nm)" value={pumpWavelength} onChange={setPumpWavelength} min={300} max={5000} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Crystal Length (mm)</label>
-          <input type="number" value={length} onChange={e => setLength(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={1} max={100} />
+          <ValidatedNumberInput label="Crystal Length (mm)" value={length} onChange={setLength} min={1} max={100} />
         </div>
       </div>
 

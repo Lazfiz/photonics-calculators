@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface Material {
   name: string;
   n2_cm2_W: number; // nonlinear index in cm²/W
@@ -44,18 +45,7 @@ export default function NonlinearIndexPage() {
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">n₂ (cm²/W)</label>
-          <input type="text" value={n2.toExponential(2)} onChange={e => setN2(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white font-mono" />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">Intensity I (W/cm²)</label>
-          <input type="text" value={intensity.toExponential(2)} onChange={e => setIntensity(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white font-mono" />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-          <input type="number" value={wavelength} onChange={e => setWavelength(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" />
+          <ValidatedNumberInput label="n₂ (cm²/W)" value={wavelength} onChange={setWavelength} />
         </div>
       </div>
 

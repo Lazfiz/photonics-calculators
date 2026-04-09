@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/polarization",
   title: "Polarization Calculators",
   description: "Polarization calculators for Jones and Stokes analysis, retarders, birefringence, Mueller matrices, and waveplate design.",
 };

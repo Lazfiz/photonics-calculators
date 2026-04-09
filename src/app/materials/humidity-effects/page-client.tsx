@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface Material {
   name: string;
   // Water absorption rate (μg/cm²/day at given RH)
@@ -96,14 +97,7 @@ export default function HumidityEffectsPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Relative Humidity (%)</label>
-          <input type="range" min={10} max={99} value={rh} onChange={e => setRh(Number(e.target.value))}
-            />
-          <span className="text-blue-400 text-sm">{rh}%</span>
-        </div>
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">Exposure time (days)</label>
-          <input type="number" value={exposureDays} onChange={e => setExposureDays(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={1} />
+          <ValidatedNumberInput label="Relative Humidity (%)" value={exposureDays} onChange={setExposureDays} min={1} />
         </div>
         <div className="flex items-end">
           <div className={`px-3 py-2 rounded text-sm font-bold ${safe ? "bg-green-900 text-green-400" : "bg-red-900 text-red-400"}`}>

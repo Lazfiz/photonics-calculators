@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/wave-optics/optical-waveguide",
     title: 'Optical Waveguide Modes',
   description: 'Slab waveguide mode analysis: V-number, NA, and effective index.'
 };

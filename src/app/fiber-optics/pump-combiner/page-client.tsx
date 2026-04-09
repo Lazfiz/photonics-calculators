@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function PumpCombinerCalculator() {
   const [numPumpPorts, setNumPumpPorts] = useURLState("numPumpPorts", 6);
   const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 976); // nm
@@ -91,39 +92,32 @@ export default function PumpCombinerCalculator() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium mb-2">Number of Pump Ports</label>
-              <input type="number" value={numPumpPorts} onChange={(e) => setNumPumpPorts(Math.max(1, Math.min(20, Number(e.target.value))))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Number of Pump Ports" value={numPumpPorts} onChange={setNumPumpPorts} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Pump Wavelength (nm)</label>
-              <input type="number" value={pumpWavelength} onChange={(e) => setPumpWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Pump Power per Port (W)</label>
-              <input type="number" value={pumpPowerPerPort} onChange={(e) => setPumpPowerPerPort(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Pump Power per Port (W)" value={pumpPowerPerPort} onChange={setPumpPowerPerPort} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Combiner Efficiency (%)</label>
-              <input type="number" value={combinerEfficiency} onChange={(e) => setCombinerEfficiency(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.5" />
+              <ValidatedNumberInput label="Combiner Efficiency (%)" value={combinerEfficiency} onChange={setCombinerEfficiency} step="0.5" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Signal Insertion Loss (dB)</label>
-              <input type="number" value={signalInsertionLoss} onChange={(e) => setSignalInsertionLoss(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.01" />
+              <ValidatedNumberInput label="Signal Insertion Loss (dB)" value={signalInsertionLoss} onChange={setSignalInsertionLoss} step="0.01" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Pump NA</label>
-                <input type="number" value={pumpNA} onChange={(e) => setPumpNA(Number(e.target.value))}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.01" />
+                <ValidatedNumberInput label="Pump NA" value={pumpNA} onChange={setPumpNA} step="0.01" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Signal NA</label>
-                <input type="number" value={signalNA} onChange={(e) => setSignalNA(Number(e.target.value))}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.01" />
+                <ValidatedNumberInput label="Signal NA" value={signalNA} onChange={setSignalNA} step="0.01" />
               </div>
             </div>
           </div>

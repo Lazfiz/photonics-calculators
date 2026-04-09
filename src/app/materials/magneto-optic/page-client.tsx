@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface MOMaterial {
   name: string;
   type: string; // "diamagnetic" or "paramagnetic"
@@ -136,21 +137,18 @@ export default function MagnetoOpticPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-          <input type="number" value={wavelength} onChange={e => setWavelength(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={300} max={2000} />
+          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={2000} />
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Magnetic Field (T)</label>
-          <input type="number" value={fieldStrength} onChange={e => setFieldStrength(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0.01} max={5} step={0.01} />
+          <ValidatedNumberInput label="Magnetic Field (T)" value={fieldStrength} onChange={setFieldStrength} min={0.01} max={5} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Crystal Length (mm)</label>
-          <input type="number" value={length} onChange={e => setLength(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={1} max={100} />
+          <ValidatedNumberInput label="Crystal Length (mm)" value={length} onChange={setLength} min={1} max={100} />
         </div>
       </div>
 

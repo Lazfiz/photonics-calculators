@@ -63,15 +63,15 @@ export default function DualBandARPage() {
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
-          <input type="number" value={nSub} onChange={e => setNSub(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="nsubstrate" value={nSub} onChange={setNSub} step="0.01" /></label>
         <ValidatedNumberInput label="Band 1 λ (nm)" value={wl1} onChange={setWl1} />
         <ValidatedNumberInput label="Band 2 λ (nm)" value={wl2} onChange={setWl2} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>1</sub> (top layer)</span>
-          <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="n1 (top layer)" value={n1} onChange={setN1} step="0.01" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>2</sub> (middle layer)</span>
-          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="n2 (middle layer)" value={n2} onChange={setN2} step="0.01" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>3</sub> (bottom layer)</span>
-          <input type="number" value={n3} onChange={e => setN3(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="n3 (bottom layer)" value={n3} onChange={setN3} step="0.01" /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">

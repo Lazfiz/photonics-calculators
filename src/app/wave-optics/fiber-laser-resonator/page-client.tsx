@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function FiberLaserResonatorPage() {
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 3); // m
   const [coreDiameter, setCoreDiameter] = useURLState("coreDiameter", 10); // µm
@@ -92,39 +93,39 @@ export default function FiberLaserResonatorPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Fiber Length (m)</label>
-          <input type="number" className={inputStyle} value={fiberLength} onChange={e => setFiberLength(+e.target.value)} step={0.1} min={0.1} />
+          <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} min={0.1} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Core Diameter (µm)</label>
-          <input type="number" className={inputStyle} value={coreDiameter} onChange={e => setCoreDiameter(+e.target.value)} step={1} />
+          <ValidatedNumberInput label="Core Diameter (µm)" value={coreDiameter} onChange={setCoreDiameter} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Numerical Aperture</label>
-          <input type="number" className={inputStyle} value={NA} onChange={e => setNA(+e.target.value)} step={0.01} />
+          <ValidatedNumberInput label="Numerical Aperture" value={NA} onChange={setNA} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Laser Wavelength (nm)</label>
-          <input type="number" className={inputStyle} value={wavelength} onChange={e => setWavelength(+e.target.value)} />
+          <ValidatedNumberInput label="Laser Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Pump Wavelength (nm)</label>
-          <input type="number" className={inputStyle} value={pumpWavelength} onChange={e => setPumpWavelength(+e.target.value)} />
+          <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Output Coupler R</label>
-          <input type="number" className={inputStyle} value={R_oc} onChange={e => setR_oc(+e.target.value)} step={0.01} min={0} max={1} />
+          <ValidatedNumberInput label="Output Coupler R" value={R_oc} onChange={setR_oc} min={0} max={1} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">HR Reflector R</label>
-          <input type="number" className={inputStyle} value={R_hr} onChange={e => setR_hr(+e.target.value)} step={0.001} min={0} max={1} />
+          <ValidatedNumberInput label="HR Reflector R" value={R_hr} onChange={setR_hr} min={0} max={1} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Background Loss (dB/m)</label>
-          <input type="number" className={inputStyle} value={alpha} onChange={e => setAlpha(+e.target.value)} step={0.01} />
+          <ValidatedNumberInput label="Background Loss (dB/m)" value={alpha} onChange={setAlpha} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
           <label className="text-sm text-gray-400">Small-Signal Gain (m⁻¹)</label>
-          <input type="number" className={inputStyle} value={gainPerMeter} onChange={e => setGainPerMeter(+e.target.value)} step={0.1} />
+          <ValidatedNumberInput label="Small-Signal Gain (m⁻¹)" value={gainPerMeter} onChange={setGainPerMeter} />
         </div>
       </div>
 

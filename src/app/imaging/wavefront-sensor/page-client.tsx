@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function WavefrontSensorPage() {
   const [numLenslets, setNumLenslets] = useURLState("numLenslets", 12);
   const [lensletPitch, setLensletPitch] = useURLState("lensletPitch", 150); // µm
@@ -50,27 +51,27 @@ export default function WavefrontSensorPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Lenslets across aperture</label>
-            <input type="number" step={1} min={4} max={64} value={numLenslets} onChange={e => setNumLenslets(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Lenslets across aperture" value={numLenslets} onChange={setNumLenslets} min={4} max={64} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Lenslet pitch (µm)</label>
-            <input type="number" step={10} value={lensletPitch} onChange={e => setLensletPitch(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Lenslet pitch (µm)" value={lensletPitch} onChange={setLensletPitch} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Lenslet focal length (mm)</label>
-            <input type="number" step={1} value={focalLength} onChange={e => setFocalLength(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Lenslet focal length (mm)" value={focalLength} onChange={setFocalLength} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-            <input type="number" step={1} value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Camera pixel size (µm)</label>
-            <input type="number" step={0.1} value={pixelSize} onChange={e => setPixelSize(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Camera pixel size (µm)" value={pixelSize} onChange={setPixelSize} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Camera sensor size (mm)</label>
-            <input type="number" step={0.5} value={sensorSize} onChange={e => setSensorSize(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Camera sensor size (mm)" value={sensorSize} onChange={setSensorSize} />
           </div>
         </div>
 

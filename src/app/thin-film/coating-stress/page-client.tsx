@@ -63,15 +63,15 @@ export default function CoatingStressPage() {
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">σ<sub>film</sub> (MPa)</span>
-          <input type="number" value={sigmaFilm} onChange={e => setSigmaFilm(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="σfilm (MPa)" value={sigmaFilm} onChange={setSigmaFilm} step="10" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">d<sub>film</sub> (nm)</span>
-          <input type="number" value={dFilm} onChange={e => setDFilm(+e.target.value)} step="10" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="dfilm (nm)" value={dFilm} onChange={setDFilm} step="10" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">E<sub>substrate</sub> (GPa)</span>
-          <input type="number" value={eSub} onChange={e => setESub(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="Esubstrate (GPa)" value={eSub} onChange={setESub} step="1" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">ν<sub>substrate</sub></span>
-          <input type="number" value={nuSub} onChange={e => setNuSub(+e.target.value)} step="0.01" min="0" max="0.5" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="νsubstrate" value={nuSub} onChange={setNuSub} min={0} max={0.5} step="0.01" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">t<sub>substrate</sub> (mm)</span>
-          <input type="number" value={tSub} onChange={e => setTSub(+e.target.value)} step="0.1" min="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="tsubstrate (mm)" value={tSub} onChange={setTSub} min={0.01} step="0.1" /></label>
         <ValidatedNumberInput label="Number of layers" value={numLayers} onChange={setNumLayers} min={1} max={100} />
       </div>
 

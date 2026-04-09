@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function PhotonicCrystalFiberCalculator() {
   const [pitch, setPitch] = useURLState("pitch", 4.5); // μm (Λ)
   const [holeDiameter, setHoleDiameter] = useURLState("holeDiameter", 2.7); // μm (d)
@@ -105,18 +106,15 @@ export default function PhotonicCrystalFiberCalculator() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium mb-2">Pitch Λ (μm)</label>
-              <input type="number" value={pitch} onChange={(e) => setPitch(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.1" min="0.5" />
+              <ValidatedNumberInput label="Pitch Λ (μm)" value={pitch} onChange={setPitch} min={0.5} step="0.1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Hole Diameter d (μm)</label>
-              <input type="number" value={holeDiameter} onChange={(e) => setHoleDiameter(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.1" min="0.1" />
+              <ValidatedNumberInput label="Hole Diameter d (μm)" value={holeDiameter} onChange={setHoleDiameter} min={0.1} step="0.1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
-              <input type="number" value={wavelength} onChange={(e) => setWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="1" />
+              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
           </div>
 

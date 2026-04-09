@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-center py-1 border-b border-gray-800">
@@ -103,8 +104,7 @@ export default function DegreeOfPolarizationPage() {
           ].map(({ label, val, set, step }) => (
             <div key={label} className="mb-3">
               <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <input type="number" step={step} value={val} onChange={(e) => set(parseFloat(e.target.value) || 0)}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
             </div>
           ))}
           <div className="mt-3 flex flex-wrap gap-2">
@@ -166,11 +166,9 @@ export default function DegreeOfPolarizationPage() {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Spectral DoP Analysis</h2>
             <div className="flex gap-2">
-              <input type="number" value={centerWl} onChange={(e) => setCenterWl(parseFloat(e.target.value) || 0)}
-                className="w-24 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
+              <ValidatedNumberInput label="centerWl" value={centerWl} onChange={setCenterWl} />
               <span className="text-sm text-gray-400 self-center">nm ±</span>
-              <input type="number" value={bandwidth} onChange={(e) => setBandwidth(parseFloat(e.target.value) || 0)}
-                className="w-20 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
+              <ValidatedNumberInput label="nm ±" value={bandwidth} onChange={setBandwidth} />
               <span className="text-sm text-gray-400 self-center">nm, {retardance} waves</span>
             </div>
           </div>

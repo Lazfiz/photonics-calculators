@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function AnsiIecComparisonPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 632);
   const [exposureTime, setExposureTime] = useURLState("exposureTime", 0.25);
@@ -83,15 +84,15 @@ export default function AnsiIecComparisonPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Exposure Time (s)</label>
-          <input type="number" step="0.01" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} step="0.01" />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Pulse Energy (µJ)</label>
-          <input type="number" step="0.1" value={pulseEnergy} onChange={e => setPulseEnergy(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Pulse Energy (µJ)" value={pulseEnergy} onChange={setPulseEnergy} step="0.1" />
         </div>
       </div>
 

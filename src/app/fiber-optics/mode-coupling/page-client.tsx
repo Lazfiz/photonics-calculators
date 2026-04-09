@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function ModeCouplingCalculator() {
   const [couplingLength, setCouplingLength] = useURLState("couplingLength", 1000); // μm
   const [couplingCoeff, setCouplingCoeff] = useURLState("couplingCoeff", 0.5); // mm⁻¹
@@ -84,23 +85,19 @@ export default function ModeCouplingCalculator() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium mb-2">Coupling Length (μm)</label>
-              <input type="number" value={couplingLength} onChange={(e) => setCouplingLength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="10" min="1" />
+              <ValidatedNumberInput label="Coupling Length (μm)" value={couplingLength} onChange={setCouplingLength} min={1} step="10" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Coupling Coefficient κ (mm⁻¹)</label>
-              <input type="number" value={couplingCoeff} onChange={(e) => setCouplingCoeff(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.01" min="0.01" />
+              <ValidatedNumberInput label="Coupling Coefficient κ (mm⁻¹)" value={couplingCoeff} onChange={setCouplingCoeff} min={0.01} step="0.01" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Propagation Constant Difference Δβ (mm⁻¹)</label>
-              <input type="number" value={propConstDiff} onChange={(e) => setPropConstDiff(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.01" />
+              <ValidatedNumberInput label="Propagation Constant Difference Δβ (mm⁻¹)" value={propConstDiff} onChange={setPropConstDiff} step="0.01" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Input Power (mW)</label>
-              <input type="number" value={inputPower} onChange={(e) => setInputPower(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.1" min="0.01" />
+              <ValidatedNumberInput label="Input Power (mW)" value={inputPower} onChange={setInputPower} min={0.01} step="0.1" />
             </div>
           </div>
 

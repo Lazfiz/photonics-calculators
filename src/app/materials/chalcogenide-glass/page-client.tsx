@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface ChalcogenideGlass {
   name: string;
   composition: string;
@@ -126,8 +127,7 @@ export default function ChalcogenideGlassPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-          <input type="number" value={wavelength} onChange={e => setWavelength(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={600} max={14000} step={50} />
+          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={600} max={14000} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Plot Mode</label>

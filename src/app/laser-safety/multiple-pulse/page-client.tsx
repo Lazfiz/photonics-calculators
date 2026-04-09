@@ -5,7 +5,8 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function MultiplePulsePage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 532);
   const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 0.1); // µJ
@@ -113,23 +114,23 @@ export default function MultiplePulsePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Pulse Energy (µJ)</label>
-          <input type="number" step="0.01" value={pulseEnergy} onChange={e => setPulseEnergy(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Pulse Energy (µJ)" value={pulseEnergy} onChange={setPulseEnergy} step="0.01" />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Pulse Width (ns)</label>
-          <input type="number" value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Pulse Width (ns)" value={pulseWidth} onChange={setPulseWidth} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">PRF (Hz)</label>
-          <input type="number" value={prf} onChange={e => setPrf(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="PRF (Hz)" value={prf} onChange={setPrf} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Number of Pulses</label>
-          <input type="number" value={numPulses} onChange={e => setNumPulses(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Number of Pulses" value={numPulses} onChange={setNumPulses} />
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/spectroscopy/spectral-resolution",
     title: 'Spectral Resolution Calculator',
   description: 'Compare spectral resolution across grating, prism, and Fabry-Pérot spectrometers.'
 };

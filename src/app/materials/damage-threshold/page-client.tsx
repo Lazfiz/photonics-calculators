@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface Material {
   name: string;
   // LIDT in J/cm² at various pulse durations (ns), reference 1064nm
@@ -85,51 +86,21 @@ export default function DamageThresholdPage() {
         <p>LIDT(τ) = LIDT_ref · (τ/τ_ref)^0.5 &nbsp;|&nbsp; F = E/A &nbsp;|&nbsp; I = P/A</p>
       </div>
 
+      {pulseMode ? (
       <div className="flex gap-4 mb-6">
-        <label className="flex items-center gap-2 text-sm text-gray-400">
-          <input type="checkbox" checked={isCW} onChange={e => setIsCW(e.target.checked)} className="rounded" />
-          CW mode
-        </label>
-        <label className="flex items-center gap-2 text-sm text-gray-400">
-          <input type="checkbox" checked={useCoating} onChange={e => setUseCoating(e.target.checked)} className="rounded" />
-          Include AR coating limit
-        </label>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Material</label>
-          <select value={selected} onChange={e => setSelected(e.target.value)}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white">
-            {Object.entries(materials).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
-          </select>
+          <ValidatedNumberInput label="Pulse duration (s)" value={pulseDuration} onChange={setPulseDuration} min={0.001} step="0.1" />
         </div>
-        {!isCW ? (
-          <>
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">Pulse duration (ns)</label>
-              <input type="number" value={pulseDuration} onChange={e => setPulseDuration(Number(e.target.value))}
-                className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0.001} step="0.1" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">Pulse energy (J)</label>
-              <input type="number" value={energy} onChange={e => setEnergy(Number(e.target.value))}
-                className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0} step="0.01" />
-            </div>
-          </>
-        ) : (
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">CW Power (W)</label>
-            <input type="number" value={cwPower} onChange={e => setCwPower(Number(e.target.value))}
-              className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0} />
-          </div>
-        )}
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Beam diameter (cm)</label>
-          <input type="number" value={beamDiam} onChange={e => setBeamDiam(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0.01} step="0.01" />
+          <ValidatedNumberInput label="Pulse energy (J)" value={energy} onChange={setEnergy} min={0} step="0.01" />
         </div>
       </div>
+      ) : (
+        <div className="mb-4">
+          <ValidatedNumberInput label="CW Power (W)" value={cwPower} onChange={setCwPower} min={0} />
+        </div>
+      )}
+      <ValidatedNumberInput label="Beam diameter (cm)" value={beamDiam} onChange={setBeamDiam} min={0.01} step="0.01" />
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">

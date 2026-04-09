@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function FiberCouplerCalculator() {
   const [couplingLength, setCouplingLength] = useURLState("couplingLength", 10); // mm
   const [couplingCoeff, setCouplingCoeff] = useURLState("couplingCoeff", 0.5); // 1/mm
@@ -116,28 +117,23 @@ export default function FiberCouplerCalculator() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Coupling Length (mm)</label>
-              <input type="number" value={couplingLength} onChange={(e) => setCouplingLength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.5" />
+              <ValidatedNumberInput label="Coupling Length (mm)" value={couplingLength} onChange={setCouplingLength} step="0.5" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Coupling Coefficient κ (1/mm)</label>
-              <input type="number" value={couplingCoeff} onChange={(e) => setCouplingCoeff(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.05" />
+              <ValidatedNumberInput label="Coupling Coefficient κ (1/mm)" value={couplingCoeff} onChange={setCouplingCoeff} step="0.05" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Excess Loss (dB)</label>
-              <input type="number" value={excessLoss} onChange={(e) => setExcessLoss(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.01" />
+              <ValidatedNumberInput label="Excess Loss (dB)" value={excessLoss} onChange={setExcessLoss} step="0.01" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Input Power (dBm)</label>
-              <input type="number" value={inputPower} onChange={(e) => setInputPower(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.1" />
+              <ValidatedNumberInput label="Input Power (dBm)" value={inputPower} onChange={setInputPower} step="0.1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
-              <input type="number" value={wavelength} onChange={(e) => setWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
             </div>
           </div>
 

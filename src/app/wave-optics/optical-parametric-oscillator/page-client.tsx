@@ -2,7 +2,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 const hc = 1.986446e-25; // J·m
 const c = 3e8;
 
@@ -121,47 +122,20 @@ export default function OPOCalculator() {
           <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
             <h3 className="text-orange-400 font-semibold mb-4">Parameters</h3>
 
-            <label className="block mb-3">
-              <span className="text-sm text-gray-400">Pump λ (nm)</span>
-              <input type="number" value={pumpWavelength} onChange={e => setPumpWavelength(+e.target.value)} step={1} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
-            </label>
-            <label className="block mb-3">
-              <span className="text-sm text-gray-400">Crystal Length (mm)</span>
-              <input type="number" value={crystalLength} onChange={e => setCrystalLength(+e.target.value)} step={1} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
-            </label>
-            <label className="block mb-3">
-              <span className="text-sm text-gray-400">d_eff (pm/V)</span>
-              <input type="number" value={dEff} onChange={e => setDEff(+e.target.value)} step={0.1} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
-            </label>
+            <ValidatedNumberInput label="Pump λ (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
+            <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} />
+            <ValidatedNumberInput label="d_eff (pm/V)" value={dEff} onChange={setDEff} />
 
             <p className="text-xs text-gray-500 mb-2">Refractive Indices</p>
             <div className="grid grid-cols-3 gap-2 mb-3">
-              <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-                <span className="text-xs text-gray-400">nₚ</span>
-                <input type="number" value={nPump} onChange={e => setNPump(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
-              </label>
-              <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-                <span className="text-xs text-gray-400">nₛ</span>
-                <input type="number" value={nSignal} onChange={e => setNSignal(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
-              </label>
-              <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-                <span className="text-xs text-gray-400">nᵢ</span>
-                <input type="number" value={nIdler} onChange={e => setNIdler(+e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
-              </label>
+              <ValidatedNumberInput label="nₚ" value={nPump} onChange={setNPump} />
+              <ValidatedNumberInput label="nₛ" value={nSignal} onChange={setNSignal} />
+              <ValidatedNumberInput label="nᵢ" value={nIdler} onChange={setNIdler} />
             </div>
 
-            <label className="block mb-3">
-              <span className="text-sm text-gray-400">Pump Power (W)</span>
-              <input type="number" value={pumpPower} onChange={e => setPumpPower(+e.target.value)} step={0.5} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
-            </label>
-            <label className="block mb-3">
-              <span className="text-sm text-gray-400">Beam Radius (μm)</span>
-              <input type="number" value={beamRadius} onChange={e => setBeamRadius(+e.target.value)} step={5} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
-            </label>
-            <label className="block mb-3">
-              <span className="text-sm text-gray-400">Walk-off (deg)</span>
-              <input type="number" value={walkOff} onChange={e => setWalkOff(+e.target.value)} step={0.1} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
-            </label>
+            <ValidatedNumberInput label="Pump Power (W)" value={pumpPower} onChange={setPumpPower} />
+            <ValidatedNumberInput label="Beam Radius (μm)" value={beamRadius} onChange={setBeamRadius} />
+            <ValidatedNumberInput label="Walk-off (deg)" value={walkOff} onChange={setWalkOff} />
 
             <label className="flex items-center gap-2 text-gray-300 mt-4">
               <input type="checkbox" checked={showPhaseMatching} onChange={e => setShowPhaseMatching(e.target.checked)} className="rounded" />

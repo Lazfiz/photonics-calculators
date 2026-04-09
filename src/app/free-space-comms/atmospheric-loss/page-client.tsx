@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function AtmosphericLossPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550);
   const [visibility, setVisibility] = useURLState("visibility", 23); // km
@@ -98,8 +99,7 @@ export default function AtmosphericLossPage() {
           ].map(([label, val, set]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
-              <input type="number" value={val} onChange={(e) => set(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white" />
+              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
             </div>
           ))}
         </div>

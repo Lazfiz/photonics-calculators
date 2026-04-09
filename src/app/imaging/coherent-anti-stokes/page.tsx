@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/imaging/coherent-anti-stokes",
     title: 'CARS Imaging Calculator',
   description: 'Coherent Anti-Stokes Raman Scattering: vibrational shift, CARS wavelength, and laser parameters.'
 };

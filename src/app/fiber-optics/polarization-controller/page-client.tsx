@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function PolarizationControllerCalculator() {
   const [birefringence, setBirefringence] = useURLState("birefringence", 3e-4); // Δn
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 1); // m per coil section
@@ -148,40 +149,33 @@ export default function PolarizationControllerCalculator() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium mb-2">Birefringence Δn</label>
-              <input type="number" value={birefringence} onChange={(e) => setBirefringence(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="1e-5" />
+              <ValidatedNumberInput label="Birefringence Δn" value={birefringence} onChange={setBirefringence} step="1e-5" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Fiber Length per Section (m)</label>
-              <input type="number" value={fiberLength} onChange={(e) => setFiberLength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.1" />
+              <ValidatedNumberInput label="Fiber Length per Section (m)" value={fiberLength} onChange={setFiberLength} step="0.1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Number of Sections</label>
-              <input type="number" value={numSections} onChange={(e) => setNumSections(Math.max(1, Math.min(6, Number(e.target.value))))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Number of Sections" value={numSections} onChange={setNumSections} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
-              <input type="number" value={wavelength} onChange={(e) => setWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Input Azimuth (°)</label>
-                <input type="number" value={inputAzimuth} onChange={(e) => setInputAzimuth(Number(e.target.value))}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+                <ValidatedNumberInput label="Input Azimuth (°)" value={inputAzimuth} onChange={setInputAzimuth} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Input Ellipticity (°)</label>
-                <input type="number" value={inputEllipticity} onChange={(e) => setInputEllipticity(Number(e.target.value))}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+                <ValidatedNumberInput label="Input Ellipticity (°)" value={inputEllipticity} onChange={setInputEllipticity} />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Coil Radius (mm)</label>
-              <input type="number" value={coilRadii} onChange={(e) => setCoilRadii(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Coil Radius (mm)" value={coilRadii} onChange={setCoilRadii} />
             </div>
           </div>
 

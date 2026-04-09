@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/imaging/adaptive-optics",
     title: 'Adaptive Optics Calculator',
   description: 'AO correction performance, Strehl ratio, and deformable mirror requirements.'
 };

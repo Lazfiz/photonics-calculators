@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function SecondHarmonicPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm, fundamental
   const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 10); // nJ
@@ -68,27 +69,27 @@ export default function SecondHarmonicPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Fundamental wavelength (nm)</label>
-            <input type="number" step={10} value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Fundamental wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Pulse energy (nJ)</label>
-            <input type="number" step={1} value={pulseEnergy} onChange={e => setPulseEnergy(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Pulse energy (nJ)" value={pulseEnergy} onChange={setPulseEnergy} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Pulse width (fs)</label>
-            <input type="number" step={10} value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Pulse width (fs)" value={pulseWidth} onChange={setPulseWidth} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">NA</label>
-            <input type="number" step={0.01} value={na} onChange={e => setNa(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="NA" value={na} onChange={setNa} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">χ² effective (pm/V)</label>
-            <input type="number" step={0.1} value={chi2} onChange={e => setChi2(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="χ² effective (pm/V)" value={chi2} onChange={setChi2} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Sample thickness (µm)</label>
-            <input type="number" step={10} value={thickness} onChange={e => setThickness(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Sample thickness (µm)" value={thickness} onChange={setThickness} />
           </div>
         </div>
 

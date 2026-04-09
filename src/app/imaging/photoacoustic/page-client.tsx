@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function PhotoacousticPage() {
   const [laserWavelength, setLaserWavelength] = useURLState("laserWavelength", 750); // nm
   const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 10); // mJ
@@ -78,39 +79,39 @@ export default function PhotoacousticPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Laser wavelength (nm)</label>
-            <input type="number" step={10} value={laserWavelength} onChange={e => setLaserWavelength(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Laser wavelength (nm)" value={laserWavelength} onChange={setLaserWavelength} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Pulse energy (mJ)</label>
-            <input type="number" step={1} value={pulseEnergy} onChange={e => setPulseEnergy(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Pulse energy (mJ)" value={pulseEnergy} onChange={setPulseEnergy} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Pulse width (ns)</label>
-            <input type="number" step={1} value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Pulse width (ns)" value={pulseWidth} onChange={setPulseWidth} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Fluence (mJ/cm²)</label>
-            <input type="number" step={1} value={fluence} onChange={e => setFluence(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Fluence (mJ/cm²)" value={fluence} onChange={setFluence} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Repetition rate (Hz)</label>
-            <input type="number" step={5} value={repetitionRate} onChange={e => setRepetitionRate(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Repetition rate (Hz)" value={repetitionRate} onChange={setRepetitionRate} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Absorption coeff µ_a (cm⁻¹)</label>
-            <input type="number" step={0.5} value={absorptionCoeff} onChange={e => setAbsorptionCoeff(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Absorption coeff µ_a (cm⁻¹)" value={absorptionCoeff} onChange={setAbsorptionCoeff} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Scattering coeff µ_s (cm⁻¹)</label>
-            <input type="number" step={10} value={scatteringCoeff} onChange={e => setScatteringCoeff(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Scattering coeff µ_s (cm⁻¹)" value={scatteringCoeff} onChange={setScatteringCoeff} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Grüneisen parameter Γ</label>
-            <input type="number" step={0.05} value={gruneisen} onChange={e => setGruneisen(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Grüneisen parameter Γ" value={gruneisen} onChange={setGruneisen} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Detector center freq (MHz)</label>
-            <input type="number" step={1} value={detectorFreq} onChange={e => setDetectorFreq(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Detector center freq (MHz)" value={detectorFreq} onChange={setDetectorFreq} />
           </div>
         </div>
 

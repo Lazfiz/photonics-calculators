@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/materials/sellmeier",
     title: 'Sellmeier Equation',
   description: 'Calculate refractive index from Sellmeier coefficients across wavelength.'
 };

@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function IlluminationPage() {
   const [objMag, setObjMag] = useURLState("objMag", 40);
   const [objNa, setObjNa] = useURLState("objNa", 0.95);
@@ -47,27 +48,27 @@ export default function IlluminationPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Objective magnification</label>
-            <input type="number" step={1} value={objMag} onChange={e => setObjMag(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Objective magnification" value={objMag} onChange={setObjMag} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Objective NA</label>
-            <input type="number" step={0.01} value={objNa} onChange={e => setObjNa(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Objective NA" value={objNa} onChange={setObjNa} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Tube length (mm)</label>
-            <input type="number" step={10} value={tubeFocal} onChange={e => setTubeFocal(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Tube length (mm)" value={tubeFocal} onChange={setTubeFocal} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Condenser NA</label>
-            <input type="number" step={0.01} value={condenserNa} onChange={e => setCondenserNa(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Condenser NA" value={condenserNa} onChange={setCondenserNa} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Field diaphragm (mm)</label>
-            <input type="number" step={1} value={fieldDiaphragm} onChange={e => setFieldDiaphragm(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Field diaphragm (mm)" value={fieldDiaphragm} onChange={setFieldDiaphragm} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Condenser focal length (mm)</label>
-            <input type="number" step={5} value={condenserFocal} onChange={e => setCondenserFocal(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Condenser focal length (mm)" value={condenserFocal} onChange={setCondenserFocal} />
           </div>
         </div>
 

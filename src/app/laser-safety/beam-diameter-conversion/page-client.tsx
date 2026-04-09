@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function BeamDiameterConversionPage() {
   const [inputValue, setInputValue] = useURLState("inputValue", 1);
   const [inputType, setInputType] = useState<"1e2" | "1e" | "fwhm">("1e2");
@@ -77,14 +78,7 @@ export default function BeamDiameterConversionPage() {
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Diameter (mm)</label>
-              <input
-                type="number"
-                value={inputValue}
-                onChange={e => setInputValue(Math.max(0.001, parseFloat(e.target.value) || 0.001))}
-                step="0.1"
-                min="0.001"
-                className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white"
-              />
+              <ValidatedNumberInput label="Diameter (mm)" value={inputValue} onChange={setInputValue} min={0.001} step="0.1" />
             </div>
           </div>
         </div>

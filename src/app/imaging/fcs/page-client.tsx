@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function FCSPage() {
   const [w0, setW0] = useURLState("w0", 0.3); // µm
   const [z0, setZ0] = useURLState("z0", 1.5); // µm axial
@@ -62,27 +63,27 @@ export default function FCSPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Lateral beam waist w₀ (µm)</label>
-            <input type="number" step={0.01} value={w0} onChange={e => setW0(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Lateral beam waist w₀ (µm)" value={w0} onChange={setW0} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Axial parameter z₀ (µm)</label>
-            <input type="number" step={0.1} value={z0} onChange={e => setZ0(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Axial parameter z₀ (µm)" value={z0} onChange={setZ0} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Diffusion time τ_D (ms)</label>
-            <input type="number" step={0.01} value={tauD} onChange={e => setTauD(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Diffusion time τ_D (ms)" value={tauD} onChange={setTauD} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Molecular brightness (kHz/particle)</label>
-            <input type="number" step={1000} value={brightness} onChange={e => setBrightness(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Molecular brightness (kHz/particle)" value={brightness} onChange={setBrightness} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Concentration (nM)</label>
-            <input type="number" step={1} value={concentration} onChange={e => setConcentration(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Concentration (nM)" value={concentration} onChange={setConcentration} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Triplet fraction</label>
-            <input type="number" step={0.01} value={tripletFrac} onChange={e => setTripletFrac(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Triplet fraction" value={tripletFrac} onChange={setTripletFrac} />
           </div>
         </div>
 

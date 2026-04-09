@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function ContrastMethodsPage() {
   const [method, setMethod] = useState("phase");
   const [na, setNa] = useURLState("na", 1.4);
@@ -65,31 +66,31 @@ export default function ContrastMethodsPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">NA</label>
-            <input type="number" step={0.01} value={na} onChange={e => setNa(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="NA" value={na} onChange={setNa} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-            <input type="number" step={1} value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Refractive index (medium)</label>
-            <input type="number" step={0.01} value={n} onChange={e => setN(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Refractive index (medium)" value={n} onChange={setN} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Sample thickness (µm)</label>
-            <input type="number" step={0.1} value={sampleThickness} onChange={e => setSampleThickness(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Sample thickness (µm)" value={sampleThickness} onChange={setSampleThickness} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Δn (sample - medium)</label>
-            <input type="number" step={0.001} value={dnSample} onChange={e => setDnSample(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Δn (sample - medium)" value={dnSample} onChange={setDnSample} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Phase plate retardation (λ)</label>
-            <input type="number" step={0.05} min={0.05} max={1.0} value={phaseShift} onChange={e => setPhaseShift(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Phase plate retardation (λ)" value={phaseShift} onChange={setPhaseShift} min={0.05} max={1.0} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">DIC shear (λ)</label>
-            <input type="number" step={0.01} value={shearAmount} onChange={e => setShearAmount(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="DIC shear (λ)" value={shearAmount} onChange={setShearAmount} />
           </div>
         </div>
 

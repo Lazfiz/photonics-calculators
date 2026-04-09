@@ -5,7 +5,8 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function MaximumExposurePage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 632); // nm
   const [power, setPower] = useURLState("power", 0.001); // W
@@ -127,23 +128,19 @@ export default function MaximumExposurePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-              <input type="number" value={wavelength} onChange={e => setWavelength(parseFloat(e.target.value) || 400)}
-                step="1" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Power (W)</label>
-              <input type="number" value={power} onChange={e => setPower(Math.max(0, parseFloat(e.target.value) || 0))}
-                step="any" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Power (W)" value={power} onChange={setPower} step="any" />
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Beam Diameter (mm)</label>
-              <input type="number" value={beamDiam} onChange={e => setBeamDiam(Math.max(0.01, parseFloat(e.target.value) || 0.01))}
-                step="0.1" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDiam} onChange={setBeamDiam} step="0.1" />
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">MPE Reference (mJ/cm²)</label>
-              <input type="number" value={mpeValue} onChange={e => setMpeValue(Math.max(0.001, parseFloat(e.target.value) || 0.001))}
-                step="0.1" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="MPE Reference (mJ/cm²)" value={mpeValue} onChange={setMpeValue} step="0.1" />
             </div>
           </div>
         </div>

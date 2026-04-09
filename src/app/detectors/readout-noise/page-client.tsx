@@ -31,7 +31,7 @@ export default function ReadoutNoisePage() {
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read noise σ<sub>read</sub> (e⁻ rms)</span>
-          <input type="number" value={readNoise} onChange={e => setReadNoise(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="Read noise σread (e⁻ rms)" value={readNoise} onChange={setReadNoise} step="1" /></label>
         <ValidatedNumberInput label="Dark current (e⁻/s/pixel)" value={darkCurrent} onChange={setDarkCurrent} step="0.01" />
         <ValidatedNumberInput label="Exposure time (s)" value={exposureTime} onChange={setExposureTime} step="0.001" />
       </div>

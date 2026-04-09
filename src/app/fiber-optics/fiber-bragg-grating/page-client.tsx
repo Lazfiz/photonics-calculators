@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function FiberBraggGratingCalculator() {
   const [braggWavelength, setBraggWavelength] = useURLState("braggWavelength", 1550); // nm
   const [effectiveIndex, setEffectiveIndex] = useURLState("effectiveIndex", 1.468);
@@ -141,29 +142,24 @@ export default function FiberBraggGratingCalculator() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Bragg Wavelength (nm)</label>
-              <input type="number" value={braggWavelength} onChange={(e) => setBraggWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="1" />
+              <ValidatedNumberInput label="Bragg Wavelength (nm)" value={braggWavelength} onChange={setBraggWavelength} step="1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Effective Index n_eff</label>
-              <input type="number" value={effectiveIndex} onChange={(e) => setEffectiveIndex(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.0001" />
+              <ValidatedNumberInput label="Effective Index n_eff" value={effectiveIndex} onChange={setEffectiveIndex} step="0.0001" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Grating Length (mm)</label>
-              <input type="number" value={gratingLength} onChange={(e) => setGratingLength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.5" min="0.1" />
+              <ValidatedNumberInput label="Grating Length (mm)" value={gratingLength} onChange={setGratingLength} min={0.1} step="0.5" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Index Modulation Δn</label>
-              <input type="number" value={indexModulation} onChange={(e) => setIndexModulation(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="1e-5" />
+              <ValidatedNumberInput label="Index Modulation Δn" value={indexModulation} onChange={setIndexModulation} step="1e-5" />
             </div>
             {gratingType === "chirped" && (
               <div>
                 <label className="block text-sm font-medium mb-2">Chirp Rate (nm/mm)</label>
-                <input type="number" value={chirpRate} onChange={(e) => setChirpRate(Number(e.target.value))}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.01" />
+                <ValidatedNumberInput label="Chirp Rate (nm/mm)" value={chirpRate} onChange={setChirpRate} step="0.01" />
               </div>
             )}
           </div>

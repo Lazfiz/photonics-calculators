@@ -95,12 +95,12 @@ export default function StressMeasurementPage() {
         <ValidatedNumberInput label="Substrate Thickness (mm)" value={substrateThickness} onChange={setSubstrateThickness} step="0.05" />
         <ValidatedNumberInput label="Film Thickness (nm)" value={thickness} onChange={setThickness} step="1" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>film</sub></span>
-          <input type="number" value={nFilm} onChange={e => setNFilm(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="nfilm" value={nFilm} onChange={setNFilm} step="0.01" /></label>
         <ValidatedNumberInput label="Center Deflection (μm)" value={deflection} onChange={setDeflection} step="0.1" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">E<sub>substrate</sub> (GPa)</span>
-          <input type="number" value={youngsModulus} onChange={e => setYoungsModulus(+e.target.value)} step="1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="Esubstrate (GPa)" value={youngsModulus} onChange={setYoungsModulus} step="1" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">ν<sub>substrate</sub></span>
-          <input type="number" value={poissonRatio} onChange={e => setPoissonRatio(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="νsubstrate" value={poissonRatio} onChange={setPoissonRatio} step="0.01" /></label>
         <ValidatedNumberInput label="Deposition Temp (°C)" value={depositionTemp} onChange={setDepositionTemp} step="10" />
         <ValidatedNumberInput label="Measurement Temp (°C)" value={temperature} onChange={setTemperature} step="1" />
       </div>

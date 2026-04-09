@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-center py-1 border-b border-gray-800">
@@ -114,28 +115,23 @@ export default function OpticalActivityPage() {
 
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Specific rotation [α]<sub>D</sub><sup>20</sup> (deg·mL/g·dm)</label>
-            <input type="number" step={0.1} value={specificRotation} onChange={(e) => setSpecificRotation(parseFloat(e.target.value) || 0)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="specificRotation" value={specificRotation} onChange={setSpecificRotation} />
           </div>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Concentration (g/100mL)</label>
-            <input type="number" step={0.1} value={concentration} onChange={(e) => setConcentration(parseFloat(e.target.value) || 0)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Concentration (g/100mL)" value={concentration} onChange={setConcentration} />
           </div>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Path length (dm)</label>
-            <input type="number" step={0.1} value={pathLength} onChange={(e) => setPathLength(parseFloat(e.target.value) || 0)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Path length (dm)" value={pathLength} onChange={setPathLength} />
           </div>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Temperature (°C)</label>
-            <input type="number" step={0.1} value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value) || 0)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Temperature (°C)" value={temperature} onChange={setTemperature} />
           </div>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Wavelength (nm)</label>
-            <input type="number" value={wavelength} onChange={(e) => setWavelength(parseFloat(e.target.value) || 0)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div className="mt-3 flex gap-2">
             <button onClick={() => setWavelength(589)} className="px-3 py-1 text-xs bg-gray-800 border border-gray-700 rounded hover:border-blue-500">Na D-line</button>

@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 const media = [
   { label: "Air", n: 1.0 },
   { label: "Water", n: 1.33 },
@@ -53,13 +54,11 @@ export default function ResolutionPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Numerical Aperture (NA)</label>
-            <input type="number" step={0.01} min={0.01} max={1.8} value={na} onChange={e => setNa(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Numerical Aperture (NA)" value={na} onChange={setNa} min={0.01} max={1.8} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-            <input type="number" step={1} min={200} max={2000} value={wavelength} onChange={e => setWavelength(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={2000} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Immersion Medium</label>
@@ -71,8 +70,7 @@ export default function ResolutionPage() {
           {mediumIdx === 3 && (
             <div>
               <label className="block text-sm text-gray-400 mb-1">Custom refractive index</label>
-              <input type="number" step={0.01} min={1} max={2} value={customN} onChange={e => setCustomN(+e.target.value)}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+              <ValidatedNumberInput label="Custom refractive index" value={customN} onChange={setCustomN} min={1} max={2} />
             </div>
           )}
           <p className="text-xs text-gray-500">Immersion medium sets n. NA must be ≤ n for valid results.</p>

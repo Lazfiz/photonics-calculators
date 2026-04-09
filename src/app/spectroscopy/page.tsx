@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/spectroscopy",
   title: "Spectroscopy Calculators",
   description: "Spectroscopy calculators for FTIR, Raman, spectral resolution, calibration, line broadening, and signal analysis.",
 };

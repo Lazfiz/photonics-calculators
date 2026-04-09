@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function PMFiberCalculator() {
   const [fiberType, setFiberType] = useState<"PANDA" | "Bowtie" | "Elliptical">("PANDA");
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
@@ -100,32 +101,26 @@ export default function PMFiberCalculator() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
-              <input type="number" value={wavelength} onChange={(e) => setWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="1" />
+              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Core Radius (μm)</label>
-              <input type="number" value={coreRadius} onChange={(e) => setCoreRadius(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.1" />
+              <ValidatedNumberInput label="Core Radius (μm)" value={coreRadius} onChange={setCoreRadius} step="0.1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Core Index / Cladding Index</label>
               <div className="grid grid-cols-2 gap-2">
-                <input type="number" value={coreIndex} onChange={(e) => setCoreIndex(Number(e.target.value))}
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none text-sm" step="0.0001" />
-                <input type="number" value={claddingIndex} onChange={(e) => setCladdingIndex(Number(e.target.value))}
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none text-sm" step="0.0001" />
+                <ValidatedNumberInput label="Core Index / Cladding Index" value={coreIndex} onChange={setCoreIndex} step="0.0001" />
+                <ValidatedNumberInput label="claddingIndex" value={claddingIndex} onChange={setCladdingIndex} step="0.0001" />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Fiber Length (m)</label>
-              <input type="number" value={fiberLength} onChange={(e) => setFiberLength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="100" />
+              <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} step="100" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Input PER (dB)</label>
-              <input type="number" value={extinctionRatio} onChange={(e) => setExtinctionRatio(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="1" />
+              <ValidatedNumberInput label="Input PER (dB)" value={extinctionRatio} onChange={setExtinctionRatio} step="1" />
             </div>
           </div>
 

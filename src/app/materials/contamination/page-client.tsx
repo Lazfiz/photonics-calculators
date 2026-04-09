@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface Material {
   name: string;
   // Scatter per particle density (ppm) at 1064nm
@@ -119,18 +120,15 @@ export default function ContaminationPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Initial contamination (ppm)</label>
-          <input type="number" value={ppm} onChange={e => setPpm(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0.1} step="0.1" />
+          <ValidatedNumberInput label="Initial contamination (ppm)" value={ppm} onChange={setPpm} min={0.1} step="0.1" />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-          <input type="number" value={wavelength} onChange={e => setWavelength(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={200} />
+          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Exposure (days)</label>
-          <input type="number" value={exposureDays} onChange={e => setExposureDays(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={1} />
+          <ValidatedNumberInput label="Exposure (days)" value={exposureDays} onChange={setExposureDays} min={1} />
         </div>
       </div>
 

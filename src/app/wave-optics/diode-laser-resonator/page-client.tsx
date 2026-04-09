@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function DiodeLaserResonatorPage() {
   const [cavityLength, setCavityLength] = useURLState("cavityLength", 300); // µm
   const [stripeWidth, setStripeWidth] = useURLState("stripeWidth", 3); // µm
@@ -105,14 +106,14 @@ export default function DiodeLaserResonatorPage() {
       </div>
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Cavity Length (µm)</label><input type="number" className={inputStyle} value={cavityLength} onChange={e => setCavityLength(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Stripe Width (µm)</label><input type="number" className={inputStyle} value={stripeWidth} onChange={e => setStripeWidth(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Active Thickness (µm)</label><input type="number" className={inputStyle} value={activeThickness} onChange={e => setActiveThickness(+e.target.value)} step={0.01} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Wavelength (nm)</label><input type="number" className={inputStyle} value={wavelength} onChange={e => setWavelength(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Internal Loss (cm⁻¹)</label><input type="number" className={inputStyle} value={alpha_i} onChange={e => setAlpha_i(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Facet R₁</label><input type="number" className={inputStyle} value={mirrorR1} onChange={e => setMirrorR1(+e.target.value)} step={0.01} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Facet R₂</label><input type="number" className={inputStyle} value={mirrorR2} onChange={e => setMirrorR2(+e.target.value)} step={0.01} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Effective Index</label><input type="number" className={inputStyle} value={n_eff} onChange={e => setN_eff(+e.target.value)} step={0.1} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Cavity Length (µm)</label><ValidatedNumberInput label="Cavity Length (µm)" value={cavityLength} onChange={setCavityLength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Stripe Width (µm)</label><ValidatedNumberInput label="Stripe Width (µm)" value={stripeWidth} onChange={setStripeWidth} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Active Thickness (µm)</label><ValidatedNumberInput label="Active Thickness (µm)" value={activeThickness} onChange={setActiveThickness} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Wavelength (nm)</label><ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Internal Loss (cm⁻¹)</label><ValidatedNumberInput label="Internal Loss (cm⁻¹)" value={alpha_i} onChange={setAlpha_i} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Facet R₁</label><ValidatedNumberInput label="Internal Loss (cm⁻¹)" value={mirrorR1} onChange={setMirrorR1} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Facet R₂</label><ValidatedNumberInput label="Facet R₁" value={mirrorR2} onChange={setMirrorR2} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Effective Index</label><ValidatedNumberInput label="Facet R₂" value={n_eff} onChange={setN_eff} /></div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">

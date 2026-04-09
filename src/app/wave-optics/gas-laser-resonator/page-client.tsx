@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function GasLaserResonatorPage() {
   const [tubeDiameter, setTubeDiameter] = useURLState("tubeDiameter", 6); // mm
   const [tubeLength, setTubeLength] = useURLState("tubeLength", 500); // mm
@@ -128,13 +129,13 @@ export default function GasLaserResonatorPage() {
             <option value="ArIon">Ar⁺ (488/514 nm)</option>
           </select>
         </div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Tube Diameter (mm)</label><input type="number" className={inputStyle} value={tubeDiameter} onChange={e => setTubeDiameter(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Tube Length (mm)</label><input type="number" className={inputStyle} value={tubeLength} onChange={e => setTubeLength(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Wavelength (nm)</label><input type="number" className={inputStyle} value={wavelength} onChange={e => setWavelength(+e.target.value)} step={0.1} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">R₁ HR (mm)</label><input type="number" className={inputStyle} value={R1} onChange={e => setR1(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">R₂ OC (mm)</label><input type="number" className={inputStyle} value={R2} onChange={e => setR2(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">OC Reflectivity</label><input type="number" className={inputStyle} value={R_oc} onChange={e => setR_oc(+e.target.value)} step={0.001} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Pressure (Torr)</label><input type="number" className={inputStyle} value={pressure} onChange={e => setPressure(+e.target.value)} step={0.5} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Tube Diameter (mm)</label><ValidatedNumberInput label="Tube Diameter (mm)" value={tubeDiameter} onChange={setTubeDiameter} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Tube Length (mm)</label><ValidatedNumberInput label="Tube Length (mm)" value={tubeLength} onChange={setTubeLength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Wavelength (nm)</label><ValidatedNumberInput label="Tube Length (mm)" value={wavelength} onChange={setWavelength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">R₁ HR (mm)</label><ValidatedNumberInput label="R₁ HR (mm)" value={R1} onChange={setR1} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">R₂ OC (mm)</label><ValidatedNumberInput label="R₁ HR (mm)" value={R2} onChange={setR2} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">OC Reflectivity</label><ValidatedNumberInput label="R₂ OC (mm)" value={R_oc} onChange={setR_oc} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Pressure (Torr)</label><ValidatedNumberInput label="OC Reflectivity" value={pressure} onChange={setPressure} /></div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">

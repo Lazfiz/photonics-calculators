@@ -5,7 +5,8 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function ScannedMPEPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 532); // nm
   const [scanFreq, setScanFreq] = useURLState("scanFreq", 1000); // Hz
@@ -104,23 +105,19 @@ export default function ScannedMPEPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-              <input type="number" value={wavelength} onChange={e => setWavelength(parseFloat(e.target.value) || 400)}
-                step="1" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Scan Frequency (Hz)</label>
-              <input type="number" value={scanFreq} onChange={e => setScanFreq(Math.max(1, parseFloat(e.target.value) || 1))}
-                step="100" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Scan Frequency (Hz)" value={scanFreq} onChange={setScanFreq} step="100" />
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Spot Diameter (mm, 1/e²)</label>
-              <input type="number" value={spotDiam} onChange={e => setSpotDiam(Math.max(0.01, parseFloat(e.target.value) || 0.01))}
-                step="0.1" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Spot Diameter (mm, 1/e²)" value={spotDiam} onChange={setSpotDiam} step="0.1" />
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Scan Width (mm)</label>
-              <input type="number" value={scanWidth} onChange={e => setScanWidth(Math.max(1, parseFloat(e.target.value) || 1))}
-                step="1" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Scan Width (mm)" value={scanWidth} onChange={setScanWidth} step="1" />
             </div>
           </div>
         </div>

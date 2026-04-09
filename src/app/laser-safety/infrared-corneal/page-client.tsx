@@ -5,7 +5,8 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function InfraredCornealPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 10600); // nm (CO2)
   const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // seconds
@@ -114,18 +115,15 @@ export default function InfraredCornealPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-              <input type="number" value={wavelength} onChange={e => setWavelength(parseFloat(e.target.value) || 780)}
-                step="1" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Exposure Time (s)</label>
-              <input type="number" value={exposureTime} onChange={e => setExposureTime(Math.max(1e-5, parseFloat(e.target.value) || 1e-5))}
-                step="any" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} step="any" />
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Beam Diameter (mm)</label>
-              <input type="number" value={beamDiam} onChange={e => setBeamDiam(Math.max(0.01, parseFloat(e.target.value) || 0.01))}
-                step="0.1" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDiam} onChange={setBeamDiam} step="0.1" />
             </div>
           </div>
         </div>

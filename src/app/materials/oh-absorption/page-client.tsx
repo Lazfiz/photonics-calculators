@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 // OH absorption peaks in silica (wavelength in µm, absorption in dB/km)
 const OH_PEAKS = [
   { wl: 0.945, alpha: 1.0, label: "2ν₁+ν₃" },
@@ -66,12 +67,7 @@ export default function OHAbsorptionPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">OH Concentration Multiplier</label>
-          <input type="range" min={0.01} max={5} step={0.01} value={ohConc} onChange={e => setOhConc(+e.target.value)} />
-          <div className="text-right text-xs text-gray-500">{ohConc.toFixed(2)}×</div>
-        </div>
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">Fiber Length (km)</label>
-          <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} className="w-full bg-gray-800 rounded px-3 py-2" />
+          <ValidatedNumberInput label="OH Concentration Multiplier" value={fiberLength} onChange={setFiberLength} />
         </div>
       </div>
 

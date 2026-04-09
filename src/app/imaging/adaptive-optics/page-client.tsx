@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function AdaptiveOpticsPage() {
   const [numZernike, setNumZernike] = useURLState("numZernike", 15);
   const [rmsWavefront, setRmsWavefront] = useURLState("rmsWavefront", 0.5); // waves
@@ -50,23 +51,23 @@ export default function AdaptiveOpticsPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Number of Zernike modes corrected</label>
-            <input type="number" step={1} min={1} max={65} value={numZernike} onChange={e => setNumZernike(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Number of Zernike modes corrected" value={numZernike} onChange={setNumZernike} min={1} max={65} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Input RMS wavefront error (waves)</label>
-            <input type="number" step={0.1} min={0.01} max={5} value={rmsWavefront} onChange={e => setRmsWavefront(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Input RMS wavefront error (waves)" value={rmsWavefront} onChange={setRmsWavefront} min={0.01} max={5} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-            <input type="number" step={1} value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">DM actuators (across)</label>
-            <input type="number" step={1} min={4} max={128} value={dmActuators} onChange={e => setDmActuators(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="DM actuators (across)" value={dmActuators} onChange={setDmActuators} min={4} max={128} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">DM stroke (µm)</label>
-            <input type="number" step={0.5} value={dmStroke} onChange={e => setDmStroke(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="DM stroke (µm)" value={dmStroke} onChange={setDmStroke} />
           </div>
         </div>
 

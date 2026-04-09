@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 const POLARIZERS = [
   { name: "Glan-Taylor", er: 100000, transmission: 0.95, damageThreshold: 500, aperture: 10, wavelengthRange: "350–2500", coating: "MgF₂", material: "Calcite" },
   { name: "Glan-Thompson", er: 100000, transmission: 0.96, damageThreshold: 100, aperture: 15, wavelengthRange: "300–2500", coating: "MgF₂", material: "Calcite" },
@@ -89,12 +90,7 @@ export default function PolarizerTypesPage() {
           <h2 className="text-lg font-semibold mb-4">Options</h2>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Input power (mW)</label>
-            <input
-              type="number"
-              value={inputPower}
-              onChange={(e) => setInputPower(parseFloat(e.target.value) || 0)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white"
-            />
+            <ValidatedNumberInput label="Input power (mW)" value={inputPower} onChange={setInputPower} />
           </div>
           <h3 className="text-sm font-semibold mb-2 mt-4">Select polarizers:</h3>
           <div className="space-y-1">

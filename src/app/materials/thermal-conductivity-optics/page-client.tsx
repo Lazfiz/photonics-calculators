@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface Material {
   name: string;
   k300: number; // W/(m·K) at 300K
@@ -74,23 +75,19 @@ export default function ThermalConductivityPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Temperature (K)</label>
-          <input type="number" value={temp} onChange={e => setTemp(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={10} />
+          <ValidatedNumberInput label="Temperature (K)" value={temp} onChange={setTemp} min={10} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Thickness (mm)</label>
-          <input type="number" value={thickness} onChange={e => setThickness(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0.1} />
+          <ValidatedNumberInput label="Thickness (mm)" value={thickness} onChange={setThickness} min={0.1} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Beam area (mm²)</label>
-          <input type="number" value={area} onChange={e => setArea(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0.01} />
+          <ValidatedNumberInput label="Beam area (mm²)" value={area} onChange={setArea} min={0.01} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Absorbed power (W)</label>
-          <input type="number" value={power} onChange={e => setPower(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0} />
+          <ValidatedNumberInput label="Absorbed power (W)" value={power} onChange={setPower} min={0} />
         </div>
       </div>
 

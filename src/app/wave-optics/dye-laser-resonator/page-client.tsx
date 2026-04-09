@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function DyeLaserResonatorPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 590); // nm (Rhodamine 6G peak)
   const [dyeName, setDyeName] = useState("Rhodamine 6G");
@@ -126,13 +127,13 @@ export default function DyeLaserResonatorPage() {
             {Object.keys(dyeParams).map(d => <option key={d} value={d}>{d}</option>)}
           </select>
         </div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Wavelength (nm)</label><input type="number" className={inputStyle} value={wavelength} onChange={e => setWavelength(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Cavity Length (mm)</label><input type="number" className={inputStyle} value={cavityLength} onChange={e => setCavityLength(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">R₁ (mm)</label><input type="number" className={inputStyle} value={R1} onChange={e => setR1(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">R₂ (mm)</label><input type="number" className={inputStyle} value={R2} onChange={e => setR2(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">OC Reflectivity</label><input type="number" className={inputStyle} value={R_oc} onChange={e => setR_oc(+e.target.value)} step={0.01} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Concentration (M)</label><input type="number" className={inputStyle} value={concentration} onChange={e => setConcentration(+e.target.value)} step={1e-5} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Flow Speed (m/s)</label><input type="number" className={inputStyle} value={flowSpeed} onChange={e => setFlowSpeed(+e.target.value)} step={0.5} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Wavelength (nm)</label><ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Cavity Length (mm)</label><ValidatedNumberInput label="Cavity Length (mm)" value={cavityLength} onChange={setCavityLength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">R₁ (mm)</label><ValidatedNumberInput label="Cavity Length (mm)" value={R1} onChange={setR1} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">R₂ (mm)</label><ValidatedNumberInput label="R₁ (mm)" value={R2} onChange={setR2} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">OC Reflectivity</label><ValidatedNumberInput label="R₂ (mm)" value={R_oc} onChange={setR_oc} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Concentration (M)</label><ValidatedNumberInput label="Concentration (M)" value={concentration} onChange={setConcentration} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Flow Speed (m/s)</label><ValidatedNumberInput label="Flow Speed (m/s)" value={flowSpeed} onChange={setFlowSpeed} /></div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">

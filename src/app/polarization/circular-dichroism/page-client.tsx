@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-center py-1 border-b border-gray-800">
@@ -83,33 +84,27 @@ export default function CircularDichroismPage() {
           <h2 className="text-lg font-semibold mb-4">Sample Parameters</h2>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Absorbance LCP (A<sub>L</sub>)</label>
-            <input type="number" step={0.01} value={absL} onChange={(e) => setAbsL(parseFloat(e.target.value) || 0)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="absL" value={absL} onChange={setAbsL} />
           </div>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Absorbance RCP (A<sub>R</sub>)</label>
-            <input type="number" step={0.01} value={absR} onChange={(e) => setAbsR(parseFloat(e.target.value) || 0)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="absR" value={absR} onChange={setAbsR} />
           </div>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Path length (cm)</label>
-            <input type="number" step={0.01} value={pathLength} onChange={(e) => setPathLength(parseFloat(e.target.value) || 0)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Path length (cm)" value={pathLength} onChange={setPathLength} />
           </div>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Concentration (mM)</label>
-            <input type="number" step={0.01} value={concentration} onChange={(e) => setConcentration(parseFloat(e.target.value) || 0)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Concentration (mM)" value={concentration} onChange={setConcentration} />
           </div>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Wavelength (nm)</label>
-            <input type="number" value={wavelength} onChange={(e) => setWavelength(parseInt(e.target.value) || 0)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Temperature (°C)</label>
-            <input type="number" step={0.1} value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value) || 0)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Temperature (°C)" value={temperature} onChange={setTemperature} />
           </div>
         </div>
 

@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function ExpansionMicroscopyPage() {
   const [magnification, setMagnification] = useURLState("magnification", 4);
   const [originalRes, setOriginalRes] = useURLState("originalRes", 250);
@@ -45,27 +46,27 @@ export default function ExpansionMicroscopyPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Expansion factor (×)</label>
-            <input type="number" step={0.5} min={1} max={20} value={magnification} onChange={e => setMagnification(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Expansion factor (×)" value={magnification} onChange={setMagnification} min={1} max={20} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Original resolution (nm)</label>
-            <input type="number" step={10} value={originalRes} onChange={e => setOriginalRes(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Original resolution (nm)" value={originalRes} onChange={setOriginalRes} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Probe size (nm)</label>
-            <input type="number" step={1} value={probeSize} onChange={e => setProbeSize(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Probe size (nm)" value={probeSize} onChange={setProbeSize} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Label-linker length (nm)</label>
-            <input type="number" step={1} value={labelLinkerLen} onChange={e => setLabelLinkerLen(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Label-linker length (nm)" value={labelLinkerLen} onChange={setLabelLinkerLen} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Gel thickness (µm)</label>
-            <input type="number" step={5} value={gelThickness} onChange={e => setGelThickness(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Gel thickness (µm)" value={gelThickness} onChange={setGelThickness} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Imaging NA</label>
-            <input type="number" step={0.05} min={0.4} max={1.7} value={na} onChange={e => setNa(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Imaging NA" value={na} onChange={setNa} min={0.4} max={1.7} />
           </div>
         </div>
 

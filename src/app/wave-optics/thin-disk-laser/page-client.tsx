@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function ThinDiskLaserPage() {
   const [diskThickness, setDiskThickness] = useURLState("diskThickness", 200); // µm
   const [diskDiameter, setDiskDiameter] = useURLState("diskDiameter", 10); // mm
@@ -95,14 +96,14 @@ export default function ThinDiskLaserPage() {
       </div>
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Disk Thickness (µm)</label><input type="number" className={inputStyle} value={diskThickness} onChange={e => setDiskThickness(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Disk Diameter (mm)</label><input type="number" className={inputStyle} value={diskDiameter} onChange={e => setDiskDiameter(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Laser λ (nm)</label><input type="number" className={inputStyle} value={wavelength} onChange={e => setWavelength(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Pump λ (nm)</label><input type="number" className={inputStyle} value={pumpWavelength} onChange={e => setPumpWavelength(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Number of Passes</label><input type="number" className={inputStyle} value={numPasses} onChange={e => setNumPasses(+e.target.value)} min={1} max={64} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Pump Spot Ø (mm)</label><input type="number" className={inputStyle} value={pumpSpotDiameter} onChange={e => setPumpSpotDiameter(+e.target.value)} step={0.5} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">OC Reflectivity</label><input type="number" className={inputStyle} value={R_oc} onChange={e => setR_oc(+e.target.value)} step={0.01} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Yb Concentration (at.%)</label><input type="number" className={inputStyle} value={Yb_concentration} onChange={e => setYb_concentration(+e.target.value)} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Disk Thickness (µm)</label><ValidatedNumberInput label="Disk Thickness (µm)" value={diskThickness} onChange={setDiskThickness} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Disk Diameter (mm)</label><ValidatedNumberInput label="Disk Diameter (mm)" value={diskDiameter} onChange={setDiskDiameter} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Laser λ (nm)</label><ValidatedNumberInput label="Laser λ (nm)" value={wavelength} onChange={setWavelength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Pump λ (nm)</label><ValidatedNumberInput label="Laser λ (nm)" value={pumpWavelength} onChange={setPumpWavelength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Number of Passes</label><ValidatedNumberInput label="Number of Passes" value={numPasses} onChange={setNumPasses} min={1} max={64} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Pump Spot Ø (mm)</label><ValidatedNumberInput label="Pump Spot Ø (mm)" value={pumpSpotDiameter} onChange={setPumpSpotDiameter} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">OC Reflectivity</label><ValidatedNumberInput label="OC Reflectivity" value={R_oc} onChange={setR_oc} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Yb Concentration (at.%)</label><ValidatedNumberInput label="Yb Concentration (at.%)" value={Yb_concentration} onChange={setYb_concentration} /></div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

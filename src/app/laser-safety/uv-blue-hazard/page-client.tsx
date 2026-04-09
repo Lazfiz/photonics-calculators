@@ -5,7 +5,8 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function UVBlueHazardPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 450);
   const [exposureTime, setExposureTime] = useURLState("exposureTime", 10000);
@@ -114,15 +115,15 @@ export default function UVBlueHazardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Exposure Time (s)</label>
-          <input type="number" value={exposureTime} onChange={e => setExposureTime(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Spectral Power (mW/nm)</label>
-          <input type="number" step="0.1" value={spectralPower} onChange={e => setSpectralPower(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Spectral Power (mW/nm)" value={spectralPower} onChange={setSpectralPower} step="0.1" />
         </div>
       </div>
 

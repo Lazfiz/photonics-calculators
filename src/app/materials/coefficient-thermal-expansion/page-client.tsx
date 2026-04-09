@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface Material {
   name: string;
   cte0: number; // CTE at T0 (×10⁻⁶ /K)
@@ -93,18 +94,15 @@ export default function CTEPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Length L₀ (mm)</label>
-          <input type="number" value={length} onChange={e => setLength(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0.1} />
+          <ValidatedNumberInput label="Length L₀ (mm)" value={length} onChange={setLength} min={0.1} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">T start (°C)</label>
-          <input type="number" value={tempStart} onChange={e => setTempStart(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" />
+          <ValidatedNumberInput label="T start (°C)" value={tempStart} onChange={setTempStart} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">T end (°C)</label>
-          <input type="number" value={tempEnd} onChange={e => setTempEnd(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" />
+          <ValidatedNumberInput label="T end (°C)" value={tempEnd} onChange={setTempEnd} />
         </div>
       </div>
 

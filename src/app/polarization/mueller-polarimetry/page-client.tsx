@@ -197,10 +197,7 @@ export default function MuellerPolarimetryPage() {
             <option value="rotator">Rotator</option>
             <option value="depolarizer">Depolarizer</option>
           </select>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">{element1 === "retarder" ? "Retardance (°)" : element1 === "depolarizer" ? "Depolarization %" : "Angle (°)"}</span>
-            <input type="number" value={param1} onChange={e => setParam1(+e.target.value)} step="1" min={0} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
+          <ValidatedNumberInput label={element1 === "retarder" ? "Retardance (°)" : element1 === "depolarizer" ? "Depolarization %" : "Angle (°)"} value={param1} onChange={setParam1} min={0} step="1" />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-3">Element 2</h3>
@@ -210,10 +207,7 @@ export default function MuellerPolarimetryPage() {
             <option value="rotator">Rotator</option>
             <option value="depolarizer">Depolarizer</option>
           </select>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">{element2 === "retarder" ? "Retardance (°)" : element2 === "depolarizer" ? "Depolarization %" : "Angle (°)"}</span>
-            <input type="number" value={param2} onChange={e => setParam2(+e.target.value)} step="1" min={0} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
-          </label>
+          <ValidatedNumberInput label={element2 === "retarder" ? "Retardance (°)" : element2 === "depolarizer" ? "Depolarization %" : "Angle (°)"} value={param2} onChange={setParam2} min={0} step="1" />
         </div>
       </div>
 
@@ -228,7 +222,7 @@ export default function MuellerPolarimetryPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Analyzer Angle</p>
-          <input type="number" value={analyzerAngle} onChange={e => setAnalyzerAngle(+e.target.value)} className="w-20 bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white" />
+          <ValidatedNumberInput label="analyzerAngle" value={analyzerAngle} onChange={setAnalyzerAngle} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Final Intensity</p>

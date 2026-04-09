@@ -86,7 +86,7 @@ export default function ParametricAmplificationPage() {
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         <ValidatedNumberInput label="Pump Power (mW)" value={pumpPower} onChange={setPumpPower} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">d<sub>eff</sub> (pm/V)</span>
-          <input type="number" value={chi2} onChange={e => setChi2(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="deff (pm/V)" value={chi2} onChange={setChi2} step="0.1" /></label>
         <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} />
         <ValidatedNumberInput label="Walk-off ρ (mrad)" value={walkoff} onChange={setWalkoff} step="0.01" />
       </div>

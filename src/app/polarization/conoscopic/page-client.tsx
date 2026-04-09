@@ -128,13 +128,11 @@ export default function ConoscopicPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">n<sub>o</sub></span>
-          <input type="number" value={nO} onChange={e => setNO(+e.target.value)} step="0.001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="no" value={nO} onChange={setNO} step="0.001" />
         </label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">n<sub>e</sub></span>
-          <input type="number" value={nE} onChange={e => setNE(+e.target.value)} step="0.001"
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="ne" value={nE} onChange={setNE} step="0.001" />
         </label>
         <ValidatedNumberInput label="Thickness (mm)" value={thickness} onChange={setThickness} min={0.01} max={1} step="0.01" />
         <ValidatedNumberInput label="Objective NA" value={na} onChange={setNA} min={0.1} max={1.4} step="0.05" />

@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function MultiphotonDepthPage() {
   const [na, setNa] = useURLState("na", 0.8);
   const [wavelength, setWavelength] = useURLState("wavelength", 800);
@@ -53,35 +54,35 @@ export default function MultiphotonDepthPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Objective NA</label>
-            <input type="number" step={0.05} min={0.2} max={1.5} value={na} onChange={e => setNa(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Objective NA" value={na} onChange={setNa} min={0.2} max={1.5} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Excitation wavelength (nm)</label>
-            <input type="number" step={10} value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Excitation wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Refractive index (n)</label>
-            <input type="number" step={0.01} value={n} onChange={e => setN(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Refractive index (n)" value={n} onChange={setN} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Pulse width (fs)</label>
-            <input type="number" step={10} value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Pulse width (fs)" value={pulseWidth} onChange={setPulseWidth} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Rep rate (MHz)</label>
-            <input type="number" step={10} value={repRate} onChange={e => setRepRate(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Rep rate (MHz)" value={repRate} onChange={setRepRate} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Average power (mW)</label>
-            <input type="number" step={1} value={avgPower} onChange={e => setAvgPower(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Average power (mW)" value={avgPower} onChange={setAvgPower} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Absorption coeff (mm⁻¹)</label>
-            <input type="number" step={0.01} value={absorption} onChange={e => setAbsorption(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Absorption coeff (mm⁻¹)" value={absorption} onChange={setAbsorption} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Scattering coeff (mm⁻¹)</label>
-            <input type="number" step={0.01} value={scattering} onChange={e => setScattering(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Scattering coeff (mm⁻¹)" value={scattering} onChange={setScattering} />
           </div>
         </div>
 

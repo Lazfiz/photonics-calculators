@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 // Simplified spectral shapes using Gaussian approximation
 function gaussian(x: number, center: number, fwhm: number, amp: number) {
   const sigma = fwhm / (2 * Math.sqrt(2 * Math.LN2));
@@ -86,11 +87,11 @@ export default function FluorescenceSpectraPage() {
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Emission filter center (nm)</label>
-            <input type="number" step={1} value={filterCenter} onChange={e => setFilterCenter(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Emission filter center (nm)" value={filterCenter} onChange={setFilterCenter} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Emission filter bandwidth (nm)</label>
-            <input type="number" step={5} value={filterBW} onChange={e => setFilterBW(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Emission filter bandwidth (nm)" value={filterBW} onChange={setFilterBW} />
           </div>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={showOverlap} onChange={e => setShowOverlap(e.target.checked)} />

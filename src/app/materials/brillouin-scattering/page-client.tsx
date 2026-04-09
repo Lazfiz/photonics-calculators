@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface BrillouinMaterial { name: string; n: number; rho: number; vA: number; p12: number; color: string }
 
 // Brillouin shift: ν_B = 2nV_A/λ
@@ -79,15 +80,15 @@ export default function BrillouinScatteringPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full bg-gray-800 rounded px-3 py-2" />
+          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Linewidth (MHz)</label>
-          <input type="number" value={linewidth} onChange={e => setLinewidth(+e.target.value)} className="w-full bg-gray-800 rounded px-3 py-2" />
+          <ValidatedNumberInput label="Linewidth (MHz)" value={linewidth} onChange={setLinewidth} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Fiber Length (km)</label>
-          <input type="number" value={fiberLength} onChange={e => setFiberLength(+e.target.value)} className="w-full bg-gray-800 rounded px-3 py-2" />
+          <ValidatedNumberInput label="Fiber Length (km)" value={fiberLength} onChange={setFiberLength} />
         </div>
       </div>
 

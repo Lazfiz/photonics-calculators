@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function SuperResolutionPage() {
   const [na, setNa] = useURLState("na", 1.4);
   const [wavelength, setWavelength] = useURLState("wavelength", 580);
@@ -55,23 +56,23 @@ export default function SuperResolutionPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">NA</label>
-            <input type="number" step={0.01} value={na} onChange={e => setNa(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="NA" value={na} onChange={setNa} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Emission wavelength (nm)</label>
-            <input type="number" step={1} value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Emission wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Refractive index (n)</label>
-            <input type="number" step={0.01} value={n} onChange={e => setN(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Refractive index (n)" value={n} onChange={setN} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">STED depletion factor (%)</label>
-            <input type="number" step={1} min={0} max={99} value={stedDepletion} onChange={e => setStedDepletion(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="STED depletion factor (%)" value={stedDepletion} onChange={setStedDepletion} min={0} max={99} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">PALM photons detected</label>
-            <input type="number" step={100} value={palmPhotons} onChange={e => setPalmPhotons(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="PALM photons detected" value={palmPhotons} onChange={setPalmPhotons} />
           </div>
         </div>
 

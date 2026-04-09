@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 function qfunc(x: number): number {
   // Approximation of Q(x)
   return 0.5 * erfc(x / Math.sqrt(2));
@@ -69,13 +70,11 @@ export default function BERPage() {
           <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Photons per Bit</label>
-            <input type="number" value={photons} min={1} onChange={(e) => setPhotons(Number(e.target.value))}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Photons per Bit" value={photons} onChange={setPhotons} min={1} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Dark Count Rate (counts/bit)</label>
-            <input type="number" value={darkCount} min={0} onChange={(e) => setDarkCount(Number(e.target.value))}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Dark Count Rate (counts/bit)" value={darkCount} onChange={setDarkCount} min={0} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Modulation</label>

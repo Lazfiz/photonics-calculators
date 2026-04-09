@@ -84,7 +84,7 @@ export default function SumFrequencyPage() {
         <ValidatedNumberInput label="λ₁ (nm)" value={lambda1} onChange={setLambda1} />
         <ValidatedNumberInput label="λ₂ (nm)" value={lambda2} onChange={setLambda2} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">d<sub>eff</sub> (pm/V)</span>
-          <input type="number" value={deff} onChange={e => setDeff(+e.target.value)} step="0.1" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="deff (pm/V)" value={deff} onChange={setDeff} step="0.1" /></label>
         <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} />
         <ValidatedNumberInput label="P₁ (mW)" value={power1} onChange={setPower1} />
         <ValidatedNumberInput label="P₂ (mW)" value={power2} onChange={setPower2} />

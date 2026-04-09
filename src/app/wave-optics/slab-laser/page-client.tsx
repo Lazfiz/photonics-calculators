@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function SlabLaserPage() {
   const [slabWidth, setSlabWidth] = useURLState("slabWidth", 10); // mm
   const [slabHeight, setSlabHeight] = useURLState("slabHeight", 2); // mm (thin direction)
@@ -103,14 +104,14 @@ export default function SlabLaserPage() {
       </div>
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Slab Width (mm)</label><input type="number" className={inputStyle} value={slabWidth} onChange={e => setSlabWidth(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Slab Height / Thin (mm)</label><input type="number" className={inputStyle} value={slabHeight} onChange={e => setSlabHeight(+e.target.value)} step={0.5} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Slab Length (mm)</label><input type="number" className={inputStyle} value={slabLength} onChange={e => setSlabLength(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Wavelength (nm)</label><input type="number" className={inputStyle} value={wavelength} onChange={e => setWavelength(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Bounces</label><input type="number" className={inputStyle} value={bounces} onChange={e => setBounces(+e.target.value)} min={1} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">OC Reflectivity</label><input type="number" className={inputStyle} value={R_oc} onChange={e => setR_oc(+e.target.value)} step={0.01} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Thermal Load (W/cm³)</label><input type="number" className={inputStyle} value={thermalLoad} onChange={e => setThermalLoad(+e.target.value)} step={0.5} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Crystal Index</label><input type="number" className={inputStyle} value={n_crystal} onChange={e => setN_crystal(+e.target.value)} step={0.01} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Slab Width (mm)</label><ValidatedNumberInput label="Slab Width (mm)" value={slabWidth} onChange={setSlabWidth} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Slab Height / Thin (mm)</label><ValidatedNumberInput label="Slab Height / Thin (mm)" value={slabHeight} onChange={setSlabHeight} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Slab Length (mm)</label><ValidatedNumberInput label="Slab Length (mm)" value={slabLength} onChange={setSlabLength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Wavelength (nm)</label><ValidatedNumberInput label="Slab Length (mm)" value={wavelength} onChange={setWavelength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Bounces</label><ValidatedNumberInput label="Wavelength (nm)" value={bounces} onChange={setBounces} min={1} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">OC Reflectivity</label><ValidatedNumberInput label="Bounces" value={R_oc} onChange={setR_oc} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Thermal Load (W/cm³)</label><ValidatedNumberInput label="Thermal Load (W/cm³)" value={thermalLoad} onChange={setThermalLoad} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Crystal Index</label><ValidatedNumberInput label="Crystal Index" value={n_crystal} onChange={setN_crystal} /></div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

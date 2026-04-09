@@ -47,8 +47,7 @@ export default function STEDResolutionPage() {
         <ValidatedNumberInput label="Depletion λ (nm)" value={depletionWavelength} onChange={setDepletionWavelength} min={500} max={900} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">I<sub>dep</sub> / I<sub>sat</sub></span>
-          <input type="number" value={saturationFactor} onChange={e => setSaturationFactor(+e.target.value)} min={1} max={200}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Idep / Isat" value={saturationFactor} onChange={setSaturationFactor} min={1} max={200} />
         </label>
       </div>
 

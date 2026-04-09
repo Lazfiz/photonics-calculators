@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface Material {
   name: string;
   p11: number; // Brewster coefficients
@@ -63,13 +64,11 @@ export default function PhotoelasticPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Stress σ (MPa)</label>
-          <input type="number" value={stress} onChange={e => setStress(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" />
+          <ValidatedNumberInput label="Stress σ (MPa)" value={stress} onChange={setStress} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-          <input type="number" value={wavelength} onChange={e => setWavelength(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" />
+          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
       </div>
 

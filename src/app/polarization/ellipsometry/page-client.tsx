@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-center py-1 border-b border-gray-800">
@@ -154,13 +155,11 @@ export default function EllipsometryPage() {
           <h2 className="text-lg font-semibold mb-4">Measured Parameters</h2>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Ψ (amplitude ratio) [°]</label>
-            <input type="number" step={0.1} value={psiDeg} onChange={(e) => setPsiDeg(parseFloat(e.target.value) || 0)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Ψ (amplitude ratio) [°]" value={psiDeg} onChange={setPsiDeg} />
           </div>
           <div className="mb-3">
             <label className="text-sm text-gray-400 block mb-1">Δ (phase difference) [°]</label>
-            <input type="number" step={0.1} value={deltaDeg} onChange={(e) => setDeltaDeg(parseFloat(e.target.value) || 0)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Δ (phase difference) [°]" value={deltaDeg} onChange={setDeltaDeg} />
           </div>
 
           <h3 className="text-sm font-semibold mb-2 mt-4">Fresnel Model (Bare Substrate)</h3>
@@ -172,8 +171,7 @@ export default function EllipsometryPage() {
           ].map(({ label, val, set, step }) => (
             <div key={label} className="mb-3">
               <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <input type="number" step={step} value={val} onChange={(e) => set(parseFloat(e.target.value) || 0)}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
             </div>
           ))}
 
@@ -209,8 +207,7 @@ export default function EllipsometryPage() {
           ].map(({ label, val, set, step }) => (
             <div key={label} className="mb-3">
               <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <input type="number" step={step} value={val} onChange={(e) => set(parseFloat(e.target.value) || 0)}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
             </div>
           ))}
         </div>

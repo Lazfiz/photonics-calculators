@@ -44,7 +44,7 @@ export default function GainTemperaturePage() {
         ) : (
           <ValidatedNumberInput label="PMT Temp Coeff (%/°C)" value={pmtCoeff} onChange={setPmtCoeff} min={-2} max={0} step="0.1" />
         )}
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-4"><label className="block text-sm text-gray-300">Temp Range (°C)</label><div className="flex gap-2 mt-3"><input type="number" value={tempMin} onChange={e => setTempMin(+e.target.value)} className="w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /><input type="number" value={tempMax} onChange={e => setTempMax(+e.target.value)} className="w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></div></div>
+        <div className="rounded-lg border border-gray-800 bg-gray-900 p-4"><label className="block text-sm text-gray-300">Temp Range (°C)</label><div className="flex gap-2 mt-3"><ValidatedNumberInput label="Temp Range (°C)" value={tempMin} onChange={setTempMin} /><ValidatedNumberInput label="Temp Range (°C)" value={tempMax} onChange={setTempMax} /></div></div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label={`Gain @ ${tempMin}°C`} value={gainAtMin.toFixed(1)} tone="blue" />

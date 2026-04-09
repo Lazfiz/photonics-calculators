@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/fiber-optics/macro-bend",
     title: 'Macro Bend Loss',
   description: 'Detailed macrobending loss calculation for single-mode fibers based on bend radius and wavelength.'
 };

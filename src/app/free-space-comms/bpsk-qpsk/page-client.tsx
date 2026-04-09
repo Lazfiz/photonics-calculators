@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function BpskQpskPage() {
   const [ebn0dB, setEbn0dB] = useURLState("ebn0dB", 10);
   const [modulation, setModulation] = useState<"BPSK" | "QPSK" | "OQPSK">("BPSK");
@@ -91,8 +92,7 @@ export default function BpskQpskPage() {
           ].map(([label, val, set]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
-              <input type="number" value={val} onChange={(e) => set(Number(e.target.value))} step={val < 2 ? 0.1 : 1}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white" />
+              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
             </div>
           ))}
         </div>

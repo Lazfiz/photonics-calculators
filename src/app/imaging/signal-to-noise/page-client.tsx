@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function SignalToNoisePage() {
   const [signalPhotons, setSignalPhotons] = useURLState("signalPhotons", 5000);
   const [backgroundPhotons, setBackgroundPhotons] = useURLState("backgroundPhotons", 500);
@@ -74,43 +75,35 @@ export default function SignalToNoisePage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Signal Photons (per pixel)</label>
-            <input type="number" step={100} min={1} max={1000000} value={signalPhotons} onChange={e => setSignalPhotons(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Signal Photons (per pixel)" value={signalPhotons} onChange={setSignalPhotons} min={1} max={1000000} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Background Photons (per pixel)</label>
-            <input type="number" step={10} min={0} max={100000} value={backgroundPhotons} onChange={e => setBackgroundPhotons(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Background Photons (per pixel)" value={backgroundPhotons} onChange={setBackgroundPhotons} min={0} max={100000} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Quantum Efficiency</label>
-            <input type="number" step={0.01} min={0.01} max={1} value={quantumEfficiency} onChange={e => setQuantumEfficiency(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Quantum Efficiency" value={quantumEfficiency} onChange={setQuantumEfficiency} min={0.01} max={1} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Read Noise (e⁻ rms)</label>
-            <input type="number" step={0.1} min={0.1} max={100} value={readNoise} onChange={e => setReadNoise(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} min={0.1} max={100} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Dark Current (e⁻/s/pixel)</label>
-            <input type="number" step={0.01} min={0} max={100} value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Dark Current (e⁻/s/pixel)" value={darkCurrent} onChange={setDarkCurrent} min={0} max={100} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Exposure Time (ms)</label>
-            <input type="number" step={1} min={1} max={60000} value={exposureTime} onChange={e => setExposureTime(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Exposure Time (ms)" value={exposureTime} onChange={setExposureTime} min={1} max={60000} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Pixel Binning</label>
-            <input type="number" step={1} min={1} max={8} value={binning} onChange={e => setBinning(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Pixel Binning" value={binning} onChange={setBinning} min={1} max={8} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Number of Frames (averaged)</label>
-            <input type="number" step={1} min={1} max={1000} value={numFrames} onChange={e => setNumFrames(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Number of Frames (averaged)" value={numFrames} onChange={setNumFrames} min={1} max={1000} />
           </div>
         </div>
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/thin-film/angle-shift",
     title: 'Angle-Dependent Blue Shift',
   description: 'How the effective design wavelength shifts with angle of incidence (blue shift).',
 };

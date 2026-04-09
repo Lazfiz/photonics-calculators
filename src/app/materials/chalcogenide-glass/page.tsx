@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/materials/chalcogenide-glass",
     title: 'Chalcogenide Glass Properties',
   description: 'IR-transparent glasses for thermal imaging, sensing, and nonlinear optics',
 };

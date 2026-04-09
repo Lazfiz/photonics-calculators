@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/spectroscopy/raman-shift",
     title: 'Raman Shift Calculator',
   description: 'Convert between Raman shift (cm⁻¹), scattered wavelength, and energy for any excitation laser.'
 };

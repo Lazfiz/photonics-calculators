@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function FreeElectronLaserPage() {
   const [electronEnergy, setElectronEnergy] = useURLState("electronEnergy", 100); // MeV
   const [undulatorPeriod, setUndulatorPeriod] = useURLState("undulatorPeriod", 30); // mm
@@ -106,12 +107,12 @@ export default function FreeElectronLaserPage() {
       </div>
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Electron Energy (MeV)</label><input type="number" className={inputStyle} value={electronEnergy} onChange={e => setElectronEnergy(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Undulator Period λᵤ (mm)</label><input type="number" className={inputStyle} value={undulatorPeriod} onChange={e => setUndulatorPeriod(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Undulator K</label><input type="number" className={inputStyle} value={undulatorK} onChange={e => setUndulatorK(+e.target.value)} step={0.1} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Undulator Length (m)</label><input type="number" className={inputStyle} value={undulatorLength} onChange={e => setUndulatorLength(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Peak Beam Current (A)</label><input type="number" className={inputStyle} value={beamCurrent} onChange={e => setBeamCurrent(+e.target.value)} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Energy Spread (ΔE/E)</label><input type="number" className={inputStyle} value={energySpread} onChange={e => setEnergySpread(+e.target.value)} step={0.0001} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Electron Energy (MeV)</label><ValidatedNumberInput label="Electron Energy (MeV)" value={electronEnergy} onChange={setElectronEnergy} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Undulator Period λᵤ (mm)</label><ValidatedNumberInput label="Undulator Period λᵤ (mm)" value={undulatorPeriod} onChange={setUndulatorPeriod} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Undulator K</label><ValidatedNumberInput label="Undulator K" value={undulatorK} onChange={setUndulatorK} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Undulator Length (m)</label><ValidatedNumberInput label="Undulator Length (m)" value={undulatorLength} onChange={setUndulatorLength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Peak Beam Current (A)</label><ValidatedNumberInput label="Peak Beam Current (A)" value={beamCurrent} onChange={setBeamCurrent} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Energy Spread (ΔE/E)</label><ValidatedNumberInput label="Energy Spread (ΔE/E)" value={energySpread} onChange={setEnergySpread} /></div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">

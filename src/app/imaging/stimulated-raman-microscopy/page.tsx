@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/imaging/stimulated-raman-microscopy",
     title: 'Stimulated Raman Scattering Microscopy Calculator',
   description: 'Calculate SRS signal levels, SNR, resolution, and imaging speed for label-free chemical imaging.'
 };

@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function RareEarthDopedFiberCalculator() {
   const [dopantType, setDopantType] = useState<"Er" | "Yb" | "ErYb" | "Tm" | "Nd">("Er");
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 5); // m
@@ -123,28 +124,23 @@ export default function RareEarthDopedFiberCalculator() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Fiber Length (m)</label>
-              <input type="number" value={fiberLength} onChange={(e) => setFiberLength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.5" min="0.1" />
+              <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} min={0.1} step="0.5" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Core Radius (μm)</label>
-              <input type="number" value={coreRadius} onChange={(e) => setCoreRadius(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.1" />
+              <ValidatedNumberInput label="Core Radius (μm)" value={coreRadius} onChange={setCoreRadius} step="0.1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Dopant Concentration (ppm wt)</label>
-              <input type="number" value={dopantConcentration} onChange={(e) => setDopantConcentration(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="100" min="1" />
+              <ValidatedNumberInput label="Dopant Concentration (ppm wt)" value={dopantConcentration} onChange={setDopantConcentration} min={1} step="100" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Pump Power (mW)</label>
-              <input type="number" value={pumpPower} onChange={(e) => setPumpPower(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="10" />
+              <ValidatedNumberInput label="Pump Power (mW)" value={pumpPower} onChange={setPumpPower} step="10" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Signal λ (nm)</label>
-              <input type="number" value={signalWavelength} onChange={(e) => setSignalWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="1" />
+              <ValidatedNumberInput label="Signal λ (nm)" value={signalWavelength} onChange={setSignalWavelength} step="1" />
             </div>
           </div>
 

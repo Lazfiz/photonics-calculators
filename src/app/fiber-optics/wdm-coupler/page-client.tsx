@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function WDMCouplerCalculator() {
   const [channelCount, setChannelCount] = useURLState("channelCount", 8);
   const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 0.8); // nm
@@ -110,33 +111,27 @@ export default function WDMCouplerCalculator() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Number of Channels</label>
-              <input type="number" value={channelCount} onChange={(e) => setChannelCount(Math.max(2, Math.min(96, Number(e.target.value))))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Number of Channels" value={channelCount} onChange={setChannelCount} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Channel Spacing (nm)</label>
-              <input type="number" value={channelSpacing} onChange={(e) => setChannelSpacing(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.1" />
+              <ValidatedNumberInput label="Channel Spacing (nm)" value={channelSpacing} onChange={setChannelSpacing} step="0.1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Center Wavelength (nm)</label>
-              <input type="number" value={centerWavelength} onChange={(e) => setCenterWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Center Wavelength (nm)" value={centerWavelength} onChange={setCenterWavelength} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Passband Width (nm)</label>
-              <input type="number" value={passbandWidth} onChange={(e) => setPassbandWidth(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.05" />
+              <ValidatedNumberInput label="Passband Width (nm)" value={passbandWidth} onChange={setPassbandWidth} step="0.05" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Insertion Loss (dB)</label>
-              <input type="number" value={insertionLoss} onChange={(e) => setInsertionLoss(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.1" />
+              <ValidatedNumberInput label="Insertion Loss (dB)" value={insertionLoss} onChange={setInsertionLoss} step="0.1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Isolation (dB)</label>
-              <input type="number" value={isolation} onChange={(e) => setIsolation(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="1" />
+              <ValidatedNumberInput label="Isolation (dB)" value={isolation} onChange={setIsolation} step="1" />
             </div>
           </div>
 

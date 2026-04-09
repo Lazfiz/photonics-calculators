@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function SBSThresholdPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // km
@@ -83,8 +84,7 @@ export default function SBSThresholdPage() {
           ].map(({ label, val, set }) => (
             <div key={label} className="mb-3">
               <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <input type="number" step="any" value={val} onChange={(e) => set(parseFloat(e.target.value) || 0)}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+              <ValidatedNumberInput label="{label}" value={val} onChange={set} step="any" />
             </div>
           ))}
         </div>
@@ -98,8 +98,7 @@ export default function SBSThresholdPage() {
           ].map(({ label, val, set }) => (
             <div key={label} className="mb-3">
               <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <input type="number" step="any" value={val} onChange={(e) => set(parseFloat(e.target.value) || 0)}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+              <ValidatedNumberInput label="{label}" value={val} onChange={set} step="any" />
             </div>
           ))}
         </div>

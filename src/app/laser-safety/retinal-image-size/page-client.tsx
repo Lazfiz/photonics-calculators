@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function RetinalImageSizePage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 632);
   const [beamDiam, setBeamDiam] = useURLState("beamDiam", 2); // mm at cornea
@@ -112,23 +113,23 @@ export default function RetinalImageSizePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
-          <input type="number" value={wavelength} onChange={e => setWavelength(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Beam Diameter at Cornea (mm)</label>
-          <input type="number" step="0.1" value={beamDiam} onChange={e => setBeamDiam(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Beam Diameter at Cornea (mm)" value={beamDiam} onChange={setBeamDiam} step="0.1" />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Beam Divergence (mrad)</label>
-          <input type="number" step="0.1" value={beamDivergence} onChange={e => setBeamDivergence(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Beam Divergence (mrad)" value={beamDivergence} onChange={setBeamDivergence} step="0.1" />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Viewing Distance (cm)</label>
-          <input type="number" value={viewingDistance} onChange={e => setViewingDistance(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Viewing Distance (cm)" value={viewingDistance} onChange={setViewingDistance} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Eye Length (mm)</label>
-          <input type="number" step="0.5" value={eyeLength} onChange={e => setEyeLength(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+          <ValidatedNumberInput label="Eye Length (mm)" value={eyeLength} onChange={setEyeLength} step="0.5" />
         </div>
       </div>
 

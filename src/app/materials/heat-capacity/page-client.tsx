@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface Material {
   name: string;
   Cp300: number; // J/(g·K) at 300K
@@ -106,24 +107,20 @@ export default function HeatCapacityPage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Temperature (K)</label>
-          <input type="number" value={temp} onChange={e => setTemp(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={10} />
+          <ValidatedNumberInput label="Temperature (K)" value={temp} onChange={setTemp} min={10} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Mass (g)</label>
-          <input type="number" value={mass} onChange={e => setMass(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0.01} />
+          <ValidatedNumberInput label="Mass (g)" value={mass} onChange={setMass} min={0.01} />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="block text-sm text-gray-400 mb-1">T₁ (°C)</label>
-            <input type="number" value={tempFrom} onChange={e => setTempFrom(Number(e.target.value))}
-              className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" />
+            <ValidatedNumberInput label="T₁ (°C)" value={tempFrom} onChange={setTempFrom} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">T₂ (°C)</label>
-            <input type="number" value={tempTo} onChange={e => setTempTo(Number(e.target.value))}
-              className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" />
+            <ValidatedNumberInput label="T₂ (°C)" value={tempTo} onChange={setTempTo} />
           </div>
         </div>
       </div>

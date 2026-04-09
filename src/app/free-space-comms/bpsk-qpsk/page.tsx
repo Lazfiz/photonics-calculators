@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/free-space-comms/bpsk-qpsk",
     title: 'Bpsk Qpsk',
   description: 'Interactive Bpsk Qpsk calculator for photonics and optical engineering.'
 };

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/imaging/confocal-pin-hole",
     title: 'Confocal Pinhole Size',
   description: 'Optimal pinhole 1 Airy unit (dAU/M). Trade-off: resolution vs signal.'
 };

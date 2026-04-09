@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/wave-optics/gaussian-beam",
     title: 'Gaussian Beam Propagation',
   description: 'Explore how wavelength and waist size shape Rayleigh range, divergence, and Gaussian beam envelope.'
 };

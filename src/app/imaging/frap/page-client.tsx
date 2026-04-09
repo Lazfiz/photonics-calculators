@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function FRAPPage() {
   const [w0, setW0] = useURLState("w0", 1.0); // µm, bleach spot radius
   const [tauHalf, setTauHalf] = useURLState("tauHalf", 2.0); // s, half-recovery time
@@ -61,15 +62,15 @@ export default function FRAPPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Bleach spot radius w₀ (µm)</label>
-            <input type="number" step={0.1} value={w0} onChange={e => setW0(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Bleach spot radius w₀ (µm)" value={w0} onChange={setW0} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Half-recovery time τ₁/₂ (s)</label>
-            <input type="number" step={0.1} value={tauHalf} onChange={e => setTauHalf(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Half-recovery time τ₁/₂ (s)" value={tauHalf} onChange={setTauHalf} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Mobile fraction</label>
-            <input type="number" step={0.01} min={0} max={1} value={mobileFrac} onChange={e => setMobileFrac(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Mobile fraction" value={mobileFrac} onChange={setMobileFrac} min={0} max={1} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Fit model</label>

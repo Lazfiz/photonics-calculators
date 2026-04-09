@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-center py-1 border-b border-gray-800">
@@ -108,39 +109,22 @@ export default function DepolarizationPage() {
           ].map(({ label, val, set, step }) => (
             <div key={label} className="mb-3">
               <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <input type="number" step={step} value={val} onChange={(e) => set(parseFloat(e.target.value) || 0)}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
             </div>
           ))}
 
           {!spectralMode && (
-            <div className="mb-3 mt-4">
-              <label className="text-sm text-gray-400 block mb-1">Depolarization coefficient (0–1)</label>
-              <input type="range" min={0} max={1} step={0.01} value={depCoeff}
-                onChange={(e) => setDepCoeff(parseFloat(e.target.value))}
-                />
-              <div className="flex justify-between text-xs text-gray-500">
-                <span>None (0)</span>
-                <span className="text-white">{depCoeff.toFixed(2)}</span>
-                <span>Full (1)</span>
-              </div>
-            </div>
-          )}
-
-          {spectralMode && (
             <>
-              <div className="mb-3 mt-4">
-                <label className="text-sm text-gray-400 block mb-1">Center wavelength (nm)</label>
-                <input type="number" value={centerWavelength} onChange={(e) => setCenterWavelength(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
-              </div>
-              <div className="mb-3">
-                <label className="text-sm text-gray-400 block mb-1">Bandwidth (nm)</label>
-                <input type="range" min={1} max={500} value={bandwidth}
-                  onChange={(e) => setBandwidth(parseFloat(e.target.value))}
-                  />
-                <div className="text-center text-xs text-white">{bandwidth} nm</div>
-              </div>
+            <div className="mb-3 mt-4">
+              <ValidatedNumberInput label="Depolarization coefficient (0–1)" value={depCoeff} onChange={setDepCoeff} min={0} max={1} step="0.01" />
+            </div>
+            <div className="mb-3">
+              <label className="text-sm text-gray-400 block mb-1">Bandwidth (nm)</label>
+              <input type="range" min={1} max={500} value={bandwidth}
+                onChange={(e) => setBandwidth(parseFloat(e.target.value))}
+                />
+              <div className="text-center text-xs text-white">{bandwidth} nm</div>
+            </div>
             </>
           )}
 

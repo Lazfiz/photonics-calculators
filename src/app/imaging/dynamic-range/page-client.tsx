@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function DynamicRangePage() {
   const [fullWellCapacity, setFullWellCapacity] = useURLState("fullWellCapacity", 30000);
   const [readNoise, setReadNoise] = useURLState("readNoise", 2);
@@ -62,38 +63,31 @@ export default function DynamicRangePage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Full Well Capacity (e⁻)</label>
-            <input type="number" step={100} min={100} max={500000} value={fullWellCapacity} onChange={e => setFullWellCapacity(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Full Well Capacity (e⁻)" value={fullWellCapacity} onChange={setFullWellCapacity} min={100} max={500000} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Read Noise (e⁻ rms)</label>
-            <input type="number" step={0.1} min={0.1} max={100} value={readNoise} onChange={e => setReadNoise(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} min={0.1} max={100} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Dark Current (e⁻/s/pixel)</label>
-            <input type="number" step={0.01} min={0} max={100} value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Dark Current (e⁻/s/pixel)" value={darkCurrent} onChange={setDarkCurrent} min={0} max={100} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Exposure Time (ms)</label>
-            <input type="number" step={1} min={1} max={60000} value={exposureTime} onChange={e => setExposureTime(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Exposure Time (ms)" value={exposureTime} onChange={setExposureTime} min={1} max={60000} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">ADC Bit Depth</label>
-            <input type="number" step={1} min={8} max={24} value={bitDepth} onChange={e => setBitDepth(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="ADC Bit Depth" value={bitDepth} onChange={setBitDepth} min={8} max={24} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">PRNU (%)</label>
-            <input type="number" step={0.1} min={0} max={10} value={prnu} onChange={e => setPrnu(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="PRNU (%)" value={prnu} onChange={setPrnu} min={0} max={10} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">DSNU (%)</label>
-            <input type="number" step={0.1} min={0} max={10} value={dsnu} onChange={e => setDsnu(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="DSNU (%)" value={dsnu} onChange={setDsnu} min={0} max={10} />
           </div>
         </div>
 

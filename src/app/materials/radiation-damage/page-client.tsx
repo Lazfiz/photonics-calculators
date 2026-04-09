@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 interface Material {
   name: string;
   // Radiation-induced absorption coefficient at 1 Mrad dose (cm⁻¹)
@@ -92,18 +93,15 @@ export default function RadiationDamagePage() {
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">γ Dose (Mrad)</label>
-          <input type="number" value={dose} onChange={e => setDose(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0} />
+          <ValidatedNumberInput label="γ Dose (Mrad)" value={dose} onChange={setDose} min={0} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Thickness (mm)</label>
-          <input type="number" value={thickness} onChange={e => setThickness(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0.1} />
+          <ValidatedNumberInput label="Thickness (mm)" value={thickness} onChange={setThickness} min={0.1} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Time after exposure (h)</label>
-          <input type="number" value={timeAfter} onChange={e => setTimeAfter(Number(e.target.value))}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white" min={0} />
+          <ValidatedNumberInput label="Time after exposure (h)" value={timeAfter} onChange={setTimeAfter} min={0} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Neutron fluence (n/cm²)</label>

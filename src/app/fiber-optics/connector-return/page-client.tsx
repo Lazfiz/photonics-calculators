@@ -85,9 +85,9 @@ export default function ConnectorReturnLossPage() {
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>core</sub></span>
-          <input type="number" value={n1} onChange={e => setN1(+e.target.value)} step="0.0001" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="ncore" value={n1} onChange={setN1} step="0.0001" /></label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>gap medium</sub></span>
-          <input type="number" value={n2} onChange={e => setN2(+e.target.value)} step="0.01" className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" /></label>
+          <ValidatedNumberInput label="ngap medium" value={n2} onChange={setN2} step="0.01" /></label>
         <ValidatedNumberInput label="Gap (nm) — 0 for PC/UPC" value={gapNm} onChange={setGapNm} step="10" />
         <ValidatedNumberInput label="Lateral offset (µm)" value={lateralOffset} onChange={setLateralOffset} step="0.1" />
         <ValidatedNumberInput label="Angular misalign (°)" value={angMisalign} onChange={setAngMisalign} step="0.1" />

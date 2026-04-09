@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function SensorCCMPage() {
   const [wellCapacity, setWellCapacity] = useURLState("wellCapacity", 80000);
   const [readNoise, setReadNoise] = useURLState("readNoise", 8);
@@ -64,38 +65,31 @@ export default function SensorCCMPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Pixel Pitch (µm)</label>
-            <input type="number" step={1} min={1} max={50} value={pixelPitch} onChange={e => setPixelPitch(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Pixel Pitch (µm)" value={pixelPitch} onChange={setPixelPitch} min={1} max={50} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Full Well Capacity (e⁻)</label>
-            <input type="number" step={1000} min={1000} max={500000} value={wellCapacity} onChange={e => setWellCapacity(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Full Well Capacity (e⁻)" value={wellCapacity} onChange={setWellCapacity} min={1000} max={500000} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Read Noise (e⁻ rms)</label>
-            <input type="number" step={0.5} min={1} max={100} value={readNoise} onChange={e => setReadNoise(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} min={1} max={100} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Dark Current at 25°C (e⁻/s/pixel)</label>
-            <input type="number" step={0.001} min={0.001} max={10} value={darkCurrent} onChange={e => setDarkCurrent(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Dark Current at 25°C (e⁻/s/pixel)" value={darkCurrent} onChange={setDarkCurrent} min={0.001} max={10} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Cooling Temperature (°C)</label>
-            <input type="number" step={5} min={-100} max={25} value={coolingTemp} onChange={e => setCoolingTemp(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Cooling Temperature (°C)" value={coolingTemp} onChange={setCoolingTemp} min={-100} max={25} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Exposure Time (ms)</label>
-            <input type="number" step={100} min={1} max={60000} value={exposureTime} onChange={e => setExposureTime(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Exposure Time (ms)" value={exposureTime} onChange={setExposureTime} min={1} max={60000} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">ADC Bit Depth</label>
-            <input type="number" step={1} min={8} max={24} value={bitDepth} onChange={e => setBitDepth(+e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="ADC Bit Depth" value={bitDepth} onChange={setBitDepth} min={8} max={24} />
           </div>
         </div>
 

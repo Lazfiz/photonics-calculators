@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 const dyes = [
   { label: "GFP", onePhoton: 488 },
   { label: "YFP", onePhoton: 514 },
@@ -68,28 +69,28 @@ export default function TwoPhotonPage() {
           {dyeIdx === 6 && (
             <div>
               <label className="block text-sm text-gray-400 mb-1">Custom 1P wavelength (nm)</label>
-              <input type="number" step={1} value={customWl} onChange={e => setCustomWl(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+              <ValidatedNumberInput label="Custom 1P wavelength (nm)" value={customWl} onChange={setCustomWl} />
             </div>
           )}
           <div>
             <label className="block text-sm text-gray-400 mb-1">NA</label>
-            <input type="number" step={0.01} min={0.1} max={1.8} value={na} onChange={e => setNa(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="NA" value={na} onChange={setNa} min={0.1} max={1.8} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Refractive index (n)</label>
-            <input type="number" step={0.01} value={n} onChange={e => setN(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Refractive index (n)" value={n} onChange={setN} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Average power (mW)</label>
-            <input type="number" step={1} value={avgPower} onChange={e => setAvgPower(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Average power (mW)" value={avgPower} onChange={setAvgPower} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Rep rate (MHz)</label>
-            <input type="number" step={1} value={repRate} onChange={e => setRepRate(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Rep rate (MHz)" value={repRate} onChange={setRepRate} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Pulse width (fs)</label>
-            <input type="number" step={10} value={pulseWidth} onChange={e => setPulseWidth(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+            <ValidatedNumberInput label="Pulse width (fs)" value={pulseWidth} onChange={setPulseWidth} />
           </div>
         </div>
 

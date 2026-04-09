@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function PoincareSpherePage() {
   const [thetaDeg, setThetaDeg] = useURLState("thetaDeg", 45);
   const [chiDeg, setChiDeg] = useURLState("chiDeg", 15);
@@ -81,8 +82,7 @@ export default function PoincareSpherePage() {
           ].map(({ label, val, set, min, max }) => (
             <div key={label} className="mb-3">
               <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <input type="number" step="1" min={min} max={max} value={val} onChange={(e) => set(parseFloat(e.target.value) || 0)}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+              <ValidatedNumberInput label="{label}" value={val} onChange={set} min={min} max={max} step="1" />
               <input type="range" min={min} max={max} step="1" value={val} onChange={(e) => set(parseFloat(e.target.value))}
                 className="w-full mt-1" />
             </div>

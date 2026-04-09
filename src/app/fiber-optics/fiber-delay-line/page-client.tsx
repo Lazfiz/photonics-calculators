@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function FiberDelayLineCalculator() {
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 100); // m
   const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.468);
@@ -110,38 +111,31 @@ export default function FiberDelayLineCalculator() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium mb-2">Fiber Length (m)</label>
-              <input type="number" value={fiberLength} onChange={(e) => setFiberLength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Refractive Index n_eff</label>
-              <input type="number" value={refractiveIndex} onChange={(e) => setRefractiveIndex(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.001" />
+              <ValidatedNumberInput label="Refractive Index n_eff" value={refractiveIndex} onChange={setRefractiveIndex} step="0.001" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Signal Wavelength (nm)</label>
-              <input type="number" value={signalWavelength} onChange={(e) => setSignalWavelength(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Signal Wavelength (nm)" value={signalWavelength} onChange={setSignalWavelength} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Input Bit Rate (Gbps)</label>
-              <input type="number" value={inputBitRate} onChange={(e) => setInputBitRate(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Input Bit Rate (Gbps)" value={inputBitRate} onChange={setInputBitRate} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Dispersion Coeff. (ps/nm·km)</label>
-              <input type="number" value={coefficient} onChange={(e) => setCoefficient(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.01" />
+              <ValidatedNumberInput label="Dispersion Coeff. (ps/nm·km)" value={coefficient} onChange={setCoefficient} step="0.01" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Spectral Width (nm)</label>
-              <input type="number" value={spectralWidth} onChange={(e) => setSpectralWidth(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" step="0.01" />
+              <ValidatedNumberInput label="Spectral Width (nm)" value={spectralWidth} onChange={setSpectralWidth} step="0.01" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Temperature (°C)</label>
-              <input type="number" value={temperature} onChange={(e) => setTemperature(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none" />
+              <ValidatedNumberInput label="Temperature (°C)" value={temperature} onChange={setTemperature} />
             </div>
           </div>
 

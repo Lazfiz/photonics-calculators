@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageClient from "./page-client";
 
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/spectroscopy/jacquinot",
       title: 'Jacquinot Advantage',
   description: 'FTIR throughput advantage over dispersive instruments. G = 2/(̃2L) where L = max OPD.',
 };

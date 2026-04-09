@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function PowerDensityPage() {
   const [power, setPower] = useURLState("power", 1); // W
   const [diameter, setDiameter] = useURLState("diameter", 1); // mm (1/e²)
@@ -76,13 +77,11 @@ export default function PowerDensityPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm text-gray-400 mb-1">Power (W)</label>
-              <input type="number" value={power} onChange={e => setPower(Math.max(0, parseFloat(e.target.value) || 0))}
-                step="0.1" min="0" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="Power (W)" value={power} onChange={setPower} min={0} step="0.1" />
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">1/e² Diameter (mm)</label>
-              <input type="number" value={diameter} onChange={e => setDiameter(Math.max(0.01, parseFloat(e.target.value) || 0.01))}
-                step="0.1" min="0.01" className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 text-white" />
+              <ValidatedNumberInput label="1/e² Diameter (mm)" value={diameter} onChange={setDiameter} min={0.01} step="0.1" />
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Beam Profile</label>

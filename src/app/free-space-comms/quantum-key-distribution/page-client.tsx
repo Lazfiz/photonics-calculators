@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function QuantumKeyDistributionPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550);
   const [txPower, setTxPower] = useState(-10); // dBm (weak coherent source)
@@ -138,8 +139,7 @@ export default function QuantumKeyDistributionPage() {
           ].map(([label, val, set, step]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
-              <input type="number" value={val} onChange={(e) => set(Number(e.target.value))} step={step as number | undefined}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white" />
+              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
             </div>
           ))}
         </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 export const metadata: Metadata = {
+    canonical: "https://photonics-calculators.vercel.app/wave-optics",
   title: "Wave Optics Calculators",
   description: "Wave optics calculators for Gaussian beams, cavities, diffraction, interferometers, nonlinear propagation, and laser resonators.",
 };

@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+
 export default function ExtinctionRatioPage() {
   const [erdB, setErdB] = useURLState("erdB", 30);
   const [inputPower, setInputPower] = useURLState("inputPower", 1); // mW
@@ -53,8 +54,7 @@ export default function ExtinctionRatioPage() {
           ].map(({ label, val, set, min, max }) => (
             <div key={label} className="mb-3">
               <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <input type="number" step={label.includes("Number") ? 1 : 0.1} min={min} max={max} value={val} onChange={(e) => set(parseFloat(e.target.value) || min)}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white" />
+              <ValidatedNumberInput label="{label}" value={val} onChange={set} min={min} max={max} />
             </div>
           ))}
         </div>
