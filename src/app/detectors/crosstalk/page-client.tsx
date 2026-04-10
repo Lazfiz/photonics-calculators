@@ -12,6 +12,9 @@ export default function CrosstalkPage() {
   const [absorptionDepth, setAbsorptionDepth] = useURLState("absorptionDepth", 3.0);
   const [depletionWidth, setDepletionWidth] = useURLState("depletionWidth", 2.0);
 
+  const Ldiff = Math.max(diffusionLength, 0.01);
+  const Labs = Math.max(absorptionDepth, 0.01);
+
   const chartData = useMemo(() => {
     const N = 50; const x: number[] = []; const y: number[] = []; const z: number[][] = [];
     for (let i = 0; i < N; i++) {
@@ -22,20 +25,20 @@ export default function CrosstalkPage() {
         if (i === 0) y.push((j - N/2) * pixelPitch / N);
         const yj = (j - N/2) * pixelPitch / N;
         const r = Math.sqrt(xi*xi + yj*yj);
-        row.push(Math.exp(-r / (diffusionLength + 0.01)) * (1 - Math.exp(-depletionWidth / (absorptionDepth + 0.01))) * 100);
+        row.push(Math.exp(-r / Ldiff) * (1 - Math.exp(-depletionWidth / Labs)) * 100);
       }
       z.push(row);
     }
     return [{ x, y, z, type: "heatmap" as const, colorscale: "Blues", name: "Charge collection %" }];
-  }, [pixelPitch, diffusionLength, absorptionDepth, depletionWidth]);
+  }, [pixelPitch, Ldiff, Labs, depletionWidth]);
 
   const crosstalkLine = useMemo(() => {
     const pitches = Array.from({ length: 100 }, (_, i) => 1 + i * 0.1);
-    return [{ x: pitches, y: pitches.map(p => 100 * Math.exp(-p / (2 * diffusionLength + 0.01))), type: "scatter" as const, mode: "lines" as const, name: "Crosstalk (%)", line: { color: "#f87171", width: 2 } }];
-  }, [diffusionLength]);
+    return [{ x: pitches, y: pitches.map(p => 100 * Math.exp(-p / (2 * Ldiff))), type: "scatter" as const, mode: "lines" as const, name: "Crosstalk (%)", line: { color: "#f87171", width: 2 } }];
+  }, [Ldiff]);
 
-  const crosstalkToNeighbor = 100 * Math.exp(-pixelPitch / (2 * diffusionLength + 0.01));
-  const chargeInDepletion = (1 - Math.exp(-depletionWidth / (absorptionDepth + 0.01))) * 100;
+  const crosstalkToNeighbor = 100 * Math.exp(-pixelPitch / (2 * Ldiff));
+  const chargeInDepletion = (1 - Math.exp(-depletionWidth / Labs)) * 100;
   const mtfAtNyquist = 1 / (1 + Math.pow(Math.PI * diffusionLength / pixelPitch, 2));
 
   return (
