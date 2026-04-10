@@ -40,9 +40,9 @@ export default function RareEarthDopedFiberCalculator() {
     return dopantConcentration * factor[dopantType]; // ions/m³
   }, [dopantConcentration, dopantType]);
 
-  // Small-signal gain coefficient
+  // Small-signal gain coefficient (fully inverted, no overlap factor)
   const smallSignalGainCoeff = useMemo(() => {
-    return ionDensity * dp.emissionCross * 1e-3; // per meter (scaled)
+    return ionDensity * dp.emissionCross; // per meter
   }, [ionDensity, dp.emissionCross]);
 
   // Small-signal gain (dB)
@@ -50,10 +50,11 @@ export default function RareEarthDopedFiberCalculator() {
     return 4.343 * smallSignalGainCoeff * fiberLength;
   }, [smallSignalGainCoeff, fiberLength]);
 
-  // Saturation power
+  // Saturation power: P_sat = hν · A_eff / (σ_e · τ) where hν = hc/λ
   const saturationPower = useMemo(() => {
-    const Aeff = Math.PI * coreRadius ** 2 * 1e-12; // m²
-    return (h * c * lambdaS) / (dp.emissionCross * dp.lifetime * 1e-3 * Aeff) * 1e3; // mW
+    const Aeff = Math.PI * coreRadius ** 2 * 1e-12; // m² (coreRadius in μm)
+    const photonEnergy = (h * c) / lambdaS; // J
+    return (photonEnergy * Aeff) / (dp.emissionCross * dp.lifetime * 1e-3) * 1e3; // mW
   }, [lambdaS, dp, coreRadius]);
 
   // Noise figure (approximate)
@@ -62,10 +63,9 @@ export default function RareEarthDopedFiberCalculator() {
     return Math.max(3, nf);
   }, [pumpPower]);
 
-  // Pump absorption
-  const pumpAbsorption = useMemo(() => {
-    return ionDensity * dp.absorptionCross * fiberLength * 4.343;
-  }, [ionDensity, dp.absorptionCross, fiberLength]);
+  // Pump absorption coefficient (dB/m) and total (dB)
+  const pumpAbsCoeff = ionDensity * dp.absorptionCross * 4.343; // dB/m
+  const pumpAbsorption = pumpAbsCoeff * fiberLength; // total dB
 
   // Plot: gain vs fiber length
   const plotData = useMemo(() => {
@@ -154,7 +154,8 @@ export default function RareEarthDopedFiberCalculator() {
                 <div className="flex justify-between"><span className="text-gray-400">Small-signal gain:</span><span className={`font-mono text-lg text-green-400`}>{smallSignalGain.toFixed(1)} dB</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Saturation power:</span><span className="font-mono text-blue-400">{saturationPower.toFixed(1)} mW</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Noise figure:</span><span className="font-mono">{noiseFigure.toFixed(1)} dB</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Pump absorption:</span><span className="font-mono">{pumpAbsorption.toFixed(1)} dB</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Pump absorption coeff:</span><span className="font-mono">{pumpAbsCoeff.toFixed(1)} dB/m</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Total pump absorption:</span><span className="font-mono">{pumpAbsorption.toFixed(1)} dB</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Upper-state lifetime:</span><span className="font-mono">{dp.lifetime} ms</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Peak emission:</span><span className="font-mono">{dp.peakEmission} nm</span></div>
               </div>
