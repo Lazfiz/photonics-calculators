@@ -23,10 +23,9 @@ export default function LowWaterPeakPage() {
 
   const calc = useMemo(() => {
     // Compare OH peak loss for standard vs low water peak
-    const ohStandard = 0.5 * Math.exp(-0.5 * 0); // peak value at 1383nm
-    const ohLWP = getAttenuation(1383, fiberType);
-    const ohStdTotal = ohStandard + 0.85 * 0.19 * Math.pow(1.55 / 1.383, 4);
-    const reduction = ((ohStandard - getAttenuation(1383, fiberType)) / ohStandard) * 100;
+    const ohPeakStandard = 0.5; // dB/km peak for standard fiber
+    const ohPeakHeight = fiberType === "SMF28e" ? 0.15 : fiberType === "SMF28ePlus" ? 0.08 : fiberType === "AllWave" ? 0.1 : 0.12;
+    const reduction = ((ohPeakStandard - ohPeakHeight) / ohPeakStandard) * 100;
 
     // Usable bandwidth in E-band (1360-1460nm) and S-band (1460-1530nm)
     const eBandWls = Array.from({ length: 50 }, (_, i) => 1360 + i * 2);
@@ -113,7 +112,7 @@ export default function LowWaterPeakPage() {
         <ChartPanel data={spectrumData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
-          yaxis: { title: "Attenuation (dB/km)", color: "#9ca3af", gridcolor: "#374151", range: [0, 1.0] },
+          yaxis: { title: "Attenuation (dB/km)", color: "#9ca3af", gridcolor: "#374151", range: [0, 1.2] },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 380,
           legend: { x: 0.02, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af" } },
           shapes: [
