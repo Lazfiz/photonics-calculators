@@ -24,9 +24,11 @@ export default function AtmosphericLossPage() {
     // Kim visibility attenuation (dB/km)
     const alphaVis = (3.91 / V) * Math.pow(550 / wavelength, q);
 
-    // Molecular absorption (simplified CO2 + H2O bands)
-    // Water vapor absorption peaks near 940nm, 1130nm, 1380nm
-    const rho_w = (humidity / 100) * Math.exp(6.648 - 2632 / (temperature + 273.15)) * 1000; // g/m³
+    // Water vapor density (Buck equation + ideal gas law)
+    const T_k = temperature + 273.15;
+    const e_s = 6.1121 * Math.exp(17.502 * temperature / (temperature + 240.97)); // hPa
+    const e_w = (humidity / 100) * e_s;
+    const rho_w = 216.7 * e_w / T_k; // g/m³
     let alphaH2O = 0;
     const waterPeaks = [940, 1130, 1380, 1870, 2660];
     for (const peak of waterPeaks) {
@@ -38,18 +40,22 @@ export default function AtmosphericLossPage() {
     const H = 8.5; // scale height km
     const altFactor = Math.exp(-altitude / H);
 
-    const alphaTotal = (alphaVis * altFactor + alphaH2O * altFactor * 0.01); // dB/km
+    const alphaTotal = (alphaVis + alphaH2O) * altFactor; // dB/km
     const totalLoss = alphaTotal * L;
     const transmittance = Math.pow(10, -totalLoss / 10);
 
-    return { alphaTotal, totalLoss, transmittance, alphaVis: alphaVis * altFactor, alphaH2O: alphaH2O * altFactor * 0.01, q };
+    return { alphaTotal, totalLoss, transmittance, alphaVis: alphaVis * altFactor, alphaH2O: alphaH2O * altFactor, q };
   }, [wavelength, visibility, altitude, humidity, temperature, linkLength]);
 
   const plotData = useMemo(() => {
     const wavelengths = Array.from({ length: 300 }, (_, i) => 300 + i * 5); // 300-1800 nm
     const V = Math.max(visibility, 0.1);
     const q = (wl: number) => wl < 500 ? 1.6 : wl < 700 ? 1.3 : wl < 1500 ? 0.585 * Math.pow(V, 1 / 3) : 1.6;
-    const rho_w = (humidity / 100) * Math.exp(6.648 - 2632 / (temperature + 273.15)) * 1000;
+    const rho_w = (() => {
+      const T_k = temperature + 273.15;
+      const e_s = 6.1121 * Math.exp(17.502 * temperature / (temperature + 240.97));
+      return 216.7 * (humidity / 100) * e_s / T_k;
+    })();
 
     const total = wavelengths.map((wl) => {
       const qq = q(wl);
@@ -61,7 +67,7 @@ export default function AtmosphericLossPage() {
         alphaH2O += 0.1 * rho_w * Math.exp(-0.5 * Math.pow((wl - peak) / sigma, 2));
       }
       const altFactor = Math.exp(-altitude / 8.5);
-      return (alphaVis + alphaH2O * 0.01) * altFactor;
+      return (alphaVis + alphaH2O) * altFactor;
     });
 
     // Mark common laser wavelengths
@@ -71,14 +77,18 @@ export default function AtmosphericLossPage() {
       { x: wavelengths, y: total, type: "scatter", mode: "lines", name: "Total α", line: { color: "#06b6d4" } },
       { x: commonWavelengths, y: commonWavelengths.map((wl) => {
         const qq = q(wl);
-        const rho_w = (humidity / 100) * Math.exp(6.648 - 2632 / (temperature + 273.15)) * 1000;
+        const rho_w = (() => {
+          const T_k = temperature + 273.15;
+          const e_s = 6.1121 * Math.exp(17.502 * temperature / (temperature + 240.97));
+          return 216.7 * (humidity / 100) * e_s / T_k;
+        })();
         const alphaVis = (3.91 / V) * Math.pow(550 / wl, qq);
         let alphaH2O = 0;
         for (const peak of [940, 1130, 1380, 1870, 2660]) {
           const sigma = 30 + peak * 0.05;
           alphaH2O += 0.1 * rho_w * Math.exp(-0.5 * Math.pow((wl - peak) / sigma, 2));
         }
-        return (alphaVis + alphaH2O * 0.01) * Math.exp(-altitude / 8.5);
+        return (alphaVis + alphaH2O) * Math.exp(-altitude / 8.5);
       }), type: "scatter", mode: "markers", name: "Common λ", marker: { color: "#f97316", size: 8 } },
     ];
   }, [visibility, humidity, temperature, altitude]);
