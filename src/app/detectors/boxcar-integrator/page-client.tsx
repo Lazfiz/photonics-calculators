@@ -15,11 +15,14 @@ export default function BoxcarIntegratorPage() {
   const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 500);
 
   const dutyCycle = gateWidth / pulseWidth;
-  const samplesPerGate = Math.max(1, Math.round(gateWidth / 10));
+  // Single-shot SNR: ratio of peak signal to RMS noise within the gate
   const snrPerGate = signalPeak / noiseRms;
+  // Averaging N sweeps improves SNR by √N (independent measurements)
   const snrAfterAvg = snrPerGate * Math.sqrt(averages);
-  const snrTotal = snrPerGate * Math.sqrt(samplesPerGate * averages);
-  const bandwidth = 1 / (2 * averages * gateWidth * 1e-9);
+  // Noise equivalent bandwidth of the boxcar gate: NEB = 1/(2·τ_gate)
+  const neb = 1 / (2 * gateWidth * 1e-9);
+  // Total measurement time for N averages
+  const measureTime = averages / repRate;
 
   const chartData = useMemo(() => {
     const t = Array.from({ length: 500 }, (_, i) => i * pulseWidth * 2 / 500);
@@ -38,10 +41,9 @@ export default function BoxcarIntegratorPage() {
   const snrVsAvg = useMemo(() => {
     const N = Array.from({ length: 200 }, (_, i) => Math.pow(10, i * 5 / 200));
     return [
-      { x: N, y: N.map(n => snrPerGate * Math.sqrt(n)), type: "scatter" as const, mode: "lines" as const, name: "SNR vs Averages", line: { color: "#fbbf24", width: 2 } },
-      { x: N, y: N.map(n => snrPerGate * Math.sqrt(n * samplesPerGate)), type: "scatter" as const, mode: "lines" as const, name: "SNR (gate + avg)", line: { color: "#a78bfa", width: 2 } },
+      { x: N, y: N.map(n => snrPerGate * Math.sqrt(n)), type: "scatter" as const, mode: "lines" as const, name: "SNR after N averages", line: { color: "#fbbf24", width: 2 } },
     ];
-  }, [snrPerGate, samplesPerGate]);
+  }, [snrPerGate]);
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Boxcar Integrator" description="Gated signal averaging — recover repetitive signals from noise.">
@@ -56,12 +58,13 @@ export default function BoxcarIntegratorPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Single-shot SNR" value={snrPerGate.toFixed(3)} tone="red" />
         <ResultCard label={`After ${averages} avg`} value={snrAfterAvg.toFixed(2)} tone="yellow" />
-        <ResultCard label="Total SNR (gate+avg)" value={snrTotal.toFixed(2)} tone="green" />
-        <ResultCard label="Effective BW" value={`${bandwidth.toFixed(2)} Hz`} tone="blue" />
+        <ResultCard label="NEB (gate)" value={`${neb.toExponential(3)} Hz`} tone="blue" />
+        <ResultCard label="Measure Time" value={measureTime >= 1 ? `${measureTime.toFixed(1)} s` : `${(measureTime * 1000).toFixed(1)} ms`} tone="green" />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
-        <p>SNR_total = (V_sig / σ_noise) · √(N_gate · N_avg)</p>
-        <p>BW_eff = 1 / (2 · N_avg · τ_gate)</p>
+        <p>SNR improves by √N_avg with N independent sweep averages</p>
+        <p>Noise Equivalent Bandwidth: NEB = 1 / (2 · τ_gate)</p>
+        <p>Total measurement time: T = N_avg / f_rep</p>
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Time (ns)", gridcolor: "#374151" }, yaxis: { title: "Signal (mV)", gridcolor: "#374151" } }} title="Signal with Gate Window" />
       <h2 className="text-xl font-bold mt-8 mb-4">SNR vs Averages</h2>
