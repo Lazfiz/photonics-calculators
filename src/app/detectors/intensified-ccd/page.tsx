@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/intensified-ccd' },
     title: 'Intensified CCD (ICCD)',
-  description: 'Photocathode MCP phosphor CCD gain chain with gating and noise analysis.'
+    description: 'Photocathode → MCP → phosphor → CCD gain chain with gating and noise analysis.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Intensified CCD (ICCD)',
-  description: 'Photocathode MCP phosphor CCD gain chain with gating and noise analysis.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Intensified CCD (ICCD)',
-  'Photocathode MCP phosphor CCD gain chain with gating and noise analysis.',
+  'Photocathode → MCP → phosphor → CCD gain chain with gating and noise analysis.',
   'https://photonics-calculators.vercel.app/detectors/intensified-ccd',
-  { category: 'Detectors`,
-  `Photocathode MCP phosphor CCD gain chain with gating and noise analysis.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Intensified CCD (ICCD)',
-  'Photocathode MCP phosphor CCD gain chain with gating and noise analysis.',
-  'https://photonics-calculators.vercel.app/detectors/intensified-ccd',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/intensified-ccd`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
