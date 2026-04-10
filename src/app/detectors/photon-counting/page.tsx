@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/photon-counting' },
-    title: 'Photon Counting',
-  description: 'Interactive Photon Counting calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Photon Counting',
-  description: 'Interactive Photon Counting calculator for photonics and optical engineering.'
+    title: 'Photon Counting Statistics',
+    description: 'Poisson statistics, SNR, dead time corrections, and count distributions.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Photon Counting',
-  'Interactive Photon Counting calculator for photonics and optical engineering.',
+  'Photon Counting Statistics',
+  'Poisson statistics, SNR, dead time corrections, and count distributions.',
   'https://photonics-calculators.vercel.app/detectors/photon-counting',
-  { category: 'Detectors`,
-  `Interactive Photon Counting calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Photon Counting',
-  'Interactive Photon Counting calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/detectors/photon-counting',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/photon-counting`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
