@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
@@ -16,7 +16,7 @@ export default function IngaasParametersPage() {
   const [biasVoltage, setBiasVoltage] = useURLState("biasVoltage", 0.5);
   const [idealityFactor, setIdealityFactor] = useURLState("idealityFactor", 1.2);
 
-  const Eg = 0.36 + 0.63 * indiumFraction + 0.43 * indiumFraction ** 2;
+  const Eg = indiumFraction * 0.36 + (1 - indiumFraction) * 1.424 - 0.477 * indiumFraction * (1 - indiumFraction);
   const EgT = Eg - 2.7e-4 * (temperature - 300) * (Eg - 0.5) / Eg;
   const cutoff = 1240 / EgT;
   const R_surface = 0.02;
@@ -28,7 +28,7 @@ export default function IngaasParametersPage() {
 
   const areaCm2 = area * 1e-2;
   const Vt = k * temperature / q;
-  const diffDark = areaCm2 * 1e-8 * (Math.exp(q * biasVoltage / (idealityFactor * Vt)) - 1);
+  const diffDark = areaCm2 * 1e-8 * (1 - Math.exp(-Math.abs(biasVoltage) / (idealityFactor * Vt)));
   const grDark = areaCm2 * 1e-6 * Math.pow(temperature / 300, 1.5) * Math.exp(-EgT * q / (2 * k * temperature));
   const totalDark = diffDark + grDark;
   const R1550 = resp(1550);
@@ -45,7 +45,7 @@ export default function IngaasParametersPage() {
 
   const darkVsTemp = useMemo(() => {
     const temps = Array.from({ length: 150 }, (_, i) => 200 + i * 200 / 150);
-    return [{ x: temps, y: temps.map(T => { const egt = Eg - 2.7e-4 * (T - 300) * (Eg - 0.5) / Eg; const vt = k * T / q; const d = areaCm2 * 1e-8 * (Math.exp(q * biasVoltage / (idealityFactor * vt)) - 1); const g = areaCm2 * 1e-6 * Math.pow(T / 300, 1.5) * Math.exp(-egt * q / (2 * k * T)); return (d + g) * 1e9; }), type: "scatter", mode: "lines", name: "I_dark", line: { color: "#fbbf24", width: 2 } }];
+    return [{ x: temps, y: temps.map(T => { const egt = Eg - 2.7e-4 * (T - 300) * (Eg - 0.5) / Eg; const vt = k * T / q; const d = areaCm2 * 1e-8 * (1 - Math.exp(-Math.abs(biasVoltage) / (idealityFactor * vt))); const g = areaCm2 * 1e-6 * Math.pow(T / 300, 1.5) * Math.exp(-egt * q / (2 * k * T)); return (d + g) * 1e9; }), type: "scatter", mode: "lines", name: "I_dark", line: { color: "#fbbf24", width: 2 } }];
   }, [Eg, biasVoltage, idealityFactor, areaCm2]);
 
   return (
@@ -67,7 +67,7 @@ export default function IngaasParametersPage() {
         <ResultCard label="NEP @ 1550nm" value={nep1550.toExponential(3) + " W/√Hz"} tone="orange" />
         <ResultCard label="D* @ 1550nm" value={`${Dstar1550.toExponential(3)} cm·Hz^½/W`} tone="cyan" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>E_g(x) = 0.36 + 0.63x + 0.43x²</p><p>λ_c = 1240/E_g, QE = (1−R)·(1−exp(−α·d))</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>E_g(x) = 1.424 − 1.541x + 0.477x²</p><p>λ_c = 1240/E_g, QE = (1−R)·(1−exp(−α·d))</p></div>
       <div className="grid gap-6 md:grid-cols-2">
         <ChartPanel data={spectralQE} layout={{ xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "QE (%)", gridcolor: "#374151" } }} title="Spectral QE" />
         <ChartPanel data={darkVsTemp} layout={{ xaxis: { title: "Temperature (K)", gridcolor: "#374151" }, yaxis: { title: "I_dark (nA)", type: "log", gridcolor: "#374151" } }} title="Dark vs Temperature" />
