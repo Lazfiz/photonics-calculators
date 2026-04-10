@@ -31,16 +31,20 @@ export default function ScintillationPage() {
       sigmaI2 = 1 + 0.86 * Math.pow(sigmaR2, -2 / 5); // moderate-strong
     }
 
-    // Aperture averaging factor
+    // Aperture averaging factor (Andrews & Phillips, using Fried parameter)
     const D = apertureDiameter;
-    const apertureFactor = D > 0 ? Math.pow(1 + 1.062 * Math.pow(sigmaR2, 7 / 6) * Math.pow(D / (Math.sqrt(wl * L)), 2), -7 / 6) : 1;
+    const apertureFactor = D > 0 ? Math.pow(1 + 1.062 * Math.pow(D / r0, 5 / 3), -7 / 6) : 1;
     const sigmaI2Averaged = sigmaI2 * apertureFactor;
 
-    // Fade probability (log-normal model for weak turbulence)
+    // Fade probability (log-normal model)
+    // σ²_ln = ln(1 + σ²_I), threshold F = 10^(T/10)
+    const sigma_ln_sq = Math.log(1 + sigmaI2Averaged);
+    const sigma_ln = Math.sqrt(sigma_ln_sq);
     const fadeThresholds = Array.from({ length: 50 }, (_, i) => -30 + i * 0.5);
     const fadeProb = fadeThresholds.map((T) => {
-      const Tlinear = Math.pow(10, T / 10);
-      return 0.5 * (1 - erf(Math.abs(T) / (Math.sqrt(2) * Math.sqrt(sigmaI2Averaged) * 10 * Math.log10(Math.E))));
+      const lnF = T * Math.LN10 / 10; // ln(fade threshold ratio)
+      const z = (lnF + sigma_ln_sq / 2) / (sigma_ln * Math.SQRT2);
+      return 0.5 * (1 + erf(z));
     });
 
     // Scintillation vs distance
