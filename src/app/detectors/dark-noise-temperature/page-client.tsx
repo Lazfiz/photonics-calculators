@@ -11,9 +11,7 @@ const kB = 8.617e-5;
 export default function DarkNoiseTemperaturePage() {
   const [darkCurrent25, setDarkCurrent25] = useURLState("darkCurrent25", 0.5);
   const [eg, setEg] = useURLState("eg", 1.12);
-  const [area, setArea] = useURLState("area", 1);
   const [bandwidth, setBandwidth] = useURLState("bandwidth", 1);
-  const [readNoise, setReadNoise] = useURLState("readNoise", 2);
 
   const darkCurrentAtT = (Tc: number) => {
     const T = Tc + 273.15; const Tref = 298.15;
@@ -21,7 +19,7 @@ export default function DarkNoiseTemperaturePage() {
   };
   const darkNoiseAtT = (Tc: number) => {
     const Id = darkCurrentAtT(Tc) * 1e-9;
-    return Math.sqrt(2 * 1.602e-19 * Id * area * 1e-6 * bandwidth);
+    return Math.sqrt(2 * 1.602e-19 * Id * bandwidth);
   };
 
   const chartData = useMemo(() => {
@@ -30,14 +28,13 @@ export default function DarkNoiseTemperaturePage() {
       { x: temps, y: temps.map(darkCurrentAtT), type: "scatter", mode: "lines", name: "Dark Current", line: { color: "#f87171", width: 2 }, yaxis: "y" },
       { x: temps, y: temps.map(T => darkNoiseAtT(T) * 1e9), type: "scatter", mode: "lines", name: "Dark Noise Current", line: { color: "#60a5fa", width: 2 }, yaxis: "y2" },
     ];
-  }, [darkCurrent25, eg, area, bandwidth]);
+  }, [darkCurrent25, eg, bandwidth]);
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Dark Noise vs Temperature" description="Temperature dependence of dark current and dark noise in photodiodes/CCDs.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Dark Current at 25°C (nA)" value={darkCurrent25} onChange={setDarkCurrent25} min={0.001} step="0.1" />
         <ValidatedNumberInput label="Bandgap (eV)" value={eg} onChange={setEg} min={0.5} max={2} step="0.01" />
-        <ValidatedNumberInput label="Area (mm²)" value={area} onChange={setArea} min={0.01} step="0.1" />
         <ValidatedNumberInput label="Bandwidth (Hz)" value={bandwidth} onChange={setBandwidth} min={0.1} step="0.1" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -46,7 +43,7 @@ export default function DarkNoiseTemperaturePage() {
         <ResultCard label="Dark @ -40°C" value={`${darkCurrentAtT(-40).toExponential(2)} nA`} tone="green" />
         <ResultCard label="Ratio (80°C/−40°C)" value={`×${(darkCurrentAtT(80) / darkCurrentAtT(-40)).toExponential(1)}`} tone="red" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>I_dark(T) = I₀ · (T/T_ref)^(3/2) · exp[−E_g/(2k) · (1/T − 1/T_ref)]</p><p>σ_dark = √(2q · I_dark · A · Δf)</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>I_dark(T) = I₀ · (T/T_ref)^(3/2) · exp[−E_g/(2k) · (1/T − 1/T_ref)]</p><p>σ_dark = √(2q · I_dark · Δf)</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Temperature (°C)", gridcolor: "#374151" }, yaxis: { title: "Dark Current (nA)", gridcolor: "#374151", type: "log" }, yaxis2: { title: "Dark Noise (nA rms)", gridcolor: "#374151", overlaying: "y", side: "right", type: "log" } }} />
     </CalculatorShell>
   );

@@ -12,7 +12,6 @@ export default function ElectronMultiplyingPage() {
   const [emccdReadNoise, setEmccdReadNoise] = useURLState("emccdReadNoise", 60);
   const [scmosReadNoise, setScmosReadNoise] = useURLState("scmosReadNoise", 1.5);
   const [emGain, setEmGain] = useURLState("emGain", 1000);
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 0.1);
 
   const enf2 = 2 - 1 / emGain;
   const emccdSNR = signalElectrons / Math.sqrt(signalElectrons * enf2 + darkCurrent * enf2 + (emccdReadNoise / emGain) ** 2);
@@ -42,7 +41,6 @@ export default function ElectronMultiplyingPage() {
         <ValidatedNumberInput label="EMCCD Read Noise (e⁻)" value={emccdReadNoise} onChange={setEmccdReadNoise} min={1} step="5" />
         <ValidatedNumberInput label="sCMOS Read Noise (e⁻)" value={scmosReadNoise} onChange={setScmosReadNoise} min={0.1} step="0.1" />
         <ValidatedNumberInput label="EM Gain" value={emGain} onChange={setEmGain} min={1} step="50" />
-        <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} min={0.001} step="0.01" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="EMCCD SNR" value={emccdSNR.toFixed(2)} tone="blue" />

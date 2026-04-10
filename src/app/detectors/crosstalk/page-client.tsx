@@ -13,11 +13,18 @@ export default function CrosstalkPage() {
   const [depletionWidth, setDepletionWidth] = useURLState("depletionWidth", 2.0);
 
   const chartData = useMemo(() => {
-    const N = 50; const x: number[] = []; const y: number[] = []; const z: number[] = [];
-    for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
-      const xi = (i - N/2) * pixelPitch / N; const yj = (j - N/2) * pixelPitch / N;
-      const r = Math.sqrt(xi*xi + yj*yj);
-      x.push(xi); y.push(yj); z.push(Math.exp(-r / (diffusionLength + 0.01)) * (1 - Math.exp(-depletionWidth / (absorptionDepth + 0.01))) * 100);
+    const N = 50; const x: number[] = []; const y: number[] = []; const z: number[][] = [];
+    for (let i = 0; i < N; i++) {
+      const row: number[] = [];
+      const xi = (i - N/2) * pixelPitch / N;
+      x.push(xi);
+      for (let j = 0; j < N; j++) {
+        if (i === 0) y.push((j - N/2) * pixelPitch / N);
+        const yj = (j - N/2) * pixelPitch / N;
+        const r = Math.sqrt(xi*xi + yj*yj);
+        row.push(Math.exp(-r / (diffusionLength + 0.01)) * (1 - Math.exp(-depletionWidth / (absorptionDepth + 0.01))) * 100);
+      }
+      z.push(row);
     }
     return [{ x, y, z, type: "heatmap" as const, colorscale: "Blues", name: "Charge collection %" }];
   }, [pixelPitch, diffusionLength, absorptionDepth, depletionWidth]);
