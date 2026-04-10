@@ -39,17 +39,14 @@ export default function PhotodiodeSpeedPage() {
     const areas = Array.from({ length: 300 }, (_, i) =>
       areaMin * Math.pow(areaMax / areaMin, i / 299));
     const bw = areas.map(a => 1 / (2 * Math.PI * loadResistance * capacitanceDensity * 1e-15 * a));
-    const thermalNoise = 4 * 1.38e-23 * 300 * bandwidthToUse();
-    // NEP = sqrt(thermal noise) / Responsivity (simplified)
-    const nep = areas.map((_, i) => {
+    // NEP at 3dB bandwidth: NEP_total = spectral_NEP * sqrt(BW_3dB)
+    const nep = areas.map((a, i) => {
       const bwHz = Math.max(bw[i], 1);
-      const noiseCurrent = Math.sqrt(4 * 1.38e-23 * 300 * bwHz / loadResistance);
-      return noiseCurrent / responsivity * 1e12; // pW
+      const spectralNep = Math.sqrt(4 * 1.38e-23 * 300 / loadResistance) / responsivity;
+      return spectralNep * Math.sqrt(bwHz) * 1e12; // pW (at 3dB BW)
     });
     return { areas, nep };
-  }, [areaMin, areaMax, loadResistance, capacitanceDensity, responsivity]);
-
-  function bandwidthToUse() { return 1 / (2 * Math.PI * loadResistance * capacitanceDensity * 1e-15); }
+  }, [loadResistance, responsivity]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
@@ -73,7 +70,7 @@ export default function PhotodiodeSpeedPage() {
         <p>C<sub>j</sub> = C<sub>d</sub> · A (junction capacitance ∝ area)</p>
         <p>BW<sub>3dB</sub> = 1 / (2π · R · C<sub>j</sub>)</p>
         <p>R = QE · qλ / (hc) (responsivity)</p>
-        <p>NEP<sub>thermal</sub> = √(4k<sub>B</sub>TR·BW) / R (thermal-noise-limited only)</p>
+        <p>NEP<sub>thermal</sub> = √(4k<sub>B</sub>T/R) / R × √BW<sub>3dB</sub> (at 3dB bandwidth)</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -91,7 +88,7 @@ export default function PhotodiodeSpeedPage() {
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
           title: { text: "NEP vs Area", font: { size: 12 } },
           xaxis: { title: "Area (mm²)", gridcolor: "#374151", type: "log" },
-          yaxis: { title: "NEP (pW/√Hz)", gridcolor: "#374151", type: "log" },
+          yaxis: { title: "NEP at 3dB BW (pW)", gridcolor: "#374151", type: "log" },
           margin: { t: 40, r: 20, b: 50, l: 70 }, legend: { bgcolor: "transparent", font: { size: 10 } },
         }} />
       </div>
