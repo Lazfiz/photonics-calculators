@@ -23,19 +23,20 @@ export default function SidePolishedPage() {
     // Mode field radius (Marcuse)
     const w = (coreDia / 2) * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
 
-    // Evanescent field at the polished surface
-    // Fraction of power outside core
-    const gamma = Math.sqrt(2 * Math.PI * NA / (lambda * w));
-    const powerFraction = Math.exp(-2 * gamma * remainingClad);
-
-    // Phase matching condition for side-polished fiber with overlay
+    // Effective index (weak-guidance approximation)
     const n_eff = n_core - (0.5 * NA * NA / n_core);
+
+    // Evanescent decay constant: γ = (2π/λ)·√(n_eff² - n_clad²)
+    const gamma = (2 * Math.PI / lambda) * Math.sqrt(n_eff * n_eff - n_clad * n_clad);
+
+    // Fraction of evanescent field intensity at polished surface
+    const powerFraction = Math.exp(-2 * gamma * remainingClad);
     const delta_n = n_overlay - n_clad;
     const isResonant = Math.abs(delta_n) < 0.005;
 
-    // Interaction length for complete coupling
-    const kappa = (Math.PI / lambda) * (NA / n_core) * powerFraction;
-    const L_c = Math.PI / (2 * kappa);
+    // Coupling coefficient (simplified)
+    const kappa = (Math.PI / lambda) * (NA / n_eff) * powerFraction;
+    const L_c = Math.PI / (2 * kappa); // in μm (same unit as lambda)
 
     // Spectral response: resonance wavelength depends on overlay thickness
     // Simplified model for wavelength-dependent transmission
@@ -44,7 +45,11 @@ export default function SidePolishedPage() {
     // Insertion loss from polishing
     const scatteringLoss = remainingClad < 0.5 ? 2 * (0.5 - remainingClad) : 0;
 
-    return { NA, V, w, gamma, powerFraction, n_eff, delta_n, isResonant, kappa, L_c, resonanceShift, scatteringLoss };
+    // Transmission through polished section (coupled mode theory)
+    const polishLen_um = polishLength * 1000; // mm → μm
+    const couplingEfficiency = Math.pow(Math.cos(kappa * polishLen_um), 2);
+
+    return { NA, V, w, gamma, powerFraction, n_eff, delta_n, isResonant, kappa, L_c, resonanceShift, scatteringLoss, couplingEfficiency };
   }, [remainingClad, coreDia, wavelength, n_core, n_clad, n_overlay, polishLength]);
 
   const chartData = useMemo(() => {
@@ -52,8 +57,9 @@ export default function SidePolishedPage() {
     const powers = remainings.map(r => {
       const V = (2 * Math.PI / (wavelength * 1e-3)) * (coreDia / 2) * calc.NA;
       const w = (coreDia / 2) * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
-      const gamma = Math.sqrt(2 * Math.PI * calc.NA / (wavelength * 1e-3 * w));
-      return Math.exp(-2 * gamma * r);
+      const n_eff_local = n_core - (0.5 * calc.NA * calc.NA / n_core);
+      const gamma_local = (2 * Math.PI / (wavelength * 1e-3)) * Math.sqrt(n_eff_local * n_eff_local - n_clad * n_clad);
+      return Math.exp(-2 * gamma_local * r);
     });
     const losses = remainings.map(r => r < 0.5 ? 2 * (0.5 - r) : 0);
 
@@ -80,7 +86,7 @@ export default function SidePolishedPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Coupling Length</p>
-          <p className="text-xl font-bold text-green-400">{calc.L_c.toFixed(2)} mm</p>
+          <p className="text-xl font-bold text-green-400">{calc.L_c.toFixed(2)} μm</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Phase Match</p>
@@ -97,7 +103,7 @@ export default function SidePolishedPage() {
         <h3 className="text-lg font-semibold mb-3">Formulas</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
           <p>Evanescent: P_out/P_total = exp(-2γd)</p>
-          <p>γ = √(2π NA / (λ w₀))</p>
+          <p>γ = (2π/λ)·√(n_eff² − n_clad²)</p>
           <p>Coupling coeff: κ = (π/λ)(NA/n_eff) × P_evanescent</p>
           <p>Phase match: n_overlay ≈ n_clad</p>
           <p>Resonance shift: Δλ ∝ Δn_overlay</p>
