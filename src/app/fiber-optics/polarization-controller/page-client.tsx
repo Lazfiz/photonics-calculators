@@ -14,10 +14,8 @@ export default function PolarizationControllerCalculator() {
   const [inputEllipticity, setInputEllipticity] = useURLState("inputEllipticity", 0); // degrees (0=linear)
   const [coilRadii, setCoilRadii] = useURLState("coilRadii", 15); // mm
 
-  // Phase retardation per section
+  // Phase retardation per section: δ = 2π · Δn · L / λ
   const phasePerSection = useMemo(() => {
-    const delta = birefringence * fiberLength * 1e9 / (wavelength * 1e-9) * 2 * Math.PI; // NOT right, let me fix
-    // δ = 2π · Δn · L / λ
     return (2 * Math.PI * birefringence * fiberLength) / (wavelength * 1e-9);
   }, [birefringence, fiberLength, wavelength]);
 
@@ -26,13 +24,9 @@ export default function PolarizationControllerCalculator() {
 
   // Stress-induced birefringence from bending
   const bendingBirefringence = useMemo(() => {
-    const r = coilRadii * 1e-3; // mm to m
-    const E = 72e9; // silica Young's modulus
-    const nu = 0.17; // Poisson ratio
-    const d = 125e-6; // cladding diameter
-    const deltaN = 0.5 * E * (d / 2) ** 2 * (1 + nu) / (r ** 2);
-    // Simplified: Δn ≈ C · (d/2r)² where C ≈ 0.13 for silica
-    return 0.13 * (125 / 2 / coilRadii) ** 2;
+    // Δn ≈ C · (d/(2r))² where C ≈ 0.13 for silica, d=125μm, r in same units
+    const r_um = coilRadii * 1000; // mm → μm
+    return 0.13 * Math.pow(125 / (2 * r_um), 2);
   }, [coilRadii]);
 
   // Poincaré sphere representation - Stokes parameters after each section
@@ -76,7 +70,7 @@ export default function PolarizationControllerCalculator() {
   const outputAzimuth = useMemo(() => {
     const s1 = stokesParams.s1[stokesParams.s1.length - 1];
     const s2 = stokesParams.s2[stokesParams.s2.length - 1];
-    return (Math.atan2(s2, s1) * 180 / Math.PI / 2) % 180;
+    return ((Math.atan2(s2, s1) * 180 / Math.PI / 2) % 180 + 180) % 180;
   }, [stokesParams]);
 
   const outputEllipticity = useMemo(() => {
@@ -86,11 +80,11 @@ export default function PolarizationControllerCalculator() {
 
   // Rotation needed for linear → circular
   const quarterWaveLength = useMemo(() => {
-    return wavelength / (4 * birefringence);
+    return (wavelength * 1e-9) / (4 * birefringence);
   }, [wavelength, birefringence]);
 
   const halfWaveLength = useMemo(() => {
-    return wavelength / (2 * birefringence);
+    return (wavelength * 1e-9) / (2 * birefringence);
   }, [wavelength, birefringence]);
 
   // Stokes parameter evolution
