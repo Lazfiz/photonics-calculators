@@ -20,9 +20,13 @@ export default function SaturationPage() {
     const satPoint = fullWellCapacity;
     const real = input.map(v => {
       if (v <= satPoint * 0.9) return v;
-      // Soft saturation using tanh-like rolloff
+      // Soft saturation using tanh rolloff
+      // nonlinearityPercent controls the rolloff sharpness:
+      // higher % = earlier onset, more deviation from linear
+      const nlFactor = Math.max(0.1, nonlinearityPercent / 0.5); // 0.5% default → 1.0
       const x = (v - satPoint * 0.9) / (satPoint * 0.1);
-      return satPoint * 0.9 + satPoint * 0.1 * Math.tanh(x * 0.8) / Math.tanh(0.8);
+      const tanhEffect = Math.tanh(x * 0.8 * nlFactor) / Math.tanh(0.8 * nlFactor);
+      return satPoint * 0.9 + satPoint * 0.1 * tanhEffect;
     });
     // Nonlinearity error (%)
     const error = input.map((v, i) => v > 0 ? ((real[i] - ideal[i]) / ideal[i]) * 100 : 0);
@@ -31,10 +35,10 @@ export default function SaturationPage() {
       { x: input, y: real, type: "scatter" as const, mode: "lines" as const, name: "Actual response", line: { color: "#60a5fa", width: 2 }, yaxis: "y" },
       { x: input, y: error, type: "scatter" as const, mode: "lines" as const, name: "Nonlinearity (%)", line: { color: "#f87171", width: 2 }, yaxis: "y2" },
     ];
-  }, [fullWellCapacity, nonlinearityPercent]);
+  }, [fullWellCapacity, readNoise, bitDepth, nonlinearityPercent]);
 
   const dynamicRange = 20 * Math.log10(fullWellCapacity / readNoise);
-  const snrSat = 20 * Math.log10(fullWellCapacity / readNoise);
+  const snrSat = 20 * Math.log10(fullWellCapacity / Math.sqrt(fullWellCapacity + readNoise * readNoise));
   const dnMax = Math.pow(2, bitDepth) - 1;
   const gainE = fullWellCapacity / dnMax; // e-/DN
 
@@ -52,6 +56,7 @@ export default function SaturationPage() {
 
       <div className="bg-gray-900 rounded p-4 mb-6">
         <p className="text-gray-300">Dynamic range = <span className="text-blue-400 font-mono">{dynamicRange.toFixed(1)} dB</span></p>
+        <p className="text-gray-300">SNR at FWC = <span className="text-blue-400 font-mono">{snrSat.toFixed(1)} dB</span> (shot + read noise)</p>
         <p className="text-gray-300">Max DN = <span className="text-blue-400 font-mono">{dnMax}</span> | Conversion gain = <span className="text-blue-400 font-mono">{gainE.toFixed(2)} e⁻/DN</span></p>
         <p className="text-gray-300 text-sm mt-1">DR = 20·log₁₀(FWC / σ<sub>read</sub>)</p>
       </div>
