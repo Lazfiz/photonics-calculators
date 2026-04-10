@@ -7,7 +7,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 const materialParams: Record<string, { k: number; n: number; label: string }> = {
-  Si: { k: 0.02, n: 3.5, label: "Silicon" },
+  Si: { k: 0.02, n: 3, label: "Silicon" },
   InGaAs: { k: 0.45, n: 2.5, label: "InGaAs" },
   Ge: { k: 0.6, n: 2, label: "Germanium" },
 };
@@ -26,13 +26,13 @@ export default function AvalancheGainPage() {
   const n = materialParams[material].n;
   const k = ionizationRatio;
   const voltageRatio = biasVoltage / breakdownVoltage;
-  const gain = voltageRatio < 1 ? 1 / Math.pow(1 - voltageRatio, n) : Infinity;
+  const gain = voltageRatio < 1 ? 1 / (1 - Math.pow(voltageRatio, n)) : Infinity;
   const excessNoise = gain > 1 ? k * gain + (1 - k) * (2 - 1 / gain) : 1;
   const noiseGain = gain > 1 ? Math.sqrt(excessNoise) * gain : 1;
 
   const gainVsVoltage = useMemo(() => {
     const vratios = Array.from({ length: 200 }, (_, i) => 0.5 + i * 0.498 / 200);
-    return [{ x: vratios.map(r => r * breakdownVoltage), y: vratios.map(r => 1 / Math.pow(1 - r, n)), type: "scatter" as const, mode: "lines" as const, name: "Gain M", line: { color: "#60a5fa", width: 2 } }];
+    return [{ x: vratios.map(r => r * breakdownVoltage), y: vratios.map(r => 1 / (1 - Math.pow(r, n))), type: "scatter" as const, mode: "lines" as const, name: "Gain M", line: { color: "#60a5fa", width: 2 } }];
   }, [breakdownVoltage, n]);
 
   const noiseVsGain = useMemo(() => {
@@ -77,7 +77,7 @@ export default function AvalancheGainPage() {
           <ChartPanel data={comparisonChart} layout={{ xaxis: { title: "Gain M", gridcolor: "#374151" }, yaxis: { title: "Excess Noise F", gridcolor: "#374151" } }} title="Material Comparison" />
         </div>
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mt-6 text-sm text-gray-300 font-mono space-y-1"><p>M = 1 / (1 - V/V_br)^n</p><p>F(M) = k·M + (1-k)·(2 - 1/M)  [McIntyre]</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mt-6 text-sm text-gray-300 font-mono space-y-1"><p>M = 1 / [1 - (V/V_br)^n]  [Miller]</p><p>F(M) = k·M + (1-k)·(2 - 1/M)  [McIntyre]</p><p>n = empirical gain exponent (not refractive index)</p></div>
     </CalculatorShell>
   );
 }
