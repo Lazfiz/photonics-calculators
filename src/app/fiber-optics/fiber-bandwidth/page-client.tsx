@@ -77,8 +77,8 @@ export default function FiberBandwidthPage() {
 
   const bwVsLengthData = useMemo(() => {
     const lengths = Array.from({ length: 100 }, (_, i) => (i + 1) * 0.5);
-    const S0 = calc.D > 0 ? 0.092 : 0.1;
-    const lambda0 = 1310;
+    const S0 = fiberType === "SMF" ? 0.092 : 0.1;
+    const lambda0 = fiberType === "SMF" ? 1310 : 1290;
     const D = (S0 / 4) * (wavelength - Math.pow(lambda0, 4) / Math.pow(wavelength, 3));
 
     return [
@@ -103,7 +103,7 @@ export default function FiberBandwidthPage() {
 
   const reachData = useMemo(() => {
     const rates = [1, 2.5, 10, 25, 40, 50, 100, 200, 400];
-    const S0 = 0.092; const lambda0 = 1310;
+    const S0 = fiberType === "SMF" ? 0.092 : 0.1; const lambda0 = fiberType === "SMF" ? 1310 : 1290;
     const D = (S0 / 4) * (wavelength - Math.pow(lambda0, 4) / Math.pow(wavelength, 3));
 
     return [{
