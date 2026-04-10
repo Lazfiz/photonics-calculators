@@ -35,7 +35,7 @@ export default function DispersionShiftedCalculator() {
     // Using spectral width ≈ 0.1 nm for typical laser
     const sigmaLambda = 0.1; // nm
     if (Math.abs(dispersionAtWavelength) < 0.01) return Infinity;
-    return 1e5 / (4 * Math.abs(dispersionAtWavelength) * sigmaLambda * bitRate);
+    return 1e3 / (4 * Math.abs(dispersionAtWavelength) * sigmaLambda * bitRate);
   }, [dispersionAtWavelength, bitRate]);
 
   // Plot: dispersion vs wavelength
@@ -122,7 +122,7 @@ export default function DispersionShiftedCalculator() {
               <h3 className="text-sm font-medium text-gray-400 mb-2">Formulas</h3>
               <p className="font-mono text-sm">D(λ) ≈ S · (λ - λ₀)</p>
               <p className="font-mono text-sm mt-1">D_total = D · L</p>
-              <p className="font-mono text-sm mt-1">L_max ≈ 10⁵ / (4·|D|·σ_λ·B) km</p>
+              <p className="font-mono text-sm mt-1">L_max ≈ 10³ / (4·|D|·σ_λ·B) km</p>
             </div>
           </div>
         </div>

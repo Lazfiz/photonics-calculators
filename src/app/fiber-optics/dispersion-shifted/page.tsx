@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/dispersion-shifted' },
-    title: 'Dispersion Shifted',
-  description: 'Interactive Dispersion Shifted calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Dispersion Shifted',
-  description: 'Interactive Dispersion Shifted calculator for photonics and optical engineering.'
+    title: 'Dispersion-Shifted Fiber Calculator',
+    description: 'Compare DSF, NZ-DSF, and DCF dispersion characteristics.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Dispersion Shifted',
-  'Interactive Dispersion Shifted calculator for photonics and optical engineering.',
+  'Dispersion-Shifted Fiber Calculator',
+  'Compare DSF, NZ-DSF, and DCF dispersion characteristics.',
   'https://photonics-calculators.vercel.app/fiber-optics/dispersion-shifted',
-  { category: 'Fiber Optics`,
-  `Interactive Dispersion Shifted calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Dispersion Shifted',
-  'Interactive Dispersion Shifted calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/fiber-optics/dispersion-shifted',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/dispersion-shifted`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>
