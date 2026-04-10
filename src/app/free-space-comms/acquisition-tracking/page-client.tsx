@@ -27,21 +27,24 @@ export default function AcquisitionTrackingPage() {
     const scanLines = Math.ceil(coneAngle / (fov * 180 / Math.PI));
     const scanTime = scanLines * (coneAngle / scanRate); // seconds
 
-    // Tracking jitter (beamwidth fraction)
+    // Beamwidth for jitter estimate
     const lambda = wavelength * 1e-9;
     const beamwidth = 1.22 * lambda / (apertureForGain(30, lambda)); // approx
-    const jitter_mrad = Math.sqrt(detectorNoise * 1e-9 / (beaconPower * 1e-3)) * 1e3 * 0.1;
 
     // SNR at detector
-    const beaconW = 10 ** ((beaconPower - 30) / 10);
-    const noiseW = detectorNoise * 1e-9;
+    const beaconW = 10 ** ((beaconPower - 30) / 10); // dBm → W
+    const noiseW = detectorNoise * 1e-9; // nW → W
     const snr = beaconW / noiseW;
+
+    // Tracking jitter estimate (fraction of beamwidth, SNR-limited)
+    // jitter ≈ beamwidth / (2√SNR) — Cramér-Rao bound approximation
+    const jitter_mrad = snr > 0 ? (beamwidth * 1e3) / (2 * Math.sqrt(snr)) : 0;
 
     // Link margin for acquisition beacon
     const margin = beaconPower - rxSensitivity;
 
     return { pAcq, scanTime, scanLines, snr, margin, jitter_mrad };
-  }, [fov, uncertainty, scanRate, beaconPower, wavelength, rxSensitivity, detectorNoise, bandwidth]);
+  }, [fov, uncertainty, scanRate, beaconPower, wavelength, rxSensitivity, detectorNoise]);
 
   // Helper - rough aperture for a given gain
   function apertureForGain(gain_dBi: number, lambda: number) {
@@ -81,7 +84,6 @@ export default function AcquisitionTrackingPage() {
             ["Wavelength (nm)", wavelength, setWavelength],
             ["RX Sensitivity (dBm)", rxSensitivity, setRxSensitivity],
             ["Detector Noise Floor (nW)", detectorNoise, setDetectorNoise],
-            ["Tracking Bandwidth (kHz)", bandwidth, setBandwidth],
           ].map(([label, val, set]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
@@ -99,6 +101,7 @@ export default function AcquisitionTrackingPage() {
               <div className="flex justify-between"><span className="text-gray-400">Scan Time</span><span>{calc.scanTime.toFixed(1)} s</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Beacon SNR</span><span>{calc.snr.toFixed(1)}</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Beacon Margin</span><span className={calc.margin > 0 ? "text-green-400" : "text-red-400"}>{calc.margin.toFixed(1)} dB</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Track Jitter</span><span>{calc.jitter_mrad.toFixed(2)} mrad</span></div>
             </div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-xs text-gray-500 space-y-1">
