@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/photon-transfer' },
-    title: 'Photon Transfer',
-  description: 'Interactive Photon Transfer calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Photon Transfer',
-  description: 'Interactive Photon Transfer calculator for photonics and optical engineering.'
+    title: 'Photon Transfer Curve (PTC)',
+    description: 'Photon transfer curve: noise vs signal, variance analysis, conversion gain, and dynamic range.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Photon Transfer',
-  'Interactive Photon Transfer calculator for photonics and optical engineering.',
+  'Photon Transfer Curve (PTC)',
+  'Photon transfer curve: noise vs signal, variance analysis, conversion gain, and dynamic range.',
   'https://photonics-calculators.vercel.app/detectors/photon-transfer',
-  { category: 'Detectors`,
-  `Interactive Photon Transfer calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Photon Transfer',
-  'Interactive Photon Transfer calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/detectors/photon-transfer',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/photon-transfer`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
