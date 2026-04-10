@@ -44,8 +44,8 @@ export default function ScintillationIndexPage() {
       sigmaI2 = 1 + 1.86 * Math.pow(sigmaR2, -1 / 6);
     }
 
-    // Log-amplitude variance
-    const sigmaChi2 = Math.min(sigmaR2, 0.5); // saturates
+    // Log-amplitude variance (weak turbulence only: σ_χ² = σ_R²/4)
+    const sigmaChi2 = sigmaR2 / 4;
 
     // Coherence time
     const V_transverse = 5; // m/s typical wind
