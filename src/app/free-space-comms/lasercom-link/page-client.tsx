@@ -28,14 +28,14 @@ export default function LasercomLinkPage() {
     const rxGain = 10 * Math.log10((Math.PI * dRx / lambda) ** 2 * rxEfficiency);
     // FSPL
     const fspl = 20 * Math.log10(4 * Math.PI * R / lambda);
-    // Received power
-    const pr = txPower + txGain + rxGain - fspl - pointingLoss - atmosLoss;
 
     // Spot size at receiver
     const spotRadius = lambda * R / (Math.PI * dTx / 2) * 1e2; // cm
-    // Geometric coupling loss
+    // Geometric coupling loss (positive dB when spot > aperture)
     const couplingRatio = Math.min(1, (dRx / 2 / spotRadius) ** 2);
-    const couplingLoss = 10 * Math.log10(Math.max(couplingRatio, 1e-10));
+    const couplingLoss = couplingRatio >= 1 ? 0 : -10 * Math.log10(Math.max(couplingRatio, 1e-10));
+    // Received power includes coupling loss
+    const pr = txPower + txGain + rxGain - fspl - pointingLoss - atmosLoss - couplingLoss;
 
     return { txGain, rxGain, fspl, pr, spotRadius, couplingLoss };
   }, [txPower, txAperture, rxAperture, wavelength, range, txEfficiency, rxEfficiency, pointingLoss, atmosLoss]);
