@@ -24,15 +24,14 @@ export default function BERPage() {
   const [darkCount, setDarkCount] = useURLState("darkCount", 100);
   const [modulation, setModulation] = useState<"OOK" | "DPSK">("OOK");
 
-  const snr = photons / (1 + darkCount / photons);
-
   const calc = useMemo(() => {
-    const snrVal = photons / (1 + darkCount / photons);
+    // E_b/N₀ = SNR_peak / 2 (OOK average energy is half peak)
+    const gamma = snrVal / 2;
     let ber: number;
     if (modulation === "OOK") {
-      ber = qfunc(Math.sqrt(2 * snrVal));
+      ber = qfunc(Math.sqrt(gamma)); // standard OOK: Q(√(E_b/N₀))
     } else {
-      ber = 0.5 * Math.exp(-snrVal);
+      ber = 0.5 * Math.exp(-gamma); // standard DPSK: ½·exp(-E_b/N₀)
     }
 
     // Find required photons for target BERs
@@ -42,8 +41,8 @@ export default function BERPage() {
       let lo = 1, hi = 1e6, found = 0;
       for (let i = 0; i < 100; i++) {
         const mid = (lo + hi) / 2;
-        const s = mid / (1 + darkCount / mid);
-        const b = modulation === "OOK" ? qfunc(Math.sqrt(2 * s)) : 0.5 * Math.exp(-s);
+        const s = mid / (1 + darkCount / mid) / 2; // E_b/N₀
+        const b = modulation === "OOK" ? qfunc(Math.sqrt(s)) : 0.5 * Math.exp(-s);
         if (b > t) lo = mid; else hi = mid;
       }
       required[t.toExponential(0)] = hi;
@@ -54,8 +53,8 @@ export default function BERPage() {
 
   const plotData = useMemo(() => {
     const ppb = Array.from({ length: 300 }, (_, i) => Math.pow(10, 0.5 + i * 0.02));
-    const ook = ppb.map((p) => qfunc(Math.sqrt(2 * p / (1 + darkCount / p))));
-    const dpsk = ppb.map((p) => 0.5 * Math.exp(-p / (1 + darkCount / p)));
+    const ook = ppb.map((p) => qfunc(Math.sqrt(p / (1 + darkCount / p) / 2)));
+    const dpsk = ppb.map((p) => 0.5 * Math.exp(-p / (1 + darkCount / p) / 2));
     return [
       { x: ppb, y: ook, type: "scatter", mode: "lines", name: "OOK", line: { color: "#06b6d4" } },
       { x: ppb, y: dpsk, type: "scatter", mode: "lines", name: "DPSK", line: { color: "#f59e0b" } },
