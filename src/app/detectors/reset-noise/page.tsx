@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/reset-noise' },
-    title: 'Reset Noise',
-  description: 'Interactive Reset Noise calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Reset Noise',
-  description: 'Interactive Reset Noise calculator for photonics and optical engineering.'
+    title: 'KTC Reset Noise',
+    description: 'KTC reset noise voltage, noise charge, and conversion gain for image sensors.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Reset Noise',
-  'Interactive Reset Noise calculator for photonics and optical engineering.',
+  'KTC Reset Noise',
+  'KTC reset noise voltage, noise charge, and conversion gain for image sensors.',
   'https://photonics-calculators.vercel.app/detectors/reset-noise',
-  { category: 'Detectors`,
-  `Interactive Reset Noise calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Reset Noise',
-  'Interactive Reset Noise calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/detectors/reset-noise',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/reset-noise`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
