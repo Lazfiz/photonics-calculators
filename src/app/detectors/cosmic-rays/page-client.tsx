@@ -11,7 +11,7 @@ export default function CosmicRaysPage() {
   const [exposureTime, setExposureTime] = useURLState("exposureTime", 1);
   const [flux, setFlux] = useURLState("flux", 1);
   const [pixelSize, setPixelSize] = useURLState("pixelSize", 10);
-  const [energyDeposit, setEnergyDeposit] = useURLState("energyDeposit", 40);
+  const [energyDeposit, setEnergyDeposit] = useURLState("energyDeposit", 100);
   const [trackLength, setTrackLength] = useURLState("trackLength", 200);
   const [numFrames, setNumFrames] = useURLState("numFrames", 100);
 
@@ -22,10 +22,12 @@ export default function CosmicRaysPage() {
   const pixelFlux = expectedHits * pixelArea * 1e-8 / sensorArea;
   const cleanFrames = Math.exp(-pixelFlux) * 100;
 
+  const lgamma = (n: number) => { if (n <= 1) return 0; let s = 0; for (let i = 2; i <= n; i++) s += Math.log(i); return s; };
+
   const chartData = useMemo(() => {
     const times = Array.from({ length: 200 }, (_, i) => 0.01 + i * 10 / 200);
     const hits = times.map(t => fluxPerSec * sensorArea * t);
-    let maxHits = times.map(t => { const mu = fluxPerSec * sensorArea * t; let k = mu; let sum = 0; for (let n = 0; n <= mu + 5 * Math.sqrt(mu); n++) { let lp = n * Math.log(mu) - mu; for (let j = 2; j <= n; j++) lp -= Math.log(j); sum += Math.exp(lp); if (sum >= 0.99) { k = n; break; } } return k; });
+    let maxHits = times.map(t => { const mu = fluxPerSec * sensorArea * t; let k = mu; let sum = 0; for (let n = 0; n <= mu + 5 * Math.sqrt(mu); n++) { const lp = n * Math.log(Math.max(mu, 1e-300)) - mu - lgamma(n + 1); sum += Math.exp(lp); if (sum >= 0.99) { k = n; break; } } return k; });
     return [
       { x: times, y: hits, type: "scatter", mode: "lines", name: "Expected Hits", line: { color: "#60a5fa", width: 2 } },
       { x: times, y: maxHits, type: "scatter", mode: "lines", name: "99th Percentile", line: { color: "#f87171", width: 2, dash: "dash" } },
@@ -54,7 +56,7 @@ export default function CosmicRaysPage() {
         <ResultCard label="Clean Pixel Frames" value={`${cleanFrames.toFixed(2)}%`} tone="green" />
         <ResultCard label={`Hits in ${numFrames} frames`} value={`~${(expectedHits * numFrames).toFixed(0)}`} tone="yellow" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>Flux at sea level: ~1 hit/cm²/min</p><p>N_hits = Φ · A · t  (Poisson)</p><p>E_deposited ≈ 40 e⁻/μm in Si → ~8000 e⁻ for 200μm track</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>Flux at sea level: ~1 hit/cm²/min</p><p>N_hits = Φ · A · t  (Poisson)</p><p>E_deposited ≈ 100 e⁻/μm in Si (MIP: 390 eV/μm ÷ 3.6 eV/pair)</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Exposure Time (s)", gridcolor: "#374151" }, yaxis: { title: "Cosmic Ray Hits", gridcolor: "#374151" } }} />
       <h2 className="text-xl font-bold mt-8 mb-4">Hits vs Sensor Area</h2>
       <ChartPanel data={areaVsHits} layout={{ xaxis: { title: "Sensor Area (cm²)", gridcolor: "#374151" }, yaxis: { title: "Expected Hits per Frame", gridcolor: "#374151" } }} />
