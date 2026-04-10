@@ -28,7 +28,7 @@ export default function LockinAmplifierPage() {
   const omegaTau = 2 * Math.PI * deltaF * timeConstant;
   const lpfAttenuation = filterOrder === 1
     ? 1 / Math.sqrt(1 + omegaTau * omegaTau)
-    : 1 / (1 + omegaTau * omegaTau);
+    : 1 / Math.sqrt(1 + Math.pow(omegaTau, 4));
 
   const demodFactor = (2 / Math.PI) * Math.abs(Math.cos(phaseRad));
   const outputSignal = signalAmp * 1e-6 * Math.cos(phaseRad) * (2 / Math.PI) * lpfAttenuation;
@@ -48,7 +48,7 @@ export default function LockinAmplifierPage() {
       const wt = 2 * Math.PI * dist * timeConstant;
       return filterOrder === 1
         ? 1 / Math.sqrt(1 + wt * wt)
-        : 1 / (1 + wt * wt);
+        : 1 / Math.sqrt(1 + Math.pow(wt, 4));
     });
     const outNoise = f.map((fi, i) => noiseDensity * 1e-9 * transfer[i]);
 

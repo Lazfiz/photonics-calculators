@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/lockin-amplifier' },
-    title: 'Lockin Amplifier',
-  description: 'Interactive Lockin Amplifier calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Lockin Amplifier',
-  description: 'Interactive Lockin Amplifier calculator for photonics and optical engineering.'
+    title: 'Lock-in Amplifier',
+    description: 'Lock-in amplifier: demodulation gain, ENBW, noise rejection, and SNR improvement.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Lockin Amplifier',
-  'Interactive Lockin Amplifier calculator for photonics and optical engineering.',
+  'Lock-in Amplifier',
+  'Lock-in amplifier: demodulation gain, ENBW, noise rejection, and SNR improvement.',
   'https://photonics-calculators.vercel.app/detectors/lockin-amplifier',
-  { category: 'Detectors`,
-  `Interactive Lockin Amplifier calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Lockin Amplifier',
-  'Interactive Lockin Amplifier calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/detectors/lockin-amplifier',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/lockin-amplifier`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
