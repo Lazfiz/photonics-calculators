@@ -32,15 +32,29 @@ export default function SiliconPhotodiodePage() {
   const Eg = Eg300 - (alphaVarshni * temperature ** 2) / (temperature + betaVarshni);
   const cutoffWavelength = 1240 / Eg;
 
-  // Absorption coefficient for Si (empirical)
+  // Absorption coefficient for Si (Green & Keevers 1995, cm⁻¹)
+  // Piecewise log-linear interpolation from tabulated data
   const absorptionCoeff = (wavelengthNm: number): number => {
     const wl = wavelengthNm;
-    if (wl < 300) return 1e6;
+    if (wl < 300) return 1.5e6;
     if (wl > cutoffWavelength) return 0;
-    // Empirical fit for Si
-    if (wl < 500) return 1e4 * Math.exp((500 - wl) / 50);
-    if (wl < 800) return 1e3 + 5e3 * Math.exp((800 - wl) / 150);
-    return 1e3 * Math.pow(cutoffWavelength / wl, 3);
+    // Anchor points: [wavelength_nm, alpha_cm^-1]
+    const table: [number, number][] = [
+      [300, 1.5e6], [350, 1.0e5], [400, 7.0e4], [450, 2.2e4],
+      [500, 1.1e4], [550, 4.5e3], [600, 2.4e3], [650, 1.5e3],
+      [700, 8.0e2], [750, 4.0e2], [800, 1.0e2], [850, 5.0e1],
+      [900, 1.5e1], [950, 5.0], [1000, 1.0], [1050, 0.3],
+      [1100, 0.05],
+    ];
+    // Find bracketing segment, interpolate in log space
+    for (let i = 0; i < table.length - 1; i++) {
+      if (wl <= table[i + 1][0]) {
+        const f = (wl - table[i][0]) / (table[i + 1][0] - table[i][0]);
+        const logAlpha = Math.log10(table[i][1]) + f * (Math.log10(table[i + 1][1]) - Math.log10(table[i][1]));
+        return Math.pow(10, logAlpha);
+      }
+    }
+    return 0;
   };
 
   // QE calculation
