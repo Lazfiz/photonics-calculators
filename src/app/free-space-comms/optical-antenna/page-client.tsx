@@ -21,8 +21,8 @@ export default function OpticalAntennaPage() {
     const gain = (Math.PI * D_eff / lambda) ** 2 * efficiency;
     const gain_dBi = 10 * Math.log10(gain);
 
-    // Half-angle divergence (rad)
-    const theta = beamQuality * 4 * lambda / (Math.PI * D_eff);
+    // Half-angle divergence (rad) — Gaussian beam: θ = M²·2λ/(π·D_eff)
+    const theta = beamQuality * 2 * lambda / (Math.PI * D_eff);
     const theta_urad = theta * 1e6;
 
     // Beam waist at antenna
@@ -48,7 +48,7 @@ export default function OpticalAntennaPage() {
     const divergences = apertures.map((a) => {
       const D = a * 1e-2;
       const D_eff = D * Math.sqrt(1 - obscuration ** 2);
-      return beamQuality * 4 * lambda / (Math.PI * D_eff) * 1e6;
+      return beamQuality * 2 * lambda / (Math.PI * D_eff) * 1e6;
     });
     return [
       { x: apertures, y: gains, type: "scatter", mode: "lines", name: "Gain (dBi)", line: { color: "#06b6d4" }, yaxis: "y" },
@@ -90,7 +90,7 @@ export default function OpticalAntennaPage() {
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-xs text-gray-500 space-y-1">
             <p><strong className="text-gray-400">Gain:</strong> G = (π D<sub>eff</sub> / λ)² η</p>
-            <p><strong className="text-gray-400">Divergence:</strong> θ = M² · 4λ / (π D<sub>eff</sub>)</p>
+            <p><strong className="text-gray-400">Divergence:</strong> θ = M² · 2λ / (π D<sub>eff</sub>)</p>
             <p><strong className="text-gray-400">Rayleigh Range:</strong> z<sub>R</sub> = π w₀² / λ</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
