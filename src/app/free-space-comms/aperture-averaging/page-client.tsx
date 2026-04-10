@@ -31,11 +31,11 @@ export default function ApertureAveragingPage() {
     const FA_plane = 1 / (1 + 1.062 * Math.pow(ratio, 7 / 6));
 
     // For spherical wave:
-    const FA_sphere = 1 / (1 + 0.5 * Math.pow(ratio, 7 / 6));
+    const FA_sphere = 1 / (1 + 0.414 * Math.pow(ratio, 7 / 6));
 
     // Normalized variance of irradiance (Rytov variance)
     const sigmaR2_plane = 1.23 * Math.pow(cn2, 1) * Math.pow(k, 7 / 6) * Math.pow(L, 11 / 6);
-    const sigmaR2_sphere = 0.5 * sigmaR2_plane;
+    const sigmaR2_sphere = 0.496 * Math.pow(cn2, 1) * Math.pow(k, 7 / 6) * Math.pow(L, 11 / 6);
 
     // Scintillation index with aperture averaging
     const sigmaI2_plane = sigmaR2_plane * FA_plane;
@@ -60,7 +60,7 @@ export default function ApertureAveragingPage() {
     });
     const FA_sphere = diameters.map((d) => {
       const ratio = (d * 1e-2) / fresnel;
-      return 1 / (1 + 0.5 * Math.pow(ratio, 7 / 6));
+      return 1 / (1 + 0.414 * Math.pow(ratio, 7 / 6));
     });
 
     const sigmaI2_plane = FA_plane.map((fa) => 1.23 * cn2 * Math.pow(k, 7 / 6) * Math.pow(L, 11 / 6) * fa);
