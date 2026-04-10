@@ -25,6 +25,7 @@ export default function BERPage() {
   const [modulation, setModulation] = useState<"OOK" | "DPSK">("OOK");
 
   const calc = useMemo(() => {
+    const snrVal = photons / (1 + darkCount / photons);
     // E_b/N₀ = SNR_peak / 2 (OOK average energy is half peak)
     const gamma = snrVal / 2;
     let ber: number;
