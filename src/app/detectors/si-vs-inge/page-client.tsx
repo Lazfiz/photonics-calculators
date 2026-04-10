@@ -7,7 +7,7 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 // Si vs InGaAs detector comparison
-// Si: 400-1100 nm, high QE, low dark current
+// Si: 350-1100 nm, high QE, low dark current
 // InGaAs: 900-1700 nm (extended to 2600), higher dark current, lower QE at visible
 export default function SiVsInGaAsPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550);
@@ -27,9 +27,6 @@ export default function SiVsInGaAsPage() {
   const inGaAsQE = getInGaAsQE(wavelength);
   const inGaAsDarkCurrent = 5 * Math.pow(2, (temperature - 25) / 5); // nA (InGaAs doubles faster)
   const inGaAsNoiseFloor = 5e-12; // A/√Hz
-
-  const siResponsivity = siQE * 1.602e-19 * wavelength * 1e-9 / photonEnergy;
-  const inGaAsResponsivity = inGaAsQE * 1.602e-19 * wavelength * 1e-9 / photonEnergy;
 
   const siSignal = photonRate * siQE * 1.602e-19;
   const inGaAsSignal = photonRate * inGaAsQE * 1.602e-19;
@@ -71,17 +68,19 @@ export default function SiVsInGaAsPage() {
       const pr = powerW / pe;
       const qe = getSiQE(wl);
       const sig = pr * qe * 1.602e-19;
-      return qe > 0.01 ? sig / Math.sqrt(2 * 1.602e-19 * sig * 1e6 + siNoiseFloor ** 2 * 1e6) : 0;
+      const dc = 0.01 * Math.pow(2, (temperature - 25) / 6) * 1e-9; // Si dark current in A
+      return qe > 0.01 ? sig / Math.sqrt(2 * 1.602e-19 * sig * 1e6 + siNoiseFloor ** 2 * 1e6 + 2 * 1.602e-19 * dc * 1e6) : 0;
     });
     const inGaAsSNRs = wls.map(wl => {
       const pe = 6.626e-34 * 3e8 / (wl * 1e-9);
       const pr = powerW / pe;
       const qe = getInGaAsQE(wl);
       const sig = pr * qe * 1.602e-19;
-      return qe > 0.01 ? sig / Math.sqrt(2 * 1.602e-19 * sig * 1e6 + inGaAsNoiseFloor ** 2 * 1e6) : 0;
+      const dc = 5 * Math.pow(2, (temperature - 25) / 5) * 1e-9; // InGaAs dark current in A
+      return qe > 0.01 ? sig / Math.sqrt(2 * 1.602e-19 * sig * 1e6 + inGaAsNoiseFloor ** 2 * 1e6 + 2 * 1.602e-19 * dc * 1e6) : 0;
     });
     return { wls, siSNRs, inGaAsSNRs };
-  }, [powerW, siNoiseFloor, inGaAsNoiseFloor]);
+  }, [powerW, siNoiseFloor, inGaAsNoiseFloor, temperature]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
