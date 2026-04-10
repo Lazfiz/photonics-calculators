@@ -9,21 +9,29 @@ export default function BpskQpskPage() {
   const [ebn0dB, setEbn0dB] = useURLState("ebn0dB", 10);
   const [modulation, setModulation] = useState<"BPSK" | "QPSK" | "OQPSK">("BPSK");
   const [dataRate, setDataRate] = useURLState("dataRate", 1); // Gbps
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [rxPower, setRxPower] = useState(-30); // dBm
 
   const calc = useMemo(() => {
     const ebno = 10 ** (ebn0dB / 10);
-    // BER for BPSK/QPSK: Q(sqrt(2*Eb/N0)) ≈ 0.5*erfc(sqrt(Eb/N0))
+    // BER for BPSK: Q(sqrt(2*Eb/N0)) = 0.5*erfc(sqrt(Eb/N0))
+    // BER for QPSK (Gray coded): ≈ same as BPSK at same Eb/N0
     const sqrtEbn0 = Math.sqrt(ebno);
-    // Approximate erfc
-    const ber = 0.5 * erfc(sqrtEbn0);
+    const bpskBer = 0.5 * erfc(sqrtEbn0);
+    const ber = modulation === "BPSK" ? bpskBer
+      : erfc(sqrtEbn0) * (1 - 0.5 * erfc(sqrtEbn0)); // exact Gray-coded QPSK
 
-    // Required Eb/N0 for target BER
+    // Required Eb/N0 for target BER via binary search
     const targetBERs = [1e-3, 1e-5, 1e-6, 1e-9];
     const reqEbN0 = targetBERs.map((t) => {
-      const x = Math.sqrt(-Math.log(t) * 0.5);
-      return (2 * x * x); // approximate inverse erfc
+      let lo = 0, hi = 30; // dB
+      for (let i = 0; i < 60; i++) {
+        const mid = (lo + hi) / 2;
+        const snrLin = 10 ** (mid / 10);
+        const s = Math.sqrt(snrLin);
+        const b = modulation === "BPSK" ? 0.5 * erfc(s) : erfc(s) * (1 - 0.5 * erfc(s));
+        if (b > t) lo = mid; else hi = mid;
+      }
+      return hi;
     });
 
     // Spectral efficiency
@@ -45,7 +53,7 @@ export default function BpskQpskPage() {
     const symbolRate = dataRate / specEff;
 
     return { ber, reqEbN0, targetBERs, specEff, bw, requiredPr, margin, symbolRate };
-  }, [ebn0dB, modulation, dataRate, wavelength, rxPower]);
+  }, [ebn0dB, modulation, dataRate, rxPower]);
 
   function erfc(x: number): number {
     const t = 1 / (1 + 0.3275911 * x);
@@ -62,7 +70,7 @@ export default function BpskQpskPage() {
     const qpskBer = ebnoRange.map((e) => {
       const x = Math.sqrt(10 ** (e / 10));
       const b = 0.5 * erfc(x);
-      return 1 - (1 - b) ** 2;
+      return erfc(x) * (1 - b); // exact Gray-coded QPSK BER
     });
 
     return [
@@ -87,7 +95,6 @@ export default function BpskQpskPage() {
           {[
             ["Eb/N0 (dB)", ebn0dB, setEbn0dB],
             ["Data Rate (Gbps)", dataRate, setDataRate],
-            ["Wavelength (nm)", wavelength, setWavelength],
             ["RX Power (dBm)", rxPower, setRxPower],
           ].map(([label, val, set]: any) => (
             <div key={label as string}>
