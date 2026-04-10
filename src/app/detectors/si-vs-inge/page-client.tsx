@@ -34,9 +34,10 @@ export default function SiVsInGaAsPage() {
   const siSignal = photonRate * siQE * 1.602e-19;
   const inGaAsSignal = photonRate * inGaAsQE * 1.602e-19;
 
+  const q = 1.602e-19;
   const bw = 1e6; // 1 MHz measurement bandwidth
-  const siSNR = siSignal / Math.sqrt(2 * q * siSignal * bw + siNoiseFloor ** 2 * bw + (siDarkCurrent * 1e-9) ** 2 * bw);
-  const inGaAsSNR = inGaAsSignal / Math.sqrt(2 * q * inGaAsSignal * bw + inGaAsNoiseFloor ** 2 * bw + (inGaAsDarkCurrent * 1e-9) ** 2 * bw);
+  const siSNR = siSignal / Math.sqrt(2 * q * siSignal * bw + siNoiseFloor ** 2 * bw + 2 * q * siDarkCurrent * 1e-9 * bw);
+  const inGaAsSNR = inGaAsSignal / Math.sqrt(2 * q * inGaAsSignal * bw + inGaAsNoiseFloor ** 2 * bw + 2 * q * inGaAsDarkCurrent * 1e-9 * bw);
 
   function getSiQE(wl: number): number {
     if (wl < 350 || wl > 1100) return 0;

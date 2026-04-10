@@ -13,15 +13,15 @@ export default function FlickerNoisePage() {
   const [fLow, setFLow] = useURLState("fLow", 1);
   const [fHigh, setFHigh] = useURLState("fHigh", 1e6);
 
+  const thermalPSD = 4 * 1.381e-23 * 300 / 50; // 4kT/R at 300K, 50Ω
+
   const chartData = useMemo(() => {
     const freqs = Array.from({ length: 200 }, (_, i) => Math.pow(1e8, i / 200));
     return [
       { x: freqs, y: freqs.map(f => kf * current ** alpha / f), type: "scatter" as const, mode: "lines" as const, name: "1/f PSD", line: { color: "#f87171" } },
       { x: freqs, y: freqs.map(() => thermalPSD), type: "scatter" as const, mode: "lines" as const, name: "Thermal floor", line: { color: "#60a5fa", dash: "dash" } },
     ];
-  }, [kf, current, alpha, thermalPSD]);
-
-  const thermalPSD = 4 * 1.381e-23 * 300 / 50; // 4kT/R at 300K, 50Ω
+  }, [kf, current, alpha]);
   const flickerNoiseRms = Math.sqrt(kf * current ** alpha * Math.log(fHigh / fLow));
   const cornerFreq = kf * current ** alpha / thermalPSD;
 

@@ -21,8 +21,8 @@ export default function PhotodiodeSpeedPage() {
   const chartData = useMemo(() => {
     const areas = Array.from({ length: 300 }, (_, i) =>
       areaMin * Math.pow(areaMax / areaMin, i / 299));
-    const bw3dB = areas.map(a => 1 / (2 * Math.PI * loadResistance * capacitanceDensity * 1e-15 * a * 1e-6));
-    const rcConst = areas.map(a => loadResistance * capacitanceDensity * 1e-15 * a * 1e-6);
+    const bw3dB = areas.map(a => 1 / (2 * Math.PI * loadResistance * capacitanceDensity * 1e-15 * a));
+    const rcConst = areas.map(a => loadResistance * capacitanceDensity * 1e-15 * a);
     const cap = areas.map(a => capacitanceDensity * a);
     return [
       { x: areas, y: bw3dB, type: "scatter" as const, mode: "lines" as const,
@@ -38,7 +38,7 @@ export default function PhotodiodeSpeedPage() {
   const nepVsArea = useMemo(() => {
     const areas = Array.from({ length: 300 }, (_, i) =>
       areaMin * Math.pow(areaMax / areaMin, i / 299));
-    const bw = areas.map(a => 1 / (2 * Math.PI * loadResistance * capacitanceDensity * 1e-15 * a * 1e-6));
+    const bw = areas.map(a => 1 / (2 * Math.PI * loadResistance * capacitanceDensity * 1e-15 * a));
     const thermalNoise = 4 * 1.38e-23 * 300 * bandwidthToUse();
     // NEP = sqrt(thermal noise) / Responsivity (simplified)
     const nep = areas.map((_, i) => {
@@ -49,7 +49,7 @@ export default function PhotodiodeSpeedPage() {
     return { areas, nep };
   }, [areaMin, areaMax, loadResistance, capacitanceDensity, responsivity]);
 
-  function bandwidthToUse() { return 1 / (2 * Math.PI * loadResistance * capacitanceDensity * 1e-15 * 1e-6); }
+  function bandwidthToUse() { return 1 / (2 * Math.PI * loadResistance * capacitanceDensity * 1e-15); }
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
@@ -64,9 +64,9 @@ export default function PhotodiodeSpeedPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Responsivity" value={`${(responsivity * 1e3).toFixed(2)} mA/W`} tone="blue" />
-        <ResultCard label="BW @ 1 mm²" value={`${(1 / (2 * Math.PI * loadResistance * capacitanceDensity * 1e-15 * 1e-6) / 1e9).toFixed(1)} GHz`} tone="green" />
+        <ResultCard label="BW @ 1 mm²" value={`${(1 / (2 * Math.PI * loadResistance * capacitanceDensity * 1e-15) / 1e9).toFixed(1)} GHz`} tone="green" />
         <ResultCard label="Cap @ 1 mm²" value={`${capacitanceDensity} fF`} tone="yellow" />
-        <ResultCard label="RC @ 1 mm²" value={`${(loadResistance * capacitanceDensity * 1e-15 * 1e-6 * 1e12).toFixed(2)} ps`} tone="purple" />
+        <ResultCard label="RC @ 1 mm²" value={`${(loadResistance * capacitanceDensity * 1e-15 * 1e12).toFixed(2)} ps`} tone="purple" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">

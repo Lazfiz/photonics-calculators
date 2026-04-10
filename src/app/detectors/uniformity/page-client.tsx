@@ -15,19 +15,20 @@ export default function UniformityPage() {
 
   const chartData = useMemo(() => {
     const N = 80;
-    // Generate a 2D PRNU map
-    const x: number[] = [], y: number[] = [], z: number[] = [];
+    const x: number[] = [], y: number[] = [], z: number[][] = [];
     for (let i = 0; i < N; i++) {
+      const row: number[] = [];
+      y.push(i);
       for (let j = 0; j < N; j++) {
         const xi = i / N, yj = j / N;
         // Simulate gradual non-uniformity pattern
         const gradient = 0.3 * (xi - 0.5) + 0.2 * (yj - 0.5);
         const hotSpot = 0.4 * Math.exp(-((xi-0.3)**2 + (yj-0.7)**2) / 0.02);
         const val = meanSignal * (1 + (prnuPercent/100) * (gradient + hotSpot + 0.5*Math.sin(6*xi)*Math.cos(4*yj)));
-        x.push(i);
-        y.push(j);
-        z.push(val);
+        row.push(val);
       }
+      z.push(row);
+      x.push(i);
     }
     return [{ x, y, z, type: "heatmap" as const, colorscale: "Viridis", name: "Signal (e⁻)" }];
   }, [meanSignal, prnuPercent]);

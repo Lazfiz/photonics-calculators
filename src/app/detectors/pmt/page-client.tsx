@@ -43,7 +43,7 @@ export default function PMTPage() {
       const sig = photonRate * qe;
       const darkE = (darkCurrent * 1e-9) / (1.602e-19 * g);
       const enf = 1.1 + 1 / d; // excess noise factor approximation
-      return sig / Math.sqrt(sig + darkE + enf * sig);
+      return sig / Math.sqrt(sig * enf + darkE);
     });
     return { deltas, snrVals };
   }, [numDynodes, qe, darkCurrent, photonRate]);
@@ -60,10 +60,10 @@ export default function PMTPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Gain (δⁿ)" value={`gain.toExponential(2)`} tone="blue" />
+        <ResultCard label="Gain (δⁿ)" value={gain.toExponential(2)} tone="blue" />
         <ResultCard label="Signal Current" value={`${(signalCurrent * 1e6).toFixed(2)} μA`} tone="green" />
-        <ResultCard label="Photoelectrons/s" value={`signalElectrons.toExponential(2)`} tone="yellow" />
-        <ResultCard label="ENF" value={`(1.1 + 1 / secondaryEmission).toFixed(3)`} tone="purple" />
+        <ResultCard label="Photoelectrons/s" value={signalElectrons.toExponential(2)} tone="yellow" />
+        <ResultCard label="ENF" value={(1.1 + 1 / secondaryEmission).toFixed(3)} tone="purple" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">

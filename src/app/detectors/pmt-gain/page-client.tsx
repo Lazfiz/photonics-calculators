@@ -59,13 +59,13 @@ export default function PmtGainPage() {
     return [
       { x: flux, y: flux.map(P => {
         const signal = photocathodeQE * totalGain * P * tau;
-        const noise = Math.sqrt(photocathodeQE * totalGain * totalGain * P * tau + 2 * totalGain * cathodeDarkCurrent * tau + amplifierNoise ** 2);
+        const noise = Math.sqrt(photocathodeQE * totalGain * totalGain * P * tau + cathodeDarkCurrent * tau * totalGain * totalGain + amplifierNoise ** 2);
         return signal / noise;
       }), type: "scatter", mode: "lines", name: `G=${totalGain.toExponential(1)}`, line: { color: "#f87171", width: 2 } },
       { x: flux, y: flux.map(P => {
         const G = totalGain / 10;
         const signal = photocathodeQE * G * P * tau;
-        const noise = Math.sqrt(photocathodeQE * G * G * P * tau + 2 * G * cathodeDarkCurrent * tau + amplifierNoise ** 2);
+        const noise = Math.sqrt(photocathodeQE * G * G * P * tau + cathodeDarkCurrent * tau * G * G + amplifierNoise ** 2);
         return signal / noise;
       }), type: "scatter", mode: "lines", name: `G=${(totalGain/10).toExponential(1)}`, line: { color: "#a78bfa", width: 2, dash: "dash" } },
     ];

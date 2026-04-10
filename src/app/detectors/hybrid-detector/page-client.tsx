@@ -20,6 +20,7 @@ export default function HybridDetectorPage() {
   const currentNoise = inputNoiseCurrent * 1e-15 * Math.sqrt(bwHz);
   const voltageNoiseContrib = inputNoiseVoltage * 1e-9 * Math.sqrt(bwHz) / Rf;
   const totalNoise = Math.sqrt(currentNoise ** 2 + voltageNoiseContrib ** 2);
+  const nepSpectral = Math.sqrt(inputNoiseCurrent ** 2 * 1e-30 + inputNoiseVoltage ** 2 * 1e-18 / Rf ** 2) / responsivity * 1e15;
   const nep = totalNoise / responsivity * 1e15;
   const noiseElectrons = totalNoise / 1.602e-19;
 
@@ -51,13 +52,13 @@ export default function HybridDetectorPage() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Responsivity" value={`${(responsivity * 1e3).toFixed(2)} mA/W`} tone="blue" />
-        <ResultCard label="NEP" value={`${nep.toFixed(1)} fW/√Hz`} tone="green" />
+        <ResultCard label="NEP" value={`${nep.toFixed(1)} fW`} tone="green" subtext={`${nepSpectral.toFixed(1)} fW/√Hz`} />
         <ResultCard label="Noise Electrons" value={`${noiseElectrons.toFixed(0)} e⁻ rms`} tone="yellow" />
         <ResultCard label="R_f·BW" value={`${(Rf * bwHz / 1e12).toFixed(1)} TΩ·Hz`} tone="purple" />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>NEP = √(i_n²·BW + e_n²·BW/R_f²) / R</p><p>Optimal R_f when i_n·R_f ≈ e_n</p></div>
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartPanel data={nepVsBW} layout={{ xaxis: { title: "BW (MHz)", gridcolor: "#374151" }, yaxis: { title: "NEP (fW/√Hz)", gridcolor: "#374151" } }} title="NEP vs Bandwidth" />
+        <ChartPanel data={nepVsBW} layout={{ xaxis: { title: "BW (MHz)", gridcolor: "#374151" }, yaxis: { title: "NEP (fW)", gridcolor: "#374151" } }} title="NEP vs Bandwidth" />
         <ChartPanel data={noiseVsGain} layout={{ xaxis: { title: "R_f (Ω)", gridcolor: "#374151", type: "log" }, yaxis: { title: "Noise (fA)", gridcolor: "#374151", type: "log" } }} title="Noise vs Feedback R" />
       </div>
     </CalculatorShell>
