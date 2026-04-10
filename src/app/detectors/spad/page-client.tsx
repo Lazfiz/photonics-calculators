@@ -23,10 +23,14 @@ export default function SPADPage() {
   const photonEnergy = (6.626e-34 * 3e8) / (wavelength * 1e-9);
   const photonsPerSec = powerW / photonEnergy;
 
-  const deadTimeFrac = 1 - Math.exp(-photonsPerSec * deadTime * 1e-9);
-  const effectivePDE = pde * (1 - deadTimeFrac) * (1 - afterpulseProb);
-  const detectionRate = photonsPerSec * effectivePDE;
-  const snr = detectionRate > 0 ? detectionRate / Math.sqrt(detectionRate + dcr) : 0;
+  const dt = deadTime * 1e-9; // seconds
+  const detectedRate = photonsPerSec * pde;
+  // Non-paralyzable dead time (SPADs are typically non-paralyzable)
+  const measuredRate = detectedRate / (1 + detectedRate * dt);
+  // Afterpulsing ADDS spurious counts (trap-assisted re-ignition after avalanche)
+  const afterpulseRate = measuredRate * afterpulseProb;
+  const totalRate = measuredRate + dcr + afterpulseRate;
+  const snr = measuredRate > 0 ? measuredRate / Math.sqrt(totalRate) : 0;
 
   // DCR vs temperature
   const dcrVsTemp = useMemo(() => {
@@ -41,10 +45,11 @@ export default function SPADPage() {
     const snrVals = pwrDbm.map(p => {
       const pw = Math.pow(10, p / 10) * 1e-3;
       const ph = pw / photonEnergy;
-      const dt = 1 - Math.exp(-ph * deadTime * 1e-9);
-      const epde = pde * (1 - dt) * (1 - afterpulseProb);
-      const dr = ph * epde;
-      return dr > 0 ? dr / Math.sqrt(dr + dcr) : 0;
+      const dr = ph * pde;
+      const mr = dr / (1 + dr * deadTime * 1e-9);
+      const ap = mr * afterpulseProb;
+      const tr = mr + dcr + ap;
+      return mr > 0 ? mr / Math.sqrt(tr) : 0;
     });
     return { pwrDbm, snrVals };
   }, [pde, dcr, deadTime, afterpulseProb, photonEnergy]);
@@ -63,15 +68,15 @@ export default function SPADPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Photon Rate" value={`${photonsPerSec.toExponential(2)} /s`} tone="blue" />
-        <ResultCard label="Detection Rate" value={`${detectionRate.toExponential(2)} /s`} tone="green" />
+        <ResultCard label="Measured Rate" value={`${measuredRate.toExponential(2)} /s`} tone="green" />
         <ResultCard label="SNR" value={`${snr.toFixed(2)}`} tone="yellow" />
-        <ResultCard label="Effective PDE" value={`${(effectivePDE * 100).toFixed(1)}%`} tone="purple" />
+        <ResultCard label="Total Rate" value={`${totalRate.toExponential(2)} /s`} tone="purple" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
-        <p>PDE<sub>eff</sub> = PDE · (1 − P<sub>dead</sub>) · (1 − P<sub>AP</sub>)</p>
-        <p>Photon rate: R<sub>ph</sub> = P / (hc/λ)</p>
-        <p>SNR = R<sub>det</sub> / √(R<sub>det</sub> + DCR)</p>
+        <p>R<sub>det</sub> = R<sub>ph</sub> × PDE; R<sub>meas</sub> = R<sub>det</sub> / (1 + R<sub>det</sub>·τ) [non-paralyzable]</p>
+        <p>R<sub>total</sub> = R<sub>meas</sub> + DCR + R<sub>meas</sub>·P<sub>AP</sub></p>
+        <p>SNR = R<sub>meas</sub> / √(R<sub>total</sub>)</p>
         <p>DCR(T) ≈ DCR(T₀) · 2<sup>(T−T₀)/6</sup></p>
       </div>
 
