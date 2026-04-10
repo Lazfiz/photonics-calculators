@@ -13,10 +13,13 @@ export default function AfterpulsingPage() {
   const [countRate, setCountRate] = useURLState("countRate", 1e6);
   const [numTraps, setNumTraps] = useURLState("numTraps", 3);
 
+  // Afterpulse probability: fraction of trapped carriers that survive the dead time
+  // and can trigger a secondary avalanche. Decreases with longer dead time.
+  // P_ap = η · exp(-t_dead / τ)   [Cova et al.]
   const trapReleaseFrac = 1 - Math.exp(-deadTime / trapLifetime);
-  const afterpulseProb = trapEfficiency * (1 - trapReleaseFrac);
+  const afterpulseProb = trapEfficiency * Math.exp(-deadTime / trapLifetime);
   const afterpulseRate = countRate * afterpulseProb;
-  const afterpulseFraction = afterpulseRate / (countRate + afterpulseRate) * 100;
+  const afterpulseFraction = countRate > 0 ? (afterpulseRate / countRate) * 100 : 0;
 
   const multiTrap = useMemo(() => {
     const traps = Array.from({ length: numTraps }, (_, i) => ({
@@ -26,15 +29,19 @@ export default function AfterpulsingPage() {
     return traps.map(t => ({
       ...t,
       release: 1 - Math.exp(-deadTime / t.tau),
-      apProb: t.eta * (1 - (1 - Math.exp(-deadTime / t.tau))),
-      apRate: countRate * t.eta * (1 - (1 - Math.exp(-deadTime / t.tau))),
+      apProb: t.eta * Math.exp(-deadTime / t.tau),
+      apRate: countRate * t.eta * Math.exp(-deadTime / t.tau),
     }));
   }, [trapLifetime, trapEfficiency, deadTime, countRate, numTraps]);
 
   const chartData = useMemo(() => {
     const dt = Array.from({ length: 200 }, (_, i) => 1 + i * 200 / 200);
-    const apProb = dt.map(d => trapEfficiency * (1 - (1 - Math.exp(-d / trapLifetime))));
-    const apProb2 = dt.map(d => { let total = 0; multiTrap.forEach(t => total += t.eta * (1 - (1 - Math.exp(-d / t.tau)))); return total; });
+    const apProb = dt.map(d => trapEfficiency * Math.exp(-d / trapLifetime));
+    const apProb2 = dt.map(d => {
+      let total = 0;
+      multiTrap.forEach(t => { total += t.eta * Math.exp(-d / t.tau); });
+      return total;
+    });
     return [
       { x: dt, y: apProb.map(v => v * 100), type: "scatter" as const, mode: "lines" as const, name: "Single Trap", line: { color: "#60a5fa", width: 2 } },
       { x: dt, y: apProb2.map(v => v * 100), type: "scatter" as const, mode: "lines" as const, name: `${numTraps} Traps`, line: { color: "#f87171", width: 2, dash: "dash" as const } },
@@ -44,7 +51,7 @@ export default function AfterpulsingPage() {
   const rateVsDeadTime = useMemo(() => {
     const dt = Array.from({ length: 200 }, (_, i) => 1 + i * 200 / 200);
     return [
-      { x: dt, y: dt.map(d => { const ap = trapEfficiency * (1 - (1 - Math.exp(-d / trapLifetime))); return countRate * ap; }), type: "scatter" as const, mode: "lines" as const, name: "Afterpulse Rate", line: { color: "#fbbf24", width: 2 }, yaxis: "y" },
+      { x: dt, y: dt.map(d => { const ap = trapEfficiency * Math.exp(-d / trapLifetime); return countRate * ap; }), type: "scatter" as const, mode: "lines" as const, name: "Afterpulse Rate", line: { color: "#fbbf24", width: 2 }, yaxis: "y" },
       { x: dt, y: dt.map(d => { const measured = countRate / (1 + countRate * d * 1e-9); return measured / 1e6; }), type: "scatter" as const, mode: "lines" as const, name: "Measured Rate (Mcps)", line: { color: "#34d399", width: 2 }, yaxis: "y2" },
     ];
   }, [trapLifetime, trapEfficiency, countRate]);
@@ -55,7 +62,7 @@ export default function AfterpulsingPage() {
         <ValidatedNumberInput label="Primary Trap Lifetime (ns)" value={trapLifetime} onChange={setTrapLifetime} min={0.1} step="1" />
         <ValidatedNumberInput label="Trap Efficiency" value={trapEfficiency} onChange={setTrapEfficiency} min={0.001} max={1} step="0.01" />
         <ValidatedNumberInput label="Dead Time (ns)" value={deadTime} onChange={setDeadTime} min={1} step="1" />
-        <ValidatedNumberInput label="Count Rate (cps)" value={countRate} onChange={setCountRate} min={1} step="10000" />
+        <ValidatedNumberInput label="True Count Rate (cps)" value={countRate} onChange={setCountRate} min={1} step="10000" />
         <ValidatedNumberInput label="Number of Trap Species" value={numTraps} onChange={setNumTraps} min={1} max={5} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -65,8 +72,9 @@ export default function AfterpulsingPage() {
         <ResultCard label={`Trap Release (${deadTime}ns)`} value={`${(trapReleaseFrac * 100).toFixed(1)}%`} tone="green" />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
-        <p>P_ap = η_trap · e^(-t_dead/τ)</p>
-        <p>Longer dead time → more traps release → lower afterpulsing, but lower max count rate</p>
+        <p>P_ap = η_trap · exp(-t_dead / τ)</p>
+        <p>Afterpulsing occurs when trapped carriers survive the dead time and trigger a secondary avalanche.</p>
+        <p>Longer dead time → more traps release harmlessly during dead time → fewer remaining carriers → lower afterpulse probability.</p>
       </div>
       <ChartPanel data={chartData as any} layout={{ xaxis: { title: { text: "Dead Time (ns)" }, gridcolor: "#374151" }, yaxis: { title: { text: "Afterpulse Probability (%)" }, gridcolor: "#374151" } }} />
       <h2 className="text-xl font-bold mt-8 mb-4">Rate vs Dead Time</h2>

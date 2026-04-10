@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/afterpulsing' },
     title: 'Afterpulsing in APDs',
-  description: 'Afterpulse probability, trap dynamics, and dead time trade-offs in avalanche photodiodes.'
+    description: 'Afterpulse probability, trap dynamics, and dead time trade-offs in avalanche photodiodes.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Afterpulsing in APDs',
-  description: 'Afterpulse probability, trap dynamics, and dead time trade-offs in avalanche photodiodes.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Afterpulsing in APDs',
   'Afterpulse probability, trap dynamics, and dead time trade-offs in avalanche photodiodes.',
   'https://photonics-calculators.vercel.app/detectors/afterpulsing',
-  { category: 'Detectors`,
-  `Afterpulse probability, trap dynamics, and dead time trade-offs in avalanche photodiodes.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Afterpulsing in APDs',
-  'Afterpulse probability, trap dynamics, and dead time trade-offs in avalanche photodiodes.',
-  'https://photonics-calculators.vercel.app/detectors/afterpulsing',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/afterpulsing`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
