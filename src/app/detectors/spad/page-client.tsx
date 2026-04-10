@@ -62,10 +62,10 @@ export default function SPADPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Photon Rate" value="{photonsPerSec.toExponential(2)} /s" tone="blue" />
-        <ResultCard label="Detection Rate" value="{detectionRate.toExponential(2)} /s" tone="green" />
-        <ResultCard label="SNR" value="{snr.toFixed(2)}" tone="yellow" />
-        <ResultCard label="Effective PDE" value="{(effectivePDE * 100).toFixed(1)}%" tone="purple" />
+        <ResultCard label="Photon Rate" value={`${photonsPerSec.toExponential(2)} /s`} tone="blue" />
+        <ResultCard label="Detection Rate" value={`${detectionRate.toExponential(2)} /s`} tone="green" />
+        <ResultCard label="SNR" value={`${snr.toFixed(2)}`} tone="yellow" />
+        <ResultCard label="Effective PDE" value={`${(effectivePDE * 100).toFixed(1)}%`} tone="purple" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">

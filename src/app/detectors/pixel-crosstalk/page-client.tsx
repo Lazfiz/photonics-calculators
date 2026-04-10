@@ -76,10 +76,10 @@ export default function PixelCrosstalkPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Absorption Depth" value="{absorptionDepth.toFixed(1)} µm" tone="blue" />
-        <ResultCard label="Diffusion Crosstalk" value="{(diffusionCrosstalk * 100).toFixed(2)}%" tone="green" />
-        <ResultCard label="Total Crosstalk" value="{(totalCrosstalk * 100).toFixed(2)}%" tone="red" />
-        <ResultCard label="MTF @ Nyquist" value="{(mtfAtNyquist * 100).toFixed(1)}%" tone="yellow" />
+        <ResultCard label="Absorption Depth" value={`${absorptionDepth.toFixed(1)} µm`} tone="blue" />
+        <ResultCard label="Diffusion Crosstalk" value={`${(diffusionCrosstalk * 100).toFixed(2)}%`} tone="green" />
+        <ResultCard label="Total Crosstalk" value={`${(totalCrosstalk * 100).toFixed(2)}%`} tone="red" />
+        <ResultCard label="MTF @ Nyquist" value={`${(mtfAtNyquist * 100).toFixed(1)}%`} tone="yellow" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">

@@ -61,7 +61,7 @@ export default function PMTPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Gain (δⁿ)" value={`gain.toExponential(2)`} tone="blue" />
-        <ResultCard label="Signal Current" value="{(signalCurrent * 1e6).toFixed(2)} μA" tone="green" />
+        <ResultCard label="Signal Current" value={`${(signalCurrent * 1e6).toFixed(2)} μA`} tone="green" />
         <ResultCard label="Photoelectrons/s" value={`signalElectrons.toExponential(2)`} tone="yellow" />
         <ResultCard label="ENF" value={`(1.1 + 1 / secondaryEmission).toFixed(3)`} tone="purple" />
       </div>
