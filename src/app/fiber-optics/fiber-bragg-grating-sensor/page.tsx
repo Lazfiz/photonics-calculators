@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/fiber-bragg-grating-sensor' },
-    title: 'Fiber Bragg Grating Sensor',
-  description: 'Calculate FBG wavelength shift for strain and temperature sensing applications.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Fiber Bragg Grating Sensor',
-  description: 'Calculate FBG wavelength shift for strain and temperature sensing applications.'
+    title: 'Fiber Bragg Grating Sensor Calculator',
+    description: 'Calculate FBG wavelength shift for strain and temperature sensing applications.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Fiber Bragg Grating Sensor',
+  'Fiber Bragg Grating Sensor Calculator',
   'Calculate FBG wavelength shift for strain and temperature sensing applications.',
   'https://photonics-calculators.vercel.app/fiber-optics/fiber-bragg-grating-sensor',
-  { category: 'Fiber Optics`,
-  `Calculate FBG wavelength shift for strain and temperature sensing applications.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Fiber Bragg Grating Sensor',
-  'Calculate FBG wavelength shift for strain and temperature sensing applications.',
-  'https://photonics-calculators.vercel.app/fiber-optics/fiber-bragg-grating-sensor',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/fiber-bragg-grating-sensor`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

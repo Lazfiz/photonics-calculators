@@ -45,29 +45,39 @@ export default function FiberBraggGratingSensorPage() {
     // Shifted Bragg wavelength
     const shiftedLambdaB = lambdaB + totalShift;
     
-    // Photoelastic coefficient (typical for silica)
-    const peCoeff = 0.22;
-    
-    // Thermo-optic coefficient (typical for silica)
-    const dn_dT = 8.6e-6; // /°C
-    
-    // Thermal expansion coefficient
-    const alpha = 0.55e-6; // /°C
-    
     return { lambdaB, reflectivity, bandwidth, strainShift, tempShift, totalShift, shiftedLambdaB, kappa, s, N };
   }, [gratingPeriod, effectiveIndex, gratingLength, indexModulation, strain, temperature, tempChange, strainSensitivity, tempSensitivity]);
 
   const spectralData = useMemo(() => {
     const lambdaB = calc.lambdaB;
-    const deltaLambda = Array.from({ length: 500 }, (_, i) => (i - 250) * 0.005);
-    
-    // Reflection spectrum (sinc-squared for uniform grating)
-    const x = deltaLambda.map(d => (d - calc.totalShift * 1e3) / (calc.bandwidth * 1e3)); // normalized
-    const reflection = x.map(xi => {
-      if (Math.abs(xi) < 0.001) return calc.reflectivity;
-      return calc.reflectivity * Math.pow(Math.sin(Math.PI * xi * calc.s) / (Math.PI * xi * calc.s), 2);
-    });
-    
+    const kappa = calc.kappa;
+    const kappaL = calc.s;
+    const L = gratingLength * 1e-3; // m
+
+    // Use ±3× bandwidth range centered on shifted Bragg wavelength
+    const halfRange = Math.max(bandwidth * 3, 0.1); // nm
+    const step = halfRange * 4 / 500; // nm per point
+    const wavelengths: number[] = [];
+    const reflections: number[] = [];
+
+    for (let i = 0; i <= 500; i++) {
+      const w = calc.shiftedLambdaB - halfRange + i * step;
+      wavelengths.push(w);
+
+      // Coupled-mode detuning: δL = 2π·n_eff·L·(1/λ - 1/λ_B_shifted)
+      const deltaBeta = 2 * Math.PI * effectiveIndex * gratingLength * 1e6 * (1 / w - 1 / calc.shiftedLambdaB);
+      const gammaSq = kappaL * kappaL - deltaBeta * deltaBeta;
+      let R: number;
+      if (gammaSq > 0) {
+        R = Math.tanh(Math.sqrt(gammaSq)) ** 2;
+      } else if (gammaSq < 0) {
+        R = (kappaL / Math.sqrt(-gammaSq)) ** 2 * Math.sin(Math.sqrt(-gammaSq)) ** 2;
+      } else {
+        R = Math.tanh(kappaL) ** 2;
+      }
+      reflections.push(Math.min(1, R));
+    }
+
     const currentMarker = {
       x: [calc.shiftedLambdaB],
       y: [calc.reflectivity],
@@ -76,12 +86,12 @@ export default function FiberBraggGratingSensorPage() {
       marker: { color: "#f87171", size: 10 },
       name: "Peak",
     };
-    
+
     return [
-      { x: deltaLambda.map(d => lambdaB + d / 1e3), y: reflection, type: "scatter" as const, mode: "lines" as const, name: "Reflection", line: { color: "#3b82f6", width: 2 }, fill: "tozeroy" as const, fillcolor: "rgba(59,130,246,0.2)" },
+      { x: wavelengths, y: reflections, type: "scatter" as const, mode: "lines" as const, name: "Reflection", line: { color: "#3b82f6", width: 2 }, fill: "tozeroy" as const, fillcolor: "rgba(59,130,246,0.2)" },
       currentMarker,
     ];
-  }, [calc]);
+  }, [calc, bandwidth, effectiveIndex, gratingLength]);
 
   const strainData = useMemo(() => {
     const strains = Array.from({ length: 100 }, (_, i) => i * 10); // 0-1000 µε
