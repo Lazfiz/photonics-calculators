@@ -35,7 +35,7 @@ export default function FiberGyroscopePage() {
 
     // Noise
     const P_det = sourcePower * 1e-3 * Math.pow(10, -losses / 10);
-    const hc_over_lambda = 6.626e-34 * 3e8 / (lambda * 1e-9); // photon energy (J)
+    const hc_over_lambda = 6.626e-34 * 3e8 / lambda; // photon energy (J), lambda already in meters
     const shotNoise = Math.sqrt(2 * hc_over_lambda / P_det); // rad/√Hz
     const thermalNoise = 1e-7; // rad/√Hz (typical)
     const RIN_noise = Math.pow(10, sourceRIN / 20) * P_det / (2 * hc_over_lambda); // simplified
@@ -64,7 +64,7 @@ export default function FiberGyroscopePage() {
       const R = coilDiameter * 1e-3 / 2;
       const A = Math.PI * R * R;
       const lambda = wavelength * 1e-9;
-      const sf = 4 * Math.PI * L * A / (lambda * 3e8);
+      const sf = 4 * Math.PI * L * R / (lambda * 3e8);
       const P = sourcePower * 1e-3 * Math.pow(10, -losses / 10);
       const sn = Math.sqrt(2 * 6.626e-34 * 3e8 / (wavelength * 1e-9 * P));
       return sn / sf * (180 / Math.PI) * 3600;
@@ -119,7 +119,7 @@ export default function FiberGyroscopePage() {
           <p>Scale factor: S = 4πLR / (λc)</p>
           <p>Shot noise: σ_φ = √(2hc / (λP_det))</p>
           <p>ARW = σ_φ / S [rad/s/√Hz]</p>
-          <p>Min detectable: Ω_min = σ_φ × λc / (8πLA)</p>
+          <p>Min detectable: Ω_min = σ_φ / S</p>
           <p>c = 3×10⁸ m/s, h = 6.626×10⁻³⁴ J·s</p>
         </div>
       </div>
