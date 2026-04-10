@@ -13,8 +13,10 @@ export default function ConnectorReturnLossPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550);
 
   const fresnelRL = -10 * Math.log10(Math.pow((n1 - n2) / (n1 + n2), 2));
-  const connectorRL: Record<string, number> = { pc: 40, upc: 50, apc: 60, flat: 14 };
-  const totalRL = connectorRL[connectorType] || 40;
+  const connectorRL: Record<string, number> = { pc: 40, upc: 50, apc: 60, flat: 0 };
+  // For flat connectors, RL = Fresnel RL (no contact improvement).
+  // For PC/UPC/APC, the spec already includes reduced Fresnel from physical contact.
+  const totalRL = connectorType === "flat" ? fresnelRL : (connectorRL[connectorType] || 40);
   const reflectivity = Math.pow(10, -totalRL / 10);
   const reflectedPower = reflectivity * 100;
 

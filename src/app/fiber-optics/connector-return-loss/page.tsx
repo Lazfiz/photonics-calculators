@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/connector-return-loss' },
-    title: 'Connector Return Loss',
-  description: 'Calculate return loss (ORL) from fiber connectors based on polish type and index mismatch.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Connector Return Loss',
-  description: 'Calculate return loss (ORL) from fiber connectors based on polish type and index mismatch.'
+    title: 'Connector Return Loss Calculator',
+    description: 'Calculate return loss (ORL) from fiber connectors based on polish type and index mismatch.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Connector Return Loss',
+  'Connector Return Loss Calculator',
   'Calculate return loss (ORL) from fiber connectors based on polish type and index mismatch.',
   'https://photonics-calculators.vercel.app/fiber-optics/connector-return-loss',
-  { category: 'Fiber Optics`,
-  `Calculate return loss (ORL) from fiber connectors based on polish type and index mismatch.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Connector Return Loss',
-  'Calculate return loss (ORL) from fiber connectors based on polish type and index mismatch.',
-  'https://photonics-calculators.vercel.app/fiber-optics/connector-return-loss',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/connector-return-loss`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>
