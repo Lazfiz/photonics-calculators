@@ -20,13 +20,18 @@ export default function QuantumKeyDistributionPage() {
   // Using Decoy-state BB84 protocol model (Lo-Ma-Chen)
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-9;
+    const P_tx = Math.pow(10, (txPower - 30) / 10); // dBm → W
+    const h_planck = 6.626e-34;
+    const c = 3e8;
+    const E_photon = h_planck * c / lambda;
 
     // Channel transmission
     const totalLoss = fiberLoss * range;
     const channelTransmission = Math.pow(10, -totalLoss / 10);
 
-    // Mean photon number (optimal μ ≈ 1 for decoy states)
-    const mu = 0.5; // signal state mean photon number
+    // Mean photon number from TX power: μ = P·T_pulse/(h·c/λ)
+    // T_pulse = 1/f_rep, so μ = P/(f_rep · E_photon)
+    const mu = P_tx / (repRate * E_photon);
 
     // Single photon gain Q_1 = Y_1 * μ * exp(-μ)
     // Y_1 ≈ η for low dark counts
@@ -45,21 +50,34 @@ export default function QuantumKeyDistributionPage() {
     const E_mu = (e_det * (1 - Math.exp(-mu * eta_total)) + 0.5 * Y0) / Q_mu;
     const QBER = E_mu;
 
-    // Secure key rate (finite-key, with privacy amplification)
-    // R = 0.5 * f_rep * Q_1 * [1 - h(e_1) - h(E_μ)]
+    // Secure key rate (Lo-Ma-Chen decoy-state BB84, single-photon contribution)
+    // R = 0.5 * f_rep * Q_1 * [1 - h(e_1)]
     const h = (x: number) => {
       if (x <= 0 || x >= 1) return 0;
       return -x * Math.log2(x) - (1 - x) * Math.log2(1 - x);
     };
-    const privacyAmp = 1 - h(e1) - Math.max(0, h(E_mu) - h(e1)) * 0.1; // simplified
-    const keyRate = 0.5 * repRate * Q1 * Math.max(0, 1 - h(e1) - h(E_mu) * 0.5);
+    const keyRate = 0.5 * repRate * Q1 * Math.max(0, 1 - h(e1));
 
     // Secret key fraction
     const skf = keyRate / (0.5 * repRate);
 
-    // Max range for positive key rate
-    // Key rate → 0 when QBER → 11% (Shor-Preskill threshold)
-    const maxRange = Math.log(1 / (detectorEfficiency * (1 - errorTolerance))) / (fiberLoss * Math.log(10));
+    // Max range: binary search for when key rate → 0
+    let maxRange = 0;
+    {
+      let lo = 0, hi = 500;
+      for (let i = 0; i < 60; i++) {
+        const r = (lo + hi) / 2;
+        const loss = fiberLoss * r;
+        const eta = Math.pow(10, -loss / 10) * detectorEfficiency;
+        const y0 = darkCountRate / repRate;
+        const y1 = y0 + eta * (1 - y0);
+        const q1 = y1 * mu * Math.exp(-mu);
+        const e1r = (0.01 * eta + 0.5 * y0) / (eta + y0);
+        const kr = 0.5 * repRate * q1 * Math.max(0, 1 - h(e1r));
+        if (kr > 0) lo = r; else hi = r;
+      }
+      maxRange = lo;
+    }
 
     // Protocol comparison: CV-QKD vs DV-QKD
     const cvQkdRate = range < 80 ? repRate * 0.01 * Math.pow(10, -fiberLoss * range / 10) : 0;
@@ -69,11 +87,13 @@ export default function QuantumKeyDistributionPage() {
       keyRate, keyRateKbps: keyRate / 1000, skf, maxRange, cvQkdRate,
       isSecure: QBER < errorTolerance,
     };
-  }, [wavelength, txPower, range, fiberLoss, detectorEfficiency, darkCountRate, repRate, errorTolerance]);
+  }, [wavelength, txPower, range, fiberLoss, detectorEfficiency, darkCountRate, repRate]);
 
   const plotData = useMemo(() => {
     const ranges = Array.from({ length: 100 }, (_, i) => 1 + i * 1); // 1-100 km
-    const mu = 0.5;
+    const P_tx = Math.pow(10, (txPower - 30) / 10);
+    const lambda = wavelength * 1e-9;
+    const mu = P_tx / (repRate * 6.626e-34 * 3e8 / lambda);
     const h = (x: number) => {
       if (x <= 0 || x >= 1) return 0;
       return -x * Math.log2(x) - (1 - x) * Math.log2(1 - x);
@@ -86,10 +106,8 @@ export default function QuantumKeyDistributionPage() {
       const Y0 = darkCountRate / repRate;
       const Y1 = Y0 + eta * (1 - Y0);
       const Q1 = Y1 * mu * Math.exp(-mu);
-      const Q_mu = 1 - Math.exp(-mu * eta) + Y0;
-      const E_mu = (0.01 * (1 - Math.exp(-mu * eta)) + 0.5 * Y0) / Q_mu;
       const e1 = (0.01 * eta + 0.5 * Y0) / (eta + Y0);
-      return 0.5 * repRate * Q1 * Math.max(0, 1 - h(e1) - h(E_mu) * 0.5) / 1000; // kbps
+      return 0.5 * repRate * Q1 * Math.max(0, 1 - h(e1)) / 1000; // kbps
     });
 
     const cvQkd = ranges.map((r) => {
@@ -101,11 +119,13 @@ export default function QuantumKeyDistributionPage() {
       { x: ranges, y: bb84, type: "scatter", mode: "lines", name: "BB84 (decoy)", line: { color: "#06b6d4" } },
       { x: ranges, y: cvQkd, type: "scatter", mode: "lines", name: "CV-QKD", line: { color: "#a855f7" } },
     ];
-  }, [fiberLoss, detectorEfficiency, darkCountRate, repRate]);
+  }, [fiberLoss, detectorEfficiency, darkCountRate, repRate, wavelength, txPower]);
 
   const plotData2 = useMemo(() => {
     const ranges = Array.from({ length: 100 }, (_, i) => 1 + i * 1);
-    const mu = 0.5;
+    const P_tx = Math.pow(10, (txPower - 30) / 10);
+    const lambda = wavelength * 1e-9;
+    const mu = P_tx / (repRate * 6.626e-34 * 3e8 / lambda);
 
     const qber = ranges.map((r) => {
       const totalLoss = fiberLoss * r;
@@ -119,7 +139,7 @@ export default function QuantumKeyDistributionPage() {
     return [
       { x: ranges, y: qber.map((q) => q * 100), type: "scatter", mode: "lines", name: "QBER", line: { color: "#f97316" } },
     ];
-  }, [fiberLoss, detectorEfficiency, darkCountRate, repRate]);
+  }, [fiberLoss, detectorEfficiency, darkCountRate, repRate, wavelength, txPower]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
