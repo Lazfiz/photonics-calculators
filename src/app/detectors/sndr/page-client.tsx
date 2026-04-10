@@ -14,15 +14,15 @@ export default function SNDRPage() {
 
   const chartData = useMemo(() => {
     const bitRange = Array.from({ length: 14 }, (_, i) => i + 4);
-    const snrForBits = bitRange.map(b => {
-      const qLevel = Math.pow(2, b);
-      const sqnr = 6.02 * b + 1.76;
-      return sqnr;
-    });
+    const snrForBits = bitRange.map(b => 6.02 * b + 1.76);
+    // SNDR chart: uses actual user distortion-to-signal ratio
+    const distortionRatio = distortionPower / signalPower;
     const sndrForBits = bitRange.map(b => {
       const sqnr = 6.02 * b + 1.76;
-      // Subtract distortion
-      return sqnr - 3; // typical 3dB loss from distortion
+      const sqnrLinear = Math.pow(10, sqnr / 10);
+      // Combine quantization noise with user's distortion in linear power
+      const effectiveSndrLinear = sqnrLinear / (1 + sqnrLinear * distortionRatio);
+      return 10 * Math.log10(Math.max(1e-10, effectiveSndrLinear));
     });
     return [
       { x: bitRange, y: snrForBits, type: "scatter" as const, mode: "lines+markers" as const, name: "SQNR (ideal)", line: { color: "#60a5fa" } },
@@ -50,7 +50,7 @@ export default function SNDRPage() {
         <p className="text-gray-300">SNR = <span className="text-blue-400 font-mono">{snr.toFixed(2)} dB</span></p>
         <p className="text-gray-300">SNDR = <span className="text-blue-400 font-mono">{sndr.toFixed(2)} dB</span></p>
         <p className="text-gray-300">SFDR = <span className="text-blue-400 font-mono">{sfdr.toFixed(2)} dB</span></p>
-        <p className="text-gray-300">THD = <span className="text-blue-400 font-mono">{thd.toFixed(2)} dB</span></p>
+        <p className="text-gray-300">THD = <span className="text-blue-400 font-mono">{thd.toFixed(2)} dBc</span></p>
         <p className="text-gray-300">ENOB = <span className="text-blue-400 font-mono">{enob.toFixed(2)} bits</span></p>
       </div>
 

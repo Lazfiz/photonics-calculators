@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/sndr' },
     title: 'SNDR Calculator',
-  description: 'Signal-to-Noise-and-Distortion Ratio. SNDR = Psignal/(Pnoise + Pdistortion).',
+    description: 'Signal-to-Noise-and-Distortion Ratio, SFDR, THD, and ENOB for ADC analysis.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `SNDR Calculator',
-  description: 'Signal-to-Noise-and-Distortion Ratio. SNDR = Psignal/(Pnoise + Pdistortion).',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'SNDR Calculator',
-  'Signal-to-Noise-and-Distortion Ratio. SNDR = Psignal/(Pnoise + Pdistortion).',
+  'Signal-to-Noise-and-Distortion Ratio, SFDR, THD, and ENOB for ADC analysis.',
   'https://photonics-calculators.vercel.app/detectors/sndr',
-  { category: 'Detectors`,
-  `Signal-to-Noise-and-Distortion Ratio. SNDR = Psignal/(Pnoise + Pdistortion).',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'SNDR Calculator',
-  'Signal-to-Noise-and-Distortion Ratio. SNDR = Psignal/(Pnoise + Pdistortion).',
-  'https://photonics-calculators.vercel.app/detectors/sndr',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/sndr`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
