@@ -11,7 +11,6 @@ export default function FiberLoopMirrorPage() {
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 1); // m
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [n_eff, setN_eff] = useURLState("n_eff", 1.468);
-  const [dispersion, setDispersion] = useURLState("dispersion", 17); // ps/(nm·km)
   const [birefringence, setBirefringence] = useURLState("birefringence", 5e-7);
   const [includePM, setIncludePM] = useState(true);
 
@@ -31,22 +30,17 @@ export default function FiberLoopMirrorPage() {
     // Free spectral range (for birefringent filter configuration)
     const FSR_biref = lambda * lambda / (birefringence * L);
 
-    // With PM fiber: acts as a comb filter
-    // Periodic peaks with FSR = λ²/(Δn·L)
-    const finesse_biref = includePM ? Math.PI * Math.sqrt(avgReflectance) / (1 - avgReflectance) : 0;
+    // Note: A Sagnac loop mirror is a single-pass (two-beam) interferometer,
+    // not a resonant cavity. Fabry-Pérot finesse does not apply.
 
     // Phase shift needed for 50% transmission at k=0.5
     const phaseShift50 = Math.PI / 4;
 
-    // Chromatic dispersion effect on mirror bandwidth
-    const D = dispersion * 1e-6; // s/(m²)
-    const bandwidthLimit = 1 / (Math.abs(D) * L * 1e12); // THz, simplified
-
     // Round-trip phase
     const phaseRT = beta * 2 * L;
 
-    return { avgReflectance, peakReflectance, transmission, FSR_biref, finesse_biref, phaseShift50, bandwidthLimit, phaseRT, k };
-  }, [couplingRatio, fiberLength, wavelength, n_eff, dispersion, birefringence, includePM]);
+    return { avgReflectance, peakReflectance, transmission, FSR_biref, phaseShift50, phaseRT, k };
+  }, [couplingRatio, fiberLength, wavelength, n_eff, birefringence, includePM]);
 
   const chartData = useMemo(() => {
     // Reflectance vs coupling ratio
@@ -54,18 +48,11 @@ export default function FiberLoopMirrorPage() {
     const avgR = ks.map(k => 2 * k * (1 - k));
     const peakR = ks.map(k => 4 * k * (1 - k));
 
-    // Spectral response for birefringent loop mirror
-    const wls = Array.from({ length: 500 }, (_, i) => wavelength - 5 + i * 0.02);
-    const specResponse = includePM ? wls.map(wl => {
-      const phase = 2 * Math.PI * birefringence * fiberLength / (wl * 1e-9);
-      return Math.cos(phase * 0.5) ** 2 * calc.avgReflectance;
-    }) : [];
-
     return [
       { x: ks.map(k => k * 100), y: avgR.map(r => r * 100), type: "scatter" as const, mode: "lines" as const, name: "Avg Reflectance", line: { color: "#f87171" } },
       { x: ks.map(k => k * 100), y: peakR.map(r => r * 100), type: "scatter" as const, mode: "lines" as const, name: "Peak Reflectance", line: { color: "#60a5fa", dash: "dash" } },
     ];
-  }, [couplingRatio, birefringence, fiberLength, includePM]);
+  }, []);
 
   const spectrumData = useMemo(() => {
     if (!includePM) return [];
@@ -73,7 +60,8 @@ export default function FiberLoopMirrorPage() {
     return [{
       x: wls, y: wls.map(wl => {
         const phase = 2 * Math.PI * birefringence * fiberLength / (wl * 1e-9);
-        return Math.cos(phase * 0.5) ** 2 * 100;
+        // Birefringent fringe × Sagnac transmission envelope (1 - 4k(1-k))
+        return Math.cos(phase * 0.5) ** 2 * (1 - 4 * calc.k * (1 - calc.k)) * 100;
       }),
       type: "scatter" as const, mode: "lines" as const, name: "Transmission (%)", line: { color: "#34d399" },
     }];
@@ -104,16 +92,10 @@ export default function FiberLoopMirrorPage() {
           <p className="text-xl font-bold text-blue-400">{(calc.transmission * 100).toFixed(1)}%</p>
         </div>
         {includePM && (
-          <>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">FSR (biref)</p>
-              <p className="text-xl font-bold text-green-400">{(calc.FSR_biref * 1e9).toFixed(2)} nm</p>
-            </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">Finesse</p>
-              <p className="text-xl font-bold text-yellow-400">{calc.finesse_biref.toFixed(2)}</p>
-            </div>
-          </>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <p className="text-sm text-gray-400">FSR (biref)</p>
+            <p className="text-xl font-bold text-green-400">{(calc.FSR_biref * 1e9).toFixed(2)} nm</p>
+          </div>
         )}
       </div>
 
