@@ -13,6 +13,7 @@ export default function TemporalNoisePage() {
   const [kneeFreq, setKneeFreq] = useURLState("kneeFreq", 1000); // Hz (1/f corner)
   const [bandwidth, setBandwidth] = useURLState("bandwidth", 1e6); // Hz
   const [conversionGain, setConversionGain] = useURLState("conversionGain", 2.0); // μV/e-
+  const [k1f, setK1f] = useURLState("k1f", 2.5); // 1/f noise coefficient (e⁻ rms)
 
   const chartData = useMemo(() => {
     // Noise PSD vs frequency
@@ -23,8 +24,6 @@ export default function TemporalNoisePage() {
     const whiteNoise = freq.map(() => 1);
     // Total PSD
     const totalPSD = freq.map((f, i) => whiteNoise[i] + oneOverF[i]);
-    // Convert to voltage noise density (μV/√Hz)
-    const voltagePSD = totalPSD.map(s => conversionGain * Math.sqrt(s));
 
     return [
       { x: freq, y: oneOverF, type: "scatter" as const, mode: "lines" as const, name: "1/f noise", line: { color: "#f87171", width: 2 } },
@@ -48,8 +47,8 @@ export default function TemporalNoisePage() {
 
   const darkShotNoise = Math.sqrt(darkCurrent * exposureTime);
   const totalNoise = Math.sqrt(readNoise**2 + darkShotNoise**2);
-  // 1/f noise integrated: ~ K * ln(f_high/f_low)
-  const oneOverFNoise = readNoise * 0.5 * Math.log10(bandwidth / kneeFreq + 1);
+  // 1/f noise integrated: σ = k_1f · √(ln(f_high / f_knee))
+  const oneOverFNoise = bandwidth > kneeFreq ? k1f * Math.sqrt(Math.log(bandwidth / kneeFreq)) : 0;
   const totalNoiseWithF = Math.sqrt(readNoise**2 + darkShotNoise**2 + oneOverFNoise**2);
 
   return (
@@ -62,6 +61,7 @@ export default function TemporalNoisePage() {
         <ValidatedNumberInput label="1/f Corner Frequency (Hz)" value={kneeFreq} onChange={setKneeFreq} />
         <ValidatedNumberInput label="Bandwidth (Hz)" value={bandwidth} onChange={setBandwidth} />
         <ValidatedNumberInput label="Conversion Gain (μV/e⁻)" value={conversionGain} onChange={setConversionGain} />
+        <ValidatedNumberInput label="1/f Noise Coefficient (e⁻)" value={k1f} onChange={setK1f} step="0.1" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
@@ -69,7 +69,7 @@ export default function TemporalNoisePage() {
         <p className="text-gray-300">Dark shot noise = <span className="text-blue-400 font-mono">{darkShotNoise.toFixed(2)} e⁻</span></p>
         <p className="text-gray-300">1/f noise ≈ <span className="text-blue-400 font-mono">{oneOverFNoise.toFixed(2)} e⁻</span></p>
         <p className="text-gray-300">Total noise (with 1/f) = <span className="text-blue-400 font-mono">{totalNoiseWithF.toFixed(2)} e⁻</span></p>
-        <p className="text-gray-300 text-sm mt-1">σ<sub>1/f</sub> ∝ K·ln(f<sub>H</sub>/f<sub>L</sub>) | σ<sub>dark</sub> = √(I<sub>dark</sub>·t) | σ<sub>total</sub> = √(σ²<sub>read</sub> + σ²<sub>dark</sub> + σ²<sub>1/f</sub>)</p>
+        <p className="text-gray-300 text-sm mt-1">σ<sub>1/f</sub> = k<sub>1/f</sub>·√(ln(f<sub>H</sub>/f<sub>knee</sub>)) | σ<sub>dark</sub> = √(I<sub>dark</sub>·t) | σ<sub>total</sub> = √(σ²<sub>read</sub> + σ²<sub>dark</sub> + σ²<sub>1/f</sub>)</p>
       </div>
 
       <ChartPanel data={chartData} layout={{
