@@ -27,25 +27,26 @@ export default function DiversityReceptionPage() {
     const r0 = Math.pow(0.423 * Math.pow(2 * Math.PI / lambda, 2) * Cn2 * range * 1e3, -3 / 5);
     // Spatial coherence radius at receiver
     const rho0 = r0;
+    const sepM = separation * 0.01; // cm → m
     // Correlation between receivers
-    const rhoCorr = Math.exp(-Math.pow(separation / rho0, 5 / 3));
+    const rhoCorr = Math.exp(-Math.pow(sepM / rho0, 5 / 3));
     // Scintillation index (Rytov variance)
     const sigmaR2 = 1.23 * Math.pow(2 * Math.PI / lambda, 7 / 6) * Math.pow(Cn2, 1) * Math.pow(range * 1e3, 11 / 6);
-    // Diversity gain
+    // Effective number of independent branches
+    const neff = numRx * (1 - rhoCorr) + rhoCorr;
+    // Diversity gain (SNR improvement from combining correlated branches)
     let diversityGain: number;
     let combinedSigma2: number;
     if (combineMethod === "sc") {
-      // Selection combining: ~N * (1-rho) improvement
-      diversityGain = 10 * Math.log10(numRx * (1 - rhoCorr) + rhoCorr);
-      combinedSigma2 = sigmaR2 / numRx;
+      diversityGain = 10 * Math.log10(neff);
+      combinedSigma2 = sigmaR2 * (1 + (numRx - 1) * rhoCorr) / numRx;
     } else if (combineMethod === "egc") {
-      // Equal gain combining
-      diversityGain = 10 * Math.log10(numRx * (1 - rhoCorr) + rhoCorr) + 3 * Math.log10(numRx);
-      combinedSigma2 = sigmaR2 / (numRx * (1 - rhoCorr) + rhoCorr);
+      diversityGain = 10 * Math.log10(neff);
+      combinedSigma2 = sigmaR2 / neff;
     } else {
-      // Maximal ratio combining
-      diversityGain = 10 * Math.log10(numRx) * (1 - rhoCorr * 0.5);
-      combinedSigma2 = sigmaR2 / (numRx * numRx * (1 - rhoCorr) + rhoCorr);
+      // Maximal ratio combining (optimal)
+      diversityGain = 10 * Math.log10(neff);
+      combinedSigma2 = sigmaR2 / neff;
     }
     // Outage probability (simplified log-normal model)
     const threshold = 3; // fade margin in sigma
@@ -61,10 +62,10 @@ export default function DiversityReceptionPage() {
     const colors = ["#06b6d4", "#a78bfa", "#22c55e"];
     return methods.map((m, idx) => ({
       x: seps, y: seps.map((s) => {
-        const rho = Math.exp(-Math.pow(s / r0, 5 / 3));
-        if (m === "sc") return 10 * Math.log10(numRx * (1 - rho) + rho);
-        if (m === "egc") return 10 * Math.log10(numRx * (1 - rho) + rho) + 3 * Math.log10(numRx);
-        return 10 * Math.log10(numRx) * (1 - rho * 0.5);
+        const sepM = s * 0.01; // cm → m
+        const rho = Math.exp(-Math.pow(sepM / r0, 5 / 3));
+        const neff = numRx * (1 - rho) + rho;
+        return 10 * Math.log10(neff);
       }),
       type: "scatter" as const, mode: "lines", name: m.toUpperCase(), line: { color: colors[idx] },
     }));
