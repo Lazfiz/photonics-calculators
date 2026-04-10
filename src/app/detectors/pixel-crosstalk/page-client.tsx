@@ -18,12 +18,20 @@ export default function PixelCrosstalkPage() {
   const absorptionDepth = useMemo(() => {
     // Si absorption depth approximation (µm) vs wavelength (nm)
     // Rough fit to Si absorption coefficient data
+    // Si absorption depth (1/α) piecewise linear approximation
+    // Reference: Green & Keevers, Sol. Energy Mater. Sol. Cells (1995)
     const wl = wavelength;
-    if (wl < 400) return 0.1;
-    if (wl < 500) return 0.5 + (wl - 400) * 0.04;
-    if (wl < 700) return 4.5 + (wl - 500) * 0.08;
-    if (wl < 900) return 20.5 + (wl - 700) * 0.6;
-    return 140.5 + (wl - 900) * 1.5;
+    if (wl < 350) return 0.01 + (wl - 300) * 0.0004;
+    if (wl < 400) return 0.03 + (wl - 350) * 0.0014;
+    if (wl < 450) return 0.1 + (wl - 400) * 0.008;
+    if (wl < 500) return 0.5 + (wl - 450) * 0.01;
+    if (wl < 550) return 1.0 + (wl - 500) * 0.014;
+    if (wl < 600) return 1.7 + (wl - 550) * 0.016;
+    if (wl < 700) return 2.5 + (wl - 600) * 0.025;
+    if (wl < 800) return 5.0 + (wl - 700) * 0.05;
+    if (wl < 900) return 10.0 + (wl - 800) * 0.2;
+    if (wl < 1000) return 30.0 + (wl - 900) * 0.7;
+    return 100.0 + (wl - 1000) * 4.0;
   }, [wavelength]);
 
   const diffusionCrosstalk = Math.min(0.5, Math.sqrt(absorptionDepth / depletionDepth) * 0.1);
@@ -35,11 +43,18 @@ export default function PixelCrosstalkPage() {
     // Crosstalk vs wavelength
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 700 / 300);
     const absDepths = wls.map(wl => {
-      if (wl < 400) return 0.1;
-      if (wl < 500) return 0.5 + (wl - 400) * 0.04;
-      if (wl < 700) return 4.5 + (wl - 500) * 0.08;
-      if (wl < 900) return 20.5 + (wl - 700) * 0.6;
-      return 140.5 + (wl - 900) * 1.5;
+      // Si absorption depth (1/α) — same model as above
+      if (wl < 350) return 0.01 + (wl - 300) * 0.0004;
+      if (wl < 400) return 0.03 + (wl - 350) * 0.0014;
+      if (wl < 450) return 0.1 + (wl - 400) * 0.008;
+      if (wl < 500) return 0.5 + (wl - 450) * 0.01;
+      if (wl < 550) return 1.0 + (wl - 500) * 0.014;
+      if (wl < 600) return 1.7 + (wl - 550) * 0.016;
+      if (wl < 700) return 2.5 + (wl - 600) * 0.025;
+      if (wl < 800) return 5.0 + (wl - 700) * 0.05;
+      if (wl < 900) return 10.0 + (wl - 800) * 0.2;
+      if (wl < 1000) return 30.0 + (wl - 900) * 0.7;
+      return 100.0 + (wl - 1000) * 4.0;
     });
     const diffCt = absDepths.map(d => Math.min(0.5, Math.sqrt(d / depletionDepth) * 0.1));
     const totalCt = diffCt.map(dc => Math.sqrt(dc ** 2 + crosstalkCoeff ** 2));
