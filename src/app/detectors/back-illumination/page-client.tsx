@@ -16,12 +16,12 @@ export default function BackIlluminationPage() {
     const wavelengths = Array.from({ length: 200 }, (_, i) => 300 + (i / 200) * 700);
     const fiResponse = wavelengths.map(w => {
       const peak = 550; const sigma = 150;
-      return fiQE * Math.exp(-((w - peak) ** 2) / (2 * sigma ** 2)) * fiCFA * microlensGain;
+      const gateAbsorption = w < 400 ? 0.3 : 1;
+      return fiQE * Math.exp(-((w - peak) ** 2) / (2 * sigma ** 2)) * fiCFA * microlensGain * gateAbsorption;
     });
     const biResponse = wavelengths.map(w => {
       const peak = 550; const sigma = 150;
-      const blueLoss = w < 400 ? 0.9 : 1;
-      return biQE * Math.exp(-((w - peak) ** 2) / (2 * sigma ** 2)) * blueLoss;
+      return biQE * Math.exp(-((w - peak) ** 2) / (2 * sigma ** 2));
     });
     const improvement = wavelengths.map((w, i) => biResponse[i] / Math.max(fiResponse[i], 1e-6));
     return [
