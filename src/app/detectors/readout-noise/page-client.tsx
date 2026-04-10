@@ -14,11 +14,11 @@ export default function ReadoutNoisePage() {
   const chartData = useMemo(() => {
     const signals = Array.from({ length: 200 }, (_, i) => 1 + (i / 200) * 9999);
     const shotNoise = signals.map(s => Math.sqrt(s));
-    const totalNoise = signals.map(s => Math.sqrt(s + readNoise ** 2));
+    const totalNoise = signals.map(s => Math.sqrt(s + readNoise ** 2 + darkCurrent * exposureTime));
     const snr = signals.map(s => s / Math.sqrt(s + readNoise ** 2 + darkCurrent * exposureTime));
     return [
       { x: signals, y: shotNoise, type: "scatter" as const, mode: "lines" as const, name: "Shot noise only", line: { color: "#60a5fa" } },
-      { x: signals, y: totalNoise, type: "scatter" as const, mode: "lines" as const, name: "Total (shot + read)", line: { color: "#f87171" } },
+      { x: signals, y: totalNoise, type: "scatter" as const, mode: "lines" as const, name: "Total (shot + read + dark)", line: { color: "#f87171" } },
       { x: signals, y: snr, type: "scatter" as const, mode: "lines" as const, name: "SNR", line: { color: "#34d399" }, yaxis: "y2" },
     ];
   }, [readNoise, darkCurrent, exposureTime]);
