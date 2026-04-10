@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/fiber-coupler' },
-    title: 'Fiber Coupler',
-  description: 'Interactive Fiber Coupler calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Fiber Coupler',
-  description: 'Interactive Fiber Coupler calculator for photonics and optical engineering.'
+    title: 'Fiber Coupler Calculator',
+    description: 'Calculate power splitting, transfer curves, and spectral response for directional fiber couplers.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Fiber Coupler',
-  'Interactive Fiber Coupler calculator for photonics and optical engineering.',
+  'Fiber Coupler Calculator',
+  'Calculate power splitting, transfer curves, and spectral response for directional fiber couplers.',
   'https://photonics-calculators.vercel.app/fiber-optics/fiber-coupler',
-  { category: 'Fiber Optics`,
-  `Interactive Fiber Coupler calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Fiber Coupler',
-  'Interactive Fiber Coupler calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/fiber-optics/fiber-coupler',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/fiber-coupler`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

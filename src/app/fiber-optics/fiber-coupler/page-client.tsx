@@ -21,13 +21,16 @@ export default function FiberCouplerCalculator() {
     return sinSq; // fraction coupled to port 2
   }, [couplingCoeff, couplingLength]);
 
+  // Excess loss in linear (input is dB)
+  const lossLinear = Math.pow(10, -excessLoss / 10);
+
   const throughPower = useMemo(() => {
-    return (1 - couplingRatio) * (1 - excessLoss); // linear
-  }, [couplingRatio, excessLoss]);
+    return (1 - couplingRatio) * lossLinear; // linear
+  }, [couplingRatio, lossLinear]);
 
   const coupledPower = useMemo(() => {
-    return couplingRatio * (1 - excessLoss);
-  }, [couplingRatio, excessLoss]);
+    return couplingRatio * lossLinear;
+  }, [couplingRatio, lossLinear]);
 
   const throughPowerDbm = useMemo(() => {
     return inputPower + 10 * Math.log10(throughPower);
@@ -51,15 +54,15 @@ export default function FiberCouplerCalculator() {
     for (let l = 0; l <= 30; l += 0.05) {
       lengths.push(l);
       const sinSq = Math.sin(couplingCoeff * l) ** 2;
-      through.push((1 - sinSq) * (1 - excessLoss));
-      coupled.push(sinSq * (1 - excessLoss));
+      through.push((1 - sinSq) * lossLinear);
+      coupled.push(sinSq * lossLinear);
     }
 
     return [
       { x: lengths, y: through, type: "scatter" as const, mode: "lines" as const, name: "Through Port", line: { color: "#3b82f6", width: 2 } },
       { x: lengths, y: coupled, type: "scatter" as const, mode: "lines" as const, name: "Coupled Port", line: { color: "#ef4444", width: 2 } },
     ];
-  }, [couplingCoeff, excessLoss]);
+  }, [couplingCoeff, lossLinear]);
 
   // Spectral response (wavelength-dependent coupling)
   const spectralResponse = useMemo(() => {
@@ -75,15 +78,15 @@ export default function FiberCouplerCalculator() {
       // Coupling coefficient varies with wavelength: κ(λ) ≈ κ₀ · (λ₀/λ)
       const kappa = kappa0 * (1550 / w);
       const sinSq = Math.sin(kappa * L) ** 2;
-      throughSpec.push((1 - sinSq) * (1 - excessLoss));
-      coupledSpec.push(sinSq * (1 - excessLoss));
+      throughSpec.push((1 - sinSq) * lossLinear);
+      coupledSpec.push(sinSq * lossLinear);
     }
 
     return [
       { x: wavelengths, y: throughSpec, type: "scatter" as const, mode: "lines" as const, name: "Through Port", line: { color: "#3b82f6", width: 2 } },
       { x: wavelengths, y: coupledSpec, type: "scatter" as const, mode: "lines" as const, name: "Coupled Port", line: { color: "#ef4444", width: 2 } },
     ];
-  }, [couplingCoeff, couplingLength, excessLoss]);
+  }, [couplingCoeff, couplingLength, lossLinear]);
 
   const layout1 = {
     title: "Power Transfer vs Coupling Length",
@@ -150,8 +153,8 @@ export default function FiberCouplerCalculator() {
             </div>
             <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
               <h3 className="text-sm font-medium text-gray-400 mb-2">Formulas</h3>
-              <p className="font-mono text-sm">P_coupled = P_in · sin²(κ·L) · (1 - α)</p>
-              <p className="font-mono text-sm mt-1">P_through = P_in · cos²(κ·L) · (1 - α)</p>
+              <p className="font-mono text-sm">P_coupled = P_in · sin²(κ·L) · 10^(-α/10)</p>
+              <p className="font-mono text-sm mt-1">P_through = P_in · cos²(κ·L) · 10^(-α/10)</p>
               <p className="font-mono text-sm mt-1">L₅₀:₅₀ = π / (4κ)</p>
               <p className="font-mono text-sm mt-1">κ(λ) ≈ κ₀ · (λ₀/λ)</p>
             </div>
