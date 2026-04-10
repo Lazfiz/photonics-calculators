@@ -31,7 +31,7 @@ export default function SecurityPage() {
     const rxAntArea = Math.PI * (rxAperture * 1e-2 / 2) ** 2;
     const rxPower = powerDensityRx * rxAntArea;
 
-    // Eve's intercept (off-axis)
+    // Eve's intercept (on-axis at different distance)
     const beamAtEve = 2 * eveDistance * 1e3 * theta;
     const beamAreaEve = Math.PI * (beamAtEve / 2) ** 2;
     const evePowerDensity = Math.pow(10, txPower / 10) * 1e-3 / beamAreaEve;
