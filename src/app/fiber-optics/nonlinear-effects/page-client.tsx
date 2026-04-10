@@ -12,13 +12,11 @@ export default function NonlinearEffectsPage() {
   const [effectiveArea, setEffectiveArea] = useURLState("effectiveArea", 80); // µm²
   const [alpha, setAlpha] = useURLState("alpha", 0.2); // dB/km attenuation
   const [gamma, setGamma] = useURLState("gamma", 1.3); // W⁻¹km⁻¹ nonlinear coeff
-  const [bitRate, setBitRate] = useURLState("bitRate", 10); // Gbps
   const [numChannels, setNumChannels] = useURLState("numChannels", 1);
   const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 100); // GHz
 
   const calc = useMemo(() => {
     const P_lin = Math.pow(10, power / 10) * 1e-3; // W
-    const alpha_lin = alpha / (10 * Math.log10(Math.E)) / 1e3; // 1/m → but let's use /km
     const alpha_km = alpha / (10 * Math.log10(Math.E)); // 1/km (Neper/km)
     const L_eff = (1 - Math.exp(-alpha_km * length)) / alpha_km; // km
 
@@ -61,16 +59,12 @@ export default function NonlinearEffectsPage() {
     // Total nonlinear penalty
     const totalPenalty = spmPenalty + xpmPenalty + fwmPenalty;
 
-    // Optimal launch power
-    const NLI_coeff = gamma * gamma / (2 * alpha_km); // 1/W
-    const P_opt = 10 * Math.log10(-1 / NLI_coeff * 1e3) + 30; // dBm (very simplified)
-
     return {
       P_lin, L_eff, phiNL, spmPenalty, spectralBroadening,
       xpmPenalty, fwmPenalty, totalPenalty,
       srsThreshold_dBm, srsMargin, sbsThreshold_dBm, sbsMargin,
     };
-  }, [power, length, effectiveArea, alpha, gamma, bitRate, numChannels, channelSpacing]);
+  }, [power, length, effectiveArea, alpha, gamma, numChannels, channelSpacing]);
 
   const powerData = useMemo(() => {
     const powers = Array.from({ length: 100 }, (_, i) => -5 + i * 0.2);
@@ -115,7 +109,6 @@ export default function NonlinearEffectsPage() {
         <ValidatedNumberInput label="γ (W⁻¹km⁻¹)" value={gamma} onChange={setGamma} step="0.1" />
         <ValidatedNumberInput label="WDM Channels" value={numChannels} onChange={setNumChannels} min={1} />
         <ValidatedNumberInput label="Channel Spacing (GHz)" value={channelSpacing} onChange={setChannelSpacing} step="10" />
-        <ValidatedNumberInput label="Bit Rate (Gbps)" value={bitRate} onChange={setBitRate} step="1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
