@@ -9,8 +9,8 @@ import { useURLState } from "../../../hooks/use-url-state";
 const sensors = {
   ccd: { readNoise: 3, darkCurrent: 0.001, wellCapacity: 100000, pixelSize: 15, qe: 0.95, frameRate: 10 },
   cmos_sci: { readNoise: 1.5, darkCurrent: 0.01, wellCapacity: 50000, pixelSize: 6.5, qe: 0.90, frameRate: 100 },
-  cmos_phone: { readNoise: 2, darkCurrent: 0.05, wellCapacity: 20000, pixelSize: 1.2, qe: 0.65, frameRate: 60 },
-  emccd: { readNoise: 0.001, darkCurrent: 0.001, wellCapacity: 100000, pixelSize: 13, qe: 0.95, frameRate: 30 },
+  cmos_phone: { readNoise: 15, darkCurrent: 5, wellCapacity: 20000, pixelSize: 1.2, qe: 0.65, frameRate: 60 },
+  emccd: { readNoise: 0.1, darkCurrent: 0.001, wellCapacity: 100000, pixelSize: 13, qe: 0.95, frameRate: 30 },
 };
 const sensorNames = ["CCD", "sCMOS", "Phone CMOS", "EMCCD"];
 const sensorColors = ["text-blue-400", "text-green-400", "text-yellow-400", "text-purple-400"];
@@ -66,6 +66,8 @@ export default function CcdVsCmosPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
         <p>SNR = S / √(σ_read² + S + D·t)</p>
         <p>Dynamic Range = 20·log₁₀(FWC / σ_read) dB</p>
+        <p>⚠ EMCCD SNR shown here does NOT include excess noise factor (√2 penalty on shot noise)</p>
+        <p>Real EMCCD SNR at low light ≈ S / √(2S + σ_read² + D·t) — slightly worse than shown</p>
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Signal (e⁻)", gridcolor: "#374151", type: "log" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} />
     </CalculatorShell>
