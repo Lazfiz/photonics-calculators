@@ -13,33 +13,34 @@ export default function NonzeroDispersionPage() {
   const [dispAt1550, setDispAt1550] = useURLState("dispAt1550", 4.5); // ps/(nm·km) - typical NZ-DSF
   const [zeroDispWl, setZeroDispWl] = useURLState("zeroDispWl", 1450); // nm
   const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 100); // GHz
-  const [channels, setChannels] = useURLState("channels", 40);
 
   const calc = useMemo(() => {
-    const lam = wavelength;
-    // D(λ) = S₀/4 · (λ - λ⁴₀/λ³)  [Sellmeier approx]
-    // Or linear: D(λ) = D(1550) + S · (λ - 1550)
+    const lam = wavelength; // nm
+    // D(λ) = D(1550) + S₀ · (λ - 1550) [linear model]
     const D = dispAt1550 + dispSlope * (lam - 1550);
-    // Also using zero-dispersion wavelength model
+    // Zero-dispersion wavelength model: D(λ) = (S₀/4) · (λ - λ₀⁴/λ³)
     const D2 = (dispSlope / 4) * (lam - Math.pow(zeroDispWl, 4) / Math.pow(lam, 3));
 
     // Accumulated dispersion
     const totalDisp = D * length;
 
-    // SPM-induced spectral broadening limit
-    const bitRate = channelSpacing * 1e9; // approximate
-    const bwLimit = Math.abs(D) > 0 ? 1 / (Math.abs(D) * length) : Infinity; // nm
+    // Channel spacing in wavelength: Δλ = λ² · Δν / c
+    // Δν in GHz, λ in nm, c in nm·THz = 3e5 nm·(1e12 Hz) = 3e17 nm·Hz
+    const deltaLambda = (lam * lam * channelSpacing * 1e9) / 3e17; // nm
 
-    // FWM efficiency consideration
-    // Phase mismatch: Δβ = 2π · D · Δλ² / λ²
-    const deltaLambda = channelSpacing / (3e5 / lam * 1e-3); // nm spacing
-    const deltaBeta = 2 * Math.PI * D * 1e-6 * Math.pow(deltaLambda, 2) / Math.pow(lam * 1e-9, 2);
+    // FWM phase mismatch: Δβ = (2πc/λ²) · D · Δλ²
+    // D in ps/(nm·km) → SI: D_SI = D × 1e-6 s/m²
+    const c = 3e8; // m/s
+    const lambda_m = lam * 1e-9; // m
+    const D_SI = D * 1e-6; // s/m²
+    const deltaLambda_m = deltaLambda * 1e-9; // m
+    const deltaBeta = (2 * Math.PI * c / (lambda_m * lambda_m)) * D_SI * deltaLambda_m * deltaLambda_m; // rad/m
 
     // Compare to standard SMF and DSF
     const dSMF = 17 + 0.056 * (lam - 1550); // ps/(nm·km)
     const dDSF = -1 + 0.05 * (lam - 1550); // ps/(nm·km)
 
-    return { D, D2, totalDisp, bwLimit, deltaBeta, dSMF, dDSF };
+    return { D, D2, totalDisp, deltaLambda, deltaBeta, dSMF, dDSF };
   }, [wavelength, length, dispSlope, dispAt1550, zeroDispWl, channelSpacing]);
 
   const dispCurveData = useMemo(() => {
@@ -88,13 +89,13 @@ export default function NonzeroDispersionPage() {
           <p className="text-xl font-bold text-yellow-400">{calc.totalDisp.toFixed(0)} ps/nm</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">BW Limit (1/disp)</p>
-          <p className="text-xl font-bold text-blue-400">{calc.bwLimit === Infinity ? "∞" : calc.bwLimit.toFixed(1)} nm</p>
+          <p className="text-sm text-gray-400">Channel Spacing Δλ</p>
+          <p className="text-xl font-bold text-blue-400">{calc.deltaLambda.toFixed(3)} nm</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">SMF Comparison</p>
           <p className="text-xl font-bold text-red-400">{calc.dSMF.toFixed(1)} ps/nm/km</p>
-          <p className="text-xs text-gray-500">{(calc.dSMF / Math.max(Math.abs(calc.D), 0.01)).toFixed(1)}× NZ-DSF</p>
+          <p className="text-xs text-gray-500">{(calc.dSMF / Math.max(calc.D, 0.01)).toFixed(1)}× NZ-DSF</p>
         </div>
       </div>
 
@@ -127,7 +128,8 @@ export default function NonzeroDispersionPage() {
           <p>D(λ) = D(1550) + S₀ · (λ - 1550)</p>
           <p>D(λ) = S₀/4 · (λ - λ₀⁴/λ³) [zero-dispersion model]</p>
           <p>σ_total = D · L · Δλ [dispersion-induced pulse broadening]</p>
-          <p>Δβ_FWM = 2πD·Δλ²/λ² [FWM phase mismatch]</p>
+          <p>Δβ_FWM = (2πc/λ²) · D · Δλ² [FWM phase mismatch]</p>
+          <p>Δλ = λ² · Δν / c [frequency → wavelength spacing]</p>
           <p>G.655: 1 ≤ |D| ≤ 10 ps/(nm·km) @ 1530-1565nm</p>
           <p>Trade-off: Low D → more FWM; High D → more compensation needed</p>
         </div>
