@@ -10,7 +10,6 @@ export default function WavelengthSelectionPage() {
   const [visibility, setVisibility] = useURLState("visibility", 2);
   const [dataRate, setDataRate] = useURLState("dataRate", 10);
   const [eyeSafety, setEyeSafety] = useState(true);
-  const [costBudget, setCostBudget] = useState<"low" | "mid" | "high">("mid");
 
   const calc = useMemo(() => {
     const lambdas = [850, 1064, 1310, 1550, 10000];
@@ -22,10 +21,10 @@ export default function WavelengthSelectionPage() {
       const eyeSafetyScore = wl >= 1400 ? 95 : wl >= 1000 ? 60 : 30;
 
       // Atmospheric transmission (Beer-Lambert with Kim model)
-      const V = visibility * 1e3;
-      const q = V < 0.5 ? 0 : V < 1 ? 1.6 : V < 2 ? 0.585 * Math.pow(V, 0.333) : 1.3;
-      const beta = 3.91 / V * Math.pow(wl * 1e-6 / 0.55, -q);
-      const att = beta * range;
+      // Kim q-factor: use visibility in km for threshold comparison
+      const q = visibility < 0.5 ? 0 : visibility < 1 ? 1.6 : visibility < 2 ? 0.585 * Math.pow(visibility, 0.333) : 1.3;
+      const beta = 3.91 / visibility * Math.pow(wl * 1e-3 / 0.55, -q); // km⁻¹
+      const att = 4.343 * beta * range; // dB (Beer-Lambert → dB)
       const atmosScore = Math.max(0, 100 - att * 5);
 
       // Component availability
