@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
-import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 export default function MicrochannelPlatePage() {
@@ -11,39 +9,40 @@ export default function MicrochannelPlatePage() {
   const [channelDiameter, setChannelDiameter] = useURLState("channelDiameter", 10); // µm
   const [channelLength, setChannelLength] = useURLState("channelLength", 0.5); // mm
   const [openAreaRatio, setOpenAreaRatio] = useState(0.6);
-  const [biasAngle, setBiasAngle] = useURLState("biasAngle", 8); // degrees
   const [appliedVoltage, setAppliedVoltage] = useURLState("appliedVoltage", 1000); // V per plate
 
   const results = useMemo(() => {
-    const ldr = channelLength * 1000 / channelDiameter; // L/D ratio
-    const singlePlateGain = Math.pow(10, 2.5 + 0.05 * (appliedVoltage / 100 - 8)); // empirical
+    const ldr = channelLength * 1000 / channelDiameter; // L/D ratio (dimensionless)
+    // Gain depends on voltage and L/D: higher L/D → more secondary emission events
+    const voltageFactor = 2.5 + 0.05 * (appliedVoltage / 100 - 8);
+    const singlePlateGain = Math.pow(10, voltageFactor * Math.min(ldr / 40, 1.5));
     const totalGain = Math.pow(singlePlateGain, numPlates);
-    const spatialRes = channelDiameter * 1.2; // µm
+    const spatialRes = channelDiameter * 1.2; // µm (pore-pitch limited estimate)
     const openArea = openAreaRatio * 100;
     const effectiveQE = openAreaRatio * 0.15; // photocathode + open area
-    const temporalRes = 80 + 20 * numPlates; // ps, rough
+    const temporalRes = 80 + 20 * numPlates; // ps, rough estimate
     return { ldr, singlePlateGain, totalGain, spatialRes, openArea, effectiveQE, temporalRes };
-  }, [numPlates, channelDiameter, channelLength, openAreaRatio, biasAngle, appliedVoltage]);
+  }, [numPlates, channelDiameter, channelLength, openAreaRatio, appliedVoltage]);
 
   const chartData = useMemo(() => {
     const voltages = Array.from({ length: 100 }, (_, i) => 500 + i * 10);
-    const gains1 = voltages.map(v => Math.pow(10, 2.5 + 0.05 * (v / 100 - 8)));
-    const gains2 = gains1.map(g => g * g);
-    const ldrs = [channelLength * 1000 / channelDiameter];
+    const ldr = channelLength * 1000 / channelDiameter;
+    const ldScale = Math.min(ldr / 40, 1.5);
+    const gains1 = voltages.map(v => Math.pow(10, (2.5 + 0.05 * (v / 100 - 8)) * ldScale));
+    const gainsN = gains1.map(g => Math.pow(g, numPlates));
     return [
-      { x: voltages, y: gains1, type: "scatter", mode: "lines", name: "Single plate gain", line: { color: "#60a5fa" } },
-      { x: voltages, y: gains2, type: "scatter", mode: "lines", name: "Dual plate gain", line: { color: "#f87171" } },
+      { x: voltages, y: gains1, type: "scatter", mode: "lines", name: "Single plate", line: { color: "#60a5fa" } },
+      { x: voltages, y: gainsN, type: "scatter", mode: "lines", name: `${numPlates} plates`, line: { color: "#f87171" } },
     ];
-  }, [appliedVoltage, channelDiameter, channelLength]);
+  }, [numPlates, channelDiameter, channelLength]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Number of Plates (chevron/Z)" value={numPlates} onChange={setNumPlates} min={1} max={3} />
+        <ValidatedNumberInput label="Number of Plates" value={numPlates} onChange={setNumPlates} min={1} max={3} />
         <ValidatedNumberInput label="Channel Diameter (µm)" value={channelDiameter} onChange={setChannelDiameter} />
         <ValidatedNumberInput label="Channel Length (mm)" value={channelLength} onChange={setChannelLength} step="0.1" />
         <ValidatedNumberInput label="Open Area Ratio" value={openAreaRatio} onChange={setOpenAreaRatio} min={0} max={1} step="0.01" />
-        <ValidatedNumberInput label="Bias Angle (°)" value={biasAngle} onChange={setBiasAngle} />
         <ValidatedNumberInput label="Voltage per Plate (V)" value={appliedVoltage} onChange={setAppliedVoltage} step="50" />
       </div>
 
@@ -60,9 +59,9 @@ export default function MicrochannelPlatePage() {
       <h2 className="text-xl font-semibold mb-2">Key Formulas</h2>
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1 text-sm font-mono text-gray-400">
         <p>L/D = channel length / channel diameter</p>
-        <p>G ≈ 10^(2.5 + 0.05·(V/100 - 8))  [empirical per plate]</p>
+        <p>G ≈ 10^(α·(L/D))  where α = 2.5 + 0.05·(V/100 - 8)</p>
         <p>G<sub>total</sub> = G<sub>plate</sub>^N</p>
-        <p>Spatial res. ≈ 1.2 × d<sub>channel</sub></p>
+        <p>Spatial res. ≈ 1.2 × d<sub>channel</sub> (pore-pitch limited)</p>
         <p>η<sub>eff</sub> = η<sub>cathode</sub> × ε<sub>open</sub></p>
       </div>
 
