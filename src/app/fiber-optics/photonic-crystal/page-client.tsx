@@ -8,7 +8,6 @@ import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumbe
 export default function PhotonicCrystalFiberCalculator() {
   const [pitch, setPitch] = useURLState("pitch", 4.5); // μm (Λ)
   const [holeDiameter, setHoleDiameter] = useURLState("holeDiameter", 2.7); // μm (d)
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.45);
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
 
   // d/Λ ratio
@@ -30,13 +29,16 @@ export default function PhotonicCrystalFiberCalculator() {
   // Endlessly single-mode condition: d/Λ < 0.45 (approximately)
   const isEndlesslySM = dOverLambda < 0.45;
 
-  // Effective mode area (approximate)
+  // Effective mode area (approximate — decreases with higher d/Λ)
   const effectiveModeArea = useMemo(() => {
     const lambda = wavelength * 1e-3;
-    // Rough approximation for A_eff in PCF
-    const w = pitch * (0.65 + 0.434 * (lambda / (2 * pitch)) ** 1.5 + 0.0147 * (lambda / (2 * pitch)) ** 6);
+    // Base mode field radius (Marcuse-like), then shrink with air fraction
+    const w0 = pitch * (0.65 + 0.434 * (lambda / (2 * pitch)) ** 1.5 + 0.0147 * (lambda / (2 * pitch)) ** 6);
+    // Higher d/Λ → tighter confinement → smaller mode
+    const confinementFactor = Math.exp(-1.5 * dOverLambda);
+    const w = w0 * confinementFactor;
     return Math.PI * w ** 2;
-  }, [pitch, wavelength]);
+  }, [pitch, wavelength, dOverLambda]);
 
   // Dispersion (approximate for PCF)
   const dispersion = useMemo(() => {
@@ -68,7 +70,9 @@ export default function PhotonicCrystalFiberCalculator() {
       const lambda = wavelength * 1e-3;
       const na = Math.sqrt(1 - Math.exp(-(((2 * Math.PI * d / 2) / lambda) ** 2 * Math.log(2))));
       nas.push(na);
-      const w = pitch * (0.65 + 0.434 * (lambda / (2 * pitch)) ** 1.5 + 0.0147 * (lambda / (2 * pitch)) ** 6);
+      const w0 = pitch * (0.65 + 0.434 * (lambda / (2 * pitch)) ** 1.5 + 0.0147 * (lambda / (2 * pitch)) ** 6);
+      const confinementFactor = Math.exp(-1.5 * r);
+      const w = w0 * confinementFactor;
       areas.push(Math.PI * w ** 2);
     }
 
@@ -126,7 +130,7 @@ export default function PhotonicCrystalFiberCalculator() {
                 <div className="flex justify-between"><span className="text-gray-400">Effective NA:</span><span className="font-mono">{effectiveNA.toFixed(4)}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">V-number:</span><span className="font-mono">{vNumber.toFixed(3)}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Mode area A_eff:</span><span className="font-mono text-blue-400">{effectiveModeArea.toFixed(1)} μm²</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Dispersion:</span><span className="font-mono">{dispersion.toFixed(1)} ps/(nm·km)</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Dispersion:</span><span className="font-mono">{dispersion.toFixed(1)} ps/(nm·km) <span className="text-xs text-gray-500">(anom. PCF approx)</span></span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Confinement loss:</span><span className="font-mono">{confinementLoss < 0.01 ? "< 0.01" : confinementLoss.toFixed(2)} dB/km</span></div>
                 <div className="pt-3 border-t border-gray-700">
                   <div className={`flex items-center gap-2 ${isEndlesslySM ? "text-green-400" : "text-yellow-400"}`}>
