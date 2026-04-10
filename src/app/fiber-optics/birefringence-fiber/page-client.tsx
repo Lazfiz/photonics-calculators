@@ -13,11 +13,11 @@ export default function BirefringenceCalculator() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [stressAnisotropy, setStressAnisotropy] = useURLState("stressAnisotropy", 0); // nm
 
-  // V-number
+  // V-number (convert wavelength nm→μm to match core radius units)
   const na = Math.sqrt(coreIndex ** 2 - claddingIndex ** 2);
   const a = coreRadius; // μm
   const lambda = wavelength; // nm
-  const vNumber = (2 * Math.PI * a * na) / lambda;
+  const vNumber = (2 * Math.PI * a * na) / (wavelength / 1000);
 
   // Geometric birefringence (elliptical core)
   const geometricBirefringence = useMemo(() => {
@@ -42,12 +42,12 @@ export default function BirefringenceCalculator() {
     return wavelength / totalBirefringence;
   }, [wavelength, totalBirefringence]);
 
-  // Polarization mode dispersion (ps/km)
+  // Polarization mode dispersion (ps/km) — DGD per unit length = B / c
+  // c = 3e8 m/s = 3e5 km/s; convert s/km → ps/km: × 1e12
   const pmd = useMemo(() => {
     if (totalBirefringence === 0) return 0;
-    const Dps = (totalBirefringence * wavelength) / (2 * Math.PI * 3e5); // ps/km for unit length
-    return Dps * 1e6; // scale
-  }, [totalBirefringence, wavelength]);
+    return (totalBirefringence * 1e12) / 3e5; // ps/km
+  }, [totalBirefringence]);
 
   // Plot: birefringence vs ellipticity
   const plotData = useMemo(() => {
@@ -116,8 +116,8 @@ export default function BirefringenceCalculator() {
               <ValidatedNumberInput label="Core Ellipticity (b/a)" value={ellipticity} onChange={setEllipticity} min={0.5} max={1} step="0.01" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Stress Anisotropy Δn_stress (nm)</label>
-              <ValidatedNumberInput label="Stress Anisotropy Δn_stress (nm)" value={stressAnisotropy} onChange={setStressAnisotropy} step="1" />
+              <label className="block text-sm font-medium mb-2">Stress OPD (nm)</label>
+              <ValidatedNumberInput label="Stress OPD (nm)" value={stressAnisotropy} onChange={setStressAnisotropy} step="1" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
@@ -134,7 +134,7 @@ export default function BirefringenceCalculator() {
                 <div className="flex justify-between"><span className="text-gray-400">Geometric B:</span><span className="font-mono text-blue-400">{(geometricBirefringence * 1e4).toFixed(4)} ×10⁻⁴</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Stress B:</span><span className="font-mono text-yellow-400">{(stressBirefringence * 1e4).toFixed(4)} ×10⁻⁴</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Total B:</span><span className="font-mono text-lg text-green-400">{(totalBirefringence * 1e4).toFixed(4)} ×10⁻⁴</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Beat length:</span><span className="font-mono">{beatLength === Infinity ? "∞" : (beatLength / 1000).toFixed(3) + " mm"}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Beat length:</span><span className="font-mono">{beatLength === Infinity ? "∞" : (beatLength / 1e6).toFixed(3) + " mm"}</span></div>
               </div>
             </div>
             <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
