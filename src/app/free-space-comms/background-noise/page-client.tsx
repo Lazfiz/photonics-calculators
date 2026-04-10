@@ -16,7 +16,7 @@ export default function BackgroundNoisePage() {
   const backgroundRadiance: Record<string, number> = {
     "day-sky": 50, // W/m²/sr/μm
     "night-sky": 0.001,
-    "solar-direct": 1.3e9, // W/m²/sr (sun disk ~0.53°)
+    "solar-direct": 1.5e7, // W/m²/sr/μm (spectral radiance, conserved from sun surface)
     "urban-glow": 0.5,
   };
 
@@ -45,10 +45,7 @@ export default function BackgroundNoisePage() {
     // Background electrons per bit (at 1 Gbps)
     const electronsPerBit = photonRate * 0.5 / 1e9; // 0.5 quantum efficiency
 
-    // Noise equivalent power
-    const NEP = photonEnergy * Math.sqrt(2 * photonRate * 1e9); // per Hz BW
-
-    return { Pbg, PbgDBm, PbgFilteredDBm, photonRate, electronsPerBit, NEP, omega };
+    return { Pbg, PbgDBm, PbgFilteredDBm, photonRate, electronsPerBit, omega };
   }, [wavelength, rxFOV, rxBandwidth, rxArea, backgroundType, filterRejection]);
 
   const plotData = useMemo(() => {
