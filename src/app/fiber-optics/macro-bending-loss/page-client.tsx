@@ -11,8 +11,6 @@ export default function MacrobendingLossPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1); // µm
   const [coreNA, setCoreNA] = useURLState("coreNA", 0.12);
-  const [claddingRadius, setCladdingRadius] = useURLState("claddingRadius", 62.5); // µm
-  const [coatingIndex, setCoatingIndex] = useURLState("coatingIndex", 1.48);
   const [numBends, setNumBends] = useURLState("numBends", 1);
 
   const calc = useMemo(() => {
@@ -22,56 +20,33 @@ export default function MacrobendingLossPage() {
     const n2 = Math.sqrt(n1 * n1 - coreNA * coreNA); // cladding
     const a = coreRadius; // µm
     const V = coreNA * 2 * Math.PI * a / lambda;
-    const w = a * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6)); // Marcuse MFD (V-parameterized)
+    const w = a * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6)); // Marcuse MFR
 
-    // Marcuse formula for pure bend loss (dB/m)
-    // α_bend = (π^(1/2) · a² / (2·R·w²)) · (u²/w²)^(2·V²) · exp(-2R·(β - n_clad·k)²/(β·V²))
-    // Simplified pure bend loss using the curvature radiation model:
-    const beta = n1 * 2 * Math.PI / lambda; // propagation constant
-    const beta_clad = n2 * 2 * Math.PI / lambda;
-    const delta = (beta - beta_clad) / beta; // relative index difference
-
-    // Pure bend loss coefficient (dB/turn) - Marcuse approximation
-    // α = (sqrt(π) / 2) · (w / R)^(1/2) · (w · (β - n2·k))^(3/2) · exp(-R·(β - n2·k))
-    const dBeta = beta - beta_clad;
-    const bendLossPerTurn = R > 0
-      ? (Math.sqrt(Math.PI) / 2) * Math.pow(w / R, 0.5) * Math.pow(w * dBeta, 1.5) * Math.exp(-R * dBeta) * 4.343
-      : 0;
-
-    // Coating effect - transition loss at bend entry/exit
-    const nc = coatingIndex;
-    const transitionLoss = numBends > 1 ? 0.02 * numBends : 0; // small additional loss
-
-    // Whiteman formula alternative: α = A·exp(-B·R)
-    // Calibrated for SMF-28 at 1550nm
-    const A_coeff = 0.001; // dB/turn scaling
-    const B_coeff = 0.3; // 1/mm
-    const bendLossApprox = A_coeff * Math.exp(B_coeff * (30 - bendRadius)); // dB/turn, calibrated at R=30mm≈0.001dB
-
-    const totalLoss = (bendLossPerTurn + bendLossApprox * 0.5) * numBends + transitionLoss;
-
-    // Critical radius (where loss becomes significant, ~0.1 dB/turn)
-    // R_c ≈ 20·λ / (n1² - n2²)^(3/2) [purely empirical scaling]
-    const R_critical = 20 * lambda / Math.pow(n1 * n1 - n2 * n2, 1.5) / 1e3; // mm
-
-    return { w, V, bendLossPerTurn, bendLossApprox, totalLoss, R_critical, n1, n2 };
-  }, [bendRadius, wavelength, coreRadius, coreNA, claddingRadius, coatingIndex, numBends]);
-
-  const radiusData = useMemo(() => {
-    const radii = Array.from({ length: 150 }, (_, i) => 5 + i * 0.3);
-    const lambda = wavelength * 1e-3;
-    const n1 = 1.468;
-    const n2 = Math.sqrt(n1 * n1 - coreNA * coreNA);
-    const a = coreRadius;
-    const w = a * (0.65 + 1.619 / Math.pow(coreNA, 1.5) + 2.879 / Math.pow(coreNA, 6));
     const beta = n1 * 2 * Math.PI / lambda;
     const beta_clad = n2 * 2 * Math.PI / lambda;
     const dBeta = beta - beta_clad;
 
-    const loss = radii.map(r => {
-      const R = r * 1e3; // µm
-      return (Math.sqrt(Math.PI) / 2) * Math.pow(w / R, 0.5) * Math.pow(w * dBeta, 1.5) * Math.exp(-R * dBeta) * 4.343;
-    });
+    // Pure bend loss coefficient (dB/turn) - Marcuse approximation
+    const bendLossPerTurn = R > 0
+      ? (Math.sqrt(Math.PI) / 2) * Math.pow(w / R, 0.5) * Math.pow(w * dBeta, 1.5) * Math.exp(-R * dBeta) * 4.343
+      : 0;
+
+    // Transition loss at bend entry/exit
+    const transitionLoss = numBends > 1 ? 0.02 * numBends : 0;
+
+    const totalLoss = bendLossPerTurn * numBends + transitionLoss;
+
+    // Critical radius (empirical scaling)
+    const R_critical = 20 * lambda / Math.pow(n1 * n1 - n2 * n2, 1.5) / 1e3; // mm
+
+    return { w, V, bendLossPerTurn, totalLoss, R_critical, n1, n2 };
+  }, [bendRadius, wavelength, coreRadius, coreNA, numBends]);
+
+  const radiusData = useMemo(() => {
+    const radii = Array.from({ length: 150 }, (_, i) => 5 + i * 0.3);
+    const n1 = 1.468;
+    const n2 = Math.sqrt(n1 * n1 - coreNA * coreNA);
+    const a = coreRadius;
 
     const wavelengths = [1310, 1550, 1625];
     const allTraces = wavelengths.map(wl => {
@@ -102,6 +77,8 @@ export default function MacrobendingLossPage() {
     const loss = wavelengths.map(wl => {
       const lam = wl * 1e-3;
       const R = bendRadius * 1e3;
+      const V = coreNA * 2 * Math.PI * a / lam;
+      const w = a * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
       const beta = n1 * 2 * Math.PI / lam;
       const beta_clad = n2 * 2 * Math.PI / lam;
       const dBeta = beta - beta_clad;
@@ -119,7 +96,6 @@ export default function MacrobendingLossPage() {
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
         <ValidatedNumberInput label="Core Radius (µm)" value={coreRadius} onChange={setCoreRadius} step="0.1" />
         <ValidatedNumberInput label="Core NA" value={coreNA} onChange={setCoreNA} step="0.01" />
-        <ValidatedNumberInput label="Cladding Radius (µm)" value={claddingRadius} onChange={setCladdingRadius} step="0.5" />
         <ValidatedNumberInput label="Number of Bends" value={numBends} onChange={setNumBends} min={1} />
       </div>
 
@@ -134,7 +110,7 @@ export default function MacrobendingLossPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">MFD</p>
-          <p className="text-xl font-bold text-blue-400">{calc.w.toFixed(1)} µm</p>
+          <p className="text-xl font-bold text-blue-400">{(calc.w * 2).toFixed(1)} µm</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">V-number</p>
