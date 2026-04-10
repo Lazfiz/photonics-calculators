@@ -18,6 +18,7 @@ export default function CouplingEfficiencyCalculator() {
   const [lateralOffset, setLateralOffset] = useURLState("lateralOffset", 0);
   const [angularMisalign, setAngularMisalign] = useURLState("angularMisalign", 0);
   const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [mediumIndex, setMediumIndex] = useURLState("mediumIndex", 1.0);
 
   const w0 = useMemo(() => mfd / 2, [mfd]);
   const naMismatchLoss = useMemo(() => (sourceNa <= fiberNa ? 1 : (fiberNa / sourceNa) ** 2), [sourceNa, fiberNa]);
@@ -25,9 +26,9 @@ export default function CouplingEfficiencyCalculator() {
   const angularCoupling = useMemo(() => {
     const theta = (angularMisalign * Math.PI) / 180;
     const lambda = wavelength * 1e-3;
-    const exponent = ((Math.PI * w0 * theta) / lambda) ** 2;
+    const exponent = ((Math.PI * mediumIndex * w0 * theta) / lambda) ** 2;
     return Math.exp(-exponent);
-  }, [angularMisalign, w0, wavelength]);
+  }, [angularMisalign, w0, wavelength, mediumIndex]);
   const totalCoupling = useMemo(() => naMismatchLoss * lateralCoupling * angularCoupling, [naMismatchLoss, lateralCoupling, angularCoupling]);
   const lossDb = totalCoupling === 0 ? Infinity : -10 * Math.log10(totalCoupling);
 
@@ -60,6 +61,7 @@ export default function CouplingEfficiencyCalculator() {
         <InputSlider label="Lateral offset" value={lateralOffset} onChange={setLateralOffset} min={0} max={20} step={0.1} unit="µm" />
         <InputSlider label="Angular misalignment" value={angularMisalign} onChange={setAngularMisalign} min={0} max={5} step={0.1} unit="deg" />
         <InputSlider label="Wavelength" value={wavelength} onChange={setWavelength} min={850} max={1650} step={1} unit="nm" />
+        <InputSlider label="Medium index n" value={mediumIndex} onChange={setMediumIndex} min={1.0} max={1.5} step={0.01} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
