@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'V Number',
   description: 'Interactive V Number calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `V Number',
-  description: 'Interactive V Number calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'V Number',
   'Interactive V Number calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/fiber-optics/v-number',
-  { category: 'Fiber Optics`,
-  `Interactive V Number calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'V Number',
-  'Interactive V Number calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/fiber-optics/v-number',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/v-number`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>
