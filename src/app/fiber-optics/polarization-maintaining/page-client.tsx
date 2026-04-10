@@ -20,7 +20,7 @@ export default function PMFiberCalculator() {
   const beatLengthMap = { PANDA: 2.5, Bowtie: 1.5, Elliptical: 10 }; // mm (approximate)
 
   const B = birefringenceMap[fiberType];
-  const beatLength = useMemo(() => wavelength / B, [wavelength, B]);
+  const beatLength = useMemo(() => (wavelength * 1e-3) / B, [wavelength, B]); // nm→μm, result in μm
   const attenuation = attenuationMap[fiberType];
   const totalAttenuation = (attenuation * fiberLength) / 1000;
 
@@ -82,7 +82,7 @@ export default function PMFiberCalculator() {
   };
 
   const na = Math.sqrt(coreIndex ** 2 - claddingIndex ** 2);
-  const vNumber = (2 * Math.PI * coreRadius * na) / wavelength;
+  const vNumber = (2 * Math.PI * coreRadius * na) / (wavelength * 1e-3);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-8">
