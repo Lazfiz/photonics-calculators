@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/microchannel-plate' },
     title: 'Microchannel Plate',
-  description: 'Interactive Microchannel Plate calculator for photonics and optical engineering.'
+    description: 'MCP gain, spatial resolution, and effective QE for photon detectors.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Microchannel Plate',
-  description: 'Interactive Microchannel Plate calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Microchannel Plate',
-  'Interactive Microchannel Plate calculator for photonics and optical engineering.',
+  'MCP gain, spatial resolution, and effective QE for photon detectors.',
   'https://photonics-calculators.vercel.app/detectors/microchannel-plate',
-  { category: 'Detectors`,
-  `Interactive Microchannel Plate calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Microchannel Plate',
-  'Interactive Microchannel Plate calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/detectors/microchannel-plate',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/microchannel-plate`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
