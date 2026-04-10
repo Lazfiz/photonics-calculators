@@ -19,7 +19,7 @@ export default function BoxcarIntegratorPage() {
   const snrPerGate = signalPeak / noiseRms;
   const snrAfterAvg = snrPerGate * Math.sqrt(averages);
   const snrTotal = snrPerGate * Math.sqrt(samplesPerGate * averages);
-  const bandwidth = repRate * dutyCycle / (2 * averages);
+  const bandwidth = 1 / (2 * averages * gateWidth * 1e-9);
 
   const chartData = useMemo(() => {
     const t = Array.from({ length: 500 }, (_, i) => i * pulseWidth * 2 / 500);
@@ -61,7 +61,7 @@ export default function BoxcarIntegratorPage() {
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
         <p>SNR_total = (V_sig / σ_noise) · √(N_gate · N_avg)</p>
-        <p>BW_eff ≈ f_rep · (t_gate / t_pulse) / (2 · N_avg)</p>
+        <p>BW_eff = 1 / (2 · N_avg · τ_gate)</p>
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Time (ns)", gridcolor: "#374151" }, yaxis: { title: "Signal (mV)", gridcolor: "#374151" } }} title="Signal with Gate Window" />
       <h2 className="text-xl font-bold mt-8 mb-4">SNR vs Averages</h2>
