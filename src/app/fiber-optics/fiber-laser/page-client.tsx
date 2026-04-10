@@ -43,10 +43,13 @@ export default function FiberLaserCalculator() {
 
   // Optimum output coupling (Siegman)
   const optimumOC = useMemo(() => {
-    // T_opt = sqrt(g₀ · L_i) - L_i  (simplified)
-    const gi = absorptionCoeff * fiberLength; // small-signal gain
-    const Li = cavityLoss / (10 * Math.log10(Math.E) * 2); // convert dB to amplitude loss
-    const tOpt = Math.sqrt(gi * Li * 0.1) - Li * 0.1;
+    // T_opt = sqrt(g₀ · L_i) - L_i  (Siegman, all in nepers)
+    // gi: small-signal single-pass gain in dB → convert to nepers
+    const gi_dB = absorptionCoeff * fiberLength;
+    const gi = gi_dB / (10 * Math.log10(Math.E)); // nepers
+    // Li: round-trip cavity loss in dB → single-pass loss in nepers
+    const Li = cavityLoss / (10 * Math.log10(Math.E) * 2);
+    const tOpt = Math.sqrt(gi * Li) - Li;
     return Math.max(1, Math.min(99, tOpt * 100));
   }, [absorptionCoeff, fiberLength, cavityLoss]);
 
