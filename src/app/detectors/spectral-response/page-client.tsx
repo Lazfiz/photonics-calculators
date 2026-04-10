@@ -7,7 +7,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 export default function SpectralResponsePage() {
-  const [responsivityPeak, setResponsivityPeak] = useURLState("responsivityPeak", 0.6); // A/W at peak
+  const [responsivityPeak, setResponsivityPeak] = useURLState("responsivityPeak", 0.55); // A/W at peak (typical Si at 700nm)
   const [peakWavelength, setPeakWavelength] = useURLState("peakWavelength", 700); // nm
   const [bandwidthNm, setBandwidthNm] = useURLState("bandwidthNm", 300); // spectral bandwidth
   const [temperature, setTemperature] = useURLState("temperature", 25); // °C
@@ -26,7 +26,7 @@ export default function SpectralResponsePage() {
     const hc = 1.986e-25; // J·m
     const QE = R.map((r, i) => {
       const lam = wl[i] * 1e-9;
-      return (r * hc / (1.6e-19 * lam));
+      return (r * hc / (1.6e-19 * lam)) * 100; // percentage
     });
     return [
       { x: wl, y: R, type: "scatter" as const, mode: "lines" as const, name: "Responsivity (A/W)", line: { color: "#60a5fa", width: 2 }, yaxis: "y" },

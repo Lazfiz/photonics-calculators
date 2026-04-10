@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/spectral-response' },
-      title: 'Spectral Response',
-  description: 'R() = η() q / (hc). Responsivity and quantum efficiency as a function of wavelength.',
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Spectral Response',
-  description: 'R() = η() q / (hc). Responsivity and quantum efficiency as a function of wavelength.',
+    title: 'Spectral Response Calculator',
+    description: 'Responsivity and quantum efficiency as a function of wavelength.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Spectral Response',
-  'R() = η() q / (hc). Responsivity and quantum efficiency as a function of wavelength.',
+  'Spectral Response Calculator',
+  'Responsivity and quantum efficiency as a function of wavelength.',
   'https://photonics-calculators.vercel.app/detectors/spectral-response',
-  { category: 'Detectors`,
-  `R() = η() q / (hc). Responsivity and quantum efficiency as a function of wavelength.',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Spectral Response',
-  'R() = η() q / (hc). Responsivity and quantum efficiency as a function of wavelength.',
-  'https://photonics-calculators.vercel.app/detectors/spectral-response',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/spectral-response`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
