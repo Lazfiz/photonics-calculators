@@ -18,9 +18,11 @@ export default function GeometricLossPage() {
     const beamDiameter = 2 * R * Math.tan(theta / 2);
     const rxArea = Math.PI * (rxAperture * 1e-2 / 2) ** 2;
     const beamArea = Math.PI * (beamDiameter / 2) ** 2;
-    const geometricLoss = 10 * Math.log10(rxArea / beamArea);
+    const geometricLoss = 10 * Math.log10(beamArea / rxArea);
     const couplingEfficiency = rxArea / beamArea;
-    const waist = wavelength * 1e-9 / (Math.PI * txAperture * 1e-3 * txBeamDivergence * 1e-3);
+    // Gaussian beam waist from far-field half-angle divergence: w₀ = λ/(π·θ)
+    const halfAngle = txBeamDivergence * 1e-3 / 2; // mrad → rad, full → half
+    const waist = wavelength * 1e-9 / (Math.PI * halfAngle);
     return { beamDiameter, geometricLoss, couplingEfficiency, waist, beamArea: beamArea };
   }, [txBeamDivergence, range, rxAperture, txAperture, wavelength]);
 
@@ -30,7 +32,7 @@ export default function GeometricLossPage() {
     const losses = ranges.map((r) => {
       const R = r * 1e3;
       const bd = 2 * R * Math.tan(theta / 2);
-      return 10 * Math.log10((rxAperture * 1e-2) ** 2 / bd ** 2);
+      return 10 * Math.log10(bd ** 2 / (rxAperture * 1e-2) ** 2);
     });
     const diameters = ranges.map((r) => 2 * r * 1e3 * Math.tan(theta / 2));
     return [
