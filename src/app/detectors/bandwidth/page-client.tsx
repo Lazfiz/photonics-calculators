@@ -9,7 +9,8 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 export default function BandwidthPage() {
   const [bandwidth, setBandwidth] = useURLState("bandwidth", 1e6);
-  const [capacitance, setCapacitance] = useURLState("capacitance", 10e-12);
+  const [capacitancePF, setCapacitancePF] = useURLState("capacitance", 10);
+  const capacitance = capacitancePF * 1e-12;
   const [resistance, setResistance] = useURLState("resistance", 50);
   const [transimpedance, setTransimpedance] = useURLState("transimpedance", 1e3);
   const [q] = useState(1.6e-19);
@@ -39,7 +40,7 @@ export default function BandwidthPage() {
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Bandwidth vs Noise Trade-off" description="Noise increases with √Δf. Wider bandwidth = faster response but more noise.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Bandwidth (Hz)" value={bandwidth} onChange={setBandwidth} />
-        <ValidatedNumberInput label="Capacitance (pF)" value={capacitance} onChange={setCapacitance} />
+        <ValidatedNumberInput label="Capacitance (pF)" value={capacitancePF} onChange={setCapacitancePF} />
         <ValidatedNumberInput label="Resistance (Ω)" value={resistance} onChange={setResistance} />
         <ValidatedNumberInput label="Transimpedance (V/A)" value={transimpedance} onChange={setTransimpedance} />
       </div>
