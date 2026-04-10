@@ -28,7 +28,6 @@ export default function ReceiverFovPage() {
 
     // Background power collected
     const Lb = backgroundRadiance[backgroundType]; // W/m²/sr/μm
-    const bwMeters = filterBandwidth * 1e-9;
     const bwMicrons = filterBandwidth * 1e-3;
     const Pb = Lb * bwMicrons * omega * Math.PI / 4 * Dr * Dr * opticalEfficiency; // W
     const PbdBm = 10 * Math.log10(Pb * 1000);
@@ -36,13 +35,25 @@ export default function ReceiverFovPage() {
     // Signal geometric collection area
     const collectionArea = Math.PI / 4 * Dr * Dr;
 
-    // SNR for given signal power
+    // SNR for given signal power (proper radiometric model)
+    const e_charge = 1.6e-19;
+    const h_planck = 6.626e-34;
+    const c_light = 3e8;
+    const E_photon = h_planck * c_light / wl; // J
+    const responsivity = opticalEfficiency * e_charge / E_photon; // A/W
+    const BW_electrical = 1e9; // 1 GHz electrical bandwidth
+    const k_B = 1.38e-23;
+    const T_noise = 300; // K
+    const R_load = 50; // Ω
+
     const signalPowers = Array.from({ length: 50 }, (_, i) => -60 + i * 1.5); // dBm
     const snr = signalPowers.map((s) => {
       const Ps = Math.pow(10, s / 10) * 1e-3; // W
-      const shotNoiseElectrons = 2 * (Ps + Pb) / (1.2398 / (wavelength * 1e6)) * 1e-3; // simplified
-      const thermalNoise = 1e-12; // typical
-      return 10 * Math.log10(Math.pow(Ps, 2) / (shotNoiseElectrons * 1.6e-19 + thermalNoise * thermalNoise));
+      const i_sig = responsivity * Ps;
+      const i_bg = responsivity * Pb;
+      const shotNoiseVar = 2 * e_charge * (i_sig + i_bg) * BW_electrical;
+      const thermalNoiseVar = 4 * k_B * T_noise * BW_electrical / R_load;
+      return 10 * Math.log10(i_sig * i_sig / (shotNoiseVar + thermalNoiseVar));
     });
 
     // Background power vs FOV
