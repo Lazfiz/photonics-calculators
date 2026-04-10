@@ -36,7 +36,7 @@ export default function CcdVsCmosPage() {
     return traces;
   }, [signal, exposureTime, darkCurrent]);
 
-  const results = Object.entries(sensors).map(([key, s]) => ({ key, snr: calcSNR(signal, s.readNoise, s.darkCurrent, exposureTime, s.wellCapacity), sensor: s }));
+  const results = Object.entries(sensors).map(([key, s]) => ({ key, snr: calcSNR(signal, s.readNoise, darkCurrent, exposureTime, s.wellCapacity), sensor: s }));
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="CCD vs CMOS Sensor Comparison" description="Compare sensor architectures — SNR, dynamic range, and performance metrics.">
