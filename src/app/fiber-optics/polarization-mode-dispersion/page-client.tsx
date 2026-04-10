@@ -15,32 +15,19 @@ export default function PMDPage() {
 
   const calc = useMemo(() => {
     const DGD_rms = pmdCoeff * Math.sqrt(length); // ps
-    const DGD_mean = DGD_rms * Math.sqrt(8 / Math.PI); // ps, mean DGD
+    const DGD_mean = DGD_rms * Math.sqrt(8 / (3 * Math.PI)); // ps, Maxwellian mean
     const DGD_max = pmdCoeff * Math.sqrt(length * fiberCount); // for concatenated spans
+    const DGD_sigma = DGD_rms / Math.sqrt(3); // Maxwellian scale parameter
 
-    // Maxwellian distribution stats
-    // P(DGD > x) = (4/π²) · (x/σ)² · exp(-x²/2σ²) · Σ ...
-    // Simplified: for Q-factor penalty, PMD-induced penalty
-    const sigma = DGD_rms;
-    const penalty1dB = 0.28 * sigma / (1e12 / (bitRate * 1e9)) * 0.1; // simplified 1dB penalty threshold
-    const penaltyThreshold = (0.1 * 1e12) / (bitRate * 1e9); // 10% of bit period for ~1dB penalty
+    // PMD-limited distance for given bit rate (DGD < 10% of bit period)
+    const penaltyThreshold = (0.1 * 1e12) / (bitRate * 1e9); // 10% of bit period in ps
+    const maxDist = Math.pow(penaltyThreshold / pmdCoeff, 2); // km
     const aboveThreshold = probability / 100;
 
-    // PMD-limited distance for given bit rate
-    const maxDist = Math.pow(penaltyThreshold / pmdCoeff, 2); // km
+    // Outage DGD from probability (approximate inverse Maxwellian)
+    const DGD_outage = DGD_sigma * (3.0 + (1 - aboveThreshold) * 5);
 
-    // System Q-penalty
-    const qPenalty = 0.5 * Math.pow(bitRate * DGD_rms / 1e3, 2); // approximate Q penalty in dB
-
-    // Outage probability (Maxwellian tail)
-    // P(DGD > 3σ) ≈ 0.01%, P(DGD > 3.5σ) ≈ 0.001%
-    const DGD_outage = sigma * (3.0 + (1 - aboveThreshold) * 5); // rough mapping
-
-    // PMD-induced power penalty (dB) for different modulation formats
-    const penaltyNRZ = 10 * Math.log10(1 + 0.5 * Math.pow(bitRate * DGD_rms * 0.001 / 0.1, 2));
-    const penaltyRZ = 10 * Math.log10(1 + 0.3 * Math.pow(bitRate * DGD_rms * 0.001 / 0.1, 2));
-
-    return { DGD_rms, DGD_mean, DGD_max, maxDist, qPenalty, penaltyThreshold, DGD_outage, penaltyNRZ, penaltyRZ };
+    return { DGD_rms, DGD_mean, DGD_max, maxDist, penaltyThreshold, DGD_outage, DGD_sigma };
   }, [pmdCoeff, length, bitRate, fiberCount, probability]);
 
   const distData = useMemo(() => {
@@ -57,7 +44,7 @@ export default function PMDPage() {
 
   const distributionData = useMemo(() => {
     // Maxwellian PDF: f(x) = sqrt(2/π) · x²/σ³ · exp(-x²/2σ²)
-    const sigma = calc.DGD_rms;
+    const sigma = calc.DGD_sigma;
     const x = Array.from({ length: 200 }, (_, i) => i * sigma * 5 / 200);
     const pdf = x.map(xi => {
       if (xi === 0) return 0;
@@ -136,7 +123,7 @@ export default function PMDPage() {
         <h3 className="text-lg font-semibold mb-2">Key Formulas</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
           <p>DGD_rms = PMD_coeff × √L [ps]</p>
-          <p>DGD_mean = DGD_rms × √(8/π) ≈ 1.596 × DGD_rms</p>
+          <p>DGD_mean = DGD_rms × √(8/3π) ≈ 0.921 × DGD_rms</p>
           <p>f(x) = √(2/π) · x²/σ³ · exp(-x²/2σ²) [Maxwellian PDF]</p>
           <p>Penalty (NRZ) ≈ 10·log₁₀(1 + 0.5·(B·Δτ/T₀)²)</p>
           <p>Rule of thumb: Δτ &lt; 0.1 × T_bit for &lt;1 dB penalty</p>
