@@ -42,13 +42,16 @@ export default function AtmospherePage() {
     const wavelengths = Array.from({ length: 200 }, (_, i) => 400 + i * 8);
     const rayleighSpectrum = wavelengths.map((w) => {
       const wu = w / 1000;
-      return Math.exp(-(0.008569 / (wu ** 4)) * distance);
+      const rc = 0.008569 / (wu ** 4) * (1 + 0.0113 / (wu ** 2) + 0.00013 / (wu ** 4));
+      const h2o = getH2OAbsorption(wu, humidity);
+      const co2 = getCO2Absorption(wu);
+      return Math.exp(-(rc + h2o + co2) * distance);
     });
     const aerosolSpectrum = wavelengths.map((w) => {
       const wu = w / 1000;
       return Math.exp(-(3.91 / visibility) * Math.pow(0.55 / wu, q) * distance);
     });
-    const totalSpectrum = wavelengths.map((_, i) => rayleighSpectrum[i] * aerosolSpectrum[i]);
+    const totalSpectrum = wavelengths.map((_, i) => rayleighSpectrum[i]);
 
     return { rayleighCoeff, aerosolCoeff, h2oCoeff, co2Coeff, totalCoeff, transmission, totalLoss, rayleighLoss, aerosolLoss, molecularLoss, wavelengths, rayleighSpectrum, aerosolSpectrum, totalSpectrum };
   }, [wavelength, distance, visibility, altitude, humidity]);
@@ -98,9 +101,9 @@ export default function AtmospherePage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Transmission vs Wavelength</h2>
           <ChartPanel data={[
-              { type: "scatter" as const, mode: "lines" as const, x: results.wavelengths, y: results.rayleighSpectrum, name: "Rayleigh", line: { color: "#3b82f6", dash: "dash" } },
+              { type: "scatter" as const, mode: "lines" as const, x: results.wavelengths, y: results.rayleighSpectrum, name: "Rayleigh + Molecular", line: { color: "#3b82f6", dash: "dash" } },
               { type: "scatter" as const, mode: "lines" as const, x: results.wavelengths, y: results.aerosolSpectrum, name: "Aerosol", line: { color: "#f59e0b", dash: "dash" } },
-              { type: "scatter" as const, mode: "lines" as const, x: results.wavelengths, y: results.totalSpectrum, name: "Total", line: { color: "#22c55e", width: 2 } },
+              { type: "scatter" as const, mode: "lines" as const, x: results.wavelengths, y: results.totalSpectrum, name: "Total (all)", line: { color: "#22c55e", width: 2 } },
             ]}
             layout={{
               xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
