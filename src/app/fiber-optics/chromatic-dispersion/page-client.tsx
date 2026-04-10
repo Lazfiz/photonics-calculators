@@ -7,7 +7,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 export default function ChromaticDispersionPage() {
-  const [dispersionCoeff, setDispersionCoeff] = useURLState("dispersionCoeff", 17); // ps/(nm·km) for SMF
+  const [dispersionCoeff, setDispersionCoeff] = useURLState("dispersionCoeff", 0); // ps/(nm·km) at λ₀ (zero by definition)
   const [dispersionSlope, setDispersionSlope] = useURLState("dispersionSlope", 0.056); // ps/(nm²·km)
   const [zeroDispWavelength, setZeroDispWavelength] = useURLState("zeroDispWavelength", 1310); // nm
   const [length, setLength] = useURLState("length", 80); // km
@@ -39,7 +39,7 @@ export default function ChromaticDispersionPage() {
     // LD = T0²/|β₂| where β₂ = -λ²·D/(2πc) in ps²/km
     const lambda_m = wavelength * 1e-9; // nm → m
     const c_ms = 2.998e8; // m/s
-    const beta2 = -(lambda_m ** 2 * D) / (2 * Math.PI * c_ms) * 1e24; // ps²/km
+    const beta2 = -(lambda_m ** 2 * D) / (2 * Math.PI * c_ms) * 1e21; // ps²/km
     const LD = beta2 !== 0 ? T0 ** 2 / Math.abs(beta2) : Infinity; // km
 
     // Maximum data rate (3dB bandwidth limited by dispersion)
@@ -86,7 +86,7 @@ export default function ChromaticDispersionPage() {
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Chromatic Dispersion (CD)" description="Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.">
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="D₀ (ps/nm/km) at λ₀" value={dispersionCoeff} onChange={setDispersionCoeff} step="0.5" />
+        <ValidatedNumberInput label="D at λ₀ (ps/nm/km)" value={dispersionCoeff} onChange={setDispersionCoeff} step="0.5" />
         <ValidatedNumberInput label="Dispersion Slope S₀ (ps/nm²/km)" value={dispersionSlope} onChange={setDispersionSlope} step="0.001" />
         <ValidatedNumberInput label="Zero Dispersion Wavelength λ₀ (nm)" value={zeroDispWavelength} onChange={setZeroDispWavelength} step="1" />
         <ValidatedNumberInput label="Operating Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
@@ -157,7 +157,7 @@ export default function ChromaticDispersionPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-2">Key Formulas</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
-          <p>D(λ) = D₀ + S₀ · (λ - λ₀)</p>
+          <p>D(λ) = D₀ + S₀ · (λ - λ₀)  [D₀=0 at zero-dispersion λ₀]</p>
           <p>ΔT = |D| · L · Δλ [pulse broadening]</p>
           <p>T_out = √(T_in² + ΔT²) [Gaussian]</p>
           <p>Penalty = 5·log₁₀(1 + (π·D·L·Δλ·B/4)²) [dB]</p>
