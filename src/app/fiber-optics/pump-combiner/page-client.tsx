@@ -13,8 +13,6 @@ export default function PumpCombinerCalculator() {
   const [signalInsertionLoss, setSignalInsertionLoss] = useURLState("signalInsertionLoss", 0.1); // dB
   const [pumpNA, setPumpNA] = useURLState("pumpNA", 0.46);
   const [signalNA, setSignalNA] = useURLState("signalNA", 0.06);
-  const [fiberModeField, setFiberModeField] = useURLState("fiberModeField", 10.4); // µm
-  const [pumpFiberCore, setPumpFiberCore] = useURLState("pumpFiberCore", 105); // µm
 
   // Total pump power
   const totalPumpPower = numPumpPorts * pumpPowerPerPort;
@@ -29,22 +27,22 @@ export default function PumpCombinerCalculator() {
     return pumpPowerPerPort / (Math.PI * NA ** 2);
   }, [pumpPowerPerPort, pumpNA]);
 
-  // Brightness conservation check
+  // Brightness conservation check: (NA_sig/NA_pump)² ≥ N/η for feasible combining
   const brightnessRatio = useMemo(() => {
-    // P_combined / P_total vs signal/pump NA ratio
     const naRatio = (signalNA / pumpNA) ** 2;
-    const maxEff = naRatio * numPumpPorts / 1; // simplified
-    return naRatio;
-  }, [signalNA, pumpNA, numPumpPorts]);
+    const requiredRatio = numPumpPorts / (combinerEfficiency / 100);
+    return { naRatio, requiredRatio, feasible: naRatio >= requiredRatio };
+  }, [signalNA, pumpNA, numPumpPorts, combinerEfficiency]);
 
   // Power budget
   const powerBudget = useMemo(() => {
-    const losses: { label: string; value: number }[] = [];
-    losses.push({ label: "Pump per port", value: pumpPowerPerPort });
-    losses.push({ label: "Combiner efficiency loss", value: totalPumpPower - combinedPumpPower });
-    losses.push({ label: "Signal insertion loss", value: signalInsertionLoss });
-    return losses;
-  }, [pumpPowerPerPort, totalPumpPower, combinedPumpPower, signalInsertionLoss]);
+    return [
+      { label: "Pump per port", value: pumpPowerPerPort },
+      { label: "Total pump input", value: totalPumpPower },
+      { label: "Combiner output", value: combinedPumpPower },
+      { label: "Combiner loss", value: totalPumpPower - combinedPumpPower },
+    ];
+  }, [pumpPowerPerPort, totalPumpPower, combinedPumpPower]);
 
   // Efficiency vs number of pump ports
   const efficiencyCurve = useMemo(() => {
@@ -65,9 +63,9 @@ export default function PumpCombinerCalculator() {
   // Power bar chart
   const powerBar = useMemo(() => {
     return [
-      { x: ["Per Port", "Combined\nInput", "Combined\nOutput"], y: [pumpPowerPerPort, totalPumpPower, combinedPumpPower], type: "bar" as const, marker: { color: ["#3b82f6", "#f59e0b", "#10b981"] } },
+      { x: powerBudget.map(b => b.label), y: powerBudget.map(b => b.value), type: "bar" as const, marker: { color: ["#3b82f6", "#f59e0b", "#10b981", "#ef4444"] } },
     ];
-  }, [pumpPowerPerPort, totalPumpPower, combinedPumpPower]);
+  }, [powerBudget]);
 
   const layout1 = {
     title: "Combined Power vs Number of Pump Ports",
@@ -130,14 +128,15 @@ export default function PumpCombinerCalculator() {
                 <div className="flex justify-between"><span className="text-gray-400">Combined pump power:</span><span className="font-mono text-green-400 text-lg">{combinedPumpPower.toFixed(1)} W</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Power lost in combiner:</span><span className="font-mono text-red-400">{(totalPumpPower - combinedPumpPower).toFixed(1)} W</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Pump brightness:</span><span className="font-mono">{pumpBrightness.toFixed(0)} W/sr</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">NA² ratio (sig/pump):</span><span className="font-mono">{brightnessRatio.toFixed(4)}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">NA² ratio (sig/pump):</span><span className="font-mono">{brightnessRatio.naRatio.toFixed(4)} <span className="text-xs">/ need ≥{brightnessRatio.requiredRatio.toFixed(4)}</span></span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Brightness feasible:</span><span className={`font-mono ${brightnessRatio.feasible ? "text-green-400" : "text-red-400"}`}>{brightnessRatio.feasible ? "✓ Yes" : "✗ No"}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Signal insertion loss:</span><span className="font-mono">{signalInsertionLoss.toFixed(2)} dB</span></div>
               </div>
             </div>
             <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
               <h3 className="text-sm font-medium text-gray-400 mb-2">Formulas</h3>
               <p className="font-mono text-sm">P_comb = N · P_pump · η_comb</p>
-              <p className="font-mono text-sm mt-1">B = P / (π · NA²)</p>
+              <p className="font-mono text-sm mt-1">B = P / (π · NA²) [W/sr]</p>
               <p className="font-mono text-sm mt-1">NA_match: (NA_sig/NA_pump)² ≥ N/η</p>
             </div>
           </div>
