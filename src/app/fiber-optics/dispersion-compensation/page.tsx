@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/dispersion-compensation' },
-    title: 'Dispersion Compensation',
-  description: 'GVD and TOD compensation analysis for fiber optic links.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Dispersion Compensation',
-  description: 'GVD and TOD compensation analysis for fiber optic links.'
+    title: 'Dispersion Compensation Calculator',
+    description: 'GVD and TOD compensation analysis for fiber optic links.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Dispersion Compensation',
+  'Dispersion Compensation Calculator',
   'GVD and TOD compensation analysis for fiber optic links.',
   'https://photonics-calculators.vercel.app/fiber-optics/dispersion-compensation',
-  { category: 'Fiber Optics`,
-  `GVD and TOD compensation analysis for fiber optic links.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Dispersion Compensation',
-  'GVD and TOD compensation analysis for fiber optic links.',
-  'https://photonics-calculators.vercel.app/fiber-optics/dispersion-compensation',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/dispersion-compensation`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

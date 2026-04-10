@@ -25,20 +25,20 @@ export default function DispersionCompensationPage() {
     const GVD = D * L; // ps/nm total
 
     // Calculate D from slope if using zero-dispersion wavelength
-    const Dcalc = S * (lambda - lambda0) / 1000; // ps/(nm·km)
+    const Dcalc = S * (lambda - lambda0); // ps/(nm·km)
 
     // Third-Order Dispersion (TOD) / Dispersion slope
     const TOD = S * L; // ps/nm² total
 
     // Pulse broadening
-    const spectralWidth = bitRate * 0.5; // nm (rough approximation)
+    const spectralWidth = bitRate * 0.1; // nm (direct modulation approximation: ~0.1 nm/Gbps)
     const pulseBroadening = Math.abs(GVD) * spectralWidth; // ps
 
     // Maximum bit rate for 1-bit dispersion limit
     const maxBitRate = 1 / (pulseBroadening * 1e-12) / 1e9; // Gbps
 
-    // Dispersion-limited distance
-    const dispersionLimitedDist = 0.25 / (Math.abs(D) * spectralWidth * spectralWidth); // km (1 dB penalty)
+    // Dispersion-limited distance: L = ε/(|D|·Δλ·B) where ε≈0.25 for NRZ 1dB penalty
+    const dispersionLimitedDist = 0.25 / (Math.abs(D) * spectralWidth * bitRate); // km
 
     // DCF compensation
     const DCF_D = -80; // ps/(nm·km) typical DCF dispersion
@@ -52,7 +52,7 @@ export default function DispersionCompensationPage() {
 
     // Wavelength sweep for dispersion
     const wavelengths = Array.from({ length: 100 }, (_, i) => 1200 + i * 8);
-    const dispersionVsWl = wavelengths.map((wl) => S * (wl - lambda0) / 1000);
+    const dispersionVsWl = wavelengths.map((wl) => S * (wl - lambda0));
     const accumulatedDisp = dispersionVsWl.map((d) => d * L);
 
     // Eye closure penalty vs residual dispersion
@@ -103,7 +103,7 @@ export default function DispersionCompensationPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Results</h2>
           <div className="space-y-3">
-            <ResultRow label="GVD (total)" value={`${results.GVD.toFixed(1)} ps/nm`} />
+            <ResultRow label="Accumulated Dispersion (total)" value={`${results.GVD.toFixed(1)} ps/nm`} />
             <ResultRow label="TOD (total)" value={`${results.TOD.toFixed(3)} ps/nm²`} />
             <ResultRow label="Pulse Broadening" value={`${results.pulseBroadening.toFixed(1)} ps`} />
             <ResultRow label="Max Bit Rate (disp. limited)" value={`${results.maxBitRate.toFixed(1)} Gbps`} />
