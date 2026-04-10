@@ -25,8 +25,7 @@ export default function CouplingEfficiencyCalculator() {
   const angularCoupling = useMemo(() => {
     const theta = (angularMisalign * Math.PI) / 180;
     const lambda = wavelength * 1e-3;
-    const n = 1.46;
-    const exponent = ((Math.PI * n * w0 * theta) / lambda) ** 2;
+    const exponent = ((Math.PI * w0 * theta) / lambda) ** 2;
     return Math.exp(-exponent);
   }, [angularMisalign, w0, wavelength]);
   const totalCoupling = useMemo(() => naMismatchLoss * lateralCoupling * angularCoupling, [naMismatchLoss, lateralCoupling, angularCoupling]);

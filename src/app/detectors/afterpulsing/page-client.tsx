@@ -55,7 +55,7 @@ export default function AfterpulsingPage() {
         <ValidatedNumberInput label="Primary Trap Lifetime (ns)" value={trapLifetime} onChange={setTrapLifetime} min={0.1} step="1" />
         <ValidatedNumberInput label="Trap Efficiency" value={trapEfficiency} onChange={setTrapEfficiency} min={0.001} max={1} step="0.01" />
         <ValidatedNumberInput label="Dead Time (ns)" value={deadTime} onChange={setDeadTime} min={1} step="1" />
-        <ValidatedNumberInput label="Count Rate (Mcps)" value={countRate} onChange={setCountRate} min={0.01} step="0.1" />
+        <ValidatedNumberInput label="Count Rate (cps)" value={countRate} onChange={setCountRate} min={1} step="10000" />
         <ValidatedNumberInput label="Number of Trap Species" value={numTraps} onChange={setNumTraps} min={1} max={5} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
