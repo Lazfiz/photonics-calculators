@@ -8,10 +8,10 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 export default function UniformityPage() {
   const [meanSignal, setMeanSignal] = useURLState("meanSignal", 50000); // e-
+  const [darkSignal, setDarkSignal] = useURLState("darkSignal", 100); // e- (dark offset)
   const [prnuPercent, setPrnuPercent] = useURLState("prnuPercent", 1.0); // %
   const [dsnuPercent, setDsnuPercent] = useURLState("dsnuPercent", 0.3); // %
   const [readNoise, setReadNoise] = useURLState("readNoise", 5); // e-
-  const [arraySize, setArraySize] = useURLState("arraySize", 1920); // pixels per side
 
   const chartData = useMemo(() => {
     const N = 80;
@@ -51,17 +51,17 @@ export default function UniformityPage() {
   }, [meanSignal, prnuPercent]);
 
   const prnuNoise = (prnuPercent / 100) * meanSignal;
-  const dsnuNoise = (dsnuPercent / 100) * meanSignal;
+  const dsnuNoise = (dsnuPercent / 100) * darkSignal; // DSNU scales with dark signal, not illumination
   const shotNoise = Math.sqrt(meanSignal);
   const totalNoise = Math.sqrt(prnuNoise**2 + dsnuNoise**2 + readNoise**2 + shotNoise**2);
   const snr = meanSignal / totalNoise;
-  const prnuInDN = prnuNoise / (meanSignal / (Math.pow(2, 16) - 1));
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Photoresponse Non-Uniformity" description="PRNU measures the spatial variation in pixel sensitivity across the sensor array. σPRNU = PRNU% × mean signal.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Mean Signal (e⁻)" value={meanSignal} onChange={setMeanSignal} />
+        <ValidatedNumberInput label="Dark Signal (e⁻)" value={darkSignal} onChange={setDarkSignal} />
         <ValidatedNumberInput label="PRNU (%)" value={prnuPercent} onChange={setPrnuPercent} />
         <ValidatedNumberInput label="DSNU (%)" value={dsnuPercent} onChange={setDsnuPercent} />
         <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} />

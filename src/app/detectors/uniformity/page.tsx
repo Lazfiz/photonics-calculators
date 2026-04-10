@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/uniformity' },
-    title: 'Photoresponse Non-Uniformity',
-  description: 'PRNU measures the spatial variation in pixel sensitivity across the sensor array. PRNU = PRNU% mean signal.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Photoresponse Non-Uniformity',
-  description: 'PRNU measures the spatial variation in pixel sensitivity across the sensor array. PRNU = PRNU% mean signal.'
+    title: 'Photoresponse Non-Uniformity Calculator',
+    description: 'PRNU, DSNU, and spatial uniformity analysis for image sensors.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Photoresponse Non-Uniformity',
-  'PRNU measures the spatial variation in pixel sensitivity across the sensor array. PRNU = PRNU% mean signal.',
+  'Photoresponse Non-Uniformity Calculator',
+  'PRNU, DSNU, and spatial uniformity analysis for image sensors.',
   'https://photonics-calculators.vercel.app/detectors/uniformity',
-  { category: 'Detectors`,
-  `PRNU measures the spatial variation in pixel sensitivity across the sensor array. PRNU = PRNU% mean signal.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Photoresponse Non-Uniformity',
-  'PRNU measures the spatial variation in pixel sensitivity across the sensor array. PRNU = PRNU% mean signal.',
-  'https://photonics-calculators.vercel.app/detectors/uniformity',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/uniformity`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
