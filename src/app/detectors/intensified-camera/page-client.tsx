@@ -1,46 +1,44 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 export default function IntensifiedCameraPage() {
-  const [gain, setGain] = useURLState("gain", 1000);
   const [photocathodeQE, setPhotocathodeQE] = useURLState("photocathodeQE", 0.25);
   const [mcpGain, setMcpGain] = useURLState("mcpGain", 1e4);
   const [phosphorEff, setPhosphorEff] = useURLState("phosphorEff", 0.15);
   const [fiberCoupling, setFiberCoupling] = useURLState("fiberCoupling", 0.5);
   const [ccdQE, setCcdQE] = useURLState("ccdQE", 0.5);
   const [ccdReadNoise, setCcdReadNoise] = useURLState("ccdReadNoise", 10);
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
 
-  const totalGain = photocathodeQE * mcpGain * phosphorEff * fiberCoupling * ccdQE * gain;
-  const electronGain = mcpGain * phosphorEff * fiberCoupling;
+  const totalGain = photocathodeQE * mcpGain * phosphorEff * fiberCoupling * ccdQE;
+  const electronGain = mcpGain * phosphorEff * fiberCoupling * ccdQE;
   const noiseFactor = Math.sqrt(2); // MCP stochastic gain
-  const effectiveNoise = ccdReadNoise / (mcpGain * phosphorEff * fiberCoupling);
-  const snr = totalGain / Math.sqrt(totalGain * noiseFactor ** 2 + ccdReadNoise ** 2 / (mcpGain * phosphorEff * fiberCoupling) ** 2);
+  const effectiveNoise = ccdReadNoise / electronGain;
 
   const gainChart = useMemo(() => {
     const mcpGains = Array.from({ length: 200 }, (_, i) => 1e2 * Math.pow(1e6 / 1e2, i / 200));
-    const eg = mcpGains.map(g => g * phosphorEff * fiberCoupling);
-    const effNoise = mcpGains.map(g => ccdReadNoise / (g * phosphorEff * fiberCoupling));
+    const eg = mcpGains.map(g => g * phosphorEff * fiberCoupling * ccdQE);
+    const effNoise = mcpGains.map(g => ccdReadNoise / (g * phosphorEff * fiberCoupling * ccdQE));
     return [
       { x: mcpGains, y: eg, type: "scatter", mode: "lines", name: "Electron gain", line: { color: "#60a5fa", width: 2 }, yaxis: "y" },
       { x: mcpGains, y: effNoise, type: "scatter", mode: "lines", name: "Eff. read noise", line: { color: "#f87171", width: 2 }, yaxis: "y2" },
     ];
-  }, [mcpGain, phosphorEff, fiberCoupling, ccdReadNoise]);
+  }, [phosphorEff, fiberCoupling, ccdQE, ccdReadNoise]);
 
   const sensitivityChart = useMemo(() => {
     const photons = Array.from({ length: 200 }, (_, i) => 0.1 + i * 0.5);
-    const iccdSNR = photons.map(p => { const eg = mcpGain * phosphorEff * fiberCoupling; return p * photocathodeQE * eg / Math.sqrt(p * photocathodeQE * eg * 2 + ccdReadNoise ** 2); });
+    const eg = mcpGain * phosphorEff * fiberCoupling * ccdQE;
+    const iccdSNR = photons.map(p => p * photocathodeQE * eg / Math.sqrt(p * photocathodeQE * eg * noiseFactor ** 2 + ccdReadNoise ** 2));
     const emccdSNR = photons.map(p => p / Math.sqrt(p * 2 + 1.5 ** 2));
     return [
       { x: photons, y: iccdSNR, type: "scatter", mode: "lines", name: "ICCD", line: { color: "#60a5fa" } },
-      { x: photons, y: emccdSNR, type: "scatter", mode: "lines", name: "EMCCD", line: { color: "#34d399" } },
+      { x: photons, y: emccdSNR, type: "scatter", mode: "lines", name: "EMCCD (QE≈100%, read≈1.5e⁻)", line: { color: "#34d399" } },
     ];
-  }, [photocathodeQE, mcpGain, phosphorEff, fiberCoupling, ccdReadNoise]);
+  }, [photocathodeQE, mcpGain, phosphorEff, fiberCoupling, ccdQE, ccdReadNoise, noiseFactor]);
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Intensified Camera (ICCD)" description="Gain chain: photocathode → MCP → phosphor → fiber optic → CCD. Noise and sensitivity analysis." maxWidthClassName="max-w-5xl">
