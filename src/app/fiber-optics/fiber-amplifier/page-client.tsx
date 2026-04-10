@@ -43,12 +43,13 @@ export default function FiberAmplifierCalculator() {
     return Math.min(alpha * fiberLength, 30);
   }, [fiberLength]);
 
-  // Saturated gain (simplified)
+  // Saturated gain (input-referenced standard formula)
   const saturatedGain = useMemo(() => {
-    const PoutLinear = Math.pow(10, inputPower / 10) * 1e-3; // W
+    const PinLinear = Math.pow(10, inputPower / 10) * 1e-3; // W
     const Psat = 10e-3; // 10 mW saturation power
     const Gss = Math.pow(10, smallSignalGain / 10);
-    const Gsat = 1 + (Gss - 1) / (1 + PoutLinear / Psat);
+    // G_sat = G_ss / (1 + P_in * G_ss / P_sat)
+    const Gsat = Gss / (1 + PinLinear * Gss / Psat);
     return 10 * Math.log10(Gsat);
   }, [smallSignalGain, inputPower]);
 
@@ -84,7 +85,8 @@ export default function FiberAmplifierCalculator() {
       }
 
       const A = Math.PI * (coreRadius * 1e-6) ** 2;
-      const g = overlap * (se - sa) * erbiumConc * fiberLength;
+      // Full inversion: N2=Nt, N1=0 → gain coefficient = σ_e·Nt
+      const g = overlap * se * erbiumConc * fiberLength;
       const gainLin = Math.exp(g);
       gains.push(10 * Math.log10(gainLin));
     }
@@ -196,7 +198,7 @@ export default function FiberAmplifierCalculator() {
               <h3 className="text-sm font-medium text-gray-400 mb-2">Formulas</h3>
               <p className="font-mono text-sm">G = exp(Γ · (σ_e·N₂ - σ_a·N₁) · L)</p>
               <p className="font-mono text-sm mt-1">NF ≥ 2·n_sp·(G-1)/G ≈ 3 dB (quantum limit)</p>
-              <p className="font-mono text-sm mt-1">G_sat = G_ss / (1 + P/P_sat)</p>
+              <p className="font-mono text-sm mt-1">G_sat = G_ss / (1 + P_in·G_ss/P_sat)</p>
             </div>
           </div>
         </div>

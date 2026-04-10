@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/fiber-amplifier' },
-    title: 'Fiber Amplifier',
-  description: 'Interactive Fiber Amplifier calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Fiber Amplifier',
-  description: 'Interactive Fiber Amplifier calculator for photonics and optical engineering.'
+    title: 'Fiber Amplifier Calculator',
+    description: 'EDFA and YDFA gain, saturation, and noise figure analysis.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Fiber Amplifier',
-  'Interactive Fiber Amplifier calculator for photonics and optical engineering.',
+  'Fiber Amplifier Calculator',
+  'EDFA and YDFA gain, saturation, and noise figure analysis.',
   'https://photonics-calculators.vercel.app/fiber-optics/fiber-amplifier',
-  { category: 'Fiber Optics`,
-  `Interactive Fiber Amplifier calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Fiber Amplifier',
-  'Interactive Fiber Amplifier calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/fiber-optics/fiber-amplifier',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/fiber-amplifier`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>
