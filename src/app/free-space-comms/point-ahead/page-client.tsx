@@ -16,12 +16,12 @@ export default function PointAheadPage() {
     const v = relVelocity * 1e3; // m/s
     const lambda = wavelength * 1e-9;
 
-    // Point-ahead angle (rad) = v × R / c
+    // Point-ahead angle (rad) = v / c (range cancels: angular displacement = v·R/c / R)
     const c = 3e8;
-    const thetaPA = v * R / c;
+    const thetaPA = v / c;
     const thetaPA_urad = thetaPA * 1e6;
 
-    // Half-power beamwidth
+    // First-null beamwidth (Airy disk)
     const D = txAperture * 1e-2;
     const thetaBW = 1.22 * lambda / D;
     const thetaBW_urad = thetaBW * 1e6;
@@ -41,7 +41,7 @@ export default function PointAheadPage() {
   const plotData = useMemo(() => {
     const c = 3e8;
     const ranges = Array.from({ length: 200 }, (_, i) => 100 + i * 250); // km
-    const paAngles = ranges.map((r) => relVelocity * 1e3 * r * 1e3 / c * 1e6);
+    const paAngles = ranges.map((r) => relVelocity * 1e3 / c * 1e6);
     const tofs = ranges.map((r) => r * 1e3 / c);
 
     return [
@@ -88,15 +88,15 @@ export default function PointAheadPage() {
             <h2 className="text-lg font-semibold text-cyan-400 mb-3">Results</h2>
             <div className="space-y-2 text-sm font-mono">
               <div className="flex justify-between"><span className="text-gray-400">Point-Ahead Angle</span><span className="text-cyan-300">{calc.thetaPA_urad.toFixed(1)} μrad</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">TX Beamwidth</span><span>{calc.thetaBW_urad.toFixed(1)} μrad</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">TX Beamwidth (1st null)</span><span>{calc.thetaBW_urad.toFixed(1)} μrad</span></div>
               <div className="flex justify-between"><span className="text-gray-400">PA / Beamwidth</span><span className={calc.ratio < 1 ? "text-green-400" : "text-red-400"}>{calc.ratio.toFixed(3)}</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Time of Flight</span><span>{(calc.tof * 1e3).toFixed(2)} ms</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Req. Pointing Acc.</span><span>{calc.pointingAccuracy_urad.toFixed(1)} μrad (BW/10)</span></div>
             </div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-xs text-gray-500 space-y-1">
-            <p><strong className="text-gray-400">θ<sub>PA</sub> = v × R / c</strong></p>
-            <p><strong className="text-gray-400">θ<sub>BW</sub> = 1.22 λ / D</strong></p>
+            <p><strong className="text-gray-400">θ<sub>PA</sub> = v / c</strong> (range cancels)</p>
+            <p><strong className="text-gray-400">θ<sub>BW</sub> = 1.22 λ / D</strong> (Airy first null)</p>
             <p>If θ<sub>PA</sub> ≫ θ<sub>BW</sub>, the TX must lead the RX by the full PA angle. The beam must be steered to compensate.</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
