@@ -7,7 +7,6 @@ import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumbe
 
 export default function SnowAttenuationPage() {
   const [snowRate, setSnowRate] = useURLState("snowRate", 5);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
   const [range, setRange] = useURLState("range", 1);
   const [snowType, setSnowType] = useState<"dry" | "wet">("dry");
 
@@ -25,7 +24,7 @@ export default function SnowAttenuationPage() {
     // Visibility equivalent
     const visEq = isWet ? Math.max(0.1, 2.0 / Math.sqrt(S + 0.1)) : Math.max(0.5, 5.0 / Math.sqrt(S + 0.1));
     return { k_s, alpha_s, specificAtt, totalAtt, visEq };
-  }, [snowRate, wavelength, range, snowType]);
+  }, [snowRate, range, snowType]);
 
   const plotData = useMemo(() => {
     const rates = Array.from({ length: 200 }, (_, i) => 0.5 + i * 0.25);
@@ -54,7 +53,6 @@ export default function SnowAttenuationPage() {
           <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
           {[
             ["Snowfall Rate (mm/h water eq.)", snowRate, setSnowRate],
-            ["Wavelength (nm)", wavelength, setWavelength],
             ["Link Range (km)", range, setRange],
           ].map(([label, val, set]: any) => (
             <div key={label as string}>
