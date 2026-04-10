@@ -19,7 +19,7 @@ export default function FogAttenuationPage() {
     } else {
       q = V < 6 ? 1.6 : V < 50 ? 1.58 : V < 80 ? 1.46 : 1.46;
     }
-    const beta = 3.91 / V * Math.pow(wavelength * 1e-6 / 0.55, -q); // per km
+    const beta = 3.91 / V * Math.pow(wavelength * 1e-3 / 0.55, -q); // per km
     const attenuation = beta * range; // dB/km * km
     const totalPowerFraction = Math.pow(10, -attenuation / 10);
     return { q, beta, attenuation, totalPowerFraction };
@@ -38,7 +38,7 @@ export default function FogAttenuationPage() {
         } else {
           q = V < 6 ? 1.6 : V < 50 ? 1.58 : V < 80 ? 1.46 : 1.46;
         }
-        return (3.91 / V) * Math.pow(wl * 1e-6 / 0.55, -q) * range;
+        return (3.91 / V) * Math.pow(wl * 1e-3 / 0.55, -q) * range;
       });
       return { x: vis, y: attens, type: "scatter", mode: "lines", name: `${wl} nm`, line: { color: colors[idx] } };
     });
