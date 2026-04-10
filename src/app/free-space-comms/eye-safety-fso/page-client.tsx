@@ -34,7 +34,8 @@ export default function EyeSafetyFsoPage() {
 
     if (wavelength >= 400 && wavelength <= 1400) {
       // Retinal hazard: MPE = 1.8 × C_A × t^(-0.25) J/cm² (for t > 0.7s simplified)
-      const cA = Math.max(1, 10 ** ((lambdaUm - 700) / 800));
+      // C_A = 10^((λ-700)/500) per ANSI Z136, λ in μm
+      const cA = Math.max(1, 10 ** ((lambdaUm - 0.7) / 0.5));
       mpeJm2 = 1.8 * cA * Math.pow(t, -0.25) * 1e4; // J/m²
       mpeWm2 = mpeJm2 / t;
       classification = "Retinal Hazard Zone";
@@ -49,31 +50,41 @@ export default function EyeSafetyFsoPage() {
       classification = "UV Hazard Zone";
     }
 
-    // NOHD (Nominal Ocular Hazard Distance)
-    // For MPE irradiance limit: P / (π × r²) = MPE → r = sqrt(P / (π × MPE))
-    const nohd = Math.sqrt(P / (Math.PI * mpeWm2)); // meters
+    // NOHD (Nominal Ocular Hazard Distance) for diverging beam
+    // Beam radius at NOHD: P/(π·r²) = MPE → r = √(P/(π·MPE))
+    // Distance: NOHD = r / (θ/2) = 2·√(P/(π·MPE)) / θ
+    const nohd = theta > 0 ? 2 * Math.sqrt(P / (Math.PI * mpeWm2)) / theta : Infinity;
 
     // Safety factor
     const safetyFactor = mpeWm2 / irradiance;
 
-    // AEL for Class 1 (accessible emission limit)
-    let ael: number;
+    // AEL for Class 1 (accessible emission limit) per IEC 60825-1
+    let ael: number; // watts
     if (wavelength >= 400 && wavelength <= 700) {
-      ael = 0.39e-3; // 0.39 μW for visible CW
+      ael = 0.39e-6; // 0.39 μW CW
     } else if (wavelength > 700 && wavelength <= 1400) {
-      ael = 0.39e-3 * 10 ** ((wavelength - 700) / 500); // increases with λ
+      ael = 0.39e-6 * cA;
     } else {
-      ael = 10e-3; // 10 mW for >1400nm Class 1
+      ael = 10e-3; // 10 mW for >1400nm (corneal absorption protects retina)
     }
 
-    // Laser classification
+    // Laser classification (simplified per IEC 60825-1)
     let laserClass = "Class 1";
-    if (P > ael * 1e3 * 1000) laserClass = "Class 4";
-    else if (P > ael * 1e3 * 5) laserClass = "Class 3B";
-    else if (P > ael * 1e3) laserClass = "Class 3R";
-    else if (P > ael * 0.5e-3) laserClass = "Class 2M";
-    else if (P > ael * 1e-6) laserClass = "Class 2";
-    // else Class 1
+    if (P > 0.5) {
+      laserClass = "Class 4"; // > 500 mW
+    } else if (P > 5e-3) {
+      laserClass = "Class 3B"; // 5–500 mW
+    } else if (wavelength >= 400 && wavelength <= 700) {
+      if (P > 1e-3) {
+        laserClass = "Class 3R"; // 1–5 mW visible
+      } else if (P > ael) {
+        laserClass = "Class 2"; // AEL–1 mW (blink reflex)
+      }
+    } else {
+      if (P > 5 * ael) {
+        laserClass = "Class 3R"; // 5× Class 1 AEL for IR
+      }
+    }
 
     // Ocular irradiance at distance
     const ocularIrrWm2 = irradiance;
@@ -91,7 +102,7 @@ export default function EyeSafetyFsoPage() {
 
     let mpeWm2: number;
     if (wavelength >= 400 && wavelength <= 1400) {
-      const cA = Math.max(1, 10 ** ((lambdaUm - 700) / 800));
+      const cA = Math.max(1, 10 ** ((lambdaUm - 0.7) / 0.5));
       mpeWm2 = 1.8 * cA * Math.pow(t, -0.25) * 1e4 / t;
     } else if (wavelength > 1400 && wavelength <= 2600) {
       mpeWm2 = 100 * Math.pow(t, -0.25) * 1e4;
