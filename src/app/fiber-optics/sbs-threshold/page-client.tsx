@@ -8,7 +8,6 @@ import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumbe
 export default function SBSThresholdPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // km
-  const [coreDiameter, setCoreDiameter] = useURLState("coreDiameter", 9); // μm
   const [effectiveArea, setEffectiveArea] = useURLState("effectiveArea", 80); // μm²
   const [loss, setLoss] = useURLState("loss", 0.2); // dB/km
   const [brillouinGain, setBrillouinGain] = useURLState("brillouinGain", 5e-11); // m/W
@@ -25,9 +24,10 @@ export default function SBSThresholdPage() {
     // Effective length
     const Leff = (1 - Math.exp(-alpha * L)) / alpha;
 
-    // Threshold (Smith formula)
+    // Threshold (Smith formula — for unpolarized light)
     const pthUnpolarized = 21 * Aeff / (gB * Leff); // W
-    const pth = pthUnpolarized * 2; // account for polarization scrambling
+    // Polarized light has 2× higher SBS gain → threshold is halved
+    const pth = pthUnpolarized / 2;
 
     // Spectral broadening factor
     const deltaNuB = brillouinBandwidth * 1e6;
@@ -43,14 +43,14 @@ export default function SBSThresholdPage() {
     const lengths = Array.from({ length: 50 }, (_, i) => (i + 1) * 2);
     const thresholdVsLength = lengths.map((l) => {
       const Le = (1 - Math.exp(-alpha * l * 1e3)) / alpha;
-      return (21 * Aeff / (gB * Le) * 2 * spectralFactor) * 1e3; // mW
+      return (21 * Aeff / (gB * Le) / 2 * spectralFactor) * 1e3; // mW
     });
 
     // Threshold vs effective area
     const areas = Array.from({ length: 50 }, (_, i) => 20 + i * 4);
     const thresholdVsArea = areas.map((a) => {
       const A = a * 1e-12;
-      return (21 * A / (gB * Leff) * 2 * spectralFactor) * 1e3; // mW
+      return (21 * A / (gB * Leff) / 2 * spectralFactor) * 1e3; // mW
     });
 
     // Backscatter power vs input power
@@ -66,8 +66,8 @@ export default function SBSThresholdPage() {
       }
     });
 
-    return { pthUnpolarized, pth, pthCorrected, Leff, linewidths, gainVsLinewidth, lengths, thresholdVsLength, areas, thresholdVsArea, inputPowers, backscatter, spectralFactor };
-  }, [wavelength, fiberLength, coreDiameter, effectiveArea, loss, brillouinGain, brillouinBandwidth, laserLinewidth]);
+    return { pthUnpolarized, pth, pthCorrected, Leff, lengths, thresholdVsLength, areas, thresholdVsArea, inputPowers, backscatter, spectralFactor };
+  }, [wavelength, fiberLength, effectiveArea, loss, brillouinGain, brillouinBandwidth, laserLinewidth]);
 
   return (
     <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="SBS Threshold Power" description="Calculate Stimulated Brillouin Scattering threshold for optical fibers.">
@@ -78,7 +78,6 @@ export default function SBSThresholdPage() {
           {[
             { label: "Wavelength (nm)", val: wavelength, set: setWavelength },
             { label: "Fiber Length (km)", val: fiberLength, set: setFiberLength },
-            { label: "Core Diameter (μm)", val: coreDiameter, set: setCoreDiameter },
             { label: "Effective Area (μm²)", val: effectiveArea, set: setEffectiveArea },
             { label: "Loss (dB/km)", val: loss, set: setLoss },
           ].map(({ label, val, set }) => (
