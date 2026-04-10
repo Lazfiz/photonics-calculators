@@ -9,7 +9,6 @@ export default function RainAttenuationPage() {
   const [rainRate, setRainRate] = useURLState("rainRate", 25);
   const [wavelength, setWavelength] = useURLState("wavelength", 1550);
   const [range, setRange] = useURLState("range", 1);
-  const [polarization, setPolarization] = useState<"h" | "v">("h");
 
   const calc = useMemo(() => {
     // Specific attenuation based on ITU-R P.838 simplified power-law
