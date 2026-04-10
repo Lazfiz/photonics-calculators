@@ -54,7 +54,8 @@ export default function MicrobendingLossPage() {
     const sensitivity = Math.pow(w / a, 4);
     
     // Coating effect (soft coating reduces microbend loss)
-    const coatingFactor = Math.sqrt(0.5 / coatingModulus); // relative to 0.5 MPa reference
+    // Softer coating = lower modulus = less lateral pressure on fiber = less microbending
+    const coatingFactor = Math.sqrt(coatingModulus / 0.5); // relative to 0.5 MPa reference
     const effectiveLoss = totalLoss * coatingFactor;
     
     return { w, V, alphaMicrodB, totalLoss, sensitivity, coatingFactor, effectiveLoss, deltaBeta };
@@ -70,7 +71,8 @@ export default function MicrobendingLossPage() {
     
     const loss = wavelengths.map(wl => {
       const lam = wl * 1e-3;
-      const w = a * (0.65 + 1.619 / Math.pow(coreNA, 1.5) + 2.879 / Math.pow(coreNA, 6));
+      const V = coreNA * 2 * Math.PI * a / lam;
+      const w = a * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
       const k0 = 2 * Math.PI / lam;
       const beta = n1 * 2 * Math.PI / lam;
       const beta_c = n2 * 2 * Math.PI / lam;
@@ -90,7 +92,8 @@ export default function MicrobendingLossPage() {
     const n2 = Math.sqrt(n1 * n1 - coreNA * coreNA);
     const Lc = correlationLength;
     const k0 = 2 * Math.PI / lambda;
-    const w = a * (0.65 + 1.619 / Math.pow(coreNA, 1.5) + 2.879 / Math.pow(coreNA, 6));
+    const V = coreNA * 2 * Math.PI * a / lambda;
+    const w = a * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
     const beta = n1 * 2 * Math.PI / lambda;
     const beta_c = n2 * 2 * Math.PI / lambda;
     const dB = beta - beta_c;
@@ -111,7 +114,8 @@ export default function MicrobendingLossPage() {
     const n2 = Math.sqrt(n1 * n1 - coreNA * coreNA);
     const A = rmsAmplitude;
     const k0 = 2 * Math.PI / lambda;
-    const w = a * (0.65 + 1.619 / Math.pow(coreNA, 1.5) + 2.879 / Math.pow(coreNA, 6));
+    const V = coreNA * 2 * Math.PI * a / lambda;
+    const w = a * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
     const beta = n1 * 2 * Math.PI / lambda;
     const beta_c = n2 * 2 * Math.PI / lambda;
     const dB = beta - beta_c;
@@ -148,7 +152,7 @@ export default function MicrobendingLossPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">MFD</p>
-          <p className="text-xl font-bold text-blue-400">{calc.w.toFixed(1)} µm</p>
+          <p className="text-xl font-bold text-blue-400">{(calc.w * 2).toFixed(1)} µm</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Sensitivity Factor</p>
