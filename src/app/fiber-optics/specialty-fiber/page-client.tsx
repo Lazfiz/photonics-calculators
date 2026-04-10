@@ -32,11 +32,11 @@ export default function SpecialtyFiberPage() {
   const calc = useMemo(() => {
     const lam = wavelength;
     const inBand = lam >= spec.lambdaMin && lam <= spec.lambdaMax;
-    // Interpolate attenuation
-    const f = (lam - 1350) / 200;
-    const att = spec.att1350 + (spec.att1550 - spec.att1350) * f;
+    // Interpolate attenuation (clamp to operating band)
+    const f = Math.max(0, Math.min(1, (lam - 1350) / 200));
+    const att = inBand ? spec.att1350 + (spec.att1550 - spec.att1350) * f : spec.att1550;
     const totalLoss = att * length;
-    const V = (2 * Math.PI * (spec.core / 2) * spec.NA) / lam;
+    const V = (Math.PI * spec.core * spec.NA) / (lam * 1e-3); // core μm, λ nm→μm
     const isSingleMode = V < 2.405;
     return { att: Math.max(0, att), totalLoss, V, isSingleMode, inBand };
   }, [fiber, wavelength, length]);
@@ -44,8 +44,8 @@ export default function SpecialtyFiberPage() {
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 200 }, (_, i) => spec.lambdaMin + (spec.lambdaMax - spec.lambdaMin) * i / 199);
     const atts = wls.map(wl => {
-      const f = (wl - 1350) / 200;
-      return Math.max(0, spec.att1350 + (spec.att1550 - spec.att1350) * f);
+      const f = Math.max(0, Math.min(1, (wl - 1350) / 200));
+      return spec.att1350 + (spec.att1550 - spec.att1350) * f;
     });
 
     return [
@@ -81,7 +81,7 @@ export default function SpecialtyFiberPage() {
 
       <p className="text-gray-300 mb-6 text-sm italic">{spec.description}</p>
 
-      <div className="grid gap-4 sm:grid-cols-4 mb-8">
+      <div className="grid gap-4 sm:grid-cols-5 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">NA</p>
           <p className="text-xl font-bold text-blue-400">{spec.NA.toFixed(3)}</p>
@@ -94,6 +94,11 @@ export default function SpecialtyFiberPage() {
           <p className="text-sm text-gray-400">V-number</p>
           <p className="text-xl font-bold text-yellow-400">{calc.V.toFixed(2)}</p>
           <p className="text-xs text-gray-500">{calc.isSingleMode ? "Single-mode" : "Multi-mode"}</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">Attenuation</p>
+          <p className="text-xl font-bold text-red-400">{calc.att.toFixed(2)} dB/km</p>
+          <p className="text-xs text-gray-500">{calc.inBand ? "Within operating band" : "⚠ Outside band"}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Total Loss</p>
