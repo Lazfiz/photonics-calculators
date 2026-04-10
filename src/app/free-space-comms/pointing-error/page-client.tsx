@@ -19,11 +19,9 @@ export default function PointingErrorPage() {
     const Dt = txAperture;
     const Dr = rxAperture;
 
-    // Beam divergence (full angle)
-    const divergence = 2.44 * wl / Dt; // rad (Airy disk)
+    // Beam divergence (full angle, Airy disk)
+    const divergence = 2.44 * wl / Dt; // rad
     const divergenceUrad = divergence * 1e6;
-    const beamWaist = wl * L / (Math.PI * Dt / 2); // beam radius at receiver
-    const beamDiameter = 2 * beamWaist;
 
     // Gaussian beam model
     const w0 = Dt / 2;
@@ -31,10 +29,9 @@ export default function PointingErrorPage() {
     const w = w0 * Math.sqrt(1 + Math.pow(L / zR, 2));
     const beamRadius = w;
 
-    // Geometric loss (no pointing error)
-    const geometricLoss = -10 * Math.log10(Math.pow(Dr / (2 * beamRadius), 2));
-    // Cap at 0 if rx > beam
-    const geomLossCapped = Math.max(0, geometricLoss);
+    // Geometric loss (Gaussian beam aperture coupling)
+    const couplingRatio = 1 - Math.exp(-2 * Math.pow(Dr / 2, 2) / (w * w));
+    const geometricLoss = couplingRatio > 0 ? -10 * Math.log10(couplingRatio) : 60;
 
     // Pointing error loss (Rician model)
     const sigmaAz = jitterAzimuth * 1e-6;
@@ -44,7 +41,7 @@ export default function PointingErrorPage() {
     // h(ξ) = exp(-2ξ²) for pointing error PDF where ξ = r/w
     const xi = sigma / beamRadius;
     const pointingLoss = -10 * Math.log10(1 / (1 + 0.89 * xi * xi)); // simplified
-    const totalLoss = geomLossCapped + pointingLoss;
+    const totalLoss = geometricLoss + pointingLoss;
 
     // Pointing loss vs jitter
     const jitterRange = Array.from({ length: 100 }, (_, i) => (i + 1) * 0.1);
@@ -57,7 +54,7 @@ export default function PointingErrorPage() {
     const totalLossVsJitter = jitterRange.map((j) => {
       const s = (j * 1e-6) / beamRadius;
       const pl = -10 * Math.log10(1 / (1 + 0.89 * s * s));
-      return geomLossCapped + pl;
+      return geometricLoss + pl;
     });
 
     // Pointing loss vs distance
@@ -65,7 +62,7 @@ export default function PointingErrorPage() {
     const lossVsDist = distRange.map((d) => {
       const Ld = d * 1e3;
       const wd = w0 * Math.sqrt(1 + Math.pow(Ld / zR, 2));
-      const gl = Math.max(0, -10 * Math.log10(Math.pow(Dr / (2 * wd), 2)));
+      const gl = -10 * Math.log10(Math.max(1 - Math.exp(-2 * Math.pow(Dr / 2, 2) / (wd * wd)), 1e-10));
       const s = sigma / wd;
       const pl = -10 * Math.log10(1 / (1 + 0.89 * s * s));
       return gl + pl;
@@ -74,7 +71,7 @@ export default function PointingErrorPage() {
     // Required tracking accuracy for 1dB pointing loss
     const requiredAccuracy = beamRadius * Math.sqrt((1 / 0.89) * (Math.pow(10, 1 / 10) - 1)) * 1e6; // μrad
 
-    return { divergence, divergenceUrad, beamRadius, beamDiameter: 2 * beamRadius, geomLossCapped, pointingLoss, totalLoss, pointingLossVsJitter, totalLossVsJitter, jitterRange, lossVsDist, distRange, requiredAccuracy };
+    return { divergence, divergenceUrad, beamRadius, beamDiameter: 2 * beamRadius, geometricLoss, pointingLoss, totalLoss, pointingLossVsJitter, totalLossVsJitter, jitterRange, lossVsDist, distRange, requiredAccuracy };
   }, [wavelength, distance, txAperture, rxAperture, jitterAzimuth, jitterElevation]);
 
   return (
@@ -104,7 +101,7 @@ export default function PointingErrorPage() {
             <ResultRow label="Beam Divergence (full)" value={`${results.divergenceUrad.toFixed(1)} μrad`} />
             <ResultRow label="Beam Radius at RX" value={`${(results.beamRadius * 100).toFixed(1)} cm`} />
             <ResultRow label="Beam Diameter at RX" value={`${(results.beamDiameter * 100).toFixed(1)} cm`} />
-            <ResultRow label="Geometric Loss" value={`${results.geomLossCapped.toFixed(2)} dB`} />
+            <ResultRow label="Geometric Loss" value={`${results.geometricLoss.toFixed(2)} dB`} />
             <ResultRow label="Pointing Loss" value={`${results.pointingLoss.toFixed(2)} dB`} />
             <ResultRow label="Total Loss" value={`${results.totalLoss.toFixed(2)} dB`} />
             <ResultRow label="Required Accuracy (1dB loss)" value={`${results.requiredAccuracy.toFixed(1)} μrad`} />
