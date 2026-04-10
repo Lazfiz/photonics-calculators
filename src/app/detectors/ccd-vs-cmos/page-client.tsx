@@ -19,7 +19,6 @@ const plotColors = ["#60a5fa", "#34d399", "#fbbf24", "#c084fc"];
 export default function CcdVsCmosPage() {
   const [signal, setSignal] = useURLState("signal", 10000);
   const [exposureTime, setExposureTime] = useURLState("exposureTime", 1);
-  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 0.01);
 
   const calcSNR = (sig: number, rn: number, dc: number, t: number, wc: number) => {
     const dark = dc * t;
@@ -32,18 +31,17 @@ export default function CcdVsCmosPage() {
     Object.entries(sensors).forEach(([key, s], idx) => {
       traces.push({ x: signals, y: signals.map(sig => calcSNR(sig, s.readNoise, s.darkCurrent, exposureTime, s.wellCapacity).snr), type: "scatter" as const, mode: "lines" as const, name: sensorNames[idx], line: { color: plotColors[idx] } });
     });
-    traces.push({ x: [signal], y: [calcSNR(signal, sensors.ccd.readNoise, darkCurrent, exposureTime, sensors.ccd.wellCapacity).snr], type: "scatter" as const, mode: "markers" as const, name: "Signal", marker: { color: "#f87171", size: 10 } });
+    traces.push({ x: [signal], y: [calcSNR(signal, sensors.ccd.readNoise, sensors.ccd.darkCurrent, exposureTime, sensors.ccd.wellCapacity).snr], type: "scatter" as const, mode: "markers" as const, name: `Signal (CCD)`, marker: { color: "#f87171", size: 10 } });
     return traces;
-  }, [signal, exposureTime, darkCurrent]);
+  }, [signal, exposureTime]);
 
-  const results = Object.entries(sensors).map(([key, s]) => ({ key, snr: calcSNR(signal, s.readNoise, darkCurrent, exposureTime, s.wellCapacity), sensor: s }));
+  const results = Object.entries(sensors).map(([key, s]) => ({ key, snr: calcSNR(signal, s.readNoise, s.darkCurrent, exposureTime, s.wellCapacity), sensor: s }));
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="CCD vs CMOS Sensor Comparison" description="Compare sensor architectures — SNR, dynamic range, and performance metrics.">
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Signal (e⁻)" value={signal} onChange={setSignal} min={1} />
         <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} min={0.001} step="0.1" />
-        <ValidatedNumberInput label="Dark Current (e⁻/pix/s)" value={darkCurrent} onChange={setDarkCurrent} min={0} step="0.001" />
       </div>
       <div className="overflow-x-auto mb-8">
         <table className="w-full text-sm">
