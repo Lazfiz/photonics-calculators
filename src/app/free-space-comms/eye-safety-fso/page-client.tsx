@@ -31,11 +31,11 @@ export default function EyeSafetyFsoPage() {
     let mpeWm2: number;
     let mpeJm2: number;
     let classification = "";
+    const cA = (wavelength > 700 && wavelength <= 1400) ? Math.max(1, 10 ** ((lambdaUm - 0.7) / 0.5)) : 1;
 
     if (wavelength >= 400 && wavelength <= 1400) {
       // Retinal hazard: MPE = 1.8 × C_A × t^(-0.25) J/cm² (for t > 0.7s simplified)
       // C_A = 10^((λ-700)/500) per ANSI Z136, λ in μm
-      const cA = Math.max(1, 10 ** ((lambdaUm - 0.7) / 0.5));
       mpeJm2 = 1.8 * cA * Math.pow(t, -0.25) * 1e4; // J/m²
       mpeWm2 = mpeJm2 / t;
       classification = "Retinal Hazard Zone";
