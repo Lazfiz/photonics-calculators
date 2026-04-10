@@ -26,7 +26,7 @@ export default function DispersionMapPage() {
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 100 }, (_, i) => 1530 + i);
     const dispVsWl = wls.map(wl => {
-      const deltaWl = (wl - wavelength) / 10;
+      const deltaWl = wl - wavelength;
       return lengthSMF * (dispSMF + slopeSMF * deltaWl) + lengthDCF * (dispDCF + slopeDCF * deltaWl);
     });
     return [
