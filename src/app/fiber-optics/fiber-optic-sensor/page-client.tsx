@@ -55,11 +55,9 @@ export default function FiberOpticSensorPage() {
         const finesse = 30; // typical for low-finesse FP
         // Temperature: cavity changes by thermal expansion
         const alpha = 0.55e-6;
-        const dL = L * alpha * (temperature - 25);
-        const dlambda = (wavelength * 1e-9 / (2 * n_eff * L)) * dL * 1e9;
+        const dlambda = wavelength * alpha * (temperature - 25); // dλ = λ·dL/L
         // Strain: direct cavity length change
-        const dL_strain = L * strain * 1e-6;
-        const dlambda_strain = (wavelength * 1e-9 / (2 * n_eff * L)) * dL_strain * 1e9;
+        const dlambda_strain = wavelength * strain * 1e-6; // dλ = λ·ε
         return { FSR: FSR * 1e9, finesse, dlambda, dlambda_strain, type: "Fabry-Pérot" };
       }
       case "evanescent": {
