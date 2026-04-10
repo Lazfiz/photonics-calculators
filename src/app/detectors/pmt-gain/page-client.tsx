@@ -131,7 +131,7 @@ export default function PmtGainPage() {
         <p>G = δ^n (total gain, n = number of stages)</p>
         <p>R_anode = η·q·λ/(h·c) · G</p>
         <p>F ≈ 1 + 1/δ (excess noise, nearly ideal)</p>
-        <p>SNR_out = η·G·P·τ / √(η·G²·P·τ + 2·G·I_d·τ·q + σ_amp²)</p>
+        <p>SNR = η·G·P·τ / √(η·G²·P·τ + N<sub>dark,cath</sub>·G²·τ + σ<sub>amp</sub>²)</p>
       </div>
     </div>
   );
