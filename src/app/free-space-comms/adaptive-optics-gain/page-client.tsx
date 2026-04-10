@@ -57,10 +57,10 @@ export default function AdaptiveOpticsGainPage() {
     const N_required = D_act / (r0_calc * Math.pow(-Math.log(strehlTarget) / 0.28, 3 / 5));
 
     // Required bandwidth
-    const BW_required = fG / Math.pow(-Math.log(strehlTarget) * 0.5, 3 / 5);
+    const BW_required = fG / Math.pow(-Math.log(strehlTarget), 3 / 5);
 
     // Gain over uncorrected (open-loop strehl ≈ exp(-(D/r0)^(5/3)))
-    const sigma_uncorrected = Math.pow(D_act / r0_calc, 5 / 3);
+    const sigma_uncorrected = 1.03 * Math.pow(D_act / r0_calc, 5 / 3);
     const strehl_open = Math.exp(-sigma_uncorrected);
     const gainLinear = strehl / Math.max(strehl_open, 1e-20);
     const gainDB = 10 * Math.log10(Math.max(gainLinear, 1e-20));
