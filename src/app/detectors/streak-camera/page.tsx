@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/streak-camera' },
-    title: 'Streak Camera',
-  description: 'Streak camera basics calculator. Models temporal resolution, sweep speed, time window, and spatial resolution trade-offs.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Streak Camera',
-  description: 'Streak camera basics calculator. Models temporal resolution, sweep speed, time window, and spatial resolution trade-offs.'
+    title: 'Streak Camera Calculator',
+    description: 'Temporal resolution, sweep speed, time window, and spatial resolution for streak cameras.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Streak Camera',
-  'Streak camera basics calculator. Models temporal resolution, sweep speed, time window, and spatial resolution trade-offs.',
+  'Streak Camera Calculator',
+  'Temporal resolution, sweep speed, time window, and spatial resolution for streak cameras.',
   'https://photonics-calculators.vercel.app/detectors/streak-camera',
-  { category: 'Detectors`,
-  `Streak camera basics calculator. Models temporal resolution, sweep speed, time window, and spatial resolution trade-offs.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Streak Camera',
-  'Streak camera basics calculator. Models temporal resolution, sweep speed, time window, and spatial resolution trade-offs.',
-  'https://photonics-calculators.vercel.app/detectors/streak-camera',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/streak-camera`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>

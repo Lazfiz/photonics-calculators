@@ -20,8 +20,7 @@ export default function StreakCameraPage() {
     const effectiveTimeRes = Math.max(temporalResolution, timePerSlit);
     const totalTimeWindow = 2048 * timePerPixel; // ps (assuming 2048 pixels)
     const spatialRes = slitWidth / magnification; // µm at photocathode
-    const streakSpeedTime = 1000 / sweepSpeed; // ns/mm → ps/µm
-    return { timePerPixel, timePerSlit, effectiveTimeRes, totalTimeWindow, spatialRes, streakSpeedTime };
+    return { timePerPixel, timePerSlit, effectiveTimeRes, totalTimeWindow, spatialRes };
   }, [sweepSpeed, slitWidth, magnification, ccdPixelSize, temporalResolution, dynamicRange]);
 
   const chartData = useMemo(() => {
@@ -59,7 +58,7 @@ export default function StreakCameraPage() {
 
       <h2 className="text-xl font-semibold mb-2">Key Formulas</h2>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 space-y-1 text-sm font-mono text-gray-400">
-        <p>Δt<sub>pixel</sub> = p<sub>CCD</sub> / (v<sub>sweep</sub> · M)</p>
+        <p>Δt<sub>pixel</sub> = p<sub>CCD</sub> / v<sub>sweep</sub></p>
         <p>Δt<sub>slit</sub> = w<sub>slit</sub> / (M · v<sub>sweep</sub>)</p>
         <p>Δt<sub>eff</sub> = max(Δt<sub>slit</sub>, Δt<sub>system</sub>)</p>
         <p>T<sub>window</sub> = N<sub>pixels</sub> · Δt<sub>pixel</sub></p>
