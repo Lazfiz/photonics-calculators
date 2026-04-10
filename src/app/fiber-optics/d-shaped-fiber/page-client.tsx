@@ -19,16 +19,12 @@ export default function DShapedFiberPage() {
     const NA = Math.sqrt(n_core * n_core - n_clad * n_clad);
     const V = (2 * Math.PI / lambda) * (coreDia / 2) * NA;
 
-    // Distance from core center to flat surface
-    const distToFlat = flatDepth - cladDia / 2; // positive = flat above core center
-    const cladRemaining = cladDia / 2 - flatDepth; // remaining cladding above core
-
-    // Mode field radius
+    // Mode field radius (Marcuse approximation)
     const w = (coreDia / 2) * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
 
-    // Asymmetry parameter: ratio of distances above and below core
-    const d_above = Math.max(cladRemaining, 0.1);
-    const d_below = cladDia - flatDepth;
+    // Distance from core center to flat surface (input convention)
+    const d_above = Math.max(flatDepth, 0.1); // distance from core center to flat
+    const d_below = cladDia / 2; // distance from core center to bottom of fiber (always radius)
     const asymmetry = d_below / d_above;
 
     // Birefringence induced by asymmetric cladding
@@ -36,12 +32,12 @@ export default function DShapedFiberPage() {
     const R = Math.min(asymmetry, 5);
     const birefringence = 0.5 * Math.pow(NA, 2) / n_core * Math.abs(1 - R * R) / (1 + R * R) * 0.1;
 
-    // Evanescent field at flat surface
-    const gamma = Math.sqrt(2 * Math.PI * NA / (lambda * w));
-    const evanescentFraction = Math.exp(-2 * gamma * Math.max(d_above, 0.01));
+    // Evanescent field at flat surface (Gaussian mode decay)
+    const evanescentFraction = Math.exp(-2 * Math.pow(d_above / w, 2));
 
-    // Polarization extinction ratio
-    const PER = birefringence > 0 ? 10 * Math.log10(1 + birefringence * 1e6 * lambda) : 0;
+    // Polarization extinction ratio (dB) = 10·log₁₀(1 + (2π·Δn·L/λ)²)
+    // For unit length L=1: PER ≈ 10·log₁₀(1 + (2π·Δn/λ)²)
+    const PER = birefringence > 0 ? 10 * Math.log10(1 + Math.pow(2 * Math.PI * birefringence / lambda, 2)) : 0;
 
     // Effective area
     const A_eff = Math.PI * w * w;
@@ -49,24 +45,22 @@ export default function DShapedFiberPage() {
     // Sensitivity to external refractive index
     const RI_sensitivity = evanescentFraction * 50; // nm/RIU simplified
 
-    return { NA, V, w, distToFlat, cladRemaining, asymmetry, birefringence, evanescentFraction, PER, A_eff, RI_sensitivity, d_above, d_below };
+    return { NA, V, w, asymmetry, birefringence, evanescentFraction, PER, A_eff, RI_sensitivity, d_above, d_below };
   }, [cladDia, coreDia, flatDepth, wavelength, n_core, n_clad]);
 
   const chartData = useMemo(() => {
     const depths = Array.from({ length: 100 }, (_, i) => cladDia * 0.4 + i * (cladDia * 0.3 / 100));
     const birefs = depths.map(d => {
-      const rem = cladDia / 2 - d;
-      const below = cladDia - d;
-      const above = Math.max(rem, 0.1);
+      const above = Math.max(d, 0.1);
+      const below = cladDia / 2;
       const R = Math.min(below / above, 5);
       return 0.5 * Math.pow(calc.NA, 2) / n_core * Math.abs(1 - R * R) / (1 + R * R) * 0.1;
     });
     const efs = depths.map(d => {
-      const rem = cladDia / 2 - d;
+      const above = Math.max(d, 0.1);
       const V = (2 * Math.PI / (wavelength * 1e-3)) * (coreDia / 2) * calc.NA;
       const w = (coreDia / 2) * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
-      const gamma = Math.sqrt(2 * Math.PI * calc.NA / (wavelength * 1e-3 * w));
-      return Math.exp(-2 * gamma * Math.max(rem, 0.01));
+      return Math.exp(-2 * Math.pow(above / w, 2));
     });
 
     return [
@@ -110,8 +104,7 @@ export default function DShapedFiberPage() {
         <div className="text-sm text-gray-300 space-y-2 font-mono">
           <p>Asymmetry: R = d_below / d_above</p>
           <p>Birefringence: Δn ≈ (NA²/2n) × |1-R²|/(1+R²)</p>
-          <p>Evanescent: η = exp(-2γ d_remaining)</p>
-          <p>γ = √(2π NA / (λ w₀))</p>
+          <p>Evanescent: η = exp(-2(d/w₀)²)</p>
           <p>RI sensitivity: S ∝ η × λ × ∂n_eff/∂n_ext</p>
         </div>
       </div>
