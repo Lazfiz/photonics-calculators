@@ -40,8 +40,9 @@ export default function DispersionCompPage() {
     ];
   }, [dispersion, bwNm, compDispersion]);
 
-  // Power penalty from residual dispersion
-  const penaltyLinear = 5e-6 * (residualBroadening * bitRate * 1e9) ** 2; // approximate
+  // Power penalty from residual dispersion: Penalty ≈ 5·(B·Δτ)² dB
+  // B in Hz, Δτ in s → B·Δτ = bitRate(Gbps)×1e9 × residualBroadening(ps)×1e-12 = bitRate×Δτ×1e-3
+  const penaltyLinear = 5e-6 * (residualBroadening * bitRate) ** 2;
   const penaltyDb = 10 * Math.log10(Math.max(1e-10, 1 + penaltyLinear));
 
   return (

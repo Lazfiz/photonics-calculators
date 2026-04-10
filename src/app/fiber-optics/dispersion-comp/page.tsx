@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/dispersion-comp' },
-      title: 'Dispersion Compensation',
-  description: 'Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.',
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Dispersion Compensation',
-  description: 'Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.',
+    title: 'Dispersion Compensation Calculator',
+    description: 'Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Dispersion Compensation',
+  'Dispersion Compensation Calculator',
   'Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.',
   'https://photonics-calculators.vercel.app/fiber-optics/dispersion-comp',
-  { category: 'Fiber Optics`,
-  `Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Dispersion Compensation',
-  'Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.',
-  'https://photonics-calculators.vercel.app/fiber-optics/dispersion-comp',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/dispersion-comp`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>
