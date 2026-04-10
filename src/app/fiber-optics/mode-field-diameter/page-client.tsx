@@ -14,9 +14,9 @@ export default function ModeFieldDiameterPage() {
   const [fiberType, setFiberType] = useState<"smf28" | "smf28e" | "smf28e+">("smf28");
 
   const presets = {
-    "smf28": { coreRadius: 4.5, na: 0.14, coreIndex: 1.4682, claddingIndex: 1.4629 },
-    "smf28e": { coreRadius: 4.1, na: 0.14, coreIndex: 1.4682, claddingIndex: 1.4629 },
-    "smf28e+": { coreRadius: 4.0, na: 0.14, coreIndex: 1.4685, claddingIndex: 1.4629 },
+    "smf28": { coreRadius: 4.5, na: 0.14, coreIndex: 1.4682, claddingIndex: Math.sqrt(1.4682 * 1.4682 - 0.14 * 0.14) },
+    "smf28e": { coreRadius: 4.1, na: 0.14, coreIndex: 1.4682, claddingIndex: Math.sqrt(1.4682 * 1.4682 - 0.14 * 0.14) },
+    "smf28e+": { coreRadius: 4.0, na: 0.14, coreIndex: 1.4685, claddingIndex: Math.sqrt(1.4685 * 1.4685 - 0.14 * 0.14) },
   };
 
   const applyPreset = (p: "smf28" | "smf28e" | "smf28e+") => {
@@ -38,13 +38,9 @@ export default function ModeFieldDiameterPage() {
     // V number
     const V = (2 * Math.PI * a / wl) * na;
 
-    // Petermann II MFD (most common definition for SMF)
+    // Petermann II MFD (far-field, standard Marcuse approximation)
     const wPetermannII = a * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
     const mfdPetermannII = 2 * wPetermannII;
-
-    // Petermann I MFD (near-field)
-    const wPetermannI = a * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
-    const mfdPetermannI = 2 * wPetermannI;
 
     // Gaussian approximation MFD
     const wGaussian = a * (0.761 + 1.237 / Math.pow(V, 1.441));
@@ -78,10 +74,10 @@ export default function ModeFieldDiameterPage() {
       return 10 * Math.log10(1 + C / R) / 1e3; // dB/m simplified
     });
 
-    // Single-mode cutoff wavelength
-    const cutoffWavelength = (2 * Math.PI * a * na) / 2.405;
+    // Single-mode cutoff wavelength (result in μm, convert to nm)
+    const cutoffWavelength = (2 * Math.PI * a * na) / 2.405 * 1000;
 
-    return { V, delta, wPetermannII, mfdPetermannII, mfdPetermannI, mfdGaussian, Aeff, wavelengths, mfdVsWl, radii, mfdVsRadius, r, intensity, bendRadii, bendLoss, cutoffWavelength };
+    return { V, delta, wPetermannII, mfdPetermannII, mfdGaussian, Aeff, wavelengths, mfdVsWl, radii, mfdVsRadius, r, intensity, bendRadii, bendLoss, cutoffWavelength };
   }, [wavelength, coreRadius, na, coreIndex, claddingIndex]);
 
   return (
