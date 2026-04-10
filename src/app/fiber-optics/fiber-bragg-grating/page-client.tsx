@@ -27,21 +27,21 @@ export default function FiberBraggGratingCalculator() {
 
   // Reflectivity for uniform grating
   const reflectivity = useMemo(() => {
-    const kappa = Math.PI * indexModulation / braggWavelength; // coupling coefficient
+    const kappa = Math.PI * indexModulation / (braggWavelength * 1e-9); // coupling coefficient [1/m]
     const L = gratingLength * 1e-3; // mm to m
-    const kappaL = kappa * L * 1e6; // scale to reasonable range
+    const kappaL = kappa * L; // dimensionless
     return Math.tanh(kappaL) ** 2;
   }, [indexModulation, braggWavelength, gratingLength]);
 
-  // Bandwidth (FWHM) for uniform grating
+  // Bandwidth (FWHM) for uniform grating — full formula (valid for weak and strong gratings)
   const bandwidth = useMemo(() => {
+    const lambda = braggWavelength * 1e-9; // nm to m
     const L = gratingLength * 1e-3; // mm to m
-    const lambda = braggWavelength * 1e-9;
-    const kappa = Math.PI * indexModulation / braggWavelength;
-    const kappaL = kappa * L * 1e6;
-    const deltaLambda = (lambda / Math.PI) * Math.sqrt((Math.PI * indexModulation / lambda * 1e3) ** 2 + (Math.PI / (gratingLength * 1e-3)) ** 2) * 1e12;
-    // Simplified: Δλ ≈ λ² · Δn / (n_eff · L) for weak gratings
-    return (braggWavelength ** 2 * indexModulation) / (effectiveIndex * gratingLength * 1e6) * 1e9;
+    const kappa = Math.PI * indexModulation / lambda; // coupling coefficient [1/m]
+    // Δλ_FWHM = (λ²/(π·n_eff)) × √(κ² + (π/L)²)
+    const sqrtTerm = Math.sqrt(kappa * kappa + Math.pow(Math.PI / L, 2));
+    const bandwidthM = (lambda * lambda) / (Math.PI * effectiveIndex) * sqrtTerm;
+    return bandwidthM * 1e9; // m to nm
   }, [braggWavelength, effectiveIndex, indexModulation, gratingLength]);
 
   // Chirped grating bandwidth
@@ -58,7 +58,7 @@ export default function FiberBraggGratingCalculator() {
     if (gratingType !== "chirped" || chirpRate === 0) return 0;
     // D ≈ 2n_eff/(c · chirp_rate) ps/(nm·km)
     const c = 3e8;
-    const chirpNmPerM = chirpRate * 1e6; // nm/mm to nm/m
+    const chirpNmPerM = chirpRate * 1e3; // nm/mm to nm/m
     return (2 * effectiveIndex) / (c * chirpNmPerM) * 1e12; // ps/nm for the grating
   }, [gratingType, chirpRate, effectiveIndex]);
 
@@ -68,8 +68,8 @@ export default function FiberBraggGratingCalculator() {
     const reflections: number[] = [];
 
     const L = gratingLength * 1e-3;
-    const kappa = Math.PI * indexModulation / braggWavelength;
-    const kappaL = kappa * L * 1e6;
+    const kappa = Math.PI * indexModulation / (braggWavelength * 1e-9);
+    const kappaL = kappa * L;
 
     const bw = gratingType === "chirped" ? chirpedBandwidth : bandwidth * 2;
     const center = braggWavelength;
@@ -78,6 +78,9 @@ export default function FiberBraggGratingCalculator() {
       wavelengths.push(w);
       let deltaLambda = w - center;
 
+      // δL = 2π·n_eff·L·(1/λ - 1/λ_B) — dimensionless detuning
+      const deltaBeta = 2 * Math.PI * effectiveIndex * gratingLength * 1e6 * (1 / w - 1 / braggWavelength);
+
       if (gratingType === "chirped") {
         // Chirped grating: broader, flatter response
         const sigma = chirpedBandwidth / 2.355;
@@ -85,7 +88,6 @@ export default function FiberBraggGratingCalculator() {
         reflections.push(R);
       } else if (gratingType === "apodized") {
         // Apodized: smoother sidelobes
-        const deltaBeta = 2 * Math.PI * effectiveIndex * (1 / w - 1 / braggWavelength) * 1e9;
         const gammaSq = kappaL ** 2 - deltaBeta ** 2;
         let R: number;
         if (gammaSq > 0) {
@@ -98,7 +100,6 @@ export default function FiberBraggGratingCalculator() {
         reflections.push(Math.min(1, R * envelope));
       } else {
         // Uniform
-        const deltaBeta = 2 * Math.PI * effectiveIndex * (1 / w - 1 / braggWavelength) * 1e9;
         const gammaSq = kappaL ** 2 - deltaBeta ** 2;
         let R: number;
         if (gammaSq > 0) {
