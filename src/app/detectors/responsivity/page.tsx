@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/responsivity' },
     title: 'Detector Responsivity',
-  description: 'Interactive detector responsivity calculator from quantum efficiency and wavelength, with wavelength sweeps and presets.'
+    description: 'Detector responsivity from quantum efficiency and wavelength with wavelength sweep.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Detector Responsivity',
-  description: 'Interactive detector responsivity calculator from quantum efficiency and wavelength, with wavelength sweeps and presets.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Detector Responsivity',
-  'Interactive detector responsivity calculator from quantum efficiency and wavelength, with wavelength sweeps and presets.',
+  'Detector responsivity from quantum efficiency and wavelength with wavelength sweep.',
   'https://photonics-calculators.vercel.app/detectors/responsivity',
-  { category: 'Detectors`,
-  `Interactive detector responsivity calculator from quantum efficiency and wavelength, with wavelength sweeps and presets.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Detector Responsivity',
-  'Interactive detector responsivity calculator from quantum efficiency and wavelength, with wavelength sweeps and presets.',
-  'https://photonics-calculators.vercel.app/detectors/responsivity',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/responsivity`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
