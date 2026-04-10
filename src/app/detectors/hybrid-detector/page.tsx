@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/hybrid-detector' },
     title: 'Hybrid Detector Design',
-  description: 'Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.'
+    description: 'Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Hybrid Detector Design',
-  description: 'Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Hybrid Detector Design',
   'Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.',
   'https://photonics-calculators.vercel.app/detectors/hybrid-detector',
-  { category: 'Detectors`,
-  `Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Hybrid Detector Design',
-  'Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.',
-  'https://photonics-calculators.vercel.app/detectors/hybrid-detector',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/hybrid-detector`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
