@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/bandwidth' },
     title: 'Bandwidth vs Noise Trade-off',
-  description: 'Noise increases with f. Wider bandwidth = faster response but more noise.'
+    description: 'Noise increases with √Δf. Wider bandwidth = faster response but more noise.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Bandwidth vs Noise Trade-off',
-  description: 'Noise increases with f. Wider bandwidth = faster response but more noise.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Bandwidth vs Noise Trade-off',
-  'Noise increases with f. Wider bandwidth = faster response but more noise.',
+  'Noise increases with √Δf. Wider bandwidth = faster response but more noise.',
   'https://photonics-calculators.vercel.app/detectors/bandwidth',
-  { category: 'Detectors`,
-  `Noise increases with f. Wider bandwidth = faster response but more noise.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Bandwidth vs Noise Trade-off',
-  'Noise increases with f. Wider bandwidth = faster response but more noise.',
-  'https://photonics-calculators.vercel.app/detectors/bandwidth',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/bandwidth`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
