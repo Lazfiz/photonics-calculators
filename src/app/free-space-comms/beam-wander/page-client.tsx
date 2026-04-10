@@ -14,10 +14,9 @@ export default function BeamWanderPage() {
   const calc = useMemo(() => {
     const L = pathLength * 1e3;
     const lambda = wavelength * 1e-9;
-    const variance = 1.83 * cn2 * Math.pow(L, 3) * Math.pow(lambda, -1 / 6);
+    const variance = 1.83 * cn2 * Math.pow(L, 3) * Math.pow(lambda, -1 / 3);
     const rms = Math.sqrt(variance) * 100; // m -> cm
-    const pointingLoss = rms > 0 ? -10 * Math.log10(Math.exp(-2 * Math.pow(rms / 100 / beamRadius / 100, 2))) : 0;
-    // Simplified: pointing loss ≈ 8.686 * (σ/w)² dB
+    // Pointing loss ≈ 8.686 * (σ/w)² dB (small-angle Gaussian coupling)
     const pointingLossDb = 8.686 * Math.pow(rms / 100 / (beamRadius / 100), 2);
     return { variance, rms, pointingLossDb };
   }, [cn2, pathLength, beamRadius, wavelength]);
@@ -27,7 +26,7 @@ export default function BeamWanderPage() {
     const lambda = wavelength * 1e-9;
     const w = beamRadius / 100;
     const cn2Vals = Array.from({ length: 200 }, (_, i) => 1e-17 + i * (1e-13 - 1e-17) / 199);
-    const wanders = cn2Vals.map((c) => Math.sqrt(1.83 * c * Math.pow(L, 3) * Math.pow(lambda, -1 / 6)) * 100);
+    const wanders = cn2Vals.map((c) => Math.sqrt(1.83 * c * Math.pow(L, 3) * Math.pow(lambda, -1 / 3)) * 100);
     return [{ x: cn2Vals, y: wanders, type: "scatter", mode: "lines", name: "RMS Wander", line: { color: "#a78bfa" } }];
   }, [pathLength, beamRadius, wavelength]);
 
