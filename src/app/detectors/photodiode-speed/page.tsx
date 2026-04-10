@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/photodiode-speed' },
-    title: 'Photodiode Speed',
-  description: 'Interactive Photodiode Speed calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Photodiode Speed',
-  description: 'Interactive Photodiode Speed calculator for photonics and optical engineering.'
+    title: 'Photodiode Speed & Bandwidth',
+    description: 'RC-limited bandwidth, junction capacitance, and NEP vs area for photodiodes.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Photodiode Speed',
-  'Interactive Photodiode Speed calculator for photonics and optical engineering.',
+  'Photodiode Speed & Bandwidth',
+  'RC-limited bandwidth, junction capacitance, and NEP vs area for photodiodes.',
   'https://photonics-calculators.vercel.app/detectors/photodiode-speed',
-  { category: 'Detectors`,
-  `Interactive Photodiode Speed calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Photodiode Speed',
-  'Interactive Photodiode Speed calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/detectors/photodiode-speed',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/photodiode-speed`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>

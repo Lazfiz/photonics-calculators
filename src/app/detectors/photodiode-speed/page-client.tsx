@@ -70,7 +70,7 @@ export default function PhotodiodeSpeedPage() {
         <p>C<sub>j</sub> = C<sub>d</sub> · A (junction capacitance ∝ area)</p>
         <p>BW<sub>3dB</sub> = 1 / (2π · R · C<sub>j</sub>)</p>
         <p>R = QE · qλ / (hc) (responsivity)</p>
-        <p>NEP<sub>thermal</sub> = √(4k<sub>B</sub>T/R) / R × √BW<sub>3dB</sub> (at 3dB bandwidth)</p>
+        <p>NEP<sub>thermal</sub> = √(4k<sub>B</sub>T/R<sub>L</sub>) / ℛ × √BW<sub>3dB</sub> (at 3dB bandwidth)</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
