@@ -48,7 +48,7 @@ export default function ChannelPMTPage() {
         <ResultCard label="Channel Gain" value={results.channelGain.toExponential(2)} tone="blue" />
         <ResultCard label="Charge/Photon" value={results.chargePerPhoton.toExponential(3) + " C"} tone="green" />
         <ResultCard label="Anode Sensitivity" value={results.anodeSensitivity.toExponential(2) + " e⁻/photon"} tone="yellow" />
-        <ResultCard label="Peak Current" value={results.peakCurrent.toExponential(2) + " A"} tone="red" />
+        <ResultCard label="Peak Current (approx)" value={results.peakCurrent.toExponential(2) + " A"} tone="red" subtext="Uses TTS as pulse width — rough estimate" />
         <ResultCard label="Energy Resolution" value={`${(results.energyRes * 100).toFixed(1)}% FWHM`} tone="purple" />
         <ResultCard label="Total Dark Rate" value={`${results.totalDarkRate.toExponential(2)} cps`} tone="orange" />
       </div>
