@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 export default function LinearModeAPDPage() {
@@ -23,13 +21,12 @@ export default function LinearModeAPDPage() {
     const iPhoto = incidentPower * resp;
     const iPhotoOut = iPhoto * gain;
     const iDarkOut = darkCurrent * gain;
-    const shotNoise = Math.sqrt(2 * q * iPhotoOut * excessNoiseFactor * bandwidth);
-    const darkNoise = Math.sqrt(2 * q * iDarkOut * excessNoiseFactor * bandwidth);
+    const shotNoise = Math.sqrt(2 * q * iPhoto * gain * gain * excessNoiseFactor * bandwidth);
+    const darkNoise = Math.sqrt(2 * q * darkCurrent * gain * gain * excessNoiseFactor * bandwidth);
     const totalNoise = Math.sqrt(shotNoise ** 2 + darkNoise ** 2);
     const snr = iPhotoOut / totalNoise;
     const nep = totalNoise / (resp * gain); // W/√Hz (output noise referred through gain)
-    const detectivity = Math.sqrt(bandwidth) / nep; // D* = √(BW) / NEP per √Hz
-    return { resp, iPhoto, iPhotoOut, iDarkOut, shotNoise, darkNoise, totalNoise, snr, nep, detectivity };
+    return { resp, iPhoto, iPhotoOut, iDarkOut, shotNoise, darkNoise, totalNoise, snr, nep };
   }, [gain, excessNoiseFactor, quantumEff, bandwidth, darkCurrent, wavelength, incidentPower]);
 
   const chartData = useMemo(() => {
@@ -40,14 +37,14 @@ export default function LinearModeAPDPage() {
     const resp = (quantumEff * q * wavelength * 1e-9) / (h * c);
     const iPhoto = incidentPower * resp;
     const signal = gains.map(g => iPhoto * g);
-    const noise = gains.map(g => Math.sqrt(2 * q * iPhoto * g * excessNoiseFactor * bandwidth + 2 * q * darkCurrent * g * excessNoiseFactor * bandwidth));
+    const noise = gains.map(g => Math.sqrt(2 * q * iPhoto * g * g * excessNoiseFactor * bandwidth + 2 * q * darkCurrent * g * g * excessNoiseFactor * bandwidth));
     const snr = signal.map((s, i) => s / noise[i]);
     return [
       { x: gains, y: signal, type: "scatter", mode: "lines", name: "Signal (A)", line: { color: "#60a5fa" } },
       { x: gains, y: noise, type: "scatter", mode: "lines", name: "Noise (A)", line: { color: "#f87171" } },
       { x: gains, y: snr, type: "scatter", mode: "lines", name: "SNR", line: { color: "#34d399" }, yaxis: "y2" },
     ];
-  }, [gain, excessNoiseFactor, quantumEff, bandwidth, darkCurrent, wavelength, incidentPower]);
+  }, [excessNoiseFactor, quantumEff, bandwidth, darkCurrent, wavelength, incidentPower]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
@@ -75,8 +72,8 @@ export default function LinearModeAPDPage() {
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1 text-sm font-mono text-gray-400">
         <p>R = η·q·λ / (h·c)</p>
         <p>I<sub>out</sub> = M · I<sub>photo</sub></p>
-        <p>i<sub>shot</sub> = √(2·q·M·I·F·Δf)</p>
-        <p>NEP = i<sub>total</sub> / R</p>
+        <p>i<sub>shot</sub> = √(2·q·M²·I·F·Δf)</p>
+        <p>NEP = i<sub>total</sub> / (M·R)</p>
       </div>
 
       <ChartPanel data={chartData} layout={{
