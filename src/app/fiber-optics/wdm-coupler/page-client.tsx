@@ -26,11 +26,8 @@ export default function WDMCouplerCalculator() {
 
   // Frequency spacing in GHz
   const freqSpacing = useMemo(() => {
-    const c = 3e5; // km/s
-    const lambda = centerWavelength * 1e-9; // m
-    const f = c / lambda; // Hz -> need GHz
-    // Δf = c·Δλ/λ²
-    return (3e8 * channelSpacing * 1e-9) / (centerWavelength * 1e-9) ** 2 / 1e9;
+    const c = 3e8; // m/s
+    return (c * channelSpacing * 1e-9) / (centerWavelength * 1e-9) ** 2 / 1e9;
   }, [channelSpacing, centerWavelength]);
 
   // ITU-T grid type estimation

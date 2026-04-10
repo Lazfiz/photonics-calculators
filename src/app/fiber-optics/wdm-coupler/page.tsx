@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Wdm Coupler',
   description: 'Interactive Wdm Coupler calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Wdm Coupler',
-  description: 'Interactive Wdm Coupler calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Wdm Coupler',
   'Interactive Wdm Coupler calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/fiber-optics/wdm-coupler',
-  { category: 'Fiber Optics`,
-  `Interactive Wdm Coupler calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Wdm Coupler',
-  'Interactive Wdm Coupler calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/fiber-optics/wdm-coupler',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/wdm-coupler`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>
