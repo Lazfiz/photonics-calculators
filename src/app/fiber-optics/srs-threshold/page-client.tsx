@@ -26,8 +26,8 @@ export default function SRSThresholdPage() {
     // SRS threshold (Smith formula)
     const pth = 16 * Aeff / (gR * Leff); // W
 
-    // Raman wavelength
-    const wlRaman = wl * wl / (wl - ramanShift * 1e12 * wl / 3e8); // approximate
+    // Raman Stokes wavelength: 1/λ_s = 1/λ_p - Δν_R/c
+    const wlRaman = 1 / (1 / wl - ramanShift * 1e12 / 3e8);
 
     // Gain spectrum (Gaussian approximation of silica Raman gain)
     const shifts = Array.from({ length: 100 }, (_, i) => (i + 1) * 0.2); // THz
@@ -149,7 +149,7 @@ export default function SRSThresholdPage() {
           <h2 className="text-lg font-semibold mb-4">Raman Gain vs Pump Power</h2>
           <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.inputPowers, y: results.ramanGain_dB, line: { color: "#f59e0b", width: 2 } }]}
             layout={{
-              xaxis: { title: "Pump Power (W)", color: "#9ca3af", gridcolor: "#374151" },
+              xaxis: { title: "Pump Power (mW)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Raman Gain (dB)", color: "#9ca3af", gridcolor: "#374151" },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
