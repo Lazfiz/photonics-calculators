@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/fiber-delay-line' },
-    title: 'Fiber Delay Line',
-  description: 'Interactive Fiber Delay Line calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Fiber Delay Line',
-  description: 'Interactive Fiber Delay Line calculator for photonics and optical engineering.'
+    title: 'Fiber Delay Line Calculator',
+    description: 'Calculate propagation delay, pulse broadening, phase shift, and FSR for fiber optic delay lines.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Fiber Delay Line',
-  'Interactive Fiber Delay Line calculator for photonics and optical engineering.',
+  'Fiber Delay Line Calculator',
+  'Calculate propagation delay, pulse broadening, phase shift, and FSR for fiber optic delay lines.',
   'https://photonics-calculators.vercel.app/fiber-optics/fiber-delay-line',
-  { category: 'Fiber Optics`,
-  `Interactive Fiber Delay Line calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Fiber Delay Line',
-  'Interactive Fiber Delay Line calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/fiber-optics/fiber-delay-line',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/fiber-delay-line`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

@@ -41,9 +41,9 @@ export default function FiberDelayLineCalculator() {
     return Math.abs(coefficient) * (fiberLength / 1000) * spectralWidth; // ps
   }, [coefficient, fiberLength, spectralWidth]);
 
-  // Temperature coefficient effect (typical: ~0.05 ps/(m·°C) for SMF)
-  const tempCoeff = 0.05; // ps/(m·°C) - fiber thermo-optic coefficient
-  const tempDelayChange = tempCoeff * fiberLength * temperature; // ps
+  // Temperature coefficient effect (typical: ~6.7 ps/(km·°C) for SMF bare fiber)
+  const tempCoeff = 0.0067; // ps/(m·°C)
+  const tempDelayChange = tempCoeff * fiberLength * (temperature - 25); // ps (ΔT from 25°C ref)
 
   // Phase shift at signal wavelength
   const phaseShift = useMemo(() => {
