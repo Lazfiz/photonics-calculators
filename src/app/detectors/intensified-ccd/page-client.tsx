@@ -12,7 +12,6 @@ export default function IntensifiedCCDPage() {
   const [phosphorType, setPhosphorType] = useState<"p43" | "p46" | "p20">("p43");
   const [fiberCoupling, setFiberCoupling] = useURLState("fiberCoupling", 0.6);
   const [ccdReadNoise, setCcdReadNoise] = useURLState("ccdReadNoise", 5);
-  const [gateWidth, setGateWidth] = useURLState("gateWidth", 10);
   const [signalPhotons, setSignalPhotons] = useURLState("signalPhotons", 100);
 
   const photocathodes = { s20: { qe: 0.2, label: "S20 (multialkali)", range: "300-850nm" }, gaas: { qe: 0.35, label: "GaAs", range: "300-900nm" }, inagaas: { qe: 0.15, label: "InGaAs", range: "900-1700nm" }, s25: { qe: 0.25, label: "S25 (ERMA)", range: "200-900nm" } };
@@ -51,7 +50,6 @@ export default function IntensifiedCCDPage() {
         <ValidatedNumberInput label="MCP Gain" value={mcpGain} onChange={setMcpGain} />
         <ValidatedNumberInput label="Fiber Coupling" value={fiberCoupling} onChange={setFiberCoupling} min={0.01} max={1} step="0.01" />
         <ValidatedNumberInput label="CCD Read Noise (e⁻)" value={ccdReadNoise} onChange={setCcdReadNoise} min={0.5} step="0.5" />
-        <ValidatedNumberInput label="Gate Width (ns)" value={gateWidth} onChange={setGateWidth} min={0.5} step="1" />
         <ValidatedNumberInput label="Signal (photons/pix)" value={signalPhotons} onChange={setSignalPhotons} min={0.1} step="1" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
