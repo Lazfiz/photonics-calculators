@@ -20,12 +20,18 @@ export default function SPCMPage() {
     const photonsPerSec = incidentPower / (h * freq);
     const detectedRate = photonsPerSec * quantumEff;
     const dt = deadTime * 1e-9;
-    const nonparalyzableRate = detectedRate / (1 + detectedRate * dt);
-    const totalRate = nonparalyzableRate + darkCountRate;
-    const snr = detectedRate / Math.sqrt(detectedRate + darkCountRate);
-    const afterpulsingProb = darkCountRate * dt * 0.01; // simplified estimate
+    // Both signal and dark counts experience dead time
+    const totalIncomingRate = detectedRate + darkCountRate;
+    const totalMeasuredRate = totalIncomingRate / (1 + totalIncomingRate * dt);
+    // Signal fraction of measured counts (approximate)
+    const signalFraction = detectedRate / totalIncomingRate;
+    const measuredSignalRate = totalMeasuredRate * signalFraction;
+    const measuredDarkRate = totalMeasuredRate * (1 - signalFraction);
+    const snr = detectedRate / Math.sqrt(detectedRate + darkCountRate); // ideal (no dead time)
+    const snrMeasured = measuredSignalRate > 0 ? measuredSignalRate / Math.sqrt(measuredSignalRate + measuredDarkRate) : 0;
+    const afterpulsingProb = totalMeasuredRate * dt * 0.01; // afterpulsing from all avalanches
     const jitter = 350; // ps typical
-    return { photonsPerSec, detectedRate, nonparalyzableRate, totalRate, snr, afterpulsingProb, jitter };
+    return { photonsPerSec, detectedRate, totalMeasuredRate, measuredSignalRate, measuredDarkRate, snr, snrMeasured, afterpulsingProb, jitter };
   }, [deadTime, darkCountRate, quantumEff, incidentPower, wavelength]);
 
   const chartData = useMemo(() => {
@@ -57,9 +63,9 @@ export default function SPCMPage() {
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
         <p className="text-gray-300">Incident photons/s = <span className="text-blue-400 font-mono">{results.photonsPerSec.toExponential(3)}</span></p>
         <p className="text-gray-300">Detected rate = <span className="text-blue-400 font-mono">{results.detectedRate.toExponential(3)} counts/s</span></p>
-        <p className="text-gray-300">Measured rate (dead-time) = <span className="text-blue-400 font-mono">{results.nonparalyzableRate.toExponential(3)} counts/s</span></p>
-        <p className="text-gray-300">Total rate (with dark) = <span className="text-blue-400 font-mono">{results.totalRate.toExponential(3)} counts/s</span></p>
-        <p className="text-gray-300">SNR = <span className="text-blue-400 font-mono">{results.snr.toFixed(1)}</span></p>
+        <p className="text-gray-300">Measured total (dead-time) = <span className="text-blue-400 font-mono">{results.totalMeasuredRate.toExponential(3)} counts/s</span></p>
+        <p className="text-gray-300">SNR (ideal) = <span className="text-blue-400 font-mono">{results.snr.toFixed(1)}</span></p>
+        <p className="text-gray-300">SNR (measured) = <span className="text-blue-400 font-mono">{results.snrMeasured.toFixed(1)}</span></p>
         <p className="text-gray-300">Timing jitter ≈ <span className="text-blue-400 font-mono">{results.jitter} ps</span></p>
       </div>
 
