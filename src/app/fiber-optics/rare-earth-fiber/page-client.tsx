@@ -56,7 +56,7 @@ export default function RareEarthFiberCalculator() {
   // V-number
   const vNumber = useMemo(() => {
     const lambda = signalWavelength * 1e-9;
-    return Math.PI * (coreDiameter / 2 * 1e-6) * numericalAperture / lambda;
+    return 2 * Math.PI * (coreDiameter / 2 * 1e-6) * numericalAperture / lambda;
   }, [coreDiameter, numericalAperture, signalWavelength]);
 
   // Absorption spectrum
@@ -67,9 +67,9 @@ export default function RareEarthFiberCalculator() {
     const [start, end] = dopantInfo.signalRange;
     for (let w = start - 50; w <= end + 50; w += 1) {
       wavelengths.push(w);
-      // Gaussian approximation centered on pump band
-      const pumpCenter = dopantInfo.pumpBands[0];
-      const abs = dopantInfo.absCross * Math.exp(-0.5 * ((w - pumpCenter) / 30) ** 2) * dopantConcentration * 4.343 * fiberLength * overlapFactor;
+      // Gaussian approximation centered on signal range midpoint
+      const sigCenter = (start + end) / 2;
+      const abs = dopantInfo.absCross * Math.exp(-0.5 * ((w - sigCenter) / 30) ** 2) * dopantConcentration * 4.343 * fiberLength * overlapFactor;
       absorption.push(abs);
     }
 
