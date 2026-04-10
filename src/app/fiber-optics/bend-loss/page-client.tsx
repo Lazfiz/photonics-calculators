@@ -20,13 +20,14 @@ export default function BendLossPage() {
     const NA = Math.sqrt(n1 * n1 - n2 * n2);
     const a = 4.1e-6; // SMF-28 core radius
     const V = (2 * Math.PI * a * NA) / lam;
+    const lambdaC = 2 * Math.PI * a * NA / 2.405 * 1e9; // cutoff wavelength (nm)
 
-    // Marcuse bend loss formula (dB/m)
-    // α = (sqrt(π)/(2*a)) * (u²/(V²*K_{m-1}(w)*K_m(w))^(1/2)) * exp(-2*R*γ)
-    // Simplified: α ≈ (π/(2*a)) * (n1²*sin²θ - n2²)^0.5 * exp(-R * (2*Δ*n1*k * (2.748 - 0.996*λ/λc)))
+    // Marcuse bend loss formula
     const delta = (n1 - n2) / n1;
-    const gamma = (2 * delta * n1 * 2 * Math.PI / lam) * (2.748 - 0.996 * 0.3); // simplified
-    const loss = (1.5 / (2 * a)) * Math.exp(-R * gamma);
+    const k0 = 2 * Math.PI / lam;
+    const gamma = (2 * delta * n1 * k0) * (2.748 - 0.996 * wavelength / lambdaC);
+    const C1 = Math.sqrt(Math.PI) / (2 * a);
+    const loss = C1 * Math.exp(-2 * R * gamma);
     const lossDB = 10 * Math.log10(Math.exp(1)) * loss; // dB/m
 
     return { NA, V, lossDB, delta };
@@ -40,10 +41,13 @@ export default function BendLossPage() {
     const NA = Math.sqrt(n1 * n1 - n2 * n2);
     const a = 4.1e-6;
     const delta = (n1 - n2) / n1;
-    const gamma = (2 * delta * n1 * 2 * Math.PI / lam) * 1.75;
+    const k0 = 2 * Math.PI / lam;
+    const lambdaC = 2 * Math.PI * a * NA / 2.405 * 1e9;
+    const gamma = (2 * delta * n1 * k0) * (2.748 - 0.996 * wavelength / lambdaC);
+    const C1 = Math.sqrt(Math.PI) / (2 * a);
 
     const losses = radii.map(R => {
-      const loss = (1.5 / (2 * a)) * Math.exp(-(R * 1e-3) * gamma);
+      const loss = C1 * Math.exp(-2 * (R * 1e-3) * gamma);
       return 10 * Math.log10(Math.exp(1)) * loss;
     });
 
