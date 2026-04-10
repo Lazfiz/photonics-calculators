@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/linear-mode-avalanche' },
     title: 'Linear Mode Avalanche',
-  description: 'Interactive Linear Mode Avalanche calculator for photonics and optical engineering.'
+    description: 'Interactive Linear Mode Avalanche calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Linear Mode Avalanche',
-  description: 'Interactive Linear Mode Avalanche calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Linear Mode Avalanche',
   'Interactive Linear Mode Avalanche calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/detectors/linear-mode-avalanche',
-  { category: 'Detectors`,
-  `Interactive Linear Mode Avalanche calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Linear Mode Avalanche',
-  'Interactive Linear Mode Avalanche calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/detectors/linear-mode-avalanche',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/linear-mode-avalanche`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>

@@ -25,8 +25,9 @@ export default function LinearModeAPDPage() {
     const darkNoise = Math.sqrt(2 * q * darkCurrent * gain * gain * excessNoiseFactor * bandwidth);
     const totalNoise = Math.sqrt(shotNoise ** 2 + darkNoise ** 2);
     const snr = iPhotoOut / totalNoise;
-    const nep = totalNoise / (resp * gain); // W/√Hz (output noise referred through gain)
-    return { resp, iPhoto, iPhotoOut, iDarkOut, shotNoise, darkNoise, totalNoise, snr, nep };
+    const nep = totalNoise / (resp * gain); // W (total, bandwidth-dependent)
+    const nepSpectral = nep / Math.sqrt(bandwidth); // W/√Hz
+    return { resp, iPhoto, iPhotoOut, iDarkOut, shotNoise, darkNoise, totalNoise, snr, nep, nepSpectral };
   }, [gain, excessNoiseFactor, quantumEff, bandwidth, darkCurrent, wavelength, incidentPower]);
 
   const chartData = useMemo(() => {
@@ -65,7 +66,8 @@ export default function LinearModeAPDPage() {
         <p className="text-gray-300">Shot noise = <span className="text-blue-400 font-mono">{results.shotNoise.toExponential(3)} A</span></p>
         <p className="text-gray-300">Total noise = <span className="text-blue-400 font-mono">{results.totalNoise.toExponential(3)} A</span></p>
         <p className="text-gray-300">SNR = <span className="text-blue-400 font-mono">{results.snr.toFixed(1)}</span></p>
-        <p className="text-gray-300">NEP = <span className="text-blue-400 font-mono">{results.nep.toExponential(3)} W/√Hz</span></p>
+        <p className="text-gray-300">NEP = <span className="text-blue-400 font-mono">{results.nep.toExponential(3)} W</span> (total)</p>
+        <p className="text-gray-300">NEP = <span className="text-blue-400 font-mono">{results.nepSpectral.toExponential(3)} W/√Hz</span> (spectral)</p>
       </div>
 
       <h2 className="text-xl font-semibold mb-2">Key Formulas</h2>
