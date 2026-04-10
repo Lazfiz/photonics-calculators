@@ -48,7 +48,7 @@ export default function WavelengthSelectionPage() {
 
     const best = scores.reduce((a, b) => a.total > b.total ? a : b);
     return { scores, best };
-  }, [range, visibility, dataRate, eyeSafety, costBudget]);
+  }, [range, visibility, dataRate, eyeSafety]);
 
   const plotData = useMemo(() => {
     const categories = ["Eye Safety", "Atmosphere", "Components", "Data Rate", "Cost"];
