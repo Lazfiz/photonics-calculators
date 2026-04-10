@@ -10,7 +10,6 @@ export default function ChannelCapacityPage() {
   const [snrDB, setSnrDB] = useURLState("snrDB", 20);
   const [modulation, setModulation] = useState<"OOK" | "BPSK" | "QPSK" | "8PSK" | "16QAM">("QPSK");
   const [fecOverhead, setFecOverhead] = useURLState("fecOverhead", 7); // % overhead
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
 
   const calc = useMemo(() => {
     const B = bandwidth * 1e9; // Hz
@@ -84,7 +83,6 @@ export default function ChannelCapacityPage() {
             ["Bandwidth (GHz)", bandwidth, setBandwidth],
             ["SNR (dB)", snrDB, setSnrDB],
             ["FEC Overhead (%)", fecOverhead, setFecOverhead],
-            ["Wavelength (nm)", wavelength, setWavelength],
           ].map(([label, val, set]: any) => (
             <div key={label as string}>
               <label className="block text-sm text-gray-400 mb-1">{label}</label>
