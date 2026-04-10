@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 export default function ModulationTransferPage() {
@@ -12,38 +10,35 @@ export default function ModulationTransferPage() {
   const [fillFactor, setFillFactor] = useURLState("fillFactor", 0.95);
   const [opticalBlur, setOpticalBlur] = useURLState("opticalBlur", 0); // μm Gaussian sigma
 
+  const nyquist = 1000 / (2 * pixelPitch); // cycles/mm
+
   const chartData = useMemo(() => {
-    const nyquist = 1000 / (2 * pixelPitch); // cycles/mm
     const maxFreq = nyquist * 2;
     const freq = Array.from({ length: 300 }, (_, i) => (i / 300) * maxFreq);
+    // Active pixel width from fill factor (2D: sqrt(FF) per dimension)
+    const activeWidth = pixelPitch * Math.sqrt(fillFactor); // μm
 
-    // Pixel aperture MTF (sinc function for square pixel)
+    // Pixel aperture MTF: |sinc(π·f·a)| where a = active width in mm
     const mtfPixel = freq.map(f => {
-      const fn = f / nyquist;
-      if (fn >= 1) return 0;
-      return Math.abs(Math.sin(Math.PI * fn) / (Math.PI * fn));
+      const arg = Math.PI * f * activeWidth / 1000; // f in lp/mm, a in mm
+      if (arg === 0) return 1;
+      return Math.abs(Math.sin(arg) / arg);
     });
 
-    // Diffusion MTF
+    // Diffusion MTF (Lorentzian approximation)
     const mtfDiffusion = freq.map(f => {
       const k = 2 * Math.PI * f / 1000; // cycles/mm to rad/μm
       return 1 / (1 + Math.pow(k * diffusionLength, 2));
     });
 
-    // Optical blur MTF
+    // Optical blur MTF (Gaussian PSF)
     const mtfOptical = freq.map(f => {
       const k = 2 * Math.PI * f / 1000;
       return Math.exp(-0.5 * Math.pow(k * opticalBlur, 2));
     });
 
-    // Fill factor MTF (simplified)
-    const mtfFill = freq.map(f => {
-      const fn = f / nyquist;
-      return fillFactor + (1 - fillFactor) * Math.cos(Math.PI * fn / 2);
-    });
-
-    // Total MTF
-    const mtfTotal = freq.map((f, i) => mtfPixel[i] * mtfDiffusion[i] * mtfOptical[i] * mtfFill[i]);
+    // Total MTF = product of components
+    const mtfTotal = freq.map((f, i) => mtfPixel[i] * mtfDiffusion[i] * mtfOptical[i]);
 
     return [
       { x: freq, y: mtfTotal, type: "scatter" as const, mode: "lines" as const, name: "Total MTF", line: { color: "#fbbf24", width: 2.5 } },
@@ -51,26 +46,30 @@ export default function ModulationTransferPage() {
       { x: freq, y: mtfDiffusion, type: "scatter" as const, mode: "lines" as const, name: "Diffusion", line: { color: "#34d399", width: 1.5, dash: "dot" } },
       { x: freq, y: mtfOptical, type: "scatter" as const, mode: "lines" as const, name: "Optical blur", line: { color: "#f87171", width: 1.5, dash: "dashdot" } },
     ];
-  }, [pixelPitch, diffusionLength, fillFactor, opticalBlur]);
+  }, [pixelPitch, diffusionLength, fillFactor, opticalBlur, nyquist]);
 
-  const nyquist = 1000 / (2 * pixelPitch);
-  const mtfAtNyquist = Math.abs(Math.sin(Math.PI * 0.5) / (Math.PI * 0.5)) *
-    1 / (1 + Math.pow(Math.PI * diffusionLength / pixelPitch, 2)) *
-    Math.exp(-0.5 * Math.pow(Math.PI * opticalBlur / pixelPitch, 2)) * fillFactor;
+  // MTF at Nyquist using same formulas
+  const activeWidth = pixelPitch * Math.sqrt(fillFactor);
+  const argNyquist = Math.PI * nyquist * activeWidth / 1000;
+  const mtfPixelNyquist = argNyquist === 0 ? 1 : Math.abs(Math.sin(argNyquist) / argNyquist);
+  const kNyquist = 2 * Math.PI * nyquist / 1000;
+  const mtfAtNyquist = mtfPixelNyquist *
+    1 / (1 + Math.pow(kNyquist * diffusionLength, 2)) *
+    Math.exp(-0.5 * Math.pow(kNyquist * opticalBlur, 2));
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Pixel Pitch (μm)" value={pixelPitch} onChange={setPixelPitch} />
         <ValidatedNumberInput label="Diffusion Length (μm)" value={diffusionLength} onChange={setDiffusionLength} />
-        <ValidatedNumberInput label="Fill Factor" value={fillFactor} onChange={setFillFactor} min={0.1} max={1} />
+        <ValidatedNumberInput label="Fill Factor" value={fillFactor} onChange={setFillFactor} min={0.1} max={1} step="0.01" />
         <ValidatedNumberInput label="Optical Blur σ (μm)" value={opticalBlur} onChange={setOpticalBlur} />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">
         <p className="text-gray-300">Nyquist frequency = <span className="text-blue-400 font-mono">{nyquist.toFixed(1)} lp/mm</span></p>
         <p className="text-gray-300">MTF at Nyquist = <span className="text-blue-400 font-mono">{(mtfAtNyquist * 100).toFixed(1)}%</span></p>
-        <p className="text-gray-300 text-sm mt-1">MTF<sub>pixel</sub> = |sinc(π·f/f<sub>N</sub>)| | MTF<sub>diff</sub> = 1/(1+(k·L<sub>d</sub>)²) | MTF<sub>opt</sub> = exp(−½(k·σ)²)</p>
+        <p className="text-gray-300 text-sm mt-1">MTF<sub>pixel</sub> = |sinc(π·f·a)| · MTF<sub>diff</sub> = 1/(1+(k·L<sub>d</sub>)²) · MTF<sub>opt</sub> = exp(−½(k·σ)²)</p>
       </div>
 
       <ChartPanel data={chartData} layout={{
