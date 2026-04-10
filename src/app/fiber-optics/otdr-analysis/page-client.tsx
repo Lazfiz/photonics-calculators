@@ -23,21 +23,22 @@ export default function OTDRAnalysisPage() {
     const v_group = c / n;
 
     // Distance resolution (spatial resolution)
-    const distResolution = (pulseWidth * 1e-9 * v_group) / 2 * 1e3; // m
+    const distResolution = (pulseWidth * 1e-9 * v_group) / 2; // m
     const distResKm = distResolution / 1000;
 
-    // Dead zone
-    const deadZone = pulseWidth * 1e-9 * v_group * 1e3 / 2 * 5; // approx meters
+    // Dead zone (approx 5× spatial resolution)
+    const deadZone = distResolution * 5; // m
 
-    // Dynamic range
-    const dynamicRange = backscatterCoeff - (-50); // typical noise floor at -50 dBm
+    // Dynamic range (backscatter level above noise floor)
+    const noiseFloor = -90; // dB (typical OTDR noise floor)
+    const dynamicRange = backscatterCoeff - noiseFloor;
     const maxRange = dynamicRange / attenuationCoeff;
 
     // Return loss from event (Fresnel reflection)
     const returnLoss = -20 * Math.log10(Math.abs((n - 1) / (n + 1)));
 
-    // Reflectance
-    const reflectance_dB = -20 * Math.log10(Math.abs((n - 1) / (n + 1)));
+    // Reflectance in dB (negative: power reflected)
+    const reflectance_dB = -returnLoss;
 
     // Two-point attenuation measurement
     const levelAtEvent = backscatterCoeff - attenuationCoeff * eventAtKm;
@@ -88,7 +89,7 @@ export default function OTDRAnalysisPage() {
       level += (Math.random() - 0.5) * noise * 2;
 
       // Clamp
-      if (d > fiberLength) level = -50 + Math.random() * 2;
+      if (d > fiberLength) level = -90 + Math.random() * 2;
 
       levels.push(level);
     }
@@ -104,7 +105,7 @@ export default function OTDRAnalysisPage() {
     const pulses = [10, 30, 100, 300, 1000, 10000];
     return pulses.map(pw => ({
       x: [pw],
-      y: [((pw * 1e-9 * 3e8 / refractiveIndex) / 2 * 1e3)], // resolution in meters
+      y: [((pw * 1e-9 * 3e8 / refractiveIndex) / 2)], // resolution in meters
       type: "bar" as const, name: `${pw} ns`,
       marker: { color: pw === pulseWidth ? "#f87171" : "#4b5563" },
     }));
