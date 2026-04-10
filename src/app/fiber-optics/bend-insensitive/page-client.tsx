@@ -17,15 +17,21 @@ export default function BendInsensitivePage() {
   const n1 = 1.4682; const n2 = 1.4629;
   const a = 4.1; // core radius μm
   const delta = (n1 - n2) / n1;
+  const NA = Math.sqrt(n1 * n1 - n2 * n2);
+  const lambdaC = 2 * Math.PI * a * 1e-6 * NA / 2.405 * 1e9; // cutoff wavelength (nm)
 
   const calc = useMemo(() => {
     const R = radius * 1e-3;
     const lam = wavelength * 1e-9;
-    const NA = Math.sqrt(n1 * n1 - n2 * n2);
+    const k0 = 2 * Math.PI / lam;
 
-    // Standard SMF bend loss (Marcuse simplified)
-    const gamma_std = (2 * delta * n1 * 2 * Math.PI / lam) * 1.75;
-    const loss_std = (1.5 / (2 * a * 1e-6)) * Math.exp(-R * gamma_std);
+    // Marcuse bend loss: α = (C₁/(2a)) · exp(-2Rγ)
+    // γ = (2Δ·n₁·k₀) · (2.748 - 0.996·λ/λc)
+    const gamma = (2 * delta * n1 * k0) * (2.748 - 0.996 * wavelength / lambdaC);
+    const V = k0 * a * 1e-6 * NA;
+    // Simplified Marcuse coefficient C₁ ≈ √(π)/(2a) for fundamental mode
+    const C1 = Math.sqrt(Math.PI) / (2 * a * 1e-6);
+    const loss_std = C1 * Math.exp(-2 * R * gamma);
     const loss_std_dB = 10 * Math.log10(Math.exp(1)) * loss_std;
 
     // Bend-insensitive fiber with trench
@@ -38,23 +44,26 @@ export default function BendInsensitivePage() {
       loss_bi_dB = loss_std_dB / improvement;
     }
 
-    // ITU-T G.657 categories
-    const ratio = loss_std_dB / Math.max(loss_bi_dB, 1e-30);
-    let category = "G.657.A1";
-    if (radius <= 5 && loss_bi_dB < 0.1) category = "G.657.B3";
-    else if (radius <= 7.5 && loss_bi_dB < 0.5) category = "G.657.B2";
-    else if (radius <= 10 && loss_bi_dB < 1.0) category = "G.657.A2";
+    // ITU-T G.657 categories (spec limits are for 20 turns around mandrel)
+    const loss20 = loss_bi_dB * 20;
+    let category = "Standard (G.652)";
+    if (loss20 <= 0.2 && radius <= 7.5) category = "G.657.B3";
+    else if (loss20 <= 0.5 && radius <= 7.5) category = "G.657.B2";
+    else if (loss20 <= 1.5 && radius <= 5) category = "G.657.A2";
+    else if (loss20 <= 1.5 && radius <= 7.5) category = "G.657.A1";
 
-    return { loss_std_dB, loss_bi_dB, NA, ratio, category };
+    return { loss_std_dB, loss_bi_dB, NA, category };
   }, [radius, wavelength, hasTrench, trenchDepth, trenchWidth]);
 
   const chartData = useMemo(() => {
     const radii = Array.from({ length: 100 }, (_, i) => 3 + i * 0.3);
     const lam = wavelength * 1e-9;
-    const gamma_std = (2 * delta * n1 * 2 * Math.PI / lam) * 1.75;
+    const k0 = 2 * Math.PI / lam;
+    const gamma = (2 * delta * n1 * k0) * (2.748 - 0.996 * wavelength / lambdaC);
+    const C1 = Math.sqrt(Math.PI) / (2 * a * 1e-6);
 
     const stdLosses = radii.map(R => {
-      const loss = (1.5 / (2 * a * 1e-6)) * Math.exp(-(R * 1e-3) * gamma_std);
+      const loss = C1 * Math.exp(-2 * (R * 1e-3) * gamma);
       return 10 * Math.log10(Math.exp(1)) * loss;
     });
 
@@ -75,15 +84,17 @@ export default function BendInsensitivePage() {
   const improvementData = useMemo(() => {
     const radii = Array.from({ length: 50 }, (_, i) => 5 + i * 0.5);
     const lam = wavelength * 1e-9;
-    const gamma_std = (2 * delta * n1 * 2 * Math.PI / lam) * 1.75;
-    const k = 2 * Math.PI * n2 / lam;
+    const k0 = 2 * Math.PI / lam;
+    const gamma = (2 * delta * n1 * k0) * (2.748 - 0.996 * wavelength / lambdaC);
+    const C1 = Math.sqrt(Math.PI) / (2 * a * 1e-6);
 
     const depths = [0.01, 0.015, 0.018, 0.025];
     return depths.map(td => ({
       x: radii,
       y: radii.map(R => {
-        const loss = (1.5 / (2 * a * 1e-6)) * Math.exp(-(R * 1e-3) * gamma_std);
+        const loss = C1 * Math.exp(-2 * (R * 1e-3) * gamma);
         const loss_dB = 10 * Math.log10(Math.exp(1)) * loss;
+        const k = 2 * Math.PI * n2 / lam;
         const imp = Math.exp(2 * td * k * trenchWidth * 1e-6);
         return loss_dB / imp;
       }),
@@ -122,8 +133,8 @@ export default function BendInsensitivePage() {
           <p className="text-xl font-bold text-green-400">{calc.loss_bi_dB < 0.001 ? "<0.001" : calc.loss_bi_dB.toFixed(4)} dB/turn</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Improvement</p>
-          <p className="text-xl font-bold text-yellow-400">{calc.ratio > 1000 ? ">1000×" : `${calc.ratio.toFixed(0)}×`}</p>
+          <p className="text-sm text-gray-400">Loss @ 20 turns</p>
+          <p className="text-xl font-bold text-green-400">{calc.loss_bi_dB * 20 < 0.001 ? "<0.001" : (calc.loss_bi_dB * 20).toFixed(3)} dB</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">ITU-T Category</p>
@@ -158,8 +169,8 @@ export default function BendInsensitivePage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-2">Key Formulas</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
-          <p>α_bend ≈ C₁/a · exp(-2Rγ) [Marcuse]</p>
-          <p>γ = (2Δn₁k₀)(2.748 - 0.996λ/λ_c)</p>
+          <p>α_bend ≈ √π/(2a) · exp(-2Rγ) [Marcuse]</p>
+          <p>γ = (2Δn₁k₀)(2.748 - 0.996λ/λ<sub>c</sub>)</p>
           <p>Improvement = exp(2Δ_trench · k · w_trench)</p>
           <p>G.657.A: ≤0.75 dB @ R=10mm, G.657.B: ≤0.25 dB @ R=7.5mm</p>
         </div>
