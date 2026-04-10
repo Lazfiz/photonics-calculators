@@ -27,6 +27,7 @@ export default function AvalancheGainPage() {
   const k = ionizationRatio;
   const voltageRatio = biasVoltage / breakdownVoltage;
   const gain = voltageRatio < 1 ? 1 / (1 - Math.pow(voltageRatio, n)) : Infinity;
+  // McIntyre 1966: F(M) = k·M + (1-k)·(2 - 1/M), where k = β/α for electron-initiated multiplication
   const excessNoise = gain > 1 ? k * gain + (1 - k) * (2 - 1 / gain) : 1;
   const noiseGain = gain > 1 ? Math.sqrt(excessNoise) * gain : 1;
 
@@ -37,9 +38,13 @@ export default function AvalancheGainPage() {
 
   const noiseVsGain = useMemo(() => {
     const M = Array.from({ length: 200 }, (_, i) => 1 + i * 199 / 200);
+    // Exact McIntyre
+    const mcintyreF = M.map(m => k * m + (1 - k) * (2 - 1 / m));
+    // Large-M asymptotic: F ≈ kM + 2(1-k)
+    const asymptoticF = M.map(m => k * m + 2 * (1 - k));
     return [
-      { x: M, y: M.map(m => k * m + (1 - k) * (2 - 1 / m)), type: "scatter" as const, mode: "lines" as const, name: "McIntyre F(M)", line: { color: "#f87171", width: 2 } },
-      { x: M, y: M.map(m => Math.pow(m, k)), type: "scatter" as const, mode: "lines" as const, name: "F = M^k (approx)", line: { color: "#fbbf24", width: 2, dash: "dash" as const } },
+      { x: M, y: mcintyreF, type: "scatter" as const, mode: "lines" as const, name: "McIntyre F(M)", line: { color: "#f87171", width: 2 } },
+      { x: M, y: asymptoticF, type: "scatter" as const, mode: "lines" as const, name: "F ≈ kM + 2(1-k)", line: { color: "#fbbf24", width: 2, dash: "dash" as const } },
     ];
   }, [k]);
 
@@ -62,13 +67,13 @@ export default function AvalancheGainPage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Breakdown Voltage (V)" value={breakdownVoltage} onChange={setBreakdownVoltage} min={10} step="1" />
         <ValidatedNumberInput label="Bias Voltage (V)" value={biasVoltage} onChange={setBiasVoltage} min={1} step="1" />
-        <ValidatedNumberInput label="Ionization Ratio k" value={ionizationRatio} onChange={setIonizationRatio} min={0.001} max={1} step="0.01" />
+        <ValidatedNumberInput label="Ionization Ratio k (β/α)" value={ionizationRatio} onChange={setIonizationRatio} min={0.001} max={1} step="0.01" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="V/V_br" value={voltageRatio.toFixed(4)} tone="blue" />
         <ResultCard label="Gain M" value={gain > 1e6 ? "∞ (breakdown)" : gain.toFixed(1)} tone="green" />
         <ResultCard label="Excess Noise F" value={excessNoise.toFixed(3)} tone="yellow" />
-        <ResultCard label="Noise Gain (√F·M)" value={noiseGain > 1e6 ? "∞" : noiseGain.toFixed(1)} tone="red" />
+        <ResultCard label="Noise Current (√F·M)" value={noiseGain > 1e6 ? "∞" : noiseGain.toFixed(1)} tone="red" />
       </div>
       <div className="grid gap-6 md:grid-cols-2">
         <ChartPanel data={gainVsVoltage} layout={{ xaxis: { title: "Bias Voltage (V)", gridcolor: "#374151" }, yaxis: { title: "Gain M", type: "log", gridcolor: "#374151" } }} title="Gain vs Bias" />
@@ -77,7 +82,13 @@ export default function AvalancheGainPage() {
           <ChartPanel data={comparisonChart} layout={{ xaxis: { title: "Gain M", gridcolor: "#374151" }, yaxis: { title: "Excess Noise F", gridcolor: "#374151" } }} title="Material Comparison" />
         </div>
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mt-6 text-sm text-gray-300 font-mono space-y-1"><p>M = 1 / [1 - (V/V_br)^n]  [Miller]</p><p>F(M) = k·M + (1-k)·(2 - 1/M)  [McIntyre]</p><p>n = empirical gain exponent (not refractive index)</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mt-6 text-sm text-gray-300 font-mono space-y-1">
+        <p>M = 1 / [1 - (V/V_br)^n]  [Miller, empirical]</p>
+        <p>F(M) = k·M + (1-k)·(2 - 1/M)  [McIntyre 1966]</p>
+        <p>k = β/α (hole/electron ionization coefficient ratio, electron-initiated multiplication)</p>
+        <p>Large-M asymptote: F ≈ kM + 2(1-k)  (linear in M, not a power law)</p>
+        <p>n = empirical gain exponent (device-specific, not a fundamental material constant)</p>
+      </div>
     </CalculatorShell>
   );
 }

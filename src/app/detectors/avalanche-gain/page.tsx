@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/avalanche-gain' },
     title: 'Avalanche Photodiode Gain',
-  description: 'APD multiplication gain, excess noise factor (McIntyre), and material comparison.'
+    description: 'APD multiplication gain, excess noise factor (McIntyre), and material comparison.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Avalanche Photodiode Gain',
-  description: 'APD multiplication gain, excess noise factor (McIntyre), and material comparison.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Avalanche Photodiode Gain',
   'APD multiplication gain, excess noise factor (McIntyre), and material comparison.',
   'https://photonics-calculators.vercel.app/detectors/avalanche-gain',
-  { category: 'Detectors`,
-  `APD multiplication gain, excess noise factor (McIntyre), and material comparison.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Avalanche Photodiode Gain',
-  'APD multiplication gain, excess noise factor (McIntyre), and material comparison.',
-  'https://photonics-calculators.vercel.app/detectors/avalanche-gain',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/avalanche-gain`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
