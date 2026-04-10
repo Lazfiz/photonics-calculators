@@ -15,16 +15,22 @@ export default function AntibloomingPage() {
   const chartData = useMemo(() => {
     const incidentElectrons = Array.from({ length: 200 }, (_, i) => (i + 1) * 1000);
     const threshold = wellCapacity * abThreshold;
-    const collected = incidentElectrons.map(n => Math.min(n, wellCapacity));
-    const linearity = incidentElectrons.map(n => {
-      if (n <= threshold) return 100;
-      return 100 * (threshold + (n - threshold) * chargeDumpEfficiency) / n;
+    // AB dumps excess charge to drain. Only (1-efficiency) leaks into the well.
+    // Collected = threshold + excess × leak_fraction, capped at well capacity
+    const collected = incidentElectrons.map(n => {
+      if (n <= threshold) return n;
+      const leaked = (n - threshold) * (1 - chargeDumpEfficiency);
+      return Math.min(threshold + leaked, wellCapacity);
+    });
+    const linearity = incidentElectrons.map((n, i) => {
+      if (n === 0) return 100;
+      return 100 * collected[i] / n;
     });
     return [
       { x: incidentElectrons, y: collected, type: "scatter" as const, mode: "lines" as const, name: "Collected (e⁻)", line: { color: "#34d399" }, yaxis: "y" },
       { x: incidentElectrons, y: linearity, type: "scatter" as const, mode: "lines" as const, name: "Linearity (%)", line: { color: "#f87171" }, yaxis: "y2" },
     ];
-  }, [wellCapacity, abThreshold, excessCharge, chargeDumpEfficiency]);
+  }, [wellCapacity, abThreshold, chargeDumpEfficiency]);
 
   const thresholdElectrons = wellCapacity * abThreshold;
   const dumpedCharge = excessCharge * chargeDumpEfficiency;
