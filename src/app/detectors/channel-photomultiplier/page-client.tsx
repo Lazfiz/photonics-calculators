@@ -15,20 +15,18 @@ export default function ChannelPMTPage() {
   const [transitTimeSpread, setTransitTimeSpread] = useURLState("transitTimeSpread", 200);
 
   const results = useMemo(() => {
-    const totalGain = channelGain * numChannels;
-    const chargePerPhoton = 1.6e-19 * totalGain * quantumEff * collectionEff;
+    const chargePerPhoton = 1.6e-19 * channelGain * quantumEff * collectionEff;
     const anodeSensitivity = chargePerPhoton / 1.6e-19;
     const peakCurrent = chargePerPhoton / (transitTimeSpread * 1e-12);
     const energyRes = 2.355 / Math.sqrt(channelGain * quantumEff * collectionEff);
-    return { totalGain, chargePerPhoton, anodeSensitivity, peakCurrent, energyRes };
+    return { channelGain, chargePerPhoton, anodeSensitivity, peakCurrent, energyRes };
   }, [numChannels, channelGain, quantumEff, darkCountRate, collectionEff, transitTimeSpread]);
 
   const chartData = useMemo(() => {
     const channels = Array.from({ length: 50 }, (_, i) => 4 + i * 2);
-    const totalGains = channels.map(n => channelGain * n);
-    const energyRes = channels.map(n => 2.355 / Math.sqrt(channelGain * n * quantumEff * collectionEff));
+    const energyRes = channels.map(n => 2.355 / Math.sqrt(channelGain * quantumEff * collectionEff));
     return [
-      { x: channels, y: totalGains, type: "scatter", mode: "lines", name: "Total Gain", line: { color: "#60a5fa" } },
+      { x: channels, y: channels.map(n => channelGain), type: "scatter", mode: "lines", name: "Channel Gain", line: { color: "#60a5fa" } },
       { x: channels, y: energyRes.map(r => r * 100), type: "scatter", mode: "lines", name: "Energy Res. (%FWHM)", line: { color: "#f87171" }, yaxis: "y2" },
     ];
   }, [channelGain, quantumEff, collectionEff]);
@@ -44,13 +42,13 @@ export default function ChannelPMTPage() {
         <ValidatedNumberInput label="Transit Time Spread (ps)" value={transitTimeSpread} onChange={setTransitTimeSpread} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ResultCard label="Total Gain" value={results.totalGain.toExponential(2)} tone="blue" />
+        <ResultCard label="Channel Gain" value={results.channelGain.toExponential(2)} tone="blue" />
         <ResultCard label="Charge/Photon" value={results.chargePerPhoton.toExponential(3) + " C"} tone="green" />
         <ResultCard label="Anode Sensitivity" value={results.anodeSensitivity.toExponential(2) + " e⁻/photon"} tone="yellow" />
         <ResultCard label="Peak Current" value={results.peakCurrent.toExponential(2) + " A"} tone="red" />
         <ResultCard label="Energy Resolution" value={`${(results.energyRes * 100).toFixed(1)}% FWHM`} tone="purple" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>G_total = G_channel · N_channels</p><p>Q = e · G_total · η · ε_coll</p><p>ΔE/E (FWHM) ≈ 2.355 / √(G·η·ε)</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>G_per_channel = G_channel</p><p>Q = e · G · η · ε_coll</p><p>ΔE/E (FWHM) ≈ 2.355 / √(G·η·ε)</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Number of Channels", gridcolor: "#374151" }, yaxis: { title: "Total Gain", type: "log", gridcolor: "#374151" }, yaxis2: { title: "Energy Res. (%FWHM)", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
     </CalculatorShell>
   );
