@@ -55,7 +55,7 @@ export default function FiberBraggGratingSensorPage() {
     const L = gratingLength * 1e-3; // m
 
     // Use ±3× bandwidth range centered on shifted Bragg wavelength
-    const halfRange = Math.max(bandwidth * 3, 0.1); // nm
+    const halfRange = Math.max(calc.bandwidth * 3, 0.1); // nm
     const step = halfRange * 4 / 500; // nm per point
     const wavelengths: number[] = [];
     const reflections: number[] = [];
@@ -91,7 +91,7 @@ export default function FiberBraggGratingSensorPage() {
       { x: wavelengths, y: reflections, type: "scatter" as const, mode: "lines" as const, name: "Reflection", line: { color: "#3b82f6", width: 2 }, fill: "tozeroy" as const, fillcolor: "rgba(59,130,246,0.2)" },
       currentMarker,
     ];
-  }, [calc, bandwidth, effectiveIndex, gratingLength]);
+  }, [calc, effectiveIndex, gratingLength]);
 
   const strainData = useMemo(() => {
     const strains = Array.from({ length: 100 }, (_, i) => i * 10); // 0-1000 µε
