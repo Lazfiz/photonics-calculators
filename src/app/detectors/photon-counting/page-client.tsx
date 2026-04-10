@@ -69,7 +69,7 @@ export default function PhotonCountingPage() {
         <ResultCard label="SNR (per interval)" value="{snr.toFixed(1)} ({snrDb.toFixed(1)} dB)" tone="green" />
         <ResultCard label="Relative Error" value="{(relativeError * 100).toFixed(2)}%" tone="yellow" />
         <ResultCard label="Dead Time Loss" value="{deadTimeLoss.toFixed(1)}%" tone="red" />
-        <ResultCard label="Total SNR ({integrationTime}s)" value="{totalSNR.toFixed(0)}" tone="purple" />
+        <ResultCard label="Total SNR ({integrationTime}s)" value={`totalSNR.toFixed(0)`} tone="purple" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">

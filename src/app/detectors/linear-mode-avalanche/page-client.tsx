@@ -28,7 +28,7 @@ export default function LinearModeAPDPage() {
     const totalNoise = Math.sqrt(shotNoise ** 2 + darkNoise ** 2);
     const snr = iPhotoOut / totalNoise;
     const nep = totalNoise / resp; // W/√Hz
-    const detectivity = 1 / nep;
+    const detectivity = Math.sqrt(bandwidth) / nep; // D* = √(BW) / NEP per √Hz
     return { resp, iPhoto, iPhotoOut, iDarkOut, shotNoise, darkNoise, totalNoise, snr, nep, detectivity };
   }, [gain, excessNoiseFactor, quantumEff, bandwidth, darkCurrent, wavelength, incidentPower]);
 

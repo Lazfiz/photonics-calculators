@@ -103,10 +103,10 @@ export default function PmtGainPage() {
         <div className="grid gap-3 sm:grid-cols-2">
           <ResultCard label="Per-Stage Gain δ" value={perStageGain.toFixed(2)} tone="blue" />
           <ResultCard label="Total Gain G" value={totalGain.toExponential(2)} tone="blue" />
-          <ResultCard label="Total Voltage" value="{totalVoltage} V" tone="blue" />
-          <ResultCard label="Anode Responsivity" value="{anodeResponsivity.toExponential(2)} A/W" tone="blue" />
+          <ResultCard label="Total Voltage" value={`${totalVoltage} V`} tone="blue" />
+          <ResultCard label="Anode Responsivity" value={`${anodeResponsivity.toExponential(2)} A/W`} tone="blue" />
           <ResultCard label="Excess Noise Factor" value={excessNoiseFactor.toFixed(4)} tone="blue" />
-          <ResultCard label="Cathode Dark Current" value="{(cathodeDarkCurrent * 1e15).toFixed(2)} fA" tone="blue" />
+          <ResultCard label="Cathode Dark Current" value={`${(cathodeDarkCurrent * 1e15).toFixed(2)} fA`} tone="blue" />
         </div>
       </div>
 

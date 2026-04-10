@@ -115,12 +115,12 @@ export default function SiliconPhotodiodePage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">
         <h2 className="text-lg font-semibold mb-4">Results</h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          <ResultCard label="Bandgap E_g" value="{Eg.toFixed(4)} eV" tone="blue" />
-          <ResultCard label="Cutoff Wavelength" value="{cutoffWavelength.toFixed(0)} nm" tone="blue" />
-          <ResultCard label="Peak QE @ 700nm" value="{(calcQE(700) * 100).toFixed(1)}%" tone="blue" />
-          <ResultCard label="Peak Responsivity @ 900nm" value="{calcResponsivity(900).toFixed(3)} A/W" tone="blue" />
-          <ResultCard label="Dark Current" value="{(darkCurrent * 1e9).toFixed(3)} nA" tone="blue" />
-          <ResultCard label="Junction Capacitance" value="{capPF.toFixed(2)} pF" tone="blue" />
+          <ResultCard label="Bandgap E_g" value={`${Eg.toFixed(4)} eV`} tone="blue" />
+          <ResultCard label="Cutoff Wavelength" value={`${cutoffWavelength.toFixed(0)} nm`} tone="blue" />
+          <ResultCard label="Peak QE @ 700nm" value={`${(calcQE(700) * 100).toFixed(1)}%`} tone="blue" />
+          <ResultCard label="Peak Responsivity @ 900nm" value={`${calcResponsivity(900).toFixed(3)} A/W`} tone="blue" />
+          <ResultCard label="Dark Current" value={`${(darkCurrent * 1e9).toFixed(3)} nA`} tone="blue" />
+          <ResultCard label="Junction Capacitance" value={`${capPF.toFixed(2)} pF`} tone="blue" />
         </div>
       </div>
 

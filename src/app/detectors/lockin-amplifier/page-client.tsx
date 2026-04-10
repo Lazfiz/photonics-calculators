@@ -64,10 +64,10 @@ export default function LockinAmplifierPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Δf (mismatch)" value="{deltaF} Hz" tone="yellow" />
-        <ResultCard label="ENBW" value="{(enbwActual).toFixed(3)} Hz" tone="blue" />
-        <ResultCard label="Output Signal" value="{(outputSignal * 1e6).toFixed(2)} μV" tone="green" />
-        <ResultCard label="SNR Improvement" value="×{snrImprovement.toFixed(1)}" tone="purple" />
+        <ResultCard label="Δf (mismatch)" value={`${deltaF} Hz`} tone="yellow" />
+        <ResultCard label="ENBW" value={`${enbwActual.toFixed(3)} Hz`} tone="blue" />
+        <ResultCard label="Output Signal" value={`${(outputSignal * 1e6).toFixed(2)} μV`} tone="green" />
+        <ResultCard label="SNR Improvement" value={`×${snrImprovement.toFixed(1)}`} tone="purple" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">

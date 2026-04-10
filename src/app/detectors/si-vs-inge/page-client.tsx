@@ -34,8 +34,9 @@ export default function SiVsInGaAsPage() {
   const siSignal = photonRate * siQE * 1.602e-19;
   const inGaAsSignal = photonRate * inGaAsQE * 1.602e-19;
 
-  const siSNR = siSignal / Math.sqrt(siSignal * 1.602e-19 * 1e6 + siNoiseFloor ** 2 * 1e6 + (siDarkCurrent * 1e-9) ** 2 * 1e6);
-  const inGaAsSNR = inGaAsSignal / Math.sqrt(inGaAsSignal * 1.602e-19 * 1e6 + inGaAsNoiseFloor ** 2 * 1e6 + (inGaAsDarkCurrent * 1e-9) ** 2 * 1e6);
+  const bw = 1e6; // 1 MHz measurement bandwidth
+  const siSNR = siSignal / Math.sqrt(2 * q * siSignal * bw + siNoiseFloor ** 2 * bw + (siDarkCurrent * 1e-9) ** 2 * bw);
+  const inGaAsSNR = inGaAsSignal / Math.sqrt(2 * q * inGaAsSignal * bw + inGaAsNoiseFloor ** 2 * bw + (inGaAsDarkCurrent * 1e-9) ** 2 * bw);
 
   function getSiQE(wl: number): number {
     if (wl < 350 || wl > 1100) return 0;
@@ -69,14 +70,14 @@ export default function SiVsInGaAsPage() {
       const pr = powerW / pe;
       const qe = getSiQE(wl);
       const sig = pr * qe * 1.602e-19;
-      return qe > 0.01 ? sig / Math.sqrt(sig * 1.602e-19 * 1e6 + siNoiseFloor ** 2 * 1e6) : 0;
+      return qe > 0.01 ? sig / Math.sqrt(2 * 1.602e-19 * sig * 1e6 + siNoiseFloor ** 2 * 1e6) : 0;
     });
     const inGaAsSNRs = wls.map(wl => {
       const pe = 6.626e-34 * 3e8 / (wl * 1e-9);
       const pr = powerW / pe;
       const qe = getInGaAsQE(wl);
       const sig = pr * qe * 1.602e-19;
-      return qe > 0.01 ? sig / Math.sqrt(sig * 1.602e-19 * 1e6 + inGaAsNoiseFloor ** 2 * 1e6) : 0;
+      return qe > 0.01 ? sig / Math.sqrt(2 * 1.602e-19 * sig * 1e6 + inGaAsNoiseFloor ** 2 * 1e6) : 0;
     });
     return { wls, siSNRs, inGaAsSNRs };
   }, [powerW, siNoiseFloor, inGaAsNoiseFloor]);

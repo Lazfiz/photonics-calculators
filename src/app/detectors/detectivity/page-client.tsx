@@ -20,22 +20,22 @@ export default function DetectivityPage() {
 
   const lambda = wavelength * 1e-9;
   const responsivity = qe * lambda * q / (h * c);
-  const areaM2 = area * 1e-6;
+  const areaCm2 = area * 1e-2; // mm² → cm² (D* uses cm·Hz^½/W)
   const shotNoiseDark = Math.sqrt(2 * q * darkCurrent * 1e-9 * excessNoiseFactor * bandwidth * 1e6);
   const thermalNoise = Math.sqrt(4 * kB * temperature * bandwidth * 1e6 / loadResistance);
   const totalNoise = Math.sqrt(shotNoiseDark ** 2 + thermalNoise ** 2);
-  const nep = totalNoise / responsivity;
-  const detectivity = Math.sqrt(areaM2 * bandwidth * 1e6) / nep;
+  const nepSpectral = totalNoise / (responsivity * Math.sqrt(bandwidth * 1e6)); // W/√Hz
+  const detectivity = Math.sqrt(areaCm2) / nepSpectral; // cm·Hz^½/W
 
   const spectralChart = useMemo(() => {
     const wl = Array.from({ length: 200 }, (_, i) => 400 + i * 1.2);
-    return [{ x: wl, y: wl.map(w => { const R = qe * w * 1e-9 * q / (h * c); return R > 1e-10 ? Math.sqrt(areaM2 * bandwidth * 1e6) / (totalNoise / R) : 0; }), type: "scatter", mode: "lines", name: "D*", line: { color: "#60a5fa", width: 2 } }];
-  }, [qe, darkCurrent, area, bandwidth, temperature, loadResistance, excessNoiseFactor, shotNoiseDark, thermalNoise, areaM2, totalNoise]);
+    return [{ x: wl, y: wl.map(w => { const R = qe * w * 1e-9 * q / (h * c); return R > 1e-10 ? Math.sqrt(areaCm2) * R / (totalNoise / Math.sqrt(bandwidth * 1e6)) : 0; }), type: "scatter", mode: "lines", name: "D*", line: { color: "#60a5fa", width: 2 } }];
+  }, [qe, darkCurrent, area, bandwidth, temperature, loadResistance, excessNoiseFactor, shotNoiseDark, thermalNoise, areaCm2, totalNoise]);
 
   const tempChart = useMemo(() => {
     const temps = Array.from({ length: 100 }, (_, i) => 200 + i * 2);
-    return [{ x: temps, y: temps.map(T => { const Idd = darkCurrent * 1e-9 * Math.pow(2, (T - temperature) / 7); const sn = Math.sqrt(2 * q * Idd * excessNoiseFactor * bandwidth * 1e6); const tn = Math.sqrt(4 * kB * T * bandwidth * 1e6 / loadResistance); const in2 = Math.sqrt(sn ** 2 + tn ** 2); return responsivity > 1e-10 ? Math.sqrt(areaM2 * bandwidth * 1e6) / (in2 / responsivity) : 0; }), type: "scatter", mode: "lines", name: "D*", line: { color: "#f87171", width: 2 } }];
-  }, [darkCurrent, temperature, bandwidth, loadResistance, excessNoiseFactor, responsivity, areaM2]);
+    return [{ x: temps, y: temps.map(T => { const Idd = darkCurrent * 1e-9 * Math.pow(2, (T - temperature) / 7); const sn = Math.sqrt(2 * q * Idd * excessNoiseFactor * bandwidth * 1e6); const tn = Math.sqrt(4 * kB * T * bandwidth * 1e6 / loadResistance); const in2 = Math.sqrt(sn ** 2 + tn ** 2); return responsivity > 1e-10 ? Math.sqrt(areaCm2) * responsivity / (in2 / Math.sqrt(bandwidth * 1e6)) : 0; }), type: "scatter", mode: "lines", name: "D*", line: { color: "#f87171", width: 2 } }];
+  }, [darkCurrent, temperature, bandwidth, loadResistance, excessNoiseFactor, responsivity, areaCm2]);
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Detectivity (D*)" description="Specific detectivity from NEP, area, and bandwidth. D* = √(A·Δf) / NEP" maxWidthClassName="max-w-5xl">
@@ -51,7 +51,7 @@ export default function DetectivityPage() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ResultCard label="Responsivity" value={`${responsivity.toFixed(3)} A/W`} tone="blue" />
-        <ResultCard label="NEP" value={`${nep.toExponential(3)} W/√Hz`} tone="red" />
+        <ResultCard label="NEP" value={`${nepSpectral.toExponential(3)} W/√Hz`} tone="red" />
         <ResultCard label="Shot Noise" value={shotNoiseDark.toExponential(3) + " A"} tone="yellow" />
         <ResultCard label="Thermal Noise" value={thermalNoise.toExponential(3) + " A"} tone="orange" />
         <ResultCard label="Detectivity D*" value={`${detectivity.toExponential(3)} cm·Hz^½/W`} tone="green" />
