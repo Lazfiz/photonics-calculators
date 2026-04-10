@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/flicker-noise' },
-      title: '1/f Flicker Noise',
-  description: 'Flicker noise: S_v(f) = K_f I^ / f. Noise spectral density falls as 1/f.',
+    title: '1/f Flicker Noise',
+    description: 'Flicker noise: S_I(f) = K_f · I^α / f. Noise spectral density falls as 1/f.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `1/f Flicker Noise',
-  description: 'Flicker noise: S_v(f) = K_f I^ / f. Noise spectral density falls as 1/f.',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   '1/f Flicker Noise',
-  'Flicker noise: S_v(f) = K_f I^ / f. Noise spectral density falls as 1/f.',
+  'Flicker noise: S_I(f) = K_f · I^α / f. Noise spectral density falls as 1/f.',
   'https://photonics-calculators.vercel.app/detectors/flicker-noise',
-  { category: 'Detectors`,
-  `Flicker noise: S_v(f) = K_f I^ / f. Noise spectral density falls as 1/f.',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  '1/f Flicker Noise',
-  'Flicker noise: S_v(f) = K_f I^ / f. Noise spectral density falls as 1/f.',
-  'https://photonics-calculators.vercel.app/detectors/flicker-noise',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/flicker-noise`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
