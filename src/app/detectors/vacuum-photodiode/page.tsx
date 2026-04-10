@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/vacuum-photodiode' },
-    title: 'Vacuum Photodiode',
-  description: 'Vacuum photodiode calculator. Models photoemission, responsivity, dark current (thermionic emission), and frequency response.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Vacuum Photodiode',
-  description: 'Vacuum photodiode calculator. Models photoemission, responsivity, dark current (thermionic emission), and frequency response.'
+    title: 'Vacuum Photodiode Calculator',
+    description: 'Photoemission, responsivity, dark current, and frequency response for vacuum photodiodes.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Vacuum Photodiode',
-  'Vacuum photodiode calculator. Models photoemission, responsivity, dark current (thermionic emission), and frequency response.',
+  'Vacuum Photodiode Calculator',
+  'Photoemission, responsivity, dark current, and frequency response for vacuum photodiodes.',
   'https://photonics-calculators.vercel.app/detectors/vacuum-photodiode',
-  { category: 'Detectors`,
-  `Vacuum photodiode calculator. Models photoemission, responsivity, dark current (thermionic emission), and frequency response.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Vacuum Photodiode',
-  'Vacuum photodiode calculator. Models photoemission, responsivity, dark current (thermionic emission), and frequency response.',
-  'https://photonics-calculators.vercel.app/detectors/vacuum-photodiode',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/vacuum-photodiode`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>
