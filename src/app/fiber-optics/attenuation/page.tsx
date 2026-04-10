@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/attenuation' },
-    title: 'Wavelength-Dependent Attenuation',
-  description: 'Fiber attenuation spectrum showing Rayleigh scattering, IR absorption, and OH peak for standard fiber types.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Wavelength-Dependent Attenuation',
-  description: 'Fiber attenuation spectrum showing Rayleigh scattering, IR absorption, and OH peak for standard fiber types.'
+    title: 'Fiber Attenuation Calculator',
+    description: 'Wavelength-dependent fiber attenuation: Rayleigh scattering, IR absorption, and OH peak.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Wavelength-Dependent Attenuation',
-  'Fiber attenuation spectrum showing Rayleigh scattering, IR absorption, and OH peak for standard fiber types.',
+  'Fiber Attenuation Calculator',
+  'Wavelength-dependent fiber attenuation: Rayleigh scattering, IR absorption, and OH peak.',
   'https://photonics-calculators.vercel.app/fiber-optics/attenuation',
-  { category: 'Fiber Optics`,
-  `Fiber attenuation spectrum showing Rayleigh scattering, IR absorption, and OH peak for standard fiber types.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Wavelength-Dependent Attenuation',
-  'Fiber attenuation spectrum showing Rayleigh scattering, IR absorption, and OH peak for standard fiber types.',
-  'https://photonics-calculators.vercel.app/fiber-optics/attenuation',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/attenuation`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>
