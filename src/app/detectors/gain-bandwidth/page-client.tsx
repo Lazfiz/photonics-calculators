@@ -12,7 +12,7 @@ export default function GainBandwidthPage() {
   const [feedbackFraction, setFeedbackFraction] = useURLState("feedbackFraction", 0.01);
 
   const f3dB = gbwProduct / gainDC;
-  const closedLoopGain = 1 / feedbackFraction;
+  const closedLoopGain = gainDC / (1 + feedbackFraction * gainDC);
   const closedLoopBW = gbwProduct / closedLoopGain;
 
   const chartData = useMemo(() => {
@@ -21,9 +21,8 @@ export default function GainBandwidthPage() {
     const openLoop = freq.map(fr => gainDC / Math.sqrt(1 + Math.pow(fr / f, 2)));
     const beta = feedbackFraction;
     const closedLoop = freq.map(fr => {
-      const aF = gainDC / Math.sqrt(1 + Math.pow(fr / f, 2));
-      const phase = Math.atan(fr / f);
-      return Math.abs(aF * Math.cos(phase) / (1 + beta * aF * Math.cos(phase)));
+      const x = fr / f;
+      return gainDC / Math.sqrt(Math.pow(1 + beta * gainDC, 2) + x * x);
     });
     return [
       { x: freq, y: openLoop, type: "scatter" as const, mode: "lines" as const, name: "Open-loop", line: { color: "#60a5fa", width: 2 } },
