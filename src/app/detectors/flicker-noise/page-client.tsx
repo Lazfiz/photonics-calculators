@@ -17,12 +17,13 @@ export default function FlickerNoisePage() {
     const freqs = Array.from({ length: 200 }, (_, i) => Math.pow(1e8, i / 200));
     return [
       { x: freqs, y: freqs.map(f => kf * current ** alpha / f), type: "scatter" as const, mode: "lines" as const, name: "1/f PSD", line: { color: "#f87171" } },
-      { x: freqs, y: freqs.map(() => 2e-24), type: "scatter" as const, mode: "lines" as const, name: "Thermal floor", line: { color: "#60a5fa", dash: "dash" } },
+      { x: freqs, y: freqs.map(() => thermalPSD), type: "scatter" as const, mode: "lines" as const, name: "Thermal floor", line: { color: "#60a5fa", dash: "dash" } },
     ];
-  }, [kf, current, alpha]);
+  }, [kf, current, alpha, thermalPSD]);
 
+  const thermalPSD = 4 * 1.381e-23 * 300 / 50; // 4kT/R at 300K, 50Ω
   const flickerNoiseRms = Math.sqrt(kf * current ** alpha * Math.log(fHigh / fLow));
-  const cornerFreq = kf * current ** alpha / (4e-26);
+  const cornerFreq = kf * current ** alpha / thermalPSD;
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="1/f Flicker Noise" description="Flicker noise: S_v(f) = K_f · I^α / f. Noise spectral density falls as 1/f.">

@@ -44,7 +44,7 @@ export default function EmGainPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="EM Gain" value={emGain} onChange={setEmGain} min={1} max={10000} />
         <ValidatedNumberInput label="Input Signal (e⁻)" value={inputSignal} onChange={setInputSignal} min={0.01} step="0.5" />
-        <ValidatedNumberInput label="CIC (e⁻/stage)" value={clockInducedCharge} onChange={setClockInducedCharge} min={0} step="0.0005" />
+        <ValidatedNumberInput label="CIC (e⁻/pix/frame)" value={clockInducedCharge} onChange={setClockInducedCharge} min={0} step="0.0005" />
         <ValidatedNumberInput label="Excess Noise Factor F" value={excessNoiseFactor} onChange={setExcessNoiseFactor} min={1} max={2} step="0.01" />
         <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} min={1} step="1" />
       </div>
