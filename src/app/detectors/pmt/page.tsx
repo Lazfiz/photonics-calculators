@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/pmt' },
-    title: 'Pmt',
-  description: 'Interactive Pmt calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Pmt',
-  description: 'Interactive Pmt calculator for photonics and optical engineering.'
+    title: 'Photomultiplier Tube (PMT)',
+    description: 'PMT gain, signal current, excess noise factor, and SNR from dynode parameters.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Pmt',
-  'Interactive Pmt calculator for photonics and optical engineering.',
+  'Photomultiplier Tube (PMT)',
+  'PMT gain, signal current, excess noise factor, and SNR from dynode parameters.',
   'https://photonics-calculators.vercel.app/detectors/pmt',
-  { category: 'Detectors`,
-  `Interactive Pmt calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Pmt',
-  'Interactive Pmt calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/detectors/pmt',
-  { category: 'Detectors`,
-  `https://photonics-calculators.vercel.app/detectors/pmt`,
-  { category: `Detectors` }
+  { category: 'Detectors' }
 );
+
 export default function Page() {
   return (
     <>

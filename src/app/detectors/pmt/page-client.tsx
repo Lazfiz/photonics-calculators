@@ -14,7 +14,6 @@ export default function PMTPage() {
   const [secondaryEmission, setSecondaryEmission] = useURLState("secondaryEmission", 3.5);
   const [qe, setQe] = useURLState("qe", 0.25);
   const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 1); // nA
-  const [anodeResistance, setAnodeResistance] = useURLState("anodeResistance", 50); // Ohm
   const [photonRate, setPhotonRate] = useURLState("photonRate", 1e6); // photons/s
   const [bandwidth, setBandwidth] = useURLState("bandwidth", 100e6); // Hz
 
@@ -22,8 +21,6 @@ export default function PMTPage() {
   const signalElectrons = photonRate * qe;
   const signalCurrent = signalElectrons * 1.602e-19 * gain;
   const darkElectrons = (darkCurrent * 1e-9) / (1.602e-19 * gain);
-  const signalPower = signalCurrent * signalCurrent * anodeResistance;
-  const noisePower = 4 * 1.38e-23 * 293 * bandwidth * 1 + signalCurrent * 1.602e-19 * gain * bandwidth; // Johnson + shot simplified
 
   // Gain vs dynode stages for different δ
   const gainVsDynodes = useMemo(() => {
