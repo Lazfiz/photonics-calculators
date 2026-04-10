@@ -7,7 +7,6 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 export default function GeigerModeAPDPage() {
-  const [breakdownVoltage, setBreakdownVoltage] = useURLState("breakdownVoltage", 150);
   const [overbias, setOverbias] = useURLState("overbias", 2);
   const [temperature, setTemperature] = useURLState("temperature", 25);
   const [tempCoeff, setTempCoeff] = useURLState("tempCoeff", 50);
@@ -17,20 +16,20 @@ export default function GeigerModeAPDPage() {
   const results = useMemo(() => {
     const bvShift = tempCoeff * 1e-3 * (temperature - 25);
     const effectiveOverbias = overbias - bvShift;
-    const pde = Math.min(0.75, 0.3 + 0.15 * effectiveOverbias);
+    const pde = Math.min(0.75, Math.max(0, 0.3 + 0.15 * effectiveOverbias));
     const dt = deadTime * 1e-9;
     const maxCountRate = 1 / dt;
     const dcrTempFactor = Math.pow(2, (temperature - 25) / 10);
     const effectiveDCR = darkCountRate * dcrTempFactor;
     const afterpulseRate = effectiveDCR * 0.02;
     return { bvShift, effectiveOverbias, pde, maxCountRate, effectiveDCR, afterpulseRate, dcrTempFactor };
-  }, [breakdownVoltage, overbias, temperature, tempCoeff, deadTime, darkCountRate]);
+  }, [overbias, temperature, tempCoeff, deadTime, darkCountRate]);
 
   const chartData = useMemo(() => {
     const temps = Array.from({ length: 100 }, (_, i) => -40 + i * 1.5);
     return [
       { x: temps, y: temps.map(t => tempCoeff * 1e-3 * (t - 25)), type: "scatter", mode: "lines", name: "Vbr shift (V)", line: { color: "#f87171" } },
-      { x: temps, y: temps.map(t => Math.min(0.75, 0.3 + 0.15 * (overbias - tempCoeff * 1e-3 * (t - 25)))), type: "scatter", mode: "lines", name: "PDE", line: { color: "#60a5fa" }, yaxis: "y2" },
+      { x: temps, y: temps.map(t => Math.min(0.75, Math.max(0, 0.3 + 0.15 * (overbias - tempCoeff * 1e-3 * (t - 25))))), type: "scatter", mode: "lines", name: "PDE", line: { color: "#60a5fa" }, yaxis: "y2" },
       { x: temps, y: temps.map(t => darkCountRate * Math.pow(2, (t - 25) / 10)), type: "scatter", mode: "lines", name: "DCR", line: { color: "#a78bfa" }, yaxis: "y3" },
     ];
   }, [overbias, tempCoeff, darkCountRate]);
@@ -38,7 +37,6 @@ export default function GeigerModeAPDPage() {
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Geiger-Mode APD" description="SPAD: breakdown voltage, overbias, temperature effects, PDE, and dark count rate.">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Breakdown Voltage (V)" value={breakdownVoltage} onChange={setBreakdownVoltage} />
         <ValidatedNumberInput label="Overbias (V)" value={overbias} onChange={setOverbias} step="0.1" />
         <ValidatedNumberInput label="Temperature (°C)" value={temperature} onChange={setTemperature} />
         <ValidatedNumberInput label="Vbr Temp Coeff (mV/°C)" value={tempCoeff} onChange={setTempCoeff} />
