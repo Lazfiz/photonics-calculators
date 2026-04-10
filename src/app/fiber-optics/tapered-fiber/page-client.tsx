@@ -26,22 +26,16 @@ export default function TaperedFiberPage() {
     const w_input = coreDia / 2 * (0.65 + 1.619 / Math.pow(V_input, 1.5) + 2.879 / Math.pow(V_input, 6));
     const w_waist = coreAtWaist > 0.1 ? coreAtWaist / 2 * (0.65 + 1.619 / Math.pow(Math.max(V_waist, 0.1), 1.5) + 2.879 / Math.pow(Math.max(V_waist, 0.1), 6)) : 0;
 
-    // Adiabatic condition: taper angle must be small enough
-    // θ_ad < r(z) / (Lb * z), where Lb is beat length
-    const Lb = 2 * Math.PI * coreDia / (wavelength * 1e-3 * NA);
+    // Adiabatic condition: taper angle must be small compared to λ/(πw)
+    // Rayleigh range z_R = πw²/λ is the characteristic adiabaticity length
+    const z_R = Math.PI * w_input * w_input / (wavelength * 1e-3); // μm
     const taperAngle = Math.atan((inputDia - outputDia) / 2 / (taperLength * 1000)) * 1e3; // mrad
     const maxAngle = 100; // mrad (simplified adiabatic threshold)
 
     // Loss: non-adiabatic coupling loss
     const adiabaticLoss = taperAngle > maxAngle ? 0.1 * Math.pow((taperAngle - maxAngle) / maxAngle, 2) : 0;
 
-    // NA transformation at waist (evanescent coupling)
-    const NA_waist = taperRatio < 0.3 ? 0.9 : NA; // in single-mode regime, NA increases
-
-    // Numerical aperture magnification for mode expansion
-    const modeExpansion = inputDia / outputDia;
-
-    return { taperRatio, coreAtWaist, V_input, V_waist, w_input, w_waist, Lb, taperAngle, maxAngle, adiabaticLoss, NA_waist, modeExpansion, NA };
+    return { taperRatio, coreAtWaist, V_input, V_waist, w_input, w_waist, z_R, taperAngle, maxAngle, adiabaticLoss, NA };
   }, [inputDia, outputDia, taperLength, coreDia, wavelength, n1, n2]);
 
   const chartData = useMemo(() => {
@@ -56,6 +50,7 @@ export default function TaperedFiberPage() {
       { x: z, y: cladProfile, type: "scatter" as const, mode: "lines" as const, name: "Cladding", line: { color: "#f87171" } },
       { x: z, y: coreProfile, type: "scatter" as const, mode: "lines" as const, name: "Core", line: { color: "#60a5fa" } },
       { x: [0, taperLength], y: [calc.w_input * 2, calc.w_input * 2], type: "scatter" as const, mode: "lines" as const, name: "Input MFD", line: { color: "#34d399", dash: "dash" } },
+      { x: [0, taperLength], y: [calc.w_waist * 2, calc.w_waist * 2], type: "scatter" as const, mode: "lines" as const, name: "Waist MFD", line: { color: "#a78bfa", dash: "dot" } },
     ];
   }, [inputDia, outputDia, taperLength, coreDia]);
 
@@ -97,7 +92,7 @@ export default function TaperedFiberPage() {
           <p>Taper ratio: r = d_waist / d_input</p>
           <p>V-number at waist: V_w = V_input × r</p>
           <p>Adiabatic condition: dθ/dz &lt; r(z) / (L_b × z)</p>
-          <p>Beat length: L_b = 2π a / (λ NA)</p>
+          <p>Rayleigh range: z_R = πw₀²/λ</p>
           <p>MFD (Marcuse): w/a = 0.65 + 1.619/V^1.5 + 2.879/V^6</p>
         </div>
       </div>
