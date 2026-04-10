@@ -72,7 +72,7 @@ export default function FadeProbabilityPage() {
     const Pfade_diversity = numChannels > 1 ? Math.pow(Pfade_ln, numChannels) : Pfade_ln;
 
     // Mean time between fades
-    const MTBF = numChannels > 1 ? tau_fade / Pfade_ln : tau_fade / Pfade_ln;
+    const MTBF = tau_fade / (numChannels > 1 ? Pfade_diversity : Pfade_ln);
 
     return {
       sigmaR2, sigmaI2_eff, FA, alpha_gg, beta_gg,
