@@ -15,7 +15,7 @@ export default function FOVCalculatorPage() {
   const fovW = sensorW / mag;
   const fovH = sensorH / mag;
   const fovDiag = Math.sqrt(fovW * fovW + fovH * fovH);
-  const pixelFOV = pixelSize / (mag * 1000); // µm
+  const pixelFOV = pixelSize / mag; // µm in object plane
 
   const chartData = useMemo(() => {
     const mags = Array.from({ length: 50 }, (_, i) => 1 + i * 2);
