@@ -15,23 +15,23 @@ export default function ThirdHarmonicMicroscopyPage() {
   const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.33);
 
   const thgWavelength = wavelength / 3;
-  const energyPerPulse = (power * 1000 / repRate) * 1e-9;
+  const energyPerPulse = (power / repRate) * 1e-9;
   const peakPower = energyPerPulse / (pulseWidth * 1e-15);
   const w0 = 0.61 * wavelength / (na * 1000);
   const spotArea = Math.PI * (w0 * 1e-6) ** 2;
-  const peakIntensity = peakPower / spotArea / 1e12;
+  const peakIntensity = peakPower / spotArea / 1e16;
 
   // THG signal ∝ I³ × χ⁽³⁾²
   const thgSignal = Math.pow(peakIntensity, 3) * 1e-12;
 
   // Resolution at THG wavelength
   const lateralResExc = 0.61 * wavelength / na;
-  const lateralResTHG = 0.61 * thgWavelength / na;
+  const lateralResTHG = 0.61 * wavelength / na / Math.sqrt(3);
 
   // THG contrast mechanism: interface detection
   // Gouy phase shift causes THG cancellation in homogeneous medium
   const zR = Math.PI * w0 * w0 * refractiveIndex / (wavelength / 1000);
-  const gouyPhaseShift = Math.PI; // total Gouy phase through focus
+  const gouyPhaseShift = 3 * Math.PI; // THG nonlinear polarization sees 3× fundamental Gouy
 
   const depthChart = useMemo(() => {
     const depths = Array.from({ length: 80 }, (_, i) => i * 25);
