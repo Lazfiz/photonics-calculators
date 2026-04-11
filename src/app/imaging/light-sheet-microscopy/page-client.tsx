@@ -15,12 +15,12 @@ export default function LightSheetMicroscopyPage() {
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;
-    const sheetThickness = n * lam / (naIll * naIll) * 1e6;
+    const sheetThickness = 2 * lam / (Math.PI * naIll) * 1e6;
     const lateralRes = 0.61 * lam / naDet * 1e9;
     const rayleighRange = n * lam / (Math.PI * naIll * naIll) * 1e6;
     const fov = sampleThickness / Math.cos((tiltAngle * Math.PI) / 180);
     const volumetricRate = (fov * fov * 1e-12) / 0.01; // approx frames
-    const opticalSectioning = 2 * n * lam / (naIll * naIll) * 1e6;
+    const opticalSectioning = 2 * lam / (Math.PI * naIll) * 1e6;
     const workingDistRequirement = (sampleThickness / 2) / Math.cos((tiltAngle * Math.PI) / 180);
     return { sheetThickness, lateralRes, rayleighRange, fov, opticalSectioning, workingDistRequirement };
   }, [naDet, naIll, wavelength, n, sampleThickness, tiltAngle]);
@@ -80,7 +80,7 @@ export default function LightSheetMicroscopyPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Effective FOV (tilt)</span><span className="font-mono text-cyan-400">{results.fov.toFixed(1)} µm</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">WD requirement</span><span className="font-mono text-red-400">{results.workingDistRequirement.toFixed(1)} µm</span></div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">
-            <p>Sheet: t = nλ/NA²_ill | Lateral: d = 0.61λ/NA_det</p>
+            <p>Sheet: t = 2λ/(π·NA_ill) | Lateral: d = 0.61λ/NA_det</p>
             <p>FOV_eff = t_sample / cos(θ) | WD = t_sample/(2·cos(θ))</p>
           </div>
         </div>
