@@ -46,7 +46,7 @@ export default function STEDResolutionPage() {
         <ValidatedNumberInput label="Numerical Aperture" value={na} onChange={setNa} min={0.5} max={1.7} step="0.01" />
         <ValidatedNumberInput label="Depletion λ (nm)" value={depletionWavelength} onChange={setDepletionWavelength} min={500} max={900} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">I<sub>dep</sub> / I<sub>sat</sub></span>
+          <span className="block text-sm text-gray-300 mb-1">I<sub>dep</sub> / I<sub>sat</sub></span>
           <ValidatedNumberInput label="Idep / Isat" value={saturationFactor} onChange={setSaturationFactor} min={1} max={200} />
         </label>
       </div>
@@ -72,6 +72,11 @@ export default function STEDResolutionPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Formulas</h3>
+        <div className="space-y-2 text-sm text-gray-300 font-mono">
+          <p>d_conf = 0.4λ / NA (confocal FWHM)</p>
+          <p>d_STED = d_conf / √(1 + I_dep/I_sat)</p>
+          <p>Improvement = √(1 + I_dep/I_sat)</p>
+        </div>
                       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
