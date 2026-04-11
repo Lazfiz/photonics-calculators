@@ -15,7 +15,7 @@ export default function ConfocalPinholePage() {
     const ratios = Array.from({ length: 200 }, (_, i) => (i * 3) / 200);
     // Axial resolution vs pinhole size (in Airy units)
     const airyDiam = 1.22 * wavelength / na;
-    const axialIdeal = 2 * wavelength * na / (na * na); // nm, ideal confocal
+    const axialIdeal = 1.4 * wavelength / (na * na); // nm, ideal confocal
     const axial = ratios.map(r => {
       // Larger pinhole → worse axial resolution, approaching widefield
       const widefield = 2 * wavelength / (na * na);
@@ -31,7 +31,7 @@ export default function ConfocalPinholePage() {
 
   const airyDiam = 1.22 * wavelength / na;
   const optimalPinhole = airyDiam / magnification;
-  const axialRes = 2 * wavelength * na / (na * na);
+  const axialRes = 1.4 * wavelength / (na * na);
   const lateralRes = 0.61 * wavelength / na;
 
   return (
