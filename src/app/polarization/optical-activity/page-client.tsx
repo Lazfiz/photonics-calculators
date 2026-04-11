@@ -32,10 +32,9 @@ export default function OpticalActivityPage() {
 
   // Observed rotation
   const observedRotation = useMemo(() => {
-    // [α] = α_obs / (c · l)
-    // α_obs = [α] · c · l
+    // [α] = α_obs / (c · l), with c in g/100mL need /100 to convert to g/mL
     const alpha = specificRotation;
-    const c = concentration;
+    const c = concentration / 100;
     const l = pathLength;
     return alpha * c * l;
   }, [specificRotation, concentration, pathLength]);
@@ -51,21 +50,30 @@ export default function OpticalActivityPage() {
   const tempCorrected = useMemo(() => {
     // d[α]/dT ≈ 0.01 °C⁻¹ for many sugars
     const refTemp = 20;
-    const tempCoeff = 0.01;
+    // Temperature coefficient: rotation decreases with temperature for most sugars
+    // Typical for sucrose: d[α]/dT ≈ -0.0144 deg·(mL/g·dm)⁻¹·°C⁻¹ (CRC Handbook)
+    const tempCoeff = -0.0002; // ~-0.02% per °C
     return wavelengthCorrected * (1 + tempCoeff * (temperature - refTemp));
   }, [wavelengthCorrected, temperature]);
 
   // Final observed rotation with corrections
   const finalRotation = useMemo(() => {
-    return tempCorrected * concentration * pathLength;
+    return tempCorrected * concentration / 100 * pathLength;
   }, [tempCorrected, concentration, pathLength]);
 
   // Molar rotation
   const molarRotation = useMemo(() => {
-    // [M] = [α] · M / 100
-    const MW = 342.3; // sucrose molecular weight g/mol
+    // [M] = [α] · M / 100 (standard formula)
+    const MW_MAP: Record<string, number> = {
+      sucrose: 342.3,
+      glucose: 180.16,
+      fructose: 180.16,
+      camphor: 152.23,
+      lactic: 90.08,
+    };
+    const MW = MW_MAP[sample] || 342.3;
     return specificRotation * MW / 100;
-  }, [specificRotation]);
+  }, [specificRotation, sample]);
 
   // Dispersion curve
   const dispersionData = useMemo(() => {
@@ -175,7 +183,7 @@ export default function OpticalActivityPage() {
               <circle cx="20" cy="100" r="4" fill="#3b82f6" />
               <circle cx="180" cy="100" r="4" fill="#3b82f6" />
               {/* Rotated polarization */}
-              <g transform={`rotate(${finalRotation * 2}, 100, 100)`}>
+              <g transform={`rotate(${finalRotation}, 100, 100)`}>
                 <line x1="30" y1="100" x2="170" y2="100" stroke="#22c55e" strokeWidth="2" strokeDasharray="5,3" />
                 <circle cx="30" cy="100" r="3" fill="#22c55e" />
                 <circle cx="170" cy="100" r="3" fill="#22c55e" />

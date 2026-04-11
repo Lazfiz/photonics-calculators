@@ -25,18 +25,21 @@ export default function PMDPage() {
     // Maxwellian PDF
     const x = Array.from({ length: 200 }, (_, i) => (i / 200) * maxDGD * 1.5);
     const pdf = x.map((xi) => {
-      const a = meanDGD * 2 / (Math.PI * meanDGD * meanDGD);
-      const norm = xi * xi * xi / (meanDGD ** 4);
-      const exp = Math.exp(-2 * xi * xi / (Math.PI * meanDGD * meanDGD));
-      return a * norm * exp;
+      // Maxwellian PDF for DGD (ITU-T G.650.2):
+      // p(Δτ) = (π·Δτ²)/(2·⟨Δτ⟩³) · exp(-π·Δτ²/(4·⟨Δτ⟩²))
+      const tau = xi;
+      const mean = meanDGD;
+      return (Math.PI * tau * tau) / (2 * mean * mean * mean) *
+        Math.exp(-Math.PI * tau * tau / (4 * mean * mean));
     });
     const cdf = x.reduce((acc: number[], xi) => {
       const prev = acc.length > 0 ? acc[acc.length - 1] : 0;
       const dx = x[1] - x[0];
-      const a = meanDGD * 2 / (Math.PI * meanDGD * meanDGD);
-      const norm = xi * xi * xi / (meanDGD ** 4);
-      const exp = Math.exp(-2 * xi * xi / (Math.PI * meanDGD * meanDGD));
-      return [...acc, prev + a * norm * exp * dx];
+      const tau = xi;
+      const mean = meanDGD;
+      const pdfVal = (Math.PI * tau * tau) / (2 * mean * mean * mean) *
+        Math.exp(-Math.PI * tau * tau / (4 * mean * mean));
+      return [...acc, prev + pdfVal * dx];
     }, []);
 
     // DGD vs length
