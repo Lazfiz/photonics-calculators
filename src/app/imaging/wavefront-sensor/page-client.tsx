@@ -15,16 +15,16 @@ export default function WavefrontSensorPage() {
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;
-    const spotSize = 1.22 * focalLength * 1e-3 * lam / (lensletPitch * 1e-6) * 1e6; // µm
+    const spotSize = 1.22 * focalLength * 1e-3 * lam / (lensletPitch * 1e-6) * 1e6; // µm (Airy radius)
     const dynamicRange = (lensletPitch / 2) / (spotSize / 2);
-    const sensitivity = spotSize * pixelSize / (2 * focalLength * 1e3); // waves/pixel
-    const fov = sensorSize * 1e3 / (focalLength * 1e3) * 1e3; // mrad
-    const minWavefrontRes = pixelSize / (lensletPitch * 1e-6) * lam * 1e9; // nm
+    const sensitivity = (pixelSize * lensletPitch) / (focalLength * wavelength) * 1e3; // waves/pixel (µm·µm)/(mm·nm)×1e3
+    const fov = sensorSize / focalLength * 1e3; // mrad (mm/mm = rad → ×1e3)
+    const minWavefrontRes = (pixelSize * 1e-6) / (focalLength * 1e-3) * (lensletPitch * 1e-6) * 1e9; // nm (slope × pitch)
     const numActuators = numLenslets * numLenslets;
     const subapDiam = lensletPitch * 1e-6; // m
     const coherentLength = (0.31 * lam / (numLenslets * 0.1 + 0.01)) * 1e9; // rough r0 estimate, nm
-    const crossTalk = Math.exp(-((lensletPitch / (spotSize * 2)) ** 2)) * 100;
-    return { spotSize, dynamicRange, sensitivity, fov, minWavefrontRes, numActuators, crossTalk, coherentLength };
+    const crossTalk = Math.exp(-Math.pow(lensletPitch / (spotSize * 2), 2)) * 100;
+    return { spotSize, dynamicRange, sensitivity, fov, minWavefrontRes, numActuators, crossTalk };
   }, [numLenslets, lensletPitch, focalLength, wavelength, pixelSize, sensorSize]);
 
   const plotData = useMemo(() => {
@@ -84,9 +84,9 @@ export default function WavefrontSensorPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Subaperture FOV</span><span className="font-mono">{results.fov.toFixed(1)} mrad</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Total subapertures</span><span className="font-mono">{results.numActuators}</span></div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">
-            <p>Spot: d = 1.22·f·λ/d_lenslet</p>
+            <p>Spot: d = 1.22·f·λ/d_lenslet (Airy radius)</p>
             <p>Dynamic range ≈ pitch / spot_size</p>
-            <p>Sensitivity ≈ λ·(pixel/pitch)</p>
+            <p>Sensitivity = (pixel·pitch) / (f·λ) [waves/px]</p>
           </div>
         </div>
       </div>
