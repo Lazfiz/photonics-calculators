@@ -9,16 +9,17 @@ export default function StructuredIlluminationPage() {
   const [na, setNa] = useURLState("na", 1.4);
   const [wavelength, setWavelength] = useURLState("wavelength", 488);
   const [modulationDepth, setModulationDepth] = useURLState("modulationDepth", 0.8);
-  const [patternOrders, setPatternOrders] = useURLState("patternOrders", 3);
+  const [patternOrders, setPatternOrders] = useURLState("patternOrders", 2);
 
   const results = useMemo(() => {
     const lambda_um = wavelength * 1e-3;
     const res_widefield = 0.61 * lambda_um / na;
-    const res_sim = res_widefield / 2;
+    const res_sim = res_widefield / patternOrders;
     const cutoff = (2 * na) / lambda_um;
     const expandedCutoff = cutoff * patternOrders;
-    const factor = Math.sqrt(2 * patternOrders + 1);
-    const snrImprovement = factor / modulationDepth;
+    const nPhases = 2 * patternOrders - 1; // 3 for 2× SIM, 5 for 3× NL-SIM
+    const nImages = 3 * nPhases; // 3 angles × nPhases
+    const snrPenalty = Math.sqrt(nImages) / modulationDepth;
 
     const freqs: number[] = [];
     const otfWide: number[] = [];
@@ -33,7 +34,7 @@ export default function StructuredIlluminationPage() {
       otfSIM.push(sim);
     }
 
-    return { res_widefield, res_sim, cutoff, expandedCutoff, snrImprovement, freqs, otfWide, otfSIM };
+    return { res_widefield, res_sim, cutoff, expandedCutoff, snrPenalty, nImages, freqs, otfWide, otfSIM };
   }, [na, wavelength, modulationDepth, patternOrders]);
 
   const plotData = useMemo(() => [
@@ -72,8 +73,8 @@ export default function StructuredIlluminationPage() {
             <ValidatedNumberInput label="Pattern Modulation Depth" value={modulationDepth} onChange={setModulationDepth} min={0.1} max={1} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pattern Orders (2×: 2, 3×: 3)</label>
-            <ValidatedNumberInput label="Pattern Orders (2×: 2, 3×: 3)" value={patternOrders} onChange={setPatternOrders} min={1} max={5} />
+            <label className="block text-sm text-gray-400 mb-1">Resolution Factor (2=linear, 3=nonlinear)</label>
+            <ValidatedNumberInput label="Resolution Factor" value={patternOrders} onChange={setPatternOrders} min={2} max={5} />
           </div>
         </div>
 
@@ -94,7 +95,11 @@ export default function StructuredIlluminationPage() {
             </div>
             <div className="bg-gray-800 rounded p-3">
               <div className="text-xs text-gray-400">SNR Penalty (√N/m)</div>
-              <div className="text-xl font-mono text-yellow-400">{results.snrImprovement.toFixed(2)}×</div>
+              <div className="text-xl font-mono text-yellow-400">{results.snrPenalty.toFixed(2)}×</div>
+            </div>
+            <div className="bg-gray-800 rounded p-3">
+              <div className="text-xs text-gray-400">Raw Images</div>
+              <div className="text-xl font-mono text-gray-300">{results.nImages}</div>
             </div>
           </div>
         </div>
@@ -108,8 +113,8 @@ export default function StructuredIlluminationPage() {
         <h3 className="font-semibold">Key Formulas</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
           <p>r_widefield = 0.61 λ / NA</p>
-          <p>r_SIM = 0.305 λ / NA (2× improvement)</p>
-          <p>SNR penalty = √(2N+1) / m  (N = pattern orders, m = modulation depth)</p>
+          <p>r_SIM = 0.61λ / (NA × N) (N = resolution factor)</p>
+          <p>SNR penalty = √(N_images) / m  (3 angles × (2N−1) phases)</p>
           <p>Expanded OTF cutoff = N × (2·NA/λ)</p>
         </div>
         <div className="text-sm text-gray-400 mt-4 space-y-1">
