@@ -18,8 +18,8 @@ export default function PolarizationScramblingPage() {
   const data = useMemo(() => {
     const inputAngle = Math.random() * 360;
     const inputS3 = inputPol === "circular" ? 1 : inputPol === "elliptical" ? ellipticity : 0;
-    const inputS1 = inputPol === "linear" ? Math.cos(inputAngle * Math.PI / 180) : 0;
-    const inputS2 = inputPol === "linear" ? Math.sin(inputAngle * Math.PI / 180) : 0;
+    const inputS1 = inputPol === "linear" ? Math.cos(2 * inputAngle * Math.PI / 180) : 0;
+    const inputS2 = inputPol === "linear" ? Math.sin(2 * inputAngle * Math.PI / 180) : 0;
 
     // Generate scrambling pattern
     const N = numSegments;
@@ -48,11 +48,13 @@ export default function PolarizationScramblingPage() {
       angles.push(theta);
 
       // Rotated Stokes vector
-      const c = Math.cos(theta * Math.PI / 180);
-      const s = Math.sin(theta * Math.PI / 180);
-      s1.push(inputS1 * c * c + inputS2 * c * s - inputS3 * s);
-      s2.push(inputS1 * c * s + inputS2 * s * s + inputS3 * c);
-      s3.push(-inputS1 * c * s + inputS2 * c * s + inputS3 * (c * c + s * s));
+      // Mueller rotation matrix for Stokes parameters (rotation by 2θ about S3 axis)
+      // M_rot(2θ) = [[1,0,0,0],[0,cos2θ,sin2θ,0],[0,-sin2θ,cos2θ,0],[0,0,0,1]]
+      const c2 = Math.cos(2 * theta * Math.PI / 180);
+      const s2 = Math.sin(2 * theta * Math.PI / 180);
+      s1.push(inputS1 * c2 + inputS2 * s2);
+      s2.push(-inputS1 * s2 + inputS2 * c2);
+      s3.push(inputS3);
       dop.push(1.0); // each segment is fully polarized
     }
 

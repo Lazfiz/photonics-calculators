@@ -49,8 +49,10 @@ export default function PoincareSpherePage() {
     const psi = (thetaDeg * Math.PI) / 180;
     const chi = (chiDeg * Math.PI) / 180;
     return {
-      ex: amplitude * Math.cos(psi) * Math.cos(chi) - 0 * amplitude * Math.sin(psi) * Math.sin(chi),
-      ey: amplitude * Math.sin(psi) * Math.cos(chi) + 0 * amplitude * Math.cos(psi) * Math.sin(chi),
+      ex_re: amplitude * Math.cos(psi) * Math.cos(chi),
+      ex_im: -amplitude * Math.sin(psi) * Math.sin(chi),
+      ey_re: amplitude * Math.sin(psi) * Math.cos(chi),
+      ey_im: amplitude * Math.cos(psi) * Math.sin(chi),
     };
   }, [thetaDeg, chiDeg, amplitude]);
 
@@ -98,8 +100,8 @@ export default function PoincareSpherePage() {
             <ResultRow label="V (S₃)" value={stokes.V.toFixed(4)} />
             <ResultRow label="DOP" value={dop.toFixed(4)} />
             <ResultRow label="Handedness" value={handedness} />
-            <ResultRow label="Jones Ex" value={`${jones.ex.toFixed(3)}`} />
-            <ResultRow label="Jones Ey" value={`${jones.ey.toFixed(3)}`} />
+            <ResultRow label="Jones Ex" value={`${jones.ex_re.toFixed(3)}${jones.ex_im >= 0 ? '+' : ''}${jones.ex_im.toFixed(3)}i`} />
+            <ResultRow label="Jones Ey" value={`${jones.ey_re.toFixed(3)}${jones.ey_im >= 0 ? '+' : ''}${jones.ey_im.toFixed(3)}i`} />
           </div>
         </div>
 
