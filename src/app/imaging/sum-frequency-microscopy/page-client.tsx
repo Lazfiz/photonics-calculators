@@ -16,17 +16,13 @@ export default function SumFrequencyMicroscopyPage() {
 
   // SFG wavelength: 1/λ_SFG = 1/λ1 + 1/λ2
   const lambdaSFG = (lambda1 * lambda2) / (lambda1 + lambda2);
-  const wavenumber1 = 1e7 / lambda1;
-  const wavenumber2 = 1e7 / lambda2;
-  const wavenumberSFG = wavenumber1 + wavenumber2;
-
   const energy1 = 1240 / lambda1;
   const energy2 = 1240 / lambda2;
   const energySFG = energy1 + energy2;
 
   // Beam waists
-  const w0_1 = 0.61 * lambda1 / na;
-  const w0_2 = 0.61 * lambda2 / na;
+  const w0_1 = 0.61 * lambda1 / na / 1000;
+  const w0_2 = 0.61 * lambda2 / na / 1000;
 
   const chartData = useMemo(() => {
     const lams2 = Array.from({ length: 100 }, (_, i) => 600 + i * 10);
