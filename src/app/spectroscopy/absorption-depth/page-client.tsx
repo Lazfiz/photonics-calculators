@@ -18,8 +18,8 @@ export default function AbsorptionDepthPage() {
       if (wl < 350) return 1e6;
       if (wl < 400) return 1e5;
       if (wl < 500) return 1e4;
-      if (wl < 800) return 1e3 * Math.exp((wl - 500) * 0.005);
-      if (wl < 1100) return 100 * Math.exp((wl - 800) * 0.007);
+      if (wl < 800) return 1e3 * Math.exp(-(wl - 500) * 0.005);
+      if (wl < 1100) return 100 * Math.exp(-(wl - 800) * 0.007);
       return 10;
     },
     glass: (wl) => wl < 300 ? 100 : wl < 2500 ? 0.1 : 10,
@@ -28,7 +28,7 @@ export default function AbsorptionDepthPage() {
       if (wl < 300) return 0.1;
       if (wl < 700) return 0.001;
       if (wl < 1000) return 0.5;
-      return 50 * Math.exp((wl - 1000) * 0.005);
+      return 50 * Math.exp(-(wl - 1000) * 0.005);
     },
     custom: () => absorptionCoeff,
   };
@@ -99,7 +99,7 @@ export default function AbsorptionDepthPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p>I(z) = I₀ · exp(−αz)</p>
         <p>δ = 1/α — depth at which intensity falls to 1/e ≈ 36.8%</p>
-        <p>Beer-Lambert: A = α · d = log₁₀(I₀/I)</p>
+        <p>Beer-Lambert: A = (α/ln10) · d = log₁₀(I₀/I),  I = I₀·exp(−αd)</p>
       </div>
 
       <ChartPanel data={[...chartData, ...customRange, ...customData]} layout={material !== "custom" ? {
