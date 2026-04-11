@@ -48,11 +48,14 @@ export default function WireGridPage() {
   const ZgridParallel = Zs / dutyCycle; // effective impedance for E parallel
 
   // Perpendicular (E across wires) - capacitive grid
-  const ZgridPerp = Z0 / (Math.PI * normalizedSpacing * Math.log(1 / (Math.PI * normalizedDiameter / 2)));
+  // Ulrich, Infrared Physics 7, 37-55 (1967): log factor uses geometry not wavelength
+  const ZgridPerp = Z0 / (Math.PI * normalizedSpacing * Math.log(2 * wireSpacing / (Math.PI * wireDiameter)));
 
-  // Transmission coefficients
-  const tParallel = 2 * ZgridParallel / (2 * ZgridParallel / Math.cos(thetaI) + Z0);
-  const tPerpendicular = 2 * ZgridPerp / (2 * ZgridPerp * Math.cos(thetaI) + Z0);
+  // Transmission coefficients (standard sheet impedance model)
+  // TE (E ∥ wires): t = 2·Z₀·cosθ / (2·Z_s + Z₀·cosθ)
+  // TM (E ⊥ wires): t = 2·Z₀ / (2·Z_s·cosθ + Z₀)
+  const tParallel = 2 * Z0 * Math.cos(thetaI) / (2 * ZgridParallel + Z0 * Math.cos(thetaI));
+  const tPerpendicular = 2 * Z0 / (2 * ZgridPerp * Math.cos(thetaI) + Z0);
 
   const Tparallel = Math.abs(tParallel) ** 2;
   const Tperpendicular = Math.abs(tPerpendicular) ** 2;
@@ -74,8 +77,8 @@ export default function WireGridPage() {
       const skd = Math.sqrt(2 / (2 * Math.PI * 3e8 / (w * 1e-6) * 4 * Math.PI * 1e-7 * sigma));
       const zp = (1 / (sigma * skd)) / dutyCycle;
       const zs = Z0 / (Math.PI * nsp * Math.log(1 / (Math.PI * ndp / 2)));
-      const tp = Math.abs(2 * zp / (2 * zp / Math.cos(thetaI) + Z0)) ** 2;
-      const ts = Math.abs(2 * zs / (2 * zs * Math.cos(thetaI) + Z0)) ** 2;
+      const tp = Math.abs(2 * Z0 * Math.cos(thetaI) / (2 * zp + Z0 * Math.cos(thetaI))) ** 2;
+      const ts = Math.abs(2 * Z0 / (2 * zs * Math.cos(thetaI) + Z0)) ** 2;
       return tp;
     });
 
@@ -85,8 +88,8 @@ export default function WireGridPage() {
       const skd = Math.sqrt(2 / (2 * Math.PI * 3e8 / (w * 1e-6) * 4 * Math.PI * 1e-7 * sigma));
       const zp = (1 / (sigma * skd)) / dutyCycle;
       const zs = Z0 / (Math.PI * nsp * Math.log(1 / (Math.PI * ndp / 2)));
-      const tp = Math.abs(2 * zp / (2 * zp / Math.cos(thetaI) + Z0)) ** 2;
-      const ts = Math.abs(2 * zs / (2 * zs * Math.cos(thetaI) + Z0)) ** 2;
+      const tp = Math.abs(2 * Z0 * Math.cos(thetaI) / (2 * zp + Z0 * Math.cos(thetaI))) ** 2;
+      const ts = Math.abs(2 * Z0 / (2 * zs * Math.cos(thetaI) + Z0)) ** 2;
       return ts;
     });
 

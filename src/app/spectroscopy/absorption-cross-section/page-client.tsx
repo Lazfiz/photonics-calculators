@@ -13,7 +13,8 @@ export default function AbsorptionCrossSectionPage() {
   const [sweepParam, setSweepParam] = useState<"epsilon" | "lambda">("epsilon");
 
   const NA = 6.022e23;
-  const sigma = extinctionCoeff * 1000 / (NA * Math.LN10);
+  // σ = ε × 1000 × ln(10) / N_A  (from A = εcl = σ·N_A·c·l / (1000·ln10))
+  const sigma = extinctionCoeff * 1000 * Math.LN10 / NA;
   const sigmaCm2 = sigma * 1e4;
   const absorbance = extinctionCoeff * concentration * 1;
 
@@ -24,10 +25,10 @@ export default function AbsorptionCrossSectionPage() {
     if (sweepParam === "epsilon") {
       const eMax = Math.max(extinctionCoeff * 2, 100000);
       xs = Array.from({ length: n }, (_, i) => (i / n) * eMax);
-      ys = xs.map(e => e * 1000 / (NA * Math.LN10) * 1e4);
+      ys = xs.map(e => e * 1000 * Math.LN10 / NA * 1e4);
     } else {
       xs = Array.from({ length: n }, (_, i) => 200 + (i / n) * 1000);
-      ys = xs.map(_ => extinctionCoeff * 1000 / (NA * Math.LN10) * 1e4);
+      ys = xs.map(_ => extinctionCoeff * 1000 * Math.LN10 / NA * 1e4);
     }
 
     return [
