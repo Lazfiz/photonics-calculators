@@ -16,18 +16,18 @@ export default function StreakCameraPage() {
 
   const results = useMemo(() => {
     const timePerPixel = (ccdPixelSize / (sweepSpeed * 1e3)) * 1e3; // ps per pixel: µm / (mm/ns) = ns → ps
-    const timePerSlit = (slitWidth / magnification) / (sweepSpeed * 1e3) * 1e3; // ps
+    const timePerSlit = (slitWidth * magnification) / (sweepSpeed * 1e3) * 1e3; // ps (slit image on CCD = slitWidth * M)
     const effectiveTimeRes = Math.max(temporalResolution, timePerSlit);
     const totalTimeWindow = 2048 * timePerPixel; // ps (assuming 2048 pixels)
-    const spatialRes = slitWidth / magnification; // µm at photocathode
+    const spatialRes = slitWidth; // µm at photocathode (slit is at cathode)
     return { timePerPixel, timePerSlit, effectiveTimeRes, totalTimeWindow, spatialRes };
   }, [sweepSpeed, slitWidth, magnification, ccdPixelSize, temporalResolution, dynamicRange]);
 
   const chartData = useMemo(() => {
     const speeds = Array.from({ length: 100 }, (_, i) => 1 + i * 0.5);
     const tpp = speeds.map(s => (ccdPixelSize / (s * 1e3)) * 1e3);
-    const tps = speeds.map(s => (slitWidth / magnification) / (s * 1e3) * 1e3);
-    const eff = speeds.map(s => Math.max(temporalResolution, (slitWidth / magnification) / (s * 1e3) * 1e3));
+    const tps = speeds.map(s => (slitWidth * magnification) / (s * 1e3) * 1e3);
+    const eff = speeds.map(s => Math.max(temporalResolution, (slitWidth * magnification) / (s * 1e3) * 1e3));
     const window = speeds.map(s => 2048 * (ccdPixelSize / (s * 1e3)) * 1e3);
     return [
       { x: speeds, y: tpp, type: "scatter", mode: "lines", name: "Time/pixel (ps)", line: { color: "#60a5fa" } },
@@ -59,7 +59,7 @@ export default function StreakCameraPage() {
       <h2 className="text-xl font-semibold mb-2">Key Formulas</h2>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 space-y-1 text-sm font-mono text-gray-400">
         <p>Δt<sub>pixel</sub> = p<sub>CCD</sub> / v<sub>sweep</sub></p>
-        <p>Δt<sub>slit</sub> = w<sub>slit</sub> / (M · v<sub>sweep</sub>)</p>
+        <p>Δt<sub>slit</sub> = w<sub>slit</sub> · M / v<sub>sweep</sub></p>
         <p>Δt<sub>eff</sub> = max(Δt<sub>slit</sub>, Δt<sub>system</sub>)</p>
         <p>T<sub>window</sub> = N<sub>pixels</sub> · Δt<sub>pixel</sub></p>
       </div>
