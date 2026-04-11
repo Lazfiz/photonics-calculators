@@ -26,9 +26,9 @@ export default function FlickerNoisePage() {
   const cornerFreq = kf * current ** alpha / thermalPSD;
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="1/f Flicker Noise" description="Flicker noise: S_v(f) = K_f · I^α / f. Noise spectral density falls as 1/f.">
+    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="1/f Flicker Noise" description="Flicker noise: S_i(f) = K_f · I^α / f. Noise spectral density falls as 1/f.">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="K_f (A²·Hz)" value={kf} onChange={setKf} step="1e-25" />
+        <ValidatedNumberInput label="K_f (A²)" value={kf} onChange={setKf} step="1e-25" />
         <ValidatedNumberInput label="Current (A)" value={current} onChange={setCurrent} step="1e-7" />
         <ValidatedNumberInput label="Exponent α" value={alpha} onChange={setAlpha} step="0.1" />
         <ValidatedNumberInput label="f_low (Hz)" value={fLow} onChange={setFLow} />
