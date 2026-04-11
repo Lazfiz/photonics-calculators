@@ -16,9 +16,11 @@ export default function BirefringentPolarizerPage() {
   const prismAngle = prismAngleDeg * Math.PI / 180;
   const dn = nO - nE; // birefringence
 
-  // Walk-off angle (ray deviation)
-  const walkoffGlan = Math.atan((nO * nE * Math.sqrt((nO ** 2 - nE ** 2))) /
-    (nO ** 2 * Math.cos(prismAngle) ** 2 + nE ** 2 * Math.sin(prismAngle) ** 2));
+  // Walk-off angle: tan(ρ) = (n_e² - n_o²)·sinθ·cosθ / (n_o²·sin²θ + n_e²·cos²θ)
+  // (Saleh & Teich, Fundamentals of Photonics, Eq. 6.2-9)
+  const sinT = Math.sin(prismAngle), cosT = Math.cos(prismAngle);
+  const walkoffGlan = Math.atan(((nE ** 2 - nO ** 2) * sinT * cosT) /
+    (nO ** 2 * sinT ** 2 + nE ** 2 * cosT ** 2));
 
   // Wollaston: beam splitting, deviation ≈ 2Δn·tan(α)
   const deviationWollaston = 2 * dn * Math.tan(prismAngle);
@@ -47,9 +49,10 @@ export default function BirefringentPolarizerPage() {
     const angles = Array.from({ length: 300 }, (_, i) => 20 + (i / 300) * 50);
     const walkoff = angles.map(a => {
       const r = a * Math.PI / 180;
+      const sinR = Math.sin(r), cosR = Math.cos(r);
       if (cutType === "glan") {
-        return Math.atan((nO * nE * Math.sqrt(nO ** 2 - nE ** 2)) /
-          (nO ** 2 * Math.cos(r) ** 2 + nE ** 2 * Math.sin(r) ** 2)) * 180 / Math.PI;
+        return Math.atan(((nE ** 2 - nO ** 2) * sinR * cosR) /
+          (nO ** 2 * sinR ** 2 + nE ** 2 * cosR ** 2)) * 180 / Math.PI;
       }
       return 2 * dn * Math.tan(r) * 180 / Math.PI;
     });

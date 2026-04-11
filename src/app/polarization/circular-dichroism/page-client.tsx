@@ -25,7 +25,7 @@ export default function CircularDichroismPage() {
   // CD calculations
   const results = useMemo(() => {
     const deltaA = absL - absR;
-    const deltaE = deltaA / (concentration * pathLength); // M⁻¹cm⁻¹
+    const deltaE = deltaA / (concentration * 1e-3 * pathLength); // mM→M: c(M) = c(mM)×1e-3
     // Convert to molar ellipticity [θ] = 3298 * Δε
     const molarEllipticity = 3298 * deltaE;
     // Mean residue ellipticity (for proteins)
@@ -33,7 +33,7 @@ export default function CircularDichroismPage() {
     // g-factor (anisotropy factor)
     const gFactor = deltaA / ((absL + absR) / 2);
     // Ellipticity in millidegrees
-    const ellipticityMdeg = deltaA * 32980 * Math.log(10) / 2; // approximate
+    const ellipticityMdeg = deltaA * 32980; // ψ(mdeg) ≈ 32980 × ΔA (Greenfield 2006, Nat. Protocols)
     // Dissymmetry factor
     const dissymmetry = gFactor;
 

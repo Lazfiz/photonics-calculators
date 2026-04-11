@@ -37,7 +37,7 @@ export default function BirefringenceImagingPage() {
   // I = sin²(α - β) cos²(δ/2) + sin²(δ/2) cos²(2φ + α - β)
   // Simplified: I = sin²(α - β) when δ = 0, I varies with δ
   const theta = anaRad - polRad; // angle between pol and analyzer
-  const intensity = Math.sin(theta) ** 2 * Math.cos(totalDelta / 2) ** 2 +
+  const intensity = Math.cos(theta) ** 2 * Math.cos(totalDelta / 2) ** 2 +
     Math.sin(totalDelta / 2) ** 2 * Math.cos(2 * polRad + theta) ** 2;
 
   // With compensator: Senarmont or similar
@@ -78,7 +78,7 @@ export default function BirefringenceImagingPage() {
 
         const localDelta = (2 * Math.PI * localDn * d) / lam + compensatorRet;
         const localTheta = anaRad - polRad;
-        const I = Math.sin(localTheta) ** 2 * Math.cos(localDelta / 2) ** 2 +
+        const I = Math.cos(localTheta) ** 2 * Math.cos(localDelta / 2) ** 2 +
           Math.sin(localDelta / 2) ** 2 * Math.cos(2 * polRad + localTheta) ** 2;
 
         xArr.push(x);
@@ -97,7 +97,7 @@ export default function BirefringenceImagingPage() {
     const rets = Array.from({ length: 300 }, (_, i) => (i / 300) * 4 * Math.PI);
     const I = rets.map(d => {
       const td = d + compensatorRet;
-      return Math.sin(theta) ** 2 * Math.cos(td / 2) ** 2 +
+      return Math.cos(theta) ** 2 * Math.cos(td / 2) ** 2 +
         Math.sin(td / 2) ** 2 * Math.cos(2 * polRad + theta) ** 2;
     });
     const sens = rets.map(d => Math.abs(Math.sin(d)));
@@ -112,7 +112,7 @@ export default function BirefringenceImagingPage() {
     const I = angles.map(a => {
       const th = (a - polarizerAngleDeg) * Math.PI / 180;
       const td = delta + compensatorRet;
-      return Math.sin(th) ** 2 * Math.cos(td / 2) ** 2 +
+      return Math.cos(th) ** 2 * Math.cos(td / 2) ** 2 +
         Math.sin(td / 2) ** 2 * Math.cos(2 * polRad + th) ** 2;
     });
     return [
