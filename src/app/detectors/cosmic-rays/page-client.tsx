@@ -27,7 +27,7 @@ export default function CosmicRaysPage() {
   const chartData = useMemo(() => {
     const times = Array.from({ length: 200 }, (_, i) => 0.01 + i * 10 / 200);
     const hits = times.map(t => fluxPerSec * sensorArea * t);
-    let maxHits = times.map(t => { const mu = fluxPerSec * sensorArea * t; let k = mu; let sum = 0; for (let n = 0; n <= mu + 5 * Math.sqrt(mu); n++) { const lp = n * Math.log(Math.max(mu, 1e-300)) - mu - lgamma(n + 1); sum += Math.exp(lp); if (sum >= 0.99) { k = n; break; } } return k; });
+    let maxHits = times.map(t => { const mu = fluxPerSec * sensorArea * t; let k = mu; let sum = 0; for (let n = 0; n <= mu + 5 * Math.sqrt(mu); n++) { const lp = n * Math.log(Math.max(mu, 1e-300)) - mu - lgamma(n); sum += Math.exp(lp); if (sum >= 0.99) { k = n; break; } } return k; });
     return [
       { x: times, y: hits, type: "scatter", mode: "lines", name: "Expected Hits", line: { color: "#60a5fa", width: 2 } },
       { x: times, y: maxHits, type: "scatter", mode: "lines", name: "99th Percentile", line: { color: "#f87171", width: 2, dash: "dash" } },
