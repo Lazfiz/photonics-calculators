@@ -15,13 +15,14 @@ export default function HarmonicGenerationPage() {
   const [order, setOrder] = useURLState("order", 2);
 
   const harmonicWavelength = wavelength / order;
-  const peakPower = (power * 1000) / (pulseWidth * 1e-12) / 1e6; // in MW
-  const averagePowerPerPulse = power / repetitionRate;
-  const peakIntensity = (peakPower * 1e6) / (Math.PI * (0.61 * wavelength * 1e-3 / na) ** 2) / 1e12; // TW/cm²
+  const peakPower = power / (repetitionRate * pulseWidth); // MW (mW / MHz / fs)
+  const energyPerPulse = power / repetitionRate; // nJ (mW / MHz)
+  const spotRadius = 0.61 * wavelength * 1e-3 / na; // µm
+  const peakIntensity = peakPower * 1e6 / (Math.PI * spotRadius * spotRadius) * 1e-4; // TW/cm²
 
   // SHG conversion efficiency estimate (proportional to intensity and χ²)
   const shgEfficiency = 1e-12 * peakIntensity * peakIntensity * 0.01;
-  const thgEfficiency = 1e-24 * peakIntensity * peakIntensity * peakIntensity * 0.001;
+  const thgEfficiency = 1e-18 * peakIntensity * peakIntensity * peakIntensity * 0.001;
 
   const chartData = useMemo(() => {
     const wavelengths = Array.from({ length: 100 }, (_, i) => 600 + i * 8);
@@ -35,10 +36,20 @@ export default function HarmonicGenerationPage() {
   const efficiencyChart = useMemo(() => {
     const powers = Array.from({ length: 60 }, (_, i) => 5 + i * 3);
     return [
-      { x: powers, y: powers.map(p => 1e-12 * ((p * 1000 / (pulseWidth * 1e-12) / 1e6 * 1e6) / (Math.PI * (0.61 * wavelength * 1e-3 / na) ** 2) / 1e12) ** 2 * 0.01), type: "scatter", mode: "lines", name: "SHG Efficiency", line: { color: "#34d399" } },
-      { x: powers, y: powers.map(p => 1e-24 * ((p * 1000 / (pulseWidth * 1e-12) / 1e6 * 1e6) / (Math.PI * (0.61 * wavelength * 1e-3 / na) ** 2) / 1e12) ** 3 * 0.001), type: "scatter", mode: "lines", name: "THG Efficiency", line: { color: "#fbbf24" } },
+      { x: powers, y: powers.map(p => {
+        const pp = p / (repetitionRate * pulseWidth); // MW
+        const sr = 0.61 * wavelength * 1e-3 / na;
+        const pi = pp * 1e6 / (Math.PI * sr * sr) * 1e-4; // TW/cm²
+        return 1e-12 * pi * pi * 0.01;
+      }), type: "scatter", mode: "lines", name: "SHG Efficiency", line: { color: "#34d399" } },
+      { x: powers, y: powers.map(p => {
+        const pp = p / (repetitionRate * pulseWidth);
+        const sr = 0.61 * wavelength * 1e-3 / na;
+        const pi = pp * 1e6 / (Math.PI * sr * sr) * 1e-4;
+        return 1e-18 * pi * pi * pi * 0.001;
+      }), type: "scatter", mode: "lines", name: "THG Efficiency", line: { color: "#fbbf24" } },
     ];
-  }, [wavelength, na, pulseWidth]);
+  }, [wavelength, na, pulseWidth, repetitionRate]);
 
   return (
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Harmonic Generation Microscopy Calculator" description="Calculate harmonic wavelengths, peak intensities, and conversion efficiencies for nonlinear harmonic generation microscopy.">
@@ -74,7 +85,7 @@ export default function HarmonicGenerationPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Energy/Pulse</p>
-          <p className="text-2xl font-bold text-purple-400">{averagePowerPerPulse.toFixed(2)} nJ</p>
+          <p className="text-2xl font-bold text-purple-400">{energyPerPulse.toFixed(2)} nJ</p>
         </div>
       </div>
 
