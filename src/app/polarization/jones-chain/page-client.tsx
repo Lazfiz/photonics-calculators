@@ -73,9 +73,11 @@ export default function JonesChainPage() {
   const ex = Math.abs(outputField[0].re) ** 2 + Math.abs(outputField[0].im) ** 2;
   const ey = Math.abs(outputField[1].re) ** 2 + Math.abs(outputField[1].im) ** 2;
   const exy = 2 * (outputField[0].re * outputField[1].re + outputField[0].im * outputField[1].im);
-  const chi = 0.5 * Math.atan2(exy, ex - ey);
+  const s3 = 2 * (outputField[0].re * outputField[1].im - outputField[0].im * outputField[1].re);
+  const s1 = ex - ey;
+  const chi = 0.5 * Math.atan2(s3, Math.sqrt(s1 * s1 + exy * exy));
   const ellipticity = Math.abs(Math.tan(chi));
-  const psi = 0.5 * Math.atan2(2 * exy, ex - ey) * 180 / Math.PI;
+  const psi = 0.5 * Math.atan2(exy, s1) * 180 / Math.PI;
 
   const chartData = useMemo(() => {
     const t = Array.from({ length: 200 }, (_, i) => (i / 200) * 2 * Math.PI);

@@ -76,8 +76,8 @@ const INPUT_PRESETS: Record<InputPreset, { jones: C[]; label: string }> = {
   "linear-v": { jones: [czero, cone], label: "Linear V" },
   "linear-45": { jones: [{ re: 1 / Math.sqrt(2), im: 0 }, { re: 1 / Math.sqrt(2), im: 0 }], label: "Linear 45°" },
   "linear-135": { jones: [{ re: 1 / Math.sqrt(2), im: 0 }, { re: -1 / Math.sqrt(2), im: 0 }], label: "Linear 135°" },
-  rcp: { jones: [{ re: 1 / Math.sqrt(2), im: 0 }, { re: 0, im: 1 / Math.sqrt(2) }], label: "RCP" },
-  lcp: { jones: [{ re: 1 / Math.sqrt(2), im: 0 }, { re: 0, im: -1 / Math.sqrt(2) }], label: "LCP" },
+  rcp: { jones: [{ re: 1 / Math.sqrt(2), im: 0 }, { re: 0, im: -1 / Math.sqrt(2) }], label: "RCP" }, // [1, -i]/√2 (e^{-iωt} convention, Hecht)
+  lcp: { jones: [{ re: 1 / Math.sqrt(2), im: 0 }, { re: 0, im: 1 / Math.sqrt(2) }], label: "LCP" },   // [1, +i]/√2
 };
 
 export default function JonesCalculusPage() {

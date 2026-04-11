@@ -20,11 +20,11 @@ export default function LiquidCrystalPolarizerPage() {
   const lambda = wavelength * 1e-9;
   const delta = (2 * Math.PI * neNo * d) / lambda;
 
-  // TN mode: Gooch-Tarry condition
-  // T = sin²(π/2 √(1 + u²)) / (1 + u²), u = 2Δnd/(λ√(1 + α²))
-  const alpha = preTilt;
-  const uTN = (2 * neNo * d) / (lambda * Math.sqrt(1 + (twistAngle * Math.PI / (2 * Math.PI)) ** 2));
-  const ttn = Math.sin(Math.PI / 2 * Math.sqrt(1 + uTN ** 2)) ** 2 / (1 + uTN ** 2);
+  // TN mode: Gooch-Tarry condition (Gooch & Tarry, Applied Physics 8, 1975)
+  // T = sin²(φ√(1+u²)/2) / (1+u²), u = δ/φ = (2πΔnd/λ) / φ
+  // For 90° twist (φ=π/2): u = 4Δnd/λ, first minimum at u=√3/2
+  const uTN = delta / twistRad;
+  const ttn = Math.sin(twistRad / 2 * Math.sqrt(1 + uTN ** 2)) ** 2 / (1 + uTN ** 2);
 
   // VAN (VA) mode: T = sin²(δ/2) · sin²(2φ)
   // At normal incidence with no voltage: LC aligned homeotropically, T ≈ 0
