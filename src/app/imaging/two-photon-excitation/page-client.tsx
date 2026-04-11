@@ -14,8 +14,8 @@ export default function TwoPhotonExcitationPage() {
   const [repRate, setRepRate] = useURLState("repRate", 80);
 
   const twoPhotonEx = 2 * exWavelength;
-  const peakPower = avgPower / (repRate * 1e6 * pulseWidth * 1e-15);
-  const pulseEnergy = (avgPower / repRate) * 1000; // nJ
+  const peakPower = avgPower * 1e-3 / (repRate * 1e6 * pulseWidth * 1e-15);
+  const pulseEnergy = avgPower / repRate; // nJ (mW / MHz)
 
   const chartData = useMemo(() => {
     const wavelengths = Array.from({ length: 80 }, (_, i) => 350 + i * 5);
@@ -28,7 +28,7 @@ export default function TwoPhotonExcitationPage() {
   const powerData = useMemo(() => {
     const widths = Array.from({ length: 60 }, (_, i) => 20 + i * 5);
     return [
-      { x: widths, y: widths.map(w => (avgPower / (repRate * 1e6 * w * 1e-15)) / 1e6), type: "scatter", mode: "lines", name: "Peak Power (MW)", line: { color: "#fbbf24" } },
+      { x: widths, y: widths.map(w => (avgPower * 1e-3 / (repRate * 1e6 * w * 1e-15)) / 1e6), type: "scatter", mode: "lines", name: "Peak Power (MW)", line: { color: "#fbbf24" } },
       { x: [pulseWidth], y: [peakPower / 1e6], type: "scatter", mode: "markers", name: "Current", marker: { color: "#34d399", size: 12 } },
     ];
   }, [avgPower, repRate, pulseWidth, peakPower]);
@@ -65,7 +65,12 @@ export default function TwoPhotonExcitationPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Formulas</h3>
-                              </div>
+        <div className="space-y-2 text-sm text-gray-300 font-mono">
+          <p>λ₂P ≈ 2 × λ₁ₚ</p>
+          <p>P_peak = P_avg / (f_rep · τ_pulse)</p>
+          <p>E_pulse = P_avg / f_rep</p>
+          <p>Lateral: d = 0.325λ/NA</p>
+        </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="bg-gray-900 rounded-lg p-4">
