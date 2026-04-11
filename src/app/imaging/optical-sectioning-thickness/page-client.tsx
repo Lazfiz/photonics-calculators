@@ -17,7 +17,7 @@ export default function OpticalSectioningPage() {
   const pinholeDiam = pinholeAU * 2 * airyRadiusUm;
 
   // Widefield optical section thickness (depth of field)
-  const dof = refractiveIndex * wavelength / (na * na);
+  const dof = 2 * refractiveIndex * wavelength / (na * na);
 
   // Confocal optical section thickness
   const confocalSection = 1.4 * refractiveIndex * wavelength / (na * na);
@@ -28,7 +28,7 @@ export default function OpticalSectioningPage() {
   const chartData = useMemo(() => {
     const nas = Array.from({ length: 80 }, (_, i) => 0.2 + i * 0.016);
     return [
-      { x: nas, y: nas.map(n => refractiveIndex * wavelength / (n * n)), type: "scatter", mode: "lines", name: "Widefield", line: { color: "#60a5fa" } },
+      { x: nas, y: nas.map(n => 2 * refractiveIndex * wavelength / (n * n)), type: "scatter", mode: "lines", name: "Widefield", line: { color: "#60a5fa" } },
       { x: nas, y: nas.map(n => 1.4 * refractiveIndex * wavelength / (n * n)), type: "scatter", mode: "lines", name: "Confocal (1 AU)", line: { color: "#34d399" } },
       { x: nas, y: nas.map(n => 0.7 * 2 * refractiveIndex * wavelength / (n * n)), type: "scatter", mode: "lines", name: "Multiphoton", line: { color: "#fbbf24", dash: "dash" } },
       { x: [na], y: [confocalSection], type: "scatter", mode: "markers", name: "Current", marker: { color: "#f87171", size: 12 } },
