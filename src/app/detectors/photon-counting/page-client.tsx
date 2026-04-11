@@ -17,7 +17,7 @@ export default function PhotonCountingPage() {
 
   const actualMean = meanCounts;
   const snr = Math.sqrt(actualMean);
-  const snrDb = 10 * Math.log10(snr);
+  const snrDb = 10 * Math.log10(actualMean);
   const relativeError = 1 / snr;
   // Dead time correction: N_measured = N_true / (1 + N_true * tau)
   // N_true = N_measured / (1 - N_measured * tau)
@@ -28,7 +28,7 @@ export default function PhotonCountingPage() {
   const totalSNR = Math.sqrt(totalCounts);
 
   const chartData = useMemo(() => {
-    const n = Array.from({ length: Math.min(200, Math.max(30, Math.round(meanCounts * 3))) }, (_, i) => i);
+    const n = Array.from({ length: Math.min(500, Math.max(30, Math.round(meanCounts * 3.5))) }, (_, i) => i);
     // Poisson PMF
     const poisson = n.map(k => {
       let logP = k * Math.log(actualMean) - actualMean;
