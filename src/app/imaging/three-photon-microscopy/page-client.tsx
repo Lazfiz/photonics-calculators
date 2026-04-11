@@ -27,14 +27,14 @@ export default function ThreePhotonMicroscopyPage() {
   // Excitation volume
   const w0 = 0.61 * wavelength / (na * 1000);
   const zR = Math.PI * w0 * w0 * refractiveIndex / (wavelength / 1000);
-  // 3-photon excitation volume ≈ V_2P × √(2/3) / 3 (PSF-derived scaling)
-  const excitationVolume = Math.PI * w0 * w0 * zR * 0.5 * Math.sqrt(2 / 3) / 3;
+  // 3-photon excitation volume ≈ π²w₀²zR/12 (PSF-derived)
+  const excitationVolume = Math.PI * Math.PI * w0 * w0 * zR / 12;
 
   // Peak intensity
-  const energyPerPulse = (avgPower * 1000 / repRate) * 1e-9;
+  const energyPerPulse = (avgPower / repRate) * 1e-9;
   const peakPower = energyPerPulse / (pulseWidth * 1e-15);
   const spotArea = Math.PI * (w0 * 1e-6) ** 2;
-  const peakIntensity = peakPower / spotArea / 1e12;
+  const peakIntensity = peakPower / spotArea / 1e16;
 
   // Power at depth (lower scattering at longer wavelength)
   const powerAtDepth = avgPower * Math.exp(-scatteringCoeff * depth / 1e4);
