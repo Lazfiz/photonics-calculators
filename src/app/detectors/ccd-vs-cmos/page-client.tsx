@@ -26,7 +26,7 @@ export default function CcdVsCmosPage() {
   };
 
   const chartData = useMemo(() => {
-    const signals = Array.from({ length: 300 }, (_, i) => 1 + i * 100000 / 300);
+    const signals = Array.from({ length: 300 }, (_, i) => 1 * Math.pow(100000, i / 300));
     const traces: any[] = [];
     Object.entries(sensors).forEach(([key, s], idx) => {
       traces.push({ x: signals, y: signals.map(sig => calcSNR(sig, s.readNoise, s.darkCurrent, exposureTime, s.wellCapacity).snr), type: "scatter" as const, mode: "lines" as const, name: sensorNames[idx], line: { color: plotColors[idx] } });
@@ -67,7 +67,7 @@ export default function CcdVsCmosPage() {
         <p>SNR = S / √(σ_read² + S + D·t)</p>
         <p>Dynamic Range = 20·log₁₀(FWC / σ_read) dB</p>
         <p>⚠ EMCCD SNR shown here does NOT include excess noise factor (√2 penalty on shot noise)</p>
-        <p>Real EMCCD SNR at low light ≈ S / √(2S + σ_read² + D·t) — slightly worse than shown</p>
+        <p>Real EMCCD SNR at low light ≈ S / √(2(S + D·t) + σ_read²) — slightly worse than shown</p>
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Signal (e⁻)", gridcolor: "#374151", type: "log" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} />
     </CalculatorShell>
