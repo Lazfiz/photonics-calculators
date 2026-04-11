@@ -35,8 +35,9 @@ export default function WaveplateOrderPage() {
 
   // Calculate required thickness for specific waveplate types
   const thicknessFor = useMemo(() => {
-    const qwp = (wavelength / 4) / (birefringence * 1e3); // mm
-    const hwp = (wavelength / 2) / (birefringence * 1e3);
+    // thickness = (fraction × λ) / Δn, with λ in nm → result in meters
+    const qwp = (wavelength * 1e-9 / 4) / birefringence; // meters
+    const hwp = (wavelength * 1e-9 / 2) / birefringence;
     return { qwp, hwp };
   }, [wavelength, birefringence]);
 
