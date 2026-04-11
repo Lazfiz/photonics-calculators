@@ -14,24 +14,20 @@ export default function SpeckleImagingPage() {
   const [apertureDiameterMm, setApertureDiameterMm] = useURLState("apertureDiameterMm", 10);
   const [numAverages, setNumAverages] = useURLState("numAverages", 10);
   const [speckleContrast, setSpeckleContrast] = useURLState("speckleContrast", 1.0);
-  const [scatteringParticles, setScatteringParticles] = useURLState("scatteringParticles", 100);
 
   const lambda = wavelengthNm * 1e-9;
   const lambdaUm = wavelengthNm * 1e-3;
   const beamRad = beamDiameterMm * 1e-3 / 2;
   const z = propagationDistMm * 1e-3;
-  const speckleSize = 1.22 * lambda * z / (beamDiameterMm * 1e-3) * 1e6; // µm
+  const speckleSize = lambda * z / (beamDiameterMm * 1e-3) * 1e6; // µm
   const rayleighRange = Math.PI * beamRad ** 2 / lambda;
-  const numSpeckles = (apertureDiameterMm / (speckleSize / 1000)) ** 2;
+  const reducedContrast = numAverages > 0 ? speckleContrast / Math.sqrt(numAverages) : 1;
   const roughnessWaves = surfaceRoughnessUm / lambdaUm;
   const isFullyDeveloped = roughnessWaves > 1;
-  const reducedContrast = numAverages > 0 ? speckleContrast / Math.sqrt(numAverages) : 1;
-  const snrImprovement = Math.sqrt(numAverages);
-  const decorrelationLength = lambdaUm / (2 * Math.sin(Math.atan(beamDiameterMm / (2 * propagationDistMm))));
 
   const speckleSizeChart = useMemo(() => {
     const dists = Array.from({ length: 40 }, (_, i) => 50 + i * 25);
-    const sizes = dists.map(d => 1.22 * lambda * (d * 1e-3) / (beamDiameterMm * 1e-3) * 1e6);
+    const sizes = dists.map(d => lambda * (d * 1e-3) / (beamDiameterMm * 1e-3) * 1e6);
     return [
       { x: dists, y: sizes, type: "scatter", mode: "lines" as const, name: "Speckle Size", line: { color: "#60a5fa", width: 2 } },
       { x: [propagationDistMm], y: [speckleSize], type: "scatter", mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
@@ -84,13 +80,14 @@ export default function SpeckleImagingPage() {
         <ValidatedNumberInput label="Surface Roughness (µm)" value={surfaceRoughnessUm} onChange={setSurfaceRoughnessUm} min={0.01} max={10} step="0.1" />
         <ValidatedNumberInput label="Propagation Distance (mm)" value={propagationDistMm} onChange={setPropagationDistMm} min={10} max={2000} step="10" />
         <ValidatedNumberInput label="Number of Averages" value={numAverages} onChange={setNumAverages} min={1} max={100} step="1" />
+        <ValidatedNumberInput label="Speckle Contrast" value={speckleContrast} onChange={setSpeckleContrast} min={0.01} max={1} step="0.05" />
         <ValidatedNumberInput label="Aperture Diameter (mm)" value={apertureDiameterMm} onChange={setApertureDiameterMm} min={1} max={50} step="1" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Key Formulas</h3>
         <div className="space-y-2 text-gray-300 text-sm font-mono">
-          <p>d_s = 1.22 λz / D — Objective speckle size</p>
+          <p>d_s = λz / D — Speckle size (objective)</p>
           <p>C = σ_I / ⟨I⟩ — Speckle contrast</p>
           <p>C_N = C / √N — Contrast after N averages</p>
           <p>σ_h &gt; λ → fully developed speckle</p>
