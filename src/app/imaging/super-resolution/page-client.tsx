@@ -9,8 +9,7 @@ export default function SuperResolutionPage() {
   const [na, setNa] = useURLState("na", 1.4);
   const [wavelength, setWavelength] = useURLState("wavelength", 580);
   const [n, setN] = useURLState("n", 1.52);
-  const [stedDepletion, setStedDepletion] = useURLState("stedDepletion", 0); // 0=off, percentage
-  const [stedWavelength, setStedWavelength] = useURLState("stedWavelength", 775);
+  const [stedDepletion, setStedDepletion] = useURLState("stedDepletion", 30); // I_dep/I_sat ratio
   const [palmPhotons, setPalmPhotons] = useURLState("palmPhotons", 5000);
 
   const results = useMemo(() => {
@@ -19,14 +18,14 @@ export default function SuperResolutionPage() {
     const axialAbbe = 2 * n * lam / (na * na) * 1e9;
     let stedLat = null, stedAx = null;
     if (stedDepletion > 0) {
-      const factor = 1 / Math.sqrt(1 + stedDepletion / 100);
+      const factor = 1 / Math.sqrt(1 + stedDepletion);
       stedLat = abbe * factor;
-      stedAx = axialAbbe * factor;
+      // Note: 2D STED only improves lateral resolution; axial stays diffraction-limited
     }
     const palmRes = lam / (2 * na * Math.sqrt(palmPhotons)) * 1e9;
     const palmAxRes = 2 * lam * n / (na * na * Math.sqrt(palmPhotons)) * 1e9;
-    return { abbe, axialAbbe, stedLat, stedAx, palmRes, palmAxRes };
-  }, [na, wavelength, n, stedDepletion, stedWavelength, palmPhotons]);
+    return { abbe, axialAbbe, stedLat, palmRes, palmAxRes };
+  }, [na, wavelength, n, stedDepletion, palmPhotons]);
 
   const plotData = useMemo(() => {
     const photons = [];
@@ -39,7 +38,7 @@ export default function SuperResolutionPage() {
       photons.push(p);
       palmLats.push(lam / (2 * na * Math.sqrt(p)) * 1e9);
     }
-    for (let d = 0; d <= 99; d += 1) {
+    for (let d = 0; d <= 100; d += 1) {
       stedDepls.push(d);
       stedLats.push(abbe / Math.sqrt(1 + d));
     }
@@ -67,8 +66,8 @@ export default function SuperResolutionPage() {
             <ValidatedNumberInput label="Refractive index (n)" value={n} onChange={setN} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">STED depletion factor (%)</label>
-            <ValidatedNumberInput label="STED depletion factor (%)" value={stedDepletion} onChange={setStedDepletion} min={0} max={99} />
+            <label className="block text-sm text-gray-400 mb-1">STED I_dep / I_sat</label>
+            <ValidatedNumberInput label="STED I_dep / I_sat" value={stedDepletion} onChange={setStedDepletion} min={0} max={200} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">PALM photons detected</label>
@@ -81,16 +80,13 @@ export default function SuperResolutionPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Diffraction limit (lateral)</span><span className="font-mono">{results.abbe.toFixed(1)} nm</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Diffraction limit (axial)</span><span className="font-mono">{results.axialAbbe.toFixed(1)} nm</span></div>
           {results.stedLat && (
-            <>
-              <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">STED lateral</span><span className="font-mono text-red-400">{results.stedLat != null ? results.stedLat.toFixed(1) + " nm" : "—"}</span></div>
-              <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">STED axial</span><span className="font-mono text-orange-400">{results.stedAx != null ? results.stedAx.toFixed(1) + " nm" : "—"}</span></div>
-            </>
+              <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">STED lateral (2D)</span><span className="font-mono text-red-400">{results.stedLat.toFixed(1)} nm</span></div>
           )}
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">PALM/STORM lateral</span><span className="font-mono text-blue-400">{results.palmRes.toFixed(1)} nm</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">PALM/STORM axial</span><span className="font-mono text-purple-400">{results.palmAxRes.toFixed(1)} nm</span></div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>Abbe: d = 0.61λ/NA</p>
-            <p>STED: d_STED = d_Abbe / √(1 + ζ), ζ = I_depl/I_sat</p>
+            <p>STED: d_STED = d_Abbe / √(1 + I_dep/I_sat) (lateral only)</p>
             <p>PALM: d = λ/(2·NA·√N_photons)</p>
           </div>
         </div>
@@ -100,7 +96,7 @@ export default function SuperResolutionPage() {
         <h2 className="text-lg font-semibold mb-4">Resolution Improvement</h2>
         <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" },
           xaxis: { title: "PALM photons detected", gridcolor: "#333", side: "bottom" },
-          xaxis2: { title: "STED depletion (%)", gridcolor: "#333", overlaying: "x", side: "top", titlefont: { color: "#f87171" } },
+          xaxis2: { title: "STED I_dep / I_sat", gridcolor: "#333", overlaying: "x", side: "top", titlefont: { color: "#f87171" } },
           yaxis: { title: "Lateral resolution (nm)", gridcolor: "#333" },
           legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 60, b: 60 }
         }} />
