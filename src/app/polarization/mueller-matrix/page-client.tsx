@@ -84,8 +84,8 @@ export default function MuellerMatrixPage() {
   const outputStokes = useMemo(() => {
     if (elements.length === 0) return inputStokes;
     let result = [...inputStokes] as number[];
-    // Apply in reverse order: last element acts first on light
-    for (let i = elements.length - 1; i >= 0; i--) {
+    // Apply in forward order: first element in list acts first on light
+    for (let i = 0; i < elements.length; i++) {
       const M = ELEMENTS[elements[i]];
       if (!M) continue;
       result = M.map(row => row.reduce((s, v, j) => s + v * result[j], 0));
@@ -95,8 +95,8 @@ export default function MuellerMatrixPage() {
 
   const combinedMatrix = useMemo(() => {
     if (elements.length === 0) return null;
-    let result = ELEMENTS[elements[elements.length - 1]];
-    for (let i = elements.length - 2; i >= 0; i--) {
+    let result = ELEMENTS[elements[0]];
+    for (let i = 1; i < elements.length; i++) {
       result = matMul(ELEMENTS[elements[i]], result);
     }
     return result;

@@ -17,15 +17,15 @@ export default function MicroscopePolarizerPage() {
 
   // Polarization effects in microscope
   // Convergent light through high-NA objective creates angular spread
-  const maxAngle = Math.asin(na);
+  const maxAngle = na <= 1 ? Math.asin(na) : Math.asin(1); // Cap at 90° for NA>1 (oil immersion)
   const maxAngleDeg = maxAngle * 180 / Math.PI;
 
   // Crossed polarizer transmission
   const crossTransmission = 1 / extinctionRatio;
 
   // Malus&apos;s law for partially polarized light
-  const transmissionCrossed = 0.5 * (1 - 1 / extinctionRatio);
-  const transmissionParallel = 0.5 * (1 + 1 / extinctionRatio);
+  const transmissionCrossed = 0.5 / extinctionRatio;  // Unpolarized → first polarizer (50%) → crossed (1/ER)
+  const transmissionParallel = 0.5;  // Unpolarized → first polarizer (50%) → parallel (100%)
 
   // Malus&apos;s law at analyzer angle
   const transmissionAngle = Math.cos(analyzerRad) ** 2;
