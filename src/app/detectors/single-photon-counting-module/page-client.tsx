@@ -41,7 +41,8 @@ export default function SPCMPage() {
     const freq = c / (wavelength * 1e-9);
     const dt = deadTime * 1e-9;
     const detected = powers.map(p => (p / (h * freq)) * quantumEff);
-    const measured = detected.map(r => r / (1 + r * dt));
+    const totalIncoming = detected.map(r => r + darkCountRate);
+    const measured = totalIncoming.map(r => r / (1 + r * dt));
     const snr = detected.map(r => r / Math.sqrt(r + darkCountRate));
     return [
       { x: powers, y: detected, type: "scatter", mode: "lines", name: "True count rate", line: { color: "#60a5fa" } },
