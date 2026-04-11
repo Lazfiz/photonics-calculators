@@ -21,7 +21,6 @@ export default function SensorCMOSPage() {
     const dynamicRange = 20 * Math.log10(fullWellElectrons / readNoise);
     const dynamicRangeDB = dynamicRange;
     const dynamicRangeBits = dynamicRange / 6.02;
-    const dynamicRangeStops = dynamicRangeDB / 20 * 3; // approx
     const snrMax = fullWellElectrons / Math.sqrt(fullWellElectrons);
     const noiseFloor = Math.sqrt(readNoise * readNoise + darkElectrons);
     const drStops = Math.log2(fullWellElectrons / readNoise);
@@ -39,7 +38,7 @@ export default function SensorCMOSPage() {
     }
 
     return { fullWellDN, darkElectrons, dynamicRangeDB, dynamicRangeBits, drStops, snrMax, noiseFloor, exposures, snrVals, darkNoiseVals };
-  }, [pixelPitch, wellCapacity, readNoise, darkCurrent, conversionGain, quantumEfficiency, exposureTime]);
+  }, [wellCapacity, readNoise, darkCurrent, conversionGain, exposureTime]);
 
   const plotData = useMemo(() => [
     {
