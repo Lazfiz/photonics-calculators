@@ -24,8 +24,10 @@ export default function SimultaneousMulticolorPage() {
 
   const effectivePixel = pixelSize * binning;
   const maxFramerate = 1000 / (exposureMs + 2);
-  const signalPerChannel = 500 * (quantumEff / 100);
-  const snrPerChannel = signalPerChannel / Math.sqrt(signalPerChannel + readNoise ** 2 + darkCurrent * exposureMs / 1000);
+  const photonRate = 500; // photons/pixel/frame at reference conditions
+  const signalPerChannel = photonRate * (quantumEff / 100) * (exposureMs / 20) * binning * binning;
+  const darkE = darkCurrent * exposureMs / 1000 * binning * binning;
+  const snrPerChannel = signalPerChannel / Math.sqrt(signalPerChannel + readNoise ** 2 + darkE);
 
   const spectralData = useMemo(() => {
     const x = Array.from({ length: 300 }, (_, i) => 400 + i * 1.5);
@@ -33,7 +35,8 @@ export default function SimultaneousMulticolorPage() {
     for (let c = 0; c < Math.min(numChannels, 6); c++) {
       const em = emissionCenter[c] || 500;
       const bw = emissionBW[c] || 30;
-      const y = x.map(v => Math.exp(-0.5 * ((v - em) / (bw / 2)) ** 2));
+      const sigma = bw / 2.355;
+      const y = x.map(v => Math.exp(-0.5 * ((v - em) / sigma) ** 2));
       traces.push({
         x, y, type: "scatter", mode: "lines" as const,
         name: `Channel ${c + 1} (${em} nm)`,
@@ -47,7 +50,17 @@ export default function SimultaneousMulticolorPage() {
   const crosstalkData = useMemo(() => {
     const channels = Array.from({ length: Math.min(numChannels, 6) }, (_, i) => i + 1);
     const crosstalkMatrix = channels.map((_, i) =>
-      channels.map((_, j) => i === j ? 100 : (j < channels.length ? crosstalk * Math.exp(-0.3 * Math.abs(i - j)) : 0))
+      channels.map((_, j) => {
+        if (i === j) return 100;
+        const em_i = emissionCenter[i] || 500;
+        const bw_i = emissionBW[i] || 30;
+        const em_j = emissionCenter[j] || 500;
+        const bw_j = emissionBW[j] || 30;
+        const sigma_i = bw_i / 2.355;
+        const sigma_j = bw_j / 2.355;
+        const overlap = Math.exp(-0.5 * (em_i - em_j) ** 2 / (sigma_i ** 2 + sigma_j ** 2));
+        return crosstalk * overlap;
+      })
     );
     const z = crosstalkMatrix;
     return [{
@@ -105,6 +118,7 @@ export default function SimultaneousMulticolorPage() {
         <ValidatedNumberInput label="Number of Channels (1–6)" value={numChannels} onChange={setNumChannels} min={1} max={6} />
         <ValidatedNumberInput label="Base Crosstalk (%)" value={crosstalk} onChange={setCrosstalk} min={0} max={50} step="0.5" />
         <ValidatedNumberInput label="Exposure Time (ms)" value={exposureMs} onChange={setExposureMs} min={1} step="1" />
+        <ValidatedNumberInput label="Target Frame Rate (fps)" value={frameRate} onChange={setFrameRate} min={1} max={1000} step="1" />
         <ValidatedNumberInput label="Pixel Size (µm)" value={pixelSize} onChange={setPixelSize} min={1} step="0.1" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Binning</span>
@@ -171,8 +185,8 @@ export default function SimultaneousMulticolorPage() {
         <div className="space-y-2 text-sm text-gray-300 font-mono">
           <p><span className="text-blue-400">Effective pixel:</span> p_eff = p_pixel × binning</p>
           <p><span className="text-blue-400">Max frame rate:</span> f_max = 1000 / (t_exp + t_read)</p>
-          <p><span className="text-blue-400">SNR:</span> SNR = S / √(S + σ_read² + I_dark × t_exp)</p>
-          <p><span className="text-blue-400">Crosstalk:</span> CT(i,j) = overlap(Emission_i, Filter_j) × 100%</p>
+          <p><span className="text-blue-400">SNR:</span> SNR = S / √(S + σ_read² + I_dark × t_exp) × B²</p>
+          <p><span className="text-blue-400">Crosstalk:</span> CT(i,j) = exp(−Δλ²/(2(σᵢ²+σⱼ²))) × CT_base</p>
         </div>
       </div>
     </CalculatorShell>
