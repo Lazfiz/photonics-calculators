@@ -29,10 +29,10 @@ export default function TwoPhotonMicroscopyPage() {
   const excitationVolume = Math.PI * w0 * w0 * zR; // µm³
 
   // Peak intensity
-  const energyPerPulse = (avgPower * 1000 / repRate) * 1e-9; // J
+  const energyPerPulse = (avgPower / repRate) * 1e-9; // J (mW / MHz = nJ → ×1e-9 J)
   const peakPower = energyPerPulse / (pulseWidth * 1e-15); // W
   const spotArea = Math.PI * (w0 * 1e-6) ** 2;
-  const peakIntensity = peakPower / spotArea / 1e12; // TW/cm²
+  const peakIntensity = peakPower / spotArea / 1e16; // TW/cm²
 
   // Power at depth (scattering model)
   const powerAtDepth = avgPower * Math.exp(-scatteringCoeff * exposureDepth / 1e4);
