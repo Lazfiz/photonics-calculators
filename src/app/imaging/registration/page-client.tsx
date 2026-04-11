@@ -41,12 +41,12 @@ export default function RegistrationPage() {
               [s.toFixed(4), c.toFixed(4), translationY.toFixed(1)],
               ["0", "0", "1"]];
     } else if (transformation === "affine") {
-      return [[(c * scaleFactor).toFixed(4), ((-s + sh) * scaleFactor).toFixed(4), translationX.toFixed(1)],
-              [(s * scaleFactor).toFixed(4), (c * scaleFactor).toFixed(4), translationY.toFixed(1)],
+      return [[(c * scaleFactor).toFixed(4), ((c * sh - s) * scaleFactor).toFixed(4), translationX.toFixed(1)],
+              [(s * scaleFactor).toFixed(4), ((s * sh + c) * scaleFactor).toFixed(4), translationY.toFixed(1)],
               ["0", "0", "1"]];
     } else {
-      return [[(c * scaleFactor).toFixed(4), ((-s + sh) * scaleFactor).toFixed(4), translationX.toFixed(1)],
-              [(s * scaleFactor).toFixed(4), (c * scaleFactor).toFixed(4), translationY.toFixed(1)],
+      return [[(c * scaleFactor).toFixed(4), ((c * sh - s) * scaleFactor).toFixed(4), translationX.toFixed(1)],
+              [(s * scaleFactor).toFixed(4), ((s * sh + c) * scaleFactor).toFixed(4), translationY.toFixed(1)],
               ["0", "0", "1"]];
     }
   }, [rotationRad, scaleFactor, shearDeg, translationX, translationY, transformation]);
@@ -117,7 +117,7 @@ export default function RegistrationPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">DOF</p>
-          <p className="text-2xl font-bold text-purple-400">{transformation === "rigid" ? 6 : transformation === "affine" ? 12 : "∞"}</p>
+          <p className="text-2xl font-bold text-purple-400">{transformation === "rigid" ? 3 : transformation === "affine" ? 6 : "∞"}</p>
         </div>
       </div>
 
@@ -126,8 +126,8 @@ export default function RegistrationPage() {
           <span className="text-sm text-gray-300">Transformation</span>
           <select value={transformation} onChange={e => setTransformation(e.target.value as any)}
             className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            <option value="rigid">Rigid (6 DOF)</option>
-            <option value="affine">Affine (12 DOF)</option>
+            <option value="rigid">Rigid (3 DOF)</option>
+            <option value="affine">Affine (6 DOF)</option>
             <option value="elastic">Elastic (B-spline)</option>
           </select>
         </label>
