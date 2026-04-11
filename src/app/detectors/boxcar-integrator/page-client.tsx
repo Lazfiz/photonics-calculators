@@ -14,7 +14,6 @@ export default function BoxcarIntegratorPage() {
   const [averages, setAverages] = useURLState("averages", 100);
   const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 500);
 
-  const dutyCycle = gateWidth / pulseWidth;
   // Single-shot SNR: ratio of peak signal to RMS noise within the gate
   const snrPerGate = signalPeak / noiseRms;
   // Averaging N sweeps improves SNR by √N (independent measurements)
