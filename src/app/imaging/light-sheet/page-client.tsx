@@ -15,9 +15,9 @@ export default function LightSheetPage() {
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;
     const lateralRes = 0.61 * lam / naDet * 1e9;
-    const axResIll = 2 * n * lam / (naIll * naIll) * 1e9;
+    const axResIll = 2 * lam / (Math.PI * naIll) * 1e9;
     const axResDet = 2 * n * lam / (naDet * naDet) * 1e9;
-    const sheetThickness = n * lam / (naIll * naIll) * 1e6;
+    const sheetThickness = 2 * lam / (Math.PI * naIll) * 1e6;
     const rayleighRange = n * lam / (Math.PI * naIll * naIll) * 1e6;
     const effectiveAx = Math.sqrt(axResIll ** 2 + axResDet ** 2);
     return { lateralRes, axResIll, axResDet, sheetThickness, rayleighRange, effectiveAx };
@@ -30,7 +30,7 @@ export default function LightSheetPage() {
     for (let x = 0.02; x <= 0.5; x += 0.005) {
       nas.push(x);
       const lam = wavelength * 1e-9;
-      sheets.push(n * lam / (x * x) * 1e6);
+      sheets.push(2 * lam / (Math.PI * x) * 1e6);
       detAx.push(2 * n * lam / (naDet * naDet) * 1e6);
     }
     return [
@@ -71,7 +71,7 @@ export default function LightSheetPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Effective axial</span><span className="font-mono text-purple-400">{results.effectiveAx.toFixed(1)} nm</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Rayleigh range</span><span className="font-mono">{results.rayleighRange.toFixed(2)} µm</span></div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">
-            <p>Sheet: t = nλ/NA²_ill | Lateral: d = 0.61λ/NA_det</p>
+            <p>Sheet: t = 2λ/(π·NA_ill) | Lateral: d = 0.61λ/NA_det</p>
             <p>Rayleigh: z_R = nλ/(π·NA²_ill)</p>
           </div>
         </div>
