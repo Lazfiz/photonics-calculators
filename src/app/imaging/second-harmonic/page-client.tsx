@@ -20,11 +20,11 @@ export default function SecondHarmonicPage() {
     const w0 = 0.61 * wavelength * 1e-9 / na; // beam waist m
     const intensity = 2 * peakPower / (Math.PI * w0 * w0); // W/m²
     const dn = 0.01; // approximate dispersion for biological tissue
-    const coherenceLength = shgWavelength * 1e-9 / (4 * dn);
+    const coherenceLength = shgWavelength * 1e-9 / (2 * dn);
     const coherenceLengthSafe = isFinite(coherenceLength) && coherenceLength > 0 ? coherenceLength : 5e-6;
-    // Simplified SHG power estimate: P_2w ∝ (χ²)² · P² · L² · sinc²(Δk·L/2)
-    const P_shg = 1e-12 * (chi2 / 1) ** 2 * (pulseEnergy * 1e-9) ** 2 * (thickness * 1e-6) ** 2 / (w0 * w0);
-    const conversionEff = P_shg / (pulseEnergy * 1e-9) * 100;
+    // Simplified SHG power estimate: P_2w ∝ (χ²)² · P_peak² · L² · sinc²(Δk·L/2)
+    const P_shg = 4e-24 * (chi2) ** 2 * peakPower ** 2 * (thickness * 1e-6) ** 2 / (w0 * w0);
+    const conversionEff = P_shg / peakPower * 100;
     return { shgWavelength, peakPower, intensity, coherenceLength: coherenceLengthSafe, P_shg, conversionEff, w0 };
   }, [wavelength, pulseEnergy, pulseWidth, na, n, chi2, thickness]);
 
@@ -35,7 +35,7 @@ export default function SecondHarmonicPage() {
     for (let t = 1; t <= 500; t += 2) {
       thicknesses.push(t);
       const L = t * 1e-6;
-      const P = 1e-12 * chi2 ** 2 * (pulseEnergy * 1e-9) ** 2 * L ** 2 / (results.w0 ** 2);
+      const P = 4e-24 * chi2 ** 2 * peakPower ** 2 * L ** 2 / (results.w0 ** 2);
       powers.push(P * 1e9);
       // Phase matched: L² dependence, non-phase-matched: oscillates
       const Pc = P * Math.pow(t / 500, 2) * 10;
@@ -102,7 +102,7 @@ export default function SecondHarmonicPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">SHG power (est.)</span><span className="font-mono text-purple-400">{(results.P_shg * 1e9).toExponential(2)} nW</span></div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>λ_SHG = λ_fund / 2</p>
-            <p>L_c = λ_SHG / (4|n(2ω) − n(ω)|)</p>
+            <p>L_c = λ_SHG / (2|n(2ω) − n(ω)|)</p>
             <p>P_2ω ∝ (χ²)² · P²_ω · L² · sinc²(ΔkL/2)</p>
             <p>SHG requires non-centrosymmetric media</p>
           </div>
