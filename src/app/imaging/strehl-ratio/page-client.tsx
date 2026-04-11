@@ -11,16 +11,12 @@ export default function StrehlRatioPage() {
   const [wfeNm, setWfeNm] = useURLState("wfeNm", 20);
   const [mode, setMode] = useState<"wfe" | "pv">("wfe");
 
-  const wfeMeters = wfeNm * 1e-9;
-  const wavelengthM = wavelengthNm * 1e-9;
-  const pvWave = mode === "pv" ? wfeNm / wavelengthNm : wfeNm / wavelengthNm * 3.55; // Maréchal approx: PV ≈ 3.55×RMS
-
-  // Maréchal approximation: Strehl ≈ exp(-(2π·WFE_rms/λ)²)
-  const wfeRmsWave = mode === "wfe" ? wfeNm / wavelengthNm : wfeNm / wavelengthNm;
+  const wfeRmsWave = mode === "wfe" ? wfeNm / wavelengthNm : (wfeNm / wavelengthNm) / 3.55;
   const strehl = Math.exp(-Math.pow(2 * Math.PI * wfeRmsWave, 2));
 
   const chartData = useMemo(() => {
-    const wfes = Array.from({ length: 200 }, (_, i) => i * 0.5);
+    const wfes = Array.from({ length: 200 }, (_, i) => i * 0.01);
+    const maxWfe = Math.max(0.5, wfeRmsWave * 1.5);
     return [
       {
         x: wfes,
@@ -36,7 +32,7 @@ export default function StrehlRatioPage() {
         marker: { color: "#f87171", size: 12 },
       },
       {
-        x: [0, 0.5],
+        x: [0, maxWfe],
         y: [0.8, 0.8],
         type: "scatter" as const, mode: "lines" as const,
         name: "Maréchal Criterion (0.8)",
@@ -60,8 +56,8 @@ export default function StrehlRatioPage() {
           <span className="text-sm text-gray-300">Input Mode</span>
           <select value={mode} onChange={e => setMode(e.target.value as "wfe" | "pv")}
             className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            <option value="wfe">WFE in units of λ (RMS)</option>
-            <option value="pv">WFE in units of λ (PV)</option>
+            <option value="wfe">WFE as RMS (waves)</option>
+            <option value="pv">WFE as PV (waves)</option>
           </select>
         </label>
       </div>
