@@ -16,14 +16,14 @@ export default function DynamicRangePage() {
 
   const results = useMemo(() => {
     const darkElectrons = darkCurrent * exposureTime / 1000;
-    const totalReadNoise = Math.sqrt(readNoise * readNoise + darkElectrons + dsnu * dsnu * fullWellCapacity);
+    const totalReadNoise = Math.sqrt(readNoise * readNoise + darkElectrons + dsnu * dsnu * darkElectrons);
     const drDB = 20 * Math.log10(fullWellCapacity / totalReadNoise);
     const drStops = Math.log2(fullWellCapacity / totalReadNoise);
     const drBits = drDB / 6.02;
     const maxDN = Math.pow(2, bitDepth) - 1;
     const systemDR = Math.min(drStops, bitDepth);
     const adcLimited = bitDepth < drStops;
-    const snrAtHalf = (fullWellCapacity / 2) / Math.sqrt(fullWellCapacity / 2 + totalReadNoise * totalReadNoise);
+    const snrAtHalf = (fullWellCapacity / 2) / Math.sqrt(fullWellCapacity / 2 + totalReadNoise * totalReadNoise + (prnu * fullWellCapacity / 2) * (prnu * fullWellCapacity / 2));
 
     const signals: number[] = [];
     const snrVals: number[] = [];
