@@ -38,7 +38,7 @@ export default function DispersionCompensationPage() {
     const maxBitRate = 1 / (pulseBroadening * 1e-12) / 1e9; // Gbps
 
     // Dispersion-limited distance: L = ε/(|D|·Δλ·B) where ε≈0.25 for NRZ 1dB penalty
-    const dispersionLimitedDist = 0.25 / (Math.abs(D) * spectralWidth * bitRate); // km
+    const dispersionLimitedDist = 250 / (Math.abs(D) * spectralWidth * bitRate); // km (×1000: ps·Gbps → 1e-3)
 
     // DCF compensation
     const DCF_D = -80; // ps/(nm·km) typical DCF dispersion
