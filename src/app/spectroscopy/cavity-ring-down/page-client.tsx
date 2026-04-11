@@ -16,7 +16,7 @@ export default function CavityRingDownPage() {
   const L = cavityLength / 100; // meters
   const lossFrac = baseLoss / 100;
   const roundTripLoss = -Math.log(R * R * (1 - lossFrac));
-  const alphaSample = sampleAbsorbance;
+  const alphaSample = 2 * sampleAbsorbance; // ×2 for round trip (sample traversed twice)
   const totalLoss = roundTripLoss + alphaSample;
 
   const c = 2.998e8; // m/s

@@ -29,16 +29,26 @@ export default function CoherentAntiStokesPage() {
     const gamma = 10; // linewidth cm⁻¹
     const A_NR = 0.1; // non-resonant amplitude
     const R = 5; // Raman cross-section
+    const gamma = 10; // HWHM linewidth in cm⁻¹
 
     const carsIntensity = shifts.map(s => {
-      const chiR = R / (s * 100 - vibFreq / 100 / (2 * Math.PI * c / 100) + 0);
-      const chi = A_NR + chiR;
-      return Math.pow(chi * chi, 2);
+      // Complex Lorentzian: χ_R = R / (Ω_v - Ω + iΓ) where all in cm⁻¹
+      const detuning = s - vibWavenumber; // cm⁻¹
+      const denomRe = detuning;
+      const denomIm = gamma; // HWHM
+      const denomMag2 = denomRe * denomRe + denomIm * denomIm;
+      const chiR_re = R * denomRe / denomMag2;
+      const chiR_im = R * denomIm / denomMag2;
+      // Total χ³ = χ_NR + χ_R (complex)
+      const chi_re = A_NR + chiR_re;
+      const chi_im = chiR_im;
+      // I_CARS ∝ |χ³|²
+      return chi_re * chi_re + chi_im * chi_im;
     });
 
-    // Spontaneous Raman for comparison
+    // Spontaneous Raman for comparison (Gaussian line shape)
     const ramanIntensity = shifts.map(s => {
-      const x = (s - (vibFreq / 100 / (2 * Math.PI * c / 100)));
+      const x = s - vibWavenumber;
       return Math.exp(-x * x / (2 * gamma * gamma));
     });
 
