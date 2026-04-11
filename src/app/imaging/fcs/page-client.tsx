@@ -16,7 +16,7 @@ export default function FCSPage() {
 
   const results = useMemo(() => {
     const kappa = z0 / w0; // structure parameter
-    const Veff = Math.PI ** 1.5 * w0 * w0 * z0 * 1e-18; // L (effective volume)
+    const Veff = Math.PI ** 1.5 * w0 * w0 * z0 * 1e-15; // L (effective volume)
     const Veff_fL = Veff * 1e15; // femtoliters
     const N = concentration * 1e-9 * 6.022e23 * Veff; // number of particles
     const G0 = 1 / N;
