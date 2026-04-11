@@ -40,10 +40,11 @@ export default function PMTPage() {
       const sig = photonRate * qe;
       const darkE = (darkCurrent * 1e-9) / (1.602e-19 * g);
       const enf = 1.1 + 1 / d; // excess noise factor approximation
-      return sig / Math.sqrt((sig + darkE) * enf);
+      // SNR with noise bandwidth: rates / sqrt(2*BW*(rate_sum)*ENF)
+      return sig / Math.sqrt(2 * bandwidth * (sig + darkE) * enf);
     });
     return { deltas, snrVals };
-  }, [numDynodes, qe, darkCurrent, photonRate]);
+  }, [numDynodes, qe, darkCurrent, photonRate, bandwidth]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
