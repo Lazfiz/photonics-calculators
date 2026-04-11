@@ -26,10 +26,12 @@ export default function SiliconPhotodiodePage() {
   const c = 3e8;
 
   // Si bandgap temperature dependence (Varshni)
-  const Eg300 = 1.12; // eV at 300K
+  // Eg0 chosen so that Eg(300K) ≈ 1.12 eV
+  const Eg0 = 1.166; // eV at 0K
   const alphaVarshni = 4.73e-4; // eV/K
   const betaVarshni = 636; // K
-  const Eg = Eg300 - (alphaVarshni * temperature ** 2) / (temperature + betaVarshni);
+  const Eg = Eg0 - (alphaVarshni * temperature ** 2) / (temperature + betaVarshni);
+  const EgAt300 = Eg0 - (alphaVarshni * 300 ** 2) / (300 + betaVarshni); // ~1.12 eV
   const cutoffWavelength = 1240 / Eg;
 
   // Absorption coefficient for Si (Green & Keevers 1995, cm⁻¹)
@@ -72,7 +74,7 @@ export default function SiliconPhotodiodePage() {
 
   // Dark current (GR-dominated for Si at moderate bias)
   const areaCm2 = area * 1e-2;
-  const ni = 1.5e10 * Math.pow(temperature / 300, 1.5) * Math.exp(-Eg * q / (2 * k * temperature) + Eg300 * q / (2 * k * 300));
+  const ni = 1.5e10 * Math.pow(temperature / 300, 1.5) * Math.exp(-Eg * q / (2 * k * temperature) + EgAt300 * q / (2 * k * 300));
   const tau = 1e-3; // carrier lifetime, s
   const darkCurrent = q * ni * areaCm2 * depletionWidth * 1e-4 / (2 * tau);
 
@@ -98,7 +100,7 @@ export default function SiliconPhotodiodePage() {
     return [{
       x: temps, y: temps.map(T => {
         const EgT = Eg300 - (alphaVarshni * T ** 2) / (T + betaVarshni);
-        const niT = 1.5e10 * Math.pow(T / 300, 1.5) * Math.exp(-EgT * q / (2 * k * T) + Eg300 * q / (2 * k * 300));
+        const niT = 1.5e10 * Math.pow(T / 300, 1.5) * Math.exp(-EgT * q / (2 * k * T) + EgAt300 * q / (2 * k * 300));
         return (q * niT * areaCm2 * depletionWidth * 1e-4 / (2 * tau)) * 1e9;
       }), type: "scatter", mode: "lines", name: "I_dark", line: { color: "#f87171", width: 2 },
     }];
