@@ -26,8 +26,8 @@ function fresnelCoefficients(n1: number, n2: number, thetaI: number) {
   const Rs = rs * rs;
   const Rp = rp * rp;
   const cosISafe = Math.max(cosI, 1e-10); // guard grazing incidence division
-  const Ts = (n2 * cosT) / cosISafe * ts * ts;
-  const Tp = (n2 * cosT) / cosISafe * tp * tp;
+  const Ts = (n2 * cosT) / (n1 * cosISafe) * ts * ts;
+  const Tp = (n2 * cosT) / (n1 * cosISafe) * tp * tp;
 
   return { rs, rp, ts, tp, Rs, Rp, Ts, Tp, thetaT };
 }
@@ -61,7 +61,19 @@ export default function FresnelPolarizationPage() {
     const degs = angles.map(a => a * 180 / Math.PI);
     const phaseDiff = angles.map(a => {
       const c = fresnelCoefficients(n1, n2, a);
-      return Math.atan2(c.rp, 1) - Math.atan2(c.rs, 1);
+      const sinT = (n1 / n2) * Math.sin(a);
+      if (Math.abs(sinT) > 1) {
+        // TIR: use Born & Wolf phase formulas
+        const cosI = Math.cos(a);
+        const g = Math.sqrt(sinT * sinT - 1); // √(sin²θi - (n2/n1)²)
+        const phaseS = -2 * Math.atan2(Math.sqrt(Math.sin(a) ** 2 - (n2 / n1) ** 2), cosI);
+        const phaseP = -2 * Math.atan2((n1 / n2) ** 2 * Math.sqrt(Math.sin(a) ** 2 - (n2 / n1) ** 2), cosI);
+        return phaseP - phaseS;
+      }
+      // Below TIR: real coefficients, phase is 0 or π
+      const phiS = c.rs >= 0 ? 0 : Math.PI;
+      const phiP = c.rp >= 0 ? 0 : Math.PI;
+      return phiP - phiS;
     });
     return [
       { x: degs, y: phaseDiff.map(d => d * 180 / Math.PI), type: "scatter" as const, mode: "lines" as const, name: "δ = arg(rp) − arg(rs)", line: { color: "#a78bfa", width: 2 } },

@@ -23,33 +23,39 @@ export default function GlansPrismPage() {
   const criticalO = Math.asin(gapIndex / nO);
   const criticalE = Math.asin(gapIndex / nE);
 
-  // Ray angle at interface
-  const rayAngle = Math.PI / 2 - cutAngle;
+  // Ray angle at interface = cutAngle (angle of incidence at the diagonal surface)
+  // In Glan prisms, the cut angle equals the angle of incidence at the interface
+  // for a beam normally incident on the end face.
+  const rayAngle = cutAngle;
 
   const oTIR = rayAngle >= criticalO;
   const eTIR = rayAngle >= criticalE;
 
   // Field of view (half-angle)
   // Max angle where o-ray still TIR and e-ray still transmits
-  const maxAngleForTIR = (Math.PI / 2 - criticalO) * 180 / Math.PI;
-  const minAngleForTransmit = (Math.PI / 2 - criticalE) * 180 / Math.PI;
+  const maxAngleForTIR = criticalO * 180 / Math.PI; // o-ray TIR up to this angle
+  const minAngleForTransmit = criticalE * 180 / Math.PI; // e-ray transmits below this angle
 
-  // FOV approximation
+  // FOV: angular margin on each side of the nominal angle
   const fovHalf = Math.min(
     Math.abs(cutAngleDeg - maxAngleForTIR),
     Math.abs(minAngleForTransmit - cutAngleDeg)
   );
 
-  // Length-to-aperture ratio
+  // Length-to-aperture ratio (L/A ≈ tan(90° - cutAngle) × correction)
+  const structuralAngle = Math.PI / 2 - cutAngle;
   const LA_ratio = prismType === "taylor"
-    ? 2 * Math.tan(cutAngle) + 1
-    : 3 * Math.tan(cutAngle) + 1;
+    ? 2 * Math.tan(structuralAngle) + 1
+    : 3 * Math.tan(structuralAngle) + 1;
 
-  // Transmission losses
-  const brewsterAngle = Math.atan(nE / gapIndex);
-  const RpBrewster = 0;
-  const RsBrewster = ((nE * Math.cos(brewsterAngle) - gapIndex * Math.cos(Math.asin(gapIndex / nE * Math.sin(brewsterAngle)))) /
-    (nE * Math.cos(brewsterAngle) + gapIndex * Math.cos(Math.asin(gapIndex / nE * Math.sin(brewsterAngle))))) ** 2;
+  // Brewster angle for e-ray at crystal-to-gap interface (internal)
+  const brewsterAngle = Math.atan(gapIndex / nE);
+  const RsBrewster = 0;
+  const sinBrewT = (nE / gapIndex) * Math.sin(brewsterAngle);
+  const RsBrewsterVal = Math.abs(sinBrewT) <= 1
+    ? ((nE * Math.cos(brewsterAngle) - gapIndex * Math.cos(Math.asin(sinBrewT))) /
+       (nE * Math.cos(brewsterAngle) + gapIndex * Math.cos(Math.asin(sinBrewT)))) ** 2
+    : 1;
 
   const transmissionData = useMemo(() => {
     const angles = Array.from({ length: 300 }, (_, i) => (i / 300) * 15 - 5);
