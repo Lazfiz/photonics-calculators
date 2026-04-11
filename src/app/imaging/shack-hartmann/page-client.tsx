@@ -15,8 +15,6 @@ export default function ShackHartmannPage() {
   const [rmsWavefrontNm, setRmsWavefrontNm] = useURLState("rmsWavefrontNm", 150);
   const [dynamicRangeWaves, setDynamicRangeWaves] = useURLState("dynamicRangeWaves", 5);
   const [numSubapertures, setNumSubapertures] = useURLState("numSubapertures", 0);
-  const [readNoiseE, setReadNoiseE] = useURLState("readNoiseE", 2);
-  const [darkCurrentEPx, setDarkCurrentEPx] = useURLState("darkCurrentEPx", 0.1);
 
   const lambda = wavelengthNm * 1e-9;
   const D = apertureDiameterMm * 1e-3;
@@ -27,14 +25,13 @@ export default function ShackHartmannPage() {
   const calculatedSubaps = Math.round((D / d) ** 2);
   const totalSubaps = numSubapertures > 0 ? numSubapertures : calculatedSubaps;
   const subapDiameter = D / Math.sqrt(totalSubaps) * 1e3; // mm
-  const diffLimit = 1.22 * lambda / d * 1e6; // µm spot size
+  const diffLimit = 1.22 * lambda * f / d * 1e6; // µm spot size on detector
   const spotSizePixels = diffLimit / detectorPixelUm;
   const angularSensitivity = detectorPixelUm * 1e-6 / f; // rad/px
-  const wavefrontSensitivity = angularSensitivity / (2 * Math.PI / lambda) * wavelengthNm; // nm/px
+  const wavefrontSensitivity = angularSensitivity * d * 1e9; // nm/px
   const dynamicRangeNm = dynamicRangeWaves * wavelengthNm;
   const maxTilt = dynamicRangeWaves * wavelengthNm / subapDiameter; // rad
   const strehl = Math.exp(-((2 * Math.PI * rmsWaves) ** 2));
-  const samplingRatio = detectorPixelUm / (diffLimit / 2); // Nyquist check
 
   const centroidNoise = useMemo(() => {
     const photons = Array.from({ length: 30 }, (_, i) => 10 + i * 100);
@@ -46,7 +43,7 @@ export default function ShackHartmannPage() {
 
   const spotSizeChart = useMemo(() => {
     const pitches = Array.from({ length: 30 }, (_, i) => 100 + i * 20);
-    const spots = pitches.map(p => 1.22 * lambda / (p * 1e-6) * 1e6);
+    const spots = pitches.map(p => 1.22 * lambda * f / (p * 1e-6) * 1e6);
     return [
       { x: pitches, y: spots, type: "scatter", mode: "lines" as const, name: "Spot Size", line: { color: "#34d399", width: 2 } },
       { x: [lensletPitchUm], y: [diffLimit], type: "scatter", mode: "markers" as const, name: "Current", marker: { color: "#fbbf24", size: 12 } },
@@ -113,7 +110,7 @@ export default function ShackHartmannPage() {
           <p>d_spot = 1.22 λ f / d_lenslet — Airy disk at detector</p>
           <p>σ_centroid = p_det / √N_ph — Photon-limited centroid precision</p>
           <p>DR = Δx_max / d_spot — Dynamic range in spot diameters</p>
-          <p>σ_W = (λ / 2π) · σ_centroid / f — Wavefront sensitivity</p>
+          <p>σ_W = (p / f) · d_lenslet — Wavefront sensitivity (nm/px)</p>
         </div>
       </div>
 
