@@ -5,6 +5,39 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
+// Modified Bessel function I_n(x) via series
+function besselIn(n: number, x: number): number {
+  if (x === 0) return n === 0 ? 1 : 0;
+  const hx = x / 2;
+  let term = Math.pow(hx, n);
+  let sum = term;
+  let nf = 1;
+  for (let i = 2; i <= n; i++) nf *= i;
+  term /= nf;
+  sum = term;
+  for (let k = 1; k <= 30; k++) {
+    term *= (hx * hx) / (k * (k + n));
+    sum += term;
+    if (Math.abs(term) < 1e-15 * Math.abs(sum)) break;
+  }
+  return sum;
+}
+
+// Soumpasis 1983: fraction of bleach remaining (1=bleached, 0=recovered)
+function soumpasisFK(tau: number, t: number): number {
+  if (t <= 0) return 1;
+  const q = tau / t;
+  let fk = 0;
+  for (let n = 1; n <= 15; n++) {
+    const nq = n * q;
+    const sign = (n % 2 === 1) ? 1 : -1;
+    const In = besselIn(n, nq);
+    const term = sign * Math.pow(n, n) * Math.pow(q, n) * Math.exp(-nq) * In;
+    fk += term;
+  }
+  return Math.max(0, Math.min(1, fk));
+}
+
 export default function FRAPPage() {
   const [w0, setW0] = useURLState("w0", 1.0); // µm, bleach spot radius
   const [tauHalf, setTauHalf] = useURLState("tauHalf", 2.0); // s, half-recovery time
@@ -16,31 +49,37 @@ export default function FRAPPage() {
     const tau = tauHalf / gamma;
     const D = w0 * w0 * 1e-12 / (4 * tau); // m²/s
     const D_um2s = D * 1e12; // µm²/s
-    const recoveryCurve = (t: number) => mobileFrac * (1 - Math.exp(-2 * t / tauHalf) * (fitModel === "single" ? 1 : 1));
-    // Soumpasis model: F(t)/F₀ = F_mobile * (1 - (τ_half/t) * exp(-2τ_half/t) * I₁(2τ_half/t))
-    // Simplified exponential: F(t) = F_inf * (1 - exp(-t/τ_eff))
-    const tauEff = tauHalf / 1.5; // rough mapping for display
-    return { D, D_um2s, tau, tauEff };
-  }, [w0, tauHalf, mobileFrac, fitModel]);
+    return { D, D_um2s, tau };
+  }, [w0, tauHalf]);
 
   const plotData = useMemo(() => {
     const times = [];
     const recovery = [];
-    const tauEff = results.tauEff;
+    const tau = results.tau;
     for (let t = 0; t <= 20; t += 0.1) {
       times.push(t);
-      // Soumpasis 1983 approximation
-      const x = tauHalf / t;
-      const val = x > 0 ? x * Math.exp(-x) : 0;
-      const approx = mobileFrac * (1 - val);
-      recovery.push(t === 0 ? 0 : Math.max(0, Math.min(1, (1 - mobileFrac) + approx)));
+      if (t === 0) {
+        recovery.push(1 - mobileFrac); // post-bleach baseline (immobile only)
+      } else {
+        let fRec: number;
+        if (fitModel === "single") {
+          // Soumpasis 1983 (Gaussian bleach profile)
+          const fk = soumpasisFK(tau, t); // bleach remaining (1→0)
+          fRec = 1 - fk; // recovered fraction (0→1)
+        } else {
+          // Axelrod uniform disk: exponential approximation
+          fRec = 1 - Math.exp(-t * Math.LN2 / tauHalf);
+        }
+        const F = (1 - mobileFrac) + mobileFrac * fRec;
+        recovery.push(Math.max(0, Math.min(1, F)));
+      }
     }
     return [
       { x: times, y: recovery, name: "Recovery curve", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
       { x: [0, 20], y: [1 - mobileFrac, 1 - mobileFrac], name: "Pre-bleach", line: { color: "#4ade80", dash: "dash" }, type: "scatter", mode: "lines" },
       { x: [0, 20], y: [1, 1], name: "Full recovery", line: { color: "#f87171", dash: "dash" }, type: "scatter", mode: "lines" },
     ];
-  }, [tauHalf, mobileFrac]);
+  }, [tauHalf, mobileFrac, fitModel, results.tau]);
 
   const diffPlot = useMemo(() => {
     const w0Range = [];
