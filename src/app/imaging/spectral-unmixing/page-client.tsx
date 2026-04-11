@@ -30,7 +30,8 @@ export default function SpectralUnmixingPage() {
     for (let e = 0; e < numEndmembers; e++) {
       const peak = endmemberPeaks[e];
       const width = endmemberWidths[e];
-      const spectrum = wavelengths.map(w => Math.exp(-0.5 * ((w - peak) / width) ** 2));
+      const sigma = width / 2.355;
+      const spectrum = wavelengths.map(w => Math.exp(-0.5 * ((w - peak) / sigma) ** 2));
       traces.push({
         x: wavelengths, y: spectrum, type: "scatter", mode: "lines" as const,
         name: `EM${e + 1} (${peak}nm)`,
@@ -42,9 +43,9 @@ export default function SpectralUnmixingPage() {
     const mixed = wavelengths.map((w, i) => {
       let val = 0;
       for (let e = 0; e < numEndmembers; e++) {
-        val += normalizedAbundances[e] * Math.exp(-0.5 * ((w - endmemberPeaks[e]) / endmemberWidths[e]) ** 2);
+        val += normalizedAbundances[e] * Math.exp(-0.5 * ((w - endmemberPeaks[e]) / (endmemberWidths[e] / 2.355)) ** 2);
       }
-      return val + (noiseLevel / 100) * (Math.sin(i * 1.7) * 0.5 + 0.5);
+      return val + (noiseLevel / 100) * (Math.sin(i * 1.7) * 2 - 1);
     });
     traces.push({
       x: wavelengths, y: mixed, type: "scatter", mode: "lines" as const,
@@ -57,9 +58,8 @@ export default function SpectralUnmixingPage() {
   const abundanceData = useMemo(() => {
     const labels = normalizedAbundances.map((_, i) => `EM${i + 1}`);
     const colors = ["#34d399", "#fbbf24", "#f87171", "#a78bfa", "#60a5fa", "#f472b6"];
-    // Simulate unmixing error
-    const error = method === "nnls" ? 0.02 : method === "cls" ? 0.05 : 0.08;
-    const unmixed = normalizedAbundances.map(a => Math.max(0, a + (Math.random() - 0.5) * error));
+    const error = (method === "nnls" ? 0.02 : method === "cls" ? 0.05 : 0.08) * (1 + noiseLevel / 10);
+    const unmixed = normalizedAbundances.map((a, i) => Math.max(0, a + Math.sin(i * 2.3 + 1.7) * error));
     const sum = unmixed.reduce((s, v) => s + v, 0);
     const final = unmixed.map(a => a / sum);
 
@@ -72,7 +72,7 @@ export default function SpectralUnmixingPage() {
       name: "True Abundance", line: { color: "#ffffff", dash: "dot" },
       marker: { color: "#ffffff", size: 8 },
     }];
-  }, [numEndmembers, normalizedAbundances, method]);
+  }, [numEndmembers, normalizedAbundances, method, noiseLevel]);
 
   const errorData = useMemo(() => {
     const noiseLevels = Array.from({ length: 20 }, (_, i) => i * 2.5);
@@ -127,7 +127,7 @@ export default function SpectralUnmixingPage() {
           </select>
         </label>
         <ValidatedNumberInput label="Abundance EM1 (fraction)" value={abundance1} onChange={setAbundance1} min={0} max={1} step="0.05" />
-        <ValidatedNumberInput label="Abundance EM2 (fraction)" value={abundance2} onChange={setAbundance2} min={0} max={1} step="0.05" />
+        <ValidatedNumberInput label="Abundance EM2 (fraction)" value={Math.min(abundance2, 1 - abundance1)} onChange={setAbundance2} min={0} max={1} step="0.05" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
