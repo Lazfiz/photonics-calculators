@@ -17,7 +17,7 @@ export default function SensorCCMPage() {
 
   const results = useMemo(() => {
     const darkElectrons = darkCurrent * exposureTime / 1000;
-    const tempFactor = Math.pow(2, (coolingTemp - (-20)) / 6); // dark doubles per 6°C
+    const tempFactor = Math.pow(2, (coolingTemp - 25) / 6); // dark doubles per 6°C, ref 25°C
     const darkElectronsCooled = darkElectrons * tempFactor;
     const dynamicRangeDB = 20 * Math.log10(wellCapacity / readNoise);
     const drStops = Math.log2(wellCapacity / readNoise);
@@ -31,12 +31,12 @@ export default function SensorCCMPage() {
     const darkVals: number[] = [];
     for (let t = -80; t <= 20; t += 2) {
       temps.push(t);
-      const factor = Math.pow(2, (t - (-20)) / 6);
+      const factor = Math.pow(2, (t - 25) / 6);
       darkVals.push(darkCurrent * exposureTime / 1000 * factor);
     }
 
     return { darkElectrons, darkElectronsCooled, dynamicRangeDB, drStops, drBits, electronsPerDN, snrMax, noiseFloor, temps, darkVals };
-  }, [wellCapacity, readNoise, darkCurrent, exposureTime, quantumEfficiency, coolingTemp, bitDepth, pixelPitch]);
+  }, [wellCapacity, readNoise, darkCurrent, exposureTime, coolingTemp, bitDepth]);
 
   const plotData = useMemo(() => [
     {
@@ -131,7 +131,7 @@ export default function SensorCCMPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
         <h3 className="font-semibold">Key Formulas</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
-          <p>N_dark(T) = DCR · t_exp · 2^((T - T_ref) / 6)</p>
+          <p>N_dark(T) = DCR₂₅ · t_exp · 2^((T - 25) / 6)</p>
           <p>DR = 20·log₁₀(FWC / σ_read)</p>
           <p>DR_stops = log₂(FWC / σ_read)</p>
           <p>e⁻/DN = FWC / (2^bits - 1)</p>
