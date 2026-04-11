@@ -24,8 +24,6 @@ export default function SignalToNoisePage() {
     const snr = signalE / totalNoise;
     const snrSingle = snr;
     const snrMulti = snr * Math.sqrt(numFrames);
-    const snrOnly = Math.sqrt(signalE);
-    const snrNoiseFloor = Math.sqrt(readNoise * readNoise + darkE);
     const roseCriterion = snr >= 5;
 
     const bgLevels: number[] = [];
@@ -40,7 +38,7 @@ export default function SignalToNoisePage() {
       snrIdeal.push(Math.sqrt(sE));
     }
 
-    return { signalE, bgE, darkE, shotNoise, totalNoise, snr, snrSingle, snrMulti, snrOnly, roseCriterion, bgLevels, snrVals, snrIdeal };
+    return { signalE, bgE, darkE, shotNoise, totalNoise, snr, snrSingle, snrMulti, roseCriterion, bgLevels, snrVals, snrIdeal };
   }, [signalPhotons, backgroundPhotons, quantumEfficiency, readNoise, darkCurrent, exposureTime, binning, numFrames]);
 
   const plotData = useMemo(() => [
@@ -50,7 +48,7 @@ export default function SignalToNoisePage() {
       name: "SNR (with background)", line: { color: "#60a5fa", width: 2 },
     },
     {
-      x: results.bgLevels, y: Array(results.bgLevels.length).fill(results.snrIdeal),
+      x: results.bgLevels, y: results.snrIdeal,
       type: "scatter" as const, mode: "lines" as const,
       name: "Shot-noise limit", line: { color: "#34d399", width: 1, dash: "dash" },
     },
@@ -121,6 +119,10 @@ export default function SignalToNoisePage() {
             <div className="bg-gray-800 rounded p-3">
               <div className="text-xs text-gray-400">Dark Electrons</div>
               <div className="text-xl font-mono text-red-400">{results.darkE.toFixed(2)} e⁻</div>
+            </div>
+            <div className="bg-gray-800 rounded p-3">
+              <div className="text-xs text-gray-400">Shot Noise (σ)</div>
+              <div className="text-xl font-mono text-orange-400">{results.shotNoise.toFixed(2)} e⁻</div>
             </div>
             <div className="bg-gray-800 rounded p-3">
               <div className="text-xs text-gray-400">Total Noise (σ)</div>
