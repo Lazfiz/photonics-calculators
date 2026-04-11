@@ -15,7 +15,7 @@ export default function IntensifiedCCDPage() {
   const [signalPhotons, setSignalPhotons] = useURLState("signalPhotons", 100);
 
   const photocathodes = { s20: { qe: 0.2, label: "S20 (multialkali)", range: "300-850nm" }, gaas: { qe: 0.35, label: "GaAs", range: "300-900nm" }, inagaas: { qe: 0.15, label: "InGaAs", range: "900-1700nm" }, s25: { qe: 0.25, label: "S25 (ERMA)", range: "200-900nm" } };
-  const phosphors = { p43: { eff: 0.15, decay: 1.2, label: "P43 (Gd₂O₂S:Tb)" }, p46: { eff: 0.25, decay: 0.08, label: "P46 (Y₂O₂S:Tb)" }, p20: { eff: 0.12, decay: 0.06, label: "P20 (Y₂SiO₅:Ce)" } };
+  const phosphors = { p43: { eff: 0.15, decay: 1.2, label: "P43 (Gd₂O₂S:Tb)" }, p46: { eff: 0.25, decay: 0.08, label: "P46 (YAG:Ce)" }, p20: { eff: 0.12, decay: 0.06, label: "P20 (ZnCdS:Ag)" } };
 
   const pc = photocathodes[photocathodeType];
   const ph = phosphors[phosphorType];
