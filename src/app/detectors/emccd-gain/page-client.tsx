@@ -6,7 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-const alpha = 0.015; const vThreshold = 30;
+const alpha = 0.001; const vThreshold = 30;
 const excessNoise = Math.sqrt(2);
 
 export default function EmccdGainPage() {
