@@ -14,7 +14,6 @@ export default function WavefrontSensingPage() {
   const [numSubapertures, setNumSubapertures] = useURLState("numSubapertures", 64);
   const [detectorPixelSizeUm, setDetectorPixelSizeUm] = useURLState("detectorPixelSizeUm", 5.5);
   const [focalLengthMm, setFocalLengthMm] = useURLState("focalLengthMm", 100);
-  const [sensingWavelengthNm, setSensingWavelengthNm] = useURLState("sensingWavelengthNm", 632.8);
 
   const lambda = wavelengthNm * 1e-9;
   const lambdaUm = wavelengthNm * 1e-3;
@@ -22,11 +21,11 @@ export default function WavefrontSensingPage() {
   const rmsWaves = rmsWavefrontNm / wavelengthNm;
   const strehl = Math.exp(-((2 * Math.PI * rmsWaves) ** 2));
   const maréchalCrit = rmsWaves <= 1 / 14;
-  const diffLimit = 1.22 * lambda / D * 1e6; // µm
+  const diffLimit = 1.22 * lambda / D * focalLengthMm * 1e3; // µm spot on detector
   const subapDiam = D / Math.sqrt(numSubapertures) * 1e3; // mm
-  const subapSampling = (subapDiam * 1e-3 / (lambdaUm * 1e-6 * focalLengthMm * 1e-3)) * detectorPixelSizeUm;
-  const dynamicRange = Math.PI / (rmsWaves * 2 * Math.PI); // in waves
-  const sensitivity = 2 * Math.PI * detectorPixelSizeUm * 1e-6 / (lambda * focalLengthMm * 1e-3); // rad sensitivity
+  const subapAiry = 1.22 * lambda / (subapDiam * 1e-3) * focalLengthMm * 1e3; // µm
+  const subapSampling = subapAiry / detectorPixelSizeUm; // pixels per Airy spot
+  const sensitivity = detectorPixelSizeUm * 1e-6 / (focalLengthMm * 1e-3); // rad/px angular sensitivity
   const zernikeFitError = rmsWavefrontNm / Math.sqrt(numZernikeTerms);
 
   const strehlChart = useMemo(() => {
@@ -50,12 +49,12 @@ export default function WavefrontSensingPage() {
 
   const sensitivityChart = useMemo(() => {
     const fls = Array.from({ length: 30 }, (_, i) => 20 + i * 20);
-    const sens = fls.map(f => 2 * Math.PI * detectorPixelSizeUm * 1e-6 / (lambda * f * 1e-3) * 1e6);
+    const sens = fls.map(f => detectorPixelSizeUm * 1e-6 / (f * 1e-3) * 1e6);
     return [
       { x: fls, y: sens, type: "scatter", mode: "lines" as const, name: "Sensitivity (µrad/px)", line: { color: "#34d399", width: 2 } },
       { x: [focalLengthMm], y: [sensitivity * 1e6], type: "scatter", mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
     ];
-  }, [lambda, detectorPixelSizeUm, focalLengthMm]);
+  }, [detectorPixelSizeUm, focalLengthMm]);
 
   return (
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Wavefront Sensing" description="Wavefront error analysis, Zernike decomposition, Strehl ratio, and sensor sensitivity.">
@@ -76,6 +75,21 @@ export default function WavefrontSensingPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Zernike Fit Error</p>
           <p className="text-2xl font-bold text-yellow-400">{zernikeFitError.toFixed(1)} nm</p>
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3 mb-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">Airy Spot (detector)</p>
+          <p className="text-2xl font-bold text-blue-400">{diffLimit.toFixed(1)} µm</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">Subap. Sampling (px/spot)</p>
+          <p className="text-2xl font-bold text-green-400">{subapSampling.toFixed(1)}</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">Angular Sensitivity</p>
+          <p className="text-2xl font-bold text-purple-400">{(sensitivity * 1e6).toFixed(1)} µrad/px</p>
         </div>
       </div>
 
