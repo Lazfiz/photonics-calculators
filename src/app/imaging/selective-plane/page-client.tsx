@@ -13,16 +13,15 @@ export default function SelectivePlanePage() {
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;
-    const sheetThickness = n * lam / (naIll * naIll) * 1e6;
+    const sheetThickness = 2 * lam / (Math.PI * naIll) * 1e6;
     const rayleighRange = n * lam / (Math.PI * naIll * naIll) * 1e6;
-    const confocalParam = Math.PI * sheetThickness * sheetThickness / (4 * lam * 1e6);
     const lateralRes = 0.61 * lam / naDet * 1e9;
     const axialResDet = 2 * n * lam / (naDet * naDet) * 1e9;
-    const axialResIll = 2 * n * lam / (naIll * naIll) * 1e9;
-    const effectiveAxial = Math.sqrt(axialResDet ** 2 + axialResIll ** 2);
+    const axialResIll = 2 * n * lam / (Math.PI * naIll * naIll) * 1e9;
+    const effectiveAxial = 1 / Math.sqrt(1 / (axialResDet * axialResDet) + 1 / (axialResIll * axialResIll));
     const beamWaist = lam / (Math.PI * naIll) * 1e6;
     const divergence = 2 * naIll / n;
-    return { sheetThickness, rayleighRange, confocalParam, lateralRes, axialResDet, axialResIll, effectiveAxial, beamWaist, divergence };
+    return { sheetThickness, rayleighRange, lateralRes, axialResDet, axialResIll, effectiveAxial, beamWaist, divergence };
   }, [naIll, wavelength, n, naDet]);
 
   const plotData = useMemo(() => {
@@ -32,7 +31,7 @@ export default function SelectivePlanePage() {
     for (let x = 0.01; x <= 0.3; x += 0.003) {
       nas.push(x);
       const lam = wavelength * 1e-9;
-      thicknesses.push(n * lam / (x * x) * 1e6);
+      thicknesses.push(2 * lam / (Math.PI * x) * 1e6);
       ranges.push(n * lam / (Math.PI * x * x) * 1e6);
     }
     return [
@@ -74,7 +73,7 @@ export default function SelectivePlanePage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Lateral resolution</span><span className="font-mono text-emerald-400">{results.lateralRes.toFixed(1)} nm</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Effective axial</span><span className="font-mono text-red-400">{results.effectiveAxial.toFixed(1)} nm</span></div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">
-            <p>Sheet: t = nλ/NA²_ill | w₀ = λ/(π·NA_ill)</p>
+            <p>Sheet: t = 2λ/(π·NA_ill) | w₀ = λ/(π·NA_ill)</p>
             <p>z_R = nλ/(π·NA²_ill) | θ_div = 2·NA_ill/n</p>
           </div>
         </div>
