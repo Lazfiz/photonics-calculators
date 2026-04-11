@@ -35,10 +35,9 @@ export default function TwoPhotonAbsorptionPage() {
 
   const mat = TPA_MATERIALS[material];
   const beta = tpaBeta(mat, wavelength);
-  const alphaTPA = beta * intensity; // 1/cm
-  const L = thickness * 0.1; // cm
-  const effectiveLength = alphaTPA > 0 ? (1 - Math.exp(-alphaTPA * L)) / alphaTPA : L;
-  const transmission = Math.exp(-beta * intensity * effectiveLength);
+  const L = thickness * 0.1; // mm → cm
+  const betaIL = beta * intensity * L; // dimensionless (β in cm/GW × I in GW/cm² × L in cm)
+  const transmission = 1 / (1 + betaIL); // T = 1/(1+β·I₀·L) for plane wave TPA
   const loss_dB = -10 * Math.log10(transmission);
 
   const chartData = useMemo(() => {
@@ -53,7 +52,7 @@ export default function TwoPhotonAbsorptionPage() {
   const intensityData = useMemo(() => {
     const intensities = Array.from({ length: 200 }, (_, i) => 0.1 + i * 2);
     const b = tpaBeta(mat, wavelength);
-    return [{ x: intensities, y: intensities.map(I => Math.exp(-b * I * thickness * 0.1) * 100), type: "scatter" as const, mode: "lines" as const, name: "Transmission", line: { color: "#f59e0b", width: 2 } }];
+    return [{ x: intensities, y: intensities.map(I => 1 / (1 + b * I * thickness * 0.1) * 100), type: "scatter" as const, mode: "lines" as const, name: "Transmission", line: { color: "#f59e0b", width: 2 } }];
   }, [material, wavelength, thickness]);
 
   return (

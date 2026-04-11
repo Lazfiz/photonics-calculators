@@ -15,15 +15,15 @@ interface UVMaterial {
 }
 
 const MATERIALS: Record<string, UVMaterial> = {
-  FusedSilica: { name: "Fused Silica (SiO₂)", range: [160, 3500], nd200: 1.5600, solarization: "low", B: [0.6961663, 0.4079426, 0.8974794], C: [0.0684043, 0.1162414, 9.896161] },
+  FusedSilica: { name: "Fused Silica (SiO₂)", range: [160, 3500], nd200: 1.5600, solarization: "low", B: [0.6961663, 0.4079426, 0.8974794], C: [0.00467914825849, 0.01351206307396, 97.93400253792099] },
   CaF2: { name: "Calcium Fluoride (CaF₂)", range: [130, 9000], nd200: 1.5300, solarization: "low", B: [0.5675888, 0.4710914, 3.8484723], C: [0.00252643, 0.010078333, 1200.556] },
   MgF2: { name: "Magnesium Fluoride (MgF₂)", range: [115, 7500], nd200: 1.4450, solarization: "low", B: [0.487551, 0.398750, 2.3120], C: [0.00188, 0.00788, 55.0] },
   LiF: { name: "Lithium Fluoride (LiF)", range: [105, 7000], nd200: 1.4400, solarization: "medium", B: [0.925, 0.209, 0.880], C: [0.0070, 0.022, 4100] },
   Sapphire: { name: "Sapphire (Al₂O₃)", range: [150, 6000], nd200: 1.8500, solarization: "low", B: [1.4313, 0.6505, 5.3414], C: [0.00528, 0.01424, 325.0] },
   BK7: { name: "BK7 (Borosilicate)", range: [310, 2500], nd200: null as any, solarization: "high", B: [1.03961212, 0.231792344, 1.01046945], C: [0.00600069867, 0.0200179144, 103.560653] },
-  UVFS: { name: "UV Grade Fused Silica", range: [160, 3500], nd200: 1.5620, solarization: "very low", B: [0.6965, 0.4082, 0.8969], C: [0.0684, 0.1162, 9.8962] },
+  UVFS: { name: "UV Grade Fused Silica", range: [160, 3500], nd200: 1.5620, solarization: "very low", B: [0.6965, 0.4082, 0.8969], C: [0.004679, 0.01351, 97.934] },
   BaF2: { name: "Barium Fluoride (BaF₂)", range: [135, 12500], nd200: 1.5700, solarization: "medium", B: [0.6434, 0.5088, 3.7237], C: [0.00340, 0.01200, 1960] },
-  Quartz: { name: "Crystalline Quartz (SiO₂)", range: [150, 4000], nd200: 1.5560, solarization: "medium", B: [0.6962, 0.4080, 0.8970], C: [0.0684, 0.1162, 9.896] },
+  Quartz: { name: "Crystalline Quartz (SiO₂)", range: [150, 4000], nd200: 1.5560, solarization: "medium", B: [1.3518538967, 0.0000252728, 0.0800136425], C: [0.0085140688, 0.0972764732, 11.7952943043] },
   CsI: { name: "Cesium Iodide (CsI)", range: [200, 55000], nd200: 1.7700, solarization: "medium", B: [1.0, 0.6, 2.5], C: [0.015, 0.08, 3000] },
 };
 
