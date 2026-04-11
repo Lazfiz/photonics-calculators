@@ -52,7 +52,7 @@ export default function UniformityPage() {
 
   const prnuNoise = (prnuPercent / 100) * meanSignal;
   const dsnuNoise = (dsnuPercent / 100) * darkSignal; // DSNU scales with dark signal, not illumination
-  const shotNoise = Math.sqrt(meanSignal);
+  const shotNoise = Math.sqrt(meanSignal + darkSignal);
   const totalNoise = Math.sqrt(prnuNoise**2 + dsnuNoise**2 + readNoise**2 + shotNoise**2);
   const snr = meanSignal / totalNoise;
 
