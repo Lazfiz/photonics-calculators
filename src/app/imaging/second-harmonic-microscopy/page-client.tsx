@@ -13,22 +13,21 @@ export default function SecondHarmonicMicroscopyPage() {
   const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100);
   const [repRate, setRepRate] = useURLState("repRate", 80);
   const [thickness, setThickness] = useURLState("thickness", 1);
+  const [dn, setDn] = useURLState("dn", 0.01);
 
   const shgWavelength = wavelength / 2;
-  const energyPerPulse = (power * 1000 / repRate) * 1e-9;
+  const energyPerPulse = (power / repRate) * 1e-9;
   const peakPower = energyPerPulse / (pulseWidth * 1e-15);
   const w0 = 0.61 * wavelength / (na * 1000);
   const spotArea = Math.PI * (w0 * 1e-6) ** 2;
-  const peakIntensity = peakPower / spotArea / 1e12;
+  const peakIntensity = peakPower / spotArea / 1e16;
 
   // SHG signal ∝ I² × d_eff² × L² × sinc²(ΔkL/2)
-  const coherenceLength = Math.PI / (4 * Math.PI * (1.33 - 1) / shgWavelength * 1e-3);
-  const shgSignal = peakIntensity * peakIntensity * thickness * thickness * 1e-6;
-
-  // Phase matching parameter
-  const deltaN = 0.33; // typical birefringence
-  const deltaK = 4 * Math.PI * deltaN / shgWavelength * 1e-3;
+  const deltaN = dn;
+  const deltaK = 4 * Math.PI * deltaN / (wavelength * 1e-3);
+  const coherenceLength = Math.PI / deltaK;
   const sincFactor = thickness > 0 ? Math.pow(Math.sin(deltaK * thickness / 2) / (deltaK * thickness / 2), 2) : 1;
+  const shgSignal = peakIntensity * peakIntensity * thickness * thickness * 1e-6 * sincFactor;
 
   const resolutionChart = useMemo(() => {
     const nas = Array.from({ length: 80 }, (_, i) => 0.2 + i * 0.018);
@@ -58,6 +57,7 @@ export default function SecondHarmonicMicroscopyPage() {
         <ValidatedNumberInput label="Pulse Width (fs)" value={pulseWidth} onChange={setPulseWidth} min={10} max={500} />
         <ValidatedNumberInput label="Rep. Rate (MHz)" value={repRate} onChange={setRepRate} min={0.1} max={250} />
         <ValidatedNumberInput label="Sample Thickness (µm)" value={thickness} onChange={setThickness} min={0.01} max={100} step="0.1" />
+        <ValidatedNumberInput label="Dispersion Δn" value={dn} onChange={setDn} min={0.001} max={0.5} step="0.001" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -76,6 +76,10 @@ export default function SecondHarmonicMicroscopyPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Phase Match Factor</p>
           <p className="text-2xl font-bold text-pink-400">{sincFactor.toFixed(3)}</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">SHG Signal (a.u.)</p>
+          <p className="text-2xl font-bold text-orange-400">{shgSignal.toExponential(2)}</p>
         </div>
       </div>
 
