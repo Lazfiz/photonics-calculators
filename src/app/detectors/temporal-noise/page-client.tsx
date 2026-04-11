@@ -34,7 +34,7 @@ export default function TemporalNoisePage() {
 
   // Noise vs integration time
   const noiseVsTime = useMemo(() => {
-    const times = Array.from({ length: 200 }, (_, i) => 1e-6 * Math.pow(1e4, i / 200)); // 1μs to 10s
+    const times = Array.from({ length: 200 }, (_, i) => 1e-6 * Math.pow(1e7, i / 200)); // 1μs to 10s
     const readN = times.map(() => readNoise);
     const darkN = times.map(t => Math.sqrt(darkCurrent * t));
     const totalN = times.map((t, i) => Math.sqrt(readN[i]**2 + darkN[i]**2));
