@@ -17,8 +17,8 @@ export default function Reconstruction3DPage() {
   const [wobble, setWobble] = useURLState("wobble", 1);
   const [numViews, setNumViews] = useURLState("numViews", 1);
 
-  const axialRes = (2 * refractiveIndex * wavelengthNm) / (na ** 2) * 1000; // nm
-  const lateralRes = (0.61 * wavelengthNm) / na * 1000; // nm
+  const axialRes = (2 * refractiveIndex * wavelengthNm) / (na ** 2); // nm
+  const lateralRes = (0.61 * wavelengthNm) / na; // nm
   const totalHeight = numSlices * sliceSpacing;
   const voxelSize = (xyResolution * xyResolution * sliceSpacing).toFixed(4);
   const totalVoxels = Math.round((totalHeight / sliceSpacing) * (100 / xyResolution) ** 2);
@@ -30,8 +30,8 @@ export default function Reconstruction3DPage() {
 
   const resolutionVsNA = useMemo(() => {
     const nas = Array.from({ length: 50 }, (_, i) => 0.2 + i * 0.036);
-    const lateral = nas.map(n => (0.61 * wavelengthNm) / n * 1000);
-    const axial = nas.map(n => (2 * refractiveIndex * wavelengthNm) / (n ** 2) * 1000);
+    const lateral = nas.map(n => (0.61 * wavelengthNm) / n);
+    const axial = nas.map(n => (2 * refractiveIndex * wavelengthNm) / (n ** 2));
     return [
       { x: nas, y: lateral, type: "scatter", mode: "lines" as const, name: "Lateral", line: { color: "#60a5fa", width: 2 } },
       { x: nas, y: axial, type: "scatter", mode: "lines" as const, name: "Axial (Widefield)", line: { color: "#f87171", width: 2 } },
