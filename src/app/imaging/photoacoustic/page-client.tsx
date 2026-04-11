@@ -34,7 +34,7 @@ export default function PhotoacousticPage() {
     // Imaging depth = min of optical and acoustic
     const imagingDepth = Math.min(penetrationDepth_mm, acousticPenetration_mm);
     // Axial resolution = c / (2 · BW), BW ≈ 0.5 · f_center
-    const axialRes = 1540 / (2 * detectorFreq * 1e6) * 1e6; // µm
+    const axialRes = 1540 / (detectorFreq * 1e6) * 1e6; // µm
     // Lateral resolution ~ beam width / NA_acoustic ≈ λ_acoustic
     const lateralRes = 1540 / (detectorFreq * 1e6) * 1e6; // µm
     return { mfp, transportMfp, muEff, penetrationDepth_mm, p0, acousticPenetration_mm, imagingDepth, axialRes, lateralRes, acousticAttenuation };
@@ -63,7 +63,7 @@ export default function PhotoacousticPage() {
     const lateral = [];
     for (let f = 1; f <= 50; f += 1) {
       freqs.push(f);
-      axial.push(1540 / (2 * f * 1e6) * 1e6); // µm
+      axial.push(1540 / (f * 1e6) * 1e6); // µm
       lateral.push(1540 / (f * 1e6) * 1e6); // µm
     }
     return [
