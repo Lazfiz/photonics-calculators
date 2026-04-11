@@ -18,13 +18,12 @@ export default function ClearedTissuePage() {
     const lam = wavelength * 1e-9;
     const lateralRes = 0.61 * lam / na * 1e9;
     const axialRes = 2 * nMedium * lam / (na * na) * 1e6;
-    const reducedScattering = scatteringCoeff * (1 - absorptionCoeff / (absorptionCoeff + scatteringCoeff));
-    const transmission = Math.exp(-(absorptionCoeff + scatteringCoeff) * tissueThickness / 1000);
+    const transmission = Math.exp(-(absorptionCoeff + scatteringCoeff) * tissueThickness);
     const imagingDepth = objectiveWD * (na / nMedium);
     const riMismatchPenalty = ((na / nMedium) ** 4);
     const snrLoss = -10 * Math.log10(Math.max(transmission, 1e-10));
-    const ballPhotonFrac = Math.exp(-scatteringCoeff * tissueThickness / 1000);
-    return { lateralRes, axialRes, transmission, imagingDepth, riMismatchPenalty, snrLoss, ballPhotonFrac, reducedScattering };
+    const ballPhotonFrac = Math.exp(-scatteringCoeff * tissueThickness);
+    return { lateralRes, axialRes, transmission, imagingDepth, riMismatchPenalty, snrLoss, ballPhotonFrac };
   }, [na, wavelength, nMedium, tissueThickness, absorptionCoeff, scatteringCoeff, objectiveWD]);
 
   const plotData = useMemo(() => {
@@ -33,8 +32,8 @@ export default function ClearedTissuePage() {
     const ballFracs = [];
     for (let d = 0; d <= 5000; d += 50) {
       depths.push(d);
-      transmissions.push(Math.exp(-(absorptionCoeff + scatteringCoeff) * d / 1000) * 100);
-      ballFracs.push(Math.exp(-scatteringCoeff * d / 1000) * 100);
+      transmissions.push(Math.exp(-(absorptionCoeff + scatteringCoeff) * d) * 100);
+      ballFracs.push(Math.exp(-scatteringCoeff * d) * 100);
     }
     return [
       { x: depths, y: transmissions, name: "Total transmission (%)", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
