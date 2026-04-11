@@ -31,10 +31,11 @@ export default function DoubleRefractionPage() {
   const neEffective = thetaI === 0 ? nE :
     (nO * nE) / Math.sqrt(nO ** 2 * sinThetaE ** 2 + nE ** 2 * cosThetaE ** 2);
 
-  // Walk-off angle
+  // Walk-off angle: tan(ρ) = (n_o² - n_e²)·sinθ·cosθ / (n_o²·sin²θ + n_e²·cos²θ)
+  // (Saleh & Teich, Fundamentals of Photonics, Eq.6.2-9)
   const rho = thetaI === 0 ? 0 : Math.atan(
     (Math.sin(thetaI) * Math.cos(thetaI) * (nO ** 2 - nE ** 2)) /
-    (nO ** 2 * Math.cos(thetaI) ** 2 + nE ** 2 * Math.sin(thetaI) ** 2)
+    (nO ** 2 * Math.sin(thetaI) ** 2 + nE ** 2 * Math.cos(thetaI) ** 2)
   );
 
   // Lateral separation of o and e rays at exit
@@ -62,7 +63,7 @@ export default function DoubleRefractionPage() {
       if (a === 0) return 0;
       return Math.atan(
         (Math.sin(t) * Math.cos(t) * (nO ** 2 - nE ** 2)) /
-        (nO ** 2 * Math.cos(t) ** 2 + nE ** 2 * Math.sin(t) ** 2)
+        (nO ** 2 * Math.sin(t) ** 2 + nE ** 2 * Math.cos(t) ** 2)
       ) * 180 / Math.PI;
     });
     return [
