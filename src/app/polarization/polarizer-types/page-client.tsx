@@ -65,7 +65,7 @@ export default function PolarizerTypesPage() {
         er: 10 * Math.log10(p.er),
         transmission: (p.transmission * 100).toFixed(1),
         outputPower: (inputPower * p.transmission).toFixed(2),
-        leakagePower: (inputPower / p.er).toFixed(4),
+        leakagePower: (inputPower * p.transmission / p.er).toFixed(4),
         damageThreshold: p.damageThreshold,
         wavelengthRange: p.wavelengthRange,
         material: p.material,

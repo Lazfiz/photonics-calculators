@@ -21,7 +21,9 @@ export default function PBSPage() {
   const criticalE = Math.asin(1 / nE);
 
   // At cut angle, ray inside prism makes angle (90° - cut) with normal to hypotenuse
-  const rayAngleAtInterface = Math.PI / 2 - cutAngle;
+  // Cut angle = angle of incidence at the diagonal interface
+  // (standard Glan-type prism convention)
+  const rayAngleAtInterface = cutAngle;
 
   const oTIR = rayAngleAtInterface > criticalO;
   const eTIR = rayAngleAtInterface > criticalE;
@@ -36,7 +38,7 @@ export default function PBSPage() {
 
   // Angular acceptance
   const acceptanceO = (rayAngleAtInterface - criticalO) * 180 / Math.PI;
-  const acceptanceE = (cutAngle - criticalE) * 180 / Math.PI;
+  const acceptanceE = (criticalE - rayAngleAtInterface) * 180 / Math.PI;
 
   const spectralData = useMemo(() => {
     // Birefringence vs wavelength (simplified Cauchy-like model for calcite)
