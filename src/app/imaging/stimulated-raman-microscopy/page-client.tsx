@@ -15,7 +15,7 @@ export default function StimulatedRamanMicroscopyPage() {
   const [pixelDwell, setPixelDwell] = useURLState("pixelDwell", 1);
   const [nPixel] = useState(512);
 
-  const stokesWavelength = 1 / (1 / (pumpWavelength * 1e-3) - ramanShift / 1e7) * 1e3;
+  const stokesWavelength = 1e7 / (1e7 / pumpWavelength - ramanShift);
   const beatFreq = ramanShift * 3e10; // Hz
 
   // SRS signal: SRS ∝ Im[χ³] × I_pump × I_stokes
@@ -23,7 +23,7 @@ export default function StimulatedRamanMicroscopyPage() {
 
   // Noise: shot noise limited ∝ √(P_pump × P_stokes)
   const shotNoise = Math.sqrt(pumpPower * stokesPower) * 0.1;
-  const snr = srsSignal / (shotNoise * 1e-12);
+  const snr = srsSignal / (shotNoise * 1e-12) * Math.sqrt(pixelDwell);
 
   // Spatial resolution
   const lateralRes = 0.61 * pumpWavelength / na;
@@ -38,7 +38,7 @@ export default function StimulatedRamanMicroscopyPage() {
       { x: powers, y: powers.map(p => Math.pow(10, -12) * p * stokesPower / (Math.sqrt(p * stokesPower) * 0.1 * 1e-12)), type: "scatter", mode: "lines", name: "SNR (SRS)", line: { color: "#34d399" } },
       { x: [pumpPower], y: [snr], type: "scatter", mode: "markers", name: "Current", marker: { color: "#f87171", size: 12 } },
     ];
-  }, [pumpPower, stokesPower, snr]);
+  }, [pumpPower, stokesPower, pixelDwell, snr]);
 
   const depthChart = useMemo(() => {
     const depths = Array.from({ length: 60 }, (_, i) => i * 20);
@@ -75,7 +75,13 @@ export default function StimulatedRamanMicroscopyPage() {
           <p className="text-2xl font-bold text-yellow-400">{frameTime.toFixed(2)} s</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Beat Frequency</p>
+          <p className="text-sm text-gray-400">SRS Signal (a.u.)</p>
+          <p className="text-2xl font-bold text-cyan-400">{srsSignal.toExponential(2)}</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">SNR</p>
+          <p className="text-2xl font-bold text-orange-400">{snr.toFixed(1)}</p>
+        </div>
           <p className="text-2xl font-bold text-purple-400">{(beatFreq / 1e12).toFixed(1)} THz</p>
         </div>
       </div>
