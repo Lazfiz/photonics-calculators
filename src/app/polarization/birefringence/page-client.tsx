@@ -62,7 +62,7 @@ export default function BirefringencePage() {
           <div className="mt-3 flex gap-2">
             <button onClick={() => { setNo(1.5443); setNe(1.5534); }}
               className="px-3 py-1 text-xs bg-gray-800 border border-gray-700 rounded hover:border-blue-500">Quartz</button>
-            <button onClick={() => { setNo(1.5427); setNe(1.4862); }}
+            <button onClick={() => { setNo(1.6584); setNe(1.4864); }}
               className="px-3 py-1 text-xs bg-gray-800 border border-gray-700 rounded hover:border-blue-500">Calcite</button>
             <button onClick={() => { setNo(1.658); setNe(1.486); }}
               className="px-3 py-1 text-xs bg-gray-800 border border-gray-700 rounded hover:border-blue-500">Calcite (vis)</button>
@@ -76,7 +76,7 @@ export default function BirefringencePage() {
             <ResultRow label="Phase retardation δ" value={`${delta.toFixed(4)} rad`} />
             <ResultRow label="Retardation (waves)" value={retardationWaves.toFixed(4)} />
             <ResultRow label="Retardation (degrees)" value={`${retardationDeg.toFixed(2)}°`} />
-            <ResultRow label="Waveplate order" value={`~${Math.floor(retardationWaves + 0.5)}${retardationWaves >= 0.95 && retardationWaves <= 1.05 ? " (quarter)" : retardationWaves >= 1.95 && retardationWaves <= 2.05 ? " (half)" : ""}`} />
+            <ResultRow label="Waveplate order" value={`~${Math.floor(retardationWaves + 0.5)}${retardationWaves >= 0.23 && retardationWaves <= 0.27 ? " (quarter)" : retardationWaves >= 0.48 && retardationWaves <= 0.52 ? " (half)" : retardationWaves >= 0.95 && retardationWaves <= 1.05 ? " (full)" : ""}`} />
           </div>
           {orderCrossings.length > 0 && (
             <div className="mt-4">
