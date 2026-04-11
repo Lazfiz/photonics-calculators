@@ -8,7 +8,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 // PMT: Photomultiplier Tube
 // Gain = δ^n where δ = secondary emission ratio, n = number of dynodes
-// SNR = signal_electrons / sqrt(signal_electrons + gain^2 * (dark + noise))
+// SNR = signal_electrons / sqrt((signal_electrons + dark_electrons) * ENF)
 export default function PMTPage() {
   const [numDynodes, setNumDynodes] = useURLState("numDynodes", 10);
   const [secondaryEmission, setSecondaryEmission] = useURLState("secondaryEmission", 3.5);
@@ -40,7 +40,7 @@ export default function PMTPage() {
       const sig = photonRate * qe;
       const darkE = (darkCurrent * 1e-9) / (1.602e-19 * g);
       const enf = 1.1 + 1 / d; // excess noise factor approximation
-      return sig / Math.sqrt(sig * enf + darkE);
+      return sig / Math.sqrt((sig + darkE) * enf);
     });
     return { deltas, snrVals };
   }, [numDynodes, qe, darkCurrent, photonRate]);
@@ -67,7 +67,7 @@ export default function PMTPage() {
         <p>Gain G = δ<sup>n</sup></p>
         <p>I<sub>signal</sub> = R<sub>ph</sub> · QE · e · G</p>
         <p>ENF = 1.1 + 1/δ (excess noise factor)</p>
-        <p>SNR = N<sub>pe</sub> / √(N<sub>pe</sub> · ENF + N<sub>dark</sub>)</p>
+        <p>SNR = N<sub>pe</sub> / √((N<sub>pe</sub> + N<sub>dark</sub>) · ENF)</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
