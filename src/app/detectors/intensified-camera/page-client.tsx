@@ -32,7 +32,7 @@ export default function IntensifiedCameraPage() {
   const sensitivityChart = useMemo(() => {
     const photons = Array.from({ length: 200 }, (_, i) => 0.1 + i * 0.5);
     const eg = mcpGain * phosphorEff * fiberCoupling * ccdQE;
-    const iccdSNR = photons.map(p => p * photocathodeQE * eg / Math.sqrt(p * photocathodeQE * eg * noiseFactor ** 2 + ccdReadNoise ** 2));
+    const iccdSNR = photons.map(p => p * photocathodeQE / Math.sqrt(p * photocathodeQE * noiseFactor ** 2 + (ccdReadNoise / eg) ** 2));
     const emccdSNR = photons.map(p => p / Math.sqrt(p * 2 + 1.5 ** 2));
     return [
       { x: photons, y: iccdSNR, type: "scatter", mode: "lines", name: "ICCD", line: { color: "#60a5fa" } },
