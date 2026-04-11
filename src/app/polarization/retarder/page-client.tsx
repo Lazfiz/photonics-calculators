@@ -26,10 +26,17 @@ export default function RetarderPage() {
     const phase = retardanceRad;
     
     // Output field (simplified real/imaginary calculation)
-    const Ex_re = ci * (c * c + s * s * Math.cos(phase)) + si * c * s * (1 - Math.cos(phase));
-    const Ex_im = si * s * s * Math.sin(phase) - ci * c * s * Math.sin(phase);
-    const Ey_re = si * (s * s + c * c * Math.cos(phase)) + ci * c * s * (1 - Math.cos(phase));
-    const Ey_im = -si * c * s * Math.sin(phase) + ci * c * c * Math.sin(phase);
+    // Jones matrix for retarder: M = R(-θ)·diag(1,e^{-iΓ})·R(θ)
+    // Input: E_in = [cosφ, sinφ]
+    // After R(θ): [cos(φ-θ), sin(φ-θ)]
+    // After diag: [cos(φ-θ), e^{-iΓ}sin(φ-θ)]
+    // After R(-θ): multiply by rotation matrix
+    const ci_rt = ci * c + si * s; // cos(φ-θ)
+    const si_rt = si * c - ci * s; // sin(φ-θ)
+    const Ex_re = c * ci_rt + s * Math.cos(phase) * si_rt;
+    const Ex_im = -s * Math.sin(phase) * si_rt;
+    const Ey_re = -s * ci_rt + c * Math.cos(phase) * si_rt;
+    const Ey_im = -c * Math.sin(phase) * si_rt;
     
     // Input polarization ellipse
     const inX = t.map(tt => ci * Math.cos(tt));
@@ -54,11 +61,13 @@ export default function RetarderPage() {
   const c = Math.cos(fastAxisRad);
   const s = Math.sin(fastAxisRad);
   const phase = retardanceRad;
-  
-  const Ex_re = ci * (c * c + s * s * Math.cos(phase)) + si * c * s * (1 - Math.cos(phase));
-  const Ex_im = si * s * s * Math.sin(phase) - ci * c * s * Math.sin(phase);
-  const Ey_re = si * (s * s + c * c * Math.cos(phase)) + ci * c * s * (1 - Math.cos(phase));
-  const Ey_im = -si * c * s * Math.sin(phase) + ci * c * c * Math.sin(phase);
+
+  const ci_rt = ci * c + si * s;
+  const si_rt = si * c - ci * s;
+  const Ex_re = c * ci_rt + s * Math.cos(phase) * si_rt;
+  const Ex_im = -s * Math.sin(phase) * si_rt;
+  const Ey_re = -s * ci_rt + c * Math.cos(phase) * si_rt;
+  const Ey_im = -c * Math.sin(phase) * si_rt;
 
   const S0 = Ex_re * Ex_re + Ex_im * Ex_im + Ey_re * Ey_re + Ey_im * Ey_im;
   const S1 = (Ex_re * Ex_re + Ex_im * Ex_im) - (Ey_re * Ey_re + Ey_im * Ey_im);

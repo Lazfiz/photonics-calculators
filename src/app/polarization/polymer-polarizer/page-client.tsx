@@ -26,7 +26,9 @@ export default function PolymerPolarizerPage() {
 
   const transmission = (Tpara + Tperp) / 2; // unpolarized input
   const singlePassT = Tpara;
-  const extinction = Tpara / Tperp;
+  // In dichroic polarizers, ∥ direction (aligned with iodine chains) is blocked (high absorption),
+  // ⊥ direction is passed (low absorption). Extinction ratio = T_passed / T_blocked.
+  const extinction = Tperp / Tpara;
   const extinctionDB = 10 * Math.log10(extinction);
 
   // Polarization efficiency: (T_para - T_perp) / (T_para + T_perp)
@@ -52,8 +54,8 @@ export default function PolymerPolarizerPage() {
       return Math.exp(-aS * d);
     });
     return [
-      { x: wls, y: Tp, type: "scatter" as const, mode: "lines" as const, name: "T∥ (passed)", line: { color: "#60a5fa", width: 2 } },
-      { x: wls, y: Ts, type: "scatter" as const, mode: "lines" as const, name: "T⊥ (blocked)", line: { color: "#f87171", width: 2 } },
+      { x: wls, y: Tp, type: "scatter" as const, mode: "lines" as const, name: "T∥ (blocked)", line: { color: "#f87171", width: 2 } },
+      { x: wls, y: Ts, type: "scatter" as const, mode: "lines" as const, name: "T⊥ (passed)", line: { color: "#60a5fa", width: 2 } },
       { x: [wavelength, wavelength], y: [0, 1], type: "scatter" as const, mode: "lines" as const, name: "λ₀", line: { color: "#4ade80", dash: "dash" } },
     ];
   }, [absorptionCoeff, iodineConc, dichroicRatio, d, wavelength]);
@@ -111,11 +113,11 @@ export default function PolymerPolarizerPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">T∥ (passed)</p>
+          <p className="text-sm text-gray-400">T∥ (blocked)</p>
           <p className="text-2xl font-bold text-green-400">{(Tpara * 100).toFixed(1)}%</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">T⊥ (blocked)</p>
+          <p className="text-sm text-gray-400">T⊥ (passed)</p>
           <p className="text-2xl font-bold text-red-400">{(Tperp * 100).toFixed(3)}%</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
