@@ -20,8 +20,8 @@ export default function OpticalCoherencePage() {
   const bandwidthM = bandwidthNm * 1e-9;
   const coherenceLengthCalc = (2 * Math.LN2 / Math.PI) * (wavelengthM ** 2) / bandwidthM * 1e3; // mm
   const coherenceTime = coherenceLengthCalc * 1e-3 / (3e8 / refractiveIndex) * 1e15; // fs
-  const axialResolution = (2 * Math.LN2 / Math.PI) * (wavelengthM ** 2) / bandwidthM * 1e6; // µm
-  const lateralResolution = (0.37 * wavelengthM) / 0.05; // µm for NA=0.05 typical
+  const axialResolution = (2 * Math.LN2 / Math.PI) * (wavelengthM ** 2) / bandwidthM * 1e6 / (2 * refractiveIndex); // µm
+  const lateralResolution = (0.37 * wavelengthM) / 0.05 * 1e6; // µm for NA=0.05 typical
   const opticalPathDiff = 2 * refractiveIndex * 0.5 * 1e-3; // for 0.5mm sample
 
   const backscatteredPower = sourcePowerMw * 1e-3 * couplingEfficiency * sampleReflectivity * 2; // W
@@ -38,7 +38,7 @@ export default function OpticalCoherencePage() {
 
   const axialResChart = useMemo(() => {
     const bw = Array.from({ length: 60 }, (_, i) => 10 + i * 5);
-    const ar = bw.map(b => (2 * Math.LN2 / Math.PI) * ((wavelengthNm * 1e-9) ** 2) / (b * 1e-9) * 1e6);
+    const ar = bw.map(b => (2 * Math.LN2 / Math.PI) * ((wavelengthNm * 1e-9) ** 2) / (b * 1e-9) * 1e6 / (2 * refractiveIndex));
     return [
       { x: bw, y: ar, type: "scatter", mode: "lines" as const, name: "Axial Resolution", line: { color: "#34d399", width: 2 } },
       { x: [bandwidthNm], y: [axialResolution], type: "scatter", mode: "markers" as const, name: "Current", marker: { color: "#fbbf24", size: 12 } },
