@@ -20,13 +20,14 @@ export default function ThirdHarmonicGenerationPage() {
     const thgNm = thgWavelength * 1e9;
     const lateralRes = 0.325 * lam / na * 1e9;
     const pulseEnergy = (avgPower * 1e-3) / (repRate * 1e6) * 1e9;
-    const peakIntensity = (pulseEnergy * 1e-9) / (Math.PI * (lam / na) ** 2 * pulseWidth * 1e-15);
-    const thgEfficiency = chi3 * chi3 * (peakIntensity * 1e-4) ** 2 * 1e-12;
+    const w0 = 0.325 * lam / na;
+    const peakIntensity = (pulseEnergy * 1e-9) / (Math.PI * w0 * w0 * pulseWidth * 1e-15);
+    const thgEfficiency = chi3 * chi3 * (peakIntensity * 1e-4) ** 3 * 1e-18;
     const fwdBwdRatio = 3;
     const spectralBandwidth = 0.44 / (pulseWidth * 1e-15) * 1e-12;
     const gouyPhaseShift = 3 * Math.PI;
     return { thgNm, lateralRes, pulseEnergy, peakIntensity, thgEfficiency, fwdBwdRatio, spectralBandwidth, gouyPhaseShift };
-  }, [wavelength, na, n, pulseWidth, avgPower, repRate, chi3]);
+  }, [wavelength, na, pulseWidth, avgPower, repRate, chi3]);
 
   const plotData = useMemo(() => {
     const wavelengths = [];
@@ -80,6 +81,7 @@ export default function ThirdHarmonicGenerationPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Lateral resolution</span><span className="font-mono text-green-400">{results.lateralRes.toFixed(1)} nm</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Pulse energy</span><span className="font-mono text-yellow-400">{results.pulseEnergy.toFixed(2)} nJ</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Peak intensity (est.)</span><span className="font-mono text-cyan-400">{results.peakIntensity.toExponential(2)} W/m²</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">THG efficiency (est.)</span><span className="font-mono text-pink-400">{(results.thgEfficiency * 100).toExponential(2)} %</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Fwd/Bwd ratio</span><span className="font-mono text-blue-400">~{results.fwdBwdRatio}:1</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Spectral bandwidth</span><span className="font-mono text-orange-400">{results.spectralBandwidth.toFixed(2)} THz</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Gouy phase shift</span><span className="font-mono text-red-400">{results.gouyPhaseShift.toFixed(1)} rad</span></div>
