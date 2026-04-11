@@ -12,22 +12,26 @@ export default function SecondHarmonicGenerationPage() {
   const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100);
   const [avgPower, setAvgPower] = useURLState("avgPower", 50);
   const [repRate, setRepRate] = useURLState("repRate", 80);
-  const [chi2, setChi2] = useURLState("chi2", 1);
-  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 10);
+  const [chi2, setChi2] = useURLState("chi2", 1); // pm/V (effective)
+  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 10); // µm
+  const [dn, setDn] = useURLState("dn", 0.01); // dispersion |n(2ω)-n(ω)|
 
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;
     const shgWavelength = lam / 2;
     const shgNm = shgWavelength * 1e9;
     const lateralRes = 0.325 * lam / na * 1e9;
-    const coherenceLength = lam / (4 * Math.abs(n - n));
+    const coherenceLength = lam / (4 * dn);
     const pulseEnergy = (avgPower * 1e-3) / (repRate * 1e6) * 1e9;
-    const peakIntensity = (pulseEnergy * 1e-9) / (Math.PI * (lam / na) ** 2 * pulseWidth * 1e-15);
-    const shgEfficiency = chi2 * chi2 * (peakIntensity * 1e-4) * crystalLength * crystalLength * 1e-6;
+    const w0 = 0.325 * lam / na;
+    const peakIntensity = (pulseEnergy * 1e-9) / (Math.PI * w0 * w0 * pulseWidth * 1e-15);
+    const L_m = crystalLength * 1e-6;
+    const chi2_mV = chi2 * 1e-12;
+    const shgEfficiency = 8 * Math.PI ** 2 * chi2_mV ** 2 * peakIntensity * L_m ** 2 / (3 * (lam / (2 * Math.PI)) ** 2 * 299792458 * 8.854e-12);
     const fwdBwdRatio = 1;
     const spectralBandwidth = 0.44 / (pulseWidth * 1e-15) * 1e-12;
-    return { shgNm, lateralRes, pulseEnergy, peakIntensity, shgEfficiency, fwdBwdRatio, spectralBandwidth };
-  }, [wavelength, na, n, pulseWidth, avgPower, repRate, chi2, crystalLength]);
+    return { shgNm, lateralRes, pulseEnergy, peakIntensity, coherenceLength, shgEfficiency: Math.min(shgEfficiency, 1), fwdBwdRatio, spectralBandwidth };
+  }, [wavelength, na, n, pulseWidth, avgPower, repRate, chi2, crystalLength, dn]);
 
   const plotData = useMemo(() => {
     const wavelengths = [];
@@ -73,6 +77,18 @@ export default function SecondHarmonicGenerationPage() {
             <label className="block text-sm text-gray-400 mb-1">Rep rate (MHz)</label>
             <ValidatedNumberInput label="Rep rate (MHz)" value={repRate} onChange={setRepRate} />
           </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">χ² effective (pm/V)</label>
+            <ValidatedNumberInput label="χ² effective (pm/V)" value={chi2} onChange={setChi2} min={0.01} max={100} step="0.1" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">Sample thickness (µm)</label>
+            <ValidatedNumberInput label="Sample thickness (µm)" value={crystalLength} onChange={setCrystalLength} min={1} max={1000} />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">Dispersion Δn = |n(2ω)−n(ω)|</label>
+            <ValidatedNumberInput label="Dispersion Δn" value={dn} onChange={setDn} min={0.001} max={0.5} step="0.001" />
+          </div>
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
@@ -82,10 +98,12 @@ export default function SecondHarmonicGenerationPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Pulse energy</span><span className="font-mono text-yellow-400">{results.pulseEnergy.toFixed(2)} nJ</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Peak intensity (est.)</span><span className="font-mono text-purple-400">{results.peakIntensity.toExponential(2)} W/m²</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Fwd/Bwd ratio</span><span className="font-mono text-cyan-400">~{results.fwdBwdRatio} (depends on sample)</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Coherence length</span><span className="font-mono text-blue-300">{(results.coherenceLength * 1e6).toFixed(2)} µm</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">SHG efficiency (est.)</span><span className="font-mono text-pink-400">{(results.shgEfficiency * 100).toExponential(2)} %</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Spectral bandwidth</span><span className="font-mono text-orange-400">{results.spectralBandwidth.toFixed(2)} THz</span></div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>λ_SHG = λ_exc / 2 | Lateral: 0.325λ/NA</p>
-            <p>I_SHG ∝ χ²² · I² · L² | Bandwidth: 0.44/τ_p</p>
+            <p>L_c = λ/(4Δn) | I_SHG ∝ χ²²·I²·L² | Bandwidth: 0.44/τ_p</p>
           </div>
         </div>
       </div>
