@@ -31,7 +31,7 @@ export default function VacuumPhotodiodePage() {
     // Transit time: d ≈ 0.1*√(area), v_drift ≈ √(2*e*V/m)
     const cathodeAnodeGap = 0.1 * Math.sqrt(cathodeArea * 1e-6); // m
     const driftVelocity = Math.sqrt(2 * q * anodeVoltage / (9.109e-31)); // m/s
-    const transitTime = (cathodeAnodeGap / driftVelocity) * 1e12; // ps
+    const transitTime = (2 * cathodeAnodeGap / driftVelocity) * 1e12; // ps (uniform E field: avg v = v_final/2)
     const bandwidth = 0.35 / (transitTime * 1e-12); // Hz
     // Shot-noise limited SNR: SNR = I_photo / √(2q(I_photo + I_dark)·BW)
     const shotNoiseCurrent = Math.sqrt(2 * q * (iPhoto + darkCurrent) * bandwidth);
