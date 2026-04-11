@@ -9,6 +9,7 @@ export default function SpinningDiskPage() {
   const [na, setNa] = useURLState("na", 0.8);
   const [wavelength, setWavelength] = useURLState("wavelength", 488);
   const [n, setN] = useURLState("n", 1.33);
+  const [magnification, setMagnification] = useURLState("magnification", 60);
   const [pinholeDiam, setPinholeDiam] = useURLState("pinholeDiam", 50);
   const [numPins, setNumPins] = useURLState("numPins", 20000);
   const [diskRPM, setDiskRPM] = useURLState("diskRPM", 5000);
@@ -17,7 +18,8 @@ export default function SpinningDiskPage() {
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;
     const airy = 1.22 * lam / na * 1e9; // nm
-    const pinholeAU = pinholeDiam / airy;
+    const pinholeNm = pinholeDiam * 1000 / magnification;
+    const pinholeAU = pinholeNm / airy;
     const lateralRes = 0.61 * lam / na * 1e9;
     const axialRes = 2 * n * lam / (na * na) * 1e9;
     const opticalSection = (4 * n * lam * pinholeAU) / (na * na) * 1e9;
@@ -25,7 +27,7 @@ export default function SpinningDiskPage() {
     const dwellTime = (cameraExposure * 1e-3) / numPins * 1e6;
     const frameRate = diskFreq;
     return { airy, pinholeAU, lateralRes, axialRes, opticalSection, dwellTime, frameRate };
-  }, [na, wavelength, n, pinholeDiam, numPins, diskRPM, cameraExposure]);
+  }, [na, wavelength, n, magnification, pinholeDiam, numPins, diskRPM, cameraExposure]);
 
   const plotData = useMemo(() => {
     const auRange = [];
@@ -60,6 +62,10 @@ export default function SpinningDiskPage() {
             <ValidatedNumberInput label="Refractive index (n)" value={n} onChange={setN} />
           </div>
           <div>
+            <label className="block text-sm text-gray-400 mb-1">Objective Magnification</label>
+            <ValidatedNumberInput label="Objective Magnification" value={magnification} onChange={setMagnification} min={10} max={150} />
+          </div>
+          <div>
             <label className="block text-sm text-gray-400 mb-1">Pinhole diameter (µm)</label>
             <ValidatedNumberInput label="Pinhole diameter (µm)" value={pinholeDiam} onChange={setPinholeDiam} />
           </div>
@@ -87,8 +93,8 @@ export default function SpinningDiskPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Max frame rate</span><span className="font-mono text-red-400">{results.frameRate.toFixed(1)} fps</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Dwell time per pinhole</span><span className="font-mono">{results.dwellTime.toFixed(2)} µs</span></div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">
-            <p>Airy unit: d_AU = 1.22·λ/NA</p>
-            <p>Optical section: z = 4nλ·(d_pin/d_AU)/NA²</p>
+            <p>Pinhole(AU) = (d_pin / M) / d_AU</p>
+            <p>Optical section: z = 4nλ·AU / NA²</p>
             <p>Frame rate = RPM / 60 (one revolution per frame)</p>
           </div>
         </div>
