@@ -38,7 +38,7 @@ export default function PlasmaDepositionPage() {
     const Te_eV = 2 + 0.5 * Math.log10(1 + p / 1e-3);
 
     // Electron density
-    const E_field = P / (A * d * p * 0.133); // V/m (p in Pa = p*0.133)
+    const E_field = P / (A * d * p * 133.322); // V/m (p in Torr → Pa: ×133.322)
     const ne = (P * 0.01) / (Te_eV * 1.6e-19 * A * d * 1e6 * Math.sqrt(8 * Te_eV * 1.6e-19 / (Math.PI * gas.mw * 1.673e-27)));
 
     // Ion energy at substrate (simplified sheath model)
