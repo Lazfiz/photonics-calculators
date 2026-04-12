@@ -61,7 +61,7 @@ export default function FourierSelfCombPage() {
 
   const c = 3e8;
   const fRep = repetitionRate * 1e6;
-  const spacingNm = centerWavelength ** 2 * fRep / c;
+  const spacingNm = (centerWavelength ** 2 * fRep * 1e-9) / c;
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fourier Self-Comb Spectroscopy" description="Optical frequency comb from a single microresonator. Dual-comb spectroscopy without two separate lasers.">

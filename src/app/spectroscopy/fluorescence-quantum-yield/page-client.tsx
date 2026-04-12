@@ -22,7 +22,10 @@ export default function FluorescenceQuantumYieldPage() {
 
   const chartData = useMemo(() => {
     const absVals = Array.from({ length: 200 }, (_, i) => 0.01 + (i / 200) * 0.5);
-    const qyLine = absVals.map(a => (sampleInt / refInt) * (refAbs / a) * refQY);
+    const qyLine = absVals.map(a => {
+      const riFactor = useRefrIdx ? (refrIdxSample / refrIdxRef) ** 2 : 1;
+      return (sampleInt / refInt) * (refAbs / a) * riFactor * refQY;
+    });
     return [
       { x: absVals, y: qyLine, type: "scatter" as const, mode: "lines" as const, name: "QY vs Sample A", line: { color: "#60a5fa" } },
       { x: [sampleAbs], y: [qy], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
