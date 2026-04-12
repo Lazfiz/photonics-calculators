@@ -18,8 +18,8 @@ export default function RamanShiftPage() {
   const antiStokesWavenumber = laserWavenumber + ramanShiftCm;
   const antiStokesWavelength = 1e7 / antiStokesWavenumber;
 
-  const stokesEnergyEv = 1.239842e-4 / (stokesWavelength / 1000); // eV from nm
-  const laserEnergyEv = 1.239842e-4 / laserWavelength;
+  const stokesEnergyEv = 1239.842 / stokesWavelength; // eV (hc ≈ 1239.84 eV·nm)
+  const laserEnergyEv = 1239.842 / laserWavelength;
 
   const chartData = useMemo(() => {
     const shifts = Array.from({ length: 500 }, (_, i) => minShift + i * (maxShift - minShift) / 500);
