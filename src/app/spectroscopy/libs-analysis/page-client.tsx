@@ -17,7 +17,7 @@ export default function LibsAnalysisPage() {
 
   // Doppler FWHM (nm)
   const dopplerWidth = wavelength * Math.sqrt(8 * 1.380649e-23 * temperature * Math.log(2) / (1.66054e-27 * 3e8 ** 2 * 40)); // atomic mass ~40 amu (Ar-like)
-  const dopplerWidthNm = dopplerWidth * 1e9;
+  const dopplerWidthNm = dopplerWidth; // already in nm (same unit as wavelength input)
 
   // Voigt approx (Gaussian + Lorentzian FWHM)
   const voigtWidth = 0.5346 * starkWidth + Math.sqrt(0.2166 * starkWidth ** 2 + dopplerWidthNm ** 2);
