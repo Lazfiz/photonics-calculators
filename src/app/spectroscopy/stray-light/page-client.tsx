@@ -16,15 +16,15 @@ export default function StrayLightPage() {
     // Stray light rejection across wavelengths
     const wls = Array.from({ length: 300 }, (_, i) => 200 + i * 3);
 
-    // Ghost orders: λ_ghost = m·λ_center / n (order m detected at order n)
+    // Ghost orders: λ_ghost = n·λ_center / m (fixed angle: nλ_n = mλ_m)
     const ghosts = [2, 3, 4].map(m => ({
-      ghostWl: (m * centralWavelength) / order,
+      ghostWl: (order * centralWavelength) / m,
       label: `Order ${m} ghost`,
     }));
 
     // Approximate stray light envelope (Rayleigh-like scatter ∝ 1/λ⁴)
     const strayLight = wls.map(wl => {
-      const baseScatter = scatterFraction * Math.pow(centralWavelength / wl, 2);
+      const baseScatter = scatterFraction * Math.pow(centralWavelength / wl, 4);
       // Add peaks near ghost orders
       let ghostContrib = 0;
       for (const g of ghosts) {
@@ -46,7 +46,7 @@ export default function StrayLightPage() {
 
   const ghosts = [2, 3, 4].map(m => ({
     order: m,
-    wavelength: ((m * centralWavelength) / order).toFixed(1),
+    wavelength: ((order * centralWavelength) / m).toFixed(1),
   }));
 
   const rejectionDB = 10 * Math.log10(1 / scatterFraction);

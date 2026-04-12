@@ -29,17 +29,27 @@ export default function StimulatedRamanPage() {
 
   const powerTransferData = useMemo(() => {
     const distances = Array.from({ length: 300 }, (_, i) => (i / 300) * pathLength * 1e3);
-    const gR = concentration * 1e-3;
-    const pumpDepletion = distances.map(z => pumpPower * Math.exp(-gR * z * stokesPower * 1e-3));
-    const stokesGrowth = distances.map(z => stokesPower * Math.exp(gR * z * pumpPower * 1e-3));
+    // Undepleted pump approximation (small-signal regime):
+    // dI_s/dz = g_R × I_p × I_s → I_s(z) = I_s(0) × exp(g_R × I_p × z)
+    // Pump depletion is linear: I_p(z) ≈ I_p(0) - (ω_p/ω_s) × [I_s(z) - I_s(0)]
+    const gR = ramanGainCoeff; // cm/GW → use with power in GW, length in cm
+    const Ip_GW = pumpPower * 1e-3; // mW → GW
+    const freqRatio = 1; // ≈ ω_p/ω_s ≈ 1 for small shifts
+    const stokesGrowth = distances.map(z => {
+      const z_cm = z * 1e-3; // mm → cm
+      return stokesPower * Math.exp(gR * Ip_GW * z_cm);
+    });
+    const pumpDepletion = distances.map((z, i) => {
+      const dStokes = stokesGrowth[i] - stokesPower;
+      return Math.max(0, pumpPower - freqRatio * dStokes);
+    });
     return [
       { x: distances, y: pumpDepletion, type: "scatter" as const, mode: "lines" as const, name: "Pump (depleted)", line: { color: "#f87171", width: 2 } },
       { x: distances, y: stokesGrowth, type: "scatter" as const, mode: "lines" as const, name: "Stokes (amplified)", line: { color: "#34d399", width: 2 } },
     ];
-  }, [pumpPower, stokesPower, pathLength, concentration]);
+  }, [pumpPower, stokesPower, pathLength, ramanGainCoeff]);
 
-  const ramanGainCoeff = concentration * 1e-3;
-  const maxStokesGain = Math.log(1 + pumpPower * ramanGainCoeff * pathLength * 1e3 / stokesPower) * stokesPower;
+  const maxStokesGain = stokesPower * (Math.exp(ramanGainCoeff * pumpPower * 1e-3 * pathLength) - 1);
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Stimulated Raman Scattering (SRS)" description="Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.">
