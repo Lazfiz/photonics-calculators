@@ -56,7 +56,7 @@ export default function TwoDimensionalSpectroscopyPage() {
   }, [excitationCenter, coupling, linewidth, t2]);
 
   const dephasingRate = 1 / (t2 * 1e-15); // s⁻¹
-  const homogeneousWidth = dephasingRate / (2 * Math.PI * 3e10); // cm⁻¹
+  const homogeneousWidth = dephasingRate / (Math.PI * 3e10); // cm⁻¹ FWHM = 1/(πT₂c)
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Two-Dimensional (2D) Spectroscopy" description="Correlates excitation and detection frequencies via three-pulse photon echo. Reveals coupling, energy transfer, and homogeneous vs inhomogeneous broadening.">
