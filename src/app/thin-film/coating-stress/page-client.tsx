@@ -23,7 +23,7 @@ export default function CoatingStressPage() {
     const curvatures = layers.map(n => {
       // Stoney equation: κ = 6·σ_f·d_f·N / (E_s·t_s²)
       // σ_f in Pa, d_f in m, t_s in m, E_s in Pa → κ in 1/m
-      const kappa = (6 * sigmaMPa * 1e6 * dNm * 1e-9 * n) / (eSub * 1e9 * (tMm * 1e-3) ** 2);
+      const kappa = (6 * sigmaMPa * 1e6 * dNm * 1e-9 * n) / (eSub * 1e9 * (tMm * 1e-3) ** 2 * (1 - nuSub * nuSub));
       return { n, kappa, radius: 1 / kappa };
     });
 
@@ -42,7 +42,7 @@ export default function CoatingStressPage() {
   }, [sigmaFilm, dFilm, eSub, nuSub, tSub, numLayers]);
 
   // Stoney equation: κ = 6σ_f d_f / (E_s t_s²) for single layer
-  const kappa1 = (6 * sigmaFilm * 1e6 * dFilm * 1e-9) / (eSub * 1e9 * (tSub * 1e-3) ** 2);
+  const kappa1 = (6 * sigmaFilm * 1e6 * dFilm * 1e-9) / (eSub * 1e9 * (tSub * 1e-3) ** 2 * (1 - nuSub * nuSub));
   const radius1 = 1 / kappa1;
   const kappaN = kappa1 * numLayers;
 
@@ -50,7 +50,7 @@ export default function CoatingStressPage() {
     // Stress vs thickness for fixed number of layers
     const thicknesses = Array.from({ length: 100 }, (_, i) => 100 + i * 2000 / 100);
     const curvatures = thicknesses.map(d => {
-      return (6 * sigmaFilm * 1e6 * d * 1e-9 * numLayers) / (eSub * 1e9 * (tSub * 1e-3) ** 2);
+      return (6 * sigmaFilm * 1e6 * d * 1e-9 * numLayers) / (eSub * 1e9 * (tSub * 1e-3) ** 2 * (1 - nuSub * nuSub));
     });
     return [
       { x: thicknesses, y: curvatures, type: "scatter" as const, mode: "lines" as const, name: "κ", line: { color: "#a78bfa" } },
