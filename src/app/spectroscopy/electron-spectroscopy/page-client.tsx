@@ -103,10 +103,10 @@ export default function ElectronSpectroscopyPage() {
                     <p className="text-xl font-bold text-blue-400">{kineticEnergy.toFixed(1)} eV</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-                    <p className="text-xl font-bold text-green-400">{imfp.toFixed(1)} Å</p>
+                    <p className="text-xl font-bold text-green-400">{imfp.toFixed(1)} nm</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-                    <p className="text-xl font-bold text-yellow-400">{infoDepth.toFixed(1)} Å</p>
+                    <p className="text-xl font-bold text-yellow-400">{infoDepth.toFixed(1)} nm</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
                     <p className="text-xl font-bold text-red-400">{infoDepth < 30 ? "High" : infoDepth < 60 ? "Medium" : "Bulk"}</p>

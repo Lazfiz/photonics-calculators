@@ -21,10 +21,10 @@ export default function DualCombSpectroscopyPage() {
   const centerFreq = c / (centerWavelength * 1e-9);
 
   const opticalBW = numModes * Math.max(frep1Hz, frep2Hz);
-  const opticalBWnm = (centerWavelength ** 2 * opticalBW) / c * 1e9;
+  const opticalBWnm = (centerWavelength ** 2 * opticalBW) / (c * 1e9);
   const updateTime = 1 / deltaFrep;
   const resolutionHz = deltaFrep;
-  const resolutionNm = (centerWavelength ** 2 * resolutionHz) / c * 1e9;
+  const resolutionNm = (centerWavelength ** 2 * resolutionHz) / (c * 1e9);
 
   const chartData = useMemo(() => {
     const fMin = centerFreq - opticalBW / 2;
@@ -41,7 +41,7 @@ export default function DualCombSpectroscopyPage() {
   }, [repRate1, repRate2, numModes, centerFreq, opticalBW]);
 
   const rfData = useMemo(() => {
-    const maxRf = Math.min(deltaFrep * 10, frep1Hz * 1e6 / 2);
+    const maxRf = Math.min(deltaFrep * 10, frep1Hz / 2);
     const rfFreqs = Array.from({ length: 200 }, (_, i) => i * maxRf / 200);
     const rfIntensity = rfFreqs.map(f => {
       const beat = Math.exp(-((f - deltaFrep * 2) ** 2) / (deltaFrep ** 2)) + 0.3 * Math.exp(-((f - deltaFrep * 5) ** 2) / (deltaFrep * 2) ** 2);

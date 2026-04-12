@@ -21,7 +21,8 @@ export default function EmissionSpectraPage() {
 
   const asymmetricGaussian = (x: number, center: number, width: number, amp: number, asym: number) => {
     const d = x - center;
-    const sigma = d < 0 ? width / 2 : width / (2 * (1 + asym));
+    // width = FWHM; convert to sigma: σ = FWHM / (2√(2ln2)) ≈ FWHM/2.355
+    const sigma = d < 0 ? width / 2.355 : width / (2.355 * (1 + asym));
     return amp * Math.exp(-0.5 * (d / sigma) ** 2);
   };
 
@@ -82,7 +83,7 @@ export default function EmissionSpectraPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono text-blue-400">I(λ) = A · exp(−0.5 · ((λ − λ₀)/σ)²)</p>
-        <p className="text-gray-300 text-sm font-mono text-green-400">σ_left = FWHM/2, σ_right = FWHM/(2·(1+α))</p>
+        <p className="text-gray-300 text-sm font-mono text-green-400">σ_left = FWHM/2.355, σ_right = FWHM/(2.355·(1+α))</p>
         <p className="text-gray-500 text-xs mt-2">Asymmetric Gaussian models the common red-tailed emission of fluorophores due to vibronic coupling.</p>
       </div>
 
