@@ -22,8 +22,8 @@ export default function SurfaceEnhancedRamanPage() {
       const colors = ["#60a5fa", "#34d399", "#fbbf24", "#f87171"];
       const enh = radii.map(r => {
         const ratio = gap / r;
-        // Simplified EM enhancement: |E/E₀|⁴ ~ (r/gap)^4 (dipole coupling)
-        const emEnh = Math.min(Math.pow(r / gap, 4) / 1e6, 1e12);
+        // EM enhancement: G = |E/E₀|⁴ ~ (r/gap)⁴ (dipole coupling model)
+        const emEnh = Math.min(Math.pow(r / gap, 4), 1e12);
         return emEnh;
       });
       return {

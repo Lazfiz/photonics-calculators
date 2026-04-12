@@ -29,7 +29,7 @@ export default function FourierTransformPage() {
         real += signal[n] * Math.cos(phase);
         imag -= signal[n] * Math.sin(phase);
       }
-      return Math.sqrt(real * real + imag * imag) / N;
+      return 2 * Math.sqrt(real * real + imag * imag) / N;
     });
 
     return [
