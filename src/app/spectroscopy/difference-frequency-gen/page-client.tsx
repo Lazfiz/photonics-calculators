@@ -49,8 +49,9 @@ export default function DifferenceFrequencyGenPage() {
   const idlerFreq = pumpFreq - signalFreq;
   const idlerNm = idlerFreq > 0 ? c / idlerFreq * 1e9 : NaN;
   const idlerWavenumber = idlerFreq > 0 ? idlerFreq / c * 1e-2 : NaN;
-  const coherenceLength = 3.14159; // π/Δk for Δk=1 mm⁻¹
-  const quantumEfficiency = (idlerNm || signalWavelength) / signalWavelength;
+  const coherenceLength = Math.PI / Math.abs(0.5); // π/Δk, uses chart Δk value
+  const powerConversionEff = idlerFreq > 0 ? idlerFreq / signalFreq : NaN; // Manley-Rowe: ω_idler/ω_signal
+  const walkOffDisplacement = crystalLength * walkOff * 1e-3; // mm × mrad → mm (displacement at crystal exit)
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Difference Frequency Generation" description="Generate tunable mid-IR via DFG: ω_idler = ω_pump − ω_signal. Essential for IR spectroscopy sources.">
@@ -73,8 +74,8 @@ export default function DifferenceFrequencyGenPage() {
         <h3 className="text-lg font-semibold mb-2">Computed Values</h3>
         <p className="text-sm text-gray-300"><span className="text-green-400">Idler wavelength:</span> {idlerNm?.toFixed(2) ?? "N/A"} nm</p>
         <p className="text-sm text-gray-300"><span className="text-green-400">Idler wavenumber:</span> {idlerWavenumber?.toFixed(1) ?? "N/A"} cm⁻¹</p>
-        <p className="text-sm text-gray-300"><span className="text-green-400">Quantum efficiency (λ_idler/λ_sig):</span> {quantumEfficiency.toFixed(3)}</p>
-        <p className="text-sm text-gray-300"><span className="text-green-400">Walk-off length:</span> {(crystalLength * 1000 / (walkOff || 0.001)).toFixed(3)} mm</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">Power conversion (Manley-Rowe):</span> {powerConversionEff?.toFixed(3) ?? "N/A"} (ω_idler/ω_signal)</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">Walk-off displacement:</span> {(walkOffDisplacement * 1000).toFixed(3)} µm</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
