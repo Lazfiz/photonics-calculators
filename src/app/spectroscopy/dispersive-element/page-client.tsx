@@ -15,7 +15,7 @@ export default function DispersiveElementPage() {
   const [blazeWavelength, setBlazeWavelength] = useURLState("blazeWavelength", 550); // nm
 
   const chartData = useMemo(() => {
-    const d = 1e6 / grooveDensity; // μm per groove
+    const d = 1 / (grooveDensity * 1e3); // groove spacing in meters
     const alpha = (incidentAngle * Math.PI) / 180;
     const wls = Array.from({ length: 300 }, (_, i) => wavelengthMin + (wavelengthMax - wavelengthMin) * (i / 299));
 
@@ -29,7 +29,7 @@ export default function DispersiveElementPage() {
     const angularDispersion = wls.map((wl, i) => {
       if (diffractionAngles[i] === null) return null;
       const beta = (diffractionAngles[i]! * Math.PI) / 180;
-      return (order / (d * Math.cos(beta))) * 1000; // rad/nm → convert
+      return order / (d * Math.cos(beta)) * 1e-9; // rad/nm (rad/m × 1e-9)
     });
 
     // Linear dispersion at focal length f
@@ -49,10 +49,10 @@ export default function DispersiveElementPage() {
     ];
   }, [grooveDensity, order, incidentAngle, wavelengthMin, wavelengthMax, blazeWavelength]);
 
-  const d = 1e6 / grooveDensity;
+  const d = 1 / (grooveDensity * 1e3);
   const alpha = (incidentAngle * Math.PI) / 180;
-  const blazeAngle = Math.asin(order * blazeWavelength / 1000 / (2 * d)) * 180 / Math.PI;
-  const resolvingPower = order * grooveDensity * 10 * Math.cos(alpha); // per mm of grating width
+  const blazeAngle = Math.asin(order * blazeWavelength * 1e-9 / (2 * d)) * 180 / Math.PI;
+  const resolvingPower = order * grooveDensity * 1e3; // per mm of grating width
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Dispersive Element Design" description="Diffraction grating parameters: grating equation, angular/linear dispersion, blaze profile.">

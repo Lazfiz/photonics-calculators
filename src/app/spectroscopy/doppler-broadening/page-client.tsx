@@ -20,7 +20,7 @@ export default function DopplerBroadeningPage() {
   const nu0 = c / (wavelength * 1e-9); // center frequency Hz
   const deltaNuD = (nu0 / c) * Math.sqrt(8 * kB * temperature * Math.log(2) / m); // Hz
   const fwhmNm = deltaNuD * (wavelength * 1e-9) ** 2 / c * 1e9; // nm
-  const deltaNuHz = deltaNuD / Math.PI; // HWHM in Hz
+  const deltaNuHz = deltaNuD / 2; // HWHM in Hz (Gaussian: HWHM = FWHM/2)
 
   const profile = (dw: number) => Math.exp(-Math.pow(dw / (fwhmNm / 2), 2) * Math.log(2));
 
@@ -56,7 +56,7 @@ export default function DopplerBroadeningPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Thermal Velocity</p>
-          <p className="text-2xl font-bold text-yellow-400">{Math.sqrt(kB * temperature / m).toFixed(0)} m/s</p>
+          <p className="text-2xl font-bold text-yellow-400">{Math.sqrt(2 * kB * temperature / m).toFixed(0)} m/s</p>
         </div>
       </div>
 

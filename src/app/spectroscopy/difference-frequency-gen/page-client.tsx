@@ -50,7 +50,7 @@ export default function DifferenceFrequencyGenPage() {
   const idlerNm = idlerFreq > 0 ? c / idlerFreq * 1e9 : NaN;
   const idlerWavenumber = idlerFreq > 0 ? idlerFreq / c * 1e-2 : NaN;
   const coherenceLength = 3.14159; // π/Δk for Δk=1 mm⁻¹
-  const quantumEfficiency = signalWavelength / (idlerNm || signalWavelength);
+  const quantumEfficiency = (idlerNm || signalWavelength) / signalWavelength;
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Difference Frequency Generation" description="Generate tunable mid-IR via DFG: ω_idler = ω_pump − ω_signal. Essential for IR spectroscopy sources.">
@@ -74,7 +74,7 @@ export default function DifferenceFrequencyGenPage() {
         <p className="text-sm text-gray-300"><span className="text-green-400">Idler wavelength:</span> {idlerNm?.toFixed(2) ?? "N/A"} nm</p>
         <p className="text-sm text-gray-300"><span className="text-green-400">Idler wavenumber:</span> {idlerWavenumber?.toFixed(1) ?? "N/A"} cm⁻¹</p>
         <p className="text-sm text-gray-300"><span className="text-green-400">Quantum efficiency (λ_idler/λ_sig):</span> {quantumEfficiency.toFixed(3)}</p>
-        <p className="text-sm text-gray-300"><span className="text-green-400">Walk-off length:</span> {(crystalLength * walkOff / 1000).toFixed(3)} mm</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">Walk-off length:</span> {(crystalLength * 1000 / (walkOff || 0.001)).toFixed(3)} mm</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
