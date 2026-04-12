@@ -16,7 +16,7 @@ export default function AngleShiftPage() {
     const angles = Array.from({ length: 200 }, (_, i) => (i * maxAngle) / 200);
     const shiftTE = angles.map(theta => {
       const t = (theta * Math.PI) / 180;
-      const cosT = Math.cos(t);
+      const cosT = Math.sqrt(1 - (Math.sin(t) / nFilm) ** 2);
       const newWl = designWl * cosT;
       return newWl;
     });
@@ -34,7 +34,8 @@ export default function AngleShiftPage() {
     ];
   }, [nFilm, nSub, designWl, maxAngle]);
 
-  const shiftAt45 = designWl * Math.cos((45 * Math.PI) / 180);
+  const cos45film = Math.sqrt(1 - (Math.sin(45 * Math.PI / 180) / nFilm) ** 2);
+  const shiftAt45 = designWl * cos45film;
 
   return (
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Angle-Dependent Blue Shift" description="How the effective design wavelength shifts with angle of incidence (blue shift).">
