@@ -16,45 +16,58 @@ export default function BraggReflectorPage() {
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => designWavelength * 0.7 + i * designWavelength * 0.6 / 300);
+    const dH = designWavelength / (4 * nH);
+    const dL = designWavelength / (4 * nL);
+
     const R = wls.map(wl => {
-      // Transfer matrix method for Bragg reflector
-      // Each layer: phase delta = 2*pi*n*d*cos(theta)/lambda
-      // Quarter-wave: d_H = lambda0/(4*nH), d_L = lambda0/(4*nL)
-      const dH = designWavelength / (4 * nH);
-      const dL = designWavelength / (4 * nL);
-      const deltaH = (2 * Math.PI * nH * dH) / wl;
-      const deltaL = (2 * Math.PI * nL * dL) / wl;
+      // Transfer matrix method (normal incidence, Macleod Ch. 2)
+      let m00r = 1, m00i = 0; // M[0][0]
+      let m01r = 0, m01i = 0; // M[0][1]
+      let m10r = 0, m10i = 0; // M[1][0]
+      let m11r = 1, m11i = 0; // M[1][1]
 
-      // Characteristic matrix for a layer: [[cos(delta), -i*sin(delta)/eta], [-i*eta*sin(delta), cos(delta)]]
-      // For normal incidence, eta = n for TE
-      // Simplified: multiply matrices as complex numbers
-      let M00r = 1, M00i = 0, M01r = 0, M01i = 0;
-      let M10r = 0, M10i = 0, M11r = 1, M11i = 0;
+      const applyLayer = (n: number, d: number) => {
+        const delta = (2 * Math.PI * n * d) / wl;
+        const cosD = Math.cos(delta);
+        const sinD = Math.sin(delta);
+        const eta = n; // admittance at normal incidence
 
-      const applyLayer = (n: number, delta: number) => {
-        const c = Math.cos(delta), s = Math.sin(delta);
-        const eta = n;
-        const a = [c, -s / eta], b = [s * eta, c]; // [row0], [row1] simplified
-        // Actually proper: M = [[cos, -i*sin/eta], [-i*eta*sin, cos]]
-        // But without complex: use Fresnel formula for stack
+        // Characteristic matrix: [[cos δ, -i sin δ / η], [-i η sin δ, cos δ]]
+        // Using complex: -i*sin = (0, -sin)
+        const a00r = cosD, a00i = 0;
+        const a01r = 0, a01i = -sinD / eta;
+        const a10r = 0, a10i = -eta * sinD;
+        const a11r = cosD, a11i = 0;
+
+        // M = M · A (complex matrix multiply)
+        const nr = m00r * a00r - m00i * a00i + m01r * a10r - m01i * a10i;
+        const ni = m00r * a00i + m00i * a00r + m01r * a10i + m01i * a10r;
+        const or_ = m00r * a01r - m00i * a01i + m01r * a11r - m01i * a11i;
+        const oi = m00r * a01i + m00i * a01r + m01r * a11i + m01i * a11r;
+        const pr = m10r * a00r - m10i * a00i + m11r * a10r - m11i * a10i;
+        const pi = m10r * a00i + m10i * a00r + m11r * a10i + m11i * a10r;
+        const qr = m10r * a01r - m10i * a01i + m11r * a11r - m11i * a11i;
+        const qi = m10r * a01i + m10i * a01r + m11r * a11i + m11i * a11r;
+
+        m00r = nr; m00i = ni; m01r = or_; m01i = oi;
+        m10r = pr; m10i = pi; m11r = qr; m11i = qi;
       };
 
-      // Use simple iterative Fresnel for quarter-wave stack:
-      // r_total from multiple reflections
-      const rH = (1 - nH) / (1 + nH);
-      const rL = (1 - nL) / (1 + nL);
-      // Simplified: use effective reflectance formula for N pairs
-      // Effective admittance at design wavelength (Macleod)
-      // Y = (nH/nL)^(2N) · nSub
-      const ratio = Math.pow(nH / nL, 2 * pairs);
-      const Y = ratio * nSub;
-      const reff = (nInc - Y) / (nInc + Y);
+      // Stack: air | (H L)^N | substrate
+      for (let i = 0; i < pairs; i++) {
+        applyLayer(nH, dH);
+        applyLayer(nL, dL);
+      }
 
-      // Wavelength-dependent modulation (Airy-like approximation)
-      const f = designWavelength / wl;
-      const sinTerm = Math.sin(pairs * Math.PI * f);
-      const R_approx = reff * reff * sinTerm * sinTerm / (1 - reff * reff + reff * reff * sinTerm * sinTerm);
-      return R_approx;
+      // Reflection coefficient: r = (m00*nS + m01*nS*n0 - m10 - m11*n0) / (m00*nS + m01*nS*n0 + m10 + m11*n0)
+      // Using real n0, nS and complex M
+      const numR = m00r * nSub + m10r + (m01r * nSub * nInc - m11r * nInc);
+      const numI = m00i * nSub + m10i + (m01i * nSub * nInc - m11i * nInc);
+      const denR = m00r * nSub - m10r + (m01r * nSub * nInc + m11r * nInc);
+      const denI = m00i * nSub - m10i + (m01i * nSub * nInc + m11i * nInc);
+
+      const rMag2 = (numR * numR + numI * numI) / (denR * denR + denI * denI);
+      return rMag2;
     });
     return [{ x: wls, y: R, type: "scatter" as const, mode: "lines" as const, name: "Reflectance", line: { color: "#60a5fa" } }];
   }, [nInc, nH, nL, nSub, designWavelength, pairs]);
