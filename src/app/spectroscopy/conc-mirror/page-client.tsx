@@ -12,29 +12,29 @@ export default function ConcMirrorPage() {
   const [mirrorDiam, setMirrorDiam] = useURLState("mirrorDiam", 25);
   const [slitWidth, setSlitWidth] = useURLState("slitWidth", 50); // µm
 
+  const f = radius * 1e-3 / 2; // focal length: f = R/2 for spherical mirror (Hecht, Optics)
+
   // Finesse for a Fabry-Perot etalon (for reference)
   const finesse = Math.PI * Math.sqrt(Math.max(0, 0.99)) / (1 - 0.99);
 
-  // Grating spectrometer resolving power: R = mN = (d·sinθ)/(λ)·W/d = W·sinθ/λ
-  // For concave mirror spectrometer: R ≈ f·(1/slitWidth) where f ≈ radius (focal length)
-  // Using R ≈ 2R_mirror / (slitWidth_angular_spread) ≈ 2·radius(mm)/slitWidth(µm)·1e-3
-  const resolvingPower = 2 * radius * 1e-3 / (slitWidth * 1e-6);
+  // Resolving power for slit-limited spectrometer: R ≈ f / w (Hecht, Ch. 10)
+  const resolvingPower = f / (slitWidth * 1e-6);
 
-  // Étendue: G = A·Ω ≈ slit_width × slit_height × (mirror_area / f²)
-  // Using slit_height ≈ slit_width and f ≈ radius:
-  const etendue = Math.pow(slitWidth * 1e-6, 2) * Math.pow(mirrorDiam * 1e-3 / 2, 2) / Math.pow(radius * 1e-3, 2);
+  // Étendue: G = A_slit × Ω = w·h × π(D/2)²/f² (Saleh & Teich, Eq. 11.2-5)
+  // Using slit_height ≈ slit_width:
+  const etendue = Math.pow(slitWidth * 1e-6, 2) * Math.PI * Math.pow(mirrorDiam * 1e-3 / 2, 2) / (f * f);
 
   // Throughput (fraction of light collected from extended source)
   const throughput = Math.min(1, etendue / (Math.PI * Math.pow(mirrorDiam * 1e-3 / 2, 2)));
 
-  // Connes (Jacquinot) advantage: throughput ratio FTIR vs grating at same resolving power
-  // FTIR throughput ~2π·A·(Δν/ν), grating ~ (λ/R)·A — advantage ~R·λ/D
-  const throughputAdvantage = resolvingPower * wavelength * 1e-9 / (mirrorDiam * 1e-3);
+  // Jacquinot advantage: T_FT/T_grating ≈ 2πF/l (Jacquinot, 1954)
+  // For comparison: T_FT/T_grating ≈ 2π·f / slitHeight
+  const throughputAdvantage = 2 * Math.PI * f / (slitWidth * 1e-6);
 
   const chartData = useMemo(() => {
     const radii = Array.from({ length: 50 }, (_, i) => 10 + i * 4);
     return [
-      { x: radii, y: radii.map(r => (2 * r * 1e-3 / (slitWidth * 1e-6)) / 1000), type: "scatter" as const, mode: "lines" as const, name: "Resolving Power (k)", line: { color: "#c084fc" } },
+      { x: radii, y: radii.map(r => ((r * 1e-3 / 2) / (slitWidth * 1e-6)) / 1000), type: "scatter" as const, mode: "lines" as const, name: "Resolving Power (k)", line: { color: "#c084fc" } },
       { x: [radius], y: [resolvingPower / 1000], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
     ];
   }, [radius, slitWidth, resolvingPower]);
