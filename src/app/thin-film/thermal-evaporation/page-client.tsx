@@ -54,7 +54,7 @@ export default function ThermalEvaporationPage() {
     const depRate = flux * m * geometricFactor * 1e9; // nm/s
 
     // Mean free path
-    const mfp = 0.005 / P; // m (rough)
+    const mfp = 0.005 / (P * 133.322); // m (λ ≈ 0.005/P for P in Pa; convert Torr→Pa)
     const mfpCm = mfp * 100;
 
     // Knudsen number

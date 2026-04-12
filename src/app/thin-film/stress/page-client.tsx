@@ -20,7 +20,7 @@ export default function StressPage() {
       const ts_m = substrateThickness * 1e-3;
       const sigma = filmStress * 1e6; // Pa
       const E = eSubstrate * 1e9;
-      const R = (E * ts_m * ts_m) / (6 * sigma * tf_m);
+      const R = (E * ts_m * ts_m * (1 - nuSubstrate * nuSubstrate)) / (6 * sigma * tf_m);
       return 1 / R; // curvature 1/m
     });
     const stresses = Array.from({ length: 200 }, (_, i) => -500 + i * 1000 / 200);
@@ -29,7 +29,7 @@ export default function StressPage() {
       const ts_m = substrateThickness * 1e-3;
       const sigma = s * 1e6;
       const E = eSubstrate * 1e9;
-      const R = (E * ts_m * ts_m) / (6 * sigma * tf_m);
+      const R = (E * ts_m * ts_m * (1 - nuSubstrate * nuSubstrate)) / (6 * sigma * tf_m);
       return 1 / R;
     });
     return [
@@ -42,7 +42,7 @@ export default function StressPage() {
   const ts_m = substrateThickness * 1e-3;
   const sigma = filmStress * 1e6;
   const E = eSubstrate * 1e9;
-  const R = (E * ts_m * ts_m) / (6 * sigma * tf_m);
+  const R = (E * ts_m * ts_m * (1 - nuSubstrate * nuSubstrate)) / (6 * sigma * tf_m);
   const curvature = 1 / R;
 
   return (
