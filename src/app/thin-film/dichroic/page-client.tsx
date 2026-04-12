@@ -18,6 +18,7 @@ export default function DichroicPage() {
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 700 / 500);
     const cosTheta = Math.cos((aoi * Math.PI) / 180);
+    const sinTheta = Math.sin((aoi * Math.PI) / 180);
 
     const R_s = wls.map(wl => {
       let m11r = 1, m11i = 0, m12r = 0, m12i = 0;
@@ -25,9 +26,10 @@ export default function DichroicPage() {
       for (let j = 0; j < numPairs * 2; j++) {
         const n = j % 2 === 0 ? nH : nL;
         const d = designWl / (4 * n);
-        const delta = (2 * Math.PI * n * d * cosTheta) / wl;
+        const cosThetaT = Math.sqrt(1 - (sinTheta * nInc / n) ** 2);
+        const delta = (2 * Math.PI * n * d * cosThetaT) / wl;
         const cosD = Math.cos(delta), sinD = Math.sin(delta);
-        const eta = n * cosTheta; // s-polarization admittance
+        const eta = n * cosThetaT; // s-polarization admittance
         const a11r = cosD, a12r = 0, a12i = -sinD / eta;
         const a21r = 0, a21i = -eta * sinD, a22r = cosD;
         const n11r = m11r * a11r + m12r * a21r - m12i * a21i;
@@ -41,7 +43,9 @@ export default function DichroicPage() {
         m11r = n11r; m11i = n11i; m12r = n12r; m12i = n12i;
         m21r = n21r; m21i = n21i; m22r = n22r; m22i = n22i;
       }
-      const etaI = nInc * cosTheta, etaS = nSub * cosTheta;
+      const cosThetaI = cosTheta;
+      const cosThetaSub = Math.sqrt(1 - (sinTheta * nInc / nSub) ** 2);
+      const etaI = nInc * cosThetaI, etaS = nSub * cosThetaSub;
       const numR = m11r * etaI + m12r * etaI * etaS - m21r - m22r * etaS;
       const numI = m11i * etaI + m12i * etaI * etaS - m21i - m22i * etaS;
       const denR = m11r * etaI + m12r * etaI * etaS + m21r + m22r * etaS;
@@ -55,9 +59,10 @@ export default function DichroicPage() {
       for (let j = 0; j < numPairs * 2; j++) {
         const n = j % 2 === 0 ? nH : nL;
         const d = designWl / (4 * n);
-        const delta = (2 * Math.PI * n * d * cosTheta) / wl;
+        const cosThetaT = Math.sqrt(1 - (sinTheta * nInc / n) ** 2);
+        const delta = (2 * Math.PI * n * d * cosThetaT) / wl;
         const cosD = Math.cos(delta), sinD = Math.sin(delta);
-        const eta = n / cosTheta; // p-polarization admittance
+        const eta = n / cosThetaT; // p-polarization admittance
         const a11r = cosD, a12r = 0, a12i = -sinD / eta;
         const a21r = 0, a21i = -eta * sinD, a22r = cosD;
         const n11r = m11r * a11r + m12r * a21r - m12i * a21i;
@@ -71,7 +76,7 @@ export default function DichroicPage() {
         m11r = n11r; m11i = n11i; m12r = n12r; m12i = n12i;
         m21r = n21r; m21i = n21i; m22r = n22r; m22i = n22i;
       }
-      const etaI = nInc / cosTheta, etaS = nSub / cosTheta;
+      const etaI = nInc / cosThetaI, etaS = nSub / cosThetaSub;
       const numR = m11r * etaI + m12r * etaI * etaS - m21r - m22r * etaS;
       const numI = m11i * etaI + m12i * etaI * etaS - m21i - m22i * etaS;
       const denR = m11r * etaI + m12r * etaI * etaS + m21r + m22r * etaS;
