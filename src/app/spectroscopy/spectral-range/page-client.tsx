@@ -15,7 +15,7 @@ export default function SpectralRangePage() {
   const [centralAngle, setCentralAngle] = useURLState("centralAngle", 10); // degrees (diffraction angle at center)
 
   const chartData = useMemo(() => {
-    const d = 1e6 / grooveDensity; // μm
+    const d = 1e6 / grooveDensity; // nm (groove spacing)
     const beta0 = (centralAngle * Math.PI) / 180;
 
     // Spectral range covered by detector
@@ -27,8 +27,8 @@ export default function SpectralRangePage() {
 
     // Use Littrow approximation for incident angle: α ≈ β₀
     const alpha = beta0;
-    const wlMin = d * (Math.sin(alpha) + Math.sin(betaMin)) * 1000 / order; // nm
-    const wlMax = d * (Math.sin(alpha) + Math.sin(betaMax)) * 1000 / order; // nm
+    const wlMin = d * (Math.sin(alpha) + Math.sin(betaMin)) / order; // nm
+    const wlMax = d * (Math.sin(alpha) + Math.sin(betaMax)) / order; // nm
 
     // Plot spectral coverage vs groove density
     const densities = Array.from({ length: 200 }, (_, i) => 50 + i * 15);
@@ -42,7 +42,7 @@ export default function SpectralRangePage() {
     // Plot resolution vs order for this grating
     const orders = Array.from({ length: 10 }, (_, i) => i + 1);
     const resolutions = orders.map(o => {
-      const illuminatedGrooves = detectorWidth * gd_mm(); // approximate
+      const illuminatedGrooves = detectorWidth * grooveDensity; // approximate
       return o * illuminatedGrooves;
     });
 

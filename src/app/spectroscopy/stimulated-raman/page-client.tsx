@@ -15,11 +15,11 @@ export default function StimulatedRamanPage() {
   const [linewidth, setLinewidth] = useURLState("linewidth", 10);
 
   const stimulatedGainData = useMemo(() => {
-    const detunings = Array.from({ length: 400 }, (_, i) => -50 + (i / 400) * 100);
+    const detunings = Array.from({ length: 400 }, (_, i) => ramanShift - 50 + (i / 400) * 100);
     const gamma = linewidth;
-    // Stimulated Raman gain profile: Lorentzian
+    // Stimulated Raman gain profile: Lorentzian centered at ramanShift
     const gain = detunings.map(d => {
-      const lorentz = Math.pow(gamma, 2) / (Math.pow(d, 2) + Math.pow(gamma, 2));
+      const lorentz = Math.pow(gamma, 2) / (Math.pow(d - ramanShift, 2) + Math.pow(gamma, 2));
       return lorentz * pumpPower * concentration * pathLength * 1e-3;
     });
     return [

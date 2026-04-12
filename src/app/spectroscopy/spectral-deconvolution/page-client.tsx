@@ -39,7 +39,7 @@ export default function SpectralDeconvolutionPage() {
   const chartData = useMemo(() => {
     const wl = Array.from({ length: 600 }, (_, i) => xMin + (i / 600) * (xMax - xMin));
     const seed = 42;
-    const pseudoRandom = (i: number) => Math.sin(i * 12.9898 + seed * 78.233) * 43758.5453 % 1;
+    const pseudoRandom = (i: number) => Math.abs(Math.sin(i * 12.9898 + seed * 78.233) * 43758.5453 % 1);
 
     const componentSpectra = peaks.map(pk =>
       wl.map((w, i) => pk.amplitude * Math.exp(-4 * Math.log(2) * ((w - pk.center) / pk.fwhm) ** 2))

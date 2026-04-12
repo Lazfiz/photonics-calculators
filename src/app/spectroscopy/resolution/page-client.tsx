@@ -11,7 +11,7 @@ export default function ResolutionPage() {
   const [order, setOrder] = useURLState("order", 1);
   const [wavelength, setWavelength] = useURLState("wavelength", 550);
 
-  const resolvingPower = gratingLines * gratingWidth * order / 1e6; // N*m*order where N = lines/mm * width_mm / 1000
+  const resolvingPower = gratingLines * gratingWidth * order; // N*m*order where N = lines/mm * width_mm / 1000
   // Actually: R = mN where N = total illuminated lines = lines/mm * width_mm
   const N = gratingLines * gratingWidth;
   const R = order * N;
