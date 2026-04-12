@@ -19,7 +19,7 @@ function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: numbe
       const cosTheta = Math.sqrt(Math.max(0, 1 - sinTheta * sinTheta));
       const nEff = pol === "TE" ? layer.n * cosTheta : layer.n / Math.max(cosTheta, 1e-10);
 
-      const delta = (2 * Math.PI * nEff * layer.d) / wl;
+      const delta = (2 * Math.PI * layer.n * cosTheta * layer.d) / wl;
       const cosD = Math.cos(delta), sinD = Math.sin(delta);
 
       const new11r = m11r * cosD + m12r * (-nEff * sinD);
