@@ -12,7 +12,7 @@ export default function GratingEfficiencyPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 500);
 
   const blazeRad = blazeAngle * Math.PI / 180;
-  const blazeWavelength = (2 / groovesPerMm) * Math.sin(blazeRad) * 1000; // nm in Littrow
+  const blazeWavelength = (2e6 / groovesPerMm) * Math.sin(blazeRad); // nm in Littrow: λ = 2d·sinθ, d = 1e6/groovesPerMm nm
 
   const efficiency = (wl: number) => {
     const delta = wl - blazeWavelength;

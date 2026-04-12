@@ -17,16 +17,17 @@ export default function FtirResolutionPage() {
   const [mirrorVelocity, setMirrorVelocity] = useURLState("mirrorVelocity", 1.0);
 
   const apodFactors: Record<string, number> = {
-    boxcar: 0.60,
-    nortonbeermedium: 0.80,
-    blackmanharris: 1.45,
-    happgenzel: 1.20,
+    boxcar: 1.0,
+    nortonbeermedium: 1.2,
+    blackmanharris: 1.5,
+    happgenzel: 1.3,
   };
 
   const nominalResolution = 1 / maxOPD;
   const effectiveResolution = nominalResolution * apodFactors[apodization];
   const dataPoints = 2 * maxOPD * spectralRange;
-  const scanTime = 2 * maxOPD / mirrorVelocity;
+  // OPD changes at 2v (light round-trip), so scan time = maxOPD / (2v)
+  const scanTime = maxOPD / (2 * mirrorVelocity);
 
   const resolutionSeries = useMemo(() => {
     const opds = Array.from({ length: 200 }, (_, i) => 0.1 + (i * 9.9) / 199);
