@@ -26,19 +26,21 @@ export default function CoherentAntiStokesPage() {
     const CARSnm = c / CARSFreq * 1e9;
 
     // CARS signal intensity (simplified: non-resonant + resonant)
-    const gamma = 10; // linewidth cm⁻¹
+    const gamma = 10; // HWHM linewidth in cm⁻¹
     const A_NR = 0.1; // non-resonant amplitude
     const R = 5; // Raman cross-section
-    const gamma = 10; // HWHM linewidth in cm⁻¹
+
+    // Calculate vibWavenumber inside useMemo
+    const vibWavenumber = vibFreq / c * 1e-2; // Hz → cm⁻¹
 
     const carsIntensity = shifts.map(s => {
       // Complex Lorentzian: χ_R = R / (Ω_v - Ω + iΓ) where all in cm⁻¹
-      const detuning = s - vibWavenumber; // cm⁻¹
-      const denomRe = detuning;
-      const denomIm = gamma; // HWHM
-      const denomMag2 = denomRe * denomRe + denomIm * denomIm;
-      const chiR_re = R * denomRe / denomMag2;
-      const chiR_im = R * denomIm / denomMag2;
+      // Boyd, Nonlinear Optics: χ_R ∝ 1/(Ω_v - Ω - iΓ)
+      const deltaOmega = vibWavenumber - s; // Ω_v - Ω
+      const denomMag2 = deltaOmega * deltaOmega + gamma * gamma;
+      // χ_R = R / (δΩ + iΓ) → multiply by conjugate: R*(δΩ - iΓ)/(δΩ² + Γ²)
+      const chiR_re = R * deltaOmega / denomMag2;
+      const chiR_im = -R * gamma / denomMag2;
       // Total χ³ = χ_NR + χ_R (complex)
       const chi_re = A_NR + chiR_re;
       const chi_im = chiR_im;
@@ -47,9 +49,10 @@ export default function CoherentAntiStokesPage() {
     });
 
     // Spontaneous Raman for comparison (Gaussian line shape)
+    const sigma = gamma / Math.sqrt(2 * Math.LN2); // convert HWHM to Gaussian σ
     const ramanIntensity = shifts.map(s => {
       const x = s - vibWavenumber;
-      return Math.exp(-x * x / (2 * gamma * gamma));
+      return Math.exp(-x * x / (2 * sigma * sigma));
     });
 
     return [
@@ -85,7 +88,7 @@ export default function CoherentAntiStokesPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">CARS:</span> ω_as = ω_p − ω_s + ω_p = 2ω_p − ω_s</p>
-        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">χ⁽³:</span> I_CARS ∝ |χ_NR + Σ R/(Ω−Ω_v + iΓ)|⁴</p>
+        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">χ⁽³⁾:</span> I_CARS ∝ |χ_NR + Σ R/(Ω_v−Ω + iΓ)|²</p>
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Thermal:</span> n(Ω) = 1/(e<sup>&#123;ℏΩ/k<sub>B</sub>T&#125;</sup> − 1)</p>
         <p className="text-sm text-gray-300">CARS is a χ⁽³⁠⁾ four-wave mixing process producing coherent signal at the anti-Stokes frequency.</p>
       </div>
