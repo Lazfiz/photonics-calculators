@@ -46,8 +46,8 @@ export default function EnvironmentalStabilityPage() {
     ];
 
     for (const cond of conditions) {
-      const nH_eff = nH + cond.dT * dn_dT_H + dn_RH_H * (cond.rh / 100) * 100;
-      const nL_eff = nL + cond.dT * dn_dT_L + dn_RH_L * (cond.rh / 100) * 100;
+      const nH_eff = nH + cond.dT * dn_dT_H + dn_RH_H;
+      const nL_eff = nL + cond.dT * dn_dT_L + dn_RH_L;
 
       const dH_base = designWl / (4 * nH);
       const dL_base = designWl / (4 * nL);
