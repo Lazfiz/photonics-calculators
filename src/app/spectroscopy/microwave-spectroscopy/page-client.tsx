@@ -38,7 +38,7 @@ export default function MicrowaveSpectroscopyPage() {
       // Boltzmann population
       const E_J = B * J * (J + 1);
       const kT = 0.695 * temperature; // cm⁻¹
-      const degeneracy = moleculeType === "linear" ? 2 * J + 1 : (2 * J + 1) * (J + 1);
+      const degeneracy = moleculeType === "linear" ? 2 * J + 1 : (2 * J + 1) * (2 * J + 1);
       const population = degeneracy * Math.exp(-E_J / kT);
       const intensity = population * (J + 1) * Math.pow(2 * J + 3, 0); // simple model
       transitions.push({ freqGHz, intensity, J });
