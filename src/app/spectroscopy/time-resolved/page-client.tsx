@@ -18,7 +18,7 @@ export default function TimeResolvedPage() {
     const times = Array.from({ length: N }, (_, i) => (i / N) * timeRange);
 
     // Instrument response function (Gaussian)
-    const sigma = instrumentResponse / 2.355; // FWHM to sigma
+    const sigma = instrumentResponse * 1e-3 / 2.355; // ps → ns, FWHM to sigma
     const irf = times.map(t => Math.exp(-t * t / (2 * sigma * sigma)));
 
     // Intrinsic decay (single exponential)
