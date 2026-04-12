@@ -13,7 +13,7 @@ export default function EtalonFSRPage() {
   const [R, setR] = useURLState("R", 0.8); // mirror reflectance
 
   const chartData = useMemo(() => {
-    const wls = Array.from({ length: 500 }, (_, i) => 1500 + i * 0.002); // μm range for FSR calc
+    const wls = Array.from({ length: 500 }, (_, i) => 1.500 + i * 0.002); // μm range for FSR calc
     // FSR = λ²/(2·n·d·cosθ) at wavelength λ
     const fsr = wls.map(wl => (wl * wl) / (2 * n * d * Math.cos((theta * Math.PI) / 180)));
     // Also show Airy function for reference

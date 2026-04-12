@@ -36,11 +36,15 @@ export default function FluorescencePage() {
   }, [tau, multiExp, tau2, amp2]);
 
   const avgLifetime = multiExp
-    ? ((1 - amp2) * tau + amp2 * tau2).toFixed(2)
-    : tau.toFixed(2);
+    ? ((1 - amp2) * tau * tau + amp2 * tau2 * tau2) / ((1 - amp2) * tau + amp2 * tau2)
+    : tau;
 
-  const fwhmSpectrum = (tau * 0.441 * 1e9 * 3e8 * 1e9).toExponential(2); // Δλ = 0.441 τ (ns) λ² (nm) / c simplified
-  const fwhmSpectrumSimple = (tau * 0.441).toFixed(3);
+  // Exponential decay → Lorentzian spectrum: Δν_FWHM = 1/(πτ)
+  const deltaNu = 1 / (Math.PI * tau * 1e-9); // Hz (τ in ns)
+  const centerFreq = 3e8 / (540e-9); // ~5.56e14 Hz for green
+  const fwhmNm = 3e8 * 1e9 * deltaNu / (centerFreq * centerFreq); // Δλ = λ²Δν/c
+  const fwhmSpectrum = fwhmNm.toExponential(2);
+  const fwhmSpectrumSimple = (1 / (Math.PI * tau)).toFixed(3); // Δν·τ = 1/π ≈ 0.318
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fluorescence Lifetime" description="Exponential decay models for fluorescence. Single and bi-exponential fitting.">
@@ -61,11 +65,11 @@ export default function FluorescencePage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Avg. Lifetime ⟨τ⟩</p>
-          <p className="text-xl font-bold text-green-400">{avgLifetime} ns</p>
+          <p className="text-xl font-bold text-green-400">{typeof avgLifetime === 'number' ? avgLifetime.toFixed(2) : avgLifetime} ns</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">FWHM of spectrum (Δν·τ ≈ 0.441)</p>
-          <p className="text-xl font-bold text-blue-400">{fwhmSpectrumSimple} (τ·0.441)</p>
+          <p className="text-sm text-gray-400">FWHM of spectrum (Lorentzian: Δν·τ ≈ 0.318)</p>
+          <p className="text-xl font-bold text-blue-400">{fwhmSpectrumSimple} (1/(πτ))</p>
         </div>
       </div>
 
