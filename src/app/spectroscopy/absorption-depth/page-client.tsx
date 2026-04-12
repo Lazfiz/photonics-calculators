@@ -26,9 +26,12 @@ export default function AbsorptionDepthPage() {
     water: (wl) => {
       if (wl < 200) return 1e4;
       if (wl < 300) return 0.1;
-      if (wl < 700) return 0.001;
-      if (wl < 1000) return 0.5;
-      return 50 * Math.exp(-(wl - 1000) * 0.005);
+      if (wl < 700) return 0.001 + (wl - 300) * 0.0002; // gradual rise
+      if (wl < 970) return 0.06 + 0.5 * Math.exp(-((wl - 970) / 100) ** 2); // 970nm band
+      if (wl < 1200) return 0.5 + 30 * Math.exp(-((wl - 1200) / 80) ** 2); // 1200nm band
+      if (wl < 1450) return 1 + 50 * Math.exp(-((wl - 1450) / 60) ** 2); // 1450nm band
+      if (wl < 1950) return 10 + 100 * Math.exp(-((wl - 1950) / 100) ** 2); // 1950nm band
+      return 50 * Math.exp((wl - 1950) * 0.008); // increasing beyond 1950nm
     },
     custom: () => absorptionCoeff,
   };
