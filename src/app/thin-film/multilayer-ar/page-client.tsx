@@ -32,7 +32,7 @@ export default function MultilayerARPage() {
     return [{ x: wls, y: R, type: "scatter" as const, mode: "lines" as const, name: "Reflectance", line: { color: "#60a5fa" } }];
   }, [n1, n2, nSub, nInc, designWl]);
 
-  const optimalN2 = n1 * Math.sqrt(nSub);
+  const optimalN2 = Math.pow(nInc * nSub * nSub * nSub, 0.25); // n₂ = (n₀·n_s³)^(1/4)
   const minR = Math.pow((n1 * n1 * nSub - optimalN2 * optimalN2 * nInc) / (n1 * n1 * nSub + optimalN2 * optimalN2 * nInc), 2);
 
   return (

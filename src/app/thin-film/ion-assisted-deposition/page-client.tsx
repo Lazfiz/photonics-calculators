@@ -76,7 +76,7 @@ export default function IonAssistedDepositionPage() {
       const beamArea = 1e-3;
       const ionFlux = J / beamArea;
       const ionArrivalRate = ionFlux / 1.6e-19;
-      const atomArrivalRate = (depositionRate * 1e-9 * mat.density * 1e3 * 6.022e23) / (mat.density * 1e-3 * beamArea * ionMass * 1.673e-27);
+      const atomArrivalRate = (depositionRate * 1e-9 * mat.density * 1e3 * 6.022e23) / (mat.molarMass * 1e-3 * beamArea * ionMass * 1.673e-27);
       const Jr = ionArrivalRate / Math.max(atomArrivalRate, 1);
       const basePacking = mat.packingDensity - 0.15;
       return Math.min(1.0, basePacking + 0.15 * (1 - Math.exp(-0.005 * E * Jr / Math.max(depositionRate, 0.01))));
@@ -86,7 +86,7 @@ export default function IonAssistedDepositionPage() {
       const beamArea = 1e-3;
       const ionFlux = J / beamArea;
       const ionArrivalRate = ionFlux / 1.6e-19;
-      const atomArrivalRate = (depositionRate * 1e-9 * mat.density * 1e3 * 6.022e23) / (mat.density * 1e-3 * beamArea * ionMass * 1.673e-27);
+      const atomArrivalRate = (depositionRate * 1e-9 * mat.density * 1e3 * 6.022e23) / (mat.molarMass * 1e-3 * beamArea * ionMass * 1.673e-27);
       const Jr = ionArrivalRate / Math.max(atomArrivalRate, 1);
       return 50 * Math.sqrt(E) * (Jr / 10) * (1 / Math.max(depositionRate, 0.01));
     });
