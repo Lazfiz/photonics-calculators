@@ -29,7 +29,7 @@ export default function AmplitudeSplittingPage() {
       let im = 0;
       for (let m = 1; m <= N; m++) {
         const phase = -m * delta;
-        const amp = Math.pow(t01 * t10 * r12, m) * Math.pow(r12, m - 1);
+        const amp = t01 * t10 * Math.pow(r12 * r12, m - 1) * r12;
         re += amp * Math.cos(phase);
         im += amp * Math.sin(phase);
       }
