@@ -14,14 +14,16 @@ function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: numbe
     for (const layer of layers) {
       const delta = (2 * Math.PI * layer.n * layer.d) / wl;
       const cosD = Math.cos(delta), sinD = Math.sin(delta), n = layer.n;
-      const new11r = m11r * cosD + m12r * (-n * sinD);
-      const new11i = m11i * cosD + m12i * (-n * sinD);
-      const new12r = m11r * (-sinD / n) + m12r * cosD;
-      const new12i = m11i * (-sinD / n) + m12i * cosD;
-      const new21r = m21r * cosD + m22r * (-n * sinD);
-      const new21i = m21i * cosD + m22i * (-n * sinD);
-      const new22r = m21r * (-sinD / n) + m22r * cosD;
-      const new22i = m21i * (-sinD / n) + m22i * cosD;
+      // Characteristic matrix: [[cos δ, -i sin δ/η], [-i η sin δ, cos δ]]
+      // a00=cosD (real), a01=(0, -sinD/η), a10=(0, -η sinD), a11=cosD (real)
+      const new11r = m11r * cosD + m12i * (-n * sinD);
+      const new11i = m11i * cosD + m12r * (n * sinD);
+      const new12r = m11r * 0 + m12r * cosD - m11i * (sinD / n);
+      const new12i = m11i * 0 + m12i * cosD + m11r * (sinD / n);
+      const new21r = m21r * cosD + m22i * (-n * sinD);
+      const new21i = m21i * cosD + m22r * (n * sinD);
+      const new22r = m21r * 0 + m22r * cosD - m21i * (sinD / n);
+      const new22i = m21i * 0 + m22i * cosD + m21r * (sinD / n);
       m11r = new11r; m11i = new11i; m12r = new12r; m12i = new12i;
       m21r = new21r; m21i = new21i; m22r = new22r; m22i = new22i;
     }
