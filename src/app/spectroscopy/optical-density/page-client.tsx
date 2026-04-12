@@ -19,7 +19,7 @@ export default function OpticalDensityPage() {
   const abs = inputMode === "abs" ? absorbance : -Math.log10(Math.max(transmission, 1e-9) / 100);
   const trans = inputMode === "trans" ? transmission : Math.pow(10, -absorbance) * 100;
   const attenuationDB = 10 * abs;
-  const neutralDensity = abs / 3;
+  const neutralDensity = abs;
 
   const series = useMemo(() => {
     const od = Array.from({ length: 300 }, (_, i) => (i / 299) * 8);

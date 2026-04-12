@@ -52,7 +52,7 @@ export default function NearInfraredPage() {
     // Fundamental at 3400 cm⁻¹ → overtones
     const fundamental = 3400;
     const overtones = [1, 2, 3, 4, 5];
-    const positions = overtones.map(n => fundamental / n);
+    const positions = overtones.map(n => fundamental * n * (1 - anharmonicity * (n * n - 1)));
     const intensities = overtones.map(n => 1 / Math.pow(n, 2));
     return [
       { x: positions, y: intensities, type: "bar" as const, name: "Overtone Intensity", marker: { color: "#60a5fa" } },

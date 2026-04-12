@@ -15,7 +15,7 @@ export default function OpticalPathLengthPage() {
 
   const angleRad = (angleDeg * Math.PI) / 180;
   const opl = physicalLength * refractiveIndex * numPasses / Math.cos(angleRad);
-  const retTime = opl / 3e8 * 1e9;
+  const retTime = opl * 0.01 / 3e8 * 1e9; // OPL(cm)→m, /c(m/s), ×1e9→ns
 
   const chartData = useMemo(() => {
     const n = 200;
