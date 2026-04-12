@@ -24,7 +24,7 @@ export default function PumpProbePage() {
     const SE = times.map(t => -0.8 * Math.exp(-t / tau1));
 
     // Excited state absorption (positive, appears with delay)
-    const ESA = times.map(t => 0.6 * (Math.exp(-t / tau2) - Math.exp(-t / tau1)) / (tau1 - tau2) * tau1);
+    const ESA = times.map(t => 0.6 * tau2 / (tau2 - tau1) * (Math.exp(-t / tau1) - Math.exp(-t / tau2)));
 
     // Total signal
     const total = times.map((_, i) => bleach[i] + SE[i] + ESA[i]);
