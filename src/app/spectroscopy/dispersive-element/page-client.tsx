@@ -21,7 +21,7 @@ export default function DispersiveElementPage() {
 
     // Grating equation: d(sinα + sinβ) = mλ → β = arcsin(mλ/d - sinα)
     const diffractionAngles = wls.map(wl => {
-      const sinBeta = (order * wl / 1000) / d - Math.sin(alpha); // wl in nm → μm
+      const sinBeta = (order * wl * 1e-9) / d - Math.sin(alpha); // wl nm → m
       return Math.abs(sinBeta) <= 1 ? (Math.asin(sinBeta) * 180) / Math.PI : null;
     });
 
@@ -52,7 +52,7 @@ export default function DispersiveElementPage() {
   const d = 1 / (grooveDensity * 1e3);
   const alpha = (incidentAngle * Math.PI) / 180;
   const blazeAngle = Math.asin(order * blazeWavelength * 1e-9 / (2 * d)) * 180 / Math.PI;
-  const resolvingPower = order * grooveDensity * 1e3; // per mm of grating width
+  const resolvingPower = order * grooveDensity; // per mm of grating width: R = m·N, N = grooves/mm
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Dispersive Element Design" description="Diffraction grating parameters: grating equation, angular/linear dispersion, blaze profile.">
@@ -69,7 +69,7 @@ export default function DispersiveElementPage() {
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Groove Spacing</p>
-          <p className="text-xl font-bold text-blue-400">{d.toFixed(4)} μm</p>
+          <p className="text-xl font-bold text-blue-400">{(d * 1e6).toFixed(4)} μm</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Blaze Angle</p>
