@@ -25,7 +25,7 @@ export default function SpectralCalibrationPage() {
 
     // True positions + noise
     const truePixels = wls.map(wlToPixel);
-    const measuredPixels = truePixels.map(p => p + pixelNoise * (Math.random() - 0.5) * 2);
+    const measuredPixels = truePixels.map(p => p + (pixelNoise / dispersion) * (Math.random() - 0.5) * 2);
 
     // Linear fit through measured points
     const n = measuredPixels.length;
