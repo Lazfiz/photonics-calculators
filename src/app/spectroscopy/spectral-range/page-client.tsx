@@ -42,7 +42,7 @@ export default function SpectralRangePage() {
     // Plot resolution vs order for this grating
     const orders = Array.from({ length: 10 }, (_, i) => i + 1);
     const resolutions = orders.map(o => {
-      const illuminatedGrooves = detectorWidth * gd_mm() * 1000 / d; // approximate
+      const illuminatedGrooves = detectorWidth * gd_mm(); // approximate
       return o * illuminatedGrooves;
     });
 
@@ -71,7 +71,7 @@ export default function SpectralRangePage() {
   const wlMin = d * (Math.sin(alpha) + Math.sin(beta0 - totalAngle / 2)) * 1000 / order;
   const wlMax = d * (Math.sin(alpha) + Math.sin(beta0 + totalAngle / 2)) * 1000 / order;
   const spectralRange = Math.abs(wlMax - wlMin);
-  const resolution = order * grooveDensity * detectorWidth / 10; // approximate R
+  const resolution = order * grooveDensity * detectorWidth; // R = mN (N = illuminated grooves)
   const pixelResolution = spectralRange / detectorPixels;
 
   return (

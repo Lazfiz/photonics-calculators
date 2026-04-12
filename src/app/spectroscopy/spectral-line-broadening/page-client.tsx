@@ -29,7 +29,7 @@ export default function SpectralLineBroadeningPage() {
     const gaussian = x.map(s => Math.exp(-Math.pow((s - sigma0) / dopplerGauss, 2) / 2));
 
     // Lorentzian (collisional + natural)
-    const lorentzFWHM = gammaCol + naturalWidth;
+    const lorentzFWHM = gammaCol * Math.max(pressure, 0.001) + naturalWidth;
     const lorentzian = x.map(s => (lorentzFWHM / 2) ** 2 / ((s - sigma0) ** 2 + (lorentzFWHM / 2) ** 2));
 
     // Voigt (approximate: Gaussian convolved with Lorentzian via pseudo-Voigt)
@@ -59,7 +59,10 @@ export default function SpectralLineBroadeningPage() {
   const sigma0 = 1e7 / centerWl;
   const dopplerFWHM = sigma0 * Math.sqrt((8 * k * temperature * Math.LN2) / (m * c * c));
   const collisionalFWHM = gammaCol * Math.max(pressure, 0.001);
-  const totalFWHM = gammaCol + naturalWidth + dopplerFWHM;
+  const lorentzFWHM_disp = collisionalFWHM + naturalWidth;
+  // Olivero-Longbothum Voigt FWHM approximation (same as chart)
+  const fG = dopplerFWHM, fL = lorentzFWHM_disp;
+  const totalFWHM = Math.pow(fG**5 + 2.69269*fG**4*fL + 2.42843*fG**3*fL**2 + 4.47163*fG**2*fL**3 + 0.07842*fG*fL**4 + fL**5, 0.2);
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Line Broadening" description="Doppler, collisional, natural, and Voigt broadening mechanisms.">

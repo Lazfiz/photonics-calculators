@@ -17,7 +17,10 @@ export default function SpectralResolutionPage() {
   const [finesse, setFinesse] = useURLState("finesse", 50);
   const [fsrNm, setFsrNm] = useURLState("fsrNm", 0.05);
 
-  const gratingResNm = (slitWidth * 1e-3) / (focalLength * grooveDensity * order) * gratingWL;
+  // Slit-limited resolution: δλ = s·d·cosβ/(m·f). s in μm→mm, d=1/g lines/mm, f in mm
+  const d_mm = 1 / grooveDensity;
+  const betaRad = Math.asin(order * gratingWL * 1e-6 / d_mm - Math.sin(centralAngle * Math.PI / 180));
+  const gratingResNm = (slitWidth * 1e-3 * d_mm * Math.cos(betaRad)) / (focalLength * order) * 1e6;
   const currentRes = mode === "grating" ? gratingResNm : mode === "fabry-perot" ? fsrNm / finesse : (slitWidth * 1e-3) / (focalLength * dispersion);
   const currentRP = gratingWL / currentRes;
 
@@ -78,7 +81,7 @@ export default function SpectralResolutionPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Bandwidth (cm⁻¹)</p>
-          <p className="text-xl font-bold text-blue-400">{(currentRes / gratingWL * 1e7).toFixed(2)} cm⁻¹</p>
+          <p className="text-xl font-bold text-blue-400">{(currentRes * 1e7 / (gratingWL * gratingWL)).toFixed(2)} cm⁻¹</p>
         </div>
       </div>
 
