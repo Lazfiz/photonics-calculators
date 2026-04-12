@@ -22,7 +22,7 @@ export default function MicrowaveSpectroscopyPage() {
     const h = 6.626e-34;
     const c = 2.998e10;
     const B = h / (8 * Math.PI * Math.PI * c * I); // cm⁻¹
-    const B_GHz = B * c; // GHz (h × B in Hz)
+    const B_GHz = B * c / 1e9; // Hz → GHz
     const D = B * B / (2 * 1e6 * 1.66054e-27 * r * r * 1e-20 * 2.998e10 * 6.626e-34 / (8 * Math.PI * Math.PI)); // centrifugal distortion
     return { B, B_GHz, I };
   };
@@ -40,7 +40,7 @@ export default function MicrowaveSpectroscopyPage() {
       const kT = 0.695 * temperature; // cm⁻¹
       const degeneracy = moleculeType === "linear" ? 2 * J + 1 : (2 * J + 1) * (2 * J + 1);
       const population = degeneracy * Math.exp(-E_J / kT);
-      const intensity = population * (J + 1) * Math.pow(2 * J + 3, 0); // simple model
+      const intensity = population * (J + 1);
       transitions.push({ freqGHz, intensity, J });
     }
     const maxInt = Math.max(...transitions.map(t => t.intensity));
@@ -69,7 +69,7 @@ export default function MicrowaveSpectroscopyPage() {
     ];
   }, [B, temperature, moleculeType]);
 
-  const maxJ_pop = Math.sqrt(temperature * 0.695 / B) - 0.5;
+  const maxJ_pop = Math.sqrt(temperature * 0.695 / (2 * B)) - 0.5;
   const maxJ_observed = maxJ_pop + 0.5;
 
   return (
