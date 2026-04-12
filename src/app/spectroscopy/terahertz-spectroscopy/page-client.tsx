@@ -91,7 +91,7 @@ export default function TerahertzSpectroscopyPage() {
                     <p className="text-lg font-bold text-blue-400">{photonEnergyMin.toFixed(0)}–{photonEnergyMax.toFixed(0)} cm⁻¹</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-                    <p className="text-lg font-bold text-green-400">{(3e8 / (maxFreq * 1e12) * 1e3).toFixed(0)}–{(3e8 / (minFreq * 1e12) * 1e3).toFixed(0)} μm</p>
+                    <p className="text-lg font-bold text-green-400">{(3e8 / (maxFreq * 1e12) * 1e6).toFixed(0)}–{(3e8 / (minFreq * 1e12) * 1e6).toFixed(0)} μm</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
                     <p className="text-lg font-bold text-yellow-400">{refractiveIndex}</p>

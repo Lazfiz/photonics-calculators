@@ -56,7 +56,7 @@ export default function TimeResolvedPage() {
   const c = 3e8;
   const repPeriod = 1 / (laserRepRate * 1e6); // seconds
   const spectralWidth = 0.44 / (pulseWidthFs * 1e-15); // Hz, time-bandwidth product
-  const spectralWidthNm = pulseWidthFs * 1e-15 * spectralWidth * (800e-9) ** 2 / c * 1e9; // approx for 800nm
+  const spectralWidthNm = spectralWidth * (800e-9) ** 2 / c * 1e9; // approx for 800nm
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Time-Resolved Spectroscopy" description="TCSPC and streak camera fundamentals. IRF convolution, temporal resolution, and decay analysis.">
@@ -79,7 +79,7 @@ export default function TimeResolvedPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Computed Values</h3>
         <p className="text-sm text-gray-300"><span className="text-green-400">Rep period:</span> {(repPeriod * 1e9).toFixed(1)} ns</p>
-        <p className="text-sm text-gray-300"><span className="text-green-400">Min resolvable τ:</span> {instrumentResponse < lifetime ? "✓ Below lifetime" : "✗ Exceeds lifetime — poor resolution"}</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">Min resolvable τ:</span> {instrumentResponse / 1000 < lifetime ? "✓ Below lifetime" : "✗ Exceeds lifetime — poor resolution"}</p>
         <p className="text-sm text-gray-300"><span className="text-green-400">Spectral bandwidth:</span> {(spectralWidth / 1e12).toFixed(1)} THz (~{spectralWidthNm.toFixed(1)} nm at 800 nm)</p>
       </div>
 
