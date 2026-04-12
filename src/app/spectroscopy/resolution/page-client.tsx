@@ -17,7 +17,7 @@ export default function ResolutionPage() {
   const R = order * N;
   const deltaLambda = wavelength / R;
 
-  const angleOfIncidence = Math.asin(wavelength * order / 1e6 / gratingLines) * 180 / Math.PI;
+  const angleOfIncidence = Math.asin(wavelength * order * gratingLines / 1e6) * 180 / Math.PI;
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Resolution" description="Resolving power and minimum resolvable wavelength for a diffraction grating spectrometer.">
