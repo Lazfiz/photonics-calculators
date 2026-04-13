@@ -14,7 +14,10 @@ export default function ElectronSpectroscopyPage() {
   const [fwhm, setFwhm] = useURLState("fwhm", 1.2);
   const [temperature, setTemperature] = useURLState("temperature", 300);
 
-  const kineticEnergy = photonEnergy - bindingEnergy - workFunction;
+  // Einstein photoelectric equation: E_k = hν - E_B - φ_analyzer
+  // (Sample and analyzer Fermi levels align via contact potential;
+  //  φ_sample cancels out — only φ_analyzer determines measured KE)
+  const kineticEnergy = Math.max(photonEnergy - bindingEnergy - analyzerWorkFunction, 0.1);
   const alFermi = 1486.6;
   const mgFermi = 1253.6;
   const heI = 21.22;
@@ -42,8 +45,9 @@ export default function ElectronSpectroscopyPage() {
           intensity += gauss + asym;
         }
       }
-      // Secondary electron background (Shirley-like)
-      const integrated = peaks.filter(p => be < p.center).reduce((sum, p) => sum + p.amp, 0);
+      // Secondary electron background (Shirley-like: inelastic electrons
+      // from lower-BE peaks accumulate at higher BE)
+      const integrated = peaks.filter(p => p.center < be).reduce((sum, p) => sum + p.amp, 0);
       intensity += 0.05 * integrated;
       return intensity;
     });
@@ -74,10 +78,10 @@ export default function ElectronSpectroscopyPage() {
   const fermiDirac = 1 / (1 + Math.exp(0));
 
   const xraySources = [
-    { name: "Al Kα", energy: 1486.6, ke: (1486.6 - bindingEnergy - workFunction).toFixed(1) },
-    { name: "Mg Kα", energy: 1253.6, ke: (1253.6 - bindingEnergy - workFunction).toFixed(1) },
-    { name: "Ag Lα", energy: 2984.3, ke: (2984.3 - bindingEnergy - workFunction).toFixed(1) },
-    { name: "He I (UPS)", energy: 21.22, ke: (21.22 - bindingEnergy - workFunction).toFixed(1) },
+    { name: "Al Kα", energy: 1486.6, ke: (1486.6 - bindingEnergy - analyzerWorkFunction).toFixed(1) },
+    { name: "Mg Kα", energy: 1253.6, ke: (1253.6 - bindingEnergy - analyzerWorkFunction).toFixed(1) },
+    { name: "Ag Lα", energy: 2984.3, ke: (2984.3 - bindingEnergy - analyzerWorkFunction).toFixed(1) },
+    { name: "He I (UPS)", energy: 21.22, ke: (21.22 - bindingEnergy - analyzerWorkFunction).toFixed(1) },
   ];
 
   return (
