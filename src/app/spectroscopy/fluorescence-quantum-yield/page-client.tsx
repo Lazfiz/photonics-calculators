@@ -16,13 +16,14 @@ export default function FluorescenceQuantumYieldPage() {
   const [refrIdxRef, setRefrIdxRef] = useURLState("refrIdxRef", 1.33);
   const [useRefrIdx, setUseRefrIdx] = useState(false);
 
-  const qy = useRefrIdx
+  const qy = (refInt === 0 || sampleAbs === 0) ? 0 : useRefrIdx
     ? (sampleInt / refInt) * (refAbs / sampleAbs) * (refrIdxSample / refrIdxRef) ** 2 * refQY
     : (sampleInt / refInt) * (refAbs / sampleAbs) * refQY;
 
   const chartData = useMemo(() => {
     const absVals = Array.from({ length: 200 }, (_, i) => 0.01 + (i / 200) * 0.5);
     const qyLine = absVals.map(a => {
+      if (a === 0 || refInt === 0) return 0;
       const riFactor = useRefrIdx ? (refrIdxSample / refrIdxRef) ** 2 : 1;
       return (sampleInt / refInt) * (refAbs / a) * riFactor * refQY;
     });

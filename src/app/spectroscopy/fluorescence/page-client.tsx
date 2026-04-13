@@ -68,8 +68,8 @@ export default function FluorescencePage() {
           <p className="text-xl font-bold text-green-400">{typeof avgLifetime === 'number' ? avgLifetime.toFixed(2) : avgLifetime} ns</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">FWHM of spectrum (Lorentzian: Δν·τ ≈ 0.318)</p>
-          <p className="text-xl font-bold text-blue-400">{fwhmSpectrumSimple} (1/(πτ))</p>
+          <p className="text-sm text-gray-400">Time-Bandwidth Product Δν·τ</p>
+          <p className="text-xl font-bold text-blue-400">{fwhmSpectrumSimple} (= 1/π)</p>
         </div>
       </div>
 

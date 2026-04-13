@@ -15,11 +15,12 @@ export default function EtalonFSRPage() {
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => 1.500 + i * 0.002); // μm range for FSR calc
     // FSR = λ²/(2·n·d·cosθ) at wavelength λ
-    const fsr = wls.map(wl => (wl * wl) / (2 * n * d * Math.cos((theta * Math.PI) / 180)));
+    const cosT = Math.max(Math.cos((theta * Math.PI) / 180), 1e-10);
+    const fsr = wls.map(wl => (wl * wl) / (2 * n * d * cosT));
     // Also show Airy function for reference
     const F = 4 * R / ((1 - R) * (1 - R));
     const T = wls.map(wl => {
-      const delta = (4 * Math.PI * n * d * Math.cos((theta * Math.PI) / 180)) / wl;
+      const delta = (4 * Math.PI * n * d * cosT) / wl;
       return 1 / (1 + F * Math.sin(delta / 2) ** 2);
     });
     return [
@@ -28,7 +29,7 @@ export default function EtalonFSRPage() {
     ];
   }, [n, d, theta, R]);
 
-  const cosTheta = Math.cos((theta * Math.PI) / 180);
+  const cosTheta = Math.max(Math.cos((theta * Math.PI) / 180), 1e-10);
   const designWl = 1.55; // μm
   const fsrDesign = (designWl * designWl) / (2 * n * d * cosTheta);
   const finesse = Math.PI * Math.sqrt(R) / (1 - R);

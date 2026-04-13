@@ -17,8 +17,9 @@ export default function FourierSelfCombPage() {
     const repFreq = repetitionRate * 1e6;
     const centerFreq = c / (centerWavelength * 1e-9);
     const deltaLambda = bandwidthNm * 1e-9;
-    const fMin = c / ((centerWavelength + bandwidthNm / 2) * 1e-9);
-    const fMax = c / ((centerWavelength - bandwidthNm / 2) * 1e-9);
+    const halfBw = bandwidthNm / 2;
+    const fMin = c / ((centerWavelength + halfBw) * 1e-9);
+    const fMax = c / ((centerWavelength - halfBw) * 1e-9);
     const fLow = Math.min(fMin, fMax);
     const fHigh = Math.max(fMin, fMax);
 
@@ -28,7 +29,8 @@ export default function FourierSelfCombPage() {
       return centerFreq + offset;
     });
 
-    // For each CEO offset, plot comb teeth within bandwidth
+    // Guard: bandwidth must be smaller than 2× center wavelength to avoid negative wavelengths
+    if (halfBw >= centerWavelength) return [];
     const traces: any[] = [];
     fCeos.forEach((fCeo, idx) => {
       const nMin = Math.ceil((fLow - fCeo) / repFreq);
