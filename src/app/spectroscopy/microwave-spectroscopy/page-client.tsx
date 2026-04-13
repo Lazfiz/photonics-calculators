@@ -23,7 +23,6 @@ export default function MicrowaveSpectroscopyPage() {
     const c = 2.998e10;
     const B = h / (8 * Math.PI * Math.PI * c * I); // cm⁻¹
     const B_GHz = B * c / 1e9; // Hz → GHz
-    const D = B * B / (2 * 1e6 * 1.66054e-27 * r * r * 1e-20 * 2.998e10 * 6.626e-34 / (8 * Math.PI * Math.PI)); // centrifugal distortion
     return { B, B_GHz, I };
   };
 
@@ -69,7 +68,7 @@ export default function MicrowaveSpectroscopyPage() {
     ];
   }, [B, temperature, moleculeType]);
 
-  const maxJ_pop = Math.sqrt(temperature * 0.695 / (2 * B)) - 0.5;
+  const maxJ_pop = B > 0 ? Math.max(0, Math.sqrt(temperature * 0.695 / (2 * B)) - 0.5) : 0;
   const maxJ_observed = maxJ_pop + 0.5;
 
   return (
@@ -86,7 +85,7 @@ export default function MicrowaveSpectroscopyPage() {
         </label>
         <ValidatedNumberInput label="Bond Length (Å)" value={bondLength} onChange={setBondLength} min={0.5} max={5} />
         <ValidatedNumberInput label="Reduced Mass (amu)" value={reducedMass} onChange={setReducedMass} min={1} max={200} />
-        <ValidatedNumberInput label="Dipole Moment (D)" value={dipoleMoment} onChange={setDipoleMoment} min={0} max={20} />
+        <ValidatedNumberInput label="Dipole Moment (D) — informational" value={dipoleMoment} onChange={setDipoleMoment} min={0} max={20} />
         <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} min={10} max={1000} />
       </div>
 
