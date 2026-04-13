@@ -34,8 +34,8 @@ export default function SpectralRangePage() {
     const densities = Array.from({ length: 200 }, (_, i) => 50 + i * 15);
     const ranges = densities.map(gd => {
       const dd = 1e6 / gd;
-      const wMin = dd * (Math.sin(alpha) + Math.sin(betaMin)) * 1000 / order;
-      const wMax = dd * (Math.sin(alpha) + Math.sin(betaMax)) * 1000 / order;
+      const wMin = dd * (Math.sin(alpha) + Math.sin(betaMin)) / order;
+      const wMax = dd * (Math.sin(alpha) + Math.sin(betaMax)) / order;
       return wMax - wMin;
     });
 
@@ -50,7 +50,7 @@ export default function SpectralRangePage() {
     const wls = Array.from({ length: 200 }, (_, i) => (wlMin || 200) + ((wlMax || 800) - (wlMin || 200)) * (i / 199));
     const dispersion = wls.map(wl => {
       const beta = Math.asin((order * wl / 1000) / d - Math.sin(alpha));
-      return (d * Math.cos(beta)) / (order * focalLength) * 1000; // nm/mm
+      return (d * Math.cos(beta)) / (order * focalLength); // nm/mm
     });
 
     return {
@@ -68,8 +68,8 @@ export default function SpectralRangePage() {
   const beta0 = (centralAngle * Math.PI) / 180;
   const alpha = beta0;
   const totalAngle = Math.atan(detectorWidth / (2 * focalLength)) * 2;
-  const wlMin = d * (Math.sin(alpha) + Math.sin(beta0 - totalAngle / 2)) * 1000 / order;
-  const wlMax = d * (Math.sin(alpha) + Math.sin(beta0 + totalAngle / 2)) * 1000 / order;
+  const wlMin = d * (Math.sin(alpha) + Math.sin(beta0 - totalAngle / 2)) / order;
+  const wlMax = d * (Math.sin(alpha) + Math.sin(beta0 + totalAngle / 2)) / order;
   const spectralRange = Math.abs(wlMax - wlMin);
   const resolution = order * grooveDensity * detectorWidth; // R = mN (N = illuminated grooves)
   const pixelResolution = spectralRange / detectorPixels;
