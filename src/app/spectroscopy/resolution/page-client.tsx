@@ -11,13 +11,13 @@ export default function ResolutionPage() {
   const [order, setOrder] = useURLState("order", 1);
   const [wavelength, setWavelength] = useURLState("wavelength", 550);
 
-  const resolvingPower = gratingLines * gratingWidth * order; // N*m*order where N = lines/mm * width_mm / 1000
-  // Actually: R = mN where N = total illuminated lines = lines/mm * width_mm
+  const resolvingPower = gratingLines * gratingWidth * order; // R = mN where N = lines/mm × W(mm)
   const N = gratingLines * gratingWidth;
-  const R = order * N;
+  const R = Math.max(order * N, 1); // guard against zero
   const deltaLambda = wavelength / R;
 
-  const angleOfIncidence = Math.asin(wavelength * order * gratingLines / 1e6) * 180 / Math.PI;
+  const sinTheta = wavelength * order * gratingLines / 1e6;
+  const angleOfIncidence = Math.abs(sinTheta) <= 1 ? Math.asin(sinTheta) * 180 / Math.PI : NaN;
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Resolution" description="Resolving power and minimum resolvable wavelength for a diffraction grating spectrometer.">
