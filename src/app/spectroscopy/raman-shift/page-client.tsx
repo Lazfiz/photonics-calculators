@@ -14,16 +14,20 @@ export default function RamanShiftPage() {
 
   const laserWavenumber = 1e7 / laserWavelength; // cm⁻¹
   const stokesWavenumber = laserWavenumber - ramanShiftCm;
-  const stokesWavelength = stokesWavenumber > 0 ? 1e7 / stokesWavenumber : 0;
+  const stokesWavelength = stokesWavenumber > 0 ? 1e7 / stokesWavenumber : NaN;
   const antiStokesWavenumber = laserWavenumber + ramanShiftCm;
   const antiStokesWavelength = 1e7 / antiStokesWavenumber;
 
-  const stokesEnergyEv = 1239.842 / stokesWavelength; // eV (hc ≈ 1239.84 eV·nm)
-  const laserEnergyEv = 1239.842 / laserWavelength;
+  // Energy and frequency from Raman shift directly (not from Stokes photon)
+  const energyDiffEv = ramanShiftCm * 1.239842e-4; // hc ≈ 1.239842e-4 eV·cm
+  const frequencyDiffTHz = ramanShiftCm * 0.029979; // 1 cm⁻¹ = 29.979 THz
 
   const chartData = useMemo(() => {
     const shifts = Array.from({ length: 500 }, (_, i) => minShift + i * (maxShift - minShift) / 500);
-    const stokesWL = shifts.map(s => 1e7 / (laserWavenumber - s));
+    const stokesWL = shifts.map(s => {
+      const wn = laserWavenumber - s;
+      return wn > 100 ? 1e7 / wn : null; // skip near-zero wavenumbers
+    });
     const antiStokesWL = shifts.map(s => 1e7 / (laserWavenumber + s));
     return [
       { x: shifts, y: stokesWL, type: "scatter" as const, mode: "lines" as const,
@@ -36,7 +40,7 @@ export default function RamanShiftPage() {
   }, [laserWavelength, ramanShiftCm, minShift, maxShift]);
 
   // Energy difference
-  const energyDiffEv = laserEnergyEv - stokesEnergyEv;
+  // const energyDiffEv = laserEnergyEv - stokesEnergyEv; // REMOVED: broke at high shifts
   const frequencyDiffTHz = energyDiffEv * 241.799; // eV to THz
 
   return (
@@ -52,7 +56,7 @@ export default function RamanShiftPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Stokes Wavelength</p>
-          <p className="text-xl font-bold text-green-400">{stokesWavelength.toFixed(2)} nm</p>
+          <p className="text-xl font-bold text-green-400">{isNaN(stokesWavelength) ? "N/A (shift > laser)" : stokesWavelength.toFixed(2) + " nm"}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Anti-Stokes Wavelength</p>
