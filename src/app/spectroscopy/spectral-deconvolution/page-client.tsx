@@ -72,6 +72,7 @@ export default function SpectralDeconvolutionPage() {
 
   const totalArea = peaks.reduce((sum, pk) => sum + pk.amplitude * pk.fwhm * Math.sqrt(Math.PI / (4 * Math.LN2)), 0);
   const peakAreas = peaks.map(pk => pk.amplitude * pk.fwhm * Math.sqrt(Math.PI / (4 * Math.LN2)));
+  const peakFractions = totalArea > 0 ? peakAreas.map((a, i) => `${i + 1}: ${((a / totalArea) * 100).toFixed(1)}%`).join(" · ") : "N/A (zero area)";
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Deconvolution" description="Decompose overlapping spectral bands into individual Gaussian components.">
@@ -124,7 +125,7 @@ export default function SpectralDeconvolutionPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Peak Fractions</p>
           <p className="text-sm text-gray-300 mt-1">
-            {peakAreas.map((a, i) => `${i + 1}: ${((a / totalArea) * 100).toFixed(1)}%`).join(" · ")}
+            {peakFractions}
           </p>
         </div>
       </div>
