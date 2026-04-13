@@ -20,18 +20,22 @@ export default function AbsorptionDepthPage() {
       if (wl < 500) return 1e4;
       if (wl < 800) return 1e3 * Math.exp(-(wl - 500) * 0.005);
       if (wl < 1100) return 100 * Math.exp(-(wl - 800) * 0.007);
-      return 10;
+      // Above bandgap: silicon becomes nearly transparent
+      return 0.01 * Math.exp(-(wl - 1100) * 0.003);
     },
     glass: (wl) => wl < 300 ? 100 : wl < 2500 ? 0.1 : 10,
     water: (wl) => {
-      if (wl < 200) return 1e4;
-      if (wl < 300) return 0.1;
-      if (wl < 700) return 0.001 + (wl - 300) * 0.0002; // gradual rise
-      if (wl < 970) return 0.06 + 0.5 * Math.exp(-((wl - 970) / 100) ** 2); // 970nm band
-      if (wl < 1200) return 0.5 + 30 * Math.exp(-((wl - 1200) / 80) ** 2); // 1200nm band
-      if (wl < 1450) return 1 + 50 * Math.exp(-((wl - 1450) / 60) ** 2); // 1450nm band
-      if (wl < 1950) return 10 + 100 * Math.exp(-((wl - 1950) / 100) ** 2); // 1950nm band
-      return 50 * Math.exp((wl - 1950) * 0.008); // increasing beyond 1950nm
+      // Baseline absorption + Gaussian bands for major water absorption features
+      // Reference: Hale & Querry 1973, Pope & Fry 1997
+      const baseline = wl < 200 ? 1e4 : wl < 300 ? 0.1 : 0.01;
+      const uvEdge = wl < 250 ? 1e4 * Math.exp(-((wl - 200) / 30) ** 2) : 0;
+      const band970 = 0.5 * Math.exp(-((wl - 970) / 100) ** 2);
+      const band1200 = 30 * Math.exp(-((wl - 1200) / 80) ** 2);
+      const band1450 = 50 * Math.exp(-((wl - 1450) / 60) ** 2);
+      const band1950 = 100 * Math.exp(-((wl - 1950) / 100) ** 2);
+      // NIR increase beyond 1950nm (combination/overtone bands)
+      const irRise = wl > 1800 ? 50 * Math.exp((wl - 1950) * 0.008) : 0;
+      return baseline + uvEdge + band970 + band1200 + band1450 + band1950 + irRise;
     },
     custom: () => absorptionCoeff,
   };
@@ -84,7 +88,7 @@ export default function AbsorptionDepthPage() {
         </>}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+      {material === "custom" && <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Absorption Coefficient α</p>
           <p className="text-xl font-bold text-red-400">{absorptionCoeff.toExponential(2)} cm⁻¹</p>
@@ -97,7 +101,7 @@ export default function AbsorptionDepthPage() {
           <p className="text-sm text-gray-400">δ (mm)</p>
           <p className="text-xl font-bold text-blue-400">{(delta * 10).toFixed(5)} mm</p>
         </div>
-      </div>
+      </div>}
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p>I(z) = I₀ · exp(−αz)</p>
