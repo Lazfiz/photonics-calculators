@@ -17,7 +17,7 @@ export default function DualCombSpectroscopyPage() {
   const c = 3e8;
   const frep1Hz = repRate1 * 1e6;
   const frep2Hz = repRate2 * 1e6;
-  const deltaFrep = Math.abs(frep2Hz - frep1Hz);
+  const deltaFrep = Math.max(Math.abs(frep2Hz - frep1Hz), 1); // Hz, floor 1 Hz to avoid /0
   const centerFreq = c / (centerWavelength * 1e-9);
 
   const opticalBW = numModes * Math.max(frep1Hz, frep2Hz);
