@@ -29,6 +29,9 @@ export default function SpectralCalibrationPage() {
 
     // Linear fit through measured points
     const n = measuredPixels.length;
+    if (n < 2 || wls.some(isNaN)) {
+      return { lines: [], calCurve: [], residual: { x: [], y: [], type: "scatter" as const, mode: "lines" as const, name: "Residual", line: { color: "#34d399" } }, slope: dispersion, intercept: centerWl - spectralWidth / 2, dispersion };
+    }
     const sx = measuredPixels.reduce((a, b) => a + b, 0);
     const sy = wls.reduce((a, b) => a + b, 0);
     const sxx = measuredPixels.reduce((a, b) => a + b * b, 0);
