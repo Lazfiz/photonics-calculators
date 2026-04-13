@@ -29,7 +29,8 @@ export default function SpectralLineBroadeningPage() {
     const gaussian = x.map(s => Math.exp(-Math.pow((s - sigma0) / dopplerGauss, 2) / 2));
 
     // Lorentzian (collisional + natural)
-    const lorentzFWHM = gammaCol * Math.max(pressure, 0.001) + naturalWidth;
+    // FWHM = 2·γ_col·P + Γ_nat (Demtröder, Laser Spectroscopy Vol 2)
+    const lorentzFWHM = 2 * gammaCol * pressure + naturalWidth;
     const lorentzian = x.map(s => (lorentzFWHM / 2) ** 2 / ((s - sigma0) ** 2 + (lorentzFWHM / 2) ** 2));
 
     // Voigt (approximate: Gaussian convolved with Lorentzian via pseudo-Voigt)
@@ -58,7 +59,7 @@ export default function SpectralLineBroadeningPage() {
   const m = molecularMass * amu;
   const sigma0 = 1e7 / centerWl;
   const dopplerFWHM = sigma0 * Math.sqrt((8 * k * temperature * Math.LN2) / (m * c * c));
-  const collisionalFWHM = gammaCol * Math.max(pressure, 0.001);
+  const collisionalFWHM = 2 * gammaCol * pressure;
   const lorentzFWHM_disp = collisionalFWHM + naturalWidth;
   // Olivero-Longbothum Voigt FWHM approximation (same as chart)
   const fG = dopplerFWHM, fL = lorentzFWHM_disp;
