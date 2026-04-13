@@ -17,14 +17,14 @@ export default function PumpProbePage() {
     const N = 500;
     const times = Array.from({ length: N }, (_, i) => (i / N) * tMax);
 
-    // Ground state bleach (negative ΔT/T)
-    const bleach = times.map(t => -1 * Math.exp(-t / tau1));
+    // Ground state bleach (positive ΔT/T — fewer absorbers, more transmission)
+    const bleach = times.map(t => Math.exp(-t / tau1));
 
-    // Stimulated emission (negative)
-    const SE = times.map(t => -0.8 * Math.exp(-t / tau1));
+    // Stimulated emission (positive ΔT/T — adds photons to probe beam)
+    const SE = times.map(t => 0.8 * Math.exp(-t / tau1));
 
-    // Excited state absorption (positive, appears with delay)
-    const ESA = times.map(t => 0.6 * tau2 / (tau2 - tau1) * (Math.exp(-t / tau1) - Math.exp(-t / tau2)));
+    // Excited state absorption (negative ΔT/T — absorbs probe photons)
+    const ESA = times.map(t => -0.6 * tau2 / (tau2 - tau1) * (Math.exp(-t / tau1) - Math.exp(-t / tau2)));
 
     // Total signal
     const total = times.map((_, i) => bleach[i] + SE[i] + ESA[i]);
@@ -58,9 +58,9 @@ export default function PumpProbePage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Signal:</span> ΔT/T = (T_pumped − T_unpumped) / T_unpumped</p>
-        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">GSB:</span> ΔT/T &lt; 0 (ground state depopulated)</p>
-        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">SE:</span> ΔT/T &lt; 0 (stimulated emission adds to probe)</p>
-        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">ESA:</span> ΔT/T &gt; 0 (excited state absorbs probe)</p>
+        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">GSB:</span> ΔT/T &gt; 0 (ground state depopulated, more transmission)</p>
+        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">SE:</span> ΔT/T &gt; 0 (stimulated emission adds to probe)</p>
+        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">ESA:</span> ΔT/T &lt; 0 (excited state absorbs probe)</p>
         <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">Kinetics:</span> ΔT/T(t) = A₁·e<sup>-t/τ₁</sup> + A₂·e<sup>-t/τ₂</sup></p>
       </div>
 
