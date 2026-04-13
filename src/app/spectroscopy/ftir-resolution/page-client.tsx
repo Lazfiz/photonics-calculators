@@ -48,7 +48,7 @@ export default function FtirResolutionPage() {
       let apod = 1;
       const frac = xi / maxOPD;
       if (apodization === "nortonbeermedium") apod = 1 - frac * frac;
-      else if (apodization === "blackmanharris") apod = 0.35875 + 0.48829 * Math.cos(Math.PI * frac) + 0.14128 * Math.cos(2 * Math.PI * frac) + 0.01168 * Math.cos(3 * Math.PI * frac);
+      else if (apodization === "blackmanharris") apod = 0.35875 - 0.48829 * Math.cos(Math.PI * frac) + 0.14128 * Math.cos(2 * Math.PI * frac) - 0.01168 * Math.cos(3 * Math.PI * frac);
       else if (apodization === "happgenzel") apod = (1 - frac) * (1 + Math.cos(Math.PI * frac)) / 2;
       return raw * apod;
     });
