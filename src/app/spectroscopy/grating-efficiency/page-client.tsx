@@ -23,7 +23,11 @@ export default function GratingEfficiencyPage() {
   const currentEff = efficiency(wavelength);
 
   const chartData = useMemo(() => {
-    const wls = Array.from({ length: 200 }, (_, i) => blazeWavelength - 300 + i * 3);
+    const sigma = blazeWavelength * 0.3;
+    const halfRange = Math.max(blazeWavelength * 1.5, 300); // at least ±300nm, scales with blaze
+    const wlMin = Math.max(1, blazeWavelength - halfRange);
+    const wlMax = blazeWavelength + halfRange;
+    const wls = Array.from({ length: 200 }, (_, i) => wlMin + i * (wlMax - wlMin) / 199);
     return [
       { x: wls, y: wls.map(efficiency), type: "scatter" as const, mode: "lines" as const, name: "Efficiency", line: { color: "#c084fc" } },
       { x: [wavelength], y: [currentEff], type: "scatter" as const, mode: "markers" as const, name: "Selected", marker: { color: "#f87171", size: 12 } },
