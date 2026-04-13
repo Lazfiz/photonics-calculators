@@ -83,7 +83,7 @@ export default function TerahertzSpectroscopyPage() {
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Transmission:</span> T = exp(−α × d)</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Debye relaxation:</span> ε*(ω) = ε∞ + (εₛ − ε∞) / (1 + jωτ)</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Phase:</span> φ = 2πf × n × d / c</p>
-        <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">k<sub>B</sub>T at {temperature}K:</span> {kBT.toFixed(1)} cm⁻¹ ({(kBT * 0.03).toFixed(2)} THz)</p>
+        <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">k<sub>B</sub>T at {temperature}K:</span> {kBT.toFixed(1)} cm⁻¹ ({(kBT / 33.356).toFixed(2)} THz)</p>
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-6">
