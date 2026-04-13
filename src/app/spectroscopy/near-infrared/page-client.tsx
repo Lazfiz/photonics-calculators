@@ -49,10 +49,11 @@ export default function NearInfraredPage() {
   }, [wavelengthStart, wavelengthEnd, pathLength, waterContent, scatteringCoeff]);
 
   const overtoneData = useMemo(() => {
-    // Fundamental at 3400 cm⁻¹ → overtones
+    // Fundamental at 3400 cm⁻¹ → overtones (Morse oscillator)
     const fundamental = 3400;
+    const anharmonicity = 0.015; // typical O-H bond
     const overtones = [1, 2, 3, 4, 5];
-    const positions = overtones.map(n => fundamental * n * (1 - anharmonicity * (n * n - 1)));
+    const positions = overtones.map(n => fundamental * n * (1 - anharmonicity * (n + 1)));
     const intensities = overtones.map(n => 1 / Math.pow(n, 2));
     return [
       { x: positions, y: intensities, type: "bar" as const, name: "Overtone Intensity", marker: { color: "#60a5fa" } },
@@ -73,7 +74,7 @@ export default function NearInfraredPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Formulas</h3>
-        <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Overtone:</span> ν̃<sub>n</sub> ≈ n × ν̃<sub>fundamental</sub> × (1 − χₑ(n²−1))</p>
+        <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Overtone:</span> ν̃<sub>n</sub> ≈ n × ν̃<sub>e</sub> × (1 − χₑ(n+1))</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Combination:</span> ν̃<sub>comb</sub> = ν̃₁ + ν̃₂</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Intensity:</span> I<sub>n</sub> ∝ 1/n² (anharmonic decay)</p>
         <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">Modified Beer-Lambert:</span> A = εcL + G (scattering term)</p>
