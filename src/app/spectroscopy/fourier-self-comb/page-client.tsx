@@ -39,8 +39,9 @@ export default function FourierSelfCombPage() {
         const f = fCeo + n * repFreq;
         if (f >= fLow && f <= fHigh) {
           freqs.push(f / 1e12); // THz
-          // Gaussian envelope
-          const relF = (f - centerFreq) / (repFreq * combLines * 0.15);
+          // Gaussian envelope derived from bandwidth
+          const sigma = (fHigh - fLow) / 4; // ~2σ contains ~95% of bandwidth
+          const relF = (f - centerFreq) / sigma;
           amps.push(Math.exp(-relF * relF));
         }
       }
