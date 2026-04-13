@@ -27,7 +27,8 @@ export default function NearInfraredPage() {
   ];
 
   const spectrumData = useMemo(() => {
-    const wl = Array.from({ length: 600 }, (_, i) => wavelengthStart + (i / 600) * (wavelengthEnd - wavelengthStart));
+    const wlRange = Math.max(wavelengthEnd - wavelengthStart, 1);
+    const wl = Array.from({ length: 600 }, (_, i) => wavelengthStart + (i / 600) * wlRange);
     const absorbance = wl.map(w => {
       let a = 0;
       for (const b of nirBands) {
