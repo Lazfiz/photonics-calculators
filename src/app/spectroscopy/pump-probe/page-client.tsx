@@ -24,7 +24,13 @@ export default function PumpProbePage() {
     const SE = times.map(t => 0.8 * Math.exp(-t / tau1));
 
     // Excited state absorption (negative ΔT/T — absorbs probe photons)
-    const ESA = times.map(t => -0.6 * tau2 / (tau2 - tau1) * (Math.exp(-t / tau1) - Math.exp(-t / tau2)));
+    // Sequential kinetics: population ∝ τ₂/(τ₂-τ₁)·(e^(-t/τ₁) - e^(-t/τ₂))
+    // Guard: τ₁ ≈ τ₂ → singularity; L'Hôpital limit = t/τ₁·e^(-t/τ₁)
+    const nearDegenerate = Math.abs(tau2 - tau1) < 1e-6;
+    const ESA = times.map(t => {
+      if (nearDegenerate) return -0.6 * (t / tau1) * Math.exp(-t / tau1);
+      return -0.6 * tau2 / (tau2 - tau1) * (Math.exp(-t / tau1) - Math.exp(-t / tau2));
+    });
 
     // Total signal
     const total = times.map((_, i) => bleach[i] + SE[i] + ESA[i]);
