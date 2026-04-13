@@ -29,7 +29,8 @@ export default function DispersiveElementPage() {
     const angularDispersion = wls.map((wl, i) => {
       if (diffractionAngles[i] === null) return null;
       const beta = (diffractionAngles[i]! * Math.PI) / 180;
-      return order / (d * Math.cos(beta)) * 1e-9; // rad/nm (rad/m × 1e-9)
+      const cosBeta = Math.cos(beta);
+      return Math.abs(cosBeta) > 1e-10 ? order / (d * cosBeta) * 1e-9 : null; // rad/nm
     });
 
     // Linear dispersion at focal length f
