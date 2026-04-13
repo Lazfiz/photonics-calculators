@@ -13,6 +13,7 @@ export default function SpectralResolutionPage() {
   const [slitWidth, setSlitWidth] = useURLState("slitWidth", 25);
   const [order, setOrder] = useURLState("order", 1);
   const [gratingWL, setGratingWL] = useURLState("gratingWL", 500);
+  const [centralAngle, setCentralAngle] = useURLState("centralAngle", 10); // degrees (incidence angle)
   const [dispersion, setDispersion] = useURLState("dispersion", 0.02);
   const [finesse, setFinesse] = useURLState("finesse", 50);
   const [fsrNm, setFsrNm] = useURLState("fsrNm", 0.05);
@@ -58,6 +59,7 @@ export default function SpectralResolutionPage() {
           <ValidatedNumberInput label="Focal Length (mm)" value={focalLength} onChange={setFocalLength} min={10} />
           <ValidatedNumberInput label="Slit Width (μm)" value={slitWidth} onChange={setSlitWidth} min={1} />
           <ValidatedNumberInput label="Diffraction Order" value={order} onChange={setOrder} min={1} max={10} />
+          <ValidatedNumberInput label="Incidence Angle (°)" value={centralAngle} onChange={setCentralAngle} min={1} max={80} />
         </>}
         {mode === "prism" && <>
           <ValidatedNumberInput label="Slit Width (μm)" value={slitWidth} onChange={setSlitWidth} min={1} />
