@@ -62,13 +62,14 @@ export default function AdhesionTestingPage() {
     // Scratch test adhesion strength
     // Critical load relates to adhesion via: W_ad ≈ L_c / (π·R)
     const adhesionEnergy = Lc / (Math.PI * R); // J/m²
-    const adhesionMPa = adhesionEnergy / (t * 1e-9) / 1e6; // MPa = W_ad / thickness
+    const adhesionMPa = adhesionEnergy / t / 1e6; // MPa = W_ad / thickness
 
     // Interfacial shear strength
     const shearStrength = Lc / (Math.PI * R * R) * 1e-6; // MPa
 
     // Scratch hardness (from load and tip radius)
-    const scratchHardness = Lc / (2 * Math.PI * R * Math.sqrt(2 * R * t - t * t)) * 1e-9; // GPa
+    const scratchArg = Math.max(2 * R * t - t * t, 0);
+    const scratchHardness = scratchArg > 0 ? Lc / (2 * Math.PI * R * Math.sqrt(scratchArg)) * 1e-9 : 0; // GPa
 
     // Peel energy (for flexible films)
     const peelEnergy = Pf; // J/m² = N/m
@@ -78,8 +79,7 @@ export default function AdhesionTestingPage() {
     const bendStrain = t / (2 * rb);
 
     // Buckling critical stress (Hutchinson & Suo): σ_cr = [2E_f·W²/((1-ν²)t³)]^(1/3)
-    const t_m = t * 1e-9; // nm → m
-    const buckleStress = (2 * filmModulus * adhesionEnergy ** 2 / ((1 - 0.25 ** 2) * t_m ** 3)) ** (1 / 3) / 1e6; // MPa
+    const buckleStress = (2 * filmModulus * adhesionEnergy ** 2 / ((1 - 0.25 ** 2) * t ** 3)) ** (1 / 3) / 1e6; // MPa
 
     // Pull-off force estimate (JKR model simplified)
     const W = adhesionEnergy; // J/m²
