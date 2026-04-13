@@ -17,19 +17,20 @@ export default function AmplitudeSplittingPage() {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 2);
     const r01 = (n1 - nFilm) / (n1 + nFilm);
     const r12 = (nFilm - n2) / (nFilm + n2);
+    const r10 = -r01; // (nFilm - n1) / (nFilm + n1) = -r01
     const t01 = 2 * n1 / (n1 + nFilm);
     const t10 = 2 * nFilm / (n1 + nFilm);
 
     // Sum multiple reflected beams (amplitude splitting)
     const reflected = wls.map(wl => {
       const delta = (4 * Math.PI * nFilm * thickness) / wl;
-      // Sum N internal reflections
+      // Sum N internal reflections: round-trip coefficient is r10*r12
       const N = 20;
       let re = r01;
       let im = 0;
       for (let m = 1; m <= N; m++) {
         const phase = -m * delta;
-        const amp = t01 * t10 * Math.pow(r12 * r12, m - 1) * r12;
+        const amp = t01 * t10 * Math.pow(r10 * r12, m - 1) * r12;
         re += amp * Math.cos(phase);
         im += amp * Math.sin(phase);
       }
@@ -39,11 +40,11 @@ export default function AmplitudeSplittingPage() {
       const delta = (4 * Math.PI * nFilm * thickness) / wl;
       const t01 = 2 * n1 / (n1 + nFilm);
       const t12 = 2 * nFilm / (nFilm + n2);
-      // Multiple beam transmission
+      // Multiple beam transmission: round-trip coefficient is r10*r12
       let re = 0, im = 0;
       for (let m = 0; m < 20; m++) {
         const phase = -m * delta;
-        const amp = t01 * t12 * Math.pow(r01 * r12, m);
+        const amp = t01 * t12 * Math.pow(r10 * r12, m);
         re += amp * Math.cos(phase);
         im += amp * Math.sin(phase);
       }
