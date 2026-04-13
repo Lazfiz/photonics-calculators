@@ -13,13 +13,16 @@ export default function StimulatedRamanPage() {
   const [pathLength, setPathLength] = useURLState("pathLength", 0.1);
   const [concentration, setConcentration] = useURLState("concentration", 0.1);
   const [linewidth, setLinewidth] = useURLState("linewidth", 10);
+  const [ramanGainCoeff, setRamanGainCoeff] = useURLState("ramanGainCoeff", 1e-11); // cm/W
 
   const stimulatedGainData = useMemo(() => {
     const detunings = Array.from({ length: 400 }, (_, i) => ramanShift - 50 + (i / 400) * 100);
     const gamma = linewidth;
     // Stimulated Raman gain profile: Lorentzian centered at ramanShift
+    // linewidth is FWHM, so HWHM = linewidth/2 (standard convention)
+    const hwhm = linewidth / 2;
     const gain = detunings.map(d => {
-      const lorentz = Math.pow(gamma, 2) / (Math.pow(d - ramanShift, 2) + Math.pow(gamma, 2));
+      const lorentz = Math.pow(hwhm, 2) / (Math.pow(d - ramanShift, 2) + Math.pow(hwhm, 2));
       return lorentz * pumpPower * concentration * pathLength * 1e-3;
     });
     return [
@@ -28,16 +31,15 @@ export default function StimulatedRamanPage() {
   }, [ramanShift, pumpPower, concentration, pathLength, linewidth]);
 
   const powerTransferData = useMemo(() => {
-    const distances = Array.from({ length: 300 }, (_, i) => (i / 300) * pathLength * 1e3);
+    const distances = Array.from({ length: 300 }, (_, i) => (i / 300) * pathLength * 10); // cm → mm
     // Undepleted pump approximation (small-signal regime):
     // dI_s/dz = g_R × I_p × I_s → I_s(z) = I_s(0) × exp(g_R × I_p × z)
-    // Pump depletion is linear: I_p(z) ≈ I_p(0) - (ω_p/ω_s) × [I_s(z) - I_s(0)]
-    const gR = ramanGainCoeff; // cm/GW → use with power in GW, length in cm
-    const Ip_GW = pumpPower * 1e-3; // mW → GW
+    const gR = ramanGainCoeff; // cm/W, with power in W, length in cm
+    const Ip_W = pumpPower * 1e-3; // mW → W
     const freqRatio = 1; // ≈ ω_p/ω_s ≈ 1 for small shifts
     const stokesGrowth = distances.map(z => {
-      const z_cm = z * 1e-3; // mm → cm
-      return stokesPower * Math.exp(gR * Ip_GW * z_cm);
+      const z_cm = z * 0.1; // mm → cm
+      return stokesPower * Math.exp(gR * Ip_W * z_cm);
     });
     const pumpDepletion = distances.map((z, i) => {
       const dStokes = stokesGrowth[i] - stokesPower;
@@ -61,6 +63,7 @@ export default function StimulatedRamanPage() {
         <ValidatedNumberInput label="Path Length (cm)" value={pathLength} onChange={setPathLength} min={0.001} max={100} />
         <ValidatedNumberInput label="Concentration (M)" value={concentration} onChange={setConcentration} min={0.001} max={50} />
         <ValidatedNumberInput label="Raman Linewidth (cm⁻¹)" value={linewidth} onChange={setLinewidth} min={1} max={100} />
+        <ValidatedNumberInput label="Raman Gain Coeff. (cm/W)" value={ramanGainCoeff} onChange={setRamanGainCoeff} min={1e-14} max={1e-8} step={1e-13} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
@@ -73,13 +76,13 @@ export default function StimulatedRamanPage() {
 
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-                    <p className="text-xl font-bold text-green-400">{(ramanGainCoeff * 1e3).toFixed(2)} cm/GW</p>
+                    <p className="text-xl font-bold text-green-400">{(ramanGainCoeff * 1e11).toFixed(2)} ×10⁻¹¹ cm/W</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
                     <p className="text-xl font-bold text-blue-400">{maxStokesGain.toFixed(2)} mW</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-                    <p className="text-xl font-bold text-yellow-400">{(ramanGainCoeff * pumpPower * pathLength * 1e3 * 100).toFixed(4)}%</p>
+                    <p className="text-xl font-bold text-yellow-400">{(ramanGainCoeff * pumpPower * 1e-3 * pathLength * 100).toFixed(4)}%</p>
         </div>
       </div>
 
