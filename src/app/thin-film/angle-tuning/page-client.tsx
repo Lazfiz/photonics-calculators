@@ -21,15 +21,19 @@ function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: numbe
 
       const delta = (2 * Math.PI * layer.n * cosTheta * layer.d) / wl;
       const cosD = Math.cos(delta), sinD = Math.sin(delta);
+      const eta = nEff; // optical admittance
 
-      const new11r = m11r * cosD + m12r * (-nEff * sinD);
-      const new11i = m11i * cosD + m12i * (-nEff * sinD);
-      const new12r = m11r * (-sinD / nEff) + m12r * cosD;
-      const new12i = m11i * (-sinD / nEff) + m12i * cosD;
-      const new21r = m21r * cosD + m22r * (-nEff * sinD);
-      const new21i = m21i * cosD + m22i * (-nEff * sinD);
-      const new22r = m21r * (-sinD / nEff) + m22r * cosD;
-      const new22i = m21i * (-sinD / nEff) + m22i * cosD;
+      // Characteristic matrix: [[cos δ, -i sin δ/η], [-i η sin δ, cos δ]]
+      // L12 = (0, -sinD/η), L21 = (0, -η·sinD)
+      // Complex multiply M_new = M · L:
+      const new11r = m11r * cosD + m12i * eta * sinD;
+      const new11i = m11i * cosD - m12r * eta * sinD;
+      const new12r = m11i * sinD / eta + m12r * cosD;
+      const new12i = -m11r * sinD / eta + m12i * cosD;
+      const new21r = m21r * cosD + m22i * eta * sinD;
+      const new21i = m21i * cosD - m22r * eta * sinD;
+      const new22r = m21i * sinD / eta + m22r * cosD;
+      const new22i = -m21r * sinD / eta + m22i * cosD;
       m11r = new11r; m11i = new11i; m12r = new12r; m12i = new12i;
       m21r = new21r; m21i = new21i; m22r = new22r; m22i = new22i;
     }
