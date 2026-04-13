@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
@@ -8,7 +8,6 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 export default function ConcMirrorPage() {
   const [radius, setRadius] = useURLState("radius", 50);
-  const [wavelength, setWavelength] = useURLState("wavelength", 600);
   const [mirrorDiam, setMirrorDiam] = useURLState("mirrorDiam", 25);
   const [slitWidth, setSlitWidth] = useURLState("slitWidth", 50); // µm
 
@@ -17,42 +16,39 @@ export default function ConcMirrorPage() {
   // Finesse for a Fabry-Perot etalon (for reference)
   const finesse = Math.PI * Math.sqrt(Math.max(0, 0.99)) / (1 - 0.99);
 
-  // Resolving power for slit-limited spectrometer: R ≈ f / w (Hecht, Ch. 10)
-  const resolvingPower = f / (slitWidth * 1e-6);
+  // Inverse slit angle: f/w (geometric factor, NOT spectral resolving power)
+  // True resolving power R = λ/Δλ requires dispersion, not just f/w
+  const inverseSlitAngle = f / (slitWidth * 1e-6);
 
   // Étendue: G = A_slit × Ω = w·h × π(D/2)²/f² (Saleh & Teich, Eq. 11.2-5)
   // Using slit_height ≈ slit_width:
   const etendue = Math.pow(slitWidth * 1e-6, 2) * Math.PI * Math.pow(mirrorDiam * 1e-3 / 2, 2) / (f * f);
 
-  // Throughput (fraction of light collected from extended source)
-  const throughput = Math.min(1, etendue / (Math.PI * Math.pow(mirrorDiam * 1e-3 / 2, 2)));
-
   // Jacquinot advantage: T_FT/T_grating ≈ 2πF/l (Jacquinot, 1954)
   // For comparison: T_FT/T_grating ≈ 2π·f / slitHeight
-  const throughputAdvantage = 2 * Math.PI * f / (slitWidth * 1e-6);
+  const jacquinotAdvantage = 2 * Math.PI * f / (slitWidth * 1e-6);
 
   const chartData = useMemo(() => {
     const radii = Array.from({ length: 50 }, (_, i) => 10 + i * 4);
     return [
-      { x: radii, y: radii.map(r => ((r * 1e-3 / 2) / (slitWidth * 1e-6)) / 1000), type: "scatter" as const, mode: "lines" as const, name: "Resolving Power (k)", line: { color: "#c084fc" } },
-      { x: [radius], y: [resolvingPower / 1000], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
+      { x: radii, y: radii.map(r => ((r * 1e-3 / 2) / (slitWidth * 1e-6)) / 1000), type: "scatter" as const, mode: "lines" as const, name: "f/w (×10³)", line: { color: "#c084fc" } },
+      { x: [radius], y: [inverseSlitAngle / 1000], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
     ];
-  }, [radius, slitWidth, resolvingPower]);
+  }, [radius, slitWidth, inverseSlitAngle]);
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Concave Mirror Throughput" description="Connes advantage and throughput for concave mirror-based spectrometers (e.g., FTIR, concave grating).">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Mirror Radius (mm)" value={radius} onChange={setRadius} min={5} max={500} />
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} max={50000} />
         <ValidatedNumberInput label="Mirror Diameter (mm)" value={mirrorDiam} onChange={setMirrorDiam} min={5} max={200} />
         <ValidatedNumberInput label="Slit Width (µm)" value={slitWidth} onChange={setSlitWidth} min={1} max={500} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Resolving Power</p>
-          <p className="text-2xl font-bold text-purple-400">{(resolvingPower / 1000).toFixed(1)}k</p>
+          <p className="text-sm text-gray-400">Inverse Slit Angle (f/w)</p>
+          <p className="text-2xl font-bold text-purple-400">{(inverseSlitAngle / 1000).toFixed(1)}k</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Finesse</p>
@@ -63,8 +59,8 @@ export default function ConcMirrorPage() {
           <p className="text-2xl font-bold text-green-400">{etendue.toExponential(2)}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Connes Advantage</p>
-          <p className="text-2xl font-bold text-yellow-400">{throughputAdvantage.toFixed(1)}×</p>
+          <p className="text-sm text-gray-400">Jacquinot Advantage</p>
+          <p className="text-2xl font-bold text-yellow-400">{jacquinotAdvantage.toFixed(1)}×</p>
         </div>
       </div>
 
@@ -72,7 +68,7 @@ export default function ConcMirrorPage() {
         <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" }, xaxis: { title: "Mirror Radius (mm)", gridcolor: "#374151" },
-          yaxis: { title: "Resolving Power (×10³)", gridcolor: "#374151" },
+          yaxis: { title: "f/w (×10³)", gridcolor: "#374151" },
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
