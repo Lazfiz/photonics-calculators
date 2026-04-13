@@ -22,18 +22,19 @@ export default function LibsAnalysisPage() {
   // Voigt approx (Gaussian + Lorentzian FWHM)
   const voigtWidth = 0.5346 * starkWidth + Math.sqrt(0.2166 * starkWidth ** 2 + dopplerWidthNm ** 2);
 
-  // Saha-Boltzmann (ionization) - simplified for visualization
+  // Boltzmann factor for ionization (simplified — not full Saha equation)
+  // Full Saha: n_{i+1}·n_e/n_i = (2/Λ³)·(g_{i+1}/g_i)·exp(-χ_i/kT)
   const k_B = 1.380649e-23;
   const ionizationEnergy = 7.0; // eV, Ar-like
-  const sahaFactor = Math.exp(-ionizationEnergy * 1.602e-19 / (k_B * temperature));
+  const boltzmannFactor = Math.exp(-ionizationEnergy * 1.602e-19 / (k_B * temperature));
 
   const chartData = useMemo(() => {
     const x = Array.from({ length: 500 }, (_, i) => wavelength - spectralRange + i * (2 * spectralRange) / 500);
     // Gaussian (Doppler)
-    const sigma = dopplerWidthNm / (2 * Math.sqrt(2 * Math.log(2)));
-    const gaussian = x.map(xi => Math.exp(-((xi - wavelength) ** 2) / (2 * sigma ** 2)));
+    const sigma = Math.max(dopplerWidthNm, 1e-10) / (2 * Math.sqrt(2 * Math.log(2)));
+    const gaussian = x.map(xi => sigma > 1e-10 ? Math.exp(-((xi - wavelength) ** 2) / (2 * sigma ** 2)) : (xi === wavelength ? 1 : 0));
     // Lorentzian (Stark)
-    const gamma = starkWidth / 2;
+    const gamma = Math.max(starkWidth / 2, 1e-10);
     const lorentzian = x.map(xi => 1 / (1 + ((xi - wavelength) / gamma) ** 2));
     return [
       { x, y: gaussian, type: "scatter", mode: "lines", name: "Doppler (Gaussian)",
@@ -67,8 +68,8 @@ export default function LibsAnalysisPage() {
           <p className="text-xl font-bold text-green-400">{voigtWidth.toFixed(4)} nm</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Saha factor (ionization)</p>
-          <p className="text-xl font-bold text-yellow-400">{sahaFactor.toExponential(2)}</p>
+          <p className="text-sm text-gray-400">Boltzmann Factor e^(-E/kT)</p>
+          <p className="text-xl font-bold text-yellow-400">{boltzmannFactor.toExponential(2)}</p>
         </div>
       </div>
 
@@ -76,7 +77,7 @@ export default function LibsAnalysisPage() {
         <p><strong>Doppler:</strong> Δλ_D = λ₀ √(8kT ln2 / mc²) — thermal broadening</p>
         <p><strong>Stark:</strong> Δλ_S ≈ 2wₑ · Nₑ — electron impact broadening (simplified)</p>
         <p><strong>Voigt:</strong> Δλ_V ≈ 0.5346·Δλ_L + √(0.2166·Δλ_L² + Δλ_D²)</p>
-        <p className="text-gray-500">wₑ ≈ 1×10⁻¹⁶ nm·cm³ for typical ionic lines (order-of-magnitude)</p>
+        <p className="text-gray-500">wₑ ≈ 1×10⁻¹⁶ nm·cm³ for typical ionic lines (order-of-magnitude). Ionization term is the Boltzmann factor, not the full Saha equation.</p>
       </div>
 
       <ChartPanel data={chartData} layout={{
