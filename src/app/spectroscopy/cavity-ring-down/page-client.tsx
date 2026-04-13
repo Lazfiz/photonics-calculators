@@ -17,14 +17,14 @@ export default function CavityRingDownPage() {
   const lossFrac = baseLoss / 100;
   const roundTripLoss = -Math.log(R * R * (1 - lossFrac));
   const alphaSample = 2 * sampleAbsorbance * Math.LN10; // ×2 for round trip; convert A₁₀ to natural optical depth
-  const totalLoss = roundTripLoss + alphaSample;
+  const totalLoss = Math.max(roundTripLoss + alphaSample, 1e-10);
 
   const c = 2.998e8; // m/s
   const roundTripTime = 2 * L / c; // seconds
   const tau = roundTripTime / totalLoss; // ring-down time
 
-  // Sensitivity (minimum detectable absorption per pass)
-  const sensitivity = totalLoss / (2 * L); // m⁻¹
+  // Equivalent absorption coefficient (total loss per unit path length)
+  const equivAlpha = totalLoss / (2 * L); // m⁻¹
 
   // Finesse
   const finesse = 2 * Math.PI / totalLoss;
@@ -70,7 +70,7 @@ export default function CavityRingDownPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Ring-Down Time τ</p>
-          <p className="text-xl font-bold text-green-400">{tau < 1e-3 ? (tau * 1e9).toFixed(1) + " ns" : (tau * 1e6).toFixed(2) + " μs"}</p>
+          <p className="text-xl font-bold text-green-400">{tau < 1e-6 ? (tau * 1e9).toFixed(1) + " ns" : (tau * 1e6).toFixed(2) + " μs"}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Finesse ℱ</p>
@@ -81,8 +81,8 @@ export default function CavityRingDownPage() {
           <p className="text-xl font-bold text-red-400">{totalLoss.toExponential(3)}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Min. Detectable α</p>
-          <p className="text-xl font-bold text-yellow-400">{sensitivity.toExponential(2)} m⁻¹</p>
+          <p className="text-sm text-gray-400">Equiv. Loss Coeff. α</p>
+          <p className="text-xl font-bold text-yellow-400">{equivAlpha.toExponential(2)} m⁻¹</p>
         </div>
       </div>
 
@@ -90,7 +90,7 @@ export default function CavityRingDownPage() {
         <p>I(t) = I₀ · exp(−t/τ)</p>
         <p>τ = t_rt / L_rt = 2L / (c · L_rt)</p>
         <p>L_rt = −ln(R₁·R₂) + α_sample + L_other</p>
-        <p>ℱ = 2π / L_rt | Sensitivity ∝ 1/(cavity length × loss)</p>
+        <p>ℱ = 2π / L_rt | α_eq = L_rt / (2L)</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
