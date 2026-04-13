@@ -49,7 +49,7 @@ export default function StrayLightPage() {
     wavelength: ((order * centralWavelength) / m).toFixed(1),
   }));
 
-  const rejectionDB = 10 * Math.log10(1 / scatterFraction);
+  const rejectionDB = scatterFraction > 0 ? 10 * Math.log10(1 / scatterFraction) : Infinity;
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Stray Light Rejection" description="Ghost order analysis and stray light estimation for grating-based spectrometers.">
