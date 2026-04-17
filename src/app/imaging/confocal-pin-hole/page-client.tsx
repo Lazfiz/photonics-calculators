@@ -10,28 +10,29 @@ export default function ConfocalPinholePage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 488); // nm
   const [na, setNA] = useURLState("na", 1.4);
   const [magnification, setMagnification] = useURLState("magnification", 60);
+  const [nImmersion, setNImmersion] = useURLState("nImmersion", 1.515);
 
   const chartData = useMemo(() => {
     const ratios = Array.from({ length: 200 }, (_, i) => (i * 3) / 200);
     // Axial resolution vs pinhole size (in Airy units)
     const airyDiam = 1.22 * wavelength / na;
-    const axialIdeal = 1.4 * wavelength / (na * na); // nm, ideal confocal
+    const axialIdeal = 1.4 * nImmersion * wavelength / (na * na); // nm, ideal confocal
+    const widefield = 2 * nImmersion * wavelength / (na * na); // nm
     const axial = ratios.map(r => {
       // Larger pinhole → worse axial resolution, approaching widefield
-      const widefield = 2 * wavelength / (na * na);
       return axialIdeal + (widefield - axialIdeal) * (1 - Math.exp(-r * r));
     });
     // Signal throughput vs pinhole size
     const throughput = ratios.map(r => 1 - Math.exp(-r * r * 2));
     return [
-      { x: ratios, y: axial, type: "scatter" as const, mode: "lines" as const, name: "Axial Resolution", line: { color: "#60a5fa" } },
-      { x: ratios, y: throughput, type: "scatter" as const, mode: "lines" as const, name: "Throughput", line: { color: "#f87171" } },
+      { x: ratios, y: axial, type: "scatter" as const, mode: "lines" as const, name: "Axial Resolution (nm)", line: { color: "#60a5fa" } },
+      { x: ratios, y: throughput, type: "scatter" as const, mode: "lines" as const, name: "Throughput", line: { color: "#f87171" }, yaxis: "y2" },
     ];
-  }, [wavelength, na, magnification]);
+  }, [wavelength, na, magnification, nImmersion]);
 
   const airyDiam = 1.22 * wavelength / na;
-  const optimalPinhole = airyDiam / magnification;
-  const axialRes = 1.4 * wavelength / (na * na);
+  const optimalPinhole = airyDiam * magnification; // physical pinhole = object Airy × M
+  const axialRes = 1.4 * nImmersion * wavelength / (na * na);
   const lateralRes = 0.61 * wavelength / na;
 
   return (
@@ -41,6 +42,7 @@ export default function ConfocalPinholePage() {
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         <ValidatedNumberInput label="NA" value={na} onChange={setNA} step="0.01" />
         <ValidatedNumberInput label="Magnification" value={magnification} onChange={setMagnification} />
+        <ValidatedNumberInput label="Immersion RI (n)" value={nImmersion} onChange={setNImmersion} min={1} max={1.8} step="0.001" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">
@@ -50,7 +52,7 @@ export default function ConfocalPinholePage() {
         <p className="text-gray-300">Axial resolution = <span className="text-blue-400 font-mono">{axialRes.toFixed(1)} nm</span></p>
       </div>
 
-      <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Pinhole Size (Airy Units)", gridcolor: "#374151" }, yaxis: { title: "Normalized Value", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true, showlegend: true }} />
+      <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Pinhole Size (Airy Units)", gridcolor: "#374151" }, yaxis: { title: "Axial Resolution (nm)", gridcolor: "#374151" }, yaxis2: { title: "Throughput", gridcolor: "#374151", overlaying: "y", side: "right", range: [0, 1.05] }, margin: { t: 20, b: 40, l: 60, r: 60 }, autosize: true, showlegend: true }} />
     </CalculatorShell>
   );
 }
