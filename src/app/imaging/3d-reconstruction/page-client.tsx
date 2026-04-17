@@ -14,19 +14,31 @@ export default function Reconstruction3DPage() {
   const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 550);
   const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.33);
   const [method, setMethod] = useState<"widefield" | "confocal" | "lightsheet">("confocal");
-  const [wobble, setWobble] = useURLState("wobble", 1);
+  const [excitationNA, setExcitationNA] = useURLState("excitationNA", 0.1);
+  const [fovUm, setFovUm] = useURLState("fovUm", 100);
   const [numViews, setNumViews] = useURLState("numViews", 1);
 
   const axialRes = (2 * refractiveIndex * wavelengthNm) / (na ** 2); // nm
   const lateralRes = (0.61 * wavelengthNm) / na; // nm
   const totalHeight = numSlices * sliceSpacing;
   const voxelSize = (xyResolution * xyResolution * sliceSpacing).toFixed(4);
-  const totalVoxels = Math.round((totalHeight / sliceSpacing) * (100 / xyResolution) ** 2);
+  const totalVoxels = Math.round((totalHeight / sliceSpacing) * (fovUm / xyResolution) ** 2);
   const volumeBytes = totalVoxels * 2; // 16-bit
 
-  // Sectioning quality factor
-  const sectioningFactor = method === "widefield" ? 1 : method === "confocal" ? 0.4 : 0.15;
-  const effectiveAxial = axialRes * sectioningFactor;
+  // Light sheet axial resolution from excitation sheet thickness (scalar diffraction)
+  // d_z(LS) ≈ λ / (2 × NA_illum) — Chen et al. (2020), Optica
+  const lightSheetAxial = method === "lightsheet" ? wavelengthNm / (2 * excitationNA) : 0; // nm
+
+  // Effective axial resolution per method
+  // Confocal: ~0.7× widefield (PSF product → sinc⁴ narrows FWHM by √2)
+  //   Born & Wolf; Pawley "Handbook of Biological Confocal Microscopy"
+  // Light sheet: combined detection DOF + illumination thickness (Gaussian convolution)
+  //   effective = 1/√(1/axialRes² + 1/lightSheetAxial²)
+  const effectiveAxial = method === "widefield"
+    ? axialRes
+    : method === "confocal"
+      ? axialRes * 0.7
+      : 1 / Math.sqrt(1 / (axialRes ** 2) + 1 / (lightSheetAxial ** 2));
 
   const resolutionVsNA = useMemo(() => {
     const nas = Array.from({ length: 50 }, (_, i) => 0.2 + i * 0.036);
@@ -35,14 +47,14 @@ export default function Reconstruction3DPage() {
     return [
       { x: nas, y: lateral, type: "scatter", mode: "lines" as const, name: "Lateral", line: { color: "#60a5fa", width: 2 } },
       { x: nas, y: axial, type: "scatter", mode: "lines" as const, name: "Axial (Widefield)", line: { color: "#f87171", width: 2 } },
-      { x: nas, y: axial.map(v => v * 0.4), type: "scatter", mode: "lines" as const, name: "Axial (Confocal)", line: { color: "#34d399", width: 2, dash: "dash" } },
+      { x: nas, y: axial.map(v => v * 0.7), type: "scatter", mode: "lines" as const, name: "Axial (Confocal)", line: { color: "#34d399", width: 2, dash: "dash" } },
       { x: [na], y: [lateralRes], type: "scatter", mode: "markers" as const, name: "Current Lat.", marker: { color: "#60a5fa", size: 12 } },
     ];
   }, [na, wavelengthNm, refractiveIndex, lateralRes]);
 
   const samplingChart = useMemo(() => {
     const spacings = Array.from({ length: 30 }, (_, i) => 0.1 + i * 0.1);
-    const voxels = spacings.map(s => Math.round((totalHeight / s) * (100 / xyResolution) ** 2));
+    const voxels = spacings.map(s => Math.round((totalHeight / s) * (fovUm / xyResolution) ** 2));
     return [{
       x: spacings, y: voxels.map(v => v / 1e6), type: "scatter", mode: "lines" as const,
       name: "Total Voxels (M)", line: { color: "#a78bfa", width: 2 },
@@ -50,19 +62,24 @@ export default function Reconstruction3DPage() {
       x: [sliceSpacing], y: [totalVoxels / 1e6], type: "scatter", mode: "markers" as const,
       name: "Current", marker: { color: "#f87171", size: 12 },
     }];
-  }, [sliceSpacing, xyResolution, totalHeight, totalVoxels]);
+  }, [sliceSpacing, xyResolution, totalHeight, totalVoxels, fovUm]);
 
   const methodCompare = useMemo(() => {
     const methods = ["Widefield", "Confocal", "Light Sheet"];
-    const axialVals = [axialRes, axialRes * 0.4, axialRes * 0.15];
-    const lateralVals = [lateralRes, lateralRes * 0.8, lateralRes * 0.9];
+    const lightSheetA = wavelengthNm / (2 * excitationNA); // nm, excitation sheet thickness
+    const axialVals = [
+      axialRes,
+      axialRes * 0.7,
+      1 / Math.sqrt(1 / (axialRes ** 2) + 1 / (lightSheetA ** 2)),
+    ];
+    const lateralVals = [lateralRes, lateralRes * 0.8, lateralRes];
     const phototox = [100, 60, 15];
     const speed = [1, 0.3, 2];
     return [
       { x: methods, y: axialVals, type: "bar" as const, name: "Axial (nm)", marker: { color: "#f87171" } },
       { x: methods, y: lateralVals, type: "bar" as const, name: "Lateral (nm)", marker: { color: "#60a5fa" } },
     ];
-  }, [axialRes, lateralRes]);
+  }, [axialRes, lateralRes, wavelengthNm, excitationNA]);
 
   return (
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="3D Reconstruction Methods" description="Compare 3D reconstruction approaches: resolution, sampling, voxel budgets, and method tradeoffs.">
@@ -102,6 +119,8 @@ export default function Reconstruction3DPage() {
             <option value="lightsheet">Light Sheet</option>
           </select>
         </label>
+        <ValidatedNumberInput label="Excitation NA (LS)" value={excitationNA} onChange={setExcitationNA} min={0.01} max={0.5} step="0.01" />
+        <ValidatedNumberInput label="FOV (µm)" value={fovUm} onChange={setFovUm} min={1} max={5000} step="10" />
         <ValidatedNumberInput label="Number of Views" value={numViews} onChange={setNumViews} min={1} max={6} />
       </div>
 
@@ -135,7 +154,8 @@ export default function Reconstruction3DPage() {
         <div className="space-y-2 text-sm text-gray-300 font-mono">
           <p><span className="text-blue-400">Lateral (Abbe):</span> d_xy = 0.61λ / NA</p>
           <p><span className="text-blue-400">Axial (widefield):</span> d_z = 2nλ / NA²</p>
-          <p><span className="text-blue-400">Axial (confocal):</span> d_z ≈ 0.4 × 2nλ / NA²</p>
+          <p><span className="text-blue-400">Axial (confocal):</span> d_z ≈ 0.7 × 2nλ / NA²</p>
+          <p><span className="text-blue-400">Axial (light sheet):</span> d_z ≈ λ / (2 × NA_illum)</p>
           <p><span className="text-blue-400">Nyquist sampling:</span> Δz ≤ d_z / 2</p>
           <p><span className="text-blue-400">Volume size:</span> V = N_x × N_y × N_z × bytes/voxel</p>
           <p><span className="text-blue-400">Voxel aspect ratio:</span> AR = Δz / Δxy</p>
