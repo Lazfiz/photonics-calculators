@@ -15,21 +15,23 @@ export default function DynamicRangePage() {
   const [dsnu, setDsnu] = useURLState("dsnu", 0.005);
 
   const results = useMemo(() => {
+    const prnuFrac = prnu / 100;
+    const dsnuFrac = dsnu / 100;
     const darkElectrons = darkCurrent * exposureTime / 1000;
-    const totalReadNoise = Math.sqrt(readNoise * readNoise + darkElectrons + dsnu * dsnu * darkElectrons);
+    const totalReadNoise = Math.sqrt(readNoise * readNoise + darkElectrons + (dsnuFrac * darkElectrons) ** 2);
     const drDB = 20 * Math.log10(fullWellCapacity / totalReadNoise);
     const drStops = Math.log2(fullWellCapacity / totalReadNoise);
     const drBits = drDB / 6.02;
     const maxDN = Math.pow(2, bitDepth) - 1;
     const systemDR = Math.min(drStops, bitDepth);
     const adcLimited = bitDepth < drStops;
-    const snrAtHalf = (fullWellCapacity / 2) / Math.sqrt(fullWellCapacity / 2 + totalReadNoise * totalReadNoise + (prnu * fullWellCapacity / 2) * (prnu * fullWellCapacity / 2));
+    const snrAtHalf = (fullWellCapacity / 2) / Math.sqrt(fullWellCapacity / 2 + totalReadNoise * totalReadNoise + (prnuFrac * fullWellCapacity / 2) * (prnuFrac * fullWellCapacity / 2));
 
     const signals: number[] = [];
     const snrVals: number[] = [];
     for (let s = 0.1; s <= fullWellCapacity; s += fullWellCapacity / 500) {
       signals.push(s);
-      const noise = Math.sqrt(s + totalReadNoise * totalReadNoise + (prnu * s) * (prnu * s));
+      const noise = Math.sqrt(s + totalReadNoise * totalReadNoise + (prnuFrac * s) * (prnuFrac * s));
       snrVals.push(s / noise);
     }
 
@@ -129,7 +131,7 @@ export default function DynamicRangePage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
         <h3 className="font-semibold">Key Formulas</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
-          <p>σ_total = √(σ²_read + N_dark + DSNU²·FWC)</p>
+          <p>σ_total = √(σ²_read + N_dark + (DSNU·N_dark)²)</p>
           <p>DR = 20·log₁₀(FWC / σ_total) [dB]</p>
           <p>DR_stops = log₂(FWC / σ_total)</p>
           <p>SNR = S / √(S + σ²_total + (PRNU·S)²)</p>
