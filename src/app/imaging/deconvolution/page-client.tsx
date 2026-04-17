@@ -27,15 +27,19 @@ export default function DeconvolutionPage() {
   // Simulate MTF curves
   const mtfData = useMemo(() => {
     const freq = Array.from({ length: 100 }, (_, i) => i * otfCutoff / 100);
-    const otfIdeal = freq.map(f => f <= otfCutoff ? Math.sqrt(Math.max(0, 1 - (f / otfCutoff) ** 2)) : 0);
+    const otfIdeal = freq.map(f => {
+      if (f >= otfCutoff) return 0;
+      const nu = f / otfCutoff; // normalized frequency
+      return (2 / Math.PI) * (Math.acos(nu) - nu * Math.sqrt(Math.max(0, 1 - nu * nu)));
+    });
     const otfMeasured = otfIdeal.map((v, i) => v * Math.exp(-0.5 * (freq[i] / (otfCutoff * 0.7)) ** 2) + (1 / Math.pow(10, snrInput / 20)) * 0.3);
     const otfDeconv = otfIdeal.map((v, i) => {
-      const w = method === "wiener" ? Math.max(regularization, (1 / snrInput ** 2)) :
+      const w = method === "wiener" ? Math.max(regularization, Math.pow(10, -snrInput / 10)) :
                 method === "tikhonov" ? regularization :
                 method === "blind" ? 0.005 : 0;
       const h = otfMeasured[i];
       if (h < 0.001) return 0;
-      return Math.min(1, v * h / (h ** 2 + w));
+      return Math.min(1, (h * h) / (h * h + w));
     });
 
     return [
@@ -131,7 +135,7 @@ export default function DeconvolutionPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-3">Key Formulas</h3>
         <div className="space-y-2 text-sm text-gray-300 font-mono">
-          <p><span className="text-blue-400">PSF (Airy):</span> I(r) = [2J₁(πrNA/λ) / (πrNA/λ)]²</p>
+          <p><span className="text-blue-400">PSF (Airy):</span> I(r) = [2J₁(2πrNA/λ) / (2πrNA/λ)]²</p>
           <p><span className="text-blue-400">Richardson-Lucy:</span> ôₙ₊₁ = ôₙ · (g / (h ⊗ ôₙ)) ⊗ h*</p>
           <p><span className="text-blue-400">Wiener:</span> Ô = (H* / (|H|² + Γ)) · G</p>
           <p><span className="text-blue-400">Tikhonov:</span> min‖H·o − g‖² + λ‖L·o‖²</p>
