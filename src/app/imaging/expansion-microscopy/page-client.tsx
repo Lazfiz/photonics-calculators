@@ -19,9 +19,10 @@ export default function ExpansionMicroscopyPage() {
     const effectiveLabelSize = labelLinkerLen / magnification;
     const expansionFactor = magnification;
     const physicalResLimit = 0.61 * 525e-9 / na * 1e9 / magnification;
-    const fovShrink = 1 / magnification;
+    const fovShrinkLinear = 1 / magnification;
+    const fovShrinkArea = 1 / (magnification * magnification);
     const sampleVolume = gelThickness * magnification;
-    return { effectiveRes, effectiveProbeSize, effectiveLabelSize, expansionFactor, physicalResLimit, fovShrink, sampleVolume };
+    return { effectiveRes, effectiveProbeSize, effectiveLabelSize, expansionFactor, physicalResLimit, fovShrinkLinear, fovShrinkArea, sampleVolume };
   }, [magnification, originalRes, probeSize, labelLinkerLen, gelThickness, na]);
 
   const plotData = useMemo(() => {
@@ -76,7 +77,8 @@ export default function ExpansionMicroscopyPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Effective probe size</span><span className="font-mono text-green-400">{results.effectiveProbeSize.toFixed(2)} nm</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Effective label size</span><span className="font-mono text-cyan-400">{results.effectiveLabelSize.toFixed(2)} nm</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Physical res. limit</span><span className="font-mono text-yellow-400">{results.physicalResLimit.toFixed(1)} nm</span></div>
-          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">FOV shrinkage</span><span className="font-mono text-purple-400">{(results.fovShrink * 100).toFixed(1)}%</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">FOV remaining (linear)</span><span className="font-mono text-purple-400">{(results.fovShrinkLinear * 100).toFixed(1)}%</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">FOV remaining (area)</span><span className="font-mono text-purple-400">{(results.fovShrinkArea * 100).toFixed(1)}%</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Expanded gel thickness</span><span className="font-mono text-red-400">{results.sampleVolume.toFixed(0)} µm</span></div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>d_eff = d_original / M | Probe_eff = probe / M</p>
