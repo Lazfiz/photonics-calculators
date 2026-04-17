@@ -15,7 +15,9 @@ export default function AfocalPage() {
   // Afocal: separation d = f1 + f2
   const idealSep = f1Mm + f2Mm;
   const isAfocal = Math.abs(separationMm - idealSep) < 0.01;
-  const angularMag = isAfocal ? -f2Mm / f1Mm : -(f2Mm / f1Mm) * (1 - (separationMm - idealSep) / f2Mm);
+  // Angular magnification: M = -f_obj/f_eye = -f₁/f₂ (Hecht §5.3.2)
+  // For non-afocal, chief ray gives M = 1 - d/f₂ (simplifies to -f₁/f₂ at d = f₁+f₂)
+  const angularMag = isAfocal ? -f1Mm / f2Mm : 1 - separationMm / f2Mm;
   const exitAngle = objectAngleDeg * angularMag;
   const fieldStopDiam = 2 * f1Mm * Math.tan(objectAngleDeg * Math.PI / 180);
 
@@ -27,10 +29,7 @@ export default function AfocalPage() {
     return [
       {
         x: seps,
-        y: seps.map(d => {
-          const dev = d - (f1Mm + f2Mm);
-          return -(f2Mm / f1Mm) * (1 - dev / f2Mm);
-        }),
+        y: seps.map(d => 1 - d / f2Mm),
         type: "scatter" as const, mode: "lines" as const,
         name: "Angular Magnification",
         line: { color: "#60a5fa", width: 2 },
@@ -42,7 +41,7 @@ export default function AfocalPage() {
         marker: { color: "#f87171", size: 12 },
       },
       {
-        x: [idealSep], y: [-f2Mm / f1Mm],
+        x: [idealSep], y: [-f1Mm / f2Mm],
         type: "scatter" as const, mode: "markers" as const,
         name: "True Afocal",
         marker: { color: "#34d399", size: 12, symbol: "diamond" },
@@ -54,7 +53,7 @@ export default function AfocalPage() {
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Afocal System Calculator" description="Design and analyze afocal (telescopic) relay systems — Keplerian and Galilean configurations.">
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm font-mono">M_ang = −f₂ / f₁ &nbsp;(afocal, d = f₁ + f₂)</p>
+        <p className="text-gray-300 text-sm font-mono">M_ang = −f₁ / f₂ &nbsp;(afocal, d = f₁ + f₂)</p>
         <p className="text-gray-300 text-sm font-mono mt-1">d_ideal = f₁ + f₂</p>
         <p className="text-gray-300 text-sm font-mono mt-1">θ_out = M_ang · θ_in</p>
       </div>
