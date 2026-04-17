@@ -30,9 +30,9 @@ export default function DenoisingAlgorithmsPage() {
   const params = methodParams[algorithm];
   const paramVal = algorithm === "gaussian" ? filterSize :
     algorithm === "median" ? filterSize :
-    algorithm === "bilateral" ? sigmaRange :
-    algorithm === "nlm" ? searchWindow :
-    algorithm === "wavelet" ? threshold :
+    algorithm === "bilateral" ? sigmaRange + sigmaSpatial * 0.5 :
+    algorithm === "nlm" ? searchWindow + patchSize * 0.3 :
+    algorithm === "wavelet" ? threshold + waveletLevel :
     0.5;
 
   const snrImprovement = Math.max(params.min, params.base + params.scale * paramVal);
@@ -45,7 +45,7 @@ export default function DenoisingAlgorithmsPage() {
     const x = Array.from({ length: 100 }, (_, i) => i);
     const clean = x.map(v => Math.sin(v * 0.1) + 0.5 * Math.sin(v * 0.25) + 0.3 * Math.sin(v * 0.5));
     const noise = clean.map(v => v + (inputNoise / 100) * (Math.sin(v * 3.7) * 0.7 + Math.cos(v * 5.3) * 0.5 + (Math.sin(v * 11) * 0.3)));
-    const denoised = clean.map((v, i) => v * (1 - detailLoss) + noise[i] * (outputNoise / (inputNoise || 1)) * 0.5);
+    const denoised = clean.map((v, i) => v * (1 - detailLoss) + (noise[i] - v) * (outputNoise / (inputNoise || 1)));
     return [
       { x, y: clean, type: "scatter", mode: "lines" as const, name: "Ground Truth", line: { color: "#34d399", width: 2 } },
       { x, y: noise, type: "scatter", mode: "lines" as const, name: "Noisy Signal", line: { color: "#f87171", width: 1 } },
