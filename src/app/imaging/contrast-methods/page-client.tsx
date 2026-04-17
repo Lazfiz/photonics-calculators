@@ -21,15 +21,14 @@ export default function ContrastMethodsPage() {
     const opdWaves = opd / lam;
     const phaseAngle = 2 * Math.PI * opdWaves;
 
-    // Phase contrast
+    // Phase contrast: I ≈ I₀(1 + 2·sin(φ)·sin(δ)) for small φ (Zernike, 1942)
     const pcPhaseRetard = phaseShift * 2 * Math.PI; // plate retardation
-    const pcContrast = Math.sin(phaseAngle) * Math.sin(pcPhaseRetard);
+    const pcContrast = 2 * Math.sin(phaseAngle) * Math.sin(pcPhaseRetard);
     const pcAmplitude = 2 * Math.abs(Math.sin(pcPhaseRetard / 2));
-    const pcTransmission = Math.cos(pcPhaseRetard / 2) ** 2;
 
-    // DIC
+    // DIC: measures OPD gradient, NOT doubled OPD (×2 only for reflection DIC)
     const shearDist = shearAmount * lam / na * 1e9; // nm lateral shear
-    const dicOPD = dnSample * sampleThickness * 1e-6 * 2; // doubled in DIC
+    const dicOPD = dnSample * sampleThickness * 1e-6; // transmission DIC: Δn·t
     const dicPhase = 2 * Math.PI * dicOPD / lam;
     const dicContrast = Math.sin(dicPhase);
 
@@ -49,8 +48,8 @@ export default function ContrastMethodsPage() {
       thicknesses.push(t);
       const opd = dnSample * t * 1e-6;
       const phaseAngle = 2 * Math.PI * opd / lam;
-      pcContrasts.push(Math.sin(phaseAngle) * Math.sin(pcPhaseRetard));
-      const dicOPD = dnSample * t * 1e-6 * 2;
+      pcContrasts.push(2 * Math.sin(phaseAngle) * Math.sin(pcPhaseRetard));
+      const dicOPD = dnSample * t * 1e-6;
       dicContrasts.push(Math.sin(2 * Math.PI * dicOPD / lam));
     }
     return [
@@ -102,7 +101,7 @@ export default function ContrastMethodsPage() {
 
           <h2 className="text-lg font-semibold mt-4">Phase Contrast</h2>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Contrast</span><span className="font-mono text-blue-400">{(results.pcContrast * 100).toFixed(2)}%</span></div>
-          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Halo size</span><span className="font-mono">{results.haloSize.toFixed(1)} nm</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Diffraction limit</span><span className="font-mono">{results.haloSize.toFixed(1)} nm</span></div>
 
           <h2 className="text-lg font-semibold mt-4">DIC</h2>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Lateral shear</span><span className="font-mono text-red-400">{results.shearDist.toFixed(1)} nm</span></div>
