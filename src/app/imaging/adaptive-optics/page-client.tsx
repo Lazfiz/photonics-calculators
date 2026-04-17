@@ -9,23 +9,23 @@ export default function AdaptiveOpticsPage() {
   const [numZernike, setNumZernike] = useURLState("numZernike", 15);
   const [rmsWavefront, setRmsWavefront] = useURLState("rmsWavefront", 0.5); // waves
   const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [na, setNa] = useURLState("na", 1.0);
   const [dmStroke, setDmStroke] = useURLState("dmStroke", 5); // µm
   const [dmActuators, setDmActuators] = useURLState("dmActuators", 32);
 
   const results = useMemo(() => {
-    const lam = wavelength * 1e-9;
     const strehlBefore = Math.exp(-((2 * Math.PI * rmsWavefront) ** 2));
     const correctedRms = rmsWavefront * Math.sqrt(1 - numZernike / (numZernike + 4));
     const strehlAfter = Math.exp(-((2 * Math.PI * correctedRms) ** 2));
     const correctionFactor = (rmsWavefront - correctedRms) / rmsWavefront * 100;
-    const isoplanaticAngle = 0.31 * (wavelength / 500) / (rmsWavefront + 0.001) * 10; // rough deg
-    const fittingError = 0.3 * rmsWavefront / Math.sqrt(dmActuators);
+    // Fitting error: Kolmogorov turbulence gives σ²_fit ∝ (d/r0)^(5/3).
+    // For N actuators across aperture, d = D/N, so σ_fit ∝ N^(-5/6).
+    // Hardy (1998), Noll (1976).
+    const fittingError = 0.3 * rmsWavefront * Math.pow(dmActuators, -5 / 6);
     const residualRms = Math.sqrt(correctedRms ** 2 + fittingError ** 2);
     const strehlWithFitting = Math.exp(-((2 * Math.PI * residualRms) ** 2));
     const phaseWrap = (2 * dmStroke * 1e3) / wavelength; // waves correctable (2×stroke in nm / λ)
-    return { strehlBefore, strehlAfter, correctedRms, correctionFactor, fittingError, residualRms, strehlWithFitting, phaseWrap, isoplanaticAngle };
-  }, [numZernike, rmsWavefront, wavelength, na, dmStroke, dmActuators]);
+    return { strehlBefore, strehlAfter, correctedRms, correctionFactor, fittingError, residualRms, strehlWithFitting, phaseWrap };
+  }, [numZernike, rmsWavefront, wavelength, dmStroke, dmActuators]);
 
   const plotData = useMemo(() => {
     const modes = [];
@@ -83,7 +83,7 @@ export default function AdaptiveOpticsPage() {
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>Strehl: S = exp(-(2π·σ)²)</p>
             <p>Corrected σ = σ₀·√(1 - N/(N+4))</p>
-            <p>Fitting error ≈ 0.3·σ₀/√N_act</p>
+            <p>Fitting error ≈ 0.3·σ₀·N_act^(-5/6)</p>
           </div>
         </div>
       </div>
