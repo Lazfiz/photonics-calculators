@@ -39,7 +39,7 @@ export default function AiryDiskPage() {
         <ResultCard label="Airy radius" value={`${airyRadiusUm.toFixed(2)} µm`} tone="blue" />
         <ResultCard label="Airy diameter" value={`${airyDiameter.toFixed(3)} µm`} tone="green" />
         <ResultCard label="Abbe limit" value={`${resolutionNm.toFixed(1)} nm`} tone="yellow" />
-        <ResultCard label="Resolution (lp/mm)" value={`${(1000 / airyDiameter).toFixed(0)}`} tone="purple" />
+        <ResultCard label="Resolution (lp/mm)" value={`${(1e6 / resolutionNm).toFixed(0)}`} tone="purple" />
       </div>
 
       <SimpleLineChart title="Diffraction-limited spot size vs NA" xLabel="Numerical aperture" yLabel="Size (µm)" series={series} />
