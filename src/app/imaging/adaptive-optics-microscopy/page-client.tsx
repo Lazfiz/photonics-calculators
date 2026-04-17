@@ -11,7 +11,6 @@ export default function AdaptiveOpticsMicroscopyPage() {
   const [numModes, setNumModes] = useURLState("numModes", 15);
   const [rmsWavefrontError, setRmsWavefrontError] = useURLState("rmsWavefrontError", 0.5);
   const [correctionEfficiency, setCorrectionEfficiency] = useURLState("correctionEfficiency", 0.85);
-  const [tissueScattering, setTissueScattering] = useURLState("tissueScattering", 0.3);
 
   const results = useMemo(() => {
     const lambda_um = wavelength * 1e-3;
@@ -21,7 +20,9 @@ export default function AdaptiveOpticsMicroscopyPage() {
     const strehlCorrected = Math.exp(-Math.pow(2 * Math.PI * rmsAfter / lambda_um, 2));
     const resAO = resDiffraction / Math.sqrt(strehlCorrected);
     const maréchalLimit = lambda_um / 14;
-    const modesCorrected = Math.round(numModes * correctionEfficiency);
+    // The correction model uses (1 - n/numModes) for fraction of modes corrected.
+    // Map correctionEfficiency to an equivalent mode count for consistency.
+    const effectiveModes = Math.round(numModes * correctionEfficiency);
 
     const modes: number[] = [];
     const strehls: number[] = [];
@@ -31,8 +32,8 @@ export default function AdaptiveOpticsMicroscopyPage() {
       strehls.push(Math.exp(-Math.pow(2 * Math.PI * corrected / lambda_um, 2)));
     }
 
-    return { resDiffraction, strehlUncorrected, rmsAfter, strehlCorrected, resAO, maréchalLimit, modesCorrected, modes, strehls };
-  }, [na, wavelength, numModes, rmsWavefrontError, correctionEfficiency, tissueScattering]);
+    return { resDiffraction, strehlUncorrected, rmsAfter, strehlCorrected, resAO, maréchalLimit, modesCorrected: effectiveModes, modes, strehls };
+  }, [na, wavelength, numModes, rmsWavefrontError, correctionEfficiency]);
 
   const plotData = useMemo(() => [
     {
@@ -78,10 +79,6 @@ export default function AdaptiveOpticsMicroscopyPage() {
           <div>
             <label className="block text-sm text-gray-400 mb-1">Correction Efficiency</label>
             <ValidatedNumberInput label="Correction Efficiency" value={correctionEfficiency} onChange={setCorrectionEfficiency} min={0} max={1} />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Tissue Scattering (µm⁻¹)</label>
-            <ValidatedNumberInput label="Tissue Scattering (µm⁻¹)" value={tissueScattering} onChange={setTissueScattering} min={0} max={5} />
           </div>
         </div>
 
