@@ -26,8 +26,8 @@ export default function CoherentAntiStokesPage() {
     const lateralRes = 0.325 * lamP / na * 1e9;
     const pumpPulseE = (pumpPower * 1e-3) / (repRate * 1e6) * 1e9;
     const stokesPulseE = (stokesPower * 1e-3) / (repRate * 1e6) * 1e9;
-    const spectralRes = 1 / (2 * Math.PI * pulseWidth * 1e-15) * 1e-12;
-    const nonResonantBg = pumpPower * stokesPower / (ramanShift * ramanShift);
+    const spectralRes = 0.441 / (pulseWidth * 1e-15) * 1e-12;
+    const nonResonantBg = pumpPower * pumpPower * stokesPower;
     const excitationBandwidth = 0.44 / (pulseWidth * 1e-15);
     const chi3Imag = Math.PI / (ramanShift * ramanShift);
     return { ramanShift, carsWavelength, lateralRes, pumpPulseE, stokesPulseE, spectralRes, nonResonantBg, excitationBandwidth, chi3Imag };

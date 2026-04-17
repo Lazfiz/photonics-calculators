@@ -22,7 +22,7 @@ export default function ClearedTissuePage() {
     const imagingDepth = objectiveWD * (na / nMedium);
     const riMismatchPenalty = ((na / nMedium) ** 4);
     const snrLoss = -10 * Math.log10(Math.max(transmission, 1e-10));
-    const ballPhotonFrac = Math.exp(-scatteringCoeff * tissueThickness);
+    const ballPhotonFrac = Math.exp(-(absorptionCoeff + scatteringCoeff) * tissueThickness);
     return { lateralRes, axialRes, transmission, imagingDepth, riMismatchPenalty, snrLoss, ballPhotonFrac };
   }, [na, wavelength, nMedium, tissueThickness, absorptionCoeff, scatteringCoeff, objectiveWD]);
 
@@ -33,7 +33,7 @@ export default function ClearedTissuePage() {
     for (let d = 0; d <= 5000; d += 50) {
       depths.push(d);
       transmissions.push(Math.exp(-(absorptionCoeff + scatteringCoeff) * d) * 100);
-      ballFracs.push(Math.exp(-scatteringCoeff * d) * 100);
+      ballFracs.push(Math.exp(-(absorptionCoeff + scatteringCoeff) * d) * 100);
     }
     return [
       { x: depths, y: transmissions, name: "Total transmission (%)", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },

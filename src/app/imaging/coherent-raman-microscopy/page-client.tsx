@@ -15,7 +15,7 @@ export default function CoherentRamanMicroscopyPage() {
   const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 5);
   const [repRate, setRepRate] = useURLState("repRate", 20);
 
-  const stokesWavelength = 1 / (1 / (pumpWavelength * 1e-3) - ramanShift / 1e7) * 1e3;
+  const stokesWavelength = 1 / (1 / pumpWavelength - ramanShift / 1e7); // nm
   const energyPump = 1240 / pumpWavelength;
   const energyStokes = 1240 / stokesWavelength;
   const energyBeat = energyPump - energyStokes;
@@ -25,11 +25,11 @@ export default function CoherentRamanMicroscopyPage() {
   const axialRes = 2 * 1.33 * pumpWavelength / (na * na);
 
   // Spectral resolution (Fourier-limited)
-  const spectralRes = 0.44 * (pumpWavelength * 1e-3) ** 2 / (pulseWidth * 1e-3); // cm⁻¹
+  const spectralRes = 0.441 / (2.998e10 * pulseWidth * 1e-12); // cm⁻¹ (Gaussian TL bandwidth)
 
   const snrChart = useMemo(() => {
     const shifts = Array.from({ length: 100 }, (_, i) => 500 + i * 50);
-    const stokesLams = shifts.map(s => 1 / (1 / (pumpWavelength * 1e-3) - s / 1e7) * 1e3);
+    const stokesLams = shifts.map(s => 1 / (1 / pumpWavelength - s / 1e7));
     return [
       { x: shifts, y: shifts.map(() => Math.sqrt(pumpPower * stokesPower) * 0.1), type: "scatter", mode: "lines", name: "CARS Signal", line: { color: "#34d399" } },
       { x: shifts, y: shifts.map(s => s * spectralRes * 0.001), type: "scatter", mode: "lines", name: "Non-resonant BG", line: { color: "#f87171", dash: "dash" } },
@@ -40,7 +40,7 @@ export default function CoherentRamanMicroscopyPage() {
   const wavelengthChart = useMemo(() => {
     const shifts = Array.from({ length: 100 }, (_, i) => 500 + i * 50);
     return [
-      { x: shifts, y: shifts.map(s => 1 / (1 / (pumpWavelength * 1e-3) - s / 1e7) * 1e3), type: "scatter", mode: "lines", name: "Stokes λ", line: { color: "#60a5fa" } },
+      { x: shifts, y: shifts.map(s => 1 / (1 / pumpWavelength - s / 1e7)), type: "scatter", mode: "lines", name: "Stokes λ", line: { color: "#60a5fa" } },
       { x: [ramanShift], y: [stokesWavelength], type: "scatter", mode: "markers", name: "Current", marker: { color: "#f87171", size: 12 } },
     ];
   }, [pumpWavelength, ramanShift, stokesWavelength]);
@@ -85,7 +85,7 @@ export default function CoherentRamanMicroscopyPage() {
         <div className="space-y-2 text-gray-300 text-sm font-mono">
           <p>1/λ_Stokes = 1/λ_Pump - Δν̃/10⁷  (Δν̃ in cm⁻¹)</p>
           <p>E_beat = E_pump - E_Stokes (Raman shift energy)</p>
-          <p>δν̃_spectral = 0.44λ²/(c×τ) (Fourier-limited bandwidth)</p>
+          <p>δν̃_spectral = 0.44/(c×τ) (Fourier-limited bandwidth in cm⁻¹)</p>
           <p>Δx_lateral = 0.61λ_Pump/NA</p>
           <p>Δz_axial = 2nλ_Pump/NA²</p>
           <p>I_CARS ∝ |χ_NR + Σ χ_R/(Ω-ω_i+iΓ_i)|²</p>

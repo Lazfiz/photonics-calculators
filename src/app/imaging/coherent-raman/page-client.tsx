@@ -18,7 +18,7 @@ export default function CoherentRamanPage() {
   const results = useMemo(() => {
     const deltaNu = wavenumber; // cm⁻¹
     const lambdaPump_m = pumpWl * 1e-9;
-    const lambdaStokes_m = 1e-2 / (1e-2 / lambdaPump_m + deltaNu * 100); // convert cm⁻¹ to m⁻¹
+    const lambdaStokes_m = 1 / (1 / lambdaPump_m - deltaNu * 100); // ν̃_S = ν̃_P - Δν̃ (all m⁻¹)
     const stokesWl = lambdaStokes_m * 1e9;
     const freqDiff_THz = deltaNu * 2.998e10 / 1e12; // THz
 
@@ -46,15 +46,14 @@ export default function CoherentRamanPage() {
     const center = wavenumber;
     for (let w = center - 500; w <= center + 500; w += 5) {
       wn.push(w);
-      // Lorentzian Raman line
-      const gamma = 15; // linewidth cm⁻¹
-      const lorentz = gamma * gamma / ((w - center) ** 2 + gamma * gamma);
-      // CARS: squared amplitude (interferes with non-resonant background)
+      // Lorentzian Raman line — complex susceptibility for CARS lineshape
       const chiNR = 0.3;
-      const chiR = lorentz;
-      cars.push(Math.abs(chiNR + chiR) ** 2);
+      const chiR_real = -(w - center) * gamma / ((w - center) ** 2 + gamma * gamma);
+      const chiR_imag = gamma * gamma / ((w - center) ** 2 + gamma * gamma);
+      cars.push((chiNR + chiR_real) ** 2 + chiR_imag ** 2);
       // SRS: purely imaginary part (dispersive)
-      srs.push(lorentz);
+      const gamma = 15; // linewidth cm⁻¹
+      srs.push(gamma * gamma / ((w - center) ** 2 + gamma * gamma));
     }
     return [
       { x: wn, y: cars.map(v => v / Math.max(...cars)), name: "CARS spectrum", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },

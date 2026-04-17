@@ -19,20 +19,16 @@ export default function ComputationalImagingPage() {
     const abbe = lambda_um / (2 * na);
     const snrSingle = photonCount / Math.sqrt(photonCount + bgNoise + readNoise * readNoise);
     const snrMulti = snrSingle * Math.sqrt(numViews);
-    const theoreticalLimit = rayleigh / Math.sqrt(numViews);
-    const fourierLimit = 1 / (2 * numViews);
     const noiseEquivalent = (bgNoise + readNoise * readNoise) / photonCount;
 
     const views: number[] = [];
     const snrVals: number[] = [];
-    const resVals: number[] = [];
     for (let n = 1; n <= 100; n += 1) {
       views.push(n);
       snrVals.push(snrSingle * Math.sqrt(n));
-      resVals.push((rayleigh / Math.sqrt(n)) * 1000);
     }
 
-    return { rayleigh, abbe, snrSingle, snrMulti, theoreticalLimit, noiseEquivalent, views, snrVals, resVals };
+    return { rayleigh, abbe, snrSingle, snrMulti, noiseEquivalent, views, snrVals };
   }, [na, wavelength, numViews, photonCount, bgNoise, readNoise]);
 
   const plotData = useMemo(() => [
@@ -101,10 +97,6 @@ export default function ComputationalImagingPage() {
               <div className="text-xl font-mono text-purple-400">{results.snrMulti.toFixed(2)}</div>
             </div>
             <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">Theoretical Res. Limit</div>
-              <div className="text-xl font-mono text-red-400">{(results.theoreticalLimit * 1000).toFixed(1)} nm</div>
-            </div>
-            <div className="bg-gray-800 rounded p-3">
               <div className="text-xs text-gray-400">Noise Equivalent</div>
               <div className="text-xl font-mono text-gray-300">{results.noiseEquivalent.toFixed(4)}</div>
             </div>
@@ -123,7 +115,6 @@ export default function ComputationalImagingPage() {
           <p>d_Abbe = λ / (2·NA)</p>
           <p>SNR_single = S / √(S + B + σ²_read)</p>
           <p>SNR_multi = SNR_single · √N</p>
-          <p>r_theoretical = r_Rayleigh / √N</p>
         </div>
         <div className="text-sm text-gray-400 mt-4 space-y-1">
           <p>Computational imaging combines multiple measurements (views, angles, illumination patterns) with algorithms to exceed diffraction limits or reduce noise. The √N SNR improvement assumes uncorrelated measurements and optimal fusion.</p>
