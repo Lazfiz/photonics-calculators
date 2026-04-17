@@ -23,7 +23,7 @@ export default function DigitalHolographyPage() {
   const fresnelNumber = (objectSizeUm * 1e-6) ** 2 / (lambda * z);
   const maxAngle = Math.asin(Math.min(numericalAperture / refractiveIndex, 1));
   const lateralRes = lambdaUm / (2 * numericalAperture);
-  const axialRes = lambdaUm / (numericalAperture ** 2);
+  const axialRes = 2 * refractiveIndex * lambdaUm / (numericalAperture ** 2);
   const fieldOfViewX = sensorWidth * pixelSizeUm;
   const fieldOfViewY = sensorHeight * pixelSizeUm;
   const samplingCriterion = lambdaUm / (2 * numericalAperture);
@@ -31,9 +31,9 @@ export default function DigitalHolographyPage() {
   const reconstructionPixelPitch = (lambda * z) / (sensorWidth * dx) * 1e6; // µm
 
   const transferFunction = useMemo(() => {
-    const freqs = Array.from({ length: 200 }, (_, i) => i * 0.5);
     const cutoffFreq = numericalAperture / lambdaUm;
-    const tf = freqs.map(f => f <= cutoffFreq ? 1.0 : Math.exp(-(((f - cutoffFreq) / (cutoffFreq * 0.1)) ** 2)));
+    const freqs = Array.from({ length: 200 }, (_, i) => i * (cutoffFreq * 1.5 / 200));
+    const tf = freqs.map(f => f <= cutoffFreq ? 1.0 : 0.0);
     return [{ x: freqs, y: tf, type: "scatter", mode: "lines" as const, name: "CTF", line: { color: "#60a5fa", width: 2 } }];
   }, [numericalAperture, lambdaUm]);
 
