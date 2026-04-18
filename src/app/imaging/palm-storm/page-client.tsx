@@ -19,10 +19,10 @@ export default function PALMSTORMPage() {
   // Localization precision (σ) as fraction of diffraction limit
   const diffractionLimit = 0.61 * wavelength / na;
   const localizationFactor = localizationPrecision / diffractionLimit;
-  // Effective resolution (approximation: depends on labeling density & precision)
-  const effectiveRes = localizationPrecision > 0 && labelDensity > 0
-    ? localizationPrecision + 100 / labelDensity
-    : localizationPrecision;
+  // Effective resolution: combine localization precision (σ) and Nyquist-limited sampling
+  // Nyquist: structural resolution = 2 × mean spacing = 200/labelDensity nm
+  const nyquistRes = 200 / labelDensity;
+  const effectiveRes = Math.sqrt(localizationPrecision * localizationPrecision + nyquistRes * nyquistRes);
   // Minimum label density for Nyquist sampling (labels per 100nm)
   const minLabelDensity = 200 / diffractionLimit;
   // Total acquisition time at 100fps
@@ -31,7 +31,7 @@ export default function PALMSTORMPage() {
   const chartData = useMemo(() => {
     const densities = Array.from({ length: 80 }, (_, i) => 1 + i * 0.5);
     return [
-      { x: densities, y: densities.map(d => localizationPrecision + 100 / d), type: "scatter", mode: "lines", name: "Effective Resolution", line: { color: "#34d399" } },
+      { x: densities, y: densities.map(d => Math.sqrt(localizationPrecision * localizationPrecision + (200 / d) * (200 / d))), type: "scatter", mode: "lines", name: "Effective Resolution", line: { color: "#34d399" } },
       { x: [labelDensity], y: [effectiveRes], type: "scatter", mode: "markers", name: "Current", marker: { color: "#f87171", size: 12 } },
       { x: [densities[0], densities[densities.length - 1]], y: [localizationPrecision, localizationPrecision], type: "scatter", mode: "lines", name: "Precision Limit", line: { color: "#fbbf24", dash: "dash" } },
     ];
