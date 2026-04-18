@@ -20,7 +20,7 @@ export default function HyperspectralMicroscopyPage() {
   const bandwidthNm = (endNm - startNm) / spectralBands;
   const dataSizeMb = (spatialPixels * spatialPixels * spectralBands * bitDepth * numFrames) / (8 * 1024 * 1024);
   const compressedMb = dataSizeMb / compression;
-  const acquisitionTime = numFrames * exposureMs / 1000;
+  const acquisitionTime = numFrames * spectralBands * exposureMs / 1000;
   const wavelengthStep = (endNm - startNm) / spectralBands;
 
   // Simulate 3 endmember spectra for the hyperspectral cube
@@ -60,7 +60,7 @@ export default function HyperspectralMicroscopyPage() {
 
   const sizeData = useMemo(() => {
     const bands = Array.from({ length: 30 }, (_, i) => 8 + i * 8);
-    const sizes = bands.map(b => (spatialPixels * spatialPixels * b * bitDepth) / (8 * 1024 * 1024));
+    const sizes = bands.map(b => (spatialPixels * spatialPixels * b * bitDepth * numFrames) / (8 * 1024 * 1024));
     return [{
       x: bands, y: sizes, type: "scatter", mode: "lines" as const,
       name: "Data Cube Size", line: { color: "#a78bfa", width: 2 },
@@ -140,7 +140,7 @@ export default function HyperspectralMicroscopyPage() {
         <div className="space-y-2 text-sm text-gray-300 font-mono">
           <p><span className="text-blue-400">Data cube size:</span> V = N_x × N_y × N_λ × B × N_frames / 8</p>
           <p><span className="text-blue-400">Bandwidth:</span> Δλ = (λ_max − λ_min) / N_bands</p>
-          <p><span className="text-blue-400">Acquisition time:</span> T = N_frames × t_exposure</p>
+          <p><span className="text-blue-400">Acquisition time:</span> T = N_frames × N_bands × t_exposure</p>
           <p><span className="text-blue-400">Mixed signal:</span> S(λ) = Σᵢ aᵢ · Eᵢ(λ) + noise</p>
           <p><span className="text-blue-400">SNR:</span> SNR(dB) = 20 · log₁₀(Signal / Noise)</p>
         </div>
