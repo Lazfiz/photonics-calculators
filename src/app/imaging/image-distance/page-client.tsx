@@ -31,7 +31,7 @@ export default function ImageDistancePage() {
       },
       {
         x: validObjs,
-        y: validObjs.map(ob => Math.abs(ob / (ob - f))),
+        y: validObjs.map(ob => Math.abs(f / (ob - f))),
         type: "scatter" as const, mode: "lines" as const,
         name: "|Magnification|",
         line: { color: "#34d399", width: 2, dash: "dash" },
