@@ -11,17 +11,17 @@ export default function NAFNumberPage() {
 
   const chartData = useMemo(() => {
     const fNums = Array.from({ length: 200 }, (_, i) => 1 + i * 20 / 200);
-    const na = fNums.map(f => 1 / (2 * f));
-    const halfAngle = fNums.map(f => Math.atan(1 / (2 * f)) * 180 / Math.PI);
+    const na = fNums.map(f => 1 / Math.sqrt(1 + 4 * f * f));
+    const halfAngle = fNums.map(f => Math.asin(1 / Math.sqrt(1 + 4 * f * f)) * 180 / Math.PI);
     return [
       { x: fNums, y: na, type: "scatter" as const, mode: "lines" as const, name: "NA", line: { color: "#60a5fa" } },
       { x: fNums, y: halfAngle, type: "scatter" as const, mode: "lines" as const, name: "Half-angle (°)", line: { color: "#f87171" } },
     ];
   }, [fNumber]);
 
-  const na = 1 / (2 * fNumber);
-  const halfAngle = Math.atan(1 / (2 * fNumber)) * 180 / Math.PI;
-  const airyDiameter = 1.22 * 0.55e-6 * fNumber * 1e6; // μm at 550nm
+  const na = 1 / Math.sqrt(1 + 4 * fNumber * fNumber); // NA = sin(arctan(1/(2f/#)))
+  const halfAngle = Math.asin(Math.min(na, 1)) * 180 / Math.PI;
+  const airyDiameter = 2.44 * 0.55e-6 * fNumber * 1e6; // μm diameter at 550nm
 
   return (
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="NA ↔ f/# Conversion" description="NA = 1/(2·f/#) for objects at infinity. Relates numerical aperture to f-number.">
