@@ -29,7 +29,7 @@ export default function RegistrationPage() {
 
   const baseAccuracy = transformation === "rigid" ? 0.02 : transformation === "affine" ? 0.05 : 0.08;
   const rmseNm = displacementRms * baseAccuracy + noiseLevel * 2;
-  const cc = Math.max(0.85, 1 - (noiseLevel / 200) - (rmseNm / 10000));
+  const cc = Math.min(1, Math.max(-1, 1 - (noiseLevel / 200) - (rmseNm / 10000)));
 
   // Transformation matrix
   const transformMatrix = useMemo(() => {
@@ -45,6 +45,8 @@ export default function RegistrationPage() {
               [(s * scaleFactor).toFixed(4), ((s * sh + c) * scaleFactor).toFixed(4), translationY.toFixed(1)],
               ["0", "0", "1"]];
     } else {
+      // Elastic: position-dependent, cannot be represented by single matrix
+      // Shows linear initialization only; actual elastic uses x' = x + u(x)
       return [[(c * scaleFactor).toFixed(4), ((c * sh - s) * scaleFactor).toFixed(4), translationX.toFixed(1)],
               [(s * scaleFactor).toFixed(4), ((s * sh + c) * scaleFactor).toFixed(4), translationY.toFixed(1)],
               ["0", "0", "1"]];
@@ -78,7 +80,7 @@ export default function RegistrationPage() {
       x: noises,
       y: noises.map(n => {
         const base = t === "rigid" ? 0.99 : t === "affine" ? 0.97 : 0.94;
-        return Math.max(0.5, base - n * (t === "rigid" ? 0.003 : t === "affine" ? 0.005 : 0.008));
+        return Math.max(-1, base - n * (t === "rigid" ? 0.003 : t === "affine" ? 0.005 : 0.008));
       }),
       type: "scatter", mode: "lines" as const,
       name: t.charAt(0).toUpperCase() + t.slice(1),
