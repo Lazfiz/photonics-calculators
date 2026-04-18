@@ -23,7 +23,7 @@ export default function SpeckleImagingPage() {
   const rayleighRange = Math.PI * beamRad ** 2 / lambda;
   const reducedContrast = numAverages > 0 ? speckleContrast / Math.sqrt(numAverages) : 1;
   const roughnessWaves = surfaceRoughnessUm / lambdaUm;
-  const isFullyDeveloped = roughnessWaves > 1;
+  const isFullyDeveloped = roughnessWaves > 1 / (4 * Math.PI);
 
   const speckleSizeChart = useMemo(() => {
     const dists = Array.from({ length: 40 }, (_, i) => 50 + i * 25);
@@ -90,7 +90,7 @@ export default function SpeckleImagingPage() {
           <p>d_s = λz / D — Speckle size (objective)</p>
           <p>C = σ_I / ⟨I⟩ — Speckle contrast</p>
           <p>C_N = C / √N — Contrast after N averages</p>
-          <p>σ_h &gt; λ → fully developed speckle</p>
+          <p>σ_h &gt; λ/(4π) → fully developed speckle (σ_φ ≈ 1 rad)</p>
           <p>z_R = πw₀² / λ — Rayleigh range</p>
         </div>
       </div>
