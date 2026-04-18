@@ -46,8 +46,8 @@ export default function TwoPhotonPage() {
     const muTwo = 0.05;
     for (let z = 0; z <= 1000; z += 10) {
       depths.push(z);
-      onePhotonInt.push(Math.exp(-muOne * z));
-      twoPhotonInt.push(Math.exp(-muTwo * z));
+      onePhotonInt.push(Math.exp(-muOne * z / 1000));
+      twoPhotonInt.push(Math.exp(-2 * muTwo * z / 1000));
     }
     return [
       { x: depths, y: onePhotonInt, name: "1P Excitation", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
@@ -111,7 +111,7 @@ export default function TwoPhotonPage() {
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-        <h2 className="text-lg font-semibold mb-4">Excitation Intensity vs Tissue Depth</h2>
+        <h2 className="text-lg font-semibold mb-4">Signal vs Tissue Depth (1P linear, 2P quadratic)</h2>
         <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Depth (µm)", gridcolor: "#333" }, yaxis: { title: "Relative intensity", gridcolor: "#333" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
       </div>
     </CalculatorShell>
