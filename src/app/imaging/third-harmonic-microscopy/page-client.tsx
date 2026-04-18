@@ -38,13 +38,13 @@ export default function ThirdHarmonicMicroscopyPage() {
     return [
       { x: depths, y: depths.map(d => Math.exp(-40 * d / 1e4) ** 3), type: "scatter", mode: "lines", name: "THG Signal", line: { color: "#a78bfa" } },
       { x: depths, y: depths.map(d => Math.exp(-40 * d / 1e4) ** 2), type: "scatter", mode: "lines", name: "SHG (ref)", line: { color: "#34d399", dash: "dash" } },
-      { x: depths, y: depths.map(d => Math.exp(-40 * d / 1e4)), type: "scatter", mode: "lines", name: "2PEF (ref)", line: { color: "#60a5fa", dash: "dot" } },
+      { x: depths, y: depths.map(d => Math.exp(-40 * d / 1e4)), type: "scatter", mode: "lines", name: "1PEF (ref)", line: { color: "#60a5fa", dash: "dot" } },
     ];
   }, []);
 
   const intensityChart = useMemo(() => {
     const powers = Array.from({ length: 60 }, (_, i) => 5 + i * 5);
-    const baseI = peakPower / spotArea / 1e12;
+    const baseI = peakIntensity;
     return [
       { x: powers, y: powers.map(p => Math.pow(baseI * p / power, 3) * 1e-12), type: "scatter", mode: "lines", name: "THG ∝ I³", line: { color: "#a78bfa" } },
       { x: powers, y: powers.map(p => Math.pow(baseI * p / power, 2) * 1e-6), type: "scatter", mode: "lines", name: "SHG ∝ I²", line: { color: "#34d399", dash: "dash" } },
