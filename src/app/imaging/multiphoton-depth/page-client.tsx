@@ -19,10 +19,10 @@ export default function MultiphotonDepthPage() {
     const lam = wavelength * 1e-9;
     const lamEff = lam / 2;
     const lateralRes = 0.325 * lam / na * 1e9;
-    const axialRes = 0.88 * lam / (n - Math.sqrt(n * n - na * na)) * 1e6;
+    const axialRes = 0.532 * lam / (n - Math.sqrt(Math.max(0, n * n - na * na))) * 1e6;
     const pulseEnergy = (avgPower * 1e-3) / (repRate * 1e6) * 1e9;
     const peakPower = (pulseEnergy * 1e-9) / (pulseWidth * 1e-15) * 1e-3;
-    const beamWaist = 0.61 * lam / na * 1e6;
+    const beamWaist = 0.32 * lam / na * 1e6; // Gaussian beam waist w₀
     const rayleighRange = Math.PI * beamWaist * beamWaist * 1e-6 * n / lam;
     const attenuation = absorption + scattering;
     const depth1e2 = -Math.log(0.01) / (2 * attenuation) * 1000;
@@ -96,8 +96,8 @@ export default function MultiphotonDepthPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Depth at 1% signal</span><span className="font-mono text-red-400">{results.depth1e2.toFixed(0)} µm</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Depth at 0.1% signal</span><span className="font-mono text-orange-400">{results.depth1e3.toFixed(0)} µm</span></div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">
-            <p>Lateral: 0.325λ/NA | Axial: 0.88λ/(n - √(n²-NA²))</p>
-            <p>Signal ∝ exp(-2µ·d) | Depth = -ln(threshold)/(2µ)
+            <p>Lateral: 0.325λ/NA | Axial: 0.532λ/(n - √(n²-NA²))</p>
+            <p>Signal ∝ exp(-2µ·d) | Depth = -ln(threshold)/(2µ)</p>
           </div>
         </div>
       </div>
