@@ -12,29 +12,29 @@ export default function LightSheetThicknessPage() {
   const [sheetLength, setSheetLength] = useURLState("sheetLength", 100);
   const [gaussianBeamWaist, setGaussianBeamWaist] = useURLState("gaussianBeamWaist", 0);
 
-  // If gaussianBeamWaist is 0, compute from NA
-  const beamWaist = gaussianBeamWaist > 0 ? gaussianBeamWaist : wavelength / (Math.PI * na);
-  // Rayleigh range
-  const zR = Math.PI * beamWaist * beamWaist / wavelength;
-  // Sheet thickness (FWHM of Gaussian ~ 2.355 × waist for intensity, but commonly 2× waist)
-  const sheetThickness = 2 * beamWaist * 1000; // µm
-  const rayleighRangeUm = zR * 1000;
+  // If gaussianBeamWaist is 0, compute from NA (all internal units in µm)
+  const beamWaistUm = gaussianBeamWaist > 0 ? gaussianBeamWaist : (wavelength / 1000) / (Math.PI * na);
+  // Rayleigh range: z_R = π·w₀²/λ (all µm)
+  const zRUm = Math.PI * beamWaistUm * beamWaistUm / (wavelength / 1000);
+  // Sheet thickness (2× beam waist)
+  const sheetThicknessUmUm = 2 * beamWaistUm;
+  const rayleighRangeUm = zRUm;
 
   const chartData = useMemo(() => {
     const nas = Array.from({ length: 80 }, (_, i) => 0.01 + i * 0.002);
     return [
-      { x: nas, y: nas.map(n => 2 * (wavelength / (Math.PI * n)) * 1000), type: "scatter", mode: "lines", name: "Sheet Thickness", line: { color: "#60a5fa" } },
-      { x: nas, y: nas.map(n => (Math.PI * Math.pow(wavelength / (Math.PI * n), 2) / wavelength) * 1000), type: "scatter", mode: "lines", name: "Rayleigh Range", line: { color: "#fbbf24", dash: "dash" } },
-      { x: [na], y: [sheetThickness], type: "scatter", mode: "markers", name: "Current Thickness", marker: { color: "#34d399", size: 12 } },
+      { x: nas, y: nas.map(n => 2 * ((wavelength / 1000) / (Math.PI * n))), type: "scatter", mode: "lines", name: "Sheet Thickness", line: { color: "#60a5fa" } },
+      { x: nas, y: nas.map(n => { const w = (wavelength / 1000) / (Math.PI * n); return Math.PI * w * w / (wavelength / 1000); }), type: "scatter", mode: "lines", name: "Rayleigh Range", line: { color: "#fbbf24", dash: "dash" } },
+      { x: [na], y: [sheetThicknessUmUm], type: "scatter", mode: "markers", name: "Current Thickness", marker: { color: "#34d399", size: 12 } },
     ];
-  }, [wavelength, na, sheetThickness]);
+  }, [wavelength, na, sheetThicknessUmUm]);
 
   const profileData = useMemo(() => {
     const z = Array.from({ length: 200 }, (_, i) => (i - 100) * sheetLength / 100);
     return [
-      { x: z, y: z.map(zz => Math.exp(-2 * zz * zz / (zR * zR))), type: "scatter", mode: "lines", name: "Intensity Profile", line: { color: "#a78bfa" } },
+      { x: z, y: z.map(zz => 1 / (1 + (zz / zRUm) ** 2)), type: "scatter", mode: "lines", name: "On-axis Intensity I(z)/I₀", line: { color: "#a78bfa" } },
     ];
-  }, [sheetLength, zR]);
+  }, [sheetLength, zRUm]);
 
   return (
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Light Sheet Thickness Calculator" description="Calculate the thickness and propagation characteristics of a Gaussian light sheet for light-sheet fluorescence microscopy (LSFM).">
@@ -49,11 +49,11 @@ export default function LightSheetThicknessPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Beam Waist (w₀)</p>
-          <p className="text-2xl font-bold text-blue-400">{(beamWaist * 1000).toFixed(2)} µm</p>
+          <p className="text-2xl font-bold text-blue-400">{(beamWaistUm).toFixed(2)} µm</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Sheet Thickness (2w₀)</p>
-          <p className="text-2xl font-bold text-green-400">{sheetThickness.toFixed(2)} µm</p>
+          <p className="text-2xl font-bold text-green-400">{sheetThicknessUm.toFixed(2)} µm</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Rayleigh Range (z<sub>R</sub>)</p>
@@ -61,7 +61,7 @@ export default function LightSheetThicknessPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Aspect Ratio</p>
-          <p className="text-2xl font-bold text-purple-400">{(2 * zR / beamWaist).toFixed(1)}:1</p>
+          <p className="text-2xl font-bold text-purple-400">{(2 * zRUm / beamWaistUm).toFixed(1)}:1</p>
         </div>
       </div>
 
