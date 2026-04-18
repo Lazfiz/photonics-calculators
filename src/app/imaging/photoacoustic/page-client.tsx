@@ -17,7 +17,7 @@ export default function PhotoacousticPage() {
   const [detectorFreq, setDetectorFreq] = useURLState("detectorFreq", 5); // MHz
 
   const results = useMemo(() => {
-    const reducedScattering = scatteringCoeff * (1 - 0.1); // ~g=0.9
+    const reducedScattering = scatteringCoeff * (1 - 0.9); // ~g=0.9 → µs' = 0.1·µs
     const mfp = 1 / (absorptionCoeff + scatteringCoeff); // cm
     const transportMfp = 1 / (absorptionCoeff + reducedScattering); // cm
     // Effective attenuation for diffuse light: µ_eff = √(3µa(µa + µs'))
@@ -46,7 +46,7 @@ export default function PhotoacousticPage() {
     const acousticDepth = [];
     for (let mua = 0.1; mua <= 30; mua += 0.2) {
       muaRange.push(mua);
-      const muEff = Math.sqrt(3 * mua * (mua + scatteringCoeff * 0.9));
+      const muEff = Math.sqrt(3 * mua * (mua + scatteringCoeff * 0.1));
       opticalDepth.push(10 / muEff); // mm
       const acAtt = 0.5 * detectorFreq;
       acousticDepth.push(20 / acAtt * 10); // mm
