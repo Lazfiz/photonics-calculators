@@ -15,12 +15,11 @@ export default function LightFieldPage() {
   const results = useMemo(() => {
     const lambda_um = wavelength * 1e-3;
     const resLateral = 0.61 * lambda_um / na;
-    const resAngular = lambda_um / (2 * na * microlensPitch);
-    const angularRange = na / magnification;
-    const rayPixels = microlensPitch / (pixelSize * magnification);
-    const depthOfField = lambda_um / (na * na);
-    const syntheticApertureNA = na * Math.sqrt(rayPixels);
-    const synthRes = 0.61 * lambda_um / syntheticApertureNA;
+    const rayPixels = microlensPitch / pixelSize; // MLA pitch / sensor pixel pitch (image space)
+    const angularRange = Math.asin(Math.min(na, 1)); // objective collection cone half-angle
+    const resAngular = angularRange / rayPixels; // angular sampling per pixel
+    const depthOfField = lambda_um / (na * na); // simplified diffraction DOF
+    const subApertureNA = na / rayPixels; // NA per sub-aperture view
 
     const angles: number[] = [];
     const psfSizes: number[] = [];
@@ -32,7 +31,7 @@ export default function LightFieldPage() {
       psfSizes.push(blur);
     }
 
-    return { resLateral, resAngular, angularRange, rayPixels, depthOfField, syntheticApertureNA, synthRes, angles, anglesDeg, psfSizes };
+    return { resLateral, resAngular, angularRange, rayPixels, depthOfField, subApertureNA, angles, anglesDeg, psfSizes };
   }, [na, magnification, pixelSize, microlensPitch, wavelength]);
 
   const plotData = useMemo(() => [
@@ -97,12 +96,8 @@ export default function LightFieldPage() {
               <div className="text-xl font-mono text-yellow-400">{results.depthOfField.toFixed(2)} µm</div>
             </div>
             <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">Synthetic Aperture NA</div>
-              <div className="text-xl font-mono text-purple-400">{results.syntheticApertureNA.toFixed(3)}</div>
-            </div>
-            <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">Synthetic Resolution</div>
-              <div className="text-xl font-mono text-purple-400">{(results.synthRes * 1000).toFixed(1)} nm</div>
+              <div className="text-xs text-gray-400">Sub-aperture NA</div>
+              <div className="text-xl font-mono text-purple-400">{results.subApertureNA.toFixed(3)}</div>
             </div>
           </div>
         </div>
@@ -116,11 +111,10 @@ export default function LightFieldPage() {
         <h3 className="font-semibold">Key Formulas</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
           <p>r_lateral = 0.61 λ / NA</p>
-          <p>Δθ = λ / (2 · NA · p_ML)</p>
-          <p>θ_max = NA / M</p>
-          <p>N_rays = p_ML / (p_pixel · M)</p>
-          <p>DOF = λ / NA²</p>
-          <p>NA_synth = NA · √N_rays</p>
+          <p>Δθ = θ_max / N_rays</p>
+          <p>θ_max = arcsin(NA)</p>
+          <p>N_rays = p_ML / p_pixel</p>
+          <p>NA_sub = NA / N_rays</p>
         </div>
         <div className="text-sm text-gray-400 mt-4 space-y-1">
           <p>Light field microscopy captures both spatial and angular information by placing a microlens array at the native image plane. Each microlens samples a different spatial position while the pixels behind it encode angular rays.</p>
