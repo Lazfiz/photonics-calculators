@@ -20,9 +20,9 @@ export default function ThirdHarmonicGenerationPage() {
     const thgNm = thgWavelength * 1e9;
     const lateralRes = 0.325 * lam / na * 1e9;
     const pulseEnergy = (avgPower * 1e-3) / (repRate * 1e6) * 1e9;
-    const w0 = 0.325 * lam / na;
-    const peakIntensity = (pulseEnergy * 1e-9) / (Math.PI * w0 * w0 * pulseWidth * 1e-15);
-    const thgEfficiency = chi3 * chi3 * (peakIntensity * 1e-4) ** 3 * 1e-18;
+    const w0 = n * lam / (Math.PI * na); // Gaussian beam waist in medium
+    const peakIntensity = 2 * (pulseEnergy * 1e-9) / (Math.PI * w0 * w0 * pulseWidth * 1e-15); // ×2 for Gaussian peak
+    const thgEfficiency = chi3 * chi3 * Math.pow(peakIntensity * 1e-4, 2) * 1e-30; // η ∝ χ₃²·I²
     const fwdBwdRatio = 3;
     const spectralBandwidth = 0.44 / (pulseWidth * 1e-15) * 1e-12;
     const gouyPhaseShift = 3 * Math.PI;
