@@ -19,8 +19,8 @@ export default function CosmicRaysPage() {
   const expectedHits = fluxPerSec * sensorArea * exposureTime;
   const totalDeposited = expectedHits * energyDeposit * trackLength;
   const pixelArea = pixelSize * pixelSize;
-  const pixelFlux = expectedHits * pixelArea * 1e-8 / sensorArea;
-  const cleanFrames = Math.exp(-pixelFlux) * 100;
+  const pixelFlux = expectedHits * (pixelPitch + trackLength) * pixelPitch * 1e-8 / sensorArea;
+  const cleanPixels = Math.exp(-pixelFlux) * 100;
 
   const lgamma = (n: number) => { if (n <= 1) return 0; let s = 0; for (let i = 2; i <= n; i++) s += Math.log(i); return s; };
 
@@ -53,7 +53,7 @@ export default function CosmicRaysPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Expected Hits/Frame" value={expectedHits.toFixed(2)} tone="blue" />
         <ResultCard label="e⁻ Deposited/Hit" value={(energyDeposit * trackLength).toExponential(2)} tone="red" />
-        <ResultCard label="Clean Pixel Frames" value={`${cleanFrames.toFixed(2)}%`} tone="green" />
+        <ResultCard label="Clean Pixels/Frame" value={`${cleanPixels.toFixed(2)}%`} tone="green" />
         <ResultCard label={`Hits in ${numFrames} frames`} value={`~${(expectedHits * numFrames).toFixed(0)}`} tone="yellow" />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>Flux at sea level: ~1 hit/cm²/min</p><p>N_hits = Φ · A · t  (Poisson)</p><p>E_deposited ≈ 100 e⁻/μm in Si (MIP: 390 eV/μm ÷ 3.6 eV/pair)</p></div>
