@@ -19,13 +19,14 @@ export default function OpticalCoherencePage() {
   const wavelengthM = wavelengthNm * 1e-9;
   const bandwidthM = bandwidthNm * 1e-9;
   const coherenceLengthCalc = (2 * Math.LN2 / Math.PI) * (wavelengthM ** 2) / bandwidthM * 1e3; // mm
-  const coherenceTime = coherenceLengthCalc * 1e-3 / (3e8 / refractiveIndex) * 1e15; // fs
+  const coherenceTime = coherenceLengthCalc * 1e-3 / 3e8 * 1e15; // fs, τ_c = l_c / c
   const axialResolution = (2 * Math.LN2 / Math.PI) * (wavelengthM ** 2) / bandwidthM * 1e6 / (2 * refractiveIndex); // µm
   const lateralResolution = (0.37 * wavelengthM) / 0.05 * 1e6; // µm for NA=0.05 typical
   const opticalPathDiff = 2 * refractiveIndex * 0.5 * 1e-3; // for 0.5mm sample
 
-  const backscatteredPower = sourcePowerMw * 1e-3 * couplingEfficiency * sampleReflectivity * 2; // W
-  const snrEstimate = 10 * Math.log10(backscatteredPower * detectorResponsivity / 1e-9); // dB vs 1nW noise floor
+  const backscatteredPower = sourcePowerMw * 1e-3 * couplingEfficiency * sampleReflectivity; // W
+  const signalCurrent = 2 * backscatteredPower * detectorResponsivity; // A, heterodyne gain
+  const snrEstimate = 10 * Math.log10(signalCurrent / 1e-9); // dB vs 1nA noise floor
 
   const coherenceLengthChart = useMemo(() => {
     const bw = Array.from({ length: 60 }, (_, i) => 10 + i * 5);
@@ -89,7 +90,7 @@ export default function OpticalCoherencePage() {
         <div className="space-y-2 text-gray-300 text-sm font-mono">
           <p>l_c = (2 ln 2 / π) · λ₀² / Δλ</p>
           <p>Δz_axial = l_c / 2n = (ln 2 / πn) · λ₀² / Δλ</p>
-          <p>τ_c = l_c · n / c</p>
+          <p>τ_c = l_c / c</p>
           <p>SNR ∝ P_s · R · η · ρ / P_noise</p>
         </div>
       </div>
