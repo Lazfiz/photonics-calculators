@@ -38,9 +38,9 @@ export default function AfterpulsingPage() {
     const dt = Array.from({ length: 200 }, (_, i) => 1 + i * 200 / 200);
     const apProb = dt.map(d => trapEfficiency * Math.exp(-d / trapLifetime));
     const apProb2 = dt.map(d => {
-      let total = 0;
-      multiTrap.forEach(t => { total += t.eta * Math.exp(-d / t.tau); });
-      return total;
+      let survive = 1;
+      multiTrap.forEach(t => { survive *= (1 - t.eta * Math.exp(-d / t.tau)); });
+      return 1 - survive;
     });
     return [
       { x: dt, y: apProb.map(v => v * 100), type: "scatter" as const, mode: "lines" as const, name: "Single Trap", line: { color: "#60a5fa", width: 2 } },
