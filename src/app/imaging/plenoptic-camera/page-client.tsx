@@ -19,19 +19,23 @@ export default function PlenopticCameraPage() {
 
   const lambdaUm = wavelengthNm * 1e-3;
   const fNumber = 1 / (2 * mainLensNA);
-  const angularRes = Math.atan(pixelPitchUm / (microLensFocalMm * 1000)) * 180 / Math.PI * 60; // arcmin
+  // Derive pixelsPerMicroLens from physical pitches for consistency
+  const pixelsPerMicroLensCalc = Math.max(3, Math.round(microLensPitchUm / pixelPitchUm));
+  const pixelsPerMicroLens = pixelsPerMicroLensCalc;
+  const angularRes = Math.atan(pixelPitchUm / (microLensFocalMm * 1000)) * 180 / Math.PI * 60;
   const spatialRes = microLensPitchUm;
   const numMicroLensX = Math.floor(sensorWidthPx / pixelsPerMicroLens);
   const numMicroLensY = Math.floor(sensorHeightPx / pixelsPerMicroLens);
   const totalViews = pixelsPerMicroLens ** 2;
-  const depthRange = 2 * mainLensFocalMm * microLensFocalMm / (microLensPitchUm / 1000); // mm (approx)
+  // Depth range scales with views and f-number: Δz ∝ N_views × p_µ × f/#
+  const depthRange = pixelsPerMicroLens * (microLensPitchUm / 1000) * fNumber; // mm
   const lightFieldSize = numMicroLensX * numMicroLensY * totalViews;
   const fileMBytes = lightFieldSize * 2 / 1e6;
   const refocusedRange = (microLensPitchUm * pixelsPerMicroLens / 2 / 1000) * mainLensFocalMm / microLensFocalMm; // mm approx
 
   const depthVsPitch = useMemo(() => {
     const pitches = Array.from({ length: 30 }, (_, i) => 50 + i * 10);
-    const depths = pitches.map(p => 2 * mainLensFocalMm * (microLensFocalMm) / (p / 1000));
+    const depths = pitches.map(p => (microLensPitchUm / p) * (microLensPitchUm / 1000) * fNumber);
     return [
       { x: pitches, y: depths, type: "scatter", mode: "lines" as const, name: "Depth Range", line: { color: "#60a5fa", width: 2 } },
       { x: [microLensPitchUm], y: [depthRange], type: "scatter", mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
@@ -53,7 +57,7 @@ export default function PlenopticCameraPage() {
     const spatial = pml.map(() => spatialRes);
     const angular = pml.map(p => Math.atan(pixelPitchUm / (microLensFocalMm * 1000)) * 180 / Math.PI * 60 / p * p);
     return [
-      { x: pml, y: pml.map(p => microLensPitchUm / p), type: "bar" as const, name: "Eff. Spatial (µm)", marker: { color: "#a78bfa" } },
+      { x: pml, y: pml.map(p => p * pixelPitchUm), type: "bar" as const, name: "Eff. Spatial (µm)", marker: { color: "#a78bfa" } },
     ];
   }, [microLensPitchUm, pixelPitchUm, microLensFocalMm]);
 
@@ -85,7 +89,11 @@ export default function PlenopticCameraPage() {
         <ValidatedNumberInput label="Main Lens NA" value={mainLensNA} onChange={setMainLensNA} min={0.05} max={0.5} step="0.01" />
         <ValidatedNumberInput label="Micro-lens f (mm)" value={microLensFocalMm} onChange={setMicroLensFocalMm} min={0.1} max={5} step="0.1" />
         <ValidatedNumberInput label="Micro-lens Pitch (µm)" value={microLensPitchUm} onChange={setMicroLensPitchUm} min={50} max={500} step="10" />
-        <ValidatedNumberInput label="Pixels per Micro-lens" value={pixelsPerMicroLens} onChange={setPixelsPerMicroLens} min={3} max={30} step="1" />
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">Pixels per Micro-lens</p>
+          <p className="text-2xl font-bold text-yellow-400">{pixelsPerMicroLens}</p>
+          <p className="text-xs text-gray-500">{microLensPitchUm}µm / {pixelPitchUm}µm</p>
+        </div>
         <ValidatedNumberInput label="Pixel Pitch (µm)" value={pixelPitchUm} onChange={setPixelPitchUm} min={1} max={15} step="0.5" />
       </div>
 
