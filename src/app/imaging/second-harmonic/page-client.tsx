@@ -19,13 +19,16 @@ export default function SecondHarmonicPage() {
     const peakPower = pulseEnergy * 1e-9 / (pulseWidth * 1e-15); // W
     const w0 = 0.32 * wavelength * 1e-9 / na; // Gaussian beam waist (m)
     const intensity = 2 * peakPower / (Math.PI * w0 * w0); // W/m²
-    const dn = 0.01; // approximate dispersion for biological tissue
+    const dn = 0.01 * (n / 1.33); // approximate dispersion, scales with n
     const coherenceLength = shgWavelength * 1e-9 / (2 * dn);
     const coherenceLengthSafe = isFinite(coherenceLength) && coherenceLength > 0 ? coherenceLength : 5e-6;
-    // Simplified SHG power estimate with phase-matching term
+    // SHG power: P_2ω ∝ ω²d²_eff P²_ω L²/(ε₀n³c³w0²) sinc²(ΔkL/2)
+    // Prefactor calibrated to give ~nW for typical microscopy parameters
+    const omega = 2 * Math.PI * 3e8 / (wavelength * 1e-9);
+    const prefactor = 4e-24 * Math.pow(omega / (2 * Math.PI * 3e8 / (800e-9)), 2) / Math.pow(n, 3);
     const phaseArg = Math.PI * (thickness * 1e-6) / (2 * coherenceLengthSafe);
     const sinc = Math.abs(phaseArg) > 1e-10 ? Math.sin(phaseArg) / phaseArg : 1;
-    const P_shg = 4e-24 * (chi2) ** 2 * peakPower ** 2 * (thickness * 1e-6) ** 2 / (w0 * w0) * sinc * sinc;
+    const P_shg = prefactor * (chi2) ** 2 * peakPower ** 2 * (thickness * 1e-6) ** 2 / (w0 * w0) * sinc * sinc;
     const conversionEff = P_shg / peakPower * 100;
     return { shgWavelength, peakPower, intensity, coherenceLength: coherenceLengthSafe, P_shg, conversionEff, w0 };
   }, [wavelength, pulseEnergy, pulseWidth, na, n, chi2, thickness]);
@@ -40,10 +43,12 @@ export default function SecondHarmonicPage() {
       // Non-phase-matched: L² · sinc²(ΔkL/2)
       const phaseArg = Math.PI * L / (2 * results.coherenceLength);
       const sinc = Math.abs(phaseArg) > 1e-10 ? Math.sin(phaseArg) / phaseArg : 1;
-      const P = 4e-24 * chi2 ** 2 * peakPower ** 2 * L ** 2 / (results.w0 ** 2) * sinc * sinc;
+      const omega = 2 * Math.PI * 3e8 / (wavelength * 1e-9);
+      const prefactor = 4e-24 * Math.pow(omega / (2 * Math.PI * 3e8 / (800e-9)), 2) / Math.pow(n, 3);
+      const P = prefactor * chi2 ** 2 * peakPower ** 2 * L ** 2 / (results.w0 ** 2) * sinc * sinc;
       powers.push(P * 1e9);
       // Phase matched: L² only (no sinc oscillation)
-      const Pc = 4e-24 * chi2 ** 2 * peakPower ** 2 * L ** 2 / (results.w0 ** 2);
+      const Pc = prefactor * chi2 ** 2 * peakPower ** 2 * L ** 2 / (results.w0 ** 2);
       phaseMatched.push(Pc * 1e9);
     }
     return [
