@@ -14,7 +14,7 @@ export default function ExcessNoisePage() {
   const excessNoise = kFactor * gain + (2 - 1 / gain) * (1 - kFactor);
   const totalNoise = Math.sqrt(excessNoise * gain * quantumEff);
   const noiseFigure = 10 * Math.log10(excessNoise);
-  const snrDegradation = Math.sqrt(excessNoise);
+  const snrDegradation = 1 / Math.sqrt(excessNoise);
 
   const chartData = useMemo(() => {
     const M = Array.from({ length: 300 }, (_, i) => 1 + i * 999 / 300);
@@ -22,7 +22,7 @@ export default function ExcessNoisePage() {
       { name: "Si (k≈0.02)", k: 0.02, color: "#60a5fa" },
       { name: "InGaAs (k≈0.5)", k: 0.5, color: "#f87171" },
       { name: "Ge (k≈0.7)", k: 0.7, color: "#fbbf24" },
-      { name: "k≈0 (ideal)", k: 0.001, color: "#34d399", dash: "dash" },
+      { name: "k=0 (electron-only)", k: 0, color: "#34d399", dash: "dash" },
     ];
     const traces: Record<string, unknown>[] = materials.map(mat => ({
       x: M, y: M.map(m => mat.k * m + (2 - 1 / m) * (1 - mat.k)),
