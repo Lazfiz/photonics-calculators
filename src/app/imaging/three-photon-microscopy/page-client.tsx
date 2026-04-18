@@ -34,7 +34,7 @@ export default function ThreePhotonMicroscopyPage() {
   const energyPerPulse = (avgPower / repRate) * 1e-9;
   const peakPower = energyPerPulse / (pulseWidth * 1e-15);
   const spotArea = Math.PI * (w0 * 1e-6) ** 2;
-  const peakIntensity = peakPower / spotArea / 1e16;
+  const peakIntensity = 2 * peakPower / spotArea / 1e16; // ×2 for Gaussian beam peak vs average
 
   // Power at depth (lower scattering at longer wavelength)
   const powerAtDepth = avgPower * Math.exp(-scatteringCoeff * depth / 1e4);
