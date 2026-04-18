@@ -44,7 +44,7 @@ export default function WavefrontErrorPage() {
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Reference λ (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={300} max={2000} />
-        <ValidatedNumberInput label="RMS Wavefront Error (λ)" value={rmsError} onChange={setPvRms} min={0} max={2} step="0.01" />
+        <ValidatedNumberInput label="RMS Wavefront Error (λ)" value={rmsError} onChange={setRmsError} min={0} max={2} step="0.01" />
         <ValidatedNumberInput label="Zernike Terms" value={numZernike} onChange={setNumZernike} min={1} max={36} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Status</span>
@@ -80,6 +80,7 @@ export default function WavefrontErrorPage() {
           <p>Diffraction-limited: σ_rms &lt; λ/14 (S &gt; 0.8)</p>
           <p>PV ≈ 3.55 × RMS (random aberrations)</p>
         </div>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="bg-gray-900 rounded-lg p-4">
