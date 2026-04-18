@@ -32,8 +32,8 @@ export default function SensorCMOSPage() {
       exposures.push(t);
       const dE = darkCurrent * t / 1000;
       const totalNoise = Math.sqrt(readNoise * readNoise + dE);
-      darkNoiseVals.push(dE);
-      const signal = t / 1000 * 1000; // arbitrary signal rate
+      darkNoiseVals.push(Math.sqrt(dE));
+      const signal = quantumEfficiency * t / 1000 * 1000; // signal rate scaled by QE
       snrVals.push(Math.min(signal, fullWellElectrons) / Math.sqrt(Math.min(signal, fullWellElectrons) + totalNoise * totalNoise));
     }
 
