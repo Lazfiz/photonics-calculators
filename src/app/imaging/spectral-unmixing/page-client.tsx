@@ -16,7 +16,8 @@ export default function SpectralUnmixingPage() {
 
   const abundance3 = Math.max(0, 1 - abundance1 - abundance2);
   const abundances = [abundance1, abundance2, abundance3, ...Array(6).fill(0)].slice(0, numEndmembers);
-  const normalizedAbundances = abundances.map(a => a / abundances.reduce((s, v) => s + v, 0));
+  const totalAb = abundances.reduce((s, v) => s + v, 0);
+  const normalizedAbundances = totalAb > 0 ? abundances.map(a => a / totalAb) : abundances.map(() => 1 / abundances.length);
 
   // Simulate endmember spectra (Gaussian peaks at different wavelengths)
   const endmemberPeaks = [520, 580, 640, 700, 450, 750];
@@ -45,7 +46,7 @@ export default function SpectralUnmixingPage() {
       for (let e = 0; e < numEndmembers; e++) {
         val += normalizedAbundances[e] * Math.exp(-0.5 * ((w - endmemberPeaks[e]) / (endmemberWidths[e] / 2.355)) ** 2);
       }
-      return val + (noiseLevel / 100) * (Math.sin(i * 1.7) * 2 - 1);
+      return val + (noiseLevel / 100) * Math.sin(i * 1.7);
     });
     traces.push({
       x: wavelengths, y: mixed, type: "scatter", mode: "lines" as const,
@@ -61,7 +62,7 @@ export default function SpectralUnmixingPage() {
     const error = (method === "nnls" ? 0.02 : method === "cls" ? 0.05 : 0.08) * (1 + noiseLevel / 10);
     const unmixed = normalizedAbundances.map((a, i) => Math.max(0, a + Math.sin(i * 2.3 + 1.7) * error));
     const sum = unmixed.reduce((s, v) => s + v, 0);
-    const final = unmixed.map(a => a / sum);
+    const final = sum > 0 ? unmixed.map(a => a / sum) : unmixed;
 
     return [{
       x: labels, y: final, type: "bar" as const,
