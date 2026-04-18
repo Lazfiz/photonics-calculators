@@ -19,11 +19,12 @@ export default function StimulatedRamanMicroscopyPage() {
   const beatFreq = ramanShift * 3e10; // Hz
 
   // SRS signal: SRS ∝ Im[χ³] × I_pump × I_stokes
-  const srsSignal = Math.pow(10, -12) * pumpPower * stokesPower * 1;
+  const srsSignal = Math.pow(10, -12) * pumpPower * stokesPower;
 
-  // Noise: shot noise limited ∝ √(P_pump × P_stokes)
-  const shotNoise = Math.sqrt(pumpPower * stokesPower) * 0.1;
-  const snr = srsSignal / (shotNoise * 1e-12) * Math.sqrt(pixelDwell);
+  // Noise: shot noise limited by probe beam (SRL → pump detection → √P_pump)
+  const shotNoise = Math.sqrt(pumpPower) * 0.1;
+  const pixelDwellSec = pixelDwell * 1e-6;
+  const snr = srsSignal / (shotNoise * 1e-12) * Math.sqrt(pixelDwellSec);
 
   // Spatial resolution
   const lateralRes = 0.61 * pumpWavelength / na;
@@ -35,7 +36,7 @@ export default function StimulatedRamanMicroscopyPage() {
   const snrChart = useMemo(() => {
     const powers = Array.from({ length: 60 }, (_, i) => 5 + i * 5);
     return [
-      { x: powers, y: powers.map(p => Math.pow(10, -12) * p * stokesPower / (Math.sqrt(p * stokesPower) * 0.1 * 1e-12)), type: "scatter", mode: "lines", name: "SNR (SRS)", line: { color: "#34d399" } },
+      { x: powers, y: powers.map(p => Math.pow(10, -12) * p * stokesPower / (Math.sqrt(p) * 0.1 * 1e-12) * Math.sqrt(pixelDwellSec)), type: "scatter", mode: "lines", name: "SNR (SRS)", line: { color: "#34d399" } },
       { x: [pumpPower], y: [snr], type: "scatter", mode: "markers", name: "Current", marker: { color: "#f87171", size: 12 } },
     ];
   }, [pumpPower, stokesPower, pixelDwell, snr]);
@@ -47,7 +48,7 @@ export default function StimulatedRamanMicroscopyPage() {
       { x: depths, y: depths.map(d => Math.exp(-d / 180) * stokesPower), type: "scatter", mode: "lines", name: "Stokes at depth", line: { color: "#f472b6" } },
       { x: depths, y: depths.map(d => Math.exp(-d / 200) * pumpPower * Math.exp(-d / 180) * stokesPower * 1e-4), type: "scatter", mode: "lines", name: "SRS Signal", line: { color: "#34d399" } },
     ];
-  }, [pumpPower, stokesPower]);
+  }, [pumpPower, stokesPower, pixelDwellSec]);
 
   return (
     <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Stimulated Raman Scattering Microscopy Calculator" description="Calculate SRS signal levels, SNR, resolution, and imaging speed for label-free chemical imaging.">
@@ -82,6 +83,8 @@ export default function StimulatedRamanMicroscopyPage() {
           <p className="text-sm text-gray-400">SNR</p>
           <p className="text-2xl font-bold text-orange-400">{snr.toFixed(1)}</p>
         </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">Beat Frequency</p>
           <p className="text-2xl font-bold text-purple-400">{(beatFreq / 1e12).toFixed(1)} THz</p>
         </div>
       </div>
