@@ -12,12 +12,12 @@ export default function MagnificationPage() {
   const [camFocal, setCamFocal] = useURLState("camFocal", 50);
 
   const objMag = tubeFocal / objFocal;
-  const camMag = 250 / camFocal; // standard near point
+  const camMag = camFocal / tubeFocal; // camera relay: f_adapter / f_tube
   const totalMag = objMag * camMag;
 
   const chartData = useMemo(() => {
     const objs = Array.from({ length: 50 }, (_, i) => 2 + i * 1);
-    const totalMags = objs.map(f => (tubeFocal / f) * (250 / camFocal));
+    const totalMags = objs.map(f => (tubeFocal / f) * (camFocal / tubeFocal));
     return [
       { x: objs, y: totalMags, type: "scatter" as const, mode: "lines" as const, name: "Total Mag", line: { color: "#60a5fa" } },
       { x: [objFocal], y: [totalMag], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
