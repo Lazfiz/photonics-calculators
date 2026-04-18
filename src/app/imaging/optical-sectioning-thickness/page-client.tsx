@@ -19,18 +19,27 @@ export default function OpticalSectioningPage() {
   // Widefield optical section thickness (depth of field)
   const dof = 2 * refractiveIndex * wavelength / (na * na);
 
-  // Confocal optical section thickness
-  const confocalSection = 1.4 * refractiveIndex * wavelength / (na * na);
+  // Confocal optical section thickness (depends on pinhole size)
+  // Combines diffraction-limited and geometric pinhole contributions
+  const zDiffraction = 0.88 * wavelength / (refractiveIndex - Math.sqrt(Math.max(0, refractiveIndex * refractiveIndex - na * na)));
+  const pinholeObjSpace = pinholeAU * 1.22 * wavelength / (na * 1000); // µm, specimen-space equivalent
+  const zGeometric = (Math.SQRT2 * refractiveIndex * pinholeObjSpace) / na;
+  const confocalSection = Math.sqrt(zDiffraction * zDiffraction + zGeometric * zGeometric);
 
-  // Multiphoton section thickness
-  const multiPhotonSection = 2 * refractiveIndex * wavelength / (na * na) * 0.7;
+  // Multiphoton section thickness (2P uses ~2× excitation wavelength, PSF ∝ |E|⁴)
+  const multiPhotonWavelength = wavelength * 2; // 2P excitation wavelength
+  const multiPhotonSection = 0.532 * multiPhotonWavelength / (refractiveIndex - Math.sqrt(Math.max(0, refractiveIndex * refractiveIndex - na * na)));
 
   const chartData = useMemo(() => {
     const nas = Array.from({ length: 80 }, (_, i) => 0.2 + i * 0.016);
     return [
       { x: nas, y: nas.map(n => 2 * refractiveIndex * wavelength / (n * n)), type: "scatter", mode: "lines", name: "Widefield", line: { color: "#60a5fa" } },
-      { x: nas, y: nas.map(n => 1.4 * refractiveIndex * wavelength / (n * n)), type: "scatter", mode: "lines", name: "Confocal (1 AU)", line: { color: "#34d399" } },
-      { x: nas, y: nas.map(n => 0.7 * 2 * refractiveIndex * wavelength / (n * n)), type: "scatter", mode: "lines", name: "Multiphoton", line: { color: "#fbbf24", dash: "dash" } },
+      { x: nas, y: nas.map(n => {
+        const zD = 0.88 * wavelength / (refractiveIndex - Math.sqrt(Math.max(0, refractiveIndex * refractiveIndex - n * n)));
+        const zG = (Math.SQRT2 * refractiveIndex * (1.22 * wavelength / (n * 1000))) / n;
+        return Math.sqrt(zD * zD + zG * zG);
+      }), type: "scatter", mode: "lines", name: "Confocal (1 AU)", line: { color: "#34d399" } },
+      { x: nas, y: nas.map(n => 0.532 * wavelength * 2 / (refractiveIndex - Math.sqrt(Math.max(0, refractiveIndex * refractiveIndex - n * n)))), type: "scatter", mode: "lines", name: "Multiphoton (2P)", line: { color: "#fbbf24", dash: "dash" } },
       { x: [na], y: [confocalSection], type: "scatter", mode: "markers", name: "Current", marker: { color: "#f87171", size: 12 } },
     ];
   }, [wavelength, na, refractiveIndex, confocalSection]);
