@@ -30,7 +30,7 @@ export default function LowCoherencePage() {
     const opd = Array.from({ length: 300 }, (_, i) => (i - 150) * 0.02); // mm
     const sigma = coherenceLen / (2 * Math.sqrt(2 * Math.LN2));
     const envelope = opd.map(d => Math.exp(-0.5 * (d / sigma) ** 2));
-    const carrier = opd.map(d => Math.cos(2 * Math.PI * d / (lambda0 * 1e3) * refractiveIndex));
+    const carrier = opd.map(d => Math.cos(2 * Math.PI * d / (lambda0 * 1e3))); // OPD already includes n
     const signal = opd.map((d, i) => envelope[i] * carrier[i] * fringeVisibility);
     return [
       { x: opd, y: envelope, type: "scatter", mode: "lines" as const, name: "Envelope", line: { color: "#60a5fa", width: 1, dash: "dash" } },
