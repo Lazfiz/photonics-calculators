@@ -56,8 +56,8 @@ export default function CoolingBenefitPage() {
         <ResultCard label={`Si Dark @ ${coolTemp}°C`} value={darkCurrentAtT(coolTemp, darkCurrent25Si, egSi).toExponential(2) + " e⁻/s"} tone="green" />
         <ResultCard label={`InGaAs Dark @ ${coolTemp}°C`} value={darkCurrentAtT(coolTemp, darkCurrent25InGaAs, egInGaAs).toExponential(2) + " e⁻/s"} tone="yellow" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>I_dark(T) = I₀ · (T/T₀)^(3/2) · exp(−E_g/(2k_B·T))</p><p>SNR = S / √(S + I_dark·t + σ_read²)</p></div>
-      <ChartPanel data={chartData} layout={{ xaxis: { title: "Temperature (°C)", gridcolor: "#374151" }, yaxis: { title: "Dark Current (e⁻/pix/s)", gridcolor: "#374151", type: "log" }, yaxis2: { title: "SNR", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>I_dark(T) = I₀ · (T/T₀)^(3/2) · exp(−E_g/(2k_B)·(1/T − 1/T₀))</p><p>SNR = S / √(S + I_dark·t + σ_read²)</p></div>
+      <ChartPanel data={chartData} layout={{ xaxis: { title: "Temperature (°C)", gridcolor: "#374151" }, yaxis: { title: "Dark Current (e⁻/s)", gridcolor: "#374151", type: "log" }, yaxis2: { title: "SNR", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
     </CalculatorShell>
   );
 }
