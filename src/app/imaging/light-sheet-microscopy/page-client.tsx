@@ -31,7 +31,7 @@ export default function LightSheetMicroscopyPage() {
     const sheetTh = [];
     for (let a = 0; a <= 90; a += 1) {
       angles.push(a);
-      wdReq.push((sampleThickness / 2) / Math.cos((a * Math.PI) / 180));
+      wdReq.push((sampleThickness / 2) / Math.max(Math.cos((a * Math.PI) / 180), 0.01));
       sheetTh.push(results.sheetThickness);
     }
     return [
