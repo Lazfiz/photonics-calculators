@@ -19,7 +19,7 @@ export default function ChannelPMTPage() {
   const results = useMemo(() => {
     const chargePerPhoton = 1.6e-19 * channelGain * quantumEff * collectionEff;
     const anodeSensitivity = chargePerPhoton / 1.6e-19;
-    const peakCurrent = chargePerPhoton / (transitTimeSpread * 1e-12);
+    const peakCurrent = (numPE * 1.6e-19 * channelGain) / (transitTimeSpread * 1e-12);
     const energyRes = numPE > 0 ? 2.355 / Math.sqrt(numPE) : 1;
     const totalDarkRate = darkCountRate * numChannels;
     return { channelGain, chargePerPhoton, anodeSensitivity, peakCurrent, energyRes, totalDarkRate };
@@ -48,11 +48,11 @@ export default function ChannelPMTPage() {
         <ResultCard label="Channel Gain" value={results.channelGain.toExponential(2)} tone="blue" />
         <ResultCard label="Charge/Photon" value={results.chargePerPhoton.toExponential(3) + " C"} tone="green" />
         <ResultCard label="Anode Sensitivity" value={results.anodeSensitivity.toExponential(2) + " e⁻/photon"} tone="yellow" />
-        <ResultCard label="Peak Current (approx)" value={results.peakCurrent.toExponential(2) + " A"} tone="red" subtext="Uses TTS as pulse width — rough estimate" />
+        <ResultCard label="Peak Current (approx)" value={results.peakCurrent.toExponential(2) + " A"} tone="red" subtext="Q_event / TTS — rough estimate" />
         <ResultCard label="Energy Resolution" value={`${(results.energyRes * 100).toFixed(1)}% FWHM`} tone="purple" />
         <ResultCard label="Total Dark Rate" value={`${results.totalDarkRate.toExponential(2)} cps`} tone="orange" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>G_per_channel = G_channel</p><p>Q = e · G · η · ε_coll</p><p>ΔE/E (FWHM) = 2.355 / √(N_pe)</p><p>N_pe = N_photons · η · ε_coll</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>G_per_channel = G_channel</p><p>I_peak ≈ N_pe · e · G / TTS</p><p>ΔE/E (FWHM) = 2.355 / √(N_pe)</p><p>N_pe = N_photons · η · ε_coll</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Channel Gain", type: "log", gridcolor: "#374151" }, yaxis: { title: "e⁻ per photon", type: "log", gridcolor: "#374151" }, yaxis2: { title: "Energy Res. (%FWHM)", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
     </CalculatorShell>
   );
