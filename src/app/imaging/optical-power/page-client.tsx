@@ -12,9 +12,10 @@ export default function OpticalPowerPage() {
   const [lensPower, setLensPower] = useURLState("lensPower", 19);
 
   const diopters = 1000 / focalLengthMm; // D = 1/f (f in meters)
-  const totalEye = corneaPower + lensPower - (corneaPower * lensPower) / 1000; // reduced vergence approx
-  const eyeFl = 1000 / totalEye; // mm approx
-  const myopiaD = totalEye - 60; // emmetropic ≈ 60 D
+  const eyeSeparation = 0.005 / 1.336; // ~5mm cornea-lens distance, aqueous n=1.336
+  const totalEye = corneaPower + lensPower - eyeSeparation * corneaPower * lensPower;
+  const eyeFl = 1000 / totalEye;
+  const myopiaD = totalEye - 60;
   const myopiaMm = (1000 / (totalEye - myopiaD) - 1000 / totalEye); // approx axial shift
 
   const chartData = useMemo(() => {
@@ -69,7 +70,7 @@ export default function OpticalPowerPage() {
           <p className={`text-2xl font-bold ${myopiaD < -0.5 ? "text-red-400" : myopiaD > 0.5 ? "text-yellow-400" : "text-green-400"}`}>
             {myopiaD.toFixed(1)} D
           </p>
-          <p className="text-xs text-gray-500">{myopiaD < -0.5 ? "Myopic" : myopiaD > 0.5 ? "Hyperopic" : "Emmetropic"}</p>
+          <p className="text-xs text-gray-500">{myopiaD > 0.5 ? "Myopic" : myopiaD < -0.5 ? "Hyperopic" : "Emmetropic"}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Correction Lens</p>
