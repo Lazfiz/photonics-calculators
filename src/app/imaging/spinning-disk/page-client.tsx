@@ -22,7 +22,7 @@ export default function SpinningDiskPage() {
     const pinholeAU = pinholeNm / airy;
     const lateralRes = 0.61 * lam / na * 1e9;
     const axialRes = 2 * n * lam / (na * na) * 1e9;
-    const opticalSection = (4 * n * lam * pinholeAU) / (na * na) * 1e9;
+    const opticalSection = 1.5 * n * lam / (na * na) * Math.pow(1 + 1.47 * Math.pow(pinholeAU, 3), 1/3) * 1e9;
     const diskFreq = diskRPM / 60;
     const dwellTime = (cameraExposure * 1e-3) / numPins * 1e6;
     const frameRate = diskFreq;
@@ -35,7 +35,7 @@ export default function SpinningDiskPage() {
     const signal = [];
     for (let au = 0.5; au <= 5; au += 0.1) {
       auRange.push(au);
-      sectioning.push((4 * n * wavelength * 1e-9 * au) / (na * na) * 1e9);
+      sectioning.push(1.5 * n * wavelength * 1e-9 / (na * na) * Math.pow(1 + 1.47 * Math.pow(au, 3), 1/3) * 1e9);
       signal.push(1 - Math.exp(-0.7 * au * au));
     }
     return [
@@ -94,7 +94,7 @@ export default function SpinningDiskPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Dwell time per pinhole</span><span className="font-mono">{results.dwellTime.toFixed(2)} µs</span></div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>Pinhole(AU) = (d_pin / M) / d_AU</p>
-            <p>Optical section: z = 4nλ·AU / NA²</p>
+            <p>Optical section: z ≈ 1.5nλ/NA²·(1+1.47·AU³)^(1/3)</p>
             <p>Frame rate = RPM / 60 (one revolution per frame)</p>
           </div>
         </div>
