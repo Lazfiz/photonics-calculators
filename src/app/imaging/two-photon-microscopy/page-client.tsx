@@ -21,7 +21,7 @@ export default function TwoPhotonMicroscopyPage() {
 
   // Lateral resolution
   const lateralRes = 0.325 * wavelength / na;
-  const axialRes = 0.532 * wavelength / (na * na);
+  const axialRes = 0.532 * refractiveIndex * wavelength / (na * na);
 
   // Two-photon excitation volume
   const w0 = 0.61 * wavelength / (na * 1000); // µm
@@ -32,7 +32,7 @@ export default function TwoPhotonMicroscopyPage() {
   const energyPerPulse = (avgPower / repRate) * 1e-9; // J (mW / MHz = nJ → ×1e-9 J)
   const peakPower = energyPerPulse / (pulseWidth * 1e-15); // W
   const spotArea = Math.PI * (w0 * 1e-6) ** 2;
-  const peakIntensity = peakPower / spotArea / 1e16; // TW/cm²
+  const peakIntensity = 2 * peakPower / spotArea / 1e16; // ×2 for Gaussian beam peak
 
   // Power at depth (scattering model)
   const powerAtDepth = avgPower * Math.exp(-scatteringCoeff * exposureDepth / 1e4);
@@ -53,7 +53,7 @@ export default function TwoPhotonMicroscopyPage() {
     const nas = Array.from({ length: 80 }, (_, i) => 0.2 + i * 0.018);
     return [
       { x: nas, y: nas.map(n => 0.325 * wavelength / n), type: "scatter", mode: "lines", name: "Lateral", line: { color: "#60a5fa" } },
-      { x: nas, y: nas.map(n => 0.532 * wavelength / (n * n)), type: "scatter", mode: "lines", name: "Axial", line: { color: "#fbbf24" } },
+      { x: nas, y: nas.map(n => 0.532 * refractiveIndex * wavelength / (n * n)), type: "scatter", mode: "lines", name: "Axial", line: { color: "#fbbf24" } },
       { x: [na], y: [lateralRes], type: "scatter", mode: "markers", name: "Current Lat.", marker: { color: "#34d399", size: 12 } },
       { x: [na], y: [axialRes], type: "scatter", mode: "markers", name: "Current Ax.", marker: { color: "#fbbf24", size: 12 } },
     ];
