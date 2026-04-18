@@ -50,7 +50,7 @@ export default function GainTemperaturePage() {
         <ResultCard label={`Gain @ ${tempMin}°C`} value={gainAtMin.toFixed(1)} tone="blue" />
         <ResultCard label={`Gain @ ${tempMax}°C`} value={gainAtMax.toFixed(1)} tone="red" />
         <ResultCard label="Gain Ratio" value={`×${gainVariation.toFixed(3)}`} tone="yellow" />
-        <ResultCard label="Temp Stability" value={detectorType === "apd" ? `±${(tempCoeff * 100).toFixed(1)}%/°C` : `${(pmtCoeff * 100).toFixed(1)}%/°C`} tone="green" />
+        <ResultCard label="Temp Stability" value={detectorType === "apd" ? `-${(tempCoeff * 100).toFixed(1)}%/°C` : `${(pmtCoeff * 100).toFixed(1)}%/°C`} tone="green" />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>APD: M(T) = M_ref / (1 + α·ΔT)</p><p>PMT: M(T) = M₀ · exp(β·ΔT)</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Temperature (°C)", gridcolor: "#374151" }, yaxis: { title: "Gain", gridcolor: "#374151" }, yaxis2: { title: "Gain (dB)", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
