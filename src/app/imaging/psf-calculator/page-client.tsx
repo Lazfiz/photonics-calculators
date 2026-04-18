@@ -40,10 +40,10 @@ export default function PSFCalculatorPage() {
     const y = Array.from({ length: size }, (_, j) => -extent + j * step);
     const z = y.map(yy => x.map(xx => {
       const r = Math.sqrt(xx * xx + yy * yy);
-      const u = Math.PI * na * r / wavelength;
+      const u = 2 * Math.PI * na * r / wavelength;
       if (u < 1e-10) return 1;
       const j1 = j1OverU(u);
-      const airy = 2 * j1 / u;
+      const airy = 2 * j1;
       return airy * airy;
     }));
     return [{ z, x, y, type: "heatmap" as const, colorscale: "Viridis", showscale: false }];
@@ -53,10 +53,10 @@ export default function PSFCalculatorPage() {
   const lateralProfile = useMemo(() => {
     const x = Array.from({ length: 200 }, (_, i) => -airyRadiusNm * 2.5 + i * (airyRadiusNm * 5 / 200));
     const y = x.map(xx => {
-      const u = Math.PI * na * xx / wavelength;
+      const u = 2 * Math.PI * na * Math.abs(xx) / wavelength;
       if (u < 1e-10) return 1;
       const j1 = j1OverU(u);
-      return Math.pow(2 * j1 / u, 2);
+      return Math.pow(2 * j1, 2);
     });
     return [
       { x, y, type: "scatter", mode: "lines", name: "Lateral PSF", line: { color: "#60a5fa" } },
@@ -68,7 +68,7 @@ export default function PSFCalculatorPage() {
   const axialProfile = useMemo(() => {
     const z = Array.from({ length: 200 }, (_, i) => -axialFWHM * 3 + i * (axialFWHM * 6 / 200));
     const y = z.map(zz => {
-      const u = Math.PI * na * na * Math.abs(zz) / (wavelength * refractiveIndex);
+      const u = 2 * Math.PI * na * na * Math.abs(zz) / (wavelength * refractiveIndex);
       if (u < 1e-10) return 1;
       return Math.pow(Math.sin(u) / u, 2);
     });
@@ -113,7 +113,7 @@ export default function PSFCalculatorPage() {
           <p>Airy radius: r = 0.61λ / NA</p>
           <p>Lateral FWHM = 0.514λ / NA</p>
           <p>Axial FWHM = 0.88nλ / NA²</p>
-          <p>I(r) = [2J₁(πNAr/λ) / (πNAr/λ)]²</p>
+          <p>I(r) = [2J₁(2πNAr/λ) / (2πNAr/λ)]²</p>
         </div>
       </div>
 
