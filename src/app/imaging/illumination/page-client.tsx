@@ -23,8 +23,8 @@ export default function IlluminationPage() {
     const condenserMag = tubeFocal / condenserFocal;
     const collectorImageSize = fieldDiaphragm / condenserMag;
     // Numerical aperture of condenser at sample
-    const condenserHalfAngle = Math.asin(Math.min(condenserNa / 1.52, 1)) * 180 / Math.PI;
-    const resolutionAtSample = 550e-9 / (objNa + condenserNa) * 1e9;
+    const condenserHalfAngle = Math.asin(Math.min(condenserNa, 1)) * 180 / Math.PI;
+    const resolutionAtSample = 550e-9 / (objNa + Math.min(condenserNa, objNa)) * 1e9;
     return { objFocal, sampleFov, naRatio, fillFactor, koehlerConjugate, condenserMag, collectorImageSize, condenserHalfAngle, resolutionAtSample };
   }, [objMag, objNa, tubeFocal, condenserNa, fieldDiaphragm, condenserFocal]);
 
@@ -33,7 +33,7 @@ export default function IlluminationPage() {
     const resVals = [];
     for (let r = 0.2; r <= 1.5; r += 0.01) {
       ratios.push(r);
-      resVals.push(550 / (objNa + objNa * r));
+      resVals.push(550 / (objNa + Math.min(objNa * r, objNa)));
     }
     return [
       { x: ratios, y: resVals, name: "Resolution (nm)", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
