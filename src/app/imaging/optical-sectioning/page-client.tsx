@@ -15,9 +15,10 @@ export default function OpticalSectioningPage() {
   const results = useMemo(() => {
     const lam = wavelength * 1e-9;
     const airyRadius = 1.22 * lam / (2 * na) * 1e6;
-    const pinholeDia = pinholeAu * airyRadius;
+    const airyDiameter = 2 * airyRadius;
+    const pinholeDia = pinholeAu * airyDiameter;
     const widefieldAxial = 2 * n * lam / (na * na) * 1e6;
-    const confocalAxial = widefieldAxial / Math.sqrt(1 + pinholeAu * pinholeAu * 0.3);
+    const confocalAxial = (widefieldAxial / Math.SQRT2) * Math.sqrt(1 + pinholeAu * pinholeAu * 0.3);
     const sectionThickness = confocalAxial;
     const opticalZoom = na / (2 * n * lam) * 1e6;
     return { airyRadius, pinholeDia, widefieldAxial, confocalAxial, sectionThickness, opticalZoom };
@@ -31,7 +32,7 @@ export default function OpticalSectioningPage() {
     const wfAx = 2 * n * lam / (na * na) * 1e6;
     for (let a = 0.1; a <= 5; a += 0.05) {
       auValues.push(a);
-      confAx.push(wfAx / Math.sqrt(1 + a * a * 0.3));
+      confAx.push((wfAx / Math.SQRT2) * Math.sqrt(1 + a * a * 0.3));
       wideAx.push(wfAx);
     }
     return [
