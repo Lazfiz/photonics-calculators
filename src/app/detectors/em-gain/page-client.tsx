@@ -19,7 +19,7 @@ export default function EmGainPage() {
   const effectiveReadNoise = readNoise / emGain;
   const enf2 = excessNoiseFactor * excessNoiseFactor;
   const snrWithEM = inputSignal / Math.sqrt((inputSignal + clockInducedCharge) * enf2 + (readNoise / emGain) ** 2);
-  const snrWithoutEM = inputSignal / Math.sqrt(inputSignal + readNoise ** 2);
+  const snrWithoutEM = inputSignal / Math.sqrt(inputSignal + clockInducedCharge + readNoise ** 2);
   const emBenefit = snrWithEM / snrWithoutEM;
 
   const chartData = useMemo(() => {
@@ -27,7 +27,7 @@ export default function EmGainPage() {
     const signals = [1, 5, 10, 50];
     const colors = ["#f87171", "#fbbf24", "#34d399", "#60a5fa"];
     const traces: Record<string, unknown>[] = signals.map((sig, idx) => ({
-      x: gains, y: gains.map(g => { const snrEm = sig / Math.sqrt((sig + clockInducedCharge) * enf2 + (readNoise / g) ** 2); return snrEm / (sig / Math.sqrt(sig + readNoise ** 2)); }),
+      x: gains, y: gains.map(g => { const snrEm = sig / Math.sqrt((sig + clockInducedCharge) * enf2 + (readNoise / g) ** 2); return snrEm / (sig / Math.sqrt(sig + clockInducedCharge + readNoise ** 2)); }),
       type: "scatter" as const, mode: "lines" as const, name: `${sig} e⁻`, line: { color: colors[idx] },
     }));
     traces.push({ x: [1, 10000], y: [1, 1], type: "scatter" as const, mode: "lines" as const, name: "No benefit", line: { color: "#9ca3af", dash: "dash" } });
