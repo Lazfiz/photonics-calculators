@@ -18,9 +18,9 @@ export default function SecondHarmonicMicroscopyPage() {
   const shgWavelength = wavelength / 2;
   const energyPerPulse = (power / repRate) * 1e-9;
   const peakPower = energyPerPulse / (pulseWidth * 1e-15);
-  const w0 = 0.61 * wavelength / (na * 1000);
+  const w0 = 0.325 * wavelength / (na * 1000); // Gaussian beam waist (µm), consistent with excitation resolution
   const spotArea = Math.PI * (w0 * 1e-6) ** 2;
-  const peakIntensity = peakPower / spotArea / 1e16;
+  const peakIntensity = 2 * peakPower / spotArea / 1e16; // Factor 2 for Gaussian peak vs average
 
   // SHG signal ∝ I² × d_eff² × L² × sinc²(ΔkL/2)
   const deltaN = dn;
@@ -88,7 +88,7 @@ export default function SecondHarmonicMicroscopyPage() {
         <div className="space-y-2 text-gray-300 text-sm font-mono">
           <p>λ_SHG = λ_excitation / 2</p>
           <p>I_SHG ∝ |χ⁽²⁾|² × I² × L² × sinc²(ΔkL/2)</p>
-          <p>Δk = 2(ω·n(ω) - 2ω·n(2ω))/c</p>
+          <p>Δk = 2ω[n(2ω) − n(ω)]/c = 4πΔn/λ</p>
           <p>L_coh = π/Δk (coherence length)</p>
           <p>No phase-matching needed in tightly focused geometry</p>
           <p>Forward SHG ∝ L² (constructive), Backward SHG ∝ constant</p>
