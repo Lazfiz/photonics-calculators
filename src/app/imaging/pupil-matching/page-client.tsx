@@ -16,10 +16,10 @@ export default function PupilMatchingPage() {
   const chartData = useMemo(() => {
     const nas = Array.from({ length: 200 }, (_, i) => 0.1 + i * 1.4 / 200);
     // Exit pupil diameter = (2 * tube_lens_FL * NA) / (objective_mag * eyepiece_mag)
-    const exitPupils = nas.map(na => (2 * tubeLensFL * na) / (objectiveMag * eyepieceMag));
+    const exitPupils = nas.map(na => 500 * na / (objectiveMag * eyepieceMag));
     // Eye pupil match
     const match = nas.map(na => {
-      const exitP = (2 * tubeLensFL * na) / (objectiveMag * eyepieceMag);
+      const exitP = 500 * na / (objectiveMag * eyepieceMag);
       return Math.min(1, exitP / eyePupil);
     });
     return [
@@ -28,9 +28,11 @@ export default function PupilMatchingPage() {
     ];
   }, [objectiveMag, tubeLensFL, eyepieceMag, eyePupil]);
 
-  const exitPupil = (2 * tubeLensFL * objectiveNA) / (objectiveMag * eyepieceMag);
+  // Exit pupil = 500 × NA / (M_obj × M_eye) [tube lens FL cancels in derivation]
+  // Standard microscopy formula: D_exit = 2 × f_eye × NA / M_obj = 500 × NA / (M_obj × M_eye)
+  const exitPupil = 500 * objectiveNA / (objectiveMag * eyepieceMag);
   const matchRatio = exitPupil / eyePupil;
-  const optimalNA = (eyePupil * objectiveMag * eyepieceMag) / (2 * tubeLensFL);
+  const optimalNA = (eyePupil * objectiveMag * eyepieceMag) / 500;
   const totalMag = objectiveMag * eyepieceMag;
 
   return (
