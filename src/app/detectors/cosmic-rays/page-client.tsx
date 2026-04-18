@@ -19,7 +19,7 @@ export default function CosmicRaysPage() {
   const expectedHits = fluxPerSec * sensorArea * exposureTime;
   const totalDeposited = expectedHits * energyDeposit * trackLength;
   const pixelArea = pixelSize * pixelSize;
-  const pixelFlux = expectedHits * (pixelPitch + trackLength) * pixelPitch * 1e-8 / sensorArea;
+  const pixelFlux = expectedHits * trackLength * pixelSize * 1e-8 / sensorArea;
   const cleanPixels = Math.exp(-pixelFlux) * 100;
 
   const lgamma = (n: number) => { if (n <= 1) return 0; let s = 0; for (let i = 2; i <= n; i++) s += Math.log(i); return s; };
@@ -27,7 +27,7 @@ export default function CosmicRaysPage() {
   const chartData = useMemo(() => {
     const times = Array.from({ length: 200 }, (_, i) => 0.01 + i * 10 / 200);
     const hits = times.map(t => fluxPerSec * sensorArea * t);
-    let maxHits = times.map(t => { const mu = fluxPerSec * sensorArea * t; let k = mu; let sum = 0; for (let n = 0; n <= mu + 5 * Math.sqrt(mu); n++) { const lp = n * Math.log(Math.max(mu, 1e-300)) - mu - lgamma(n); sum += Math.exp(lp); if (sum >= 0.99) { k = n; break; } } return k; });
+    let maxHits = times.map(t => { const mu = fluxPerSec * sensorArea * t; let k = mu; let sum = 0; for (let n = 0; n <= Math.max(10, mu + 5 * Math.sqrt(mu)); n++) { const lp = n * Math.log(Math.max(mu, 1e-300)) - mu - lgamma(n); sum += Math.exp(lp); if (sum >= 0.99) { k = n; break; } } return k; });
     return [
       { x: times, y: hits, type: "scatter", mode: "lines", name: "Expected Hits", line: { color: "#60a5fa", width: 2 } },
       { x: times, y: maxHits, type: "scatter", mode: "lines", name: "99th Percentile", line: { color: "#f87171", width: 2, dash: "dash" } },
