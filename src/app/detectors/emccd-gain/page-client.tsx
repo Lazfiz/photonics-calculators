@@ -27,7 +27,7 @@ export default function EmccdGainPage() {
   const emccdSNR = signalPhotons * totalGain / emccdTotalNoise;
   const ccdOutputNoise = Math.sqrt(signalPhotons + darkElectrons + readNoise ** 2);
   const ccdSNR = signalPhotons / ccdOutputNoise;
-  const crossoverSignal = 2 * readNoise * readNoise / (excessNoise ** 2);
+  const crossoverSignal = Math.max(0, (readNoise * readNoise - (emReadNoise / totalGain) ** 2) / (excessNoise ** 2 - 1) - darkElectrons);
 
   const gainChart = useMemo(() => {
     const stages = Array.from({ length: 200 }, (_, i) => 100 + i * 800 / 200);
