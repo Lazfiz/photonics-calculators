@@ -31,8 +31,8 @@ export default function BackIlluminationPage() {
     ];
   }, [fiQE, biQE, cfaTransmission, microlensGain]);
 
-  const effectiveFi = fiQE * cfaTransmission * microlensGain;
-  const effectiveBi = biQE * cfaTransmission * microlensGain;
+  const effectiveFi = Math.min(1, fiQE * microlensGain) * cfaTransmission;
+  const effectiveBi = Math.min(1, biQE * microlensGain) * cfaTransmission;
   const improvement = effectiveBi / effectiveFi;
   // SNR improvement = √(QE ratio) only in shot-noise-limited regime
   const snrImprovement = Math.sqrt(improvement);
