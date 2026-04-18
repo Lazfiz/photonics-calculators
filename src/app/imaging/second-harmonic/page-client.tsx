@@ -17,13 +17,15 @@ export default function SecondHarmonicPage() {
   const results = useMemo(() => {
     const shgWavelength = wavelength / 2;
     const peakPower = pulseEnergy * 1e-9 / (pulseWidth * 1e-15); // W
-    const w0 = 0.61 * wavelength * 1e-9 / na; // beam waist m
+    const w0 = 0.32 * wavelength * 1e-9 / na; // Gaussian beam waist (m)
     const intensity = 2 * peakPower / (Math.PI * w0 * w0); // W/m²
     const dn = 0.01; // approximate dispersion for biological tissue
     const coherenceLength = shgWavelength * 1e-9 / (2 * dn);
     const coherenceLengthSafe = isFinite(coherenceLength) && coherenceLength > 0 ? coherenceLength : 5e-6;
-    // Simplified SHG power estimate: P_2w ∝ (χ²)² · P_peak² · L² · sinc²(Δk·L/2)
-    const P_shg = 4e-24 * (chi2) ** 2 * peakPower ** 2 * (thickness * 1e-6) ** 2 / (w0 * w0);
+    // Simplified SHG power estimate with phase-matching term
+    const phaseArg = Math.PI * (thickness * 1e-6) / (2 * coherenceLengthSafe);
+    const sinc = Math.abs(phaseArg) > 1e-10 ? Math.sin(phaseArg) / phaseArg : 1;
+    const P_shg = 4e-24 * (chi2) ** 2 * peakPower ** 2 * (thickness * 1e-6) ** 2 / (w0 * w0) * sinc * sinc;
     const conversionEff = P_shg / peakPower * 100;
     return { shgWavelength, peakPower, intensity, coherenceLength: coherenceLengthSafe, P_shg, conversionEff, w0 };
   }, [wavelength, pulseEnergy, pulseWidth, na, n, chi2, thickness]);
@@ -35,10 +37,13 @@ export default function SecondHarmonicPage() {
     for (let t = 1; t <= 500; t += 2) {
       thicknesses.push(t);
       const L = t * 1e-6;
-      const P = 4e-24 * chi2 ** 2 * peakPower ** 2 * L ** 2 / (results.w0 ** 2);
+      // Non-phase-matched: L² · sinc²(ΔkL/2)
+      const phaseArg = Math.PI * L / (2 * results.coherenceLength);
+      const sinc = Math.abs(phaseArg) > 1e-10 ? Math.sin(phaseArg) / phaseArg : 1;
+      const P = 4e-24 * chi2 ** 2 * peakPower ** 2 * L ** 2 / (results.w0 ** 2) * sinc * sinc;
       powers.push(P * 1e9);
-      // Phase matched: L² dependence, non-phase-matched: oscillates
-      const Pc = P * Math.pow(t / 500, 2) * 10;
+      // Phase matched: L² only (no sinc oscillation)
+      const Pc = 4e-24 * chi2 ** 2 * peakPower ** 2 * L ** 2 / (results.w0 ** 2);
       phaseMatched.push(Pc * 1e9);
     }
     return [
