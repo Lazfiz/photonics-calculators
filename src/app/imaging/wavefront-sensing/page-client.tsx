@@ -21,9 +21,9 @@ export default function WavefrontSensingPage() {
   const rmsWaves = rmsWavefrontNm / wavelengthNm;
   const strehl = Math.exp(-((2 * Math.PI * rmsWaves) ** 2));
   const maréchalCrit = rmsWaves <= 1 / 14;
-  const diffLimit = 1.22 * lambda / D * focalLengthMm * 1e3; // µm spot on detector
+  const diffLimit = 2.44 * lambda / D * focalLengthMm * 1e3; // µm, Airy disk diameter
   const subapDiam = D / Math.sqrt(numSubapertures) * 1e3; // mm
-  const subapAiry = 1.22 * lambda / (subapDiam * 1e-3) * focalLengthMm * 1e3; // µm
+  const subapAiry = 2.44 * lambda / (subapDiam * 1e-3) * focalLengthMm * 1e3; // µm, Airy diameter
   const subapSampling = subapAiry / detectorPixelSizeUm; // pixels per Airy spot
   const sensitivity = detectorPixelSizeUm * 1e-6 / (focalLengthMm * 1e-3); // rad/px angular sensitivity
   const zernikeFitError = rmsWavefrontNm / Math.sqrt(numZernikeTerms);
@@ -109,7 +109,7 @@ export default function WavefrontSensingPage() {
           <p>S = exp(−(2π σ_w/λ)²) — Strehl ratio (Maréchal approx.)</p>
           <p>σ_w ≤ λ/14 — Maréchal criterion (S ≥ 0.8)</p>
           <p>W(r,θ) = Σ a_n Z_n(r,θ) — Zernike decomposition</p>
-          <p>Sensitivity ∝ p_det / (λ · f) — Angle per pixel</p>
+          <p>Sensitivity = p_det / f — Angle per pixel</p>
           <p>σ_fit = σ_w / √N — Residual after Zernike fit</p>
         </div>
       </div>
