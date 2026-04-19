@@ -29,7 +29,7 @@ export default function PumpProbePage() {
     const nearDegenerate = Math.abs(tau2 - tau1) < 1e-6;
     const ESA = times.map(t => {
       if (nearDegenerate) return -0.6 * (t / tau1) * Math.exp(-t / tau1);
-      return -0.6 * tau2 / (tau2 - tau1) * (Math.exp(-t / tau1) - Math.exp(-t / tau2));
+      return -0.6 * tau2 / (tau2 - tau1) * (Math.exp(-t / tau2) - Math.exp(-t / tau1));
     });
 
     // Total signal
