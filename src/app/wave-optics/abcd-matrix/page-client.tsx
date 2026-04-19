@@ -62,18 +62,20 @@ export default function ABCDMatrixPage() {
         default:
           m = { A: 1, B: 0, C: 0, D: 1 };
       }
-      // Multiply M * m
+      // Multiply m * M (new element on the left, standard ABCD convention)
       const { A, B, C, D } = M;
       M = {
-        A: A * m.A + B * m.C,
-        B: A * m.B + B * m.D,
-        C: C * m.A + D * m.C,
-        D: C * m.B + D * m.D,
+        A: m.A * A + m.B * C,
+        B: m.A * B + m.B * D,
+        C: m.C * A + m.D * C,
+        D: m.C * B + m.D * D,
       };
     }
 
-    const outHeight = M.A * inputHeight + M.B * inputAngle;
-    const outAngle = M.C * inputHeight + M.D * inputAngle;
+    // Convert mrad to radians for ABCD matrix (which uses radians)
+    const thetaRad = inputAngle * 1e-3;
+    const outHeight = M.A * inputHeight + M.B * thetaRad;
+    const outAngle = (M.C * inputHeight + M.D * thetaRad) * 1e3; // back to mrad
     const det = M.A * M.D - M.B * M.C;
     const isImaging = Math.abs(M.B) < 1e-10;
 
