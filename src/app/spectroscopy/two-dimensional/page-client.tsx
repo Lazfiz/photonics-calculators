@@ -35,17 +35,20 @@ export default function TwoDimensionalSpectroscopyPage() {
         const diag2 = Math.exp(-((o1 - w2) ** 2 + (o3 - w2) ** 2) / (2 * linewidth * linewidth));
 
         // Cross peaks (energy transfer / coupling signature)
-        const cross1 = 0.5 * Math.exp(-((o1 - w1) ** 2 + (o3 - w2) ** 2) / (2 * linewidth * linewidth));
-        const cross2 = 0.5 * Math.exp(-((o1 - w2) ** 2 + (o3 - w1) ** 2) / (2 * linewidth * linewidth));
+        const crossAmp = Math.min(Math.abs(coupling) / 200, 1); // dimensionless, vanishes at coupling=0
+        const cross1 = crossAmp * Math.exp(-((o1 - w1) ** 2 + (o3 - w2) ** 2) / (2 * linewidth * linewidth));
+        const cross2 = crossAmp * Math.exp(-((o1 - w2) ** 2 + (o3 - w1) ** 2) / (2 * linewidth * linewidth));
 
         // Rephasing pathway lineshape (tilted ellipse for inhomogeneous broadening)
+        // Anti-diagonal width set by homogeneous broadening (T₂), diagonal by inhomogeneous
         const tilt = coupling > 0 ? -0.3 : 0.3;
         const off1 = (o1 - w1) + tilt * (o3 - w1);
         const off2 = (o1 - w2) + tilt * (o3 - w2);
-        const diag1r = Math.exp(-(off1 ** 2 + ((o3 - w1) / (1 + Math.abs(tilt))) ** 2) / (2 * linewidth * linewidth));
-        const diag2r = Math.exp(-(off2 ** 2 + ((o3 - w2) / (1 + Math.abs(tilt))) ** 2) / (2 * linewidth * linewidth));
+        const homW = Math.max(homogeneousWidth, 1); // avoid zero
+        const diag1r = Math.exp(-(off1 ** 2) / (2 * homW * homW) - ((o3 - w1) / (1 + Math.abs(tilt))) ** 2 / (2 * linewidth * linewidth));
+        const diag2r = Math.exp(-(off2 ** 2) / (2 * homW * homW) - ((o3 - w2) / (1 + Math.abs(tilt))) ** 2 / (2 * linewidth * linewidth));
 
-        row.push(diag1 + diag2 + cross1 + cross2 + coupling * (diag1r + diag2r));
+        row.push(diag1 + diag2 + cross1 + cross2 + 0.5 * (diag1r + diag2r));
       }
       z.push(row);
     }
