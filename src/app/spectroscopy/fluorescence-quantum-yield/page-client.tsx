@@ -31,7 +31,7 @@ export default function FluorescenceQuantumYieldPage() {
       { x: absVals, y: qyLine, type: "scatter" as const, mode: "lines" as const, name: "QY vs Sample A", line: { color: "#60a5fa" } },
       { x: [sampleAbs], y: [qy], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
     ];
-  }, [sampleInt, refInt, sampleAbs, refAbs, refQY, qy]);
+  }, [sampleInt, refInt, sampleAbs, refAbs, refQY, qy, useRefrIdx, refrIdxSample, refrIdxRef]);
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fluorescence Quantum Yield" description="Φ = Φ_ref · (I_s/I_ref) · (A_ref/A_s) · (n_s/n_ref)² — comparative method using a reference standard.">
