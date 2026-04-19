@@ -72,7 +72,7 @@ export default function TimeResolvedPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">IRF:</span> R(t) = exp(−t²/2σ²), σ = FWHM/2.355</p>
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Measured:</span> I(t) = R(t) ⊗ exp(−t/τ)</p>
-        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">TCSPC:</span> Δt = 1/(rep_rate), timing jitter = IRF</p>
+        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">TCSPC:</span> Window = 1/f_rep, timing resolution = IRF width</p>
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Time-bandwidth:</span> Δν·Δt ≥ 0.44 (transform limit)</p>
       </div>
 
