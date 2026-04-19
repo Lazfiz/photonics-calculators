@@ -21,14 +21,12 @@ export default function LockinAmplifierPage() {
   const deltaF = Math.abs(signalFreq - refFreq);
   const phaseRad = (phaseShift * Math.PI) / 180;
   const enbw = 1 / (4 * timeConstant); // Hz, for 1st order RC LPF
-  // 2nd-order Butterworth ENBW = f_c * π/(2√2), f_c = 1/(2πRC), ratio to 1st = 1/√2
-  const enbwActual = filterOrder === 1 ? enbw : enbw / Math.SQRT2;
+  // Nth-order Butterworth ENBW: ENBW_N = ENBW_1 · (1/N) / sin(π/(2N))
+  const enbwActual = filterOrder === 1 ? enbw : enbw * (1 / filterOrder) / Math.sin(Math.PI / (2 * filterOrder));
 
-  // LPF transfer function magnitude at detuning frequency
+  // Nth-order Butterworth LPF transfer function magnitude
   const omegaTau = 2 * Math.PI * deltaF * timeConstant;
-  const lpfAttenuation = filterOrder === 1
-    ? 1 / Math.sqrt(1 + omegaTau * omegaTau)
-    : 1 / Math.sqrt(1 + Math.pow(omegaTau, 4));
+  const lpfAttenuation = 1 / Math.sqrt(1 + Math.pow(omegaTau, 2 * filterOrder));
 
   const demodFactor = (2 / Math.PI) * Math.abs(Math.cos(phaseRad));
   const outputSignal = signalAmp * 1e-6 * Math.cos(phaseRad) * (2 / Math.PI) * lpfAttenuation;
@@ -46,9 +44,7 @@ export default function LockinAmplifierPage() {
     const transfer = f.map(fi => {
       const dist = Math.abs(fi - refFreq);
       const wt = 2 * Math.PI * dist * timeConstant;
-      return filterOrder === 1
-        ? 1 / Math.sqrt(1 + wt * wt)
-        : 1 / Math.sqrt(1 + Math.pow(wt, 4));
+      return 1 / Math.sqrt(1 + Math.pow(wt, 2 * filterOrder));
     });
     const outNoise = f.map((fi, i) => noiseDensity * 1e-9 * transfer[i]);
 
@@ -84,7 +80,7 @@ export default function LockinAmplifierPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p>V<sub>out</sub> = V<sub>sig</sub> · cos(Δφ) · (2/π) · H(Δf)  [square-wave demod + LPF]</p>
-        <p>ENBW = 1 / (4 · τ)  [1st-order] | ENBW₂ = ENBW / √2  [2nd-order]</p>
+        <p>ENBW = 1/(4τ) [1st-order] | ENBW_N = ENBW₁·(1/N)/sin(π/2N) [Nth-order]</p>
         <p>SNR improvement = (2/π)|cos(Δφ)| · H(Δf) · √(BW<sub>in</sub> / ENBW)</p>
       </div>
 
