@@ -41,9 +41,10 @@ export default function PhotodiodeSpeedPage() {
     const bw = areas.map(a => 1 / (2 * Math.PI * loadResistance * capacitanceDensity * 1e-15 * a));
     // NEP at 3dB bandwidth: NEP_total = spectral_NEP * sqrt(BW_3dB)
     const nep = areas.map((a, i) => {
-      const bwHz = Math.max(bw[i], 1);
+      const bwHz = bw[i];
+      const enbw = bwHz * Math.PI / 2; // ENBW for 1st-order RC LPF
       const spectralNep = Math.sqrt(4 * 1.38e-23 * 300 / loadResistance) / responsivity;
-      return spectralNep * Math.sqrt(bwHz) * 1e12; // pW (at 3dB BW)
+      return spectralNep * Math.sqrt(enbw) * 1e12; // pW (at 3dB BW)
     });
     return { areas, nep };
   }, [loadResistance, responsivity]);
