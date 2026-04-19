@@ -14,7 +14,7 @@ export default function AttosecondPulsePage() {
 
   const photonEnergy = 1240 / wavelength; // eV
   const cutoffEnergy = 3.17 * photonEnergy + 0; // Up = Ip negligible for display
-  const up = 9.33e-14 * intensity * Math.pow(wavelength * 1e-9, 2); // ponderomotive in eV (approx)
+  const up = 9.33e-14 * intensity * Math.pow(wavelength * 1e-3, 2); // ponderomotive in eV (λ in µm)
   const cutoffE = 3.17 * up + 13.6; // Ip of H
   const shortestWavelength = 1240 / cutoffE; // nm
   const minPulseDuration = 0.122 / cutoffE * 1000; // time-bandwidth limit in as (approx)
