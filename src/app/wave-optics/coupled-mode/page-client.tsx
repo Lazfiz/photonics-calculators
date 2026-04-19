@@ -15,18 +15,16 @@ export default function CoupledModePage() {
   const kappaSq = kappa * kappa;
   const deltaSq = deltaBeta * deltaBeta;
   const gamma = Math.sqrt(kappaSq + deltaSq / 4);
-  const couplingEfficiency = kappaSq / gamma * gamma * Math.pow(Math.sin(gamma * length) / (gamma * length), 2) * (gamma * length) * (gamma * length) / (kappaSq / gamma * gamma) ;
-  // Simpler: P_cross = (κ²/γ²) sin²(γL)
-  const pCross = (kappaSq / (gamma * gamma)) * Math.pow(Math.sin(gamma * length), 2);
+  const pCross = gamma === 0 ? 0 : (kappaSq / (gamma * gamma)) * Math.pow(Math.sin(gamma * length), 2);
   const pThrough = 1 - pCross;
-  const couplingLength = Math.PI / (2 * kappa); // full coupling length
+  const couplingLength = kappa === 0 ? Infinity : Math.PI / (2 * Math.abs(kappa)); // full coupling length
 
   const chartData = useMemo(() => {
     const N = 300;
     const ls = Array.from({ length: N }, (_, i) => i / N * length);
     const cross = ls.map(l => {
       const g = Math.sqrt(kappaSq + deltaSq / 4);
-      return (kappaSq / (g * g)) * Math.pow(Math.sin(g * l), 2);
+      return g === 0 ? 0 : (kappaSq / (g * g)) * Math.pow(Math.sin(g * l), 2);
     });
     const through = cross.map(c => 1 - c);
     return [
@@ -56,7 +54,7 @@ export default function CoupledModePage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Full Coupling Length</p>
-          <p className="text-xl font-bold text-green-400">{couplingLength.toFixed(3)} mm</p>
+          <p className="text-xl font-bold text-green-400">{couplingLength === Infinity ? "∞" : couplingLength.toFixed(3) + " mm"}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">γ = √(κ² + Δβ²/4)</p>
