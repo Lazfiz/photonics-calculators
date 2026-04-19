@@ -44,7 +44,7 @@ export default function FourierSelfCombPage() {
           // Gaussian envelope derived from bandwidth
           const sigma = (fHigh - fLow) / 4; // ~2σ contains ~95% of bandwidth
           const relF = (f - centerFreq) / sigma;
-          amps.push(Math.exp(-relF * relF));
+          amps.push(Math.exp(-0.5 * relF * relF));
         }
       }
       if (freqs.length > 0) {
