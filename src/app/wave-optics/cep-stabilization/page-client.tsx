@@ -20,9 +20,9 @@ export default function CEPStabilizationPage() {
   const chartData = useMemo(() => {
     const N = 500;
     const tMax = cycles * period;
-    const ts = Array.from({ length: N }, (_, i) => i / N * tMax - tMax * 0.1);
+    const ts = Array.from({ length: N }, (_, i) => (i / N - 0.5) * tMax);
     const envelope = ts.map(t => {
-      const env = Math.exp(-2.77 * Math.pow(t / pulseDuration, 2));
+      const env = Math.exp(-2 * Math.LN2 * Math.pow(t / pulseDuration, 2));
       return env;
     });
     const carrier = ts.map(t => envelope[ts.indexOf(t)] * Math.cos(2 * Math.PI * carrierFreq * t * 1e-3 + cepOffset));
@@ -58,7 +58,7 @@ export default function CEPStabilizationPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Spectral Bandwidth (TL)</p>
-          <p className="text-xl font-bold text-orange-400">{(spectralWidth * 1000).toFixed(0)} GHz</p>
+          <p className="text-xl font-bold text-orange-400">{(spectralWidth * 1000).toFixed(0)} THz</p>
         </div>
       </div>
 
