@@ -13,7 +13,8 @@ export default function ChirpedPulsePage() {
   const [gratingLines, setGratingLines] = useURLState("gratingLines", 1740); // lines/mm
   const [centralWavelength, setCentralWavelength] = useURLState("centralWavelength", 800);
 
-  const stretchedDuration = inputDuration * stretchRatio; // ps
+  const stretchedDurationFs = inputDuration * stretchRatio; // fs
+  const stretchedDuration = stretchedDurationFs / 1000; // ps
   const peakPowerIn = pulseEnergy * 1e-3 / (inputDuration * 1e-15) / 1e9; // GW
   const peakPowerStretched = pulseEnergy * 1e-3 / (stretchedDuration * 1e-12) / 1e9; // GW
   const recompressedDuration = inputDuration * 1.1; // ~10% overhead
@@ -26,7 +27,7 @@ export default function ChirpedPulsePage() {
     const tMax = stretchedDuration * 1.5;
     const ts = Array.from({ length: N }, (_, i) => (i / N - 0.5) * tMax);
     const stretched = ts.map(t => Math.exp(-2.77 * Math.pow(t / stretchedDuration, 2)));
-    const recompressed = ts.map(t => Math.exp(-2.77 * Math.pow(t / recompressedDuration, 2)));
+    const recompressed = ts.map(t => Math.exp(-2.77 * Math.pow((t * 1000) / recompressedDuration, 2)));
     const timeAxis = ts.map(t => t); // in ps
     const recompAxis = ts.map(t => t * 1000); // in fs for recompressed
     return [
@@ -65,7 +66,7 @@ export default function ChirpedPulsePage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm mb-2 font-mono">GDD = λ³/(2πc²) · d²n/dλ² · L &nbsp;|&nbsp; B-integral &lt; 1 rad &nbsp;|&nbsp; d<sub>grating</sub> = 1/N</p>
+        <p className="text-gray-300 text-sm mb-2 font-mono">GDD = λ³/(2πc²) · d²n/dλ² · L &nbsp;|&nbsp; B-integral &lt; 1 rad &nbsp;|&nbsp; d<sub>grating</sub> = 1/N (mm)</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
