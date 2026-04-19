@@ -59,7 +59,7 @@ export default function MicrowaveSpectroscopyPage() {
     const kT = 0.695 * temperature;
     const populations = Js.map(J => {
       const E = B * J * (J + 1);
-      const deg = moleculeType === "linear" ? 2 * J + 1 : (2 * J + 1) * (J + 1);
+      const deg = moleculeType === "linear" ? 2 * J + 1 : (2 * J + 1) * (2 * J + 1);
       return deg * Math.exp(-E / kT);
     });
     const maxPop = Math.max(...populations);
