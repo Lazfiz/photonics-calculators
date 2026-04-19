@@ -26,7 +26,7 @@ export default function RamanShiftPage() {
     const shifts = Array.from({ length: 500 }, (_, i) => minShift + i * (maxShift - minShift) / 500);
     const stokesWL = shifts.map(s => {
       const wn = laserWavenumber - s;
-      return wn > 100 ? 1e7 / wn : null; // skip near-zero wavenumbers
+      return wn > 0 ? 1e7 / wn : null; // skip non-positive wavenumbers
     });
     const antiStokesWL = shifts.map(s => 1e7 / (laserWavenumber + s));
     return [
@@ -41,7 +41,6 @@ export default function RamanShiftPage() {
 
   // Energy difference
   // const energyDiffEv = laserEnergyEv - stokesEnergyEv; // REMOVED: broke at high shifts
-  const frequencyDiffTHz = energyDiffEv * 241.799; // eV to THz
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Raman Shift Calculator" description="Convert between Raman shift (cm⁻¹), scattered wavelength, and energy for any excitation laser.">
@@ -68,7 +67,7 @@ export default function RamanShiftPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Stokes Wavenumber</p>
-          <p className="text-xl font-bold text-green-400">{stokesWavenumber.toFixed(2)} cm⁻¹</p>
+          <p className="text-xl font-bold text-green-400">{isNaN(stokesWavelength) ? "N/A (shift > laser)" : stokesWavenumber.toFixed(2) + " cm⁻¹"}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Energy Difference</p>
