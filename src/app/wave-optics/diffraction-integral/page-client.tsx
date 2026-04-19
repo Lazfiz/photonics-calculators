@@ -57,7 +57,7 @@ export default function DiffractionIntegralPage() {
         z2d.push(row);
       }
 
-      const firstZero = 1.22 * lambda * z / a;
+      const firstZero = 1.22 * lambda * z / (2 * a); // 1.22λz/D where D=2a is diameter
       return { rhos, intensity, fresnelZones, z2d: z2d, xs, Nf, firstZero };
     }
 
@@ -74,7 +74,7 @@ export default function DiffractionIntegralPage() {
       return sinc * sinc;
     });
 
-    const firstZero = lambda * z / a;
+    const firstZero = lambda * z / (2 * a); // λz/(2a) where a is half-width, W=2a
     return { xs, intensity, Nf, firstZero };
   }, [wavelength, apertureType, apertureSize, propDist, observationSize]);
 
