@@ -28,7 +28,7 @@ export default function CavityDumpedLaserPage() {
     return [
       { x: t, y: intensity, type: "scatter" as const, mode: "lines" as const, name: "Cavity Dumped Pulse", line: { color: "#60a5fa" } },
     ];
-  }, [roundTripNs]);
+  }, [roundTripNs, repRate, pulseEnergy]);
 
   return (
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Cavity-Dumped Laser" description="Energy extraction from a laser cavity using fast Q-switching or intracavity modulation.">
