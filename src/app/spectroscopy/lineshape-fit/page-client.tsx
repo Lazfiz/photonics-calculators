@@ -19,11 +19,14 @@ export default function LineshapeFitPage() {
   const lorentzian = (x: number, x0: number, gamma: number) =>
     1 / (1 + Math.pow((x - x0) / gamma, 2));
 
-  // Approximate Voigt via pseudo-Voigt
-  const voigt = (x: number, x0: number, sigma: number, gamma: number) => {
-    const fg = sigma / (sigma + gamma);
-    const fl = gamma / (sigma + gamma);
-    return fg * gaussian(x, x0, sigma) + fl * lorentzian(x, x0, gamma);
+  // Approximate Voigt via pseudo-Voigt (Thompson-Cox-Hastings 1987)
+  const voigt = (x: number, x0: number, fG: number, fL: number) => {
+    const fV = 0.5346 * fL + Math.sqrt(0.2166 * fL * fL + fG * fG);
+    const ratio = fL / fV;
+    const eta = 1.36603 * ratio - 0.47719 * ratio * ratio + 0.11116 * ratio * ratio * ratio;
+    const sigmaV = fV / (2 * Math.sqrt(2 * Math.LN2));
+    const gammaV = fV / 2;
+    return (1 - eta) * gaussian(x, x0, sigmaV) + eta * lorentzian(x, x0, gammaV);
   };
 
   const sigma = fwhmG / (2 * Math.sqrt(2 * Math.LN2));
@@ -49,7 +52,7 @@ export default function LineshapeFitPage() {
     }
     if (profile === "voigt") {
       traces.push({
-        x, y: x.map(xi => amplitude * voigt(xi, center, sigma, gamma)),
+        x, y: x.map(xi => amplitude * voigt(xi, center, fwhmG, fwhmL)),
         type: "scatter" as const, mode: "lines" as const,
         name: "Voigt (pseudo)", line: { color: "#34d399", width: 2 },
       });
