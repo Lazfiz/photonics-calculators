@@ -13,6 +13,7 @@ export default function SpectralRangePage() {
   const [detectorWidth, setDetectorWidth] = useURLState("detectorWidth", 25.6); // mm
   const [detectorPixels, setDetectorPixels] = useURLState("detectorPixels", 2048);
   const [centralAngle, setCentralAngle] = useURLState("centralAngle", 10); // degrees (diffraction angle at center)
+  const [gratingWidth, setGratingWidth] = useURLState("gratingWidth", 50); // mm (illuminated grating width)
 
   const chartData = useMemo(() => {
     const d = 1e6 / grooveDensity; // nm (groove spacing)
@@ -42,14 +43,14 @@ export default function SpectralRangePage() {
     // Plot resolution vs order for this grating
     const orders = Array.from({ length: 10 }, (_, i) => i + 1);
     const resolutions = orders.map(o => {
-      const illuminatedGrooves = detectorWidth * grooveDensity; // approximate
+      const illuminatedGrooves = gratingWidth * grooveDensity; // approximate
       return o * illuminatedGrooves;
     });
 
     // Dispersion vs wavelength
     const wls = Array.from({ length: 200 }, (_, i) => (wlMin || 200) + ((wlMax || 800) - (wlMin || 200)) * (i / 199));
     const dispersion = wls.map(wl => {
-      const beta = Math.asin((order * wl / 1000) / d - Math.sin(alpha));
+      const beta = Math.asin((order * wl) / d - Math.sin(alpha));
       return (d * Math.cos(beta)) / (order * focalLength); // nm/mm
     });
 
@@ -61,7 +62,7 @@ export default function SpectralRangePage() {
       dispersionVsWl: { x: wls, y: dispersion, type: "scatter" as const, mode: "lines" as const, name: "Dispersion (nm/mm)", line: { color: "#34d399" } },
       wlMin, wlMax,
     };
-  }, [grooveDensity, order, focalLength, detectorWidth, detectorPixels, centralAngle]);
+  }, [grooveDensity, order, focalLength, detectorWidth, detectorPixels, centralAngle, gratingWidth]);
 
   function gd_mm() { return grooveDensity; }
   const d = 1e6 / grooveDensity;
@@ -71,7 +72,7 @@ export default function SpectralRangePage() {
   const wlMin = d * (Math.sin(alpha) + Math.sin(beta0 - totalAngle / 2)) / order;
   const wlMax = d * (Math.sin(alpha) + Math.sin(beta0 + totalAngle / 2)) / order;
   const spectralRange = Math.abs(wlMax - wlMin);
-  const resolution = order * grooveDensity * detectorWidth; // R = mN (N = illuminated grooves)
+  const resolution = order * grooveDensity * gratingWidth; // R = mN (N = illuminated grooves)
   const pixelResolution = spectralRange / detectorPixels;
 
   return (
@@ -84,6 +85,7 @@ export default function SpectralRangePage() {
         <ValidatedNumberInput label="Detector Width (mm)" value={detectorWidth} onChange={setDetectorWidth} min={0.1} />
         <ValidatedNumberInput label="Detector Pixels" value={detectorPixels} onChange={setDetectorPixels} min={64} />
         <ValidatedNumberInput label="Central Diff. Angle (°)" value={centralAngle} onChange={setCentralAngle} min={1} max={80} />
+        <ValidatedNumberInput label="Grating Width (mm)" value={gratingWidth} onChange={setGratingWidth} min={1} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
