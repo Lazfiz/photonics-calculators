@@ -23,7 +23,7 @@ export default function StimulatedRamanPage() {
     const hwhm = linewidth / 2;
     const gain = detunings.map(d => {
       const lorentz = Math.pow(hwhm, 2) / (Math.pow(d - ramanShift, 2) + Math.pow(hwhm, 2));
-      return lorentz * pumpPower * concentration * pathLength * 1e-3;
+      return lorentz * ramanGainCoeff * pumpPower * 1e-3 * concentration * pathLength;
     });
     return [
       { x: detunings, y: gain, type: "scatter" as const, mode: "lines" as const, name: "SRS Gain", line: { color: "#34d399", width: 2 } },
