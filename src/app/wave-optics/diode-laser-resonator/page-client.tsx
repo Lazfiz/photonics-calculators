@@ -30,7 +30,8 @@ export default function DiodeLaserResonatorPage() {
   const eta_i = 0.8; // internal quantum efficiency
   const Gamma = 0.02; // confinement factor
   const q = 1.6e-19;
-  const J_th = q * d_cm * g_th / (Gamma * eta_i);
+  const tau_n = 2e-9; // carrier lifetime (s) — typical for GaAs
+  const J_th = q * d_cm * g_th / (Gamma * eta_i * tau_n); // A/cm²
 
   // Threshold current
   const stripe_cm = stripeWidth * 1e-4;
@@ -39,8 +40,8 @@ export default function DiodeLaserResonatorPage() {
   // External differential quantum efficiency
   const eta_d = eta_i * mirrorLoss / (alpha_i * L_cm + mirrorLoss);
 
-  // Slope efficiency (optical)
-  const eta_slope = eta_d * (lambda_m / (1.24e-6)); // P_opt / I
+  // Slope efficiency (optical): dP/dI = η_d × hc/(qλ) [W/A]
+  const eta_slope = eta_d * (1.24e-6 / lambda_m); // P_opt / I in W/A
 
   // Series resistance and thermal
   const V_j = 1.1; // junction voltage
@@ -49,7 +50,7 @@ export default function DiodeLaserResonatorPage() {
   // L-I curve
   const liData = useMemo(() => {
     const currents = Array.from({ length: 150 }, (_, i) => i * 200 / 150); // mA
-    const Popt = currents.map(I => I > I_th * 1000 ? eta_slope * (I - I_th * 1000) * 1e-3 : 0);
+    const Popt = currents.map(I => I > I_th * 1000 ? eta_slope * (I - I_th * 1000) * 1e-3 * 1e3 : 0); // W/A × mA × 1e-3 → W, ×1e3 → mW
     const Pmax = Math.max(...Popt);
     return [
       { x: currents, y: Popt, type: "scatter", mode: "lines", name: "Output Power (mW)", line: { color: "#60a5fa", width: 2 } },
@@ -73,14 +74,16 @@ export default function DiodeLaserResonatorPage() {
     const etas = Ls.map(L => {
       const Lc = L * 1e-4;
       const ml = (1 / (2 * Lc)) * Math.log(1 / (mirrorR1 * mirrorR2));
-      return eta_i * ml / (alpha_i * Lc + ml);
+      return eta_i * ml / (alpha_i + ml);
     });
     return [{ x: Ls, y: etas.map(e => e * 100), type: "scatter", mode: "lines", name: "η_d (%)", line: { color: "#a78bfa", width: 2 } }];
   }, [alpha_i, mirrorR1, mirrorR2]);
 
-  // Far-field divergence
-  const theta_perp = lambda_m / (Math.PI * activeThickness * 1e-6) * (180 / Math.PI);
-  const theta_par = lambda_m / (Math.PI * stripeWidth * 1e-6) * (180 / Math.PI);
+  // Far-field divergence: use effective mode size (active/Gamma for perpendicular)
+  const w_perp = activeThickness * 1e-6 / Gamma; // effective mode size in m (perpendicular)
+  const w_par = stripeWidth * 1e-6; // m (parallel)
+  const theta_perp = lambda_m / (Math.PI * w_perp) * (180 / Math.PI);
+  const theta_par = lambda_m / (Math.PI * w_par) * (180 / Math.PI);
 
   // Far field pattern
   const farFieldData = useMemo(() => {
