@@ -46,18 +46,20 @@ export default function BesselBeamPage() {
   }
 
   const calc = useMemo(() => {
+    const lambdaMm = wavelength * 1e-3; // µm
+    const kr = (2 * Math.PI / lambdaMm) * Math.sin(alpha); // transverse wave vector (1/µm)
     const N = 500;
     const rs = Array.from({ length: N }, (_, i) => (maxR * i) / (N - 1));
 
     // J0 Bessel beam intensity
     const intensityJ0 = rs.map(r => {
-      const j0 = besselJ0(alpha * r);
+      const j0 = besselJ0(kr * r);
       return j0 * j0;
     });
 
     // J1 Bessel beam intensity
     const intensityJ1 = rs.map(r => {
-      const j1 = besselJ1(alpha * r);
+      const j1 = besselJ1(kr * r);
       return j1 * j1;
     });
 
@@ -70,16 +72,16 @@ export default function BesselBeamPage() {
       const row: number[] = [];
       for (let i = 0; i < N2; i++) {
         const r = Math.sqrt(xs[i] * xs[i] + xs[j] * xs[j]);
-        const j0 = besselJ0(alpha * r);
+        const j0 = besselJ0(kr * r);
         row.push(j0 * j0);
       }
       z.push(row);
     }
 
-    // Max propagation distance (approx): z_max ≈ w_input / alpha
-    const zMaxApprox = 5000 / alpha; // µm, assuming ~5mm input beam
-    const centralLobeWidth = 2.405 / alpha; // first zero of J0
-    const centralLobeFWHM = centralLobeWidth * 1.13; // approximate FWHM from first zero
+    // Max propagation distance (approx): z_max ≈ w_input / tan(α) ≈ w_input / α
+    const zMaxApprox = 5000 / Math.tan(alpha); // µm, assuming ~5mm input beam
+    const centralLobeWidth = 2.405 / kr; // first zero of J0 (µm)
+    const centralLobeFWHM = 2.252 / kr; // FWHM of J₀² intensity
 
     return { rs, intensityJ0, intensityJ1, z, xs, zMaxApprox, centralLobeWidth, centralLobeFWHM };
   }, [wavelength, alpha, maxR]);
@@ -110,7 +112,7 @@ export default function BesselBeamPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-8">
         <p className="text-gray-300 text-sm mb-2 font-mono">
-          E(r) = J₀(α·r)  |  Central lobe first zero: r = 2.405/α
+          E(r) = J₀(k_r·r), k_r = (2π/λ)·sin(α)  |  First zero: r = 2.405/k_r
         </p>
       </div>
 
