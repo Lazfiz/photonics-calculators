@@ -38,16 +38,16 @@ export default function SiVsInGaAsPage() {
 
   function getSiQE(wl: number): number {
     if (wl < 350 || wl > 1100) return 0;
-    if (wl < 500) return 0.6 + 0.3 * (wl - 350) / 150;
-    if (wl < 900) return 0.9;
-    return 0.9 * (1100 - wl) / 200;
+    if (wl < 500) return 0.65 + 0.3 * (wl - 350) / 150;
+    if (wl < 900) return 0.95;
+    return 0.95 * (1100 - wl) / 200;
   }
 
   function getInGaAsQE(wl: number): number {
     if (wl < 900 || wl > 1700) return 0;
     if (wl < 1000) return 0.1 * (wl - 900) / 100;
-    if (wl < 1500) return 0.1 + 0.7 * (wl - 1000) / 500;
-    return 0.8 * (1700 - wl) / 200;
+    if (wl < 1500) return 0.1 + 0.75 * (wl - 1000) / 500;
+    return 0.85 * (1700 - wl) / 200;
   }
 
   // Spectral response comparison
@@ -69,7 +69,7 @@ export default function SiVsInGaAsPage() {
       const qe = getSiQE(wl);
       const sig = pr * qe * 1.602e-19;
       const dc = 0.01 * Math.pow(2, (temperature - 25) / 6) * 1e-9; // Si dark current in A
-      return qe > 0.01 ? sig / Math.sqrt(2 * 1.602e-19 * sig * 1e6 + siNoiseFloor ** 2 * 1e6 + 2 * 1.602e-19 * dc * 1e6) : 0;
+      return qe > 0 ? sig / Math.sqrt(2 * 1.602e-19 * sig * 1e6 + siNoiseFloor ** 2 * 1e6 + 2 * 1.602e-19 * dc * 1e6) : 0;
     });
     const inGaAsSNRs = wls.map(wl => {
       const pe = 6.626e-34 * 3e8 / (wl * 1e-9);
@@ -77,7 +77,7 @@ export default function SiVsInGaAsPage() {
       const qe = getInGaAsQE(wl);
       const sig = pr * qe * 1.602e-19;
       const dc = 5 * Math.pow(2, (temperature - 25) / 5) * 1e-9; // InGaAs dark current in A
-      return qe > 0.01 ? sig / Math.sqrt(2 * 1.602e-19 * sig * 1e6 + inGaAsNoiseFloor ** 2 * 1e6 + 2 * 1.602e-19 * dc * 1e6) : 0;
+      return qe > 0 ? sig / Math.sqrt(2 * 1.602e-19 * sig * 1e6 + inGaAsNoiseFloor ** 2 * 1e6 + 2 * 1.602e-19 * dc * 1e6) : 0;
     });
     return { wls, siSNRs, inGaAsSNRs };
   }, [powerW, siNoiseFloor, inGaAsNoiseFloor, temperature]);
