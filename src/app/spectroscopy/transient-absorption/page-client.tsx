@@ -55,8 +55,11 @@ export default function TransientAbsorptionPage() {
     const delayArr = delays.split(",").map(Number).filter(d => !isNaN(d));
     const tTrace = delayArr.map(d => {
       const gsb = -0.8 * Math.exp(-(d / 5));
-      const esa = 0.6 * (1 - Math.exp(-d / 0.3)) * Math.exp(-d / 3);
-      return gsb + esa;
+      const esaBuildup = 1 - Math.exp(-d / 0.3);
+      const esaDecay = Math.exp(-d / 3);
+      const esa = 0.6 * esaBuildup * esaDecay * Math.exp(-((gsAbsorption - esAbsorption) ** 2) / (2 * 40 * 40));
+      const se = -0.5 * esaBuildup * esaDecay * Math.exp(-((gsAbsorption - seCenter) ** 2) / (2 * 25 * 25));
+      return gsb + esa + se;
     });
 
     return [
