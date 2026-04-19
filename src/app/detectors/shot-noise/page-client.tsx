@@ -12,7 +12,7 @@ export default function ShotNoisePage() {
   const [bandwidth, setBandwidth] = useURLState("bandwidth", 1e6); // Hz
 
   const chartData = useMemo(() => {
-    const currents = Array.from({ length: 200 }, (_, i) => 1e-9 * Math.pow(1000, i / 200)); // 1nA to 1mA
+    const currents = Array.from({ length: 200 }, (_, i) => 1e-9 * Math.pow(1e6, i / 199)); // 1nA to 1mA
     const iNoise = currents.map(I => Math.sqrt(2 * q * I * bandwidth));
     const snr = currents.map(I => I / Math.sqrt(2 * q * I * bandwidth));
     return [
@@ -22,8 +22,8 @@ export default function ShotNoisePage() {
   }, [photocurrent, q, bandwidth]);
 
   const iShot = Math.sqrt(2 * q * photocurrent * bandwidth);
-  const snrVal = iShot === 0 ? Infinity : photocurrent / iShot;
-  const snrPower = iShot === 0 ? Infinity : Math.pow(snrVal, 2);
+  const snrVal = photocurrent > 0 ? photocurrent / iShot : 0;
+  const snrPower = snrVal * snrVal;
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
