@@ -14,31 +14,23 @@ export default function CavityModeSpacingPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
 
   const c = 3e11; // mm/s
-  const L = cavityLength * n; // optical length
+  const L = cavityLength * n; // optical length (for FSR)
   const fSR = c / (2 * L); // free spectral range in Hz
   const fSRGHz = fSR / 1e9;
   const lambdaFSR = wavelength * wavelength / (2 * n * cavityLength * 1e6); // nm, wavelength FSR
 
   // Gouy phase and transverse mode spacing
-  const g1 = 1 - L / R1;
-  const g2 = 1 - L / R2;
+  // g-parameters use physical cavity length, NOT optical length
+  const g1 = 1 - cavityLength / R1;
+  const g2 = 1 - cavityLength / R2;
   const gParam = g1 * g2;
   const isStable = gParam >= 0 && gParam <= 1;
 
-  // Transverse mode spacing factor
-  const cosTheta = isStable ? 2 * Math.sqrt(gParam) : 0;
-  const gouyPhasePerRoundTrip = isStable ? 2 * Math.acos(2 * gParam - 1 > 1 ? 1 : 2 * gParam - 1 < -1 ? -1 : 2 * gParam - 1) : 0;
-  // More accurate: cos(ψ/2) = 2g1g2 - 1 ... actually arccos(±2√(g1g2)-1)... let me use proper formula
-  // Gouy phase per round trip: ψ = 2 arccos(±√(g1*g2))
-  // For stable cavity: ψ = 2 arccos(2√(g1*g2) - 1) ... no
-  // Correct: the round-trip Gouy phase is arccos(2g1g2 - 1) * 2... 
-  // Actually: cos(ψ/2) = g1*g2... no.
-  // The eigenvalue of the round-trip ABCD matrix gives cos(ψ/2) = (A+D)/2 = 2g1g2 - 1
-  const halfGouy = isStable ? Math.acos(Math.max(-1, Math.min(1, 2 * g1 * g2 - 1))) : 0;
-  const gouyRT = halfGouy * 2;
+  // Round-trip Gouy phase: ζ = 2·arccos(√(g₁g₂)) — Siegman, Lasers (1986)
+  const gouyRT = isStable ? 2 * Math.acos(Math.sqrt(gParam)) : 0;
 
-  // Transverse mode spacing
-  const transverseSpacingGHz = fSRGHz * gouyRT / (2 * Math.PI);
+  // Transverse mode spacing: Δf_T = FSR · ζ/(2π)
+  const transverseSpacingGHz = isStable ? fSRGHz * gouyRT / (2 * Math.PI) : 0;
 
   // Mode spectrum
   const chartData = useMemo(() => {
@@ -46,17 +38,19 @@ export default function CavityModeSpacingPage() {
     const modes: { x: number; y: number; label: string }[] = [];
 
     for (let q = 0; q < 7; q++) {
-      const nu00 = q * fSRGHz;
+      // TEM₀₀ frequency includes fundamental Gouy offset: (m+n+1)·ζ/(2π)
+      const gouyOffset = transverseSpacingGHz; // (0+0+1)·ζ/(2π)·FSR
+      const nu00 = q * fSRGHz + gouyOffset;
       modes.push({ x: nu00, y: 1, label: `TEM₀₀ q=${q}` });
 
-      // Higher order transverse modes
+      // Higher order transverse modes: (m+n+1)·ζ/(2π)·FSR
       for (let m = 1; m <= 4; m++) {
-        const nuT = nu00 + m * transverseSpacingGHz;
+        const nuT = q * fSRGHz + (m + 1) * transverseSpacingGHz;
         if (nuT < maxFreq) {
           modes.push({ x: nuT, y: 1 / (m + 1), label: `TEM₀${m}` });
         }
         for (let n = 1; n <= 2; n++) {
-          const nuT2 = nu00 + (m + n) * transverseSpacingGHz;
+          const nuT2 = q * fSRGHz + (m + n + 1) * transverseSpacingGHz;
           if (nuT2 < maxFreq) {
             modes.push({ x: nuT2, y: 0.5 / (m + n + 1), label: `TEM${m}${n}` });
           }
@@ -107,8 +101,11 @@ export default function CavityModeSpacingPage() {
     xaxis: { title: "g₁", gridcolor: "#374151", range: [-1.5, 1.5] },
     yaxis: { title: "g₂", gridcolor: "#374151", range: [-1.5, 1.5], scaleanchor: "x" },
     margin: { t: 30, r: 30, b: 50, l: 70 },
-    shapes: [{ type: "circle" as const, xref: "x", yref: "y", x0: 0, y0: 0, x1: 1, y1: 1, line: { color: "#60a5fa", width: 2 } },
-      { type: "circle" as const, xref: "x", yref: "y", x0: -1, y0: -1, x1: 0, y1: 0, line: { color: "#60a5fa", width: 2 } }],
+    shapes: [
+      // Stability boundaries: g₁g₂ = 0 (axes) and g₁g₂ = 1 (hyperbolas)
+      { type: "line" as const, xref: "x", yref: "y", x0: -1.5, y0: 0, x1: 1.5, y1: 0, line: { color: "#60a5fa44", width: 1 } },
+      { type: "line" as const, xref: "x", yref: "y", x0: 0, y0: -1.5, x1: 0, y1: 1.5, line: { color: "#60a5fa44", width: 1 } },
+    ],
   };
 
   return (
@@ -117,7 +114,7 @@ export default function CavityModeSpacingPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">FSR</span> = c / (2nL)</p>
         <p><span className="text-blue-400">g₁</span> = 1 − L/R₁, <span className="text-blue-400">g₂</span> = 1 − L/R₂</p>
-        <p><span className="text-blue-400">ν<sub>mnq</sub></span> = q·FSR + (m+n)·(ψ/2π)·FSR</p>
+        <p><span className="text-blue-400">ν<sub>mnq</sub></span> = (q + (m+n+1)·ζ/2π)·FSR</p>
         <p><span className="text-blue-400">Stability:</span> 0 ≤ g₁g₂ ≤ 1</p>
       </div>
 
