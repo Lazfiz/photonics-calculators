@@ -71,6 +71,7 @@ export default function TwoPhotonExcitationPage() {
           <p>E_pulse = P_avg / f_rep</p>
           <p>Lateral: d = 0.325λ/NA</p>
         </div>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="bg-gray-900 rounded-lg p-4">

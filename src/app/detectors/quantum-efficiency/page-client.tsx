@@ -29,7 +29,7 @@ function qeAt(detType: DetType, w: number, fillFactor: number, microlensGain: nu
     if (w < 900) base = 0;
     else if (w < 1100) base = 0.86 * (1 - Math.exp(-(w - 900) / 70));
     else if (w < 1600) base = 0.86 + 0.04 * Math.sin(Math.PI * (w - 1100) / 500);
-    else if (w <= 1700) base = 0.9 * Math.exp(-(w - 1600) / 45);
+    else if (w <= 1700) base = 0.86 * Math.exp(-(w - 1600) / 45);
   } else if (detType === "ccd") {
     if (w < 300) base = 0;
     else if (w < 500) base = 0.9 * (1 - Math.exp(-(w - 300) / 70));
@@ -41,7 +41,7 @@ function qeAt(detType: DetType, w: number, fillFactor: number, microlensGain: nu
     else if (w < 750) base = 0.6 + 0.08 * Math.sin(Math.PI * (w - 550) / 400);
     else if (w <= 950) base = 0.68 * Math.exp(-(w - 750) / 90);
   }
-  return Math.min(1, Math.max(0, base * fillFactor * microlensGain));
+  return base * Math.min(1, fillFactor * microlensGain);
 }
 
 export default function QuantumEfficiencyPage() {
