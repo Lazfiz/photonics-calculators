@@ -9,7 +9,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 export default function MichelsonInterferometerPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1.0); // μm
   const [maxOPD, setMaxOPD] = useURLState("maxOPD", 100); // μm
-  const [nPoints, setNPoints] = useURLState("nPoints", 256);
+  const [nPoints, setNPoints] = useURLState("nPoints", 1024);
   const [nLines, setNLines] = useURLState("nLines", 3);
   const [sourceWidth, setSourceWidth] = useURLState("sourceWidth", 0.05); // μm bandwidth
 
