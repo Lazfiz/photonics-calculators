@@ -9,7 +9,7 @@ import { useURLState } from "../../../hooks/use-url-state";
 // PMT Gain Calculator
 // Total gain: G = δ^n where δ is per-stage gain, n is number of stages
 // Per-stage gain: δ = k·V_s^α (α ≈ 0.7-0.8 depending on dynode material)
-// SNR: SNR_out = η·G·P·τ / √(η·G²·P·τ + 2·G·I_d·τ·q + σ_amp²)
+// SNR: SNR_out = η·G·P·τ / √(η·G²·P·τ·F + G·F·I_dark·τ/q + σ_amp²)
 // Where η is photocathode QE, P is photon flux, τ is integration time
 // Equivalent input noise: NEP = √(2qI_d) / (η·G·R_λ)
 
@@ -56,16 +56,17 @@ export default function PmtGainPage() {
   const snrChart = useMemo(() => {
     const flux = Array.from({ length: 150 }, (_, i) => 1 + i * 10000 / 150);
     const tau = 1; // 1 second integration
+    const anodeDarkE = darkCurrent * 1e-9 * tau / q; // anode dark electrons in tau
     return [
       { x: flux, y: flux.map(P => {
         const signal = photocathodeQE * totalGain * P * tau;
-        const noise = Math.sqrt(photocathodeQE * totalGain * totalGain * P * tau + darkCurrent * 1e-9 * tau / q + amplifierNoise ** 2);
+        const noise = Math.sqrt(photocathodeQE * totalGain * totalGain * P * tau * excessNoiseFactor + totalGain * excessNoiseFactor * anodeDarkE + amplifierNoise ** 2);
         return signal / noise;
       }), type: "scatter", mode: "lines", name: `G=${totalGain.toExponential(1)}`, line: { color: "#f87171", width: 2 } },
       { x: flux, y: flux.map(P => {
         const G = totalGain / 10;
         const signal = photocathodeQE * G * P * tau;
-        const noise = Math.sqrt(photocathodeQE * G * G * P * tau + darkCurrent * 1e-9 * tau / q + amplifierNoise ** 2);
+        const noise = Math.sqrt(photocathodeQE * G * G * P * tau * (1 + 1 / (Math.pow(k_coeff * Math.pow(stageVoltage, alpha), 1))) + G * (1 + 1 / (Math.pow(k_coeff * Math.pow(stageVoltage, alpha), 1))) * anodeDarkE + amplifierNoise ** 2);
         return signal / noise;
       }), type: "scatter", mode: "lines", name: `G=${(totalGain/10).toExponential(1)}`, line: { color: "#a78bfa", width: 2, dash: "dash" } },
     ];
@@ -87,7 +88,7 @@ export default function PmtGainPage() {
         const G = Math.pow(deltaLocal, numStages);
         const F = 1 + 1 / deltaLocal;
         const sig = photocathodeQE * G * refFlux * tau;
-        const noise = Math.sqrt(photocathodeQE * G * G * refFlux * tau * F + darkCurrent * 1e-9 * tau / q + amplifierNoise ** 2);
+        const noise = Math.sqrt(photocathodeQE * G * G * refFlux * tau * F + G * F * darkCurrent * 1e-9 * tau / q + amplifierNoise ** 2);
         return sig / noise;
       }), type: "scatter", mode: "lines", name: "SNR @ 1M photons/s", line: { color: "#34d399", width: 2 },
     }];
@@ -137,7 +138,7 @@ export default function PmtGainPage() {
         <p>G = δ^n (total gain, n = number of stages)</p>
         <p>R_anode = η·q·λ/(h·c) · G</p>
         <p>F ≈ 1 + 1/δ (excess noise, nearly ideal)</p>
-        <p>SNR = η·G·P·τ / √(η·G²·P·τ·F + I_dark·τ/q + σ<sub>amp</sub>²)</p>
+        <p>SNR = η·G·P·τ / √(η·G²·P·τ·F + G·F·I<sub>dark</sub>·τ/q + σ<sub>amp</sub>²)</p>
       </div>
     </div>
   );
