@@ -35,7 +35,7 @@ export default function PixelCrosstalkPage() {
   }, [wavelength]);
 
   const diffusionCrosstalk = Math.min(0.5, Math.sqrt(absorptionDepth / depletionDepth) * 0.1);
-  const totalCrosstalk = Math.sqrt(diffusionCrosstalk ** 2 + crosstalkCoeff ** 2);
+  const totalCrosstalk = 1 - (1 - diffusionCrosstalk) * (1 - crosstalkCoeff);
 
   const mtfCrosstalk = (freq: number) => 1 / (1 + totalCrosstalk * (2 * Math.PI * freq * pixelPitch) ** 2);
 
@@ -62,7 +62,7 @@ export default function PixelCrosstalkPage() {
     // MTF vs spatial frequency
     const freqs = Array.from({ length: 200 }, (_, i) => i * 1 / (pixelPitch) / 200);
     const mtf = freqs.map(f => 1 / (1 + totalCrosstalk * (2 * Math.PI * f * pixelPitch) ** 2));
-    const mtfIdeal = freqs.map(f => f <= 1 / (2 * pixelPitch) ? 1 : 0); // Nyquist box
+    const mtfIdeal = freqs.map(f => { const u = Math.PI * f * pixelPitch; return u === 0 ? 1 : Math.abs(Math.sin(u) / u); }); // sinc
 
     return [
       { x: wls, y: diffCt.map(c => c * 100), type: "scatter" as const, mode: "lines" as const,
