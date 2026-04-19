@@ -15,7 +15,7 @@ export default function PMTPage() {
   const [qe, setQe] = useURLState("qe", 0.25);
   const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 1); // nA
   const [photonRate, setPhotonRate] = useURLState("photonRate", 1e6); // photons/s
-  const [bandwidth, setBandwidth] = useURLState("bandwidth", 100e6); // Hz
+  const [bandwidth, setBandwidth] = useURLState("bandwidth", 100); // MHz
 
   const gain = Math.pow(secondaryEmission, numDynodes);
   const signalElectrons = photonRate * qe;
@@ -41,7 +41,8 @@ export default function PMTPage() {
       const darkE = (darkCurrent * 1e-9) / (1.602e-19 * g);
       const enf = 1.1 + 1 / d; // excess noise factor approximation
       // SNR with noise bandwidth: rates / sqrt(2*BW*(rate_sum)*ENF)
-      return sig / Math.sqrt(2 * bandwidth * (sig + darkE) * enf);
+      const bwHz = bandwidth * 1e6;
+      return Math.sqrt(g) * sig / Math.sqrt(2 * bwHz * (sig + darkE) * enf);
     });
     return { deltas, snrVals };
   }, [numDynodes, qe, darkCurrent, photonRate, bandwidth]);
@@ -68,7 +69,7 @@ export default function PMTPage() {
         <p>Gain G = δ<sup>n</sup></p>
         <p>I<sub>signal</sub> = R<sub>ph</sub> · QE · e · G</p>
         <p>ENF = 1.1 + 1/δ (excess noise factor)</p>
-        <p>SNR = N<sub>pe</sub> / √((N<sub>pe</sub> + N<sub>dark</sub>) · ENF)</p>
+        <p>SNR = √G · R<sub>pe</sub> / √(2·BW·(R<sub>pe</sub> + R<sub>dark</sub>)·ENF)</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
