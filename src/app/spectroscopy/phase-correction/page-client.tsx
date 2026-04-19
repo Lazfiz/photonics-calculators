@@ -11,9 +11,15 @@ export default function PhaseCorrectionPage() {
   const [phaseNoise, setPhaseNoise] = useURLState("phaseNoise", 0.3);
   const [method, setMethod] = useState<"mertz" | "forman" | "power">("mertz");
 
-  const x = Array.from({ length: opdPoints }, (_, i) => -1 + (2 * i) / (opdPoints - 1));
-  const idealPhase = x.map(xi => Math.PI * xi * 0.1);
-  const noisyPhase = idealPhase.map(p => p + phaseNoise * (Math.random() - 0.5) * 2 * Math.PI);
+  const { x, idealPhase, noisyPhase } = useMemo(() => {
+    const pts = Array.from({ length: opdPoints }, (_, i) => -1 + (2 * i) / (opdPoints - 1));
+    const ideal = pts.map(xi => Math.PI * xi * 0.1);
+    // Seeded PRNG for deterministic noise
+    let seed = opdPoints * 1000 + Math.round(phaseNoise * 100);
+    const rand = () => { seed = (seed * 16807 + 0) % 2147483647; return seed / 2147483647; };
+    const noisy = ideal.map(p => p + phaseNoise * (rand() - 0.5) * 2 * Math.PI);
+    return { x: pts, idealPhase: ideal, noisyPhase: noisy };
+  }, [opdPoints, phaseNoise]);
 
   const corrected = useMemo(() => {
     if (method === "mertz") {
@@ -25,7 +31,8 @@ export default function PhaseCorrectionPage() {
     } else if (method === "forman") {
       // Forman: convolution-based
       return noisyPhase.map((p, i) => {
-        const smooth = noisyPhase.slice(Math.max(0, i - 3), i + 4).reduce((a, b) => a + b, 0) / Math.min(7, opdPoints - i, i + 1);
+        const window = noisyPhase.slice(Math.max(0, i - 3), i + 4);
+        const smooth = window.reduce((a, b) => a + b, 0) / window.length;
         return smooth * (1 - phaseNoise * 0.4);
       });
     }
@@ -34,7 +41,7 @@ export default function PhaseCorrectionPage() {
   }, [noisyPhase, phaseNoise, method, idealPhase, opdPoints]);
 
   const residualRms = Math.sqrt(corrected.reduce((s, p, i) => s + Math.pow(p - idealPhase[i], 2), 0) / opdPoints);
-  const snrImprovement = phaseNoise > 0 ? (phaseNoise * Math.PI / 2) / Math.max(residualRms, 1e-10) : 1;
+  const snrImprovement = phaseNoise > 0 ? (phaseNoise * Math.PI / Math.sqrt(3)) / Math.max(residualRms, 1e-10) : 1;
 
   const chartData = useMemo(() => {
     return [
