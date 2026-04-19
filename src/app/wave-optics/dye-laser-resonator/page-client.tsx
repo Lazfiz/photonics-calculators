@@ -9,7 +9,7 @@ export default function DyeLaserResonatorPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 590); // nm (Rhodamine 6G peak)
   const [dyeName, setDyeName] = useState("Rhodamine 6G");
   const [cavityLength, setCavityLength] = useURLState("cavityLength", 150); // mm
-  const [R1, setR1] = useURLState("R1", 50); // mm (HR, strongly curved)
+  const [R1, setR1] = useURLState("R1", 100); // mm (HR)
   const [R2, setR2] = useURLState("R2", 100); // mm (OC)
   const [R_oc, setR_oc] = useURLState("R_oc", 0.85);
   const [flowSpeed, setFlowSpeed] = useURLState("flowSpeed", 5); // m/s
@@ -66,10 +66,11 @@ export default function DyeLaserResonatorPage() {
   const A_beam = Math.PI * w0 * w0;
   const P_out = isAboveThreshold ? Isat * A_beam * (2 * smallSignalGain * L_m - totalLoss) * outputLoss / totalLoss : 0;
 
-  // Triplet buildup
-  const k_ISC = (1 - dp.quantum_yield) / dp.tau;
-  const tripletFraction = k_ISC * concentration / (k_ISC * concentration + flowSpeed * 1e3 / 0.1); // rough
-  const tripletQuenchEff = 1 - Math.exp(-flowSpeed * 0.001 / (cavityLength * 0.001) * 10);
+  // Triplet buildup: rate ratio k_ISC / (k_ISC + k_flow)
+  // k_flow = flowSpeed / L_char where L_char is the dye jet thickness
+  const L_char = 0.1e-3; // m — dye jet thickness
+  const k_flow = flowSpeed / L_char; // s⁻¹
+  const tripletFraction = k_ISC / (k_ISC + k_flow);
 
   // Gain spectrum (simplified Gaussian)
   const spectrumData = useMemo(() => {
@@ -79,34 +80,44 @@ export default function DyeLaserResonatorPage() {
       const g = dp.sigma_em * dyeDensity * dp.quantum_yield * 0.3 * Math.exp(-Math.pow(wl - dp.lambda_max, 2) / (2 * sigma * sigma));
       // Re-absorption
       const abs_factor = Math.exp(-dp.sigma_abs_peak * dyeDensity * 0.001 * Math.exp(-Math.pow(wl - (dp.lambda_max - 50), 2) / (2 * 30 * 30)));
-      return g * abs_factor * 1e4;
+      return g * abs_factor;
     });
     return [{ x: wls, y: gain, type: "scatter", mode: "lines", name: "Gain (m⁻¹)", line: { color: "#60a5fa", width: 2 } }];
   }, [dyeDensity, dp]);
 
-  // Output vs pump
+  // Output vs pump (simplified linear model above threshold)
   const piData = useMemo(() => {
-    const pumps = Array.from({ length: 100 }, (_, i) => i * 5 / 100);
-    const Pmax = P_out > 0 ? P_out : 0.1;
+    const pumps = Array.from({ length: 100 }, (_, i) => i * 10 / 100); // W
+    const slopeEff = isAboveThreshold && totalLoss > 0 ? outputLoss / totalLoss * dp.quantum_yield : 0;
+    const Pth_W = isAboveThreshold ? 0 : 1; // arbitrary pump threshold for display
     return [
-      { x: pumps, y: pumps.map(Pp => Pp > 0.5 ? Pmax * (Pp - 0.5) / 4 : 0), type: "scatter", mode: "lines", name: "Output (W)", line: { color: "#60a5fa", width: 2 } },
+      { x: pumps, y: pumps.map(Pp => Pp > Pth_W ? slopeEff * (Pp - Pth_W) : 0), type: "scatter", mode: "lines", name: "Output (W)", line: { color: "#60a5fa", width: 2 } },
     ];
-  }, [P_out]);
+  }, [P_out, isAboveThreshold, outputLoss, totalLoss, dp]);
 
-  // Triplet fraction vs flow speed
+  // Triplet fraction vs flow speed (uses rate model)
   const tripletData = useMemo(() => {
     const speeds = Array.from({ length: 100 }, (_, i) => 0.1 + i * 15 / 100);
-    const tf = speeds.map(v => 1 / (1 + v * 10));
+    const kISC = (1 - dp.quantum_yield) / dp.tau;
+    const Lc = 0.1e-3; // m — dye jet thickness
+    const tf = speeds.map(v => kISC / (kISC + v / Lc));
     return [{ x: speeds, y: tf.map(f => f * 100), type: "scatter", mode: "lines", name: "Triplet Fraction (%)", line: { color: "#f87171", width: 2 } }];
-  }, []);
+  }, [dp]);
 
-  // Beam size in dye jet
+  // Beam size in dye jet — waist position depends on g-parameters
   const beamSizeData = useMemo(() => {
-    if (!isStable) return [];
+    if (!isStable || w0 === 0) return [];
+    const zR = Math.PI * w0 * w0 / lambda_m; // Rayleigh range (m)
+    // Waist position from mirror 1: z1 = L·g2·(1-g1) / (g1+g2-2g1g2)
+    const denom = g1 + g2 - 2 * g1 * g2;
+    const z1 = denom !== 0 ? L_m * g2 * (1 - g1) / denom : L_m / 2;
     const zs = Array.from({ length: 200 }, (_, i) => i * L_m / 200);
-    const ws = zs.map(z => beamWaist_um * 1e-6 * Math.sqrt(1 + Math.pow(z / (Math.PI * w0 * w0 / lambda_m), 2)) * 1e6);
+    const ws = zs.map(z => {
+      const dz = z - z1; // distance from waist
+      return w0 * Math.sqrt(1 + (dz * dz) / (zR * zR)) * 1e6; // µm
+    });
     return [{ x: zs.map(z => z * 1000), y: ws, type: "scatter", mode: "lines", name: "Beam radius (µm)", line: { color: "#a78bfa", width: 2 } }];
-  }, [isStable, beamWaist_um, w0, lambda_m, L_m]);
+  }, [isStable, w0, lambda_m, L_m, g1, g2]);
 
   const plotLayout: any = {
     paper_bgcolor: "#111827", plot_bgcolor: "#1f2937", font: { color: "#e5e7eb" },
