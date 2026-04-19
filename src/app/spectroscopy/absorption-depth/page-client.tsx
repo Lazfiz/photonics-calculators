@@ -29,12 +29,12 @@ export default function AbsorptionDepthPage() {
       // Reference: Hale & Querry 1973, Pope & Fry 1997
       const baseline = wl < 200 ? 1e4 : wl < 300 ? 0.1 : 0.01;
       const uvEdge = wl < 250 ? 1e4 * Math.exp(-((wl - 200) / 30) ** 2) : 0;
-      const band970 = 0.5 * Math.exp(-((wl - 970) / 100) ** 2);
-      const band1200 = 30 * Math.exp(-((wl - 1200) / 80) ** 2);
-      const band1450 = 50 * Math.exp(-((wl - 1450) / 60) ** 2);
-      const band1950 = 100 * Math.exp(-((wl - 1950) / 100) ** 2);
+      const band970 = 0.45 * Math.exp(-((wl - 970) / 100) ** 2);
+      const band1200 = 1.2 * Math.exp(-((wl - 1200) / 80) ** 2);
+      const band1450 = 32 * Math.exp(-((wl - 1450) / 50) ** 2);
+      const band1950 = 70 * Math.exp(-((wl - 1950) / 80) ** 2);
       // NIR increase beyond 1950nm (combination/overtone bands)
-      const irRise = wl > 1800 ? 50 * Math.exp((wl - 1950) * 0.008) : 0;
+      const irRise = wl > 1800 ? 30 * Math.exp((wl - 1950) * 0.008) : 0;
       return baseline + uvEdge + band970 + band1200 + band1450 + band1950 + irRise;
     },
     custom: () => absorptionCoeff,
