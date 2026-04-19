@@ -20,18 +20,18 @@ export default function DualCombSpectroscopyPage() {
   const deltaFrep = Math.max(Math.abs(frep2Hz - frep1Hz), 1); // Hz, floor 1 Hz to avoid /0
   const centerFreq = c / (centerWavelength * 1e-9);
 
-  const opticalBW = numModes * Math.max(frep1Hz, frep2Hz);
+  const opticalBW = (numModes - 1) * (frep1Hz + frep2Hz) / 2;
   const opticalBWnm = (centerWavelength ** 2 * opticalBW) / (c * 1e9);
   const updateTime = 1 / deltaFrep;
-  const resolutionHz = deltaFrep;
+  const resolutionHz = frep1Hz; // Optical resolution = comb tooth spacing (f_rep)
   const resolutionNm = (centerWavelength ** 2 * resolutionHz) / (c * 1e9);
 
   const chartData = useMemo(() => {
     const fMin = centerFreq - opticalBW / 2;
     const step = Math.max(1, Math.floor(numModes / 500));
     const count = Math.floor(numModes / step);
-    const modes1 = Array.from({ length: count }, (_, i) => fMin + i * step * frep1Hz);
-    const modes2 = Array.from({ length: count }, (_, i) => fMin + i * step * frep2Hz);
+    const modes1 = Array.from({ length: count }, (_, i) => fMin + i * step * frep1Hz + ceoFreq1 * 1e6);
+    const modes2 = Array.from({ length: count }, (_, i) => fMin + i * step * frep2Hz + ceoFreq2 * 1e6);
     return [
       { x: modes1.map(f => (f - centerFreq) / 1e12), y: modes1.map(() => 1), type: "scatter", mode: "lines",
         name: `Comb 1 (${repRate1} MHz)`, line: { color: "#34d399", width: 1 } },
@@ -67,7 +67,7 @@ export default function DualCombSpectroscopyPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Δf_rep (resolution)</p>
+          <p className="text-sm text-gray-400">Δf_rep (RF spacing)</p>
           <p className="text-xl font-bold text-green-400">{deltaFrep.toFixed(0)} Hz</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -86,7 +86,7 @@ export default function DualCombSpectroscopyPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p>fₙ = f_CEO + n · f_rep — comb mode frequencies</p>
-        <p>Spectral resolution = |f_rep1 − f_rep2| = Δf_rep</p>
+        <p>Spectral resolution = f_rep (comb tooth spacing)</p>
         <p>Update time = 1/Δf_rep (one full interferogram period)</p>
         <p>Optical BW ≈ N_modes × f_rep → maps to RF domain 0 to f_rep</p>
         <p className="text-gray-500">Multi-heterodyne: each optical comb pair maps to a unique RF beat note</p>
