@@ -20,17 +20,16 @@ export default function CavityStabilityPage() {
     // Beam waist and position for stable cavity
     let w0 = 0, z1 = 0, z2 = 0;
     if (stable && stability > 0) {
-      const lambda = 1.064e-3; // mm, 1064nm
-      const Lm = L / 1000; // m
-      const R1m = r1 / 1000;
-      const R2m = r2 / 1000;
+      const lambda = 1.064e-6; // m, 1064nm
       const Lcap = L * 1e-3; // m
+      const R1m = r1 * 1e-3; // m
+      const R2m = r2 * 1e-3; // m
 
       // Waist size
-      const num = Math.sqrt(Lcap * (R1m - Lcap) * (R2m - Lcap) * (R1m + R2m - Lcap));
+      const num = Math.sqrt(Math.abs(Lcap * (R1m - Lcap) * (R2m - Lcap) * (R1m + R2m - Lcap)));
       const denom = R1m + R2m - 2 * Lcap;
       if (denom !== 0) {
-        w0 = Math.sqrt(lambda / Math.PI * Math.sqrt(num / Math.abs(denom)));
+        w0 = Math.sqrt(lambda / Math.PI * num / Math.abs(denom));
         // Position from mirror 1
         z1 = Lcap * (R2m - Lcap) / (R1m + R2m - 2 * Lcap);
         z2 = Lcap - z1;
@@ -43,17 +42,24 @@ export default function CavityStabilityPage() {
   const chartData = useMemo(() => {
     // Stability diagram: g1 vs g2
     // Lines: g1*g2 = 0, g1*g2 = 1
-    const g1line = Array.from({ length: 100 }, (_, i) => -2 + i * 0.04);
-    const g2upper = g1line.map(g1 => g1 !== 0 ? 1 / g1 : 10);
-    const g2lower = g1line.map(() => 0);
+    return [
+      // Stable region shading — covers both 1st and 3rd quadrants
+      const stabGs1 = Array.from({ length: 100 }, (_, i) => 0.01 + i * 1.99 / 100);
+      const stabG2_1 = stabGs1.map(g1 => Math.min(1 / g1, 2));
+      const stabGs2 = Array.from({ length: 100 }, (_, i) => -1.99 + i * 1.98 / 100);
+      const stabG2_3 = stabGs2.map(g1 => g1 !== 0 ? Math.max(1 / g1, -2) : -2);
 
     return [
       // Stability boundaries
       { x: [-2, 2], y: [0, 0], type: "scatter" as const, mode: "lines" as const, name: "g₁g₂ = 0", line: { color: "#4b5563", dash: "dash" } },
       { x: [0, 0], y: [-2, 2], type: "scatter" as const, mode: "lines" as const, name: "", line: { color: "#4b5563", dash: "dash" }, showlegend: false },
-      { x: g1line, y: g2upper, type: "scatter" as const, mode: "lines" as const, name: "g₁g₂ = 1", line: { color: "#4b5563", dash: "dash" } },
-      // Stable region shading
-      { x: [0, 1, 1, 0, 0], y: [0, 0, 1, 1, 0], type: "scatter" as const, mode: "lines" as const, fill: "toself", name: "Stable", fillcolor: "rgba(34, 197, 94, 0.2)", line: { color: "transparent" } },
+      // g₁g₂ = 1 hyperbola — split into positive and negative branches to avoid vertical line at origin
+      { x: stabGs1, y: stabG2_1, type: "scatter" as const, mode: "lines" as const, name: "g₁g₂ = 1", line: { color: "#4b5563", dash: "dash" } },
+      { x: stabGs2, y: stabG2_3, type: "scatter" as const, mode: "lines" as const, name: "", line: { color: "#4b5563", dash: "dash" }, showlegend: false },
+      // 1st quadrant stable region
+      { x: [0.01, ...stabGs1, 1.99, 0.01], y: [0, ...stabG2_1, 0, 0], type: "scatter" as const, mode: "lines" as const, fill: "toself", name: "Stable", fillcolor: "rgba(34, 197, 94, 0.15)", line: { color: "transparent" } },
+      // 3rd quadrant stable region
+      { x: [-0.01, ...stabGs2, -1.99, -0.01], y: [0, ...stabG2_3, 0, 0], type: "scatter" as const, mode: "lines" as const, fill: "toself", name: "", fillcolor: "rgba(34, 197, 94, 0.15)", line: { color: "transparent" }, showlegend: false },
       // Current point
       { x: [calc.g1], y: [calc.g2], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: calc.stable ? "#22c55e" : "#ef4444", size: 14 } },
     ];
