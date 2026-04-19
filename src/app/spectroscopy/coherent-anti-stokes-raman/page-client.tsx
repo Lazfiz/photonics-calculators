@@ -38,10 +38,13 @@ export default function CoherentAntiStokesRamanPage() {
     // Non-resonant background + resonant CARS signal
     const cars = shifts.map(s => {
       const delta = s - ramanShift;
-      const resonant = 50 * (ramanShift * delta) / (Math.pow(delta, 2) + Math.pow(25, 2));
-      const nonresonant = 10;
-      const total = resonant + nonresonant;
-      return Math.pow(total, 2);
+      const gamma = 25;
+      const denomMag2 = delta * delta + gamma * gamma;
+      const chiR_re = 50 * delta / denomMag2;
+      const chiR_im = -50 * gamma / denomMag2;
+      const chi_re = 10 + chiR_re; // χ_NR + Re(χ_R)
+      const chi_im = chiR_im; // Im(χ_R)
+      return chi_re * chi_re + chi_im * chi_im; // |χ³|²
     });
     const maxC = Math.max(...cars);
     const normCars = cars.map(c => c / maxC);
@@ -66,7 +69,7 @@ export default function CoherentAntiStokesRamanPage() {
     ];
   }, [pumpWavelength, stokesWavelength]);
 
-  const coherenceTime = pulseWidth * 1e-12 * 2.355;
+  const coherenceTime = pulseWidth * 1e-12 / 2.355; // FWHM → σ
   const spectralRes = 1 / (coherenceTime * 2.998e10);
 
   return (
