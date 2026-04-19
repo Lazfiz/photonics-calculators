@@ -15,7 +15,7 @@ export default function MicrochannelPlatePage() {
     const ldr = channelLength * 1000 / channelDiameter; // L/D ratio (dimensionless)
     // Gain depends on voltage and L/D: higher L/D → more secondary emission events
     const voltageFactor = 2.5 + 0.05 * (appliedVoltage / 100 - 8);
-    const singlePlateGain = Math.pow(10, voltageFactor * Math.min(ldr / 40, 1));
+    const singlePlateGain = Math.pow(10, voltageFactor * Math.min(ldr / 60, 1.5));
     const totalGain = Math.pow(singlePlateGain, numPlates);
     const spatialRes = channelDiameter * 1.2; // µm (pore-pitch limited estimate)
     const openArea = openAreaRatio * 100;
@@ -27,7 +27,7 @@ export default function MicrochannelPlatePage() {
   const chartData = useMemo(() => {
     const voltages = Array.from({ length: 100 }, (_, i) => 500 + i * 10);
     const ldr = channelLength * 1000 / channelDiameter;
-    const ldScale = Math.min(ldr / 40, 1);
+    const ldScale = Math.min(ldr / 60, 1.5);
     const gains1 = voltages.map(v => Math.pow(10, (2.5 + 0.05 * (v / 100 - 8)) * ldScale));
     const gainsN = gains1.map(g => Math.pow(g, numPlates));
     return [
