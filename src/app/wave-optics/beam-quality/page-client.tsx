@@ -13,22 +13,23 @@ export default function BeamQualityPage() {
   const [zRmeas, setZRmeas] = useURLState("zRmeas", 7.4); // mm measured Rayleigh range
 
   const calc = useMemo(() => {
-    // From measured data
+    // From measured data — M² relationships (ISO 11146)
+    // W₀ = w₀·√M², Θ = θ·√M², Z_R = z_R (Rayleigh range is invariant)
     const lambdaMm = wavelength * 1e-6; // mm
-    const w0realMm = Math.sqrt(m2) * Math.sqrt(lambdaMm * zRmeas / Math.PI); // mm
-    const w0real = w0realMm * 1000; // µm — consistent with w0meas
-    const zRreal = zRmeas / m2; // mm for M²=1 equivalent
-    const divergenceReal = wavelength / (Math.PI * w0real); // mrad (nm/µm = mrad)
-    const divergenceMeas = m2 * divergenceReal;
-    const bpp = w0real * divergenceReal / 1000; // mm·mrad (µm × mrad / 1000)
-    const bppMeas = w0meas * divergenceMeas / 1000;
+    const w0realMm = Math.sqrt(lambdaMm * zRmeas / Math.PI); // mm — embedded Gaussian waist
+    const w0real = w0realMm * 1000; // µm
+    const zRreal = zRmeas; // mm — invariant for embedded Gaussian
+    const divergenceReal = wavelength / (Math.PI * w0real); // mrad — diffraction-limited divergence
+    const divergenceMeas = Math.sqrt(m2) * divergenceReal; // mrad — measured divergence
+    const bpp = w0real * divergenceReal / 1000; // mm·mrad — diffraction-limited BPP
+    const bppMeas = w0meas * divergenceMeas / 1000; // mm·mrad — measured BPP
     const strehl = m2 <= 1 ? 1 : 1 / (m2 * m2);
 
     // Beam propagation w(z) for measured and ideal
     const zMax = zRmeas * 4;
     const N = 200;
     const zs = Array.from({ length: N }, (_, i) => -zMax + (2 * zMax * i) / (N - 1));
-    const wIdeal = zs.map(z => w0real * Math.sqrt(1 + Math.pow(z / (zRmeas / m2), 2)));
+    const wIdeal = zs.map(z => w0real * Math.sqrt(1 + Math.pow(z / zRmeas, 2)));
     const wMeas = zs.map(z => w0meas * Math.sqrt(1 + Math.pow(z / zRmeas, 2)));
 
     return { w0real, zRreal, divergenceReal, divergenceMeas, bpp, bppMeas, strehl, zs, wIdeal, wMeas, zMax };
