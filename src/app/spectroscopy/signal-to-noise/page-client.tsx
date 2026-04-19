@@ -40,7 +40,7 @@ export default function SignalToNoisePage() {
     ];
   }, [signalPhotons, darkCurrent, readNoise, nScans, detectorNoise]);
 
-  const snrShotOnly = signalPhotons / Math.sqrt(signalPhotons);
+  const snrShotOnly = Math.sqrt(signalPhotons * nScans);
   const noiseBreakdown = {
     shot: Math.sqrt(signalPhotons),
     dark: Math.sqrt(darkCurrent),
