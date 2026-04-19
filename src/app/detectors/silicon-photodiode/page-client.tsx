@@ -99,7 +99,7 @@ export default function SiliconPhotodiodePage() {
     const temps = Array.from({ length: 150 }, (_, i) => 220 + i * 100 / 150);
     return [{
       x: temps, y: temps.map(T => {
-        const EgT = Eg300 - (alphaVarshni * T ** 2) / (T + betaVarshni);
+        const EgT = Eg0 - (alphaVarshni * T ** 2) / (T + betaVarshni);
         const niT = 1.5e10 * Math.pow(T / 300, 1.5) * Math.exp(-EgT * q / (2 * k * T) + EgAt300 * q / (2 * k * 300));
         return (q * niT * areaCm2 * depletionWidth * 1e-4 / (2 * tau)) * 1e9;
       }), type: "scatter", mode: "lines", name: "I_dark", line: { color: "#f87171", width: 2 },
