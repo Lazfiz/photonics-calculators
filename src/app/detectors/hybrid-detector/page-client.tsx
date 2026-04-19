@@ -22,7 +22,7 @@ export default function HybridDetectorPage() {
   const totalNoise = Math.sqrt(currentNoise ** 2 + voltageNoiseContrib ** 2);
   const nepSpectral = Math.sqrt(inputNoiseCurrent ** 2 * 1e-30 + inputNoiseVoltage ** 2 * 1e-18 / Rf ** 2) / responsivity * 1e15;
   const nep = totalNoise / responsivity * 1e15;
-  const noiseElectrons = totalNoise / 1.602e-19;
+  const noiseElectrons = totalNoise / (1.602e-19 * 2 * bwHz); // ENC = i_noise / (2q·BW)
 
   const nepVsBW = useMemo(() => {
     const bws = Array.from({ length: 200 }, (_, i) => 1 + i * 5);
