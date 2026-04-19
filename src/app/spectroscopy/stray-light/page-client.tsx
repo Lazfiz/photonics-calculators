@@ -17,7 +17,7 @@ export default function StrayLightPage() {
     const wls = Array.from({ length: 300 }, (_, i) => 200 + i * 3);
 
     // Ghost orders: λ_ghost = n·λ_center / m (fixed angle: nλ_n = mλ_m)
-    const ghosts = [2, 3, 4].map(m => ({
+    const ghosts = [1, 2, 3, 4, 5].filter(m => m !== order).map(m => ({
       ghostWl: (order * centralWavelength) / m,
       label: `Order ${m} ghost`,
     }));
@@ -44,7 +44,7 @@ export default function StrayLightPage() {
     ];
   }, [gratingLines, order, centralWavelength, scatterFraction]);
 
-  const ghosts = [2, 3, 4].map(m => ({
+  const ghosts = [1, 2, 3, 4, 5].filter(m => m !== order).map(m => ({
     order: m,
     wavelength: ((order * centralWavelength) / m).toFixed(1),
   }));
@@ -73,7 +73,7 @@ export default function StrayLightPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <h3 className="text-lg font-semibold mb-2">Ghost Orders (λ_ghost = m·λ_center / n)</h3>
+        <h3 className="text-lg font-semibold mb-2">Ghost Orders (λ_ghost = n·λ_center / m)</h3>
         {ghosts.map(g => (
           <p key={g.order} className="text-sm text-gray-300">
             Order {g.order} ghost: <span className="text-yellow-400">{g.wavelength} nm</span>
