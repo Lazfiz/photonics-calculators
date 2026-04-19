@@ -18,8 +18,8 @@ export default function DifferenceFrequencyPage() {
   // DFG: 1/λ_DFG = 1/λ_pump - 1/λ_signal
   const lambdaDFG = 1 / (1 / lambdaPump - 1 / lambdaSignal);
 
-  // Quantum defect
-  const qd = lambdaDFG > 0 ? (1 - lambdaPump / lambdaSignal) * 100 : 0;
+  // Idler-to-pump energy ratio: E_i/E_p = λ_p/λ_i
+  const idlerEnergyRatio = lambdaDFG > 0 ? (lambdaPump / lambdaDFG) * 100 : 0;
 
   const n = 2.2;
   const area = Math.PI * (beamWaist * 1e-6) ** 2;
@@ -29,9 +29,10 @@ export default function DifferenceFrequencyPage() {
   const c = 3e8;
   const lambdaOut = (lambdaDFG > 0 ? lambdaDFG : lambdaPump) * 1e-9;
 
-  // Conversion efficiency
-  const eta = (8 * Math.PI ** 2 * d ** 2 * L ** 2) / (epsilon0 * c * n ** 3 * lambdaOut ** 2 * area) * (pumpPower * 1e-3 / area);
-  const pDFG = signalPower * 1e-3 * eta * pumpPower * 1e-3;
+  // Conversion efficiency (Boyd, Nonlinear Optics Ch.2): η = P_i/P_s
+  // η = (8π² d² L²) / (ε₀ c n³ λ_i² A) × P_p
+  const eta = (8 * Math.PI ** 2 * d ** 2 * L ** 2) / (epsilon0 * c * n ** 3 * lambdaOut ** 2 * area) * (pumpPower * 1e-3);
+  const pDFG = signalPower * 1e-3 * eta;
 
   // Tuning curve: DFG wavelength vs signal wavelength
   const tuningData = useMemo(() => {
@@ -50,8 +51,8 @@ export default function DifferenceFrequencyPage() {
   const powerData = useMemo(() => {
     const lengths = Array.from({ length: 200 }, (_, i) => 0.1 + i * 40 / 200);
     const powers = lengths.map(l => {
-      const e = (8 * Math.PI ** 2 * d ** 2 * (l * 1e-3) ** 2) / (epsilon0 * c * n ** 3 * lambdaOut ** 2 * area) * (pumpPower * 1e-3 / area);
-      return signalPower * 1e-3 * e * pumpPower * 1e-3 * 1e6;
+      const e = (8 * Math.PI ** 2 * d ** 2 * (l * 1e-3) ** 2) / (epsilon0 * c * n ** 3 * lambdaOut ** 2 * area) * (pumpPower * 1e-3);
+      return signalPower * 1e-3 * e * 1e6;
     });
     return [
       { x: lengths, y: powers, type: "scatter", mode: "lines", name: "P_DFG", line: { color: "#34d399", width: 2 } },
@@ -80,7 +81,7 @@ export default function DifferenceFrequencyPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">Energy:</span> 1/λ<sub>i</sub> = 1/λ<sub>p</sub> − 1/λ<sub>s</sub></p>
         <p><span className="text-blue-400">Phase match:</span> Δk = k<sub>p</sub> − k<sub>s</sub> − k<sub>i</sub> = 0</p>
-        <p><span className="text-blue-400">η</span> = (8π² d<sub>eff</sub>² L²) / (ε₀ c n³ λ<sub>i</sub>² A) × (P<sub>p</sub>/A)</p>
+        <p><span className="text-blue-400">η</span> = (8π² d<sub>eff</sub>² L²) / (ε₀ c n³ λ<sub>i</sub>² A) × P<sub>p</sub></p>
         <p><span className="text-blue-400">Manley-Rowe:</span> P<sub>p</sub>/ω<sub>p</sub> + P<sub>i</sub>/ω<sub>i</sub> = const</p>
       </div>
 
@@ -108,8 +109,8 @@ export default function DifferenceFrequencyPage() {
           <p className="text-xl font-bold text-orange-400">{(pDFG * 1e6).toExponential(2)} µW</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Quantum Defect</p>
-          <p className="text-xl font-bold text-purple-400">{isFinite(qd) ? qd.toFixed(1) : "—"} %</p>
+          <p className="text-sm text-gray-400">Idler/Pump Energy Ratio</p>
+          <p className="text-xl font-bold text-purple-400">{isFinite(idlerEnergyRatio) && idlerEnergyRatio > 0 ? idlerEnergyRatio.toFixed(1) : "—"} %</p>
         </div>
       </div>
 
