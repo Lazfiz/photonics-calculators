@@ -53,8 +53,10 @@ export default function NearInfraredPage() {
     // Fundamental at 3400 cm⁻¹ → overtones (Morse oscillator)
     const fundamental = 3400;
     const anharmonicity = 0.015; // typical O-H bond
+    // Derive harmonic frequency from observed fundamental: ν̃₀₁ = ωe(1-2χe)
+    const omega_e = fundamental / (1 - 2 * anharmonicity);
     const overtones = [1, 2, 3, 4, 5];
-    const positions = overtones.map(n => fundamental * n * (1 - anharmonicity * (n + 1)));
+    const positions = overtones.map(n => omega_e * n * (1 - anharmonicity * (n + 1)));
     const intensities = overtones.map(n => 1 / Math.pow(n, 2));
     return [
       { x: positions, y: intensities, type: "bar" as const, name: "Overtone Intensity", marker: { color: "#60a5fa" } },
