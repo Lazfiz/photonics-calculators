@@ -18,16 +18,11 @@ export default function SaturationPage() {
     const ideal = input.map(v => v);
     // Real response with saturation roll-off
     const satPoint = fullWellCapacity;
-    const real = input.map(v => {
-      if (v <= satPoint * 0.9) return v;
-      // Soft saturation using tanh rolloff
-      // nonlinearityPercent controls the rolloff sharpness:
-      // higher % = earlier onset, more deviation from linear
-      const nlFactor = Math.max(0.1, nonlinearityPercent / 0.5); // 0.5% default → 1.0
-      const x = (v - satPoint * 0.9) / (satPoint * 0.1);
-      const tanhEffect = Math.tanh(x * 0.8 * nlFactor) / Math.tanh(0.8 * nlFactor);
-      return satPoint * 0.9 + satPoint * 0.1 * tanhEffect;
-    });
+    // Model: output = v * FWC / (FWC + nl·v) where nl = nonlinearityPercent/100
+    // At v=FWC: output = FWC/(1+nl) → error = -nl/(1+nl) ≈ -nl
+    // Monotonically increasing, always sub-linear (derivative < 1 for v > 0)
+    const nl = nonlinearityPercent / 100;
+    const real = input.map(v => v * satPoint / (satPoint + nl * v));
     // Nonlinearity error (%)
     const error = input.map((v, i) => v > 0 ? ((real[i] - ideal[i]) / ideal[i]) * 100 : 0);
     return [
