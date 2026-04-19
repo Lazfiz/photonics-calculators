@@ -88,7 +88,7 @@ export default function SpectralResolutionPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
-        <p><strong>Grating:</strong> δλ = w·d·cos(θ) / (m·f) ≈ w / (f·σ·m) · λ (small angle)</p>
+        <p><strong>Grating:</strong> δλ = w·d·cos(θ) / (m·f) ≈ w / (f·σ·m) (small angle, cosθ ≈ 1)</p>
         <p><strong>Prism:</strong> δλ = w / (f · dθ/dλ)</p>
         <p><strong>Fabry-Pérot:</strong> δλ = FSR / ℱ, R = ℱ · m ≈ λ/δλ</p>
         <p className="text-gray-500">ILS approximated as Lorentzian: L(λ) = 1 / [1 + ((λ−λ₀)/(δλ/2))²]</p>
