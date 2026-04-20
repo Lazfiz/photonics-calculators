@@ -35,13 +35,17 @@ export default function PixelCrosstalkPage() {
   }, [wavelength]);
 
   const diffusionCrosstalk = Math.min(0.5, Math.sqrt(absorptionDepth / depletionDepth) * 0.1);
-  const totalCrosstalk = 1 - (1 - diffusionCrosstalk) * (1 - crosstalkCoeff);
+  const totalCrosstalk = Math.sqrt(diffusionCrosstalk ** 2 + crosstalkCoeff ** 2);
 
-  const mtfCrosstalk = (freq: number) => 1 / (1 + totalCrosstalk * (2 * Math.PI * freq * pixelPitch) ** 2);
+  const mtfCrosstalk = (freq: number) => {
+    const u = Math.PI * freq * pixelPitch;
+    const sinc = u === 0 ? 1 : Math.abs(Math.sin(u) / u);
+    return sinc / (1 + totalCrosstalk * (2 * Math.PI * freq * pixelPitch) ** 2);
+  };
 
   const chartData = useMemo(() => {
     // Crosstalk vs wavelength
-    const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 700 / 300);
+    const wls = Array.from({ length: 300 }, (_, i) => 300 + i * (1100 - 300) / 299);
     const absDepths = wls.map(wl => {
       // Si absorption depth (1/α) — same model as above
       if (wl < 350) return 0.01 + (wl - 300) * 0.0004;
@@ -61,7 +65,7 @@ export default function PixelCrosstalkPage() {
 
     // MTF vs spatial frequency
     const freqs = Array.from({ length: 200 }, (_, i) => i * 1 / (pixelPitch) / 200);
-    const mtf = freqs.map(f => 1 / (1 + totalCrosstalk * (2 * Math.PI * f * pixelPitch) ** 2));
+    const mtf = freqs.map((f, i) => mtfIdeal[i] / (1 + totalCrosstalk * (2 * Math.PI * f * pixelPitch) ** 2));
     const mtfIdeal = freqs.map(f => { const u = Math.PI * f * pixelPitch; return u === 0 ? 1 : Math.abs(Math.sin(u) / u); }); // sinc
 
     return [

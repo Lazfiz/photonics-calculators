@@ -28,7 +28,10 @@ export default function PhotonCountingPage() {
   const totalSNR = Math.sqrt(totalCounts);
 
   const chartData = useMemo(() => {
-    const n = Array.from({ length: Math.min(500, Math.max(30, Math.round(meanCounts * 3.5))) }, (_, i) => i);
+    const sigma = Math.sqrt(actualMean);
+    const start = Math.max(0, Math.floor(actualMean - 4 * sigma));
+    const end = Math.ceil(actualMean + 4 * sigma);
+    const n = Array.from({ length: end - start + 1 }, (_, i) => start + i);
     // Poisson PMF
     const poisson = n.map(k => {
       let logP = k * Math.log(actualMean) - actualMean;
