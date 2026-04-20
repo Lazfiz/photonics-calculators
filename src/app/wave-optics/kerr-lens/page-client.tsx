@@ -15,18 +15,19 @@ export default function KerrLensPage() {
   const [n0, setN0] = useURLState("n0", 1.76); // refractive index
 
   const k = 2 * Math.PI / (wavelength * 1e-3); // 1/µm
-  const Pcr = 3.77 * Math.pow(wavelength * 1e-3, 2) / (8 * Math.PI * n0 * n2 * 1e-4); // critical power in W (n2 in cm²/W → µm²/W)
+  const n2_um = n2 * 1e-8; // ×10⁻¹⁶ cm²/W → µm²/W (×10⁻¹⁶ × 10⁸)
+  const Pcr = 3.77 * Math.pow(wavelength * 1e-3, 2) / (8 * Math.PI * n0 * n2_um); // W
 
   // Effective focal length of Kerr lens
-  const fKerr = n0 * Math.PI * Math.pow(beamWaist, 4) / (4 * n2 * 1e-4 * power * crystalLength * 1e3);
+  const fKerr = n0 * Math.PI * Math.pow(beamWaist, 4) / (4 * n2_um * power * crystalLength * 1e3);
 
   // Beam radius change vs power
   const chartData = useMemo(() => {
     const powers = Array.from({ length: 200 }, (_, i) => 0.01 + i * 5 / 200);
     const wPerturbed = powers.map(P => {
-      const fk = n0 * Math.PI * Math.pow(beamWaist, 4) / (4 * n2 * 1e-4 * P * crystalLength * 1e3);
+      const fk = n0 * Math.PI * Math.pow(beamWaist, 4) / (4 * n2_um * P * crystalLength * 1e3);
       const lensEffect = 1 / (1 + Math.pow(crystalLength * 1e3 / (2 * fk), 2));
-      return beamWaist * (1 - 0.5 * lensEffect * n2 * 1e-4 * P * crystalLength * 1e3 / (n0 * Math.PI * Math.pow(beamWaist, 2)));
+      return beamWaist * (1 - 0.5 * lensEffect * n2_um * P * crystalLength * 1e3 / (n0 * Math.PI * Math.pow(beamWaist, 2)));
     });
 
     return [
@@ -36,8 +37,10 @@ export default function KerrLensPage() {
   }, [wavelength, beamWaist, n2, crystalLength, n0, Pcr]);
 
   // GDD from Kerr effect
-  const gdd = n2 * 1e-4 * power * crystalLength * 1e3 / (Math.PI * Math.pow(beamWaist, 2) * 3e8); // fs²
-  const selfPhase = (2 * Math.PI / (wavelength * 1e-3)) * n2 * 1e-4 * power * crystalLength * 1e3; // rad
+  const gdd = n2_um * power * crystalLength * 1e3 / (Math.PI * Math.pow(beamWaist, 2) * 3e8); // fs²
+  // Self-phase: Δφ_NL = k₀ · n₂ · I₀ · L, with I₀ = 2P/(πw₀²) for Gaussian peak
+  const I0 = 2 * power / (Math.PI * Math.pow(beamWaist, 2)); // W/µm²
+  const selfPhase = k * n2_um * I0 * crystalLength * 1e3; // rad
 
   const plotLayout = {
     paper_bgcolor: "transparent", plot_bgcolor: "transparent",
@@ -70,7 +73,7 @@ export default function KerrLensPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Critical Power P<sub>crit</sub></p>
-          <p className="text-xl font-bold text-blue-400">{Pcr.toFixed(2)} MW</p>
+          <p className="text-xl font-bold text-blue-400">{(Pcr / 1e6).toFixed(2)} MW</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Kerr Focal Length</p>
@@ -82,7 +85,7 @@ export default function KerrLensPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">P / P<sub>crit</sub></p>
-          <p className="text-xl font-bold text-purple-400">{(power / Pcr * 1e6).toFixed(4)}</p>
+          <p className="text-xl font-bold text-purple-400">{(power / Pcr).toFixed(6)}</p>
         </div>
       </div>
 
