@@ -44,7 +44,7 @@ export default function HermiteGaussianPage() {
     if (plotAxis === "x") {
       const profile = xs.map(x => {
         const u = Math.SQRT2 * x / w0;
-        const norm = 1 / Math.sqrt(Math.pow(2, m) * factorial(m) * Math.sqrt(Math.PI)) / Math.pow(w0, 0.5);
+        const norm = Math.pow(2, 0.25) / Math.sqrt(Math.pow(2, m) * factorial(m) * Math.sqrt(Math.PI) * w0);
         return norm * hermite(m, u) * Math.exp(-u * u / 2);
       });
       const intensity = profile.map(v => v * v);
@@ -57,7 +57,7 @@ export default function HermiteGaussianPage() {
     if (plotAxis === "y") {
       const profile = ys.map(y => {
         const v = Math.SQRT2 * y / w0;
-        const norm = 1 / Math.sqrt(Math.pow(2, n) * factorial(n) * Math.sqrt(Math.PI)) / Math.pow(w0, 0.5);
+        const norm = Math.pow(2, 0.25) / Math.sqrt(Math.pow(2, n) * factorial(n) * Math.sqrt(Math.PI) * w0);
         return norm * hermite(n, v) * Math.exp(-v * v / 2);
       });
       const intensity = profile.map(v => v * v);
@@ -74,7 +74,7 @@ export default function HermiteGaussianPage() {
       for (let i = 0; i < N; i++) {
         const u = Math.SQRT2 * xs[i] / w0;
         const v = Math.SQRT2 * ys[j] / w0;
-        const norm = 1 / Math.sqrt(Math.pow(2, m + n) * factorial(m) * factorial(n) * Math.PI) / w0;
+        const norm = Math.SQRT2 / Math.sqrt(Math.pow(2, m + n) * factorial(m) * factorial(n) * Math.PI) / w0;
         const field = norm * hermite(m, u) * hermite(n, v) * Math.exp(-(u * u + v * v) / 2);
         row.push(field * field);
       }
