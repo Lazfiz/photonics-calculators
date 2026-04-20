@@ -17,13 +17,14 @@ export default function FiberLaserResonatorPage() {
   const [gainPerMeter, setGainPerMeter] = useURLState("gainPerMeter", 1.5); // m^-1 small-signal gain coeff
 
   const coreRadius = coreDiameter / 2;
-  const Vnumber = (Math.PI * coreDiameter * NA) / wavelength;
+  const Vnumber = (Math.PI * coreDiameter * 1000 * NA) / wavelength; // coreDiameter µm→nm for consistent units
   const modeFieldDiameter = coreDiameter * (0.65 + 1.619 / Math.pow(Vnumber, 1.5) + 2.879 / Math.pow(Vnumber, 6));
   const A_mode = Math.PI * Math.pow(modeFieldDiameter / 2, 2) * 1e-12; // m²
 
   // Single-pass loss
   const alpha_np = alpha / (10 * Math.log10(Math.E)) * fiberLength; // Neper loss per round trip (single pass)
-  const L_rt = alpha_np + Math.log(1 / R_oc) + Math.log(1 / R_hr); // total round-trip loss
+  // Round-trip loss: light passes through fiber twice in linear cavity
+  const L_rt = 2 * alpha_np + Math.log(1 / R_oc) + Math.log(1 / R_hr);
 
   // Threshold: g_th = L_rt / (2L)
   const g_th = L_rt / (2 * fiberLength);
@@ -38,7 +39,7 @@ export default function FiberLaserResonatorPage() {
 
   // Slope efficiency (simplified)
   const eta_quantum = pumpWavelength / wavelength;
-  const eta_slope = eta_quantum * Math.log(R_oc) / L_rt;
+  const eta_slope = eta_quantum * Math.log(1 / R_oc) / L_rt;
 
   // Output power vs pump power
   const piData = useMemo(() => {
@@ -56,7 +57,11 @@ export default function FiberLaserResonatorPage() {
   // Gain vs fiber length
   const gainData = useMemo(() => {
     const lengths = Array.from({ length: 100 }, (_, i) => 0.5 + i * 10 / 100);
-    const roundTripGain = lengths.map(L => 2 * gainPerMeter * L - L_rt);
+    const roundTripGain = lengths.map(L => {
+      const alphaL = alpha / (10 * Math.log10(Math.E)) * L; // Neper single-pass loss
+      const lrt = 2 * alphaL + Math.log(1 / R_oc) + Math.log(1 / R_hr); // round-trip
+      return 2 * gainPerMeter * L - lrt;
+    });
     return [
       { x: lengths, y: roundTripGain, type: "scatter", mode: "lines", name: "Round-Trip Net Gain", line: { color: "#34d399", width: 2 } },
       { x: lengths, y: lengths.map(() => 0), type: "scatter", mode: "lines", name: "Threshold", line: { color: "#f87171", dash: "dash" } },
@@ -67,7 +72,7 @@ export default function FiberLaserResonatorPage() {
   const modeData = useMemo(() => {
     const wls = Array.from({ length: 100 }, (_, i) => 900 + i * 400 / 100);
     const mfds = wls.map(wl => {
-      const V = (Math.PI * coreDiameter * NA) / wl;
+      const V = (Math.PI * coreDiameter * 1000 * NA) / wl; // consistent nm units
       return coreDiameter * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
     });
     return [{ x: wls, y: mfds, type: "scatter", mode: "lines", name: "MFD (µm)", line: { color: "#a78bfa", width: 2 } }];
