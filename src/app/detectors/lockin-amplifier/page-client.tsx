@@ -29,10 +29,11 @@ export default function LockinAmplifierPage() {
   const lpfAttenuation = 1 / Math.sqrt(1 + Math.pow(omegaTau, 2 * filterOrder));
 
   const demodFactor = (2 / Math.PI) * Math.abs(Math.cos(phaseRad));
-  const outputSignal = signalAmp * 1e-6 * Math.cos(phaseRad) * (2 / Math.PI) * lpfAttenuation;
+  // Phase only meaningful at DC (Δf=0); beat envelope amplitude is phase-independent when detuned
+  const outputSignal = signalAmp * 1e-6 * (deltaF === 0 ? Math.cos(phaseRad) : 1) * (2 / Math.PI) * lpfAttenuation;
   const inputNoise = noiseDensity * 1e-9 * Math.sqrt(inputBandwidth);
   const outputNoise = noiseDensity * 1e-9 * Math.sqrt(enbwActual);
-  const snrInput = signalAmp * 1e-6 / inputNoise;
+  const snrInput = (signalAmp * 1e-6 / Math.SQRT2) / inputNoise; // RMS signal / RMS noise
   const snrOutput = Math.abs(outputSignal) / outputNoise;
   const snrImprovement = snrOutput / snrInput;
   const bwGain = Math.sqrt(inputBandwidth / enbwActual);
