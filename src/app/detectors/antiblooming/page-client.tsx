@@ -47,15 +47,14 @@ export default function AntibloomingPage() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="AB Threshold" value={`${thresholdElectrons.toFixed(0)} e⁻`} tone="blue" />
-        <ResultCard label="Full Well (Linear Max)" value={`${wellCapacity.toFixed(0)} e⁻`} tone="green" />
+        <ResultCard label="Full Well Capacity" value={`${wellCapacity.toFixed(0)} e⁻`} tone="green" />
         <ResultCard label="Dumped Charge" value={`${dumpedCharge.toFixed(0)} e⁻`} tone="yellow" />
-        <ResultCard label="Leaked (Blooming)" value={`${leakedCharge.toFixed(0)} e⁻`} tone="red" />
+        <ResultCard label="Leaked Charge (in well)" value={`${leakedCharge.toFixed(0)} e⁻`} tone="red" />
       </div>
       <ResultCard label="Capacity Reserved for AB" value={`${((1 - abThreshold) * 100).toFixed(0)}%`} tone="purple" />
       <div className="bg-gray-900 rounded-lg p-4 mt-6 mb-6 text-sm text-gray-300 font-mono space-y-1">
         <p>Below threshold: all charge collected linearly</p>
-        <p>Above threshold: excess × (1 − η) leaks into well; rest shunted to drain</p>
-        <p>Linearity extends to full well capacity; AB threshold is where overflow protection activates</p>
+        <p>Above threshold: linearity is lost; excess × (1 − η) leaks into well; rest shunted to drain</p>
         <p>Note: real AB circuits have gradual onset — this uses a hard-threshold approximation</p>
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Incident electrons (e⁻)", gridcolor: "#374151" }, yaxis: { title: "Collected (e⁻)", gridcolor: "#374151" }, yaxis2: { title: "Collection Efficiency (%)", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
