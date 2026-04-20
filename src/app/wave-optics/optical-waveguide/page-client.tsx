@@ -13,7 +13,7 @@ export default function OpticalWaveguidePage() {
   const [coreWidth, setCoreWidth] = useURLState("coreWidth", 10); // µm
 
   const NA = Math.sqrt(nCore * nCore - nClad * nClad);
-  const vNumber = Math.PI * coreWidth * NA / wavelength;
+  const vNumber = Math.PI * (coreWidth * 1000) * NA / wavelength;
   const acceptanceAngle = Math.asin(NA) * 180 / Math.PI;
   const criticalAngle = Math.asin(nClad / nCore) * 180 / Math.PI;
 
@@ -44,7 +44,7 @@ export default function OpticalWaveguidePage() {
     const maxMode = Math.max(...mode0);
 
     return [
-      { x: vs, y: neff.map(n => n.toFixed(6) as unknown as number), type: "scatter" as const, mode: "lines" as const, name: "Fundamental n_eff", line: { color: "#60a5fa", width: 2 } },
+      { x: vs, y: neff, type: "scatter" as const, mode: "lines" as const, name: "Fundamental n_eff", line: { color: "#60a5fa", width: 2 } },
       { x: [0, vNumber * 1.5], y: Array(2).fill(nCore), type: "scatter" as const, mode: "lines" as const, name: "n_core", line: { color: "#f87171", dash: "dash" } },
       { x: [0, vNumber * 1.5], y: Array(2).fill(nClad), type: "scatter" as const, mode: "lines" as const, name: "n_clad", line: { color: "#4ade80", dash: "dash" } },
     ];
