@@ -45,9 +45,13 @@ export default function GasLaserResonatorPage() {
       w0 = Math.pow(lambda_m * L_m / Math.PI, 0.5) * Math.pow(g1 * g2 * (1 - g1 * g2) / Math.pow(g1 + g2 - 2 * g1 * g2, 2), 0.25);
     }
   } else if (Math.abs(R1m - R2m) < 1e-9) {
-    w0 = Math.pow(lambda_m * L_m / Math.PI * Math.sqrt(g1 * (1 - g1)), 0.25);
+    // Symmetric resonator: w₀ = (λL/π)^(1/2) · [(1+g)/(4(1-g))]^(1/4)
+    const g = g1;
+    if (g > 0 && g < 1) {
+      w0 = Math.sqrt(lambda_m * L_m / Math.PI) * Math.pow((1 + g) / (4 * (1 - g)), 0.25);
+    }
   }
-  w0 = w0 || 0.3e-3;
+  w0 = w0 || 0; // No fallback for unstable
   const beamWaist_um = w0 * 1e6;
 
   // Gain
@@ -64,11 +68,11 @@ export default function GasLaserResonatorPage() {
   const Isat = params.I_sat * 1e4; // W/m²
   const A_beam = Math.PI * w0 * w0;
 
-  // Output power
-  const P_out = isAboveThreshold ? Isat * A_beam * (smallSignalGain * 2 * L_m - totalLoss) * outputCouplingLoss / totalLoss : 0;
+  // Output power (only for stable cavities above threshold)
+  const P_out = (isAboveThreshold && w0 > 0) ? Isat * A_beam * (smallSignalGain * 2 * L_m - totalLoss) * outputCouplingLoss / totalLoss : 0;
 
-  // Optimal OC reflectivity
-  const R_opt = Math.exp(-2 * smallSignalGain * L_m - internalLoss + Math.sqrt(2 * smallSignalGain * L_m * internalLoss));
+  // Optimal OC: T_opt = -δ_i + √(2gL·δ_i), R_opt = exp(-T_opt) = exp(δ_i - √(2gL·δ_i))
+  const R_opt = Math.exp(internalLoss - Math.sqrt(2 * smallSignalGain * L_m * internalLoss));
 
   // Gain saturation curve
   const saturationData = useMemo(() => {
@@ -89,7 +93,7 @@ export default function GasLaserResonatorPage() {
     const gains = Array.from({ length: 100 }, (_, i) => 0.5 + i * 15 / 100);
     const Rs = gains.map(g => {
       const gL = g * L_m;
-      const val = -2 * gL - internalLoss + Math.sqrt(Math.max(0, 2 * gL * internalLoss));
+      const val = internalLoss - Math.sqrt(Math.max(0, 2 * gL * internalLoss));
       return Math.exp(val);
     });
     return [{ x: gains, y: Rs, type: "scatter", mode: "lines", name: "R_opt", line: { color: "#34d399", width: 2 } }];
