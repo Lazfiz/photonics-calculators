@@ -14,10 +14,12 @@ export default function MicrochannelPlatePage() {
   const results = useMemo(() => {
     const ldr = channelLength * 1000 / channelDiameter; // L/D ratio (dimensionless)
     // Gain depends on voltage and L/D: higher L/D → more secondary emission events
-    const voltageFactor = 2.5 + 0.05 * (appliedVoltage / 100 - 8);
+    const voltageFactor = 3.0 + 0.06 * (appliedVoltage / 100 - 8);
     const singlePlateGain = Math.pow(10, voltageFactor * Math.min(ldr / 60, 1.5));
-    const totalGain = Math.pow(singlePlateGain, numPlates);
-    const spatialRes = channelDiameter * 1.2; // µm (pore-pitch limited estimate)
+    const totalGainRaw = Math.pow(singlePlateGain, numPlates);
+    const totalGain = Math.min(totalGainRaw, 1e8); // space-charge saturation limit
+    const pitch = channelDiameter * Math.sqrt(Math.PI / (2 * Math.sqrt(3) * openAreaRatio));
+    const spatialRes = pitch;
     const openArea = openAreaRatio * 100;
     const effectiveQE = openAreaRatio * 0.15; // photocathode + open area
     const temporalRes = 80 + 20 * numPlates; // ps, rough estimate
@@ -28,8 +30,8 @@ export default function MicrochannelPlatePage() {
     const voltages = Array.from({ length: 100 }, (_, i) => 500 + i * 10);
     const ldr = channelLength * 1000 / channelDiameter;
     const ldScale = Math.min(ldr / 60, 1.5);
-    const gains1 = voltages.map(v => Math.pow(10, (2.5 + 0.05 * (v / 100 - 8)) * ldScale));
-    const gainsN = gains1.map(g => Math.pow(g, numPlates));
+    const gains1 = voltages.map(v => Math.pow(10, (3.0 + 0.06 * (v / 100 - 8)) * ldScale));
+    const gainsN = gains1.map(g => Math.min(Math.pow(g, numPlates), 1e8));
     return [
       { x: voltages, y: gains1, type: "scatter", mode: "lines", name: "Single plate", line: { color: "#60a5fa" } },
       { x: voltages, y: gainsN, type: "scatter", mode: "lines", name: `${numPlates} plates`, line: { color: "#f87171" } },
@@ -52,16 +54,16 @@ export default function MicrochannelPlatePage() {
         <p className="text-gray-300">Total gain ({numPlates} plates) = <span className="text-blue-400 font-mono">{results.totalGain.toExponential(2)}</span></p>
         <p className="text-gray-300">Spatial resolution ≈ <span className="text-blue-400 font-mono">{results.spatialRes.toFixed(1)} µm</span></p>
         <p className="text-gray-300">Open area = <span className="text-blue-400 font-mono">{results.openArea.toFixed(0)}%</span></p>
-        <p className="text-gray-300">Effective detection QE ≈ <span className="text-blue-400 font-mono">{(results.effectiveQE * 100).toFixed(1)}%</span></p>
+        <p className="text-gray-300">Collection efficiency ≈ <span className="text-blue-400 font-mono">{(results.effectiveQE * 100).toFixed(1)}%</span></p>
         <p className="text-gray-300">Temporal resolution ≈ <span className="text-blue-400 font-mono">{results.temporalRes} ps</span></p>
       </div>
 
       <h2 className="text-xl font-semibold mb-2">Key Formulas</h2>
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1 text-sm font-mono text-gray-400">
         <p>L/D = channel length / channel diameter</p>
-        <p>G ≈ 10^(α·(L/D))  where α = 2.5 + 0.05·(V/100 - 8)</p>
-        <p>G<sub>total</sub> = G<sub>plate</sub>^N</p>
-        <p>Spatial res. ≈ 1.2 × d<sub>channel</sub> (pore-pitch limited)</p>
+        <p>G ≈ 10^(α·min((L/D)/60, 1.5))  where α = 3.0 + 0.06·(V/100 - 8)</p>
+        <p>G<sub>total</sub> = min(G<sub>plate</sub>^N, 10^8) [space-charge limit]</p>
+        <p>Spatial res. ≈ pitch = d·√(π/(2√3·ε_open))</p>
         <p>η<sub>eff</sub> = η<sub>cathode</sub> × ε<sub>open</sub></p>
       </div>
 
