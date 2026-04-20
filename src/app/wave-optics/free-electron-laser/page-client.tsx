@@ -24,8 +24,11 @@ export default function FreeElectronLaserPage() {
   const lambda_r = lambda_u / (2 * gamma * gamma) * (1 + undulatorK * undulatorK / 2);
   const wavelength_nm = lambda_r * 1e9;
 
-  // Pierce parameter
-  const rho = (1 / gamma) * Math.pow(undulatorK * beamCurrent * 1e3 / (17e3 * Math.PI), 1/3) * Math.pow((1 + undulatorK * undulatorK / 2), -1/3);
+  // Pierce parameter (1D FEL theory, simplified with JJ≈1):
+  // ρ = (1/γ) × [I/(I_A) × K² / (2π)]^(1/3) × (1+K²/2)^(-1/3)
+  // I_A = 17 kA (Alfvén current)
+  const I_A = 17e3; // A
+  const rho = (1 / gamma) * Math.pow(undulatorK * undulatorK * beamCurrent / (I_A * 2 * Math.PI), 1/3) * Math.pow((1 + undulatorK * undulatorK / 2), -1/3);
 
   // Gain length
   const L_g = lambda_u / (4 * Math.PI * Math.sqrt(3) * rho);
@@ -33,8 +36,8 @@ export default function FreeElectronLaserPage() {
   // Saturation length
   const L_sat = L_g * 10;
 
-  // Saturated power estimate
-  const P_beam = beamCurrent * 1e3 * electronEnergy * 1e6 * 1.6e-19; // W
+  // Saturated power estimate: P_beam = I × E_kin [W]
+  const P_beam = beamCurrent * electronEnergy * 1e6 * 1.6e-19; // W
   const P_sat = rho * P_beam;
 
   // Slippage length
@@ -45,7 +48,7 @@ export default function FreeElectronLaserPage() {
   const gainVsK = useMemo(() => {
     const Ks = Array.from({ length: 100 }, (_, i) => 0.5 + i * 3 / 100);
     const Lgs = Ks.map(K => {
-      const r = (1 / gamma) * Math.pow(K * beamCurrent * 1e3 / (17e3 * Math.PI), 1/3) * Math.pow((1 + K * K / 2), -1/3);
+      const r = (1 / gamma) * Math.pow(K * K * beamCurrent / (17e3 * 2 * Math.PI), 1/3) * Math.pow((1 + K * K / 2), -1/3);
       return lambda_u / (4 * Math.PI * Math.sqrt(3) * r);
     });
     return [{ x: Ks, y: Lgs, type: "scatter", mode: "lines", name: "L_g (m)", line: { color: "#60a5fa", width: 2 } }];
