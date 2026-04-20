@@ -12,8 +12,8 @@ export default function ModeLockedLaserPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
 
   const chartData = useMemo(() => {
-    const t = Array.from({ length: 200 }, (_, i) => (i - 100) * pulseDuration * 2e-15 / 1e-15); // fs
-    const intensity = t.map(ti => Math.exp(-((ti / pulseDuration) ** 2)));
+    const t = Array.from({ length: 200 }, (_, i) => (i - 100) * pulseDuration / 25); // fs, ±4 FWHM
+    const intensity = t.map(ti => Math.exp(-4 * Math.LN2 * (ti / pulseDuration) ** 2));
     
     return [
       { x: t, y: intensity, type: "scatter" as const, mode: "lines" as const, name: "Pulse", line: { color: "#60a5fa" }, fill: "tozeroy" },
