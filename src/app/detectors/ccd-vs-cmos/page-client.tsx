@@ -7,10 +7,10 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 const sensors = {
-  ccd: { readNoise: 3, darkCurrent: 0.001, wellCapacity: 100000, pixelSize: 15, qe: 0.95, frameRate: 10 },
-  cmos_sci: { readNoise: 1.5, darkCurrent: 0.01, wellCapacity: 50000, pixelSize: 6.5, qe: 0.90, frameRate: 100 },
-  cmos_phone: { readNoise: 15, darkCurrent: 5, wellCapacity: 20000, pixelSize: 1.2, qe: 0.65, frameRate: 60 },
-  emccd: { readNoise: 0.1, darkCurrent: 0.001, wellCapacity: 100000, pixelSize: 13, qe: 0.95, frameRate: 30 },
+  ccd: { readNoise: 3, darkCurrent: 0.001, wellCapacity: 100000, pixelSize: 15, qe: 0.95, frameRate: 10, enf2: 1 },
+  cmos_sci: { readNoise: 1.5, darkCurrent: 0.01, wellCapacity: 50000, pixelSize: 6.5, qe: 0.90, frameRate: 100, enf2: 1 },
+  cmos_phone: { readNoise: 15, darkCurrent: 5, wellCapacity: 20000, pixelSize: 1.2, qe: 0.65, frameRate: 60, enf2: 1 },
+  emccd: { readNoise: 0.1, darkCurrent: 0.001, wellCapacity: 100000, pixelSize: 13, qe: 0.95, frameRate: 30, enf2: 2 },
 };
 const sensorNames = ["CCD", "sCMOS", "Phone CMOS", "EMCCD"];
 const sensorColors = ["text-blue-400", "text-green-400", "text-yellow-400", "text-purple-400"];
@@ -20,22 +20,22 @@ export default function CcdVsCmosPage() {
   const [signal, setSignal] = useURLState("signal", 10000);
   const [exposureTime, setExposureTime] = useURLState("exposureTime", 1);
 
-  const calcSNR = (sig: number, rn: number, dc: number, t: number, wc: number) => {
+  const calcSNR = (sig: number, rn: number, dc: number, t: number, wc: number, enf2: number = 1) => {
     const dark = dc * t;
-    return { snr: sig / Math.sqrt(rn * rn + sig + dark), dynamicRange: 20 * Math.log10(wc / rn) };
+    return { snr: sig / Math.sqrt(rn * rn + enf2 * (sig + dark)), dynamicRange: 20 * Math.log10(wc / rn) };
   };
 
   const chartData = useMemo(() => {
     const signals = Array.from({ length: 300 }, (_, i) => 1 * Math.pow(100000, i / 300));
     const traces: any[] = [];
     Object.entries(sensors).forEach(([key, s], idx) => {
-      traces.push({ x: signals, y: signals.map(sig => calcSNR(sig, s.readNoise, s.darkCurrent, exposureTime, s.wellCapacity).snr), type: "scatter" as const, mode: "lines" as const, name: sensorNames[idx], line: { color: plotColors[idx] } });
+      traces.push({ x: signals, y: signals.map(sig => calcSNR(sig, s.readNoise, s.darkCurrent, exposureTime, s.wellCapacity, s.enf2).snr), type: "scatter" as const, mode: "lines" as const, name: sensorNames[idx], line: { color: plotColors[idx] } });
     });
     traces.push({ x: [signal], y: [calcSNR(signal, sensors.ccd.readNoise, sensors.ccd.darkCurrent, exposureTime, sensors.ccd.wellCapacity).snr], type: "scatter" as const, mode: "markers" as const, name: `Signal (CCD)`, marker: { color: "#f87171", size: 10 } });
     return traces;
   }, [signal, exposureTime]);
 
-  const results = Object.entries(sensors).map(([key, s]) => ({ key, snr: calcSNR(signal, s.readNoise, s.darkCurrent, exposureTime, s.wellCapacity), sensor: s }));
+  const results = Object.entries(sensors).map(([key, s]) => ({ key, snr: calcSNR(signal, s.readNoise, s.darkCurrent, exposureTime, s.wellCapacity, s.enf2), sensor: s }));
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="CCD vs CMOS Sensor Comparison" description="Compare sensor architectures — SNR, dynamic range, and performance metrics.">
@@ -66,8 +66,8 @@ export default function CcdVsCmosPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
         <p>SNR = S / √(σ_read² + S + D·t)</p>
         <p>Dynamic Range = 20·log₁₀(FWC / σ_read) dB</p>
-        <p>⚠ EMCCD SNR shown here does NOT include excess noise factor (√2 penalty on shot noise)</p>
-        <p>Real EMCCD SNR at low light ≈ S / √(2(S + D·t) + σ_read²) — slightly worse than shown</p>
+        <p>EMCCD SNR includes excess noise factor (F² = 2): SNR = S / √(2(S + D·t) + σ_read²)</p>
+        <p>Other sensors use F² = 1 (no excess noise)</p>
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Signal (e⁻)", gridcolor: "#374151", type: "log" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} />
     </CalculatorShell>
