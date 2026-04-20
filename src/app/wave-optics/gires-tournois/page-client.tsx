@@ -33,13 +33,12 @@ export default function GiresTournoisPage() {
       const phi = -2 * Math.atan(r * Math.tan(delta / 2));
       phase.push(phi);
 
-      // GDD in fs²
-      // dφ/dω = dφ/dλ · dλ/dω = dφ/dλ · (-λ²/(2πc))
-      // d²φ/dω² = d/dω(dφ/dω)
-      // Analytical GDD: GDD = -(4n²L²)/(λ²c) · (1-R)sin(δ) / (R + 1 - 2√R·cos(δ))
-      // But careful with signs. Let me compute numerically.
-      const denom = reflectivity + 1 - 2 * sqrtR * Math.cos(delta);
-      const gddVal = -(4 * n * n * L * L) / (lam * lam * 3e5) * (1 - reflectivity) * Math.sin(delta) / denom * 1e6; // convert to fs²
+      // GDD in fs²: GDD = -8n²L²(1-R)√R·sin(δ) / [c²·(1+R+2√R·cos(δ))²]
+      // Derived: dφ/dδ = -(1-R)/(1+R+2√R·cos δ), τ = (2nL/c)(1-R)/(1+R+2√R·cos δ),
+      // GDD = d²φ/dω² = -8n²L²(1-R)√R·sin(δ) / [c²·(1+R+2√R·cos δ)²]
+      const c_nm_fs = 299792.458; // speed of light in nm/fs
+      const denom_gdd = 1 + reflectivity + 2 * sqrtR * Math.cos(delta);
+      const gddVal = -8 * n * n * L * L * (1 - reflectivity) * sqrtR * Math.sin(delta) / (c_nm_fs * c_nm_fs * denom_gdd * denom_gdd);
       gdd.push(gddVal);
     }
 
@@ -72,14 +71,10 @@ export default function GiresTournoisPage() {
 
     const gd = lambdas.map(lam => {
       const delta = 4 * Math.PI * n * thickness / lam;
-      const denom = reflectivity + 1 - 2 * sqrtR * Math.cos(delta);
-      // dφ/dδ = -r / (1 + r²·tan²(δ/2)) · 1/(2cos²(δ/2))
-      // dφ/dλ = dφ/dδ · dδ/dλ = dφ/dδ · (-4πnL/λ²)
-      // Group delay τ = -dφ/dω = dφ/dλ · λ²/(2πc) [in fs]
-      const num = -r * Math.sin(delta) * (1 - reflectivity);
-      const dphi_ddelta = -(1 - reflectivity) * Math.sin(delta) / denom;
-      const dphi_dlambda = dphi_ddelta * (-4 * Math.PI * n * thickness / (lam * lam));
-      const tau = -dphi_dlambda * lam * lam / (2 * Math.PI * 3e5) * 1e3; // fs
+      // dφ/dδ = -(1-R)/(1+R+2√R·cos δ) (derived from GTI phase)
+      // τ = -dφ/dω = (2nL/c)·(1-R)/(1+R+2√R·cos δ) [in fs, with c in nm/fs]
+      const denom_gd = 1 + reflectivity + 2 * sqrtR * Math.cos(delta);
+      const tau = 2 * n * thickness * (1 - reflectivity) / (299792.458 * denom_gd); // fs
       return tau;
     });
 
@@ -106,7 +101,8 @@ export default function GiresTournoisPage() {
 
   const sqrtR = Math.sqrt(reflectivity);
   const deltaCenter = 4 * Math.PI * n * thickness / wavelength;
-  const gddCenter = -(4 * n * n * thickness * thickness) / (wavelength * wavelength * 3e5) * (1 - reflectivity) * Math.sin(deltaCenter) / (reflectivity + 1 - 2 * sqrtR * Math.cos(deltaCenter)) * 1e6;
+  const denomCenter = 1 + reflectivity + 2 * sqrtR * Math.cos(deltaCenter);
+  const gddCenter = -8 * n * n * thickness * thickness * (1 - reflectivity) * sqrtR * Math.sin(deltaCenter) / (299792.458 * 299792.458 * denomCenter * denomCenter);
 
   return (
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Gires-Tournois Interferometer" description="Dispersion control via a GTI — constant reflectivity with tunable group delay dispersion.">
@@ -114,7 +110,7 @@ export default function GiresTournoisPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">δ</span> = 4πnL / λ (round-trip phase)</p>
         <p><span className="text-blue-400">φ(δ)</span> = −2 arctan[(1−√R)/(1+√R) · tan(δ/2)]</p>
-        <p><span className="text-blue-400">GDD</span> = −(4n²L²)/(cλ²) · (1−R)sin(δ) / (1+R−2√R·cos(δ))</p>
+        <p><span className="text-blue-400">GDD</span> = −8n²L²(1−R)√R·sin(δ) / [c²·(1+R+2√R·cos(δ))²]</p>
         <p className="text-yellow-400">Key: Power reflectivity = R₁ (constant) regardless of δ</p>
       </div>
 
