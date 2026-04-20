@@ -27,8 +27,8 @@ export default function BoxcarIntegratorPage() {
     const t = Array.from({ length: 500 }, (_, i) => i * pulseWidth * 2 / 500);
     const gateStart = pulseWidth * 0.3;
     const gateEnd = gateStart + gateWidth;
-    const signal = t.map(ti => signalPeak * Math.exp(-0.5 * Math.pow((ti - pulseWidth * 0.5) / (pulseWidth * 0.15), 2)));
-    const noisy = t.map((ti, i) => signal[i] + noiseRms * (Math.sin(i * 7.3) * 0.5 + Math.cos(i * 13.7) * 0.5));
+    const signal = t.map(ti => signalPeak * Math.exp(-0.5 * Math.pow((ti - pulseWidth * 0.5) / (pulseWidth / 2.355), 2)));
+    const noisy = t.map((ti, i) => signal[i] + noiseRms * Math.SQRT2 * (Math.sin(i * 7.3) * 0.5 + Math.cos(i * 13.7) * 0.5));
     const gate = t.map(ti => ti >= gateStart && ti <= gateEnd ? signalPeak * 1.2 : 0);
     return [
       { x: t, y: noisy, type: "scatter" as const, mode: "lines" as const, name: "Noisy Signal", line: { color: "#6b7280", width: 1 } },
