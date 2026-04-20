@@ -17,7 +17,7 @@ export default function IngaasParametersPage() {
   const [idealityFactor, setIdealityFactor] = useURLState("idealityFactor", 1.2);
 
   const Eg = indiumFraction * 0.36 + (1 - indiumFraction) * 1.424 - 0.477 * indiumFraction * (1 - indiumFraction);
-  const EgT = Eg - 2.7e-4 * (temperature - 300) * (Eg - 0.5) / Eg;
+  const EgT = Eg - 2.7e-4 * (temperature - 300) * Math.abs(Eg - 0.5) / Eg;
   const cutoff = 1240 / EgT;
   const R_surface = 0.02;
   const alpha0 = 1e4;
@@ -29,7 +29,7 @@ export default function IngaasParametersPage() {
   const areaCm2 = area * 1e-2;
   const Vt = k * temperature / q;
   const Vrev = Math.max(0, -biasVoltage);
-  const diffDark = areaCm2 * 1e-8 * (1 - Math.exp(-Vrev / (idealityFactor * Vt)));
+  const diffDark = areaCm2 * 1e-8 * Math.pow(temperature / 300, 3) * Math.exp(EgT * q / k * (1 / 300 - 1 / temperature)) * (1 - Math.exp(-Vrev / (idealityFactor * Vt)));
   const grDark = areaCm2 * 1e-6 * Math.pow(temperature / 300, 1.5) * Math.exp(-EgT * q / (2 * k * temperature));
   const totalDark = diffDark + grDark;
   const R1550 = resp(1550);
@@ -46,7 +46,7 @@ export default function IngaasParametersPage() {
 
   const darkVsTemp = useMemo(() => {
     const temps = Array.from({ length: 150 }, (_, i) => 200 + i * 200 / 150);
-    return [{ x: temps, y: temps.map(T => { const egt = Eg - 2.7e-4 * (T - 300) * (Eg - 0.5) / Eg; const vt = k * T / q; const vr = Math.max(0, -biasVoltage); const d = areaCm2 * 1e-8 * (1 - Math.exp(-vr / (idealityFactor * vt))); const g = areaCm2 * 1e-6 * Math.pow(T / 300, 1.5) * Math.exp(-egt * q / (2 * k * T)); return (d + g) * 1e9; }), type: "scatter", mode: "lines", name: "I_dark", line: { color: "#fbbf24", width: 2 } }];
+    return [{ x: temps, y: temps.map(T => { const egt = Eg - 2.7e-4 * (T - 300) * Math.abs(Eg - 0.5) / Eg; const vt = k * T / q; const vr = Math.max(0, -biasVoltage); const d = areaCm2 * 1e-8 * Math.pow(T / 300, 3) * Math.exp(egt * q / k * (1 / 300 - 1 / T)) * (1 - Math.exp(-vr / (idealityFactor * vt))); const g = areaCm2 * 1e-6 * Math.pow(T / 300, 1.5) * Math.exp(-egt * q / (2 * k * T)); return (d + g) * 1e9; }), type: "scatter", mode: "lines", name: "I_dark", line: { color: "#fbbf24", width: 2 } }];
   }, [Eg, biasVoltage, idealityFactor, areaCm2]);
 
   return (

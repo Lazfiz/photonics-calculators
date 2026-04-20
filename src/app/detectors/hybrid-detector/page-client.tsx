@@ -19,14 +19,15 @@ export default function HybridDetectorPage() {
   const Rf = feedbackResistance * 1e6;
   const currentNoise = inputNoiseCurrent * 1e-15 * Math.sqrt(bwHz);
   const voltageNoiseContrib = inputNoiseVoltage * 1e-9 * Math.sqrt(bwHz) / Rf;
-  const totalNoise = Math.sqrt(currentNoise ** 2 + voltageNoiseContrib ** 2);
-  const nepSpectral = Math.sqrt(inputNoiseCurrent ** 2 * 1e-30 + inputNoiseVoltage ** 2 * 1e-18 / Rf ** 2) / responsivity * 1e15;
+  const johnsonNoise = Math.sqrt(4 * 1.381e-23 * 300 * bwHz / Rf); // 4kT/R, T=300K
+  const totalNoise = Math.sqrt(currentNoise ** 2 + voltageNoiseContrib ** 2 + johnsonNoise ** 2);
+  const nepSpectral = Math.sqrt(inputNoiseCurrent ** 2 * 1e-30 + inputNoiseVoltage ** 2 * 1e-18 / Rf ** 2 + 4 * 1.381e-23 * 300 / Rf) / responsivity * 1e15;
   const nep = totalNoise / responsivity * 1e15;
   const noiseElectrons = totalNoise / (1.602e-19 * 2 * bwHz); // ENC = i_noise / (2q·BW)
 
   const nepVsBW = useMemo(() => {
     const bws = Array.from({ length: 200 }, (_, i) => 1 + i * 5);
-    return [{ x: bws, y: bws.map(bw => { const hz = bw * 1e6; const in_ = inputNoiseCurrent * 1e-15 * Math.sqrt(hz); const vn = inputNoiseVoltage * 1e-9 * Math.sqrt(hz) / Rf; return Math.sqrt(in_ ** 2 + vn ** 2) / responsivity * 1e15; }), type: "scatter", mode: "lines", name: "NEP", line: { color: "#34d399" } }];
+    return [{ x: bws, y: bws.map(bw => { const hz = bw * 1e6; const in_ = inputNoiseCurrent * 1e-15 * Math.sqrt(hz); const vn = inputNoiseVoltage * 1e-9 * Math.sqrt(hz) / Rf; const jn = Math.sqrt(4 * 1.381e-23 * 300 * hz / Rf); return Math.sqrt(in_ ** 2 + vn ** 2 + jn ** 2) / responsivity * 1e15; }), type: "scatter", mode: "lines", name: "NEP", line: { color: "#34d399" } }];
   }, [inputNoiseCurrent, inputNoiseVoltage, feedbackResistance, responsivity, bwHz, Rf]);
 
   const noiseVsGain = useMemo(() => {
@@ -52,11 +53,11 @@ export default function HybridDetectorPage() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Responsivity" value={`${(responsivity * 1e3).toFixed(2)} mA/W`} tone="blue" />
-        <ResultCard label="NEP" value={`${nep.toFixed(1)} fW`} tone="green" subtext={`${nepSpectral.toFixed(1)} fW/√Hz`} />
+        <ResultCard label="Noise Floor" value={`${nep.toFixed(1)} fW`} tone="green" subtext={`NEP_spectral = ${nepSpectral.toFixed(1)} fW/√Hz`} />
         <ResultCard label="Noise Electrons" value={`${noiseElectrons.toFixed(0)} e⁻ rms`} tone="yellow" />
         <ResultCard label="R_f·BW" value={`${(Rf * bwHz / 1e12).toFixed(1)} TΩ·Hz`} tone="purple" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>NEP = √(i_n²·BW + e_n²·BW/R_f²) / R</p><p>Optimal R_f when i_n·R_f ≈ e_n</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>NEP = √(i_n²·BW + e_n²·BW/R_f² + 4kT·BW/R_f) / R</p><p>Noise corner (voltage/current crossover) when i_n·R_f ≈ e_n</p></div>
       <div className="grid gap-6 lg:grid-cols-2">
         <ChartPanel data={nepVsBW} layout={{ xaxis: { title: "BW (MHz)", gridcolor: "#374151" }, yaxis: { title: "NEP (fW)", gridcolor: "#374151" } }} title="NEP vs Bandwidth" />
         <ChartPanel data={noiseVsGain} layout={{ xaxis: { title: "R_f (Ω)", gridcolor: "#374151", type: "log" }, yaxis: { title: "Noise (fA)", gridcolor: "#374151", type: "log" } }} title="Noise vs Feedback R" />

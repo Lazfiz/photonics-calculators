@@ -15,7 +15,13 @@ export default function GainTemperaturePage() {
   const [detectorType, setDetectorType] = useState<"apd" | "pmt">("apd");
   const [pmtCoeff, setPmtCoeff] = useState(-0.003);
 
-  const gainAtT = (T: number) => detectorType === "apd" ? gainRef / (1 + tempCoeff * (T - tempRef)) : gainRef * Math.exp(pmtCoeff * (T - tempRef));
+  const gainAtT = (T: number) => {
+    if (detectorType === "apd") {
+      const denom = 1 + tempCoeff * (T - tempRef);
+      return denom > 0.01 ? gainRef / denom : gainRef / 0.01; // clamp to prevent negative/infinite gain
+    }
+    return gainRef * Math.exp(pmtCoeff * (T - tempRef));
+  };
 
   const gainAtMin = gainAtT(tempMin);
   const gainAtMax = gainAtT(tempMax);
@@ -31,7 +37,13 @@ export default function GainTemperaturePage() {
 
   const stabilityChart = useMemo(() => {
     const deltaT = Array.from({ length: 100 }, (_, i) => -20 + i * 40 / 100);
-    return [{ x: deltaT, y: deltaT.map(dT => detectorType === "apd" ? ((gainRef / (1 + tempCoeff * dT) - gainRef) / gainRef) * 100 : (Math.exp(pmtCoeff * dT) - 1) * 100), type: "scatter", mode: "lines", name: "Gain Change (%)", line: { color: "#f87171", width: 2 } }];
+    return [{ x: deltaT, y: deltaT.map(dT => {
+      if (detectorType === "apd") {
+        const denom = 1 + tempCoeff * dT;
+        return denom > 0.01 ? ((gainRef / denom - gainRef) / gainRef) * 100 : ((gainRef / 0.01 - gainRef) / gainRef) * 100;
+      }
+      return (Math.exp(pmtCoeff * dT) - 1) * 100;
+    }), type: "scatter", mode: "lines", name: "Gain Change (%)", line: { color: "#f87171", width: 2 } }];
   }, [detectorType, gainRef, tempCoeff, pmtCoeff]);
 
   return (
