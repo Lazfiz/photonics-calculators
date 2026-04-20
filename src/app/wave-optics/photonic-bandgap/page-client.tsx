@@ -19,7 +19,7 @@ export default function PhotonicBandgapPage() {
   const deltaN = nHigh - nLow;
   const nAvg = (nHigh + nLow) / 2;
   const bandwidth = (4 / Math.PI) * Math.asin(deltaN / (nHigh + nLow));
-  const reflectivity = Math.tanh(numPeriods * Math.asin(deltaN / (nHigh + nLow))) ** 2;
+  const reflectivity = Math.tanh(numPeriods * Math.log(nHigh / nLow)) ** 2;
 
   const chartData = useMemo(() => {
     const N = 500;
@@ -29,14 +29,21 @@ export default function PhotonicBandgapPage() {
     // Simplified 1D photonic crystal: transfer matrix approximate
     // Use sinusoidal approximation for bandgap
     const transmission = freqs.map(f => {
-      const fNorm = f / freqNorm;
       const delta = (nHigh - nLow) / (nHigh + nLow);
       const kappa = Math.PI * delta / (2 * (nHigh * fillFraction + nLow * (1 - fillFraction)));
-      const detuning = 2 * Math.PI * (fNorm - 1);
-      const gamma = Math.sqrt(kappa * kappa + detuning * detuning / 4);
-      const coshGL = Math.cosh(gamma * numPeriods * 2);
-      const sinGL = gamma > 0.001 ? Math.sin(gamma * numPeriods * 2) / gamma : numPeriods * 2;
-      const tMag = 1 / Math.sqrt(coshGL * coshGL + Math.pow(kappa, 2) * sinGL * sinGL);
+      const detuning = 2 * Math.PI * (f - 1);
+      const gammaSq = kappa * kappa - detuning * detuning / 4;
+      const isInside = gammaSq > 0;
+      const gamma = isInside ? Math.sqrt(gammaSq) : Math.sqrt(-gammaSq);
+      const gL = gamma * numPeriods * 2;
+      let tMag: number;
+      if (isInside) {
+        // Inside bandgap: exponential decay
+        tMag = 1 / Math.cosh(gL);
+      } else {
+        // Outside bandgap: oscillatory
+        tMag = 1 / Math.sqrt(1 + (kappa / gamma) ** 2 * Math.sin(gL) ** 2);
+      }
       return Math.min(1, tMag * tMag);
     });
     return [
@@ -76,7 +83,7 @@ export default function PhotonicBandgapPage() {
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm mb-2 font-mono">λ<sub>Bragg</sub> = 2·n<sub>eff</sub>·a &nbsp;|&nbsp; R = tanh²(N·Δn/(2n̄)) &nbsp;|&nbsp; Δf/f₀ = (4/π)arcsin(Δn/(n₁+n₂))</p>
+        <p className="text-gray-300 text-sm mb-2 font-mono">λ<sub>Bragg</sub> = 2·n<sub>eff</sub>·a &nbsp;|&nbsp; R = tanh²(N·ln(n₁/n₂)) &nbsp;|&nbsp; Δf/f₀ = (4/π)arcsin(Δn/(n₁+n₂))</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
