@@ -7,18 +7,26 @@ import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumbe
 const hc = 1.986446e-25; // J·m
 const c = 3e8;
 
-function parametricGain({ pumpWavelength, crystalLength, dEff, nPump, nSignal, nIdler, pumpPower, beamRadius, walkOff }: { pumpWavelength: number; crystalLength: number; dEff: number; nPump: number; nSignal: number; nIdler: number; pumpPower: number; beamRadius: number; walkOff: number }) {
-  const omegaP = 2 * Math.PI * c / (pumpWavelength * 1e-6);
-  const omegaS = 2 * Math.PI * c / (2 * pumpWavelength * 1e-6);
+function parametricGain({ pumpWavelength, signalWavelength, crystalLength, dEff, nPump, nSignal, nIdler, pumpPower, beamRadius, walkOff }: { pumpWavelength: number; signalWavelength: number; crystalLength: number; dEff: number; nPump: number; nSignal: number; nIdler: number; pumpPower: number; beamRadius: number; walkOff: number }) {
+  const lambdaP = pumpWavelength * 1e-9;
+  const lambdaS = signalWavelength * 1e-9;
+  const lambdaI = (lambdaP * lambdaS) / (lambdaS - lambdaP);
+  const omegaP = 2 * Math.PI * c / lambdaP;
+  const omegaS = 2 * Math.PI * c / lambdaS;
+  const omegaI = omegaP - omegaS;
   const deff = dEff * 1e-12;
   const eps0 = 8.854e-12;
-  const Ip = pumpPower / (Math.PI * (beamRadius * 1e-6) ** 2);
-  const gamma = (4 * deff / (c * Math.sqrt(nPump * nSignal * nIdler))) * Math.sqrt(2 * omegaP * omegaS * Ip / (eps0 * c * nPump));
+  const w = beamRadius * 1e-6;
+  const Ip = pumpPower / (Math.PI * w * w);
+  // Standard parametric gain coefficient (Boyd, Nonlinear Optics Ch.2):
+  // γ² = 2·ωs·ωi·d²eff·Ip / (ε₀·nₚ·nₛ·nᵢ·c³)
+  const gamma = deff * Math.sqrt(2 * omegaS * omegaI * Ip / (eps0 * nPump * nSignal * nIdler * c * c * c));
+  // Walk-off reduces effective interaction length via aperture length: L_a = √π·w/ρ
   const walkOffRad = (walkOff * Math.PI) / 180;
   const L = crystalLength * 1e-3;
-  const argSquared = (gamma / 2) ** 2 - (walkOffRad / (2 * L)) ** 2;
-  const arg = argSquared > 0 ? Math.sqrt(argSquared) : 0;
-  const g0 = arg > 1e-12 ? (Math.sinh(arg * L) / arg) * (gamma / 2) : gamma * L;
+  const apertureLength = walkOffRad > 1e-6 ? Math.sqrt(Math.PI) * w / walkOffRad : L;
+  const Leff = Math.min(L, apertureLength);
+  const g0 = gamma * Leff;
   return { g0, gamma };
 }
 
@@ -32,17 +40,18 @@ export default function OPOCalculator() {
   const [pumpPower, setPumpPower] = useURLState("pumpPower", 5);
   const [beamRadius, setBeamRadius] = useURLState("beamRadius", 50);
   const [walkOff, setWalkOff] = useURLState("walkOff", 0.5);
+  const [cavityLoss, setCavityLoss] = useURLState("cavityLoss", 3);
   const [showPhaseMatching, setShowPhaseMatching] = useState(true);
 
   const signalWavelength = pumpWavelength < 2 * pumpWavelength ? pumpWavelength * 1.2 : pumpWavelength / 2;
   const idlerWavelength = (pumpWavelength * signalWavelength) / (signalWavelength - pumpWavelength);
-  const omegaP = 2 * Math.PI * c / (pumpWavelength * 1e-6);
-  const omegaS = 2 * Math.PI * c / (signalWavelength * 1e-6);
+  const omegaP = 2 * Math.PI * c / (pumpWavelength * 1e-9);
+  const omegaS = 2 * Math.PI * c / (signalWavelength * 1e-9);
   const omegaI = omegaP - omegaS;
 
   const { g0, gamma } = useMemo(
-    () => parametricGain({ pumpWavelength, crystalLength, dEff, nPump, nSignal, nIdler, pumpPower, beamRadius, walkOff }),
-    [pumpWavelength, crystalLength, dEff, nPump, nSignal, nIdler, pumpPower, beamRadius, walkOff]
+    () => parametricGain({ pumpWavelength, signalWavelength, crystalLength, dEff, nPump, nSignal, nIdler, pumpPower, beamRadius, walkOff }),
+    [pumpWavelength, signalWavelength, crystalLength, dEff, nPump, nSignal, nIdler, pumpPower, beamRadius, walkOff]
   );
 
   const thresholdPower = useMemo(() => {
@@ -50,11 +59,13 @@ export default function OPOCalculator() {
     const deff = dEff * 1e-12;
     const L = crystalLength * 1e-3;
     const w = beamRadius * 1e-6;
-    const area = Math.PI * w * w;
-    const nAvg = Math.pow(nPump * nSignal * nIdler, 1 / 3);
-    const Pth = (Math.PI * Math.PI * w * w * eps0 * c * nPump * nSignal * nIdler) / (4 * deff * deff * L * L * omegaP * omegaS) * (2 * Math.PI / (c * nAvg));
+    const alpha = cavityLoss / 100;
+    // Boyd, Nonlinear Optics Ch.2 — SRO threshold:
+    // P_th = (α·π³·w₀²·ε₀·c·nₚ·nₛ·nᵢ) / (8·d²eff·ωₛ·ωᵢ·L²)
+    const omegaI = omegaP - omegaS;
+    const Pth = (alpha * Math.PI ** 3 * w * w * eps0 * c * nPump * nSignal * nIdler) / (8 * deff * deff * omegaS * omegaI * L * L);
     return Math.abs(Pth);
-  }, [pumpWavelength, crystalLength, dEff, nPump, nSignal, nIdler, beamRadius]);
+  }, [pumpWavelength, crystalLength, dEff, nPump, nSignal, nIdler, beamRadius, cavityLoss, omegaP, omegaS]);
 
   // Phase matching curve
   const phaseMatchData = useMemo(() => {
@@ -65,9 +76,9 @@ export default function OPOCalculator() {
     for (let T = 0; T <= 80; T += 0.5) {
       temps.push(T);
       const dn_dT = 1e-5 * (T - T0);
-      const kP = 2 * Math.PI * nPump / (pumpWavelength * 1e-6);
-      const kS = 2 * Math.PI * (nSignal + dn_dT) / (signalWavelength * 1e-6);
-      const kI = 2 * Math.PI * (nIdler + dn_dT * 0.8) / (Math.abs(idlerWavelength) * 1e-6);
+      const kP = 2 * Math.PI * nPump / (pumpWavelength * 1e-9);
+      const kS = 2 * Math.PI * (nSignal + dn_dT) / (signalWavelength * 1e-9);
+      const kI = 2 * Math.PI * (nIdler + dn_dT * 0.8) / (Math.abs(idlerWavelength) * 1e-9);
       deltaK.push((kP - kS - kI) * 1e-3);
     }
     return { x: temps, y: deltaK };
@@ -79,11 +90,11 @@ export default function OPOCalculator() {
     const gains = [];
     for (let L = 1; L <= 50; L += 0.5) {
       lengths.push(L);
-      const r = parametricGain({ pumpWavelength, crystalLength: L, dEff, nPump, nSignal, nIdler, pumpPower, beamRadius, walkOff });
+      const r = parametricGain({ pumpWavelength, signalWavelength, crystalLength: L, dEff, nPump, nSignal, nIdler, pumpPower, beamRadius, walkOff });
       gains.push(r.g0);
     }
     return { x: lengths, y: gains };
-  }, [pumpWavelength, dEff, nPump, nSignal, nIdler, pumpPower, beamRadius, walkOff]);
+  }, [pumpWavelength, signalWavelength, dEff, nPump, nSignal, nIdler, pumpPower, beamRadius, walkOff]);
 
   // Gain vs pump power
   const gainVsPower = useMemo(() => {
@@ -91,11 +102,11 @@ export default function OPOCalculator() {
     const gains = [];
     for (let P = 0.1; P <= 20; P += 0.2) {
       powers.push(P);
-      const r = parametricGain({ pumpWavelength, crystalLength, dEff, nPump, nSignal, nIdler, pumpPower: P, beamRadius, walkOff });
+      const r = parametricGain({ pumpWavelength, signalWavelength, crystalLength, dEff, nPump, nSignal, nIdler, pumpPower: P, beamRadius, walkOff });
       gains.push(r.g0);
     }
     return { x: powers, y: gains };
-  }, [pumpWavelength, crystalLength, dEff, nPump, nSignal, nIdler, beamRadius, walkOff]);
+  }, [pumpWavelength, signalWavelength, crystalLength, dEff, nPump, nSignal, nIdler, beamRadius, walkOff]);
 
   const darkPlot = { paper_bgcolor: "#0a0a0a", plot_bgcolor: "#111", font: { color: "#ccc" } };
   const axisStyle = { gridcolor: "#333", zerolinecolor: "#444", color: "#ccc" };
@@ -109,9 +120,9 @@ export default function OPOCalculator() {
         <h3 className="text-cyan-400 font-semibold mb-2">Key Equations</h3>
         <p className="font-mono text-gray-400 text-sm leading-relaxed">
           ωₚ = ωₛ + ωᵢ &nbsp;|&nbsp; λᵢ = λₚ·λₛ / (λₛ − λₚ)<br />
-          γ = (4d_eff / c√(nₚnₛnᵢ)) √(2ωₚωₛIₚ / ε₀cnₚ)<br />
-          g₀ ≈ γL · sinh(γL/2)/(γL/2) &nbsp; (plane-wave, low walk-off)<br />
-          P_th ≈ π³w²ε₀c·nₚnₛnᵢ / (4d_eff²L²ωₚωₛ)<br />
+          γ = d_eff √(2ωₛωᵢIₚ / ε₀nₚnₛnᵢc³)<br />
+          g₀ = γ · L_eff &nbsp; (L_eff = min(L, √π·w/ρ))<br />
+          P_th = (α·π³·w₀²·ε₀·c·nₚnₛnᵢ) / (8·d_eff²·ωₛ·ωᵢ·L²)<br />
           Δk = kₚ − kₛ − kᵢ − 2π/Λ (QPM)
         </p>
       </div>
@@ -136,6 +147,7 @@ export default function OPOCalculator() {
             <ValidatedNumberInput label="Pump Power (W)" value={pumpPower} onChange={setPumpPower} />
             <ValidatedNumberInput label="Beam Radius (μm)" value={beamRadius} onChange={setBeamRadius} />
             <ValidatedNumberInput label="Walk-off (deg)" value={walkOff} onChange={setWalkOff} />
+            <ValidatedNumberInput label="Cavity Loss (%)" value={cavityLoss} onChange={setCavityLoss} step="0.5" />
 
             <label className="flex items-center gap-2 text-gray-300 mt-4">
               <input type="checkbox" checked={showPhaseMatching} onChange={e => setShowPhaseMatching(e.target.checked)} className="rounded" />
@@ -161,7 +173,7 @@ export default function OPOCalculator() {
                   ["Coupling γ", `${gamma.toFixed(1)} m⁻¹`],
                   ["Est. Threshold", `${thresholdPower < 1000 ? thresholdPower.toFixed(2) + " W" : (thresholdPower / 1000).toFixed(2) + " kW"}`],
                   ["Above threshold?", pumpPower > thresholdPower ? "✅ Yes" : "❌ No"],
-                  ["Pump Intensity", `${(pumpPower / (Math.PI * (beamRadius * 1e-6) ** 2) / 1e10).toFixed(2)} GW/m²`],
+                  ["Pump Intensity", `${(pumpPower / (Math.PI * (beamRadius * 1e-6) ** 2) / 1e9).toFixed(2)} GW/m²`],
                 ].map(([label, val], i) => (
                   <tr key={i}>
                     <td className="text-gray-500 py-1">{label}</td>
