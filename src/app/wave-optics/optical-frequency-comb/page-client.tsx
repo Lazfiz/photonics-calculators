@@ -22,7 +22,7 @@ export default function OpticalFrequencyCombPage() {
     });
     
     return [
-      { x: freqs.map(f => f / 1e12), y: freqs.map((_, i) => Math.exp(-((i - combLines / 2) ** 2))), type: "scatter" as const, mode: "lines" as const, name: "Comb Teeth", line: { color: "#60a5fa" } },
+      { x: freqs.map(f => f / 1e12), y: freqs.map((_, i) => Math.exp(-0.5 * ((i - combLines / 2) / (combLines / 6)) ** 2)), type: "scatter" as const, mode: "lines" as const, name: "Comb Teeth", line: { color: "#60a5fa" } },
     ];
   }, [repRate, centerWavelength, combLines]);
 
