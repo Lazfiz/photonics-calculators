@@ -19,7 +19,7 @@ export default function GouyPhasePage() {
     const gouy = Math.atan(zm / zR); // rad
     const gouyDeg = gouy * 180 / Math.PI;
     const w = w0m * Math.sqrt(1 + (zm / zR) ** 2);
-    const R = zm * (1 + (zR / zm) ** 2);
+    const R = zm === 0 ? Infinity : zm * (1 + (zR / zm) ** 2);
     return { zR, gouy, gouyDeg, w, R };
   }, [wavelength, w0, z]);
 
