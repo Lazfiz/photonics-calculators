@@ -40,9 +40,11 @@ export default function LinearModeAPDPage() {
     const darkNoise = Math.sqrt(2 * q * darkCurrent * gain * gain * F * bandwidth);
     const totalNoise = Math.sqrt(shotNoise ** 2 + darkNoise ** 2);
     const snr = iPhotoOut / totalNoise;
-    const nep = totalNoise / (resp * gain); // W (total, bandwidth-dependent)
+    const nep = totalNoise / (resp * gain); // W (signal+dark, bandwidth-dependent)
+    const nepDark = darkNoise / (resp * gain); // W (dark-limited, standard datasheet NEP)
     const nepSpectral = nep / Math.sqrt(bandwidth); // W/√Hz
-    return { resp, iPhoto, iPhotoOut, iDarkOut, shotNoise, darkNoise, totalNoise, snr, nep, nepSpectral, F };
+    const nepDarkSpectral = nepDark / Math.sqrt(bandwidth); // W/√Hz
+    return { resp, iPhoto, iPhotoOut, iDarkOut, shotNoise, darkNoise, totalNoise, snr, nep, nepDark, nepSpectral, nepDarkSpectral, F };
   }, [gain, useCustomF, customF, quantumEff, bandwidth, darkCurrent, wavelength, incidentPower, effectiveK]);
 
   const chartData = useMemo(() => {
@@ -59,15 +61,19 @@ export default function LinearModeAPDPage() {
       return Math.sqrt(2 * q * iPhoto * g * g * F * bandwidth + 2 * q * darkCurrent * g * g * F * bandwidth);
     });
     const snr = signal.map((s, i) => s / noise[i]);
-    // Also plot F(M) curve
-    const fCurve = gains.map(g => useCustomF ? customF : mcIntyre(g));
+    // When using custom F, back-calculate effective k from the operating point
+    const kChart = useCustomF
+      ? Math.max(0, (customF - 2 + 1 / gain) / (gain - 2 + 1 / gain))
+      : effectiveK;
+    const fCurve = gains.map(g => useCustomF ? kChart * g + (1 - kChart) * (2 - 1 / g) : mcIntyre(g));
+    const fMax = Math.max(...fCurve);
     return [
       { x: gains, y: signal, type: "scatter", mode: "lines", name: "Signal (A)", line: { color: "#60a5fa" } },
       { x: gains, y: noise, type: "scatter", mode: "lines", name: "Noise (A)", line: { color: "#f87171" } },
       { x: gains, y: snr, type: "scatter", mode: "lines", name: "SNR", line: { color: "#34d399" }, yaxis: "y2" },
       { x: gains, y: fCurve, type: "scatter", mode: "lines", name: "F(M)", line: { color: "#a78bfa", dash: "dash" }, yaxis: "y3" },
     ];
-  }, [useCustomF, customF, quantumEff, bandwidth, darkCurrent, wavelength, incidentPower, effectiveK]);
+  }, [useCustomF, customF, quantumEff, bandwidth, darkCurrent, wavelength, incidentPower, effectiveK, gain]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
@@ -96,7 +102,7 @@ export default function LinearModeAPDPage() {
         </div>
         <ValidatedNumberInput label="Quantum Efficiency" value={quantumEff} onChange={setQuantumEff} min={0} max={1} step="0.01" />
         <ValidatedNumberInput label="Bandwidth (Hz)" value={bandwidth} onChange={setBandwidth} step="1e6" />
-        <ValidatedNumberInput label="Dark Current - unmultiplied (A)" value={darkCurrent} onChange={setDarkCurrent} step="1e-9" />
+        <ValidatedNumberInput label="Dark Current - primary/bulk (A)" value={darkCurrent} onChange={setDarkCurrent} step="1e-9" />
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         <ValidatedNumberInput label="Incident Power (W)" value={incidentPower} onChange={setIncidentPower} step="1e-12" />
       </div>
@@ -110,8 +116,8 @@ export default function LinearModeAPDPage() {
         <p className="text-gray-300">Shot noise = <span className="text-blue-400 font-mono">{results.shotNoise.toExponential(3)} A</span></p>
         <p className="text-gray-300">Total noise = <span className="text-blue-400 font-mono">{results.totalNoise.toExponential(3)} A</span></p>
         <p className="text-gray-300">SNR = <span className="text-blue-400 font-mono">{results.snr.toFixed(1)}</span></p>
-        <p className="text-gray-300">NEP = <span className="text-blue-400 font-mono">{results.nep.toExponential(3)} W</span> (total)</p>
-        <p className="text-gray-300">NEP = <span className="text-blue-400 font-mono">{results.nepSpectral.toExponential(3)} W/√Hz</span> (spectral)</p>
+        <p className="text-gray-300">NEP = <span className="text-blue-400 font-mono">{results.nep.toExponential(3)} W</span> (total) | <span className="text-yellow-400 font-mono">{results.nepDark.toExponential(3)} W</span> (dark-limited)</p>
+        <p className="text-gray-300">NEP = <span className="text-blue-400 font-mono">{results.nepSpectral.toExponential(3)} W/√Hz</span> (total) | <span className="text-yellow-400 font-mono">{results.nepDarkSpectral.toExponential(3)} W/√Hz</span> (dark-limited)</p>
       </div>
 
       <h2 className="text-xl font-semibold mb-2">Key Formulas</h2>
@@ -128,7 +134,7 @@ export default function LinearModeAPDPage() {
         xaxis: { title: "Gain (M)", gridcolor: "#374151" },
         yaxis: { title: "Current (A)", type: "log", gridcolor: "#374151" },
         yaxis2: { title: "SNR", gridcolor: "#374151", overlaying: "y", side: "right" },
-        yaxis3: { title: "F(M)", gridcolor: "#374151", overlaying: "y", side: "left", anchor: "free", position: 0.02, range: [0, 20] },
+        yaxis3: { title: "F(M)", gridcolor: "#374151", overlaying: "y", side: "left", anchor: "free", position: 0.02, range: [0, fMax * 1.1] },
         margin: { t: 20, b: 40, l: 70, r: 60 }, autosize: true, showlegend: true
       }} />
     </div>
