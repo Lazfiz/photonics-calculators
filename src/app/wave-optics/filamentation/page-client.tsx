@@ -21,9 +21,11 @@ export default function FilamentationPage() {
   const Pcr = 3.77 * (wavelength * 1e-9) ** 2 / (8 * Math.PI * n0 * n2 * 1e-20); // critical power W
   const peakPower = pulseEnergy * 1e-6 / (pulseDuration * 1e-15); // W
 
-  // Filament length estimate
-  const PoverPcr = peakPower / Pcr;
-  const zFil = 0.367 * zR * Math.sqrt(PoverPcr); // Marburger formula for self-focusing distance
+  // Self-focusing distance (Marburger formula): z_sf decreases with power
+  // z_sf = 0.367·zR / √((√(P/Pcr) - 0.852)² - 0.0219)
+  const sqrtRatio = Math.sqrt(PoverPcr);
+  const zFilArg = Math.max(0.001, (sqrtRatio - 0.852) ** 2 - 0.0219);
+  const zFil = 0.367 * zR / Math.sqrt(zFilArg); // Marburger self-focusing distance
   const Lfil = 2 * zFil * Math.sqrt(PoverPcr); // approximate filament length
 
   // Beam radius vs propagation (Marburger)
@@ -31,13 +33,13 @@ export default function FilamentationPage() {
     const z = Array.from({ length: 300 }, (_, i) => i * zFil * 3 / 300);
     const wLinear = z.map(zi => w0 * Math.sqrt(1 + (zi / zR) ** 2) * 1e6); // linear diffraction
     const wKerr = z.map(zi => {
-      const zf = zFil;
-      if (zi < zf * 0.95) {
-        const w = w0 * Math.sqrt(1 - (zi / zf) ** 2 + (zi / zR) ** 2);
-        return Math.max(w * 1e6, wavelength / 2);
+      const collapseArg = 1 + (zi / zR) ** 2 * (1 - PoverPcr);
+      if (collapseArg <= 0) {
+        // Inside filament: clamped at ~w_filament
+        return beamWaist * 0.02;
       }
-      // Inside filament: clamped at ~w_filament
-      return beamWaist * 0.02;
+      const w = w0 * Math.sqrt(collapseArg);
+      return Math.max(w * 1e6, wavelength / 2000); // floor at λ/2 in µm
     });
     return [
       { x: z.map(v => v * 100), y: wLinear, type: "scatter", mode: "lines", name: "Linear", line: { color: "#374151", width: 1, dash: "dash" } },
@@ -50,12 +52,12 @@ export default function FilamentationPage() {
     const z = Array.from({ length: 300 }, (_, i) => i * zFil * 3 / 300);
     const I = z.map(zi => {
       const zf = zFil;
-      if (zi < zf * 0.95) {
-        const w = w0 * Math.sqrt(1 - (zi / zf) ** 2 + (zi / zR) ** 2);
-        const area = Math.PI * w ** 2;
-        return peakPower / area;
+      if (collapseArg <= 0) {
+        return 5e17; // clamped intensity ~5×10¹³ W/cm² = 5×10¹⁷ W/m²
       }
-      return 5e17; // clamped intensity ~5×10¹³ W/cm² = 5×10¹⁷ W/m²
+      const w = w0 * Math.sqrt(collapseArg);
+      const area = Math.PI * w ** 2;
+      return 2 * peakPower / area; // Gaussian peak I = 2P/(πw²)
     });
     return [
       { x: z.map(v => v * 100), y: I.map(v => v / 1e16), type: "scatter", mode: "lines", name: "Peak I(z)", line: { color: "#f472b6", width: 2 } },
