@@ -18,8 +18,8 @@ function opaGain({ pumpWavelength, signalWavelength, crystalLength, dEff, nPump,
   const L = crystalLength * 1e-3;
   const w = beamRadius * 1e-6;
   const Ip = pumpPower / (Math.PI * w * w);
-  const gamma = (2 * deff / c) * Math.sqrt(omegaP * omegaS * Ip / (2 * eps0 * c * nPump * nSignal * nIdler));
-  const G = 1 + (gamma * L * Math.sinh(gamma * L)) ** 2 / (gamma * L) ** 2;
+  const gamma = (2 * deff / c) * Math.sqrt(omegaS * omegaI * Ip / (2 * eps0 * c * nPump * nSignal * nIdler));
+  const G = 1 + Math.sinh(gamma * L) ** 2;
   const gaindB = 10 * Math.log10(G);
   return { G, gaindB, gamma, lambdaI: lambdaI * 1e9, omegaI };
 }
@@ -75,7 +75,7 @@ export default function OPACalculator() {
         <h3 className="text-cyan-400 font-semibold mb-2">Key Equations</h3>
         <p className="font-mono text-gray-400 text-sm leading-relaxed">
           ωₚ = ωₛ + ωᵢ &nbsp;|&nbsp; λᵢ = λₚλₛ/(λₛ − λₚ)<br />
-          γ = (2d_eff/c) √(ωₚωₛIₚ / 2ε₀cnₚnₛnᵢ)<br />
+          γ = (2d_eff/c) √(ωₛωᵢIₚ / 2ε₀cnₚnₛnᵢ)<br />
           G = 1 + [sinh²(γL)] &nbsp; (undepleted pump)<br />
           G_dB = 10 log₁₀(G)
         </p>
@@ -109,7 +109,7 @@ export default function OPACalculator() {
                   ["Power Gain G", result.G > 1e6 ? result.G.toExponential(2) : result.G.toFixed(2)],
                   ["Gain (dB)", `${result.gaindB.toFixed(2)} dB`],
                   ["Coupling γ", `${result.gamma.toFixed(1)} m⁻¹`],
-                  ["Pump Intensity", `${(pumpPower / (Math.PI * (beamRadius * 1e-6) ** 2) / 1e10).toFixed(2)} GW/m²`],
+                  ["Pump Intensity", `${(pumpPower / (Math.PI * (beamRadius * 1e-6) ** 2) / 1e9).toFixed(2)} GW/m²`],
                 ].map(([l, v], i) => (
                   <tr key={i}><td className="text-gray-500 py-1">{l}</td><td className="text-gray-200 font-semibold">{v}</td></tr>
                 ))}
