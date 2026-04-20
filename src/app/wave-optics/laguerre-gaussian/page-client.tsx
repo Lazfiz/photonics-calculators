@@ -51,11 +51,10 @@ export default function LaguerreGaussianPage() {
         const theta = Math.atan2(y, x);
         const rho = Math.SQRT2 * r / w0;
         const Lpl = laguerreL(p, absL, rho * rho);
-        const norm = Math.sqrt(2 * factorial(p) / (Math.PI * factorial(p + absL))) / w0;
+        const norm = Math.sqrt(factorial(p) / (Math.PI * factorial(p + absL))) / w0;
         const radial = norm * Math.pow(rho, absL) * Lpl * Math.exp(-rho * rho / 2);
-        const azimuthal = Math.cos(l * theta);
-        const field = radial * azimuthal;
-        row.push(field * field);
+        // Physical intensity: |u|² = |radial|² (|exp(ilθ)|² = 1, azimuthally symmetric)
+        row.push(radial * radial);
       }
       z.push(row);
     }
@@ -70,7 +69,7 @@ export default function LaguerreGaussianPage() {
     const intensity = rs.map(r => {
       const rho = Math.SQRT2 * r / w0;
       const Lpl = laguerreL(p, absL, rho * rho);
-      const norm = Math.sqrt(2 * factorial(p) / (Math.PI * factorial(p + absL))) / w0;
+      const norm = Math.sqrt(factorial(p) / (Math.PI * factorial(p + absL))) / w0;
       const radial = norm * Math.pow(rho, absL) * Lpl * Math.exp(-rho * rho / 2);
       return radial * radial;
     });
@@ -106,7 +105,7 @@ export default function LaguerreGaussianPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-8">
         <p className="text-gray-300 text-sm mb-2 font-mono">
-          u<sub>pl</sub>(r,θ) = C · (√2·r/w₀)<sup>|{l}|</sup> · L<sub>{p}</sub><sup>|{l}|</sup>(2r²/w₀²) · exp(−r²/w₀²) · exp(i{absL}θ)
+          u<sub>pl</sub>(r,θ) = C · (√2·r/w₀)<sup>|{l}|</sup> · L<sub>{p}</sub><sup>|{l}|</sup>(2r²/w₀²) · exp(−r²/w₀²) · exp(i{l}θ)
         </p>
       </div>
 
