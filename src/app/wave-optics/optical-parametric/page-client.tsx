@@ -36,8 +36,8 @@ export default function OpticalParametricPage() {
   // OPO threshold
   const n = 2.2;
   const lambdaPm = pumpWavelength * 1e-9;
-  const area = Math.PI * pumpWaist * 1e-6 ** 2;
-  const Pth = (lossRoundTrip / 100) * Math.PI ** 3 * n ** 3 * (lambdaPm) ** 3 * area / (8 * deff * 1e-12 ** 2 * crystalLength * 1e-3);
+  const area = Math.PI * (pumpWaist * 1e-6) ** 2;
+  const Pth = (lossRoundTrip / 100) * Math.PI ** 3 * n ** 3 * (lambdaPm) ** 3 * area / (8 * (deff * 1e-12) ** 2 * crystalLength * 1e-3);
 
   // Gain vs signal wavelength (phase-matching bandwidth)
   const gainBWData = useMemo(() => {
