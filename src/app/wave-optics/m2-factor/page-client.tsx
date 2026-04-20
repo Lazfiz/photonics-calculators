@@ -22,8 +22,8 @@ export default function M2FactorPage() {
     const M2 = (Math.PI * w0m * thetaHalf) / lam;
     const M2dB = 10 * Math.log10(M2);
 
-    // Diffraction-limited values
-    const thetaDL = lam / (Math.PI * w0m);
+    // Diffraction-limited full-angle divergence (consistent with input convention)
+    const thetaDL = 2 * lam / (Math.PI * w0m);
     const w0DL = lam / (Math.PI * thetaHalf);
 
     // Beam parameter product BPP = w0 * θ
@@ -73,7 +73,7 @@ export default function M2FactorPage() {
           </div>
           <div>
             <p className="text-sm text-gray-400">BPP</p>
-            <p className="text-2xl font-bold text-green-400">{(calc.BPP * 1e6).toFixed(2)} mm·mrad</p>
+            <p className="text-2xl font-bold text-green-400">{(calc.BPP * 1000).toFixed(2)} mm·mrad</p>
           </div>
         </div>
       </div>
