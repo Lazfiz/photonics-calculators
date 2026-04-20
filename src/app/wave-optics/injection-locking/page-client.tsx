@@ -14,13 +14,12 @@ export default function InjectionLockingPage() {
   const chartData = useMemo(() => {
     const f = Array.from({ length: 200 }, (_, i) => -50 + i * 0.5); // MHz offset
     const lockingRange = Math.sqrt(masterPower / slavePower) * lockingBW;
-    const phaseNoise = f.map(fi => {
-      const inLock = Math.abs(fi) < lockingRange;
-      return inLock ? -60 : -30;
+    const lockStatus = f.map(fi => {
+      return Math.abs(fi) < lockingRange ? 1 : 0;
     });
-    
+
     return [
-      { x: f, y: phaseNoise, type: "scatter" as const, mode: "lines" as const, name: "Phase Noise", line: { color: "#60a5fa" } },
+      { x: f, y: lockStatus, type: "scatter" as const, mode: "lines" as const, name: "Lock Status", line: { color: "#60a5fa" } },
     ];
   }, [masterPower, slavePower, lockingBW]);
 
@@ -42,7 +41,7 @@ export default function InjectionLockingPage() {
       <ChartPanel data={chartData} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
         xaxis: { title: "Frequency Offset (MHz)", gridcolor: "#374151" },
-        yaxis: { title: "Phase Noise (dBc/Hz)", gridcolor: "#374151" },
+        yaxis: { title: "Lock Status", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true
       }} />
     </CalculatorShell>
