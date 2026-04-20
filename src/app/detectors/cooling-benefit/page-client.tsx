@@ -17,17 +17,23 @@ export default function CoolingBenefitPage() {
   const [exposureTime, setExposureTime] = useURLState("exposureTime", 1);
   const [coolTemp, setCoolTemp] = useState(-40);
 
-  const darkCurrentAtT = (T_C: number, I0: number, Eg: number) => {
+  // Generation-recombination (depletion region): I ∝ n_i ∝ T^1.5 · exp(-Eg/2kT) — used for Si
+  const darkCurrentGen = (T_C: number, I0: number, Eg: number) => {
     const T = T_C + 273.15; const Tref = 298.15;
     return I0 * Math.pow(T / Tref, 1.5) * Math.exp(-Eg / (2 * kB * T)) / Math.exp(-Eg / (2 * kB * Tref));
+  };
+  // Diffusion-limited: I ∝ n_i² ∝ T^3 · exp(-Eg/kT) — used for InGaAs
+  const darkCurrentDiff = (T_C: number, I0: number, Eg: number) => {
+    const T = T_C + 273.15; const Tref = 298.15;
+    return I0 * Math.pow(T / Tref, 3) * Math.exp(-Eg / (kB * T)) / Math.exp(-Eg / (kB * Tref));
   };
 
   const chartData = useMemo(() => {
     const temps = Array.from({ length: 300 }, (_, i) => -100 + i * 140 / 300);
-    const siDark = temps.map(T => darkCurrentAtT(T, darkCurrent25Si, egSi));
-    const inGaAsDark = temps.map(T => darkCurrentAtT(T, darkCurrent25InGaAs, egInGaAs));
-    const siSNR = temps.map(T => { const d = darkCurrentAtT(T, darkCurrent25Si, egSi) * exposureTime; return 1000 / Math.sqrt(1000 + d + readNoise * readNoise); });
-    const inGaAsSNR = temps.map(T => { const d = darkCurrentAtT(T, darkCurrent25InGaAs, egInGaAs) * exposureTime; return 1000 / Math.sqrt(1000 + d + readNoise * readNoise); });
+    const siDark = temps.map(T => darkCurrentGen(T, darkCurrent25Si, egSi));
+    const inGaAsDark = temps.map(T => darkCurrentDiff(T, darkCurrent25InGaAs, egInGaAs));
+    const siSNR = temps.map(T => { const d = darkCurrentGen(T, darkCurrent25Si, egSi) * exposureTime; return 1000 / Math.sqrt(1000 + d + readNoise * readNoise); });
+    const inGaAsSNR = temps.map(T => { const d = darkCurrentDiff(T, darkCurrent25InGaAs, egInGaAs) * exposureTime; return 1000 / Math.sqrt(1000 + d + readNoise * readNoise); });
     return [
       { x: temps, y: siDark, type: "scatter" as const, mode: "lines" as const, name: "Si Dark", line: { color: "#60a5fa" }, yaxis: "y" },
       { x: temps, y: inGaAsDark, type: "scatter" as const, mode: "lines" as const, name: "InGaAs Dark", line: { color: "#fb923c" }, yaxis: "y" },
@@ -36,8 +42,8 @@ export default function CoolingBenefitPage() {
     ];
   }, [egSi, egInGaAs, darkCurrent25Si, darkCurrent25InGaAs, exposureTime, readNoise]);
 
-  const siReduction = darkCurrent25Si / darkCurrentAtT(coolTemp, darkCurrent25Si, egSi);
-  const inGaAsReduction = darkCurrent25InGaAs / darkCurrentAtT(coolTemp, darkCurrent25InGaAs, egInGaAs);
+  const siReduction = darkCurrent25Si / darkCurrentGen(coolTemp, darkCurrent25Si, egSi);
+  const inGaAsReduction = darkCurrent25InGaAs / darkCurrentDiff(coolTemp, darkCurrent25InGaAs, egInGaAs);
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Cooling Benefit Calculator" description="Dark current reduction and SNR improvement from thermoelectric (TEC) or cryogenic cooling.">
@@ -53,10 +59,10 @@ export default function CoolingBenefitPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Si Dark Reduction" value={`×${siReduction.toExponential(1)}`} tone="blue" />
         <ResultCard label="InGaAs Dark Reduction" value={`×${inGaAsReduction.toExponential(1)}`} tone="orange" />
-        <ResultCard label={`Si Dark @ ${coolTemp}°C`} value={darkCurrentAtT(coolTemp, darkCurrent25Si, egSi).toExponential(2) + " e⁻/s"} tone="green" />
-        <ResultCard label={`InGaAs Dark @ ${coolTemp}°C`} value={darkCurrentAtT(coolTemp, darkCurrent25InGaAs, egInGaAs).toExponential(2) + " e⁻/s"} tone="yellow" />
+        <ResultCard label={`Si Dark @ ${coolTemp}°C`} value={darkCurrentGen(coolTemp, darkCurrent25Si, egSi).toExponential(2) + " e⁻/s"} tone="green" />
+        <ResultCard label={`InGaAs Dark @ ${coolTemp}°C`} value={darkCurrentDiff(coolTemp, darkCurrent25InGaAs, egInGaAs).toExponential(2) + " e⁻/s"} tone="yellow" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>I_dark(T) = I₀ · (T/T₀)^(3/2) · exp(−E_g/(2k_B)·(1/T − 1/T₀))</p><p>SNR = S / √(S + I_dark·t + σ_read²)</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>Si (generation-recombination): I ∝ T^(3/2) · exp(−E_g/2kT)</p><p>InGaAs (diffusion-limited): I ∝ T³ · exp(−E_g/kT)</p><p>SNR = S / √(S + I_dark·t + σ_read²)</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Temperature (°C)", gridcolor: "#374151" }, yaxis: { title: "Dark Current (e⁻/s)", gridcolor: "#374151", type: "log" }, yaxis2: { title: "SNR", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
     </CalculatorShell>
   );

@@ -13,13 +13,15 @@ export default function CosmicRaysPage() {
   const [pixelSize, setPixelSize] = useURLState("pixelSize", 10);
   const [energyDeposit, setEnergyDeposit] = useURLState("energyDeposit", 100);
   const [trackLength, setTrackLength] = useURLState("trackLength", 200);
+  const [zenithAngle, setZenithAngle] = useURLState("zenithAngle", 30);
   const [numFrames, setNumFrames] = useURLState("numFrames", 100);
 
   const fluxPerSec = flux / 60;
   const expectedHits = fluxPerSec * sensorArea * exposureTime;
   const totalDeposited = expectedHits * energyDeposit * trackLength;
   const pixelArea = pixelSize * pixelSize;
-  const pixelFlux = expectedHits * trackLength * pixelSize * 1e-8 / sensorArea;
+  const projectedLength = trackLength * Math.sin(zenithAngle * Math.PI / 180);
+  const pixelFlux = expectedHits * Math.max(projectedLength, pixelSize) * pixelSize * 1e-8 / sensorArea;
   const cleanPixels = Math.exp(-pixelFlux) * 100;
 
   const lgamma = (n: number) => { if (n <= 1) return 0; let s = 0; for (let i = 2; i <= n; i++) s += Math.log(i); return s; };
@@ -48,6 +50,7 @@ export default function CosmicRaysPage() {
         <ValidatedNumberInput label="Pixel Size (μm)" value={pixelSize} onChange={setPixelSize} min={1} step="1" />
         <ValidatedNumberInput label="Energy Deposit (e⁻/μm)" value={energyDeposit} onChange={setEnergyDeposit} min={1} step="5" />
         <ValidatedNumberInput label="Track Length (μm)" value={trackLength} onChange={setTrackLength} min={10} step="10" />
+        <ValidatedNumberInput label="Zenith Angle (°)" value={zenithAngle} onChange={setZenithAngle} min={0} max={90} step="5" />
         <ValidatedNumberInput label="Frames for Statistics" value={numFrames} onChange={setNumFrames} min={1} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -56,7 +59,7 @@ export default function CosmicRaysPage() {
         <ResultCard label="Clean Pixels/Frame" value={`${cleanPixels.toFixed(2)}%`} tone="green" />
         <ResultCard label={`Hits in ${numFrames} frames`} value={`~${(expectedHits * numFrames).toFixed(0)}`} tone="yellow" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>Flux at sea level: ~1 hit/cm²/min</p><p>N_hits = Φ · A · t  (Poisson)</p><p>E_deposited ≈ 100 e⁻/μm in Si (MIP: 390 eV/μm ÷ 3.6 eV/pair)</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>Flux at sea level: ~1 hit/cm²/min</p><p>N_hits = Φ · A · t  (Poisson)</p><p>Projected track = path_length · sin(θ)</p><p>E_deposited ≈ 100 e⁻/μm in Si (MIP: 390 eV/μm ÷ 3.6 eV/pair)</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Exposure Time (s)", gridcolor: "#374151" }, yaxis: { title: "Cosmic Ray Hits", gridcolor: "#374151" } }} />
       <h2 className="text-xl font-bold mt-8 mb-4">Hits vs Sensor Area</h2>
       <ChartPanel data={areaVsHits} layout={{ xaxis: { title: "Sensor Area (cm²)", gridcolor: "#374151" }, yaxis: { title: "Expected Hits per Frame", gridcolor: "#374151" } }} />
