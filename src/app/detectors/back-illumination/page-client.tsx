@@ -17,11 +17,11 @@ export default function BackIlluminationPage() {
     const fiResponse = wavelengths.map(w => {
       const peak = 550; const sigma = 150;
       const gateAbsorption = w < 400 ? 0.3 : 1;
-      return fiQE * Math.exp(-((w - peak) ** 2) / (2 * sigma ** 2)) * cfaTransmission * microlensGain * gateAbsorption;
+      return Math.min(1, fiQE * microlensGain) * Math.exp(-((w - peak) ** 2) / (2 * sigma ** 2)) * cfaTransmission * gateAbsorption;
     });
     const biResponse = wavelengths.map(w => {
       const peak = 550; const sigma = 150;
-      return biQE * Math.exp(-((w - peak) ** 2) / (2 * sigma ** 2)) * cfaTransmission * microlensGain;
+      return Math.min(1, biQE * microlensGain) * Math.exp(-((w - peak) ** 2) / (2 * sigma ** 2)) * cfaTransmission;
     });
     const improvement = wavelengths.map((w, i) => biResponse[i] / Math.max(fiResponse[i], 1e-6));
     return [
@@ -36,7 +36,7 @@ export default function BackIlluminationPage() {
   const improvement = effectiveBi / effectiveFi;
   // SNR improvement = √(QE ratio) only in shot-noise-limited regime
   const snrImprovement = Math.sqrt(improvement);
-  const sensitivityGain = 10 * Math.log10(improvement);
+  const sensitivityGain = 5 * Math.log10(improvement);
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Back-Illuminated vs Front-Illuminated" description="Back-illuminated sensors bypass gate structures for higher QE and better blue/UV response.">
