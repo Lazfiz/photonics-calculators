@@ -13,7 +13,8 @@ export default function FourWaveMixingPage() {
   const [n2, setN2] = useURLState("n2", 3.2); // ×10⁻¹⁶ cm²/W
   const [coreArea, setCoreArea] = useURLState("coreArea", 50); // µm²
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // m
-  const [chi3, setChi3] = useURLState("chi3", 2.7); // ×10⁻²² m²/V² (silica)
+  // χ³ from n₂: χ³[esu] = (4n₀²/3)·n₂[esu], or in SI: χ³ = (4ε₀cn₀²/3)·n₂
+  const chi3_calc = (4 * 8.854e-12 * 3e8 * 1.45 * 1.45 / 3) * (n2 * 1e-20); // SI (m²/V²)
 
   // Phase matching: 2ωp = ωs + ωi → 1/λi = 2/λp - 1/λs
   const lambdaI = 1 / (2 / wavelengthPump - 1 / wavelengthSignal);
@@ -21,21 +22,24 @@ export default function FourWaveMixingPage() {
   const freqP = 3e8 / (wavelengthPump * 1e-9);
   const freqS = 3e8 / (wavelengthSignal * 1e-9);
 
-  // Phase mismatch
-  const beta2 = 20; // ps²/km typical dispersion
-  const deltaBeta = beta2 * 1e-3 * (2 * (2 * Math.PI * freqP) ** 2 / (2 * Math.PI * freqP) ** 2 - (2 * Math.PI * freqS) ** 2 / (2 * Math.PI * freqP) ** 2 - (2 * Math.PI * freqI) ** 2 / (2 * Math.PI * freqP) ** 2) * 1e-12;
+  // Phase mismatch: Δβ ≈ β₂·Ω² (degenerate FWM, second-order dispersion)
+  // Ω = ω_p - ω_s = 2πc(1/λs - 1/λp), β₂ in ps²/km → s²/m (×1e-27)
+  const Omega = 2 * Math.PI * 3e8 * (1 / (wavelengthSignal * 1e-9) - 1 / (wavelengthPump * 1e-9)); // rad/s
+  const beta2_SI = beta2 * 1e-27; // ps²/km → s²/m
+  const deltaBeta = beta2_SI * Omega * Omega; // rad/m
 
-  // FWM efficiency estimate
-  const gamma = (2 * Math.PI * n2 * 1e-20) / (wavelengthPump * 1e-9 * coreArea * 1e-12); // 1/(W·m)
+  // FWM efficiency: η = (γ·P_p·L)² · sinc²(Δβ·L/2) (Agrawal, Nonlinear Fiber Optics Ch.10)
   const sinc = (x: number) => Math.abs(x) < 1e-12 ? 1 : Math.sin(x) / x;
-  const eta = (gamma * pumpPower * 1e-3) ** 2 * sinc((deltaBeta * fiberLength) ** 2);
+  const eta = (gamma * pumpPower * 1e-3 * fiberLength) ** 2 * sinc(deltaBeta * fiberLength / 2) ** 2;
 
   // Idler power vs fiber length
   const chartData = useMemo(() => {
     const lengths = Array.from({ length: 200 }, (_, i) => 0.1 + i * 50 / 200);
     const pIdler = lengths.map(L => {
       const g = (2 * Math.PI * n2 * 1e-20) / (wavelengthPump * 1e-9 * coreArea * 1e-12);
-      return pumpPower * 1e-3 * (g * pumpPower * 1e-3 * L) ** 2 * 1e3;
+      const db = beta2_SI * Omega * Omega;
+      const phaseMatch = sinc(db * L / 2) ** 2;
+      return 1 * (g * pumpPower * 1e-3 * L) ** 2 * phaseMatch * 1e3; // 1mW signal seed
     });
     return [
       { x: lengths, y: pIdler, type: "scatter", mode: "lines", name: "Idler power", line: { color: "#60a5fa", width: 2 } },
@@ -107,7 +111,7 @@ export default function FourWaveMixingPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">χ⁽³⁾ Estimate</p>
-          <p className="text-xl font-bold text-purple-400">{chi3.toFixed(1)} ×10⁻²² m²/V²</p>
+          <p className="text-xl font-bold text-purple-400">{(chi3_calc * 1e22).toFixed(1)} ×10⁻²² m²/V²</p>
         </div>
       </div>
 
