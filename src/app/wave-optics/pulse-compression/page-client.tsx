@@ -15,7 +15,8 @@ export default function PulseCompressionPage() {
   const outputDuration = inputDuration / compressionRatio;
   const tlDuration = 0.44 * Math.pow(wavelength * 1e-9, 2) / (3e8 * inputBandwidth * 1e-9) * 1e15; // fs
   const peakPowerGain = compressionRatio;
-  const timeBandwidth = inputDuration * tlDuration;
+  const deltaNu = 3e8 * inputBandwidth * 1e-9 / Math.pow(wavelength * 1e-9, 2); // Hz
+  const timeBandwidth = inputDuration * 1e-15 * deltaNu; // dimensionless
 
   const chartData = useMemo(() => {
     const N = 500;
@@ -54,7 +55,7 @@ export default function PulseCompressionPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Time-Bandwidth Product</p>
-          <p className="text-xl font-bold text-purple-400">{timeBandwidth.toFixed(1)} fs²</p>
+          <p className="text-xl font-bold text-purple-400">{timeBandwidth.toFixed(3)}</p>
         </div>
       </div>
 
