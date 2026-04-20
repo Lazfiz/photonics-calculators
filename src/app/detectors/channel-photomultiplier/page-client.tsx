@@ -48,11 +48,11 @@ export default function ChannelPMTPage() {
         <ResultCard label="Channel Gain" value={results.channelGain.toExponential(2)} tone="blue" />
         <ResultCard label="Charge/Photon" value={results.chargePerPhoton.toExponential(3) + " C"} tone="green" />
         <ResultCard label="Anode Sensitivity" value={results.anodeSensitivity.toExponential(2) + " e⁻/photon"} tone="yellow" />
-        <ResultCard label="Peak Current (approx)" value={results.peakCurrent.toExponential(2) + " A"} tone="red" subtext="Q_event / TTS — rough estimate" />
+        <ResultCard label="Peak Current (approx)" value={results.peakCurrent.toExponential(2) + " A"} tone="red" subtext="Q_event / TTS — order-of-magnitude upper bound" />
         <ResultCard label="Energy Resolution" value={`${(results.energyRes * 100).toFixed(1)}% FWHM`} tone="purple" />
         <ResultCard label="Total Dark Rate" value={`${results.totalDarkRate.toExponential(2)} cps`} tone="orange" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>G_per_channel = G_channel</p><p>I_peak ≈ N_pe · e · G / TTS</p><p>ΔE/E (FWHM) = 2.355 / √(N_pe)</p><p>N_pe = N_photons · η · ε_coll</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>G_per_channel = G_channel</p><p>I_peak ≈ N_pe · e · G / TTS (upper bound; real pulse width > TTS)</p><p>ΔE/E (FWHM) = 2.355 / √(N_pe) [Poisson limit]</p><p>N_pe = N_photons · η · ε_coll</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Channel Gain", type: "log", gridcolor: "#374151" }, yaxis: { title: "e⁻ per photon", type: "log", gridcolor: "#374151" }, yaxis2: { title: "Energy Res. (%FWHM)", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
     </CalculatorShell>
   );
