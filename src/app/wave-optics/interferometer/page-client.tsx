@@ -9,32 +9,32 @@ import { useURLState } from "../../../hooks/use-url-state";
 export default function InterferometerPage() {
   const [armDiff, setArmDiff] = useURLState("armDiff", 10); // µm path difference
   const [wavelength, setWavelength] = useURLState("wavelength", 633); // nm
-  const [reflectivity, setReflectivity] = useURLState("reflectivity", 0.9); // mirror R
+  const [reflectivity, setReflectivity] = useURLState("reflectivity", 0.9); // mirror R1
+  const [reflectivity2, setReflectivity2] = useURLState("reflectivity2", 0.9); // mirror R2
   const [type, setType] = useState<"michelson" | "mz">("michelson");
 
   const calc = useMemo(() => {
-    const delta = (armDiff * 1e-6) / (wavelength * 1e-9); // fringes
+    // Michelson: OPD = 2 × arm displacement (round trip)
+    // Mach-Zehnder: OPD = arm length difference
+    const opd_m = type === "michelson" ? 2 * armDiff * 1e-6 : armDiff * 1e-6;
+    const delta = opd_m / (wavelength * 1e-9); // fringes
     const phase = (2 * Math.PI * delta) % (2 * Math.PI);
-    // Visibility V = (Imax - Imin)/(Imax + Imin)
-    // For ideal interferometer: V = 1
-    // With mirror reflectivity imbalance: V ≈ 2√(R1*R2)/(R1+R2)
-    const R1 = reflectivity;
-    const R2 = reflectivity; // assume equal mirrors
-    const V = 2 * Math.sqrt(R1 * R2) / (R1 + R2);
+    // Visibility with unequal mirror reflectivities
+    const V = 2 * Math.sqrt(reflectivity * reflectivity2) / (reflectivity + reflectivity2);
     const I = (1 + V * Math.cos(phase)) / 2; // normalized intensity
     return { delta, phase, V, I };
   }, [armDiff, wavelength, reflectivity]);
 
   const chartData = useMemo(() => {
     const deltas = Array.from({ length: 500 }, (_, i) => -2 + i * 0.008);
-    const R1 = reflectivity;
-    const R2 = reflectivity;
-    const V = 2 * Math.sqrt(R1 * R2) / (R1 + R2);
+    const V = 2 * Math.sqrt(reflectivity * reflectivity2) / (reflectivity + reflectivity2);
     const intensities = deltas.map(d => {
-      const phi = 2 * Math.PI * d;
+      const opd = type === "michelson" ? 2 * d * wavelength / 1000 : d * wavelength / 1000; // µm
+      const phi = 2 * Math.PI * opd * 1e-6 / (wavelength * 1e-9);
       return (1 + V * Math.cos(phi)) / 2;
     });
-    const currentI = (1 + V * Math.cos(2 * Math.PI * calc.delta)) / 2;
+    const opd_um = type === "michelson" ? 2 * armDiff : armDiff;
+    const currentI = (1 + V * Math.cos(2 * Math.PI * opd_um * 1e-6 / (wavelength * 1e-9))) / 2;
 
     return [
       { x: deltas.map(d => d * wavelength / 1000), y: intensities, type: "scatter" as const, mode: "lines" as const, name: "I(ΔL)", line: { color: "#60a5fa" } },
@@ -56,7 +56,8 @@ export default function InterferometerPage() {
         </label>
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} />
         <ValidatedNumberInput label="Path Difference ΔL (µm)" value={armDiff} onChange={setArmDiff} step="any" />
-        <ValidatedNumberInput label="Mirror Reflectivity R" value={reflectivity} onChange={setReflectivity} min={0} max={1} step="0.01" />
+        <ValidatedNumberInput label="Mirror R₁" value={reflectivity} onChange={setReflectivity} min={0} max={1} step="0.01" />
+        <ValidatedNumberInput label="Mirror R₂" value={reflectivity2} onChange={setReflectivity2} min={0} max={1} step="0.01" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
