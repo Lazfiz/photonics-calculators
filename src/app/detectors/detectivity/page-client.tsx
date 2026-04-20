@@ -28,7 +28,7 @@ export default function DetectivityPage() {
   const detectivity = Math.sqrt(areaCm2) / nepSpectral; // cm·Hz^½/W
 
   const spectralChart = useMemo(() => {
-    const wl = Array.from({ length: 200 }, (_, i) => 400 + i * 1.2);
+    const wl = Array.from({ length: 200 }, (_, i) => 200 + i * 2800 / 200);
     return [{ x: wl, y: wl.map(w => { const R = qe * w * 1e-9 * q / (h * c); return R > 1e-10 ? Math.sqrt(areaCm2) * R / (totalNoise / Math.sqrt(bandwidth * 1e6)) : 0; }), type: "scatter", mode: "lines", name: "D*", line: { color: "#60a5fa", width: 2 } }];
   }, [qe, darkCurrent, area, bandwidth, temperature, loadResistance, excessNoiseFactor, shotNoiseDark, thermalNoise, areaCm2, totalNoise]);
 
@@ -60,7 +60,7 @@ export default function DetectivityPage() {
         <ChartPanel data={spectralChart} layout={{ xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "D* (cm·Hz^½/W)", gridcolor: "#374151" } }} title="D* vs Wavelength" />
         <ChartPanel data={tempChart} layout={{ xaxis: { title: "Temperature (K)", gridcolor: "#374151" }, yaxis: { title: "D* (cm·Hz^½/W)", gridcolor: "#374151" } }} title="D* vs Temperature" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mt-6 text-sm text-gray-300 font-mono space-y-1"><p>D* = √(A·Δf) / NEP</p><p>NEP = i_n / R,  R = η·q·λ / (h·c)</p><p>i²_shot = 2·q·I_d·F·Δf,  i²_thermal = 4·k·T·Δf / R_L</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mt-6 text-sm text-gray-300 font-mono space-y-1"><p>D* = √A / NEP_spectral</p><p>NEP_spectral = i_n / (R · √Δf),  R = η·q·λ / (h·c)</p><p>i²_shot = 2·q·I_d·F·Δf,  i²_thermal = 4·k·T·Δf / R_L</p></div>
     </CalculatorShell>
   );
 }

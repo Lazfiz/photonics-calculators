@@ -27,7 +27,9 @@ export default function EmccdGainPage() {
   const emccdSNR = signalPhotons * totalGain / emccdTotalNoise;
   const ccdOutputNoise = Math.sqrt(signalPhotons + darkElectrons + readNoise ** 2);
   const ccdSNR = signalPhotons / ccdOutputNoise;
-  const crossoverSignal = Math.max(0, (readNoise * readNoise - (emReadNoise / totalGain) ** 2) / (excessNoise ** 2 - 1) - darkElectrons);
+  const crossoverSignalRaw = (readNoise * readNoise - (emReadNoise / totalGain) ** 2) / (excessNoise ** 2 - 1) - darkElectrons;
+  const crossoverSignal = Math.max(0, crossoverSignalRaw);
+  const hasCrossover = crossoverSignalRaw > 0;
 
   const gainChart = useMemo(() => {
     const stages = Array.from({ length: 200 }, (_, i) => 100 + i * 800 / 200);
@@ -39,7 +41,7 @@ export default function EmccdGainPage() {
     return [
       { x: sig, y: sig.map(s => { const tn = Math.sqrt(s + darkElectrons); const emn = Math.sqrt((excessNoise * totalGain * tn) ** 2 + emReadNoise ** 2); return s * totalGain / emn; }), type: "scatter", mode: "lines", name: `EMCCD (G=${totalGain.toFixed(0)})`, line: { color: "#60a5fa", width: 2 } },
       { x: sig, y: sig.map(s => s / Math.sqrt(s + darkElectrons + readNoise ** 2)), type: "scatter", mode: "lines", name: "Conventional CCD", line: { color: "#f87171", width: 2 } },
-      { x: [crossoverSignal, crossoverSignal], y: [0, 15], type: "scatter", mode: "lines", name: "Crossover", line: { color: "#fbbf24", width: 1, dash: "dash" } },
+      { x: [crossoverSignal, crossoverSignal], y: [0, 15], type: "scatter", mode: "lines", name: hasCrossover ? "Crossover" : "", line: { color: "#fbbf24", width: 1, dash: "dash" }, visible: hasCrossover },
     ];
   }, [totalGain, darkElectrons, readNoise, emReadNoise, crossoverSignal]);
 
@@ -60,7 +62,7 @@ export default function EmccdGainPage() {
         <ResultCard label="EMCCD SNR" value={emccdSNR.toFixed(2)} tone={emccdSNR > ccdSNR ? "green" : "red"} />
         <ResultCard label="Conv. CCD SNR" value={ccdSNR.toFixed(2)} tone="red" />
         <ResultCard label="SNR Improvement" value={ccdSNR > 0 ? `${(emccdSNR / ccdSNR).toFixed(2)}×` : "N/A"} tone="yellow" />
-        <ResultCard label="Crossover Signal" value={`${crossoverSignal.toFixed(1)} e⁻/pix`} tone="purple" />
+        <ResultCard label="Crossover Signal" value={hasCrossover ? `${crossoverSignal.toFixed(1)} e⁻/pix` : "None (CCD always wins)"} tone="purple" />
       </div>
       <div className={`mt-4 p-3 rounded text-sm mb-6 ${emccdSNR > ccdSNR ? "bg-green-900/30 text-green-300 border border-green-800" : "bg-red-900/30 text-red-300 border border-red-800"}`}>
         {emccdSNR > ccdSNR ? "✓ EMCCD provides better SNR at this signal level" : "✗ Conventional CCD is better — signal above crossover"}

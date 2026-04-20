@@ -50,7 +50,7 @@ export default function ElectronMultiplyingPage() {
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>EMCCD: σ = √(S·ENF² + D·ENF² + (σ_read/G)²), ENF² = 2 − 1/G</p><p>sCMOS: σ = √(S + D + σ_read²)</p></div>
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartPanel data={snrVsSignal} layout={{ xaxis: { title: "Signal (e⁻/pix)", gridcolor: "#374151" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} title="SNR vs Signal" />
+        <ChartPanel data={snrVsSignal} layout={{ xaxis: { title: "Signal (e⁻/pix/frame)", gridcolor: "#374151" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} title="SNR vs Signal" />
         <ChartPanel data={snrVsGain} layout={{ xaxis: { title: "EM Gain", gridcolor: "#374151", type: "log" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} title="EMCCD SNR vs Gain" />
       </div>
     </CalculatorShell>
