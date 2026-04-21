@@ -12,9 +12,8 @@ export default function ExtinctionCoefficientPage() {
   const [pathLength, setPathLength] = useURLState("pathLength", 1);
   const [molecularWeight, setMolecularWeight] = useURLState("molecularWeight", 100);
 
-  const extinctionCoeff = absorbance / (concentration * pathLength); // L·mol⁻¹·cm⁻¹
-  const molarExtCoeff = extinctionCoeff;
-  const specificExtCoeff = extinctionCoeff / molecularWeight; // L·g⁻¹·cm⁻¹
+  const extinctionCoeff = concentration > 0 ? absorbance / (concentration * pathLength) : NaN; // L·mol⁻¹·cm⁻¹
+  const specificExtCoeff = !isNaN(extinctionCoeff) ? extinctionCoeff / molecularWeight : NaN; // L·g⁻¹·cm⁻¹
   const transmittance = Math.pow(10, -absorbance) * 100;
 
   // Concentration plot at fixed ε for absorbance vs concentration
@@ -43,11 +42,11 @@ export default function ExtinctionCoefficientPage() {
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Molar ε</p>
-          <p className="text-xl font-bold text-blue-400">{molarExtCoeff.toFixed(1)} <span className="text-sm text-gray-400">L·mol⁻¹·cm⁻¹</span></p>
+          <p className="text-xl font-bold text-blue-400">{!isNaN(extinctionCoeff) ? extinctionCoeff.toFixed(1) + " " : "N/A "}<span className="text-sm text-gray-400">L·mol⁻¹·cm⁻¹</span></p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Specific ε</p>
-          <p className="text-xl font-bold text-green-400">{specificExtCoeff.toFixed(3)} <span className="text-sm text-gray-400">L·g⁻¹·cm⁻¹</span></p>
+          <p className="text-xl font-bold text-green-400">{!isNaN(specificExtCoeff) ? specificExtCoeff.toFixed(3) + " " : "N/A "}<span className="text-sm text-gray-400">L·g⁻¹·cm⁻¹</span></p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Transmittance</p>
