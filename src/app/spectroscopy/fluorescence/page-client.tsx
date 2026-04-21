@@ -39,12 +39,13 @@ export default function FluorescencePage() {
     ? ((1 - amp2) * tau * tau + amp2 * tau2 * tau2) / ((1 - amp2) * tau + amp2 * tau2)
     : tau;
 
-  // Exponential decay → Lorentzian spectrum: Δν_FWHM = 1/(πτ)
-  const deltaNu = 1 / (Math.PI * tau * 1e-9); // Hz (τ in ns)
+  // Exponential decay → Lorentzian spectrum: Δν_FWHM = 1/(2πτ)
+  // E(t) ∝ exp(-t/2τ) since I = |E|² → power spectrum FWHM = 1/(2πτ)
+  const deltaNu = 1 / (2 * Math.PI * tau * 1e-9); // Hz (τ in ns)
   const centerFreq = 3e8 / (540e-9); // ~5.56e14 Hz for green
   const fwhmNm = 3e8 * 1e9 * deltaNu / (centerFreq * centerFreq); // Δλ = λ²Δν/c
   const fwhmSpectrum = fwhmNm.toExponential(2);
-  const fwhmSpectrumSimple = (1 / Math.PI).toFixed(3); // Δν·τ = 1/π ≈ 0.318 (dimensionless)
+  const fwhmSpectrumSimple = (1 / (2 * Math.PI)).toFixed(3); // Δν·τ = 1/(2π) ≈ 0.159 (dimensionless)
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fluorescence Lifetime" description="Exponential decay models for fluorescence. Single and bi-exponential fitting.">
@@ -69,14 +70,14 @@ export default function FluorescencePage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Time-Bandwidth Product Δν·τ</p>
-          <p className="text-xl font-bold text-blue-400">{fwhmSpectrumSimple} (= 1/π)</p>
+          <p className="text-xl font-bold text-blue-400">{fwhmSpectrumSimple} (= 1/2π)</p>
         </div>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">I(t) = I₀ · e^(−t/τ)</span></p>
         <p className="text-sm text-gray-300"><span className="text-green-400 font-mono">Bi-exp: I(t) = a₁·e^(−t/τ₁) + a₂·e^(−t/τ₂)</span></p>
-        <p className="text-gray-300 text-sm mt-1">Fourier-limited spectral width: Δν = 1/(πτ), Δλ = λ²·Δν/c</p>
+        <p className="text-gray-300 text-sm mt-1">Fourier-limited spectral width: Δν = 1/(2πτ), Δλ = λ²·Δν/c</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
