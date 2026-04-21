@@ -40,8 +40,8 @@ export default function CoherentAntiStokesRamanPage() {
       const delta = s - ramanShift;
       const gamma = 25;
       const denomMag2 = delta * delta + gamma * gamma;
-      const chiR_re = 50 * delta / denomMag2;
-      const chiR_im = -50 * gamma / denomMag2;
+      const chiR_re = -50 * delta / denomMag2;
+      const chiR_im = 50 * gamma / denomMag2;
       const chi_re = 10 + chiR_re; // χ_NR + Re(χ_R)
       const chi_im = chiR_im; // Im(χ_R)
       return chi_re * chi_re + chi_im * chi_im; // |χ³|²
@@ -69,8 +69,8 @@ export default function CoherentAntiStokesRamanPage() {
     ];
   }, [pumpWavelength, stokesWavelength]);
 
-  const coherenceTime = pulseWidth * 1e-12 / 2.355; // FWHM → σ
-  const spectralRes = 1 / (coherenceTime * 2.998e10);
+  const coherenceTime = pulseWidth * 1e-12 / 2.355; // FWHM → σ (field)
+  const spectralRes = 0.441 / (pulseWidth * 1e-12 * 2.998e10); // Gaussian time-bandwidth product
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Coherent Anti-Stokes Raman Scattering (CARS)" description="Four-wave mixing process for label-free vibrational imaging with chemical specificity.">
@@ -85,7 +85,7 @@ export default function CoherentAntiStokesRamanPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Formulas</h3>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Energy conservation:</span> ω<sub>AS</sub> = 2ω₁ − ω₂</p>
-        <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Raman shift:</span> ν̃ = 1/λ₁ − 1/λ₂ (cm⁻¹)</p>
+        <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Raman shift:</span> ν̃ = 10⁷/λ₁ − 10⁷/λ₂ (cm⁻¹)</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Third-order susceptibility:</span> χ⁽³⁾ = χ<sub>R</sub> + χ<sub>NR</sub></p>
         <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">CARS intensity:</span> I<sub>CARS</sub> ∝ |χ⁽³⁾|² × I₁² × I₂</p>
       </div>
