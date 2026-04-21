@@ -9,8 +9,6 @@ import { useURLState } from "../../../hooks/use-url-state";
 export default function AbsorptionCrossSectionPage() {
   const [extinctionCoeff, setExtinctionCoeff] = useURLState("extinctionCoeff", 50000);
   const [concentration, setConcentration] = useURLState("concentration", 0.001);
-  const [wavelength, setWavelength] = useURLState("wavelength", 400);
-  const [sweepParam, setSweepParam] = useState<"epsilon" | "lambda">("epsilon");
 
   const NA = 6.022e23;
   // σ = ε × 1000 × ln(10) / N_A  (from A = εcl = σ·N_A·c·l / (1000·ln10))
@@ -20,35 +18,22 @@ export default function AbsorptionCrossSectionPage() {
 
   const chartData = useMemo(() => {
     const n = 200;
-    let xs: number[], ys: number[];
-
-    if (sweepParam === "epsilon") {
-      const eMax = Math.max(extinctionCoeff * 2, 100000);
-      xs = Array.from({ length: n }, (_, i) => (i / n) * eMax);
-      ys = xs.map(e => e * 1000 * Math.LN10 / NA);
-    } else {
-      xs = Array.from({ length: n }, (_, i) => 200 + (i / n) * 1000);
-      ys = xs.map(_ => extinctionCoeff * 1000 * Math.LN10 / NA);
-    }
+    const eMax = Math.max(extinctionCoeff * 2, 100000);
+    const xs = Array.from({ length: n }, (_, i) => (i / (n - 1)) * eMax);
+    const ys = xs.map(e => e * 1000 * Math.LN10 / NA);
 
     return [
       { x: xs, y: ys, type: "scatter" as const, mode: "lines" as const, name: "σ (cm²)", line: { color: "#60a5fa" } },
-      { x: [sweepParam === "epsilon" ? extinctionCoeff : wavelength], y: [sigma], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
+      { x: [extinctionCoeff], y: [sigma], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
     ];
-  }, [extinctionCoeff, wavelength, sigma, sweepParam]);
+  }, [extinctionCoeff, sigma]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Absorption Cross-Section Calculator" description="σ = ε · 1000 / (N_A · ln 10) — convert molar extinction coefficient to molecular cross-section.">
+    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Absorption Cross-Section Calculator" description="σ = ε · 1000 · ln(10) / N_A — convert molar extinction coefficient to molecular cross-section.">
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="ε (L·mol⁻¹·cm⁻¹)" value={extinctionCoeff} onChange={setExtinctionCoeff} min={0} />
         <ValidatedNumberInput label="Concentration (mol/L)" value={concentration} onChange={setConcentration} min={0} />
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} />
-      </div>
-
-      <div role="group" aria-label="Options" className="flex gap-2 mb-6">
-        <button onClick={() => setSweepParam("epsilon")} className={`px-3 py-1 rounded text-sm ${sweepParam === "epsilon" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300"}`}>Sweep ε</button>
-        <button onClick={() => setSweepParam("lambda")} className={`px-3 py-1 rounded text-sm ${sweepParam === "lambda" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300"}`}>Sweep λ</button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
@@ -79,7 +64,7 @@ export default function AbsorptionCrossSectionPage() {
       <div className="bg-gray-900 rounded-lg p-4">
         <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-          xaxis: { title: sweepParam === "epsilon" ? "ε (L·mol⁻¹·cm⁻¹)" : "Wavelength (nm)", gridcolor: "#1f2937" },
+          xaxis: { title: "ε (L·mol⁻¹·cm⁻¹)", gridcolor: "#1f2937" },
           yaxis: { title: "σ (cm²)", gridcolor: "#1f2937" },
           margin: { t: 30 },
         }} />
