@@ -25,7 +25,6 @@ export default function FluorescenceLifetimePage() {
     const points = 400;
     const ts = Array.from({ length: points }, (_, i) => (i / points) * tMax);
     const ys = ts.map(decay);
-    const norm = ys.map(y => y / ys[0]);
     return [
       { x: ts, y: ys, type: "scatter", mode: "lines", name: "I(t)",
         line: { color: "#34d399", width: 2 } },
