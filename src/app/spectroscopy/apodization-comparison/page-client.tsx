@@ -21,21 +21,22 @@ const windowDefs: Record<WindowFn, { label: string; color: string; sidelobeDb: n
 };
 
 function computeWindow(name: WindowFn, N: number): number[] {
-  const x = Array.from({ length: N }, (_, i) => i - N / 2);
+  const x = Array.from({ length: N }, (_, i) => i - (N - 1) / 2);
+  const halfN = (N - 1) / 2;
   switch (name) {
     case "boxcar": return x.map(() => 1);
-    case "hanning": return x.map(xi => 0.5 * (1 + Math.cos(2 * Math.PI * xi / N)));
-    case "hamming": return x.map(xi => 0.54 + 0.46 * Math.cos(2 * Math.PI * xi / N));
-    case "blackman": return x.map(xi => 0.42 + 0.5 * Math.cos(2 * Math.PI * xi / N) + 0.08 * Math.cos(4 * Math.PI * xi / N));
-    case "blackman-harris": return x.map(xi => 0.35875 + 0.48829 * Math.cos(2 * Math.PI * xi / N) + 0.14128 * Math.cos(4 * Math.PI * xi / N) + 0.01168 * Math.cos(6 * Math.PI * xi / N));
-    case "nuttall": return x.map(xi => 0.355768 + 0.487396 * Math.cos(2 * Math.PI * xi / N) + 0.144232 * Math.cos(4 * Math.PI * xi / N) + 0.012604 * Math.cos(6 * Math.PI * xi / N));
-    case "gaussian": return x.map(xi => Math.exp(-0.5 * Math.pow((2.5 * xi) / (N / 2), 2)));
-    case "triangular": return x.map(xi => 1 - Math.abs(xi) / (N / 2));
+    case "hanning": return x.map(xi => 0.5 * (1 + Math.cos(2 * Math.PI * xi / halfN)));
+    case "hamming": return x.map(xi => 0.54 + 0.46 * Math.cos(2 * Math.PI * xi / halfN));
+    case "blackman": return x.map(xi => 0.42 + 0.5 * Math.cos(2 * Math.PI * xi / halfN) + 0.08 * Math.cos(4 * Math.PI * xi / halfN));
+    case "blackman-harris": return x.map(xi => 0.35875 + 0.48829 * Math.cos(2 * Math.PI * xi / halfN) + 0.14128 * Math.cos(4 * Math.PI * xi / halfN) + 0.01168 * Math.cos(6 * Math.PI * xi / halfN));
+    case "nuttall": return x.map(xi => 0.355768 + 0.487396 * Math.cos(2 * Math.PI * xi / halfN) + 0.144232 * Math.cos(4 * Math.PI * xi / halfN) + 0.012604 * Math.cos(6 * Math.PI * xi / halfN));
+    case "gaussian": return x.map(xi => Math.exp(-0.5 * Math.pow((2.5 * xi) / halfN, 2)));
+    case "triangular": return x.map(xi => 1 - Math.abs(xi) / halfN);
     case "kaiser": {
       const beta = 8;
       const i0 = (x: number) => { let s = 1; for (let k = 1; k < 20; k++) s += Math.pow(x / 2, 2 * k) / (factorial(k) * factorial(k)); return s; };
       const a = i0(beta);
-      return x.map(xi => i0(beta * Math.sqrt(1 - Math.pow(2 * xi / N, 2))) / a);
+      return x.map(xi => i0(beta * Math.sqrt(Math.max(0, 1 - Math.pow(xi / halfN, 2)))) / a);
     }
   }
 }
@@ -59,13 +60,15 @@ export default function ApodizationComparisonPage() {
 
     // Compute ILS (|FT(window)|) in dB for each selected window
     const traces: any[] = [];
+    const oversample = 8;
     for (const name of selected) {
       const win = computeWindow(name, N);
-      // DFT of window
-      const spectrum = Array.from({ length: N / 2 }, (_, k) => {
+      // Oversampled DFT to resolve sidelobes (integer bins hit zero-crossings)
+      const M = N * oversample;
+      const spectrum = Array.from({ length: M / 2 }, (_, k) => {
         let re = 0, im = 0;
         for (let n = 0; n < N; n++) {
-          const phase = (2 * Math.PI * k * n) / N;
+          const phase = (2 * Math.PI * k * n) / M;
           re += win[n] * Math.cos(phase);
           im -= win[n] * Math.sin(phase);
         }
@@ -77,7 +80,7 @@ export default function ApodizationComparisonPage() {
       const def = windowDefs[name];
       traces.push(
         { x, y: win, type: "scatter" as const, mode: "lines" as const, name: def.label + " (window)", line: { color: def.color, width: 1.5 } },
-        { x: Array.from({ length: N / 2 }, (_, i) => i), y: inDb, type: "scatter" as const, mode: "lines" as const, name: def.label + " (ILS)", line: { color: def.color, dash: "dash" }, xaxis: "x2", yaxis: "y2" }
+        { x: Array.from({ length: M / 2 }, (_, i) => i / oversample), y: inDb, type: "scatter" as const, mode: "lines" as const, name: def.label + " (ILS)", line: { color: def.color, dash: "dash" }, xaxis: "x2", yaxis: "y2" }
       );
     }
     return traces;
