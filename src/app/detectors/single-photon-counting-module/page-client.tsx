@@ -46,7 +46,7 @@ export default function SPCMPage() {
     const snr = detected.map(r => r / Math.sqrt(r + darkCountRate));
     return [
       { x: powers, y: detected, type: "scatter", mode: "lines", name: "True count rate", line: { color: "#60a5fa" } },
-      { x: powers, y: measured, type: "scatter", mode: "lines", name: "Measured (dead-time corrected)", line: { color: "#f87171", dash: "dash" } },
+      { x: powers, y: measured, type: "scatter", mode: "lines", name: "Measured (dead-time affected)", line: { color: "#f87171", dash: "dash" } },
       { x: powers, y: snr, type: "scatter", mode: "lines", name: "SNR", line: { color: "#34d399" }, yaxis: "y2" },
     ];
   }, [deadTime, darkCountRate, quantumEff, wavelength]);
