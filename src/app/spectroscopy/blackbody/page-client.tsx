@@ -15,7 +15,12 @@ export default function BlackbodyPage() {
   const [temperature, setTemperature] = useURLState("temperature", 5778);
 
   const series = useMemo(() => {
-    const wls = Array.from({ length: 300 }, (_, i) => 100 + i * 4); // nm
+    // Adaptive wavelength range: extends past Wien peak to show full spectrum shape
+    const wienPeak = 2897771.955 / temperature;
+    const wlMin = Math.max(10, Math.min(100, wienPeak * 0.05));
+    const wlMax = Math.max(15000, wienPeak * 5);
+    const numPoints = 500;
+    const wls = Array.from({ length: numPoints }, (_, i) => wlMin + i * (wlMax - wlMin) / (numPoints - 1));
     const h = 6.626e-34, c = 3e8, k = 1.381e-23;
     const T = temperature;
     const spectralRadiance = wls.map((wl) => {
