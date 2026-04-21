@@ -12,6 +12,7 @@ export default function SPCMPage() {
   const [quantumEff, setQuantumEff] = useURLState("quantumEff", 0.65);
   const [incidentPower, setIncidentPower] = useURLState("incidentPower", 1e-12); // W
   const [wavelength, setWavelength] = useURLState("wavelength", 550); // nm
+  const [afterpulseProb, setAfterpulseProb] = useURLState("afterpulseProb", 0.02); // per-avalanche
 
   const results = useMemo(() => {
     const h = 6.626e-34;
@@ -22,16 +23,15 @@ export default function SPCMPage() {
     const dt = deadTime * 1e-9;
     // Both signal and dark counts experience dead time
     const totalIncomingRate = detectedRate + darkCountRate;
-    const totalMeasuredRate = totalIncomingRate / (1 + totalIncomingRate * dt);
-    // Signal fraction of measured counts (approximate)
-    const signalFraction = detectedRate / totalIncomingRate;
-    const measuredSignalRate = totalMeasuredRate * signalFraction;
-    const measuredDarkRate = totalMeasuredRate * (1 - signalFraction);
+    const totalMeasuredRate = totalIncomingRate > 0 ? totalIncomingRate / (1 + totalIncomingRate * dt) : 0;
+    // Signal/dark split preserves ratio through dead time
+    const measuredSignalRate = totalIncomingRate > 0 ? detectedRate / (1 + totalIncomingRate * dt) : 0;
+    const measuredDarkRate = totalIncomingRate > 0 ? darkCountRate / (1 + totalIncomingRate * dt) : 0;
     const snr = detectedRate / Math.sqrt(detectedRate + darkCountRate); // ideal (no dead time)
     const snrMeasured = measuredSignalRate > 0 ? measuredSignalRate / Math.sqrt(measuredSignalRate + measuredDarkRate) : 0;
-    const afterpulsingProb = totalMeasuredRate * dt * 0.01; // afterpulsing from all avalanches
+    const afterpulsingRate = totalMeasuredRate * afterpulseProb; // afterpulsing from all avalanches
     const jitter = 350; // ps typical
-    return { photonsPerSec, detectedRate, totalMeasuredRate, measuredSignalRate, measuredDarkRate, snr, snrMeasured, afterpulsingProb, jitter };
+    return { photonsPerSec, detectedRate, totalMeasuredRate, measuredSignalRate, measuredDarkRate, snr, snrMeasured, afterpulsingRate };
   }, [deadTime, darkCountRate, quantumEff, incidentPower, wavelength]);
 
   const chartData = useMemo(() => {
@@ -59,6 +59,7 @@ export default function SPCMPage() {
         <ValidatedNumberInput label="Quantum Efficiency" value={quantumEff} onChange={setQuantumEff} min={0} max={1} step="0.01" />
         <ValidatedNumberInput label="Incident Power (W)" value={incidentPower} onChange={setIncidentPower} step="1e-15" />
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
+        <ValidatedNumberInput label="Afterpulse Probability" value={afterpulseProb} onChange={setAfterpulseProb} min={0} max={0.5} step="0.005" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
@@ -67,7 +68,7 @@ export default function SPCMPage() {
         <p className="text-gray-300">Measured total (dead-time) = <span className="text-blue-400 font-mono">{results.totalMeasuredRate.toExponential(3)} counts/s</span></p>
         <p className="text-gray-300">SNR (ideal) = <span className="text-blue-400 font-mono">{results.snr.toFixed(1)}</span></p>
         <p className="text-gray-300">SNR (measured) = <span className="text-blue-400 font-mono">{results.snrMeasured.toFixed(1)}</span></p>
-        <p className="text-gray-300">Timing jitter ≈ <span className="text-blue-400 font-mono">{results.jitter} ps</span></p>
+        <p className="text-gray-300">Afterpulse rate ≈ <span className="text-blue-400 font-mono">{results.afterpulsingRate.toExponential(3)} counts/s</span></p>
       </div>
 
       <h2 className="text-xl font-semibold mb-2">Key Formulas</h2>

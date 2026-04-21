@@ -17,11 +17,11 @@ export default function SNDRPage() {
     const snrForBits = bitRange.map(b => 6.02 * b + 1.76);
     // SNDR chart: uses actual user distortion-to-signal ratio
     const distortionRatio = distortionPower / signalPower;
+    const noiseRatio = noisePower / signalPower;
     const sndrForBits = bitRange.map(b => {
       const sqnr = 6.02 * b + 1.76;
       const sqnrLinear = Math.pow(10, sqnr / 10);
-      // Combine quantization noise with user's distortion in linear power
-      const effectiveSndrLinear = sqnrLinear / (1 + sqnrLinear * distortionRatio);
+      const effectiveSndrLinear = sqnrLinear / (1 + sqnrLinear * (noiseRatio + distortionRatio));
       return 10 * Math.log10(Math.max(1e-10, effectiveSndrLinear));
     });
     return [
@@ -32,7 +32,7 @@ export default function SNDRPage() {
 
   const snr = 10 * Math.log10(signalPower / noisePower);
   const sndr = 10 * Math.log10(signalPower / (noisePower + distortionPower));
-  const sfdr = 10 * Math.log10(signalPower / distortionPower);
+  const sfdr = 10 * Math.log10(signalPower / distortionPower); // SDR (not true SFDR — SFDR requires largest spur)
   const thd = 10 * Math.log10(distortionPower / signalPower);
   const enob = (sndr - 1.76) / 6.02;
 
@@ -49,7 +49,7 @@ export default function SNDRPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <p className="text-gray-300">SNR = <span className="text-blue-400 font-mono">{snr.toFixed(2)} dB</span></p>
         <p className="text-gray-300">SNDR = <span className="text-blue-400 font-mono">{sndr.toFixed(2)} dB</span></p>
-        <p className="text-gray-300">SFDR = <span className="text-blue-400 font-mono">{sfdr.toFixed(2)} dB</span></p>
+        <p className="text-gray-300">SDR (Sig/Distortion) = <span className="text-blue-400 font-mono">{sfdr.toFixed(2)} dB</span></p>
         <p className="text-gray-300">THD = <span className="text-blue-400 font-mono">{thd.toFixed(2)} dBc</span></p>
         <p className="text-gray-300">ENOB = <span className="text-blue-400 font-mono">{enob.toFixed(2)} bits</span></p>
       </div>
