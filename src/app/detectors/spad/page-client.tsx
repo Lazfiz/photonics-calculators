@@ -25,12 +25,16 @@ export default function SPADPage() {
 
   const dt = deadTime * 1e-9; // seconds
   const detectedRate = photonsPerSec * pde;
-  // Non-paralyzable dead time (SPADs are typically non-paralyzable)
-  const measuredRate = detectedRate / (1 + detectedRate * dt);
-  // Afterpulsing ADDS spurious counts (trap-assisted re-ignition after avalanche)
-  const afterpulseRate = measuredRate * afterpulseProb;
-  const totalRate = measuredRate + dcr + afterpulseRate;
-  const snr = measuredRate > 0 ? measuredRate / Math.sqrt(totalRate) : 0;
+  // Non-paralyzable dead time: ALL avalanche events (signal + DCR) block the detector
+  const totalInputRate = detectedRate + dcr;
+  const measuredTotal = totalInputRate / (1 + totalInputRate * dt);
+  // Separate signal and dark contributions after dead time
+  const measuredSignal = measuredTotal * (detectedRate / totalInputRate);
+  const measuredDcr = measuredTotal * (dcr / totalInputRate);
+  // Afterpulsing from ALL avalanche events (signal + dark)
+  const afterpulseRate = measuredTotal * afterpulseProb;
+  const totalRate = measuredTotal + afterpulseRate;
+  const snr = measuredSignal > 0 ? measuredSignal / Math.sqrt(totalRate) : 0;
 
   // DCR vs temperature
   const dcrVsTemp = useMemo(() => {
@@ -46,10 +50,12 @@ export default function SPADPage() {
       const pw = Math.pow(10, p / 10) * 1e-3;
       const ph = pw / photonEnergy;
       const dr = ph * pde;
-      const mr = dr / (1 + dr * deadTime * 1e-9);
-      const ap = mr * afterpulseProb;
-      const tr = mr + dcr + ap;
-      return mr > 0 ? mr / Math.sqrt(tr) : 0;
+      const raw = dr + dcr;
+      const mt = raw / (1 + raw * deadTime * 1e-9);
+      const ms = mt * (dr / raw);
+      const ap = mt * afterpulseProb;
+      const tr = mt + ap;
+      return ms > 0 ? ms / Math.sqrt(tr) : 0;
     });
     return { pwrDbm, snrVals };
   }, [pde, dcr, deadTime, afterpulseProb, photonEnergy]);
@@ -68,14 +74,14 @@ export default function SPADPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ResultCard label="Photon Rate" value={`${photonsPerSec.toExponential(2)} /s`} tone="blue" />
-        <ResultCard label="Measured Rate" value={`${measuredRate.toExponential(2)} /s`} tone="green" />
+        <ResultCard label="Detected Rate" value={`${measuredSignal.toExponential(2)} /s`} tone="green" />
         <ResultCard label="SNR" value={`${snr.toFixed(2)}`} tone="yellow" />
         <ResultCard label="Total Rate" value={`${totalRate.toExponential(2)} /s`} tone="purple" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
-        <p>R<sub>det</sub> = R<sub>ph</sub> × PDE; R<sub>meas</sub> = R<sub>det</sub> / (1 + R<sub>det</sub>·τ) [non-paralyzable]</p>
-        <p>R<sub>total</sub> = R<sub>meas</sub> + DCR + R<sub>meas</sub>·P<sub>AP</sub></p>
+        <p>R<sub>in</sub> = R<sub>ph</sub>×PDE + DCR; R<sub>meas</sub> = R<sub>in</sub> / (1 + R<sub>in</sub>·τ) [non-paralyzable]</p>
+        <p>R<sub>total</sub> = R<sub>meas</sub> + R<sub>meas</sub>·P<sub>AP</sub></p>
         <p>SNR = R<sub>meas</sub> / √(R<sub>total</sub>)</p>
         <p>DCR(T) ≈ DCR(T₀) · 2<sup>(T−T₀)/6</sup></p>
       </div>

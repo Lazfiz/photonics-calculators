@@ -87,7 +87,7 @@ export default function SpadDeadTimePage() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div><span className="text-gray-400 text-sm">Measured Rate ({mode})</span><div className="text-xl font-mono text-green-400">{(measured / 1e6).toFixed(3)} Mcps</div></div>
           <div><span className="text-gray-400 text-sm">Count Loss</span><div className="text-xl font-mono text-red-400">{countLoss.toFixed(2)}%</div></div>
-          <div><span className="text-gray-400 text-sm">Duty Cycle</span><div className="text-xl font-mono">{(measured * tau * 100).toFixed(2)}%</div></div>
+          <div><span className="text-gray-400 text-sm">Duty Cycle (dead fraction)</span><div className="text-xl font-mono">{countLoss.toFixed(2)}%</div></div>
           <div><span className="text-gray-400 text-sm">Max Measurable Rate (10% loss)</span><div className="text-xl font-mono">
             {mode === "nonparalyzable" ? `${((1 / 9) / tau / 1e6).toFixed(1)} Mcps` : `${((-Math.log(0.9)) / tau / 1e6).toFixed(1)} Mcps`}
           </div></div>
