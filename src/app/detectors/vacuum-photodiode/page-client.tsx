@@ -20,14 +20,18 @@ export default function VacuumPhotodiodePage() {
     const h = 6.626e-34;
     const c = 3e8;
     const q = 1.6e-19;
-    const resp = (quantumEff * q * wavelength * 1e-9) / (h * c);
+    const cutoff = 1240 / workFunction;
+    const actualQE = wavelength <= cutoff ? quantumEff : 0;
+    const resp = (actualQE * q * wavelength * 1e-9) / (h * c);
     const iPhoto = incidentPower * resp;
-    const vOut = iPhoto * loadResistance;
+    const darkCurrent = thermionicCurrent;
+    const vOut = (iPhoto + darkCurrent) * loadResistance;
     // Richardson-Dushman: J = A_RD * T² * exp(-eφ / kT), A_RD = 1.2e6 A/m²/K²
     const T = 273.15 + temperature;
     const eOverkB = 11600; // K/eV
     const thermionicCurrent = 1.2e6 * cathodeArea * 1e-6 * T * T * Math.exp(-eOverkB * workFunction / T);
-    const darkCurrent = Math.max(thermionicCurrent, 1e-15);
+    const darkCurrent = thermionicCurrent;
+    const vOut = (iPhoto + darkCurrent) * loadResistance;
     // Transit time: d ≈ 0.1*√(area), v_drift ≈ √(2*e*V/m)
     const cathodeAnodeGap = 0.1 * Math.sqrt(cathodeArea * 1e-6); // m
     const driftVelocity = Math.sqrt(2 * q * anodeVoltage / (9.109e-31)); // m/s
@@ -37,7 +41,7 @@ export default function VacuumPhotodiodePage() {
     const shotNoiseCurrent = Math.sqrt(2 * q * (iPhoto + darkCurrent) * bandwidth);
     const snr = shotNoiseCurrent > 0 ? iPhoto / shotNoiseCurrent : 0;
     return { resp, iPhoto, vOut, darkCurrent, transitTime, bandwidth, snr };
-  }, [quantumEff, anodeVoltage, cathodeArea, wavelength, incidentPower, loadResistance, temperature]);
+  }, [quantumEff, anodeVoltage, cathodeArea, wavelength, incidentPower, loadResistance, temperature, workFunction]);
 
   const chartData = useMemo(() => {
     const wavelengths = Array.from({ length: 200 }, (_, i) => 150 + i * 2.5);

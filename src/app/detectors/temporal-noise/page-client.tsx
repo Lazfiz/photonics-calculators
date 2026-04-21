@@ -37,7 +37,7 @@ export default function TemporalNoisePage() {
     const times = Array.from({ length: 200 }, (_, i) => 1e-6 * Math.pow(1e7, i / 200)); // 1μs to 10s
     const readN = times.map(() => readNoise);
     const darkN = times.map(t => Math.sqrt(darkCurrent * t));
-    const totalN = times.map((t, i) => Math.sqrt(readN[i]**2 + darkN[i]**2));
+    const totalN = times.map((t, i) => Math.sqrt(readN[i]**2 + darkN[i]**2 + oneOverFNoise**2));
     return [
       { x: times, y: readN, type: "scatter" as const, mode: "lines" as const, name: "Read noise", line: { color: "#60a5fa", width: 2 } },
       { x: times, y: darkN, type: "scatter" as const, mode: "lines" as const, name: "Dark shot noise", line: { color: "#f87171", width: 2 } },
@@ -47,8 +47,10 @@ export default function TemporalNoisePage() {
 
   const darkShotNoise = Math.sqrt(darkCurrent * exposureTime);
   const totalNoise = Math.sqrt(readNoise**2 + darkShotNoise**2);
-  // 1/f noise integrated: σ = k_1f · √(ln(f_high / f_knee))
-  const oneOverFNoise = bandwidth > kneeFreq ? k1f * Math.sqrt(Math.log(bandwidth / kneeFreq)) : 0;
+  // 1/f noise integrated: σ = k_1f · √(ln(f_high / f_low))
+  // f_low ≈ 1/(2·t_int) for an integration of duration t_int
+  const fLow = exposureTime > 0 ? 1 / (2 * exposureTime) : 0;
+  const oneOverFNoise = bandwidth > fLow ? k1f * Math.sqrt(Math.log(bandwidth / fLow)) : 0;
   const totalNoiseWithF = Math.sqrt(readNoise**2 + darkShotNoise**2 + oneOverFNoise**2);
 
   return (
@@ -69,7 +71,7 @@ export default function TemporalNoisePage() {
         <p className="text-gray-300">Dark shot noise = <span className="text-blue-400 font-mono">{darkShotNoise.toFixed(2)} e⁻</span></p>
         <p className="text-gray-300">1/f noise ≈ <span className="text-blue-400 font-mono">{oneOverFNoise.toFixed(2)} e⁻</span></p>
         <p className="text-gray-300">Total noise (with 1/f) = <span className="text-blue-400 font-mono">{totalNoiseWithF.toFixed(2)} e⁻</span></p>
-        <p className="text-gray-300 text-sm mt-1">σ<sub>1/f</sub> = k<sub>1/f</sub>·√(ln(f<sub>H</sub>/f<sub>knee</sub>)) | σ<sub>dark</sub> = √(I<sub>dark</sub>·t) | σ<sub>total</sub> = √(σ²<sub>read</sub> + σ²<sub>dark</sub> + σ²<sub>1/f</sub>)</p>
+        <p className="text-gray-300 text-sm mt-1">σ<sub>1/f</sub> = k<sub>1/f</sub>·√(ln(f<sub>H</sub>/f<sub>L</sub>)), f<sub>L</sub> ≈ 1/(2t<sub>int</sub>) | σ<sub>dark</sub> = √(I<sub>dark</sub>·t) | σ<sub>total</sub> = √(σ²<sub>read</sub> + σ²<sub>dark</sub> + σ²<sub>1/f</sub>)</p>
       </div>
 
       <ChartPanel data={chartData} layout={{

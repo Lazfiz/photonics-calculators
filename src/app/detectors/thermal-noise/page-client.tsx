@@ -20,7 +20,7 @@ export default function ThermalNoisePage() {
 
   const vNoise = Math.sqrt(4 * kB * temperature * resistance * bandwidth);
   const iNoise = vNoise / resistance;
-  const pNoise = vNoise * vNoise / resistance;
+  const pNoise = kB * temperature * bandwidth; // available noise power (matched load)
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Johnson (Thermal) Noise" description="vn = √(4kBTRΔf). Thermal noise voltage across a resistor.">

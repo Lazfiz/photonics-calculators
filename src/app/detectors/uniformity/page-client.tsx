@@ -37,13 +37,12 @@ export default function UniformityPage() {
   const histogramData = useMemo(() => {
     const N = 10000;
     const sigma = (prnuPercent / 100) * meanSignal;
-    // Normal distribution of pixel values
     const bins = 50;
-    const binWidth = 4 * sigma / bins;
+    const binWidth = sigma > 0 ? 4 * sigma / bins : 1;
     const xH: number[] = [], yH: number[] = [];
     for (let i = 0; i < bins; i++) {
       const center = meanSignal - 2 * sigma + (i + 0.5) * binWidth;
-      const val = Math.exp(-0.5 * Math.pow((center - meanSignal) / sigma, 2));
+      const val = sigma > 0 ? Math.exp(-0.5 * Math.pow((center - meanSignal) / sigma, 2)) : (i === bins / 2 ? 1 : 0);
       xH.push(center);
       yH.push(val);
     }
