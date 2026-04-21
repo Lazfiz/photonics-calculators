@@ -79,8 +79,6 @@ export default function SiliconPhotodiodePage() {
 
   // Capacitance (abrupt junction approximation)
   const epsilonSi = 11.7 * 8.85e-14; // F/cm
-  const dopingConcentration = 1e15; // cm^-3
-  const builtInVoltage = 0.6;
   const depletionCap = epsilonSi * areaCm2 / (depletionWidth * 1e-4); // F
   const capPF = depletionCap * 1e12;
 
@@ -132,8 +130,8 @@ export default function SiliconPhotodiodePage() {
         <div className="grid gap-3 sm:grid-cols-2">
           <ResultCard label="Bandgap E_g" value={`${Eg.toFixed(4)} eV`} tone="blue" />
           <ResultCard label="Cutoff Wavelength" value={`${cutoffWavelength.toFixed(0)} nm`} tone="blue" />
-          <ResultCard label="Peak QE @ 700nm" value={`${(calcQE(700) * 100).toFixed(1)}%`} tone="blue" />
-          <ResultCard label="Peak Responsivity @ 900nm" value={`${calcResponsivity(900).toFixed(3)} A/W`} tone="blue" />
+          <ResultCard label="QE @ 700nm" value={`${(calcQE(700) * 100).toFixed(1)}%`} tone="blue" />
+          <ResultCard label="Responsivity @ 900nm" value={`${calcResponsivity(900).toFixed(3)} A/W`} tone="blue" />
           <ResultCard label="Dark Current" value={`${(darkCurrent * 1e9).toFixed(3)} nA`} tone="blue" />
           <ResultCard label="Junction Capacitance" value={`${capPF.toFixed(2)} pF`} tone="blue" />
         </div>

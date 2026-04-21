@@ -17,14 +17,14 @@ export default function SaturationPage() {
     // Ideal linear response
     const ideal = input.map(v => v);
     // Real response with saturation roll-off
-    const satPoint = fullWellCapacity;
-    // Model: output = v * FWC / (FWC + nl·v) where nl = nonlinearityPercent/100
-    // At v=FWC: output = FWC/(1+nl) → error = -nl/(1+nl) ≈ -nl
-    // Monotonically increasing, always sub-linear (derivative < 1 for v > 0)
     const nl = nonlinearityPercent / 100;
-    const real = input.map(v => v * satPoint / (satPoint + nl * v));
-    // Nonlinearity error (%)
-    const error = input.map((v, i) => v > 0 ? ((real[i] - ideal[i]) / ideal[i]) * 100 : 0);
+    const satPoint = fullWellCapacity;
+    // Model: output = FWC * (1 - nl^(v/FWC))
+    // At v=FWC: output = FWC*(1-nl), so error = -nl*100% (matches the nonlinearity input)
+    // Bounded: always <= FWC, monotonically increasing
+    const real = input.map(v => v >= satPoint ? satPoint : satPoint * (1 - Math.pow(nl, v / satPoint)));
+    // INL = deviation from ideal / full-scale range (%)
+    const error = input.map((v, i) => v > 0 ? ((real[i] - ideal[i]) / satPoint) * 100 : 0);
     return [
       { x: input, y: ideal, type: "scatter" as const, mode: "lines" as const, name: "Ideal (linear)", line: { color: "#374151", width: 1, dash: "dash" }, yaxis: "y" },
       { x: input, y: real, type: "scatter" as const, mode: "lines" as const, name: "Actual response", line: { color: "#60a5fa", width: 2 }, yaxis: "y" },
