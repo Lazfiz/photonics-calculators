@@ -10,6 +10,7 @@ export default function ConcMirrorPage() {
   const [radius, setRadius] = useURLState("radius", 50);
   const [mirrorDiam, setMirrorDiam] = useURLState("mirrorDiam", 25);
   const [slitWidth, setSlitWidth] = useURLState("slitWidth", 50); // µm
+  const [slitHeight, setSlitHeight] = useURLState("slitHeight", 1); // mm
 
   const f = radius * 1e-3 / 2; // focal length: f = R/2 for spherical mirror (Hecht, Optics)
 
@@ -21,12 +22,12 @@ export default function ConcMirrorPage() {
   const inverseSlitAngle = f / (slitWidth * 1e-6);
 
   // Étendue: G = A_slit × Ω = w·h × π(D/2)²/f² (Saleh & Teich, Eq. 11.2-5)
-  // Using slit_height ≈ slit_width:
-  const etendue = Math.pow(slitWidth * 1e-6, 2) * Math.PI * Math.pow(mirrorDiam * 1e-3 / 2, 2) / (f * f);
+  const etendue = (slitWidth * 1e-6) * (slitHeight * 1e-3) * Math.PI * Math.pow(mirrorDiam * 1e-3 / 2, 2) / (f * f);
 
   // Jacquinot advantage: T_FT/T_grating ≈ 2πF/l (Jacquinot, 1954)
-  // For comparison: T_FT/T_grating ≈ 2π·f / slitHeight
-  const jacquinotAdvantage = 2 * Math.PI * f / (slitWidth * 1e-6);
+  // Jacquinot advantage: T_FT/T_grating ≈ 2π·f / slitHeight (Jacquinot 1954)
+  // slitHeight is in mm, convert to m for dimensional consistency
+  const jacquinotAdvantage = 2 * Math.PI * f / (slitHeight * 1e-3);
 
   const chartData = useMemo(() => {
     const radii = Array.from({ length: 50 }, (_, i) => 10 + i * 4);
@@ -43,6 +44,7 @@ export default function ConcMirrorPage() {
         <ValidatedNumberInput label="Mirror Radius (mm)" value={radius} onChange={setRadius} min={5} max={500} />
         <ValidatedNumberInput label="Mirror Diameter (mm)" value={mirrorDiam} onChange={setMirrorDiam} min={5} max={200} />
         <ValidatedNumberInput label="Slit Width (µm)" value={slitWidth} onChange={setSlitWidth} min={1} max={500} />
+        <ValidatedNumberInput label="Slit Height (mm)" value={slitHeight} onChange={setSlitHeight} min={0.1} max={50} step={0.1} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
