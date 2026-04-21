@@ -15,12 +15,16 @@ export default function ElectronSpectroscopyPage() {
   const [temperature, setTemperature] = useURLState("temperature", 300);
 
   // Einstein photoelectric equation: E_k = hν - E_B - φ_analyzer
-  // (Sample and analyzer Fermi levels align via contact potential;
-  //  φ_sample cancels out — only φ_analyzer determines measured KE)
-  const kineticEnergy = Math.max(photonEnergy - bindingEnergy - analyzerWorkFunction, 0.1);
+  // If E_k ≤ 0, no photoelectron is emitted (below threshold)
+  const kineticEnergy = photonEnergy - bindingEnergy - analyzerWorkFunction;
   const alFermi = 1486.6;
   const mgFermi = 1253.6;
   const heI = 21.22;
+
+  // IMFP (inelastic mean free path) — Seah-Dench universal curve (nm)
+  // λ = 143/E_k² + 0.054√E_k  (Seah & Dench, Surf. Interface Anal. 1979)
+  const imfp = kineticEnergy > 0 ? 143 / (kineticEnergy * kineticEnergy) + 0.054 * Math.sqrt(kineticEnergy) : NaN;
+  const infoDepth = imfp > 0 ? 3 * imfp : NaN;
 
   const spectrumData = useMemo(() => {
     const bes = Array.from({ length: 800 }, (_, i) => 0 + (i / 800) * photonEnergy);
@@ -34,21 +38,28 @@ export default function ElectronSpectroscopyPage() {
       { name: "Valence band", center: 10, width: 5, amp: 15, color: "#fbbf24" },
     ];
 
-    // Asymmetric Doniach-Šunjić lineshape (simplified with Gaussian)
-    const spectrum = bes.map(be => {
+    // Pre-compute Gaussian intensities for Shirley-like background (smooth integral)
+    const gaussianIntensities = bes.map(be => {
       let intensity = 0;
       for (const p of peaks) {
-        if (be > p.center - 5 * p.width && be < p.center + 5 * p.width) {
-          // Gaussian + exponential tail (asymmetric)
-          const gauss = p.amp * Math.exp(-4 * Math.LN2 * Math.pow((be - p.center) / p.width, 2));
-          const asym = be < p.center ? 0 : p.amp * 0.3 * Math.exp(-(be - p.center) / (p.width * 2));
-          intensity += gauss + asym;
-        }
+        intensity += p.amp * Math.exp(-4 * Math.LN2 * Math.pow((be - p.center) / p.width, 2));
       }
-      // Secondary electron background (Shirley-like: inelastic electrons
-      // from lower-BE peaks accumulate at higher BE)
-      const integrated = peaks.filter(p => p.center < be).reduce((sum, p) => sum + p.amp, 0);
-      intensity += 0.05 * integrated;
+      return intensity;
+    });
+
+    // Asymmetric Doniach-Šunjić lineshape (simplified with Gaussian + exponential tail)
+    const spectrum = bes.map((be, idx) => {
+      let intensity = 0;
+      for (const p of peaks) {
+        const gauss = p.amp * Math.exp(-4 * Math.LN2 * Math.pow((be - p.center) / p.width, 2));
+        const asym = be < p.center ? 0 : p.amp * 0.3 * Math.exp(-(be - p.center) / (p.width * 2));
+        intensity += gauss + asym;
+      }
+      // Shirley-like background: smooth integral of peak intensity
+      // (integrated from high-BE side, normalized)
+      const totalIntegral = gaussianIntensities.reduce((sum, v) => sum + v, 0);
+      const integratedFromRight = gaussianIntensities.slice(idx).reduce((sum, v) => sum + v, 0);
+      intensity += 0.05 * (totalIntegral > 0 ? integratedFromRight : 0);
       return intensity;
     });
 
@@ -63,9 +74,9 @@ export default function ElectronSpectroscopyPage() {
 
   const depthData = useMemo(() => {
     const depths = Array.from({ length: 200 }, (_, i) => (i / 200) * 100); // nm
-    // IMFP (inelastic mean free path) - universal curve
+    // IMFP (inelastic mean free path) — Seah-Dench universal curve (nm)
     const ke = kineticEnergy;
-    const lambda = 143 / (ke * ke) + 0.054 * Math.sqrt(ke); // TPP-2M simplified (nm, Seah-Dench)
+    const lambda = ke > 0 ? 143 / (ke * ke) + 0.054 * Math.sqrt(ke) : 1; // fallback for chart
     const attenuation = depths.map(d => Math.exp(-d / lambda));
     return [
       { x: depths, y: attenuation.map(a => a * 100), type: "scatter" as const, mode: "lines" as const, name: "Signal", line: { color: "#60a5fa", width: 2 } },
@@ -73,9 +84,7 @@ export default function ElectronSpectroscopyPage() {
     ];
   }, [kineticEnergy]);
 
-  const imfp = 143 / (kineticEnergy * kineticEnergy) + 0.054 * Math.sqrt(kineticEnergy); // nm
   const infoDepth = 3 * imfp;
-  const fermiDirac = 1 / (1 + Math.exp(0));
 
   const xraySources = [
     { name: "Al Kα", energy: 1486.6, ke: (1486.6 - bindingEnergy - analyzerWorkFunction).toFixed(1) },
@@ -97,23 +106,24 @@ export default function ElectronSpectroscopyPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold mb-2">Formulas</h3>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Einstein:</span> E<sub>k</sub> = hν − E<sub>B</sub> − ϕ</p>
-        <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">IMFP (TPP-2M):</span> λ = 143/(E<sub>k</sub>²) + 0.054√E<sub>k</sub> nm</p>
+        <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">IMFP (Seah-Dench):</span> λ = 143/(E<sub>k</sub>²) + 0.054√E<sub>k</sub> nm</p>
         <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Attenuation:</span> I(d) = I₀ exp(−d/λ)</p>
         <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">Info depth:</span> ~3λ (95% signal from this depth)</p>
+        <p className="text-xs text-gray-500 mt-1">Note: φ_sample cancels for grounded conductors in XPS (Fermi level alignment). For UPS spectral cutoff, φ_sample is relevant.</p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-                    <p className="text-xl font-bold text-blue-400">{kineticEnergy.toFixed(1)} eV</p>
+                    <p className="text-xl font-bold text-blue-400">{kineticEnergy > 0 ? kineticEnergy.toFixed(1) + " eV" : "Below threshold"}</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-                    <p className="text-xl font-bold text-green-400">{imfp.toFixed(1)} nm</p>
+                    <p className="text-xl font-bold text-green-400">{!isNaN(imfp) ? imfp.toFixed(1) + " nm" : "N/A"}</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-                    <p className="text-xl font-bold text-yellow-400">{infoDepth.toFixed(1)} nm</p>
+                    <p className="text-xl font-bold text-yellow-400">{!isNaN(infoDepth) ? infoDepth.toFixed(1) + " nm" : "N/A"}</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-                    <p className="text-xl font-bold text-red-400">{infoDepth < 30 ? "High" : infoDepth < 60 ? "Medium" : "Bulk"}</p>
+                    <p className="text-xl font-bold text-red-400">{!isNaN(infoDepth) ? (infoDepth < 30 ? "High" : infoDepth < 60 ? "Medium" : "Bulk") : "N/A"}</p>
         </div>
       </div>
 
