@@ -19,13 +19,15 @@ export default function CrosstalkPage() {
     const N = 50; const x: number[] = []; const y: number[] = []; const z: number[][] = [];
     for (let i = 0; i < N; i++) {
       const row: number[] = [];
-      const xi = (i - N/2) * pixelPitch / N;
+      const xi = (i - N/2) * 3 * pixelPitch / N;
       x.push(xi);
       for (let j = 0; j < N; j++) {
-        if (i === 0) y.push((j - N/2) * pixelPitch / N);
-        const yj = (j - N/2) * pixelPitch / N;
+        if (i === 0) y.push((j - N/2) * 3 * pixelPitch / N);
+        const yj = (j - N/2) * 3 * pixelPitch / N;
         const r = Math.sqrt(xi*xi + yj*yj);
-        row.push(Math.exp(-r / Ldiff) * (1 - Math.exp(-depletionWidth / Labs)) * 100);
+        // Diffusion comes from charge generated BEYOND depletion (neutral bulk)
+        const bulkFraction = Math.exp(-depletionWidth / Labs);
+        row.push(Math.exp(-r / Ldiff) * bulkFraction * 100);
       }
       z.push(row);
     }
