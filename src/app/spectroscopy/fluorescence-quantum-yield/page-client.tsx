@@ -72,7 +72,7 @@ export default function FluorescenceQuantumYieldPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono text-blue-400">Φ_s = Φ_ref · (I_s / I_ref) · (A_ref / A_s) · (n_s² / n_ref²)</p>
-        <p className="text-gray-500 text-xs mt-2">Keep A &lt; 0.1 to avoid inner filter effects. Common standards: quinine sulfate (Φ=0.54 in 0.1M H₂SO₄), fluorescein (Φ=0.95 in 0.1M NaOH).</p>
+        <p className="text-gray-500 text-xs mt-2">Keep A &lt; 0.1 to avoid inner filter effects and ensure A_ref/A_s ≈ (1−10^−A_ref)/(1−10^−A_s) &lt; 5% error. For higher absorbances, replace A ratio with the exact fraction of absorbed photons."
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
