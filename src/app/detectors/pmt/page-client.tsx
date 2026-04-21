@@ -39,10 +39,11 @@ export default function PMTPage() {
       const g = Math.pow(d, numDynodes);
       const sig = photonRate * qe;
       const darkE = (darkCurrent * 1e-9) / (1.602e-19 * g);
-      const enf = 1.1 + 1 / d; // excess noise factor approximation
+      const enf = d / (d - 1); // exact ENF for identical dynodes with Poisson statistics
       // SNR with noise bandwidth: rates / sqrt(2*BW*(rate_sum)*ENF)
+      // Note: PMT gain cancels from SNR (amplifies signal and noise equally)
       const bwHz = bandwidth * 1e6;
-      return Math.sqrt(g) * sig / Math.sqrt(2 * bwHz * (sig + darkE) * enf);
+      return sig / Math.sqrt(2 * bwHz * (sig + darkE) * enf);
     });
     return { deltas, snrVals };
   }, [numDynodes, qe, darkCurrent, photonRate, bandwidth]);
@@ -62,14 +63,14 @@ export default function PMTPage() {
         <ResultCard label="Gain (δⁿ)" value={gain.toExponential(2)} tone="blue" />
         <ResultCard label="Signal Current" value={`${(signalCurrent * 1e6).toFixed(2)} μA`} tone="green" />
         <ResultCard label="Photoelectrons/s" value={signalElectrons.toExponential(2)} tone="yellow" />
-        <ResultCard label="ENF" value={(1.1 + 1 / secondaryEmission).toFixed(3)} tone="purple" />
+        <ResultCard label="ENF" value={(secondaryEmission / (secondaryEmission - 1)).toFixed(3)} tone="purple" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p>Gain G = δ<sup>n</sup></p>
         <p>I<sub>signal</sub> = R<sub>ph</sub> · QE · e · G</p>
-        <p>ENF = 1.1 + 1/δ (excess noise factor)</p>
-        <p>SNR = √G · R<sub>pe</sub> / √(2·BW·(R<sub>pe</sub> + R<sub>dark</sub>)·ENF)</p>
+        <p>ENF = δ / (δ−1) (excess noise factor)</p>
+        <p>SNR = R<sub>pe</sub> / √(2·BW·(R<sub>pe</sub> + R<sub>dark</sub>)·ENF)</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

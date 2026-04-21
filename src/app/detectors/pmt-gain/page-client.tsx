@@ -65,8 +65,10 @@ export default function PmtGainPage() {
       }), type: "scatter", mode: "lines", name: `G=${totalGain.toExponential(1)}`, line: { color: "#f87171", width: 2 } },
       { x: flux, y: flux.map(P => {
         const G = totalGain / 10;
+        const deltaGby10 = k_coeff * Math.pow(stageVoltage, alpha);
+        const Fgby10 = deltaGby10 / (deltaGby10 - 1);
         const signal = photocathodeQE * G * P * tau;
-        const noise = Math.sqrt(photocathodeQE * G * G * P * tau * (1 + 1 / (Math.pow(k_coeff * Math.pow(stageVoltage, alpha), 1))) + G * (1 + 1 / (Math.pow(k_coeff * Math.pow(stageVoltage, alpha), 1))) * anodeDarkE + amplifierNoise ** 2);
+        const noise = Math.sqrt(photocathodeQE * G * G * P * tau * Fgby10 + G * Fgby10 * anodeDarkE / 10 + amplifierNoise ** 2);
         return signal / noise;
       }), type: "scatter", mode: "lines", name: `G=${(totalGain/10).toExponential(1)}`, line: { color: "#a78bfa", width: 2, dash: "dash" } },
     ];
@@ -74,7 +76,7 @@ export default function PmtGainPage() {
 
   // Excess noise factor for PMT ≈ 1 (nearly ideal)
   // F = 1 + 1/δ (approximately for large δ)
-  const excessNoiseFactor = 1 + 1 / perStageGain;
+  const excessNoiseFactor = perStageGain / (perStageGain - 1);
 
   // SNR gain chart vs total voltage
   const snrVsVoltage = useMemo(() => {
@@ -137,7 +139,7 @@ export default function PmtGainPage() {
         <p>δ = k·V_s^α (per-stage gain, α ≈ 0.7-0.8)</p>
         <p>G = δ^n (total gain, n = number of stages)</p>
         <p>R_anode = η·q·λ/(h·c) · G</p>
-        <p>F ≈ 1 + 1/δ (excess noise, nearly ideal)</p>
+        <p>F = δ / (δ−1) (excess noise factor)</p>
         <p>SNR = η·G·P·τ / √(η·G²·P·τ·F + G·F·I<sub>dark</sub>·τ/q + σ<sub>amp</sub>²)</p>
       </div>
     </div>
