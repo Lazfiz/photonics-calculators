@@ -17,11 +17,10 @@ export default function FourierSelfCombPage() {
     const repFreq = repetitionRate * 1e6;
     const centerFreq = c / (centerWavelength * 1e-9);
     const deltaLambda = bandwidthNm * 1e-9;
-    const halfBw = bandwidthNm / 2;
-    const fMin = c / ((centerWavelength + halfBw) * 1e-9);
-    const fMax = c / ((centerWavelength - halfBw) * 1e-9);
-    const fLow = Math.min(fMin, fMax);
-    const fHigh = Math.max(fMin, fMax);
+    // Convert bandwidth to frequency space (centered on centerFreq, not wavelength)
+    const bandwidthHz = c * bandwidthNm * 1e-9 / (centerWavelength * 1e-9) ** 2;
+    const fLow = centerFreq - bandwidthHz / 2;
+    const fHigh = centerFreq + bandwidthHz / 2;
 
     // Comb teeth: equally spaced by f_rep, centered on f_ceo
     const fCeos = Array.from({ length: combLines }, (_, i) => {
@@ -29,8 +28,8 @@ export default function FourierSelfCombPage() {
       return centerFreq + offset;
     });
 
-    // Guard: bandwidth must be smaller than 2× center wavelength to avoid negative wavelengths
-    if (halfBw >= centerWavelength) return [];
+    // Guard: bandwidth must be smaller than 2× center wavelength
+    if (bandwidthNm >= 2 * centerWavelength) return [];
     const traces: any[] = [];
     fCeos.forEach((fCeo, idx) => {
       const nMin = Math.ceil((fLow - fCeo) / repFreq);
@@ -41,8 +40,8 @@ export default function FourierSelfCombPage() {
         const f = fCeo + n * repFreq;
         if (f >= fLow && f <= fHigh) {
           freqs.push(f / 1e12); // THz
-          // Gaussian envelope derived from bandwidth
-          const sigma = (fHigh - fLow) / 4; // ~2σ contains ~95% of bandwidth
+          // Gaussian envelope: σ = Δf_FWHM / 2.355 (bandwidth = FWHM)
+          const sigma = bandwidthHz / 2.355;
           const relF = (f - centerFreq) / sigma;
           amps.push(Math.exp(-0.5 * relF * relF));
         }
@@ -79,7 +78,7 @@ export default function FourierSelfCombPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Comb teeth:</span> f_n = f_CEO + n · f_rep</p>
         <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Mode spacing (λ):</span> Δλ = λ₀² · f_rep / c</p>
-        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Self-comb condition:</span> D₁ ≠ 0, FSR_anomalous = m · f_rep</p>
+        <p className="text-gray-300 text-sm mb-2"><span className="text-blue-400 font-mono">Self-comb condition:</span> f_rep = m · FSR (m solitons)</p>
         <p className="text-sm text-gray-300">Microresonator solitons produce equispaced comb lines enabling DCS with a single device.</p>
       </div>
 
@@ -87,7 +86,7 @@ export default function FourierSelfCombPage() {
         <h3 className="text-lg font-semibold mb-2">Computed Values</h3>
         <p className="text-sm text-gray-300"><span className="text-green-400">f_rep:</span> {repetitionRate} MHz</p>
         <p className="text-sm text-gray-300"><span className="text-green-400">Mode spacing:</span> {spacingNm.toFixed(4)} nm</p>
-        <p className="text-sm text-gray-300"><span className="text-green-400">Lines in bandwidth:</span> {Math.floor(bandwidthNm / spacingNm)}</p>
+        <p className="text-sm text-gray-300"><span className="text-green-400">Lines in bandwidth:</span> {Math.floor(bandwidthNm / spacingNm) + 1}</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
