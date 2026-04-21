@@ -47,7 +47,12 @@ export default function FtirResolutionPage() {
       const raw = Math.cos(2 * Math.PI * nu0 * xi);
       let apod = 1;
       const frac = xi / maxOPD;
-      if (apodization === "nortonbeermedium") apod = 1 - frac * frac;
+      if (apodization === "nortonbeermedium") {
+        // Norton-Beer Medium: D(x) = d0 + d1*(1-x²) + d2*(1-x²)²
+        // Coefficients from Norton & Beer (1976), JOSA 66, 259
+        const u = 1 - frac * frac;
+        apod = 0.15244 + 0.13618 * u + 0.98373 * u * u;
+      }
       else if (apodization === "blackmanharris") apod = 0.35875 + 0.48829 * Math.cos(Math.PI * frac) + 0.14128 * Math.cos(2 * Math.PI * frac) + 0.01168 * Math.cos(3 * Math.PI * frac);
       else if (apodization === "happgenzel") apod = (1 - frac) * (1 + Math.cos(Math.PI * frac)) / 2;
       return raw * apod;
