@@ -33,9 +33,15 @@ export default function DispersiveElementPage() {
       return Math.abs(cosBeta) > 1e-10 ? order / (d * cosBeta) * 1e-9 : null; // rad/nm
     });
 
-    // Linear dispersion at focal length f
+    // Linear dispersion at focal length f (small-angle: dx/dλ ≈ f·dβ/dλ)
+    // Exact: dx/dλ = f·sec²β·dβ/dλ = f·m/(d·cos³β) — use exact form
     const f = 100; // mm focal length
-    const linearDispersion = angularDispersion.map(ad => ad !== null ? f * ad : null); // mm/nm
+    const linearDispersion = angularDispersion.map((ad, i) => {
+      if (ad === null || diffractionAngles[i] === null) return null;
+      const beta = (diffractionAngles[i]! * Math.PI) / 180;
+      const cosBeta = Math.cos(beta);
+      return Math.abs(cosBeta) > 1e-10 ? f / (cosBeta * cosBeta) * ad : null; // f·sec²β·dβ/dλ mm/nm
+    });
 
     // Blaze efficiency (approximate triangular profile)
     const blazeEfficiency = wls.map(wl => {
@@ -77,8 +83,9 @@ export default function DispersiveElementPage() {
           <p className="text-xl font-bold text-green-400">{isNaN(blazeAngle) ? "N/A" : blazeAngle.toFixed(2)}°</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">R/mm grating width</p>
+          <p className="text-sm text-gray-400">Resolving Power R/mm</p>
           <p className="text-xl font-bold text-yellow-400">{resolvingPower.toFixed(0)}</p>
+          <p className="text-xs text-gray-500">R = m·N, N = grooves/mm per mm width</p>
         </div>
       </div>
 
@@ -95,7 +102,7 @@ export default function DispersiveElementPage() {
         xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
         yaxis: { title: "Angle (°)", gridcolor: "#374151" },
         xaxis2: { title: "Wavelength (nm)", gridcolor: "#374151" },
-        yaxis2: { title: "mm/nm (f=100mm)", gridcolor: "#374151" },
+        yaxis2: { title: "mm/nm (f=100mm, exact)", gridcolor: "#374151" },
         xaxis3: { title: "Wavelength (nm)", gridcolor: "#374151" },
         yaxis3: { title: "Efficiency (%)", gridcolor: "#374151", range: [0, 110] },
         height: 900, margin: { t: 30, b: 40 },
