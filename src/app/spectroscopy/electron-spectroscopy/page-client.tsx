@@ -9,17 +9,14 @@ import { useURLState } from "../../../hooks/use-url-state";
 export default function ElectronSpectroscopyPage() {
   const [photonEnergy, setPhotonEnergy] = useURLState("photonEnergy", 1486.6); // Al Kα
   const [bindingEnergy, setBindingEnergy] = useURLState("bindingEnergy", 285); // C 1s
-  const [workFunction, setWorkFunction] = useURLState("workFunction", 4.5);
-  const [analyzerWorkFunction, setAnalyzerWorkFunction] = useURLState("analyzerWorkFunction", 4.2);
+  const [workFunction, setWorkFunction] = useURLState("workFunction", 4.2);
   const [fwhm, setFwhm] = useURLState("fwhm", 1.2);
-  const [temperature, setTemperature] = useURLState("temperature", 300);
 
-  // Einstein photoelectric equation: E_k = hν - E_B - φ_analyzer
+  // Einstein photoelectric equation: E_k = hν - E_B - φ (sample-analyzer aligned)
   // If E_k ≤ 0, no photoelectron is emitted (below threshold)
-  const kineticEnergy = photonEnergy - bindingEnergy - analyzerWorkFunction;
-  const alFermi = 1486.6;
-  const mgFermi = 1253.6;
-  const heI = 21.22;
+  const kineticEnergy = photonEnergy - bindingEnergy - workFunction;
+  const noEmission = kineticEnergy <= 0;
+  const maxBE = photonEnergy - workFunction;
 
   // IMFP (inelastic mean free path) — Seah-Dench universal curve (nm)
   // λ = 143/E_k² + 0.054√E_k  (Seah & Dench, Surf. Interface Anal. 1979)
@@ -27,7 +24,7 @@ export default function ElectronSpectroscopyPage() {
   const infoDepth = imfp > 0 ? 3 * imfp : NaN;
 
   const spectrumData = useMemo(() => {
-    const bes = Array.from({ length: 800 }, (_, i) => 0 + (i / 800) * photonEnergy);
+    const bes = Array.from({ length: 800 }, (_, i) => 0 + (i / 800) * maxBE);
     // Simulate XPS spectrum with peaks
     const peaks = [
       { name: "C 1s", center: 285, width: fwhm, amp: 100, color: "#60a5fa" },
@@ -84,13 +81,12 @@ export default function ElectronSpectroscopyPage() {
     ];
   }, [kineticEnergy]);
 
-  const infoDepth = 3 * imfp;
 
   const xraySources = [
-    { name: "Al Kα", energy: 1486.6, ke: (1486.6 - bindingEnergy - analyzerWorkFunction).toFixed(1) },
-    { name: "Mg Kα", energy: 1253.6, ke: (1253.6 - bindingEnergy - analyzerWorkFunction).toFixed(1) },
-    { name: "Ag Lα", energy: 2984.3, ke: (2984.3 - bindingEnergy - analyzerWorkFunction).toFixed(1) },
-    { name: "He I (UPS)", energy: 21.22, ke: (21.22 - bindingEnergy - analyzerWorkFunction).toFixed(1) },
+    { name: "Al Kα", energy: 1486.6, ke: (1486.6 - bindingEnergy - workFunction).toFixed(1) },
+    { name: "Mg Kα", energy: 1253.6, ke: (1253.6 - bindingEnergy - workFunction).toFixed(1) },
+    { name: "Ag Lα", energy: 2984.3, ke: (2984.3 - bindingEnergy - workFunction).toFixed(1) },
+    { name: "He I (UPS)", energy: 21.22, ke: (21.22 - bindingEnergy - workFunction).toFixed(1) },
   ];
 
   return (
