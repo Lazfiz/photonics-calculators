@@ -14,7 +14,6 @@ export default function ConcentrationPage() {
 
   const concentration = absorbance / (extinctionCoeff * pathLength);
   const molarity = concentration;
-  const ppm = concentration * 1000;
   const transmission = Math.pow(10, -absorbance);
 
   const chartData = useMemo(() => {
