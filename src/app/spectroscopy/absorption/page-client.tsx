@@ -13,7 +13,7 @@ export default function AbsorptionPage() {
   const [cMax, setCMax] = useURLState("cMax", 0.05);
 
   const chartData = useMemo(() => {
-    const cs = Array.from({ length: 200 }, (_, i) => (i / 200) * cMax);
+    const cs = Array.from({ length: 200 }, (_, i) => (i / 199) * cMax);
     const abs = cs.map(c => extinctionCoeff * c * pathLength);
     const trans = abs.map(a => Math.pow(10, -a));
 
