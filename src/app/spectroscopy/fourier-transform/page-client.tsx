@@ -20,8 +20,9 @@ export default function FourierTransformPage() {
     const time = Array.from({ length: N }, (_, i) => i * dt);
     const signal = time.map(t => amp1 * Math.sin(2 * Math.PI * freq1 * t) + amp2 * Math.sin(2 * Math.PI * freq2 * t) + noise * (Math.random() - 0.5));
 
-    // DFT magnitude
-    const freqs = Array.from({ length: N / 2 }, (_, i) => i / (N * dt));
+    // DFT magnitude (one-sided spectrum)
+    const halfN = Math.floor(N / 2) + 1; // include Nyquist bin
+    const freqs = Array.from({ length: halfN }, (_, i) => i / (N * dt));
     const magnitude = freqs.map((_, k) => {
       let real = 0, imag = 0;
       for (let n = 0; n < N; n++) {
@@ -29,7 +30,11 @@ export default function FourierTransformPage() {
         real += signal[n] * Math.cos(phase);
         imag -= signal[n] * Math.sin(phase);
       }
-      return 2 * Math.sqrt(real * real + imag * imag) / N;
+      const mag = Math.sqrt(real * real + imag * imag) / N;
+      // DC and Nyquist bins have no negative-frequency counterpart: scale by 1, not 2
+      const isDC = k === 0;
+      const isNyquist = N % 2 === 0 && k === N / 2;
+      return (isDC || isNyquist) ? mag : 2 * mag;
     });
 
     return [
