@@ -17,7 +17,6 @@ export default function SiliconPhotodiodePage() {
   const [temperature, setTemperature] = useURLState("temperature", 293); // K
   const [depletionWidth, setDepletionWidth] = useURLState("depletionWidth", 10); // μm
   const [area, setArea] = useURLState("area", 1); // mm²
-  const [reverseBias, setReverseBias] = useURLState("reverseBias", 5); // V
   const [surfaceReflectivity, setSurfaceReflectivity] = useURLState("surfaceReflectivity", 0.05);
 
   const k = 1.381e-23;
@@ -38,15 +37,15 @@ export default function SiliconPhotodiodePage() {
   // Piecewise log-linear interpolation from tabulated data
   const absorptionCoeff = (wavelengthNm: number): number => {
     const wl = wavelengthNm;
-    if (wl < 300) return 1.5e6;
+    if (wl < 300) return 1.73e6;
     if (wl > cutoffWavelength) return 0;
     // Anchor points: [wavelength_nm, alpha_cm^-1]
     const table: [number, number][] = [
-      [300, 1.5e6], [350, 1.0e5], [400, 7.0e4], [450, 2.2e4],
-      [500, 1.1e4], [550, 4.5e3], [600, 2.4e3], [650, 1.5e3],
-      [700, 8.0e2], [750, 4.0e2], [800, 1.0e2], [850, 5.0e1],
-      [900, 1.5e1], [950, 5.0], [1000, 1.0], [1050, 0.3],
-      [1100, 0.05],
+      [300, 1.73e6], [350, 1.04e6], [400, 9.52e4], [450, 2.55e4],
+      [500, 1.11e4], [550, 6.39e3], [600, 4.14e3], [650, 2.81e3],
+      [700, 1.90e3], [750, 1.30e3], [800, 850], [850, 535],
+      [900, 306], [950, 157], [1000, 64], [1050, 16.3],
+      [1100, 3.5], [1150, 0.5],
     ];
     // Find bracketing segment, interpolate in log space
     for (let i = 0; i < table.length - 1; i++) {

@@ -8,21 +8,21 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 export default function ShotNoisePage() {
   const [photocurrent, setPhotocurrent] = useURLState("photocurrent", 1e-6); // A
-  const [q, setQ] = useURLState("q", 1.6e-19); // C
+  const [q, setQ] = useURLState("q", 1.602176634e-19); // C
   const [bandwidth, setBandwidth] = useURLState("bandwidth", 1e6); // Hz
 
   const chartData = useMemo(() => {
     const currents = Array.from({ length: 200 }, (_, i) => 1e-9 * Math.pow(1e6, i / 199)); // 1nA to 1mA
-    const iNoise = currents.map(I => Math.sqrt(2 * q * I * bandwidth));
-    const snr = currents.map(I => I / Math.sqrt(2 * q * I * bandwidth));
+    const iNoise = currents.map(I => Math.sqrt(2 * q * Math.abs(I) * bandwidth));
+    const snr = currents.map(I => I !== 0 ? Math.abs(I) / Math.sqrt(2 * q * Math.abs(I) * bandwidth) : 0);
     return [
       { x: currents, y: iNoise, type: "scatter" as const, mode: "lines" as const, name: "Shot noise current", line: { color: "#f87171" }, yaxis: "y" },
       { x: currents, y: snr, type: "scatter" as const, mode: "lines" as const, name: "SNR", line: { color: "#60a5fa" }, yaxis: "y2" },
     ];
   }, [photocurrent, q, bandwidth]);
 
-  const iShot = Math.sqrt(2 * q * photocurrent * bandwidth);
-  const snrVal = photocurrent > 0 ? photocurrent / iShot : 0;
+  const iShot = Math.sqrt(2 * q * Math.abs(photocurrent) * bandwidth);
+  const snrVal = photocurrent !== 0 ? Math.abs(photocurrent) / iShot : 0;
   const snrPower = snrVal * snrVal;
 
   return (
