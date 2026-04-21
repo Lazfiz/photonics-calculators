@@ -16,14 +16,12 @@ export default function EmissionSpectraPage() {
   const [peak2Fwhm, setPeak2Fwhm] = useURLState("peak2Fwhm", 40);
   const [peak2Intensity, setPeak2Intensity] = useURLState("peak2Intensity", 0.3);
 
-  const gaussian = (x: number, center: number, width: number, amp: number) =>
-    amp * Math.exp(-4 * Math.log(2) * ((x - center) / width) ** 2);
-
-  const asymmetricGaussian = (x: number, center: number, width: number, amp: number, asym: number) => {
+  const asymmetricGaussian = (x: number, center: number, fwhm: number, amp: number, asym: number) => {
     const d = x - center;
-    // width = FWHM; convert to sigma: σ = FWHM / (2√(2ln2)) ≈ FWHM/2.355
-    // Red-tail: σ_right > σ_left (wider on longer-wavelength side)
-    const sigma = d < 0 ? width / 2.355 : width * (1 + asym) / 2.355;
+    // Normalize so the peak's actual FWHM matches the user-specified value.
+    // σ_left = fwhm / (2.355 * (1 + asym/2)), σ_right = σ_left * (1 + asym)
+    const sigmaLeft = fwhm / (2.355 * (1 + asym / 2));
+    const sigma = d < 0 ? sigmaLeft : sigmaLeft * (1 + asym);
     return amp * Math.exp(-0.5 * (d / sigma) ** 2);
   };
 
@@ -43,15 +41,15 @@ export default function EmissionSpectraPage() {
     // Center of mass
     const combined = nPeaks >= 2 ? spec.map((v, i) => v + spec2[i]) : spec;
     const totalInt = combined.reduce((a, b) => a + b, 0);
-    const com = combined.reduce((a, b, i) => a + b * wl[i], 0) / totalInt;
-    const fwhmWl = wl.find((_, i) => combined[i] >= peakIntensity / 2);
-    const fwhmWr = [...wl].reverse().find((_, ri) => combined[combined.length - 1 - ri] >= peakIntensity / 2);
+    const com = totalInt > 0 ? combined.reduce((a, b, i) => a + b * wl[i], 0) / totalInt : NaN;
 
-    traces.push({
-      x: [com], y: [peakIntensity * 1.1],
-      type: "scatter" as const, mode: "markers" as const, name: `CoM: ${com.toFixed(1)} nm`,
-      marker: { color: "#f87171", size: 10, symbol: "x" }
-    });
+    if (!isNaN(com)) {
+      traces.push({
+        x: [com], y: [peakIntensity * 1.1],
+        type: "scatter" as const, mode: "markers" as const, name: `CoM: ${com.toFixed(1)} nm`,
+        marker: { color: "#f87171", size: 10, symbol: "x" }
+      });
+    }
 
     return traces;
   }, [centerWL, fwhm, asymmetry, peakIntensity, nPeaks, peak2WL, peak2Fwhm, peak2Intensity]);
@@ -84,7 +82,7 @@ export default function EmissionSpectraPage() {
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono text-blue-400">I(λ) = A · exp(−0.5 · ((λ − λ₀)/σ)²)</p>
-        <p className="text-gray-300 text-sm font-mono text-green-400">σ_left = FWHM/2.355, σ_right = FWHM·(1+α)/2.355</p>
+        <p className="text-gray-300 text-sm font-mono text-green-400">σ_left = FWHM / (2.355·(1+α/2)), σ_right = σ_left·(1+α)</p>
         <p className="text-gray-500 text-xs mt-2">Asymmetric Gaussian models the common red-tailed emission of fluorophores due to vibronic coupling.</p>
       </div>
 
