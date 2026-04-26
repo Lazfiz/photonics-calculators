@@ -24,7 +24,7 @@ export default function GeigerModeAPDPage() {
     return [
       { x: temps, y: temps.map(t => tempCoeff * 1e-3 * (t - 25)), type: "scatter", mode: "lines", name: "Vbr shift (V)", line: { color: "#f87171" } },
       { x: temps, y: temps.map(t => { const eo = overbias - tempCoeff * 1e-3 * (t - 25); return eo <= 0 ? 0 : Math.min(0.75, 0.15 * eo); }), type: "scatter", mode: "lines", name: "PDE", line: { color: "#60a5fa" }, yaxis: "y2" },
-      { x: temps, y: temps.map(t => { const eo = overbias - tempCoeff * 1e-3 * (t - 25); return eo <= 0 ? 0 : darkCountRate * Math.pow(2, (t - 25) / 10) * (eo / overbias); }), type: "scatter", mode: "lines", name: "DCR", line: { color: "#a78bfa" }, yaxis: "y3" },
+      { x: temps, y: temps.map(t => { const eo = overbias - tempCoeff * 1e-3 * (t - 25); return (eo <= 0 || overbias <= 0) ? 0 : darkCountRate * Math.pow(2, (t - 25) / 10) * (eo / overbias); }), type: "scatter", mode: "lines", name: "DCR", line: { color: "#a78bfa" }, yaxis: "y3" },
     ];
   }, [overbias, tempCoeff, darkCountRate]);
 

@@ -78,3 +78,17 @@ test("afterpulse rate is 2% of effective DCR", () => {
   const ref = calculateGeigerMode(defaults);
   assert.equal(ref.afterpulseRate, ref.effectiveDCR * 0.02);
 });
+
+test("DCR is zero and no division-by-zero when overbias input is zero", () => {
+  const result = calculateGeigerMode({ ...defaults, overbias: 0 });
+  assert.equal(result.effectiveDCR, 0);
+  assert.equal(result.pde, 0);
+  assert.equal(result.afterpulseRate, 0);
+});
+
+test("DCR is zero and no division-by-zero when overbias input is negative", () => {
+  const result = calculateGeigerMode({ ...defaults, overbias: -1 });
+  assert.equal(result.effectiveDCR, 0);
+  assert.equal(result.pde, 0);
+  assert.equal(result.afterpulseRate, 0);
+});
