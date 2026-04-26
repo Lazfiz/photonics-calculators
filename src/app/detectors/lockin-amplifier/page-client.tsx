@@ -21,8 +21,8 @@ export default function LockinAmplifierPage() {
   const deltaF = Math.abs(signalFreq - refFreq);
   const phaseRad = (phaseShift * Math.PI) / 180;
   const enbw = 1 / (4 * timeConstant); // Hz, for 1st order RC LPF
-  // Nth-order Butterworth ENBW: ENBW_N = ENBW_1 · (1/N) / sin(π/(2N))
-  const enbwActual = filterOrder === 1 ? enbw : enbw * (1 / filterOrder) / Math.sin(Math.PI / (2 * filterOrder));
+  // Nth-order Butterworth ENBW: ENBW_N = ENBW_1 · (π/(2N)) / sin(π/(2N))
+  const enbwActual = filterOrder === 1 ? enbw : enbw * (Math.PI / (2 * filterOrder)) / Math.sin(Math.PI / (2 * filterOrder));
 
   // Nth-order Butterworth LPF transfer function magnitude
   const omegaTau = 2 * Math.PI * deltaF * timeConstant;

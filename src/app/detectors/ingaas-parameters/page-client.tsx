@@ -30,7 +30,7 @@ export default function IngaasParametersPage() {
   const Vt = k * temperature / q;
   const Vrev = Math.max(0, -biasVoltage);
   const diffDark = areaCm2 * 1e-8 * Math.pow(temperature / 300, 3) * Math.exp(EgT * q / k * (1 / 300 - 1 / temperature)) * (1 - Math.exp(-Vrev / (idealityFactor * Vt)));
-  const grDark = areaCm2 * 1e-6 * Math.pow(temperature / 300, 1.5) * Math.exp(-EgT * q / (2 * k * temperature));
+  const grDark = areaCm2 * 1e-6 * Math.pow(temperature / 300, 1.5) * Math.exp(-EgT * q / (2 * k * temperature)) * (1 - Math.exp(-Vrev / (2 * Vt)));
   const totalDark = diffDark + grDark;
   const R1550 = resp(1550);
   const nep1550 = Math.sqrt(2 * q * totalDark) / R1550;
