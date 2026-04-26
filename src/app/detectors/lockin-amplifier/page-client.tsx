@@ -7,7 +7,7 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 // Lock-in amplifier: V_out = V_signal * cos(Δφ) * (2/π) * H(Δf) for square-wave demod
 // ENBW = 1/(4*RC) for 1st-order RC output filter
-// SNR improvement = (2/π)|cos(Δφ)|·H(Δf)·√(BW_in / ENBW)
+// SNR improvement = (2√2/π)|cos(Δφ)|·H(Δf)·√(BW_in / ENBW)
 export default function LockinAmplifierPage() {
   const [signalFreq, setSignalFreq] = useURLState("signalFreq", 1000); // Hz
   const [refFreq, setRefFreq] = useURLState("refFreq", 1000); // Hz
@@ -82,7 +82,7 @@ export default function LockinAmplifierPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p>V<sub>out</sub> = V<sub>sig</sub> · cos(Δφ) · (2/π) · H(Δf)  [square-wave demod + LPF]</p>
         <p>ENBW = 1/(4τ) [1st-order] | ENBW_N = ENBW₁·(1/N)/sin(π/2N) [Nth-order]</p>
-        <p>SNR improvement = (2/π)|cos(Δφ)| · H(Δf) · √(BW<sub>in</sub> / ENBW)</p>
+        <p>SNR improvement = (2√2/π)|cos(Δφ)| · H(Δf) · √(BW<sub>in</sub> / ENBW)</p>
       </div>
 
       <ChartPanel data={chartData} layout={{

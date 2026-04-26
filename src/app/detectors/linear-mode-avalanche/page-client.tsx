@@ -55,17 +55,19 @@ export default function LinearModeAPDPage() {
     const resp = (quantumEff * q * wavelength * 1e-9) / (h * c);
     const iPhoto = incidentPower * resp;
     const signal = gains.map(g => iPhoto * g);
-    // McIntyre F(M) for each gain point
+    // When using custom F, back-calculate effective k from the operating point
+    // F(M) = 1 for any k at M=1, so inversion is only valid for M > 1
+    const kChart = useCustomF && gain > 1
+      ? Math.max(0, (customF - 2 + 1 / gain) / (gain - 2 + 1 / gain))
+      : effectiveK;
+    // Use consistent F(M) in both noise and F-curve traces
+    const fOfM = (g: number) => useCustomF ? kChart * g + (1 - kChart) * (2 - 1 / g) : mcIntyre(g);
     const noise = gains.map(g => {
-      const F = useCustomF ? customF : mcIntyre(g);
+      const F = fOfM(g);
       return Math.sqrt(2 * q * iPhoto * g * g * F * bandwidth + 2 * q * darkCurrent * g * g * F * bandwidth);
     });
     const snr = signal.map((s, i) => s / noise[i]);
-    // When using custom F, back-calculate effective k from the operating point
-    const kChart = useCustomF
-      ? Math.max(0, (customF - 2 + 1 / gain) / (gain - 2 + 1 / gain))
-      : effectiveK;
-    const fCurve = gains.map(g => useCustomF ? kChart * g + (1 - kChart) * (2 - 1 / g) : mcIntyre(g));
+    const fCurve = gains.map(g => fOfM(g));
     const fMax = Math.max(...fCurve);
     return [
       { x: gains, y: signal, type: "scatter", mode: "lines", name: "Signal (A)", line: { color: "#60a5fa" } },

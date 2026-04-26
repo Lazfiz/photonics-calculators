@@ -34,10 +34,12 @@ export default function HybridDetectorPage() {
     const gains = Array.from({ length: 200 }, (_, i) => 1e3 * Math.pow(1e7 / 1e3, i / 199));
     const cur = gains.map(() => inputNoiseCurrent * 1e-15 * Math.sqrt(bwHz) * 1e15);
     const vol = gains.map(g => inputNoiseVoltage * 1e-9 * Math.sqrt(bwHz) / g * 1e15);
+    const john = gains.map(g => Math.sqrt(4 * 1.381e-23 * 300 * bwHz / g) * 1e15);
     return [
       { x: gains, y: cur, type: "scatter", mode: "lines", name: "Current noise", line: { color: "#f87171" } },
       { x: gains, y: vol, type: "scatter", mode: "lines", name: "Voltage noise", line: { color: "#60a5fa" } },
-      { x: gains, y: gains.map((_, i) => Math.sqrt(cur[i] ** 2 + vol[i] ** 2)), type: "scatter", mode: "lines", name: "Total", line: { color: "#34d399", dash: "dash" } },
+      { x: gains, y: john, type: "scatter", mode: "lines", name: "Johnson noise", line: { color: "#fbbf24" } },
+      { x: gains, y: gains.map((_, i) => Math.sqrt(cur[i] ** 2 + vol[i] ** 2 + john[i] ** 2)), type: "scatter", mode: "lines", name: "Total", line: { color: "#34d399", dash: "dash" } },
     ];
   }, [inputNoiseCurrent, inputNoiseVoltage, bwHz]);
 
