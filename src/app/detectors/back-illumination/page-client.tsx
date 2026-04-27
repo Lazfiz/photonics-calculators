@@ -36,7 +36,7 @@ export default function BackIlluminationPage() {
   const improvement = effectiveBi / effectiveFi;
   // SNR improvement = √(QE ratio) only in shot-noise-limited regime
   const snrImprovement = Math.sqrt(improvement);
-  const sensitivityGain = 5 * Math.log10(improvement);
+  const sensitivityGain = 10 * Math.log10(improvement);
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Back-Illuminated vs Front-Illuminated" description="Back-illuminated sensors bypass gate structures for higher QE and better blue/UV response.">
