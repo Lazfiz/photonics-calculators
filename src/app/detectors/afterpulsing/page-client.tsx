@@ -13,13 +13,20 @@ export default function AfterpulsingPage() {
   const [countRate, setCountRate] = useURLState("countRate", 1e6);
   const [numTraps, setNumTraps] = useURLState("numTraps", 3);
 
+  // Measured (avalanche) rate: only actual detections fill traps.
+  // Photons arriving during dead time cannot trigger avalanches.
+  // measuredRate = countRate / (1 + countRate × deadTime × 1e-9)
+  const measuredRate = countRate / (1 + countRate * deadTime * 1e-9);
+
   // Afterpulse probability: fraction of trapped carriers that survive the dead time
   // and can trigger a secondary avalanche. Decreases with longer dead time.
   // P_ap = η · exp(-t_dead / τ)   [Cova et al.]
   const trapReleaseFrac = 1 - Math.exp(-deadTime / trapLifetime);
   const afterpulseProb = trapEfficiency * Math.exp(-deadTime / trapLifetime);
-  const afterpulseRate = countRate * afterpulseProb;
-  const afterpulseFraction = countRate > 0 ? (afterpulseRate / countRate) * 100 : 0;
+  const afterpulseRate = measuredRate * afterpulseProb;
+  // afterpulseFraction uses measuredRate as denominator: fraction of detected
+  // (avalanche) events that are afterpulses, not fraction of incident photons.
+  const afterpulseFraction = measuredRate > 0 ? (afterpulseRate / measuredRate) * 100 : 0;
 
   const multiTrap = useMemo(() => {
     const traps = Array.from({ length: numTraps }, (_, i) => ({
@@ -30,9 +37,9 @@ export default function AfterpulsingPage() {
       ...t,
       release: 1 - Math.exp(-deadTime / t.tau),
       apProb: t.eta * Math.exp(-deadTime / t.tau),
-      apRate: countRate * t.eta * Math.exp(-deadTime / t.tau),
+      apRate: measuredRate * t.eta * Math.exp(-deadTime / t.tau),
     }));
-  }, [trapLifetime, trapEfficiency, deadTime, countRate, numTraps]);
+  }, [trapLifetime, trapEfficiency, deadTime, measuredRate, numTraps]);
 
   const chartData = useMemo(() => {
     const dt = Array.from({ length: 200 }, (_, i) => 1 + i * 200 / 200);
@@ -51,7 +58,7 @@ export default function AfterpulsingPage() {
   const rateVsDeadTime = useMemo(() => {
     const dt = Array.from({ length: 200 }, (_, i) => 1 + i * 200 / 200);
     return [
-      { x: dt, y: dt.map(d => { const ap = trapEfficiency * Math.exp(-d / trapLifetime); return countRate * ap; }), type: "scatter" as const, mode: "lines" as const, name: "Afterpulse Rate", line: { color: "#fbbf24", width: 2 }, yaxis: "y" },
+      { x: dt, y: dt.map(d => { const ap = trapEfficiency * Math.exp(-d / trapLifetime); const mr = countRate / (1 + countRate * d * 1e-9); return mr * ap; }), type: "scatter" as const, mode: "lines" as const, name: "Afterpulse Rate", line: { color: "#fbbf24", width: 2 }, yaxis: "y" },
       { x: dt, y: dt.map(d => { const measured = countRate / (1 + countRate * d * 1e-9); return measured / 1e6; }), type: "scatter" as const, mode: "lines" as const, name: "Measured Rate (Mcps)", line: { color: "#34d399", width: 2 }, yaxis: "y2" },
     ];
   }, [trapLifetime, trapEfficiency, countRate]);
