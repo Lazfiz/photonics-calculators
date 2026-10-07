@@ -59,7 +59,7 @@ export default function PhotonCountingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
+    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Photon Counting Statistics" description="Poisson statistics, SNR, dead time corrections, and count distributions.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Mean Counts per Interval" value={meanCounts} onChange={setMeanCounts} min={0.1} step="1" />
         <ValidatedNumberInput label="Dead Time (ns)" value={deadTime} onChange={setDeadTime} min={0} step="1" />
@@ -100,6 +100,6 @@ export default function PhotonCountingPage() {
         yaxis2: { title: "Relative Error (%)", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 30, r: 60, b: 50, l: 60 }, legend: { bgcolor: "transparent", font: { size: 10 } },
       }} />
-    </div>
+    </CalculatorShell>
   );
 }

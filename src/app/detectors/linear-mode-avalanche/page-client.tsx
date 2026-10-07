@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
@@ -79,7 +80,7 @@ export default function LinearModeAPDPage() {
   }, [useCustomF, customF, quantumEff, bandwidth, darkCurrent, wavelength, incidentPower, effectiveK, gain]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
+    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Linear-Mode Avalanche Photodiode" description="McIntyre excess noise factor F(M), signal current and shot noise of a linear-mode APD versus gain, ionization ratio k and dark current.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Gain (M)" value={gain} onChange={setGain} min={1} />
         <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -140,6 +141,6 @@ export default function LinearModeAPDPage() {
         yaxis3: { title: "F(M)", gridcolor: "#374151", overlaying: "y", side: "left", anchor: "free", position: 0.02, range: [0, fMax * 1.1] },
         margin: { t: 20, b: 40, l: 70, r: 60 }, autosize: true, showlegend: true
       }} />
-    </div>
+    </CalculatorShell>
   );
 }

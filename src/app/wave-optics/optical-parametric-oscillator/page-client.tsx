@@ -112,8 +112,7 @@ export default function OPOCalculator() {
   const axisStyle = { gridcolor: "#333", zerolinecolor: "#444", color: "#ccc" };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6">
-            <p className="text-gray-500 mb-6">Singly-resonant OPO — signal resonant, idler extracted. Quasi-phase-matched (QPM) or birefringent phase matching model.</p>
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Optical Parametric Oscillator" description="Parametric gain, walk-off-limited interaction length and singly-resonant OPO threshold from pump wavelength, d_eff, beam radius and cavity loss." maxWidthClassName="max-w-6xl">
 
       {/* Formulas */}
       <div className="bg-gray-900 rounded-lg p-4 mb-6 border border-gray-800">
@@ -196,6 +195,6 @@ export default function OPOCalculator() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -105,8 +105,7 @@ export default function FiberCouplerCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Coupler Calculator" description="Calculate power splitting, transfer curves, and spectral response for directional fiber couplers.">
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -164,7 +163,6 @@ export default function FiberCouplerCalculator() {
             <ChartPanel data={spectralResponse} layout={layout2} />
           </div>
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

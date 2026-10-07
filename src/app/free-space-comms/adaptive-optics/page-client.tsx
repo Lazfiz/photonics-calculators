@@ -67,7 +67,7 @@ export default function AdaptiveOpticsPage() {
   }, [wavelength, range, diameter]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Adaptive Optics for FSO" description="Fried parameter r₀, Greenwood frequency, isoplanatic angle and Strehl ratio with and without adaptive optics for a free-space optical link." maxWidthClassName="max-w-5xl">
       
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
                 <p className="text-cyan-300 mt-1 font-mono">r₀ = [0.423·k²·Cn²·L]^(-3/5)</p>
@@ -115,6 +115,6 @@ export default function AdaptiveOpticsPage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

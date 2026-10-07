@@ -90,8 +90,7 @@ export default function VNumberCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber V-Number" description={"Normalized frequency V = 2πa·NA/λ of a step-index fiber, NA from core and cladding indices, the single-mode check (V < 2.405) and the mode count."}>
 
                 
         <div className="grid md:grid-cols-2 gap-8">
@@ -192,7 +191,6 @@ export default function VNumberCalculator() {
            
           />
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

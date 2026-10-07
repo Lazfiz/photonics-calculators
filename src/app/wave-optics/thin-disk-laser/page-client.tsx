@@ -91,9 +91,7 @@ export default function ThinDiskLaserPage() {
   const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-6xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-      </div>
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Yb Thin-Disk Laser" description="Multipass pump absorption, threshold, slope efficiency, temperature rise and thermal lens of a Yb thin-disk laser from disk thickness and doping." maxWidthClassName="max-w-6xl">
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Disk Thickness (µm)" value={diskThickness} onChange={setDiskThickness} /></div>
@@ -130,6 +128,6 @@ export default function ThinDiskLaserPage() {
         <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">ΔT vs Pump Intensity</h3><ChartPanel data={tempData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Intensity (kW/cm²)" }, yaxis: { ...plotLayout.yaxis, title: "ΔT (K)" } }} /></div>
         <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Thermal Lens f vs Pump</h3><ChartPanel data={thermalLensData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "f_thermal (m)" } }} /></div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -82,7 +82,7 @@ export default function SecurityPage() {
   }, [txPower, rxAperture, wavelength, linkRange, eveAperture]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="FSO Physical-Layer Security" description="Power at the receiver and an off-axis eavesdropper, Bob/Eve ratio, secrecy capacity and a BB84 key-rate estimate for a free-space optical link." maxWidthClassName="max-w-5xl">
       
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
                 <p className="text-cyan-300 mt-1 font-mono">C_s = max(0, log₂(1+SNR_Bob) − log₂(1+SNR_Eve))</p>
@@ -137,6 +137,6 @@ export default function SecurityPage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -55,7 +55,7 @@ export default function BpskQpskPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="BPSK and QPSK Error Rates" description="Bit and symbol error rates of BPSK, Gray-coded QPSK and OQPSK versus Eb/N0, with spectral efficiency, bandwidth, required receive power and margin." maxWidthClassName="max-w-5xl">
             
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -117,6 +117,6 @@ export default function BpskQpskPage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -111,7 +111,7 @@ export default function AdaptiveOpticsGainPage() {
   }, [wavelength, cn2, range, r0, numActuators, windSpeed]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Adaptive Optics Strehl Gain" description="Fitting and Greenwood temporal error, corrected Strehl ratio, AO gain, and the actuators and bandwidth needed for a target Strehl in turbulence." maxWidthClassName="max-w-5xl">
       
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -171,6 +171,6 @@ export default function AdaptiveOpticsGainPage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

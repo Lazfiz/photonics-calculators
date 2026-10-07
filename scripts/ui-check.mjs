@@ -182,6 +182,22 @@ try {
     check("ber: URL photons=0.5", await param("photons"), "0.5");
     await typeInto(ph, "100");
     check("ber: reset removes photons, keeps utm", await evaluate("location.search"), "?utm_source=test");
+    check("ber: shell renders the title", await evaluate(`document.querySelector("h1")?.textContent`), "Photon-Counting BER (OOK and DPSK)");
+
+    // 3b. One label per number input, naming the value it's bound to. A bulk edit once left a
+    // caption <label> beside each input, shifted the input labels by a row, and wrote "{label}".
+    const valueLabelled = (text) =>
+      evaluate(`(() => { const l = [...document.querySelectorAll("label")].find((l) => l.querySelector("input") && l.querySelector("span")?.textContent === ${JSON.stringify(text)}); return l ? l.querySelector("input").value : null; })()`);
+    await open("/wave-optics/gas-laser-resonator");
+    check("labels: 'Wavelength (nm)' holds the wavelength", await valueLabelled("Wavelength (nm)"), "632.8");
+    check("labels: 'Tube Length (mm)' holds the length", await valueLabelled("Tube Length (mm)"), "500");
+    check(
+      "labels: no caption <label> before a number input's own label",
+      await evaluate(`[...document.querySelectorAll("label")].filter((l) => !l.htmlFor && !l.querySelector("input, select, textarea") && l.nextElementSibling?.matches("label") && l.nextElementSibling.querySelector('input[type="number"]')).length`),
+      0
+    );
+    await open("/fiber-optics/sbs-threshold");
+    check("labels: no literal {label}", await evaluate(`document.body.innerText.includes("{label}")`), false);
 
     // 4. InputSlider: out-of-range typing never reaches onChange; clamp on blur.
     await open("/detectors/quantum-efficiency");

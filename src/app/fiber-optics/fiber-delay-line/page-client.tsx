@@ -104,8 +104,7 @@ export default function FiberDelayLineCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Delay Line Calculator" description="Calculate propagation delay, pulse broadening, phase shift, and FSR for fiber optic delay lines.">
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -166,7 +165,6 @@ export default function FiberDelayLineCalculator() {
             <ChartPanel data={dispersionCurve} layout={layout2} />
           </div>
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

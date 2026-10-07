@@ -28,7 +28,7 @@ export default function ReadoutNoisePage() {
   const readNoiseLimitedSignal = readNoise ** 2; // signal where shot = read noise
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
+    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Readout Noise" description="Readout noise, dark current, shot noise, and SNR analysis for image sensors.">
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Read noise σ<sub>read</sub> (e⁻ rms)</span>
           <ValidatedNumberInput label="Read noise σread (e⁻ rms)" value={readNoise} onChange={setReadNoise} step="1" /></label>
@@ -49,6 +49,6 @@ export default function ReadoutNoisePage() {
         yaxis2: { title: "SNR", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 70, r: 60 }, autosize: true, showlegend: true
       }} />
-    </div>
+    </CalculatorShell>
   );
 }

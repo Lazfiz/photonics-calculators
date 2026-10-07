@@ -64,7 +64,7 @@ export default function BERPage() {
   }, [darkCount]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Photon-Counting BER (OOK and DPSK)" description="Exact Poisson bit error rate of photon-counting OOK and DPSK receivers versus detected photons per bit and dark plus background counts." maxWidthClassName="max-w-5xl">
       
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -125,6 +125,6 @@ export default function BERPage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

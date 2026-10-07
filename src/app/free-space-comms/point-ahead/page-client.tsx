@@ -51,7 +51,7 @@ export default function PointAheadPage() {
   }, [relVelocity]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Point-Ahead Angle" description="Point-ahead angle from relative velocity, transmit beamwidth, time of flight and required pointing accuracy for LEO, GEO and deep-space laser links." maxWidthClassName="max-w-5xl">
             
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -109,6 +109,6 @@ export default function PointAheadPage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -26,7 +26,7 @@ export default function ShotNoisePage() {
   const snrPower = snrVal * snrVal;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
+    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Shot Noise" description="Shot noise current, SNR, and noise vs signal analysis for photodetectors.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Photocurrent (A)" value={photocurrent} onChange={setPhotocurrent} step="1e-9" />
         <ValidatedNumberInput label="Bandwidth (Hz)" value={bandwidth} onChange={setBandwidth} />
@@ -46,6 +46,6 @@ export default function ShotNoisePage() {
         yaxis2: { title: "SNR", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 70, r: 60 }, autosize: true, showlegend: true
       }} />
-    </div>
+    </CalculatorShell>
   );
 }

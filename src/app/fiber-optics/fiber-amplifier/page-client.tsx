@@ -129,8 +129,7 @@ export default function FiberAmplifierCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Amplifier Calculator" description="EDFA and YDFA gain, saturation, and noise figure analysis.">
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -204,7 +203,6 @@ export default function FiberAmplifierCalculator() {
             <ChartPanel data={gainVsPump} layout={layout2} />
           </div>
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

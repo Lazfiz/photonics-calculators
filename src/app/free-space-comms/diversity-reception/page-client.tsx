@@ -66,7 +66,7 @@ export default function DiversityReceptionPage() {
   }, [numRx, c2n, wavelength, range]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Diversity Reception" description="Diversity gain, combined scintillation and outage probability for selection, equal-gain and maximal-ratio combining with N receivers in turbulence." maxWidthClassName="max-w-5xl">
       
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
                 <p className="text-cyan-300 mt-1 font-mono">ρ = exp(−(d/r₀)^(5/3)) &nbsp; (inter-receiver correlation)</p>
@@ -120,6 +120,6 @@ export default function DiversityReceptionPage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }
