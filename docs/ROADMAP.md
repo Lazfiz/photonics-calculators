@@ -57,7 +57,7 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 - ESLint had **290 errors**. Four rules are temporarily set to `warn` in `eslint.config.mjs`:
   - `preserve-manual-memoization` (153 sites)
   - `no-explicit-any` (116)
-  - `react-hooks/purity` (9: `Math.random` in render, a hydration mismatch, in otdr-analysis, circular-dichroism, polarization-scrambling, retarder-types, fourier-transform and spectral-calibration)
+  - `react-hooks/purity` (9: `Math.random` in render, a hydration mismatch, in otdr-analysis, circular-dichroism, polarization-scrambling, retarder-types, fourier-transform and spectral-calibration): fixed in Phase 1, back to `error`
   - `set-state-in-effect` (`input-slider`, `use-url-state`): fixed in Phase 1, back to `error`
 - Questionable models noticed while fixing (for Phase 4):
   - `filamentation`: Marburger z_sf gives a finite collapse distance for P < P_cr.
@@ -167,7 +167,10 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - The 44 `{label}` sites were part of a larger bug: 532 caption `<label>`s in 150 files sat beside a `ValidatedNumberInput` that renders its own label, so each label showed twice. In 18 sites the two disagreed; in 5 resonator pages and `aging-effects` the input labels were shifted by one row. `scripts/codemods/2026-10-07-input-captions.ts` moved each caption (it matches the bound value) into `label` and removed the caption. By hand: `label` is now `ReactNode` (sub/sup labels), and `materials/photorefractive` had its "Applied Field" input bound to `wavelength`; the field and wavelength inputs are separate again.
   - `scripts/codemods/2026-10-07-render-calculator-shell.ts` wrapped 66 pages in `CalculatorShell` (title/description from `metadata`, back link from the category, the page's max width); it added the import to the 4 detector pages that lacked it. OPA and OPO were done by hand (full-width root with their own description `<p>`).
   - `scripts/ui-check.mjs` checks the ber title, gas-laser-resonator labels against bound values, and no "{label}" on sbs-threshold. All 35 checks pass; the 4 new ones fail on the old pages.
-- [ ] Use a seeded PRNG (`src/physics/random.ts`) for the 6 pages that call `Math.random` in render. Then set `react-hooks/purity` back to `error` (`set-state-in-effect` already is).
+- [x] Use a seeded PRNG (`src/physics/random.ts`) for the 6 pages that call `Math.random` in render. Then set `react-hooks/purity` back to `error` (`set-state-in-effect` already is). **Done 2026-10-07 on `phase-1`:**
+  - `random.ts`: mulberry32 (`createRng(seed)`), `uniform`, and Box–Muller `gaussian` (u ∈ (0, 1], so log u is finite). `tests/random.test.ts` matches an independent port of the C reference for 4 seeds and checks the moments.
+  - Each page creates a fixed-seed generator inside its memo, so changing e.g. the noise amplitude rescales one noise realization instead of redrawing it. `react-hooks/purity` is `error` again.
+  - Headless Chrome (`ui-check … load`) on the 6 pages: 0 console errors. The old versions logged "Hydration failed" on polarization-scrambling and spectral-calibration (the two that print noise-dependent values).
 
 ## Phase 2 — architecture (~1 week)
 - [ ] `src/physics/constants.ts` (CODATA) and `src/physics/<category>/<slug>.ts` pure functions, migrated by codemod and category by category, with tests.
