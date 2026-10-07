@@ -52,8 +52,7 @@ export default function StressPage() {
         <ValidatedNumberInput label="Film Stress (MPa, compressive = negative)" value={filmStress} onChange={setFilmStress} />
         <ValidatedNumberInput label="Film Thickness (nm)" value={filmThickness} onChange={setFilmThickness} />
         <ValidatedNumberInput label="Substrate Thickness (mm)" value={substrateThickness} onChange={setSubstrateThickness} step="0.1" />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">E<sub>substrate</sub> (GPa)</span>
-          <ValidatedNumberInput label="Esubstrate (GPa)" value={eSubstrate} onChange={setESubstrate} /></label>
+        <ValidatedNumberInput label={<>E<sub>substrate</sub> (GPa)</>} value={eSubstrate} onChange={setESubstrate} />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

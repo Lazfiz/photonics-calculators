@@ -94,13 +94,10 @@ export default function StressMeasurementPage() {
         <ValidatedNumberInput label="Substrate Radius (mm)" value={radius} onChange={setRadius} step="0.5" />
         <ValidatedNumberInput label="Substrate Thickness (mm)" value={substrateThickness} onChange={setSubstrateThickness} step="0.05" />
         <ValidatedNumberInput label="Film Thickness (nm)" value={thickness} onChange={setThickness} step="1" />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>film</sub></span>
-          <ValidatedNumberInput label="nfilm" value={nFilm} onChange={setNFilm} step="0.01" /></label>
+        <ValidatedNumberInput label={<>n<sub>film</sub></>} value={nFilm} onChange={setNFilm} step="0.01" />
         <ValidatedNumberInput label="Center Deflection (μm)" value={deflection} onChange={setDeflection} step="0.1" />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">E<sub>substrate</sub> (GPa)</span>
-          <ValidatedNumberInput label="Esubstrate (GPa)" value={youngsModulus} onChange={setYoungsModulus} step="1" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">ν<sub>substrate</sub></span>
-          <ValidatedNumberInput label="νsubstrate" value={poissonRatio} onChange={setPoissonRatio} step="0.01" /></label>
+        <ValidatedNumberInput label={<>E<sub>substrate</sub> (GPa)</>} value={youngsModulus} onChange={setYoungsModulus} step="1" />
+        <ValidatedNumberInput label={<>ν<sub>substrate</sub></>} value={poissonRatio} onChange={setPoissonRatio} step="0.01" />
         <ValidatedNumberInput label="Deposition Temp (°C)" value={depositionTemp} onChange={setDepositionTemp} step="10" />
         <ValidatedNumberInput label="Measurement Temp (°C)" value={temperature} onChange={setTemperature} step="1" />
       </div>

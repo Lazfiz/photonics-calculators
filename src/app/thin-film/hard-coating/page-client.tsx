@@ -67,10 +67,8 @@ export default function HardCoatingPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Hard Coating Design" description="Abrasion-resistant optical coating — balance mechanical hardness with optical performance.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>coating</sub></span>
-          <ValidatedNumberInput label="ncoating" value={nCoat} onChange={setNCoat} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
-          <ValidatedNumberInput label="nsubstrate" value={nSub} onChange={setNSub} step="0.01" /></label>
+        <ValidatedNumberInput label={<>n<sub>coating</sub></>} value={nCoat} onChange={setNCoat} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
         <ValidatedNumberInput label="Thickness (nm)" value={thickness} onChange={setThickness} />
         <ValidatedNumberInput label="Hardness (HK₀.₀₁)" value={hardness} onChange={setHardness} />
         <ValidatedNumberInput label="Stress (GPa, negative=tension)" value={stressGPa} onChange={setStressGPa} step="0.1" />

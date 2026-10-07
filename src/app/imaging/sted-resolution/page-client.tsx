@@ -45,10 +45,7 @@ export default function STEDResolutionPage() {
         <ValidatedNumberInput label="Excitation λ (nm)" value={wavelength} onChange={setWavelength} min={400} max={800} />
         <ValidatedNumberInput label="Numerical Aperture" value={na} onChange={setNa} min={0.5} max={1.7} step="0.01" />
         <ValidatedNumberInput label="Depletion λ (nm)" value={depletionWavelength} onChange={setDepletionWavelength} min={500} max={900} />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="block text-sm text-gray-300 mb-1">I<sub>dep</sub> / I<sub>sat</sub></span>
-          <ValidatedNumberInput label="Idep / Isat" value={saturationFactor} onChange={setSaturationFactor} min={1} max={200} />
-        </label>
+        <ValidatedNumberInput label={<>I<sub>dep</sub> / I<sub>sat</sub></>} value={saturationFactor} onChange={setSaturationFactor} min={1} max={200} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

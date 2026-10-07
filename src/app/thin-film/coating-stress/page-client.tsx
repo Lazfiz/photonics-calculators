@@ -62,16 +62,11 @@ export default function CoatingStressPage() {
         Relates thin-film stress to substrate curvature. Valid for thin films (df ≪ ts).">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">σ<sub>film</sub> (MPa)</span>
-          <ValidatedNumberInput label="σfilm (MPa)" value={sigmaFilm} onChange={setSigmaFilm} step="10" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">d<sub>film</sub> (nm)</span>
-          <ValidatedNumberInput label="dfilm (nm)" value={dFilm} onChange={setDFilm} step="10" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">E<sub>substrate</sub> (GPa)</span>
-          <ValidatedNumberInput label="Esubstrate (GPa)" value={eSub} onChange={setESub} step="1" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">ν<sub>substrate</sub></span>
-          <ValidatedNumberInput label="νsubstrate" value={nuSub} onChange={setNuSub} min={0} max={0.5} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">t<sub>substrate</sub> (mm)</span>
-          <ValidatedNumberInput label="tsubstrate (mm)" value={tSub} onChange={setTSub} min={0.01} step="0.1" /></label>
+        <ValidatedNumberInput label={<>σ<sub>film</sub> (MPa)</>} value={sigmaFilm} onChange={setSigmaFilm} step="10" />
+        <ValidatedNumberInput label={<>d<sub>film</sub> (nm)</>} value={dFilm} onChange={setDFilm} step="10" />
+        <ValidatedNumberInput label={<>E<sub>substrate</sub> (GPa)</>} value={eSub} onChange={setESub} step="1" />
+        <ValidatedNumberInput label={<>ν<sub>substrate</sub></>} value={nuSub} onChange={setNuSub} min={0} max={0.5} step="0.01" />
+        <ValidatedNumberInput label={<>t<sub>substrate</sub> (mm)</>} value={tSub} onChange={setTSub} min={0.01} step="0.1" />
         <ValidatedNumberInput label="Number of layers" value={numLayers} onChange={setNumLayers} min={1} max={100} />
       </div>
 

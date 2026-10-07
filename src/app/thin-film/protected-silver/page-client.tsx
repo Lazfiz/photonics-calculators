@@ -93,14 +93,11 @@ export default function ProtectedSilverPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Protected Silver Mirror" description="Protected silver coating — high reflectance UV-Vis-IR with dielectric overcoat and adhesion layer.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
-          <ValidatedNumberInput label="nsubstrate" value={nSub} onChange={setNSub} step="0.01" /></label>
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
         <ValidatedNumberInput label="Ag Thickness (nm)" value={agThickness} onChange={setAgThickness} />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>protect</sub> (overcoat)</span>
-          <ValidatedNumberInput label="nprotect (overcoat)" value={nProtect} onChange={setNProtect} step="0.01" /></label>
+        <ValidatedNumberInput label={<>n<sub>protect</sub> (overcoat)</>} value={nProtect} onChange={setNProtect} step="0.01" />
         <ValidatedNumberInput label="Overcoat Thickness (nm)" value={protectThick} onChange={setProtectThick} />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>adhesion</sub></span>
-          <ValidatedNumberInput label="nadhesion" value={nAdhesion} onChange={setNAdhesion} step="0.01" /></label>
+        <ValidatedNumberInput label={<>n<sub>adhesion</sub></>} value={nAdhesion} onChange={setNAdhesion} step="0.01" />
         <ValidatedNumberInput label="Adhesion Layer (nm)" value={adhesionThick} onChange={setAdhesionThick} />
       </div>
 

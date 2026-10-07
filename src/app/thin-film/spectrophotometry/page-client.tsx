@@ -86,14 +86,10 @@ export default function SpectrophotometryPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Spectrophotometry" description="Model spectrophotometric R, T, A spectra for a single absorbing thin film using transfer matrix method with complex refractive index.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>film</sub></span>
-          <ValidatedNumberInput label="nfilm" value={nFilm} onChange={setNFilm} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">k<sub>film</sub> (extinction)</span>
-          <ValidatedNumberInput label="kfilm (extinction)" value={kFilm} onChange={setKFilm} min={0} step="0.001" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
-          <ValidatedNumberInput label="nsubstrate" value={nSub} onChange={setNSub} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>incident</sub></span>
-          <ValidatedNumberInput label="nincident" value={nInc} onChange={setNInc} step="0.01" /></label>
+        <ValidatedNumberInput label={<>n<sub>film</sub></>} value={nFilm} onChange={setNFilm} step="0.01" />
+        <ValidatedNumberInput label={<>k<sub>film</sub> (extinction)</>} value={kFilm} onChange={setKFilm} min={0} step="0.001" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} step="0.01" />
         <ValidatedNumberInput label="Thickness (nm)" value={thickness} onChange={setThickness} step="1" />
         <ValidatedNumberInput label="Angle of Incidence (°)" value={angleDeg} onChange={setAngleDeg} min={0} max={90} step="1" />
       </div>

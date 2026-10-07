@@ -93,11 +93,9 @@ export default function EnhancedAluminumPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Enhanced Aluminum Mirror" description="Aluminum mirror with dielectric overcoat to boost reflectance in the visible.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
-          <ValidatedNumberInput label="nsubstrate" value={nSub} onChange={setNSub} step="0.01" /></label>
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
         <ValidatedNumberInput label="Al Thickness (nm)" value={alThick} onChange={setAlThick} />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>overcoat</sub></span>
-          <ValidatedNumberInput label="novercoat" value={nProtect} onChange={setNProtect} step="0.01" /></label>
+        <ValidatedNumberInput label={<>n<sub>overcoat</sub></>} value={nProtect} onChange={setNProtect} step="0.01" />
         <ValidatedNumberInput label="Overcoat Thickness (nm)" value={protectThick} onChange={setProtectThick} />
         <ValidatedNumberInput label="Design λ (nm)" value={designWl} onChange={setDesignWl} />
         <ValidatedNumberInput label="Adhesion Layer (nm)" value={adhesionThick} onChange={setAdhesionThick} />

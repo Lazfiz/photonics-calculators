@@ -71,12 +71,9 @@ export default function NotchFilterPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Notch Filter" description="Rejection notch filter — high reflectance at target wavelength, transmits elsewhere.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>high</sub></span>
-          <ValidatedNumberInput label="nhigh" value={nH} onChange={setNH} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>low</sub></span>
-          <ValidatedNumberInput label="nlow" value={nL} onChange={setNL} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
-          <ValidatedNumberInput label="nsubstrate" value={nSub} onChange={setNSub} step="0.01" /></label>
+        <ValidatedNumberInput label={<>n<sub>high</sub></>} value={nH} onChange={setNH} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>low</sub></>} value={nL} onChange={setNL} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
         <ValidatedNumberInput label="Notch λ (nm)" value={notchWl} onChange={setNotchWl} />
         <ValidatedNumberInput label="Mirror Pairs" value={mirrorPairs} onChange={setMirrorPairs} min={1} max={15} />
         <ValidatedNumberInput label="Cavity n" value={spacerN} onChange={setSpacerN} step="0.01" />

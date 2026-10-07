@@ -85,14 +85,8 @@ export default function PBSPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={2000} step="1" />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">n<sub>o</sub></span>
-          <ValidatedNumberInput label="no" value={nO} onChange={setNO} min={1.3} max={2.5} step="0.001" />
-        </label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">n<sub>e</sub></span>
-          <ValidatedNumberInput label="ne" value={nE} onChange={setNE} min={1.3} max={2.5} step="0.001" />
-        </label>
+        <ValidatedNumberInput label={<>n<sub>o</sub></>} value={nO} onChange={setNO} min={1.3} max={2.5} step="0.001" />
+        <ValidatedNumberInput label={<>n<sub>e</sub></>} value={nE} onChange={setNE} min={1.3} max={2.5} step="0.001" />
         <ValidatedNumberInput label="Cut Angle (°)" value={cutAngleDeg} onChange={setCutAngleDeg} min={30} max={60} step="0.5" />
       </div>
 

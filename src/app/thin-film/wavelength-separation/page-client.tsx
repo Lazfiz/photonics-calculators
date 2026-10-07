@@ -114,14 +114,10 @@ export default function WavelengthSeparationPage() {
         demonstrate dichroic behavior. The combined stack shows how reflectance bands add when cascaded.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>H</sub></span>
-          <ValidatedNumberInput label="nH" value={nH} onChange={setNH} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>L</sub></span>
-          <ValidatedNumberInput label="nL" value={nL} onChange={setNL} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
-          <ValidatedNumberInput label="nsubstrate" value={nSub} onChange={setNSub} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>incident</sub></span>
-          <ValidatedNumberInput label="nincident" value={nInc} onChange={setNInc} step="0.01" /></label>
+        <ValidatedNumberInput label={<>n<sub>H</sub></>} value={nH} onChange={setNH} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>L</sub></>} value={nL} onChange={setNL} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} step="0.01" />
         <ValidatedNumberInput label="Pairs per stack (N)" value={numPairs} onChange={setNumPairs} min={1} max={20} />
         <ValidatedNumberInput label="λ₁ center (nm)" value={designWl} onChange={setDesignWl} step="10" />
       </div>
