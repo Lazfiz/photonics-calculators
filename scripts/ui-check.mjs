@@ -1,7 +1,7 @@
 // Headless-Chrome UI check over the DevTools protocol (Node 24's global WebSocket; no deps).
-// Covers useURLState, ValidatedNumberInput and InputSlider on three calculators, and reports
-// console errors (hydration mismatches, exceptions). Use it when the Chrome extension isn't
-// connected.
+// Covers useURLState, ValidatedNumberInput, InputSlider and CalculatorShell (share button,
+// breadcrumb) on three calculators, and reports console errors (hydration mismatches,
+// exceptions). Use it when the Chrome extension isn't connected.
 //
 //   npm run dev                                   # in another shell
 //   node scripts/ui-check.mjs [baseUrl]           # default http://localhost:3000
@@ -104,6 +104,7 @@ const byLabel = (text) =>
 const byAria = (text) => `document.querySelector('input[aria-label=${JSON.stringify(text)}]')`;
 const field = (sel) =>
   evaluate(`(() => { const el = ${sel}; const p = el.closest("label")?.querySelector("p"); return { value: el.value, invalid: el.getAttribute("aria-invalid"), warning: p ? p.textContent : null }; })()`);
+const shareShown = `[...document.querySelectorAll("button")].some((b) => b.title === "Copy URL with current settings")`;
 const param = (key) => evaluate(`new URLSearchParams(location.search).get(${JSON.stringify(key)})`);
 
 async function key(keyName, code, vk, extra = {}) {
@@ -141,8 +142,10 @@ try {
     await open("/detectors/boxcar-integrator");
     const pw = byLabel("Pulse Width (ns)");
     check("boxcar: default", (await field(pw)).value, "500");
+    check("share: hidden without params", await evaluate(shareShown), false);
     await typeInto(pw, "50");
     check("boxcar: typed 50 stays 50", await field(pw), { value: "50", invalid: "false", warning: null });
+    check("share: shown once a param is set", await evaluate(shareShown), true);
     check("boxcar: URL pulseWidth=50", await param("pulseWidth"), "50");
     await typeInto(pw, "5");
     check("boxcar: 5 held back with warning", await field(pw), { value: "5", invalid: "true", warning: "Min: 10" });
@@ -200,6 +203,17 @@ try {
     await sleep(300);
     check("slider: drag to default removes param", await param("probeWavelength"), null);
     check("slider: exact field follows drag", (await field(pwl)).value, "850");
+
+    // 5. CalculatorShell: a shared link hydrates without a mismatch; the breadcrumb ends at the page.
+    const shared = "/detectors/boxcar-integrator?pulseWidth=42";
+    await open(shared);
+    check("share: shown on a shared link", await evaluate(shareShown), true);
+    check("share: no console errors on a shared link", logs.filter((l) => l.startsWith(`[${shared}]`)).length, 0);
+    check(
+      "breadcrumb: links, then the current page",
+      await evaluate(`(() => { const nav = document.querySelector('nav[aria-label="Breadcrumb"]'); return { links: [...nav.querySelectorAll("a")].map((a) => a.textContent), current: nav.querySelector('[aria-current="page"]')?.textContent === document.querySelector("h1").textContent, stray: nav.querySelectorAll("ol > :not(li)").length }; })()`),
+      { links: ["Home", "Detectors"], current: true, stray: 0 }
+    );
   }
 } catch (e) {
   failures++;

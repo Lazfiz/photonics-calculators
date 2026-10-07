@@ -76,6 +76,16 @@ export function readParam(pathname: string, key: string): string | null {
   return currentParams().get(key);
 }
 
+/**
+ * The query string (without "?") of page `pathname` as a shared link should carry it: the URL plus
+ * unflushed writes. Empty when there are no params, or when the browser shows another page.
+ */
+export function currentQuery(pathname: string): string {
+  if (window.location.pathname !== pathname) return "";
+  if (pendingPath !== pathname) return currentParams().toString();
+  return applyParamWrites(window.location.search, pending);
+}
+
 export function writeParam(
   pathname: string,
   key: string,

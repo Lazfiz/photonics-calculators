@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   applyParamWrites,
+  currentQuery,
   parseParam,
   readParam,
   subscribe,
@@ -107,4 +108,20 @@ test("a failed URL write keeps the value, and the next write retries it", (t) =>
   writeParam("/p", "b", "2", "0");
   t.mock.timers.tick(100);
   assert.deepEqual(urls, ["/p?a=1&b=2"]);
+});
+
+// The share link must include writes from the last 100 ms, and never another page's params.
+test("currentQuery: URL plus pending writes, empty on another page", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  stubWindow("/p?a=1#chart");
+  assert.equal(currentQuery("/p"), "a=1");
+  assert.equal(currentQuery("/q"), "");
+
+  writeParam("/p", "b", "2", "0");
+  assert.equal(currentQuery("/p"), "a=1&b=2", "pending write included before the flush");
+  writeParam("/p", "a", "0", "0");
+  writeParam("/p", "b", "0", "0");
+  assert.equal(currentQuery("/p"), "", "all params reset");
+  t.mock.timers.tick(100);
+  assert.equal(currentQuery("/p"), "");
 });
