@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
+import { totalCalculatorCount } from "@/lib/home-categories";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   title: {
-    default: "Photonics Calculators - 541 Interactive Optics Tools",
+    default: `Photonics Calculators - ${totalCalculatorCount} Interactive Optics Tools`,
     template: "%s | Photonics Calculators",
   },
   description: "Free interactive calculators and simulators for optics, photonics, laser safety, fiber optics, thin films, imaging, spectroscopy, and more.",
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
       default: "Photonics Calculators",
       template: "%s | Photonics Calculators",
     },
-    description: "541 interactive photonics, optics & laser tools — free and open source.",
+    description: `${totalCalculatorCount} interactive photonics, optics & laser tools — free and open source.`,
     type: "website",
     siteName: "Photonics Calculators",
     locale: "en_US",
@@ -44,7 +45,7 @@ export const metadata: Metadata = {
       default: "Photonics Calculators",
       template: "%s | Photonics Calculators",
     },
-    description: "541 interactive photonics, optics & laser tools — free and open source.",
+    description: `${totalCalculatorCount} interactive photonics, optics & laser tools — free and open source.`,
   },
 };
 
@@ -63,7 +64,7 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebApplication",
               name: "Photonics Calculators",
-              description: "541 interactive calculators and simulators for optics, photonics, laser safety, fiber optics, thin films, imaging, and spectroscopy.",
+              description: `${totalCalculatorCount} interactive calculators and simulators for optics, photonics, laser safety, fiber optics, thin films, imaging, and spectroscopy.`,
               applicationCategory: "UtilitiesApplication",
               operatingSystem: "Any",
               offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
