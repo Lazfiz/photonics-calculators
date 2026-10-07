@@ -5,12 +5,12 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/aperture-averaging' },
     title: 'Aperture Averaging',
-  description: 'Interactive Aperture Averaging calculator for photonics and optical engineering.'
+  description: 'Aperture-averaging factor for plane and spherical waves, Rytov variance and the reduced scintillation index versus receiver diameter over √(λL).'
 };
 
 const jsonLd = generateCalculatorJsonLd(
   'Aperture Averaging',
-  'Interactive Aperture Averaging calculator for photonics and optical engineering.',
+  'Aperture-averaging factor for plane and spherical waves, Rytov variance and the reduced scintillation index versus receiver diameter over √(λL).',
   'https://photonics-calculators.vercel.app/free-space-comms/aperture-averaging',
   { category: 'Free Space Comms' }
 );

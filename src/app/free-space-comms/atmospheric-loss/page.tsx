@@ -4,13 +4,13 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/atmospheric-loss' },
-    title: 'Atmospheric Loss',
-  description: 'Interactive Atmospheric Loss calculator for photonics and optical engineering.'
+    title: 'FSO Atmospheric Loss',
+  description: 'Visibility-based (Kim) scattering plus water-vapour absorption: attenuation in dB/km, total path loss and transmittance of a free-space optical link.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
-  'Atmospheric Loss',
-  'Interactive Atmospheric Loss calculator for photonics and optical engineering.',
+  'FSO Atmospheric Loss',
+  'Visibility-based (Kim) scattering plus water-vapour absorption: attenuation in dB/km, total path loss and transmittance of a free-space optical link.',
   'https://photonics-calculators.vercel.app/free-space-comms/atmospheric-loss',
   { category: 'Free Space Comms' }
 );

@@ -4,13 +4,13 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/wdm-coupler' },
-    title: 'Wdm Coupler',
-  description: 'Interactive Wdm Coupler calculator for photonics and optical engineering.'
+    title: 'WDM Channel Plan',
+  description: 'WDM channel wavelengths, frequency spacing, ITU-T grid type (CWDM or DWDM), total bandwidth, insertion loss and isolation from channel count and spacing.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
-  'Wdm Coupler',
-  'Interactive Wdm Coupler calculator for photonics and optical engineering.',
+  'WDM Channel Plan',
+  'WDM channel wavelengths, frequency spacing, ITU-T grid type (CWDM or DWDM), total bandwidth, insertion loss and isolation from channel count and spacing.',
   'https://photonics-calculators.vercel.app/fiber-optics/wdm-coupler',
   { category: 'Fiber Optics' }
 );

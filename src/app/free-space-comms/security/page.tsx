@@ -4,13 +4,13 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/security' },
-    title: 'Security',
-  description: 'Interactive Security calculator for photonics and optical engineering.'
+    title: 'FSO Physical-Layer Security',
+  description: 'Power at the receiver and an off-axis eavesdropper, Bob/Eve ratio, secrecy capacity and a BB84 key-rate estimate for a free-space optical link.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
-  'Security',
-  'Interactive Security calculator for photonics and optical engineering.',
+  'FSO Physical-Layer Security',
+  'Power at the receiver and an off-axis eavesdropper, Bob/Eve ratio, secrecy capacity and a BB84 key-rate estimate for a free-space optical link.',
   'https://photonics-calculators.vercel.app/free-space-comms/security',
   { category: 'Free Space Comms' }
 );

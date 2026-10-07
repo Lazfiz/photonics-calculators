@@ -4,13 +4,13 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/optical-antenna' },
-    title: 'Optical Antenna',
-  description: 'Interactive Optical Antenna calculator for photonics and optical engineering.'
+    title: 'Optical Antenna Gain',
+  description: 'Telescope gain, directivity, divergence, beam waist and Rayleigh range with central obscuration, aperture efficiency and beam quality M².'
 };
 
 const jsonLd = generateCalculatorJsonLd(
-  'Optical Antenna',
-  'Interactive Optical Antenna calculator for photonics and optical engineering.',
+  'Optical Antenna Gain',
+  'Telescope gain, directivity, divergence, beam waist and Rayleigh range with central obscuration, aperture efficiency and beam quality M².',
   'https://photonics-calculators.vercel.app/free-space-comms/optical-antenna',
   { category: 'Free Space Comms' }
 );

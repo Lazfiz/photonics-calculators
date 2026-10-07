@@ -4,13 +4,13 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/polarization-controller' },
-    title: 'Polarization Controller',
-  description: 'Interactive Polarization Controller calculator for photonics and optical engineering.'
+    title: 'Fiber Polarization Controller',
+  description: 'Retardation per paddle, bend-induced birefringence, quarter- and half-wave coil lengths and output polarization state of a fiber polarization controller.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
-  'Polarization Controller',
-  'Interactive Polarization Controller calculator for photonics and optical engineering.',
+  'Fiber Polarization Controller',
+  'Retardation per paddle, bend-induced birefringence, quarter- and half-wave coil lengths and output polarization state of a fiber polarization controller.',
   'https://photonics-calculators.vercel.app/fiber-optics/polarization-controller',
   { category: 'Fiber Optics' }
 );

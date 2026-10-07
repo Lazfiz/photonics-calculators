@@ -4,13 +4,13 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/eye-safety-fso' },
-    title: 'Eye Safety Fso',
-  description: 'Interactive Eye Safety Fso calculator for photonics and optical engineering.'
+    title: 'FSO Eye Safety',
+  description: 'Simplified educational estimate of MPE, NOHD, laser class and safety factor for an FSO transmitter. Not for safety decisions; use IEC 60825-1.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
-  'Eye Safety Fso',
-  'Interactive Eye Safety Fso calculator for photonics and optical engineering.',
+  'FSO Eye Safety',
+  'Simplified educational estimate of MPE, NOHD, laser class and safety factor for an FSO transmitter. Not for safety decisions; use IEC 60825-1.',
   'https://photonics-calculators.vercel.app/free-space-comms/eye-safety-fso',
   { category: 'Free Space Comms' }
 );

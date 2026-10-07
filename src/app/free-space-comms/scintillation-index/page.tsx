@@ -4,13 +4,13 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/scintillation-index' },
-    title: 'Scintillation Index',
-  description: 'Interactive Scintillation Index calculator for photonics and optical engineering.'
+    title: 'Scintillation and Coherence Length',
+  description: 'Rytov variance, scintillation index, Fried parameter, coherence length and coherence time for plane or spherical waves versus Cn² and range.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
-  'Scintillation Index',
-  'Interactive Scintillation Index calculator for photonics and optical engineering.',
+  'Scintillation and Coherence Length',
+  'Rytov variance, scintillation index, Fried parameter, coherence length and coherence time for plane or spherical waves versus Cn² and range.',
   'https://photonics-calculators.vercel.app/free-space-comms/scintillation-index',
   { category: 'Free Space Comms' }
 );

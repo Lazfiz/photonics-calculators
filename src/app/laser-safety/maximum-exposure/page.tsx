@@ -5,12 +5,12 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/maximum-exposure' },
     title: 'Maximum Exposure Duration',
-  description: 'Interactive Maximum Exposure Duration calculator for photonics and optical engineering.'
+  description: 'Simplified educational estimate of the longest exposure before the MPE is reached. Not for safety decisions; use ANSI Z136.1.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
   'Maximum Exposure Duration',
-  'Interactive Maximum Exposure Duration calculator for photonics and optical engineering.',
+  'Simplified educational estimate of the longest exposure before the MPE is reached. Not for safety decisions; use ANSI Z136.1.',
   'https://photonics-calculators.vercel.app/laser-safety/maximum-exposure',
   { category: 'Laser Safety' }
 );

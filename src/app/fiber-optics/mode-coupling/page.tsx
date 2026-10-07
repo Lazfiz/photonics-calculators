@@ -4,13 +4,13 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
   alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/mode-coupling' },
-  title: 'Mode Coupling',
-  description: 'Interactive Mode Coupling calculator for photonics and optical engineering.'
+  title: 'Coupled-Mode Power Transfer',
+  description: 'Coupled-mode power transfer between two waveguides: coupled and through power, coupling efficiency and full-transfer length from κ and Δβ.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
-  'Mode Coupling',
-  'Interactive Mode Coupling calculator for photonics and optical engineering.',
+  'Coupled-Mode Power Transfer',
+  'Coupled-mode power transfer between two waveguides: coupled and through power, coupling efficiency and full-transfer length from κ and Δβ.',
   'https://photonics-calculators.vercel.app/fiber-optics/mode-coupling',
   { category: 'Fiber Optics' }
 );

@@ -4,13 +4,13 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/ber' },
-    title: 'Ber',
-  description: 'Interactive Ber calculator for photonics and optical engineering.'
+    title: 'Photon-Counting BER (OOK and DPSK)',
+  description: 'Exact Poisson bit error rate of photon-counting OOK and DPSK receivers versus detected photons per bit and dark plus background counts.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
-  'Ber',
-  'Interactive Ber calculator for photonics and optical engineering.',
+  'Photon-Counting BER (OOK and DPSK)',
+  'Exact Poisson bit error rate of photon-counting OOK and DPSK receivers versus detected photons per bit and dark plus background counts.',
   'https://photonics-calculators.vercel.app/free-space-comms/ber',
   { category: 'Free Space Comms' }
 );

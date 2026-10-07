@@ -4,13 +4,13 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/wave-optics/thin-disk-laser' },
-    title: 'Thin Disk Laser',
-  description: 'Interactive Thin Disk Laser calculator for photonics and optical engineering.'
+    title: 'Yb Thin-Disk Laser',
+  description: 'Multipass pump absorption, threshold, slope efficiency, temperature rise and thermal lens of a Yb thin-disk laser from disk thickness and doping.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
-  'Thin Disk Laser',
-  'Interactive Thin Disk Laser calculator for photonics and optical engineering.',
+  'Yb Thin-Disk Laser',
+  'Multipass pump absorption, threshold, slope efficiency, temperature rise and thermal lens of a Yb thin-disk laser from disk thickness and doping.',
   'https://photonics-calculators.vercel.app/wave-optics/thin-disk-laser',
   { category: 'Wave Optics' }
 );

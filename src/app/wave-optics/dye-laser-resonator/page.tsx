@@ -5,12 +5,12 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/wave-optics/dye-laser-resonator' },
     title: 'Dye Laser Resonator',
-  description: 'Interactive Dye Laser Resonator calculator for photonics and optical engineering.'
+  description: 'Cavity stability, beam waist, small-signal and threshold gain, triplet loss versus flow speed and output power of a Rhodamine or Coumarin dye laser.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
   'Dye Laser Resonator',
-  'Interactive Dye Laser Resonator calculator for photonics and optical engineering.',
+  'Cavity stability, beam waist, small-signal and threshold gain, triplet loss versus flow speed and output power of a Rhodamine or Coumarin dye laser.',
   'https://photonics-calculators.vercel.app/wave-optics/dye-laser-resonator',
   { category: 'Wave Optics' }
 );

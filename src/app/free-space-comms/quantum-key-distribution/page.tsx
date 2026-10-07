@@ -4,13 +4,13 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/quantum-key-distribution' },
-    title: 'Quantum Key Distribution',
-  description: 'Interactive Quantum Key Distribution calculator for photonics and optical engineering.'
+    title: 'QKD Secure Key Rate',
+  description: 'Decoy-state BB84 secure key rate, QBER, single-photon yield and maximum range versus channel loss, detector efficiency, dark counts and pulse rate.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
-  'Quantum Key Distribution',
-  'Interactive Quantum Key Distribution calculator for photonics and optical engineering.',
+  'QKD Secure Key Rate',
+  'Decoy-state BB84 secure key rate, QBER, single-photon yield and maximum range versus channel loss, detector efficiency, dark counts and pulse rate.',
   'https://photonics-calculators.vercel.app/free-space-comms/quantum-key-distribution',
   { category: 'Free Space Comms' }
 );

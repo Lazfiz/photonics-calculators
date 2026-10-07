@@ -1,0 +1,200 @@
+{
+  "detectors/linear-mode-avalanche": {
+    "title": "Linear-Mode Avalanche Photodiode",
+    "description": "McIntyre excess noise factor F(M), signal current and shot noise of a linear-mode APD versus gain, ionization ratio k and dark current."
+  },
+  "fiber-optics/birefringence-fiber": {
+    "description": "Geometric (elliptical-core) and stress-induced birefringence and beat length of a single-mode fiber from core and cladding indices and core shape."
+  },
+  "fiber-optics/fiber-laser": {
+    "title": "Fiber Laser Output Power",
+    "description": "Fiber laser output power, optical, Stokes and quantum efficiency, and output-coupler and cavity losses from pump power, wavelengths and slope efficiency."
+  },
+  "fiber-optics/mode-coupling": {
+    "title": "Coupled-Mode Power Transfer",
+    "description": "Coupled-mode power transfer between two waveguides: coupled and through power, coupling efficiency and full-transfer length from κ and Δβ."
+  },
+  "fiber-optics/multi-core": {
+    "title": "Multi-Core Fiber Crosstalk",
+    "description": "Simplified coupled-mode estimate of inter-core coupling, crosstalk and packing density in a homogeneous multi-core fiber versus core pitch and length."
+  },
+  "fiber-optics/photonic-crystal": {
+    "title": "Photonic Crystal Fiber",
+    "description": "Approximate NA, V-number, mode area, dispersion and confinement loss of an index-guiding photonic crystal fiber from hole pitch Λ and diameter d."
+  },
+  "fiber-optics/polarization-controller": {
+    "title": "Fiber Polarization Controller",
+    "description": "Retardation per paddle, bend-induced birefringence, quarter- and half-wave coil lengths and output polarization state of a fiber polarization controller."
+  },
+  "fiber-optics/polarization-maintaining": {
+    "title": "Polarization-Maintaining Fiber",
+    "description": "Birefringence, beat length, h-parameter and output extinction ratio of PANDA, bow-tie and elliptical-core PM fibers versus length and input PER."
+  },
+  "fiber-optics/pump-combiner": {
+    "title": "Fiber Pump Combiner",
+    "description": "Combined pump power, loss, pump brightness and the NA² brightness-conservation check for an N×1 fiber pump combiner, plus signal insertion loss."
+  },
+  "fiber-optics/rare-earth-doped": {
+    "title": "Rare-Earth-Doped Fiber Amplifier",
+    "description": "Ion density, pump absorption, small-signal gain, saturation power and noise figure of an Er, Yb, Tm or Nd-doped fiber from doping and pump power."
+  },
+  "fiber-optics/rare-earth-fiber": {
+    "title": "Rare-Earth Fiber Dopants",
+    "description": "Pump bands, cross-sections, lifetime, absorption, small-signal gain and optimal length of Er, Yb, Tm and Ho-doped fibers from concentration and core size."
+  },
+  "fiber-optics/v-number": {
+    "title": "Fiber V-Number",
+    "description": "Normalized frequency V = 2πa·NA/λ of a step-index fiber, NA from core and cladding indices, the single-mode check (V < 2.405) and the mode count."
+  },
+  "fiber-optics/wdm-coupler": {
+    "title": "WDM Channel Plan",
+    "description": "WDM channel wavelengths, frequency spacing, ITU-T grid type (CWDM or DWDM), total bandwidth, insertion loss and isolation from channel count and spacing."
+  },
+  "free-space-comms/acquisition-tracking": {
+    "title": "FSO Acquisition and Tracking",
+    "description": "Acquisition probability, scan lines and scan time over the uncertainty cone, beacon SNR and margin, and tracking jitter for a free-space optical terminal."
+  },
+  "free-space-comms/adaptive-optics-gain": {
+    "title": "Adaptive Optics Strehl Gain",
+    "description": "Fitting and Greenwood temporal error, corrected Strehl ratio, AO gain, and the actuators and bandwidth needed for a target Strehl in turbulence."
+  },
+  "free-space-comms/adaptive-optics": {
+    "title": "Adaptive Optics for FSO",
+    "description": "Fried parameter r₀, Greenwood frequency, isoplanatic angle and Strehl ratio with and without adaptive optics for a free-space optical link."
+  },
+  "free-space-comms/aperture-averaging": {
+    "description": "Aperture-averaging factor for plane and spherical waves, Rytov variance and the reduced scintillation index versus receiver diameter over √(λL)."
+  },
+  "free-space-comms/atmospheric-loss": {
+    "title": "FSO Atmospheric Loss",
+    "description": "Visibility-based (Kim) scattering plus water-vapour absorption: attenuation in dB/km, total path loss and transmittance of a free-space optical link."
+  },
+  "free-space-comms/background-noise": {
+    "title": "FSO Background Noise",
+    "description": "Background power, photon rate and electrons per bit from day sky, night sky, direct sun or urban glow for a given receiver FOV, aperture and filter."
+  },
+  "free-space-comms/beam-wander": {
+    "description": "RMS turbulence-induced beam wander and the resulting pointing loss of a Gaussian beam versus Cn², path length, beam radius and wavelength."
+  },
+  "free-space-comms/ber": {
+    "title": "Photon-Counting BER (OOK and DPSK)",
+    "description": "Exact Poisson bit error rate of photon-counting OOK and DPSK receivers versus detected photons per bit and dark plus background counts."
+  },
+  "free-space-comms/bpsk-qpsk": {
+    "title": "BPSK and QPSK Error Rates",
+    "description": "Bit and symbol error rates of BPSK, Gray-coded QPSK and OQPSK versus Eb/N0, with spectral efficiency, bandwidth, required receive power and margin."
+  },
+  "free-space-comms/channel-capacity": {
+    "title": "FSO Channel Capacity",
+    "description": "Shannon capacity, achievable rate of OOK, PSK and 16-QAM after FEC overhead, gap to Shannon and required SNR for a given bandwidth and SNR."
+  },
+  "free-space-comms/diversity-reception": {
+    "description": "Diversity gain, combined scintillation and outage probability for selection, equal-gain and maximal-ratio combining with N receivers in turbulence."
+  },
+  "free-space-comms/eye-safety-fso": {
+    "title": "FSO Eye Safety",
+    "description": "Simplified educational estimate of MPE, NOHD, laser class and safety factor for an FSO transmitter. Not for safety decisions; use IEC 60825-1."
+  },
+  "free-space-comms/fade-probability": {
+    "title": "FSO Fade Probability",
+    "description": "Gamma-gamma fade probability, mean fade time and diversity gain versus fade threshold, with aperture averaging, for an FSO link in turbulence."
+  },
+  "free-space-comms/fog-attenuation": {
+    "description": "Optical attenuation in fog from visibility with the Kim or Kruse model: exponent q, attenuation coefficient, total path loss and transmitted fraction."
+  },
+  "free-space-comms/geometric-loss": {
+    "title": "FSO Geometric Loss",
+    "description": "Beam diameter at the receiver, geometric spreading loss and coupling efficiency from transmitter divergence, apertures, range and wavelength."
+  },
+  "free-space-comms/lasercom-link": {
+    "title": "Lasercom Link Budget",
+    "description": "Lasercom link budget with Gaussian-beam transmit and receive gains, free-space path loss, spot size at the receiver, and pointing and atmospheric losses."
+  },
+  "free-space-comms/optical-antenna": {
+    "title": "Optical Antenna Gain",
+    "description": "Telescope gain, directivity, divergence, beam waist and Rayleigh range with central obscuration, aperture efficiency and beam quality M²."
+  },
+  "free-space-comms/point-ahead": {
+    "title": "Point-Ahead Angle",
+    "description": "Point-ahead angle from relative velocity, transmit beamwidth, time of flight and required pointing accuracy for LEO, GEO and deep-space laser links."
+  },
+  "free-space-comms/quantum-key-distribution": {
+    "title": "QKD Secure Key Rate",
+    "description": "Decoy-state BB84 secure key rate, QBER, single-photon yield and maximum range versus channel loss, detector efficiency, dark counts and pulse rate."
+  },
+  "free-space-comms/rain-attenuation": {
+    "description": "Specific and total attenuation of a free-space optical link in rain from the rain rate with the power law α = k·Rᵃ, for a given range."
+  },
+  "free-space-comms/scintillation-index": {
+    "title": "Scintillation and Coherence Length",
+    "description": "Rytov variance, scintillation index, Fried parameter, coherence length and coherence time for plane or spherical waves versus Cn² and range."
+  },
+  "free-space-comms/security": {
+    "title": "FSO Physical-Layer Security",
+    "description": "Power at the receiver and an off-axis eavesdropper, Bob/Eve ratio, secrecy capacity and a BB84 key-rate estimate for a free-space optical link."
+  },
+  "free-space-comms/snow-attenuation": {
+    "description": "Specific and total attenuation of a free-space optical link in dry or wet snow from the snowfall rate (water equivalent), with equivalent visibility."
+  },
+  "free-space-comms/wavelength-selection": {
+    "title": "FSO Wavelength Selection",
+    "description": "Compare 850, 1064, 1310 and 1550 nm for an FSO link by eye safety, atmospheric loss, range and data rate, and get a recommended wavelength."
+  },
+  "laser-safety/beam-diameter-conversion": {
+    "description": "Convert Gaussian beam diameters between the 1/e², 1/e and FWHM definitions and the waist radius w₀, with relative intensity levels."
+  },
+  "laser-safety/blue-light-hazard": {
+    "description": "Simplified educational estimate of B(λ)-weighted blue-light irradiance and risk group. Not for safety decisions; use IEC 62471."
+  },
+  "laser-safety/infrared-corneal": {
+    "description": "Simplified educational estimate of the infrared corneal MPE and maximum safe power. Not for safety decisions; use ANSI Z136.1 or IEC 60825-1."
+  },
+  "laser-safety/maximum-exposure": {
+    "description": "Simplified educational estimate of the longest exposure before the MPE is reached. Not for safety decisions; use ANSI Z136.1."
+  },
+  "laser-safety/power-density": {
+    "description": "Peak and average irradiance of a Gaussian beam from power and 1/e² diameter, with the beam area and the radial intensity profile."
+  },
+  "laser-safety/scanned-mpe": {
+    "description": "Simplified educational estimate of dwell time, pulses per point and scanned-beam MPE versus scan frequency. Not for safety decisions; use ANSI Z136.1."
+  },
+  "laser-safety/thermal-vs-photochemical": {
+    "description": "Educational comparison of thermal and photochemical retinal MPE versus wavelength and exposure time, showing which mechanism sets the limit."
+  },
+  "laser-safety/uv-exposure": {
+    "description": "Simplified educational estimate of actinic UV exposure limits with S(λ) weighting. Not for safety decisions; use IEC 62471."
+  },
+  "wave-optics/diode-laser-resonator": {
+    "description": "Threshold gain and current, differential efficiency and far-field divergence of a Fabry–Pérot diode laser from cavity length and facet reflectivity."
+  },
+  "wave-optics/dye-laser-resonator": {
+    "description": "Cavity stability, beam waist, small-signal and threshold gain, triplet loss versus flow speed and output power of a Rhodamine or Coumarin dye laser."
+  },
+  "wave-optics/fiber-laser-resonator": {
+    "description": "V-number, mode field diameter, threshold gain and slope efficiency of a fiber laser cavity from fiber length, core, NA and mirror reflectivities."
+  },
+  "wave-optics/free-electron-laser": {
+    "title": "Free-Electron Laser",
+    "description": "FEL resonance wavelength, Pierce parameter ρ, 1D gain length and saturation power from electron energy, undulator period, K and peak current."
+  },
+  "wave-optics/gas-laser-resonator": {
+    "description": "Stability g₁g₂, beam waist, Fresnel number, optimal output coupling and output power of a HeNe or CO₂ laser from tube size and mirror radii."
+  },
+  "wave-optics/optical-parametric-amplifier": {
+    "description": "Parametric power gain of an OPA from pump intensity, d_eff, refractive indices and crystal length, versus pump power, length and signal wavelength."
+  },
+  "wave-optics/optical-parametric-oscillator": {
+    "description": "Parametric gain, walk-off-limited interaction length and singly-resonant OPO threshold from pump wavelength, d_eff, beam radius and cavity loss."
+  },
+  "wave-optics/slab-laser": {
+    "title": "Zigzag Slab Laser",
+    "description": "Bounce angle, temperature rise, optical path difference per bounce and slope efficiency of a zigzag slab laser from slab geometry and thermal load."
+  },
+  "wave-optics/solid-state-laser-resonator": {
+    "description": "Two-mirror resonator stability g₁g₂, beam waist and radius along the cavity, and slope efficiency and output power of a solid-state laser."
+  },
+  "wave-optics/thin-disk-laser": {
+    "title": "Yb Thin-Disk Laser",
+    "description": "Multipass pump absorption, threshold, slope efficiency, temperature rise and thermal lens of a Yb thin-disk laser from disk thickness and doping."
+  }
+}

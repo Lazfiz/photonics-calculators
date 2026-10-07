@@ -4,13 +4,13 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/background-noise' },
-    title: 'Background Noise',
-  description: 'Interactive Background Noise calculator for photonics and optical engineering.'
+    title: 'FSO Background Noise',
+  description: 'Background power, photon rate and electrons per bit from day sky, night sky, direct sun or urban glow for a given receiver FOV, aperture and filter.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
-  'Background Noise',
-  'Interactive Background Noise calculator for photonics and optical engineering.',
+  'FSO Background Noise',
+  'Background power, photon rate and electrons per bit from day sky, night sky, direct sun or urban glow for a given receiver FOV, aperture and filter.',
   'https://photonics-calculators.vercel.app/free-space-comms/background-noise',
   { category: 'Free Space Comms' }
 );

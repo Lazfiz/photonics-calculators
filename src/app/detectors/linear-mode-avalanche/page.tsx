@@ -4,13 +4,13 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/linear-mode-avalanche' },
-    title: 'Linear Mode Avalanche',
-    description: 'Interactive Linear Mode Avalanche calculator for photonics and optical engineering.'
+    title: 'Linear-Mode Avalanche Photodiode',
+    description: 'McIntyre excess noise factor F(M), signal current and shot noise of a linear-mode APD versus gain, ionization ratio k and dark current.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
-  'Linear Mode Avalanche',
-  'Interactive Linear Mode Avalanche calculator for photonics and optical engineering.',
+  'Linear-Mode Avalanche Photodiode',
+  'McIntyre excess noise factor F(M), signal current and shot noise of a linear-mode APD versus gain, ionization ratio k and dark current.',
   'https://photonics-calculators.vercel.app/detectors/linear-mode-avalanche',
   { category: 'Detectors' }
 );

@@ -4,13 +4,13 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/adaptive-optics' },
-    title: 'Adaptive Optics',
-  description: 'Interactive Adaptive Optics calculator for photonics and optical engineering.'
+    title: 'Adaptive Optics for FSO',
+  description: 'Fried parameter r₀, Greenwood frequency, isoplanatic angle and Strehl ratio with and without adaptive optics for a free-space optical link.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
-  'Adaptive Optics',
-  'Interactive Adaptive Optics calculator for photonics and optical engineering.',
+  'Adaptive Optics for FSO',
+  'Fried parameter r₀, Greenwood frequency, isoplanatic angle and Strehl ratio with and without adaptive optics for a free-space optical link.',
   'https://photonics-calculators.vercel.app/free-space-comms/adaptive-optics',
   { category: 'Free Space Comms' }
 );
