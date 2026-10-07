@@ -9,9 +9,9 @@ paths:
 
 - **Units:** SI internally. Convert UI units (nm, mm, µm, dBm, °C) at the input/output boundary only,
   and name variables with their unit when they're not SI (`lambda_nm`, `L_mm`).
-- **Constants:** import from `src/physics/constants.ts` (CODATA 2018 exact values; create the file on
-  first need). Never write `3e8`, `1.6e-19`, `6.626e-34`, `1.38e-23` inline.
-- **Shared math:** one `erf`/`erfc`/`Q`, complex helpers, etc. in `src/physics/math.ts` (or `src/lib/complex.ts`).
+- **Constants:** import from `src/physics/constants.ts` (exact SI values; measured ones from CODATA 2022).
+  Never write `3e8`, `1.6e-19`, `6.626e-34`, `1.38e-23` inline.
+- **Shared math:** one `erf`/`erfc`/`Q`, complex helpers, etc. in `src/physics/math.ts` and `src/physics/complex.ts`.
   Don't add another local copy.
 - **Domain guards:** every input reaches the physics clamped/validated. Guard ÷0, `sqrt`/`log` of
   negatives, `asin`/`acos` outside [-1,1], and overflow in `exp`. Return `NaN` plus a message rather than a fake number.

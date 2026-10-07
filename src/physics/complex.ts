@@ -1,4 +1,4 @@
-// Simple complex number utilities for photonics calculations
+// Complex arithmetic helpers ({ re, im } objects) for the physics modules
 export interface Complex {
   re: number;
   im: number;
@@ -31,7 +31,31 @@ export function exp(c: Complex): Complex {
 }
 
 export function abs(c: Complex): number {
-  return Math.sqrt(c.re * c.re + c.im * c.im);
+  return Math.hypot(c.re, c.im);
+}
+
+/** |c|². */
+export function abs2(c: Complex): number {
+  return c.re * c.re + c.im * c.im;
+}
+
+export function scale(c: Complex, s: number): Complex {
+  return { re: c.re * s, im: c.im * s };
+}
+
+/**
+ * Principal square root (Re ≥ 0), computed without cancellation. On the branch cut (negative real
+ * axis, including im = −0) it returns +i√|re|: the decaying root for e^(−iωt) waves.
+ */
+export function sqrt(c: Complex): Complex {
+  const r = Math.hypot(c.re, c.im);
+  if (r === 0) return { re: 0, im: 0 };
+  if (c.re >= 0) {
+    const t = Math.sqrt((r + c.re) / 2);
+    return { re: t, im: c.im / (2 * t) };
+  }
+  const t = Math.sqrt((r - c.re) / 2);
+  return { re: Math.abs(c.im) / (2 * t), im: c.im < 0 ? -t : t };
 }
 
 export function conj(c: Complex): Complex {
