@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 export default function SpectrophotometryPage() {
   const [nFilm, setNFilm] = useURLState("nFilm", 1.46);
   const [kFilm, setKFilm] = useURLState("kFilm", 0.001);
@@ -17,56 +18,17 @@ export default function SpectrophotometryPage() {
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 400 }, (_, i) => 300 + i * 1000 / 400);
     const theta = angleDeg * Math.PI / 180;
-    const cosTheta0 = Math.cos(theta);
 
-    // Simplified thin-film Fresnel using real-valued approximation
-    // Ignores extinction (kFilm≈0) for the phase calculation but includes absorption loss
-    const sinTheta2 = nInc * Math.sin(theta) / nFilm;
-    const cosTheta2 = Math.sqrt(Math.max(0, 1 - sinTheta2 * sinTheta2));
-    const sinTheta3 = nInc * Math.sin(theta) / nSub;
-    const cosTheta3 = Math.sqrt(Math.max(0, 1 - sinTheta3 * sinTheta3));
-
-    // Interface Fresnel coefficients (real, s-pol)
-    const rs01 = (nInc * cosTheta0 - nFilm * cosTheta2) / (nInc * cosTheta0 + nFilm * cosTheta2);
-    const rs12 = (nFilm * cosTheta2 - nSub * cosTheta3) / (nFilm * cosTheta2 + nSub * cosTheta3);
-    // p-pol
-    const rp01 = (nFilm * cosTheta0 - nInc * cosTheta2) / (nFilm * cosTheta0 + nInc * cosTheta2);
-    const rp12 = (nSub * cosTheta2 - nFilm * cosTheta3) / (nSub * cosTheta2 + nFilm * cosTheta3);
-
-    const RsVals = wls.map(wl => {
-      const d = thickness * 1e-9;
-      const lambda = wl * 1e-9;
-      const delta = (2 * Math.PI * nFilm * d * cosTheta2) / lambda;
-      // |r_total|² using cos/sin for real part of e^(2iδ)
-      const cos2d = Math.cos(2 * delta);
-      const sin2d = Math.sin(2 * delta);
-      const rs = (rs01 + rs12 * cos2d) / (1 + rs01 * rs12 * cos2d);
-      const rsIm = (rs12 * sin2d) / (1 + rs01 * rs12 * cos2d);
-      return rs * rs + rsIm * rsIm;
-    });
-
-    const RpVals = wls.map(wl => {
-      const d = thickness * 1e-9;
-      const lambda = wl * 1e-9;
-      const delta = (2 * Math.PI * nFilm * d * cosTheta2) / lambda;
-      const cos2d = Math.cos(2 * delta);
-      const sin2d = Math.sin(2 * delta);
-      const rp = (rp01 + rp12 * cos2d) / (1 + rp01 * rp12 * cos2d);
-      const rpIm = (rp12 * sin2d) / (1 + rp01 * rp12 * cos2d);
-      return rp * rp + rpIm * rpIm;
-    });
-
+    // Incident | film (n + ik) | substrate, exact for s and p at the angle of incidence;
+    // T and A are for unpolarized light (the mean of s and p).
+    const stack = { incident: nInc, layers: [{ n: nFilm, k: kFilm, thickness: thickness * 1e-9 }], substrate: { n: nSub } };
+    const s = wls.map((wl) => stackResponse(stack, wl * 1e-9, theta, "s"));
+    const p = wls.map((wl) => stackResponse(stack, wl * 1e-9, theta, "p"));
+    const RsVals = s.map((r) => r.R);
+    const RpVals = p.map((r) => r.R);
     const Ravg = wls.map((_, i) => (RsVals[i] + RpVals[i]) / 2);
-
-    // Transmission (simplified: T ≈ 1 - R - A, where A from k)
-    const absorptionCoeff = 4 * Math.PI * kFilm / 550 * 1e7; // cm⁻¹ at 550nm reference
-    const T = wls.map((_, i) => {
-      const d_cm = thickness * 1e-7;
-      const T_absorption = Math.exp(-absorptionCoeff * d_cm);
-      return Math.min(Math.max((1 - Ravg[i]) * T_absorption, 0), 1);
-    });
-
-    const A = wls.map((_, i) => Math.max(0, 1 - Ravg[i] - T[i]));
+    const T = wls.map((_, i) => (s[i].T + p[i].T) / 2);
+    const A = wls.map((_, i) => (s[i].A + p[i].A) / 2);
 
     return [
       { x: wls, y: RsVals, type: "scatter" as const, mode: "lines" as const, name: "Rs", line: { color: "#f87171", dash: "dash" } },

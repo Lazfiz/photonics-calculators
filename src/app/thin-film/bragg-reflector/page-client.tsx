@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function BraggReflectorPage() {
   const [nInc, setNInc] = useURLState("nInc", 1.0);
   const [nH, setNH] = useURLState("nH", 2.35);
@@ -16,59 +18,10 @@ export default function BraggReflectorPage() {
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => designWavelength * 0.7 + i * designWavelength * 0.6 / 300);
-    const dH = designWavelength / (4 * nH);
-    const dL = designWavelength / (4 * nL);
-
-    const R = wls.map(wl => {
-      // Transfer matrix method (normal incidence, Macleod Ch. 2)
-      let m00r = 1, m00i = 0; // M[0][0]
-      let m01r = 0, m01i = 0; // M[0][1]
-      let m10r = 0, m10i = 0; // M[1][0]
-      let m11r = 1, m11i = 0; // M[1][1]
-
-      const applyLayer = (n: number, d: number) => {
-        const delta = (2 * Math.PI * n * d) / wl;
-        const cosD = Math.cos(delta);
-        const sinD = Math.sin(delta);
-        const eta = n; // admittance at normal incidence
-
-        // Characteristic matrix: [[cos δ, -i sin δ / η], [-i η sin δ, cos δ]]
-        // Using complex: -i*sin = (0, -sin)
-        const a00r = cosD, a00i = 0;
-        const a01r = 0, a01i = -sinD / eta;
-        const a10r = 0, a10i = -eta * sinD;
-        const a11r = cosD, a11i = 0;
-
-        // M = M · A (complex matrix multiply)
-        const nr = m00r * a00r - m00i * a00i + m01r * a10r - m01i * a10i;
-        const ni = m00r * a00i + m00i * a00r + m01r * a10i + m01i * a10r;
-        const or_ = m00r * a01r - m00i * a01i + m01r * a11r - m01i * a11i;
-        const oi = m00r * a01i + m00i * a01r + m01r * a11i + m01i * a11r;
-        const pr = m10r * a00r - m10i * a00i + m11r * a10r - m11i * a10i;
-        const pi = m10r * a00i + m10i * a00r + m11r * a10i + m11i * a10r;
-        const qr = m10r * a01r - m10i * a01i + m11r * a11r - m11i * a11i;
-        const qi = m10r * a01i + m10i * a01r + m11r * a11i + m11i * a11r;
-
-        m00r = nr; m00i = ni; m01r = or_; m01i = oi;
-        m10r = pr; m10i = pi; m11r = qr; m11i = qi;
-      };
-
-      // Stack: air | (H L)^N | substrate
-      for (let i = 0; i < pairs; i++) {
-        applyLayer(nH, dH);
-        applyLayer(nL, dL);
-      }
-
-      // Reflection coefficient: r = (m00*nS + m01*nS*n0 - m10 - m11*n0) / (m00*nS + m01*nS*n0 + m10 + m11*n0)
-      // Using real n0, nS and complex M
-      const numR = m00r * nSub + m10r + (m01r * nSub * nInc - m11r * nInc);
-      const numI = m00i * nSub + m10i + (m01i * nSub * nInc - m11i * nInc);
-      const denR = m00r * nSub - m10r + (m01r * nSub * nInc + m11r * nInc);
-      const denI = m00i * nSub - m10i + (m01i * nSub * nInc + m11i * nInc);
-
-      const rMag2 = (numR * numR + numI * numI) / (denR * denR + denI * denI);
-      return rMag2;
-    });
+    // Stack: incident | (H L)^N | substrate
+    const indices = Array.from({ length: 2 * pairs }, (_, j) => (j % 2 === 0 ? nH : nL));
+    const layers = quarterWaveLayers(indices, designWavelength * 1e-9);
+    const R = reflectanceSpectrum({ incident: nInc, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
     return [{ x: wls, y: R, type: "scatter" as const, mode: "lines" as const, name: "Reflectance", line: { color: "#60a5fa" } }];
   }, [nInc, nH, nL, nSub, designWavelength, pairs]);
 

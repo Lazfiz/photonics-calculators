@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function GradientIndexCoatingPage() {
   const [n1, setN1] = useURLState("n1", 1.0);
   const [nSurface, setNSurface] = useURLState("nSurface", 1.23);
@@ -21,45 +23,21 @@ export default function GradientIndexCoatingPage() {
     const N = 50;
     const dz = thickness / N;
 
-    const R = wls.map(wl => {
-      let re = 1, im = 0; // Start with reflected amplitude from substrate side
-      for (let j = N - 1; j >= 0; j--) {
-        const frac = j / (N - 1); // 0 at surface, 1 at substrate
-        let nLayer: number;
-        if (profile === "linear") {
-          nLayer = nSurface + (nSub - nSurface) * frac;
-        } else if (profile === "cosine") {
-          nLayer = (nSurface + nSub) / 2 + (nSurface - nSub) / 2 * Math.cos(Math.PI * frac);
-        } else {
-          nLayer = nSurface * Math.pow(nSub / nSurface, frac);
-        }
-        const delta = (2 * Math.PI * nLayer * dz) / wl;
-        const r = j === 0
-          ? (n1 - nLayer) / (n1 + nLayer)
-          : (() => {
-              const fracPrev = (j + 1) / (N - 1);
-              let nPrev: number;
-              if (profile === "linear") nPrev = nSurface + (nSub - nSurface) * fracPrev;
-              else if (profile === "cosine") nPrev = (nSurface + nSub) / 2 + (nSurface - nSub) / 2 * Math.cos(Math.PI * fracPrev);
-              else nPrev = nSurface * Math.pow(nSub / nSurface, fracPrev);
-              return (nLayer - nPrev) / (nLayer + nPrev);
-            })();
-        const newRe = re * Math.cos(delta) - im * Math.sin(delta) + r;
-        const newIm = re * Math.sin(delta) + im * Math.cos(delta);
-        re = newRe;
-        im = newIm;
+    // N homogeneous sublayers of thickness dz; sublayer j has n at frac = j/(N − 1),
+    // 0 at the surface and 1 at the substrate. Incident | sublayers | substrate.
+    const layers = Array.from({ length: N }, (_, j) => {
+      const frac = j / (N - 1);
+      let nLayer: number;
+      if (profile === "linear") {
+        nLayer = nSurface + (nSub - nSurface) * frac;
+      } else if (profile === "cosine") {
+        nLayer = (nSurface + nSub) / 2 + (nSurface - nSub) / 2 * Math.cos(Math.PI * frac);
+      } else {
+        nLayer = nSurface * Math.pow(nSub / nSurface, frac);
       }
-      return Math.min(re * re + im * im, 1);
+      return { n: nLayer, thickness: dz * 1e-9 };
     });
-
-    // Refractive index profile
-    const z = Array.from({ length: 100 }, (_, i) => (i * thickness) / 99);
-    const nProfile = z.map(zi => {
-      const frac = zi / thickness;
-      if (profile === "linear") return nSurface + (nSub - nSurface) * frac;
-      if (profile === "cosine") return (nSurface + nSub) / 2 + (nSurface - nSub) / 2 * Math.cos(Math.PI * frac);
-      return nSurface * Math.pow(nSub / nSurface, frac);
-    });
+    const R = reflectanceSpectrum({ incident: n1, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
 
     return [
       { x: wls, y: R, type: "scatter" as const, mode: "lines" as const, name: "Reflectance", line: { color: "#60a5fa" } },
