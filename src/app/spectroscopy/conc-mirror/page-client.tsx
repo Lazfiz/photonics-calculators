@@ -44,7 +44,7 @@ export default function ConcMirrorPage() {
         <ValidatedNumberInput label="Mirror Radius (mm)" value={radius} onChange={setRadius} min={5} max={500} />
         <ValidatedNumberInput label="Mirror Diameter (mm)" value={mirrorDiam} onChange={setMirrorDiam} min={5} max={200} />
         <ValidatedNumberInput label="Slit Width (µm)" value={slitWidth} onChange={setSlitWidth} min={1} max={500} />
-        <ValidatedNumberInput label="Slit Height (mm)" value={slitHeight} onChange={setSlitHeight} min={0.1} max={50} step={0.1} />
+        <ValidatedNumberInput label="Slit Height (mm)" value={slitHeight} onChange={setSlitHeight} min={0.1} max={50} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

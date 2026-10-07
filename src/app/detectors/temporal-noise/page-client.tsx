@@ -32,6 +32,11 @@ export default function TemporalNoisePage() {
     ];
   }, [kneeFreq, bandwidth, conversionGain]);
 
+  // 1/f noise integrated: σ = k_1f · √(ln(f_high / f_low))
+  // f_low ≈ 1/(2·t_int) for an integration of duration t_int
+  const fLow = exposureTime > 0 ? 1 / (2 * exposureTime) : 0;
+  const oneOverFNoise = bandwidth > fLow ? k1f * Math.sqrt(Math.log(bandwidth / fLow)) : 0;
+
   // Noise vs integration time
   const noiseVsTime = useMemo(() => {
     const times = Array.from({ length: 200 }, (_, i) => 1e-6 * Math.pow(1e7, i / 200)); // 1μs to 10s
@@ -43,14 +48,10 @@ export default function TemporalNoisePage() {
       { x: times, y: darkN, type: "scatter" as const, mode: "lines" as const, name: "Dark shot noise", line: { color: "#f87171", width: 2 } },
       { x: times, y: totalN, type: "scatter" as const, mode: "lines" as const, name: "Total noise", line: { color: "#fbbf24", width: 2.5 } },
     ];
-  }, [readNoise, darkCurrent, exposureTime]);
+  }, [readNoise, darkCurrent, exposureTime, oneOverFNoise]);
 
   const darkShotNoise = Math.sqrt(darkCurrent * exposureTime);
   const totalNoise = Math.sqrt(readNoise**2 + darkShotNoise**2);
-  // 1/f noise integrated: σ = k_1f · √(ln(f_high / f_low))
-  // f_low ≈ 1/(2·t_int) for an integration of duration t_int
-  const fLow = exposureTime > 0 ? 1 / (2 * exposureTime) : 0;
-  const oneOverFNoise = bandwidth > fLow ? k1f * Math.sqrt(Math.log(bandwidth / fLow)) : 0;
   const totalNoiseWithF = Math.sqrt(readNoise**2 + darkShotNoise**2 + oneOverFNoise**2);
 
   return (

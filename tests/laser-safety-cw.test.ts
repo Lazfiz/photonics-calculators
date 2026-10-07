@@ -5,14 +5,14 @@ import {
   calculateEducationalContinuousMpe,
   correctionCb,
   crossoverT1Seconds,
-} from "../src/lib/laser-safety-mpe.ts";
+} from "../src/lib/laser-safety-mpe";
 import {
   cornealIrradianceWcm2,
   cwPointSourceNohdPrecheck,
   cwPointSourceOdPrecheck,
   divergenceMradToRad,
   powerMwToW,
-} from "../src/lib/laser-safety-cw-suite.ts";
+} from "../src/lib/laser-safety-cw-suite";
 
 test("supports short-duration visible thermal branch", () => {
   const result = calculateEducationalContinuousMpe(532, 0.25);

@@ -35,7 +35,7 @@ export default function ContrastMethodsPage() {
     // Halo size (phase contrast artifact)
     const haloSize = 0.61 * lam / na * 1e9; // nm, related to resolution
 
-    return { opd, opdWaves, phaseAngle, pcContrast, pcAmplitude, pcTransmission, shearDist, dicOPD, dicPhase, dicContrast, haloSize };
+    return { opd, opdWaves, phaseAngle, pcContrast, pcAmplitude, shearDist, dicOPD, dicPhase, dicContrast, haloSize };
   }, [method, na, wavelength, n, phaseShift, shearAmount, sampleThickness, dnSample]);
 
   const plotData = useMemo(() => {

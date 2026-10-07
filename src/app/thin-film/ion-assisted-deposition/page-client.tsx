@@ -14,14 +14,15 @@ export default function IonAssistedDepositionPage() {
   const [filmMaterial, setFilmMaterial] = useState("SiO2");
   const [chamberPressure, setChamberPressure] = useURLState("chamberPressure", 2e-4);
 
-  const materials: Record<string, { density: number; packingDensity: number; n: number; name: string }> = {
-    SiO2: { density: 2.2, packingDensity: 0.95, n: 1.46, name: "Silicon Dioxide" },
-    TiO2: { density: 4.23, packingDensity: 0.92, n: 2.35, name: "Titanium Dioxide" },
-    Ta2O5: { density: 8.2, packingDensity: 0.94, n: 2.1, name: "Tantalum Pentoxide" },
-    MgF2: { density: 3.15, packingDensity: 0.90, n: 1.38, name: "Magnesium Fluoride" },
-    ZrO2: { density: 5.68, packingDensity: 0.93, n: 2.1, name: "Zirconium Dioxide" },
-    Al2O3: { density: 3.95, packingDensity: 0.96, n: 1.63, name: "Aluminum Oxide" },
-    HfO2: { density: 9.68, packingDensity: 0.93, n: 2.05, name: "Hafnium Dioxide" },
+  // density in g/cm³, molarMass in g/mol (per formula unit)
+  const materials: Record<string, { density: number; molarMass: number; packingDensity: number; n: number; name: string }> = {
+    SiO2: { density: 2.2, molarMass: 60.08, packingDensity: 0.95, n: 1.46, name: "Silicon Dioxide" },
+    TiO2: { density: 4.23, molarMass: 79.87, packingDensity: 0.92, n: 2.35, name: "Titanium Dioxide" },
+    Ta2O5: { density: 8.2, molarMass: 441.89, packingDensity: 0.94, n: 2.1, name: "Tantalum Pentoxide" },
+    MgF2: { density: 3.15, molarMass: 62.30, packingDensity: 0.90, n: 1.38, name: "Magnesium Fluoride" },
+    ZrO2: { density: 5.68, molarMass: 123.22, packingDensity: 0.93, n: 2.1, name: "Zirconium Dioxide" },
+    Al2O3: { density: 3.95, molarMass: 101.96, packingDensity: 0.96, n: 1.63, name: "Aluminum Oxide" },
+    HfO2: { density: 9.68, molarMass: 210.49, packingDensity: 0.93, n: 2.05, name: "Hafnium Dioxide" },
   };
 
   const mat = materials[filmMaterial];

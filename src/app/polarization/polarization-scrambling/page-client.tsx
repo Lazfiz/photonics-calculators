@@ -50,10 +50,10 @@ export default function PolarizationScramblingPage() {
       // Rotated Stokes vector
       // Mueller rotation matrix for Stokes parameters (rotation by 2θ about S3 axis)
       // M_rot(2θ) = [[1,0,0,0],[0,cos2θ,sin2θ,0],[0,-sin2θ,cos2θ,0],[0,0,0,1]]
-      const c2 = Math.cos(2 * theta * Math.PI / 180);
-      const s2 = Math.sin(2 * theta * Math.PI / 180);
-      s1.push(inputS1 * c2 + inputS2 * s2);
-      s2.push(-inputS1 * s2 + inputS2 * c2);
+      const cos2t = Math.cos(2 * theta * Math.PI / 180);
+      const sin2t = Math.sin(2 * theta * Math.PI / 180);
+      s1.push(inputS1 * cos2t + inputS2 * sin2t);
+      s2.push(-inputS1 * sin2t + inputS2 * cos2t);
       s3.push(inputS3);
       dop.push(1.0); // each segment is fully polarized
     }

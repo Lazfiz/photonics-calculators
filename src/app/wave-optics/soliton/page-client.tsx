@@ -29,8 +29,8 @@ export default function SolitonPage() {
     const dt = 2 * tSpan / nT;
 
     // Initialize pulse: sech envelope
-    let real = new Float64Array(nT);
-    let imag = new Float64Array(nT);
+    const real = new Float64Array(nT);
+    const imag = new Float64Array(nT);
     for (let i = 0; i < nT; i++) {
       const t = -tSpan + i * dt;
       real[i] = Math.sqrt(peakPower) / Math.cosh(t / t0);

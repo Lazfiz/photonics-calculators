@@ -47,8 +47,8 @@ export default function LinearModeAPDPage() {
     return { resp, iPhoto, iPhotoOut, iDarkOut, shotNoise, darkNoise, totalNoise, snr, nep, nepDark, nepSpectral, nepDarkSpectral, F };
   }, [gain, useCustomF, customF, quantumEff, bandwidth, darkCurrent, wavelength, incidentPower, effectiveK]);
 
-  const chartData = useMemo(() => {
-    const gains = Array.from({ length: 200 }, (_, i) => 1 + i * 500 / 200);
+  const { chartData, fMax } = useMemo(() => {
+    const gains =Array.from({ length: 200 }, (_, i) => 1 + i * 500 / 200);
     const h = 6.626e-34;
     const c = 3e8;
     const q = 1.6e-19;
@@ -69,12 +69,13 @@ export default function LinearModeAPDPage() {
     const snr = signal.map((s, i) => s / noise[i]);
     const fCurve = gains.map(g => fOfM(g));
     const fMax = Math.max(...fCurve);
-    return [
+    const chartData = [
       { x: gains, y: signal, type: "scatter", mode: "lines", name: "Signal (A)", line: { color: "#60a5fa" } },
       { x: gains, y: noise, type: "scatter", mode: "lines", name: "Noise (A)", line: { color: "#f87171" } },
       { x: gains, y: snr, type: "scatter", mode: "lines", name: "SNR", line: { color: "#34d399" }, yaxis: "y2" },
       { x: gains, y: fCurve, type: "scatter", mode: "lines", name: "F(M)", line: { color: "#a78bfa", dash: "dash" }, yaxis: "y3" },
     ];
+    return { chartData, fMax };
   }, [useCustomF, customF, quantumEff, bandwidth, darkCurrent, wavelength, incidentPower, effectiveK, gain]);
 
   return (

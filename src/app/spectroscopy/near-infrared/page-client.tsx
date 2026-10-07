@@ -91,7 +91,7 @@ export default function NearInfraredPage() {
                     <p className="text-lg font-bold text-green-400">{(1e7 / wavelengthEnd).toFixed(0)}–{(1e7 / wavelengthStart).toFixed(0)} cm⁻¹</p>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 text-center">
-                    <p className="text-lg font-bold text-yellow-400">μ'<sub>s</sub> = {scatteringCoeff}</p>
+                    <p className="text-lg font-bold text-yellow-400">μ′<sub>s</sub> = {scatteringCoeff}</p>
         </div>
       </div>
 

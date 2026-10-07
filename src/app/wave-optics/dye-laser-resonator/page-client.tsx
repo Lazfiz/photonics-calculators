@@ -70,6 +70,7 @@ export default function DyeLaserResonatorPage() {
   // k_flow = flowSpeed / L_char where L_char is the dye jet thickness
   const L_char = 0.1e-3; // m — dye jet thickness
   const k_flow = flowSpeed / L_char; // s⁻¹
+  const k_ISC = (1 - dp.quantum_yield) / dp.tau; // s⁻¹, as in the triplet chart below
   const tripletFraction = k_ISC / (k_ISC + k_flow);
 
   // Gain spectrum (simplified Gaussian)

@@ -45,7 +45,7 @@ export default function ConfocalResolutionPage() {
         <ValidatedNumberInput label="Numerical Aperture" value={na} onChange={setNa} min={0.1} max={1.7} step="0.01" />
         <ValidatedNumberInput label="Pinhole (Airy units)" value={pinholeAU} onChange={setPinholeAU} min={0.1} max={5} step="0.1" />
         <ValidatedNumberInput label="Refractive Index" value={refractiveIndex} onChange={setRefractiveIndex} min={1.0} max={1.8} step="0.001" />
-        <ValidatedNumberInput label="Magnification" value={magnification} onChange={setMagnification} min={10} max="100" step="5" />
+        <ValidatedNumberInput label="Magnification" value={magnification} onChange={setMagnification} min={10} max={100} step="5" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

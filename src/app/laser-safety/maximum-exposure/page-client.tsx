@@ -111,7 +111,7 @@ export default function MaximumExposurePage() {
       <div className="max-w-4xl mx-auto">
         
         <h1 className="text-3xl font-bold mb-2">Maximum Exposure Duration</h1>
-        <p className="text-gray-400 mb-8">Given a laser's parameters, calculate the maximum safe exposure time before exceeding MPE.</p>
+        <p className="text-gray-400 mb-8">Given a laser’s parameters, calculate the maximum safe exposure time before exceeding MPE.</p>
 
         <div className="bg-[#12121a] rounded-xl p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4">Formulas</h2>

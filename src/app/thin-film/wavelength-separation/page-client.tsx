@@ -15,7 +15,7 @@ function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: numbe
   for (const wl of wavelengths) {
     let m11r = 1, m11i = 0, m12r = 0, m12i = 0;
     let m21r = 0, m21i = 0, m22r = 1, m22i = 0;
-    let nEffPrev = nInc;
+    const nEffPrev = nInc;
 
     for (const layer of layers) {
       // Snell's law for refraction angle in each layer

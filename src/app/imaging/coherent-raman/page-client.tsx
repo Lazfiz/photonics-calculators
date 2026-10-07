@@ -48,11 +48,11 @@ export default function CoherentRamanPage() {
       wn.push(w);
       // Lorentzian Raman line — complex susceptibility for CARS lineshape
       const chiNR = 0.3;
+      const gamma = 15; // linewidth cm⁻¹
       const chiR_real = -(w - center) * gamma / ((w - center) ** 2 + gamma * gamma);
       const chiR_imag = gamma * gamma / ((w - center) ** 2 + gamma * gamma);
       cars.push((chiNR + chiR_real) ** 2 + chiR_imag ** 2);
-      // SRS: purely imaginary part (dispersive)
-      const gamma = 15; // linewidth cm⁻¹
+      // SRS: imaginary (absorptive) part of χ_R
       srs.push(gamma * gamma / ((w - center) ** 2 + gamma * gamma));
     }
     return [

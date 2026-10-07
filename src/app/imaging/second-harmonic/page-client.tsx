@@ -45,17 +45,17 @@ export default function SecondHarmonicPage() {
       const sinc = Math.abs(phaseArg) > 1e-10 ? Math.sin(phaseArg) / phaseArg : 1;
       const omega = 2 * Math.PI * 3e8 / (wavelength * 1e-9);
       const prefactor = 4e-24 * Math.pow(omega / (2 * Math.PI * 3e8 / (800e-9)), 2) / Math.pow(n, 3);
-      const P = prefactor * chi2 ** 2 * peakPower ** 2 * L ** 2 / (results.w0 ** 2) * sinc * sinc;
+      const P = prefactor * chi2 ** 2 * results.peakPower ** 2 * L ** 2 / (results.w0 ** 2) * sinc * sinc;
       powers.push(P * 1e9);
       // Phase matched: L² only (no sinc oscillation)
-      const Pc = prefactor * chi2 ** 2 * peakPower ** 2 * L ** 2 / (results.w0 ** 2);
+      const Pc = prefactor * chi2 ** 2 * results.peakPower ** 2 * L ** 2 / (results.w0 ** 2);
       phaseMatched.push(Pc * 1e9);
     }
     return [
       { x: thicknesses, y: powers, name: "SHG power (non-PM)", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
       { x: thicknesses, y: phaseMatched, name: "SHG power (phase-matched)", line: { color: "#f87171", dash: "dash" }, type: "scatter", mode: "lines" },
     ];
-  }, [chi2, pulseEnergy, results.w0]);
+  }, [chi2, wavelength, n, results]);
 
   const phasePlot = useMemo(() => {
     const thicknesses = [];

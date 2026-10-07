@@ -16,7 +16,7 @@ export default function SuperResolutionPage() {
     const lam = wavelength * 1e-9;
     const abbe = 0.61 * lam / na * 1e9;
     const axialAbbe = 2 * n * lam / (na * na) * 1e9;
-    let stedLat = null, stedAx = null;
+    let stedLat = null;
     if (stedDepletion > 0) {
       const factor = 1 / Math.sqrt(1 + stedDepletion);
       stedLat = abbe * factor;

@@ -96,14 +96,13 @@ export default function ModeMatchingPage() {
         // 
         // Simplified: just check if w_out ≈ w2 and qpp_r ≈ 0 (output at waist)
         if (Math.abs(w_out - w2) / w2 < 0.005 && Math.abs(qpp_r) / zR2_mm < 0.05) {
-        // Compute exact Gaussian mode overlap (Kogelnik & Li, 1966):
-        // η = 4·Im(q₁)·Im(q₂) / |q₁* - q₂|²
-        const q_target = 0 + 1i * zR2_mm; // target at its waist
-        const q_out_conj = qpp_r - qpp_i; // complex conjugate
-        const dq_r = q_out_conj - 0;
-        const dq_i = qpp_i - zR2_mm;
-        const eta = 4 * qpp_i * zR2_mm / (dq_r * dq_r + dq_i * dq_i);
-          
+          // Exact Gaussian mode overlap (Kogelnik & Li, 1966):
+          // η = 4·Im(q₁)·Im(q₂) / |q₁* - q₂|², target q₂ = i·zR2 (at its waist)
+          // q₁* - q₂ = qpp_r - i·(qpp_i + zR2)
+          const dq_r = qpp_r;
+          const dq_i = qpp_i + zR2_mm;
+          const eta = 4 * qpp_i * zR2_mm / (dq_r * dq_r + dq_i * dq_i);
+
           // Avoid duplicates
           if (!sols.some(s => Math.abs(s.f - f_test) < 5 && Math.abs(s.s - s_test) < 2)) {
             sols.push({ f: f_test, s: s_test, overlap: eta });
@@ -140,9 +139,10 @@ export default function ModeMatchingPage() {
         if (inv_q_im >= 0) continue;
         const w_out = Math.sqrt(-lam_mm / (Math.PI * inv_q_im)) * 1000;
         // Exact overlap: η = 4·Im(q_out)·Im(q_target) / |q_out* - q_target|²
+        // q_out* - q_target = qpp_r - i·(qpp_i + zR2), so Im parts add (η = 1 at a perfect match)
         const q_target_i = zR2 / 1000;
         const dq_r = qpp_r;
-        const dq_i = qpp_i - q_target_i;
+        const dq_i = qpp_i + q_target_i;
         const eta = 4 * qpp_i * q_target_i / (dq_r * dq_r + dq_i * dq_i);
         if (eta > bestEta) bestEta = eta;
       }

@@ -76,6 +76,8 @@ export default function DichroicPage() {
         m11r = n11r; m11i = n11i; m12r = n12r; m12i = n12i;
         m21r = n21r; m21i = n21i; m22r = n22r; m22i = n22i;
       }
+      const cosThetaI = cosTheta;
+      const cosThetaSub = Math.sqrt(1 - (sinTheta * nInc / nSub) ** 2);
       const etaI = nInc / cosThetaI, etaS = nSub / cosThetaSub;
       const numR = m11r * etaI + m12r * etaI * etaS - m21r - m22r * etaS;
       const numI = m11i * etaI + m12i * etaI * etaS - m21i - m22i * etaS;

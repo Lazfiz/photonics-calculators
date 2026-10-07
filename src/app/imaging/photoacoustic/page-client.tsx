@@ -127,7 +127,7 @@ export default function PhotoacousticPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Axial resolution</span><span className="font-mono">{results.axialRes.toFixed(0)} µm</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Lateral resolution</span><span className="font-mono">{results.lateralRes.toFixed(0)} µm</span></div>
           <div className="text-xs text-gray-500 mt-2 space-y-1">
-            <p>µ_eff = √(3µa(µa + µs'))</p>
+            <p>µ_eff = √(3µa(µa + µs′))</p>
             <p>p₀ = Γ · µa · F</p>
             <p>Axial res = c / (2·BW), Lateral ≈ λ_acoustic</p>
             <p>ANSI limit: 20 mJ/cm² at 750 nm (skin)</p>

@@ -39,7 +39,7 @@ export default function BERPage() {
     const targets = [1e-3, 1e-6, 1e-9];
     const required: Record<string, number> = {};
     for (const t of targets) {
-      let lo = 1, hi = 1e6, found = 0;
+      let lo = 1, hi = 1e6;
       for (let i = 0; i < 100; i++) {
         const mid = (lo + hi) / 2;
         const s = mid / (1 + darkCount / mid) / 2; // E_b/N₀

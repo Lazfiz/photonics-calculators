@@ -13,7 +13,6 @@ export default function PlenopticCameraPage() {
   const [microLensFocalMm, setMicroLensFocalMm] = useURLState("microLensFocalMm", 0.5);
   const [microLensPitchUm, setMicroLensPitchUm] = useURLState("microLensPitchUm", 150);
   const [pixelPitchUm, setPixelPitchUm] = useURLState("pixelPitchUm", 5.5);
-  const [pixelsPerMicroLens, setPixelsPerMicroLens] = useURLState("pixelsPerMicroLens", 15);
   const [sensorWidthPx, setSensorWidthPx] = useURLState("sensorWidthPx", 4000);
   const [sensorHeightPx, setSensorHeightPx] = useURLState("sensorHeightPx", 3000);
 

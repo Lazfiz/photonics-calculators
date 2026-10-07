@@ -39,7 +39,6 @@ export default function PhotonCountingPage() {
       return Math.exp(logP);
     });
     // Gaussian approximation
-    const sigma = Math.sqrt(actualMean);
     const gaussian = n.map(k => (1 / (sigma * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((k - actualMean) / sigma, 2)));
 
     return [

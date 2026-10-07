@@ -53,6 +53,10 @@ export default function PmtGainPage() {
   }, []);
 
   // SNR vs photon flux
+  // Excess noise factor for PMT ≈ 1 (nearly ideal)
+  // F = 1 + 1/δ (approximately for large δ)
+  const excessNoiseFactor = perStageGain / (perStageGain - 1);
+
   const snrChart = useMemo(() => {
     const flux = Array.from({ length: 150 }, (_, i) => 1 + i * 10000 / 150);
     const tau = 1; // 1 second integration
@@ -74,9 +78,6 @@ export default function PmtGainPage() {
     ];
   }, [totalGain, photocathodeQE, cathodeDarkCurrent, amplifierNoise]);
 
-  // Excess noise factor for PMT ≈ 1 (nearly ideal)
-  // F = 1 + 1/δ (approximately for large δ)
-  const excessNoiseFactor = perStageGain / (perStageGain - 1);
 
   // SNR gain chart vs total voltage
   const snrVsVoltage = useMemo(() => {
