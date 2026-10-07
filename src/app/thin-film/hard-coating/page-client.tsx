@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function HardCoatingPage() {
   const [nCoat, setNCoat] = useURLState("nCoat", 2.1);
   const [nSub, setNSub] = useURLState("nSub", 1.52);
@@ -33,17 +35,11 @@ export default function HardCoatingPage() {
     const wls = Array.from({ length: N }, (_, i) => 300 + i * 600 / N);
     const d = thickness;
 
-    const R = wls.map(wl => {
-      const delta = (2 * Math.PI * nCoat * d) / wl;
-      const c = Math.cos(delta), s = Math.sin(delta);
-      const eta = nCoat;
-      const M = [[c, -s / eta], [s * eta, c]] as [number, number][];
-
-      const nInc = 1.0;
-      const num = M[0][0]*nSub + M[0][1]*nSub*nInc - M[1][0] - M[1][1]*nInc;
-      const den = M[0][0]*nSub + M[0][1]*nSub*nInc + M[1][0] + M[1][1]*nInc;
-      return (num / den) ** 2;
-    });
+    // Air | coating | substrate
+    const R = reflectanceSpectrum(
+      { incident: 1, layers: [{ n: nCoat, thickness: d * 1e-9 }], substrate: { n: nSub } },
+      wls.map((wl) => wl * 1e-9),
+    );
 
     return { wls, R };
   }, [nCoat, nSub, thickness]);

@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function AntiFogPage() {
   const [nCoat, setNCoat] = useURLState("nCoat", 1.33);
   const [nSub, setNSub] = useURLState("nSub", 1.52);
@@ -22,57 +24,14 @@ export default function AntiFogPage() {
     const wls = Array.from({ length: N }, (_, i) => 350 + i * 500 / N);
     const d = thickness; // nm
 
-    const R = wls.map(wl => {
-      // Transfer matrix for single layer: M = [[cos(δ), i·sin(δ)/η], [i·η·sin(δ), cos(δ)]]
-      // Decompose into real/imaginary: M11=cos(δ), M12=i·sin(δ)/η, M21=i·η·sin(δ), M22=cos(δ)
-      // r = (M11·nSub + M12·nSub·nInc - nInc·M21 - M22·nInc) / (M11·nSub + M12·nSub·nInc + nInc·M21 + M22·nInc)
-      // Numerator: (cos(δ)·nSub - nInc·cos(δ)) + i·(sin(δ)/η·nSub·nInc - nInc·η·sin(δ))
-      // Denominator: (cos(δ)·nSub + nInc·cos(δ)) + i·(sin(δ)/η·nSub·nInc + nInc·η·sin(δ))
-      const delta = (2 * Math.PI * nCoat * d) / wl;
-      const c = Math.cos(delta), s = Math.sin(delta);
-      const eta = nCoat;
-      const nInc = 1.0;
+    const wlsM = wls.map((wl) => wl * 1e-9);
+    const coating = { n: nCoat, thickness: d * 1e-9 };
+    // Air | coating | substrate
+    const R = reflectanceSpectrum({ incident: 1, layers: [coating], substrate: { n: nSub } }, wlsM);
 
-      // Real and imaginary parts of numerator and denominator
-      const numR = c * nSub - nInc * c; // cos(δ)·(nSub - nInc)
-      const numI = (s / eta) * nSub * nInc - nInc * eta * s; // sin(δ)·nInc·(nSub/eta - eta)
-      const denR = c * nSub + nInc * c; // cos(δ)·(nSub + nInc)
-      const denI = (s / eta) * nSub * nInc + nInc * eta * s; // sin(δ)·nInc·(nSub/eta + eta)
-
-      return (numR * numR + numI * numI) / (denR * denR + denI * denI);
-    });
-
-    // With water layer on top (fog): n_water ≈ 1.33
-    const RwithWater = wls.map(wl => {
-      const delta1 = (2 * Math.PI * nCoat * d) / wl;
-      const delta2 = (2 * Math.PI * 1.33 * 1000) / wl; // 1µm water film
-
-      // Track complex matrix as 4 real values: [[A, iB], [iC, D]]
-      let A = 1, B = 0, C = 0, D = 1;
-
-      // Add layer: M_layer = [[cos(δ), i·sin(δ)/n], [i·n·sin(δ), cos(δ)]]
-      const addLayer = (n: number, delta: number) => {
-        const cl = Math.cos(delta), sl = Math.sin(delta);
-        const nA = A * cl - B * n * sl;
-        const nB = A * sl / n + B * cl;
-        const nC = C * cl + D * n * sl;
-        const nD = C * sl / n + D * cl;
-        A = nA; B = nB; C = nC; D = nD;
-      };
-
-      addLayer(1.33, delta2); // water (from air side)
-      addLayer(nCoat, delta1); // coating (from water side)
-
-      // r = (A·nSub + iB·nSub·nInc - iC·nInc - D·nInc) / (A·nSub + iB·nSub·nInc + iC·nInc + D·nInc)
-      const nInc = 1.0;
-      const BnSub = B * nSub * nInc;
-      const CnInc = C * nInc;
-      const numR = A * nSub - D * nInc;
-      const numI = BnSub - CnInc;
-      const denR = A * nSub + D * nInc;
-      const denI = BnSub + CnInc;
-      return (numR * numR + numI * numI) / (denR * denR + denI * denI);
-    });
+    // With a uniform 1 µm water film on top (fog on a hydrophilic surface): air | water | coating | substrate
+    const water = { n: 1.33, thickness: 1000e-9 };
+    const RwithWater = reflectanceSpectrum({ incident: 1, layers: [water, coating], substrate: { n: nSub } }, wlsM);
 
     return { wls, R, RwithWater };
   }, [nCoat, nSub, thickness]);

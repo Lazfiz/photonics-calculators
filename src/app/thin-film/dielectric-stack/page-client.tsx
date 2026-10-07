@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { quarterWaveLayers, quarterWaveStackReflectance, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function DielectricStackPage() {
   const [nH, setNH] = useURLState("nH", 2.35);
   const [nL, setNL] = useURLState("nL", 1.38);
@@ -16,58 +18,17 @@ export default function DielectricStackPage() {
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 2);
-    // Transfer matrix method for alternating H/L quarter-wave stack
-    const R = wls.map(wl => {
-      // Transfer matrix method: M = [[A, iB], [iC, D]] where A,B,C,D are real
-      // For lossless dielectric at normal incidence: η = n (TE)
-      // Single layer: M_j = [[cos(δ), i·sin(δ)/n], [i·n·sin(δ), cos(δ)]]
-      const dH = designWl / (4 * nH);
-      const dL = designWl / (4 * nL);
-      const deltaH = (2 * Math.PI * nH * dH) / wl;
-      const deltaL = (2 * Math.PI * nL * dL) / wl;
-
-      // Track all 4 real elements of the 2x2 characteristic matrix
-      let A = 1, B = 0, C = 0, D = 1;
-
-      for (let p = 0; p < numPairs; p++) {
-        // H layer matrix multiplication
-        const cH = Math.cos(deltaH), sH = Math.sin(deltaH);
-        const nA = A * cH - B * nH * sH;
-        const nB = A * sH / nH + B * cH;
-        const nC = C * cH + D * nH * sH;
-        const nD = C * sH / nH + D * cH;
-        A = nA; B = nB; C = nC; D = nD;
-
-        // L layer matrix multiplication
-        const cL = Math.cos(deltaL), sL = Math.sin(deltaL);
-        const nA2 = A * cL - B * nL * sL;
-        const nB2 = A * sL / nL + B * cL;
-        const nC2 = C * cL + D * nL * sL;
-        const nD2 = C * sL / nL + D * cL;
-        A = nA2; B = nB2; C = nC2; D = nD2;
-      }
-
-      // Y = (M21 + M22·nSub) / (M11 + M12·nSub) = (iC + iD·nSub) / (A + iB·nSub)
-      const Bn = B * nSub;
-      const Cn = C + D * nSub;
-      const denom = A * A + Bn * Bn;
-      const Yr = Cn * Bn / denom;
-      const Yi = Cn * A / denom;
-
-      // r = (nInc - Y)/(nInc + Y), R = |r|²
-      const nr = nInc - Yr, ni = -Yi;
-      const dr = nInc + Yr, di = Yi;
-      return (nr * nr + ni * ni) / (dr * dr + di * di);
-    });
+    // Quarter-wave stack air | (HL)^N | sub
+    const layers = quarterWaveLayers(Array.from({ length: 2 * numPairs }, (_, j) => (j % 2 === 0 ? nH : nL)), designWl * 1e-9);
+    const R = reflectanceSpectrum({ incident: nInc, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
     return [
       { x: wls, y: R, type: "scatter" as const, mode: "lines" as const, name: "Reflectance", line: { color: "#60a5fa" } },
       { x: wls, y: wls.map(() => 1 - Math.pow((nInc - nSub) / (nInc + nSub), 2)), type: "scatter" as const, mode: "lines" as const, name: "Substrate T baseline", line: { color: "#4b5563", dash: "dash" } },
     ];
   }, [nH, nL, nSub, nInc, numPairs, designWl]);
 
-  const ratio = Math.pow(nH / nL, 2 * numPairs);
-  const q = (nInc * nSub) / (nH * nH);
-  const peakR = Math.pow((ratio - q) / (ratio + q), 2);
+  // Exact at λ₀ for air | (HL)^N | sub: Y = (nH/nL)^(2N)·n_sub, so q = n₀/n_sub
+  const peakR = quarterWaveStackReflectance(nInc, Array.from({ length: 2 * numPairs }, (_, j) => (j % 2 === 0 ? nH : nL)), nSub);
   const bandwidthNm = (4 * designWl) / Math.PI * Math.asin((1 - nL / nH) / (1 + nL / nH));
 
   return (
@@ -102,8 +63,8 @@ export default function DielectricStackPage() {
         <div className="space-y-2 text-sm text-gray-300 font-mono">
           <p>Structure: n₀ | (H L)^N | n_sub</p>
           <p>d_H = λ₀/(4n_H), &nbsp; d_L = λ₀/(4n_L)</p>
-          <p>R_peak ≈ {`{[(nH/nL)^(2N) − q] / [(nH/nL)^(2N) + q]}`}²</p>
-          <p>q = n₀·n_sub / n_H²</p>
+          <p>R_peak = {`{[(nH/nL)^(2N) − q] / [(nH/nL)^(2N) + q]}`}²</p>
+          <p>q = n₀ / n_sub</p>
           <p>Transfer Matrix: M = ∏ M_j, &nbsp; M_j = [[cosδ, iη⁻¹sinδ], [iηsinδ, cosδ]]</p>
         </div>
       </div>

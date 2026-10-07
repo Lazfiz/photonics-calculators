@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function DielectricHRPage() {
   const [nH, setNH] = useURLState("nH", 2.35);
   const [nL, setNL] = useURLState("nL", 1.45);
@@ -16,28 +18,10 @@ export default function DielectricHRPage() {
   const tmm = useMemo(() => {
     const N = 500;
     const wls = Array.from({ length: N }, (_, i) => designWl * 0.5 + i * designWl / N);
-    const R = wls.map(wl => {
-      const dH = designWl / (4 * nH);
-      const dL = designWl / (4 * nL);
-
-      let M = [[1, 0], [0, 1]] as [number, number][];
-      for (let p = 0; p < pairs; p++) {
-        for (const [n, d] of [[nH, dH], [nL, dL]] as [number, number][]) {
-          const delta = (2 * Math.PI * n * d) / wl;
-          const c = Math.cos(delta), s = Math.sin(delta);
-          const L: [number, number][] = [[c, -s / n], [s * n, c]];
-          M = [
-            [M[0][0]*L[0][0]+M[0][1]*L[1][0], M[0][0]*L[0][1]+M[0][1]*L[1][1]],
-            [M[1][0]*L[0][0]+M[1][1]*L[1][0], M[1][0]*L[0][1]+M[1][1]*L[1][1]],
-          ];
-        }
-      }
-
-      const nInc = 1.0;
-      const num = M[0][0]*nSub + M[0][1]*nSub*nInc - M[1][0] - M[1][1]*nInc;
-      const den = M[0][0]*nSub + M[0][1]*nSub*nInc + M[1][0] + M[1][1]*nInc;
-      return (num / den) ** 2;
-    });
+    // Quarter-wave stack air | (LH)^p | sub (H on the substrate)
+    const indices = Array.from({ length: 2 * pairs }, (_, j) => (j % 2 === 0 ? nL : nH));
+    const layers = quarterWaveLayers(indices, designWl * 1e-9);
+    const R = reflectanceSpectrum({ incident: 1, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
 
     return { wls, R };
   }, [nH, nL, nSub, designWl, pairs]);
@@ -53,14 +37,6 @@ export default function DielectricHRPage() {
     if (tmm.R[i] > 0.5) { stopHigh = tmm.wls[i]; break; }
   }
   const stopBand = stopHigh - stopLow;
-  const centerIdx = tmm.R.indexOf(peakR);
-  const gdd = tmm.wls.map((_, i) => {
-    if (i < 2 || i >= tmm.R.length - 2) return 0;
-    const dwl = tmm.wls[1] - tmm.wls[0];
-    const d2phi = (Math.atan2(Math.sqrt(tmm.R[i+1]) - Math.sqrt(tmm.R[i-1]), 0) -
-                   Math.atan2(Math.sqrt(tmm.R[i]) - Math.sqrt(tmm.R[i-2]), 0)) / (dwl * dwl);
-    return d2phi;
-  });
 
   return (
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Dielectric High Reflector" description="Quarter-wave dielectric stack HR mirror — stopband width, peak reflectance, and dispersion.">
