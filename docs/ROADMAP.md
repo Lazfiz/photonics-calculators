@@ -58,7 +58,7 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - `preserve-manual-memoization` (153 sites)
   - `no-explicit-any` (116)
   - `react-hooks/purity` (9: `Math.random` in render, a hydration mismatch, in otdr-analysis, circular-dichroism, polarization-scrambling, retarder-types, fourier-transform and spectral-calibration)
-  - `set-state-in-effect` (`input-slider`, `use-url-state`)
+  - `set-state-in-effect` (`input-slider`, `use-url-state`): fixed in Phase 1, back to `error`
 - Questionable models noticed while fixing (for Phase 4):
   - `filamentation`: Marburger z_sf gives a finite collapse distance for P < P_cr.
   - `coherent-raman`: signal prefactors are arbitrary (`1e-60`, `1e-30`).
@@ -76,6 +76,8 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 - For Phase 4:
   - `bpsk-qpsk` "Required RX power" uses the RF floor kT = −174 dBm/Hz + 3 dB NF. Coherent optical detection is shot-noise limited at hν ≈ −159 dBm/Hz (1550 nm).
   - `diversity-reception` uses a fixed "3σ" outage and gives identical gain for SC, EGC and MRC.
+- `SimpleLineChart` prints SVG coordinates at full precision. Node (SSR) and Chrome can differ by 1 ulp (`200.2834021708276` vs `…763` on `detectors/quantum-efficiency`, seen with a warm Chrome profile), which logs a hydration-mismatch error. Round coordinates to 0.01 px in the Phase 3 chart rewrite.
+- `useURLState` only rejects non-finite URL values. A crafted link (e.g. `?na=0`) still reaches the physics unclamped, because the inputs clamp only what the user types. Guard domains in the Phase 2 physics modules, or give `useURLState` an optional range.
 
 ## Phase 0 — safe, building, Claude-native (1 session)
 - [ ] 0.1 **User, manual:**
@@ -139,11 +141,14 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - bpsk-qpsk: Gray QPSK BER = BPSK BER (the old formula, 2Q(1−Q), was neither BER nor SER). SER is now shown separately.
   - scintillation, diversity-reception and fade-probability use the shared `erfc`, where they used to compute ½(1 ± erf) with cancellation.
   - Tests: `tests/math.test.ts`, `ber.test.ts`, `bpsk-qpsk.test.ts`.
-- [ ] Fix `use-url-state` reset. `ValidatedNumberInput` and `InputSlider` clamp on blur and never pass out-of-range values to the physics.
+- [x] Fix `use-url-state` reset. `ValidatedNumberInput` and `InputSlider` clamp on blur and never pass out-of-range values to the physics. **Done 2026-10-07 on `phase-1`:**
+  - `useURLState` reads `src/lib/url-state-store.ts` through `useSyncExternalStore`: the query string plus an overlay of unflushed writes (`null` deletes the param). Batched 100 ms writes keep other params and the hash. A pathname guard stops one page's params reaching the next during client navigation. Non-finite URL numbers fall back to the default.
+  - Both inputs keep the typed text locally. In-range values reach `onChange` live; out-of-range values are held back and clamped on blur/Enter; invalid text reverts (`src/lib/number-input.ts`).
+  - `set-state-in-effect` is back to `error` (0 sites). Tests: `tests/url-state-store.test.ts`, `number-input.test.ts`. Headless-Chrome check: `scripts/ui-check.mjs` (all checks pass on boxcar-integrator, ber and quantum-efficiency).
 - [ ] Rebuild JSON-LD from each page's `metadata` (codemod) and write the 55 placeholder descriptions.
 - [ ] Fix the `ShareButton` hydration mismatch and the breadcrumb bug. Make the "541" count a computed value.
 - [ ] Codemod (ts-morph): `label="{label}"` → `label={label}` in 40 `page-client.tsx` files (44 sites; the input card literally shows "{label}"). Find them with `git grep -l 'label="{label}"' -- src`. Also render `CalculatorShell` in the 64 pages that import it without using it (see "Found during Phase 1").
-- [ ] Use a seeded PRNG (`src/physics/random.ts`) for the 6 pages that call `Math.random` in render. Then set `react-hooks/purity` and `set-state-in-effect` back to `error`.
+- [ ] Use a seeded PRNG (`src/physics/random.ts`) for the 6 pages that call `Math.random` in render. Then set `react-hooks/purity` back to `error` (`set-state-in-effect` already is).
 
 ## Phase 2 — architecture (~1 week)
 - [ ] `src/physics/constants.ts` (CODATA) and `src/physics/<category>/<slug>.ts` pure functions, migrated by codemod and category by category, with tests.
