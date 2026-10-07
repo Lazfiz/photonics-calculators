@@ -15,11 +15,11 @@
   - `build`: green, 541 static routes. CI (`check-and-build`) is green on both PRs.
   - Live `ui-check`: 35/35 PASS, 0 console errors. The load check on the PRNG pages also shows 0 errors.
   - The 1-ulp quantum-efficiency error doesn't appear in production builds.
-- **Still open in 0.1 (user):**
-  - Reconnect the Vercel connector: PR previews are behind Vercel login, and the connector returned 403.
-  - Delete `~/.claude/settings-glm-backup.json`.
-  - Optional: Defender exclusion.
-- **Also open: 0.5 (user).** Protect `main` so CI must pass.
+- **Session 8 also finished:**
+  - The Vercel connector was reconnected with the team scope.
+  - `main` is protected by the ruleset "Protect main": a PR and `check-and-build` are required, and force-push and deletion are blocked.
+  - The z.ai backup file was deleted.
+- **Still open in 0.1 (user):** revoke the z.ai key in its console. Optional: Defender exclusion.
 
 ## Next actions
 1. Nested-label codemod (ROADMAP "Found during Phase 1"): 138 `<label>` cards in 53 files wrap a `ValidatedNumberInput`.
@@ -30,7 +30,7 @@
 3. Ship flow that worked:
    - push with `gh` credentials (below)
    - `gh pr create`, then `gh pr checks <n> --watch`
-   - verify on a local `npm run build && npm run start` with `ui-check`, because the previews are protected
+   - verify the preview: `get_access_to_vercel_url` (team `team_LaEJuanZGFVc5UHhLD6LRaiq`) gives a `?_vercel_share=` link; open it with a cookie jar, then curl or `ui-check`. A local `npm run start` build also works.
    - ask the user, then `gh pr merge <n> --merge`
    - wait for the Vercel status on the merge commit, then run `ui-check` against production
 
@@ -47,7 +47,7 @@
   - `gh` is logged in through the keyring with `repo` and `workflow` scopes.
   - This avoids a Git Credential Manager pop-up that would block a non-interactive shell.
   - The repo is public, so `ls-remote` succeeding proves nothing about auth.
-- **Preview URLs** come from the Vercel PR comment: `gh pr view <n> --json comments`. They return 302 to a Vercel login.
+- **Preview URLs** come from the Vercel PR comment: `gh pr view <n> --json comments`. Without a share link they return 302 to a Vercel login.
 - **`ui-check` load mode prints `ALL PASS` even when it logs console errors.** Read the `console errors/warnings: N` line instead.
   - The full mode also doesn't fail on console errors, because of the known 1-ulp `quantum-efficiency` error.
 - **Git Bash rewrites `/path` arguments into Windows paths** (`C:/Program Files/Git/...`). Set `MSYS_NO_PATHCONV=1` before `node scripts/ui-check.mjs <base> load /a /b`.

@@ -89,8 +89,8 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 ## Phase 0 — safe, building, Claude-native (1 session)
 - [ ] 0.1 **User, manual:**
   - [x] Revoke the GitHub PAT, then `git remote set-url origin https://github.com/Lazfiz/photonics-calculators.git` (use Git Credential Manager). **Done 2026-10-07** (session 8). Pushes use `gh`'s keyring login: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push …`.
-  - [ ] Delete `~/.claude/settings-glm-backup.json` (plaintext z.ai key); revoke that key if it's unused.
-  - [ ] Re-authenticate the Vercel connector for scope `mariusrut-8463s-projects` (or `vercel login`). Still needed: previews are behind Vercel login, and the connector got 403 in session 8.
+  - [ ] Delete `~/.claude/settings-glm-backup.json` (plaintext z.ai key); revoke that key if it's unused. File deleted 2026-10-07 (session 8). Open: the user revokes the key in the z.ai console.
+  - [x] Re-authenticate the Vercel connector for scope `mariusrut-8463s-projects` (or `vercel login`). **Done 2026-10-07** (session 8, with the team scope granted). `get_access_to_vercel_url` gives a share link that opens protected previews.
   - [ ] Optional: add a Defender exclusion for `C:\dev`.
 - [x] 0.2 **Environment:**
   - [x] Delete `node_modules`, `.next` and `.vercel/output`. All three are Linux artifacts: Linux-only native binaries and ~4,800 empty placeholders left where symlinks were.
@@ -135,10 +135,10 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - [x] Fix the 5 parse errors above.
   - [x] Run the full `tsc` again and fix any errors it uncovers.
   - [x] `npm test`, then `npm run build`.
-- [ ] 0.5 **CI:**
+- [x] 0.5 **CI:**
   - [x] Add `"check": "tsc --noEmit && eslint && npm test"` to `package.json`.
   - [x] Add `.github/workflows/ci.yml` (Node 24, `npm ci`, `check`, `build`) on push and PR.
-  - [ ] User: protect `main` so CI must pass.
+  - [x] User: protect `main` so CI must pass. **Done 2026-10-07:** ruleset "Protect main" (id 24673948) requires a PR (0 approvals) and `check-and-build` (GitHub Actions), and blocks force-push and deletion. Admins can bypass only through a PR.
 - [x] 0.6 **Ship:** branch `phase-0`, then PR, then a green Vercel preview, then merge. Verify live: channel-photomultiplier should show "order-of-magnitude upper bound". **Status 2026-10-07:** `phase-0` is committed locally with green gates. The push is blocked on 0.1 (the PAT is still in the remote).
   - **Done 2026-10-07 (session 8):** PR #2 merged (`11922a71`), CI green, and the live site shows the text.
 
