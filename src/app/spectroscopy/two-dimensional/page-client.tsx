@@ -12,6 +12,9 @@ export default function TwoDimensionalSpectroscopyPage() {
   const [linewidth, setLinewidth] = useURLState("linewidth", 50); // cm⁻¹
   const [t2, setT2] = useURLState("t2", 200); // fs, dephasing time
 
+  const dephasingRate = 1 / (t2 * 1e-15); // s⁻¹
+  const homogeneousWidth = dephasingRate / (Math.PI * 3e10); // cm⁻¹ FWHM = 1/(πT₂c)
+
   const chartData = useMemo(() => {
     const N = 100;
     const range = 3000;
@@ -60,8 +63,6 @@ export default function TwoDimensionalSpectroscopyPage() {
     }];
   }, [excitationCenter, coupling, linewidth, t2]);
 
-  const dephasingRate = 1 / (t2 * 1e-15); // s⁻¹
-  const homogeneousWidth = dephasingRate / (Math.PI * 3e10); // cm⁻¹ FWHM = 1/(πT₂c)
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Two-Dimensional (2D) Spectroscopy" description="Correlates excitation and detection frequencies via three-pulse photon echo. Reveals coupling, energy transfer, and homogeneous vs inhomogeneous broadening.">

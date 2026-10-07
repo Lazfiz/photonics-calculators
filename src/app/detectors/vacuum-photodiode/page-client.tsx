@@ -24,8 +24,6 @@ export default function VacuumPhotodiodePage() {
     const actualQE = wavelength <= cutoff ? quantumEff : 0;
     const resp = (actualQE * q * wavelength * 1e-9) / (h * c);
     const iPhoto = incidentPower * resp;
-    const darkCurrent = thermionicCurrent;
-    const vOut = (iPhoto + darkCurrent) * loadResistance;
     // Richardson-Dushman: J = A_RD * T² * exp(-eφ / kT), A_RD = 1.2e6 A/m²/K²
     const T = 273.15 + temperature;
     const eOverkB = 11600; // K/eV

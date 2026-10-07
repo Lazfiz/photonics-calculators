@@ -20,6 +20,7 @@ export default function FilamentationPage() {
   const zR = Math.PI * w0 ** 2 * n0 / (wavelength * 1e-9); // Rayleigh range
   const Pcr = 3.77 * (wavelength * 1e-9) ** 2 / (8 * Math.PI * n0 * n2 * 1e-20); // critical power W
   const peakPower = pulseEnergy * 1e-6 / (pulseDuration * 1e-15); // W
+  const PoverPcr = peakPower / Pcr;
 
   // Self-focusing distance (Marburger formula): z_sf decreases with power
   // z_sf = 0.367·zR / √((√(P/Pcr) - 0.852)² - 0.0219)
@@ -52,6 +53,7 @@ export default function FilamentationPage() {
     const z = Array.from({ length: 300 }, (_, i) => i * zFil * 3 / 300);
     const I = z.map(zi => {
       const zf = zFil;
+      const collapseArg = 1 + (zi / zR) ** 2 * (1 - PoverPcr);
       if (collapseArg <= 0) {
         return 5e17; // clamped intensity ~5×10¹³ W/cm² = 5×10¹⁷ W/m²
       }

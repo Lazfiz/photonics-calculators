@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { calculateGeigerMode } from "../src/lib/geiger-mode-avalanche.ts";
+import { calculateGeigerMode } from "../src/lib/geiger-mode-avalanche";
 
 const defaults = { overbias: 2, temperature: 25, tempCoeff: 50, deadTime: 100, darkCountRate: 1000 };
 

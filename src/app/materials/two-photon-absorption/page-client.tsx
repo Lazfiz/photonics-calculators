@@ -36,6 +36,7 @@ export default function TwoPhotonAbsorptionPage() {
   const mat = TPA_MATERIALS[material];
   const beta = tpaBeta(mat, wavelength);
   const L = thickness * 0.1; // mm → cm
+  const alphaTPA = beta * intensity; // cm⁻¹, effective TPA absorption coefficient α₂ = β·I
   const betaIL = beta * intensity * L; // dimensionless (β in cm/GW × I in GW/cm² × L in cm)
   const transmission = 1 / (1 + betaIL); // T = 1/(1+β·I₀·L) for plane wave TPA
   const loss_dB = -10 * Math.log10(transmission);

@@ -52,7 +52,7 @@ export default function ChannelPMTPage() {
         <ResultCard label="Energy Resolution" value={`${(results.energyRes * 100).toFixed(1)}% FWHM`} tone="purple" />
         <ResultCard label="Total Dark Rate" value={`${results.totalDarkRate.toExponential(2)} cps`} tone="orange" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>G_per_channel = G_channel</p><p>I_peak ≈ N_pe · e · G / TTS (upper bound; real pulse width > TTS)</p><p>ΔE/E (FWHM) = 2.355 / √(N_pe) [Poisson limit]</p><p>N_pe = N_photons · η · ε_coll</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>G_per_channel = G_channel</p><p>I_peak ≈ N_pe · e · G / TTS (upper bound; real pulse width &gt; TTS)</p><p>ΔE/E (FWHM) = 2.355 / √(N_pe) [Poisson limit]</p><p>N_pe = N_photons · η · ε_coll</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Channel Gain", type: "log", gridcolor: "#374151" }, yaxis: { title: "e⁻ per photon", type: "log", gridcolor: "#374151" }, yaxis2: { title: "Energy Res. (%FWHM)", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
     </CalculatorShell>
   );

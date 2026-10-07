@@ -15,6 +15,7 @@ export default function FourWaveMixingPage() {
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // m
   // χ³ from n₂: χ³[esu] = (4n₀²/3)·n₂[esu], or in SI: χ³ = (4ε₀cn₀²/3)·n₂
   const chi3_calc = (4 * 8.854e-12 * 3e8 * 1.45 * 1.45 / 3) * (n2 * 1e-20); // SI (m²/V²)
+  const beta2 = 20; // ps²/km, typical silica GVD near 1 µm
 
   // Phase matching: 2ωp = ωs + ωi → 1/λi = 2/λp - 1/λs
   const lambdaI = 1 / (2 / wavelengthPump - 1 / wavelengthSignal);
@@ -30,6 +31,7 @@ export default function FourWaveMixingPage() {
 
   // FWM efficiency: η = (γ·P_p·L)² · sinc²(Δβ·L/2) (Agrawal, Nonlinear Fiber Optics Ch.10)
   const sinc = (x: number) => Math.abs(x) < 1e-12 ? 1 : Math.sin(x) / x;
+  const gamma = (2 * Math.PI * n2 * 1e-20) / (wavelengthPump * 1e-9 * coreArea * 1e-12); // nonlinear coefficient γ = 2πn₂/(λA_eff), 1/(W·m)
   const eta = (gamma * pumpPower * 1e-3 * fiberLength) ** 2 * sinc(deltaBeta * fiberLength / 2) ** 2;
 
   // Idler power vs fiber length
@@ -44,7 +46,7 @@ export default function FourWaveMixingPage() {
     return [
       { x: lengths, y: pIdler, type: "scatter", mode: "lines", name: "Idler power", line: { color: "#60a5fa", width: 2 } },
     ];
-  }, [wavelengthPump, wavelengthSignal, pumpPower, n2, coreArea, chi3]);
+  }, [wavelengthPump, wavelengthSignal, pumpPower, n2, coreArea]);
 
   const plotLayout = {
     paper_bgcolor: "transparent", plot_bgcolor: "transparent",

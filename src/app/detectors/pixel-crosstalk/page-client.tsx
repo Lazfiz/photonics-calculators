@@ -65,8 +65,8 @@ export default function PixelCrosstalkPage() {
 
     // MTF vs spatial frequency
     const freqs = Array.from({ length: 200 }, (_, i) => i * 1 / (pixelPitch) / 200);
-    const mtf = freqs.map((f, i) => mtfIdeal[i] / (1 + totalCrosstalk * (2 * Math.PI * f * pixelPitch) ** 2));
     const mtfIdeal = freqs.map(f => { const u = Math.PI * f * pixelPitch; return u === 0 ? 1 : Math.abs(Math.sin(u) / u); }); // sinc
+    const mtf = freqs.map((f, i) => mtfIdeal[i] / (1 + totalCrosstalk * (2 * Math.PI * f * pixelPitch) ** 2));
 
     return [
       { x: wls, y: diffCt.map(c => c * 100), type: "scatter" as const, mode: "lines" as const,

@@ -17,7 +17,7 @@ export default function LightSheetThicknessPage() {
   // Rayleigh range: z_R = π·w₀²/λ (all µm)
   const zRUm = Math.PI * beamWaistUm * beamWaistUm / (wavelength / 1000);
   // Sheet thickness (2× beam waist)
-  const sheetThicknessUmUm = 2 * beamWaistUm;
+  const sheetThicknessUm = 2 * beamWaistUm;
   const rayleighRangeUm = zRUm;
 
   const chartData = useMemo(() => {
@@ -25,9 +25,9 @@ export default function LightSheetThicknessPage() {
     return [
       { x: nas, y: nas.map(n => 2 * ((wavelength / 1000) / (Math.PI * n))), type: "scatter", mode: "lines", name: "Sheet Thickness", line: { color: "#60a5fa" } },
       { x: nas, y: nas.map(n => { const w = (wavelength / 1000) / (Math.PI * n); return Math.PI * w * w / (wavelength / 1000); }), type: "scatter", mode: "lines", name: "Rayleigh Range", line: { color: "#fbbf24", dash: "dash" } },
-      { x: [na], y: [sheetThicknessUmUm], type: "scatter", mode: "markers", name: "Current Thickness", marker: { color: "#34d399", size: 12 } },
+      { x: [na], y: [sheetThicknessUm], type: "scatter", mode: "markers", name: "Current Thickness", marker: { color: "#34d399", size: 12 } },
     ];
-  }, [wavelength, na, sheetThicknessUmUm]);
+  }, [wavelength, na, sheetThicknessUm]);
 
   const profileData = useMemo(() => {
     const z = Array.from({ length: 200 }, (_, i) => (i - 100) * sheetLength / 100);

@@ -63,7 +63,7 @@ export default function StimulatedRamanPage() {
         <ValidatedNumberInput label="Path Length (cm)" value={pathLength} onChange={setPathLength} min={0.001} max={100} />
         <ValidatedNumberInput label="Concentration (M)" value={concentration} onChange={setConcentration} min={0.001} max={50} />
         <ValidatedNumberInput label="Raman Linewidth (cm⁻¹)" value={linewidth} onChange={setLinewidth} min={1} max={100} />
-        <ValidatedNumberInput label="Raman Gain Coeff. (cm/W)" value={ramanGainCoeff} onChange={setRamanGainCoeff} min={1e-14} max={1e-8} step={1e-13} />
+        <ValidatedNumberInput label="Raman Gain Coeff. (cm/W)" value={ramanGainCoeff} onChange={setRamanGainCoeff} min={1e-14} max={1e-8} step="any" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">

@@ -42,12 +42,11 @@ export default function CavityStabilityPage() {
   const chartData = useMemo(() => {
     // Stability diagram: g1 vs g2
     // Lines: g1*g2 = 0, g1*g2 = 1
-    return [
-      // Stable region shading — covers both 1st and 3rd quadrants
-      const stabGs1 = Array.from({ length: 100 }, (_, i) => 0.01 + i * 1.99 / 100);
-      const stabG2_1 = stabGs1.map(g1 => Math.min(1 / g1, 2));
-      const stabGs2 = Array.from({ length: 100 }, (_, i) => -1.99 + i * 1.98 / 100);
-      const stabG2_3 = stabGs2.map(g1 => g1 !== 0 ? Math.max(1 / g1, -2) : -2);
+    // Stable region shading — covers both 1st and 3rd quadrants
+    const stabGs1 = Array.from({ length: 100 }, (_, i) => 0.01 + i * 1.99 / 100);
+    const stabG2_1 = stabGs1.map(g1 => Math.min(1 / g1, 2));
+    const stabGs2 = Array.from({ length: 100 }, (_, i) => -1.99 + i * 1.98 / 100);
+    const stabG2_3 = stabGs2.map(g1 => g1 !== 0 ? Math.max(1 / g1, -2) : -2);
 
     return [
       // Stability boundaries
