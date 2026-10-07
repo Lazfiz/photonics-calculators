@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { reflectanceSpectrum, type Layer } from "../../../physics/thin-film/transfer-matrix";
 export default function EnvironmentalStabilityPage() {
   const [nH, setNH] = useURLState("nH", 2.35);
   const [nL, setNL] = useURLState("nL", 1.45);
@@ -18,6 +19,7 @@ export default function EnvironmentalStabilityPage() {
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 600 / 500);
+    const lambdas = wls.map((wl) => wl * 1e-9);
 
     // Environmental effects on thin films:
     // 1. Water absorption changes n (typically +0.001 to +0.02 for porous films)
@@ -32,8 +34,8 @@ export default function EnvironmentalStabilityPage() {
 
     // Humidity effect: water absorption changes n and d for porous films
     // Δn ≈ 0.02 × (RH/100) for SiO₂ (porous), negligible for dense TiO₂
-    const dn_RH_L = 0.02 * (humidityPct / 100);
-    const dn_RH_H = 0.002 * (humidityPct / 100);
+    const dn_RH_L = 0.02 / 100; // per % RH
+    const dn_RH_H = 0.002 / 100;
 
     const deltaT = tempC - 25;
 
@@ -46,42 +48,17 @@ export default function EnvironmentalStabilityPage() {
     ];
 
     for (const cond of conditions) {
-      const nH_eff = nH + cond.dT * dn_dT_H + dn_RH_H;
-      const nL_eff = nL + cond.dT * dn_dT_L + dn_RH_L;
+      const nH_eff = nH + cond.dT * dn_dT_H + cond.rh * dn_RH_H;
+      const nL_eff = nL + cond.dT * dn_dT_L + cond.rh * dn_RH_L;
 
       const dH_base = designWl / (4 * nH);
       const dL_base = designWl / (4 * nL);
       const dH_eff = dH_base * (1 + cond.dT * CTE_H);
       const dL_eff = dL_base * (1 + cond.dT * CTE_L);
 
-      // Transfer matrix
-      const R = wls.map(wl => {
-        let m11r = 1, m11i = 0, m12r = 0, m12i = 0;
-        let m21r = 0, m21i = 0, m22r = 1, m22i = 0;
-
-        for (let j = 0; j < numPairs * 2; j++) {
-          const n = j % 2 === 0 ? nH_eff : nL_eff;
-          const d = j % 2 === 0 ? dH_eff : dL_eff;
-          const delta = (2 * Math.PI * n * d) / wl;
-          const cosD = Math.cos(delta), sinD = Math.sin(delta);
-          const new11r = m11r * cosD + m12r * (-n * sinD);
-          const new11i = m11i * cosD + m12i * (-n * sinD);
-          const new12r = m11r * (-sinD / n) + m12r * cosD;
-          const new12i = m11i * (-sinD / n) + m12i * cosD;
-          const new21r = m21r * cosD + m22r * (-n * sinD);
-          const new21i = m21i * cosD + m22i * (-n * sinD);
-          const new22r = m21r * (-sinD / n) + m22r * cosD;
-          const new22i = m21i * (-sinD / n) + m22i * cosD;
-          m11r = new11r; m11i = new11i; m12r = new12r; m12i = new12i;
-          m21r = new21r; m21i = new21i; m22r = new22r; m22i = new22i;
-        }
-
-        const numR = m11r * nInc + m12r * nInc * nSub - m21r - m22r * nSub;
-        const numI = m11i * nInc + m12i * nInc * nSub - m21i - m22i * nSub;
-        const denR = m11r * nInc + m12r * nInc * nSub + m21r + m22r * nSub;
-        const denI = m11i * nInc + m12i * nInc * nSub + m21i + m22i * nSub;
-        return (numR * numR + numI * numI) / (denR * denR + denI * denI);
-      });
+      const layers: Layer[] = Array.from({ length: numPairs * 2 }, (_, j) =>
+        j % 2 === 0 ? { n: nH_eff, thickness: dH_eff * 1e-9 } : { n: nL_eff, thickness: dL_eff * 1e-9 });
+      const R = reflectanceSpectrum({ incident: nInc, layers, substrate: { n: nSub } }, lambdas);
 
       traces.push({
         x: wls, y: R, type: "scatter" as const, mode: "lines" as const,
