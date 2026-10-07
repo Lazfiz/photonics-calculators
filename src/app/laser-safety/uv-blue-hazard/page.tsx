@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'UV / Blue Light Hazard',
   description: 'Calculates weighted hazard using the blue light B() and UV S() action spectra per IEC 62471 / ICNIRP guidelines.',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `UV / Blue Light Hazard',
-  description: 'Calculates weighted hazard using the blue light B() and UV S() action spectra per IEC 62471 / ICNIRP guidelines.',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'UV / Blue Light Hazard',
   'Calculates weighted hazard using the blue light B() and UV S() action spectra per IEC 62471 / ICNIRP guidelines.',
   'https://photonics-calculators.vercel.app/laser-safety/uv-blue-hazard',
-  { category: 'Laser Safety`,
-  `Calculates weighted hazard using the blue light B() and UV S() action spectra per IEC 62471 / ICNIRP guidelines.',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'UV / Blue Light Hazard',
-  'Calculates weighted hazard using the blue light B() and UV S() action spectra per IEC 62471 / ICNIRP guidelines.',
-  'https://photonics-calculators.vercel.app/laser-safety/uv-blue-hazard',
-  { category: 'Laser Safety`,
-  `https://photonics-calculators.vercel.app/laser-safety/uv-blue-hazard`,
-  { category: `Laser Safety` }
+  { category: 'Laser Safety' }
 );
+
 export default function Page() {
   return (
     <>

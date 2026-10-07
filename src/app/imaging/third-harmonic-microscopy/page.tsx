@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Third-Harmonic Generation Microscopy Calculator',
   description: 'Calculate THG wavelength, signal intensity, and resolution for label-free interface and heterogeneity imaging.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Third-Harmonic Generation Microscopy Calculator',
-  description: 'Calculate THG wavelength, signal intensity, and resolution for label-free interface and heterogeneity imaging.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Third-Harmonic Generation Microscopy Calculator',
   'Calculate THG wavelength, signal intensity, and resolution for label-free interface and heterogeneity imaging.',
   'https://photonics-calculators.vercel.app/imaging/third-harmonic-microscopy',
-  { category: 'Imaging`,
-  `Calculate THG wavelength, signal intensity, and resolution for label-free interface and heterogeneity imaging.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Third-Harmonic Generation Microscopy Calculator',
-  'Calculate THG wavelength, signal intensity, and resolution for label-free interface and heterogeneity imaging.',
-  'https://photonics-calculators.vercel.app/imaging/third-harmonic-microscopy',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/third-harmonic-microscopy`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

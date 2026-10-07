@@ -20,6 +20,7 @@ description: Add a new calculator page end-to-end - physics module, golden test,
    `git grep -c "const jsonLd" -- <file>`, which must be 1). Give it a real description (no "Interactive X
    calculator for photonics…" placeholder) and a canonical URL.
 5. **Listings** (until the registry exists, all of them by hand): `src/app/sitemap.ts`,
-   `src/lib/home-categories.ts`, the category index page, and `src/generated/search-index.json` (regenerate with
-   `node scripts/generate-search-index.mjs`).
+   `src/lib/home-categories.ts` (examples only; counts are generated), the category index page, and
+   `src/generated/search-index.json` + `calculator-counts.json` (regenerate both with
+   `node scripts/generate-search-index.mjs`; commit the counts, `tests/calculator-counts.test.ts` checks them).
 6. `/verify`: check, then build. Open the page in `npm run dev` and try the defaults plus one edge input.

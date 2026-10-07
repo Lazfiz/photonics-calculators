@@ -91,8 +91,7 @@ export default function WDMCouplerCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="WDM Channel Plan" description="WDM channel wavelengths, frequency spacing, ITU-T grid type (CWDM or DWDM), total bandwidth, insertion loss and isolation from channel count and spacing.">
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -107,27 +106,21 @@ export default function WDMCouplerCalculator() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Number of Channels</label>
               <ValidatedNumberInput label="Number of Channels" value={channelCount} onChange={setChannelCount} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Channel Spacing (nm)</label>
               <ValidatedNumberInput label="Channel Spacing (nm)" value={channelSpacing} onChange={setChannelSpacing} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Center Wavelength (nm)</label>
               <ValidatedNumberInput label="Center Wavelength (nm)" value={centerWavelength} onChange={setCenterWavelength} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Passband Width (nm)</label>
               <ValidatedNumberInput label="Passband Width (nm)" value={passbandWidth} onChange={setPassbandWidth} step="0.05" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Insertion Loss (dB)</label>
               <ValidatedNumberInput label="Insertion Loss (dB)" value={insertionLoss} onChange={setInsertionLoss} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Isolation (dB)</label>
               <ValidatedNumberInput label="Isolation (dB)" value={isolation} onChange={setIsolation} step="1" />
             </div>
           </div>
@@ -166,7 +159,6 @@ export default function WDMCouplerCalculator() {
         <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
           <ChartPanel data={spectrum} layout={layout} />
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

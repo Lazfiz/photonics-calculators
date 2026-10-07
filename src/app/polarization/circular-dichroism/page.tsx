@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Circular Dichroism',
   description: 'Calculate CD parameters: A, , molar ellipticity, and g-factor from absorbance of left and right circularly polarized light.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Circular Dichroism',
-  description: 'Calculate CD parameters: A, , molar ellipticity, and g-factor from absorbance of left and right circularly polarized light.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Circular Dichroism',
   'Calculate CD parameters: A, , molar ellipticity, and g-factor from absorbance of left and right circularly polarized light.',
   'https://photonics-calculators.vercel.app/polarization/circular-dichroism',
-  { category: 'Polarization`,
-  `Calculate CD parameters: A, , molar ellipticity, and g-factor from absorbance of left and right circularly polarized light.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Circular Dichroism',
-  'Calculate CD parameters: A, , molar ellipticity, and g-factor from absorbance of left and right circularly polarized light.',
-  'https://photonics-calculators.vercel.app/polarization/circular-dichroism',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/circular-dichroism`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

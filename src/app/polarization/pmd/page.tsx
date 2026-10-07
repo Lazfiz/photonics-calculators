@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Polarization Mode Dispersion',
   description: 'Calculate PMD-induced DGD, Maxwellian statistics, and system penalties.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Polarization Mode Dispersion',
-  description: 'Calculate PMD-induced DGD, Maxwellian statistics, and system penalties.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Polarization Mode Dispersion',
   'Calculate PMD-induced DGD, Maxwellian statistics, and system penalties.',
   'https://photonics-calculators.vercel.app/polarization/pmd',
-  { category: 'Polarization`,
-  `Calculate PMD-induced DGD, Maxwellian statistics, and system penalties.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Polarization Mode Dispersion',
-  'Calculate PMD-induced DGD, Maxwellian statistics, and system penalties.',
-  'https://photonics-calculators.vercel.app/polarization/pmd',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/pmd`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

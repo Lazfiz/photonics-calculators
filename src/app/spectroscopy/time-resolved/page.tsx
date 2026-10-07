@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Time-Resolved Spectroscopy',
   description: 'TCSPC and streak camera fundamentals. IRF convolution, temporal resolution, and decay analysis.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Time-Resolved Spectroscopy',
-  description: 'TCSPC and streak camera fundamentals. IRF convolution, temporal resolution, and decay analysis.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Time-Resolved Spectroscopy',
   'TCSPC and streak camera fundamentals. IRF convolution, temporal resolution, and decay analysis.',
   'https://photonics-calculators.vercel.app/spectroscopy/time-resolved',
-  { category: 'Spectroscopy`,
-  `TCSPC and streak camera fundamentals. IRF convolution, temporal resolution, and decay analysis.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Time-Resolved Spectroscopy',
-  'TCSPC and streak camera fundamentals. IRF convolution, temporal resolution, and decay analysis.',
-  'https://photonics-calculators.vercel.app/spectroscopy/time-resolved',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/time-resolved`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

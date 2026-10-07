@@ -112,23 +112,18 @@ export default function RetinalImageSizePage() {
       <LaserSafetyDisclaimer />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Beam Diameter at Cornea (mm)</label>
           <ValidatedNumberInput label="Beam Diameter at Cornea (mm)" value={beamDiam} onChange={setBeamDiam} step="0.1" />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Beam Divergence (mrad)</label>
           <ValidatedNumberInput label="Beam Divergence (mrad)" value={beamDivergence} onChange={setBeamDivergence} step="0.1" />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Viewing Distance (cm)</label>
           <ValidatedNumberInput label="Viewing Distance (cm)" value={viewingDistance} onChange={setViewingDistance} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Eye Length (mm)</label>
           <ValidatedNumberInput label="Eye Length (mm)" value={eyeLength} onChange={setEyeLength} step="0.5" />
         </div>
       </div>

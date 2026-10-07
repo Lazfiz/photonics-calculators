@@ -104,19 +104,17 @@ export default function DiodeLaserResonatorPage() {
   const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-6xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-      </div>
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Diode Laser Resonator" description="Threshold gain and current, differential efficiency and far-field divergence of a Fabry–Pérot diode laser from cavity length and facet reflectivity." maxWidthClassName="max-w-6xl">
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Cavity Length (µm)</label><ValidatedNumberInput label="Cavity Length (µm)" value={cavityLength} onChange={setCavityLength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Stripe Width (µm)</label><ValidatedNumberInput label="Stripe Width (µm)" value={stripeWidth} onChange={setStripeWidth} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Active Thickness (µm)</label><ValidatedNumberInput label="Active Thickness (µm)" value={activeThickness} onChange={setActiveThickness} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Wavelength (nm)</label><ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Internal Loss (cm⁻¹)</label><ValidatedNumberInput label="Internal Loss (cm⁻¹)" value={alpha_i} onChange={setAlpha_i} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Facet R₁</label><ValidatedNumberInput label="Internal Loss (cm⁻¹)" value={mirrorR1} onChange={setMirrorR1} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Facet R₂</label><ValidatedNumberInput label="Facet R₁" value={mirrorR2} onChange={setMirrorR2} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Effective Index</label><ValidatedNumberInput label="Facet R₂" value={n_eff} onChange={setN_eff} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Cavity Length (µm)" value={cavityLength} onChange={setCavityLength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Stripe Width (µm)" value={stripeWidth} onChange={setStripeWidth} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Active Thickness (µm)" value={activeThickness} onChange={setActiveThickness} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Internal Loss (cm⁻¹)" value={alpha_i} onChange={setAlpha_i} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Facet R₁" value={mirrorR1} onChange={setMirrorR1} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Facet R₂" value={mirrorR2} onChange={setMirrorR2} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Effective Index" value={n_eff} onChange={setN_eff} /></div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
@@ -143,6 +141,6 @@ export default function DiodeLaserResonatorPage() {
         <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Threshold Gain vs Cavity Length</h3><ChartPanel data={gthVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "L (µm)" }, yaxis: { ...plotLayout.yaxis, title: "g_th (cm⁻¹)" } }} /></div>
         <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">η_d vs Cavity Length</h3><ChartPanel data={etaVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "L (µm)" }, yaxis: { ...plotLayout.yaxis, title: "η_d (%)" } }} /></div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

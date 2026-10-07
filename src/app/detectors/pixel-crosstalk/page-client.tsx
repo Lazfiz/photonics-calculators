@@ -86,7 +86,7 @@ export default function PixelCrosstalkPage() {
   const mtfAtNyquist = mtfCrosstalk(nyquistFreq);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
+    <CalculatorShell backHref="/detectors" backLabel="Detectors" title={"Pixel Crosstalk & MTF"} description="Charge diffusion and electrical crosstalk: wavelength-dependent absorption depth, total crosstalk, and MTF degradation.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Pixel Pitch (µm)" value={pixelPitch} onChange={setPixelPitch} min={0.5} step="0.1" />
         <ValidatedNumberInput label="Depletion Depth (µm)" value={depletionDepth} onChange={setDepletionDepth} min={1} step="1" />
@@ -131,6 +131,6 @@ export default function PixelCrosstalkPage() {
           }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

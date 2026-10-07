@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import ErrorBoundary from "./error-boundary";
+import { currentQuery, subscribe } from "@/lib/url-state-store";
 
 interface CalculatorShellProps {
   title?: string;
@@ -13,16 +15,26 @@ interface CalculatorShellProps {
   maxWidthClassName?: string;
 }
 
+/** Shown once the page has URL params; copies the link that reproduces the inputs. */
 function ShareButton() {
+  const pathname = usePathname();
+  // Prerender and hydration see no params (as `useURLState` does); the real query follows right
+  // after hydration and on every input change.
+  const query = useSyncExternalStore(subscribe, () => currentQuery(pathname), () => "");
   const [copied, setCopied] = useState(false);
-  const hasParams = typeof window !== "undefined" && window.location.search.length > 0;
-  if (!hasParams) return null;
+  if (!query) return null;
   return (
     <button
       onClick={() => {
-        navigator.clipboard.writeText(window.location.href);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        const url = `${window.location.origin}${pathname}?${query}${window.location.hash}`;
+        // The clipboard API is missing or blocked in insecure contexts; the address bar still has the link.
+        navigator.clipboard?.writeText(url).then(
+          () => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          },
+          () => {}
+        );
       }}
       className="shrink-0 mt-1 inline-flex items-center gap-1.5 rounded-lg border border-gray-700 bg-gray-900 px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:border-gray-500 transition-colors"
       title="Copy URL with current settings"
@@ -50,13 +62,16 @@ export default function CalculatorShell({
   children,
   maxWidthClassName = "max-w-4xl",
 }: CalculatorShellProps) {
-  // Build breadcrumb path from backHref: /fiber-optics → [{href: "/", label: "Home"}, {href: "/fiber-optics", label: "Fiber Optics"}]
+  // Ancestors from backHref: /fiber-optics → Home › Fiber Optics. The last one is named by backLabel.
   const segments = backHref.split("/").filter(Boolean);
   const breadcrumbs = [
     { href: "/", label: "Home" },
     ...segments.map((seg, i) => ({
       href: "/" + segments.slice(0, i + 1).join("/"),
-      label: seg.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
+      label:
+        i === segments.length - 1
+          ? backLabel
+          : seg.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
     })),
   ];
 
@@ -66,21 +81,18 @@ export default function CalculatorShell({
         {/* Breadcrumbs */}
         <nav aria-label="Breadcrumb" className="text-xs text-gray-500 mb-3">
           <ol className="flex flex-wrap items-center gap-1">
+            {/* Every crumb is an ancestor, so each is a link; the page itself is the title. */}
             {breadcrumbs.map((crumb, i) => (
               <li key={crumb.href} className="flex items-center gap-1">
                 {i > 0 && <span aria-hidden="true">›</span>}
-                {i < breadcrumbs.length ? (
-                  <Link href={crumb.href} className="hover:text-gray-300">{crumb.label}</Link>
-                ) : (
-                  <span className="text-gray-400">{crumb.label}</span>
-                )}
+                <Link href={crumb.href} className="hover:text-gray-300">{crumb.label}</Link>
               </li>
             ))}
             {title && (
-              <>
+              <li className="flex items-center gap-1">
                 <span aria-hidden="true">›</span>
-                <li className="text-gray-400">{title}</li>
-              </>
+                <span aria-current="page" className="text-gray-400">{title}</span>
+              </li>
             )}
           </ol>
         </nav>

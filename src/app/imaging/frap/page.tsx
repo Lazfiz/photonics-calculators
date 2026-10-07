@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'FRAP Diffusion Coefficient Calculator',
   description: 'Calculate diffusion coefficients from Fluorescence Recovery After Photobleaching data.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `FRAP Diffusion Coefficient Calculator',
-  description: 'Calculate diffusion coefficients from Fluorescence Recovery After Photobleaching data.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'FRAP Diffusion Coefficient Calculator',
   'Calculate diffusion coefficients from Fluorescence Recovery After Photobleaching data.',
   'https://photonics-calculators.vercel.app/imaging/frap',
-  { category: 'Imaging`,
-  `Calculate diffusion coefficients from Fluorescence Recovery After Photobleaching data.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'FRAP Diffusion Coefficient Calculator',
-  'Calculate diffusion coefficients from Fluorescence Recovery After Photobleaching data.',
-  'https://photonics-calculators.vercel.app/imaging/frap',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/frap`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

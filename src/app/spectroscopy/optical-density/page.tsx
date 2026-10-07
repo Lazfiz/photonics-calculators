@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Optical Density',
   description: 'Convert optical density, transmission, and attenuation with interactive presets and slider-based exploration.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Optical Density',
-  description: 'Convert optical density, transmission, and attenuation with interactive presets and slider-based exploration.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Optical Density',
   'Convert optical density, transmission, and attenuation with interactive presets and slider-based exploration.',
   'https://photonics-calculators.vercel.app/spectroscopy/optical-density',
-  { category: 'Spectroscopy`,
-  `Convert optical density, transmission, and attenuation with interactive presets and slider-based exploration.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Optical Density',
-  'Convert optical density, transmission, and attenuation with interactive presets and slider-based exploration.',
-  'https://photonics-calculators.vercel.app/spectroscopy/optical-density',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/optical-density`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

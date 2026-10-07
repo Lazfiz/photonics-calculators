@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Thermal Conductivity for Optics',
   description: 'Heat transport in optical substrates',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Thermal Conductivity for Optics',
-  description: 'Heat transport in optical substrates',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Thermal Conductivity for Optics',
   'Heat transport in optical substrates',
   'https://photonics-calculators.vercel.app/materials/thermal-conductivity-optics',
-  { category: 'Materials`,
-  `Heat transport in optical substrates',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Thermal Conductivity for Optics',
-  'Heat transport in optical substrates',
-  'https://photonics-calculators.vercel.app/materials/thermal-conductivity-optics',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/thermal-conductivity-optics`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

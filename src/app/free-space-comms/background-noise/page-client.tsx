@@ -76,7 +76,7 @@ export default function BackgroundNoisePage() {
   }, [rxArea, backgroundType, rxBandwidth, rxFOV, filterRejection]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="FSO Background Noise" description="Background power, photon rate and electrons per bit from day sky, night sky, direct sun or urban glow for a given receiver FOV, aperture and filter." maxWidthClassName="max-w-5xl">
             
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -99,8 +99,7 @@ export default function BackgroundNoisePage() {
             ["Filter Rejection (dB)", filterRejection, setFilterRejection],
           ].map(([label, val, set]: any) => (
             <div key={label as string}>
-              <label className="block text-sm text-gray-400 mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
         </div>
@@ -131,6 +130,6 @@ export default function BackgroundNoisePage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

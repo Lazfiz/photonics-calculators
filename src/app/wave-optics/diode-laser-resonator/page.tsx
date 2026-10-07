@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/wave-optics/diode-laser-resonator' },
     title: 'Diode Laser Resonator',
-  description: 'Interactive Diode Laser Resonator calculator for photonics and optical engineering.'
+  description: 'Threshold gain and current, differential efficiency and far-field divergence of a Fabry–Pérot diode laser from cavity length and facet reflectivity.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Diode Laser Resonator',
-  description: 'Interactive Diode Laser Resonator calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Diode Laser Resonator',
-  'Interactive Diode Laser Resonator calculator for photonics and optical engineering.',
+  'Threshold gain and current, differential efficiency and far-field divergence of a Fabry–Pérot diode laser from cavity length and facet reflectivity.',
   'https://photonics-calculators.vercel.app/wave-optics/diode-laser-resonator',
-  { category: 'Wave Optics`,
-  `Interactive Diode Laser Resonator calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Diode Laser Resonator',
-  'Interactive Diode Laser Resonator calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/wave-optics/diode-laser-resonator',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/diode-laser-resonator`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

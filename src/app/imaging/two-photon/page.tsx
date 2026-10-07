@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Two-Photon Microscopy Calculator',
   description: 'Excitation wavelength, resolution, and pulse parameters for two-photon fluorescence microscopy.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Two-Photon Microscopy Calculator',
-  description: 'Excitation wavelength, resolution, and pulse parameters for two-photon fluorescence microscopy.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Two-Photon Microscopy Calculator',
   'Excitation wavelength, resolution, and pulse parameters for two-photon fluorescence microscopy.',
   'https://photonics-calculators.vercel.app/imaging/two-photon',
-  { category: 'Imaging`,
-  `Excitation wavelength, resolution, and pulse parameters for two-photon fluorescence microscopy.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Two-Photon Microscopy Calculator',
-  'Excitation wavelength, resolution, and pulse parameters for two-photon fluorescence microscopy.',
-  'https://photonics-calculators.vercel.app/imaging/two-photon',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/two-photon`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

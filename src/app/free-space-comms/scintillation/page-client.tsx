@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { erfc } from "../../../physics/math";
 
 export default function ScintillationPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
@@ -44,7 +45,7 @@ export default function ScintillationPage() {
     const fadeProb = fadeThresholds.map((T) => {
       const lnF = T * Math.LN10 / 10; // ln(fade threshold ratio)
       const z = (lnF + sigma_ln_sq / 2) / (sigma_ln * Math.SQRT2);
-      return 0.5 * (1 + erf(z));
+      return 0.5 * erfc(-z);
     });
 
     // Scintillation vs distance
@@ -89,8 +90,7 @@ export default function ScintillationPage() {
             { label: "Aperture Diameter (m)", val: apertureDiameter, set: setApertureDiameter },
           ].map(({ label, val, set }) => (
             <div key={label} className="mb-3">
-              <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} step="any" />
+              <ValidatedNumberInput label={label} value={val} onChange={set} step="any" />
             </div>
           ))}
           <div className="mb-3">
@@ -150,15 +150,6 @@ export default function ScintillationPage() {
       </div>
     </CalculatorShell>
   );
-}
-
-function erf(x: number): number {
-  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
-  const sign = x >= 0 ? 1 : -1;
-  x = Math.abs(x);
-  const t = 1 / (1 + p * x);
-  const y = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
-  return sign * y;
 }
 
 function ResultRow({ label, value }: { label: string; value: string }) {

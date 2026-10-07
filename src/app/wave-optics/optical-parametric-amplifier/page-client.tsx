@@ -68,8 +68,7 @@ export default function OPACalculator() {
   const ax = { gridcolor: "#333", zerolinecolor: "#444", color: "#ccc" };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6">
-            <p className="text-gray-500 mb-6">Non-collinear or collinear OPA gain analysis. Parametric amplification of a seed signal by a strong pump.</p>
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Optical Parametric Amplifier" description="Parametric power gain of an OPA from pump intensity, d_eff, refractive indices and crystal length, versus pump power, length and signal wavelength." maxWidthClassName="max-w-6xl">
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 border border-gray-800">
         <h3 className="text-cyan-400 font-semibold mb-2">Key Equations</h3>
@@ -126,6 +125,6 @@ export default function OPACalculator() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

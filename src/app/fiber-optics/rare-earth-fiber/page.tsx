@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/rare-earth-fiber' },
-    title: 'Rare Earth Fiber',
-  description: 'Interactive Rare Earth Fiber calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Rare Earth Fiber',
-  description: 'Interactive Rare Earth Fiber calculator for photonics and optical engineering.'
+    title: 'Rare-Earth Fiber Dopants',
+  description: 'Pump bands, cross-sections, lifetime, absorption, small-signal gain and optimal length of Er, Yb, Tm and Ho-doped fibers from concentration and core size.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Rare Earth Fiber',
-  'Interactive Rare Earth Fiber calculator for photonics and optical engineering.',
+  'Rare-Earth Fiber Dopants',
+  'Pump bands, cross-sections, lifetime, absorption, small-signal gain and optimal length of Er, Yb, Tm and Ho-doped fibers from concentration and core size.',
   'https://photonics-calculators.vercel.app/fiber-optics/rare-earth-fiber',
-  { category: 'Fiber Optics`,
-  `Interactive Rare Earth Fiber calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Rare Earth Fiber',
-  'Interactive Rare Earth Fiber calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/fiber-optics/rare-earth-fiber',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/rare-earth-fiber`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

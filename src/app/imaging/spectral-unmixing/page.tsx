@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Spectral Unmixing',
   description: 'Decompose mixed spectral signals into constituent endmember abundances using linear unmixing methods.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Spectral Unmixing',
-  description: 'Decompose mixed spectral signals into constituent endmember abundances using linear unmixing methods.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Spectral Unmixing',
   'Decompose mixed spectral signals into constituent endmember abundances using linear unmixing methods.',
   'https://photonics-calculators.vercel.app/imaging/spectral-unmixing',
-  { category: 'Imaging`,
-  `Decompose mixed spectral signals into constituent endmember abundances using linear unmixing methods.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Spectral Unmixing',
-  'Decompose mixed spectral signals into constituent endmember abundances using linear unmixing methods.',
-  'https://photonics-calculators.vercel.app/imaging/spectral-unmixing',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/spectral-unmixing`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

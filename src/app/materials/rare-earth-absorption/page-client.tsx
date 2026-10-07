@@ -87,11 +87,9 @@ export default function RareEarthAbsorptionPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Concentration (ions/m³)</label>
           <ValidatedNumberInput label="Concentration (ions/m³)" value={concentration} onChange={setConcentration} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Probe Wavelength (nm)</label>
           <ValidatedNumberInput label="Probe Wavelength (nm)" value={pumpWl} onChange={setPumpWl} />
         </div>
         <div className="flex items-end">

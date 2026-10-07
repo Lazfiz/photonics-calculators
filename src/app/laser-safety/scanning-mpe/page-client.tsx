@@ -116,23 +116,18 @@ export default function ScanningMPEPage() {
       <LaserSafetyQuarantineBanner />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Beam Diameter (mm)</label>
           <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDiam} onChange={setBeamDiam} step="0.1" />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Scan Rate (Hz)</label>
           <ValidatedNumberInput label="Scan Rate (Hz)" value={scanRate} onChange={setScanRate} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Scan Angle (°)</label>
           <ValidatedNumberInput label="Scan Angle (°)" value={scanAngle} onChange={setScanAngle} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Working Distance (cm)</label>
           <ValidatedNumberInput label="Working Distance (cm)" value={workingDistance} onChange={setWorkingDistance} />
         </div>
       </div>

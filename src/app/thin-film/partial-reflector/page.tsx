@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Partial Reflector Design',
   description: 'Partial reflectors (output couplers, etalon mirrors) provide controlled reflectance between',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Partial Reflector Design',
-  description: 'Partial reflectors (output couplers, etalon mirrors) provide controlled reflectance between',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Partial Reflector Design',
   'Partial reflectors (output couplers, etalon mirrors) provide controlled reflectance between',
   'https://photonics-calculators.vercel.app/thin-film/partial-reflector',
-  { category: 'Thin Film`,
-  `Partial reflectors (output couplers, etalon mirrors) provide controlled reflectance between',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Partial Reflector Design',
-  'Partial reflectors (output couplers, etalon mirrors) provide controlled reflectance between',
-  'https://photonics-calculators.vercel.app/thin-film/partial-reflector',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/partial-reflector`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

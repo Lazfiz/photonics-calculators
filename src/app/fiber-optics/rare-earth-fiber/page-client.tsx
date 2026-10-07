@@ -113,8 +113,7 @@ export default function RareEarthFiberCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Rare-Earth Fiber Dopants" description="Pump bands, cross-sections, lifetime, absorption, small-signal gain and optimal length of Er, Yb, Tm and Ho-doped fibers from concentration and core size.">
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -138,23 +137,18 @@ export default function RareEarthFiberCalculator() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Dopant Concentration (ions/m³)</label>
               <ValidatedNumberInput label="Dopant Concentration (ions/m³)" value={dopantConcentration} onChange={setDopantConcentration} step="1e23" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Fiber Length (m)</label>
               <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Core Diameter (µm)</label>
               <ValidatedNumberInput label="Core Diameter (µm)" value={coreDiameter} onChange={setCoreDiameter} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Numerical Aperture</label>
               <ValidatedNumberInput label="Numerical Aperture" value={numericalAperture} onChange={setNumericalAperture} step="0.01" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Overlap Factor Γ</label>
               <ValidatedNumberInput label="Overlap Factor Γ" value={overlapFactor} onChange={setOverlapFactor} step="0.05" />
             </div>
           </div>
@@ -197,7 +191,6 @@ export default function RareEarthFiberCalculator() {
             <ChartPanel data={gainVsLength} layout={layout2} />
           </div>
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

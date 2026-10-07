@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Edge Filter Design',
   description: '{type === "long" ? "Long-pass" : "Short-pass"} edge filter — quarter-wave stack transition region and cut-on/cut-off wavelength.',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Edge Filter Design',
-  description: '{type === "long" ? "Long-pass" : "Short-pass"} edge filter — quarter-wave stack transition region and cut-on/cut-off wavelength.',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Edge Filter Design',
-  '{type === "long" ? "Long-pass" : "Short-pass"} edge filter — quarter-wave stack transition region and cut-on/cut-off wavelength.',
+  "{type === \"long\" ? \"Long-pass\" : \"Short-pass\"} edge filter — quarter-wave stack transition region and cut-on/cut-off wavelength.",
   'https://photonics-calculators.vercel.app/thin-film/edge-filter',
-  { category: 'Thin Film`,
-  `{type === "long" ? "Long-pass" : "Short-pass"} edge filter — quarter-wave stack transition region and cut-on/cut-off wavelength.',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Edge Filter Design',
-  '{type === "long" ? "Long-pass" : "Short-pass"} edge filter — quarter-wave stack transition region and cut-on/cut-off wavelength.',
-  'https://photonics-calculators.vercel.app/thin-film/edge-filter',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/edge-filter`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

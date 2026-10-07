@@ -96,7 +96,6 @@ export default function SchottGlassPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={380} max={2500} />
         </div>
       </div>

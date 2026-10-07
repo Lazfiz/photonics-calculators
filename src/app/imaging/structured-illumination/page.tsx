@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Structured Illumination Microscopy',
   description: 'SIM resolution enhancement and OTF expansion via patterned illumination.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Structured Illumination Microscopy',
-  description: 'SIM resolution enhancement and OTF expansion via patterned illumination.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Structured Illumination Microscopy',
   'SIM resolution enhancement and OTF expansion via patterned illumination.',
   'https://photonics-calculators.vercel.app/imaging/structured-illumination',
-  { category: 'Imaging`,
-  `SIM resolution enhancement and OTF expansion via patterned illumination.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Structured Illumination Microscopy',
-  'SIM resolution enhancement and OTF expansion via patterned illumination.',
-  'https://photonics-calculators.vercel.app/imaging/structured-illumination',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/structured-illumination`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

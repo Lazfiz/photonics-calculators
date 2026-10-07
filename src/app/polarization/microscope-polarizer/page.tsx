@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Microscope Polarizer Calculator',
   description: 'Analyze polarization effects in microscopy: extinction, retardance sensitivity, NA degradation, and Michel-Lévy colors.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Microscope Polarizer Calculator',
-  description: 'Analyze polarization effects in microscopy: extinction, retardance sensitivity, NA degradation, and Michel-Lévy colors.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Microscope Polarizer Calculator',
   'Analyze polarization effects in microscopy: extinction, retardance sensitivity, NA degradation, and Michel-Lévy colors.',
   'https://photonics-calculators.vercel.app/polarization/microscope-polarizer',
-  { category: 'Polarization`,
-  `Analyze polarization effects in microscopy: extinction, retardance sensitivity, NA degradation, and Michel-Lévy colors.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Microscope Polarizer Calculator',
-  'Analyze polarization effects in microscopy: extinction, retardance sensitivity, NA degradation, and Michel-Lévy colors.',
-  'https://photonics-calculators.vercel.app/polarization/microscope-polarizer',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/microscope-polarizer`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

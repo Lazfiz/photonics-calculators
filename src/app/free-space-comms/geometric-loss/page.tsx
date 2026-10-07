@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/geometric-loss' },
-    title: 'Geometric Loss',
-  description: 'Interactive Geometric Loss calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Geometric Loss',
-  description: 'Interactive Geometric Loss calculator for photonics and optical engineering.'
+    title: 'FSO Geometric Loss',
+  description: 'Beam diameter at the receiver, geometric spreading loss and coupling efficiency from transmitter divergence, apertures, range and wavelength.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Geometric Loss',
-  'Interactive Geometric Loss calculator for photonics and optical engineering.',
+  'FSO Geometric Loss',
+  'Beam diameter at the receiver, geometric spreading loss and coupling efficiency from transmitter divergence, apertures, range and wavelength.',
   'https://photonics-calculators.vercel.app/free-space-comms/geometric-loss',
-  { category: 'Free Space Comms`,
-  `Interactive Geometric Loss calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Geometric Loss',
-  'Interactive Geometric Loss calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/geometric-loss',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/geometric-loss`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

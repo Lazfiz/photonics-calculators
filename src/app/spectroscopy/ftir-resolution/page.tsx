@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'FTIR Resolution Calculator',
   description: 'FTIR spectral resolution from maximum OPD, apodization, and scan parameters.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `FTIR Resolution Calculator',
-  description: 'FTIR spectral resolution from maximum OPD, apodization, and scan parameters.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'FTIR Resolution Calculator',
   'FTIR spectral resolution from maximum OPD, apodization, and scan parameters.',
   'https://photonics-calculators.vercel.app/spectroscopy/ftir-resolution',
-  { category: 'Spectroscopy`,
-  `FTIR spectral resolution from maximum OPD, apodization, and scan parameters.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'FTIR Resolution Calculator',
-  'FTIR spectral resolution from maximum OPD, apodization, and scan parameters.',
-  'https://photonics-calculators.vercel.app/spectroscopy/ftir-resolution',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/ftir-resolution`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/channel-capacity' },
-    title: 'Channel Capacity',
-  description: 'Interactive Channel Capacity calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Channel Capacity',
-  description: 'Interactive Channel Capacity calculator for photonics and optical engineering.'
+    title: 'FSO Channel Capacity',
+  description: 'Shannon capacity, achievable rate of OOK, PSK and 16-QAM after FEC overhead, gap to Shannon and required SNR for a given bandwidth and SNR.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Channel Capacity',
-  'Interactive Channel Capacity calculator for photonics and optical engineering.',
+  'FSO Channel Capacity',
+  'Shannon capacity, achievable rate of OOK, PSK and 16-QAM after FEC overhead, gap to Shannon and required SNR for a given bandwidth and SNR.',
   'https://photonics-calculators.vercel.app/free-space-comms/channel-capacity',
-  { category: 'Free Space Comms`,
-  `Interactive Channel Capacity calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Channel Capacity',
-  'Interactive Channel Capacity calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/channel-capacity',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/channel-capacity`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

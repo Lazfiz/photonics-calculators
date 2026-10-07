@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Emission Spectra Fitting',
   description: 'Model photoluminescence emission with asymmetric Gaussian line shapes.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Emission Spectra Fitting',
-  description: 'Model photoluminescence emission with asymmetric Gaussian line shapes.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Emission Spectra Fitting',
   'Model photoluminescence emission with asymmetric Gaussian line shapes.',
   'https://photonics-calculators.vercel.app/spectroscopy/emission-spectra',
-  { category: 'Spectroscopy`,
-  `Model photoluminescence emission with asymmetric Gaussian line shapes.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Emission Spectra Fitting',
-  'Model photoluminescence emission with asymmetric Gaussian line shapes.',
-  'https://photonics-calculators.vercel.app/spectroscopy/emission-spectra',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/emission-spectra`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

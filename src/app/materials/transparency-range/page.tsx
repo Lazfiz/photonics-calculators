@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Transparency Range',
   description: 'UV cutoff to IR cutoff for common optical materials',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Transparency Range',
-  description: 'UV cutoff to IR cutoff for common optical materials',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Transparency Range',
   'UV cutoff to IR cutoff for common optical materials',
   'https://photonics-calculators.vercel.app/materials/transparency-range',
-  { category: 'Materials`,
-  `UV cutoff to IR cutoff for common optical materials',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Transparency Range',
-  'UV cutoff to IR cutoff for common optical materials',
-  'https://photonics-calculators.vercel.app/materials/transparency-range',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/transparency-range`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

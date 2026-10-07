@@ -86,11 +86,9 @@ export default function FluorescenceSpectraPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Emission filter center (nm)</label>
             <ValidatedNumberInput label="Emission filter center (nm)" value={filterCenter} onChange={setFilterCenter} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Emission filter bandwidth (nm)</label>
             <ValidatedNumberInput label="Emission filter bandwidth (nm)" value={filterBW} onChange={setFilterBW} />
           </div>
           <label className="flex items-center gap-2 text-sm">

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Two-Photon Excitation Calculator',
   description: 'Calculate two-photon excitation wavelength, peak power, and pulse energy from laser parameters.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Two-Photon Excitation Calculator',
-  description: 'Calculate two-photon excitation wavelength, peak power, and pulse energy from laser parameters.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Two-Photon Excitation Calculator',
   'Calculate two-photon excitation wavelength, peak power, and pulse energy from laser parameters.',
   'https://photonics-calculators.vercel.app/imaging/two-photon-excitation',
-  { category: 'Imaging`,
-  `Calculate two-photon excitation wavelength, peak power, and pulse energy from laser parameters.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Two-Photon Excitation Calculator',
-  'Calculate two-photon excitation wavelength, peak power, and pulse energy from laser parameters.',
-  'https://photonics-calculators.vercel.app/imaging/two-photon-excitation',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/two-photon-excitation`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

@@ -52,7 +52,7 @@ export default function SPCMPage() {
   }, [deadTime, darkCountRate, quantumEff, wavelength]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
+    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Single-Photon Counting Module" description="SPCM dead time correction, SNR, dark count effects, and afterpulsing analysis.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Dead Time (ns)" value={deadTime} onChange={setDeadTime} />
         <ValidatedNumberInput label="Dark Count Rate (counts/s)" value={darkCountRate} onChange={setDarkCountRate} />
@@ -86,6 +86,6 @@ export default function SPCMPage() {
         yaxis2: { title: "SNR", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 80, r: 60 }, autosize: true, showlegend: true
       }} />
-    </div>
+    </CalculatorShell>
   );
 }

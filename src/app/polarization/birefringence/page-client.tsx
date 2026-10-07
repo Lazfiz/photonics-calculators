@@ -55,8 +55,7 @@ export default function BirefringencePage() {
             { label: "Wavelength (nm)", val: wavelength, set: setWavelength, step: 1 },
           ].map(({ label, val, set, step }) => (
             <div key={label} className="mb-3">
-              <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
           <div className="mt-3 flex gap-2">

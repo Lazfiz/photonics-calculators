@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Coating Stress & Curvature',
   description: 'Stoney',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Coating Stress & Curvature',
-  description: 'Stoney',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Coating Stress & Curvature',
   'Stoney',
   'https://photonics-calculators.vercel.app/thin-film/stress',
-  { category: 'Thin Film`,
-  `Stoney',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Coating Stress & Curvature',
-  'Stoney',
-  'https://photonics-calculators.vercel.app/thin-film/stress',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/stress`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

@@ -148,7 +148,6 @@ export default function PolymerOpticsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={1700} />
         </div>
       </div>

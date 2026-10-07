@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Jones Calculus',
   description: 'Chain Jones matrices for polarizers, waveplates, and rotators. Up to 5 elements.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Jones Calculus',
-  description: 'Chain Jones matrices for polarizers, waveplates, and rotators. Up to 5 elements.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Jones Calculus',
   'Chain Jones matrices for polarizers, waveplates, and rotators. Up to 5 elements.',
   'https://photonics-calculators.vercel.app/polarization/jones-calculus',
-  { category: 'Polarization`,
-  `Chain Jones matrices for polarizers, waveplates, and rotators. Up to 5 elements.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Jones Calculus',
-  'Chain Jones matrices for polarizers, waveplates, and rotators. Up to 5 elements.',
-  'https://photonics-calculators.vercel.app/polarization/jones-calculus',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/jones-calculus`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

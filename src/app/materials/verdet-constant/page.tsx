@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Verdet Constant',
   description: 'Faraday rotation: = V B L, where V ∝ 1/² for paramagnetic materials',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Verdet Constant',
-  description: 'Faraday rotation: = V B L, where V ∝ 1/² for paramagnetic materials',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Verdet Constant',
   'Faraday rotation: = V B L, where V ∝ 1/² for paramagnetic materials',
   'https://photonics-calculators.vercel.app/materials/verdet-constant',
-  { category: 'Materials`,
-  `Faraday rotation: = V B L, where V ∝ 1/² for paramagnetic materials',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Verdet Constant',
-  'Faraday rotation: = V B L, where V ∝ 1/² for paramagnetic materials',
-  'https://photonics-calculators.vercel.app/materials/verdet-constant',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/verdet-constant`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

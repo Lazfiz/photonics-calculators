@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/bpsk-qpsk' },
-    title: 'Bpsk Qpsk',
-  description: 'Interactive Bpsk Qpsk calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Bpsk Qpsk',
-  description: 'Interactive Bpsk Qpsk calculator for photonics and optical engineering.'
+    title: 'BPSK and QPSK Error Rates',
+  description: 'Bit and symbol error rates of BPSK, Gray-coded QPSK and OQPSK versus Eb/N0, with spectral efficiency, bandwidth, required receive power and margin.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Bpsk Qpsk',
-  'Interactive Bpsk Qpsk calculator for photonics and optical engineering.',
+  'BPSK and QPSK Error Rates',
+  'Bit and symbol error rates of BPSK, Gray-coded QPSK and OQPSK versus Eb/N0, with spectral efficiency, bandwidth, required receive power and margin.',
   'https://photonics-calculators.vercel.app/free-space-comms/bpsk-qpsk',
-  { category: 'Free Space Comms`,
-  `Interactive Bpsk Qpsk calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Bpsk Qpsk',
-  'Interactive Bpsk Qpsk calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/bpsk-qpsk',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/bpsk-qpsk`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

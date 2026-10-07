@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Spectral Calibration',
   description: 'Wavelength calibration using known emission lines and linear/polynomial fitting.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Spectral Calibration',
-  description: 'Wavelength calibration using known emission lines and linear/polynomial fitting.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Spectral Calibration',
   'Wavelength calibration using known emission lines and linear/polynomial fitting.',
   'https://photonics-calculators.vercel.app/spectroscopy/spectral-calibration',
-  { category: 'Spectroscopy`,
-  `Wavelength calibration using known emission lines and linear/polynomial fitting.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Spectral Calibration',
-  'Wavelength calibration using known emission lines and linear/polynomial fitting.',
-  'https://photonics-calculators.vercel.app/spectroscopy/spectral-calibration',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/spectral-calibration`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useId, useState } from "react";
+
+import { clampToRange, isInRange, parseNumberInput } from "@/lib/number-input";
 
 interface InputSliderProps {
   label: string;
@@ -12,32 +14,34 @@ interface InputSliderProps {
   unit?: string;
 }
 
+/**
+ * Slider plus an exact-value field. The field lets the user type freely: in-range values reach
+ * `onChange` as they're typed, out-of-range ones are clamped on blur or Enter, and invalid text
+ * reverts. `onChange` only ever receives finite numbers within [min, max].
+ */
 export default function InputSlider({ label, value, onChange, min, max, step = 1, unit }: InputSliderProps) {
-  const [localText, setLocalText] = useState<string | null>(null);
-  const [localSlider, setLocalSlider] = useState(value);
+  // Text being edited in the number field; null while it shows `value`.
+  const [text, setText] = useState<string | null>(null);
+  const sliderId = useId();
 
-  useEffect(() => {
-    if (localText === null) setLocalSlider(value);
-  }, [value, localText]);
+  const typed = text === null ? null : parseNumberInput(text);
+  const invalid = text !== null && (typed === null || !isInRange(typed, min, max));
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const text = e.target.value;
-    setLocalText(text);
-    const num = Number(text);
-    if (!isNaN(num)) {
-      onChange(num);
-    }
+    const raw = e.target.value;
+    setText(raw);
+    const num = parseNumberInput(raw);
+    if (num !== null && isInRange(num, min, max)) onChange(num);
   };
 
-  const handleBlur = () => {
-    setLocalText(null);
-    const clamped = Math.min(Math.max(value, min), max);
-    if (clamped !== value) onChange(clamped);
+  const commit = () => {
+    if (text === null) return;
+    setText(null);
+    const num = parseNumberInput(text);
+    if (num === null) return; // revert to the last valid value
+    const clamped = clampToRange(num, min, max);
+    if (isInRange(clamped, min, max) && clamped !== value) onChange(clamped);
   };
-
-  const displayValue = localText !== null ? localText : value;
-
-  const sliderId = `slider-range-${label.replace(/\s+/g, "-").toLowerCase()}`;
 
   return (
     <div className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -51,14 +55,13 @@ export default function InputSlider({ label, value, onChange, min, max, step = 1
       <input
         id={sliderId}
         type="range"
-        value={localSlider}
+        value={clampToRange(value, min, max)}
         min={min}
         max={max}
         step={step}
         onChange={(e) => {
-          const v = Number(e.target.value);
-          setLocalSlider(v);
-          onChange(v);
+          setText(null); // the slider wins over any half-typed text
+          onChange(Number(e.target.value));
         }}
         className="mt-3 w-full accent-blue-500 min-h-[44px] py-2"
       />
@@ -66,13 +69,19 @@ export default function InputSlider({ label, value, onChange, min, max, step = 1
         <input
           aria-label={`${label} exact value`}
           type="number"
-          value={displayValue}
+          value={text ?? value}
           min={min}
           max={max}
           step={step}
           onChange={handleNumberChange}
-          onBlur={handleBlur}
-          className="w-full bg-gray-950 border border-gray-700 rounded px-3 py-3 min-h-[44px] text-white"
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+          }}
+          aria-invalid={invalid}
+          className={`w-full bg-gray-950 border rounded px-3 py-3 min-h-[44px] text-white ${
+            invalid ? "border-yellow-400" : "border-gray-700"
+          }`}
         />
         <span className="text-xs text-gray-500 whitespace-nowrap">
           {min}–{max}{unit ? ` ${unit}` : ""}

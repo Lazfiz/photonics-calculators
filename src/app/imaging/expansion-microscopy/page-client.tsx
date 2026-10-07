@@ -46,27 +46,21 @@ export default function ExpansionMicroscopyPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Expansion factor (×)</label>
             <ValidatedNumberInput label="Expansion factor (×)" value={magnification} onChange={setMagnification} min={1} max={20} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Original resolution (nm)</label>
             <ValidatedNumberInput label="Original resolution (nm)" value={originalRes} onChange={setOriginalRes} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Probe size (nm)</label>
             <ValidatedNumberInput label="Probe size (nm)" value={probeSize} onChange={setProbeSize} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Label-linker length (nm)</label>
             <ValidatedNumberInput label="Label-linker length (nm)" value={labelLinkerLen} onChange={setLabelLinkerLen} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Gel thickness (µm)</label>
             <ValidatedNumberInput label="Gel thickness (µm)" value={gelThickness} onChange={setGelThickness} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Imaging NA</label>
             <ValidatedNumberInput label="Imaging NA" value={na} onChange={setNa} min={0.4} max={1.7} />
           </div>
         </div>

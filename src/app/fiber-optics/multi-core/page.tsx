@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/multi-core' },
-    title: 'Multi Core',
-  description: 'Interactive Multi Core calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Multi Core',
-  description: 'Interactive Multi Core calculator for photonics and optical engineering.'
+    title: 'Multi-Core Fiber Crosstalk',
+  description: 'Simplified coupled-mode estimate of inter-core coupling, crosstalk and packing density in a homogeneous multi-core fiber versus core pitch and length.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Multi Core',
-  'Interactive Multi Core calculator for photonics and optical engineering.',
+  'Multi-Core Fiber Crosstalk',
+  'Simplified coupled-mode estimate of inter-core coupling, crosstalk and packing density in a homogeneous multi-core fiber versus core pitch and length.',
   'https://photonics-calculators.vercel.app/fiber-optics/multi-core',
-  { category: 'Fiber Optics`,
-  `Interactive Multi Core calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Multi Core',
-  'Interactive Multi Core calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/fiber-optics/multi-core',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/multi-core`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

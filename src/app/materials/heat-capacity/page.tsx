@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Heat Capacity of Optical Materials',
   description: 'Specific heat and thermal energy storage',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Heat Capacity of Optical Materials',
-  description: 'Specific heat and thermal energy storage',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Heat Capacity of Optical Materials',
   'Specific heat and thermal energy storage',
   'https://photonics-calculators.vercel.app/materials/heat-capacity',
-  { category: 'Materials`,
-  `Specific heat and thermal energy storage',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Heat Capacity of Optical Materials',
-  'Specific heat and thermal energy storage',
-  'https://photonics-calculators.vercel.app/materials/heat-capacity',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/heat-capacity`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

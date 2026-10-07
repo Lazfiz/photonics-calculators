@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Phase Correction Methods',
   description: 'Compare Mertz, Forman, and power spectrum methods for interferogram phase correction (FTIR).',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Phase Correction Methods',
-  description: 'Compare Mertz, Forman, and power spectrum methods for interferogram phase correction (FTIR).',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Phase Correction Methods',
   'Compare Mertz, Forman, and power spectrum methods for interferogram phase correction (FTIR).',
   'https://photonics-calculators.vercel.app/spectroscopy/phase-correction',
-  { category: 'Spectroscopy`,
-  `Compare Mertz, Forman, and power spectrum methods for interferogram phase correction (FTIR).',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Phase Correction Methods',
-  'Compare Mertz, Forman, and power spectrum methods for interferogram phase correction (FTIR).',
-  'https://photonics-calculators.vercel.app/spectroscopy/phase-correction',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/phase-correction`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

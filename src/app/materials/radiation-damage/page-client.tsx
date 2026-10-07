@@ -92,15 +92,12 @@ export default function RadiationDamagePage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">γ Dose (Mrad)</label>
           <ValidatedNumberInput label="γ Dose (Mrad)" value={dose} onChange={setDose} min={0} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Thickness (mm)</label>
           <ValidatedNumberInput label="Thickness (mm)" value={thickness} onChange={setThickness} min={0.1} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Time after exposure (h)</label>
           <ValidatedNumberInput label="Time after exposure (h)" value={timeAfter} onChange={setTimeAfter} min={0} />
         </div>
         <div>

@@ -49,7 +49,7 @@ export default function PMTPage() {
   }, [numDynodes, qe, darkCurrent, photonRate, bandwidth]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
+    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Photomultiplier Tube (PMT)" description="PMT gain, signal current, excess noise factor, and SNR from dynode parameters.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Number of Dynodes" value={numDynodes} onChange={setNumDynodes} min={4} max={14} step="1" />
         <ValidatedNumberInput label="Secondary Emission Ratio (δ)" value={secondaryEmission} onChange={setSecondaryEmission} min={1.5} max={6} step="0.1" />
@@ -97,6 +97,6 @@ export default function PMTPage() {
           margin: { t: 40, r: 20, b: 50, l: 60 }, legend: { bgcolor: "transparent", font: { size: 10 } },
         }} />
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

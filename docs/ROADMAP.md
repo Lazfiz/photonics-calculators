@@ -57,8 +57,8 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 - ESLint had **290 errors**. Four rules are temporarily set to `warn` in `eslint.config.mjs`:
   - `preserve-manual-memoization` (153 sites)
   - `no-explicit-any` (116)
-  - `react-hooks/purity` (9: `Math.random` in render, a hydration mismatch, in otdr-analysis, circular-dichroism, polarization-scrambling, retarder-types, fourier-transform and spectral-calibration)
-  - `set-state-in-effect` (`input-slider`, `use-url-state`)
+  - `react-hooks/purity` (9: `Math.random` in render, a hydration mismatch, in otdr-analysis, circular-dichroism, polarization-scrambling, retarder-types, fourier-transform and spectral-calibration): fixed in Phase 1, back to `error`
+  - `set-state-in-effect` (`input-slider`, `use-url-state`): fixed in Phase 1, back to `error`
 - Questionable models noticed while fixing (for Phase 4):
   - `filamentation`: Marburger z_sf gives a finite collapse distance for P < P_cr.
   - `coherent-raman`: signal prefactors are arbitrary (`1e-60`, `1e-30`).
@@ -68,6 +68,23 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 - `scripts/generate-search-index.mjs` (run as `prebuild`) produces a different file from the committed `src/generated/search-index.json`: 5,134 changed lines, different ordering, newer titles, and "3×10^4" mangled into "310^4". Production always ships the regenerated copy. Phase 2 registry: make it deterministic, and either gitignore the file or check it in CI.
 - `next build` prerender exposes runtime TDZ errors that tsc misses (a `const` used inside a closure before its declaration, e.g. `pixel-crosstalk`). Swept with `@typescript-eslint/no-use-before-define`.
 - npm 12 skips install scripts (esbuild, sharp, unrs-resolver). Their prebuilt `win32-x64` binaries are installed, so this is harmless.
+
+**Found during Phase 1** (2026-10-07)
+- The A&S 7.1.26 `erfc` copies (bpsk-qpsk, ber, scintillation, diversity-reception, fade-probability) have absolute error 1.5e-7 and are about 38 % off asymptotically, so every BER below ~1e-7 was wrong. All are replaced by `src/physics/math.ts`.
+- `SimpleChart` floors log axes at 1e-10. The ber and bpsk-qpsk pages therefore plot log₁₀(BER) on a linear axis. Switch them back to log axes after the Phase 3 chart rewrite.
+- 64 `page-client.tsx` files import `CalculatorShell` but never render it, so they have no title, breadcrumb or share button (e.g. `free-space-comms/ber`). Fix alongside the Phase 1 shell item. Count: `comm -23` of `git grep -l 'import CalculatorShell'` vs `git grep -l '<CalculatorShell'`.
+- 138 `<label>` cards in 53 files wrap a `ValidatedNumberInput` (nested `<label>`, invalid HTML), mostly in thin-film and polarization: `<label><span>n<sub>substrate</sub></span><ValidatedNumberInput label="nsubstrate" … /></label>`. The caption shows twice and the input's copy has lost its markup. Fix with a codemod like `input-captions`: pass the span's content as `label={<>…</>}` and drop the wrapper.
+- Shell titles drift from `metadata.title` in the ~456 pages that already rendered the shell (e.g. attenuation: "Wavelength-Dependent Attenuation" vs "Fiber Attenuation Calculator"). The pages fixed in item 5 use `metadata`. Generate both from the registry (Phase 2).
+- For Phase 4:
+  - `bpsk-qpsk` "Required RX power" uses the RF floor kT = −174 dBm/Hz + 3 dB NF. Coherent optical detection is shot-noise limited at hν ≈ −159 dBm/Hz (1550 nm).
+  - `diversity-reception` uses a fixed "3σ" outage and gives identical gain for SC, EGC and MRC.
+- `SimpleLineChart` prints SVG coordinates at full precision. Node (SSR) and Chrome can differ by 1 ulp (`200.2834021708276` vs `…763` on `detectors/quantum-efficiency`, seen with a warm Chrome profile), which logs a hydration-mismatch error. Round coordinates to 0.01 px in the Phase 3 chart rewrite.
+- Found while writing descriptions (JSON-LD item):
+  - `point-ahead` uses θ = v/c. The standard point-ahead angle is 2v⊥/c, so this is a factor-2 error (Phase 4).
+  - The FAQ in `lib/json-ld.tsx` lower-cases the title ("What is photon-counting ber (ook and dpsk)?", "… (fog)?"). Fix it when the registry generates the JSON-LD (Phase 2).
+  - The old slug-derived titles survive in `flagship-related.ts` ("Ber", "Wdm Coupler", with "Related … calculator." as the description) and in the category index pages. Both get regenerated from the registry (Phase 2).
+  - More duplicate pairs: `scanned-mpe` / `scanning-mpe` (both titled "Scanned Beam MPE"), `scintillation` / `scintillation-index`, and `free-space-comms/atmospheric-loss` / `laser-safety/atmospheric-attenuation`.
+- `useURLState` only rejects non-finite URL values. A crafted link (e.g. `?na=0`) still reaches the physics unclamped, because the inputs clamp only what the user types. Guard domains in the Phase 2 physics modules, or give `useURLState` an optional range.
 
 ## Phase 0 — safe, building, Claude-native (1 session)
 - [ ] 0.1 **User, manual:**
@@ -125,11 +142,35 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 - [ ] 0.6 **Ship:** branch `phase-0`, then PR, then a green Vercel preview, then merge. Verify live: channel-photomultiplier should show "order-of-magnitude upper bound". **Status 2026-10-07:** `phase-0` is committed locally with green gates. The push is blocked on 0.1 (the PAT is still in the remote).
 
 ## Phase 1 — correctness (1–2 days)
-- [ ] Shared `src/physics/math.ts`: accurate `erfc`/`Q`, used by ber, bpsk-qpsk and scintillation. Fix and retest BER, and decide on the Poisson model.
-- [ ] Fix `use-url-state` reset. `ValidatedNumberInput` and `InputSlider` clamp on blur and never pass out-of-range values to the physics.
-- [ ] Rebuild JSON-LD from each page's `metadata` (codemod) and write the 55 placeholder descriptions.
-- [ ] Fix the `ShareButton` hydration mismatch and the breadcrumb bug. Make the "541" count a computed value.
-- [ ] Use a seeded PRNG (`src/physics/random.ts`) for the 6 pages that call `Math.random` in render. Then set `react-hooks/purity` and `set-state-in-effect` back to `error`.
+- [x] Shared `src/physics/math.ts`: accurate `erfc`/`Q`, used by ber, bpsk-qpsk and scintillation. Fix and retest BER, and decide on the Poisson model. **Done 2026-10-07 on branch `phase-1`** (stacked on `phase-0`, not pushed):
+  - `math.ts`: `erf`/`erfc` (series + continued fraction; ≤2e-13 relative vs CPython), `qFunction`, `normalCdf`, `lnFactorial`, Poisson pmf/cdf/sf (each tail summed directly).
+  - BER: chose the **exact Poisson photon-counting model** (`src/physics/free-space-comms/ber.ts`). OOK uses the ML threshold, DPSK uses two port counters with random tie-breaks. It matches brute-force sums to 1e-13 and gives the quantum limits of 10 and 20 photons/bit.
+  - bpsk-qpsk: Gray QPSK BER = BPSK BER (the old formula, 2Q(1−Q), was neither BER nor SER). SER is now shown separately.
+  - scintillation, diversity-reception and fade-probability use the shared `erfc`, where they used to compute ½(1 ± erf) with cancellation.
+  - Tests: `tests/math.test.ts`, `ber.test.ts`, `bpsk-qpsk.test.ts`.
+- [x] Fix `use-url-state` reset. `ValidatedNumberInput` and `InputSlider` clamp on blur and never pass out-of-range values to the physics. **Done 2026-10-07 on `phase-1`:**
+  - `useURLState` reads `src/lib/url-state-store.ts` through `useSyncExternalStore`: the query string plus an overlay of unflushed writes (`null` deletes the param). Batched 100 ms writes keep other params and the hash. A pathname guard stops one page's params reaching the next during client navigation. Non-finite URL numbers fall back to the default.
+  - Both inputs keep the typed text locally. In-range values reach `onChange` live; out-of-range values are held back and clamped on blur/Enter; invalid text reverts (`src/lib/number-input.ts`).
+  - `set-state-in-effect` is back to `error` (0 sites). Tests: `tests/url-state-store.test.ts`, `number-input.test.ts`. Headless-Chrome check: `scripts/ui-check.mjs` (all checks pass on boxcar-integrator, ber and quantum-efficiency).
+- [x] Rebuild JSON-LD from each page's `metadata` (codemod) and write the 55 placeholder descriptions. **Done 2026-10-07 on `phase-1`:**
+  - `scripts/codemods/2026-10-07-rebuild-json-ld.ts` (ts-morph) rebuilt the call in 429 pages: 427 corrupted, plus 2 whose `\uXXXX` escapes became literal characters. It skipped none, and a second run changes nothing. It also checks that each canonical URL matches the page's path.
+  - `scripts/codemods/2026-10-07-placeholder-descriptions.ts` wrote the 55 descriptions from `…-placeholder-descriptions.json`, each written from the page's inputs and results and ≤155 characters. It also replaced 33 slug-derived titles (e.g. "Ber" → "Photon-Counting BER (OOK and DPSK)").
+    - Quarantined laser-safety pages, and `eye-safety-fso`, say "Simplified educational estimate … Not for safety decisions".
+  - Added JSON-LD by hand to the 3 pages that had none: `nohd`, `blackbody`, `single-ar`.
+  - `tests/page-json-ld.test.ts` checks every calculator page: the JSON-LD arguments equal `metadata` as plain strings, the canonical URL matches the path, and there's no placeholder description.
+- [x] Fix the `ShareButton` hydration mismatch and the breadcrumb bug. Make the "541" count a computed value. **Done 2026-10-07 on `phase-1`:**
+  - `ShareButton` reads `currentQuery(pathname)` from `url-state-store` through `useSyncExternalStore` (server snapshot ""), so a shared link hydrates cleanly and the button appears on the first input change. The copied link includes unflushed writes; a blocked clipboard no longer shows "Copied".
+  - Breadcrumb: all ancestors are links, the title is the last `<li>` with `aria-current="page"`, no bare `<span>` in the `<ol>`, and the category crumb uses `backLabel`.
+  - Counts: `scripts/generate-search-index.mjs` also writes `src/generated/calculator-counts.json` (524 = pages under `src/app/<category>/<slug>/`, hidden ones included). `home-categories`, `layout.tsx` (title, OG, Twitter, JSON-LD) and the search placeholder read it. `tests/calculator-counts.test.ts` checks it against the file system.
+  - `scripts/ui-check.mjs` gained share/breadcrumb checks. The old shell fails 3 of them (including "Hydration failed"); the new one passes all 30.
+- [x] Codemod (ts-morph): `label="{label}"` → `label={label}` in 40 `page-client.tsx` files (44 sites), and render `CalculatorShell` where it is missing. **Done 2026-10-07 on `phase-1`:**
+  - The 44 `{label}` sites were part of a larger bug: 532 caption `<label>`s in 150 files sat beside a `ValidatedNumberInput` that renders its own label, so each label showed twice. In 18 sites the two disagreed; in 5 resonator pages and `aging-effects` the input labels were shifted by one row. `scripts/codemods/2026-10-07-input-captions.ts` moved each caption (it matches the bound value) into `label` and removed the caption. By hand: `label` is now `ReactNode` (sub/sup labels), and `materials/photorefractive` had its "Applied Field" input bound to `wavelength`; the field and wavelength inputs are separate again.
+  - `scripts/codemods/2026-10-07-render-calculator-shell.ts` wrapped 66 pages in `CalculatorShell` (title/description from `metadata`, back link from the category, the page's max width); it added the import to the 4 detector pages that lacked it. OPA and OPO were done by hand (full-width root with their own description `<p>`).
+  - `scripts/ui-check.mjs` checks the ber title, gas-laser-resonator labels against bound values, and no "{label}" on sbs-threshold. All 35 checks pass; the 4 new ones fail on the old pages.
+- [x] Use a seeded PRNG (`src/physics/random.ts`) for the 6 pages that call `Math.random` in render. Then set `react-hooks/purity` back to `error` (`set-state-in-effect` already is). **Done 2026-10-07 on `phase-1`:**
+  - `random.ts`: mulberry32 (`createRng(seed)`), `uniform`, and Box–Muller `gaussian` (u ∈ (0, 1], so log u is finite). `tests/random.test.ts` matches an independent port of the C reference for 4 seeds and checks the moments.
+  - Each page creates a fixed-seed generator inside its memo, so changing e.g. the noise amplitude rescales one noise realization instead of redrawing it. `react-hooks/purity` is `error` again.
+  - Headless Chrome (`ui-check … load`) on the 6 pages: 0 console errors. The old versions logged "Hydration failed" on polarization-scrambling and spectral-calibration (the two that print noise-dependent values).
 
 ## Phase 2 — architecture (~1 week)
 - [ ] `src/physics/constants.ts` (CODATA) and `src/physics/<category>/<slug>.ts` pure functions, migrated by codemod and category by category, with tests.

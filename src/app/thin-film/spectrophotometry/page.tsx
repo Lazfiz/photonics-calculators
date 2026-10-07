@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Spectrophotometry',
   description: 'Model spectrophotometric R, T, A spectra for a single absorbing thin film using transfer matrix method with complex refractive index.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Spectrophotometry',
-  description: 'Model spectrophotometric R, T, A spectra for a single absorbing thin film using transfer matrix method with complex refractive index.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Spectrophotometry',
   'Model spectrophotometric R, T, A spectra for a single absorbing thin film using transfer matrix method with complex refractive index.',
   'https://photonics-calculators.vercel.app/thin-film/spectrophotometry',
-  { category: 'Thin Film`,
-  `Model spectrophotometric R, T, A spectra for a single absorbing thin film using transfer matrix method with complex refractive index.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Spectrophotometry',
-  'Model spectrophotometric R, T, A spectra for a single absorbing thin film using transfer matrix method with complex refractive index.',
-  'https://photonics-calculators.vercel.app/thin-film/spectrophotometry',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/spectrophotometry`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

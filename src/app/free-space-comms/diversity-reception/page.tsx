@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/diversity-reception' },
     title: 'Diversity Reception',
-  description: 'Interactive Diversity Reception calculator for photonics and optical engineering.'
+  description: 'Diversity gain, combined scintillation and outage probability for selection, equal-gain and maximal-ratio combining with N receivers in turbulence.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Diversity Reception',
-  description: 'Interactive Diversity Reception calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Diversity Reception',
-  'Interactive Diversity Reception calculator for photonics and optical engineering.',
+  'Diversity gain, combined scintillation and outage probability for selection, equal-gain and maximal-ratio combining with N receivers in turbulence.',
   'https://photonics-calculators.vercel.app/free-space-comms/diversity-reception',
-  { category: 'Free Space Comms`,
-  `Interactive Diversity Reception calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Diversity Reception',
-  'Interactive Diversity Reception calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/diversity-reception',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/diversity-reception`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

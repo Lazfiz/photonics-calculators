@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Sputtering Deposition',
   description: 'Calculate sputter yield, deposition rate, thermalization, and film stress for magnetron sputtering processes.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Sputtering Deposition',
-  description: 'Calculate sputter yield, deposition rate, thermalization, and film stress for magnetron sputtering processes.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Sputtering Deposition',
   'Calculate sputter yield, deposition rate, thermalization, and film stress for magnetron sputtering processes.',
   'https://photonics-calculators.vercel.app/thin-film/sputtering-deposition',
-  { category: 'Thin Film`,
-  `Calculate sputter yield, deposition rate, thermalization, and film stress for magnetron sputtering processes.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Sputtering Deposition',
-  'Calculate sputter yield, deposition rate, thermalization, and film stress for magnetron sputtering processes.',
-  'https://photonics-calculators.vercel.app/thin-film/sputtering-deposition',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/sputtering-deposition`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

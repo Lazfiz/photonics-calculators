@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Retinal Hazard Calculator',
   description: 'Estimate retinal irradiance and image size from corneal laser parameters. Simplified model assuming emmetropic eye.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Retinal Hazard Calculator',
-  description: 'Estimate retinal irradiance and image size from corneal laser parameters. Simplified model assuming emmetropic eye.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Retinal Hazard Calculator',
   'Estimate retinal irradiance and image size from corneal laser parameters. Simplified model assuming emmetropic eye.',
   'https://photonics-calculators.vercel.app/laser-safety/retinal-hazard',
-  { category: 'Laser Safety`,
-  `Estimate retinal irradiance and image size from corneal laser parameters. Simplified model assuming emmetropic eye.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Retinal Hazard Calculator',
-  'Estimate retinal irradiance and image size from corneal laser parameters. Simplified model assuming emmetropic eye.',
-  'https://photonics-calculators.vercel.app/laser-safety/retinal-hazard',
-  { category: 'Laser Safety`,
-  `https://photonics-calculators.vercel.app/laser-safety/retinal-hazard`,
-  { category: `Laser Safety` }
+  { category: 'Laser Safety' }
 );
+
 export default function Page() {
   return (
     <>

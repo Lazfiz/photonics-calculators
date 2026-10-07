@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Mueller Matrix Calculator',
   description: 'Chain optical elements using Mueller matrices and compute output Stokes vector.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Mueller Matrix Calculator',
-  description: 'Chain optical elements using Mueller matrices and compute output Stokes vector.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Mueller Matrix Calculator',
   'Chain optical elements using Mueller matrices and compute output Stokes vector.',
   'https://photonics-calculators.vercel.app/polarization/mueller-matrix',
-  { category: 'Polarization`,
-  `Chain optical elements using Mueller matrices and compute output Stokes vector.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Mueller Matrix Calculator',
-  'Chain optical elements using Mueller matrices and compute output Stokes vector.',
-  'https://photonics-calculators.vercel.app/polarization/mueller-matrix',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/mueller-matrix`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

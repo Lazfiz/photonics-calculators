@@ -68,7 +68,6 @@ export default function WavenumberConverterPage() {
         </div>
         <div className="flex gap-4 items-end mb-4 flex-wrap">
           <div className="min-w-[220px] flex-1">
-            <label className="text-sm text-gray-300">{mode === "wl-to-wn" ? "Wavelength (nm)" : "Wavenumber (cm⁻¹)"}</label>
             <ValidatedNumberInput label={mode === "wl-to-wn" ? "Wavelength (nm)" : "Wavenumber (cm⁻¹)"} value={singleValue} onChange={setSingleValue} min={0.001} />
           </div>
           <button onClick={() => setMode(mode === "wl-to-wn" ? "wn-to-wl" : "wl-to-wn")} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm text-white">⇄</button>

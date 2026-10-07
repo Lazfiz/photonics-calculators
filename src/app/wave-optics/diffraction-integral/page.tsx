@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Diffraction Integral Calculator',
   description: 'Fresnel/Kirchhoff diffraction patterns.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Diffraction Integral Calculator',
-  description: 'Fresnel/Kirchhoff diffraction patterns.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Diffraction Integral Calculator',
   'Fresnel/Kirchhoff diffraction patterns.',
   'https://photonics-calculators.vercel.app/wave-optics/diffraction-integral',
-  { category: 'Wave Optics`,
-  `Fresnel/Kirchhoff diffraction patterns.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Diffraction Integral Calculator',
-  'Fresnel/Kirchhoff diffraction patterns.',
-  'https://photonics-calculators.vercel.app/wave-optics/diffraction-integral',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/diffraction-integral`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

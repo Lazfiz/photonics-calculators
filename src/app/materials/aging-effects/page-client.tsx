@@ -116,24 +116,19 @@ export default function AgingEffectsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Operating time (hours)</label>
           <ValidatedNumberInput label="Operating time (hours)" value={hours} onChange={setHours} min={1} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Temp acceleration factor</label>
           <ValidatedNumberInput label="Temp acceleration factor" value={tempFactor} onChange={setTempFactor} min={1} step="0.1" />
           <span className="text-xs text-gray-500">Arrhenius: exp(-Ea/k·Δ(1/T))</span>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">UV dose (kJ/cm²)</label>
-          <ValidatedNumberInput label="Arrhenius: exp(-Ea/k·Δ(1/T))" value={uvDose} onChange={setUvDose} min={0} step="0.1" />
+          <ValidatedNumberInput label="UV dose (kJ/cm²)" value={uvDose} onChange={setUvDose} min={0} step="0.1" />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Laser fluence (J/cm²/pulse)</label>
           <ValidatedNumberInput label="Laser fluence (J/cm²/pulse)" value={laserFluence} onChange={setLaserFluence} min={0} step="0.01" />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Initial stress (nm/cm)</label>
           <ValidatedNumberInput label="Initial stress (nm/cm)" value={initialStress} onChange={setInitialStress} min={0} />
         </div>
       </div>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Soliton Propagation',
   description: 'Fundamental and higher-order soliton dynamics via split-step Fourier simulation.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Soliton Propagation',
-  description: 'Fundamental and higher-order soliton dynamics via split-step Fourier simulation.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Soliton Propagation',
   'Fundamental and higher-order soliton dynamics via split-step Fourier simulation.',
   'https://photonics-calculators.vercel.app/wave-optics/soliton',
-  { category: 'Wave Optics`,
-  `Fundamental and higher-order soliton dynamics via split-step Fourier simulation.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Soliton Propagation',
-  'Fundamental and higher-order soliton dynamics via split-step Fourier simulation.',
-  'https://photonics-calculators.vercel.app/wave-optics/soliton',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/soliton`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

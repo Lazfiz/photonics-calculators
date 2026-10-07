@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'X-ray Optics Materials',
   description: 'X-ray refractive index: n = 1 - - i. For hard X-rays, , ∝ ² ∝ 1/E².',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `X-ray Optics Materials',
-  description: 'X-ray refractive index: n = 1 - - i. For hard X-rays, , ∝ ² ∝ 1/E².',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'X-ray Optics Materials',
   'X-ray refractive index: n = 1 - - i. For hard X-rays, , ∝ ² ∝ 1/E².',
   'https://photonics-calculators.vercel.app/materials/x-ray-optics',
-  { category: 'Materials`,
-  `X-ray refractive index: n = 1 - - i. For hard X-rays, , ∝ ² ∝ 1/E².',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'X-ray Optics Materials',
-  'X-ray refractive index: n = 1 - - i. For hard X-rays, , ∝ ² ∝ 1/E².',
-  'https://photonics-calculators.vercel.app/materials/x-ray-optics',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/x-ray-optics`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/beam-wander' },
     title: 'Beam Wander',
-  description: 'Interactive Beam Wander calculator for photonics and optical engineering.'
+  description: 'RMS turbulence-induced beam wander and the resulting pointing loss of a Gaussian beam versus Cn², path length, beam radius and wavelength.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Beam Wander',
-  description: 'Interactive Beam Wander calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Beam Wander',
-  'Interactive Beam Wander calculator for photonics and optical engineering.',
+  'RMS turbulence-induced beam wander and the resulting pointing loss of a Gaussian beam versus Cn², path length, beam radius and wavelength.',
   'https://photonics-calculators.vercel.app/free-space-comms/beam-wander',
-  { category: 'Free Space Comms`,
-  `Interactive Beam Wander calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Beam Wander',
-  'Interactive Beam Wander calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/beam-wander',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/beam-wander`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

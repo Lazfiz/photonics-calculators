@@ -98,7 +98,7 @@ export default function PmtGainPage() {
   }, [numStages, photocathodeQE, darkCurrent, amplifierNoise]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
+    <CalculatorShell backHref="/detectors" backLabel="Detectors" title={"PMT Gain & SNR"} description="PMT dynode gain, voltage dependence, anode responsivity, and SNR analysis.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Number of Dynode Stages" value={numStages} onChange={setNumStages} min={6} max={14} step="1" />
         <ValidatedNumberInput label="Stage Voltage (V)" value={stageVoltage} onChange={setStageVoltage} min={50} max={200} step="5" />
@@ -143,6 +143,6 @@ export default function PmtGainPage() {
         <p>F = δ / (δ−1) (excess noise factor)</p>
         <p>SNR = η·G·P·τ / √(η·G²·P·τ·F + G·F·I<sub>dark</sub>·τ/q + σ<sub>amp</sub>²)</p>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

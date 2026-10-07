@@ -79,15 +79,12 @@ export default function BrillouinScatteringPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Linewidth (MHz)</label>
           <ValidatedNumberInput label="Linewidth (MHz)" value={linewidth} onChange={setLinewidth} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Fiber Length (km)</label>
           <ValidatedNumberInput label="Fiber Length (km)" value={fiberLength} onChange={setFiberLength} />
         </div>
       </div>

@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/photonic-crystal' },
-    title: 'Photonic Crystal',
-  description: 'Interactive Photonic Crystal calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Photonic Crystal',
-  description: 'Interactive Photonic Crystal calculator for photonics and optical engineering.'
+    title: 'Photonic Crystal Fiber',
+  description: 'Approximate NA, V-number, mode area, dispersion and confinement loss of an index-guiding photonic crystal fiber from hole pitch Λ and diameter d.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Photonic Crystal',
-  'Interactive Photonic Crystal calculator for photonics and optical engineering.',
+  'Photonic Crystal Fiber',
+  'Approximate NA, V-number, mode area, dispersion and confinement loss of an index-guiding photonic crystal fiber from hole pitch Λ and diameter d.',
   'https://photonics-calculators.vercel.app/fiber-optics/photonic-crystal',
-  { category: 'Fiber Optics`,
-  `Interactive Photonic Crystal calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Photonic Crystal',
-  'Interactive Photonic Crystal calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/fiber-optics/photonic-crystal',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/photonic-crystal`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

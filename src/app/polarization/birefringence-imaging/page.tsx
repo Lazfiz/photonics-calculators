@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Birefringence Imaging',
   description: 'Simulate quantitative birefringence imaging with polarizer/analyzer rotation and compensators. Visualize stress-induced birefringence patterns.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Birefringence Imaging',
-  description: 'Simulate quantitative birefringence imaging with polarizer/analyzer rotation and compensators. Visualize stress-induced birefringence patterns.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Birefringence Imaging',
   'Simulate quantitative birefringence imaging with polarizer/analyzer rotation and compensators. Visualize stress-induced birefringence patterns.',
   'https://photonics-calculators.vercel.app/polarization/birefringence-imaging',
-  { category: 'Polarization`,
-  `Simulate quantitative birefringence imaging with polarizer/analyzer rotation and compensators. Visualize stress-induced birefringence patterns.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Birefringence Imaging',
-  'Simulate quantitative birefringence imaging with polarizer/analyzer rotation and compensators. Visualize stress-induced birefringence patterns.',
-  'https://photonics-calculators.vercel.app/polarization/birefringence-imaging',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/birefringence-imaging`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

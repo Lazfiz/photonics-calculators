@@ -61,20 +61,16 @@ export default function StructuredIlluminationPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Numerical Aperture (NA)</label>
             <ValidatedNumberInput label="Numerical Aperture (NA)" value={na} onChange={setNa} min={0.1} max={1.8} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
             <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={2000} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pattern Modulation Depth</label>
             <ValidatedNumberInput label="Pattern Modulation Depth" value={modulationDepth} onChange={setModulationDepth} min={0.1} max={1} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Resolution Factor (2=linear, 3=nonlinear)</label>
-            <ValidatedNumberInput label="Resolution Factor" value={patternOrders} onChange={setPatternOrders} min={2} max={5} />
+            <ValidatedNumberInput label="Resolution Factor (2=linear, 3=nonlinear)" value={patternOrders} onChange={setPatternOrders} min={2} max={5} />
           </div>
         </div>
 

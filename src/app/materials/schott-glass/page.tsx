@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Schott Glass Catalog',
   description: 'Refractive index n() from SCHOTT Sellmeier coefficients',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Schott Glass Catalog',
-  description: 'Refractive index n() from SCHOTT Sellmeier coefficients',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Schott Glass Catalog',
   'Refractive index n() from SCHOTT Sellmeier coefficients',
   'https://photonics-calculators.vercel.app/materials/schott-glass',
-  { category: 'Materials`,
-  `Refractive index n() from SCHOTT Sellmeier coefficients',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Schott Glass Catalog',
-  'Refractive index n() from SCHOTT Sellmeier coefficients',
-  'https://photonics-calculators.vercel.app/materials/schott-glass',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/schott-glass`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

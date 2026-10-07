@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'FSO Link Budget',
   description: 'Interactive free-space optical link budget with sliders, presets, and received-power versus range view.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `FSO Link Budget',
-  description: 'Interactive free-space optical link budget with sliders, presets, and received-power versus range view.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'FSO Link Budget',
   'Interactive free-space optical link budget with sliders, presets, and received-power versus range view.',
   'https://photonics-calculators.vercel.app/free-space-comms/link-budget',
-  { category: 'Free Space Comms`,
-  `Interactive free-space optical link budget with sliders, presets, and received-power versus range view.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'FSO Link Budget',
-  'Interactive free-space optical link budget with sliders, presets, and received-power versus range view.',
-  'https://photonics-calculators.vercel.app/free-space-comms/link-budget',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/link-budget`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Absorption Coefficient',
   description: 'Wavelength-dependent absorption coefficient () and transmission through material thickness.',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Absorption Coefficient',
-  description: 'Wavelength-dependent absorption coefficient () and transmission through material thickness.',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Absorption Coefficient',
   'Wavelength-dependent absorption coefficient () and transmission through material thickness.',
   'https://photonics-calculators.vercel.app/materials/absorption',
-  { category: 'Materials`,
-  `Wavelength-dependent absorption coefficient () and transmission through material thickness.',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Absorption Coefficient',
-  'Wavelength-dependent absorption coefficient () and transmission through material thickness.',
-  'https://photonics-calculators.vercel.app/materials/absorption',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/absorption`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

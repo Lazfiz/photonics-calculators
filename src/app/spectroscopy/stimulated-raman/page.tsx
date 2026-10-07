@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Stimulated Raman Scattering (SRS)',
   description: 'Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Stimulated Raman Scattering (SRS)',
-  description: 'Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Stimulated Raman Scattering (SRS)',
   'Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.',
   'https://photonics-calculators.vercel.app/spectroscopy/stimulated-raman',
-  { category: 'Spectroscopy`,
-  `Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Stimulated Raman Scattering (SRS)',
-  'Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.',
-  'https://photonics-calculators.vercel.app/spectroscopy/stimulated-raman',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/stimulated-raman`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

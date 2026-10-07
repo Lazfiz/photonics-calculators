@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Wavelength Separation',
   description: 'Wavelength separation coatings combine multiple quarter-wave stacks at different design wavelengths',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Wavelength Separation',
-  description: 'Wavelength separation coatings combine multiple quarter-wave stacks at different design wavelengths',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Wavelength Separation',
   'Wavelength separation coatings combine multiple quarter-wave stacks at different design wavelengths',
   'https://photonics-calculators.vercel.app/thin-film/wavelength-separation',
-  { category: 'Thin Film`,
-  `Wavelength separation coatings combine multiple quarter-wave stacks at different design wavelengths',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Wavelength Separation',
-  'Wavelength separation coatings combine multiple quarter-wave stacks at different design wavelengths',
-  'https://photonics-calculators.vercel.app/thin-film/wavelength-separation',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/wavelength-separation`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

@@ -40,7 +40,7 @@ export default function RainAttenuationPage() {
   }, [range]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Rain Attenuation" description="Specific and total attenuation of a free-space optical link in rain from the rain rate with the power law α = k·Rᵃ, for a given range." maxWidthClassName="max-w-5xl">
       
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
                 <p className="text-cyan-300 mt-1 font-mono">α = k · R^α_coeff &nbsp; [dB/km], &nbsp; Total = α × L</p>
@@ -56,8 +56,7 @@ export default function RainAttenuationPage() {
             ["Link Range (km)", range, setRange],
           ].map(([label, val, set]: any) => (
             <div key={label as string}>
-              <label className="block text-sm text-gray-400 mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
           <div className="text-xs text-gray-500 mt-2">
@@ -86,6 +85,6 @@ export default function RainAttenuationPage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

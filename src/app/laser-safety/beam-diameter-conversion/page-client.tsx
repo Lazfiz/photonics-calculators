@@ -77,7 +77,6 @@ export default function BeamDiameterConversionPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Diameter (mm)</label>
               <ValidatedNumberInput label="Diameter (mm)" value={inputValue} onChange={setInputValue} min={0.001} step="0.1" />
             </div>
           </div>

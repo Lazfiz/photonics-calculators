@@ -119,15 +119,12 @@ export default function ContaminationPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Initial contamination (ppm)</label>
           <ValidatedNumberInput label="Initial contamination (ppm)" value={ppm} onChange={setPpm} min={0.1} step="0.1" />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Exposure (days)</label>
           <ValidatedNumberInput label="Exposure (days)" value={exposureDays} onChange={setExposureDays} min={1} />
         </div>
       </div>

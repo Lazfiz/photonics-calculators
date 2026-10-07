@@ -128,9 +128,7 @@ export default function DyeLaserResonatorPage() {
   const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-6xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-      </div>
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Dye Laser Resonator" description="Cavity stability, beam waist, small-signal and threshold gain, triplet loss versus flow speed and output power of a Rhodamine or Coumarin dye laser." maxWidthClassName="max-w-6xl">
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4">
@@ -139,13 +137,13 @@ export default function DyeLaserResonatorPage() {
             {Object.keys(dyeParams).map(d => <option key={d} value={d}>{d}</option>)}
           </select>
         </div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Wavelength (nm)</label><ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Cavity Length (mm)</label><ValidatedNumberInput label="Cavity Length (mm)" value={cavityLength} onChange={setCavityLength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">R₁ (mm)</label><ValidatedNumberInput label="Cavity Length (mm)" value={R1} onChange={setR1} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">R₂ (mm)</label><ValidatedNumberInput label="R₁ (mm)" value={R2} onChange={setR2} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">OC Reflectivity</label><ValidatedNumberInput label="R₂ (mm)" value={R_oc} onChange={setR_oc} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Concentration (M)</label><ValidatedNumberInput label="Concentration (M)" value={concentration} onChange={setConcentration} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Flow Speed (m/s)</label><ValidatedNumberInput label="Flow Speed (m/s)" value={flowSpeed} onChange={setFlowSpeed} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Cavity Length (mm)" value={cavityLength} onChange={setCavityLength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="R₁ (mm)" value={R1} onChange={setR1} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="R₂ (mm)" value={R2} onChange={setR2} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="OC Reflectivity" value={R_oc} onChange={setR_oc} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Concentration (M)" value={concentration} onChange={setConcentration} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Flow Speed (m/s)" value={flowSpeed} onChange={setFlowSpeed} /></div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
@@ -172,6 +170,6 @@ export default function DyeLaserResonatorPage() {
         <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Triplet Fraction vs Flow Speed</h3><ChartPanel data={tripletData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Flow Speed (m/s)" }, yaxis: { ...plotLayout.yaxis, title: "Triplet (%)" } }} /></div>
         <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Output vs Pump</h3><ChartPanel data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output (W)" } }} /></div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

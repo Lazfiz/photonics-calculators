@@ -83,8 +83,7 @@ export default function PoincareSpherePage() {
             { label: "Amplitude", val: amplitude, set: setAmplitude, min: 0.01, max: 5 },
           ].map(({ label, val, set, min, max }) => (
             <div key={label} className="mb-3">
-              <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} min={min} max={max} step="1" />
+              <ValidatedNumberInput label={label} value={val} onChange={set} min={min} max={max} step="1" />
               <input type="range" min={min} max={max} step="1" value={val} onChange={(e) => set(parseFloat(e.target.value))}
                 className="w-full mt-1" />
             </div>

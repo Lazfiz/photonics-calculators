@@ -55,23 +55,18 @@ export default function LightFieldPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Objective NA</label>
             <ValidatedNumberInput label="Objective NA" value={na} onChange={setNa} min={0.05} max={1.8} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Magnification</label>
             <ValidatedNumberInput label="Magnification" value={magnification} onChange={setMagnification} min={1} max={200} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pixel Size (µm)</label>
             <ValidatedNumberInput label="Pixel Size (µm)" value={pixelSize} onChange={setPixelSize} min={1} max={20} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Microlens Pitch (µm)</label>
             <ValidatedNumberInput label="Microlens Pitch (µm)" value={microlensPitch} onChange={setMicrolensPitch} min={50} max={500} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
             <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={2000} />
           </div>
         </div>

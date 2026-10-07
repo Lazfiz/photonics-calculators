@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Mode-Locked Laser',
   description: 'Ultrashort pulse generation through passive or active mode-locking.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Mode-Locked Laser',
-  description: 'Ultrashort pulse generation through passive or active mode-locking.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Mode-Locked Laser',
   'Ultrashort pulse generation through passive or active mode-locking.',
   'https://photonics-calculators.vercel.app/wave-optics/mode-locked-laser',
-  { category: 'Wave Optics`,
-  `Ultrashort pulse generation through passive or active mode-locking.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Mode-Locked Laser',
-  'Ultrashort pulse generation through passive or active mode-locking.',
-  'https://photonics-calculators.vercel.app/wave-optics/mode-locked-laser',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/mode-locked-laser`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

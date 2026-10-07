@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Phase Shift Coatings',
   description: 'Phase shift accumulated in thin film coatings. Explore how film thickness and refractive index affect the optical phase of reflected and transmitted light.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Phase Shift Coatings',
-  description: 'Phase shift accumulated in thin film coatings. Explore how film thickness and refractive index affect the optical phase of reflected and transmitted light.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Phase Shift Coatings',
   'Phase shift accumulated in thin film coatings. Explore how film thickness and refractive index affect the optical phase of reflected and transmitted light.',
   'https://photonics-calculators.vercel.app/thin-film/phase-shift-coating',
-  { category: 'Thin Film`,
-  `Phase shift accumulated in thin film coatings. Explore how film thickness and refractive index affect the optical phase of reflected and transmitted light.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Phase Shift Coatings',
-  'Phase shift accumulated in thin film coatings. Explore how film thickness and refractive index affect the optical phase of reflected and transmitted light.',
-  'https://photonics-calculators.vercel.app/thin-film/phase-shift-coating',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/phase-shift-coating`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

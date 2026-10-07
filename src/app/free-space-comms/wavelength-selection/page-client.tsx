@@ -61,7 +61,7 @@ export default function WavelengthSelectionPage() {
   }, [calc]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="FSO Wavelength Selection" description="Compare 850, 1064, 1310 and 1550 nm for an FSO link by eye safety, atmospheric loss, range and data rate, and get a recommended wavelength." maxWidthClassName="max-w-5xl">
       
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
                 <p className="text-gray-500 mt-1">850 nm (VCSEL), 1064 nm, 1310 nm, 1550 nm (eye-safe), 10 μm (CO₂ laser)</p>
@@ -76,8 +76,7 @@ export default function WavelengthSelectionPage() {
             ["Data Rate (Gbps)", dataRate, setDataRate],
           ].map(([label, val, set]: any) => (
             <div key={label as string}>
-              <label className="block text-sm text-gray-400 mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
           <div className="flex items-center gap-2">
@@ -115,6 +114,6 @@ export default function WavelengthSelectionPage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

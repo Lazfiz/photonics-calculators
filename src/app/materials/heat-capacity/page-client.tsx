@@ -106,20 +106,16 @@ export default function HeatCapacityPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Temperature (K)</label>
           <ValidatedNumberInput label="Temperature (K)" value={temp} onChange={setTemp} min={10} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Mass (g)</label>
           <ValidatedNumberInput label="Mass (g)" value={mass} onChange={setMass} min={0.01} />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">T₁ (°C)</label>
             <ValidatedNumberInput label="T₁ (°C)" value={tempFrom} onChange={setTempFrom} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">T₂ (°C)</label>
             <ValidatedNumberInput label="T₂ (°C)" value={tempTo} onChange={setTempTo} />
           </div>
         </div>

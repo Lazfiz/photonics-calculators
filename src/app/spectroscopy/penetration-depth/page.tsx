@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 const jsonLd = generateCalculatorJsonLd(
   'Optical Penetration Depth',
-  "Calculate optical penetration depth from complex refractive index \u00f1 = n + ik. Includes oblique incidence via Snell's law.",
+  "Calculate optical penetration depth from complex refractive index ñ = n + ik. Includes oblique incidence via Snell's law.",
   'https://photonics-calculators.vercel.app/spectroscopy/penetration-depth',
   { category: 'Spectroscopy' }
 );

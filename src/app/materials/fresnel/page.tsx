@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Fresnel Equations',
   description: 'Interactive Fresnel reflection and transmission at a dielectric interface with sliders, presets, and angle sweeps.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Fresnel Equations',
-  description: 'Interactive Fresnel reflection and transmission at a dielectric interface with sliders, presets, and angle sweeps.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Fresnel Equations',
   'Interactive Fresnel reflection and transmission at a dielectric interface with sliders, presets, and angle sweeps.',
   'https://photonics-calculators.vercel.app/materials/fresnel',
-  { category: 'Materials`,
-  `Interactive Fresnel reflection and transmission at a dielectric interface with sliders, presets, and angle sweeps.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Fresnel Equations',
-  'Interactive Fresnel reflection and transmission at a dielectric interface with sliders, presets, and angle sweeps.',
-  'https://photonics-calculators.vercel.app/materials/fresnel',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/fresnel`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

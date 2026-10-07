@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Retarder Types Comparison',
   description: 'Compare waveplate and retarder types: bandwidth, accuracy, temperature sensitivity.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Retarder Types Comparison',
-  description: 'Compare waveplate and retarder types: bandwidth, accuracy, temperature sensitivity.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Retarder Types Comparison',
   'Compare waveplate and retarder types: bandwidth, accuracy, temperature sensitivity.',
   'https://photonics-calculators.vercel.app/polarization/retarder-types',
-  { category: 'Polarization`,
-  `Compare waveplate and retarder types: bandwidth, accuracy, temperature sensitivity.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Retarder Types Comparison',
-  'Compare waveplate and retarder types: bandwidth, accuracy, temperature sensitivity.',
-  'https://photonics-calculators.vercel.app/polarization/retarder-types',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/retarder-types`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

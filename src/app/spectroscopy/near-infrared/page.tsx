@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Near-Infrared (NIR) Spectroscopy',
   description: 'Overtone and combination band analysis for non-destructive composition measurement.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Near-Infrared (NIR) Spectroscopy',
-  description: 'Overtone and combination band analysis for non-destructive composition measurement.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Near-Infrared (NIR) Spectroscopy',
   'Overtone and combination band analysis for non-destructive composition measurement.',
   'https://photonics-calculators.vercel.app/spectroscopy/near-infrared',
-  { category: 'Spectroscopy`,
-  `Overtone and combination band analysis for non-destructive composition measurement.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Near-Infrared (NIR) Spectroscopy',
-  'Overtone and combination band analysis for non-destructive composition measurement.',
-  'https://photonics-calculators.vercel.app/spectroscopy/near-infrared',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/near-infrared`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

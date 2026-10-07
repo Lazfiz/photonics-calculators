@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Super-Resolution Calculator',
   description: 'STED and PALM/STORM resolution limits beyond the diffraction barrier.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Super-Resolution Calculator',
-  description: 'STED and PALM/STORM resolution limits beyond the diffraction barrier.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Super-Resolution Calculator',
   'STED and PALM/STORM resolution limits beyond the diffraction barrier.',
   'https://photonics-calculators.vercel.app/imaging/super-resolution',
-  { category: 'Imaging`,
-  `STED and PALM/STORM resolution limits beyond the diffraction barrier.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Super-Resolution Calculator',
-  'STED and PALM/STORM resolution limits beyond the diffraction barrier.',
-  'https://photonics-calculators.vercel.app/imaging/super-resolution',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/super-resolution`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

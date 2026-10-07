@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Accessible Emission Limits (AEL)',
   description: 'IEC 60825-1 laser classification AEL thresholds. Simplified model for educational reference.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Accessible Emission Limits (AEL)',
-  description: 'IEC 60825-1 laser classification AEL thresholds. Simplified model for educational reference.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Accessible Emission Limits (AEL)',
   'IEC 60825-1 laser classification AEL thresholds. Simplified model for educational reference.',
   'https://photonics-calculators.vercel.app/laser-safety/ael-limits',
-  { category: 'Laser Safety`,
-  `IEC 60825-1 laser classification AEL thresholds. Simplified model for educational reference.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Accessible Emission Limits (AEL)',
-  'IEC 60825-1 laser classification AEL thresholds. Simplified model for educational reference.',
-  'https://photonics-calculators.vercel.app/laser-safety/ael-limits',
-  { category: 'Laser Safety`,
-  `https://photonics-calculators.vercel.app/laser-safety/ael-limits`,
-  { category: `Laser Safety` }
+  { category: 'Laser Safety' }
 );
+
 export default function Page() {
   return (
     <>

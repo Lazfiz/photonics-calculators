@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Raman Shift Calculator',
   description: 'Convert between Raman shift (cm⁻¹), scattered wavelength, and energy for any excitation laser.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Raman Shift Calculator',
-  description: 'Convert between Raman shift (cm⁻¹), scattered wavelength, and energy for any excitation laser.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Raman Shift Calculator',
   'Convert between Raman shift (cm⁻¹), scattered wavelength, and energy for any excitation laser.',
   'https://photonics-calculators.vercel.app/spectroscopy/raman-shift',
-  { category: 'Spectroscopy`,
-  `Convert between Raman shift (cm⁻¹), scattered wavelength, and energy for any excitation laser.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Raman Shift Calculator',
-  'Convert between Raman shift (cm⁻¹), scattered wavelength, and energy for any excitation laser.',
-  'https://photonics-calculators.vercel.app/spectroscopy/raman-shift',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/raman-shift`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

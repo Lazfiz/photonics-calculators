@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Supercontinuum Generation',
   description: 'Broadband SC generation in photonic crystal fibers via soliton fission, SPM, and dispersive wave generation.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Supercontinuum Generation',
-  description: 'Broadband SC generation in photonic crystal fibers via soliton fission, SPM, and dispersive wave generation.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Supercontinuum Generation',
   'Broadband SC generation in photonic crystal fibers via soliton fission, SPM, and dispersive wave generation.',
   'https://photonics-calculators.vercel.app/wave-optics/supercontinuum',
-  { category: 'Wave Optics`,
-  `Broadband SC generation in photonic crystal fibers via soliton fission, SPM, and dispersive wave generation.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Supercontinuum Generation',
-  'Broadband SC generation in photonic crystal fibers via soliton fission, SPM, and dispersive wave generation.',
-  'https://photonics-calculators.vercel.app/wave-optics/supercontinuum',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/supercontinuum`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

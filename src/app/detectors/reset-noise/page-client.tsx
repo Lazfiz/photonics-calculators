@@ -29,7 +29,7 @@ export default function ResetNoisePage() {
   const conversionGain = 1.6e-19 / capacitance; // V/e-
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 max-w-4xl mx-auto">
+    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="KTC Reset Noise" description="KTC reset noise voltage, noise charge, and conversion gain for image sensors.">
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Capacitance (F)" value={capacitance} onChange={setCapacitance} step="1e-15" />
         <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} step="1" />
@@ -48,6 +48,6 @@ export default function ResetNoisePage() {
         yaxis2: { title: "Noise voltage (V)", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 70, r: 70 }, autosize: true, showlegend: true
       }} />
-    </div>
+    </CalculatorShell>
   );
 }

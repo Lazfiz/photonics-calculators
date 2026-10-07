@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/pump-combiner' },
-    title: 'Pump Combiner',
-  description: 'Interactive Pump Combiner calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Pump Combiner',
-  description: 'Interactive Pump Combiner calculator for photonics and optical engineering.'
+    title: 'Fiber Pump Combiner',
+  description: 'Combined pump power, loss, pump brightness and the NA² brightness-conservation check for an N×1 fiber pump combiner, plus signal insertion loss.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Pump Combiner',
-  'Interactive Pump Combiner calculator for photonics and optical engineering.',
+  'Fiber Pump Combiner',
+  'Combined pump power, loss, pump brightness and the NA² brightness-conservation check for an N×1 fiber pump combiner, plus signal insertion loss.',
   'https://photonics-calculators.vercel.app/fiber-optics/pump-combiner',
-  { category: 'Fiber Optics`,
-  `Interactive Pump Combiner calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Pump Combiner',
-  'Interactive Pump Combiner calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/fiber-optics/pump-combiner',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/pump-combiner`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

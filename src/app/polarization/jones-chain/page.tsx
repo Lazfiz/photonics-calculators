@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Jones Matrix Chain',
   description: 'Chain Jones matrices to transform input polarization states and visualize the output ellipse.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Jones Matrix Chain',
-  description: 'Chain Jones matrices to transform input polarization states and visualize the output ellipse.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Jones Matrix Chain',
   'Chain Jones matrices to transform input polarization states and visualize the output ellipse.',
   'https://photonics-calculators.vercel.app/polarization/jones-chain',
-  { category: 'Polarization`,
-  `Chain Jones matrices to transform input polarization states and visualize the output ellipse.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Jones Matrix Chain',
-  'Chain Jones matrices to transform input polarization states and visualize the output ellipse.',
-  'https://photonics-calculators.vercel.app/polarization/jones-chain',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/jones-chain`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

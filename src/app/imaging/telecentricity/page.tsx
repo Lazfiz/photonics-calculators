@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Telecentric Lens Design',
   description: 'Telecentric lenses maintain constant magnification regardless of object distance. Chief rays are parallel to optical axis.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Telecentric Lens Design',
-  description: 'Telecentric lenses maintain constant magnification regardless of object distance. Chief rays are parallel to optical axis.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Telecentric Lens Design',
   'Telecentric lenses maintain constant magnification regardless of object distance. Chief rays are parallel to optical axis.',
   'https://photonics-calculators.vercel.app/imaging/telecentricity',
-  { category: 'Imaging`,
-  `Telecentric lenses maintain constant magnification regardless of object distance. Chief rays are parallel to optical axis.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Telecentric Lens Design',
-  'Telecentric lenses maintain constant magnification regardless of object distance. Chief rays are parallel to optical axis.',
-  'https://photonics-calculators.vercel.app/imaging/telecentricity',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/telecentricity`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

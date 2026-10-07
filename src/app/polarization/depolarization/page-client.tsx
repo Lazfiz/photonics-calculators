@@ -108,8 +108,7 @@ export default function DepolarizationPage() {
             { label: "S₃ (RCP vs LCP)", val: s3in, set: setS3in, step: 0.1 },
           ].map(({ label, val, set, step }) => (
             <div key={label} className="mb-3">
-              <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
 

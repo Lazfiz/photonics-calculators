@@ -74,19 +74,15 @@ export default function ThermalConductivityPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Temperature (K)</label>
           <ValidatedNumberInput label="Temperature (K)" value={temp} onChange={setTemp} min={10} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Thickness (mm)</label>
           <ValidatedNumberInput label="Thickness (mm)" value={thickness} onChange={setThickness} min={0.1} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Beam area (mm²)</label>
           <ValidatedNumberInput label="Beam area (mm²)" value={area} onChange={setArea} min={0.01} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Absorbed power (W)</label>
           <ValidatedNumberInput label="Absorbed power (W)" value={power} onChange={setPower} min={0} />
         </div>
       </div>

@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/fog-attenuation' },
     title: 'Fog Attenuation',
-  description: 'Interactive Fog Attenuation calculator for photonics and optical engineering.'
+  description: 'Optical attenuation in fog from visibility with the Kim or Kruse model: exponent q, attenuation coefficient, total path loss and transmitted fraction.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Fog Attenuation',
-  description: 'Interactive Fog Attenuation calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Fog Attenuation',
-  'Interactive Fog Attenuation calculator for photonics and optical engineering.',
+  'Optical attenuation in fog from visibility with the Kim or Kruse model: exponent q, attenuation coefficient, total path loss and transmitted fraction.',
   'https://photonics-calculators.vercel.app/free-space-comms/fog-attenuation',
-  { category: 'Free Space Comms`,
-  `Interactive Fog Attenuation calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Fog Attenuation',
-  'Interactive Fog Attenuation calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/fog-attenuation',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/fog-attenuation`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

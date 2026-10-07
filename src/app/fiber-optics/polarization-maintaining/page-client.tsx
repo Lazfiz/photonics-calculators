@@ -85,8 +85,7 @@ export default function PMFiberCalculator() {
   const vNumber = (2 * Math.PI * coreRadius * na) / (wavelength * 1e-3);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Polarization-Maintaining Fiber" description="Birefringence, beat length, h-parameter and output extinction ratio of PANDA, bow-tie and elliptical-core PM fibers versus length and input PER.">
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -100,11 +99,9 @@ export default function PMFiberCalculator() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
               <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Core Radius (μm)</label>
               <ValidatedNumberInput label="Core Radius (μm)" value={coreRadius} onChange={setCoreRadius} step="0.1" />
             </div>
             <div>
@@ -115,11 +112,9 @@ export default function PMFiberCalculator() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Fiber Length (m)</label>
               <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} step="100" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Input PER (dB)</label>
               <ValidatedNumberInput label="Input PER (dB)" value={extinctionRatio} onChange={setExtinctionRatio} step="1" />
             </div>
           </div>
@@ -149,7 +144,6 @@ export default function PMFiberCalculator() {
         <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
           <ChartPanel data={plotData} layout={layout} />
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

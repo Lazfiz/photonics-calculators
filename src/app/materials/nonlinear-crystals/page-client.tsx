@@ -167,11 +167,9 @@ export default function NonlinearCrystalsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Pump λ (nm)</label>
           <ValidatedNumberInput label="Pump λ (nm)" value={pumpWavelength} onChange={setPumpWavelength} min={300} max={5000} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Crystal Length (mm)</label>
           <ValidatedNumberInput label="Crystal Length (mm)" value={length} onChange={setLength} min={1} max={100} />
         </div>
       </div>

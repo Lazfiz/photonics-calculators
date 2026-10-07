@@ -69,15 +69,12 @@ export default function PRFCorrectionPage() {
       <LaserSafetyQuarantineBanner />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Single Pulse MPE (µJ/cm²)</label>
           <ValidatedNumberInput label="Single Pulse MPE (µJ/cm²)" value={singlePulseMPE} onChange={setSinglePulseMPE} step="0.1" />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Pulse Repetition Rate (Hz)</label>
           <ValidatedNumberInput label="Pulse Repetition Rate (Hz)" value={prf} onChange={setPrf} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Exposure Duration (s)</label>
           <ValidatedNumberInput label="Exposure Duration (s)" value={exposureDuration} onChange={setExposureDuration} step="1" />
         </div>
       </div>

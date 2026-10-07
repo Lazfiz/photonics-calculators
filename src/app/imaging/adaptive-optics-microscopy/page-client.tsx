@@ -61,23 +61,18 @@ export default function AdaptiveOpticsMicroscopyPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Numerical Aperture (NA)</label>
             <ValidatedNumberInput label="Numerical Aperture (NA)" value={na} onChange={setNa} min={0.1} max={1.8} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
             <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={2000} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Total Zernike Modes</label>
             <ValidatedNumberInput label="Total Zernike Modes" value={numModes} onChange={setNumModes} min={1} max={65} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">RMS Wavefront Error (µm)</label>
             <ValidatedNumberInput label="RMS Wavefront Error (µm)" value={rmsWavefrontError} onChange={setRmsWavefrontError} min={0.01} max={5} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Correction Efficiency</label>
             <ValidatedNumberInput label="Correction Efficiency" value={correctionEfficiency} onChange={setCorrectionEfficiency} min={0} max={1} />
           </div>
         </div>

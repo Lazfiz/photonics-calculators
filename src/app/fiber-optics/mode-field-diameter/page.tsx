@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Mode Field Diameter',
   description: 'Calculate MFD, effective area, and spot size for single-mode fibers.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Mode Field Diameter',
-  description: 'Calculate MFD, effective area, and spot size for single-mode fibers.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Mode Field Diameter',
   'Calculate MFD, effective area, and spot size for single-mode fibers.',
   'https://photonics-calculators.vercel.app/fiber-optics/mode-field-diameter',
-  { category: 'Fiber Optics`,
-  `Calculate MFD, effective area, and spot size for single-mode fibers.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Mode Field Diameter',
-  'Calculate MFD, effective area, and spot size for single-mode fibers.',
-  'https://photonics-calculators.vercel.app/fiber-optics/mode-field-diameter',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/mode-field-diameter`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

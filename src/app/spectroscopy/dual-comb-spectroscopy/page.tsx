@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Dual-Comb Spectroscopy Calculator',
   description: 'Model dual-comb spectroscopy parameters: resolution, bandwidth, update rate, and multi-heterodyne RF spectrum.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Dual-Comb Spectroscopy Calculator',
-  description: 'Model dual-comb spectroscopy parameters: resolution, bandwidth, update rate, and multi-heterodyne RF spectrum.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Dual-Comb Spectroscopy Calculator',
   'Model dual-comb spectroscopy parameters: resolution, bandwidth, update rate, and multi-heterodyne RF spectrum.',
   'https://photonics-calculators.vercel.app/spectroscopy/dual-comb-spectroscopy',
-  { category: 'Spectroscopy`,
-  `Model dual-comb spectroscopy parameters: resolution, bandwidth, update rate, and multi-heterodyne RF spectrum.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Dual-Comb Spectroscopy Calculator',
-  'Model dual-comb spectroscopy parameters: resolution, bandwidth, update rate, and multi-heterodyne RF spectrum.',
-  'https://photonics-calculators.vercel.app/spectroscopy/dual-comb-spectroscopy',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/dual-comb-spectroscopy`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: '3D Reconstruction Methods',
   description: 'Compare 3D reconstruction approaches: resolution, sampling, voxel budgets, and method tradeoffs.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `3D Reconstruction Methods',
-  description: 'Compare 3D reconstruction approaches: resolution, sampling, voxel budgets, and method tradeoffs.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   '3D Reconstruction Methods',
   'Compare 3D reconstruction approaches: resolution, sampling, voxel budgets, and method tradeoffs.',
   'https://photonics-calculators.vercel.app/imaging/3d-reconstruction',
-  { category: 'Imaging`,
-  `Compare 3D reconstruction approaches: resolution, sampling, voxel budgets, and method tradeoffs.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  '3D Reconstruction Methods',
-  'Compare 3D reconstruction approaches: resolution, sampling, voxel budgets, and method tradeoffs.',
-  'https://photonics-calculators.vercel.app/imaging/3d-reconstruction',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/3d-reconstruction`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

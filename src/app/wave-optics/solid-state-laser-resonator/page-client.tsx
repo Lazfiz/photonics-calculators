@@ -112,45 +112,34 @@ export default function SolidStateLaserResonatorPage() {
   const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-6xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-      </div>
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Solid State Laser Resonator" description="Two-mirror resonator stability g₁g₂, beam waist and radius along the cavity, and slope efficiency and output power of a solid-state laser." maxWidthClassName="max-w-6xl">
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Crystal Length (mm)</label>
           <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Crystal Diameter (mm)</label>
           <ValidatedNumberInput label="Crystal Diameter (mm)" value={crystalDiameter} onChange={setCrystalDiameter} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">R₁ (HR mirror, mm)</label>
           <ValidatedNumberInput label="R₁ (HR mirror, mm)" value={R1} onChange={setR1} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">R₂ (OC mirror, mm)</label>
           <ValidatedNumberInput label="R₂ (OC mirror, mm)" value={R2} onChange={setR2} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Cavity Length (mm)</label>
           <ValidatedNumberInput label="Cavity Length (mm)" value={L_cav} onChange={setL_cav} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">OC Reflectivity</label>
           <ValidatedNumberInput label="OC Reflectivity" value={R_oc} onChange={setR_oc} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">HR Reflectivity</label>
           <ValidatedNumberInput label="HR Reflectivity" value={R_hr} onChange={setR_hr} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Crystal Index</label>
           <ValidatedNumberInput label="Crystal Index" value={n_crystal} onChange={setN_crystal} />
         </div>
       </div>
@@ -199,6 +188,6 @@ export default function SolidStateLaserResonatorPage() {
           <ChartPanel data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output (W)" } }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

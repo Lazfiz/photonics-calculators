@@ -47,31 +47,24 @@ export default function ClearedTissuePage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Objective NA</label>
             <ValidatedNumberInput label="Objective NA" value={na} onChange={setNa} min={0.2} max={1.7} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
             <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Medium refractive index</label>
             <ValidatedNumberInput label="Medium refractive index" value={nMedium} onChange={setNMedium} min={1.0} max={1.8} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Tissue thickness (µm)</label>
             <ValidatedNumberInput label="Tissue thickness (µm)" value={tissueThickness} onChange={setTissueThickness} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Absorption coeff (µm⁻¹)</label>
             <ValidatedNumberInput label="Absorption coeff (µm⁻¹)" value={absorptionCoeff} onChange={setAbsorptionCoeff} min={0} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Scattering coeff (µm⁻¹)</label>
             <ValidatedNumberInput label="Scattering coeff (µm⁻¹)" value={scatteringCoeff} onChange={setScatteringCoeff} min={0} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Objective WD (µm)</label>
             <ValidatedNumberInput label="Objective WD (µm)" value={objectiveWD} onChange={setObjectiveWD} />
           </div>
         </div>

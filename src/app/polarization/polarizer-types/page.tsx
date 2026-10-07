@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Polarizer Types Comparison',
   description: 'Compare extinction ratio, transmission, damage threshold, and other specs across common polarizer types.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Polarizer Types Comparison',
-  description: 'Compare extinction ratio, transmission, damage threshold, and other specs across common polarizer types.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Polarizer Types Comparison',
   'Compare extinction ratio, transmission, damage threshold, and other specs across common polarizer types.',
   'https://photonics-calculators.vercel.app/polarization/polarizer-types',
-  { category: 'Polarization`,
-  `Compare extinction ratio, transmission, damage threshold, and other specs across common polarizer types.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Polarizer Types Comparison',
-  'Compare extinction ratio, transmission, damage threshold, and other specs across common polarizer types.',
-  'https://photonics-calculators.vercel.app/polarization/polarizer-types',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/polarizer-types`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

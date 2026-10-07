@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Sum-Frequency Generation Microscopy Calculator',
   description: 'Calculate SFG wavelengths, energies, and beam parameters for sum-frequency generation microscopy.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Sum-Frequency Generation Microscopy Calculator',
-  description: 'Calculate SFG wavelengths, energies, and beam parameters for sum-frequency generation microscopy.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Sum-Frequency Generation Microscopy Calculator',
   'Calculate SFG wavelengths, energies, and beam parameters for sum-frequency generation microscopy.',
   'https://photonics-calculators.vercel.app/imaging/sum-frequency-microscopy',
-  { category: 'Imaging`,
-  `Calculate SFG wavelengths, energies, and beam parameters for sum-frequency generation microscopy.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Sum-Frequency Generation Microscopy Calculator',
-  'Calculate SFG wavelengths, energies, and beam parameters for sum-frequency generation microscopy.',
-  'https://photonics-calculators.vercel.app/imaging/sum-frequency-microscopy',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/sum-frequency-microscopy`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

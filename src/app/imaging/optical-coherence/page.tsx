@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Optical Coherence Theory',
   description: 'Temporal coherence, coherence length, axial resolution, and SNR estimation for OCT systems.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Optical Coherence Theory',
-  description: 'Temporal coherence, coherence length, axial resolution, and SNR estimation for OCT systems.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Optical Coherence Theory',
   'Temporal coherence, coherence length, axial resolution, and SNR estimation for OCT systems.',
   'https://photonics-calculators.vercel.app/imaging/optical-coherence',
-  { category: 'Imaging`,
-  `Temporal coherence, coherence length, axial resolution, and SNR estimation for OCT systems.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Optical Coherence Theory',
-  'Temporal coherence, coherence length, axial resolution, and SNR estimation for OCT systems.',
-  'https://photonics-calculators.vercel.app/imaging/optical-coherence',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/optical-coherence`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

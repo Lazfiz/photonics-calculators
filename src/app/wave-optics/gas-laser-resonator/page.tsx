@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/wave-optics/gas-laser-resonator' },
     title: 'Gas Laser Resonator',
-  description: 'Interactive Gas Laser Resonator calculator for photonics and optical engineering.'
+  description: 'Stability g₁g₂, beam waist, Fresnel number, optimal output coupling and output power of a HeNe or CO₂ laser from tube size and mirror radii.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Gas Laser Resonator',
-  description: 'Interactive Gas Laser Resonator calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Gas Laser Resonator',
-  'Interactive Gas Laser Resonator calculator for photonics and optical engineering.',
+  'Stability g₁g₂, beam waist, Fresnel number, optimal output coupling and output power of a HeNe or CO₂ laser from tube size and mirror radii.',
   'https://photonics-calculators.vercel.app/wave-optics/gas-laser-resonator',
-  { category: 'Wave Optics`,
-  `Interactive Gas Laser Resonator calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Gas Laser Resonator',
-  'Interactive Gas Laser Resonator calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/wave-optics/gas-laser-resonator',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/gas-laser-resonator`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

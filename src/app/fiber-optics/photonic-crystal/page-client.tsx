@@ -103,21 +103,17 @@ export default function PhotonicCrystalFiberCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Photonic Crystal Fiber" description="Approximate NA, V-number, mode area, dispersion and confinement loss of an index-guiding photonic crystal fiber from hole pitch Λ and diameter d.">
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Pitch Λ (μm)</label>
               <ValidatedNumberInput label="Pitch Λ (μm)" value={pitch} onChange={setPitch} min={0.5} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Hole Diameter d (μm)</label>
               <ValidatedNumberInput label="Hole Diameter d (μm)" value={holeDiameter} onChange={setHoleDiameter} min={0.1} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
               <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
           </div>
@@ -154,7 +150,6 @@ export default function PhotonicCrystalFiberCalculator() {
         <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
           <ChartPanel data={plotData} layout={layout} />
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -103,15 +103,12 @@ export default function ThermalVsPhotochemicalPage() {
           <h2 className="text-lg font-semibold mb-4">Input</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
               <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Exposure Time (s)</label>
               <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} step="any" />
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Spot Size (mm)</label>
               <ValidatedNumberInput label="Spot Size (mm)" value={spotSize} onChange={setSpotSize} step="0.1" />
             </div>
           </div>

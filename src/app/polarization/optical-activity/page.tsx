@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Optical Activity',
   description: 'Calculate optical rotation from specific rotation, concentration, and path length with wavelength/temperature corrections.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Optical Activity',
-  description: 'Calculate optical rotation from specific rotation, concentration, and path length with wavelength/temperature corrections.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Optical Activity',
   'Calculate optical rotation from specific rotation, concentration, and path length with wavelength/temperature corrections.',
   'https://photonics-calculators.vercel.app/polarization/optical-activity',
-  { category: 'Polarization`,
-  `Calculate optical rotation from specific rotation, concentration, and path length with wavelength/temperature corrections.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Optical Activity',
-  'Calculate optical rotation from specific rotation, concentration, and path length with wavelength/temperature corrections.',
-  'https://photonics-calculators.vercel.app/polarization/optical-activity',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/optical-activity`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

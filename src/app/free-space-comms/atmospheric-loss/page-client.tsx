@@ -94,7 +94,7 @@ export default function AtmosphericLossPage() {
   }, [visibility, humidity, temperature, altitude]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="FSO Atmospheric Loss" description="Visibility-based (Kim) scattering plus water-vapour absorption: attenuation in dB/km, total path loss and transmittance of a free-space optical link." maxWidthClassName="max-w-5xl">
       
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -108,8 +108,7 @@ export default function AtmosphericLossPage() {
             ["Link Length (km)", linkLength, setLinkLength],
           ].map(([label, val, set]: any) => (
             <div key={label as string}>
-              <label className="block text-sm text-gray-400 mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
         </div>
@@ -137,6 +136,6 @@ export default function AtmosphericLossPage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

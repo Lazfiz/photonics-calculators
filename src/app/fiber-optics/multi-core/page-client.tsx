@@ -115,8 +115,7 @@ export default function MultiCoreFiberCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Multi-Core Fiber Crosstalk" description="Simplified coupled-mode estimate of inter-core coupling, crosstalk and packing density in a homogeneous multi-core fiber versus core pitch and length.">
 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -132,11 +131,9 @@ export default function MultiCoreFiberCalculator() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Core Pitch (μm)</label>
               <ValidatedNumberInput label="Core Pitch (μm)" value={corePitch} onChange={setCorePitch} min={10} step="1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Core Radius (μm)</label>
               <ValidatedNumberInput label="Core Radius (μm)" value={coreRadius} onChange={setCoreRadius} step="0.1" />
             </div>
             <div>
@@ -147,16 +144,13 @@ export default function MultiCoreFiberCalculator() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
               <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Fiber Length (km)</label>
               <ValidatedNumberInput label="Fiber Length (km)" value={fiberLength} onChange={setFiberLength} step="1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Core Mismatch Δβ (rad/m)</label>
-              <ValidatedNumberInput label="Δβ (rad/m)" value={deltaBeta} onChange={setDeltaBeta} min={0} step="100" />
+              <ValidatedNumberInput label="Core Mismatch Δβ (rad/m)" value={deltaBeta} onChange={setDeltaBeta} min={0} step="100" />
             </div>
           </div>
 
@@ -187,7 +181,6 @@ export default function MultiCoreFiberCalculator() {
         <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
           <ChartPanel data={plotData} layout={layout} />
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

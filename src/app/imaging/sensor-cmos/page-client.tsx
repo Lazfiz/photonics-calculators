@@ -67,31 +67,24 @@ export default function SensorCMOSPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pixel Pitch (µm)</label>
             <ValidatedNumberInput label="Pixel Pitch (µm)" value={pixelPitch} onChange={setPixelPitch} min={0.5} max={50} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Full Well Capacity (e⁻)</label>
             <ValidatedNumberInput label="Full Well Capacity (e⁻)" value={wellCapacity} onChange={setWellCapacity} min={100} max={200000} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Read Noise (e⁻ rms)</label>
             <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} min={0.1} max={50} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Dark Current (e⁻/s/pixel)</label>
             <ValidatedNumberInput label="Dark Current (e⁻/s/pixel)" value={darkCurrent} onChange={setDarkCurrent} min={0} max={100} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Conversion Gain (e⁻/DN)</label>
             <ValidatedNumberInput label="Conversion Gain (e⁻/DN)" value={conversionGain} onChange={setConversionGain} min={0.1} max={100} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Quantum Efficiency</label>
             <ValidatedNumberInput label="Quantum Efficiency" value={quantumEfficiency} onChange={setQuantumEfficiency} min={0.01} max={1} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Exposure Time (ms)</label>
             <ValidatedNumberInput label="Exposure Time (ms)" value={exposureTime} onChange={setExposureTime} min={1} max={10000} />
           </div>
         </div>

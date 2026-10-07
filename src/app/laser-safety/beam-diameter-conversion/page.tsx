@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/beam-diameter-conversion' },
     title: 'Beam Diameter Conversion',
-  description: 'Interactive Beam Diameter Conversion calculator for photonics and optical engineering.'
+  description: 'Convert Gaussian beam diameters between the 1/e², 1/e and FWHM definitions and the waist radius w₀, with relative intensity levels.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Beam Diameter Conversion',
-  description: 'Interactive Beam Diameter Conversion calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Beam Diameter Conversion',
-  'Interactive Beam Diameter Conversion calculator for photonics and optical engineering.',
+  'Convert Gaussian beam diameters between the 1/e², 1/e and FWHM definitions and the waist radius w₀, with relative intensity levels.',
   'https://photonics-calculators.vercel.app/laser-safety/beam-diameter-conversion',
-  { category: 'Laser Safety`,
-  `Interactive Beam Diameter Conversion calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Beam Diameter Conversion',
-  'Interactive Beam Diameter Conversion calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/laser-safety/beam-diameter-conversion',
-  { category: 'Laser Safety`,
-  `https://photonics-calculators.vercel.app/laser-safety/beam-diameter-conversion`,
-  { category: `Laser Safety` }
+  { category: 'Laser Safety' }
 );
+
 export default function Page() {
   return (
     <>

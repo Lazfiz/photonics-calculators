@@ -105,46 +105,36 @@ export default function FiberLaserCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Laser Output Power" description="Fiber laser output power, optical, Stokes and quantum efficiency, and output-coupler and cavity losses from pump power, wavelengths and slope efficiency.">
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Pump Power (W)</label>
               <ValidatedNumberInput label="Pump Power (W)" value={pumpPower} onChange={setPumpPower} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Pump Wavelength (nm)</label>
               <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Laser Wavelength (nm)</label>
               <ValidatedNumberInput label="Laser Wavelength (nm)" value={laserWavelength} onChange={setLaserWavelength} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Fiber Length (m)</label>
               <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Absorption Coefficient (dB/m)</label>
               <ValidatedNumberInput label="Absorption Coefficient (dB/m)" value={absorptionCoeff} onChange={setAbsorptionCoeff} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Slope Efficiency (%)</label>
               <ValidatedNumberInput label="Slope Efficiency (%)" value={slopeEfficiency} onChange={setSlopeEfficiency} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Threshold Power (W)</label>
               <ValidatedNumberInput label="Threshold Power (W)" value={thresholdPower} onChange={setThresholdPower} step="0.1" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Output Coupling (%)</label>
                 <ValidatedNumberInput label="Output Coupling (%)" value={outputCoupling} onChange={setOutputCoupling} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Cavity Loss (dB)</label>
                 <ValidatedNumberInput label="Cavity Loss (dB)" value={cavityLoss} onChange={setCavityLoss} step="0.1" />
               </div>
             </div>
@@ -181,7 +171,6 @@ export default function FiberLaserCalculator() {
             <ChartPanel data={gainCurve} layout={layout2} />
           </div>
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

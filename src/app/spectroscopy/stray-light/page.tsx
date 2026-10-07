@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Stray Light Rejection',
   description: 'Ghost order analysis and stray light estimation for grating-based spectrometers.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Stray Light Rejection',
-  description: 'Ghost order analysis and stray light estimation for grating-based spectrometers.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Stray Light Rejection',
   'Ghost order analysis and stray light estimation for grating-based spectrometers.',
   'https://photonics-calculators.vercel.app/spectroscopy/stray-light',
-  { category: 'Spectroscopy`,
-  `Ghost order analysis and stray light estimation for grating-based spectrometers.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Stray Light Rejection',
-  'Ghost order analysis and stray light estimation for grating-based spectrometers.',
-  'https://photonics-calculators.vercel.app/spectroscopy/stray-light',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/stray-light`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

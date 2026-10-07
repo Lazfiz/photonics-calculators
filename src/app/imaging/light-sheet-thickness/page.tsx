@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Light Sheet Thickness Calculator',
   description: 'Calculate the thickness and propagation characteristics of a Gaussian light sheet for light-sheet fluorescence microscopy (LSFM).',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Light Sheet Thickness Calculator',
-  description: 'Calculate the thickness and propagation characteristics of a Gaussian light sheet for light-sheet fluorescence microscopy (LSFM).',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Light Sheet Thickness Calculator',
   'Calculate the thickness and propagation characteristics of a Gaussian light sheet for light-sheet fluorescence microscopy (LSFM).',
   'https://photonics-calculators.vercel.app/imaging/light-sheet-thickness',
-  { category: 'Imaging`,
-  `Calculate the thickness and propagation characteristics of a Gaussian light sheet for light-sheet fluorescence microscopy (LSFM).',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Light Sheet Thickness Calculator',
-  'Calculate the thickness and propagation characteristics of a Gaussian light sheet for light-sheet fluorescence microscopy (LSFM).',
-  'https://photonics-calculators.vercel.app/imaging/light-sheet-thickness',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/light-sheet-thickness`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

@@ -4,32 +4,17 @@ import PageClient from "./page-client";
 
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/fade-probability' },
-    title: 'Fade Probability',
-  description: 'Interactive Fade Probability calculator for photonics and optical engineering.'
-};
-const jsonLd = generateCalculatorJsonLd(
-  `Fade Probability',
-  description: 'Interactive Fade Probability calculator for photonics and optical engineering.'
+    title: 'FSO Fade Probability',
+  description: 'Gamma-gamma fade probability, mean fade time and diversity gain versus fade threshold, with aperture averaging, for an FSO link in turbulence.'
 };
 
-
 const jsonLd = generateCalculatorJsonLd(
-  'Fade Probability',
-  'Interactive Fade Probability calculator for photonics and optical engineering.',
+  'FSO Fade Probability',
+  'Gamma-gamma fade probability, mean fade time and diversity gain versus fade threshold, with aperture averaging, for an FSO link in turbulence.',
   'https://photonics-calculators.vercel.app/free-space-comms/fade-probability',
-  { category: 'Free Space Comms`,
-  `Interactive Fade Probability calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Fade Probability',
-  'Interactive Fade Probability calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/fade-probability',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/fade-probability`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

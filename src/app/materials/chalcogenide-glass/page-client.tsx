@@ -126,7 +126,6 @@ export default function ChalcogenideGlassPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={600} max={14000} />
         </div>
         <div>

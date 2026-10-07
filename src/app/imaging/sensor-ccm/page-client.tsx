@@ -64,31 +64,24 @@ export default function SensorCCMPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pixel Pitch (µm)</label>
             <ValidatedNumberInput label="Pixel Pitch (µm)" value={pixelPitch} onChange={setPixelPitch} min={1} max={50} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Full Well Capacity (e⁻)</label>
             <ValidatedNumberInput label="Full Well Capacity (e⁻)" value={wellCapacity} onChange={setWellCapacity} min={1000} max={500000} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Read Noise (e⁻ rms)</label>
             <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} min={1} max={100} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Dark Current at 25°C (e⁻/s/pixel)</label>
             <ValidatedNumberInput label="Dark Current at 25°C (e⁻/s/pixel)" value={darkCurrent} onChange={setDarkCurrent} min={0.001} max={10} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Cooling Temperature (°C)</label>
             <ValidatedNumberInput label="Cooling Temperature (°C)" value={coolingTemp} onChange={setCoolingTemp} min={-100} max={25} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Exposure Time (ms)</label>
             <ValidatedNumberInput label="Exposure Time (ms)" value={exposureTime} onChange={setExposureTime} min={1} max={60000} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">ADC Bit Depth</label>
             <ValidatedNumberInput label="ADC Bit Depth" value={bitDepth} onChange={setBitDepth} min={8} max={24} />
           </div>
         </div>

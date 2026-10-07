@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { createRng } from "../../../physics/random";
 
 const RETARDERS = [
   { name: "Zero-Order Quartz", order: 0, material: "Quartz", retardationAccuracy: "λ/300", bandwidth: "±1%", tempCoeff: 1.0e-5, damage: 500, price: "$$" },
@@ -43,10 +44,11 @@ export default function RetarderTypesPage() {
       const frac = actualRet - Math.floor(actualRet);
       return Math.abs(frac - (retardance % 1)) / (retardance % 1) * 100;
     });
-    // Achromatic: very flat
-    const achromatic = wls.map(() => Math.random() * 0.3 + 0.1);
+    // Achromatic: very flat (fixed seed: same curve on server and client)
+    const rng = createRng(1);
+    const achromatic = wls.map(() => rng() * 0.3 + 0.1);
     // Fresnel rhomb: flat
-    const fresnel = wls.map(() => Math.random() * 0.5 + 0.2);
+    const fresnel = wls.map(() => rng() * 0.5 + 0.2);
 
     return { wls, zeroOrder, multiOrder, achromatic, fresnel };
   }, [wavelength, retardance, thickness]);
@@ -91,8 +93,7 @@ export default function RetarderTypesPage() {
             { label: "Crystal thickness (mm)", val: thickness, set: setThickness, step: 0.01 },
           ].map(({ label, val, set, step }) => (
             <div key={label} className="mb-3">
-              <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
           <div className="mt-3 flex flex-wrap gap-2">

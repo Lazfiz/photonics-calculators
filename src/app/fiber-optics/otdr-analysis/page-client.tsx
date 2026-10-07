@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { createRng } from "../../../physics/random";
 export default function OTDRAnalysisPage() {
   const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100); // ns
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 50); // km
@@ -57,6 +58,7 @@ export default function OTDRAnalysisPage() {
   }, [pulseWidth, fiberLength, attenuationCoeff, refractiveIndex, backscatterCoeff, connectorLoss, spliceLoss, numSplices, eventAtKm]);
 
   const traceData = useMemo(() => {
+    const rng = createRng(1); // fixed seed: same noise on server and client
     const n = refractiveIndex;
     const v_group = 3e8 / n;
     const resolution = (pulseWidth * 1e-9 * v_group) / 2; // m
@@ -86,10 +88,10 @@ export default function OTDRAnalysisPage() {
       }
 
       // Add random noise
-      level += (Math.random() - 0.5) * noise * 2;
+      level += (rng() - 0.5) * noise * 2;
 
       // Clamp
-      if (d > fiberLength) level = -90 + Math.random() * 2;
+      if (d > fiberLength) level = -90 + rng() * 2;
 
       levels.push(level);
     }

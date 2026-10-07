@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Thin Film Stress Measurement',
   description: 'Calculate film stress from substrate curvature using the Stoney equation. Includes thermal stress decomposition and stored elastic energy.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Thin Film Stress Measurement',
-  description: 'Calculate film stress from substrate curvature using the Stoney equation. Includes thermal stress decomposition and stored elastic energy.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Thin Film Stress Measurement',
   'Calculate film stress from substrate curvature using the Stoney equation. Includes thermal stress decomposition and stored elastic energy.',
   'https://photonics-calculators.vercel.app/thin-film/stress-measurement',
-  { category: 'Thin Film`,
-  `Calculate film stress from substrate curvature using the Stoney equation. Includes thermal stress decomposition and stored elastic energy.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Thin Film Stress Measurement',
-  'Calculate film stress from substrate curvature using the Stoney equation. Includes thermal stress decomposition and stored elastic energy.',
-  'https://photonics-calculators.vercel.app/thin-film/stress-measurement',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/stress-measurement`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

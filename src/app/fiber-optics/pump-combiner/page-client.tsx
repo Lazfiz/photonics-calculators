@@ -83,38 +83,30 @@ export default function PumpCombinerCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Pump Combiner" description="Combined pump power, loss, pump brightness and the NA² brightness-conservation check for an N×1 fiber pump combiner, plus signal insertion loss.">
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Number of Pump Ports</label>
               <ValidatedNumberInput label="Number of Pump Ports" value={numPumpPorts} onChange={setNumPumpPorts} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Pump Wavelength (nm)</label>
               <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Pump Power per Port (W)</label>
               <ValidatedNumberInput label="Pump Power per Port (W)" value={pumpPowerPerPort} onChange={setPumpPowerPerPort} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Combiner Efficiency (%)</label>
               <ValidatedNumberInput label="Combiner Efficiency (%)" value={combinerEfficiency} onChange={setCombinerEfficiency} step="0.5" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Signal Insertion Loss (dB)</label>
               <ValidatedNumberInput label="Signal Insertion Loss (dB)" value={signalInsertionLoss} onChange={setSignalInsertionLoss} step="0.01" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Pump NA</label>
                 <ValidatedNumberInput label="Pump NA" value={pumpNA} onChange={setPumpNA} step="0.01" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Signal NA</label>
                 <ValidatedNumberInput label="Signal NA" value={signalNA} onChange={setSignalNA} step="0.01" />
               </div>
             </div>
@@ -150,7 +142,6 @@ export default function PumpCombinerCalculator() {
             <ChartPanel data={powerBar} layout={layout2} />
           </div>
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

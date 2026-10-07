@@ -94,33 +94,26 @@ export default function BirefringenceCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Birefringence Fiber Calculator" description="Geometric (elliptical-core) and stress-induced birefringence and beat length of a single-mode fiber from core and cladding indices and core shape.">
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Core Index n₁</label>
               <ValidatedNumberInput label="Core Index n₁" value={coreIndex} onChange={setCoreIndex} step="0.0001" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Cladding Index n₂</label>
               <ValidatedNumberInput label="Cladding Index n₂" value={claddingIndex} onChange={setCladdingIndex} step="0.0001" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Core Radius (μm)</label>
               <ValidatedNumberInput label="Core Radius (μm)" value={coreRadius} onChange={setCoreRadius} min={0.1} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Core Ellipticity (b/a)</label>
               <ValidatedNumberInput label="Core Ellipticity (b/a)" value={ellipticity} onChange={setEllipticity} min={0.5} max={1} step="0.01" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Stress OPD (nm)</label>
               <ValidatedNumberInput label="Stress OPD (nm)" value={stressAnisotropy} onChange={setStressAnisotropy} step="1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
               <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} step="1" />
             </div>
           </div>
@@ -150,7 +143,6 @@ export default function BirefringenceCalculator() {
         <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
           <ChartPanel data={plotData} layout={layout} />
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

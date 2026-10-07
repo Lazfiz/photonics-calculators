@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Diode Laser Safety Calculator',
   description: 'Calculate MPE, NOHD, and OD requirements for diode laser bars/stacks with asymmetric divergence.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Diode Laser Safety Calculator',
-  description: 'Calculate MPE, NOHD, and OD requirements for diode laser bars/stacks with asymmetric divergence.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Diode Laser Safety Calculator',
   'Calculate MPE, NOHD, and OD requirements for diode laser bars/stacks with asymmetric divergence.',
   'https://photonics-calculators.vercel.app/laser-safety/diode-laser-safety',
-  { category: 'Laser Safety`,
-  `Calculate MPE, NOHD, and OD requirements for diode laser bars/stacks with asymmetric divergence.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Diode Laser Safety Calculator',
-  'Calculate MPE, NOHD, and OD requirements for diode laser bars/stacks with asymmetric divergence.',
-  'https://photonics-calculators.vercel.app/laser-safety/diode-laser-safety',
-  { category: 'Laser Safety`,
-  `https://photonics-calculators.vercel.app/laser-safety/diode-laser-safety`,
-  { category: `Laser Safety` }
+  { category: 'Laser Safety' }
 );
+
 export default function Page() {
   return (
     <>

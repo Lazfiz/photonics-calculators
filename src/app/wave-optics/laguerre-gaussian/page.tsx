@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Laguerre-Gaussian Modes',
   description: 'Donut modes with orbital angular momentum.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Laguerre-Gaussian Modes',
-  description: 'Donut modes with orbital angular momentum.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Laguerre-Gaussian Modes',
   'Donut modes with orbital angular momentum.',
   'https://photonics-calculators.vercel.app/wave-optics/laguerre-gaussian',
-  { category: 'Wave Optics`,
-  `Donut modes with orbital angular momentum.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Laguerre-Gaussian Modes',
-  'Donut modes with orbital angular momentum.',
-  'https://photonics-calculators.vercel.app/wave-optics/laguerre-gaussian',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/laguerre-gaussian`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Difference Frequency Generation (DFG)',
   description: 'Downconversion via χ⁽²⁾: p − s i for mid-IR generation.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Difference Frequency Generation (DFG)',
-  description: 'Downconversion via χ⁽²⁾: p − s i for mid-IR generation.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Difference Frequency Generation (DFG)',
   'Downconversion via χ⁽²⁾: p − s i for mid-IR generation.',
   'https://photonics-calculators.vercel.app/wave-optics/difference-frequency',
-  { category: 'Wave Optics`,
-  `Downconversion via χ⁽²⁾: p − s i for mid-IR generation.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Difference Frequency Generation (DFG)',
-  'Downconversion via χ⁽²⁾: p − s i for mid-IR generation.',
-  'https://photonics-calculators.vercel.app/wave-optics/difference-frequency',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/difference-frequency`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

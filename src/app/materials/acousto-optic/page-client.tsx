@@ -131,11 +131,9 @@ export default function AcoustoOpticPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">RF Frequency (MHz)</label>
           <ValidatedNumberInput label="RF Frequency (MHz)" value={frequency} onChange={setFrequency} min={10} max={3000} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Optical Wavelength (nm)</label>
           <ValidatedNumberInput label="Optical Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={15000} />
         </div>
       </div>

@@ -76,8 +76,7 @@ export default function DispersionShiftedCalculator() {
   const totalAttenuation = p.attenuation * fiberLength;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Dispersion-Shifted Fiber Calculator" description="Compare DSF, NZ-DSF, and DCF dispersion characteristics.">
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -92,15 +91,12 @@ export default function DispersionShiftedCalculator() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
               <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Fiber Length (km)</label>
               <ValidatedNumberInput label="Fiber Length (km)" value={fiberLength} onChange={setFiberLength} step="10" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Bit Rate (Gbps)</label>
               <ValidatedNumberInput label="Bit Rate (Gbps)" value={bitRate} onChange={setBitRate} step="1" />
             </div>
           </div>
@@ -130,7 +126,6 @@ export default function DispersionShiftedCalculator() {
         <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
           <ChartPanel data={plotData} layout={layout} />
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

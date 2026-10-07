@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Cavity Mode Spacing',
   description: 'Axial and transverse mode structure of optical resonators.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Cavity Mode Spacing',
-  description: 'Axial and transverse mode structure of optical resonators.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Cavity Mode Spacing',
   'Axial and transverse mode structure of optical resonators.',
   'https://photonics-calculators.vercel.app/wave-optics/cavity-mode-spacing',
-  { category: 'Wave Optics`,
-  `Axial and transverse mode structure of optical resonators.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Cavity Mode Spacing',
-  'Axial and transverse mode structure of optical resonators.',
-  'https://photonics-calculators.vercel.app/wave-optics/cavity-mode-spacing',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/cavity-mode-spacing`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

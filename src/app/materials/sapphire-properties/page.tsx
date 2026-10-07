@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Sapphire (AlO₃) Properties',
   description: 'Uniaxial crystal. Sellmeier equations for ordinary and extraordinary rays.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Sapphire (AlO₃) Properties',
-  description: 'Uniaxial crystal. Sellmeier equations for ordinary and extraordinary rays.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Sapphire (AlO₃) Properties',
   'Uniaxial crystal. Sellmeier equations for ordinary and extraordinary rays.',
   'https://photonics-calculators.vercel.app/materials/sapphire-properties',
-  { category: 'Materials`,
-  `Uniaxial crystal. Sellmeier equations for ordinary and extraordinary rays.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Sapphire (AlO₃) Properties',
-  'Uniaxial crystal. Sellmeier equations for ordinary and extraordinary rays.',
-  'https://photonics-calculators.vercel.app/materials/sapphire-properties',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/sapphire-properties`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

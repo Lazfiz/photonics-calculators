@@ -105,17 +105,15 @@ export default function FreeElectronLaserPage() {
   const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-6xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-      </div>
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Free-Electron Laser" description="FEL resonance wavelength, Pierce parameter ρ, 1D gain length and saturation power from electron energy, undulator period, K and peak current." maxWidthClassName="max-w-6xl">
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Electron Energy (MeV)</label><ValidatedNumberInput label="Electron Energy (MeV)" value={electronEnergy} onChange={setElectronEnergy} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Undulator Period λᵤ (mm)</label><ValidatedNumberInput label="Undulator Period λᵤ (mm)" value={undulatorPeriod} onChange={setUndulatorPeriod} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Undulator K</label><ValidatedNumberInput label="Undulator K" value={undulatorK} onChange={setUndulatorK} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Undulator Length (m)</label><ValidatedNumberInput label="Undulator Length (m)" value={undulatorLength} onChange={setUndulatorLength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Peak Beam Current (A)</label><ValidatedNumberInput label="Peak Beam Current (A)" value={beamCurrent} onChange={setBeamCurrent} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Energy Spread (ΔE/E)</label><ValidatedNumberInput label="Energy Spread (ΔE/E)" value={energySpread} onChange={setEnergySpread} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Electron Energy (MeV)" value={electronEnergy} onChange={setElectronEnergy} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Undulator Period λᵤ (mm)" value={undulatorPeriod} onChange={setUndulatorPeriod} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Undulator K" value={undulatorK} onChange={setUndulatorK} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Undulator Length (m)" value={undulatorLength} onChange={setUndulatorLength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Peak Beam Current (A)" value={beamCurrent} onChange={setBeamCurrent} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Energy Spread (ΔE/E)" value={energySpread} onChange={setEnergySpread} /></div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
@@ -144,6 +142,6 @@ export default function FreeElectronLaserPage() {
         <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Power Evolution</h3><ChartPanel data={powerEvolution} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "z (m)" }, yaxis: { ...plotLayout.yaxis, title: "P (W)" } }} /></div>
         <div className="bg-gray-800 rounded-lg p-4 md:col-span-2"><h3 className="font-semibold mb-2">Harmonic Spectrum</h3><ChartPanel data={spectrumData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "Relative Intensity" }, barmode: "group" }} /></div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

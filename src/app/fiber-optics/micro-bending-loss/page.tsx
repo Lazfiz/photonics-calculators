@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Microbending Loss',
   description: 'Calculate microbending-induced loss from random perturbations, coating properties, and fiber parameters.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Microbending Loss',
-  description: 'Calculate microbending-induced loss from random perturbations, coating properties, and fiber parameters.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Microbending Loss',
   'Calculate microbending-induced loss from random perturbations, coating properties, and fiber parameters.',
   'https://photonics-calculators.vercel.app/fiber-optics/micro-bending-loss',
-  { category: 'Fiber Optics`,
-  `Calculate microbending-induced loss from random perturbations, coating properties, and fiber parameters.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Microbending Loss',
-  'Calculate microbending-induced loss from random perturbations, coating properties, and fiber parameters.',
-  'https://photonics-calculators.vercel.app/fiber-optics/micro-bending-loss',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/micro-bending-loss`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

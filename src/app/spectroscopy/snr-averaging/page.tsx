@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'SNR Improvement with Co-Adding',
   description: 'SNR improves as N where N is the number of co-added scans. Signal adds linearly, noise as N.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `SNR Improvement with Co-Adding',
-  description: 'SNR improves as N where N is the number of co-added scans. Signal adds linearly, noise as N.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'SNR Improvement with Co-Adding',
   'SNR improves as N where N is the number of co-added scans. Signal adds linearly, noise as N.',
   'https://photonics-calculators.vercel.app/spectroscopy/snr-averaging',
-  { category: 'Spectroscopy`,
-  `SNR improves as N where N is the number of co-added scans. Signal adds linearly, noise as N.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'SNR Improvement with Co-Adding',
-  'SNR improves as N where N is the number of co-added scans. Signal adds linearly, noise as N.',
-  'https://photonics-calculators.vercel.app/spectroscopy/snr-averaging',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/snr-averaging`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

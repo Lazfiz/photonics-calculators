@@ -5,31 +5,16 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/wave-optics/solid-state-laser-resonator' },
     title: 'Solid State Laser Resonator',
-  description: 'Interactive Solid State Laser Resonator calculator for photonics and optical engineering.'
+  description: 'Two-mirror resonator stability g₁g₂, beam waist and radius along the cavity, and slope efficiency and output power of a solid-state laser.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Solid State Laser Resonator',
-  description: 'Interactive Solid State Laser Resonator calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Solid State Laser Resonator',
-  'Interactive Solid State Laser Resonator calculator for photonics and optical engineering.',
+  'Two-mirror resonator stability g₁g₂, beam waist and radius along the cavity, and slope efficiency and output power of a solid-state laser.',
   'https://photonics-calculators.vercel.app/wave-optics/solid-state-laser-resonator',
-  { category: 'Wave Optics`,
-  `Interactive Solid State Laser Resonator calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Solid State Laser Resonator',
-  'Interactive Solid State Laser Resonator calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/wave-optics/solid-state-laser-resonator',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/solid-state-laser-resonator`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

@@ -41,7 +41,7 @@ export default function SnowAttenuationPage() {
   }, [range]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Snow Attenuation" description="Specific and total attenuation of a free-space optical link in dry or wet snow from the snowfall rate (water equivalent), with equivalent visibility." maxWidthClassName="max-w-5xl">
       
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
                 <p className="text-cyan-300 mt-1 font-mono">α = k_s · S^α_s &nbsp; [dB/km]</p>
@@ -56,8 +56,7 @@ export default function SnowAttenuationPage() {
             ["Link Range (km)", range, setRange],
           ].map(([label, val, set]: any) => (
             <div key={label as string}>
-              <label className="block text-sm text-gray-400 mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
           <div>
@@ -91,6 +90,6 @@ export default function SnowAttenuationPage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

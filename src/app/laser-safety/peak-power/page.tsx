@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Peak Power Calculator',
   description: 'Convert average power to peak power for pulsed lasers. Essential for assessing single-pulse hazards.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Peak Power Calculator',
-  description: 'Convert average power to peak power for pulsed lasers. Essential for assessing single-pulse hazards.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Peak Power Calculator',
   'Convert average power to peak power for pulsed lasers. Essential for assessing single-pulse hazards.',
   'https://photonics-calculators.vercel.app/laser-safety/peak-power',
-  { category: 'Laser Safety`,
-  `Convert average power to peak power for pulsed lasers. Essential for assessing single-pulse hazards.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Peak Power Calculator',
-  'Convert average power to peak power for pulsed lasers. Essential for assessing single-pulse hazards.',
-  'https://photonics-calculators.vercel.app/laser-safety/peak-power',
-  { category: 'Laser Safety`,
-  `https://photonics-calculators.vercel.app/laser-safety/peak-power`,
-  { category: `Laser Safety` }
+  { category: 'Laser Safety' }
 );
+
 export default function Page() {
   return (
     <>

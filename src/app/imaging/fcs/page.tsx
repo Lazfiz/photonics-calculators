@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'FCS Calculator',
   description: 'Fluorescence Correlation Spectroscopy — diffusion time, concentration, and confocal volume.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `FCS Calculator',
-  description: 'Fluorescence Correlation Spectroscopy — diffusion time, concentration, and confocal volume.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'FCS Calculator',
   'Fluorescence Correlation Spectroscopy — diffusion time, concentration, and confocal volume.',
   'https://photonics-calculators.vercel.app/imaging/fcs',
-  { category: 'Imaging`,
-  `Fluorescence Correlation Spectroscopy — diffusion time, concentration, and confocal volume.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'FCS Calculator',
-  'Fluorescence Correlation Spectroscopy — diffusion time, concentration, and confocal volume.',
-  'https://photonics-calculators.vercel.app/imaging/fcs',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/fcs`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

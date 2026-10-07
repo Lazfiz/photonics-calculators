@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Three-Photon Microscopy Calculator',
   description: 'Calculate resolution, excitation volume, and depth penetration for three-photon excitation microscopy at 1300+ nm.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Three-Photon Microscopy Calculator',
-  description: 'Calculate resolution, excitation volume, and depth penetration for three-photon excitation microscopy at 1300+ nm.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Three-Photon Microscopy Calculator',
   'Calculate resolution, excitation volume, and depth penetration for three-photon excitation microscopy at 1300+ nm.',
   'https://photonics-calculators.vercel.app/imaging/three-photon-microscopy',
-  { category: 'Imaging`,
-  `Calculate resolution, excitation volume, and depth penetration for three-photon excitation microscopy at 1300+ nm.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Three-Photon Microscopy Calculator',
-  'Calculate resolution, excitation volume, and depth penetration for three-photon excitation microscopy at 1300+ nm.',
-  'https://photonics-calculators.vercel.app/imaging/three-photon-microscopy',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/three-photon-microscopy`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

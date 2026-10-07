@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Amplitude Splitting',
   description: 'Multiple-beam interference from amplitude splitting at a thin film. Shows how partial reflections from each interface combine to form interference fringes.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Amplitude Splitting',
-  description: 'Multiple-beam interference from amplitude splitting at a thin film. Shows how partial reflections from each interface combine to form interference fringes.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Amplitude Splitting',
   'Multiple-beam interference from amplitude splitting at a thin film. Shows how partial reflections from each interface combine to form interference fringes.',
   'https://photonics-calculators.vercel.app/thin-film/amplitude-splitting',
-  { category: 'Thin Film`,
-  `Multiple-beam interference from amplitude splitting at a thin film. Shows how partial reflections from each interface combine to form interference fringes.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Amplitude Splitting',
-  'Multiple-beam interference from amplitude splitting at a thin film. Shows how partial reflections from each interface combine to form interference fringes.',
-  'https://photonics-calculators.vercel.app/thin-film/amplitude-splitting',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/amplitude-splitting`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

@@ -91,45 +91,34 @@ export default function FiberLaserResonatorPage() {
   const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-6xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-      </div>
+    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Fiber Laser Resonator" description="V-number, mode field diameter, threshold gain and slope efficiency of a fiber laser cavity from fiber length, core, NA and mirror reflectivities." maxWidthClassName="max-w-6xl">
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Fiber Length (m)</label>
           <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} min={0.1} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Core Diameter (µm)</label>
           <ValidatedNumberInput label="Core Diameter (µm)" value={coreDiameter} onChange={setCoreDiameter} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Numerical Aperture</label>
           <ValidatedNumberInput label="Numerical Aperture" value={NA} onChange={setNA} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Laser Wavelength (nm)</label>
           <ValidatedNumberInput label="Laser Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Pump Wavelength (nm)</label>
           <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Output Coupler R</label>
           <ValidatedNumberInput label="Output Coupler R" value={R_oc} onChange={setR_oc} min={0} max={1} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">HR Reflector R</label>
           <ValidatedNumberInput label="HR Reflector R" value={R_hr} onChange={setR_hr} min={0} max={1} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Background Loss (dB/m)</label>
           <ValidatedNumberInput label="Background Loss (dB/m)" value={alpha} onChange={setAlpha} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Small-Signal Gain (m⁻¹)</label>
           <ValidatedNumberInput label="Small-Signal Gain (m⁻¹)" value={gainPerMeter} onChange={setGainPerMeter} />
         </div>
       </div>
@@ -177,6 +166,6 @@ export default function FiberLaserResonatorPage() {
           <ChartPanel data={modeData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "MFD (µm)" } }} />
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

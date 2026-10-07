@@ -129,8 +129,7 @@ export default function FiberAmplifierCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Amplifier Calculator" description="EDFA and YDFA gain, saturation, and noise figure analysis.">
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -152,32 +151,25 @@ export default function FiberAmplifierCalculator() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Fiber Length (m)</label>
               <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Pump Power (mW)</label>
               <ValidatedNumberInput label="Pump Power (mW)" value={pumpPower} onChange={setPumpPower} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Pump Wavelength (nm)</label>
               <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Signal Wavelength (nm)</label>
               <ValidatedNumberInput label="Signal Wavelength (nm)" value={signalWavelength} onChange={setSignalWavelength} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Input Signal Power (dBm)</label>
               <ValidatedNumberInput label="Input Signal Power (dBm)" value={inputPower} onChange={setInputPower} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Dopant Conc. (ions/m³)</label>
                 <ValidatedNumberInput label="Dopant Conc. (ions/m³)" value={erbiumConc} onChange={setErbiumConc} step="1e23" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Overlap Factor Γ</label>
                 <ValidatedNumberInput label="Overlap Factor Γ" value={overlap} onChange={setOverlap} step="0.05" />
               </div>
             </div>
@@ -211,7 +203,6 @@ export default function FiberAmplifierCalculator() {
             <ChartPanel data={gainVsPump} layout={layout2} />
           </div>
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

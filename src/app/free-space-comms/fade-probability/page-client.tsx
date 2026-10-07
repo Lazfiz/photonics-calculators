@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { erfc } from "../../../physics/math";
 
 export default function FadeProbabilityPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550);
@@ -53,15 +54,7 @@ export default function FadeProbabilityPage() {
     const lnThreshold = Math.log(FT);
     // P = 0.5 * erfc(-(lnThreshold - mu_ln) / (sigma_ln * sqrt(2)))
     const arg = -(lnThreshold - mu_ln) / (sigma_ln * Math.SQRT2);
-    const erfApprox = (x: number) => {
-      const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429;
-      const p = 0.3275911;
-      const sign = x >= 0 ? 1 : -1;
-      const t = 1 / (1 + p * Math.abs(x));
-      const y = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
-      return sign * y;
-    };
-    const Pfade_ln = 0.5 * (1 - erfApprox(arg));
+    const Pfade_ln = 0.5 * erfc(arg);
 
     // Mean fade time (Burgemeister et al.)
     const V_wind = 5; // m/s
@@ -93,18 +86,10 @@ export default function FadeProbabilityPage() {
     const sigma_ln = Math.sqrt(Math.log(1 + sigmaI2));
     const mu_ln = -sigma_ln * sigma_ln / 2;
 
-    const erfApprox = (x: number) => {
-      const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429;
-      const p = 0.3275911;
-      const sign = x >= 0 ? 1 : -1;
-      const t = 1 / (1 + p * Math.abs(x));
-      return sign * (1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x));
-    };
-
     const single = thresholds.map((th) => {
       const FT = Math.pow(10, -th / 10);
       const arg = -(Math.log(FT) - mu_ln) / (sigma_ln * Math.SQRT2);
-      return 0.5 * (1 - erfApprox(arg));
+      return 0.5 * erfc(arg);
     });
 
     const diversity = thresholds.map((th) => Math.pow(Math.max(single[thresholds.indexOf(th)], 1e-30), numChannels));
@@ -116,7 +101,7 @@ export default function FadeProbabilityPage() {
   }, [wavelength, cn2, range, rxDiameter, numChannels]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="FSO Fade Probability" description="Gamma-gamma fade probability, mean fade time and diversity gain versus fade threshold, with aperture averaging, for an FSO link in turbulence." maxWidthClassName="max-w-5xl">
       
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -130,8 +115,7 @@ export default function FadeProbabilityPage() {
             ["Num Channels", numChannels, setNumChannels],
           ].map(([label, val, set, step]: any) => (
             <div key={label as string}>
-              <label className="block text-sm text-gray-400 mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
         </div>
@@ -162,6 +146,6 @@ export default function FadeProbabilityPage() {
           </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Double Refraction (Birefringence)',
   description: 'Calculate ordinary and extraordinary ray paths, walk-off angle, lateral separation, and retardation in uniaxial crystals.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Double Refraction (Birefringence)',
-  description: 'Calculate ordinary and extraordinary ray paths, walk-off angle, lateral separation, and retardation in uniaxial crystals.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Double Refraction (Birefringence)',
   'Calculate ordinary and extraordinary ray paths, walk-off angle, lateral separation, and retardation in uniaxial crystals.',
   'https://photonics-calculators.vercel.app/polarization/double-refraction',
-  { category: 'Polarization`,
-  `Calculate ordinary and extraordinary ray paths, walk-off angle, lateral separation, and retardation in uniaxial crystals.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Double Refraction (Birefringence)',
-  'Calculate ordinary and extraordinary ray paths, walk-off angle, lateral separation, and retardation in uniaxial crystals.',
-  'https://photonics-calculators.vercel.app/polarization/double-refraction',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/double-refraction`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

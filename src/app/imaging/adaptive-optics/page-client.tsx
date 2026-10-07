@@ -50,23 +50,18 @@ export default function AdaptiveOpticsPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Number of Zernike modes corrected</label>
             <ValidatedNumberInput label="Number of Zernike modes corrected" value={numZernike} onChange={setNumZernike} min={1} max={65} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Input RMS wavefront error (waves)</label>
             <ValidatedNumberInput label="Input RMS wavefront error (waves)" value={rmsWavefront} onChange={setRmsWavefront} min={0.01} max={5} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
             <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">DM actuators (across)</label>
             <ValidatedNumberInput label="DM actuators (across)" value={dmActuators} onChange={setDmActuators} min={4} max={128} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">DM stroke (µm)</label>
             <ValidatedNumberInput label="DM stroke (µm)" value={dmStroke} onChange={setDmStroke} />
           </div>
         </div>

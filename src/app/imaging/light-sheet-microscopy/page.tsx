@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Light Sheet Microscopy Design Calculator',
   description: 'Full light sheet microscope design parameters: sheet geometry, tilt geometry, and volume imaging.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Light Sheet Microscopy Design Calculator',
-  description: 'Full light sheet microscope design parameters: sheet geometry, tilt geometry, and volume imaging.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Light Sheet Microscopy Design Calculator',
   'Full light sheet microscope design parameters: sheet geometry, tilt geometry, and volume imaging.',
   'https://photonics-calculators.vercel.app/imaging/light-sheet-microscopy',
-  { category: 'Imaging`,
-  `Full light sheet microscope design parameters: sheet geometry, tilt geometry, and volume imaging.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Light Sheet Microscopy Design Calculator',
-  'Full light sheet microscope design parameters: sheet geometry, tilt geometry, and volume imaging.',
-  'https://photonics-calculators.vercel.app/imaging/light-sheet-microscopy',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/light-sheet-microscopy`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

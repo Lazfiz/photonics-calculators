@@ -4,77 +4,76 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import {
+  MAX_NOISE_PER_SLOT,
+  MAX_PHOTONS_PER_BIT,
+  ookPhotonCountingBer,
+  photonCountingBer,
+  requiredPhotonsPerBit,
+  type PhotonCountingScheme,
+} from "../../../physics/free-space-comms/ber";
 
-function qfunc(x: number): number {
-  // Approximation of Q(x)
-  return 0.5 * erfc(x / Math.sqrt(2));
+const TARGET_BERS = [1e-3, 1e-6, 1e-9];
+const CHART_FLOOR = 1e-18;
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
 }
 
-function erfc(x: number): number {
-  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
-  const sign = x < 0 ? -1 : 1;
-  x = Math.abs(x);
-  const t = 1 / (1 + p * x);
-  const y = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
-  return 0.5 * (1 + sign * y);
+function formatBer(ber: number): string {
+  if (Number.isNaN(ber)) return "—";
+  return ber < 1e-300 ? "< 1e-300" : ber.toExponential(2);
+}
+
+/** log₁₀ BER curve, trimmed at CHART_FLOOR (SimpleChart's log axis can't go below 1e-10). */
+function berCurve(scheme: PhotonCountingScheme, noisePerSlot: number, name: string, line: Record<string, unknown>) {
+  const x: number[] = [];
+  const y: number[] = [];
+  for (let i = 0; i <= 200; i++) {
+    const ppb = Math.pow(10, i * 0.02); // 1 … 1e4 photons/bit
+    const ber = photonCountingBer(scheme, ppb, noisePerSlot);
+    if (!(ber >= CHART_FLOOR)) break; // BER only falls with ppb
+    x.push(ppb);
+    y.push(Math.log10(ber));
+  }
+  return { x, y, type: "scatter", mode: "lines", name, line };
 }
 
 export default function BERPage() {
   const [photons, setPhotons] = useURLState("photons", 100);
   const [darkCount, setDarkCount] = useURLState("darkCount", 100);
-  const [modulation, setModulation] = useState<"OOK" | "DPSK">("OOK");
+  const [modulation, setModulation] = useState<PhotonCountingScheme>("OOK");
 
   const calc = useMemo(() => {
-    const snrVal = photons / (1 + darkCount / photons);
-    // E_b/N₀ = SNR_peak / 2 (OOK average energy is half peak)
-    const gamma = snrVal / 2;
-    let ber: number;
-    if (modulation === "OOK") {
-      ber = qfunc(Math.sqrt(gamma)); // standard OOK: Q(√(E_b/N₀))
-    } else {
-      ber = 0.5 * Math.exp(-gamma); // standard DPSK: ½·exp(-E_b/N₀)
-    }
-
-    // Find required photons for target BERs
-    const targets = [1e-3, 1e-6, 1e-9];
-    const required: Record<string, number> = {};
-    for (const t of targets) {
-      let lo = 1, hi = 1e6;
-      for (let i = 0; i < 100; i++) {
-        const mid = (lo + hi) / 2;
-        const s = mid / (1 + darkCount / mid) / 2; // E_b/N₀
-        const b = modulation === "OOK" ? qfunc(Math.sqrt(s)) : 0.5 * Math.exp(-s);
-        if (b > t) lo = mid; else hi = mid;
-      }
-      required[t.toExponential(0)] = hi;
-    }
-
-    return { ber, snr: snrVal, required };
+    const n = clamp(photons, 0, MAX_PHOTONS_PER_BIT);
+    const nb = clamp(darkCount, 0, MAX_NOISE_PER_SLOT);
+    const ook = ookPhotonCountingBer(n, nb);
+    const ber = modulation === "OOK" ? ook.ber : photonCountingBer("DPSK", n, nb);
+    const required = TARGET_BERS.map((target) => ({ target, photons: requiredPhotonsPerBit(modulation, target, nb) }));
+    return { ber, threshold: ook.threshold, pulsePhotons: 2 * n, required };
   }, [photons, darkCount, modulation]);
 
   const plotData = useMemo(() => {
-    const ppb = Array.from({ length: 300 }, (_, i) => Math.pow(10, 0.5 + i * 0.02));
-    const ook = ppb.map((p) => qfunc(Math.sqrt(p / (1 + darkCount / p) / 2)));
-    const dpsk = ppb.map((p) => 0.5 * Math.exp(-p / (1 + darkCount / p) / 2));
+    const nb = clamp(darkCount, 0, MAX_NOISE_PER_SLOT);
     return [
-      { x: ppb, y: ook, type: "scatter", mode: "lines", name: "OOK", line: { color: "#06b6d4" } },
-      { x: ppb, y: dpsk, type: "scatter", mode: "lines", name: "DPSK", line: { color: "#f59e0b" } },
+      berCurve("OOK", nb, "OOK", { color: "#06b6d4" }),
+      berCurve("DPSK", nb, "DPSK", { color: "#f59e0b" }),
+      berCurve("OOK", 0, "OOK, no noise", { color: "#06b6d4", dash: "dot" }),
+      berCurve("DPSK", 0, "DPSK, no noise", { color: "#f59e0b", dash: "dot" }),
     ];
   }, [darkCount]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 max-w-5xl mx-auto">
+    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Photon-Counting BER (OOK and DPSK)" description="Exact Poisson bit error rate of photon-counting OOK and DPSK receivers versus detected photons per bit and dark plus background counts." maxWidthClassName="max-w-5xl">
       
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
           <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Photons per Bit</label>
-            <ValidatedNumberInput label="Photons per Bit" value={photons} onChange={setPhotons} min={1} />
+            <ValidatedNumberInput label="Detected Signal Photons per Bit (average)" value={photons} onChange={setPhotons} min={0.1} max={MAX_PHOTONS_PER_BIT} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Dark Count Rate (counts/bit)</label>
-            <ValidatedNumberInput label="Dark Count Rate (counts/bit)" value={darkCount} onChange={setDarkCount} min={0} />
+            <ValidatedNumberInput label="Dark + Background Counts per Bit Slot (per detector)" value={darkCount} onChange={setDarkCount} min={0} max={MAX_NOISE_PER_SLOT} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">Modulation</label>
@@ -93,26 +92,39 @@ export default function BERPage() {
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
             <h2 className="text-lg font-semibold text-cyan-400 mb-3">Results</h2>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-gray-400">SNR</span><span>{calc.snr.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">BER ({modulation})</span><span>{calc.ber.toExponential(2)}</span></div>
-              {Object.entries(calc.required).map(([target, photons]) => (
+              <div className="flex justify-between"><span className="text-gray-400">BER ({modulation})</span><span>{formatBer(calc.ber)}</span></div>
+              {modulation === "OOK" ? (
+                <>
+                  <div className="flex justify-between"><span className="text-gray-400">Photons per &quot;1&quot; pulse</span><span>{calc.pulsePhotons.toPrecision(3)}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-400">Decision threshold (ML)</span><span>{Number.isFinite(calc.threshold) ? `≥ ${calc.threshold} counts` : "—"}</span></div>
+                </>
+              ) : (
+                <div className="flex justify-between"><span className="text-gray-400">Decision</span><span>port with more counts</span></div>
+              )}
+              {calc.required.map(({ target, photons }) => (
                 <div key={target} className="flex justify-between">
-                  <span className="text-gray-400">Required for BER {target}</span>
-                  <span>{photons.toFixed(0)} photons/bit</span>
+                  <span className="text-gray-400">Required for BER {target.toExponential(0)}</span>
+                  <span>{Number.isFinite(photons) ? `${photons.toPrecision(3)} photons/bit` : Number.isNaN(photons) ? "—" : "> 1e7 photons/bit"}</span>
                 </div>
               ))}
             </div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
             <ChartPanel data={plotData} layout={{
-              xaxis: { title: "Photons per Bit", type: "log", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "BER", type: "log", color: "#9ca3af", gridcolor: "#374151" },
+              xaxis: { title: "Detected photons per bit", type: "log", color: "#9ca3af", gridcolor: "#374151" },
+              yaxis: { title: "log₁₀ BER", color: "#9ca3af", gridcolor: "#374151" },
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",
               margin: { t: 20, r: 20, b: 40, l: 50 }, font: { color: "#9ca3af" },
             }} />
           </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-xs text-gray-500 space-y-1">
+            <p><strong className="text-gray-400">Model (exact for an ideal photon-counting receiver):</strong> Poisson signal and noise counts, equiprobable bits, no dead time or ISI.</p>
+            <p><strong className="text-gray-400">OOK:</strong> a &quot;1&quot; carries 2n̄ photons. Decide &quot;1&quot; when k ≥ k<sub>T</sub> = ⌊2n̄ / ln(1 + 2n̄/n<sub>b</sub>)⌋ + 1 (maximum likelihood). BER = ½[P(K ≥ k<sub>T</sub> | n<sub>b</sub>) + P(K &lt; k<sub>T</sub> | 2n̄ + n<sub>b</sub>)].</p>
+            <p><strong className="text-gray-400">DPSK:</strong> delay-line interferometer with one counter per port. BER = P(K<sub>d</sub> &gt; K<sub>c</sub>) + ½P(K<sub>d</sub> = K<sub>c</sub>), K<sub>c</sub> ~ Poisson(n̄ + n<sub>b</sub>), K<sub>d</sub> ~ Poisson(n<sub>b</sub>).</p>
+            <p><strong className="text-gray-400">No noise (dotted):</strong> ½e<sup>−2n̄</sup> (OOK, 10 photons/bit at 10⁻⁹) and ½e<sup>−n̄</sup> (DPSK, 20 photons/bit). Ref: D. O. Caplan, in Free-Space Laser Communications (Springer, 2008), doi:10.1007/978-0-387-28677-8_4.</p>
+          </div>
         </div>
       </div>
-    </div>
+    </CalculatorShell>
   );
 }

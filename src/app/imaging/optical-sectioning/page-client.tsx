@@ -47,19 +47,15 @@ export default function OpticalSectioningPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">NA</label>
             <ValidatedNumberInput label="NA" value={na} onChange={setNa} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
             <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Refractive index (n)</label>
             <ValidatedNumberInput label="Refractive index (n)" value={n} onChange={setN} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pinhole size (AU)</label>
             <ValidatedNumberInput label="Pinhole size (AU)" value={pinholeAu} onChange={setPinholeAu} min={0.1} max={5} />
           </div>
         </div>

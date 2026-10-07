@@ -5,6 +5,7 @@ const repoRoot = process.cwd();
 const appDir = path.join(repoRoot, "src", "app");
 const outDir = path.join(repoRoot, "src", "generated");
 const outFile = path.join(outDir, "search-index.json");
+const countsFile = path.join(outDir, "calculator-counts.json");
 
 const hiddenSearchRoutes = new Set([
   "/laser-safety/classification",
@@ -165,3 +166,20 @@ const items = scan(appDir)
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(outFile, `${JSON.stringify(items, null, 2)}\n`);
 console.log(`Wrote ${items.length} search items to ${path.relative(repoRoot, outFile)}`);
+
+// Calculator pages per category (src/app/<category>/<slug>/page.tsx), hidden ones included: the
+// site's "N calculators" copy reads these. tests/calculator-counts.test.ts checks them.
+const byCategory = {};
+for (const category of fs.readdirSync(appDir).sort()) {
+  if (category.startsWith("_") || category.startsWith("(")) continue;
+  const categoryDir = path.join(appDir, category);
+  if (!fs.statSync(categoryDir).isDirectory()) continue;
+  const count = fs
+    .readdirSync(categoryDir)
+    .filter((slug) => fs.existsSync(path.join(categoryDir, slug, "page.tsx"))).length;
+  if (count > 0) byCategory[category] = count;
+}
+const total = Object.values(byCategory).reduce((sum, n) => sum + n, 0);
+fs.writeFileSync(countsFile, `${JSON.stringify({ total, byCategory }, null, 2)}
+`);
+console.log(`Wrote ${total} calculator counts to ${path.relative(repoRoot, countsFile)}`);

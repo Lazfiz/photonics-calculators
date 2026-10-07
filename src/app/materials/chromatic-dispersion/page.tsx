@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Chromatic Dispersion',
   description: 'Material dispersion dn/d from Sellmeier coefficients',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Chromatic Dispersion',
-  description: 'Material dispersion dn/d from Sellmeier coefficients',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Chromatic Dispersion',
   'Material dispersion dn/d from Sellmeier coefficients',
   'https://photonics-calculators.vercel.app/materials/chromatic-dispersion',
-  { category: 'Materials`,
-  `Material dispersion dn/d from Sellmeier coefficients',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Chromatic Dispersion',
-  'Material dispersion dn/d from Sellmeier coefficients',
-  'https://photonics-calculators.vercel.app/materials/chromatic-dispersion',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/chromatic-dispersion`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

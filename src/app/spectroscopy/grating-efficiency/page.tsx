@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Grating Efficiency Calculator',
   description: 'Estimate diffraction grating efficiency based on groove density, blaze angle, and wavelength.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Grating Efficiency Calculator',
-  description: 'Estimate diffraction grating efficiency based on groove density, blaze angle, and wavelength.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Grating Efficiency Calculator',
   'Estimate diffraction grating efficiency based on groove density, blaze angle, and wavelength.',
   'https://photonics-calculators.vercel.app/spectroscopy/grating-efficiency',
-  { category: 'Spectroscopy`,
-  `Estimate diffraction grating efficiency based on groove density, blaze angle, and wavelength.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Grating Efficiency Calculator',
-  'Estimate diffraction grating efficiency based on groove density, blaze angle, and wavelength.',
-  'https://photonics-calculators.vercel.app/spectroscopy/grating-efficiency',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/grating-efficiency`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

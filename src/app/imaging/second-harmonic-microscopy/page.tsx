@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Second-Harmonic Generation Microscopy Calculator',
   description: 'Calculate SHG wavelength, resolution, phase matching, and signal strength for SHG microscopy of collagen, muscle, and other non-centrosymmetric structures.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Second-Harmonic Generation Microscopy Calculator',
-  description: 'Calculate SHG wavelength, resolution, phase matching, and signal strength for SHG microscopy of collagen, muscle, and other non-centrosymmetric structures.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Second-Harmonic Generation Microscopy Calculator',
   'Calculate SHG wavelength, resolution, phase matching, and signal strength for SHG microscopy of collagen, muscle, and other non-centrosymmetric structures.',
   'https://photonics-calculators.vercel.app/imaging/second-harmonic-microscopy',
-  { category: 'Imaging`,
-  `Calculate SHG wavelength, resolution, phase matching, and signal strength for SHG microscopy of collagen, muscle, and other non-centrosymmetric structures.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Second-Harmonic Generation Microscopy Calculator',
-  'Calculate SHG wavelength, resolution, phase matching, and signal strength for SHG microscopy of collagen, muscle, and other non-centrosymmetric structures.',
-  'https://photonics-calculators.vercel.app/imaging/second-harmonic-microscopy',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/second-harmonic-microscopy`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

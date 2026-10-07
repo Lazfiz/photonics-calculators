@@ -73,15 +73,12 @@ export default function VerdetConstantPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={5000} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Magnetic field B (T)</label>
           <ValidatedNumberInput label="Magnetic field B (T)" value={field} onChange={setField} min={0.01} max={10} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Length (mm)</label>
           <ValidatedNumberInput label="Length (mm)" value={length} onChange={setLength} min={0.1} max={200} />
         </div>
       </div>

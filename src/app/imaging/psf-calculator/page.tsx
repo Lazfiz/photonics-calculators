@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Point Spread Function Calculator',
   description: 'Visualize the 2D and 1D point spread function (PSF) for a diffraction-limited system.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Point Spread Function Calculator',
-  description: 'Visualize the 2D and 1D point spread function (PSF) for a diffraction-limited system.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Point Spread Function Calculator',
   'Visualize the 2D and 1D point spread function (PSF) for a diffraction-limited system.',
   'https://photonics-calculators.vercel.app/imaging/psf-calculator',
-  { category: 'Imaging`,
-  `Visualize the 2D and 1D point spread function (PSF) for a diffraction-limited system.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Point Spread Function Calculator',
-  'Visualize the 2D and 1D point spread function (PSF) for a diffraction-limited system.',
-  'https://photonics-calculators.vercel.app/imaging/psf-calculator',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/psf-calculator`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

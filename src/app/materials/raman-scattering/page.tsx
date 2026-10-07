@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Raman Scattering',
   description: 'Spontaneous and stimulated Raman scattering cross-sections and gain spectra for common optical materials.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Raman Scattering',
-  description: 'Spontaneous and stimulated Raman scattering cross-sections and gain spectra for common optical materials.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Raman Scattering',
   'Spontaneous and stimulated Raman scattering cross-sections and gain spectra for common optical materials.',
   'https://photonics-calculators.vercel.app/materials/raman-scattering',
-  { category: 'Materials`,
-  `Spontaneous and stimulated Raman scattering cross-sections and gain spectra for common optical materials.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Raman Scattering',
-  'Spontaneous and stimulated Raman scattering cross-sections and gain spectra for common optical materials.',
-  'https://photonics-calculators.vercel.app/materials/raman-scattering',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/raman-scattering`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

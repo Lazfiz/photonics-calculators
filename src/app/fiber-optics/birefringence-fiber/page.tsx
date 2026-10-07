@@ -5,12 +5,12 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/birefringence-fiber' },
     title: 'Birefringence Fiber Calculator',
-    description: 'Interactive Birefringence Fiber calculator for photonics and optical engineering.'
+    description: 'Geometric (elliptical-core) and stress-induced birefringence and beat length of a single-mode fiber from core and cladding indices and core shape.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
   'Birefringence Fiber Calculator',
-  'Interactive Birefringence Fiber calculator for photonics and optical engineering.',
+  'Geometric (elliptical-core) and stress-induced birefringence and beat length of a single-mode fiber from core and cladding indices and core shape.',
   'https://photonics-calculators.vercel.app/fiber-optics/birefringence-fiber',
   { category: 'Fiber Optics' }
 );

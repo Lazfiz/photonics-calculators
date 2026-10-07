@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Wide Bandpass Filter',
   description: 'Cascaded short-pass + long-pass quarter-wave stacks for broad transmission bands.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Wide Bandpass Filter',
-  description: 'Cascaded short-pass + long-pass quarter-wave stacks for broad transmission bands.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Wide Bandpass Filter',
   'Cascaded short-pass + long-pass quarter-wave stacks for broad transmission bands.',
   'https://photonics-calculators.vercel.app/thin-film/wide-bandpass',
-  { category: 'Thin Film`,
-  `Cascaded short-pass + long-pass quarter-wave stacks for broad transmission bands.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Wide Bandpass Filter',
-  'Cascaded short-pass + long-pass quarter-wave stacks for broad transmission bands.',
-  'https://photonics-calculators.vercel.app/thin-film/wide-bandpass',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/wide-bandpass`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

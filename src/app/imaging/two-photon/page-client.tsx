@@ -68,28 +68,22 @@ export default function TwoPhotonPage() {
           </div>
           {dyeIdx === 6 && (
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Custom 1P wavelength (nm)</label>
               <ValidatedNumberInput label="Custom 1P wavelength (nm)" value={customWl} onChange={setCustomWl} />
             </div>
           )}
           <div>
-            <label className="block text-sm text-gray-400 mb-1">NA</label>
             <ValidatedNumberInput label="NA" value={na} onChange={setNa} min={0.1} max={1.8} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Refractive index (n)</label>
             <ValidatedNumberInput label="Refractive index (n)" value={n} onChange={setN} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Average power (mW)</label>
             <ValidatedNumberInput label="Average power (mW)" value={avgPower} onChange={setAvgPower} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Rep rate (MHz)</label>
             <ValidatedNumberInput label="Rep rate (MHz)" value={repRate} onChange={setRepRate} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pulse width (fs)</label>
             <ValidatedNumberInput label="Pulse width (fs)" value={pulseWidth} onChange={setPulseWidth} />
           </div>
         </div>

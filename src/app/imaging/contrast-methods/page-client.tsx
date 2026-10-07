@@ -64,31 +64,24 @@ export default function ContrastMethodsPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">NA</label>
             <ValidatedNumberInput label="NA" value={na} onChange={setNa} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
             <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Refractive index (medium)</label>
             <ValidatedNumberInput label="Refractive index (medium)" value={n} onChange={setN} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Sample thickness (µm)</label>
             <ValidatedNumberInput label="Sample thickness (µm)" value={sampleThickness} onChange={setSampleThickness} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Δn (sample - medium)</label>
             <ValidatedNumberInput label="Δn (sample - medium)" value={dnSample} onChange={setDnSample} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Phase plate retardation (λ)</label>
             <ValidatedNumberInput label="Phase plate retardation (λ)" value={phaseShift} onChange={setPhaseShift} min={0.05} max={1.0} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">DIC shear (λ)</label>
             <ValidatedNumberInput label="DIC shear (λ)" value={shearAmount} onChange={setShearAmount} />
           </div>
         </div>

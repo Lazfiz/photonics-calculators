@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import calculatorCounts from "@/generated/calculator-counts.json";
+
 interface SearchItem {
   title: string;
   href: string;
@@ -100,7 +102,7 @@ export default function SiteSearch() {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search 524 calculators... (Ctrl+K)"
+          placeholder={`Search ${calculatorCounts.total} calculators... (Ctrl+K)`}
           className="w-full rounded-xl border border-white/10 bg-slate-950/80 pl-12 pr-16 py-3 text-base text-white placeholder-gray-500 outline-none transition focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
         />
         <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center rounded border border-gray-600 px-1.5 py-0.5 text-xs text-gray-400">⌘K</kbd>

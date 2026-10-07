@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Brillouin Scattering',
   description: 'Stimulated Brillouin scattering (SBS): frequency shift, gain coefficient, and power threshold in optical fibers and bulk materials.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Brillouin Scattering',
-  description: 'Stimulated Brillouin scattering (SBS): frequency shift, gain coefficient, and power threshold in optical fibers and bulk materials.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Brillouin Scattering',
   'Stimulated Brillouin scattering (SBS): frequency shift, gain coefficient, and power threshold in optical fibers and bulk materials.',
   'https://photonics-calculators.vercel.app/materials/brillouin-scattering',
-  { category: 'Materials`,
-  `Stimulated Brillouin scattering (SBS): frequency shift, gain coefficient, and power threshold in optical fibers and bulk materials.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Brillouin Scattering',
-  'Stimulated Brillouin scattering (SBS): frequency shift, gain coefficient, and power threshold in optical fibers and bulk materials.',
-  'https://photonics-calculators.vercel.app/materials/brillouin-scattering',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/brillouin-scattering`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

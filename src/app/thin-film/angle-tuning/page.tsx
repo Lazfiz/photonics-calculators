@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Angle Tuning of Coatings',
   description: 'Changing the angle of incidence shifts the spectral response of thin film coatings toward',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Angle Tuning of Coatings',
-  description: 'Changing the angle of incidence shifts the spectral response of thin film coatings toward',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Angle Tuning of Coatings',
   'Changing the angle of incidence shifts the spectral response of thin film coatings toward',
   'https://photonics-calculators.vercel.app/thin-film/angle-tuning',
-  { category: 'Thin Film`,
-  `Changing the angle of incidence shifts the spectral response of thin film coatings toward',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Angle Tuning of Coatings',
-  'Changing the angle of incidence shifts the spectral response of thin film coatings toward',
-  'https://photonics-calculators.vercel.app/thin-film/angle-tuning',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/angle-tuning`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

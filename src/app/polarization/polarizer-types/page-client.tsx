@@ -89,7 +89,6 @@ export default function PolarizerTypesPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Options</h2>
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Input power (mW)</label>
             <ValidatedNumberInput label="Input power (mW)" value={inputPower} onChange={setInputPower} />
           </div>
           <h3 className="text-sm font-semibold mb-2 mt-4">Select polarizers:</h3>

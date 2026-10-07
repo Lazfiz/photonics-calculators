@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Polarization Mode Dispersion (PMD)',
   description: 'Calculate PMD-induced differential group delay (DGD), system penalties, and PMD-limited reach using Maxwellian statistics.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Polarization Mode Dispersion (PMD)',
-  description: 'Calculate PMD-induced differential group delay (DGD), system penalties, and PMD-limited reach using Maxwellian statistics.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Polarization Mode Dispersion (PMD)',
   'Calculate PMD-induced differential group delay (DGD), system penalties, and PMD-limited reach using Maxwellian statistics.',
   'https://photonics-calculators.vercel.app/fiber-optics/polarization-mode-dispersion',
-  { category: 'Fiber Optics`,
-  `Calculate PMD-induced differential group delay (DGD), system penalties, and PMD-limited reach using Maxwellian statistics.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Polarization Mode Dispersion (PMD)',
-  'Calculate PMD-induced differential group delay (DGD), system penalties, and PMD-limited reach using Maxwellian statistics.',
-  'https://photonics-calculators.vercel.app/fiber-optics/polarization-mode-dispersion',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/polarization-mode-dispersion`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

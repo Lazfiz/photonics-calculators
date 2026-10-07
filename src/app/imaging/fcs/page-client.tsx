@@ -62,27 +62,21 @@ export default function FCSPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Lateral beam waist w₀ (µm)</label>
             <ValidatedNumberInput label="Lateral beam waist w₀ (µm)" value={w0} onChange={setW0} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Axial parameter z₀ (µm)</label>
             <ValidatedNumberInput label="Axial parameter z₀ (µm)" value={z0} onChange={setZ0} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Diffusion time τ_D (ms)</label>
             <ValidatedNumberInput label="Diffusion time τ_D (ms)" value={tauD} onChange={setTauD} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Molecular brightness (kHz/particle)</label>
             <ValidatedNumberInput label="Molecular brightness (kHz/particle)" value={brightness} onChange={setBrightness} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Concentration (nM)</label>
             <ValidatedNumberInput label="Concentration (nM)" value={concentration} onChange={setConcentration} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Triplet fraction</label>
             <ValidatedNumberInput label="Triplet fraction" value={tripletFrac} onChange={setTripletFrac} />
           </div>
         </div>

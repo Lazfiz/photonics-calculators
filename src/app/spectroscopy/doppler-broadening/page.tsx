@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Doppler Broadening Calculator',
   description: 'Calculate Doppler (thermal) line broadening FWHM from gas temperature and atomic/molecular mass.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Doppler Broadening Calculator',
-  description: 'Calculate Doppler (thermal) line broadening FWHM from gas temperature and atomic/molecular mass.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Doppler Broadening Calculator',
   'Calculate Doppler (thermal) line broadening FWHM from gas temperature and atomic/molecular mass.',
   'https://photonics-calculators.vercel.app/spectroscopy/doppler-broadening',
-  { category: 'Spectroscopy`,
-  `Calculate Doppler (thermal) line broadening FWHM from gas temperature and atomic/molecular mass.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Doppler Broadening Calculator',
-  'Calculate Doppler (thermal) line broadening FWHM from gas temperature and atomic/molecular mass.',
-  'https://photonics-calculators.vercel.app/spectroscopy/doppler-broadening',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/doppler-broadening`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

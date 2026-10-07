@@ -96,7 +96,6 @@ export default function HumidityEffectsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Relative Humidity (%)</label>
           <ValidatedNumberInput label="Relative Humidity (%)" value={exposureDays} onChange={setExposureDays} min={1} />
         </div>
         <div className="flex items-end">

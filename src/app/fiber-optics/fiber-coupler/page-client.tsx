@@ -105,8 +105,7 @@ export default function FiberCouplerCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Coupler Calculator" description="Calculate power splitting, transfer curves, and spectral response for directional fiber couplers.">
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -119,23 +118,18 @@ export default function FiberCouplerCalculator() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Coupling Length (mm)</label>
               <ValidatedNumberInput label="Coupling Length (mm)" value={couplingLength} onChange={setCouplingLength} step="0.5" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Coupling Coefficient κ (1/mm)</label>
               <ValidatedNumberInput label="Coupling Coefficient κ (1/mm)" value={couplingCoeff} onChange={setCouplingCoeff} step="0.05" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Excess Loss (dB)</label>
               <ValidatedNumberInput label="Excess Loss (dB)" value={excessLoss} onChange={setExcessLoss} step="0.01" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Input Power (dBm)</label>
               <ValidatedNumberInput label="Input Power (dBm)" value={inputPower} onChange={setInputPower} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
               <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
             </div>
           </div>
@@ -169,7 +163,6 @@ export default function FiberCouplerCalculator() {
             <ChartPanel data={spectralResponse} layout={layout2} />
           </div>
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Concentration from Absorbance',
   description: 'c = A / (l) — determine concentration from measured absorbance using Beer-Lambert law.',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Concentration from Absorbance',
-  description: 'c = A / (l) — determine concentration from measured absorbance using Beer-Lambert law.',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Concentration from Absorbance',
   'c = A / (l) — determine concentration from measured absorbance using Beer-Lambert law.',
   'https://photonics-calculators.vercel.app/spectroscopy/concentration',
-  { category: 'Spectroscopy`,
-  `c = A / (l) — determine concentration from measured absorbance using Beer-Lambert law.',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Concentration from Absorbance',
-  'c = A / (l) — determine concentration from measured absorbance using Beer-Lambert law.',
-  'https://photonics-calculators.vercel.app/spectroscopy/concentration',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/concentration`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

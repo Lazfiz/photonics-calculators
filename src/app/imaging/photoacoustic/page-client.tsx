@@ -78,39 +78,30 @@ export default function PhotoacousticPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Laser wavelength (nm)</label>
             <ValidatedNumberInput label="Laser wavelength (nm)" value={laserWavelength} onChange={setLaserWavelength} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pulse energy (mJ)</label>
             <ValidatedNumberInput label="Pulse energy (mJ)" value={pulseEnergy} onChange={setPulseEnergy} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pulse width (ns)</label>
             <ValidatedNumberInput label="Pulse width (ns)" value={pulseWidth} onChange={setPulseWidth} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Fluence (mJ/cm²)</label>
             <ValidatedNumberInput label="Fluence (mJ/cm²)" value={fluence} onChange={setFluence} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Repetition rate (Hz)</label>
             <ValidatedNumberInput label="Repetition rate (Hz)" value={repetitionRate} onChange={setRepetitionRate} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Absorption coeff µ_a (cm⁻¹)</label>
             <ValidatedNumberInput label="Absorption coeff µ_a (cm⁻¹)" value={absorptionCoeff} onChange={setAbsorptionCoeff} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Scattering coeff µ_s (cm⁻¹)</label>
             <ValidatedNumberInput label="Scattering coeff µ_s (cm⁻¹)" value={scatteringCoeff} onChange={setScatteringCoeff} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Grüneisen parameter Γ</label>
             <ValidatedNumberInput label="Grüneisen parameter Γ" value={gruneisen} onChange={setGruneisen} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Detector center freq (MHz)</label>
             <ValidatedNumberInput label="Detector center freq (MHz)" value={detectorFreq} onChange={setDetectorFreq} />
           </div>
         </div>

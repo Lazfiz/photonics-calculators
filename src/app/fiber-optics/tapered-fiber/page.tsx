@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Tapered Fiber Design',
   description: 'Design adiabatic fiber tapers for mode conversion, evanescent field enhancement, and coupler fabrication.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Tapered Fiber Design',
-  description: 'Design adiabatic fiber tapers for mode conversion, evanescent field enhancement, and coupler fabrication.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Tapered Fiber Design',
   'Design adiabatic fiber tapers for mode conversion, evanescent field enhancement, and coupler fabrication.',
   'https://photonics-calculators.vercel.app/fiber-optics/tapered-fiber',
-  { category: 'Fiber Optics`,
-  `Design adiabatic fiber tapers for mode conversion, evanescent field enhancement, and coupler fabrication.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Tapered Fiber Design',
-  'Design adiabatic fiber tapers for mode conversion, evanescent field enhancement, and coupler fabrication.',
-  'https://photonics-calculators.vercel.app/fiber-optics/tapered-fiber',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/tapered-fiber`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

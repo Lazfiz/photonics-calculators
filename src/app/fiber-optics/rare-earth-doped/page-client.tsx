@@ -106,8 +106,7 @@ export default function RareEarthDopedFiberCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Rare-Earth-Doped Fiber Amplifier" description="Ion density, pump absorption, small-signal gain, saturation power and noise figure of an Er, Yb, Tm or Nd-doped fiber from doping and pump power.">
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -123,23 +122,18 @@ export default function RareEarthDopedFiberCalculator() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Fiber Length (m)</label>
               <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} min={0.1} step="0.5" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Core Radius (μm)</label>
               <ValidatedNumberInput label="Core Radius (μm)" value={coreRadius} onChange={setCoreRadius} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Dopant Concentration (ppm wt)</label>
               <ValidatedNumberInput label="Dopant Concentration (ppm wt)" value={dopantConcentration} onChange={setDopantConcentration} min={1} step="100" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Pump Power (mW)</label>
               <ValidatedNumberInput label="Pump Power (mW)" value={pumpPower} onChange={setPumpPower} step="10" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Signal λ (nm)</label>
               <ValidatedNumberInput label="Signal λ (nm)" value={signalWavelength} onChange={setSignalWavelength} step="1" />
             </div>
           </div>
@@ -172,7 +166,6 @@ export default function RareEarthDopedFiberCalculator() {
         <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
           <ChartPanel data={plotData} layout={layout} />
         </div>
-      </div>
-    </div>
+    </CalculatorShell>
   );
 }

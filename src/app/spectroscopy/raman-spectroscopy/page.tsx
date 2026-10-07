@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Raman Spectroscopy',
   description: 'Stokes and anti-Stokes wavelength shift vs Raman shift. Inelastic scattering fundamentals.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Raman Spectroscopy',
-  description: 'Stokes and anti-Stokes wavelength shift vs Raman shift. Inelastic scattering fundamentals.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Raman Spectroscopy',
   'Stokes and anti-Stokes wavelength shift vs Raman shift. Inelastic scattering fundamentals.',
   'https://photonics-calculators.vercel.app/spectroscopy/raman-spectroscopy',
-  { category: 'Spectroscopy`,
-  `Stokes and anti-Stokes wavelength shift vs Raman shift. Inelastic scattering fundamentals.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Raman Spectroscopy',
-  'Stokes and anti-Stokes wavelength shift vs Raman shift. Inelastic scattering fundamentals.',
-  'https://photonics-calculators.vercel.app/spectroscopy/raman-spectroscopy',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/raman-spectroscopy`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

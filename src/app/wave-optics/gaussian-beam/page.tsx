@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Gaussian Beam Propagation',
   description: 'Explore how wavelength and waist size shape Rayleigh range, divergence, and Gaussian beam envelope.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Gaussian Beam Propagation',
-  description: 'Explore how wavelength and waist size shape Rayleigh range, divergence, and Gaussian beam envelope.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Gaussian Beam Propagation',
   'Explore how wavelength and waist size shape Rayleigh range, divergence, and Gaussian beam envelope.',
   'https://photonics-calculators.vercel.app/wave-optics/gaussian-beam',
-  { category: 'Wave Optics`,
-  `Explore how wavelength and waist size shape Rayleigh range, divergence, and Gaussian beam envelope.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Gaussian Beam Propagation',
-  'Explore how wavelength and waist size shape Rayleigh range, divergence, and Gaussian beam envelope.',
-  'https://photonics-calculators.vercel.app/wave-optics/gaussian-beam',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/gaussian-beam`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

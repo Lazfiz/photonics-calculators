@@ -46,27 +46,21 @@ export default function LightSheetMicroscopyPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Detection NA</label>
             <ValidatedNumberInput label="Detection NA" value={naDet} onChange={setNaDet} min={0.1} max={1.8} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Illumination NA</label>
             <ValidatedNumberInput label="Illumination NA" value={naIll} onChange={setNaIll} min={0.01} max={1.0} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
             <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Refractive index (n)</label>
             <ValidatedNumberInput label="Refractive index (n)" value={n} onChange={setN} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Sample thickness (µm)</label>
             <ValidatedNumberInput label="Sample thickness (µm)" value={sampleThickness} onChange={setSampleThickness} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Tilt angle (°)</label>
             <ValidatedNumberInput label="Tilt angle (°)" value={tiltAngle} onChange={setTiltAngle} min={0} max={90} />
           </div>
         </div>

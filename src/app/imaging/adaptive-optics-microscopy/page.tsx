@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Adaptive Optics in Microscopy',
   description: 'Wavefront correction, Strehl ratio recovery, and resolution improvement for deep-tissue imaging.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Adaptive Optics in Microscopy',
-  description: 'Wavefront correction, Strehl ratio recovery, and resolution improvement for deep-tissue imaging.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Adaptive Optics in Microscopy',
   'Wavefront correction, Strehl ratio recovery, and resolution improvement for deep-tissue imaging.',
   'https://photonics-calculators.vercel.app/imaging/adaptive-optics-microscopy',
-  { category: 'Imaging`,
-  `Wavefront correction, Strehl ratio recovery, and resolution improvement for deep-tissue imaging.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Adaptive Optics in Microscopy',
-  'Wavefront correction, Strehl ratio recovery, and resolution improvement for deep-tissue imaging.',
-  'https://photonics-calculators.vercel.app/imaging/adaptive-optics-microscopy',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/adaptive-optics-microscopy`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

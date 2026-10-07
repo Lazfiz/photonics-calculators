@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Dielectric Stack Theory',
   description: 'Quarter-wave dielectric stack reflectance. Alternating high/low index layers create high-reflectance mirrors — the basis of dielectric mirrors and VCSELs.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Dielectric Stack Theory',
-  description: 'Quarter-wave dielectric stack reflectance. Alternating high/low index layers create high-reflectance mirrors — the basis of dielectric mirrors and VCSELs.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Dielectric Stack Theory',
   'Quarter-wave dielectric stack reflectance. Alternating high/low index layers create high-reflectance mirrors — the basis of dielectric mirrors and VCSELs.',
   'https://photonics-calculators.vercel.app/thin-film/dielectric-stack',
-  { category: 'Thin Film`,
-  `Quarter-wave dielectric stack reflectance. Alternating high/low index layers create high-reflectance mirrors — the basis of dielectric mirrors and VCSELs.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Dielectric Stack Theory',
-  'Quarter-wave dielectric stack reflectance. Alternating high/low index layers create high-reflectance mirrors — the basis of dielectric mirrors and VCSELs.',
-  'https://photonics-calculators.vercel.app/thin-film/dielectric-stack',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/dielectric-stack`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

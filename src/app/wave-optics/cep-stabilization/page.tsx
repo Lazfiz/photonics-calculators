@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Carrier-Envelope Phase (CEP)',
   description: 'CEP offset effects on few-cycle pulse electric field.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Carrier-Envelope Phase (CEP)',
-  description: 'CEP offset effects on few-cycle pulse electric field.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Carrier-Envelope Phase (CEP)',
   'CEP offset effects on few-cycle pulse electric field.',
   'https://photonics-calculators.vercel.app/wave-optics/cep-stabilization',
-  { category: 'Wave Optics`,
-  `CEP offset effects on few-cycle pulse electric field.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Carrier-Envelope Phase (CEP)',
-  'CEP offset effects on few-cycle pulse electric field.',
-  'https://photonics-calculators.vercel.app/wave-optics/cep-stabilization',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/cep-stabilization`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>
