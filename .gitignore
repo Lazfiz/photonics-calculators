@@ -5,3 +5,8 @@ node_modules/
 # Vercel build output (keep project.json for repo linking)
 .vercel/*
 !.vercel/project.json
+# TypeScript incremental build info
+tsconfig.tsbuildinfo
+# Claude Code personal overrides
+.claude/settings.local.json
+CLAUDE.local.md

@@ -1,0 +1,2 @@
+# Keep LF everywhere (repo came from Linux; CI runs on Linux)
+* text=auto eol=lf
