@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Mode Matching',
   description: 'Find the optimal lens for coupling one Gaussian beam mode into another.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Mode Matching',
-  description: 'Find the optimal lens for coupling one Gaussian beam mode into another.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Mode Matching',
   'Find the optimal lens for coupling one Gaussian beam mode into another.',
   'https://photonics-calculators.vercel.app/wave-optics/mode-matching',
-  { category: 'Wave Optics`,
-  `Find the optimal lens for coupling one Gaussian beam mode into another.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Mode Matching',
-  'Find the optimal lens for coupling one Gaussian beam mode into another.',
-  'https://photonics-calculators.vercel.app/wave-optics/mode-matching',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/mode-matching`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

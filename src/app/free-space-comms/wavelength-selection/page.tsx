@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Wavelength Selection',
   description: 'Interactive Wavelength Selection calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Wavelength Selection',
-  description: 'Interactive Wavelength Selection calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Wavelength Selection',
   'Interactive Wavelength Selection calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/free-space-comms/wavelength-selection',
-  { category: 'Free Space Comms`,
-  `Interactive Wavelength Selection calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Wavelength Selection',
-  'Interactive Wavelength Selection calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/wavelength-selection',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/wavelength-selection`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

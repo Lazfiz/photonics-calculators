@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Polarization Scrambling',
   description: 'Simulate polarization scrambling: how randomizing polarization state reduces residual polarization.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Polarization Scrambling',
-  description: 'Simulate polarization scrambling: how randomizing polarization state reduces residual polarization.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Polarization Scrambling',
   'Simulate polarization scrambling: how randomizing polarization state reduces residual polarization.',
   'https://photonics-calculators.vercel.app/polarization/polarization-scrambling',
-  { category: 'Polarization`,
-  `Simulate polarization scrambling: how randomizing polarization state reduces residual polarization.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Polarization Scrambling',
-  'Simulate polarization scrambling: how randomizing polarization state reduces residual polarization.',
-  'https://photonics-calculators.vercel.app/polarization/polarization-scrambling',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/polarization-scrambling`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

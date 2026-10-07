@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Two-Photon Absorption',
   description: 'Nonlinear absorption coefficient PA and intensity-dependent transmission. TPA becomes significant at high peak intensities (pulsed lasers).',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Two-Photon Absorption',
-  description: 'Nonlinear absorption coefficient PA and intensity-dependent transmission. TPA becomes significant at high peak intensities (pulsed lasers).',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Two-Photon Absorption',
   'Nonlinear absorption coefficient PA and intensity-dependent transmission. TPA becomes significant at high peak intensities (pulsed lasers).',
   'https://photonics-calculators.vercel.app/materials/two-photon-absorption',
-  { category: 'Materials`,
-  `Nonlinear absorption coefficient PA and intensity-dependent transmission. TPA becomes significant at high peak intensities (pulsed lasers).',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Two-Photon Absorption',
-  'Nonlinear absorption coefficient PA and intensity-dependent transmission. TPA becomes significant at high peak intensities (pulsed lasers).',
-  'https://photonics-calculators.vercel.app/materials/two-photon-absorption',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/two-photon-absorption`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Protected Silver Mirror',
   description: 'Protected silver coating — high reflectance UV-Vis-IR with dielectric overcoat and adhesion layer.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Protected Silver Mirror',
-  description: 'Protected silver coating — high reflectance UV-Vis-IR with dielectric overcoat and adhesion layer.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Protected Silver Mirror',
   'Protected silver coating — high reflectance UV-Vis-IR with dielectric overcoat and adhesion layer.',
   'https://photonics-calculators.vercel.app/thin-film/protected-silver',
-  { category: 'Thin Film`,
-  `Protected silver coating — high reflectance UV-Vis-IR with dielectric overcoat and adhesion layer.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Protected Silver Mirror',
-  'Protected silver coating — high reflectance UV-Vis-IR with dielectric overcoat and adhesion layer.',
-  'https://photonics-calculators.vercel.app/thin-film/protected-silver',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/protected-silver`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Poincaré Sphere',
   description: 'Interactive visualization of polarization states on the Poincaré sphere.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Poincaré Sphere',
-  description: 'Interactive visualization of polarization states on the Poincaré sphere.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Poincaré Sphere',
   'Interactive visualization of polarization states on the Poincaré sphere.',
   'https://photonics-calculators.vercel.app/polarization/poincare-sphere',
-  { category: 'Polarization`,
-  `Interactive visualization of polarization states on the Poincaré sphere.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Poincaré Sphere',
-  'Interactive visualization of polarization states on the Poincaré sphere.',
-  'https://photonics-calculators.vercel.app/polarization/poincare-sphere',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/poincare-sphere`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

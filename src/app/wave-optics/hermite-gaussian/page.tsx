@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Hermite-Gaussian Modes (TEMmn)',
   description: 'Rectangular higher-order Gaussian beam modes.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Hermite-Gaussian Modes (TEMmn)',
-  description: 'Rectangular higher-order Gaussian beam modes.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Hermite-Gaussian Modes (TEMmn)',
   'Rectangular higher-order Gaussian beam modes.',
   'https://photonics-calculators.vercel.app/wave-optics/hermite-gaussian',
-  { category: 'Wave Optics`,
-  `Rectangular higher-order Gaussian beam modes.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Hermite-Gaussian Modes (TEMmn)',
-  'Rectangular higher-order Gaussian beam modes.',
-  'https://photonics-calculators.vercel.app/wave-optics/hermite-gaussian',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/hermite-gaussian`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

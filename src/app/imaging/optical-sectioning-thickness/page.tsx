@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Optical Sectioning Thickness Calculator',
   description: 'Compare optical sectioning capability across widefield, confocal, and multiphoton microscopy techniques.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Optical Sectioning Thickness Calculator',
-  description: 'Compare optical sectioning capability across widefield, confocal, and multiphoton microscopy techniques.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Optical Sectioning Thickness Calculator',
   'Compare optical sectioning capability across widefield, confocal, and multiphoton microscopy techniques.',
   'https://photonics-calculators.vercel.app/imaging/optical-sectioning-thickness',
-  { category: 'Imaging`,
-  `Compare optical sectioning capability across widefield, confocal, and multiphoton microscopy techniques.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Optical Sectioning Thickness Calculator',
-  'Compare optical sectioning capability across widefield, confocal, and multiphoton microscopy techniques.',
-  'https://photonics-calculators.vercel.app/imaging/optical-sectioning-thickness',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/optical-sectioning-thickness`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Optical Parametric Oscillator',
   description: 'Interactive Optical Parametric Oscillator calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Optical Parametric Oscillator',
-  description: 'Interactive Optical Parametric Oscillator calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Optical Parametric Oscillator',
   'Interactive Optical Parametric Oscillator calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/wave-optics/optical-parametric-oscillator',
-  { category: 'Wave Optics`,
-  `Interactive Optical Parametric Oscillator calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Optical Parametric Oscillator',
-  'Interactive Optical Parametric Oscillator calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/wave-optics/optical-parametric-oscillator',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/optical-parametric-oscillator`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

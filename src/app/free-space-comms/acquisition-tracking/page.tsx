@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Acquisition Tracking',
   description: 'Interactive Acquisition Tracking calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Acquisition Tracking',
-  description: 'Interactive Acquisition Tracking calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Acquisition Tracking',
   'Interactive Acquisition Tracking calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/free-space-comms/acquisition-tracking',
-  { category: 'Free Space Comms`,
-  `Interactive Acquisition Tracking calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Acquisition Tracking',
-  'Interactive Acquisition Tracking calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/acquisition-tracking',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/acquisition-tracking`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

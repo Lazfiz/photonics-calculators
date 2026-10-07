@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Channel Capacity',
   description: 'Interactive Channel Capacity calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Channel Capacity',
-  description: 'Interactive Channel Capacity calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Channel Capacity',
   'Interactive Channel Capacity calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/free-space-comms/channel-capacity',
-  { category: 'Free Space Comms`,
-  `Interactive Channel Capacity calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Channel Capacity',
-  'Interactive Channel Capacity calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/channel-capacity',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/channel-capacity`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

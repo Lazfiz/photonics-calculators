@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Crystal Birefringence Data',
   description: 'n = |nₒ − nₑ| for uniaxial and birefringent crystals at selected wavelength',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Crystal Birefringence Data',
-  description: 'n = |nₒ − nₑ| for uniaxial and birefringent crystals at selected wavelength',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Crystal Birefringence Data',
   'n = |nₒ − nₑ| for uniaxial and birefringent crystals at selected wavelength',
   'https://photonics-calculators.vercel.app/materials/crystal-birefringence',
-  { category: 'Materials`,
-  `n = |nₒ − nₑ| for uniaxial and birefringent crystals at selected wavelength',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Crystal Birefringence Data',
-  'n = |nₒ − nₑ| for uniaxial and birefringent crystals at selected wavelength',
-  'https://photonics-calculators.vercel.app/materials/crystal-birefringence',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/crystal-birefringence`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

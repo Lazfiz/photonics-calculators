@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Diamond Optics',
   description: 'Diamond — the ultimate optical material. Bandgap: 5.47 eV. n 2.42.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Diamond Optics',
-  description: 'Diamond — the ultimate optical material. Bandgap: 5.47 eV. n 2.42.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Diamond Optics',
   'Diamond — the ultimate optical material. Bandgap: 5.47 eV. n 2.42.',
   'https://photonics-calculators.vercel.app/materials/diamond-optics',
-  { category: 'Materials`,
-  `Diamond — the ultimate optical material. Bandgap: 5.47 eV. n 2.42.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Diamond Optics',
-  'Diamond — the ultimate optical material. Bandgap: 5.47 eV. n 2.42.',
-  'https://photonics-calculators.vercel.app/materials/diamond-optics',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/diamond-optics`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Quantum Key Distribution',
   description: 'Interactive Quantum Key Distribution calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Quantum Key Distribution',
-  description: 'Interactive Quantum Key Distribution calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Quantum Key Distribution',
   'Interactive Quantum Key Distribution calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/free-space-comms/quantum-key-distribution',
-  { category: 'Free Space Comms`,
-  `Interactive Quantum Key Distribution calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Quantum Key Distribution',
-  'Interactive Quantum Key Distribution calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/quantum-key-distribution',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/quantum-key-distribution`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

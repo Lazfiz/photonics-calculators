@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Gradient Index Coating',
   description: 'Continuously graded refractive index coating — broadband AR with no sharp interfaces.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Gradient Index Coating',
-  description: 'Continuously graded refractive index coating — broadband AR with no sharp interfaces.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Gradient Index Coating',
   'Continuously graded refractive index coating — broadband AR with no sharp interfaces.',
   'https://photonics-calculators.vercel.app/thin-film/gradient-index',
-  { category: 'Thin Film`,
-  `Continuously graded refractive index coating — broadband AR with no sharp interfaces.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Gradient Index Coating',
-  'Continuously graded refractive index coating — broadband AR with no sharp interfaces.',
-  'https://photonics-calculators.vercel.app/thin-film/gradient-index',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/gradient-index`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

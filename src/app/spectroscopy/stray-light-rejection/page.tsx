@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Stray Light Rejection',
   description: 'Impact of stray light on photometric accuracy. Critical for high-absorbance measurements.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Stray Light Rejection',
-  description: 'Impact of stray light on photometric accuracy. Critical for high-absorbance measurements.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Stray Light Rejection',
   'Impact of stray light on photometric accuracy. Critical for high-absorbance measurements.',
   'https://photonics-calculators.vercel.app/spectroscopy/stray-light-rejection',
-  { category: 'Spectroscopy`,
-  `Impact of stray light on photometric accuracy. Critical for high-absorbance measurements.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Stray Light Rejection',
-  'Impact of stray light on photometric accuracy. Critical for high-absorbance measurements.',
-  'https://photonics-calculators.vercel.app/spectroscopy/stray-light-rejection',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/stray-light-rejection`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

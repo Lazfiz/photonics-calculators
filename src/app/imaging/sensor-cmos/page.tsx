@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'CMOS Sensor Design',
   description: 'Pixel design parameters, dynamic range, noise floor, and sensitivity calculations.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `CMOS Sensor Design',
-  description: 'Pixel design parameters, dynamic range, noise floor, and sensitivity calculations.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'CMOS Sensor Design',
   'Pixel design parameters, dynamic range, noise floor, and sensitivity calculations.',
   'https://photonics-calculators.vercel.app/imaging/sensor-cmos',
-  { category: 'Imaging`,
-  `Pixel design parameters, dynamic range, noise floor, and sensitivity calculations.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'CMOS Sensor Design',
-  'Pixel design parameters, dynamic range, noise floor, and sensitivity calculations.',
-  'https://photonics-calculators.vercel.app/imaging/sensor-cmos',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/sensor-cmos`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

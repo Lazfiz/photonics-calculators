@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Afocal System Calculator',
   description: 'Design and analyze afocal (telescopic) relay systems — Keplerian and Galilean configurations.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Afocal System Calculator',
-  description: 'Design and analyze afocal (telescopic) relay systems — Keplerian and Galilean configurations.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Afocal System Calculator',
   'Design and analyze afocal (telescopic) relay systems — Keplerian and Galilean configurations.',
   'https://photonics-calculators.vercel.app/imaging/afocal',
-  { category: 'Imaging`,
-  `Design and analyze afocal (telescopic) relay systems — Keplerian and Galilean configurations.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Afocal System Calculator',
-  'Design and analyze afocal (telescopic) relay systems — Keplerian and Galilean configurations.',
-  'https://photonics-calculators.vercel.app/imaging/afocal',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/afocal`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Birefringent Polarizer Design',
   description: 'Compare Glan, Wollaston, Rochon, and Senarmont polarizer designs using birefringent crystal prisms.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Birefringent Polarizer Design',
-  description: 'Compare Glan, Wollaston, Rochon, and Senarmont polarizer designs using birefringent crystal prisms.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Birefringent Polarizer Design',
   'Compare Glan, Wollaston, Rochon, and Senarmont polarizer designs using birefringent crystal prisms.',
   'https://photonics-calculators.vercel.app/polarization/birefringent-polarizer',
-  { category: 'Polarization`,
-  `Compare Glan, Wollaston, Rochon, and Senarmont polarizer designs using birefringent crystal prisms.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Birefringent Polarizer Design',
-  'Compare Glan, Wollaston, Rochon, and Senarmont polarizer designs using birefringent crystal prisms.',
-  'https://photonics-calculators.vercel.app/polarization/birefringent-polarizer',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/birefringent-polarizer`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Light Field Microscopy',
   description: 'Angular resolution, spatial-angular tradeoff, and synthetic aperture parameters.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Light Field Microscopy',
-  description: 'Angular resolution, spatial-angular tradeoff, and synthetic aperture parameters.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Light Field Microscopy',
   'Angular resolution, spatial-angular tradeoff, and synthetic aperture parameters.',
   'https://photonics-calculators.vercel.app/imaging/light-field',
-  { category: 'Imaging`,
-  `Angular resolution, spatial-angular tradeoff, and synthetic aperture parameters.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Light Field Microscopy',
-  'Angular resolution, spatial-angular tradeoff, and synthetic aperture parameters.',
-  'https://photonics-calculators.vercel.app/imaging/light-field',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/light-field`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

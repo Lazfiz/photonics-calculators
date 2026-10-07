@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Hard Coating Design',
   description: 'Abrasion-resistant optical coating — balance mechanical hardness with optical performance.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Hard Coating Design',
-  description: 'Abrasion-resistant optical coating — balance mechanical hardness with optical performance.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Hard Coating Design',
   'Abrasion-resistant optical coating — balance mechanical hardness with optical performance.',
   'https://photonics-calculators.vercel.app/thin-film/hard-coating',
-  { category: 'Thin Film`,
-  `Abrasion-resistant optical coating — balance mechanical hardness with optical performance.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Hard Coating Design',
-  'Abrasion-resistant optical coating — balance mechanical hardness with optical performance.',
-  'https://photonics-calculators.vercel.app/thin-film/hard-coating',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/hard-coating`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

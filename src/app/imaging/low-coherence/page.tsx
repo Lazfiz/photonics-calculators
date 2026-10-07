@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Low Coherence Interferometry',
   description: 'Interferogram modelling, coherence gating, fringe visibility, and depth scanning parameters.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Low Coherence Interferometry',
-  description: 'Interferogram modelling, coherence gating, fringe visibility, and depth scanning parameters.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Low Coherence Interferometry',
   'Interferogram modelling, coherence gating, fringe visibility, and depth scanning parameters.',
   'https://photonics-calculators.vercel.app/imaging/low-coherence',
-  { category: 'Imaging`,
-  `Interferogram modelling, coherence gating, fringe visibility, and depth scanning parameters.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Low Coherence Interferometry',
-  'Interferogram modelling, coherence gating, fringe visibility, and depth scanning parameters.',
-  'https://photonics-calculators.vercel.app/imaging/low-coherence',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/low-coherence`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

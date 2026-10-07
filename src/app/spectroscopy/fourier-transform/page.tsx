@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Fourier Transform Basics',
   description: 'Decompose a composite time-domain signal into its frequency components via DFT.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Fourier Transform Basics',
-  description: 'Decompose a composite time-domain signal into its frequency components via DFT.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Fourier Transform Basics',
   'Decompose a composite time-domain signal into its frequency components via DFT.',
   'https://photonics-calculators.vercel.app/spectroscopy/fourier-transform',
-  { category: 'Spectroscopy`,
-  `Decompose a composite time-domain signal into its frequency components via DFT.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Fourier Transform Basics',
-  'Decompose a composite time-domain signal into its frequency components via DFT.',
-  'https://photonics-calculators.vercel.app/spectroscopy/fourier-transform',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/fourier-transform`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

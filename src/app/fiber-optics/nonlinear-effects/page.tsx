@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Nonlinear Effects in Fiber',
   description: 'Calculate SPM, XPM, FWM penalties, SBS/SRS thresholds, and nonlinear phase shift.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Nonlinear Effects in Fiber',
-  description: 'Calculate SPM, XPM, FWM penalties, SBS/SRS thresholds, and nonlinear phase shift.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Nonlinear Effects in Fiber',
   'Calculate SPM, XPM, FWM penalties, SBS/SRS thresholds, and nonlinear phase shift.',
   'https://photonics-calculators.vercel.app/fiber-optics/nonlinear-effects',
-  { category: 'Fiber Optics`,
-  `Calculate SPM, XPM, FWM penalties, SBS/SRS thresholds, and nonlinear phase shift.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Nonlinear Effects in Fiber',
-  'Calculate SPM, XPM, FWM penalties, SBS/SRS thresholds, and nonlinear phase shift.',
-  'https://photonics-calculators.vercel.app/fiber-optics/nonlinear-effects',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/nonlinear-effects`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

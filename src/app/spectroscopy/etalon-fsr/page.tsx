@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Etalon Free Spectral Range',
   description: 'Fabry-Pérot etalon: FSR = ²/(2nd cos ). Transmission follows the Airy function.',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Etalon Free Spectral Range',
-  description: 'Fabry-Pérot etalon: FSR = ²/(2nd cos ). Transmission follows the Airy function.',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Etalon Free Spectral Range',
   'Fabry-Pérot etalon: FSR = ²/(2nd cos ). Transmission follows the Airy function.',
   'https://photonics-calculators.vercel.app/spectroscopy/etalon-fsr',
-  { category: 'Spectroscopy`,
-  `Fabry-Pérot etalon: FSR = ²/(2nd cos ). Transmission follows the Airy function.',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Etalon Free Spectral Range',
-  'Fabry-Pérot etalon: FSR = ²/(2nd cos ). Transmission follows the Airy function.',
-  'https://photonics-calculators.vercel.app/spectroscopy/etalon-fsr',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/etalon-fsr`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Fiber Laser Resonator',
   description: 'Interactive Fiber Laser Resonator calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Fiber Laser Resonator',
-  description: 'Interactive Fiber Laser Resonator calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Fiber Laser Resonator',
   'Interactive Fiber Laser Resonator calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/wave-optics/fiber-laser-resonator',
-  { category: 'Wave Optics`,
-  `Interactive Fiber Laser Resonator calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Fiber Laser Resonator',
-  'Interactive Fiber Laser Resonator calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/wave-optics/fiber-laser-resonator',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/fiber-laser-resonator`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

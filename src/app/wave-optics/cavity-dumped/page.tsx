@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Cavity-Dumped Laser',
   description: 'Energy extraction from a laser cavity using fast Q-switching or intracavity modulation.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Cavity-Dumped Laser',
-  description: 'Energy extraction from a laser cavity using fast Q-switching or intracavity modulation.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Cavity-Dumped Laser',
   'Energy extraction from a laser cavity using fast Q-switching or intracavity modulation.',
   'https://photonics-calculators.vercel.app/wave-optics/cavity-dumped',
-  { category: 'Wave Optics`,
-  `Energy extraction from a laser cavity using fast Q-switching or intracavity modulation.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Cavity-Dumped Laser',
-  'Energy extraction from a laser cavity using fast Q-switching or intracavity modulation.',
-  'https://photonics-calculators.vercel.app/wave-optics/cavity-dumped',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/cavity-dumped`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

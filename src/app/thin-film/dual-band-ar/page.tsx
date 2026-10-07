@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Dual-Band AR Coating',
   description: 'Three-layer anti-reflection coating optimized for two distinct wavelength bands.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Dual-Band AR Coating',
-  description: 'Three-layer anti-reflection coating optimized for two distinct wavelength bands.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Dual-Band AR Coating',
   'Three-layer anti-reflection coating optimized for two distinct wavelength bands.',
   'https://photonics-calculators.vercel.app/thin-film/dual-band-ar',
-  { category: 'Thin Film`,
-  `Three-layer anti-reflection coating optimized for two distinct wavelength bands.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Dual-Band AR Coating',
-  'Three-layer anti-reflection coating optimized for two distinct wavelength bands.',
-  'https://photonics-calculators.vercel.app/thin-film/dual-band-ar',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/dual-band-ar`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

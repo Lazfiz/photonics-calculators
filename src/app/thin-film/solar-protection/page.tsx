@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Solar Protection Coating',
   description: 'Dual-stack design: UV + IR blocking for glazing and solar control applications.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Solar Protection Coating',
-  description: 'Dual-stack design: UV + IR blocking for glazing and solar control applications.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Solar Protection Coating',
   'Dual-stack design: UV + IR blocking for glazing and solar control applications.',
   'https://photonics-calculators.vercel.app/thin-film/solar-protection',
-  { category: 'Thin Film`,
-  `Dual-stack design: UV + IR blocking for glazing and solar control applications.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Solar Protection Coating',
-  'Dual-stack design: UV + IR blocking for glazing and solar control applications.',
-  'https://photonics-calculators.vercel.app/thin-film/solar-protection',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/solar-protection`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

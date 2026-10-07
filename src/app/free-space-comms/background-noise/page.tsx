@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Background Noise',
   description: 'Interactive Background Noise calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Background Noise',
-  description: 'Interactive Background Noise calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Background Noise',
   'Interactive Background Noise calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/free-space-comms/background-noise',
-  { category: 'Free Space Comms`,
-  `Interactive Background Noise calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Background Noise',
-  'Interactive Background Noise calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/background-noise',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/background-noise`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

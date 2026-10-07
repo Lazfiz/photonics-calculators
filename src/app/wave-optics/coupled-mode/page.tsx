@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Coupled Mode Theory',
   description: 'Power exchange between two coupled waveguides.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Coupled Mode Theory',
-  description: 'Power exchange between two coupled waveguides.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Coupled Mode Theory',
   'Power exchange between two coupled waveguides.',
   'https://photonics-calculators.vercel.app/wave-optics/coupled-mode',
-  { category: 'Wave Optics`,
-  `Power exchange between two coupled waveguides.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Coupled Mode Theory',
-  'Power exchange between two coupled waveguides.',
-  'https://photonics-calculators.vercel.app/wave-optics/coupled-mode',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/coupled-mode`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Security',
   description: 'Interactive Security calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Security',
-  description: 'Interactive Security calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Security',
   'Interactive Security calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/free-space-comms/security',
-  { category: 'Free Space Comms`,
-  `Interactive Security calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Security',
-  'Interactive Security calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/security',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/security`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

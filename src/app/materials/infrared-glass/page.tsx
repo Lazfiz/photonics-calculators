@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Infrared Optical Materials',
   description: 'Compare IR transmitting materials. n(T) = n₅ + (dn/dT)(T - 25°C)',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Infrared Optical Materials',
-  description: 'Compare IR transmitting materials. n(T) = n₅ + (dn/dT)(T - 25°C)',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Infrared Optical Materials',
   'Compare IR transmitting materials. n(T) = n₅ + (dn/dT)(T - 25°C)',
   'https://photonics-calculators.vercel.app/materials/infrared-glass',
-  { category: 'Materials`,
-  `Compare IR transmitting materials. n(T) = n₅ + (dn/dT)(T - 25°C)',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Infrared Optical Materials',
-  'Compare IR transmitting materials. n(T) = n₅ + (dn/dT)(T - 25°C)',
-  'https://photonics-calculators.vercel.app/materials/infrared-glass',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/infrared-glass`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

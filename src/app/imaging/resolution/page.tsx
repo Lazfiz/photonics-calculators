@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Resolution Calculator',
   description: 'Abbe and Rayleigh lateral resolution limits for diffraction-limited imaging.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Resolution Calculator',
-  description: 'Abbe and Rayleigh lateral resolution limits for diffraction-limited imaging.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Resolution Calculator',
   'Abbe and Rayleigh lateral resolution limits for diffraction-limited imaging.',
   'https://photonics-calculators.vercel.app/imaging/resolution',
-  { category: 'Imaging`,
-  `Abbe and Rayleigh lateral resolution limits for diffraction-limited imaging.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Resolution Calculator',
-  'Abbe and Rayleigh lateral resolution limits for diffraction-limited imaging.',
-  'https://photonics-calculators.vercel.app/imaging/resolution',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/resolution`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

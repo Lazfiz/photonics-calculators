@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Fiber Optic Gyroscope (FOG)',
   description: 'Sagnac effect, scale factor, angle random walk, and bias stability for fiber optic gyroscopes.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Fiber Optic Gyroscope (FOG)',
-  description: 'Sagnac effect, scale factor, angle random walk, and bias stability for fiber optic gyroscopes.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Fiber Optic Gyroscope (FOG)',
   'Sagnac effect, scale factor, angle random walk, and bias stability for fiber optic gyroscopes.',
   'https://photonics-calculators.vercel.app/fiber-optics/fiber-gyroscope',
-  { category: 'Fiber Optics`,
-  `Sagnac effect, scale factor, angle random walk, and bias stability for fiber optic gyroscopes.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Fiber Optic Gyroscope (FOG)',
-  'Sagnac effect, scale factor, angle random walk, and bias stability for fiber optic gyroscopes.',
-  'https://photonics-calculators.vercel.app/fiber-optics/fiber-gyroscope',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/fiber-gyroscope`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

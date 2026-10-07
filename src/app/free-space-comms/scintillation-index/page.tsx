@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Scintillation Index',
   description: 'Interactive Scintillation Index calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Scintillation Index',
-  description: 'Interactive Scintillation Index calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Scintillation Index',
   'Interactive Scintillation Index calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/free-space-comms/scintillation-index',
-  { category: 'Free Space Comms`,
-  `Interactive Scintillation Index calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Scintillation Index',
-  'Interactive Scintillation Index calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/scintillation-index',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/scintillation-index`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

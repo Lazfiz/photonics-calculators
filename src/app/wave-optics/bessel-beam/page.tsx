@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Bessel Beam Calculator',
   description: 'Non-diffracting beam profiles and propagation.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Bessel Beam Calculator',
-  description: 'Non-diffracting beam profiles and propagation.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Bessel Beam Calculator',
   'Non-diffracting beam profiles and propagation.',
   'https://photonics-calculators.vercel.app/wave-optics/bessel-beam',
-  { category: 'Wave Optics`,
-  `Non-diffracting beam profiles and propagation.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Bessel Beam Calculator',
-  'Non-diffracting beam profiles and propagation.',
-  'https://photonics-calculators.vercel.app/wave-optics/bessel-beam',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/bessel-beam`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

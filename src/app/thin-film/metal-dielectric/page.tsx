@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Metal-Dielectric Coatings',
   description: 'Metal-dielectric coating design. Explore how a dielectric overcoat modifies the reflectance, transmittance, and absorptance of a thin metal layer.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Metal-Dielectric Coatings',
-  description: 'Metal-dielectric coating design. Explore how a dielectric overcoat modifies the reflectance, transmittance, and absorptance of a thin metal layer.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Metal-Dielectric Coatings',
   'Metal-dielectric coating design. Explore how a dielectric overcoat modifies the reflectance, transmittance, and absorptance of a thin metal layer.',
   'https://photonics-calculators.vercel.app/thin-film/metal-dielectric',
-  { category: 'Thin Film`,
-  `Metal-dielectric coating design. Explore how a dielectric overcoat modifies the reflectance, transmittance, and absorptance of a thin metal layer.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Metal-Dielectric Coatings',
-  'Metal-dielectric coating design. Explore how a dielectric overcoat modifies the reflectance, transmittance, and absorptance of a thin metal layer.',
-  'https://photonics-calculators.vercel.app/thin-film/metal-dielectric',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/metal-dielectric`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

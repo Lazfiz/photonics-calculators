@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Ber',
   description: 'Interactive Ber calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Ber',
-  description: 'Interactive Ber calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Ber',
   'Interactive Ber calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/free-space-comms/ber',
-  { category: 'Free Space Comms`,
-  `Interactive Ber calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Ber',
-  'Interactive Ber calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/ber',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/ber`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Signal-to-Noise Ratio',
   description: 'Detailed SNR model: shot noise, dark current, read noise, and detector noise contributions.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Signal-to-Noise Ratio',
-  description: 'Detailed SNR model: shot noise, dark current, read noise, and detector noise contributions.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Signal-to-Noise Ratio',
   'Detailed SNR model: shot noise, dark current, read noise, and detector noise contributions.',
   'https://photonics-calculators.vercel.app/spectroscopy/signal-to-noise',
-  { category: 'Spectroscopy`,
-  `Detailed SNR model: shot noise, dark current, read noise, and detector noise contributions.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Signal-to-Noise Ratio',
-  'Detailed SNR model: shot noise, dark current, read noise, and detector noise contributions.',
-  'https://photonics-calculators.vercel.app/spectroscopy/signal-to-noise',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/signal-to-noise`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

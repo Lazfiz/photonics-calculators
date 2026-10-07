@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Skin MPE Calculator',
   description: 'Maximum permissible exposure for skin (ANSI Z136 simplified). Not for clinical safety decisions.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Skin MPE Calculator',
-  description: 'Maximum permissible exposure for skin (ANSI Z136 simplified). Not for clinical safety decisions.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Skin MPE Calculator',
   'Maximum permissible exposure for skin (ANSI Z136 simplified). Not for clinical safety decisions.',
   'https://photonics-calculators.vercel.app/laser-safety/skin-mpe',
-  { category: 'Laser Safety`,
-  `Maximum permissible exposure for skin (ANSI Z136 simplified). Not for clinical safety decisions.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Skin MPE Calculator',
-  'Maximum permissible exposure for skin (ANSI Z136 simplified). Not for clinical safety decisions.',
-  'https://photonics-calculators.vercel.app/laser-safety/skin-mpe',
-  { category: 'Laser Safety`,
-  `https://photonics-calculators.vercel.app/laser-safety/skin-mpe`,
-  { category: `Laser Safety` }
+  { category: 'Laser Safety' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Thermal Lens Hazard',
   description: 'Evaluate thermal lensing risk to protective eyewear and optical components from absorbed laser power.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Thermal Lens Hazard',
-  description: 'Evaluate thermal lensing risk to protective eyewear and optical components from absorbed laser power.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Thermal Lens Hazard',
   'Evaluate thermal lensing risk to protective eyewear and optical components from absorbed laser power.',
   'https://photonics-calculators.vercel.app/laser-safety/thermal-lens-hazard',
-  { category: 'Laser Safety`,
-  `Evaluate thermal lensing risk to protective eyewear and optical components from absorbed laser power.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Thermal Lens Hazard',
-  'Evaluate thermal lensing risk to protective eyewear and optical components from absorbed laser power.',
-  'https://photonics-calculators.vercel.app/laser-safety/thermal-lens-hazard',
-  { category: 'Laser Safety`,
-  `https://photonics-calculators.vercel.app/laser-safety/thermal-lens-hazard`,
-  { category: `Laser Safety` }
+  { category: 'Laser Safety' }
 );
+
 export default function Page() {
   return (
     <>

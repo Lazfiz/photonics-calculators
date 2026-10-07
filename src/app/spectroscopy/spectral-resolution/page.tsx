@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Spectral Resolution Calculator',
   description: 'Compare spectral resolution across grating, prism, and Fabry-Pérot spectrometers.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Spectral Resolution Calculator',
-  description: 'Compare spectral resolution across grating, prism, and Fabry-Pérot spectrometers.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Spectral Resolution Calculator',
   'Compare spectral resolution across grating, prism, and Fabry-Pérot spectrometers.',
   'https://photonics-calculators.vercel.app/spectroscopy/spectral-resolution',
-  { category: 'Spectroscopy`,
-  `Compare spectral resolution across grating, prism, and Fabry-Pérot spectrometers.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Spectral Resolution Calculator',
-  'Compare spectral resolution across grating, prism, and Fabry-Pérot spectrometers.',
-  'https://photonics-calculators.vercel.app/spectroscopy/spectral-resolution',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/spectral-resolution`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

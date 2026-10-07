@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Modulation Transfer Function',
   description: 'Diffraction-limited incoherent MTF with defocus effects.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Modulation Transfer Function',
-  description: 'Diffraction-limited incoherent MTF with defocus effects.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Modulation Transfer Function',
   'Diffraction-limited incoherent MTF with defocus effects.',
   'https://photonics-calculators.vercel.app/imaging/mtf',
-  { category: 'Imaging`,
-  `Diffraction-limited incoherent MTF with defocus effects.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Modulation Transfer Function',
-  'Diffraction-limited incoherent MTF with defocus effects.',
-  'https://photonics-calculators.vercel.app/imaging/mtf',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/mtf`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

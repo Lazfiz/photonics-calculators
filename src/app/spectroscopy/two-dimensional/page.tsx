@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Two-Dimensional (2D) Spectroscopy',
   description: 'Correlates excitation and detection frequencies via three-pulse photon echo. Reveals coupling, energy transfer, and homogeneous vs inhomogeneous broadening.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Two-Dimensional (2D) Spectroscopy',
-  description: 'Correlates excitation and detection frequencies via three-pulse photon echo. Reveals coupling, energy transfer, and homogeneous vs inhomogeneous broadening.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Two-Dimensional (2D) Spectroscopy',
   'Correlates excitation and detection frequencies via three-pulse photon echo. Reveals coupling, energy transfer, and homogeneous vs inhomogeneous broadening.',
   'https://photonics-calculators.vercel.app/spectroscopy/two-dimensional',
-  { category: 'Spectroscopy`,
-  `Correlates excitation and detection frequencies via three-pulse photon echo. Reveals coupling, energy transfer, and homogeneous vs inhomogeneous broadening.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Two-Dimensional (2D) Spectroscopy',
-  'Correlates excitation and detection frequencies via three-pulse photon echo. Reveals coupling, energy transfer, and homogeneous vs inhomogeneous broadening.',
-  'https://photonics-calculators.vercel.app/spectroscopy/two-dimensional',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/two-dimensional`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Slow Light Structures',
   description: 'Group velocity reduction in photonic crystals and EIT media.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Slow Light Structures',
-  description: 'Group velocity reduction in photonic crystals and EIT media.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Slow Light Structures',
   'Group velocity reduction in photonic crystals and EIT media.',
   'https://photonics-calculators.vercel.app/wave-optics/slow-light',
-  { category: 'Wave Optics`,
-  `Group velocity reduction in photonic crystals and EIT media.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Slow Light Structures',
-  'Group velocity reduction in photonic crystals and EIT media.',
-  'https://photonics-calculators.vercel.app/wave-optics/slow-light',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/slow-light`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

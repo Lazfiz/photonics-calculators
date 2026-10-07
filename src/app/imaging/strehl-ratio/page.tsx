@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Strehl Ratio Calculator',
   description: 'Estimate the Strehl ratio from wavefront error using the Maréchal approximation.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Strehl Ratio Calculator',
-  description: 'Estimate the Strehl ratio from wavefront error using the Maréchal approximation.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Strehl Ratio Calculator',
   'Estimate the Strehl ratio from wavefront error using the Maréchal approximation.',
   'https://photonics-calculators.vercel.app/imaging/strehl-ratio',
-  { category: 'Imaging`,
-  `Estimate the Strehl ratio from wavefront error using the Maréchal approximation.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Strehl Ratio Calculator',
-  'Estimate the Strehl ratio from wavefront error using the Maréchal approximation.',
-  'https://photonics-calculators.vercel.app/imaging/strehl-ratio',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/strehl-ratio`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

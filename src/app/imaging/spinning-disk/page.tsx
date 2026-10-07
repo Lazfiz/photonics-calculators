@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Spinning Disk Confocal Calculator',
   description: 'Pinhole size, optical sectioning, and frame rate for spinning disk confocal microscopy.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Spinning Disk Confocal Calculator',
-  description: 'Pinhole size, optical sectioning, and frame rate for spinning disk confocal microscopy.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Spinning Disk Confocal Calculator',
   'Pinhole size, optical sectioning, and frame rate for spinning disk confocal microscopy.',
   'https://photonics-calculators.vercel.app/imaging/spinning-disk',
-  { category: 'Imaging`,
-  `Pinhole size, optical sectioning, and frame rate for spinning disk confocal microscopy.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Spinning Disk Confocal Calculator',
-  'Pinhole size, optical sectioning, and frame rate for spinning disk confocal microscopy.',
-  'https://photonics-calculators.vercel.app/imaging/spinning-disk',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/spinning-disk`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

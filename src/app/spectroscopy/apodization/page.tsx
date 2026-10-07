@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Apodization Functions',
   description: 'Window functions and their instrument line shapes (ILS). Trade-off: resolution vs sidelobe suppression.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Apodization Functions',
-  description: 'Window functions and their instrument line shapes (ILS). Trade-off: resolution vs sidelobe suppression.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Apodization Functions',
   'Window functions and their instrument line shapes (ILS). Trade-off: resolution vs sidelobe suppression.',
   'https://photonics-calculators.vercel.app/spectroscopy/apodization',
-  { category: 'Spectroscopy`,
-  `Window functions and their instrument line shapes (ILS). Trade-off: resolution vs sidelobe suppression.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Apodization Functions',
-  'Window functions and their instrument line shapes (ILS). Trade-off: resolution vs sidelobe suppression.',
-  'https://photonics-calculators.vercel.app/spectroscopy/apodization',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/apodization`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

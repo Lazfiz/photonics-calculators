@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'CCD/CCM Sensor Design',
   description: 'CCD sensor parameters, cooling requirements, dark current, and dynamic range analysis.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `CCD/CCM Sensor Design',
-  description: 'CCD sensor parameters, cooling requirements, dark current, and dynamic range analysis.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'CCD/CCM Sensor Design',
   'CCD sensor parameters, cooling requirements, dark current, and dynamic range analysis.',
   'https://photonics-calculators.vercel.app/imaging/sensor-ccm',
-  { category: 'Imaging`,
-  `CCD sensor parameters, cooling requirements, dark current, and dynamic range analysis.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'CCD/CCM Sensor Design',
-  'CCD sensor parameters, cooling requirements, dark current, and dynamic range analysis.',
-  'https://photonics-calculators.vercel.app/imaging/sensor-ccm',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/sensor-ccm`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

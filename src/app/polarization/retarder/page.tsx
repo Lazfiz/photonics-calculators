@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Waveplate / Retarder',
   description: 'Polarization state transformation by a birefringent waveplate with variable retardance and fast-axis orientation.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Waveplate / Retarder',
-  description: 'Polarization state transformation by a birefringent waveplate with variable retardance and fast-axis orientation.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Waveplate / Retarder',
   'Polarization state transformation by a birefringent waveplate with variable retardance and fast-axis orientation.',
   'https://photonics-calculators.vercel.app/polarization/retarder',
-  { category: 'Polarization`,
-  `Polarization state transformation by a birefringent waveplate with variable retardance and fast-axis orientation.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Waveplate / Retarder',
-  'Polarization state transformation by a birefringent waveplate with variable retardance and fast-axis orientation.',
-  'https://photonics-calculators.vercel.app/polarization/retarder',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/retarder`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Corneal Exposure Limits',
   description: 'Corneal MPE across UV, visible, and IR spectral regions. Simplified model.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Corneal Exposure Limits',
-  description: 'Corneal MPE across UV, visible, and IR spectral regions. Simplified model.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Corneal Exposure Limits',
   'Corneal MPE across UV, visible, and IR spectral regions. Simplified model.',
   'https://photonics-calculators.vercel.app/laser-safety/corneal-limits',
-  { category: 'Laser Safety`,
-  `Corneal MPE across UV, visible, and IR spectral regions. Simplified model.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Corneal Exposure Limits',
-  'Corneal MPE across UV, visible, and IR spectral regions. Simplified model.',
-  'https://photonics-calculators.vercel.app/laser-safety/corneal-limits',
-  { category: 'Laser Safety`,
-  `https://photonics-calculators.vercel.app/laser-safety/corneal-limits`,
-  { category: `Laser Safety` }
+  { category: 'Laser Safety' }
 );
+
 export default function Page() {
   return (
     <>

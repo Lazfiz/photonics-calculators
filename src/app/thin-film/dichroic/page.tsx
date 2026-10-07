@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Dichroic Beam Splitter',
   description: 'Dichroic beam splitter at oblique incidence. Shows s- and p-polarisation splitting characteristic of dichroic filters used at 45°.',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Dichroic Beam Splitter',
-  description: 'Dichroic beam splitter at oblique incidence. Shows s- and p-polarisation splitting characteristic of dichroic filters used at 45°.',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Dichroic Beam Splitter',
   'Dichroic beam splitter at oblique incidence. Shows s- and p-polarisation splitting characteristic of dichroic filters used at 45°.',
   'https://photonics-calculators.vercel.app/thin-film/dichroic',
-  { category: 'Thin Film`,
-  `Dichroic beam splitter at oblique incidence. Shows s- and p-polarisation splitting characteristic of dichroic filters used at 45°.',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Dichroic Beam Splitter',
-  'Dichroic beam splitter at oblique incidence. Shows s- and p-polarisation splitting characteristic of dichroic filters used at 45°.',
-  'https://photonics-calculators.vercel.app/thin-film/dichroic',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/dichroic`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

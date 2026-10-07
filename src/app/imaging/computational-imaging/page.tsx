@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Computational Imaging',
   description: 'Multi-view fusion, resolution scaling, and SNR improvement through computational techniques.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Computational Imaging',
-  description: 'Multi-view fusion, resolution scaling, and SNR improvement through computational techniques.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Computational Imaging',
   'Multi-view fusion, resolution scaling, and SNR improvement through computational techniques.',
   'https://photonics-calculators.vercel.app/imaging/computational-imaging',
-  { category: 'Imaging`,
-  `Multi-view fusion, resolution scaling, and SNR improvement through computational techniques.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Computational Imaging',
-  'Multi-view fusion, resolution scaling, and SNR improvement through computational techniques.',
-  'https://photonics-calculators.vercel.app/imaging/computational-imaging',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/computational-imaging`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

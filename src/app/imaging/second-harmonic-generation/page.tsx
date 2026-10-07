@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Second Harmonic Generation (SHG) Calculator',
   description: 'SHG signal properties, wavelength conversion, and imaging resolution for collagen and other non-centrosymmetric structures.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Second Harmonic Generation (SHG) Calculator',
-  description: 'SHG signal properties, wavelength conversion, and imaging resolution for collagen and other non-centrosymmetric structures.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Second Harmonic Generation (SHG) Calculator',
   'SHG signal properties, wavelength conversion, and imaging resolution for collagen and other non-centrosymmetric structures.',
   'https://photonics-calculators.vercel.app/imaging/second-harmonic-generation',
-  { category: 'Imaging`,
-  `SHG signal properties, wavelength conversion, and imaging resolution for collagen and other non-centrosymmetric structures.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Second Harmonic Generation (SHG) Calculator',
-  'SHG signal properties, wavelength conversion, and imaging resolution for collagen and other non-centrosymmetric structures.',
-  'https://photonics-calculators.vercel.app/imaging/second-harmonic-generation',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/second-harmonic-generation`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Rare Earth Doped',
   description: 'Interactive Rare Earth Doped calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Rare Earth Doped',
-  description: 'Interactive Rare Earth Doped calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Rare Earth Doped',
   'Interactive Rare Earth Doped calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/fiber-optics/rare-earth-doped',
-  { category: 'Fiber Optics`,
-  `Interactive Rare Earth Doped calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Rare Earth Doped',
-  'Interactive Rare Earth Doped calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/fiber-optics/rare-earth-doped',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/rare-earth-doped`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

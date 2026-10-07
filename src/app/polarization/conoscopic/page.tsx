@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Conoscopic Observation',
   description: 'Simulate conoscopic interference figures (isochromates and isogyres) for uniaxial and biaxial crystals between crossed polarizers.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Conoscopic Observation',
-  description: 'Simulate conoscopic interference figures (isochromates and isogyres) for uniaxial and biaxial crystals between crossed polarizers.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Conoscopic Observation',
   'Simulate conoscopic interference figures (isochromates and isogyres) for uniaxial and biaxial crystals between crossed polarizers.',
   'https://photonics-calculators.vercel.app/polarization/conoscopic',
-  { category: 'Polarization`,
-  `Simulate conoscopic interference figures (isochromates and isogyres) for uniaxial and biaxial crystals between crossed polarizers.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Conoscopic Observation',
-  'Simulate conoscopic interference figures (isochromates and isogyres) for uniaxial and biaxial crystals between crossed polarizers.',
-  'https://photonics-calculators.vercel.app/polarization/conoscopic',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/conoscopic`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

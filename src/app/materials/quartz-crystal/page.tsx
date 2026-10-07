@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Quartz Crystal (SiO) Properties',
   description: 'Uniaxial positive, optically active, piezoelectric. Sellmeier dispersion for o & e rays.',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Quartz Crystal (SiO) Properties',
-  description: 'Uniaxial positive, optically active, piezoelectric. Sellmeier dispersion for o & e rays.',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Quartz Crystal (SiO) Properties',
   'Uniaxial positive, optically active, piezoelectric. Sellmeier dispersion for o & e rays.',
   'https://photonics-calculators.vercel.app/materials/quartz-crystal',
-  { category: 'Materials`,
-  `Uniaxial positive, optically active, piezoelectric. Sellmeier dispersion for o & e rays.',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Quartz Crystal (SiO) Properties',
-  'Uniaxial positive, optically active, piezoelectric. Sellmeier dispersion for o & e rays.',
-  'https://photonics-calculators.vercel.app/materials/quartz-crystal',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/quartz-crystal`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

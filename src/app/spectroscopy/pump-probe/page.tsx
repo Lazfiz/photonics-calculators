@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Pump-Probe Spectroscopy',
   description: 'Ultrafast dynamics via time-resolved differential transmission. GSB, SE, and ESA contributions.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Pump-Probe Spectroscopy',
-  description: 'Ultrafast dynamics via time-resolved differential transmission. GSB, SE, and ESA contributions.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Pump-Probe Spectroscopy',
   'Ultrafast dynamics via time-resolved differential transmission. GSB, SE, and ESA contributions.',
   'https://photonics-calculators.vercel.app/spectroscopy/pump-probe',
-  { category: 'Spectroscopy`,
-  `Ultrafast dynamics via time-resolved differential transmission. GSB, SE, and ESA contributions.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Pump-Probe Spectroscopy',
-  'Ultrafast dynamics via time-resolved differential transmission. GSB, SE, and ESA contributions.',
-  'https://photonics-calculators.vercel.app/spectroscopy/pump-probe',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/pump-probe`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

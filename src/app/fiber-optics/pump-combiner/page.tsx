@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Pump Combiner',
   description: 'Interactive Pump Combiner calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Pump Combiner',
-  description: 'Interactive Pump Combiner calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Pump Combiner',
   'Interactive Pump Combiner calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/fiber-optics/pump-combiner',
-  { category: 'Fiber Optics`,
-  `Interactive Pump Combiner calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Pump Combiner',
-  'Interactive Pump Combiner calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/fiber-optics/pump-combiner',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/pump-combiner`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

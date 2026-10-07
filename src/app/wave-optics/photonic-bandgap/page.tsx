@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Photonic Bandgap',
   description: '1D photonic crystal band structure and reflectivity.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Photonic Bandgap',
-  description: '1D photonic crystal band structure and reflectivity.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Photonic Bandgap',
   '1D photonic crystal band structure and reflectivity.',
   'https://photonics-calculators.vercel.app/wave-optics/photonic-bandgap',
-  { category: 'Wave Optics`,
-  `1D photonic crystal band structure and reflectivity.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Photonic Bandgap',
-  '1D photonic crystal band structure and reflectivity.',
-  'https://photonics-calculators.vercel.app/wave-optics/photonic-bandgap',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/photonic-bandgap`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

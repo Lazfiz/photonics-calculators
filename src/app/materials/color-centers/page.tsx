@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Color Centers in Crystals',
   description: 'Point defects and impurity centers: absorption/emission spectra, cross-sections, and ZPL characteristics. Key for quantum emitters and tunable lasers.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Color Centers in Crystals',
-  description: 'Point defects and impurity centers: absorption/emission spectra, cross-sections, and ZPL characteristics. Key for quantum emitters and tunable lasers.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Color Centers in Crystals',
   'Point defects and impurity centers: absorption/emission spectra, cross-sections, and ZPL characteristics. Key for quantum emitters and tunable lasers.',
   'https://photonics-calculators.vercel.app/materials/color-centers',
-  { category: 'Materials`,
-  `Point defects and impurity centers: absorption/emission spectra, cross-sections, and ZPL characteristics. Key for quantum emitters and tunable lasers.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Color Centers in Crystals',
-  'Point defects and impurity centers: absorption/emission spectra, cross-sections, and ZPL characteristics. Key for quantum emitters and tunable lasers.',
-  'https://photonics-calculators.vercel.app/materials/color-centers',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/color-centers`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Group Index (ng)',
   description: 'ng = n − dn/d — the effective index seen by optical pulses',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Group Index (ng)',
-  description: 'ng = n − dn/d — the effective index seen by optical pulses',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Group Index (ng)',
   'ng = n − dn/d — the effective index seen by optical pulses',
   'https://photonics-calculators.vercel.app/materials/group-index',
-  { category: 'Materials`,
-  `ng = n − dn/d — the effective index seen by optical pulses',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Group Index (ng)',
-  'ng = n − dn/d — the effective index seen by optical pulses',
-  'https://photonics-calculators.vercel.app/materials/group-index',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/group-index`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

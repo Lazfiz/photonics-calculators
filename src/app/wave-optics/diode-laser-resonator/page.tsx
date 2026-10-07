@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Diode Laser Resonator',
   description: 'Interactive Diode Laser Resonator calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Diode Laser Resonator',
-  description: 'Interactive Diode Laser Resonator calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Diode Laser Resonator',
   'Interactive Diode Laser Resonator calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/wave-optics/diode-laser-resonator',
-  { category: 'Wave Optics`,
-  `Interactive Diode Laser Resonator calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Diode Laser Resonator',
-  'Interactive Diode Laser Resonator calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/wave-optics/diode-laser-resonator',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/diode-laser-resonator`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Lineshape Fitting',
   description: 'Voigt, Gaussian, and Lorentzian line profiles — compare convolution effects on spectral lines.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Lineshape Fitting',
-  description: 'Voigt, Gaussian, and Lorentzian line profiles — compare convolution effects on spectral lines.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Lineshape Fitting',
   'Voigt, Gaussian, and Lorentzian line profiles — compare convolution effects on spectral lines.',
   'https://photonics-calculators.vercel.app/spectroscopy/lineshape-fit',
-  { category: 'Spectroscopy`,
-  `Voigt, Gaussian, and Lorentzian line profiles — compare convolution effects on spectral lines.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Lineshape Fitting',
-  'Voigt, Gaussian, and Lorentzian line profiles — compare convolution effects on spectral lines.',
-  'https://photonics-calculators.vercel.app/spectroscopy/lineshape-fit',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/lineshape-fit`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

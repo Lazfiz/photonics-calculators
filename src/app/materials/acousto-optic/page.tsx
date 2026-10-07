@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Acousto-Optic Materials',
   description: 'Acousto-optic figure of merit, Bragg angle, and deflection calculations',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Acousto-Optic Materials',
-  description: 'Acousto-optic figure of merit, Bragg angle, and deflection calculations',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Acousto-Optic Materials',
   'Acousto-optic figure of merit, Bragg angle, and deflection calculations',
   'https://photonics-calculators.vercel.app/materials/acousto-optic',
-  { category: 'Materials`,
-  `Acousto-optic figure of merit, Bragg angle, and deflection calculations',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Acousto-Optic Materials',
-  'Acousto-optic figure of merit, Bragg angle, and deflection calculations',
-  'https://photonics-calculators.vercel.app/materials/acousto-optic',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/acousto-optic`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

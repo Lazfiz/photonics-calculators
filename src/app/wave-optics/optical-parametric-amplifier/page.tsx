@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Optical Parametric Amplifier',
   description: 'Interactive Optical Parametric Amplifier calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Optical Parametric Amplifier',
-  description: 'Interactive Optical Parametric Amplifier calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Optical Parametric Amplifier',
   'Interactive Optical Parametric Amplifier calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/wave-optics/optical-parametric-amplifier',
-  { category: 'Wave Optics`,
-  `Interactive Optical Parametric Amplifier calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Optical Parametric Amplifier',
-  'Interactive Optical Parametric Amplifier calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/wave-optics/optical-parametric-amplifier',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/optical-parametric-amplifier`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

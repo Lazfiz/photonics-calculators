@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Digital Holography',
   description: 'Hologram recording, numerical reconstruction, resolution limits, and sampling criteria.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Digital Holography',
-  description: 'Hologram recording, numerical reconstruction, resolution limits, and sampling criteria.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Digital Holography',
   'Hologram recording, numerical reconstruction, resolution limits, and sampling criteria.',
   'https://photonics-calculators.vercel.app/imaging/digital-holography',
-  { category: 'Imaging`,
-  `Hologram recording, numerical reconstruction, resolution limits, and sampling criteria.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Digital Holography',
-  'Hologram recording, numerical reconstruction, resolution limits, and sampling criteria.',
-  'https://photonics-calculators.vercel.app/imaging/digital-holography',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/digital-holography`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

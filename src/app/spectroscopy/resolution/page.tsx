@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Spectral Resolution',
   description: 'Resolving power and minimum resolvable wavelength for a diffraction grating spectrometer.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Spectral Resolution',
-  description: 'Resolving power and minimum resolvable wavelength for a diffraction grating spectrometer.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Spectral Resolution',
   'Resolving power and minimum resolvable wavelength for a diffraction grating spectrometer.',
   'https://photonics-calculators.vercel.app/spectroscopy/resolution',
-  { category: 'Spectroscopy`,
-  `Resolving power and minimum resolvable wavelength for a diffraction grating spectrometer.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Spectral Resolution',
-  'Resolving power and minimum resolvable wavelength for a diffraction grating spectrometer.',
-  'https://photonics-calculators.vercel.app/spectroscopy/resolution',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/resolution`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

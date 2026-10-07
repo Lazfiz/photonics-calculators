@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Long Pass Filter',
   description: 'Quarter-wave stack (HL)N long-pass filter. Transmits > edge, reflects shorter wavelengths.',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Long Pass Filter',
-  description: 'Quarter-wave stack (HL)N long-pass filter. Transmits > edge, reflects shorter wavelengths.',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Long Pass Filter',
   'Quarter-wave stack (HL)N long-pass filter. Transmits > edge, reflects shorter wavelengths.',
   'https://photonics-calculators.vercel.app/thin-film/long-pass',
-  { category: 'Thin Film`,
-  `Quarter-wave stack (HL)N long-pass filter. Transmits > edge, reflects shorter wavelengths.',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Long Pass Filter',
-  'Quarter-wave stack (HL)N long-pass filter. Transmits > edge, reflects shorter wavelengths.',
-  'https://photonics-calculators.vercel.app/thin-film/long-pass',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/long-pass`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

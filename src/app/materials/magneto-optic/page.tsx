@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Magneto-Optic Materials',
   description: 'Faraday rotation, Verdet constants, and isolator design calculations',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Magneto-Optic Materials',
-  description: 'Faraday rotation, Verdet constants, and isolator design calculations',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Magneto-Optic Materials',
   'Faraday rotation, Verdet constants, and isolator design calculations',
   'https://photonics-calculators.vercel.app/materials/magneto-optic',
-  { category: 'Materials`,
-  `Faraday rotation, Verdet constants, and isolator design calculations',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Magneto-Optic Materials',
-  'Faraday rotation, Verdet constants, and isolator design calculations',
-  'https://photonics-calculators.vercel.app/materials/magneto-optic',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/magneto-optic`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

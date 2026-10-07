@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Self-Phase Modulation (SPM)',
   description: 'Intensity-dependent phase shift and spectral broadening from the optical Kerr effect.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Self-Phase Modulation (SPM)',
-  description: 'Intensity-dependent phase shift and spectral broadening from the optical Kerr effect.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Self-Phase Modulation (SPM)',
   'Intensity-dependent phase shift and spectral broadening from the optical Kerr effect.',
   'https://photonics-calculators.vercel.app/wave-optics/self-phase-modulation',
-  { category: 'Wave Optics`,
-  `Intensity-dependent phase shift and spectral broadening from the optical Kerr effect.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Self-Phase Modulation (SPM)',
-  'Intensity-dependent phase shift and spectral broadening from the optical Kerr effect.',
-  'https://photonics-calculators.vercel.app/wave-optics/self-phase-modulation',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/self-phase-modulation`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

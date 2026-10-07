@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Diversity Reception',
   description: 'Interactive Diversity Reception calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Diversity Reception',
-  description: 'Interactive Diversity Reception calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Diversity Reception',
   'Interactive Diversity Reception calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/free-space-comms/diversity-reception',
-  { category: 'Free Space Comms`,
-  `Interactive Diversity Reception calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Diversity Reception',
-  'Interactive Diversity Reception calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/diversity-reception',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/diversity-reception`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

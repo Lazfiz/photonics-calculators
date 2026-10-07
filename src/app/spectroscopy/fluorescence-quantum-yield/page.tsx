@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Fluorescence Quantum Yield',
   description: 'Φ = Φ_ref (I_s/I_ref) (A_ref/A_s) (n_s/n_ref)² — comparative method using a reference standard.',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Fluorescence Quantum Yield',
-  description: 'Φ = Φ_ref (I_s/I_ref) (A_ref/A_s) (n_s/n_ref)² — comparative method using a reference standard.',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Fluorescence Quantum Yield',
   'Φ = Φ_ref (I_s/I_ref) (A_ref/A_s) (n_s/n_ref)² — comparative method using a reference standard.',
   'https://photonics-calculators.vercel.app/spectroscopy/fluorescence-quantum-yield',
-  { category: 'Spectroscopy`,
-  `Φ = Φ_ref (I_s/I_ref) (A_ref/A_s) (n_s/n_ref)² — comparative method using a reference standard.',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Fluorescence Quantum Yield',
-  'Φ = Φ_ref (I_s/I_ref) (A_ref/A_s) (n_s/n_ref)² — comparative method using a reference standard.',
-  'https://photonics-calculators.vercel.app/spectroscopy/fluorescence-quantum-yield',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/fluorescence-quantum-yield`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

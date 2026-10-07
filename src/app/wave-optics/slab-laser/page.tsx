@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Slab Laser',
   description: 'Interactive Slab Laser calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Slab Laser',
-  description: 'Interactive Slab Laser calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Slab Laser',
   'Interactive Slab Laser calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/wave-optics/slab-laser',
-  { category: 'Wave Optics`,
-  `Interactive Slab Laser calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Slab Laser',
-  'Interactive Slab Laser calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/wave-optics/slab-laser',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/slab-laser`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

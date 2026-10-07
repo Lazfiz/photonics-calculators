@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Birefringence & Retardation',
   description: 'Phase retardation from crystal birefringence, thickness, and wavelength.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Birefringence & Retardation',
-  description: 'Phase retardation from crystal birefringence, thickness, and wavelength.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Birefringence & Retardation',
   'Phase retardation from crystal birefringence, thickness, and wavelength.',
   'https://photonics-calculators.vercel.app/polarization/birefringence',
-  { category: 'Polarization`,
-  `Phase retardation from crystal birefringence, thickness, and wavelength.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Birefringence & Retardation',
-  'Phase retardation from crystal birefringence, thickness, and wavelength.',
-  'https://photonics-calculators.vercel.app/polarization/birefringence',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/birefringence`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

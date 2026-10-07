@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Beam Expander Safety',
   description: 'Calculate power density reduction from beam expansion. Critical for ensuring safe irradiance levels.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Beam Expander Safety',
-  description: 'Calculate power density reduction from beam expansion. Critical for ensuring safe irradiance levels.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Beam Expander Safety',
   'Calculate power density reduction from beam expansion. Critical for ensuring safe irradiance levels.',
   'https://photonics-calculators.vercel.app/laser-safety/beam-expander',
-  { category: 'Laser Safety`,
-  `Calculate power density reduction from beam expansion. Critical for ensuring safe irradiance levels.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Beam Expander Safety',
-  'Calculate power density reduction from beam expansion. Critical for ensuring safe irradiance levels.',
-  'https://photonics-calculators.vercel.app/laser-safety/beam-expander',
-  { category: 'Laser Safety`,
-  `https://photonics-calculators.vercel.app/laser-safety/beam-expander`,
-  { category: `Laser Safety` }
+  { category: 'Laser Safety' }
 );
+
 export default function Page() {
   return (
     <>

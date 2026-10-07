@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Working Distance Calculator',
   description: 'Calculate working distance from objective focal length and magnification.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Working Distance Calculator',
-  description: 'Calculate working distance from objective focal length and magnification.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Working Distance Calculator',
   'Calculate working distance from objective focal length and magnification.',
   'https://photonics-calculators.vercel.app/imaging/working-distance',
-  { category: 'Imaging`,
-  `Calculate working distance from objective focal length and magnification.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Working Distance Calculator',
-  'Calculate working distance from objective focal length and magnification.',
-  'https://photonics-calculators.vercel.app/imaging/working-distance',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/working-distance`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

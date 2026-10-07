@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Thin Film Interference Conditions',
   description: 'Constructive and destructive interference patterns from a single thin film, accounting for phase shifts at boundaries.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Thin Film Interference Conditions',
-  description: 'Constructive and destructive interference patterns from a single thin film, accounting for phase shifts at boundaries.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Thin Film Interference Conditions',
   'Constructive and destructive interference patterns from a single thin film, accounting for phase shifts at boundaries.',
   'https://photonics-calculators.vercel.app/thin-film/interference-conditions',
-  { category: 'Thin Film`,
-  `Constructive and destructive interference patterns from a single thin film, accounting for phase shifts at boundaries.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Thin Film Interference Conditions',
-  'Constructive and destructive interference patterns from a single thin film, accounting for phase shifts at boundaries.',
-  'https://photonics-calculators.vercel.app/thin-film/interference-conditions',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/interference-conditions`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

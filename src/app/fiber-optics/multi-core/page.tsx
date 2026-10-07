@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Multi Core',
   description: 'Interactive Multi Core calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Multi Core',
-  description: 'Interactive Multi Core calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Multi Core',
   'Interactive Multi Core calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/fiber-optics/multi-core',
-  { category: 'Fiber Optics`,
-  `Interactive Multi Core calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Multi Core',
-  'Interactive Multi Core calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/fiber-optics/multi-core',
-  { category: 'Fiber Optics`,
-  `https://photonics-calculators.vercel.app/fiber-optics/multi-core`,
-  { category: `Fiber Optics` }
+  { category: 'Fiber Optics' }
 );
+
 export default function Page() {
   return (
     <>

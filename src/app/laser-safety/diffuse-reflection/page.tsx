@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Diffuse Reflection Hazard',
   description: 'Evaluate hazard from Lambertian (diffuse) reflections off matte surfaces. Uses extended-source MPE.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Diffuse Reflection Hazard',
-  description: 'Evaluate hazard from Lambertian (diffuse) reflections off matte surfaces. Uses extended-source MPE.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Diffuse Reflection Hazard',
   'Evaluate hazard from Lambertian (diffuse) reflections off matte surfaces. Uses extended-source MPE.',
   'https://photonics-calculators.vercel.app/laser-safety/diffuse-reflection',
-  { category: 'Laser Safety`,
-  `Evaluate hazard from Lambertian (diffuse) reflections off matte surfaces. Uses extended-source MPE.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Diffuse Reflection Hazard',
-  'Evaluate hazard from Lambertian (diffuse) reflections off matte surfaces. Uses extended-source MPE.',
-  'https://photonics-calculators.vercel.app/laser-safety/diffuse-reflection',
-  { category: 'Laser Safety`,
-  `https://photonics-calculators.vercel.app/laser-safety/diffuse-reflection`,
-  { category: `Laser Safety` }
+  { category: 'Laser Safety' }
 );
+
 export default function Page() {
   return (
     <>

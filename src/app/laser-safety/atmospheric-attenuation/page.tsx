@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Atmospheric Attenuation',
   description: 'Calculates atmospheric beam attenuation using Beer-Lambert law with water vapor absorption, CO absorption, Rayleigh and Mie scattering. Useful for outdoor laser safety NOHD calculations.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Atmospheric Attenuation',
-  description: 'Calculates atmospheric beam attenuation using Beer-Lambert law with water vapor absorption, CO absorption, Rayleigh and Mie scattering. Useful for outdoor laser safety NOHD calculations.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Atmospheric Attenuation',
   'Calculates atmospheric beam attenuation using Beer-Lambert law with water vapor absorption, CO absorption, Rayleigh and Mie scattering. Useful for outdoor laser safety NOHD calculations.',
   'https://photonics-calculators.vercel.app/laser-safety/atmospheric-attenuation',
-  { category: 'Laser Safety`,
-  `Calculates atmospheric beam attenuation using Beer-Lambert law with water vapor absorption, CO absorption, Rayleigh and Mie scattering. Useful for outdoor laser safety NOHD calculations.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Atmospheric Attenuation',
-  'Calculates atmospheric beam attenuation using Beer-Lambert law with water vapor absorption, CO absorption, Rayleigh and Mie scattering. Useful for outdoor laser safety NOHD calculations.',
-  'https://photonics-calculators.vercel.app/laser-safety/atmospheric-attenuation',
-  { category: 'Laser Safety`,
-  `https://photonics-calculators.vercel.app/laser-safety/atmospheric-attenuation`,
-  { category: `Laser Safety` }
+  { category: 'Laser Safety' }
 );
+
 export default function Page() {
   return (
     <>

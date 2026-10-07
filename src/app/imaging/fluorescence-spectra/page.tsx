@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Fluorescence Spectra Overlap Calculator',
   description: 'Compare excitation/emission spectra, spectral overlap, and filter crosstalk.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Fluorescence Spectra Overlap Calculator',
-  description: 'Compare excitation/emission spectra, spectral overlap, and filter crosstalk.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Fluorescence Spectra Overlap Calculator',
   'Compare excitation/emission spectra, spectral overlap, and filter crosstalk.',
   'https://photonics-calculators.vercel.app/imaging/fluorescence-spectra',
-  { category: 'Imaging`,
-  `Compare excitation/emission spectra, spectral overlap, and filter crosstalk.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Fluorescence Spectra Overlap Calculator',
-  'Compare excitation/emission spectra, spectral overlap, and filter crosstalk.',
-  'https://photonics-calculators.vercel.app/imaging/fluorescence-spectra',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/fluorescence-spectra`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

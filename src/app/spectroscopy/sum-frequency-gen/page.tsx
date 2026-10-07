@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Sum Frequency Generation Spectroscopy',
   description: 'Surface-specific vibrational probe. SFG is forbidden in centrosymmetric media — only surfaces and interfaces contribute.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Sum Frequency Generation Spectroscopy',
-  description: 'Surface-specific vibrational probe. SFG is forbidden in centrosymmetric media — only surfaces and interfaces contribute.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Sum Frequency Generation Spectroscopy',
   'Surface-specific vibrational probe. SFG is forbidden in centrosymmetric media — only surfaces and interfaces contribute.',
   'https://photonics-calculators.vercel.app/spectroscopy/sum-frequency-gen',
-  { category: 'Spectroscopy`,
-  `Surface-specific vibrational probe. SFG is forbidden in centrosymmetric media — only surfaces and interfaces contribute.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Sum Frequency Generation Spectroscopy',
-  'Surface-specific vibrational probe. SFG is forbidden in centrosymmetric media — only surfaces and interfaces contribute.',
-  'https://photonics-calculators.vercel.app/spectroscopy/sum-frequency-gen',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/sum-frequency-gen`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

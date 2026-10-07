@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Ion-Assisted Deposition (IAD)',
   description: 'Design ion beam parameters for improved packing density and stress control. Models ion-to-atom ratio, packing density, and compressive stress.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Ion-Assisted Deposition (IAD)',
-  description: 'Design ion beam parameters for improved packing density and stress control. Models ion-to-atom ratio, packing density, and compressive stress.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Ion-Assisted Deposition (IAD)',
   'Design ion beam parameters for improved packing density and stress control. Models ion-to-atom ratio, packing density, and compressive stress.',
   'https://photonics-calculators.vercel.app/thin-film/ion-assisted-deposition',
-  { category: 'Thin Film`,
-  `Design ion beam parameters for improved packing density and stress control. Models ion-to-atom ratio, packing density, and compressive stress.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Ion-Assisted Deposition (IAD)',
-  'Design ion beam parameters for improved packing density and stress control. Models ion-to-atom ratio, packing density, and compressive stress.',
-  'https://photonics-calculators.vercel.app/thin-film/ion-assisted-deposition',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/ion-assisted-deposition`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

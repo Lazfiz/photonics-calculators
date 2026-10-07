@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'TIRF Penetration Depth Calculator',
   description: 'Evanescent field penetration depth for Total Internal Reflection Fluorescence microscopy.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `TIRF Penetration Depth Calculator',
-  description: 'Evanescent field penetration depth for Total Internal Reflection Fluorescence microscopy.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'TIRF Penetration Depth Calculator',
   'Evanescent field penetration depth for Total Internal Reflection Fluorescence microscopy.',
   'https://photonics-calculators.vercel.app/imaging/tirf',
-  { category: 'Imaging`,
-  `Evanescent field penetration depth for Total Internal Reflection Fluorescence microscopy.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'TIRF Penetration Depth Calculator',
-  'Evanescent field penetration depth for Total Internal Reflection Fluorescence microscopy.',
-  'https://photonics-calculators.vercel.app/imaging/tirf',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/tirf`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Ring Resonator Design',
   description: 'Ring cavity stability, modes, and spectral analysis.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Ring Resonator Design',
-  description: 'Ring cavity stability, modes, and spectral analysis.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Ring Resonator Design',
   'Ring cavity stability, modes, and spectral analysis.',
   'https://photonics-calculators.vercel.app/wave-optics/ring-cavity',
-  { category: 'Wave Optics`,
-  `Ring cavity stability, modes, and spectral analysis.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Ring Resonator Design',
-  'Ring cavity stability, modes, and spectral analysis.',
-  'https://photonics-calculators.vercel.app/wave-optics/ring-cavity',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/ring-cavity`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

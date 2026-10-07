@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Beam Diameter Conversion',
   description: 'Interactive Beam Diameter Conversion calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Beam Diameter Conversion',
-  description: 'Interactive Beam Diameter Conversion calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Beam Diameter Conversion',
   'Interactive Beam Diameter Conversion calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/laser-safety/beam-diameter-conversion',
-  { category: 'Laser Safety`,
-  `Interactive Beam Diameter Conversion calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Beam Diameter Conversion',
-  'Interactive Beam Diameter Conversion calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/laser-safety/beam-diameter-conversion',
-  { category: 'Laser Safety`,
-  `https://photonics-calculators.vercel.app/laser-safety/beam-diameter-conversion`,
-  { category: `Laser Safety` }
+  { category: 'Laser Safety' }
 );
+
 export default function Page() {
   return (
     <>

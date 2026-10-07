@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Orthoscopic Observation',
   description: 'Model orthoscopic observation of birefringent samples with rotating stage. Calculate intensity vs rotation angle and interference colors.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Orthoscopic Observation',
-  description: 'Model orthoscopic observation of birefringent samples with rotating stage. Calculate intensity vs rotation angle and interference colors.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Orthoscopic Observation',
   'Model orthoscopic observation of birefringent samples with rotating stage. Calculate intensity vs rotation angle and interference colors.',
   'https://photonics-calculators.vercel.app/polarization/orthoconoscopic',
-  { category: 'Polarization`,
-  `Model orthoscopic observation of birefringent samples with rotating stage. Calculate intensity vs rotation angle and interference colors.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Orthoscopic Observation',
-  'Model orthoscopic observation of birefringent samples with rotating stage. Calculate intensity vs rotation angle and interference colors.',
-  'https://photonics-calculators.vercel.app/polarization/orthoconoscopic',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/orthoconoscopic`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

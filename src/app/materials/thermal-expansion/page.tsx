@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Thermal Expansion',
   description: 'L = T L — dimensional change from temperature',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Thermal Expansion',
-  description: 'L = T L — dimensional change from temperature',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Thermal Expansion',
   'L = T L — dimensional change from temperature',
   'https://photonics-calculators.vercel.app/materials/thermal-expansion',
-  { category: 'Materials`,
-  `L = T L — dimensional change from temperature',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Thermal Expansion',
-  'L = T L — dimensional change from temperature',
-  'https://photonics-calculators.vercel.app/materials/thermal-expansion',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/thermal-expansion`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

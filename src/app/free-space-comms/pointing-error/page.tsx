@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Pointing Error Loss',
   description: 'Calculate pointing loss from beam jitter for FSO links.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Pointing Error Loss',
-  description: 'Calculate pointing loss from beam jitter for FSO links.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Pointing Error Loss',
   'Calculate pointing loss from beam jitter for FSO links.',
   'https://photonics-calculators.vercel.app/free-space-comms/pointing-error',
-  { category: 'Free Space Comms`,
-  `Calculate pointing loss from beam jitter for FSO links.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Pointing Error Loss',
-  'Calculate pointing loss from beam jitter for FSO links.',
-  'https://photonics-calculators.vercel.app/free-space-comms/pointing-error',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/pointing-error`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

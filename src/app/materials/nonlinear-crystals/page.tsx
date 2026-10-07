@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Nonlinear Crystal Comparison',
   description: 'SHG, OPO, and frequency conversion crystal properties',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Nonlinear Crystal Comparison',
-  description: 'SHG, OPO, and frequency conversion crystal properties',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Nonlinear Crystal Comparison',
   'SHG, OPO, and frequency conversion crystal properties',
   'https://photonics-calculators.vercel.app/materials/nonlinear-crystals',
-  { category: 'Materials`,
-  `SHG, OPO, and frequency conversion crystal properties',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Nonlinear Crystal Comparison',
-  'SHG, OPO, and frequency conversion crystal properties',
-  'https://photonics-calculators.vercel.app/materials/nonlinear-crystals',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/nonlinear-crystals`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

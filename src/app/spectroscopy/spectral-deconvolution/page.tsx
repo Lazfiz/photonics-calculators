@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Spectral Deconvolution',
   description: 'Decompose overlapping spectral bands into individual Gaussian components.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Spectral Deconvolution',
-  description: 'Decompose overlapping spectral bands into individual Gaussian components.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Spectral Deconvolution',
   'Decompose overlapping spectral bands into individual Gaussian components.',
   'https://photonics-calculators.vercel.app/spectroscopy/spectral-deconvolution',
-  { category: 'Spectroscopy`,
-  `Decompose overlapping spectral bands into individual Gaussian components.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Spectral Deconvolution',
-  'Decompose overlapping spectral bands into individual Gaussian components.',
-  'https://photonics-calculators.vercel.app/spectroscopy/spectral-deconvolution',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/spectral-deconvolution`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

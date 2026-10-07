@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Bpsk Qpsk',
   description: 'Interactive Bpsk Qpsk calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Bpsk Qpsk',
-  description: 'Interactive Bpsk Qpsk calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Bpsk Qpsk',
   'Interactive Bpsk Qpsk calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/free-space-comms/bpsk-qpsk',
-  { category: 'Free Space Comms`,
-  `Interactive Bpsk Qpsk calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Bpsk Qpsk',
-  'Interactive Bpsk Qpsk calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/bpsk-qpsk',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/bpsk-qpsk`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

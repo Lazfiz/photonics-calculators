@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Electron Spectroscopy (XPS/UPS)',
   description: 'Photoelectron spectroscopy for surface composition, chemical state, and electronic structure.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Electron Spectroscopy (XPS/UPS)',
-  description: 'Photoelectron spectroscopy for surface composition, chemical state, and electronic structure.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Electron Spectroscopy (XPS/UPS)',
   'Photoelectron spectroscopy for surface composition, chemical state, and electronic structure.',
   'https://photonics-calculators.vercel.app/spectroscopy/electron-spectroscopy',
-  { category: 'Spectroscopy`,
-  `Photoelectron spectroscopy for surface composition, chemical state, and electronic structure.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Electron Spectroscopy (XPS/UPS)',
-  'Photoelectron spectroscopy for surface composition, chemical state, and electronic structure.',
-  'https://photonics-calculators.vercel.app/spectroscopy/electron-spectroscopy',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/electron-spectroscopy`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

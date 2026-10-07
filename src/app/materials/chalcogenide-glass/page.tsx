@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Chalcogenide Glass Properties',
   description: 'IR-transparent glasses for thermal imaging, sensing, and nonlinear optics',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Chalcogenide Glass Properties',
-  description: 'IR-transparent glasses for thermal imaging, sensing, and nonlinear optics',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Chalcogenide Glass Properties',
   'IR-transparent glasses for thermal imaging, sensing, and nonlinear optics',
   'https://photonics-calculators.vercel.app/materials/chalcogenide-glass',
-  { category: 'Materials`,
-  `IR-transparent glasses for thermal imaging, sensing, and nonlinear optics',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Chalcogenide Glass Properties',
-  'IR-transparent glasses for thermal imaging, sensing, and nonlinear optics',
-  'https://photonics-calculators.vercel.app/materials/chalcogenide-glass',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/chalcogenide-glass`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

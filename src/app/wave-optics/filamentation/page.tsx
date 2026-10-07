@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Filamentation Dynamics',
   description: 'Laser filamentation — balance of Kerr self-focusing, plasma defocusing, and diffraction.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Filamentation Dynamics',
-  description: 'Laser filamentation — balance of Kerr self-focusing, plasma defocusing, and diffraction.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Filamentation Dynamics',
   'Laser filamentation — balance of Kerr self-focusing, plasma defocusing, and diffraction.',
   'https://photonics-calculators.vercel.app/wave-optics/filamentation',
-  { category: 'Wave Optics`,
-  `Laser filamentation — balance of Kerr self-focusing, plasma defocusing, and diffraction.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Filamentation Dynamics',
-  'Laser filamentation — balance of Kerr self-focusing, plasma defocusing, and diffraction.',
-  'https://photonics-calculators.vercel.app/wave-optics/filamentation',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/filamentation`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

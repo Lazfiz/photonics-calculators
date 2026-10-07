@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Solid State Laser Resonator',
   description: 'Interactive Solid State Laser Resonator calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Solid State Laser Resonator',
-  description: 'Interactive Solid State Laser Resonator calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Solid State Laser Resonator',
   'Interactive Solid State Laser Resonator calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/wave-optics/solid-state-laser-resonator',
-  { category: 'Wave Optics`,
-  `Interactive Solid State Laser Resonator calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Solid State Laser Resonator',
-  'Interactive Solid State Laser Resonator calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/wave-optics/solid-state-laser-resonator',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/solid-state-laser-resonator`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Depolarization',
   description: 'Calculate depolarization effects via Mueller matrix model or spectral averaging.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Depolarization',
-  description: 'Calculate depolarization effects via Mueller matrix model or spectral averaging.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Depolarization',
   'Calculate depolarization effects via Mueller matrix model or spectral averaging.',
   'https://photonics-calculators.vercel.app/polarization/depolarization',
-  { category: 'Polarization`,
-  `Calculate depolarization effects via Mueller matrix model or spectral averaging.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Depolarization',
-  'Calculate depolarization effects via Mueller matrix model or spectral averaging.',
-  'https://photonics-calculators.vercel.app/polarization/depolarization',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/depolarization`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

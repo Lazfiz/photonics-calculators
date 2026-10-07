@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Extinction Ratio',
   description: 'Calculate polarizer extinction ratio, transmission, and cascaded performance.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Extinction Ratio',
-  description: 'Calculate polarizer extinction ratio, transmission, and cascaded performance.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Extinction Ratio',
   'Calculate polarizer extinction ratio, transmission, and cascaded performance.',
   'https://photonics-calculators.vercel.app/polarization/extinction-ratio',
-  { category: 'Polarization`,
-  `Calculate polarizer extinction ratio, transmission, and cascaded performance.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Extinction Ratio',
-  'Calculate polarizer extinction ratio, transmission, and cascaded performance.',
-  'https://photonics-calculators.vercel.app/polarization/extinction-ratio',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/extinction-ratio`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

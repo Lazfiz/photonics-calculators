@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Laser Damage Threshold',
   description: 'LIDT for pulsed and CW laser optics',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Laser Damage Threshold',
-  description: 'LIDT for pulsed and CW laser optics',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Laser Damage Threshold',
   'LIDT for pulsed and CW laser optics',
   'https://photonics-calculators.vercel.app/materials/damage-threshold',
-  { category: 'Materials`,
-  `LIDT for pulsed and CW laser optics',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Laser Damage Threshold',
-  'LIDT for pulsed and CW laser optics',
-  'https://photonics-calculators.vercel.app/materials/damage-threshold',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/damage-threshold`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

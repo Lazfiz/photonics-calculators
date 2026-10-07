@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Aging of Optical Materials',
   description: 'Long-term degradation: transmission loss, solarization, compaction, stress relaxation',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Aging of Optical Materials',
-  description: 'Long-term degradation: transmission loss, solarization, compaction, stress relaxation',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Aging of Optical Materials',
   'Long-term degradation: transmission loss, solarization, compaction, stress relaxation',
   'https://photonics-calculators.vercel.app/materials/aging-effects',
-  { category: 'Materials`,
-  `Long-term degradation: transmission loss, solarization, compaction, stress relaxation',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Aging of Optical Materials',
-  'Long-term degradation: transmission loss, solarization, compaction, stress relaxation',
-  'https://photonics-calculators.vercel.app/materials/aging-effects',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/aging-effects`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

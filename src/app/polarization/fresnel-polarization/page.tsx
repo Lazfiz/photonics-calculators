@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Fresnel Polarization Calculator',
   description: 'Compute Fresnel reflection/transmission coefficients and analyze polarization-dependent effects at dielectric interfaces.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Fresnel Polarization Calculator',
-  description: 'Compute Fresnel reflection/transmission coefficients and analyze polarization-dependent effects at dielectric interfaces.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Fresnel Polarization Calculator',
   'Compute Fresnel reflection/transmission coefficients and analyze polarization-dependent effects at dielectric interfaces.',
   'https://photonics-calculators.vercel.app/polarization/fresnel-polarization',
-  { category: 'Polarization`,
-  `Compute Fresnel reflection/transmission coefficients and analyze polarization-dependent effects at dielectric interfaces.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Fresnel Polarization Calculator',
-  'Compute Fresnel reflection/transmission coefficients and analyze polarization-dependent effects at dielectric interfaces.',
-  'https://photonics-calculators.vercel.app/polarization/fresnel-polarization',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/fresnel-polarization`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

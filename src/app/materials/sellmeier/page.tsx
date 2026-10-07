@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Sellmeier Equation',
   description: 'Calculate refractive index from Sellmeier coefficients across wavelength.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Sellmeier Equation',
-  description: 'Calculate refractive index from Sellmeier coefficients across wavelength.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Sellmeier Equation',
   'Calculate refractive index from Sellmeier coefficients across wavelength.',
   'https://photonics-calculators.vercel.app/materials/sellmeier',
-  { category: 'Materials`,
-  `Calculate refractive index from Sellmeier coefficients across wavelength.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Sellmeier Equation',
-  'Calculate refractive index from Sellmeier coefficients across wavelength.',
-  'https://photonics-calculators.vercel.app/materials/sellmeier',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/sellmeier`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

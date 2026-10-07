@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 const jsonLd = generateCalculatorJsonLd(
   'Eye-Safe Wavelength',
-  "Identifies the eye-safe wavelength bands (1400\u20131500 nm, 1500\u20131800 nm) where corneal absorption protects the retina. Compare your laser's fluence against spectral MPE.",
+  "Identifies the eye-safe wavelength bands (1400–1500 nm, 1500–1800 nm) where corneal absorption protects the retina. Compare your laser's fluence against spectral MPE.",
   'https://photonics-calculators.vercel.app/laser-safety/eye-safe-wavelength',
   { category: 'Laser Safety' }
 );

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Photoelastic Constants',
   description: 'Stress-induced birefringence: n = C , where C is the stress-optic coefficient',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Photoelastic Constants',
-  description: 'Stress-induced birefringence: n = C , where C is the stress-optic coefficient',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Photoelastic Constants',
   'Stress-induced birefringence: n = C , where C is the stress-optic coefficient',
   'https://photonics-calculators.vercel.app/materials/photoelastic',
-  { category: 'Materials`,
-  `Stress-induced birefringence: n = C , where C is the stress-optic coefficient',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Photoelastic Constants',
-  'Stress-induced birefringence: n = C , where C is the stress-optic coefficient',
-  'https://photonics-calculators.vercel.app/materials/photoelastic',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/photoelastic`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

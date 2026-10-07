@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Spectral Line Broadening',
   description: 'Doppler, collisional, natural, and Voigt broadening mechanisms.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Spectral Line Broadening',
-  description: 'Doppler, collisional, natural, and Voigt broadening mechanisms.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Spectral Line Broadening',
   'Doppler, collisional, natural, and Voigt broadening mechanisms.',
   'https://photonics-calculators.vercel.app/spectroscopy/spectral-line-broadening',
-  { category: 'Spectroscopy`,
-  `Doppler, collisional, natural, and Voigt broadening mechanisms.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Spectral Line Broadening',
-  'Doppler, collisional, natural, and Voigt broadening mechanisms.',
-  'https://photonics-calculators.vercel.app/spectroscopy/spectral-line-broadening',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/spectral-line-broadening`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

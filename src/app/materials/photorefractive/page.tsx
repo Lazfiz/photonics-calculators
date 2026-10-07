@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Photorefractive Effect',
   description: 'Light-induced refractive index changes via space-charge fields in electro-optic materials. Key for holographic storage, phase conjugation, and beam coupling.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Photorefractive Effect',
-  description: 'Light-induced refractive index changes via space-charge fields in electro-optic materials. Key for holographic storage, phase conjugation, and beam coupling.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Photorefractive Effect',
   'Light-induced refractive index changes via space-charge fields in electro-optic materials. Key for holographic storage, phase conjugation, and beam coupling.',
   'https://photonics-calculators.vercel.app/materials/photorefractive',
-  { category: 'Materials`,
-  `Light-induced refractive index changes via space-charge fields in electro-optic materials. Key for holographic storage, phase conjugation, and beam coupling.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Photorefractive Effect',
-  'Light-induced refractive index changes via space-charge fields in electro-optic materials. Key for holographic storage, phase conjugation, and beam coupling.',
-  'https://photonics-calculators.vercel.app/materials/photorefractive',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/photorefractive`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Polymer Optical Materials',
   description: 'Refractive index, dispersion, and loss data for optical polymers',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Polymer Optical Materials',
-  description: 'Refractive index, dispersion, and loss data for optical polymers',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Polymer Optical Materials',
   'Refractive index, dispersion, and loss data for optical polymers',
   'https://photonics-calculators.vercel.app/materials/polymer-optics',
-  { category: 'Materials`,
-  `Refractive index, dispersion, and loss data for optical polymers',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Polymer Optical Materials',
-  'Refractive index, dispersion, and loss data for optical polymers',
-  'https://photonics-calculators.vercel.app/materials/polymer-optics',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/polymer-optics`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>

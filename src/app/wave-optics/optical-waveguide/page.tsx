@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Optical Waveguide Modes',
   description: 'Slab waveguide mode analysis: V-number, NA, and effective index.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Optical Waveguide Modes',
-  description: 'Slab waveguide mode analysis: V-number, NA, and effective index.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Optical Waveguide Modes',
   'Slab waveguide mode analysis: V-number, NA, and effective index.',
   'https://photonics-calculators.vercel.app/wave-optics/optical-waveguide',
-  { category: 'Wave Optics`,
-  `Slab waveguide mode analysis: V-number, NA, and effective index.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Optical Waveguide Modes',
-  'Slab waveguide mode analysis: V-number, NA, and effective index.',
-  'https://photonics-calculators.vercel.app/wave-optics/optical-waveguide',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/optical-waveguide`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

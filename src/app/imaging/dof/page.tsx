@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Depth of Field',
   description: 'Microscope depth of field including diffraction and detector contributions.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Depth of Field',
-  description: 'Microscope depth of field including diffraction and detector contributions.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Depth of Field',
   'Microscope depth of field including diffraction and detector contributions.',
   'https://photonics-calculators.vercel.app/imaging/dof',
-  { category: 'Imaging`,
-  `Microscope depth of field including diffraction and detector contributions.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Depth of Field',
-  'Microscope depth of field including diffraction and detector contributions.',
-  'https://photonics-calculators.vercel.app/imaging/dof',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/dof`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

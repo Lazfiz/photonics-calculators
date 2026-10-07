@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Photoacoustic Imaging Calculator',
   description: 'Imaging depth, resolution, and signal estimation for photoacoustic microscopy/tomography.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Photoacoustic Imaging Calculator',
-  description: 'Imaging depth, resolution, and signal estimation for photoacoustic microscopy/tomography.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Photoacoustic Imaging Calculator',
   'Imaging depth, resolution, and signal estimation for photoacoustic microscopy/tomography.',
   'https://photonics-calculators.vercel.app/imaging/photoacoustic',
-  { category: 'Imaging`,
-  `Imaging depth, resolution, and signal estimation for photoacoustic microscopy/tomography.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Photoacoustic Imaging Calculator',
-  'Imaging depth, resolution, and signal estimation for photoacoustic microscopy/tomography.',
-  'https://photonics-calculators.vercel.app/imaging/photoacoustic',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/photoacoustic`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

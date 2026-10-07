@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Rain Attenuation',
   description: 'Interactive Rain Attenuation calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Rain Attenuation',
-  description: 'Interactive Rain Attenuation calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Rain Attenuation',
   'Interactive Rain Attenuation calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/free-space-comms/rain-attenuation',
-  { category: 'Free Space Comms`,
-  `Interactive Rain Attenuation calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Rain Attenuation',
-  'Interactive Rain Attenuation calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/rain-attenuation',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/rain-attenuation`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

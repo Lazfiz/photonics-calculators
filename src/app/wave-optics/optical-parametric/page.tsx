@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'OPA / OPO Design',
   description: 'Optical parametric oscillator and amplifier design — tuning curves, thresholds, and gain bandwidth.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `OPA / OPO Design',
-  description: 'Optical parametric oscillator and amplifier design — tuning curves, thresholds, and gain bandwidth.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'OPA / OPO Design',
   'Optical parametric oscillator and amplifier design — tuning curves, thresholds, and gain bandwidth.',
   'https://photonics-calculators.vercel.app/wave-optics/optical-parametric',
-  { category: 'Wave Optics`,
-  `Optical parametric oscillator and amplifier design — tuning curves, thresholds, and gain bandwidth.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'OPA / OPO Design',
-  'Optical parametric oscillator and amplifier design — tuning curves, thresholds, and gain bandwidth.',
-  'https://photonics-calculators.vercel.app/wave-optics/optical-parametric',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/optical-parametric`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

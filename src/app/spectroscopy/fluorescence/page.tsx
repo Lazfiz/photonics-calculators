@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Fluorescence Lifetime',
   description: 'Exponential decay models for fluorescence. Single and bi-exponential fitting.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Fluorescence Lifetime',
-  description: 'Exponential decay models for fluorescence. Single and bi-exponential fitting.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Fluorescence Lifetime',
   'Exponential decay models for fluorescence. Single and bi-exponential fitting.',
   'https://photonics-calculators.vercel.app/spectroscopy/fluorescence',
-  { category: 'Spectroscopy`,
-  `Exponential decay models for fluorescence. Single and bi-exponential fitting.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Fluorescence Lifetime',
-  'Exponential decay models for fluorescence. Single and bi-exponential fitting.',
-  'https://photonics-calculators.vercel.app/spectroscopy/fluorescence',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/fluorescence`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

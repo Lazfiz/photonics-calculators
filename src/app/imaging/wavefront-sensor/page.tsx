@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Shack-Hartmann Wavefront Sensor Calculator',
   description: 'Design parameters for Shack-Hartmann wavefront sensors including spot size, sensitivity, and dynamic range.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Shack-Hartmann Wavefront Sensor Calculator',
-  description: 'Design parameters for Shack-Hartmann wavefront sensors including spot size, sensitivity, and dynamic range.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Shack-Hartmann Wavefront Sensor Calculator',
   'Design parameters for Shack-Hartmann wavefront sensors including spot size, sensitivity, and dynamic range.',
   'https://photonics-calculators.vercel.app/imaging/wavefront-sensor',
-  { category: 'Imaging`,
-  `Design parameters for Shack-Hartmann wavefront sensors including spot size, sensitivity, and dynamic range.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Shack-Hartmann Wavefront Sensor Calculator',
-  'Design parameters for Shack-Hartmann wavefront sensors including spot size, sensitivity, and dynamic range.',
-  'https://photonics-calculators.vercel.app/imaging/wavefront-sensor',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/wavefront-sensor`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

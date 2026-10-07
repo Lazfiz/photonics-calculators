@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Fluorescence Lifetime Calculator',
   description: 'Model single and bi-exponential fluorescence decay curves. Calculate intensity-weighted average lifetimes.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Fluorescence Lifetime Calculator',
-  description: 'Model single and bi-exponential fluorescence decay curves. Calculate intensity-weighted average lifetimes.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Fluorescence Lifetime Calculator',
   'Model single and bi-exponential fluorescence decay curves. Calculate intensity-weighted average lifetimes.',
   'https://photonics-calculators.vercel.app/spectroscopy/fluorescence-lifetime',
-  { category: 'Spectroscopy`,
-  `Model single and bi-exponential fluorescence decay curves. Calculate intensity-weighted average lifetimes.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Fluorescence Lifetime Calculator',
-  'Model single and bi-exponential fluorescence decay curves. Calculate intensity-weighted average lifetimes.',
-  'https://photonics-calculators.vercel.app/spectroscopy/fluorescence-lifetime',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/fluorescence-lifetime`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

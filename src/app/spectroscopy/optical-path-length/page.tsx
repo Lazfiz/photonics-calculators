@@ -7,29 +7,14 @@ export const metadata: Metadata = {
       title: 'Optical Path Length Calculator',
   description: 'OPL = n d N / cos() — effective path through a medium.',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Optical Path Length Calculator',
-  description: 'OPL = n d N / cos() — effective path through a medium.',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Optical Path Length Calculator',
   'OPL = n d N / cos() — effective path through a medium.',
   'https://photonics-calculators.vercel.app/spectroscopy/optical-path-length',
-  { category: 'Spectroscopy`,
-  `OPL = n d N / cos() — effective path through a medium.',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Optical Path Length Calculator',
-  'OPL = n d N / cos() — effective path through a medium.',
-  'https://photonics-calculators.vercel.app/spectroscopy/optical-path-length',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/optical-path-length`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Pulse Compression',
   description: 'Transform-limited pulse compression via chirp compensation.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Pulse Compression',
-  description: 'Transform-limited pulse compression via chirp compensation.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Pulse Compression',
   'Transform-limited pulse compression via chirp compensation.',
   'https://photonics-calculators.vercel.app/wave-optics/pulse-compression',
-  { category: 'Wave Optics`,
-  `Transform-limited pulse compression via chirp compensation.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Pulse Compression',
-  'Transform-limited pulse compression via chirp compensation.',
-  'https://photonics-calculators.vercel.app/wave-optics/pulse-compression',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/pulse-compression`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

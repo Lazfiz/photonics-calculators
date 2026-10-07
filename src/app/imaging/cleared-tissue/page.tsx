@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Cleared Tissue Imaging Calculator',
   description: 'Optical clearing tissue imaging: resolution, transmission, ballistic photon fraction, and RI matching.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Cleared Tissue Imaging Calculator',
-  description: 'Optical clearing tissue imaging: resolution, transmission, ballistic photon fraction, and RI matching.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Cleared Tissue Imaging Calculator',
   'Optical clearing tissue imaging: resolution, transmission, ballistic photon fraction, and RI matching.',
   'https://photonics-calculators.vercel.app/imaging/cleared-tissue',
-  { category: 'Imaging`,
-  `Optical clearing tissue imaging: resolution, transmission, ballistic photon fraction, and RI matching.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Cleared Tissue Imaging Calculator',
-  'Optical clearing tissue imaging: resolution, transmission, ballistic photon fraction, and RI matching.',
-  'https://photonics-calculators.vercel.app/imaging/cleared-tissue',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/cleared-tissue`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

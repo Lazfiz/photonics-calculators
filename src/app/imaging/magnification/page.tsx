@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Total Magnification Calculator',
   description: 'Calculate total system magnification from objective, tube lens, and camera adapter lens.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Total Magnification Calculator',
-  description: 'Calculate total system magnification from objective, tube lens, and camera adapter lens.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Total Magnification Calculator',
   'Calculate total system magnification from objective, tube lens, and camera adapter lens.',
   'https://photonics-calculators.vercel.app/imaging/magnification',
-  { category: 'Imaging`,
-  `Calculate total system magnification from objective, tube lens, and camera adapter lens.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Total Magnification Calculator',
-  'Calculate total system magnification from objective, tube lens, and camera adapter lens.',
-  'https://photonics-calculators.vercel.app/imaging/magnification',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/magnification`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

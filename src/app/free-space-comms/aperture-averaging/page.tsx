@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Aperture Averaging',
   description: 'Interactive Aperture Averaging calculator for photonics and optical engineering.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Aperture Averaging',
-  description: 'Interactive Aperture Averaging calculator for photonics and optical engineering.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Aperture Averaging',
   'Interactive Aperture Averaging calculator for photonics and optical engineering.',
   'https://photonics-calculators.vercel.app/free-space-comms/aperture-averaging',
-  { category: 'Free Space Comms`,
-  `Interactive Aperture Averaging calculator for photonics and optical engineering.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Aperture Averaging',
-  'Interactive Aperture Averaging calculator for photonics and optical engineering.',
-  'https://photonics-calculators.vercel.app/free-space-comms/aperture-averaging',
-  { category: 'Free Space Comms`,
-  `https://photonics-calculators.vercel.app/free-space-comms/aperture-averaging`,
-  { category: `Free Space Comms` }
+  { category: 'Free Space Comms' }
 );
+
 export default function Page() {
   return (
     <>

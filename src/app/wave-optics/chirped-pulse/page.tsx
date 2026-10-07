@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Chirped Pulse Amplification (CPA)',
   description: 'Stretch, amplify, compress — bypassing damage thresholds.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Chirped Pulse Amplification (CPA)',
-  description: 'Stretch, amplify, compress — bypassing damage thresholds.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Chirped Pulse Amplification (CPA)',
   'Stretch, amplify, compress — bypassing damage thresholds.',
   'https://photonics-calculators.vercel.app/wave-optics/chirped-pulse',
-  { category: 'Wave Optics`,
-  `Stretch, amplify, compress — bypassing damage thresholds.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Chirped Pulse Amplification (CPA)',
-  'Stretch, amplify, compress — bypassing damage thresholds.',
-  'https://photonics-calculators.vercel.app/wave-optics/chirped-pulse',
-  { category: 'Wave Optics`,
-  `https://photonics-calculators.vercel.app/wave-optics/chirped-pulse`,
-  { category: `Wave Optics` }
+  { category: 'Wave Optics' }
 );
+
 export default function Page() {
   return (
     <>

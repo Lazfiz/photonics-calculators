@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Köhler Illumination Calculator',
   description: 'Design parameters for Köhler illumination including conjugate planes, fill factor, and field of view.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Köhler Illumination Calculator',
-  description: 'Design parameters for Köhler illumination including conjugate planes, fill factor, and field of view.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Köhler Illumination Calculator',
   'Design parameters for Köhler illumination including conjugate planes, fill factor, and field of view.',
   'https://photonics-calculators.vercel.app/imaging/illumination',
-  { category: 'Imaging`,
-  `Design parameters for Köhler illumination including conjugate planes, fill factor, and field of view.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Köhler Illumination Calculator',
-  'Design parameters for Köhler illumination including conjugate planes, fill factor, and field of view.',
-  'https://photonics-calculators.vercel.app/imaging/illumination',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/illumination`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

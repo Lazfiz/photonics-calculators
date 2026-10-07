@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Stokes Parameters',
   description: 'Analyze polarization state from Stokes vector components with Poincaré-sphere visualization.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Stokes Parameters',
-  description: 'Analyze polarization state from Stokes vector components with Poincaré-sphere visualization.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Stokes Parameters',
   'Analyze polarization state from Stokes vector components with Poincaré-sphere visualization.',
   'https://photonics-calculators.vercel.app/polarization/stokes',
-  { category: 'Polarization`,
-  `Analyze polarization state from Stokes vector components with Poincaré-sphere visualization.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Stokes Parameters',
-  'Analyze polarization state from Stokes vector components with Poincaré-sphere visualization.',
-  'https://photonics-calculators.vercel.app/polarization/stokes',
-  { category: 'Polarization`,
-  `https://photonics-calculators.vercel.app/polarization/stokes`,
-  { category: `Polarization` }
+  { category: 'Polarization' }
 );
+
 export default function Page() {
   return (
     <>

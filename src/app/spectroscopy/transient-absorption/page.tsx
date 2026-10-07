@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Transient Absorption Spectroscopy',
   description: 'A spectra vs delay time. Decompose into GSB, ESA, and SE contributions across the probe range.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Transient Absorption Spectroscopy',
-  description: 'A spectra vs delay time. Decompose into GSB, ESA, and SE contributions across the probe range.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Transient Absorption Spectroscopy',
   'A spectra vs delay time. Decompose into GSB, ESA, and SE contributions across the probe range.',
   'https://photonics-calculators.vercel.app/spectroscopy/transient-absorption',
-  { category: 'Spectroscopy`,
-  `A spectra vs delay time. Decompose into GSB, ESA, and SE contributions across the probe range.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Transient Absorption Spectroscopy',
-  'A spectra vs delay time. Decompose into GSB, ESA, and SE contributions across the probe range.',
-  'https://photonics-calculators.vercel.app/spectroscopy/transient-absorption',
-  { category: 'Spectroscopy`,
-  `https://photonics-calculators.vercel.app/spectroscopy/transient-absorption`,
-  { category: `Spectroscopy` }
+  { category: 'Spectroscopy' }
 );
+
 export default function Page() {
   return (
     <>

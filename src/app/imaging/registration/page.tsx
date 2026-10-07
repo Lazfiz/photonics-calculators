@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Image Registration',
   description: 'Calculate transformation parameters, registration accuracy, and evaluate different registration approaches.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Image Registration',
-  description: 'Calculate transformation parameters, registration accuracy, and evaluate different registration approaches.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Image Registration',
   'Calculate transformation parameters, registration accuracy, and evaluate different registration approaches.',
   'https://photonics-calculators.vercel.app/imaging/registration',
-  { category: 'Imaging`,
-  `Calculate transformation parameters, registration accuracy, and evaluate different registration approaches.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Image Registration',
-  'Calculate transformation parameters, registration accuracy, and evaluate different registration approaches.',
-  'https://photonics-calculators.vercel.app/imaging/registration',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/registration`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

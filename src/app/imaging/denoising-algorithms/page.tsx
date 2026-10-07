@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Denoising Algorithms',
   description: 'Compare denoising methods: noise reduction, detail preservation, and SNR improvement tradeoffs.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Denoising Algorithms',
-  description: 'Compare denoising methods: noise reduction, detail preservation, and SNR improvement tradeoffs.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Denoising Algorithms',
   'Compare denoising methods: noise reduction, detail preservation, and SNR improvement tradeoffs.',
   'https://photonics-calculators.vercel.app/imaging/denoising-algorithms',
-  { category: 'Imaging`,
-  `Compare denoising methods: noise reduction, detail preservation, and SNR improvement tradeoffs.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Denoising Algorithms',
-  'Compare denoising methods: noise reduction, detail preservation, and SNR improvement tradeoffs.',
-  'https://photonics-calculators.vercel.app/imaging/denoising-algorithms',
-  { category: 'Imaging`,
-  `https://photonics-calculators.vercel.app/imaging/denoising-algorithms`,
-  { category: `Imaging` }
+  { category: 'Imaging' }
 );
+
 export default function Page() {
   return (
     <>

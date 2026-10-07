@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Bragg Reflector',
   description: 'Dielectric distributed Bragg reflector — reflectance spectrum and stopband design.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Bragg Reflector',
-  description: 'Dielectric distributed Bragg reflector — reflectance spectrum and stopband design.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Bragg Reflector',
   'Dielectric distributed Bragg reflector — reflectance spectrum and stopband design.',
   'https://photonics-calculators.vercel.app/thin-film/bragg-reflector',
-  { category: 'Thin Film`,
-  `Dielectric distributed Bragg reflector — reflectance spectrum and stopband design.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Bragg Reflector',
-  'Dielectric distributed Bragg reflector — reflectance spectrum and stopband design.',
-  'https://photonics-calculators.vercel.app/thin-film/bragg-reflector',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/bragg-reflector`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

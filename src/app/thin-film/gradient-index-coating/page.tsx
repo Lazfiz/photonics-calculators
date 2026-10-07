@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Gradient Index Coating',
   description: 'Gradient-index (GRIN) antireflection coatings use a continuously varying refractive index to suppress Fresnel reflections over a broad bandwidth.'
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Gradient Index Coating',
-  description: 'Gradient-index (GRIN) antireflection coatings use a continuously varying refractive index to suppress Fresnel reflections over a broad bandwidth.'
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Gradient Index Coating',
   'Gradient-index (GRIN) antireflection coatings use a continuously varying refractive index to suppress Fresnel reflections over a broad bandwidth.',
   'https://photonics-calculators.vercel.app/thin-film/gradient-index-coating',
-  { category: 'Thin Film`,
-  `Gradient-index (GRIN) antireflection coatings use a continuously varying refractive index to suppress Fresnel reflections over a broad bandwidth.'
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Gradient Index Coating',
-  'Gradient-index (GRIN) antireflection coatings use a continuously varying refractive index to suppress Fresnel reflections over a broad bandwidth.',
-  'https://photonics-calculators.vercel.app/thin-film/gradient-index-coating',
-  { category: 'Thin Film`,
-  `https://photonics-calculators.vercel.app/thin-film/gradient-index-coating`,
-  { category: `Thin Film` }
+  { category: 'Thin Film' }
 );
+
 export default function Page() {
   return (
     <>

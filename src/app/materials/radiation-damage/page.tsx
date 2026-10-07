@@ -7,29 +7,14 @@ export const metadata: Metadata = {
     title: 'Radiation Damage Effects',
   description: 'Radiation-induced absorption and transmission loss in optical materials',
 };
-const jsonLd = generateCalculatorJsonLd(
-  `Radiation Damage Effects',
-  description: 'Radiation-induced absorption and transmission loss in optical materials',
-};
-
 
 const jsonLd = generateCalculatorJsonLd(
   'Radiation Damage Effects',
   'Radiation-induced absorption and transmission loss in optical materials',
   'https://photonics-calculators.vercel.app/materials/radiation-damage',
-  { category: 'Materials`,
-  `Radiation-induced absorption and transmission loss in optical materials',
-};
-
-
-const jsonLd = generateCalculatorJsonLd(
-  'Radiation Damage Effects',
-  'Radiation-induced absorption and transmission loss in optical materials',
-  'https://photonics-calculators.vercel.app/materials/radiation-damage',
-  { category: 'Materials`,
-  `https://photonics-calculators.vercel.app/materials/radiation-damage`,
-  { category: `Materials` }
+  { category: 'Materials' }
 );
+
 export default function Page() {
   return (
     <>
