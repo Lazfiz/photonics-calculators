@@ -83,7 +83,7 @@ export default function OpticalPathLengthPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono text-blue-400">OPL = n · d · N / cos(θ)</p>
         <p className="text-gray-300 text-sm font-mono text-green-400">Δt = OPL / c</p>
-        <p className="text-gray-500 text-xs mt-2">n = refractive index, d = physical length, N = number of passes, θ = external angle of incidence (converted to internal via Snell's law).</p>
+        <p className="text-gray-500 text-xs mt-2">n = refractive index, d = physical length, N = number of passes, θ = external angle of incidence (converted to internal via Snell’s law).</p>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4">

@@ -76,7 +76,7 @@ export default function FiberBraggGratingCalculator() {
 
     for (let w = center - bw * 2; w <= center + bw * 2; w += 0.01) {
       wavelengths.push(w);
-      let deltaLambda = w - center;
+      const deltaLambda = w - center;
 
       // δL = 2π·n_eff·L·(1/λ - 1/λ_B) — dimensionless detuning
       const deltaBeta = 2 * Math.PI * effectiveIndex * gratingLength * 1e6 * (1 / w - 1 / braggWavelength);
