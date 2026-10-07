@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function GradientIndexPage() {
   const [nSub, setNSub] = useURLState("nSub", 1.52);
   const [nInc, setNInc] = useURLState("nInc", 1.0);
@@ -19,33 +21,23 @@ export default function GradientIndexPage() {
     const wls = Array.from({ length: N }, (_, i) => designWl * 0.5 + i * designWl / N);
     const numLayers = 50;
 
-    const R = wls.map(wl => {
-      let M = [[1, 0], [0, 1]] as [number, number][];
-
-      for (let j = 0; j < numLayers; j++) {
-        const frac = j / numLayers;
-        let nLayer: number;
-        if (profile === "linear") {
-          nLayer = nSub + (nSurface - nSub) * frac;
-        } else if (profile === "cosine") {
-          nLayer = nSub + (nSurface - nSub) * (1 - Math.cos(Math.PI * frac)) / 2;
-        } else {
-          nLayer = nSub * Math.exp(frac * Math.log(nSurface / nSub));
-        }
-        const dLayer = thickness / numLayers;
-        const delta = (2 * Math.PI * nLayer * dLayer) / wl;
-        const c = Math.cos(delta), s = Math.sin(delta);
-        const L: [number, number][] = [[c, -s / nLayer], [s * nLayer, c]];
-        M = [
-          [M[0][0]*L[0][0]+M[0][1]*L[1][0], M[0][0]*L[0][1]+M[0][1]*L[1][1]],
-          [M[1][0]*L[0][0]+M[1][1]*L[1][0], M[1][0]*L[0][1]+M[1][1]*L[1][1]],
-        ];
+    // Staircase of homogeneous sublayers; sublayer j starts at height j/numLayers above the substrate.
+    const fromSubstrate = Array.from({ length: numLayers }, (_, j) => {
+      const frac = j / numLayers;
+      let nLayer: number;
+      if (profile === "linear") {
+        nLayer = nSub + (nSurface - nSub) * frac;
+      } else if (profile === "cosine") {
+        nLayer = nSub + (nSurface - nSub) * (1 - Math.cos(Math.PI * frac)) / 2;
+      } else {
+        nLayer = nSub * Math.exp(frac * Math.log(nSurface / nSub));
       }
-
-      const num = M[0][0]*nSub + M[0][1]*nSub*nInc - M[1][0] - M[1][1]*nInc;
-      const den = M[0][0]*nSub + M[0][1]*nSub*nInc + M[1][0] + M[1][1]*nInc;
-      return (num / den) ** 2;
+      return { n: nLayer, thickness: (thickness / numLayers) * 1e-9 };
     });
+    const R = reflectanceSpectrum(
+      { incident: nInc, layers: fromSubstrate.reverse(), substrate: { n: nSub } },
+      wls.map((wl) => wl * 1e-9),
+    );
 
     // Index profile for plotting
     const depths = Array.from({ length: 101 }, (_, i) => (thickness * i) / 100);

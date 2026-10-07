@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function WideBandpassPage() {
   const [nH, setNH] = useURLState("nH", 2.35);
   const [nL, setNL] = useURLState("nL", 1.45);
@@ -19,35 +21,12 @@ export default function WideBandpassPage() {
     const N = 500;
     const wls = Array.from({ length: N }, (_, i) => 300 + i * 800 / N);
 
+    // Quarter-wave stacks at cutWl (nm), listed from the air side:
+    // long-pass air | (LH)^p | sub (H on the substrate), short-pass air | (HL)^p | sub.
     const computeStack = (cutWl: number, type: "sp" | "lp") => {
-      return wls.map(wl => {
-        const dH = cutWl / (4 * nH);
-        const dL = cutWl / (4 * nL);
-        let M = [[1, 0], [0, 1]] as [number, number][];
-
-        const addLayer = (n: number, d: number) => {
-          const delta = (2 * Math.PI * n * d) / wl;
-          const c = Math.cos(delta), s = Math.sin(delta);
-          const L: [number, number][] = [[c, -s / n], [s * n, c]];
-          M = [
-            [M[0][0]*L[0][0]+M[0][1]*L[1][0], M[0][0]*L[0][1]+M[0][1]*L[1][1]],
-            [M[1][0]*L[0][0]+M[1][1]*L[1][0], M[1][0]*L[0][1]+M[1][1]*L[1][1]],
-          ];
-        };
-
-        if (type === "lp") {
-          // Long-pass: H/L/H/L... starting with H
-          for (let p = 0; p < pairs; p++) { addLayer(nH, dH); addLayer(nL, dL); }
-        } else {
-          // Short-pass: L/H/L/H... starting with L
-          for (let p = 0; p < pairs; p++) { addLayer(nL, dL); addLayer(nH, dH); }
-        }
-
-        const nInc = 1.0;
-        const num = M[0][0]*nSub + M[0][1]*nSub*nInc - M[1][0] - M[1][1]*nInc;
-        const den = M[0][0]*nSub + M[0][1]*nSub*nInc + M[1][0] + M[1][1]*nInc;
-        return (num / den) ** 2;
-      });
+      const indices = Array.from({ length: 2 * pairs }, (_, j) => ((j % 2 === 0) === (type === "lp") ? nL : nH));
+      const layers = quarterWaveLayers(indices, cutWl * 1e-9);
+      return reflectanceSpectrum({ incident: 1, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
     };
 
     const Rsp = computeStack(shortPassWl, "sp");
