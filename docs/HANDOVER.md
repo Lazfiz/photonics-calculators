@@ -19,7 +19,7 @@
   - The Vercel connector was reconnected with the team scope.
   - `main` is protected by the ruleset "Protect main": a PR and `check-and-build` are required, and force-push and deletion are blocked.
   - The z.ai backup file was deleted.
-- **Still open in 0.1 (user):** revoke the z.ai key in its console. Optional: Defender exclusion.
+- **0.1 is done.** The z.ai key no longer works (the plan expired). The Defender exclusion is optional and wasn't done.
 
 ## Next actions
 1. Nested-label codemod (ROADMAP "Found during Phase 1"): 138 `<label>` cards in 53 files wrap a `ValidatedNumberInput`.

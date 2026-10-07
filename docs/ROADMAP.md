@@ -87,9 +87,9 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 - `useURLState` only rejects non-finite URL values. A crafted link (e.g. `?na=0`) still reaches the physics unclamped, because the inputs clamp only what the user types. Guard domains in the Phase 2 physics modules, or give `useURLState` an optional range.
 
 ## Phase 0 — safe, building, Claude-native (1 session)
-- [ ] 0.1 **User, manual:**
+- [x] 0.1 **User, manual:** (the Defender exclusion is optional and wasn't done)
   - [x] Revoke the GitHub PAT, then `git remote set-url origin https://github.com/Lazfiz/photonics-calculators.git` (use Git Credential Manager). **Done 2026-10-07** (session 8). Pushes use `gh`'s keyring login: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push …`.
-  - [ ] Delete `~/.claude/settings-glm-backup.json` (plaintext z.ai key); revoke that key if it's unused. File deleted 2026-10-07 (session 8). Open: the user revokes the key in the z.ai console.
+  - [x] Delete `~/.claude/settings-glm-backup.json` (plaintext z.ai key); revoke that key if it's unused. **Done 2026-10-07:** the file is deleted, and the key no longer works because the z.ai plan expired.
   - [x] Re-authenticate the Vercel connector for scope `mariusrut-8463s-projects` (or `vercel login`). **Done 2026-10-07** (session 8, with the team scope granted). `get_access_to_vercel_url` gives a share link that opens protected previews.
   - [ ] Optional: add a Defender exclusion for `C:\dev`.
 - [x] 0.2 **Environment:**
