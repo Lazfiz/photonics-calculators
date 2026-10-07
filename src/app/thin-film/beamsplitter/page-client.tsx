@@ -6,36 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: number, wavelengths: number[]) {
-  const R: number[] = [];
-  for (const wl of wavelengths) {
-    let m11r = 1, m11i = 0, m12r = 0, m12i = 0;
-    let m21r = 0, m21i = 0, m22r = 1, m22i = 0;
-    for (const layer of layers) {
-      const delta = (2 * Math.PI * layer.n * layer.d) / wl;
-      const cosD = Math.cos(delta), sinD = Math.sin(delta), n = layer.n;
-      // Characteristic matrix: [[cos δ, -i sin δ/n], [-i n sin δ, cos δ]]
-      // L12 = (0, -sinD/n), L21 = (0, -n·sinD)
-      // Complex multiply M_new = M · L:
-      const new11r = m11r * cosD + m12i * n * sinD;
-      const new11i = m11i * cosD - m12r * n * sinD;
-      const new12r = m11i * sinD / n + m12r * cosD;
-      const new12i = -m11r * sinD / n + m12i * cosD;
-      const new21r = m21r * cosD + m22i * n * sinD;
-      const new21i = m21i * cosD - m22r * n * sinD;
-      const new22r = m21i * sinD / n + m22r * cosD;
-      const new22i = -m21r * sinD / n + m22i * cosD;
-      m11r = new11r; m11i = new11i; m12r = new12r; m12i = new12i;
-      m21r = new21r; m21i = new21i; m22r = new22r; m22i = new22i;
-    }
-    const numR = m11r * nInc + m12r * nInc * nSub - m21r - m22r * nSub;
-    const numI = m11i * nInc + m12i * nInc * nSub - m21i - m22i * nSub;
-    const denR = m11r * nInc + m12r * nInc * nSub + m21r + m22r * nSub;
-    const denI = m11i * nInc + m12i * nInc * nSub + m21i + m22i * nSub;
-    R.push((numR * numR + numI * numI) / (denR * denR + denI * denI));
-  }
-  return R;
-}
+import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
 
 export default function BeamsplitterPage() {
   const [nH, setNH] = useURLState("nH", 2.35);
@@ -47,34 +18,18 @@ export default function BeamsplitterPage() {
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 600 / 500);
-
-    // For a 50/50 beamsplitter, find the number of QWL pairs to hit target R
-    // Single layer Fresnel: R = ((nH-nL)/(nH+nL))^2 for one interface
-    // We use a single half-wave layer or specific stack
-    // Simpler: use a single non-QWL layer of variable thickness
-    // Actually, let's do a single dielectric layer approach
-    // R = (r1^2 + r2^2 + 2*r1*r2*cos(2δ)) / (1 + r1^2*r2^2 + 2*r1*r2*cos(2δ))
-    // where r1 = (nInc - nFilm)/(nInc + nFilm), r2 = (nFilm - nSub)/(nFilm + nSub)
+    const lambdas = wls.map((wl) => wl * 1e-9);
+    const designLambda = designWl * 1e-9;
 
     const traces: any[] = [];
 
-    // Multiple nFilm values for comparison
+    // Single quarter-wave layer for several film indices
     const nFilms = [1.7, 2.0, 2.35, 2.7];
     const colors = ["#f87171", "#fbbf24", "#34d399", "#60a5fa"];
 
     for (let fi = 0; fi < nFilms.length; fi++) {
       const nF = nFilms[fi];
-      const d = designWl / (4 * nF);
-      const r1 = (nInc - nF) / (nInc + nF);
-      const r2 = (nF - nSub) / (nF + nSub);
-
-      const R = wls.map(wl => {
-        const delta = (2 * Math.PI * nF * d) / wl;
-        const cos2d = Math.cos(2 * delta);
-        const num = r1 * r1 + r2 * r2 + 2 * r1 * r2 * cos2d;
-        const den = 1 + r1 * r1 * r2 * r2 + 2 * r1 * r2 * cos2d;
-        return num / den;
-      });
+      const R = reflectanceSpectrum({ incident: nInc, layers: quarterWaveLayers([nF], designLambda), substrate: { n: nSub } }, lambdas);
 
       traces.push({
         x: wls, y: R, type: "scatter" as const, mode: "lines" as const,
@@ -85,16 +40,12 @@ export default function BeamsplitterPage() {
 
     // Also show multilayer approach: (HL)^N with varying N
     const Ns = [1, 2, 3];
-    const dH = designWl / (4 * nH);
-    const dL = designWl / (4 * nL);
     const mlColors = ["#a78bfa", "#fb923c", "#f472b6"];
 
     for (let ni = 0; ni < Ns.length; ni++) {
-      const layers: { n: number; d: number }[] = [];
-      for (let j = 0; j < Ns[ni] * 2; j++) {
-        layers.push({ n: j % 2 === 0 ? nH : nL, d: j % 2 === 0 ? dH : dL });
-      }
-      const R = computeRT(layers, nInc, nSub, wls);
+      const indices = Array.from({ length: Ns[ni] * 2 }, (_, j) => (j % 2 === 0 ? nH : nL));
+      const layers = quarterWaveLayers(indices, designLambda);
+      const R = reflectanceSpectrum({ incident: nInc, layers, substrate: { n: nSub } }, lambdas);
       traces.push({
         x: wls, y: R, type: "scatter" as const, mode: "lines" as const,
         name: `(HL)^${Ns[ni]}`,

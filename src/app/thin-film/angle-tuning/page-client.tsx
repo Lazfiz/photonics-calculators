@@ -6,51 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: number, wavelengths: number[], angleDeg: number, pol: "TE" | "TM") {
-  const R: number[] = [];
-  const thetaInc = angleDeg * Math.PI / 180;
-
-  for (const wl of wavelengths) {
-    let m11r = 1, m11i = 0, m12r = 0, m12i = 0;
-    let m21r = 0, m21i = 0, m22r = 1, m22i = 0;
-
-    for (const layer of layers) {
-      const sinTheta = nInc * Math.sin(thetaInc) / layer.n;
-      const cosTheta = Math.sqrt(Math.max(0, 1 - sinTheta * sinTheta));
-      const nEff = pol === "TE" ? layer.n * cosTheta : layer.n / Math.max(cosTheta, 1e-10);
-
-      const delta = (2 * Math.PI * layer.n * cosTheta * layer.d) / wl;
-      const cosD = Math.cos(delta), sinD = Math.sin(delta);
-      const eta = nEff; // optical admittance
-
-      // Characteristic matrix: [[cos δ, -i sin δ/η], [-i η sin δ, cos δ]]
-      // L12 = (0, -sinD/η), L21 = (0, -η·sinD)
-      // Complex multiply M_new = M · L:
-      const new11r = m11r * cosD + m12i * eta * sinD;
-      const new11i = m11i * cosD - m12r * eta * sinD;
-      const new12r = m11i * sinD / eta + m12r * cosD;
-      const new12i = -m11r * sinD / eta + m12i * cosD;
-      const new21r = m21r * cosD + m22i * eta * sinD;
-      const new21i = m21i * cosD - m22r * eta * sinD;
-      const new22r = m21i * sinD / eta + m22r * cosD;
-      const new22i = -m21r * sinD / eta + m22i * cosD;
-      m11r = new11r; m11i = new11i; m12r = new12r; m12i = new12i;
-      m21r = new21r; m21i = new21i; m22r = new22r; m22i = new22i;
-    }
-
-    const sinThetaSub = nInc * Math.sin(thetaInc) / nSub;
-    const cosThetaSub = Math.sqrt(Math.max(0, 1 - sinThetaSub * sinThetaSub));
-    const nEffSub = pol === "TE" ? nSub * cosThetaSub : nSub / Math.max(cosThetaSub, 1e-10);
-    const nEffInc = pol === "TE" ? nInc * Math.cos(thetaInc) : nInc / Math.max(Math.cos(thetaInc), 1e-10);
-
-    const numR = m11r * nEffInc + m12r * nEffInc * nEffSub - m21r - m22r * nEffSub;
-    const numI = m11i * nEffInc + m12i * nEffInc * nEffSub - m21i - m22i * nEffSub;
-    const denR = m11r * nEffInc + m12r * nEffInc * nEffSub + m21r + m22r * nEffSub;
-    const denI = m11i * nEffInc + m12i * nEffInc * nEffSub + m21i + m22i * nEffSub;
-    R.push((numR * numR + numI * numI) / (denR * denR + denI * denI));
-  }
-  return R;
-}
+import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
 
 export default function AngleTuningPage() {
   const [nH, setNH] = useURLState("nH", 2.35);
@@ -62,21 +18,18 @@ export default function AngleTuningPage() {
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 600 / 500);
-    const dH = designWl / (4 * nH);
-    const dL = designWl / (4 * nL);
-
-    const layers: { n: number; d: number }[] = [];
-    for (let j = 0; j < numPairs * 2; j++) {
-      layers.push({ n: j % 2 === 0 ? nH : nL, d: j % 2 === 0 ? dH : dL });
-    }
+    const lambdas = wls.map((wl) => wl * 1e-9);
+    const indices = Array.from({ length: numPairs * 2 }, (_, j) => (j % 2 === 0 ? nH : nL));
+    const stack = { incident: nInc, layers: quarterWaveLayers(indices, designWl * 1e-9), substrate: { n: nSub } };
 
     const traces: any[] = [];
     const angles = [0, 15, 30, 45];
     const angleColors = ["#60a5fa", "#34d399", "#fbbf24", "#f87171"];
 
     for (let ai = 0; ai < angles.length; ai++) {
-      const RTE = computeRT(layers, nInc, nSub, wls, angles[ai], "TE");
-      const RTM = computeRT(layers, nInc, nSub, wls, angles[ai], "TM");
+      const angle = angles[ai] * Math.PI / 180;
+      const RTE = reflectanceSpectrum(stack, lambdas, angle, "s");
+      const RTM = reflectanceSpectrum(stack, lambdas, angle, "p");
 
       traces.push({
         x: wls, y: RTE, type: "scatter" as const, mode: "lines" as const,
