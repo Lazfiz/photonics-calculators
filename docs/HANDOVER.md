@@ -1,47 +1,65 @@
-# Handover — 2026-10-07 (session 2 → session 3)
+# Handover — 2026-10-07 (session 3 → session 4)
 
-**Start here:** read this file, then `docs/ROADMAP.md`. Phase 0 is done locally. The only steps left are the push and ship, and they're blocked on the user's manual step 0.1. After that comes Phase 1.
+**Start here:** read this file, then `docs/ROADMAP.md`. Phase 0 is done but not pushed: the user's manual step 0.1 is still open.
+Phase 1, item 1 (shared math + BER) is done on `phase-1`. Next: the Phase 1 item on `use-url-state` and the number inputs.
 
 ## State
-- Branch `phase-0` is 5 commits ahead of `main` (`0749eb58`). **Not pushed**: the user chose to skip the push this session because the PAT is still in the `origin` URL.
-  - `60181268` fix(build): 5 parse errors, 54 hidden type errors and 4 prerender TDZ crashes
-  - `2fdda432` chore: Claude Code setup (CLAUDE.md, rules, skills, agents, settings, hook) and cleanup
-  - `a34ec2a6` fix(mode-matching): conjugate sign in the chart overlap
-  - `5b12ad97` ci: `npm run check`, `.github/workflows/ci.yml`, ESLint baseline
-  - then a docs commit (ROADMAP and this handover)
-- Local gates are green: `check` has 0 errors (about 1,446 warnings), tests pass 21/21, and `build` prerenders 541/541 static pages. The built `/detectors/channel-photomultiplier` contains "order-of-magnitude upper bound".
-- `node_modules` is now a Windows install (`npm ci`, npm 12, Node 24.21). Nothing is running in the background.
+- **`phase-0`**: 5 commits ahead of `main` (`0749eb58`), **not pushed**.
+  - At the start of session 3 the `origin` URL still embedded a credential.
+  - The user chose to skip the push again and start Phase 1.
+- **`phase-1`** is stacked on `phase-0` and also not pushed:
+  - `873acc47` feat(physics): `src/physics/math.ts` (erf/erfc/Q/Φ, lnFactorial, Poisson pmf/cdf/sf) + `tests/math.test.ts`
+  - `3c7c4141` fix(ber): exact Poisson photon-counting model (`src/physics/free-space-comms/ber.ts`) + `tests/ber.test.ts`
+  - `804ea9b5` fix(bpsk-qpsk): Gray QPSK BER = BPSK, SER shown separately (`.../bpsk-qpsk.ts`) + `tests/bpsk-qpsk.test.ts`
+  - `eec3dc30` refactor: scintillation, diversity-reception and fade-probability use the shared `erfc`
+  - then a docs commit (ROADMAP ticks/findings and this file)
+- **Gates on `phase-1`:**
+  - `check`: 0 errors, 1,442 warnings, 33/33 tests.
+  - `build`: see the last line of this section.
+- **Dev SSR check:**
+  - `/free-space-comms/ber` (defaults 100 photons/bit, 100 noise counts): OOK BER 1.00e-13, threshold ≥ 183, 77.7 photons/bit for 1e-9.
+  - `/bpsk-qpsk`: 3.87e-6 at 10 dB.
+  - **Charts not checked visually:** the Chrome extension wasn't connected.
+- Build: `npm run build` green on `phase-1`, prerendering 541/541. The built `ber.html` contains "1.00e-13".
 
 ## Next actions
-1. Ask the user whether 0.1 is done: PAT revoked, remote reset, GLM backup deleted, Vercel re-authenticated.
-   - Verify without printing anything: `git remote get-url origin | grep -c '@'` must output `0`.
-   - `git remote -v` and `git remote get-url` are denied in settings because they would print the PAT.
-2. 0.6: `git push -u origin phase-0`, open a PR (`gh pr create`), and wait for CI (about 15 min) and the Vercel preview.
-   - Use `/verify` on the preview URL: channel-photomultiplier text, and check that the JSON-LD parses.
-   - Then merge and verify the live site.
-3. User: protect `main` so CI must pass (0.5).
-4. Update the memory pointer, suggest `/clear`, and start Phase 1 (BER first).
+1. Ask the user whether 0.1 is done.
+   - Check without printing the URL: `u=$(git config --get remote.origin.url); case "$u" in https://*@*) echo with-credential;; *) echo clean;; esac`
+   - `git remote -v` / `get-url` are denied.
+2. If it's done, ship (0.6):
+   - Push `phase-0`, open a PR and merge after CI and the preview.
+   - Then push `phase-1` and open a PR against `main`.
+   - On the preview, check the ber and bpsk-qpsk charts: log₁₀ axis, dotted no-noise curves.
+3. Phase 1, item 2: the `use-url-state` reset bug, plus clamp-on-blur in `ValidatedNumberInput` and `InputSlider`.
+   - These are shared components (488 pages), so verify on 2–3 calculators. Read `.claude/rules/ui.md` first.
+4. Later Phase 1 items: the JSON-LD codemod and placeholder descriptions, the shell/breadcrumb, and the new `label="{label}"` codemod item (40 files).
+
+## Physics decisions made this session
+- **BER model: exact Poisson photon counting.** Inputs are detected photons per bit (averaged over 0s and 1s) and noise counts per detector per slot.
+  - OOK uses the ML threshold ⌊2n̄/ln(1+2n̄/n_b)⌋+1. DPSK uses two port counters with random tie-breaks.
+  - Noiseless limits: 10 / 20 photons/bit at 1e-9 (Caplan 2008, doi:10.1007/978-0-387-28677-8_4).
+  - Checked against brute-force Python sums to 1e-13. Values below 1e-300 are returned as 0 (Chernoff bound short-circuit).
+- The `math.ts` erfc switches from series to continued fraction at x = 2. Relative error ≤ 2e-13 vs CPython.
 
 ## Non-obvious facts
-- **Timings on this disk:**
-  - full `tsc` takes about 4 min
-  - `npm run build` takes about 6–10 min (2.3 min compile, 51 s TypeScript, then prerender)
-  - `npm run check` takes about 6 min
+- **Timings on this disk:** `tsc` ≈ 4 min, `check` ≈ 6 min, `build` ≈ 6–10 min. Use `run_in_background` and read only the tail.
+- **Python 3 is on PATH:** `math.erfc` and `math.lgamma` are handy for golden reference values.
+- **Don't add, delete or rename files while `check` runs.** ESLint lists files up front and crashes with ENOENT.
+- **Dev server cleanup:**
+  - `TaskStop` on `npm run dev` leaves `node …/start-server.js` listening. Find it with `netstat -ano | grep :<port>` and kill that PID.
+  - `next dev` rewrites `next-env.d.ts` and `src/generated/search-index.json`; `build` rewrites only the search index. Restore them with `git checkout -- <path>`, and never commit them.
+- **SimpleChart quirks:**
+  - It floors log axes at 1e-10, so plot log₁₀ values on a linear axis until Phase 3.
+  - `Number(null)` becomes 0 there, so trim arrays instead of inserting nulls.
+- **Committing:** `git commit -F msg -- <paths>` commits only those paths, but untracked files need `git add` first.
+- **Agents not offered:** `.claude/agents/implementer.md` and `physics-reviewer.md` exist, but this session didn't list them as Agent types. Check with `/agents` before planning to delegate.
+- **TDZ errors** that `tsc` misses show up in `next build`. Sweep with `@typescript-eslint/no-use-before-define` (`variables: true`, `functions: false`). The `materials/*` hits are safe.
+- **ESLint baseline:** 4 rules are set to `warn`. Phase 1 promotes purity and set-state-in-effect back to error; Phase 2 does memoization and any.
+- **`ion-assisted-deposition` is deliberately unfixed** (Phase 4 rewrite). See ROADMAP.
+- **Commit hook:** it runs `node .claude/hooks/block-secrets.mjs` on Bash calls and blocks token shapes in commits.
+- **npm 12 skips install scripts** for esbuild, sharp and unrs-resolver. This is harmless because the prebuilt win32-x64 packages are present.
+- **Vercel:** project `prj_wTWqQ2nFEuhYGHa06aUYA6Cb4XIH`, team `team_LaEJuanZGFVc5UHhLD6LRaiq` (scope `mariusrut-8463s-projects`). The MCP returned 403 until re-authentication.
 
-  Always use `run_in_background` and read only the tail.
-- **`prebuild` rewrites `src/generated/search-index.json`.** It produces 5,134 changed lines and a dirty tree. Run `git checkout -- src/generated/search-index.json` after every local build and never commit the file (Phase 2 registry item). CI deliberately doesn't diff it.
-- **`next build` catches runtime TDZ errors that tsc misses.** Sweep with:
-  `npx eslint --rule '{"@typescript-eslint/no-use-before-define": ["error", {"functions": false, "classes": false, "variables": true, "typedefs": false, "ignoreTypeReferences": true}]}' -f json -o <file> src`
-  The `materials/*` hits on `baseLayout`/`plotConfig` are module-scope constants and safe.
-- **ESLint baseline:** 4 rules are set to `warn` in `eslint.config.mjs`. ROADMAP tracks promoting them back to `error` in Phase 1 (purity, set-state-in-effect) and Phase 2 (memoization, any).
-- **`ion-assisted-deposition` is broken and was deliberately NOT fixed:** the correct flux just exposes other bad assumptions. See ROADMAP; it's a Phase 4 rewrite. The BER bug is still open (Phase 1).
-- **The project `.claude/` setup takes effect from the next session:** agents, skills, rules and the commit hook. The hook runs `node .claude/hooks/block-secrets.mjs` on every Bash call (quick exit when the command isn't `git commit`). It was tested in a scratch repo: it blocks staged and `commit -a` leaks and never echoes the secret.
-- **Committing with other changes staged:** use `git commit -F msg -- <paths>`. It commits only those paths.
-- **npm 12 skips the install scripts** for esbuild, sharp and unrs-resolver. Their prebuilt `win32-x64` packages are present, so this is harmless.
-- **Searching and the toolchain:** Windows plus Defender means `git grep` / `git ls-files` are fast, while `grep -r` over the repo times out. Next is 16.2.2, so read `node_modules/next/dist/docs/` before using a Next API.
-- **Vercel:** project `prj_wTWqQ2nFEuhYGHa06aUYA6Cb4XIH`, team `team_LaEJuanZGFVc5UHhLD6LRaiq` (scope `mariusrut-8463s-projects`). The MCP returned 403 until the user re-authenticates. The site is https://photonics-calculators.vercel.app.
-
-## Working style for this project (quota)
+## Working style (quota)
 - One phase or stage per session, then a handover and `/clear`.
-- The main session designs and reviews. Routine multi-file edits go to the `implementer` agent (Sonnet, `.claude/agents/`) with the goal, allowed files, gates and a report of ≤40 lines. Batches of physics review go to `physics-reviewer`.
 - Keep tool output small: tail and failures only.

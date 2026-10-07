@@ -69,6 +69,14 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 - `next build` prerender exposes runtime TDZ errors that tsc misses (a `const` used inside a closure before its declaration, e.g. `pixel-crosstalk`). Swept with `@typescript-eslint/no-use-before-define`.
 - npm 12 skips install scripts (esbuild, sharp, unrs-resolver). Their prebuilt `win32-x64` binaries are installed, so this is harmless.
 
+**Found during Phase 1** (2026-10-07)
+- The A&S 7.1.26 `erfc` copies (bpsk-qpsk, ber, scintillation, diversity-reception, fade-probability) have absolute error 1.5e-7 and are about 38 % off asymptotically, so every BER below ~1e-7 was wrong. All are replaced by `src/physics/math.ts`.
+- `SimpleChart` floors log axes at 1e-10. The ber and bpsk-qpsk pages therefore plot log₁₀(BER) on a linear axis. Switch them back to log axes after the Phase 3 chart rewrite.
+- 64 `page-client.tsx` files import `CalculatorShell` but never render it, so they have no title, breadcrumb or share button (e.g. `free-space-comms/ber`). Fix alongside the Phase 1 shell item. Count: `comm -23` of `git grep -l 'import CalculatorShell'` vs `git grep -l '<CalculatorShell'`.
+- For Phase 4:
+  - `bpsk-qpsk` "Required RX power" uses the RF floor kT = −174 dBm/Hz + 3 dB NF. Coherent optical detection is shot-noise limited at hν ≈ −159 dBm/Hz (1550 nm).
+  - `diversity-reception` uses a fixed "3σ" outage and gives identical gain for SC, EGC and MRC.
+
 ## Phase 0 — safe, building, Claude-native (1 session)
 - [ ] 0.1 **User, manual:**
   - [ ] Revoke the GitHub PAT, then `git remote set-url origin https://github.com/Lazfiz/photonics-calculators.git` (use Git Credential Manager).
@@ -125,10 +133,16 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 - [ ] 0.6 **Ship:** branch `phase-0`, then PR, then a green Vercel preview, then merge. Verify live: channel-photomultiplier should show "order-of-magnitude upper bound". **Status 2026-10-07:** `phase-0` is committed locally with green gates. The push is blocked on 0.1 (the PAT is still in the remote).
 
 ## Phase 1 — correctness (1–2 days)
-- [ ] Shared `src/physics/math.ts`: accurate `erfc`/`Q`, used by ber, bpsk-qpsk and scintillation. Fix and retest BER, and decide on the Poisson model.
+- [x] Shared `src/physics/math.ts`: accurate `erfc`/`Q`, used by ber, bpsk-qpsk and scintillation. Fix and retest BER, and decide on the Poisson model. **Done 2026-10-07 on branch `phase-1`** (stacked on `phase-0`, not pushed):
+  - `math.ts`: `erf`/`erfc` (series + continued fraction; ≤2e-13 relative vs CPython), `qFunction`, `normalCdf`, `lnFactorial`, Poisson pmf/cdf/sf (each tail summed directly).
+  - BER: chose the **exact Poisson photon-counting model** (`src/physics/free-space-comms/ber.ts`). OOK uses the ML threshold, DPSK uses two port counters with random tie-breaks. It matches brute-force sums to 1e-13 and gives the quantum limits of 10 and 20 photons/bit.
+  - bpsk-qpsk: Gray QPSK BER = BPSK BER (the old formula, 2Q(1−Q), was neither BER nor SER). SER is now shown separately.
+  - scintillation, diversity-reception and fade-probability use the shared `erfc`, where they used to compute ½(1 ± erf) with cancellation.
+  - Tests: `tests/math.test.ts`, `ber.test.ts`, `bpsk-qpsk.test.ts`.
 - [ ] Fix `use-url-state` reset. `ValidatedNumberInput` and `InputSlider` clamp on blur and never pass out-of-range values to the physics.
 - [ ] Rebuild JSON-LD from each page's `metadata` (codemod) and write the 55 placeholder descriptions.
 - [ ] Fix the `ShareButton` hydration mismatch and the breadcrumb bug. Make the "541" count a computed value.
+- [ ] Codemod (ts-morph): `label="{label}"` → `label={label}` in 40 `page-client.tsx` files (44 sites; the input card literally shows "{label}"). Find them with `git grep -l 'label="{label}"' -- src`. Also render `CalculatorShell` in the 64 pages that import it without using it (see "Found during Phase 1").
 - [ ] Use a seeded PRNG (`src/physics/random.ts`) for the 6 pages that call `Math.random` in render. Then set `react-hooks/purity` and `set-state-in-effect` back to `error`.
 
 ## Phase 2 — architecture (~1 week)
