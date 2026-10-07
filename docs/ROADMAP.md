@@ -87,10 +87,10 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 - `useURLState` only rejects non-finite URL values. A crafted link (e.g. `?na=0`) still reaches the physics unclamped, because the inputs clamp only what the user types. Guard domains in the Phase 2 physics modules, or give `useURLState` an optional range.
 
 ## Phase 0 — safe, building, Claude-native (1 session)
-- [ ] 0.1 **User, manual:**
-  - [ ] Revoke the GitHub PAT, then `git remote set-url origin https://github.com/Lazfiz/photonics-calculators.git` (use Git Credential Manager).
-  - [ ] Delete `~/.claude/settings-glm-backup.json` (plaintext z.ai key); revoke that key if it's unused.
-  - [ ] Re-authenticate the Vercel connector for scope `mariusrut-8463s-projects` (or `vercel login`).
+- [x] 0.1 **User, manual:** (the Defender exclusion is optional and wasn't done)
+  - [x] Revoke the GitHub PAT, then `git remote set-url origin https://github.com/Lazfiz/photonics-calculators.git` (use Git Credential Manager). **Done 2026-10-07** (session 8). Pushes use `gh`'s keyring login: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push …`.
+  - [x] Delete `~/.claude/settings-glm-backup.json` (plaintext z.ai key); revoke that key if it's unused. **Done 2026-10-07:** the file is deleted, and the key no longer works because the z.ai plan expired.
+  - [x] Re-authenticate the Vercel connector for scope `mariusrut-8463s-projects` (or `vercel login`). **Done 2026-10-07** (session 8, with the team scope granted). `get_access_to_vercel_url` gives a share link that opens protected previews.
   - [ ] Optional: add a Defender exclusion for `C:\dev`.
 - [x] 0.2 **Environment:**
   - [x] Delete `node_modules`, `.next` and `.vercel/output`. All three are Linux artifacts: Linux-only native binaries and ~4,800 empty placeholders left where symlinks were.
@@ -135,13 +135,15 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - [x] Fix the 5 parse errors above.
   - [x] Run the full `tsc` again and fix any errors it uncovers.
   - [x] `npm test`, then `npm run build`.
-- [ ] 0.5 **CI:**
+- [x] 0.5 **CI:**
   - [x] Add `"check": "tsc --noEmit && eslint && npm test"` to `package.json`.
   - [x] Add `.github/workflows/ci.yml` (Node 24, `npm ci`, `check`, `build`) on push and PR.
-  - [ ] User: protect `main` so CI must pass.
-- [ ] 0.6 **Ship:** branch `phase-0`, then PR, then a green Vercel preview, then merge. Verify live: channel-photomultiplier should show "order-of-magnitude upper bound". **Status 2026-10-07:** `phase-0` is committed locally with green gates. The push is blocked on 0.1 (the PAT is still in the remote).
+  - [x] User: protect `main` so CI must pass. **Done 2026-10-07:** ruleset "Protect main" (id 24673948) requires a PR (0 approvals) and `check-and-build` (GitHub Actions), and blocks force-push and deletion. Admins can bypass only through a PR.
+- [x] 0.6 **Ship:** branch `phase-0`, then PR, then a green Vercel preview, then merge. Verify live: channel-photomultiplier should show "order-of-magnitude upper bound". **Status 2026-10-07:** `phase-0` is committed locally with green gates. The push is blocked on 0.1 (the PAT is still in the remote).
+  - **Done 2026-10-07 (session 8):** PR #2 merged (`11922a71`), CI green, and the live site shows the text.
 
 ## Phase 1 — correctness (1–2 days)
+**Shipped 2026-10-07:** PR #3 merged (`3983934d`). CI is green and `ui-check` passes 35/35 on the live site with 0 console errors.
 - [x] Shared `src/physics/math.ts`: accurate `erfc`/`Q`, used by ber, bpsk-qpsk and scintillation. Fix and retest BER, and decide on the Poisson model. **Done 2026-10-07 on branch `phase-1`** (stacked on `phase-0`, not pushed):
   - `math.ts`: `erf`/`erfc` (series + continued fraction; ≤2e-13 relative vs CPython), `qFunction`, `normalCdf`, `lnFactorial`, Poisson pmf/cdf/sf (each tail summed directly).
   - BER: chose the **exact Poisson photon-counting model** (`src/physics/free-space-comms/ber.ts`). OOK uses the ML threshold, DPSK uses two port counters with random tie-breaks. It matches brute-force sums to 1e-13 and gives the quantum limits of 10 and 20 photons/bit.
