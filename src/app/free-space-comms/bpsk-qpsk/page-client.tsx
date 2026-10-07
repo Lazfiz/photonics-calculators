@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { bpskBer, qpskSer, requiredEbN0dB } from "../../../physics/free-space-comms/bpsk-qpsk";
 
 export default function BpskQpskPage() {
   const [ebn0dB, setEbn0dB] = useURLState("ebn0dB", 10);
@@ -13,26 +14,13 @@ export default function BpskQpskPage() {
 
   const calc = useMemo(() => {
     const ebno = 10 ** (ebn0dB / 10);
-    // BER for BPSK: Q(sqrt(2*Eb/N0)) = 0.5*erfc(sqrt(Eb/N0))
-    // BER for QPSK (Gray coded): ≈ same as BPSK at same Eb/N0
-    const sqrtEbn0 = Math.sqrt(ebno);
-    const bpskBer = 0.5 * erfc(sqrtEbn0);
-    const ber = modulation === "BPSK" ? bpskBer
-      : erfc(sqrtEbn0) * (1 - 0.5 * erfc(sqrtEbn0)); // exact Gray-coded QPSK
+    // Gray-coded QPSK/OQPSK have the same bit error rate as BPSK: Q(√(2E_b/N₀))
+    const ber = bpskBer(ebno);
+    const ser = modulation === "BPSK" ? ber : qpskSer(ebno);
 
-    // Required Eb/N0 for target BER via binary search
+    // Required Eb/N0 for target BER (same for all three formats)
     const targetBERs = [1e-3, 1e-5, 1e-6, 1e-9];
-    const reqEbN0 = targetBERs.map((t) => {
-      let lo = 0, hi = 30; // dB
-      for (let i = 0; i < 60; i++) {
-        const mid = (lo + hi) / 2;
-        const snrLin = 10 ** (mid / 10);
-        const s = Math.sqrt(snrLin);
-        const b = modulation === "BPSK" ? 0.5 * erfc(s) : erfc(s) * (1 - 0.5 * erfc(s));
-        if (b > t) lo = mid; else hi = mid;
-      }
-      return hi;
-    });
+    const reqEbN0 = targetBERs.map(requiredEbN0dB);
 
     // Spectral efficiency
     const specEff = modulation === "BPSK" ? 1 : 2; // bits/s/Hz
@@ -52,30 +40,17 @@ export default function BpskQpskPage() {
     // Symbol rate
     const symbolRate = dataRate / specEff;
 
-    return { ber, reqEbN0, targetBERs, specEff, bw, requiredPr, margin, symbolRate };
+    return { ber, ser, reqEbN0, targetBERs, specEff, bw, requiredPr, margin, symbolRate };
   }, [ebn0dB, modulation, dataRate, rxPower]);
 
-  function erfc(x: number): number {
-    const t = 1 / (1 + 0.3275911 * x);
-    const poly = t * (0.254829592 + t * (-0.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429))));
-    return poly * Math.exp(-x * x);
-  }
-
   const plotData = useMemo(() => {
-    const ebnoRange = Array.from({ length: 200 }, (_, i) => 0 + i * 0.15);
-    const bpskBer = ebnoRange.map((e) => {
-      const x = Math.sqrt(10 ** (e / 10));
-      return 0.5 * erfc(x);
-    });
-    const qpskBer = ebnoRange.map((e) => {
-      const x = Math.sqrt(10 ** (e / 10));
-      const b = 0.5 * erfc(x);
-      return erfc(x) * (1 - b); // exact Gray-coded QPSK BER
-    });
-
+    // log₁₀ of the error rates on a linear axis (SimpleChart's log axis floors at 1e-10); 0–15 dB
+    // spans BER 0.08 down to ~1e-15.
+    const ebnoRange = Array.from({ length: 151 }, (_, i) => i * 0.1);
+    const lin = (dB: number) => 10 ** (dB / 10);
     return [
-      { x: ebnoRange, y: bpskBer, type: "scatter", mode: "lines", name: "BPSK", line: { color: "#06b6d4" } },
-      { x: ebnoRange, y: qpskBer, type: "scatter", mode: "lines", name: "QPSK", line: { color: "#f59e0b" } },
+      { x: ebnoRange, y: ebnoRange.map((e) => Math.log10(bpskBer(lin(e)))), type: "scatter", mode: "lines", name: "BER: BPSK, QPSK, OQPSK", line: { color: "#06b6d4" } },
+      { x: ebnoRange, y: ebnoRange.map((e) => Math.log10(qpskSer(lin(e)))), type: "scatter", mode: "lines", name: "SER: QPSK", line: { color: "#f59e0b", dash: "dash" } },
     ];
   }, []);
 
@@ -110,6 +85,9 @@ export default function BpskQpskPage() {
             <div className="space-y-2 text-sm font-mono">
               <div className="flex justify-between"><span className="text-gray-400">BER</span><span className={calc.ber < 1e-9 ? "text-green-400" : calc.ber < 1e-6 ? "text-yellow-400" : "text-red-400"}>
                 {calc.ber < 1e-15 ? "< 10⁻¹⁵" : calc.ber.toExponential(2)}</span></div>
+              {modulation !== "BPSK" && (
+                <div className="flex justify-between"><span className="text-gray-400">Symbol Error Rate</span><span>{calc.ser < 1e-15 ? "< 10⁻¹⁵" : calc.ser.toExponential(2)}</span></div>
+              )}
               <div className="flex justify-between"><span className="text-gray-400">Spectral Efficiency</span><span>{calc.specEff} bit/s/Hz</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Symbol Rate</span><span>{calc.symbolRate.toFixed(2)} Gbaud</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Required BW</span><span>{calc.bw.toFixed(2)} GHz</span></div>
@@ -127,13 +105,13 @@ export default function BpskQpskPage() {
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-xs text-gray-500 space-y-1">
             <p><strong className="text-gray-400">BPSK BER:</strong> P<sub>e</sub> = ½ erfc(√(E<sub>b</sub>/N<sub>0</sub>))</p>
-            <p><strong className="text-gray-400">QPSK BER:</strong> P<sub>e</sub> = 1 − (1 − P<sub>BPSK</sub>)²</p>
+            <p><strong className="text-gray-400">QPSK / OQPSK (Gray-coded):</strong> same BER as BPSK; symbol error rate P<sub>s</sub> = 1 − (1 − P<sub>e</sub>)²</p>
             <p><strong className="text-gray-400">P<sub>req</sub>:</strong> E<sub>b</sub>/N<sub>0</sub> + kT + 10log₁₀(R) + NF</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
             <ChartPanel data={plotData} layout={{
               xaxis: { title: "Eb/N0 (dB)", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "BER", color: "#9ca3af", gridcolor: "#374151", type: "log" },
+              yaxis: { title: "log₁₀ error rate", color: "#9ca3af", gridcolor: "#374151" },
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",
               margin: { t: 20, r: 20, b: 40, l: 60 }, font: { color: "#9ca3af" }, legend: { font: { size: 10 } },
             }} />
