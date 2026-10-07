@@ -99,7 +99,30 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - `cold-mirror` and `heat-mirror` showed R_max = [(r−1)/(r+1)]² with r = (n_H/n_L)^2N, which ignores n_inc and n_sub. They now use the exact quarter-wave admittance Y = (n_H/n_L)^2N·n_sub.
   - `environmental-stability` added the humidity Δn to every curve, "Nominal (0 % RH)" included. Its Δn and CTE coefficients are still uncalibrated (Phase 4).
   - All of these are fixed on `phase-2/constants-thin-film`.
-- 26 more thin-film pages still have an inline characteristic matrix, and each has its own arithmetic. List: `git grep -l -E "m11|cosD" -- 'src/app/thin-film/*/page-client.tsx'`. Expect more bugs like the ones above. Compare each with the module before you migrate it.
+- Stage 1b (session 11, branch `phase-2/thin-film-1b`): 25 more thin-film pages now use the module. Each was compared with its old code at the defaults, copied verbatim into a scratch script:
+  - **Real matrix** (the `i` was lost), so R was right at the quarter-wave points by coincidence and reached 1e4–8e5 elsewhere: `bandpass-filter`, `edge-filter`, `dual-band-ar`, `gradient-index`, `ir-blocking`, `narrow-bandpass`, `notch-filter`, `solar-protection`, `uv-blocking`, `wide-bandpass`, `dielectric-high-reflector`, `emissivity-control`, `hard-coating`, `double-layer-ar` (which also swapped n₁/n₂ in M₁₂).
+    - These pages listed layers from the substrate. With the `i` restored, the old geometry agrees with the new code to 8e-15.
+  - **ABCD update** had D′ = +C sin δ/n (it should be −): `dielectric-stack` (Y also used iD·n_sub) and `anti-fog`'s water-film curve (the water was also put next to the substrate). `anti-fog`'s bare-coating R was right.
+  - **Wrong r formula** (M₁₀ sign): `bragg-reflector`, where R reached 11.
+  - **Absorbing-layer matrix** used cos δ·cosh α and sin δ·sinh α: `enhanced-aluminum` (R(550) was 6.6 %, now 99.3 %) and `protected-silver` (average R 6 % → 95 %). Both also plotted T = 1 − R. They now plot the module's T and A.
+  - **Heuristics replaced:**
+    - `metal-dielectric`: a two-beam formula, off by up to 0.43 in R. Its "Metal Absorption" was exp(−4πkd/λ); it now shows the absorptance.
+    - `gradient-index-coating`: an amplitude sum that started from r = 1, so R_min was 0.80; it is 0.009.
+    - `spectrophotometry`: an Airy formula with a real denominator, and T from Beer's law at 550 nm. The error is small at the defaults (1e-4).
+  - **Already correct:** `long-pass`, `short-pass` and `dichroic` (3e-15). The R_max shown on long-pass and short-pass ignored n_inc and n_sub. They now show the exact R(λ₀): 97.92 % and 95.25 %, where both showed 96.85 %.
+  - **Design errors:**
+    - `bandpass-filter`, `narrow-bandpass` and `notch-filter` repeated (HL)^p after the spacer instead of mirroring it. So the bandpasses had no passband at λ₀, and the notch had a dip at λ₀. New: `src/physics/thin-film/cavity-filter.ts` (4 golden tests, absentee-layer hand values).
+    - `notch-filter`'s FWHM used the level 1 − T_min/2 and the first dip.
+    - `dielectric-stack`'s peak R used the (HL)^N H formula for an (HL)^N plot. It showed 99.46 %; the value is 98.72 %.
+- Not yet compared with the module: thin-film pages that use closed forms rather than a matrix. They are `amplitude-splitting`, `angle-shift`, `ellipsometry-measurement`, `fabry-perot-filter`, `fresnel-equations`, `interference-conditions`, `multilayer-ar`, `phase-shift-coating`, `quarter-wave`, `single-ar`, `thermal-evaporation` and `wedge-film`.
+- Thin-film models and labels for Phase 4 (left as they are):
+  - Plain quarter-wave stacks labelled "long-pass" or "short-pass" (`edge-filter`, `long-pass`, `short-pass`, `ir-blocking`, `uv-blocking`, `wide-bandpass`, `solar-protection`): the HL/LH order barely changes the spectrum, and the edge comes from the plot window. Real edge filters use (L/2 H L/2)^N. `long-pass`'s "bandwidth = 700 − 1.1 λ₀" is made up.
+  - `notch-filter` is a high-contrast quarter-wave stack, so its "notch" is 538 nm wide at the defaults. Real notch filters use low index contrast or a rugate profile.
+  - `narrow-bandpass`: the 0.78 nm FWHM is 2 grid steps (0.39 nm sampling). Its "Finesse" is λ/FWHM, which is a resolving power, not a finesse.
+  - `emissivity-control` shows ε = 1 − R for a transparent lossless stack, which is T. Kirchhoff needs ε = A.
+  - `enhanced-aluminum` and `protected-silver` use Drude n, k. The Al model has no 800 nm interband term and clamps n and k, and the "Cr" layer is lossless (n = 3.0). Use tabulated data (Rakić 1998).
+  - `dielectric-high-reflector` promises dispersion: compute GDD from arg r (the module returns r).
+  - `gradient-index` and `gradient-index-coating` are duplicates.
 
 ## Phase 0 — safe, building, Claude-native (1 session)
 - [x] 0.1 **User, manual:** (the Defender exclusion is optional and wasn't done)
@@ -193,7 +216,8 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 - [ ] `src/physics/constants.ts` (CODATA) and `src/physics/<category>/<slug>.ts` pure functions, migrated by codemod and category by category, with tests.
   - [x] `src/physics/constants.ts` holds the exact SI constants plus CODATA 2022 measured values, with consistency tests. `src/lib/complex.ts` (unused) moved to `src/physics/complex.ts` and gained a stable `sqrt`.
   - [x] Thin-film pilot: `src/physics/thin-film/transfer-matrix.ts`. It handles complex N, oblique incidence (s and p), and R, T and A. It doesn't overflow on thick metal or evanescent layers. It has 11 golden tests (Fresnel, Brewster, TIR, AR, (HL)^N, Airy with an absorbing film, bulk metal, critical angle). 7 pages use it.
-  - [ ] Migrate the other 26 thin-film pages with an inline matrix (see Phase 2 findings), in batches of ≤10 files, each compared before and after.
+  - [x] Migrate the other thin-film pages with an inline matrix (25, see Phase 2 findings), in batches of ≤10 files, each compared before and after. `cavity-filter.ts` builds the Fabry-Perot designs. 32 pages use the module.
+  - [ ] Compare the 12 closed-form thin-film pages (listed in the Phase 2 findings) with the module.
   - [ ] Replace the inline constants in 46 files (`c = 3e8` ×54, …) with imports from `constants.ts`, using a codemod. Expect last-digit changes.
 - [ ] Calculator registry as the single source of truth: slug, title, description, category, model tier, references, aliases. It generates the sitemap, search index, metadata, JSON-LD and related links at build time.
 - [ ] Merge the ~40 duplicates and add 301 redirects in `next.config.js`.
