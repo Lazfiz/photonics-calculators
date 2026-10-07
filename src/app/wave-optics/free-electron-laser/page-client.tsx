@@ -110,12 +110,12 @@ export default function FreeElectronLaserPage() {
       </div>
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Electron Energy (MeV)</label><ValidatedNumberInput label="Electron Energy (MeV)" value={electronEnergy} onChange={setElectronEnergy} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Undulator Period λᵤ (mm)</label><ValidatedNumberInput label="Undulator Period λᵤ (mm)" value={undulatorPeriod} onChange={setUndulatorPeriod} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Undulator K</label><ValidatedNumberInput label="Undulator K" value={undulatorK} onChange={setUndulatorK} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Undulator Length (m)</label><ValidatedNumberInput label="Undulator Length (m)" value={undulatorLength} onChange={setUndulatorLength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Peak Beam Current (A)</label><ValidatedNumberInput label="Peak Beam Current (A)" value={beamCurrent} onChange={setBeamCurrent} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Energy Spread (ΔE/E)</label><ValidatedNumberInput label="Energy Spread (ΔE/E)" value={energySpread} onChange={setEnergySpread} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Electron Energy (MeV)" value={electronEnergy} onChange={setElectronEnergy} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Undulator Period λᵤ (mm)" value={undulatorPeriod} onChange={setUndulatorPeriod} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Undulator K" value={undulatorK} onChange={setUndulatorK} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Undulator Length (m)" value={undulatorLength} onChange={setUndulatorLength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Peak Beam Current (A)" value={beamCurrent} onChange={setBeamCurrent} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Energy Spread (ΔE/E)" value={energySpread} onChange={setEnergySpread} /></div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">

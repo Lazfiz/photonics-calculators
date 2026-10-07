@@ -136,18 +136,15 @@ export default function MagnetoOpticPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={2000} />
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Magnetic Field (T)</label>
           <ValidatedNumberInput label="Magnetic Field (T)" value={fieldStrength} onChange={setFieldStrength} min={0.01} max={5} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Crystal Length (mm)</label>
           <ValidatedNumberInput label="Crystal Length (mm)" value={length} onChange={setLength} min={1} max={100} />
         </div>
       </div>

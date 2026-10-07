@@ -107,11 +107,9 @@ export default function PolarizationScramblingPage() {
             </div>
           </div>
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Number of segments</label>
             <ValidatedNumberInput label="Number of segments" value={numSegments} onChange={setNumSegments} />
           </div>
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Sweep rate (Hz)</label>
             <ValidatedNumberInput label="Sweep rate (Hz)" value={sweepRate} onChange={setSweepRate} />
           </div>
           <div className="mb-3">

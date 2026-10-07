@@ -72,35 +72,27 @@ export default function SignalToNoisePage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Signal Photons (per pixel)</label>
             <ValidatedNumberInput label="Signal Photons (per pixel)" value={signalPhotons} onChange={setSignalPhotons} min={1} max={1000000} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Background Photons (per pixel)</label>
             <ValidatedNumberInput label="Background Photons (per pixel)" value={backgroundPhotons} onChange={setBackgroundPhotons} min={0} max={100000} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Quantum Efficiency</label>
             <ValidatedNumberInput label="Quantum Efficiency" value={quantumEfficiency} onChange={setQuantumEfficiency} min={0.01} max={1} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Read Noise (e⁻ rms)</label>
             <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} min={0.1} max={100} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Dark Current (e⁻/s/pixel)</label>
             <ValidatedNumberInput label="Dark Current (e⁻/s/pixel)" value={darkCurrent} onChange={setDarkCurrent} min={0} max={100} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Exposure Time (ms)</label>
             <ValidatedNumberInput label="Exposure Time (ms)" value={exposureTime} onChange={setExposureTime} min={1} max={60000} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pixel Binning</label>
             <ValidatedNumberInput label="Pixel Binning" value={binning} onChange={setBinning} min={1} max={8} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Number of Frames (averaged)</label>
             <ValidatedNumberInput label="Number of Frames (averaged)" value={numFrames} onChange={setNumFrames} min={1} max={1000} />
           </div>
         </div>

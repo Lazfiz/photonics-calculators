@@ -84,19 +84,15 @@ export default function ModeCouplingCalculator() {
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Coupling Length (μm)</label>
               <ValidatedNumberInput label="Coupling Length (μm)" value={couplingLength} onChange={setCouplingLength} min={1} step="10" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Coupling Coefficient κ (mm⁻¹)</label>
               <ValidatedNumberInput label="Coupling Coefficient κ (mm⁻¹)" value={couplingCoeff} onChange={setCouplingCoeff} min={0.01} step="0.01" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Propagation Constant Difference Δβ (mm⁻¹)</label>
               <ValidatedNumberInput label="Propagation Constant Difference Δβ (mm⁻¹)" value={propConstDiff} onChange={setPropConstDiff} step="0.01" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Input Power (mW)</label>
               <ValidatedNumberInput label="Input Power (mW)" value={inputPower} onChange={setInputPower} min={0.01} step="0.1" />
             </div>
           </div>

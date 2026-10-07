@@ -91,8 +91,7 @@ export default function RetarderTypesPage() {
             { label: "Crystal thickness (mm)", val: thickness, set: setThickness, step: 0.01 },
           ].map(({ label, val, set, step }) => (
             <div key={label} className="mb-3">
-              <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
           <div className="mt-3 flex flex-wrap gap-2">

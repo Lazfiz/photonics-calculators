@@ -64,31 +64,24 @@ export default function DynamicRangePage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Full Well Capacity (e⁻)</label>
             <ValidatedNumberInput label="Full Well Capacity (e⁻)" value={fullWellCapacity} onChange={setFullWellCapacity} min={100} max={500000} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Read Noise (e⁻ rms)</label>
             <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} min={0.1} max={100} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Dark Current (e⁻/s/pixel)</label>
             <ValidatedNumberInput label="Dark Current (e⁻/s/pixel)" value={darkCurrent} onChange={setDarkCurrent} min={0} max={100} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Exposure Time (ms)</label>
             <ValidatedNumberInput label="Exposure Time (ms)" value={exposureTime} onChange={setExposureTime} min={1} max={60000} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">ADC Bit Depth</label>
             <ValidatedNumberInput label="ADC Bit Depth" value={bitDepth} onChange={setBitDepth} min={8} max={24} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">PRNU (%)</label>
             <ValidatedNumberInput label="PRNU (%)" value={prnu} onChange={setPrnu} min={0} max={10} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">DSNU (%)</label>
             <ValidatedNumberInput label="DSNU (%)" value={dsnu} onChange={setDsnu} min={0} max={10} />
           </div>
         </div>

@@ -100,8 +100,7 @@ export default function SecurityPage() {
             ["Data Rate (Gbps)", dataRate, setDataRate],
           ].map(([label, val, set]: any) => (
             <div key={label as string}>
-              <label className="block text-sm text-gray-400 mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
           <h3 className="text-md font-semibold text-red-400 mt-4">Eavesdropper</h3>
@@ -110,8 +109,7 @@ export default function SecurityPage() {
             ["Eve Aperture (cm)", eveAperture, setEveAperture],
           ].map(([label, val, set]: any) => (
             <div key={label as string}>
-              <label className="block text-sm text-gray-400 mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
         </div>

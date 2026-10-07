@@ -63,11 +63,9 @@ export default function PhotoelasticPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Stress σ (MPa)</label>
           <ValidatedNumberInput label="Stress σ (MPa)" value={stress} onChange={setStress} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
       </div>

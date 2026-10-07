@@ -89,8 +89,7 @@ export default function PointingErrorPage() {
             { label: "Jitter Elevation (μrad RMS)", val: jitterElevation, set: setJitterElevation },
           ].map(({ label, val, set }) => (
             <div key={label} className="mb-3">
-              <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} step="any" />
+              <ValidatedNumberInput label={label} value={val} onChange={set} step="any" />
             </div>
           ))}
         </div>

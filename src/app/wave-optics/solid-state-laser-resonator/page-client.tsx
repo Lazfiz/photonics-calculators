@@ -118,39 +118,30 @@ export default function SolidStateLaserResonatorPage() {
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Crystal Length (mm)</label>
           <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Crystal Diameter (mm)</label>
           <ValidatedNumberInput label="Crystal Diameter (mm)" value={crystalDiameter} onChange={setCrystalDiameter} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">R₁ (HR mirror, mm)</label>
           <ValidatedNumberInput label="R₁ (HR mirror, mm)" value={R1} onChange={setR1} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">R₂ (OC mirror, mm)</label>
           <ValidatedNumberInput label="R₂ (OC mirror, mm)" value={R2} onChange={setR2} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Cavity Length (mm)</label>
           <ValidatedNumberInput label="Cavity Length (mm)" value={L_cav} onChange={setL_cav} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">OC Reflectivity</label>
           <ValidatedNumberInput label="OC Reflectivity" value={R_oc} onChange={setR_oc} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">HR Reflectivity</label>
           <ValidatedNumberInput label="HR Reflectivity" value={R_hr} onChange={setR_hr} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Crystal Index</label>
           <ValidatedNumberInput label="Crystal Index" value={n_crystal} onChange={setN_crystal} />
         </div>
       </div>

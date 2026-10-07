@@ -131,7 +131,6 @@ export default function CrystalBirefringencePage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Reference Wavelength (nm)</label>
           <ValidatedNumberInput label="Reference Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={2000} />
         </div>
       </div>

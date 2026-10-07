@@ -122,23 +122,18 @@ export default function OpticalActivityPage() {
           </div>
 
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Specific rotation [α]<sub>D</sub><sup>20</sup> (deg·mL/g·dm)</label>
-            <ValidatedNumberInput label="specificRotation" value={specificRotation} onChange={setSpecificRotation} />
+            <ValidatedNumberInput label={<>Specific rotation [α]<sub>D</sub><sup>20</sup> (deg·mL/g·dm)</>} value={specificRotation} onChange={setSpecificRotation} />
           </div>
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Concentration (g/100mL)</label>
             <ValidatedNumberInput label="Concentration (g/100mL)" value={concentration} onChange={setConcentration} />
           </div>
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Path length (dm)</label>
             <ValidatedNumberInput label="Path length (dm)" value={pathLength} onChange={setPathLength} />
           </div>
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Temperature (°C)</label>
             <ValidatedNumberInput label="Temperature (°C)" value={temperature} onChange={setTemperature} />
           </div>
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Wavelength (nm)</label>
             <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div className="mt-3 flex gap-2">

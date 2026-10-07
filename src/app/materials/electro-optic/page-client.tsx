@@ -143,15 +143,12 @@ export default function ElectroOpticPage() {
 
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Voltage (V)</label>
           <ValidatedNumberInput label="Voltage (V)" value={voltage} onChange={setVoltage} min={0} max={10000} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={2000} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Electrode Gap (μm)</label>
           <ValidatedNumberInput label="Electrode Gap (μm)" value={gap} onChange={setGap} min={1} max={1000} />
         </div>
       </div>

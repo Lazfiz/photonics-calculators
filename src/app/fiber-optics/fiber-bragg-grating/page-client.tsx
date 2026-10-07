@@ -142,24 +142,19 @@ export default function FiberBraggGratingCalculator() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Bragg Wavelength (nm)</label>
               <ValidatedNumberInput label="Bragg Wavelength (nm)" value={braggWavelength} onChange={setBraggWavelength} step="1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Effective Index n_eff</label>
               <ValidatedNumberInput label="Effective Index n_eff" value={effectiveIndex} onChange={setEffectiveIndex} step="0.0001" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Grating Length (mm)</label>
               <ValidatedNumberInput label="Grating Length (mm)" value={gratingLength} onChange={setGratingLength} min={0.1} step="0.5" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Index Modulation Δn</label>
               <ValidatedNumberInput label="Index Modulation Δn" value={indexModulation} onChange={setIndexModulation} step="1e-5" />
             </div>
             {gratingType === "chirped" && (
               <div>
-                <label className="block text-sm font-medium mb-2">Chirp Rate (nm/mm)</label>
                 <ValidatedNumberInput label="Chirp Rate (nm/mm)" value={chirpRate} onChange={setChirpRate} step="0.01" />
               </div>
             )}

@@ -100,15 +100,12 @@ export default function FRAPPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Bleach spot radius w₀ (µm)</label>
             <ValidatedNumberInput label="Bleach spot radius w₀ (µm)" value={w0} onChange={setW0} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Half-recovery time τ₁/₂ (s)</label>
             <ValidatedNumberInput label="Half-recovery time τ₁/₂ (s)" value={tauHalf} onChange={setTauHalf} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Mobile fraction</label>
             <ValidatedNumberInput label="Mobile fraction" value={mobileFrac} onChange={setMobileFrac} min={0} max={1} />
           </div>
           <div>

@@ -104,14 +104,14 @@ export default function SlabLaserPage() {
       </div>
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Slab Width (mm)</label><ValidatedNumberInput label="Slab Width (mm)" value={slabWidth} onChange={setSlabWidth} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Slab Height / Thin (mm)</label><ValidatedNumberInput label="Slab Height / Thin (mm)" value={slabHeight} onChange={setSlabHeight} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Slab Length (mm)</label><ValidatedNumberInput label="Slab Length (mm)" value={slabLength} onChange={setSlabLength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Wavelength (nm)</label><ValidatedNumberInput label="Slab Length (mm)" value={wavelength} onChange={setWavelength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Bounces</label><ValidatedNumberInput label="Wavelength (nm)" value={bounces} onChange={setBounces} min={1} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">OC Reflectivity</label><ValidatedNumberInput label="Bounces" value={R_oc} onChange={setR_oc} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Thermal Load (W/cm³)</label><ValidatedNumberInput label="Thermal Load (W/cm³)" value={thermalLoad} onChange={setThermalLoad} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><label className="text-sm text-gray-400">Crystal Index</label><ValidatedNumberInput label="Crystal Index" value={n_crystal} onChange={setN_crystal} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Slab Width (mm)" value={slabWidth} onChange={setSlabWidth} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Slab Height / Thin (mm)" value={slabHeight} onChange={setSlabHeight} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Slab Length (mm)" value={slabLength} onChange={setSlabLength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Bounces" value={bounces} onChange={setBounces} min={1} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="OC Reflectivity" value={R_oc} onChange={setR_oc} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Thermal Load (W/cm³)" value={thermalLoad} onChange={setThermalLoad} /></div>
+        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Crystal Index" value={n_crystal} onChange={setN_crystal} /></div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

@@ -114,15 +114,12 @@ export default function UVBlueHazardPage() {
       <LaserSafetyQuarantineBanner />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Exposure Time (s)</label>
           <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Spectral Power (mW/nm)</label>
           <ValidatedNumberInput label="Spectral Power (mW/nm)" value={spectralPower} onChange={setSpectralPower} step="0.1" />
         </div>
       </div>

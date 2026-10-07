@@ -134,7 +134,6 @@ export default function InfraredMaterialsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={500} max={30000} />
         </div>
       </div>

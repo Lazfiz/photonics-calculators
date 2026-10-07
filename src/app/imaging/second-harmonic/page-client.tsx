@@ -78,27 +78,21 @@ export default function SecondHarmonicPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Fundamental wavelength (nm)</label>
             <ValidatedNumberInput label="Fundamental wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pulse energy (nJ)</label>
             <ValidatedNumberInput label="Pulse energy (nJ)" value={pulseEnergy} onChange={setPulseEnergy} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pulse width (fs)</label>
             <ValidatedNumberInput label="Pulse width (fs)" value={pulseWidth} onChange={setPulseWidth} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">NA</label>
             <ValidatedNumberInput label="NA" value={na} onChange={setNa} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">χ² effective (pm/V)</label>
             <ValidatedNumberInput label="χ² effective (pm/V)" value={chi2} onChange={setChi2} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Sample thickness (µm)</label>
             <ValidatedNumberInput label="Sample thickness (µm)" value={thickness} onChange={setThickness} />
           </div>
         </div>

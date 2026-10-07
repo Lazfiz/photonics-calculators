@@ -1,11 +1,11 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useState, type ReactNode } from "react";
 
 import { clampToRange, isInRange, parseNumberInput } from "@/lib/number-input";
 
 interface ValidatedNumberInputProps {
-  label: string;
+  label: ReactNode;
   value: number;
   onChange: (value: number) => void;
   min?: number;

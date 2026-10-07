@@ -154,11 +154,9 @@ export default function EllipsometryPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Measured Parameters</h2>
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Ψ (amplitude ratio) [°]</label>
             <ValidatedNumberInput label="Ψ (amplitude ratio) [°]" value={psiDeg} onChange={setPsiDeg} />
           </div>
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Δ (phase difference) [°]</label>
             <ValidatedNumberInput label="Δ (phase difference) [°]" value={deltaDeg} onChange={setDeltaDeg} />
           </div>
 
@@ -170,8 +168,7 @@ export default function EllipsometryPage() {
             { label: "Angle of incidence (°)", val: incidentAngle, set: setIncidentAngle, step: 0.5 },
           ].map(({ label, val, set, step }) => (
             <div key={label} className="mb-3">
-              <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
 
@@ -206,8 +203,7 @@ export default function EllipsometryPage() {
             { label: "Wavelength (nm)", val: wavelength, set: setWavelength, step: 0.1 },
           ].map(({ label, val, set, step }) => (
             <div key={label} className="mb-3">
-              <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
         </div>

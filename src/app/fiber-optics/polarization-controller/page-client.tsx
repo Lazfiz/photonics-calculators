@@ -142,33 +142,26 @@ export default function PolarizationControllerCalculator() {
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Birefringence Δn</label>
               <ValidatedNumberInput label="Birefringence Δn" value={birefringence} onChange={setBirefringence} step="1e-5" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Fiber Length per Section (m)</label>
               <ValidatedNumberInput label="Fiber Length per Section (m)" value={fiberLength} onChange={setFiberLength} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Number of Sections</label>
               <ValidatedNumberInput label="Number of Sections" value={numSections} onChange={setNumSections} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
               <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Input Azimuth (°)</label>
                 <ValidatedNumberInput label="Input Azimuth (°)" value={inputAzimuth} onChange={setInputAzimuth} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Input Ellipticity (°)</label>
                 <ValidatedNumberInput label="Input Ellipticity (°)" value={inputEllipticity} onChange={setInputEllipticity} />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Coil Radius (mm)</label>
               <ValidatedNumberInput label="Coil Radius (mm)" value={coilRadii} onChange={setCoilRadii} />
             </div>
           </div>

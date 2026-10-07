@@ -113,23 +113,18 @@ export default function MultiplePulsePage() {
       <LaserSafetyQuarantineBanner />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Pulse Energy (µJ)</label>
           <ValidatedNumberInput label="Pulse Energy (µJ)" value={pulseEnergy} onChange={setPulseEnergy} step="0.01" />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Pulse Width (ns)</label>
           <ValidatedNumberInput label="Pulse Width (ns)" value={pulseWidth} onChange={setPulseWidth} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">PRF (Hz)</label>
           <ValidatedNumberInput label="PRF (Hz)" value={prf} onChange={setPrf} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Number of Pulses</label>
           <ValidatedNumberInput label="Number of Pulses" value={numPulses} onChange={setNumPulses} />
         </div>
       </div>

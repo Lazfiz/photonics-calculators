@@ -119,23 +119,18 @@ export default function FiberCouplerCalculator() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Coupling Length (mm)</label>
               <ValidatedNumberInput label="Coupling Length (mm)" value={couplingLength} onChange={setCouplingLength} step="0.5" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Coupling Coefficient κ (1/mm)</label>
               <ValidatedNumberInput label="Coupling Coefficient κ (1/mm)" value={couplingCoeff} onChange={setCouplingCoeff} step="0.05" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Excess Loss (dB)</label>
               <ValidatedNumberInput label="Excess Loss (dB)" value={excessLoss} onChange={setExcessLoss} step="0.01" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Input Power (dBm)</label>
               <ValidatedNumberInput label="Input Power (dBm)" value={inputPower} onChange={setInputPower} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
               <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
             </div>
           </div>

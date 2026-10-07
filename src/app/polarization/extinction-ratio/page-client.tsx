@@ -53,8 +53,7 @@ export default function ExtinctionRatioPage() {
             { label: "Number of Cascaded Polarizers", val: numPolarizers, set: setNumPolarizers, min: 1, max: 10 },
           ].map(({ label, val, set, min, max }) => (
             <div key={label} className="mb-3">
-              <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} min={min} max={max} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} min={min} max={max} />
             </div>
           ))}
         </div>

@@ -59,23 +59,18 @@ export default function TIRFPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Objective NA</label>
             <ValidatedNumberInput label="Objective NA" value={na} onChange={setNa} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">n₁ (coverslip / immersion)</label>
             <ValidatedNumberInput label="n₁ (coverslip / immersion)" value={n1} onChange={setN1} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">n₂ (sample medium)</label>
             <ValidatedNumberInput label="n₂ (sample medium)" value={n2} onChange={setN2} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
             <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Angle beyond critical (°)</label>
             <ValidatedNumberInput label="Angle beyond critical (°)" value={angleOffset} onChange={setAngleOffset} />
           </div>
         </div>

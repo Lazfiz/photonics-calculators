@@ -85,7 +85,6 @@ export default function TransparencyRangePage() {
     <CalculatorShell backHref="/materials" backLabel="Materials" title="Transparency Range" description="UV cutoff to IR cutoff for common optical materials">
             
       <div className="mb-8">
-        <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} max={50000} />
       </div>
 

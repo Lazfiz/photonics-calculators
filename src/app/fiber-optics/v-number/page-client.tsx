@@ -98,12 +98,10 @@ export default function VNumberCalculator() {
           {/* Input Section */}
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Core Radius (μm)</label>
               <ValidatedNumberInput label="Core Radius (μm)" value={coreRadius} onChange={setCoreRadius} min={0.1} step="0.1" />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
               <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} step="1" />
             </div>
 
@@ -121,17 +119,14 @@ export default function VNumberCalculator() {
 
             {inputMode === "na" ? (
               <div>
-                <label className="block text-sm font-medium mb-2">Numerical Aperture (NA)</label>
                 <ValidatedNumberInput label="Numerical Aperture (NA)" value={na} onChange={setNa} min={0.01} max={1} step="0.001" />
               </div>
             ) : (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Core Refractive Index (n₁)</label>
                   <ValidatedNumberInput label="Core Refractive Index (n₁)" value={coreIndex} onChange={setCoreIndex} step="0.0001" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Cladding Refractive Index (n₂)</label>
                   <ValidatedNumberInput label="Cladding Refractive Index (n₂)" value={claddingIndex} onChange={setCladdingIndex} step="0.0001" />
                 </div>
               </div>

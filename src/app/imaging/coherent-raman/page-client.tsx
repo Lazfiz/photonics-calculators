@@ -92,31 +92,24 @@ export default function CoherentRamanPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pump wavelength (nm)</label>
             <ValidatedNumberInput label="Pump wavelength (nm)" value={pumpWl} onChange={setPumpWl} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Raman shift (cm⁻¹)</label>
             <ValidatedNumberInput label="Raman shift (cm⁻¹)" value={wavenumber} onChange={setWavenumber} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pump power (mW)</label>
             <ValidatedNumberInput label="Pump power (mW)" value={pumpPower} onChange={setPumpPower} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Stokes power (mW)</label>
             <ValidatedNumberInput label="Stokes power (mW)" value={stokesPower} onChange={setStokesPower} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pulse width (ps)</label>
             <ValidatedNumberInput label="Pulse width (ps)" value={pulseWidth} onChange={setPulseWidth} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Rep rate (MHz)</label>
             <ValidatedNumberInput label="Rep rate (MHz)" value={repRate} onChange={setRepRate} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">NA</label>
             <ValidatedNumberInput label="NA" value={na} onChange={setNa} />
           </div>
         </div>

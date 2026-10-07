@@ -83,8 +83,7 @@ export default function SRSThresholdPage() {
             { label: "Loss (dB/km)", val: loss, set: setLoss },
           ].map(({ label, val, set }) => (
             <div key={label} className="mb-3">
-              <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} step="any" />
+              <ValidatedNumberInput label={label} value={val} onChange={set} step="any" />
             </div>
           ))}
         </div>
@@ -96,8 +95,7 @@ export default function SRSThresholdPage() {
             { label: "Raman Shift (THz)", val: ramanShift, set: setRamanShift },
           ].map(({ label, val, set }) => (
             <div key={label} className="mb-3">
-              <label className="text-sm text-gray-400 block mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} step="any" />
+              <ValidatedNumberInput label={label} value={val} onChange={set} step="any" />
             </div>
           ))}
           <div className="mt-4 p-3 bg-gray-800 rounded text-sm text-gray-400">

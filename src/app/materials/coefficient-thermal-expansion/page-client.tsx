@@ -93,15 +93,12 @@ export default function CTEPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Length L₀ (mm)</label>
           <ValidatedNumberInput label="Length L₀ (mm)" value={length} onChange={setLength} min={0.1} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">T start (°C)</label>
           <ValidatedNumberInput label="T start (°C)" value={tempStart} onChange={setTempStart} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">T end (°C)</label>
           <ValidatedNumberInput label="T end (°C)" value={tempEnd} onChange={setTempEnd} />
         </div>
       </div>

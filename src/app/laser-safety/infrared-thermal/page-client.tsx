@@ -101,19 +101,15 @@ export default function InfraredThermalPage() {
       <LaserSafetyQuarantineBanner />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Exposure Time (s)</label>
           <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} step="0.1" />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Beam Diameter (mm)</label>
           <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDiam} onChange={setBeamDiam} step="0.1" />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Power (W)</label>
           <ValidatedNumberInput label="Power (W)" value={power} onChange={setPower} step="0.1" />
         </div>
       </div>

@@ -47,27 +47,21 @@ export default function IlluminationPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Objective magnification</label>
             <ValidatedNumberInput label="Objective magnification" value={objMag} onChange={setObjMag} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Objective NA</label>
             <ValidatedNumberInput label="Objective NA" value={objNa} onChange={setObjNa} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Tube length (mm)</label>
             <ValidatedNumberInput label="Tube length (mm)" value={tubeFocal} onChange={setTubeFocal} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Condenser NA</label>
             <ValidatedNumberInput label="Condenser NA" value={condenserNa} onChange={setCondenserNa} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Field diaphragm (mm)</label>
             <ValidatedNumberInput label="Field diaphragm (mm)" value={fieldDiaphragm} onChange={setFieldDiaphragm} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Condenser focal length (mm)</label>
             <ValidatedNumberInput label="Condenser focal length (mm)" value={condenserFocal} onChange={setCondenserFocal} />
           </div>
         </div>

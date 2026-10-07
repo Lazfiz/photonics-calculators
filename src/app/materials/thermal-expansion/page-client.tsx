@@ -46,15 +46,12 @@ export default function ThermalExpansionPage() {
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">CTE α (×10⁻⁶/K)</label>
           <ValidatedNumberInput label="CTE α (×10⁻⁶/K)" value={alpha} onChange={setAlpha} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Temperature change ΔT (°C)</label>
           <ValidatedNumberInput label="Temperature change ΔT (°C)" value={dT} onChange={setDT} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Length L (mm)</label>
           <ValidatedNumberInput label="Length L (mm)" value={length} onChange={setLength} />
         </div>
       </div>

@@ -138,23 +138,18 @@ export default function RareEarthFiberCalculator() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Dopant Concentration (ions/m³)</label>
               <ValidatedNumberInput label="Dopant Concentration (ions/m³)" value={dopantConcentration} onChange={setDopantConcentration} step="1e23" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Fiber Length (m)</label>
               <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Core Diameter (µm)</label>
               <ValidatedNumberInput label="Core Diameter (µm)" value={coreDiameter} onChange={setCoreDiameter} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Numerical Aperture</label>
               <ValidatedNumberInput label="Numerical Aperture" value={numericalAperture} onChange={setNumericalAperture} step="0.01" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Overlap Factor Γ</label>
               <ValidatedNumberInput label="Overlap Factor Γ" value={overlapFactor} onChange={setOverlapFactor} step="0.05" />
             </div>
           </div>

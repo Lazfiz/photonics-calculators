@@ -123,23 +123,18 @@ export default function RareEarthDopedFiberCalculator() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Fiber Length (m)</label>
               <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} min={0.1} step="0.5" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Core Radius (μm)</label>
               <ValidatedNumberInput label="Core Radius (μm)" value={coreRadius} onChange={setCoreRadius} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Dopant Concentration (ppm wt)</label>
               <ValidatedNumberInput label="Dopant Concentration (ppm wt)" value={dopantConcentration} onChange={setDopantConcentration} min={1} step="100" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Pump Power (mW)</label>
               <ValidatedNumberInput label="Pump Power (mW)" value={pumpPower} onChange={setPumpPower} step="10" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Signal λ (nm)</label>
               <ValidatedNumberInput label="Signal λ (nm)" value={signalWavelength} onChange={setSignalWavelength} step="1" />
             </div>
           </div>

@@ -107,27 +107,21 @@ export default function WDMCouplerCalculator() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Number of Channels</label>
               <ValidatedNumberInput label="Number of Channels" value={channelCount} onChange={setChannelCount} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Channel Spacing (nm)</label>
               <ValidatedNumberInput label="Channel Spacing (nm)" value={channelSpacing} onChange={setChannelSpacing} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Center Wavelength (nm)</label>
               <ValidatedNumberInput label="Center Wavelength (nm)" value={centerWavelength} onChange={setCenterWavelength} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Passband Width (nm)</label>
               <ValidatedNumberInput label="Passband Width (nm)" value={passbandWidth} onChange={setPassbandWidth} step="0.05" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Insertion Loss (dB)</label>
               <ValidatedNumberInput label="Insertion Loss (dB)" value={insertionLoss} onChange={setInsertionLoss} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Isolation (dB)</label>
               <ValidatedNumberInput label="Isolation (dB)" value={isolation} onChange={setIsolation} step="1" />
             </div>
           </div>

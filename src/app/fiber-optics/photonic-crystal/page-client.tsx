@@ -109,15 +109,12 @@ export default function PhotonicCrystalFiberCalculator() {
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Pitch Λ (μm)</label>
               <ValidatedNumberInput label="Pitch Λ (μm)" value={pitch} onChange={setPitch} min={0.5} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Hole Diameter d (μm)</label>
               <ValidatedNumberInput label="Hole Diameter d (μm)" value={holeDiameter} onChange={setHoleDiameter} min={0.1} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
               <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
           </div>

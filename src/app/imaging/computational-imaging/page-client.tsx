@@ -52,27 +52,21 @@ export default function ComputationalImagingPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Numerical Aperture (NA)</label>
             <ValidatedNumberInput label="Numerical Aperture (NA)" value={na} onChange={setNa} min={0.1} max={1.8} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
             <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={2000} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Number of Views</label>
             <ValidatedNumberInput label="Number of Views" value={numViews} onChange={setNumViews} min={1} max={200} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Photons per Pixel (single view)</label>
             <ValidatedNumberInput label="Photons per Pixel (single view)" value={photonCount} onChange={setPhotonCount} min={1} max={100000} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Background Noise (e⁻)</label>
             <ValidatedNumberInput label="Background Noise (e⁻)" value={bgNoise} onChange={setBgNoise} min={0} max={1000} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Read Noise (e⁻ rms)</label>
             <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} min={0} max={50} />
           </div>
         </div>

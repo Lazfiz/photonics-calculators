@@ -110,31 +110,24 @@ export default function FiberDelayLineCalculator() {
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Fiber Length (m)</label>
               <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Refractive Index n_eff</label>
               <ValidatedNumberInput label="Refractive Index n_eff" value={refractiveIndex} onChange={setRefractiveIndex} step="0.001" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Signal Wavelength (nm)</label>
               <ValidatedNumberInput label="Signal Wavelength (nm)" value={signalWavelength} onChange={setSignalWavelength} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Input Bit Rate (Gbps)</label>
               <ValidatedNumberInput label="Input Bit Rate (Gbps)" value={inputBitRate} onChange={setInputBitRate} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Dispersion Coeff. (ps/nm·km)</label>
               <ValidatedNumberInput label="Dispersion Coeff. (ps/nm·km)" value={coefficient} onChange={setCoefficient} step="0.01" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Spectral Width (nm)</label>
               <ValidatedNumberInput label="Spectral Width (nm)" value={spectralWidth} onChange={setSpectralWidth} step="0.01" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Temperature (°C)</label>
               <ValidatedNumberInput label="Temperature (°C)" value={temperature} onChange={setTemperature} />
             </div>
           </div>

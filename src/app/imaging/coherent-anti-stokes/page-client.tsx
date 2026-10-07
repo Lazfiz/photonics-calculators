@@ -56,35 +56,27 @@ export default function CoherentAntiStokesPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pump wavelength (nm)</label>
             <ValidatedNumberInput label="Pump wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Stokes wavelength (nm)</label>
             <ValidatedNumberInput label="Stokes wavelength (nm)" value={stokesWavelength} onChange={setStokesWavelength} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Objective NA</label>
             <ValidatedNumberInput label="Objective NA" value={na} onChange={setNa} min={0.2} max={1.5} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Refractive index (n)</label>
             <ValidatedNumberInput label="Refractive index (n)" value={n} onChange={setN} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pulse width (fs)</label>
             <ValidatedNumberInput label="Pulse width (fs)" value={pulseWidth} onChange={setPulseWidth} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pump power (mW)</label>
             <ValidatedNumberInput label="Pump power (mW)" value={pumpPower} onChange={setPumpPower} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Stokes power (mW)</label>
             <ValidatedNumberInput label="Stokes power (mW)" value={stokesPower} onChange={setStokesPower} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Rep rate (MHz)</label>
             <ValidatedNumberInput label="Rep rate (MHz)" value={repRate} onChange={setRepRate} />
           </div>
         </div>

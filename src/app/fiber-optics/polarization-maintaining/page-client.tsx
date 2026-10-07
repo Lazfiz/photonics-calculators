@@ -100,11 +100,9 @@ export default function PMFiberCalculator() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
               <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Core Radius (μm)</label>
               <ValidatedNumberInput label="Core Radius (μm)" value={coreRadius} onChange={setCoreRadius} step="0.1" />
             </div>
             <div>
@@ -115,11 +113,9 @@ export default function PMFiberCalculator() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Fiber Length (m)</label>
               <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} step="100" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Input PER (dB)</label>
               <ValidatedNumberInput label="Input PER (dB)" value={extinctionRatio} onChange={setExtinctionRatio} step="1" />
             </div>
           </div>

@@ -70,11 +70,9 @@ export default function BERPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
           <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Detected Signal Photons per Bit (average)</label>
             <ValidatedNumberInput label="Detected Signal Photons per Bit (average)" value={photons} onChange={setPhotons} min={0.1} max={MAX_PHOTONS_PER_BIT} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Dark + Background Counts per Bit Slot (per detector)</label>
             <ValidatedNumberInput label="Dark + Background Counts per Bit Slot (per detector)" value={darkCount} onChange={setDarkCount} min={0} max={MAX_NOISE_PER_SLOT} />
           </div>
           <div>

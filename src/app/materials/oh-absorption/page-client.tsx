@@ -66,7 +66,6 @@ export default function OHAbsorptionPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">OH Concentration Multiplier</label>
           <ValidatedNumberInput label="OH Concentration Multiplier" value={fiberLength} onChange={setFiberLength} />
         </div>
       </div>

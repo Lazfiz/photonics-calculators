@@ -53,11 +53,9 @@ export default function ResolutionPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Numerical Aperture (NA)</label>
             <ValidatedNumberInput label="Numerical Aperture (NA)" value={na} onChange={setNa} min={0.01} max={1.8} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
             <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={2000} />
           </div>
           <div>
@@ -69,7 +67,6 @@ export default function ResolutionPage() {
           </div>
           {mediumIdx === 3 && (
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Custom refractive index</label>
               <ValidatedNumberInput label="Custom refractive index" value={customN} onChange={setCustomN} min={1} max={2} />
             </div>
           )}

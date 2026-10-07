@@ -83,27 +83,21 @@ export default function CircularDichroismPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Sample Parameters</h2>
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Absorbance LCP (A<sub>L</sub>)</label>
-            <ValidatedNumberInput label="absL" value={absL} onChange={setAbsL} />
+            <ValidatedNumberInput label={<>Absorbance LCP (A<sub>L</sub>)</>} value={absL} onChange={setAbsL} />
           </div>
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Absorbance RCP (A<sub>R</sub>)</label>
-            <ValidatedNumberInput label="absR" value={absR} onChange={setAbsR} />
+            <ValidatedNumberInput label={<>Absorbance RCP (A<sub>R</sub>)</>} value={absR} onChange={setAbsR} />
           </div>
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Path length (cm)</label>
             <ValidatedNumberInput label="Path length (cm)" value={pathLength} onChange={setPathLength} />
           </div>
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Concentration (mM)</label>
             <ValidatedNumberInput label="Concentration (mM)" value={concentration} onChange={setConcentration} />
           </div>
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Wavelength (nm)</label>
             <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div className="mb-3">
-            <label className="text-sm text-gray-400 block mb-1">Temperature (°C)</label>
             <ValidatedNumberInput label="Temperature (°C)" value={temperature} onChange={setTemperature} />
           </div>
         </div>

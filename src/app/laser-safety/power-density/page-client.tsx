@@ -76,11 +76,9 @@ export default function PowerDensityPage() {
           <h2 className="text-lg font-semibold mb-4">Input</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Power (W)</label>
               <ValidatedNumberInput label="Power (W)" value={power} onChange={setPower} min={0} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1">1/e² Diameter (mm)</label>
               <ValidatedNumberInput label="1/e² Diameter (mm)" value={diameter} onChange={setDiameter} min={0.01} step="0.1" />
             </div>
             <div>

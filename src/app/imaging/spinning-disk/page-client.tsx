@@ -50,35 +50,27 @@ export default function SpinningDiskPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">NA</label>
             <ValidatedNumberInput label="NA" value={na} onChange={setNa} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Excitation wavelength (nm)</label>
             <ValidatedNumberInput label="Excitation wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Refractive index (n)</label>
             <ValidatedNumberInput label="Refractive index (n)" value={n} onChange={setN} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Objective Magnification</label>
             <ValidatedNumberInput label="Objective Magnification" value={magnification} onChange={setMagnification} min={10} max={150} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pinhole diameter (µm)</label>
             <ValidatedNumberInput label="Pinhole diameter (µm)" value={pinholeDiam} onChange={setPinholeDiam} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Number of pinholes</label>
             <ValidatedNumberInput label="Number of pinholes" value={numPins} onChange={setNumPins} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Disk speed (RPM)</label>
             <ValidatedNumberInput label="Disk speed (RPM)" value={diskRPM} onChange={setDiskRPM} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Camera exposure (ms)</label>
             <ValidatedNumberInput label="Camera exposure (ms)" value={cameraExposure} onChange={setCameraExposure} />
           </div>
         </div>

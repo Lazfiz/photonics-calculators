@@ -50,27 +50,21 @@ export default function WavefrontSensorPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Lenslets across aperture</label>
             <ValidatedNumberInput label="Lenslets across aperture" value={numLenslets} onChange={setNumLenslets} min={4} max={64} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Lenslet pitch (µm)</label>
             <ValidatedNumberInput label="Lenslet pitch (µm)" value={lensletPitch} onChange={setLensletPitch} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Lenslet focal length (mm)</label>
             <ValidatedNumberInput label="Lenslet focal length (mm)" value={focalLength} onChange={setFocalLength} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
             <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Camera pixel size (µm)</label>
             <ValidatedNumberInput label="Camera pixel size (µm)" value={pixelSize} onChange={setPixelSize} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Camera sensor size (mm)</label>
             <ValidatedNumberInput label="Camera sensor size (mm)" value={sensorSize} onChange={setSensorSize} />
           </div>
         </div>

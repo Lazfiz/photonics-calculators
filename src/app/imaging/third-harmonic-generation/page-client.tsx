@@ -50,27 +50,21 @@ export default function ThirdHarmonicGenerationPage() {
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Excitation wavelength (nm)</label>
             <ValidatedNumberInput label="Excitation wavelength (nm)" value={wavelength} onChange={setWavelength} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Objective NA</label>
             <ValidatedNumberInput label="Objective NA" value={na} onChange={setNa} min={0.2} max={1.5} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Refractive index (n)</label>
             <ValidatedNumberInput label="Refractive index (n)" value={n} onChange={setN} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Pulse width (fs)</label>
             <ValidatedNumberInput label="Pulse width (fs)" value={pulseWidth} onChange={setPulseWidth} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Average power (mW)</label>
             <ValidatedNumberInput label="Average power (mW)" value={avgPower} onChange={setAvgPower} />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Rep rate (MHz)</label>
             <ValidatedNumberInput label="Rep rate (MHz)" value={repRate} onChange={setRepRate} />
           </div>
         </div>

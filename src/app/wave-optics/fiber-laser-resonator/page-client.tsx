@@ -97,39 +97,30 @@ export default function FiberLaserResonatorPage() {
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Fiber Length (m)</label>
           <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} min={0.1} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Core Diameter (µm)</label>
           <ValidatedNumberInput label="Core Diameter (µm)" value={coreDiameter} onChange={setCoreDiameter} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Numerical Aperture</label>
           <ValidatedNumberInput label="Numerical Aperture" value={NA} onChange={setNA} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Laser Wavelength (nm)</label>
           <ValidatedNumberInput label="Laser Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Pump Wavelength (nm)</label>
           <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Output Coupler R</label>
           <ValidatedNumberInput label="Output Coupler R" value={R_oc} onChange={setR_oc} min={0} max={1} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">HR Reflector R</label>
           <ValidatedNumberInput label="HR Reflector R" value={R_hr} onChange={setR_hr} min={0} max={1} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Background Loss (dB/m)</label>
           <ValidatedNumberInput label="Background Loss (dB/m)" value={alpha} onChange={setAlpha} />
         </div>
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Small-Signal Gain (m⁻¹)</label>
           <ValidatedNumberInput label="Small-Signal Gain (m⁻¹)" value={gainPerMeter} onChange={setGainPerMeter} />
         </div>
       </div>

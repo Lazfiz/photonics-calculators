@@ -92,15 +92,12 @@ export default function DispersionShiftedCalculator() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Wavelength (nm)</label>
               <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Fiber Length (km)</label>
               <ValidatedNumberInput label="Fiber Length (km)" value={fiberLength} onChange={setFiberLength} step="10" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Bit Rate (Gbps)</label>
               <ValidatedNumberInput label="Bit Rate (Gbps)" value={bitRate} onChange={setBitRate} step="1" />
             </div>
           </div>

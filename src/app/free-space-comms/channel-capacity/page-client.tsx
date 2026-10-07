@@ -85,8 +85,7 @@ export default function ChannelCapacityPage() {
             ["FEC Overhead (%)", fecOverhead, setFecOverhead],
           ].map(([label, val, set]: any) => (
             <div key={label as string}>
-              <label className="block text-sm text-gray-400 mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
         </div>

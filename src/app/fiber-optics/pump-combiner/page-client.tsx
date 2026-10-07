@@ -89,32 +89,25 @@ export default function PumpCombinerCalculator() {
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Number of Pump Ports</label>
               <ValidatedNumberInput label="Number of Pump Ports" value={numPumpPorts} onChange={setNumPumpPorts} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Pump Wavelength (nm)</label>
               <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Pump Power per Port (W)</label>
               <ValidatedNumberInput label="Pump Power per Port (W)" value={pumpPowerPerPort} onChange={setPumpPowerPerPort} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Combiner Efficiency (%)</label>
               <ValidatedNumberInput label="Combiner Efficiency (%)" value={combinerEfficiency} onChange={setCombinerEfficiency} step="0.5" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Signal Insertion Loss (dB)</label>
               <ValidatedNumberInput label="Signal Insertion Loss (dB)" value={signalInsertionLoss} onChange={setSignalInsertionLoss} step="0.01" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Pump NA</label>
                 <ValidatedNumberInput label="Pump NA" value={pumpNA} onChange={setPumpNA} step="0.01" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Signal NA</label>
                 <ValidatedNumberInput label="Signal NA" value={signalNA} onChange={setSignalNA} step="0.01" />
               </div>
             </div>

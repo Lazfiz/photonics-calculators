@@ -104,19 +104,15 @@ export default function ScannedMPEPage() {
           <h2 className="text-lg font-semibold mb-4">Input</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
               <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Scan Frequency (Hz)</label>
               <ValidatedNumberInput label="Scan Frequency (Hz)" value={scanFreq} onChange={setScanFreq} step="100" />
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Spot Diameter (mm, 1/e²)</label>
               <ValidatedNumberInput label="Spot Diameter (mm, 1/e²)" value={spotDiam} onChange={setSpotDiam} step="0.1" />
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Scan Width (mm)</label>
               <ValidatedNumberInput label="Scan Width (mm)" value={scanWidth} onChange={setScanWidth} step="1" />
             </div>
           </div>

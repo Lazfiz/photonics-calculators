@@ -44,7 +44,6 @@ export default function NonlinearIndexPage() {
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">n₂ (cm²/W)</label>
           <ValidatedNumberInput label="n₂ (cm²/W)" value={wavelength} onChange={setWavelength} />
         </div>
       </div>

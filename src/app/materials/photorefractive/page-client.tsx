@@ -72,8 +72,10 @@ export default function PhotorefractivePage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Applied Field (V/m): {field.toExponential(2)}</label>
-          <ValidatedNumberInput label="Applied Field (V/m): {field.toExponential(2)}" value={wavelength} onChange={setWavelength} />
+          <ValidatedNumberInput label="Applied Field (V/m)" value={field} onChange={setField} min={1000} max={100000} />
+        </div>
+        <div>
+          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={1} />
         </div>
         <div>
           <label className="block text-sm text-gray-400 mb-1">Polarization</label>

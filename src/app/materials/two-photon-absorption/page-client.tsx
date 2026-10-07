@@ -67,15 +67,12 @@ export default function TwoPhotonAbsorptionPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Wavelength (nm)</label>
           <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Peak Intensity (GW/cm²)</label>
           <ValidatedNumberInput label="Peak Intensity (GW/cm²)" value={intensity} onChange={setIntensity} />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Thickness (mm)</label>
           <ValidatedNumberInput label="Thickness (mm)" value={thickness} onChange={setThickness} />
         </div>
       </div>

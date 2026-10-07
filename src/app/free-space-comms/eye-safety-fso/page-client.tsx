@@ -135,8 +135,7 @@ export default function EyeSafetyFsoPage() {
             ["Distance for Check (m)", distance, setDistance],
           ].map(([label, val, set]: any) => (
             <div key={label as string}>
-              <label className="block text-sm text-gray-400 mb-1">{label}</label>
-              <ValidatedNumberInput label="{label}" value={val} onChange={set} />
+              <ValidatedNumberInput label={label} value={val} onChange={set} />
             </div>
           ))}
           <div className="text-xs text-gray-500 pt-2 border-t border-gray-800">
