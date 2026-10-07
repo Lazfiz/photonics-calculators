@@ -139,9 +139,10 @@ export default function ModeMatchingPage() {
         if (inv_q_im >= 0) continue;
         const w_out = Math.sqrt(-lam_mm / (Math.PI * inv_q_im)) * 1000;
         // Exact overlap: η = 4·Im(q_out)·Im(q_target) / |q_out* - q_target|²
+        // q_out* - q_target = qpp_r - i·(qpp_i + zR2), so Im parts add (η = 1 at a perfect match)
         const q_target_i = zR2 / 1000;
         const dq_r = qpp_r;
-        const dq_i = qpp_i - q_target_i;
+        const dq_i = qpp_i + q_target_i;
         const eta = 4 * qpp_i * q_target_i / (dq_r * dq_r + dq_i * dq_i);
         if (eta > bestEta) bestEta = eta;
       }
