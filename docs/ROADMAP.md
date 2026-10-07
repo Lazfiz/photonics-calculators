@@ -156,7 +156,11 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
     - Quarantined laser-safety pages, and `eye-safety-fso`, say "Simplified educational estimate … Not for safety decisions".
   - Added JSON-LD by hand to the 3 pages that had none: `nohd`, `blackbody`, `single-ar`.
   - `tests/page-json-ld.test.ts` checks every calculator page: the JSON-LD arguments equal `metadata` as plain strings, the canonical URL matches the path, and there's no placeholder description.
-- [ ] Fix the `ShareButton` hydration mismatch and the breadcrumb bug. Make the "541" count a computed value.
+- [x] Fix the `ShareButton` hydration mismatch and the breadcrumb bug. Make the "541" count a computed value. **Done 2026-10-07 on `phase-1`:**
+  - `ShareButton` reads `currentQuery(pathname)` from `url-state-store` through `useSyncExternalStore` (server snapshot ""), so a shared link hydrates cleanly and the button appears on the first input change. The copied link includes unflushed writes; a blocked clipboard no longer shows "Copied".
+  - Breadcrumb: all ancestors are links, the title is the last `<li>` with `aria-current="page"`, no bare `<span>` in the `<ol>`, and the category crumb uses `backLabel`.
+  - Counts: `scripts/generate-search-index.mjs` also writes `src/generated/calculator-counts.json` (524 = pages under `src/app/<category>/<slug>/`, hidden ones included). `home-categories`, `layout.tsx` (title, OG, Twitter, JSON-LD) and the search placeholder read it. `tests/calculator-counts.test.ts` checks it against the file system.
+  - `scripts/ui-check.mjs` gained share/breadcrumb checks. The old shell fails 3 of them (including "Hydration failed"); the new one passes all 30.
 - [ ] Codemod (ts-morph): `label="{label}"` → `label={label}` in 40 `page-client.tsx` files (44 sites; the input card literally shows "{label}"). Find them with `git grep -l 'label="{label}"' -- src`. Also render `CalculatorShell` in the 64 pages that import it without using it (see "Found during Phase 1").
 - [ ] Use a seeded PRNG (`src/physics/random.ts`) for the 6 pages that call `Math.random` in render. Then set `react-hooks/purity` back to `error` (`set-state-in-effect` already is).
 
