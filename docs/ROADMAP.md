@@ -77,6 +77,11 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - `bpsk-qpsk` "Required RX power" uses the RF floor kT = −174 dBm/Hz + 3 dB NF. Coherent optical detection is shot-noise limited at hν ≈ −159 dBm/Hz (1550 nm).
   - `diversity-reception` uses a fixed "3σ" outage and gives identical gain for SC, EGC and MRC.
 - `SimpleLineChart` prints SVG coordinates at full precision. Node (SSR) and Chrome can differ by 1 ulp (`200.2834021708276` vs `…763` on `detectors/quantum-efficiency`, seen with a warm Chrome profile), which logs a hydration-mismatch error. Round coordinates to 0.01 px in the Phase 3 chart rewrite.
+- Found while writing descriptions (JSON-LD item):
+  - `point-ahead` uses θ = v/c. The standard point-ahead angle is 2v⊥/c, so this is a factor-2 error (Phase 4).
+  - The FAQ in `lib/json-ld.tsx` lower-cases the title ("What is photon-counting ber (ook and dpsk)?", "… (fog)?"). Fix it when the registry generates the JSON-LD (Phase 2).
+  - The old slug-derived titles survive in `flagship-related.ts` ("Ber", "Wdm Coupler", with "Related … calculator." as the description) and in the category index pages. Both get regenerated from the registry (Phase 2).
+  - More duplicate pairs: `scanned-mpe` / `scanning-mpe` (both titled "Scanned Beam MPE"), `scintillation` / `scintillation-index`, and `free-space-comms/atmospheric-loss` / `laser-safety/atmospheric-attenuation`.
 - `useURLState` only rejects non-finite URL values. A crafted link (e.g. `?na=0`) still reaches the physics unclamped, because the inputs clamp only what the user types. Guard domains in the Phase 2 physics modules, or give `useURLState` an optional range.
 
 ## Phase 0 — safe, building, Claude-native (1 session)
@@ -145,7 +150,12 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - `useURLState` reads `src/lib/url-state-store.ts` through `useSyncExternalStore`: the query string plus an overlay of unflushed writes (`null` deletes the param). Batched 100 ms writes keep other params and the hash. A pathname guard stops one page's params reaching the next during client navigation. Non-finite URL numbers fall back to the default.
   - Both inputs keep the typed text locally. In-range values reach `onChange` live; out-of-range values are held back and clamped on blur/Enter; invalid text reverts (`src/lib/number-input.ts`).
   - `set-state-in-effect` is back to `error` (0 sites). Tests: `tests/url-state-store.test.ts`, `number-input.test.ts`. Headless-Chrome check: `scripts/ui-check.mjs` (all checks pass on boxcar-integrator, ber and quantum-efficiency).
-- [ ] Rebuild JSON-LD from each page's `metadata` (codemod) and write the 55 placeholder descriptions.
+- [x] Rebuild JSON-LD from each page's `metadata` (codemod) and write the 55 placeholder descriptions. **Done 2026-10-07 on `phase-1`:**
+  - `scripts/codemods/2026-10-07-rebuild-json-ld.ts` (ts-morph) rebuilt the call in 429 pages: 427 corrupted, plus 2 whose `\uXXXX` escapes became literal characters. It skipped none, and a second run changes nothing. It also checks that each canonical URL matches the page's path.
+  - `scripts/codemods/2026-10-07-placeholder-descriptions.ts` wrote the 55 descriptions from `…-placeholder-descriptions.json`, each written from the page's inputs and results and ≤155 characters. It also replaced 33 slug-derived titles (e.g. "Ber" → "Photon-Counting BER (OOK and DPSK)").
+    - Quarantined laser-safety pages, and `eye-safety-fso`, say "Simplified educational estimate … Not for safety decisions".
+  - Added JSON-LD by hand to the 3 pages that had none: `nohd`, `blackbody`, `single-ar`.
+  - `tests/page-json-ld.test.ts` checks every calculator page: the JSON-LD arguments equal `metadata` as plain strings, the canonical URL matches the path, and there's no placeholder description.
 - [ ] Fix the `ShareButton` hydration mismatch and the breadcrumb bug. Make the "541" count a computed value.
 - [ ] Codemod (ts-morph): `label="{label}"` → `label={label}` in 40 `page-client.tsx` files (44 sites; the input card literally shows "{label}"). Find them with `git grep -l 'label="{label}"' -- src`. Also render `CalculatorShell` in the 64 pages that import it without using it (see "Found during Phase 1").
 - [ ] Use a seeded PRNG (`src/physics/random.ts`) for the 6 pages that call `Math.random` in render. Then set `react-hooks/purity` back to `error` (`set-state-in-effect` already is).
