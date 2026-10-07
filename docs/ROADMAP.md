@@ -90,6 +90,17 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - More duplicate pairs: `scanned-mpe` / `scanning-mpe` (both titled "Scanned Beam MPE"), `scintillation` / `scintillation-index`, and `free-space-comms/atmospheric-loss` / `laser-safety/atmospheric-attenuation`.
 - `useURLState` only rejects non-finite URL values. A crafted link (e.g. `?na=0`) still reaches the physics unclamped, because the inputs clamp only what the user types. Guard domains in the Phase 2 physics modules, or give `useURLState` an optional range.
 
+**Found during Phase 2** (2026-10-07)
+- The 6 thin-film copies of `computeRT` were compared with `src/physics/thin-film/transfer-matrix.ts` on an 11-layer stack, 300–900 nm:
+  - `angle-tuning` (s and p, 0–45°), `beamsplitter` and `heat-mirror` agree to 3e-15.
+  - `cold-mirror`'s matrix product dropped the M₁₁·L₁₂ terms, so R was off by up to 0.9.
+  - `wavelength-separation` and `environmental-stability` (inline) multiplied by a *real* matrix `[[cos δ, −sin δ/n], [−n sin δ, cos δ]]` (the `i` was lost), so R reached 2,370.
+  - `partial-reflector`'s copy was dead code. Its "R_design (QWL)" and the R-vs-n_film chart used cos 2δ = +1 (a half-wave layer), so they always showed the bare substrate, whatever n_film was.
+  - `cold-mirror` and `heat-mirror` showed R_max = [(r−1)/(r+1)]² with r = (n_H/n_L)^2N, which ignores n_inc and n_sub. They now use the exact quarter-wave admittance Y = (n_H/n_L)^2N·n_sub.
+  - `environmental-stability` added the humidity Δn to every curve, "Nominal (0 % RH)" included. Its Δn and CTE coefficients are still uncalibrated (Phase 4).
+  - All of these are fixed on `phase-2/constants-thin-film`.
+- 26 more thin-film pages still have an inline characteristic matrix, and each has its own arithmetic. List: `git grep -l -E "m11|cosD" -- 'src/app/thin-film/*/page-client.tsx'`. Expect more bugs like the ones above. Compare each with the module before you migrate it.
+
 ## Phase 0 — safe, building, Claude-native (1 session)
 - [x] 0.1 **User, manual:** (the Defender exclusion is optional and wasn't done)
   - [x] Revoke the GitHub PAT, then `git remote set-url origin https://github.com/Lazfiz/photonics-calculators.git` (use Git Credential Manager). **Done 2026-10-07** (session 8). Pushes use `gh`'s keyring login: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push …`.
@@ -180,6 +191,10 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 
 ## Phase 2 — architecture (~1 week)
 - [ ] `src/physics/constants.ts` (CODATA) and `src/physics/<category>/<slug>.ts` pure functions, migrated by codemod and category by category, with tests.
+  - [x] `src/physics/constants.ts` holds the exact SI constants plus CODATA 2022 measured values, with consistency tests. `src/lib/complex.ts` (unused) moved to `src/physics/complex.ts` and gained a stable `sqrt`.
+  - [x] Thin-film pilot: `src/physics/thin-film/transfer-matrix.ts`. It handles complex N, oblique incidence (s and p), and R, T and A. It doesn't overflow on thick metal or evanescent layers. It has 11 golden tests (Fresnel, Brewster, TIR, AR, (HL)^N, Airy with an absorbing film, bulk metal, critical angle). 7 pages use it.
+  - [ ] Migrate the other 26 thin-film pages with an inline matrix (see Phase 2 findings), in batches of ≤10 files, each compared before and after.
+  - [ ] Replace the inline constants in 46 files (`c = 3e8` ×54, …) with imports from `constants.ts`, using a codemod. Expect last-digit changes.
 - [ ] Calculator registry as the single source of truth: slug, title, description, category, model tier, references, aliases. It generates the sitemap, search index, metadata, JSON-LD and related links at build time.
 - [ ] Merge the ~40 duplicates and add 301 redirects in `next.config.js`.
 - [ ] As pages move to pure physics modules, fix the `useMemo` deps and `any`. Then set `preserve-manual-memoization` and `no-explicit-any` back to `error`.

@@ -6,33 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: number, wavelengths: number[]) {
-  const R: number[] = [];
-  for (const wl of wavelengths) {
-    let m11r = 1, m11i = 0, m12r = 0, m12i = 0;
-    let m21r = 0, m21i = 0, m22r = 1, m22i = 0;
-    for (const layer of layers) {
-      const delta = (2 * Math.PI * layer.n * layer.d) / wl;
-      const cosD = Math.cos(delta), sinD = Math.sin(delta), n = layer.n;
-      const new11r = m11r * cosD + m12r * (-n * sinD);
-      const new11i = m11i * cosD + m12i * (-n * sinD);
-      const new12r = m11r * (-sinD / n) + m12r * cosD;
-      const new12i = m11i * (-sinD / n) + m12i * cosD;
-      const new21r = m21r * cosD + m22r * (-n * sinD);
-      const new21i = m21i * cosD + m22i * (-n * sinD);
-      const new22r = m21r * (-sinD / n) + m22r * cosD;
-      const new22i = m21i * (-sinD / n) + m22i * cosD;
-      m11r = new11r; m11i = new11i; m12r = new12r; m12i = new12i;
-      m21r = new21r; m21i = new21i; m22r = new22r; m22i = new22i;
-    }
-    const numR = m11r * nInc + m12r * nInc * nSub - m21r - m22r * nSub;
-    const numI = m11i * nInc + m12i * nInc * nSub - m21i - m22i * nSub;
-    const denR = m11r * nInc + m12r * nInc * nSub + m21r + m22r * nSub;
-    const denI = m11i * nInc + m12i * nInc * nSub + m21i + m22i * nSub;
-    R.push((numR * numR + numI * numI) / (denR * denR + denI * denI));
-  }
-  return R;
-}
+import { quarterWaveStackReflectance, quarterWaveThickness, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
 
 export default function PartialReflectorPage() {
   const [nFilm, setNFilm] = useURLState("nFilm", 1.7);
@@ -43,30 +17,19 @@ export default function PartialReflectorPage() {
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 600 / 500);
-    const d = thicknessRatio * designWl / (4 * nFilm);
-    const r1 = (nInc - nFilm) / (nInc + nFilm);
-    const r2 = (nFilm - nSub) / (nFilm + nSub);
+    const lambdas = wls.map((wl) => wl * 1e-9);
+    // One film of `ratio` quarter-waves at λ₀
+    const filmSpectrum = (ratio: number) => {
+      const film = { n: nFilm, thickness: ratio * quarterWaveThickness(nFilm, designWl * 1e-9) };
+      return reflectanceSpectrum({ incident: nInc, layers: [film], substrate: { n: nSub } }, lambdas);
+    };
 
     // Single layer
-    const R_single = wls.map(wl => {
-      const delta = (2 * Math.PI * nFilm * d) / wl;
-      const cos2d = Math.cos(2 * delta);
-      const num = r1 * r1 + r2 * r2 + 2 * r1 * r2 * cos2d;
-      const den = 1 + r1 * r1 * r2 * r2 + 2 * r1 * r2 * cos2d;
-      return num / den;
-    });
+    const R_single = filmSpectrum(thicknessRatio);
 
-    // Fabry-Perot: substrate + two coatings (partial reflector on each side)
-    // Model as: film | substrate | film
-    const layers = [
-      { n: nFilm, d },
-      { n: nSub, d: 1000000 }, // thick substrate (just use nSub as exit)
-      { n: nFilm, d },
-    ];
-    // Actually for a Fabry-Perot we need air gap, let's just show single layer at multiple thicknesses
     const traces: any[] = [
       { x: wls, y: R_single, type: "scatter" as const, mode: "lines" as const,
-        name: `Single layer (d/λ₀ = ${thicknessRatio})`, line: { color: "#60a5fa", width: 2 } },
+        name: `Single layer (${thicknessRatio} × λ₀/4n)`, line: { color: "#60a5fa", width: 2 } },
     ];
 
     // Sweep thickness ratios
@@ -74,34 +37,21 @@ export default function PartialReflectorPage() {
     const ratioColors = ["#f87171", "#fbbf24", "#34d399", "#a78bfa", "#fb923c"];
     for (let ri = 0; ri < ratios.length; ri++) {
       if (Math.abs(ratios[ri] - thicknessRatio) < 0.01) continue;
-      const dd = ratios[ri] * designWl / (4 * nFilm);
-      const Rr = wls.map(wl => {
-        const delta = (2 * Math.PI * nFilm * dd) / wl;
-        const cos2d = Math.cos(2 * delta);
-        const num = r1 * r1 + r2 * r2 + 2 * r1 * r2 * cos2d;
-        const den = 1 + r1 * r1 * r2 * r2 + 2 * r1 * r2 * cos2d;
-        return num / den;
-      });
+      const Rr = filmSpectrum(ratios[ri]);
       traces.push({
         x: wls, y: Rr, type: "scatter" as const, mode: "lines" as const,
-        name: `d/λ₀ = ${ratios[ri]}`, line: { color: ratioColors[ri], width: 1, dash: "dash" },
+        name: `${ratios[ri]} × λ₀/4n`, line: { color: ratioColors[ri], width: 1, dash: "dash" },
       });
     }
 
-    // Show R at design wavelength for various nFilm
+    // R at the design wavelength of a quarter-wave layer, for various nFilm
     const nRange = Array.from({ length: 200 }, (_, i) => 1.0 + i * 2.5 / 200);
-    const R_vs_n = nRange.map(n => {
-      const rr1 = (nInc - n) / (nInc + n);
-      const rr2 = (n - nSub) / (n + nSub);
-      return (rr1 * rr1 + rr2 * rr2 + 2 * rr1 * rr2) / (1 + rr1 * rr1 * rr2 * rr2 + 2 * rr1 * rr2);
-    });
+    const R_vs_n = nRange.map((n) => quarterWaveStackReflectance(nInc, [n], nSub));
 
     return { mainTraces: traces, nRange, R_vs_n };
   }, [nFilm, nSub, nInc, thicknessRatio, designWl]);
 
-  const r1 = (nInc - nFilm) / (nInc + nFilm);
-  const r2 = (nFilm - nSub) / (nFilm + nSub);
-  const Rdesign = (r1 * r1 + r2 * r2 + 2 * r1 * r2) / (1 + r1 * r1 * r2 * r2 + 2 * r1 * r2);
+  const Rdesign = quarterWaveStackReflectance(nInc, [nFilm], nSub);
 
   return (
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Partial Reflector Design" description="Partial reflectors (output couplers, etalon mirrors) provide controlled reflectance between

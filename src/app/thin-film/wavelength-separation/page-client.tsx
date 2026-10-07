@@ -6,53 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-function computeRT(layers: { n: number; d: number }[], nInc: number, nSub: number, wavelengths: number[], angleDeg: number) {
-  const R: number[] = [];
-  const thetaInc = angleDeg * Math.PI / 180;
-  const cosThetaInc = Math.cos(thetaInc);
-  const sinThetaInc = Math.sin(thetaInc);
-
-  for (const wl of wavelengths) {
-    let m11r = 1, m11i = 0, m12r = 0, m12i = 0;
-    let m21r = 0, m21i = 0, m22r = 1, m22i = 0;
-    const nEffPrev = nInc;
-
-    for (const layer of layers) {
-      // Snell's law for refraction angle in each layer
-      const sinThetaLayer = nInc * sinThetaInc / layer.n;
-      const cosThetaLayer = Math.sqrt(1 - sinThetaLayer * sinThetaLayer);
-      // TE polarization effective index
-      const nEff = layer.n * cosThetaLayer;
-
-      const delta = (2 * Math.PI * nEff * layer.d) / wl;
-      const cosD = Math.cos(delta), sinD = Math.sin(delta);
-
-      const new11r = m11r * cosD + m12r * (-nEff * sinD);
-      const new11i = m11i * cosD + m12i * (-nEff * sinD);
-      const new12r = m11r * (-sinD / nEff) + m12r * cosD;
-      const new12i = m11i * (-sinD / nEff) + m12i * cosD;
-      const new21r = m21r * cosD + m22r * (-nEff * sinD);
-      const new21i = m21i * cosD + m22i * (-nEff * sinD);
-      const new22r = m21r * (-sinD / nEff) + m22r * cosD;
-      const new22i = m21i * (-sinD / nEff) + m22i * cosD;
-      m11r = new11r; m11i = new11i; m12r = new12r; m12i = new12i;
-      m21r = new21r; m21i = new21i; m22r = new22r; m22i = new22i;
-    }
-
-    // Substrate angle
-    const sinThetaSub = nInc * sinThetaInc / nSub;
-    const cosThetaSub = Math.sqrt(1 - sinThetaSub * sinThetaSub);
-    const nEffSub = nSub * cosThetaSub;
-    const nEffInc = nInc * cosThetaInc;
-
-    const numR = m11r * nEffInc + m12r * nEffInc * nEffSub - m21r - m22r * nEffSub;
-    const numI = m11i * nEffInc + m12i * nEffInc * nEffSub - m21i - m22i * nEffSub;
-    const denR = m11r * nEffInc + m12r * nEffInc * nEffSub + m21r + m22r * nEffSub;
-    const denI = m11i * nEffInc + m12i * nEffInc * nEffSub + m21i + m22i * nEffSub;
-    R.push((numR * numR + numI * numI) / (denR * denR + denI * denI));
-  }
-  return R;
-}
+import { quarterWaveLayers, reflectanceSpectrum, type Layer } from "../../../physics/thin-film/transfer-matrix";
 
 export default function WavelengthSeparationPage() {
   const [nH, setNH] = useURLState("nH", 2.35);
@@ -65,8 +19,7 @@ export default function WavelengthSeparationPage() {
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 600 }, (_, i) => 300 + i * 600 / 600);
-    const dH = bandwidthFactor * designWl / (4 * nH);
-    const dL = bandwidthFactor * designWl / (4 * nL);
+    const lambdas = wls.map((wl) => wl * 1e-9);
 
     // Two-stack approach: stack A centered at λ₁, stack B centered at λ₂
     // Reflects λ₁, transmits λ₂ (or vice versa)
@@ -74,29 +27,18 @@ export default function WavelengthSeparationPage() {
     const lambda1 = designWl;
     const lambda2 = designWl * sepRatio;
 
-    const dH1 = lambda1 / (4 * nH);
-    const dL1 = lambda1 / (4 * nL);
-    const dH2 = lambda2 / (4 * nH);
-    const dL2 = lambda2 / (4 * nL);
-
-    // Stack A: reflects λ₁
-    const layersA: { n: number; d: number }[] = [];
-    for (let j = 0; j < numPairs * 2; j++) {
-      layersA.push({ n: j % 2 === 0 ? nH : nL, d: j % 2 === 0 ? dH1 : dL1 });
-    }
-
-    // Stack B: reflects λ₂
-    const layersB: { n: number; d: number }[] = [];
-    for (let j = 0; j < numPairs * 2; j++) {
-      layersB.push({ n: j % 2 === 0 ? nH : nL, d: j % 2 === 0 ? dH2 : dL2 });
-    }
+    // (HL)^N quarter-wave stacks: A reflects λ₁, B reflects λ₂
+    const indices = Array.from({ length: numPairs * 2 }, (_, j) => (j % 2 === 0 ? nH : nL));
+    const layersA = quarterWaveLayers(indices, lambda1 * 1e-9);
+    const layersB = quarterWaveLayers(indices, lambda2 * 1e-9);
 
     // Combined: A on top of B
     const layersAB = [...layersA, ...layersB];
 
-    const R_A = computeRT(layersA, nInc, nSub, wls, 0);
-    const R_B = computeRT(layersB, nInc, nSub, wls, 0);
-    const R_AB = computeRT(layersAB, nInc, nSub, wls, 0);
+    const spectrum = (layers: Layer[]) => reflectanceSpectrum({ incident: nInc, layers, substrate: { n: nSub } }, lambdas);
+    const R_A = spectrum(layersA);
+    const R_B = spectrum(layersB);
+    const R_AB = spectrum(layersAB);
 
     return [
       { x: wls, y: R_A, type: "scatter" as const, mode: "lines" as const,
