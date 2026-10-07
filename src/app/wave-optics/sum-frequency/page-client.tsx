@@ -83,8 +83,7 @@ export default function SumFrequencyPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="λ₁ (nm)" value={lambda1} onChange={setLambda1} />
         <ValidatedNumberInput label="λ₂ (nm)" value={lambda2} onChange={setLambda2} />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">d<sub>eff</sub> (pm/V)</span>
-          <ValidatedNumberInput label="deff (pm/V)" value={deff} onChange={setDeff} step="0.1" /></label>
+        <ValidatedNumberInput label={<>d<sub>eff</sub> (pm/V)</>} value={deff} onChange={setDeff} step="0.1" />
         <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} />
         <ValidatedNumberInput label="P₁ (mW)" value={power1} onChange={setPower1} />
         <ValidatedNumberInput label="P₂ (mW)" value={power2} onChange={setPower2} />

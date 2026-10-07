@@ -92,8 +92,7 @@ export default function ParametricAmplificationPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
         <ValidatedNumberInput label="Pump Power (mW)" value={pumpPower} onChange={setPumpPower} />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">d<sub>eff</sub> (pm/V)</span>
-          <ValidatedNumberInput label="deff (pm/V)" value={chi2} onChange={setChi2} step="0.1" /></label>
+        <ValidatedNumberInput label={<>d<sub>eff</sub> (pm/V)</>} value={chi2} onChange={setChi2} step="0.1" />
         <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} />
         <ValidatedNumberInput label="GVM (fs/mm)" value={walkoff} onChange={setWalkoff} step="0.01" />
       </div>

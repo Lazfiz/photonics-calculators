@@ -143,8 +143,7 @@ export default function AdhesionTestingPage() {
 
         {(testMethod === "scratch" || testMethod === "all") && (
           <>
-            <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Critical Load L<sub>c</sub> (N)</span>
-              <ValidatedNumberInput label="Critical Load Lc (N)" value={criticalLoad} onChange={setCriticalLoad} step="0.5" /></label>
+            <ValidatedNumberInput label={<>Critical Load L<sub>c</sub> (N)</>} value={criticalLoad} onChange={setCriticalLoad} step="0.5" />
             <ValidatedNumberInput label="Stylus Tip Radius (μm)" value={tipRadius} onChange={setTipRadius} step="10" />
             <ValidatedNumberInput label="Scratch Length (mm)" value={scratchLength} onChange={setScratchLength} step="0.5" />
           </>

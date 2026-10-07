@@ -5,12 +5,12 @@ import PageClient from "./page-client";
 export const metadata: Metadata = {
     alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/mpe' },
     title: 'Maximum Permissible Exposure (MPE)',
-  description: 'Bounded CW point-source MPE pre-check for 400–1050 nm and 1 ms to 310^4 s using explicitly implemented ANSI-style table slices.'
+  description: 'Bounded CW point-source MPE pre-check for 400–1050 nm and 1 ms to 3×10⁴ s using explicitly implemented ANSI-style table slices.'
 };
 
 const jsonLd = generateCalculatorJsonLd(
   'Maximum Permissible Exposure (MPE)',
-  'Bounded CW point-source MPE pre-check for 400–1050 nm and 1 ms to 310^4 s using explicitly implemented ANSI-style table slices.',
+  'Bounded CW point-source MPE pre-check for 400–1050 nm and 1 ms to 3×10⁴ s using explicitly implemented ANSI-style table slices.',
   'https://photonics-calculators.vercel.app/laser-safety/mpe',
   { category: 'Laser Safety' }
 );

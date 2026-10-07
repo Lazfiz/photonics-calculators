@@ -93,8 +93,7 @@ export default function FourWaveMixingPage() {
         <ValidatedNumberInput label="Signal λ (nm)" value={wavelengthSignal} onChange={setWavelengthSignal} />
         <ValidatedNumberInput label="Pump Power (mW)" value={pumpPower} onChange={setPumpPower} />
         <ValidatedNumberInput label="n₂ (×10⁻¹⁶ cm²/W)" value={n2} onChange={setN2} step="0.1" />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">A<sub>eff</sub> (µm²)</span>
-          <ValidatedNumberInput label="Aeff (µm²)" value={coreArea} onChange={setCoreArea} /></label>
+        <ValidatedNumberInput label={<>A<sub>eff</sub> (µm²)</>} value={coreArea} onChange={setCoreArea} />
         <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} />
       </div>
 

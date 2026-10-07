@@ -96,8 +96,7 @@ export default function OpticalParametricPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Pump λ (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
         <ValidatedNumberInput label="Signal λ (nm)" value={signalWavelength} onChange={setSignalWavelength} />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">d<sub>eff</sub> (pm/V)</span>
-          <ValidatedNumberInput label="deff (pm/V)" value={deff} onChange={setDeff} step="0.1" /></label>
+        <ValidatedNumberInput label={<>d<sub>eff</sub> (pm/V)</>} value={deff} onChange={setDeff} step="0.1" />
         <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} />
         <ValidatedNumberInput label="Pump Power (mW)" value={pumpPower} onChange={setPumpPower} />
         <ValidatedNumberInput label="Pump Waist (µm)" value={pumpWaist} onChange={setPumpWaist} />

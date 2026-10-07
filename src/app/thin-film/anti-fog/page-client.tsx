@@ -91,10 +91,8 @@ export default function AntiFogPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Anti-Fog Coating Design" description="Hydrophilic thin film that spreads condensation into a uniform water layer, minimizing scattering.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>coating</sub></span>
-          <ValidatedNumberInput label="ncoating" value={nCoat} onChange={setNCoat} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
-          <ValidatedNumberInput label="nsubstrate" value={nSub} onChange={setNSub} step="0.01" /></label>
+        <ValidatedNumberInput label={<>n<sub>coating</sub></>} value={nCoat} onChange={setNCoat} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
         <ValidatedNumberInput label="Coating thickness (nm)" value={thickness} onChange={setThickness} />
         <ValidatedNumberInput label="Contact angle (°)" value={contactAngle} onChange={setContactAngle} min={0} max={90} />
       </div>

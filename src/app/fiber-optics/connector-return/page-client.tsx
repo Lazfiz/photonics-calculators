@@ -84,10 +84,8 @@ export default function ConnectorReturnLossPage() {
         Fresnel: r = (n₁ − n₂)/(n₁ + n₂), RL = −20 log₁₀|r|. Physical contact (PC) eliminates air gap.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>core</sub></span>
-          <ValidatedNumberInput label="ncore" value={n1} onChange={setN1} step="0.0001" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>gap medium</sub></span>
-          <ValidatedNumberInput label="ngap medium" value={n2} onChange={setN2} step="0.01" /></label>
+        <ValidatedNumberInput label={<>n<sub>core</sub></>} value={n1} onChange={setN1} step="0.0001" />
+        <ValidatedNumberInput label={<>n<sub>gap medium</sub></>} value={n2} onChange={setN2} step="0.01" />
         <ValidatedNumberInput label="Gap (nm) — 0 for PC/UPC" value={gapNm} onChange={setGapNm} step="10" />
         <ValidatedNumberInput label="Lateral offset (µm)" value={lateralOffset} onChange={setLateralOffset} step="0.1" />
         <ValidatedNumberInput label="Angular misalign (°)" value={angMisalign} onChange={setAngMisalign} step="0.1" />

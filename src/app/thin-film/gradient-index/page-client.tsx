@@ -66,12 +66,9 @@ export default function GradientIndexPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Gradient Index Coating" description="Continuously graded refractive index coating — broadband AR with no sharp interfaces.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
-          <ValidatedNumberInput label="nsubstrate" value={nSub} onChange={setNSub} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>incident</sub></span>
-          <ValidatedNumberInput label="nincident" value={nInc} onChange={setNInc} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>surface</sub></span>
-          <ValidatedNumberInput label="nsurface" value={nSurface} onChange={setNSurface} step="0.01" /></label>
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>surface</sub></>} value={nSurface} onChange={setNSurface} step="0.01" />
         <ValidatedNumberInput label="Thickness (nm)" value={thickness} onChange={setThickness} />
         <ValidatedNumberInput label="Design λ (nm)" value={designWl} onChange={setDesignWl} />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Profile</span>

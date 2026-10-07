@@ -98,12 +98,9 @@ export default function EmissivityControlPage() {
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Emissivity Control" description="Low-emissivity (Low-E) coating for thermal insulation — Kirchhoff's law: ε = 1 - R.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>high</sub> (dielectric)</span>
-          <ValidatedNumberInput label="nhigh (dielectric)" value={nH} onChange={setNH} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>low</sub> (dielectric)</span>
-          <ValidatedNumberInput label="nlow (dielectric)" value={nL} onChange={setNL} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
-          <ValidatedNumberInput label="nsubstrate" value={nSub} onChange={setNSub} step="0.01" /></label>
+        <ValidatedNumberInput label={<>n<sub>high</sub> (dielectric)</>} value={nH} onChange={setNH} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>low</sub> (dielectric)</>} value={nL} onChange={setNL} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
         <ValidatedNumberInput label="Design λ (nm)" value={designWl} onChange={setDesignWl} />
         <ValidatedNumberInput label="Pairs" value={pairs} onChange={setPairs} min={1} max={20} />
       </div>

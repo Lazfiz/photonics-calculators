@@ -115,14 +115,10 @@ export default function EnvironmentalStabilityPage() {
         are more environmentally stable. Understanding these shifts is critical for field deployment.">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>H</sub> (e.g. TiO₂)</span>
-          <ValidatedNumberInput label="nH (e.g. TiO₂)" value={nH} onChange={setNH} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>L</sub> (e.g. SiO₂)</span>
-          <ValidatedNumberInput label="nL (e.g. SiO₂)" value={nL} onChange={setNL} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>substrate</sub></span>
-          <ValidatedNumberInput label="nsubstrate" value={nSub} onChange={setNSub} step="0.01" /></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">n<sub>incident</sub></span>
-          <ValidatedNumberInput label="nincident" value={nInc} onChange={setNInc} step="0.01" /></label>
+        <ValidatedNumberInput label={<>n<sub>H</sub> (e.g. TiO₂)</>} value={nH} onChange={setNH} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>L</sub> (e.g. SiO₂)</>} value={nL} onChange={setNL} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} step="0.01" />
         <ValidatedNumberInput label="Number of pairs (N)" value={numPairs} onChange={setNumPairs} min={1} max={20} />
         <ValidatedNumberInput label="Design λ₀ (nm)" value={designWl} onChange={setDesignWl} step="10" />
         <ValidatedNumberInput label="Temperature (°C)" value={tempC} onChange={setTempC} min={-50} max={200} step="5" />

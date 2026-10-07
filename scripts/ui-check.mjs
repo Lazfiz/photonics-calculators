@@ -198,6 +198,14 @@ try {
     );
     await open("/fiber-optics/sbs-threshold");
     check("labels: no literal {label}", await evaluate(`document.body.innerText.includes("{label}")`), false);
+    // The input's own label carries the sub/sup markup; no old card <label> wraps it.
+    await open("/thin-film/angle-tuning");
+    check("labels: no <label> nested in a <label>", await evaluate(`document.querySelectorAll("label label").length`), 0);
+    check(
+      "labels: 'n<sub>substrate</sub>' holds nSub",
+      await evaluate(`[...document.querySelectorAll("input")].find((i) => i.closest("label")?.querySelector("span")?.innerHTML === "n<sub>substrate</sub>")?.value ?? null`),
+      "1.52"
+    );
 
     // 4. InputSlider: out-of-range typing never reaches onChange; clamp on blur.
     await open("/detectors/quantum-efficiency");
