@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { createRng } from "../../../physics/random";
 export default function SpectralCalibrationPage() {
   const [pixelCount, setPixelCount] = useURLState("pixelCount", 2048);
   const [centerWl, setCenterWl] = useURLState("centerWl", 600); // nm
@@ -25,7 +26,8 @@ export default function SpectralCalibrationPage() {
 
     // True positions + noise
     const truePixels = wls.map(wlToPixel);
-    const measuredPixels = truePixels.map(p => p + (pixelNoise / dispersion) * (Math.random() - 0.5) * 2);
+    const rng = createRng(1); // fixed seed: same noise on server and client
+    const measuredPixels = truePixels.map(p => p + (pixelNoise / dispersion) * (rng() - 0.5) * 2);
 
     // Linear fit through measured points
     const n = measuredPixels.length;

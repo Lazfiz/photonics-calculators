@@ -7,12 +7,11 @@ const eslintConfig = defineConfig([
   ...nextTs,
   // TEMPORARY (Phase 0): pre-existing, site-wide violations downgraded to warnings so that
   // `npm run check` can gate CI. Each one is tracked in docs/ROADMAP.md and goes back to "error"
-  // once fixed (Phase 1: purity; Phase 2: memoization, explicit-any).
+  // once fixed (Phase 2: memoization, explicit-any). `react-hooks/purity` is back to error (Phase 1).
   {
     rules: {
       "react-hooks/preserve-manual-memoization": "warn", // 153 sites, page-client useMemo deps
       "@typescript-eslint/no-explicit-any": "warn", // 116 sites
-      "react-hooks/purity": "warn", // 9 sites: Math.random during render (hydration mismatch)
     },
   },
   // Override default ignores of eslint-config-next.

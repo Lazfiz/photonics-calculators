@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { createRng, gaussian } from "../../../physics/random";
 
 export default function PolarizationScramblingPage() {
   const [numSegments, setNumSegments] = useURLState("numSegments", 100);
@@ -16,7 +17,8 @@ export default function PolarizationScramblingPage() {
 
   // Simulate polarization scrambling
   const data = useMemo(() => {
-    const inputAngle = Math.random() * 360;
+    const rng = createRng(1); // fixed seed: same pattern on server and client
+    const inputAngle = rng() * 360;
     const inputS3 = inputPol === "circular" ? 1 : inputPol === "elliptical" ? ellipticity : 0;
     const inputS1 = inputPol === "linear" ? Math.cos(2 * inputAngle * Math.PI / 180) : 0;
     const inputS2 = inputPol === "linear" ? Math.sin(2 * inputAngle * Math.PI / 180) : 0;
@@ -39,10 +41,10 @@ export default function PolarizationScramblingPage() {
           theta = (360 * i) / N;
           break;
         case "gaussian":
-          theta = gaussianRandom() * 360;
+          theta = gaussian(rng) * 360;
           break;
         case "random":
-          theta = Math.random() * 360;
+          theta = rng() * 360;
           break;
       }
       angles.push(theta);
@@ -191,11 +193,4 @@ export default function PolarizationScramblingPage() {
       </div>
     </CalculatorShell>
   );
-}
-
-function gaussianRandom(): number {
-  let u = 0, v = 0;
-  while (u === 0) u = Math.random();
-  while (v === 0) v = Math.random();
-  return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
 }

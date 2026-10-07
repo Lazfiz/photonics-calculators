@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { createRng } from "../../../physics/random";
 
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
@@ -42,6 +43,7 @@ export default function CircularDichroismPage() {
 
   // Simulated CD spectrum
   const cdSpectrum = useMemo(() => {
+    const rng = createRng(1); // fixed seed: same noise on server and client
     const wls = Array.from({ length: 150 }, (_, i) => 190 + i * 1.5);
     // Typical protein CD spectrum with alpha-helix signature
     const cdVals = wls.map((wl) => {
@@ -50,7 +52,7 @@ export default function CircularDichroismPage() {
       const h222 = -25000 * Math.exp(-((wl - 222) ** 2) / 50);
       const h190 = 60000 * Math.exp(-((wl - 190) ** 2) / 30);
       // Add some noise
-      const noise = (Math.random() - 0.5) * 1000;
+      const noise = (rng() - 0.5) * 1000;
       return h208 + h222 + h190 + noise;
     });
     return { wls, cdVals };

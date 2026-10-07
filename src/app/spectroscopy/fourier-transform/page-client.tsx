@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { createRng } from "../../../physics/random";
 export default function FourierTransformPage() {
   const [freq1, setFreq1] = useURLState("freq1", 10);
   const [freq2, setFreq2] = useURLState("freq2", 25);
@@ -15,10 +16,11 @@ export default function FourierTransformPage() {
   const [nPoints, setNPoints] = useURLState("nPoints", 256);
 
   const chartData = useMemo(() => {
+    const rng = createRng(1); // fixed seed: same noise on server and client
     const N = nPoints;
     const dt = 1 / 100; // sampling interval
     const time = Array.from({ length: N }, (_, i) => i * dt);
-    const signal = time.map(t => amp1 * Math.sin(2 * Math.PI * freq1 * t) + amp2 * Math.sin(2 * Math.PI * freq2 * t) + noise * (Math.random() - 0.5));
+    const signal = time.map(t => amp1 * Math.sin(2 * Math.PI * freq1 * t) + amp2 * Math.sin(2 * Math.PI * freq2 * t) + noise * (rng() - 0.5));
 
     // DFT magnitude (one-sided spectrum)
     const halfN = Math.floor(N / 2) + 1; // include Nyquist bin
