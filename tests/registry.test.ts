@@ -45,6 +45,15 @@ test("entries are complete and their overrides aren't redundant", () => {
   }
 });
 
+test("titles are unique", () => {
+  const byTitle = new Map<string, string>();
+  for (const c of calculators) {
+    const key = c.title.toLowerCase().replace(/ calculator$/, "");
+    assert.equal(byTitle.get(key), undefined, `${c.href} has the title of ${byTitle.get(key)}`);
+    byTitle.set(key, c.href);
+  }
+});
+
 test("the text has no HTML entities, line breaks or code", () => {
   for (const c of calculators) {
     // React prints strings as they are, so "&apos;" shows up on the page.

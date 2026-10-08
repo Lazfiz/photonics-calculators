@@ -41,6 +41,7 @@ export const laserSafety: CalculatorEntry[] = [
     slug: "blue-light-hazard",
     title: "Blue Light Hazard",
     description: "Simplified educational estimate of B(λ)-weighted blue-light irradiance and risk group. Not for safety decisions; use IEC 62471.",
+    keywords: ["UV / Blue Light Hazard"],
   },
   {
     slug: "classification",
@@ -79,6 +80,7 @@ export const laserSafety: CalculatorEntry[] = [
     slug: "exposure-duration",
     title: "Maximum Safe Exposure Duration",
     description: "Calculate the maximum safe exposure time for a CW laser beam based on MPE limits.",
+    keywords: ["Maximum Exposure Duration"],
   },
   {
     slug: "extended-source",
@@ -132,11 +134,6 @@ export const laserSafety: CalculatorEntry[] = [
     title: "LiDAR Laser Safety Calculator",
     description: "Analyze pulse energy, PRF-corrected MPE, and NOHD for LiDAR systems (905/1550 nm).",
     hidden: true,
-  },
-  {
-    slug: "maximum-exposure",
-    title: "Maximum Exposure Duration",
-    description: "Simplified educational estimate of the longest exposure before the MPE is reached. Not for safety decisions; use ANSI Z136.1.",
   },
   {
     slug: "medical-laser-safety",
@@ -229,12 +226,6 @@ export const laserSafety: CalculatorEntry[] = [
     description: "Analyzes hazard when a scanning laser fails to scan, causing the beam to dwell on a single point. IEC 60825-1 scan failure assessment.",
   },
   {
-    slug: "scanned-mpe",
-    title: "Scanned Beam MPE",
-    description: "Simplified educational estimate of dwell time, pulses per point and scanned-beam MPE versus scan frequency. Not for safety decisions; use ANSI Z136.1.",
-    hidden: true,
-  },
-  {
     slug: "scanning-mpe",
     title: "Scanned Beam MPE",
     description: "Calculates the effective MPE for scanning laser beams where dwell time per retinal point is reduced compared to stationary exposure.",
@@ -264,12 +255,6 @@ export const laserSafety: CalculatorEntry[] = [
     slug: "ultrafast-laser-safety",
     title: "Ultrafast Laser Safety Calculator",
     description: "Evaluate single-pulse, average-power, and PRF-corrected MPE for femtosecond/picosecond laser systems.",
-  },
-  {
-    slug: "uv-blue-hazard",
-    title: "UV / Blue Light Hazard",
-    description: "Calculates weighted hazard using the blue light B() and UV S() action spectra per IEC 62471 / ICNIRP guidelines.",
-    lede: "Calculates weighted hazard using the blue light B(λ) and UV S(λ) action spectra per IEC 62471 / ICNIRP guidelines.",
   },
   {
     slug: "uv-exposure",

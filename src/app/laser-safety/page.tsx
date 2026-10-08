@@ -47,7 +47,6 @@ const quarantinedTopics: CalcLink[] = [
   { name: "Infrared Corneal", href: "/laser-safety/infrared-corneal", desc: "IR corneal branch is standards-heavy and quarantined." },
   { name: "Infrared Hazard", href: "/laser-safety/infrared-hazard", desc: "Broad IR hazard page — quarantined." },
   { name: "Infrared Thermal", href: "/laser-safety/infrared-thermal", desc: "Thermal IR hazard topic — quarantined." },
-  { name: "Maximum Exposure", href: "/laser-safety/maximum-exposure", desc: "Standards-heavy inversion of MPE logic — quarantined." },
   { name: "Multiple Wavelength", href: "/laser-safety/multiple-wavelength", desc: "Additive multi-wavelength hazard logic — quarantined." },
   { name: "PRF Correction", href: "/laser-safety/prf-correction", desc: "Pulse repetition correction logic — quarantined." },
   { name: "Retinal Hazard", href: "/laser-safety/retinal-hazard", desc: "Retinal hazard evaluation beyond bounded pre-check scope." },
@@ -55,7 +54,6 @@ const quarantinedTopics: CalcLink[] = [
   { name: "Skin Hazard", href: "/laser-safety/skin-hazard", desc: "Skin hazard branch outside current bounded scope." },
   { name: "Skin MPE", href: "/laser-safety/skin-mpe", desc: "Skin MPE branch outside current bounded scope." },
   { name: "Thermal Lens Hazard", href: "/laser-safety/thermal-lens-hazard", desc: "Protective-filter / lens failure topic — quarantined." },
-  { name: "UV / Blue Hazard", href: "/laser-safety/uv-blue-hazard", desc: "UV / blue hazard weighting topic — quarantined." },
   { name: "UV Exposure", href: "/laser-safety/uv-exposure", desc: "UV exposure limits topic — quarantined." },
   { name: "UV Hazard", href: "/laser-safety/uv-hazard", desc: "UV hazard evaluation — quarantined." },
 ];

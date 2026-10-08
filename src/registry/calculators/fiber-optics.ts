@@ -15,13 +15,6 @@ export const fiberOptics: CalculatorEntry[] = [
     heading: "Bend-Insensitive Fiber Design",
   },
   {
-    slug: "bend-loss",
-    title: "Macro Bending Loss Calculator",
-    description: "Estimate macro-bending loss for single-mode fiber using simplified Marcuse formula.",
-    heading: "Macro Bending Loss",
-    lede: "Estimate macro-bending loss for single-mode fiber using simplified Marcuse formula. For more detailed analysis, see Macrobending Loss calculator.",
-  },
-  {
     slug: "birefringence-fiber",
     title: "Birefringence Fiber Calculator",
     description: "Geometric (elliptical-core) and stress-induced birefringence and beat length of a single-mode fiber from core and cladding indices and core shape.",
@@ -37,13 +30,6 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Connector Insertion Loss Calculator",
     description: "Calculate connector insertion loss from misalignment parameters and build link budgets for different connector types.",
     heading: "Connector Insertion Loss",
-  },
-  {
-    slug: "connector-return",
-    title: "Connector Return Loss Calculator",
-    description: "Calculates return loss and insertion loss for fiber connectors with air gaps, lateral offsets, and angular misalignment.",
-    heading: "Connector Return Loss",
-    lede: "Calculates return loss (RL) and insertion loss (IL) for fiber connectors with air gaps, lateral offsets, and angular misalignment. Fresnel: r = (n₁ − n₂)/(n₁ + n₂), RL = −20 log₁₀|r|. Physical contact (PC) eliminates air gap.",
   },
   {
     slug: "connector-return-loss",
@@ -86,12 +72,6 @@ export const fiberOptics: CalculatorEntry[] = [
     description: "Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.",
     heading: "Dispersion Compensation",
     lede: "Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements. Total dispersion: Dtotal = D · L. Pulse broadening: Δτ = Dtotal · Δλ. NRZ bit-rate limit: B ≤ 1/(4Δτ). DCF length: LDCF = D·L / |DDCF|.",
-  },
-  {
-    slug: "dispersion-compensation",
-    title: "Dispersion Compensation Calculator",
-    description: "GVD and TOD compensation analysis for fiber optic links.",
-    heading: "Dispersion Compensation",
   },
   {
     slug: "dispersion-map",
@@ -188,26 +168,17 @@ export const fiberOptics: CalculatorEntry[] = [
     description: "Analyze low water peak (LWP) fibers that reduce the OH⁻ absorption peak at 1383 nm, enabling E-band and full CWDM operation.",
   },
   {
-    slug: "macro-bend",
-    title: "Macro Bend Loss",
-    description: "Detailed macrobending loss calculation for single-mode fibers based on bend radius and wavelength.",
-    lede: "Quick macrobending loss estimate using empirical heuristic. For physically rigorous results, see Macrobending Loss calculator.",
-  },
-  {
     slug: "macro-bending-loss",
     title: "Macrobending Loss",
     description: "Detailed macrobending loss calculation using the curvature radiation model for single-mode fiber.",
+    keywords: ["Macro Bending Loss", "Macro Bend Loss"],
   },
   {
     slug: "micro-bend",
     title: "Micro Bend Loss",
     description: "Calculate microbending loss from periodic perturbations in fiber geometry.",
     lede: "Calculate microbending loss from periodic perturbations using Marcuse mode coupling theory.",
-  },
-  {
-    slug: "micro-bending-loss",
-    title: "Microbending Loss",
-    description: "Calculate microbending-induced loss from random perturbations, coating properties, and fiber parameters.",
+    keywords: ["Microbending Loss"],
   },
   {
     slug: "mode-coupling",

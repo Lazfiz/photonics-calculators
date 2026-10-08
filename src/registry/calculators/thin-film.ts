@@ -116,19 +116,9 @@ export const thinFilm: CalculatorEntry[] = [
     description: "Fabry-Pérot etalon/filter transmission based on the Airy function. Explore how mirror reflectance and cavity spacing control spectral selectivity.",
   },
   {
-    slug: "fresnel-equations",
-    title: "Fresnel Equations",
-    description: "Reflectance vs. angle of incidence at a dielectric interface. Shows s-polarization, p-polarization, Brewster's angle, and total internal reflection.",
-  },
-  {
     slug: "gradient-index",
     title: "Gradient Index Coating",
     description: "Continuously graded refractive index coating — broadband AR with no sharp interfaces.",
-  },
-  {
-    slug: "gradient-index-coating",
-    title: "Gradient Index Coating",
-    description: "Gradient-index (GRIN) antireflection coatings use a continuously varying refractive index to suppress Fresnel reflections over a broad bandwidth.",
   },
   {
     slug: "hard-coating",
@@ -166,12 +156,6 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "metal-dielectric",
     title: "Metal-Dielectric Coatings",
     description: "Metal-dielectric coating design. Explore how a dielectric overcoat modifies the reflectance, transmittance, and absorptance of a thin metal layer.",
-  },
-  {
-    slug: "multilayer-ar",
-    title: "Two-Layer AR Coating",
-    description: "Design a two-layer quarter-wave anti-reflection coating. Zero reflectance at the design wavelength when n2 = n1·√(nsub/ninc).",
-    lede: "Design a two-layer quarter-wave anti-reflection coating. Zero reflectance at λ₀ when n₂ = n₁√(n_sub/n_inc).",
   },
   {
     slug: "narrow-bandpass",
@@ -228,9 +212,8 @@ export const thinFilm: CalculatorEntry[] = [
         href: "/thin-film/double-layer-ar",
         note: "Extend the AR concept to a higher-performance stack.",
       },
-      { href: "/thin-film/multilayer-ar", note: "Broader-band AR design direction." },
       {
-        href: "/thin-film/fresnel-equations",
+        href: "/polarization/fresnel-polarization",
         note: "Interface reflection/transmission fundamentals.",
       },
       { href: "/materials/brewster-tir", note: "Angle-dependent reflection behavior." },
@@ -250,12 +233,6 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "sputtering-deposition",
     title: "Sputtering Deposition",
     description: "Calculate sputter yield, deposition rate, thermalization, and film stress for magnetron sputtering processes.",
-  },
-  {
-    slug: "stress",
-    title: "Coating Stress & Curvature",
-    description: "Stoney",
-    lede: "Stoney's equation: σ = E·ts²/(6·R·tf). Relates film stress to substrate curvature.",
   },
   {
     slug: "stress-measurement",

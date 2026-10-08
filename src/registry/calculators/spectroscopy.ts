@@ -2,12 +2,6 @@ import type { CalculatorEntry } from "../types";
 
 export const spectroscopy: CalculatorEntry[] = [
   {
-    slug: "absorption",
-    title: "Beer-Lambert Absorption",
-    description: "A = cl — absorbance from molar extinction coefficient, concentration, and path length.",
-    lede: "A = ε·c·l — absorbance from molar extinction coefficient, concentration, and path length.",
-  },
-  {
     slug: "absorption-cross-section",
     title: "Absorption Cross-Section Calculator",
     description: "= 1000 / (N_A ln 10) — convert molar extinction coefficient to molecular cross-section.",
@@ -20,14 +14,10 @@ export const spectroscopy: CalculatorEntry[] = [
     lede: "Calculate absorption depth δ = 1/α and explore spectral dependence for common optical materials.",
   },
   {
-    slug: "apodization",
-    title: "Apodization Functions",
-    description: "Window functions and their instrument line shapes (ILS). Trade-off: resolution vs sidelobe suppression.",
-  },
-  {
     slug: "apodization-comparison",
     title: "Apodization Comparison",
     description: "Compare 9 window functions and their instrument line shapes (ILS). Select windows to overlay.",
+    keywords: ["Apodization Functions"],
   },
   {
     slug: "blackbody",
@@ -58,15 +48,10 @@ export const spectroscopy: CalculatorEntry[] = [
     description: "Model CRDS ring-down time, sensitivity, and finesse. Visualize exponential decay with and without sample absorption.",
   },
   {
-    slug: "coherent-anti-stokes",
-    title: "Coherent Anti-Stokes Raman Spectroscopy (CARS)",
-    description: "Four-wave mixing process: _CARS = _pump − _Stokes + _probe. Coherent, directional signal above fluorescence.",
-    lede: "Four-wave mixing process: ω_CARS = ω_pump − ω_Stokes + ω_probe. Coherent, directional signal above fluorescence.",
-  },
-  {
     slug: "coherent-anti-stokes-raman",
     title: "Coherent Anti-Stokes Raman Scattering (CARS)",
     description: "Four-wave mixing process for label-free vibrational imaging with chemical specificity.",
+    keywords: ["Coherent Anti-Stokes Raman Spectroscopy (CARS)"],
   },
   {
     slug: "conc-mirror",
@@ -78,12 +63,6 @@ export const spectroscopy: CalculatorEntry[] = [
     title: "Concentration from Absorbance",
     description: "c = A / (l) — determine concentration from measured absorbance using Beer-Lambert law.",
     lede: "c = A / (ε·l) — determine concentration from measured absorbance using Beer-Lambert law.",
-  },
-  {
-    slug: "difference-frequency-gen",
-    title: "Difference Frequency Generation",
-    description: "Generate tunable mid-IR via DFG: _idler = _pump − _signal. Essential for IR spectroscopy sources.",
-    lede: "Generate tunable mid-IR via DFG: ω_idler = ω_pump − ω_signal. Essential for IR spectroscopy sources.",
   },
   {
     slug: "dispersive-element",
@@ -123,11 +102,6 @@ export const spectroscopy: CalculatorEntry[] = [
     lede: "Calculate molar and specific extinction coefficients from absorbance measurements. Beer-Lambert law: ε = A / (c·l).",
   },
   {
-    slug: "fluorescence",
-    title: "Fluorescence Lifetime",
-    description: "Exponential decay models for fluorescence. Single and bi-exponential fitting.",
-  },
-  {
     slug: "fluorescence-lifetime",
     title: "Fluorescence Lifetime Calculator",
     description: "Model single and bi-exponential fluorescence decay curves. Calculate intensity-weighted average lifetimes.",
@@ -157,7 +131,7 @@ export const spectroscopy: CalculatorEntry[] = [
     priority: 96,
     related: [
       {
-        href: "/spectroscopy/apodization",
+        href: "/spectroscopy/apodization-comparison",
         note: "Windowing behavior and line-shape tradeoffs.",
       },
       {
@@ -192,7 +166,7 @@ export const spectroscopy: CalculatorEntry[] = [
     title: "Lambert-Beer Law Calculator",
     description: "Beer-Lambert absorbance, optical density, and transmission with interactive parameter sweeps.",
     lede: "Comprehensive Beer-Lambert law analysis with sliders, presets, and interactive parameter sweeps.",
-    keywords: ["absorbance", "optical density", "transmission"],
+    keywords: ["absorbance", "optical density", "transmission", "Beer-Lambert Absorption"],
     priority: 94,
     related: [
       { href: "/spectroscopy/infrared-spectroscopy" },
@@ -272,11 +246,6 @@ export const spectroscopy: CalculatorEntry[] = [
     description: "Stokes and anti-Stokes wavelength shift vs Raman shift. Inelastic scattering fundamentals.",
   },
   {
-    slug: "resolution",
-    title: "Spectral Resolution",
-    description: "Resolving power and minimum resolvable wavelength for a diffraction grating spectrometer.",
-  },
-  {
     slug: "signal-to-noise",
     title: "Signal-to-Noise Ratio",
     description: "Detailed SNR model: shot noise, dark current, read noise, and detector noise contributions.",
@@ -325,7 +294,7 @@ export const spectroscopy: CalculatorEntry[] = [
   },
   {
     slug: "stray-light",
-    title: "Stray Light Rejection",
+    title: "Grating Ghosts & Stray Light",
     description: "Ghost order analysis and stray light estimation for grating-based spectrometers.",
   },
   {

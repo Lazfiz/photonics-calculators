@@ -54,21 +54,11 @@ export const polarization: CalculatorEntry[] = [
     description: "Calculate ordinary and extraordinary ray paths, walk-off angle, lateral separation, and retardation in uniaxial crystals.",
   },
   {
-    slug: "ellipsometry",
-    title: "Ellipsometry",
-    description: "Calculate Ψ, from Fresnel equations; model thin film interference in ellipsometry.",
-    lede: "Calculate Ψ, Δ from Fresnel equations; model thin film interference in ellipsometry.",
-  },
-  {
-    slug: "extinction-ratio",
-    title: "Extinction Ratio",
-    description: "Calculate polarizer extinction ratio, transmission, and cascaded performance.",
-  },
-  {
     slug: "fresnel-polarization",
     title: "Fresnel Polarization Calculator",
     description: "Compute Fresnel reflection/transmission coefficients and analyze polarization-dependent effects at dielectric interfaces.",
     lede: "Compute Fresnel reflection/transmission coefficients and analyze polarization-dependent effects at dielectric interfaces. Uses Born & Wolf sign convention (r_p sign differs from thin-film Macleod convention).",
+    keywords: ["Fresnel Equations"],
   },
   {
     slug: "glans-prism",
@@ -114,11 +104,6 @@ export const polarization: CalculatorEntry[] = [
     slug: "orthoconoscopic",
     title: "Orthoscopic Observation",
     description: "Model orthoscopic observation of birefringent samples with rotating stage. Calculate intensity vs rotation angle and interference colors.",
-  },
-  {
-    slug: "pmd",
-    title: "Polarization Mode Dispersion",
-    description: "Calculate PMD-induced DGD, Maxwellian statistics, and system penalties.",
   },
   {
     slug: "poincare-sphere",
