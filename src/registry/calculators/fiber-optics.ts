@@ -71,7 +71,7 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Dispersion Compensation Calculator",
     description: "Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.",
     heading: "Dispersion Compensation",
-    lede: "Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements. Total dispersion: Dtotal = D · L. Pulse broadening: Δτ = Dtotal · Δλ. NRZ bit-rate limit: B ≤ 1/(4Δτ). DCF length: LDCF = D·L / |DDCF|.",
+    lede: "Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements: the rms pulse broadening of a span, the 4Bσ ≤ 1 bit-rate limit and power penalty, the DCF length that cancels the dispersion at one wavelength, and the residual dispersion that a slope mismatch leaves across the band.",
   },
   {
     slug: "dispersion-map",
