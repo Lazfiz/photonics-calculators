@@ -172,3 +172,12 @@ export function besselK(nu: number, x: number): number {
   }
   return h * sum;
 }
+
+/** I₀(x) = (1/2π) ∫₀^{2π} e^(x cos τ) dτ (DLMF 10.32.1), trapezoidal rule as for besselJ. */
+export function besselI0(x: number): number {
+  if (!Number.isFinite(x)) return Number.isNaN(x) ? NaN : Infinity;
+  const N = 2 * Math.ceil(Math.abs(x)) + 64;
+  let sum = 0;
+  for (let k = 0; k < N; k++) sum += Math.exp(x * Math.cos((2 * Math.PI * k) / N));
+  return sum / N;
+}

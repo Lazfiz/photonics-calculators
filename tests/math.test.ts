@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  besselI0,
   besselJ,
   besselK,
   erf,
@@ -90,6 +91,9 @@ test("Bessel J_n and K_ν match A&S Tables 9.1 and 9.8", () => {
     [0, 2, 0.1138938727], [1, 2, 0.1398658818], [0, 10, Math.exp(-10) * 0.3916319344],
   ];
   for (const [nu, x, v] of K) assertRel(besselK(nu, x), v, 1e-9, `K${nu}(${x})`);
+  // I₀: A&S Table 9.8 (I₀(8) = e^8 · 0.1434317818).
+  assertRel(besselI0(1), 1.2660658778, 1e-9, "I0(1)");
+  assertRel(besselI0(8), Math.exp(8) * 0.1434317818, 1e-9, "I0(8)");
   // Closed form K_{1/2}(x) = √(π/2x) e^(−x) (DLMF 10.39.2), and the first zero of J₀ (DLMF Table 10.21.1).
   for (const x of [0.01, 0.5, 3, 40]) assertRel(besselK(0.5, x), Math.sqrt(Math.PI / (2 * x)) * Math.exp(-x), 1e-13, `K½(${x})`);
   assert.ok(Math.abs(besselJ(0, 2.404825557695773)) < 1e-15);
@@ -99,6 +103,7 @@ test("Bessel edge cases", () => {
   assert.equal(besselJ(0, 0), 1);
   assert.equal(besselJ(1, 0), 0);
   assertRel(besselK(1, 1e-6), 1e6, 1e-9, "K₁(x) → 1/x"); // DLMF 10.30.2
+  assert.equal(besselI0(0), 1);
   assert.equal(besselK(0, 0), Infinity);
   assert.ok(Number.isNaN(besselK(0, -1)));
   assert.ok(Number.isNaN(besselJ(0.5, 1))); // integer orders only
