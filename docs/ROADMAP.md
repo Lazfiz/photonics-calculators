@@ -31,7 +31,7 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - ccd-cmos/ccd-vs-cmos, em-gain/emccd-gain/electron-multiplying, full-well/well-capacity
   - scanned-mpe/scanning-mpe, dual-comb (spectroscopy + wave-optics)
 - Fudge-factor models presented as calculators, e.g. `imaging/second-harmonic` (prefactor `4e-24`, `dn = 0.01·n/1.33`).
-- Constants are redefined inline in 46 files (`c = 3e8` ×54, `q = 1.6e-19` ×6). `erf` is implemented 3 different ways.
+- ~~Constants are redefined inline in 46 files~~: it was 273 literals in 91 files (`3e8` ×121, `1.6e-19`/`1.602e-19` ×49, `6.626e-34` ×35, …). They're imported since the 2026-10-08 codemod, and `tests/no-inline-constants.test.ts` guards against new ones. Unit-scaled forms remain (Phase 2). `erf` is implemented 3 different ways.
 - Minor: `fiber-optics/v-number` uses `floor(V²/2)` modes for V<2.405.
 - Verified correct: gaussian-beam, v-number, single-ar, sellmeier, nep, airy-disk, blackbody (rounded constants).
 
@@ -152,6 +152,12 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - New modules: `src/physics/thin-film/interference.ts` (F, finesse, Airy width, net reflection phase, first extrema) and `ellipsometry.ts` (two-phase inversion).
     - They have 8 golden tests: hand values from Born & Wolf §7.6.1 and Hecht §9.4.1, and round trips through the transfer matrix (glass, Si, Al and Au at 55–80°).
   - `thermal-evaporation` isn't optics, so there was nothing to compare. Its issues are listed under Phase 4.
+- Constants codemod (session 13, branch `phase-2/inline-constants`): 273 literals in 91 files now import from `constants.ts`.
+  - Results move by the rounding only: `3e8` −0.07 %, `1.6e-19` +0.14 %, `1.38e-23` +0.05 %, `6.626e-34` +0.001 %. The deposition pages' amu moves −0.75 % (m_p → m_u).
+  - 122 `const c = 3e8`-style declarations were removed, and 49 references to local names (`kB`, `eps0`, `amu`, `h_planck`, …) were renamed to the exported ones.
+  - `shot-noise`, `reset-noise` and `thermal-noise` held q or k_B as state that was never set (`useURLState("q", …)`), so a `?q=` URL could change the elementary charge. Those are plain imports now.
+  - `quantum-key-distribution` named its binary-entropy function `h`, which shadowed Planck's h. It is `binaryEntropy` now.
+  - `wire-grid` used μ₀ = 4π·1e-7 (pre-2019 SI). It now uses CODATA 2022's `mu_0`, 1.3e-10 lower.
 - Thin-film models and labels for Phase 4 (left as they are):
   - Plain quarter-wave stacks labelled "long-pass" or "short-pass" (`edge-filter`, `long-pass`, `short-pass`, `ir-blocking`, `uv-blocking`, `wide-bandpass`, `solar-protection`): the HL/LH order barely changes the spectrum, and the edge comes from the plot window. Real edge filters use (L/2 H L/2)^N. `long-pass`'s "bandwidth = 700 − 1.1 λ₀" is made up.
   - `notch-filter` is a high-contrast quarter-wave stack, so its "notch" is 538 nm wide at the defaults. Real notch filters use low index contrast or a rugate profile.
@@ -164,7 +170,7 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
     - The deposition rate is mass flux × r²/d² × 1e9 with no ÷ρ, so it is ×2,200 (SiO₂) to ×19,300 (Au) too high.
     - Its log₁₀P = A − B/T coefficients look about 10⁴ low. Al at 1,080 °C gives 3e-8 Torr, where about 1e-4 Torr is expected (Honig curves, or Alcock et al. 1984 for metals).
     - The two errors partly cancel, so fix them together, with tabulated data. The oxide coefficients look invented.
-    - It uses m_p (1.673e-27) as the atomic mass unit. The constants codemod must map it to `m_u`, not `m_p`.
+    - It used m_p (1.673e-27) as the atomic mass unit. The constants codemod mapped it to `m_u` (0.75 % lower), here and in `ion-assisted-deposition`, `sputtering-deposition` and `plasma-deposition`.
     - Its mean free path is 0.005/P_Pa m, about 25 % below the air rule (6.6e-3/P_Pa m). The packing density and uniformity are heuristics.
   - `phase-shift-coating` promises the phase of the reflected and transmitted light but plots only R. Plot arg r from the module. Its `numLayers` state is unused.
   - `ellipsometry-measurement`: a film thickness needs a film model, e.g. a known film index and Azzam & Bashara's exact inversion for a transparent film.
@@ -264,7 +270,8 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - [x] Thin-film pilot: `src/physics/thin-film/transfer-matrix.ts`. It handles complex N, oblique incidence (s and p), and R, T and A. It doesn't overflow on thick metal or evanescent layers. It has 11 golden tests (Fresnel, Brewster, TIR, AR, (HL)^N, Airy with an absorbing film, bulk metal, critical angle). 7 pages use it.
   - [x] Migrate the other thin-film pages with an inline matrix (25, see Phase 2 findings), in batches of ≤10 files, each compared before and after. `cavity-filter.ts` builds the Fabry-Perot designs. 32 pages use the module.
   - [x] Compare the 12 closed-form thin-film pages (listed in the Phase 2 findings) with the module. 10 pages changed. `fresnel-equations` was exact, and `thermal-evaporation` is deferred to Phase 4.
-  - [ ] Replace the inline constants in 46 files (`c = 3e8` ×54, …) with imports from `constants.ts`, using a codemod. Expect last-digit changes.
+  - [x] Replace the inline constants with imports from `constants.ts`, using a codemod (`scripts/codemods/2026-10-08-inline-constants.ts`): 273 literals in 91 files, see the Phase 2 findings. `tests/no-inline-constants.test.ts` fails on any literal within 1 % of an SI constant.
+  - [ ] Unit-scaled constants, which the codemod skipped: `1240` ×28 and `1239.84` (hc in eV·nm; `1240` is also a wavelength in nm, so check each by hand), `299792.458` ×5, `3e5` ×3 and `2.998e5` (c in km/s), `3e17` ×3 (c in nm/s), `8.617e-5` ×2 (k_B in eV/K), `2897771` ×2 (Wien b in nm·K), `8.314` (R) and `377` (Z₀). Add the derived values to `constants.ts`, or convert at the call.
 - [ ] Calculator registry as the single source of truth: slug, title, description, category, model tier, references, aliases. It generates the sitemap, search index, metadata, JSON-LD and related links at build time.
 - [ ] Merge the ~40 duplicates and add 301 redirects in `next.config.js`.
 - [ ] As pages move to pure physics modules, fix the `useMemo` deps and `any`. Then set `preserve-manual-memoization` and `no-explicit-any` back to `error`.
