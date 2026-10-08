@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { hc_eV_nm } from "../../../physics/constants";
 export default function TransientAbsorptionPage() {
   const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 400);
   const [probeRangeMin, setProbeRangeMin] = useURLState("probeRangeMin", 400);
@@ -68,7 +69,7 @@ export default function TransientAbsorptionPage() {
     ];
   }, [delays, gsAbsorption, esAbsorption]);
 
-  const pumpE = 1240 / pumpWavelength;
+  const pumpE = hc_eV_nm / pumpWavelength;
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Transient Absorption Spectroscopy" description="ΔA spectra vs delay time. Decompose into GSB, ESA, and SE contributions across the probe range.">

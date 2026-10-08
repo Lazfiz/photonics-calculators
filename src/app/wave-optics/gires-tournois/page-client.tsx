@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { gtiGdd, gtiGroupDelay, gtiPhase, gtiRoundTripPhase } from "../../../physics/wave-optics/gires-tournois";
+
 export default function GiresTournoisPage() {
   const [reflectivity, setReflectivity] = useURLState("reflectivity", 0.7);
   const [thickness, setThickness] = useURLState("thickness", 500); // nm
@@ -13,73 +15,21 @@ export default function GiresTournoisPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm center
   const [bandwidth, setBandwidth] = useURLState("bandwidth", 100); // nm range to plot
 
-  // Gires-Tournois interferometer: high-reflectivity back surface (R₂≈1), partial front surface R₁
-  // Phase response: φ(δ) = -2 arctan[(1-√R₁)/(1+√R₁) · tan(δ/2)]
-  // where δ = 4πnL/λ is the round-trip phase
-  // GDD = d²φ/dω² = -(2L²n²/c) · (1-R₁)·sin(δ) / (1+R₁-2√R₁·cos(δ))
+  // Lossless GTI: front reflector R₁, 100 % back mirror (src/physics/wave-optics/gires-tournois.ts).
+  const gti = useMemo(() => ({ R: reflectivity, n, d: thickness * 1e-9 }), [reflectivity, n, thickness]);
+  const lambdas = useMemo(
+    () => Array.from({ length: 400 }, (_, i) => wavelength - bandwidth / 2 + i * bandwidth / 400),
+    [wavelength, bandwidth],
+  );
 
-  const chartData = useMemo(() => {
-    const lambdas = Array.from({ length: 400 }, (_, i) => wavelength - bandwidth / 2 + i * bandwidth / 400);
-    const phase: number[] = [];
-    const gdd: number[] = [];
+  const chartData = useMemo(() => [
+    { x: lambdas, y: lambdas.map((l) => gtiPhase(gti, l * 1e-9)), type: "scatter", mode: "lines", name: "Phase φ(λ)", line: { color: "#60a5fa", width: 2 }, yaxis: "y" },
+    { x: lambdas, y: lambdas.map((l) => gtiGdd(gti, l * 1e-9) * 1e30), type: "scatter", mode: "lines", name: "GDD (fs²)", line: { color: "#f87171", width: 2 }, yaxis: "y2" },
+  ], [gti, lambdas]);
 
-    const sqrtR = Math.sqrt(reflectivity);
-    const L = thickness; // nm (coating thickness)
-    const r = (1 - sqrtR) / (1 + sqrtR);
-
-    for (const lam of lambdas) {
-      const delta = 4 * Math.PI * n * L / lam;
-      // Phase
-      const phi = -2 * Math.atan(r * Math.tan(delta / 2));
-      phase.push(phi);
-
-      // GDD in fs²: GDD = -8n²L²(1-R)√R·sin(δ) / [c²·(1+R+2√R·cos(δ))²]
-      // Derived: dφ/dδ = -(1-R)/(1+R+2√R·cos δ), τ = (2nL/c)(1-R)/(1+R+2√R·cos δ),
-      // GDD = d²φ/dω² = -8n²L²(1-R)√R·sin(δ) / [c²·(1+R+2√R·cos δ)²]
-      const c_nm_fs = 299792.458; // speed of light in nm/fs
-      const denom_gdd = 1 + reflectivity + 2 * sqrtR * Math.cos(delta);
-      const gddVal = -8 * n * n * L * L * (1 - reflectivity) * sqrtR * Math.sin(delta) / (c_nm_fs * c_nm_fs * denom_gdd * denom_gdd);
-      gdd.push(gddVal);
-    }
-
-    return [
-      { x: lambdas, y: phase, type: "scatter", mode: "lines", name: "Phase φ(λ)", line: { color: "#60a5fa", width: 2 }, yaxis: "y" },
-      { x: lambdas, y: gdd, type: "scatter", mode: "lines", name: "GDD (fs²)", line: { color: "#f87171", width: 2 }, yaxis: "y2" },
-    ];
-  }, [reflectivity, thickness, n, wavelength, bandwidth]);
-
-  // Reflectivity vs wavelength
-  const reflectData = useMemo(() => {
-    const lambdas = Array.from({ length: 400 }, (_, i) => wavelength - bandwidth / 2 + i * bandwidth / 400);
-    const sqrtR = Math.sqrt(reflectivity);
-    const r = (1 - sqrtR) / (1 + sqrtR);
-    const Rs = lambdas.map(lam => {
-      const delta = 4 * Math.PI * n * thickness / lam;
-      const phi = -2 * Math.atan(r * Math.tan(delta / 2));
-      // Amplitude reflectivity of GTI is always √R₁ (high)
-      // The power reflectivity is R₁ (constant) - that's the key feature of GTI
-      return reflectivity;
-    });
-    return [{ x: lambdas, y: Rs, type: "scatter", mode: "lines", name: "Reflectivity", line: { color: "#34d399", width: 2 } }];
-  }, [reflectivity, thickness, n, wavelength, bandwidth]);
-
-  // Group delay
-  const gdData = useMemo(() => {
-    const lambdas = Array.from({ length: 400 }, (_, i) => wavelength - bandwidth / 2 + i * bandwidth / 400);
-    const sqrtR = Math.sqrt(reflectivity);
-    const r = (1 - sqrtR) / (1 + sqrtR);
-
-    const gd = lambdas.map(lam => {
-      const delta = 4 * Math.PI * n * thickness / lam;
-      // dφ/dδ = -(1-R)/(1+R+2√R·cos δ) (derived from GTI phase)
-      // τ = -dφ/dω = (2nL/c)·(1-R)/(1+R+2√R·cos δ) [in fs, with c in nm/fs]
-      const denom_gd = 1 + reflectivity + 2 * sqrtR * Math.cos(delta);
-      const tau = 2 * n * thickness * (1 - reflectivity) / (299792.458 * denom_gd); // fs
-      return tau;
-    });
-
-    return [{ x: lambdas, y: gd, type: "scatter", mode: "lines", name: "Group Delay (fs)", line: { color: "#fbbf24", width: 2 } }];
-  }, [reflectivity, thickness, n, wavelength, bandwidth]);
+  const gdData = useMemo(() => [
+    { x: lambdas, y: lambdas.map((l) => gtiGroupDelay(gti, l * 1e-9) * 1e15), type: "scatter", mode: "lines", name: "Group Delay (fs)", line: { color: "#fbbf24", width: 2 } },
+  ], [gti, lambdas]);
 
   const layout1 = {
     paper_bgcolor: "transparent", plot_bgcolor: "transparent",
@@ -99,33 +49,33 @@ export default function GiresTournoisPage() {
     margin: { t: 30, r: 30, b: 50, l: 70 },
   };
 
-  const sqrtR = Math.sqrt(reflectivity);
-  const deltaCenter = 4 * Math.PI * n * thickness / wavelength;
-  const denomCenter = 1 + reflectivity + 2 * sqrtR * Math.cos(deltaCenter);
-  const gddCenter = -8 * n * n * thickness * thickness * (1 - reflectivity) * sqrtR * Math.sin(deltaCenter) / (299792.458 * 299792.458 * denomCenter * denomCenter);
+  const deltaCenter = gtiRoundTripPhase(gti, wavelength * 1e-9);
+  const tauCenter = gtiGroupDelay(gti, wavelength * 1e-9) * 1e15; // fs
+  const gddCenter = gtiGdd(gti, wavelength * 1e-9) * 1e30; // fs²
 
   return (
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Gires-Tournois Interferometer" description="Dispersion control via a GTI — constant reflectivity with tunable group delay dispersion.">
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">δ</span> = 4πnL / λ (round-trip phase)</p>
-        <p><span className="text-blue-400">φ(δ)</span> = −2 arctan[(1−√R)/(1+√R) · tan(δ/2)]</p>
-        <p><span className="text-blue-400">GDD</span> = −8n²L²(1−R)√R·sin(δ) / [c²·(1+R+2√R·cos(δ))²]</p>
-        <p className="text-yellow-400">Key: Power reflectivity = R₁ (constant) regardless of δ</p>
+        <p><span className="text-blue-400">φ(δ)</span> = 2 arctan[(1−√R)/(1+√R) · tan(δ/2)]</p>
+        <p><span className="text-blue-400">τ</span> = dφ/dω = (2nL/c)·(1−R) / (1+R+2√R·cos δ)</p>
+        <p><span className="text-blue-400">GDD</span> = dτ/dω = 8n²L²√R(1−R)·sin δ / [c²·(1+R+2√R·cos δ)²]</p>
+        <p className="text-yellow-400">Key: a lossless GTI reflects all the power (|r|² = 1) at every δ; R₁ sets how sharply the phase varies</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Front Surface R₁" value={reflectivity} onChange={setReflectivity} min={0.01} max={0.99} step="0.01" />
-        <ValidatedNumberInput label="Coating Thickness (nm)" value={thickness} onChange={setThickness} />
-        <ValidatedNumberInput label="Refractive Index n" value={n} onChange={setN} step="0.01" />
+        <ValidatedNumberInput label="Coating Thickness (nm)" value={thickness} onChange={setThickness} min={0} />
+        <ValidatedNumberInput label="Refractive Index n" value={n} onChange={setN} min={1} step="0.01" />
         <ValidatedNumberInput label="Center λ (nm)" value={wavelength} onChange={setWavelength} />
         <ValidatedNumberInput label="Plot Bandwidth (nm)" value={bandwidth} onChange={setBandwidth} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Power Reflectivity</p>
-          <p className="text-xl font-bold text-green-400">{(reflectivity * 100).toFixed(1)}% (constant)</p>
+          <p className="text-sm text-gray-400">Group Delay at Center λ</p>
+          <p className="text-xl font-bold text-yellow-400">{tauCenter.toFixed(2)} fs</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Round-trip Phase δ₀</p>

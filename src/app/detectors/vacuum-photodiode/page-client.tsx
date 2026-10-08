@@ -6,7 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c, h, q, m_e } from "../../../physics/constants";
+import { c, h, q, m_e, hc_eV_nm } from "../../../physics/constants";
 export default function VacuumPhotodiodePage() {
   const [quantumEff, setQuantumEff] = useURLState("quantumEff", 0.25);
   const [anodeVoltage, setAnodeVoltage] = useURLState("anodeVoltage", 100); // V
@@ -18,7 +18,7 @@ export default function VacuumPhotodiodePage() {
   const [workFunction, setWorkFunction] = useURLState("workFunction", 2.0); // eV
 
   const results = useMemo(() => {
-    const cutoff = 1240 / workFunction;
+    const cutoff = hc_eV_nm / workFunction;
     const actualQE = wavelength <= cutoff ? quantumEff : 0;
     const resp = (actualQE * q * wavelength * 1e-9) / (h * c);
     const iPhoto = incidentPower * resp;
@@ -42,7 +42,7 @@ export default function VacuumPhotodiodePage() {
   const chartData = useMemo(() => {
     const wavelengths = Array.from({ length: 200 }, (_, i) => 150 + i * 2.5);
     // Simple QE model: rises at cutoff, peaks mid-band
-    const cutoff = 1240 / workFunction; // nm, from work function
+    const cutoff = hc_eV_nm / workFunction; // nm, from work function
     const qe = wavelengths.map(l => {
       if (l > cutoff) return 0;
       const uvPeak = 0.25 * Math.exp(-0.5 * ((l - 300) / 200) ** 2);

@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, hc_eV_nm } from "../../../physics/constants";
 export default function CoherentRamanMicroscopyPage() {
   const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 800);
   const [ramanShift, setRamanShift] = useURLState("ramanShift", 2850);
@@ -16,8 +17,8 @@ export default function CoherentRamanMicroscopyPage() {
   const [repRate, setRepRate] = useURLState("repRate", 20);
 
   const stokesWavelength = 1 / (1 / pumpWavelength - ramanShift / 1e7); // nm
-  const energyPump = 1240 / pumpWavelength;
-  const energyStokes = 1240 / stokesWavelength;
+  const energyPump = hc_eV_nm / pumpWavelength;
+  const energyStokes = hc_eV_nm / stokesWavelength;
   const energyBeat = energyPump - energyStokes;
 
   // CARS/SRS resolution
@@ -25,7 +26,7 @@ export default function CoherentRamanMicroscopyPage() {
   const axialRes = 2 * 1.33 * pumpWavelength / (na * na);
 
   // Spectral resolution (Fourier-limited)
-  const spectralRes = 0.441 / (2.998e10 * pulseWidth * 1e-12); // cm⁻¹ (Gaussian TL bandwidth)
+  const spectralRes = 0.441 / (c * 100 * pulseWidth * 1e-12); // cm⁻¹ (Gaussian TL bandwidth)
 
   const snrChart = useMemo(() => {
     const shifts = Array.from({ length: 100 }, (_, i) => 500 + i * 50);

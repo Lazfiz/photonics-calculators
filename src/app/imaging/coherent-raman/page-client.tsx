@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c } from "../../../physics/constants";
 
 export default function CoherentRamanPage() {
   const [mode, setMode] = useState<"CARS" | "SRS">("CARS");
@@ -20,7 +21,7 @@ export default function CoherentRamanPage() {
     const lambdaPump_m = pumpWl * 1e-9;
     const lambdaStokes_m = 1 / (1 / lambdaPump_m - deltaNu * 100); // ν̃_S = ν̃_P - Δν̃ (all m⁻¹)
     const stokesWl = lambdaStokes_m * 1e9;
-    const freqDiff_THz = deltaNu * 2.998e10 / 1e12; // THz
+    const freqDiff_THz = deltaNu * c * 100 / 1e12; // THz
 
     const pulseEnergyPump = (pumpPower * 1e-3) / (repRate * 1e6); // J
     const pulseEnergyStokes = (stokesPower * 1e-3) / (repRate * 1e6);

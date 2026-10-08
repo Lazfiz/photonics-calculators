@@ -42,6 +42,14 @@ export const WIEN_X = 4.965114231744276;
 /** Wien wavelength displacement constant b = c₂ / x, m·K (λ_max T = b). */
 export const b_Wien = c2_radiation / WIEN_X;
 
+// ── Exact: unit-scaled, for pages that work in nm and eV ────────────────────────────────────
+// Other scaled forms are converted where they are used: c * 100 (cm/s), b_Wien * 1e9 (nm·K), ….
+
+/** hc in eV·nm: photon energy E[eV] = hc_eV_nm / λ[nm] (≈ 1239.84, often rounded to 1240). */
+export const hc_eV_nm = ((h * c) / q) * 1e9;
+/** Boltzmann constant in eV/K (≈ 8.617e-5), so k_B_eV·T is the thermal energy in eV. */
+export const k_B_eV = k_B / q;
+
 // ── Measured: CODATA 2022 ───────────────────────────────────────────────────────────────────
 
 /** Fine-structure constant α (dimensionless), (11)e-13. */

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c } from "../../../physics/constants";
 
 interface Material {
   name: string;
@@ -42,8 +43,8 @@ function gvd(m: Material, lamNm: number) {
   const lam = lamNm / 1000; // to µm
   const dlam = 0.001; // µm
   const dnd = (dnDlambda(m, lam + dlam) - dnDlambda(m, lam - dlam)) / (2 * dlam);
-  const c = 2.998e5; // km/s
-  return (lam / c) * dnd * 1e6; // ps²/km, convert from s²/km·µm⁻¹
+  const c_km_s = c * 1e-3; // km/s
+  return (lam / c_km_s) * dnd * 1e6; // ps²/km, convert from s²/km·µm⁻¹
 }
 
 const colors = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899"];

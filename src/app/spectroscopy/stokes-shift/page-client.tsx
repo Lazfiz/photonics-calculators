@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { hc_eV_nm } from "../../../physics/constants";
 export default function StokesShiftPage() {
   const [absPeak, setAbsPeak] = useURLState("absPeak", 480);
   const [emPeak, setEmPeak] = useURLState("emPeak", 520);
@@ -14,7 +15,7 @@ export default function StokesShiftPage() {
 
   const stokesShiftNm = emPeak - absPeak;
   const stokesShiftCm = (1e7 / absPeak - 1e7 / emPeak);
-  const stokesEnergyEV = 1240 / absPeak - 1240 / emPeak;
+  const stokesEnergyEV = hc_eV_nm / absPeak - hc_eV_nm / emPeak;
 
   const gaussian = (x: number[], center: number, fwhm: number) =>
     x.map(xi => Math.exp(-4 * Math.log(2) * ((xi - center) / fwhm) ** 2));

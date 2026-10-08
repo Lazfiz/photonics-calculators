@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function CavityModeSpacingPage() {
   const [cavityLength, setCavityLength] = useURLState("cavityLength", 150); // mm
   const [n, setN] = useURLState("n", 1.0); // refractive index inside cavity
@@ -13,9 +14,9 @@ export default function CavityModeSpacingPage() {
   const [R2, setR2] = useURLState("R2", 100); // mm, mirror 2 ROC
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
 
-  const c = 3e11; // mm/s
+  const c_mm_s = c * 1e3; // mm/s
   const L = cavityLength * n; // optical length (for FSR)
-  const fSR = c / (2 * L); // free spectral range in Hz
+  const fSR = c_mm_s / (2 * L); // free spectral range in Hz
   const fSRGHz = fSR / 1e9;
   const lambdaFSR = wavelength * wavelength / (2 * n * cavityLength * 1e6); // nm, wavelength FSR
 

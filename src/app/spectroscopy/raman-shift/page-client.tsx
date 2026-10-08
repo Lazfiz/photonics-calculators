@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function RamanShiftPage() {
   const [laserWavelength, setLaserWavelength] = useURLState("laserWavelength", 532);
   const [ramanShiftCm, setRamanShiftCm] = useURLState("ramanShiftCm", 1000);
@@ -20,7 +21,7 @@ export default function RamanShiftPage() {
 
   // Energy and frequency from Raman shift directly (not from Stokes photon)
   const energyDiffEv = ramanShiftCm * 1.239842e-4; // hc ≈ 1.239842e-4 eV·cm
-  const frequencyDiffTHz = ramanShiftCm * 0.029979; // 1 cm⁻¹ = 29.979 THz
+  const frequencyDiffTHz = ramanShiftCm * c * 1e-10; // 1 cm⁻¹ = 29.979 GHz
 
   const chartData = useMemo(() => {
     const shifts = Array.from({ length: 500 }, (_, i) => minShift + i * (maxShift - minShift) / 500);

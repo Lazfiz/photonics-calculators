@@ -6,8 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { q } from "../../../physics/constants";
-const kB = 8.617e-5;
+import { q, k_B_eV } from "../../../physics/constants";
 
 export default function DarkNoiseTemperaturePage() {
   const [darkCurrent25, setDarkCurrent25] = useURLState("darkCurrent25", 0.5);
@@ -16,7 +15,7 @@ export default function DarkNoiseTemperaturePage() {
 
   const darkCurrentAtT = (Tc: number) => {
     const T = Tc + 273.15; const Tref = 298.15;
-    return darkCurrent25 * Math.pow(T / Tref, 1.5) * Math.exp(-eg / (2 * kB) * (1 / T - 1 / Tref));
+    return darkCurrent25 * Math.pow(T / Tref, 1.5) * Math.exp(-eg / (2 * k_B_eV) * (1 / T - 1 / Tref));
   };
   const darkNoiseAtT = (Tc: number) => {
     const Id = darkCurrentAtT(Tc) * 1e-9;

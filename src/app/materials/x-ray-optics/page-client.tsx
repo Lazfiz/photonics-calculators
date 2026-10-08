@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
+import { hc_eV_nm } from "../../../physics/constants";
 
 
 // Critical angle and refractive index for X-ray materials
@@ -76,7 +77,7 @@ export default function XRayOpticsPage() {
         // Penetration depth L = λ/(4πβ) ∝ 1/(β·E)
         return { x: energyRange, y: energyRange.map(E => {
           const b = betaAtEnergy(m, E);
-          return (1.24 / E) / (4 * Math.PI * b) * 1e-3; // λ(nm)/(4πβ) → nm, ×1e-3 → µm
+          return (hc_eV_nm / (E * 1e3)) / (4 * Math.PI * b) * 1e-3; // λ(nm)/(4πβ) → nm, ×1e-3 → µm
         }), type: "scatter" as const, mode: "lines" as const, name: m.name, line: { color: colors[i % colors.length] } };
       }),
       layout: { ...baseLayout, xaxis: { ...baseLayout.xaxis, title: { text: "Energy (keV)", font: { color: "#9ca3af" } } }, yaxis: { ...baseLayout.yaxis, title: { text: "Penetration Depth (µm)", font: { color: "#9ca3af" } }, type: "log" as const }, title: { text: "1/e Penetration Depth: L = λ/(4πβ)", font: { color: "#e5e7eb" } } }

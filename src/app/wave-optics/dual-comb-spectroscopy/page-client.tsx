@@ -6,12 +6,13 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function DualCombSpectroscopyPage() {
   const [repRate1, setRepRate1] = useURLState("repRate1", 250); // MHz
   const [repRate2, setRepRate2] = useURLState("repRate2", 250.001); // MHz
   const [centerWavelength, setCenterWavelength] = useURLState("centerWavelength", 1550); // nm
 
-  const fCenter = 299792.458 / centerWavelength; // THz (c in nm·THz)
+  const fCenter = c * 1e-3 / centerWavelength; // THz (c in nm·THz)
   const deltaFRep = Math.abs(repRate1 - repRate2) * 1e3; // kHz → MHz
   const deltaFRepMHz = Math.abs(repRate1 - repRate2); // MHz
 
