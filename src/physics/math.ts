@@ -130,3 +130,54 @@ export function poissonSf(k: number, mu: number): number {
   if (mu === 0 || kk === Infinity) return 0;
   return kk < mu ? 1 - poissonLowerTail(kk, mu) : poissonUpperTail(kk, mu);
 }
+
+/*
+ * Bessel functions from their integral representations, summed with the trapezoidal rule. For these
+ * integrands (periodic, or decaying double-exponentially on the real line) the rule converges
+ * exponentially (Trefethen & Weideman, SIAM Rev. 56, 385 (2014)), so a fixed grid reaches ~1e-15.
+ * Checked against A&S Tables 9.1 and 9.8 in tests/math.test.ts.
+ */
+
+/** J_n(x) for integer n ≥ 0: J_n(x) = (1/2π) ∫₀^{2π} cos(nτ − x sin τ) dτ (DLMF 10.9.2). */
+export function besselJ(n: number, x: number): number {
+  if (!Number.isInteger(n) || n < 0 || !Number.isFinite(x)) return NaN;
+  if (x === 0) return n === 0 ? 1 : 0;
+  // The N-point rule returns J_n + J_{N−n} ± …; with N > |x| + n + 64 the aliases are below 1e-17.
+  const N = 2 * Math.ceil(Math.abs(x) + n) + 64;
+  let sum = 0;
+  for (let k = 0; k < N; k++) {
+    const t = (2 * Math.PI * k) / N;
+    sum += Math.cos(n * t - x * Math.sin(t));
+  }
+  return sum / N;
+}
+
+/**
+ * Modified Bessel function K_ν(x) for real ν and x > 0: K_ν(x) = ∫₀^∞ e^(−x cosh t) cosh(νt) dt
+ * (DLMF 10.32.9). Step 0.05; the sum stops once the terms (decreasing past cosh t = (1 + |ν|)/x)
+ * fall below 1e-17 of it. K_ν(0) = ∞; negative x gives NaN.
+ */
+export function besselK(nu: number, x: number): number {
+  if (!Number.isFinite(nu) || Number.isNaN(x) || x < 0) return NaN;
+  if (x === 0) return Infinity;
+  if (x === Infinity) return 0;
+  const h = 0.05;
+  let sum = 0.5 * Math.exp(-x);
+  for (let k = 1; k < 20000; k++) {
+    const t = k * h;
+    const ch = Math.cosh(t);
+    const term = Math.exp(-x * ch) * Math.cosh(nu * t);
+    sum += term;
+    if (term <= 1e-17 * sum && x * ch > 1 + Math.abs(nu)) break;
+  }
+  return h * sum;
+}
+
+/** I₀(x) = (1/2π) ∫₀^{2π} e^(x cos τ) dτ (DLMF 10.32.1), trapezoidal rule as for besselJ. */
+export function besselI0(x: number): number {
+  if (!Number.isFinite(x)) return Number.isNaN(x) ? NaN : Infinity;
+  const N = 2 * Math.ceil(Math.abs(x)) + 64;
+  let sum = 0;
+  for (let k = 0; k < N; k++) sum += Math.exp(x * Math.cos((2 * Math.PI * k) / N));
+  return sum / N;
+}

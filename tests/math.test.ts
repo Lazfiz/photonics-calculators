@@ -2,6 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  besselI0,
+  besselJ,
+  besselK,
   erf,
   erfc,
   lnFactorial,
@@ -77,4 +80,31 @@ test("Poisson edge cases", () => {
   assert.equal(poissonPmf(3, 0), 0);
   assert.ok(Number.isNaN(poissonCdf(2, -1)));
   assert.equal(poissonSf(5000, 1), 0); // underflow, and no runaway loop
+});
+
+test("Bessel J_n and K_ν match A&S Tables 9.1 and 9.8", () => {
+  // Abramowitz & Stegun, Handbook of Mathematical Functions, Table 9.1 (J) and Table 9.8 (K; K₀(10) = e^(−10)·0.3916319344).
+  const J: [number, number, number][] = [[0, 1, 0.7651976866], [1, 1, 0.4400505857], [1, 10, 0.0434727462], [0, 5, -0.1775967713]];
+  for (const [n, x, v] of J) assertRel(besselJ(n, x), v, 1e-9, `J${n}(${x})`);
+  const K: [number, number, number][] = [
+    [0, 0.1, 2.4270690247], [1, 0.1, 9.8538447809], [0, 1, 0.4210244382], [1, 1, 0.6019072302],
+    [0, 2, 0.1138938727], [1, 2, 0.1398658818], [0, 10, Math.exp(-10) * 0.3916319344],
+  ];
+  for (const [nu, x, v] of K) assertRel(besselK(nu, x), v, 1e-9, `K${nu}(${x})`);
+  // I₀: A&S Table 9.8 (I₀(8) = e^8 · 0.1434317818).
+  assertRel(besselI0(1), 1.2660658778, 1e-9, "I0(1)");
+  assertRel(besselI0(8), Math.exp(8) * 0.1434317818, 1e-9, "I0(8)");
+  // Closed form K_{1/2}(x) = √(π/2x) e^(−x) (DLMF 10.39.2), and the first zero of J₀ (DLMF Table 10.21.1).
+  for (const x of [0.01, 0.5, 3, 40]) assertRel(besselK(0.5, x), Math.sqrt(Math.PI / (2 * x)) * Math.exp(-x), 1e-13, `K½(${x})`);
+  assert.ok(Math.abs(besselJ(0, 2.404825557695773)) < 1e-15);
+});
+
+test("Bessel edge cases", () => {
+  assert.equal(besselJ(0, 0), 1);
+  assert.equal(besselJ(1, 0), 0);
+  assertRel(besselK(1, 1e-6), 1e6, 1e-9, "K₁(x) → 1/x"); // DLMF 10.30.2
+  assert.equal(besselI0(0), 1);
+  assert.equal(besselK(0, 0), Infinity);
+  assert.ok(Number.isNaN(besselK(0, -1)));
+  assert.ok(Number.isNaN(besselJ(0.5, 1))); // integer orders only
 });

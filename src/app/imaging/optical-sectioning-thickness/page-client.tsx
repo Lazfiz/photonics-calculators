@@ -1,51 +1,53 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import {
+  airyUnit, confocalSectionFwhm, confocalSectionFwhmPointPinhole, twoPhotonAxialFwhm, widefieldDepthOfField,
+} from "../../../physics/imaging/optical-sectioning-thickness";
+
+const fmtUm = (x: number) => (Number.isFinite(x) ? `${(x * 1e6).toFixed(2)} µm` : "—");
+
+/** Keep the finite (x, y) pairs, with y converted to µm. */
+function finiteUm(xs: number[], ys: number[]) {
+  const keep = ys.map(Number.isFinite);
+  return { x: xs.filter((_, i) => keep[i]), y: ys.filter((_, i) => keep[i]).map((y) => y * 1e6) };
+}
+
 export default function OpticalSectioningPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
+  const [wavelength, setWavelength] = useURLState("wavelength", 550); // nm
   const [na, setNa] = useURLState("na", 0.75);
   const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.518);
   const [pinholeAU, setPinholeAU] = useURLState("pinholeAU", 1.0);
 
-  // Axial extent of detection PSF
-  const airyRadiusUm = 0.61 * wavelength / (na * 1000);
-  const pinholeDiam = pinholeAU * 2 * airyRadiusUm;
-
-  // Widefield optical section thickness (depth of field)
-  const dof = 2 * refractiveIndex * wavelength / (na * na);
-
-  // Confocal optical section thickness (depends on pinhole size)
-  // Combines diffraction-limited and geometric pinhole contributions
-  const zDiffraction = 0.88 * wavelength / (refractiveIndex - Math.sqrt(Math.max(0, refractiveIndex * refractiveIndex - na * na)));
-  const pinholeObjSpace = pinholeAU * 1.22 * wavelength / (na * 1000); // µm, specimen-space equivalent
-  const zGeometric = (Math.SQRT2 * refractiveIndex * pinholeObjSpace) / na;
-  const confocalSection = Math.sqrt(zDiffraction * zDiffraction + zGeometric * zGeometric);
-
-  // Multiphoton section thickness (2P uses ~2× excitation wavelength, PSF ∝ |E|⁴)
-  const multiPhotonWavelength = wavelength * 2; // 2P excitation wavelength
-  const multiPhotonSection = 0.532 * multiPhotonWavelength / (refractiveIndex - Math.sqrt(Math.max(0, refractiveIndex * refractiveIndex - na * na)));
+  const lambda = wavelength * 1e-9;
+  const n = refractiveIndex;
+  const results = {
+    widefield: widefieldDepthOfField(lambda, n, na),
+    confocal: confocalSectionFwhm(lambda, n, na, pinholeAU),
+    pointPinhole: confocalSectionFwhmPointPinhole(lambda, n, na),
+    twoPhoton: twoPhotonAxialFwhm(2 * lambda, n, na),
+    pinholeDiameter: pinholeAU * airyUnit(lambda, na),
+  };
+  const valid = Number.isFinite(results.confocal);
 
   const chartData = useMemo(() => {
     const nas = Array.from({ length: 80 }, (_, i) => 0.2 + i * 0.016);
+    const lam = wavelength * 1e-9;
+    const n = refractiveIndex;
     return [
-      { x: nas, y: nas.map(n => 2 * refractiveIndex * wavelength / (n * n)), type: "scatter", mode: "lines", name: "Widefield", line: { color: "#60a5fa" } },
-      { x: nas, y: nas.map(n => {
-        const zD = 0.88 * wavelength / (refractiveIndex - Math.sqrt(Math.max(0, refractiveIndex * refractiveIndex - n * n)));
-        const zG = (Math.SQRT2 * refractiveIndex * (1.22 * wavelength / (n * 1000))) / n;
-        return Math.sqrt(zD * zD + zG * zG);
-      }), type: "scatter", mode: "lines", name: "Confocal (1 AU)", line: { color: "#34d399" } },
-      { x: nas, y: nas.map(n => 0.532 * wavelength * 2 / (refractiveIndex - Math.sqrt(Math.max(0, refractiveIndex * refractiveIndex - n * n)))), type: "scatter", mode: "lines", name: "Multiphoton (2P)", line: { color: "#fbbf24", dash: "dash" } },
-      { x: [na], y: [confocalSection], type: "scatter", mode: "markers", name: "Current", marker: { color: "#f87171", size: 12 } },
+      { ...finiteUm(nas, nas.map((a) => widefieldDepthOfField(lam, n, a))), type: "scatter", mode: "lines", name: "Widefield DOF", line: { color: "#60a5fa" } },
+      { ...finiteUm(nas, nas.map((a) => confocalSectionFwhm(lam, n, a, pinholeAU))), type: "scatter", mode: "lines", name: `Confocal (${pinholeAU} AU)`, line: { color: "#34d399" } },
+      { ...finiteUm(nas, nas.map((a) => twoPhotonAxialFwhm(2 * lam, n, a))), type: "scatter", mode: "lines", name: "Two-photon (2λ)", line: { color: "#fbbf24", dash: "dash" } },
+      { ...finiteUm([na], [confocalSectionFwhm(lam, n, na, pinholeAU)]), type: "scatter", mode: "markers", name: "Current", marker: { color: "#f87171", size: 12 } },
     ];
-  }, [wavelength, na, refractiveIndex, confocalSection]);
+  }, [wavelength, na, refractiveIndex, pinholeAU]);
 
   return (
     <>
-            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={2000} />
         <ValidatedNumberInput label="Numerical Aperture" value={na} onChange={setNa} min={0.1} max={1.7} step="0.01" />
@@ -53,34 +55,39 @@ export default function OpticalSectioningPage() {
         <ValidatedNumberInput label="Pinhole (Airy units)" value={pinholeAU} onChange={setPinholeAU} min={0.1} max={5} step="0.1" />
       </div>
 
+      {!valid && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          No result: the NA must be smaller than the refractive index of the immersion medium.
+        </p>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Widefield Section</p>
-          <p className="text-2xl font-bold text-blue-400">{dof.toFixed(0)} nm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Confocal Section</p>
-          <p className="text-2xl font-bold text-green-400">{confocalSection.toFixed(0)} nm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Multiphoton Section</p>
-          <p className="text-2xl font-bold text-yellow-400">{multiPhotonSection.toFixed(0)} nm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Pinhole Diameter</p>
-          <p className="text-2xl font-bold text-purple-400">{pinholeDiam.toFixed(2)} µm</p>
-        </div>
+        <ResultCard label="Widefield depth of field" value={fmtUm(results.widefield)} tone="blue" subtext="2nλ/NA²; no true sectioning" />
+        <ResultCard
+          label={`Confocal section (${pinholeAU} AU)`}
+          value={fmtUm(results.confocal)}
+          tone="green"
+          subtext={pinholeAU < 1 ? `Below 1 AU this overestimates; point-pinhole limit ${fmtUm(results.pointPinhole)}` : `Point-pinhole limit ${fmtUm(results.pointPinhole)}`}
+        />
+        <ResultCard label="Two-photon section (at 2λ)" value={fmtUm(results.twoPhoton)} tone="yellow" subtext={`λ_exc = ${(2 * wavelength).toFixed(0)} nm${na < 0.7 ? "; fit is for NA > 0.7" : ""}`} />
+        <ResultCard label="Pinhole diameter (object side)" value={fmtUm(results.pinholeDiameter)} tone="purple" subtext="× magnification at the pinhole plane" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-        <h3 className="text-lg font-semibold mb-2">Formulas</h3>
-                              </div>
+        <h3 className="text-lg font-semibold mb-2">Formulas (FWHM, textbook approximations)</h3>
+        <div className="text-sm text-gray-300 space-y-2">
+          <p className="font-mono">Confocal: √[(0.88λ / (n − √(n² − NA²)))² + (√2·n·PH / NA)²], PH = AU × 1.22λ/NA</p>
+          <p className="font-mono">Point pinhole: 0.64λ / (n − √(n² − NA²))</p>
+          <p className="font-mono">Two-photon: 2√(ln 2) · 0.532λ / (√2 (n − √(n² − NA²)))</p>
+          <p>Confocal formulas from Zeiss, &quot;Confocal Laser Scanning Microscopy: Principles&quot; (Wilhelm et al.); the pinhole formula is the geometric-optical one, valid from 1 AU up. Two-photon from Zipfel, Williams &amp; Webb, Nat. Biotechnol. 21, 1369 (2003), excitation at twice the entered wavelength. Widefield: distance from focus to the first axial zero of the paraxial PSF (Born &amp; Wolf §8.8); out-of-focus light is blurred, not rejected.</p>
+        </div>
+      </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" }, xaxis: { title: "NA", gridcolor: "#374151" },
-          yaxis: { title: "Section Thickness (nm)", gridcolor: "#374151" },
+          yaxis: { title: "Section thickness (µm)", gridcolor: "#374151", type: "log" },
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
