@@ -21,7 +21,7 @@ and heed deprecation notices.
 | Gate (pre-commit) | `npm run check` | tsc + eslint + tests; tsc alone ≈ 4 min → background |
 | Type-check only | `npm run typecheck` | ≈ 4 min |
 | Tests | `npm test` | `node:test` via tsx, files in `tests/*.test.ts` |
-| Build (pre-push) | `npm run build` | regenerates `src/generated/search-index.json` |
+| Build (pre-push) | `npm run build` | ≈ 6–10 min → background |
 | CI | `.github/workflows/ci.yml` | Node 24: `npm ci` → `check` → `build` on PRs and `main` |
 
 Searching: use `git grep` / `git ls-files`. Recursive `grep -r` / `Get-ChildItem -Recurse` over
@@ -30,15 +30,20 @@ the repo times out (Defender + `node_modules`). Keep tool output small: tail and
 ## Architecture
 **Current**
 - `src/app/<category>/<slug>/page.tsx`: server component with `metadata` + JSON-LD
-  (`lib/json-ld.tsx`). 427 of these have corrupted JSON-LD (ROADMAP Phase 1).
+  (`lib/json-ld.tsx`); `tests/page-json-ld.test.ts` checks the JSON-LD equals `metadata`.
 - `src/app/<category>/<slug>/page-client.tsx`: `"use client"`; inputs, **physics inline**, charts.
 - `src/components/`: `calculator-shell`, `validated-number-input`, `input-slider`, `result-card`,
   `simple-chart` / `simple-line-chart` (SVG), `chart-panel` / `plotly-chart` (Plotly).
 - `src/hooks/use-url-state.ts`: input state mirrored to the URL query.
-- `src/lib/`: a few extracted physics modules (`geiger-mode-avalanche`, `laser-safety-*`), search
-  index, related links (`flagship-related.ts`, `related-calculators.ts`), `home-categories.ts`.
-- `src/app/sitemap.ts` is hand-written; `scripts/generate-search-index.mjs` builds the index.
-- Sources of truth drift: sitemap, search index, flagship-related, home-categories, page metadata.
+- `src/registry/`: one entry per calculator (title, description, heading/lede overrides, keywords,
+  priority, hidden, related) in `calculators/<category>.ts`, plus `categories.ts`. It generates the
+  sitemap, `/search-index.json` (`src/app/search-index.json/route.ts`), counts, home categories and the
+  category index pages (`components/category-index.tsx`). **Server-only:** client components get data as
+  props; `tests/registry.test.ts` fails on a client import chain (one exception: `related-calculators`).
+- Page metadata, JSON-LD and the `CalculatorShell` title still repeat the registry text (test-checked)
+  until ROADMAP Phase 2 stage 2b generates them.
+- `src/lib/`: a few extracted physics modules (`geiger-mode-avalanche`, `laser-safety-*`), related links
+  (`related-calculators.ts`), `home-categories.ts` (a view of the registry).
 
 **Target** (ROADMAP Phase 2+)
 - `src/physics/constants.ts` (CODATA) + `src/physics/<category>/<slug>.ts` pure SI functions,

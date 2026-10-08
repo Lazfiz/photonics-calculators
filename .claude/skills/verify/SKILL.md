@@ -7,8 +7,8 @@ description: Run this project's gates on Windows (tsc, eslint, tests, build), re
 ## Gates (run in this order; long ones in the background, then read only the tail)
 1. `npm run check`: `tsc --noEmit && eslint && npm test`. tsc alone takes about 4 min on this disk, so run the
    gate with `run_in_background` and redirect output to a log in the scratchpad.
-2. `npm run build`: required before a push. Its `prebuild` regenerates `src/generated/search-index.json`;
-   commit that change only if it's intentional.
+2. `npm run build`: required before a push. It prerenders `/search-index.json` and the sitemap from the
+   registry; nothing generated is committed.
 - Type-check only: `node node_modules/typescript/bin/tsc --noEmit -p .`
 
 ## Reading failures (keep output small)
