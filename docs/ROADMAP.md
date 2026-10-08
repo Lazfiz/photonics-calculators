@@ -31,7 +31,7 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - ccd-cmos/ccd-vs-cmos, em-gain/emccd-gain/electron-multiplying, full-well/well-capacity
   - scanned-mpe/scanning-mpe, dual-comb (spectroscopy + wave-optics)
 - Fudge-factor models presented as calculators, e.g. `imaging/second-harmonic` (prefactor `4e-24`, `dn = 0.01·n/1.33`).
-- ~~Constants are redefined inline in 46 files~~: it was 273 literals in 91 files (`3e8` ×121, `1.6e-19`/`1.602e-19` ×49, `6.626e-34` ×35, …). They're imported since the 2026-10-08 codemod, and `tests/no-inline-constants.test.ts` guards against new ones. Unit-scaled forms remain (Phase 2). `erf` is implemented 3 different ways.
+- ~~Constants are redefined inline in 46 files~~: it was 273 literals in 91 files (`3e8` ×121, `1.6e-19`/`1.602e-19` ×49, `6.626e-34` ×35, …). They're imported since the 2026-10-08 codemod, and `tests/no-inline-constants.test.ts` guards against new ones. A second codemod did the unit-scaled forms (`1240 / λ`, `3e10`, …; 38 sites). `erf` is implemented 3 different ways.
 - Minor: `fiber-optics/v-number` uses `floor(V²/2)` modes for V<2.405.
 - Verified correct: gaussian-beam, v-number, single-ar, sellmeier, nep, airy-disk, blackbody (rounded constants).
 
@@ -158,6 +158,23 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - `shot-noise`, `reset-noise` and `thermal-noise` held q or k_B as state that was never set (`useURLState("q", …)`), so a `?q=` URL could change the elementary charge. Those are plain imports now.
   - `quantum-key-distribution` named its binary-entropy function `h`, which shadowed Planck's h. It is `binaryEntropy` now.
   - `wire-grid` used μ₀ = 4π·1e-7 (pre-2019 SI). It now uses CODATA 2022's `mu_0`, 1.3e-10 lower.
+- Unit-scaled constants (session 14, branch `phase-2/unit-scaled-constants`): `scripts/codemods/2026-10-08-unit-scaled-constants.ts` lists 38 sites in 33 files, each checked by hand against the page's input units.
+  - `constants.ts` gained `hc_eV_nm` (1239.84) and `k_B_eV`. Other scales are converted where they're used: `c * 100` (cm/s), `c * 1e-3` (km/s and nm·THz), `c * 1e9` (nm/s), `c * 1e3` (mm/s), `c * 1e-10` (THz per cm⁻¹), `b_Wien * 1e9` (nm·K), `epsilon_0 * 1e-2` (F/cm) and `h * c`.
+  - Every site used its unit correctly, so values move by the rounding only: `1240` −0.013 %; `3e10`, `3e5`, `3e17`, `3e11` and `377` −0.07 %; `8.85e-14` +0.05 %.
+  - The list was longer than the ROADMAP's. The new guard also found `1.986446e-25` (hc in J·m, `optical-parametric-oscillator`), `1.24e-6` (hc/e in V·m, `diode-laser-resonator`), `1.24 / λ` with λ in µm or E in keV (×3), `0.029979` (`raman-shift`), `3e11` (`cavity-mode-spacing`) and `8.85e-14` (`silicon-photodiode`).
+  - `tests/no-inline-constants.test.ts` now covers the scaled forms:
+    - 1 % for the unambiguous ones (c in cm/s, km/s, mm/s and nm/s; k_B in eV/K; ε₀ in F/cm; b in nm·K).
+    - 0.1 % for R, Z₀ and hc in J·m. A 2e-25 m² rare-earth cross-section sits 0.7 % from hc.
+    - hc in eV·nm, eV·µm and V·m count only as the dividend of a division (`1240 / λ`), since 1240 nm is also a wavelength. c in nm/fs (300) and in THz per cm⁻¹ (0.03) aren't guarded.
+  - `gires-tournois` is fixed, with `src/physics/wave-optics/gires-tournois.ts` and 3 golden tests (hand values, plus a numerical derivative of arg r):
+    - c was 299792.458 "nm/fs" (it is 299.79), so τ was 10³ times too small and the GDD 10⁶ times too small. At the defaults the GDD was −0.0024 fs²; it is +2,404 fs², and τ = 65.3 fs.
+    - The GDD was −dτ/dω: d²φ/dω² of a phase written in the e^(+iωt) convention.
+    - The page claimed a power reflectivity of R₁. A lossless GTI reflects 100 %. The unused `reflectData` is gone.
+  - `raman-shift`'s comment said 1 cm⁻¹ = 29.979 THz. It's GHz, and the code was right.
+  - **Open (not a constants bug):** `chromatic-dispersion` is wrong in sign and size.
+    - `dnDlambda` drops the minus sign of dn/dλ = −(λ/n) Σ BᵢCᵢ/(λ² − Cᵢ)², so fused silica at 1.55 µm gives +0.01198/µm.
+    - "GVD (β₂)" is (λ/c)·d(dn/dλ)/dλ × 1e6, labelled ps²/km. It shows +0.0219, where β₂ = −27.95 ps²/km and D = +21.91 ps/(nm·km) (numerical derivatives of the page's own Malitson Sellmeier).
+    - Fix: a Sellmeier module with golden values (Malitson 1965), showing β₂ = λ³/(2πc²)·n″ and D = −(λ/c)·n″.
 - Thin-film models and labels for Phase 4 (left as they are):
   - Plain quarter-wave stacks labelled "long-pass" or "short-pass" (`edge-filter`, `long-pass`, `short-pass`, `ir-blocking`, `uv-blocking`, `wide-bandpass`, `solar-protection`): the HL/LH order barely changes the spectrum, and the edge comes from the plot window. Real edge filters use (L/2 H L/2)^N. `long-pass`'s "bandwidth = 700 − 1.1 λ₀" is made up.
   - `notch-filter` is a high-contrast quarter-wave stack, so its "notch" is 538 nm wide at the defaults. Real notch filters use low index contrast or a rugate profile.
@@ -271,7 +288,7 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - [x] Migrate the other thin-film pages with an inline matrix (25, see Phase 2 findings), in batches of ≤10 files, each compared before and after. `cavity-filter.ts` builds the Fabry-Perot designs. 32 pages use the module.
   - [x] Compare the 12 closed-form thin-film pages (listed in the Phase 2 findings) with the module. 10 pages changed. `fresnel-equations` was exact, and `thermal-evaporation` is deferred to Phase 4.
   - [x] Replace the inline constants with imports from `constants.ts`, using a codemod (`scripts/codemods/2026-10-08-inline-constants.ts`): 273 literals in 91 files, see the Phase 2 findings. `tests/no-inline-constants.test.ts` fails on any literal within 1 % of an SI constant.
-  - [ ] Unit-scaled constants, which the codemod skipped: `1240` ×28 and `1239.84` (hc in eV·nm; `1240` is also a wavelength in nm, so check each by hand), `299792.458` ×5, `3e5` ×3 and `2.998e5` (c in km/s), `3e17` ×3 (c in nm/s), `8.617e-5` ×2 (k_B in eV/K), `2897771` ×2 (Wien b in nm·K), `8.314` (R) and `377` (Z₀). Add the derived values to `constants.ts`, or convert at the call.
+  - [x] Unit-scaled constants, which the first codemod skipped. `constants.ts` gained `hc_eV_nm` and `k_B_eV`, and the other scales are converted at the call. `scripts/codemods/2026-10-08-unit-scaled-constants.ts` changed 38 hand-checked sites in 33 files. The guard test covers the scaled forms. This also found and fixed `gires-tournois` (c off by 10³). See the Phase 2 findings.
 - [ ] Calculator registry as the single source of truth: slug, title, description, category, model tier, references, aliases. It generates the sitemap, search index, metadata, JSON-LD and related links at build time.
 - [ ] Merge the ~40 duplicates and add 301 redirects in `next.config.js`.
 - [ ] As pages move to pure physics modules, fix the `useMemo` deps and `any`. Then set `preserve-manual-memoization` and `no-explicit-any` back to `error`.
