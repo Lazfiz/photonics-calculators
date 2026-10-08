@@ -7,9 +7,9 @@ paths:
 
 - Before using any Next API (metadata, routing, `generateStaticParams`, redirects, `next/dynamic`,
   caching), read the matching guide in `node_modules/next/dist/docs/`. APIs differ from training data.
-- `page.tsx` is a **server component**. It exports `metadata` and renders JSON-LD, both built from the
-  calculator's registry entry (until the registry exists: from the same `title`/`description` literals,
-  never duplicated by hand). JSON-LD values are plain strings, never source code inside template literals.
+- `page.tsx` is a **server component** with no text of its own: `metadata = calculatorMetadata(href)` and
+  `<CalculatorShell href={href}>`, which renders the JSON-LD, heading and breadcrumbs from the registry
+  entry. JSON-LD only describes what the page shows (no generated FAQ) and goes through `jsonLdHtml`.
 - `page-client.tsx` (`"use client"`) is only for interactivity: inputs, state, calling physics functions,
   and rendering results/charts. No metadata and no large static data imports.
 - Related links, category lists and search data are computed on the server (or at build time) and passed
