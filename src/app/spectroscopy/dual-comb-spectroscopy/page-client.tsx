@@ -1,133 +1,130 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
+import { aliasFreeBandwidth, beatNote, rfMapping } from "../../../physics/spectroscopy/dual-comb-spectroscopy";
+
+const CHART_TEETH = 800;
+
+const fmt = (x: number, digits = 4) =>
+  !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e6 ? x.toPrecision(digits) : x.toExponential(3);
+
+/** Frequency width at λ as a wavelength width, nm. */
+const toNm = (df: number, lambda_nm: number) => (lambda_nm ** 2 * df) / (c * 1e9);
+
 export default function DualCombSpectroscopyPage() {
   const [repRate1, setRepRate1] = useURLState("repRate1", 100); // MHz
-  const [repRate2, setRepRate2] = useURLState("repRate2", 100.001); // MHz
+  const [repRate2, setRepRate2] = useURLState("repRate2", 100.0002); // MHz
   const [ceoFreq1, setCeoFreq1] = useURLState("ceoFreq1", 20); // MHz
   const [ceoFreq2, setCeoFreq2] = useURLState("ceoFreq2", 20.1); // MHz
   const [centerWavelength, setCenterWavelength] = useURLState("centerWavelength", 1550); // nm
-  const [numModes, setNumModes] = useURLState("numModes", 200000);
+  const [numModes, setNumModes] = useURLState("numModes", 100000);
 
-  const frep1Hz = repRate1 * 1e6;
-  const frep2Hz = repRate2 * 1e6;
-  const deltaFrep = Math.abs(frep2Hz - frep1Hz);
-  const deltaFceo = Math.abs(ceoFreq2 - ceoFreq1) * 1e6; // Hz
-  const centerFreq = c / (centerWavelength * 1e-9);
+  const calc = useMemo(() => {
+    const comb1 = { frep: repRate1 * 1e6, fceo: ceoFreq1 * 1e6 };
+    const comb2 = { frep: repRate2 * 1e6, fceo: ceoFreq2 * 1e6 };
+    const nuCenter = c / (centerWavelength * 1e-9);
+    const N = Math.max(2, Math.round(numModes));
+    const dfr = comb2.frep - comb1.frep;
+    const map = rfMapping(comb1, comb2, nuCenter, N);
+    const opticalBW = (N - 1) * comb1.frep;
+    const limit = aliasFreeBandwidth(comb1, comb2);
+    return { comb1, comb2, nuCenter, N, dfr, map, opticalBW, limit };
+  }, [repRate1, repRate2, ceoFreq1, ceoFreq2, centerWavelength, numModes]);
 
-  // Optical bandwidth: (N-1) * f_rep per comb
-  const opticalBW1 = (numModes - 1) * frep1Hz;
-  const opticalBW2 = (numModes - 1) * frep2Hz;
-  const opticalBW = (opticalBW1 + opticalBW2) / 2; // average for display
-  const opticalBWnm = (centerWavelength ** 2 * opticalBW) / (c * 1e9);
-  const updateTime = deltaFrep > 0 ? 1 / deltaFrep : Infinity;
-  const resolutionHz = frep1Hz; // Optical resolution = comb tooth spacing (f_rep)
-  const resolutionNm = (centerWavelength ** 2 * resolutionHz) / (c * 1e9);
-
-  const chartData = useMemo(() => {
-    const step = Math.max(1, Math.floor(numModes / 500));
-    const count = Math.floor(numModes / step);
-    // Comb modes: f_n = n * f_rep + f_CEO (exact comb equation)
-    const nMin1 = Math.round((centerFreq - opticalBW1 / 2 - ceoFreq1 * 1e6) / frep1Hz);
-    const nMin2 = Math.round((centerFreq - opticalBW2 / 2 - ceoFreq2 * 1e6) / frep2Hz);
-    const modes1 = Array.from({ length: count }, (_, i) => (nMin1 + i * step) * frep1Hz + ceoFreq1 * 1e6);
-    const modes2 = Array.from({ length: count }, (_, i) => (nMin2 + i * step) * frep2Hz + ceoFreq2 * 1e6);
+  const mappingData = useMemo(() => {
+    const { comb1, comb2, nuCenter, map, N } = calc;
+    if (calc.dfr === 0) return [];
+    const step = Math.max(1, Math.floor(N / CHART_TEETH));
+    const teeth = Array.from({ length: Math.floor((N - 1) / step) + 1 }, (_, i) => map.nFirst + i * step);
+    const x = teeth.map((n) => (n * comb1.frep + comb1.fceo - nuCenter) / 1e12);
     return [
-      { x: modes1.map(f => (f - centerFreq) / 1e12), y: modes1.map(() => 1), type: "scatter", mode: "lines",
-        name: `Comb 1 (${repRate1} MHz)`, line: { color: "#34d399", width: 1 } },
-      { x: modes2.map(f => (f - centerFreq) / 1e12), y: modes2.map(() => 0.8), type: "scatter", mode: "lines",
-        name: `Comb 2 (${repRate2} MHz)`, line: { color: "#f87171", width: 1 } },
+      {
+        x, y: teeth.map((n) => Math.abs(beatNote(comb1, comb2, n)) / 1e6), type: "scatter", mode: "markers",
+        name: "RF beat of each tooth pair", marker: { color: map.aliasFree ? "#a78bfa" : "#f87171", size: 3 },
+      },
+      {
+        x: [x[0], x[x.length - 1]], y: [comb2.frep / 2e6, comb2.frep / 2e6], type: "scatter", mode: "lines",
+        name: "f_r/2 (Nyquist)", line: { color: "#6b7280", width: 1, dash: "dash" },
+      },
     ];
-  }, [repRate1, repRate2, numModes, centerFreq, opticalBW1, opticalBW2, ceoFreq1, ceoFreq2]);
+  }, [calc]);
 
-  const rfData = useMemo(() => {
-    if (deltaFrep === 0) return [];
-    // Multi-heterodyne RF beat notes: f_RF,n = |Δf_CEO + n·Δf_rep|
-    // These fold into the detection band [0, f_rep/2]
-    const maxN = Math.min(numModes, Math.floor(frep1Hz / (2 * deltaFrep)));
-    const rfBeats = Array.from({ length: maxN }, (_, i) => Math.abs(deltaFceo + i * deltaFrep));
-    // Fold into Nyquist band
-    const foldedBeats = rfBeats.map(f => {
-      const nyq = frep1Hz / 2;
-      const folded = f % nyq;
-      return folded > nyq / 2 ? nyq - folded : folded;
-    });
-    // Build histogram-style plot
-    const maxRf = frep1Hz / 2;
-    const bins = 500;
-    const rfBins = Array.from({ length: bins }, (_, i) => i * maxRf / bins);
-    const rfIntensity = rfBins.map((_, i) => {
-      const f = (i + 0.5) * maxRf / bins;
-      return foldedBeats.reduce((sum, fb) => sum + Math.exp(-((f - fb) ** 2) / (deltaFrep * 0.3) ** 2), 0);
-    });
-    const maxI = Math.max(...rfIntensity, 1);
-    return [
-      { x: rfBins.map(f => f / 1e6), y: rfIntensity.map(v => v / maxI), type: "scatter", mode: "lines",
-        name: "RF Multi-Heterodyne", line: { color: "#a78bfa", width: 2 }, fill: "tozeroy", fillcolor: "rgba(167,139,250,0.1)" },
-    ];
-  }, [deltaFrep, deltaFceo, frep1Hz, numModes]);
+  const { map, dfr } = calc;
+  const fr = calc.comb1.frep;
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Comb 1 Rep Rate (MHz)" value={repRate1} onChange={setRepRate1} min={10} step="0.1" />
-        <ValidatedNumberInput label="Comb 2 Rep Rate (MHz)" value={repRate2} onChange={setRepRate2} min={10} step="0.0001" />
-        <ValidatedNumberInput label="Center Wavelength (nm)" value={centerWavelength} onChange={setCenterWavelength} min={400} />
-        <ValidatedNumberInput label="Number of Comb Modes" value={numModes} onChange={setNumModes} min={1000} step="10000" />
-        <ValidatedNumberInput label="f_CEO Comb 1 (MHz)" value={ceoFreq1} onChange={setCeoFreq1} min={0} step="0.1" />
-        <ValidatedNumberInput label="f_CEO Comb 2 (MHz)" value={ceoFreq2} onChange={setCeoFreq2} min={0} step="0.1" />
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Comb 1 rep rate f_r (MHz)" value={repRate1} onChange={setRepRate1} min={1} max={100000} step="0.1" />
+        <ValidatedNumberInput label="Comb 2 rep rate (MHz)" value={repRate2} onChange={setRepRate2} min={1} max={100000} step="0.0001" />
+        <ValidatedNumberInput label="Number of comb teeth N" value={numModes} onChange={setNumModes} min={2} max={10000000} step="10000" />
+        <ValidatedNumberInput label="f_CEO comb 1 (MHz)" value={ceoFreq1} onChange={setCeoFreq1} min={0} max={100000} step="0.1" />
+        <ValidatedNumberInput label="f_CEO comb 2 (MHz)" value={ceoFreq2} onChange={setCeoFreq2} min={0} max={100000} step="0.1" />
+        <ValidatedNumberInput label="Center wavelength (nm)" value={centerWavelength} onChange={setCenterWavelength} min={200} max={20000} />
       </div>
+
+      {dfr === 0 ? (
+        <p className="mb-6 text-sm text-yellow-300" role="status">Equal repetition rates: the two combs give no dual-comb interferogram.</p>
+      ) : !map.aliasFree ? (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          Aliased: two or more optical teeth share an RF frequency.{" "}
+          {calc.opticalBW > calc.limit
+            ? `The optical band (${fmt(calc.opticalBW / 1e12)} THz) exceeds f_r²/(2Δf_r) = ${fmt(calc.limit / 1e12)} THz; reduce N or Δf_r, or filter the spectrum.`
+            : `The band fits in principle; shift f_CEO of comb 2 by ${fmt(map.offsetToCentre / 1e6)} MHz to centre its image at f_r/4.`}
+        </p>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Δf_rep (RF spacing)</p>
-          <p className="text-xl font-bold text-green-400">{deltaFrep > 0 ? deltaFrep.toFixed(0) + " Hz" : "N/A (identical)"}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Update Time</p>
-          <p className="text-xl font-bold text-blue-400">{isFinite(updateTime) ? (updateTime * 1e6).toFixed(1) + " μs" : "N/A"}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Optical Bandwidth</p>
-          <p className="text-xl font-bold text-yellow-400">{opticalBWnm.toFixed(1)} nm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Resolution (nm)</p>
-          <p className="text-xl font-bold text-red-400">{resolutionNm.toExponential(2)}</p>
-        </div>
+        <ResultCard label="Δf_r" value={`${fmt(dfr)} Hz`} tone="green" subtext={`compression f_r/Δf_r = ${fmt(Math.abs(fr / dfr))}`} />
+        <ResultCard label="Update time 1/Δf_r" value={`${fmt(1e3 / Math.abs(dfr))} ms`} tone="blue" subtext="one interferogram" />
+        <ResultCard label="Optical bandwidth" value={`${fmt(calc.opticalBW / 1e12)} THz`} tone="yellow" subtext={`${fmt(toNm(calc.opticalBW, centerWavelength))} nm`} />
+        <ResultCard
+          label="Alias-free limit f_r²/(2Δf_r)"
+          value={`${fmt(calc.limit / 1e12)} THz`}
+          tone={calc.opticalBW <= calc.limit ? "green" : "red"}
+          subtext={`${fmt(toNm(calc.limit, centerWavelength))} nm`}
+        />
+        <ResultCard
+          label="RF image of the band"
+          value={map.aliasFree ? `${fmt(map.rfMin / 1e6)}–${fmt(map.rfMax / 1e6)} MHz` : "aliased"}
+          tone={map.aliasFree ? "purple" : "red"}
+          subtext={`N·Δf_r = ${fmt((calc.N * Math.abs(dfr)) / 1e6)} MHz of [0, ${fmt(fr / 2e6)}] MHz`}
+        />
+        <ResultCard label="Resolution (tooth spacing)" value={`${fmt(fr / 1e6)} MHz`} tone="gray" subtext={`${fmt(toNm(fr, centerWavelength) * 1e3)} pm`} />
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
-        <p>fₙ = f_CEO + n · f_rep — comb mode frequencies</p>
-        <p>Spectral resolution = f_rep (comb tooth spacing)</p>
-        <p>Update time = 1/Δf_rep (one full interferogram period)</p>
-        <p>Optical BW ≈ N_modes × f_rep → maps to RF domain 0 to f_rep</p>
-        <p className="text-gray-500">Multi-heterodyne: each optical comb pair maps to a unique RF beat note</p>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6">
+        <h3 className="text-lg font-semibold mb-3">Optical → RF Mapping</h3>
+        <ChartPanel data={mappingData} layout={{
+          paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          xaxis: { title: "Optical frequency − ν_c (THz)", gridcolor: "#374151" },
+          yaxis: { title: "RF frequency (MHz)", gridcolor: "#374151" },
+          margin: { t: 20, r: 20, b: 50, l: 60 }, height: 340,
+          legend: { x: 0.02, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af", size: 11 } },
+        }} />
+        <p className="text-sm text-gray-400 mt-2">
+          Each comb-1 tooth beats with the nearest comb-2 tooth. Alias-free, the points form one straight line inside
+          [0, f_r/2]; a fold at 0 or at f_r/2 means two optical frequencies land on the same RF frequency.
+        </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ChartPanel data={chartData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" },
-          title: { text: "Optical Comb Teeth", font: { size: 13 } },
-          xaxis: { title: "Relative Frequency (THz)", gridcolor: "#374151" },
-          yaxis: { title: "Amplitude", gridcolor: "#374151", range: [0, 1.2] },
-          margin: { t: 40, r: 20, b: 50, l: 60 }, legend: { bgcolor: "transparent", font: { size: 10 } },
-        }} />
-        <ChartPanel data={rfData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" },
-          title: { text: "RF Multi-Heterodyne Spectrum", font: { size: 13 } },
-          xaxis: { title: "RF Frequency (MHz)", gridcolor: "#374151" },
-          yaxis: { title: "Intensity", gridcolor: "#374151" },
-          margin: { t: 40, r: 20, b: 50, l: 60 }, legend: { bgcolor: "transparent" },
-        }} />
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2">
+          <p className="font-mono">ν<sub>j</sub>(n) = n f<sub>r,j</sub> + f<sub>0,j</sub>,   f<sub>RF</sub>(n) = |wrap(n Δf<sub>r</sub> + Δf<sub>0</sub>)|  into [0, f<sub>r</sub>/2]</p>
+          <p className="font-mono">Δν ≤ f<sub>r</sub>²/(2Δf<sub>r</sub>),   T<sub>update</sub> = 1/Δf<sub>r</sub>,   compression = f<sub>r</sub>/Δf<sub>r</sub></p>
+          <p>
+            Comb equation and sampling arithmetic, exact (Coddington, Newbury &amp; Swann, &quot;Dual-comb spectroscopy&quot;,
+            Optica 3, 414, 2016). The interferogram is sampled once per pulse, so its Nyquist frequency is f<sub>r</sub>/2.
+            The band&apos;s image must sit inside one half-band, which depends on the absolute tooth numbers and the
+            offset frequencies, not only on the bandwidth limit.
+          </p>
+        </div>
       </div>
     </>
   );

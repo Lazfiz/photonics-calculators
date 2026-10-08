@@ -1,132 +1,153 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import {
+  MEAN_DGD_BIT_FRACTION, MEAN_TO_RMS, dgdExceedanceProbability, dgdPdf, meanDgd, pmdLimitedLength,
+} from "../../../physics/fiber-optics/polarization-mode-dispersion";
+
+const PS_SQRT_KM = 1e-12 / Math.sqrt(1e3); // ps/√km → s/√m
+const CHART_RATES_GBPS = [2.5, 10, 40, 100];
+const MINUTES_PER_YEAR = 365.25 * 24 * 60;
+
+const fmt = (x: number, digits = 3) =>
+  !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
+
+/** Outage time per year for a probability, in readable units. */
+function fmtOutage(p: number) {
+  const minutes = p * MINUTES_PER_YEAR;
+  if (minutes >= 60 * 24) return `${fmt(minutes / 60 / 24)} days/year`;
+  if (minutes >= 60) return `${fmt(minutes / 60)} h/year`;
+  if (minutes >= 1) return `${fmt(minutes)} min/year`;
+  return `${fmt(minutes * 60)} s/year`;
+}
+
 export default function PMDPage() {
   const [pmdCoeff, setPmdCoeff] = useURLState("pmdCoeff", 0.5); // ps/√km
   const [length, setLength] = useURLState("length", 100); // km
-  const [bitRate, setBitRate] = useURLState("bitRate", 10); // Gbps
-  const [fiberCount, setFiberCount] = useURLState("fiberCount", 1); // number of fiber spans
-  const [probability, setProbability] = useURLState("probability", 99.9); // % Q outage probability
+  const [bitRate, setBitRate] = useURLState("bitRate", 10); // Gb/s
+  const [maxToMean, setMaxToMean] = useURLState("maxToMean", 3); // max DGD / mean DGD
 
   const calc = useMemo(() => {
-    const DGD_rms = pmdCoeff * Math.sqrt(length); // ps
-    const DGD_mean = DGD_rms * Math.sqrt(8 / (3 * Math.PI)); // ps, Maxwellian mean
-    const DGD_max = pmdCoeff * Math.sqrt(length * fiberCount); // for concatenated spans
-    const DGD_sigma = DGD_rms / Math.sqrt(3); // Maxwellian scale parameter
-
-    // PMD-limited distance for given bit rate (DGD < 10% of bit period)
-    const penaltyThreshold = (0.1 * 1e12) / (bitRate * 1e9); // 10% of bit period in ps
-    const maxDist = Math.pow(penaltyThreshold / pmdCoeff, 2); // km
-    const aboveThreshold = probability / 100;
-
-    // Outage DGD from probability (approximate inverse Maxwellian)
-    const DGD_outage = DGD_sigma * (3.0 + (1 - aboveThreshold) * 5);
-
-    return { DGD_rms, DGD_mean, DGD_max, maxDist, penaltyThreshold, DGD_outage, DGD_sigma };
-  }, [pmdCoeff, length, bitRate, fiberCount, probability]);
-
-  const distData = useMemo(() => {
-    const distances = Array.from({ length: 80 }, (_, i) => (i + 1) * 5);
-    const rates = [2.5, 10, 40, 100, 400];
-    return rates.map(rate => ({
-      x: distances,
-      y: distances.map(d => pmdCoeff * Math.sqrt(d) * rate * 1e9 * 1e-12), // DGD/bit period ratio
-      type: "scatter" as const, mode: "lines" as const,
-      name: `${rate} Gbps`,
-      line: { width: 1.5 },
-    }));
-  }, [pmdCoeff]);
+    const mean = meanDgd(pmdCoeff * PS_SQRT_KM, length * 1e3);
+    const bitPeriod = 1 / (bitRate * 1e9);
+    const pOut = dgdExceedanceProbability(maxToMean * mean, mean);
+    return {
+      mean_ps: mean * 1e12,
+      rms_ps: (mean / MEAN_TO_RMS) * 1e12,
+      meanOverT: mean / bitPeriod,
+      maxDgd_ps: maxToMean * mean * 1e12,
+      maxOverT: (maxToMean * mean) / bitPeriod,
+      pOut,
+      maxLength_km: pmdLimitedLength(pmdCoeff * PS_SQRT_KM, bitRate * 1e9) / 1e3,
+    };
+  }, [pmdCoeff, length, bitRate, maxToMean]);
 
   const distributionData = useMemo(() => {
-    // Maxwellian PDF: f(x) = sqrt(2/π) · x²/σ³ · exp(-x²/2σ²)
-    const sigma = calc.DGD_sigma;
-    const x = Array.from({ length: 200 }, (_, i) => i * sigma * 5 / 200);
-    const pdf = x.map(xi => {
-      if (xi === 0) return 0;
-      return Math.sqrt(2 / Math.PI) * Math.pow(xi, 2) / Math.pow(sigma, 3) * Math.exp(-xi * xi / (2 * sigma * sigma));
-    });
-    const cdf = x.reduce((acc: number[], xi, i) => {
-      if (i === 0) return [pdf[0] * (x[1] - x[0])];
-      return [...acc, acc[acc.length - 1] + pdf[i] * (x[i] - x[i - 1])];
-    }, []);
-
+    const mean = calc.mean_ps;
+    const xMax = Math.max(5, maxToMean + 0.5) * mean;
+    const x = Array.from({ length: 201 }, (_, i) => (i * xMax) / 200);
+    // dgdPdf is scale-free: in ps in, 1/ps out.
+    const pdf = x.map((xi) => dgdPdf(xi, mean));
+    const peak = Math.max(...pdf);
     return [
-      { x, y: pdf, type: "scatter" as const, mode: "lines" as const, name: "PDF (Maxwellian)", line: { color: "#f87171" } },
-      { x, y: cdf.map(c => c * 100), type: "scatter" as const, mode: "lines" as const, name: "CDF (%)", line: { color: "#60a5fa" }, yaxis: "y2" },
-      { x: [calc.DGD_rms, calc.DGD_rms], y: [0, Math.max(...pdf)], type: "scatter" as const, mode: "lines" as const, name: "DGD_rms", line: { color: "#fbbf24", dash: "dash" } },
+      { x, y: pdf, type: "scatter", mode: "lines", name: "Maxwellian PDF", line: { color: "#60a5fa", width: 2 } },
+      { x: [mean, mean], y: [0, peak], type: "scatter", mode: "lines", name: "Mean DGD", line: { color: "#fbbf24", width: 1.5, dash: "dash" } },
+      { x: [calc.maxDgd_ps, calc.maxDgd_ps], y: [0, peak], type: "scatter", mode: "lines", name: `${maxToMean} × mean`, line: { color: "#f87171", width: 1.5, dash: "dash" } },
     ];
-  }, [calc]);
+  }, [calc.mean_ps, calc.maxDgd_ps, maxToMean]);
+
+  const distanceData = useMemo(() => {
+    const distances = Array.from({ length: 100 }, (_, i) => (i + 1) * 10);
+    const traces: Record<string, unknown>[] = CHART_RATES_GBPS.map((rate) => ({
+      x: distances,
+      y: distances.map((d) => meanDgd(pmdCoeff * PS_SQRT_KM, d * 1e3) * rate * 1e9),
+      type: "scatter", mode: "lines", name: `${rate} Gb/s`, line: { width: 1.5 },
+    }));
+    traces.push({
+      x: [distances[0], distances[distances.length - 1]], y: [MEAN_DGD_BIT_FRACTION, MEAN_DGD_BIT_FRACTION],
+      type: "scatter", mode: "lines", name: "0.1 rule", line: { color: "#f87171", width: 1, dash: "dash" },
+    });
+    return traces;
+  }, [pmdCoeff]);
+
+  const withinRule = calc.meanOverT <= MEAN_DGD_BIT_FRACTION;
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="PMD Coefficient (ps/√km)" value={pmdCoeff} onChange={setPmdCoeff} min={0.01} step="0.01" />
-        <ValidatedNumberInput label="Fiber Length (km)" value={length} onChange={setLength} min={1} />
-        <ValidatedNumberInput label="Bit Rate (Gbps)" value={bitRate} onChange={setBitRate} min={0.1} step="0.1" />
-        <ValidatedNumberInput label="Fiber Spans" value={fiberCount} onChange={setFiberCount} min={1} />
-        <ValidatedNumberInput label="Outage Prob. (%)" value={probability} onChange={setProbability} min={90} max={99.999} />
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">DGD (rms)</p>
-          <p className="text-xl font-bold text-green-400">{calc.DGD_rms.toFixed(2)} ps</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">DGD (mean)</p>
-          <p className="text-xl font-bold text-blue-400">{calc.DGD_mean.toFixed(2)} ps</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">PMD-Limited Distance</p>
-          <p className="text-xl font-bold text-yellow-400">{calc.maxDist.toFixed(0)} km</p>
-          <p className="text-xs text-gray-500">@ {bitRate} Gbps, 1dB penalty</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">DGD / Bit Period</p>
-          <p className="text-xl font-bold text-red-400">{(calc.DGD_rms * bitRate * 1e-3).toFixed(3)}</p>
-          <p className="text-xs text-gray-500">&lt;0.1 for &lt;1dB penalty</p>
-        </div>
+        <ValidatedNumberInput label="PMD coefficient (ps/√km)" value={pmdCoeff} onChange={setPmdCoeff} min={0.001} max={10} step="0.01" />
+        <ValidatedNumberInput label="Link length (km)" value={length} onChange={setLength} min={0.1} max={50000} />
+        <ValidatedNumberInput label="Bit rate (Gb/s)" value={bitRate} onChange={setBitRate} min={0.1} max={1000} step="0.1" />
+        <ValidatedNumberInput label="Design max DGD (× mean)" value={maxToMean} onChange={setMaxToMean} min={1} max={8} step="0.1" />
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <h3 className="text-lg font-semibold mb-3">DGD Maxwellian Distribution</h3>
-        <ChartPanel data={distributionData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          xaxis: { title: "DGD (ps)", color: "#9ca3af", gridcolor: "#374151" },
-          yaxis: { title: "Probability Density", color: "#9ca3af", gridcolor: "#374151" },
-          yaxis2: { title: "CDF (%)", color: "#60a5fa", gridcolor: "#374151", overlaying: "y", side: "right", range: [0, 105] },
-          font: { color: "#e5e7eb" }, margin: { t: 20, r: 60, b: 40, l: 60 }, height: 380,
-          legend: { x: 0.02, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af" } },
-          showlegend: true,
-        }} />
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <ResultCard label="Mean DGD (PMD value)" value={`${fmt(calc.mean_ps)} ps`} tone="blue" subtext="⟨Δτ⟩ = PMD · √L" />
+        <ResultCard label="RMS DGD" value={`${fmt(calc.rms_ps)} ps`} tone="purple" subtext="⟨Δτ²⟩^½ = ⟨Δτ⟩ / 0.921" />
+        <ResultCard
+          label="Mean DGD / bit period"
+          value={fmt(calc.meanOverT)}
+          tone={withinRule ? "green" : "red"}
+          subtext={withinRule ? "within the ≤ 0.1 rule of thumb" : "exceeds the ≤ 0.1 rule of thumb"}
+        />
+        <ResultCard label="PMD-limited length" value={`${fmt(calc.maxLength_km)} km`} tone="yellow" subtext={`mean DGD ≤ 0.1 bit period at ${bitRate} Gb/s`} />
+        <ResultCard
+          label={`Max DGD (${maxToMean} × mean)`}
+          value={`${fmt(calc.maxDgd_ps)} ps`}
+          tone="orange"
+          subtext={`${fmt(calc.maxOverT)} bit periods`}
+        />
+        <ResultCard
+          label="Probability DGD exceeds it"
+          value={fmt(calc.pOut)}
+          tone="gray"
+          subtext={`≈ ${fmtOutage(calc.pOut)}`}
+        />
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <h3 className="text-lg font-semibold mb-3">DGD / Bit Period vs Distance</h3>
-        <ChartPanel data={distData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          xaxis: { title: "Distance (km)", color: "#9ca3af", gridcolor: "#374151" },
-          yaxis: { title: "DGD / Bit Period", color: "#9ca3af", gridcolor: "#374151" },
-          font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 350,
-          legend: { x: 0.02, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af" } },
-          shapes: [{ type: "line" as const, x0: 0, x1: 500, y0: 0.1, y1: 0.1, line: { color: "#f87171", width: 1, dash: "dash" } }],
-        }} />
+      <div className="grid gap-4 sm:grid-cols-2 mb-8">
+        <div className="bg-gray-900 rounded-lg p-4">
+          <h3 className="text-lg font-semibold mb-3">DGD Distribution (Maxwellian)</h3>
+          <ChartPanel data={distributionData} layout={{
+            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+            xaxis: { title: "DGD (ps)", color: "#9ca3af", gridcolor: "#374151" },
+            yaxis: { title: "Probability density (1/ps)", color: "#9ca3af", gridcolor: "#374151" },
+            font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 320,
+            legend: { x: 0.6, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af", size: 11 } },
+          }} />
+        </div>
+        <div className="bg-gray-900 rounded-lg p-4">
+          <h3 className="text-lg font-semibold mb-3">Mean DGD / Bit Period vs Distance</h3>
+          <ChartPanel data={distanceData} layout={{
+            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+            xaxis: { title: "Distance (km)", color: "#9ca3af", gridcolor: "#374151" },
+            yaxis: { title: "Mean DGD / bit period", color: "#9ca3af", gridcolor: "#374151" },
+            font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 320,
+            legend: { x: 0.02, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af", size: 11 } },
+          }} />
+        </div>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-        <h3 className="text-lg font-semibold mb-2">Key Formulas</h3>
-        <div className="text-sm text-gray-300 space-y-2 font-mono">
-          <p>DGD_rms = PMD_coeff × √L [ps]</p>
-          <p>DGD_mean = DGD_rms × √(8/3π) ≈ 0.921 × DGD_rms</p>
-          <p>f(x) = √(2/π) · x²/σ³ · exp(-x²/2σ²) [Maxwellian PDF]</p>
-          <p>Penalty (NRZ) ≈ 10·log₁₀(1 + 0.5·(B·Δτ/T₀)²)</p>
-          <p>Rule of thumb: Δτ &lt; 0.1 × T_bit for &lt;1 dB penalty</p>
-          <p>Modern fiber: PMD &lt; 0.1 ps/√km (G.652.D), legacy: up to 2 ps/√km</p>
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2">
+          <p className="font-mono">⟨Δτ⟩ = PMD·√L,   f(Δτ) = √(2/π) Δτ²/σ³ · exp(−Δτ²/2σ²),   σ = ⟨Δτ⟩√(π/8)</p>
+          <p className="font-mono">P(DGD &gt; Δτ) = erfc(u/√2) + √(2/π) u e^(−u²/2),   u = Δτ/σ</p>
+          <p>
+            The PMD coefficient is the mean DGD per √length (ITU-T G.650.2). In a long, randomly coupled fibre the
+            instantaneous DGD is Maxwellian (Poole 1988), with ⟨Δτ⟩ ≈ 0.921 × the rms DGD; it exceeds 3⟨Δτ⟩ with
+            probability 4.2 × 10⁻⁵, about 22 minutes a year.
+          </p>
+          <p>
+            Rule of thumb, not a standard: keep ⟨Δτ⟩ ≤ 0.1 bit period, so the DGD stays below 0.3 bit period except for
+            that fraction of the time. For multilevel formats use the symbol period; coherent receivers compensate
+            first-order PMD digitally. Not modelled: second-order PMD, component PMD and the penalty itself.
+            Modern G.652.D cable specifies PMD<sub>Q</sub> ≤ 0.2 ps/√km; old fibre can exceed 1 ps/√km.
+          </p>
         </div>
       </div>
     </>
