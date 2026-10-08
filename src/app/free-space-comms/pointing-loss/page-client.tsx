@@ -1,95 +1,112 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { pointingCapture } from "../../../physics/free-space-comms/pointing-loss";
+
 const presets = [
-  { label: "Tight pointing", wavelength: 1550, txBeamWaist: 2.5, jitterRMS: 0.5, misalign: 0.2, rxAperture: 10 },
-  { label: "Moderate jitter", wavelength: 1550, txBeamWaist: 2.5, jitterRMS: 2, misalign: 1, rxAperture: 10 },
-  { label: "Small aperture", wavelength: 1550, txBeamWaist: 2.5, jitterRMS: 1, misalign: 0.5, rxAperture: 4 },
+  { label: "Tight pointing", wavelength: 1550, txBeamWaist: 2.5, jitterRMS: 0.5, misalign: 0.2, rxAperture: 10, range: 1 },
+  { label: "Moderate jitter", wavelength: 1550, txBeamWaist: 2.5, jitterRMS: 2, misalign: 1, rxAperture: 10, range: 1 },
+  { label: "Long link", wavelength: 1550, txBeamWaist: 1, jitterRMS: 5, misalign: 2, rxAperture: 10, range: 10 },
 ];
 
+const dB = (eta: number) => (eta > 0 ? -10 * Math.log10(eta) : Infinity);
+const fmt = (x: number, digits = 3) =>
+  !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
+
 export default function PointingLossPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [txBeamWaist, setTxBeamWaist] = useURLState("txBeamWaist", 2.5);
-  const [jitterRMS, setJitterRMS] = useURLState("jitterRMS", 1);
-  const [misalign, setMisalign] = useURLState("misalign", 0);
-  const [rxAperture, setRxAperture] = useURLState("rxAperture", 10);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [txBeamWaist, setTxBeamWaist] = useURLState("txBeamWaist", 2.5); // cm, 1/e² radius at the transmitter
+  const [jitterRMS, setJitterRMS] = useURLState("jitterRMS", 1); // µrad per axis
+  const [misalign, setMisalign] = useURLState("misalign", 0); // µrad
+  const [rxAperture, setRxAperture] = useURLState("rxAperture", 10); // cm diameter
+  const [range, setRange] = useURLState("range", 1); // km
 
   const calc = useMemo(() => {
-    const lambda = wavelength * 1e-9;
-    const w0 = txBeamWaist * 1e-2;
-    const thetaDiv = lambda / (Math.PI * w0);
-    const thetaDivUrad = thetaDiv * 1e6;
-    const totalErrorRad = Math.sqrt(jitterRMS * jitterRMS + misalign * misalign) * 1e-6;
-    const zR = Math.PI * w0 * w0 / lambda;
-    const R = 1000;
-    const wR = w0 * Math.sqrt(1 + (R / zR) ** 2);
-    const etaPoint = Math.exp((-2 * totalErrorRad * totalErrorRad) / (thetaDiv * thetaDiv));
-    const pointingLoss = -10 * Math.log10(Math.max(etaPoint, 1e-12));
-    const offsetAtRx = totalErrorRad * R;
-    const rxRadius = (rxAperture * 1e-2) / 2;
-    const etaAperture = 1 - Math.exp(-2 * (rxRadius / wR) ** 2);
-    const etaCombined = etaPoint * etaAperture;
-    const totalLoss = -10 * Math.log10(Math.max(etaCombined, 1e-12));
-    return { thetaDivUrad, pointingLoss, etaPoint, etaAperture, etaCombined, totalLoss, wRcm: wR * 100, offsetCm: offsetAtRx * 100 };
-  }, [wavelength, txBeamWaist, jitterRMS, misalign, rxAperture]);
+    const r = pointingCapture(wavelength * 1e-9, txBeamWaist * 1e-2, range * 1e3, rxAperture * 1e-2, misalign * 1e-6, jitterRMS * 1e-6);
+    return {
+      ...r,
+      divergenceUrad: ((wavelength * 1e-9) / (Math.PI * txBeamWaist * 1e-2)) * 1e6,
+      pointingLossDb: dB(r.meanFraction / r.alignedFraction),
+      geometricLossDb: dB(r.alignedFraction),
+      totalLossDb: dB(r.meanFraction),
+    };
+  }, [wavelength, txBeamWaist, jitterRMS, misalign, rxAperture, range]);
 
   const series = useMemo(() => {
-    const jitterVals = Array.from({ length: 120 }, (_, i) => 0.05 + i * 0.1);
-    const lambda = wavelength * 1e-9;
-    const w0 = txBeamWaist * 1e-2;
-    const thetaDiv = lambda / (Math.PI * w0);
-    const rxRadius = (rxAperture * 1e-2) / 2;
-    const zR = Math.PI * w0 * w0 / lambda;
-    const R = 1000;
-    const wR = w0 * Math.sqrt(1 + (R / zR) ** 2);
-    const etaAp = 1 - Math.exp(-2 * (rxRadius / wR) ** 2);
-    const losses = jitterVals.map((j) => {
-      const err = Math.sqrt(j * j + misalign * misalign) * 1e-6;
-      const eta = Math.exp((-2 * err * err) / (thetaDiv * thetaDiv));
-      return -10 * Math.log10(Math.max(eta, 1e-12));
-    });
-    const totalLosses = jitterVals.map((j) => {
-      const err = Math.sqrt(j * j + misalign * misalign) * 1e-6;
-      const eta = Math.exp((-2 * err * err) / (thetaDiv * thetaDiv));
-      return -10 * Math.log10(Math.max(eta * etaAp, 1e-12));
-    });
+    const jMax = Math.max(20, 3 * jitterRMS);
+    const js = Array.from({ length: 121 }, (_, i) => (i * jMax) / 120);
+    const rs = js.map((j) =>
+      pointingCapture(wavelength * 1e-9, txBeamWaist * 1e-2, range * 1e3, rxAperture * 1e-2, misalign * 1e-6, j * 1e-6));
+    // A beam that misses the aperture entirely has infinite loss; leave those points out.
+    const finite = (pts: { x: number; y: number }[]) => pts.filter((p) => Number.isFinite(p.y));
     return [
-      { name: "Pointing only", color: "#06b6d4", points: jitterVals.map((x, i) => ({ x, y: losses[i] })) },
-      { name: "Pointing + aperture", color: "#f97316", dashed: true, points: jitterVals.map((x, i) => ({ x, y: totalLosses[i] })) },
-      { name: "Current jitter", color: "#22c55e", showPoints: true, points: [{ x: jitterRMS, y: calc.totalLoss }] },
+      { name: "Pointing loss", color: "#06b6d4", points: finite(js.map((x, i) => ({ x, y: dB(rs[i].meanFraction / rs[i].alignedFraction) }))) },
+      { name: "Geometric + pointing", color: "#f97316", dashed: true, points: finite(js.map((x, i) => ({ x, y: dB(rs[i].meanFraction) }))) },
+      { name: "Current jitter", color: "#22c55e", showPoints: true, points: finite([{ x: jitterRMS, y: calc.totalLossDb }]) },
     ];
-  }, [wavelength, txBeamWaist, misalign, rxAperture, jitterRMS, calc.totalLoss]);
+  }, [wavelength, txBeamWaist, misalign, rxAperture, range, jitterRMS, calc.totalLossDb]);
 
   return (
     <>
       <div className="mb-5 flex flex-wrap gap-2">
-        {presets.map((preset) => (
-          <button key={preset.label} onClick={() => { setWavelength(preset.wavelength); setTxBeamWaist(preset.txBeamWaist); setJitterRMS(preset.jitterRMS); setMisalign(preset.misalign); setRxAperture(preset.rxAperture); }} className={`rounded-full border px-3 py-1 text-sm transition ${wavelength === preset.wavelength && txBeamWaist === preset.txBeamWaist && jitterRMS === preset.jitterRMS && misalign === preset.misalign && rxAperture === preset.rxAperture ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>{preset.label}</button>
-        ))}
+        {presets.map((p) => {
+          const active = wavelength === p.wavelength && txBeamWaist === p.txBeamWaist && jitterRMS === p.jitterRMS &&
+            misalign === p.misalign && rxAperture === p.rxAperture && range === p.range;
+          return (
+            <button key={p.label}
+              onClick={() => { setWavelength(p.wavelength); setTxBeamWaist(p.txBeamWaist); setJitterRMS(p.jitterRMS); setMisalign(p.misalign); setRxAperture(p.rxAperture); setRange(p.range); }}
+              className={`rounded-full border px-3 py-1 text-sm transition ${active ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>
+              {p.label}
+            </button>
+          );
+        })}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <InputSlider label="Wavelength" value={wavelength} onChange={setWavelength} min={850} max={2000} step={1} unit="nm" />
-        <InputSlider label="TX beam waist" value={txBeamWaist} onChange={setTxBeamWaist} min={0.5} max={10} step={0.1} unit="cm" />
-        <InputSlider label="Jitter RMS" value={jitterRMS} onChange={setJitterRMS} min={0} max={20} step={0.1} unit="μrad" />
-        <InputSlider label="Static misalignment" value={misalign} onChange={setMisalign} min={0} max={20} step={0.1} unit="μrad" />
-        <InputSlider label="RX aperture" value={rxAperture} onChange={setRxAperture} min={1} max={30} step={0.1} unit="cm" />
+        <InputSlider label="Wavelength" value={wavelength} onChange={setWavelength} min={400} max={11000} step={1} unit="nm" />
+        <InputSlider label="TX beam waist w₀ (1/e² radius)" value={txBeamWaist} onChange={setTxBeamWaist} min={0.1} max={20} step={0.1} unit="cm" />
+        <ValidatedNumberInput label="Link range (km)" value={range} onChange={setRange} min={0.001} max={100000} step="0.1" />
+        <InputSlider label="Jitter σ per axis" value={jitterRMS} onChange={setJitterRMS} min={0} max={100} step={0.1} unit="µrad" />
+        <InputSlider label="Static misalignment" value={misalign} onChange={setMisalign} min={0} max={100} step={0.1} unit="µrad" />
+        <InputSlider label="RX aperture diameter" value={rxAperture} onChange={setRxAperture} min={0.1} max={100} step={0.1} unit="cm" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ResultCard label="Beam divergence" value={`${calc.thetaDivUrad.toFixed(1)} μrad`} tone="blue" />
-        <ResultCard label="Beam radius @ 1 km" value={`${calc.wRcm.toFixed(1)} cm`} tone="green" />
-        <ResultCard label="Pointing offset @ 1 km" value={`${calc.offsetCm.toFixed(2)} cm`} tone="yellow" />
-        <ResultCard label="Pointing η" value={`${(calc.etaPoint * 100).toFixed(2)}%`} tone="purple" />
-        <ResultCard label="Aperture η" value={`${(calc.etaAperture * 100).toFixed(2)}%`} tone="blue" />
-        <ResultCard label="Combined loss" value={`${calc.totalLoss.toFixed(2)} dB`} tone="red" />
+        <ResultCard label={`Beam radius @ ${range} km`} value={`${fmt(calc.beamRadius * 100)} cm`} tone="green"
+          subtext={`far-field divergence λ/(πw₀) = ${fmt(calc.divergenceUrad)} µrad`} />
+        <ResultCard label="Pointing offset / jitter at RX" value={`${fmt(calc.offset * 100)} / ${fmt(calc.jitter * 100)} cm`} tone="yellow"
+          subtext="static offset b, jitter s per axis" />
+        <ResultCard label="Aligned capture η₀" value={`${fmt(calc.alignedFraction * 100, 4)} %`} tone="blue"
+          subtext={`geometric loss ${fmt(calc.geometricLossDb)} dB`} />
+        <ResultCard label="Mean capture ⟨η⟩" value={`${fmt(calc.meanFraction * 100, 4)} %`} tone="purple" subtext="with offset and jitter" />
+        <ResultCard label="Pointing loss" value={`${fmt(calc.pointingLossDb)} dB`} tone="orange" subtext="−10 log₁₀(⟨η⟩/η₀)" />
+        <ResultCard label="Geometric + pointing loss" value={`${fmt(calc.totalLossDb)} dB`} tone="red" subtext="−10 log₁₀⟨η⟩" />
       </div>
 
-      <SimpleLineChart title="Loss vs jitter RMS" xLabel="Jitter RMS (μrad)" yLabel="Loss (dB)" series={series} />
+      <SimpleLineChart title={`Loss vs jitter at ${range} km`} xLabel="Jitter σ per axis (µrad)" yLabel="Loss (dB)" series={series} />
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mt-6 text-sm text-gray-300 space-y-2">
+        <h3 className="text-lg font-semibold">Model</h3>
+        <p className="font-mono">w(z) = w₀√(1 + (z/z_R)²),   z_R = πw₀²/λ,   η₀ = 1 − exp(−2a²/w²)</p>
+        <p className="font-mono">⟨η⟩ = 1 − Q₁(b/σ_t, a/σ_t),   σ_t² = w²/4 + s²,   b = θ_b z,   s = σ_θ z</p>
+        <p>
+          A Gaussian beam with its waist at the transmitter reaches the receiver with radius w(z). Its intensity is a
+          2-D Gaussian (σ = w/2 per axis); random jitter of σ_θ per axis moves its centre by a Gaussian amount, so the
+          time-averaged power on the aperture of radius a is the fraction of a wider Gaussian (σ_t) offset by the
+          static error b, a Marcum Q-function. For a small aperture this reduces to η₀ · w²/(w² + 4s²) ·
+          exp(−2b²/(w² + 4s²)) (Farid &amp; Hranilovic, J. Lightwave Technol. 25, 1702 (2007)). Jitter is a fading
+          process: this is the mean, not the outage probability.
+        </p>
+        <p className="text-gray-500">
+          Not modelled: atmospheric attenuation, turbulence (beam wander, spreading, scintillation) and truncation of
+          the transmitted beam by the TX aperture.
+        </p>
+      </div>
     </>
   );
 }
