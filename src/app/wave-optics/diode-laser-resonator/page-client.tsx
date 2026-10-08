@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { q } from "../../../physics/constants";
+import { q, c, h } from "../../../physics/constants";
 
 export default function DiodeLaserResonatorPage() {
   const [cavityLength, setCavityLength] = useURLState("cavityLength", 300); // µm
@@ -41,7 +41,7 @@ export default function DiodeLaserResonatorPage() {
   const eta_d = eta_i * mirrorLoss / (alpha_i * L_cm + mirrorLoss);
 
   // Slope efficiency (optical): dP/dI = η_d × hc/(qλ) [W/A]
-  const eta_slope = eta_d * (1.24e-6 / lambda_m); // P_opt / I in W/A
+  const eta_slope = eta_d * (h * c / (q * lambda_m)); // P_opt / I in W/A
 
   // Series resistance and thermal
   const V_j = 1.1; // junction voltage

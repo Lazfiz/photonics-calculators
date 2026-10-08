@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c } from "../../../physics/constants";
 
 export default function BirefringenceCalculator() {
   const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.468);
@@ -46,7 +47,7 @@ export default function BirefringenceCalculator() {
   // c = 3e8 m/s = 3e5 km/s; convert s/km → ps/km: × 1e12
   const pmd = useMemo(() => {
     if (totalBirefringence === 0) return 0;
-    return (totalBirefringence * 1e12) / 3e5; // ps/km
+    return (totalBirefringence * 1e12) / (c * 1e-3); // ps/km
   }, [totalBirefringence]);
 
   // Plot: birefringence vs ellipticity

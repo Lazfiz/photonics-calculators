@@ -7,10 +7,11 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
+import { hc_eV_nm } from "../../../physics/constants";
 // Aluminum optical constants (simplified)
 function aluminumN(wlNm: number): { n: number; k: number } {
   const wl = wlNm / 1000;
-  const E = 1.24 / wl;
+  const E = hc_eV_nm / (wl * 1e3);
   // Simplified Drude + interband
   const epsInf = 1.0;
   const wp = 14.98;

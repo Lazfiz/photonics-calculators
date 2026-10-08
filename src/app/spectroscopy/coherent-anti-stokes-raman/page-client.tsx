@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function CoherentAntiStokesRamanPage() {
   const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 532);
   const [stokesWavelength, setStokesWavelength] = useURLState("stokesWavelength", 630);
@@ -47,7 +48,7 @@ export default function CoherentAntiStokesRamanPage() {
       return chi_re * chi_re + chi_im * chi_im; // |χ³|²
     });
     const maxC = Math.max(...cars);
-    const normCars = cars.map(c => c / maxC);
+    const normCars = cars.map(v => v / maxC);
 
     return [
       { x: shifts, y: normCars, type: "scatter" as const, mode: "lines" as const, name: "CARS Signal", line: { color: "#60a5fa", width: 2 } },
@@ -70,7 +71,7 @@ export default function CoherentAntiStokesRamanPage() {
   }, [pumpWavelength, stokesWavelength]);
 
   const coherenceTime = pulseWidth * 1e-12 / 2.355; // FWHM → σ (field)
-  const spectralRes = 0.441 / (pulseWidth * 1e-12 * 2.998e10); // Gaussian time-bandwidth product
+  const spectralRes = 0.441 / (pulseWidth * 1e-12 * c * 100); // Gaussian time-bandwidth product
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Coherent Anti-Stokes Raman Scattering (CARS)" description="Four-wave mixing process for label-free vibrational imaging with chemical specificity.">

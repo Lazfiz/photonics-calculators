@@ -8,6 +8,7 @@ import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c, hc_eV_nm } from "../../../physics/constants";
 
 const rangePresets = [
   { label: "Visible", min: 400, max: 700 },
@@ -31,7 +32,7 @@ export default function WavenumberConverterPage() {
   const series = useMemo(() => {
     const wl = Array.from({ length: 300 }, (_, i) => wavelengthMin + (i / 299) * (wavelengthMax - wavelengthMin));
     const wn = wl.map((w) => 1e7 / w);
-    const energy = wl.map((w) => 1240 / w);
+    const energy = wl.map((w) => hc_eV_nm / w);
     return [
       { name: "Wavenumber (cm⁻¹)", color: "#60a5fa", points: wl.map((x, i) => ({ x, y: wn[i] })) },
       { name: "Energy (eV)", color: "#34d399", dashed: true, points: wl.map((x, i) => ({ x, y: energy[i] })) },
@@ -55,7 +56,7 @@ export default function WavenumberConverterPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ResultCard label="Range (cm⁻¹)" value={`${wnMin.toFixed(1)} — ${wnMax.toFixed(1)}`} tone="blue" />
-        <ResultCard label="Energy Range (eV)" value={`${(1240 / wavelengthMax).toFixed(3)} — ${(1240 / wavelengthMin).toFixed(3)}`} tone="green" />
+        <ResultCard label="Energy Range (eV)" value={`${(hc_eV_nm / wavelengthMax).toFixed(3)} — ${(hc_eV_nm / wavelengthMin).toFixed(3)}`} tone="green" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
@@ -77,7 +78,7 @@ export default function WavenumberConverterPage() {
           </div>
         </div>
         <p className="text-sm text-gray-300">
-          Freq: <span className="text-purple-400">{(mode === "wl-to-wn" ? 3e17 / singleValue : 3e10 * singleValue).toExponential(2)} Hz</span> | Energy: <span className="text-green-400">{(mode === "wl-to-wn" ? 1240 / singleValue : 1240 / singleConverted).toFixed(3)} eV</span>
+          Freq: <span className="text-purple-400">{(mode === "wl-to-wn" ? c * 1e9 / singleValue : c * 100 * singleValue).toExponential(2)} Hz</span> | Energy: <span className="text-green-400">{(mode === "wl-to-wn" ? hc_eV_nm / singleValue : hc_eV_nm / singleConverted).toFixed(3)} eV</span>
         </p>
       </div>
 

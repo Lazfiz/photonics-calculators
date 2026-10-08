@@ -6,17 +6,18 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { hc_eV_nm } from "../../../physics/constants";
 export default function AttosecondPulsePage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm, driving laser
   const [duration, setDuration] = useURLState("duration", 5); // fs, driving pulse
   const [intensity, setIntensity] = useURLState("intensity", 2e14); // W/cm²
   const [cutoffOrder, setCutoffOrder] = useURLState("cutoffOrder", 50);
 
-  const photonEnergy = 1240 / wavelength; // eV
+  const photonEnergy = hc_eV_nm / wavelength; // eV
   const cutoffEnergy = 3.17 * photonEnergy + 0; // Up = Ip negligible for display
   const up = 9.33e-14 * intensity * Math.pow(wavelength * 1e-3, 2); // ponderomotive in eV (λ in µm)
   const cutoffE = 3.17 * up + 13.6; // Ip of H
-  const shortestWavelength = 1240 / cutoffE; // nm
+  const shortestWavelength = hc_eV_nm / cutoffE; // nm
   const minPulseDuration = 0.122 / cutoffE * 1000; // time-bandwidth limit in as (approx)
 
   const chartData = useMemo(() => {

@@ -6,7 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c, h, q, k_B } from "../../../physics/constants";
+import { c, h, q, k_B, hc_eV_nm, epsilon_0 } from "../../../physics/constants";
 // Silicon Photodiode Parameters
 // Bandgap: E_g ≈ 1.12 eV at 300K → λ_c ≈ 1100 nm
 // QE: η = (1-R)·(1 - exp(-α·d)) with wavelength-dependent α
@@ -28,7 +28,7 @@ export default function SiliconPhotodiodePage() {
   const betaVarshni = 636; // K
   const Eg = Eg0 - (alphaVarshni * temperature ** 2) / (temperature + betaVarshni);
   const EgAt300 = Eg0 - (alphaVarshni * 300 ** 2) / (300 + betaVarshni); // ~1.12 eV
-  const cutoffWavelength = 1240 / Eg;
+  const cutoffWavelength = hc_eV_nm / Eg;
 
   // Absorption coefficient for Si (Green & Keevers 1995, cm⁻¹)
   // Piecewise log-linear interpolation from tabulated data
@@ -75,7 +75,7 @@ export default function SiliconPhotodiodePage() {
   const darkCurrent = q * ni * areaCm2 * depletionWidth * 1e-4 / (2 * tau);
 
   // Capacitance (abrupt junction approximation)
-  const epsilonSi = 11.7 * 8.85e-14; // F/cm
+  const epsilonSi = 11.7 * epsilon_0 * 1e-2; // F/cm
   const depletionCap = epsilonSi * areaCm2 / (depletionWidth * 1e-4); // F
   const capPF = depletionCap * 1e12;
 

@@ -6,7 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c, mu_0 } from "../../../physics/constants";
+import { c, mu_0, Z_0 } from "../../../physics/constants";
 export default function WireGridPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1.55);
   const [wireSpacing, setWireSpacing] = useURLState("wireSpacing", 1.0);
@@ -43,19 +43,18 @@ export default function WireGridPage() {
 
   // Parallel polarization (E along wires) - reflection dominated
   // Sheet impedance approximation
-  const Z0 = 377;
   const Zs = 1 / (sigma * skinDepth); // surface impedance
   const ZgridParallel = Zs / dutyCycle; // effective impedance for E parallel
 
   // Perpendicular (E across wires) - capacitive grid
   // Ulrich, Infrared Physics 7, 37-55 (1967): log factor uses geometry not wavelength
-  const ZgridPerp = Z0 / (Math.PI * normalizedSpacing * Math.log(2 * wireSpacing / (Math.PI * wireDiameter)));
+  const ZgridPerp = Z_0 / (Math.PI * normalizedSpacing * Math.log(2 * wireSpacing / (Math.PI * wireDiameter)));
 
   // Transmission coefficients (standard sheet impedance model)
   // TE (E ∥ wires): t = 2·Z₀·cosθ / (2·Z_s + Z₀·cosθ)
   // TM (E ⊥ wires): t = 2·Z₀ / (2·Z_s·cosθ + Z₀)
-  const tParallel = 2 * Z0 * Math.cos(thetaI) / (2 * ZgridParallel + Z0 * Math.cos(thetaI));
-  const tPerpendicular = 2 * Z0 / (2 * ZgridPerp * Math.cos(thetaI) + Z0);
+  const tParallel = 2 * Z_0 * Math.cos(thetaI) / (2 * ZgridParallel + Z_0 * Math.cos(thetaI));
+  const tPerpendicular = 2 * Z_0 / (2 * ZgridPerp * Math.cos(thetaI) + Z_0);
 
   const Tparallel = Math.abs(tParallel) ** 2;
   const Tperpendicular = Math.abs(tPerpendicular) ** 2;
@@ -68,7 +67,7 @@ export default function WireGridPage() {
     const wls = Array.from({ length: 400 }, (_, i) => 0.3 + (i / 400) * 5.7);
     const sD = Math.sqrt(2 / (2 * Math.PI * c / (wavelength * 1e-6) * mu_0 * sigma));
     const zsp = (1 / (sigma * sD)) / dutyCycle;
-    const zspCap = Z0 / (Math.PI * normalizedSpacing * Math.log(1 / (Math.PI * normalizedDiameter / 2)));
+    const zspCap = Z_0 / (Math.PI * normalizedSpacing * Math.log(1 / (Math.PI * normalizedDiameter / 2)));
 
     const Ts = wls.map(w => {
       const kk = 2 * Math.PI / (w * 1e-6);
@@ -76,9 +75,9 @@ export default function WireGridPage() {
       const ndp = wireDiameter / w;
       const skd = Math.sqrt(2 / (2 * Math.PI * c / (w * 1e-6) * mu_0 * sigma));
       const zp = (1 / (sigma * skd)) / dutyCycle;
-      const zs = Z0 / (Math.PI * nsp * Math.log(1 / (Math.PI * ndp / 2)));
-      const tp = Math.abs(2 * Z0 * Math.cos(thetaI) / (2 * zp + Z0 * Math.cos(thetaI))) ** 2;
-      const ts = Math.abs(2 * Z0 / (2 * zs * Math.cos(thetaI) + Z0)) ** 2;
+      const zs = Z_0 / (Math.PI * nsp * Math.log(1 / (Math.PI * ndp / 2)));
+      const tp = Math.abs(2 * Z_0 * Math.cos(thetaI) / (2 * zp + Z_0 * Math.cos(thetaI))) ** 2;
+      const ts = Math.abs(2 * Z_0 / (2 * zs * Math.cos(thetaI) + Z_0)) ** 2;
       return tp;
     });
 
@@ -87,9 +86,9 @@ export default function WireGridPage() {
       const ndp = wireDiameter / w;
       const skd = Math.sqrt(2 / (2 * Math.PI * c / (w * 1e-6) * mu_0 * sigma));
       const zp = (1 / (sigma * skd)) / dutyCycle;
-      const zs = Z0 / (Math.PI * nsp * Math.log(1 / (Math.PI * ndp / 2)));
-      const tp = Math.abs(2 * Z0 * Math.cos(thetaI) / (2 * zp + Z0 * Math.cos(thetaI))) ** 2;
-      const ts = Math.abs(2 * Z0 / (2 * zs * Math.cos(thetaI) + Z0)) ** 2;
+      const zs = Z_0 / (Math.PI * nsp * Math.log(1 / (Math.PI * ndp / 2)));
+      const tp = Math.abs(2 * Z_0 * Math.cos(thetaI) / (2 * zp + Z_0 * Math.cos(thetaI))) ** 2;
+      const ts = Math.abs(2 * Z_0 / (2 * zs * Math.cos(thetaI) + Z_0)) ** 2;
       return ts;
     });
 
@@ -111,13 +110,13 @@ export default function WireGridPage() {
       const th = a * Math.PI / 180;
       const skd = Math.sqrt(2 / (2 * Math.PI * c / lam * mu_0 * sigma));
       const zp = (1 / (sigma * skd)) / dutyCycle;
-      const zs = Z0 / (Math.PI * normalizedSpacing * Math.log(1 / (Math.PI * normalizedDiameter / 2)));
-      return Math.abs(2 * zp / (2 * zp / Math.cos(th) + Z0)) ** 2;
+      const zs = Z_0 / (Math.PI * normalizedSpacing * Math.log(1 / (Math.PI * normalizedDiameter / 2)));
+      return Math.abs(2 * zp / (2 * zp / Math.cos(th) + Z_0)) ** 2;
     });
     const Tp = angles.map(a => {
       const th = a * Math.PI / 180;
-      const zs = Z0 / (Math.PI * normalizedSpacing * Math.log(1 / (Math.PI * normalizedDiameter / 2)));
-      return Math.abs(2 * zs / (2 * zs * Math.cos(th) + Z0)) ** 2;
+      const zs = Z_0 / (Math.PI * normalizedSpacing * Math.log(1 / (Math.PI * normalizedDiameter / 2)));
+      return Math.abs(2 * zs / (2 * zs * Math.cos(th) + Z_0)) ** 2;
     });
     return [
       { x: angles, y: Ts, type: "scatter" as const, mode: "lines" as const, name: "T (E ∥ wires)", line: { color: "#60a5fa", width: 2 } },

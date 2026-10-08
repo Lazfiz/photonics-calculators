@@ -6,7 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { q } from "../../../physics/constants";
+import { q, c, h } from "../../../physics/constants";
 export default function SpectralResponsePage() {
   const [responsivityPeak, setResponsivityPeak] = useURLState("responsivityPeak", 0.55); // A/W at peak (typical Si at 700nm)
   const [peakWavelength, setPeakWavelength] = useURLState("peakWavelength", 700); // nm
@@ -24,7 +24,7 @@ export default function SpectralResponsePage() {
       return r * tempShift;
     });
     // Also show QE curve (R = η * q * λ / hc)
-    const hc = 1.986e-25; // J·m
+    const hc = h * c; // J·m
     const QE = R.map((r, i) => {
       const lam = wl[i] * 1e-9;
       return (r * hc / (q * lam)) * 100; // percentage

@@ -3,9 +3,9 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { c, epsilon_0 } from "../../../physics/constants";
+import { c, epsilon_0, h } from "../../../physics/constants";
 
-const hc = 1.986446e-25; // J·m
+const hc = h * c; // J·m
 
 function parametricGain({ pumpWavelength, signalWavelength, crystalLength, dEff, nPump, nSignal, nIdler, pumpPower, beamRadius, walkOff }: { pumpWavelength: number; signalWavelength: number; crystalLength: number; dEff: number; nPump: number; nSignal: number; nIdler: number; pumpPower: number; beamRadius: number; walkOff: number }) {
   const lambdaP = pumpWavelength * 1e-9;

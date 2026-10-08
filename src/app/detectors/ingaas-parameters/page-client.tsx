@@ -6,7 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c, h, q, k_B } from "../../../physics/constants";
+import { c, h, q, k_B, hc_eV_nm } from "../../../physics/constants";
 
 export default function IngaasParametersPage() {
   const [temperature, setTemperature] = useURLState("temperature", 293);
@@ -18,11 +18,11 @@ export default function IngaasParametersPage() {
 
   const Eg = indiumFraction * 0.36 + (1 - indiumFraction) * 1.424 - 0.477 * indiumFraction * (1 - indiumFraction);
   const EgT = Eg - 2.7e-4 * (temperature - 300) * Math.abs(Eg - 0.5) / Eg;
-  const cutoff = 1240 / EgT;
+  const cutoff = hc_eV_nm / EgT;
   const R_surface = 0.02;
   const alpha0 = 1e4;
 
-  const alpha = (wl: number) => { const Ep = 1240 / wl; return Ep > EgT ? alpha0 * Math.sqrt(Ep - EgT) : 0; };
+  const alpha = (wl: number) => { const Ep = hc_eV_nm / wl; return Ep > EgT ? alpha0 * Math.sqrt(Ep - EgT) : 0; };
   const calcQE = (wl: number) => (1 - R_surface) * (1 - Math.exp(-alpha(wl) * thickness * 1e-4));
   const resp = (wl: number) => calcQE(wl) * wl * 1e-9 * q / (h * c);
 

@@ -8,7 +8,7 @@ import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c, h, k_B, sigma_SB } from "../../../physics/constants";
+import { c, h, k_B, sigma_SB, b_Wien } from "../../../physics/constants";
 const currentHref = "/spectroscopy/blackbody";
 const temperaturePresets = [300, 1200, 3000, 5778];
 
@@ -17,7 +17,7 @@ export default function BlackbodyPage() {
 
   const series = useMemo(() => {
     // Adaptive wavelength range: extends past Wien peak to show full spectrum shape
-    const wienPeak = 2897771.955 / temperature;
+    const wienPeak = b_Wien * 1e9 / temperature;
     const wlMin = Math.max(10, Math.min(100, wienPeak * 0.05));
     const wlMax = Math.max(15000, wienPeak * 5);
     const numPoints = 500;
@@ -32,7 +32,7 @@ export default function BlackbodyPage() {
     return [{ name: `${T} K`, color: "#f87171", points: wls.map((x, i) => ({ x, y: spectralRadiance[i] })) }];
   }, [temperature]);
 
-  const peakWavelength = 2897771.955 / temperature;
+  const peakWavelength = b_Wien * 1e9 / temperature;
   const totalPower = sigma_SB * Math.pow(temperature, 4);
 
   return (

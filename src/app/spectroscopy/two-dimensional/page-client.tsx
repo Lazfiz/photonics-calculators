@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function TwoDimensionalSpectroscopyPage() {
   const [excitationCenter, setExcitationCenter] = useURLState("excitationCenter", 12500); // cm⁻¹
   const [coupling, setCoupling] = useURLState("coupling", 100); // cm⁻¹
@@ -13,7 +14,7 @@ export default function TwoDimensionalSpectroscopyPage() {
   const [t2, setT2] = useURLState("t2", 200); // fs, dephasing time
 
   const dephasingRate = 1 / (t2 * 1e-15); // s⁻¹
-  const homogeneousWidth = dephasingRate / (Math.PI * 3e10); // cm⁻¹ FWHM = 1/(πT₂c)
+  const homogeneousWidth = dephasingRate / (Math.PI * c * 100); // cm⁻¹ FWHM = 1/(πT₂c)
 
   const chartData = useMemo(() => {
     const N = 100;

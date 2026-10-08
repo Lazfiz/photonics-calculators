@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function StimulatedRamanMicroscopyPage() {
   const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 800);
   const [ramanShift, setRamanShift] = useURLState("ramanShift", 2850);
@@ -16,7 +17,7 @@ export default function StimulatedRamanMicroscopyPage() {
   const [nPixel] = useState(512);
 
   const stokesWavelength = 1e7 / (1e7 / pumpWavelength - ramanShift);
-  const beatFreq = ramanShift * 3e10; // Hz
+  const beatFreq = ramanShift * c * 100; // Hz
 
   // SRS signal: SRS ∝ Im[χ³] × I_pump × I_stokes
   const srsSignal = Math.pow(10, -12) * pumpPower * stokesPower;

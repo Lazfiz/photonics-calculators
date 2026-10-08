@@ -18,6 +18,8 @@ test("constants: derived exact values match CODATA 2022", () => {
   assertRel(K.c1_radiation, 3.741771852e-16, 1e-9, "c₁");
   assertRel(K.c2_radiation, 1.438776877e-2, 1e-9, "c₂");
   assertRel(K.b_Wien, 2.897771955e-3, 1e-9, "b");
+  assertRel(K.hc_eV_nm, 1239.841984, 1e-9, "hc (eV·nm)");
+  assertRel(K.k_B_eV, 8.617333262e-5, 1e-9, "k_B (eV/K)");
   // Edge: WIEN_X is the root of x = 5(1 − e^(−x)).
   assert.ok(Math.abs(K.WIEN_X - 5 * -Math.expm1(-K.WIEN_X)) < 1e-14);
 });

@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { hc_eV_nm } from "../../../physics/constants";
 export default function SumFrequencyMicroscopyPage() {
   const [lambda1, setLambda1] = useURLState("lambda1", 1040);
   const [lambda2, setLambda2] = useURLState("lambda2", 800);
@@ -16,8 +17,8 @@ export default function SumFrequencyMicroscopyPage() {
 
   // SFG wavelength: 1/λ_SFG = 1/λ1 + 1/λ2
   const lambdaSFG = (lambda1 * lambda2) / (lambda1 + lambda2);
-  const energy1 = 1240 / lambda1;
-  const energy2 = 1240 / lambda2;
+  const energy1 = hc_eV_nm / lambda1;
+  const energy2 = hc_eV_nm / lambda2;
   const energySFG = energy1 + energy2;
 
   // Beam waists
@@ -35,8 +36,8 @@ export default function SumFrequencyMicroscopyPage() {
   const energyChart = useMemo(() => {
     const lams2 = Array.from({ length: 100 }, (_, i) => 600 + i * 10);
     return [
-      { x: lams2, y: lams2.map(l => 1240 / l), type: "scatter", mode: "lines", name: "ω₂ Photon Energy", line: { color: "#60a5fa" } },
-      { x: lams2, y: lams2.map(l => 1240 / lambda1 + 1240 / l), type: "scatter", mode: "lines", name: "SFG Photon Energy", line: { color: "#f472b6" } },
+      { x: lams2, y: lams2.map(l => hc_eV_nm / l), type: "scatter", mode: "lines", name: "ω₂ Photon Energy", line: { color: "#60a5fa" } },
+      { x: lams2, y: lams2.map(l => hc_eV_nm / lambda1 + hc_eV_nm / l), type: "scatter", mode: "lines", name: "SFG Photon Energy", line: { color: "#f472b6" } },
       { x: [lambda2], y: [energySFG], type: "scatter", mode: "markers", name: "Current SFG", marker: { color: "#f87171", size: 12 } },
     ];
   }, [lambda1, lambda2, energySFG]);

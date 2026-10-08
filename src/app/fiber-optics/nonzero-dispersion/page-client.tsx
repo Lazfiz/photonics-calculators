@@ -27,7 +27,7 @@ export default function NonzeroDispersionPage() {
 
     // Channel spacing in wavelength: Δλ = λ² · Δν / c
     // Δν in GHz, λ in nm, c in nm·THz = 3e5 nm·(1e12 Hz) = 3e17 nm·Hz
-    const deltaLambda = (lam * lam * channelSpacing * 1e9) / 3e17; // nm
+    const deltaLambda = (lam * lam * channelSpacing * 1e9) / (c * 1e9); // nm
 
     // FWM phase mismatch: Δβ = (2πc/λ²) · D · Δλ²
     // D in ps/(nm·km) → SI: D_SI = D × 1e-6 s/m²

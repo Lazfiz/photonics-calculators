@@ -6,7 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-const kB = 8.617e-5;
+import { k_B_eV } from "../../../physics/constants";
 
 export default function CoolingBenefitPage() {
   const [egSi, setEgSi] = useURLState("egSi", 1.12);
@@ -20,12 +20,12 @@ export default function CoolingBenefitPage() {
   // Generation-recombination (depletion region): I ∝ n_i ∝ T^1.5 · exp(-Eg/2kT) — used for Si
   const darkCurrentGen = (T_C: number, I0: number, Eg: number) => {
     const T = T_C + 273.15; const Tref = 298.15;
-    return I0 * Math.pow(T / Tref, 1.5) * Math.exp(-Eg / (2 * kB * T)) / Math.exp(-Eg / (2 * kB * Tref));
+    return I0 * Math.pow(T / Tref, 1.5) * Math.exp(-Eg / (2 * k_B_eV * T)) / Math.exp(-Eg / (2 * k_B_eV * Tref));
   };
   // Diffusion-limited: I ∝ n_i² ∝ T^3 · exp(-Eg/kT) — used for InGaAs
   const darkCurrentDiff = (T_C: number, I0: number, Eg: number) => {
     const T = T_C + 273.15; const Tref = 298.15;
-    return I0 * Math.pow(T / Tref, 3) * Math.exp(-Eg / (kB * T)) / Math.exp(-Eg / (kB * Tref));
+    return I0 * Math.pow(T / Tref, 3) * Math.exp(-Eg / (k_B_eV * T)) / Math.exp(-Eg / (k_B_eV * Tref));
   };
 
   const chartData = useMemo(() => {

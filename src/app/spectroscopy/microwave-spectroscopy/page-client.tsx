@@ -6,7 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { h, m_u } from "../../../physics/constants";
+import { h, m_u, c } from "../../../physics/constants";
 export default function MicrowaveSpectroscopyPage() {
   const [moleculeType, setMoleculeType] = useState("linear");
   const [bondLength, setBondLength] = useURLState("bondLength", 1.128); // N₂-like, in Å
@@ -20,9 +20,9 @@ export default function MicrowaveSpectroscopyPage() {
     const mu = reducedMass * m_u; // kg
     const r = bondLength * 1e-10; // m
     const I = mu * r * r;
-    const c = 2.998e10;
-    const B = h / (8 * Math.PI * Math.PI * c * I); // cm⁻¹
-    const B_GHz = B * c / 1e9; // Hz → GHz
+    const c_cm_s = c * 100;
+    const B = h / (8 * Math.PI * Math.PI * c_cm_s * I); // cm⁻¹
+    const B_GHz = B * c_cm_s / 1e9; // Hz → GHz
     return { B, B_GHz, I };
   };
 
@@ -33,7 +33,7 @@ export default function MicrowaveSpectroscopyPage() {
     const transitions = [];
     for (let J = 0; J < maxJ; J++) {
       const nu = 2 * B * (J + 1); // cm⁻¹ for J→J+1
-      const freqGHz = nu * 2.998e10 / 1e9; // GHz
+      const freqGHz = nu * c * 100 / 1e9; // GHz
       // Boltzmann population
       const E_J = B * J * (J + 1);
       const kT = 0.695 * temperature; // cm⁻¹

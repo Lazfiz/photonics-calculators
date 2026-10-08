@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { R_gas } from "../../../physics/constants";
 
 interface Material {
   name: string;
@@ -32,13 +33,12 @@ function debyeCp(mat: Material, T: number): number {
   const x = thetaD / T;
   if (x > 50) return 0; // T << Debye
   // Simplified Debye: Cp ≈ 3R * [1 - (1/20)(θ/T)²] for T > θ/3
-  const R = 8.314; // J/(mol·K)
   // Approximate with polynomial fit to Debye function
   const t = T / thetaD;
   if (t > 2) return mat.Cp300 * (1 + 0.1 * Math.log(t)); // high-T, ~Dulong-Petit + slow growth
   if (t > 0.5) {
     const cp3R = 1 - 0.075 / (t * t);
-    return Math.max(0, 3 * R * cp3R / 60); // normalize to ~match known values
+    return Math.max(0, 3 * R_gas * cp3R / 60); // normalize to ~match known values
   }
   // Low T: Cp ∝ T³
   return mat.Cp300 * 0.001 * Math.pow(t * 10, 3);

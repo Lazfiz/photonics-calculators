@@ -6,7 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c } from "../../../physics/constants";
+import { c, hc_eV_nm } from "../../../physics/constants";
 export default function PumpProbePage() {
   const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 400);
   const [probeWavelength, setProbeWavelength] = useURLState("probeWavelength", 800);
@@ -48,8 +48,8 @@ export default function PumpProbePage() {
     ];
   }, [pumpWavelength, probeWavelength, tau1, tau2, tMax]);
 
-  const pumpE = 1240 / pumpWavelength; // eV
-  const probeE = 1240 / probeWavelength; // eV
+  const pumpE = hc_eV_nm / pumpWavelength; // eV
+  const probeE = hc_eV_nm / probeWavelength; // eV
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Pump-Probe Spectroscopy" description="Ultrafast dynamics via time-resolved differential transmission. GSB, SE, and ESA contributions.">

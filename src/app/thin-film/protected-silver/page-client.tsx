@@ -7,13 +7,14 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
+import { hc_eV_nm } from "../../../physics/constants";
 // Silver optical constants (simplified Drude)
 function silverN(wlNm: number): { n: number; k: number } {
   const wl = wlNm / 1000; // μm
   const epsInf = 5.0;
   const wp = 9.01; // plasma frequency eV
   const gamma = 0.048; // damping eV
-  const E = 1.24 / wl; // photon energy eV
+  const E = hc_eV_nm / (wl * 1e3); // photon energy eV
   const epsR = epsInf - wp * wp / (E * E + gamma * gamma);
   const epsI = wp * wp * gamma / (E * (E * E + gamma * gamma));
   const n = Math.sqrt((Math.sqrt(epsR * epsR + epsI * epsI) + epsR) / 2);
