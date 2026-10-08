@@ -228,7 +228,7 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "polarization-mode-dispersion",
     title: "Polarization Mode Dispersion (PMD)",
-    description: "Calculate PMD-induced differential group delay (DGD), system penalties, and PMD-limited reach using Maxwellian statistics.",
+    description: "Calculate PMD-induced differential group delay (DGD), its Maxwellian outage probability, and PMD-limited reach.",
   },
   {
     slug: "pump-combiner",
