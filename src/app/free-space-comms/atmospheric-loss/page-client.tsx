@@ -1,139 +1,104 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  DB_PER_NEPER, aerosolExtinction, kimExponent, rayleighExtinction,
+} from "../../../physics/free-space-comms/atmospheric-attenuation";
+
+// International visibility code classes (upper visibility limit of each class).
+const weatherPresets = [
+  { label: "Moderate fog", visibility: 0.5 },
+  { label: "Thin fog", visibility: 2 },
+  { label: "Haze", visibility: 4 },
+  { label: "Clear", visibility: 20 },
+  { label: "Very clear", visibility: 50 },
+];
+const COMMON_WAVELENGTHS = [532, 785, 850, 980, 1064, 1310, 1550];
+const fmt = (x: number, digits = 3) =>
+  !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
+
+/** Attenuation coefficients in dB/km for λ in nm and visibility in km. */
+function alphaDbPerKm(wavelengthNm: number, visibilityKm: number) {
+  const lambda = wavelengthNm * 1e-9;
+  const rayleigh = rayleighExtinction(lambda) * 1e3 * DB_PER_NEPER;
+  const aerosol = aerosolExtinction(lambda, visibilityKm * 1e3) * 1e3 * DB_PER_NEPER;
+  return { rayleigh, aerosol, total: rayleigh + aerosol };
+}
 
 export default function AtmosphericLossPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [visibility, setVisibility] = useURLState("visibility", 23); // km
-  const [altitude, setAltitude] = useURLState("altitude", 0); // km
-  const [humidity, setHumidity] = useURLState("humidity", 50); // %
-  const [temperature, setTemperature] = useURLState("temperature", 20); // °C
   const [linkLength, setLinkLength] = useURLState("linkLength", 1); // km
 
-  // Beer-Lambert atmospheric attenuation model
-  // α = α_molecular + α_aerosol + α_haze
-  // Kim model for visibility-dependent attenuation
   const calc = useMemo(() => {
-    const V = Math.max(visibility, 0.1); // km
-    const L = linkLength;
-    const q = wavelength < 500 ? 1.6 : wavelength < 700 ? 1.3 : wavelength < 1500 ? 0.585 * Math.pow(V, 1 / 3) : 1.6;
-
-    // Kim visibility attenuation (dB/km)
-    const alphaVis = (3.91 / V) * Math.pow(550 / wavelength, q);
-
-    // Water vapor density (Buck equation + ideal gas law)
-    const T_k = temperature + 273.15;
-    const e_s = 6.1121 * Math.exp(17.502 * temperature / (temperature + 240.97)); // hPa
-    const e_w = (humidity / 100) * e_s;
-    const rho_w = 216.7 * e_w / T_k; // g/m³
-    let alphaH2O = 0;
-    const waterPeaks = [940, 1130, 1380, 1870, 2660];
-    for (const peak of waterPeaks) {
-      const sigma = 30 + peak * 0.05;
-      alphaH2O += 0.1 * rho_w * Math.exp(-0.5 * Math.pow((wavelength - peak) / sigma, 2));
-    }
-
-    // Altitude correction (exponential atmosphere)
-    const H = 8.5; // scale height km
-    const altFactor = Math.exp(-altitude / H);
-
-    const alphaTotal = (alphaVis + alphaH2O) * altFactor; // dB/km
-    const totalLoss = alphaTotal * L;
-    const transmittance = Math.pow(10, -totalLoss / 10);
-
-    return { alphaTotal, totalLoss, transmittance, alphaVis: alphaVis * altFactor, alphaH2O: alphaH2O * altFactor, q };
-  }, [wavelength, visibility, altitude, humidity, temperature, linkLength]);
+    const a = alphaDbPerKm(wavelength, visibility);
+    const totalLoss = a.total * linkLength;
+    return { ...a, totalLoss, transmittance: 10 ** (-totalLoss / 10), q: kimExponent(visibility * 1e3) };
+  }, [wavelength, visibility, linkLength]);
 
   const plotData = useMemo(() => {
-    const wavelengths = Array.from({ length: 300 }, (_, i) => 300 + i * 5); // 300-1800 nm
-    const V = Math.max(visibility, 0.1);
-    const q = (wl: number) => wl < 500 ? 1.6 : wl < 700 ? 1.3 : wl < 1500 ? 0.585 * Math.pow(V, 1 / 3) : 1.6;
-    const rho_w = (() => {
-      const T_k = temperature + 273.15;
-      const e_s = 6.1121 * Math.exp(17.502 * temperature / (temperature + 240.97));
-      return 216.7 * (humidity / 100) * e_s / T_k;
-    })();
-
-    const total = wavelengths.map((wl) => {
-      const qq = q(wl);
-      const alphaVis = (3.91 / V) * Math.pow(550 / wl, qq);
-      let alphaH2O = 0;
-      const waterPeaks = [940, 1130, 1380, 1870, 2660];
-      for (const peak of waterPeaks) {
-        const sigma = 30 + peak * 0.05;
-        alphaH2O += 0.1 * rho_w * Math.exp(-0.5 * Math.pow((wl - peak) / sigma, 2));
-      }
-      const altFactor = Math.exp(-altitude / 8.5);
-      return (alphaVis + alphaH2O) * altFactor;
-    });
-
-    // Mark common laser wavelengths
-    const commonWavelengths = [532, 850, 980, 1064, 1310, 1550];
-
+    const wavelengths = Array.from({ length: 141 }, (_, i) => 400 + i * 10); // 400–1800 nm
     return [
-      { x: wavelengths, y: total, type: "scatter", mode: "lines", name: "Total α", line: { color: "#06b6d4" } },
-      { x: commonWavelengths, y: commonWavelengths.map((wl) => {
-        const qq = q(wl);
-        const rho_w = (() => {
-          const T_k = temperature + 273.15;
-          const e_s = 6.1121 * Math.exp(17.502 * temperature / (temperature + 240.97));
-          return 216.7 * (humidity / 100) * e_s / T_k;
-        })();
-        const alphaVis = (3.91 / V) * Math.pow(550 / wl, qq);
-        let alphaH2O = 0;
-        for (const peak of [940, 1130, 1380, 1870, 2660]) {
-          const sigma = 30 + peak * 0.05;
-          alphaH2O += 0.1 * rho_w * Math.exp(-0.5 * Math.pow((wl - peak) / sigma, 2));
-        }
-        return (alphaVis + alphaH2O) * Math.exp(-altitude / 8.5);
-      }), type: "scatter", mode: "markers", name: "Common λ", marker: { color: "#f97316", size: 8 } },
+      { x: wavelengths, y: wavelengths.map((wl) => alphaDbPerKm(wl, visibility).total), type: "scatter", mode: "lines", name: "Total α", line: { color: "#06b6d4", width: 2 } },
+      { x: wavelengths, y: wavelengths.map((wl) => alphaDbPerKm(wl, visibility).rayleigh), type: "scatter", mode: "lines", name: "Rayleigh", line: { color: "#a78bfa", dash: "dot" } },
+      { x: COMMON_WAVELENGTHS, y: COMMON_WAVELENGTHS.map((wl) => alphaDbPerKm(wl, visibility).total), type: "scatter", mode: "markers", name: "Common λ", marker: { color: "#f97316", size: 8 } },
     ];
-  }, [visibility, humidity, temperature, altitude]);
+  }, [visibility]);
 
   return (
     <>
-      
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-          <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
-          {[
-            ["Wavelength (nm)", wavelength, setWavelength],
-            ["Visibility (km)", visibility, setVisibility],
-            ["Altitude (km)", altitude, setAltitude],
-            ["Humidity (%)", humidity, setHumidity],
-            ["Temperature (°C)", temperature, setTemperature],
-            ["Link Length (km)", linkLength, setLinkLength],
-          ].map(([label, val, set]: any) => (
-            <div key={label as string}>
-              <ValidatedNumberInput label={label} value={val} onChange={set} />
-            </div>
-          ))}
-        </div>
+      <div className="mb-5 flex flex-wrap gap-2">
+        {weatherPresets.map((p) => (
+          <button key={p.label} onClick={() => setVisibility(p.visibility)}
+            className={`rounded-full border px-3 py-1 text-sm transition ${visibility === p.visibility ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>
+            {p.label} (V = {p.visibility} km)
+          </button>
+        ))}
+      </div>
 
-        <div className="space-y-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <h2 className="text-lg font-semibold text-cyan-400 mb-3">Results</h2>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-gray-400">Visibility α (dB/km)</span><span>{calc.alphaVis.toFixed(4)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">H₂O α (dB/km)</span><span>{calc.alphaH2O.toFixed(4)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Total α (dB/km)</span><span className="font-bold">{calc.alphaTotal.toFixed(4)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Total Loss (dB)</span><span className="text-orange-400 font-bold">{calc.totalLoss.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Transmittance</span><span>{(calc.transmittance * 100).toFixed(2)}%</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Kim q parameter</span><span>{calc.q.toFixed(3)}</span></div>
-            </div>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-gray-400 mb-2">Spectral Attenuation (dB/km)</h3>
-            <ChartPanel data={plotData} layout={{
-              xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "α (dB/km)", color: "#9ca3af", gridcolor: "#374151" },
-              paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-              margin: { t: 20, r: 20, b: 40, l: 50 }, font: { color: "#9ca3af" },
-            }} />
-          </div>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={2500} />
+        <ValidatedNumberInput label="Visibility (km)" value={visibility} onChange={setVisibility} min={0.01} max={300} step="0.1" />
+        <ValidatedNumberInput label="Link Length (km)" value={linkLength} onChange={setLinkLength} min={0.001} max={1000} step="0.1" />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <ResultCard label="Attenuation α" value={`${fmt(calc.total)} dB/km`} tone="cyan" subtext={`= ${fmt(calc.total / DB_PER_NEPER)} km⁻¹ (Np/km)`} />
+        <ResultCard label="Path loss" value={`${fmt(calc.totalLoss)} dB`} tone="orange" subtext={`over ${linkLength} km`} />
+        <ResultCard label="Transmittance" value={`${fmt(calc.transmittance * 100, 4)} %`} tone="green" />
+        <ResultCard label="Aerosol (Kim)" value={`${fmt(calc.aerosol)} dB/km`} tone="yellow" subtext={`q = ${fmt(calc.q)}`} />
+        <ResultCard label="Rayleigh (molecular)" value={`${fmt(calc.rayleigh)} dB/km`} tone="purple" />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
+        <h3 className="text-lg font-semibold mb-3">Spectral attenuation at V = {visibility} km</h3>
+        <ChartPanel data={plotData} layout={{
+          xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
+          yaxis: { title: "α (dB/km)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
+          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+          margin: { t: 20, r: 20, b: 40, l: 60 }, font: { color: "#9ca3af" }, legend: { x: 0.7, y: 0.98 },
+        }} />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-sm text-gray-300 space-y-2">
+        <h3 className="text-lg font-semibold">Model</h3>
+        <p className="font-mono">β(λ) = β_R(λ) + [3.912/V − β_R(550 nm)] · (λ/550 nm)^(−q),   α [dB/km] = 4.343 · β [km⁻¹]</p>
+        <p>
+          The visibility V (Koschmieder, 2 % contrast) fixes the total extinction at 550 nm. Rayleigh scattering of
+          standard air is computed from its refractive index (Bucholtz, Appl. Opt. 34, 2765, 1995); the rest is aerosol
+          and scales with Kim&apos;s exponent q: 1.6 (V &gt; 50 km), 1.3 (6–50 km), 0.16V + 0.34 (1–6 km), V − 0.5
+          (0.5–1 km) and 0 in fog, where scattering no longer depends on wavelength (Kim, McArthur &amp; Korevaar,
+          Proc. SPIE 4214, 26, 2001). β is in nepers per km; the loss in dB is 4.343 times larger.
+        </p>
+        <p className="text-gray-500">
+          Not modelled: molecular absorption (water-vapour bands near 940, 1130, 1380 and 1870 nm; choose a wavelength
+          in a transmission window), rain and snow, turbulence and geometric loss. Kim&apos;s law was fitted in the
+          visible and near IR.
+        </p>
       </div>
     </>
   );

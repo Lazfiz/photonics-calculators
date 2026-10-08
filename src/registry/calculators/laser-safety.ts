@@ -14,8 +14,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "atmospheric-attenuation",
     title: "Atmospheric Attenuation",
-    description: "Calculates atmospheric beam attenuation using Beer-Lambert law with water vapor absorption, CO absorption, Rayleigh and Mie scattering. Useful for outdoor laser safety NOHD calculations.",
-    lede: "Calculates atmospheric beam attenuation using Beer-Lambert law with water vapor absorption, CO₂ absorption, Rayleigh and Mie scattering. Useful for outdoor laser safety NOHD calculations.",
+    description: "Beam attenuation along an outdoor path from Rayleigh scattering and visibility-based aerosol extinction (Beer-Lambert). Molecular absorption is left out, the conservative side for laser safety NOHD estimates.",
   },
   {
     slug: "aversion-response",
