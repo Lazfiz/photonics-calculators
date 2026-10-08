@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function OpticalPathLengthPage() {
   const [physicalLength, setPhysicalLength] = useURLState("physicalLength", 1);
   const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.5);
@@ -18,7 +19,7 @@ export default function OpticalPathLengthPage() {
   const sinInternal = Math.sin(angleRad) / refractiveIndex;
   const cosInternal = Math.sqrt(Math.max(0, 1 - sinInternal * sinInternal));
   const opl = physicalLength * refractiveIndex * numPasses / Math.max(cosInternal, 1e-10);
-  const retTime = opl * 0.01 / 3e8 * 1e9; // OPL(cm)→m, /c(m/s), ×1e9→ns
+  const retTime = opl * 0.01 / c * 1e9; // OPL(cm)→m, /c(m/s), ×1e9→ns
 
   const chartData = useMemo(() => {
     const n = 200;

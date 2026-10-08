@@ -3,9 +3,8 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c, epsilon_0 } from "../../../physics/constants";
 
-const c = 3e8;
-const eps0 = 8.854e-12;
 
 function opaGain({ pumpWavelength, signalWavelength, crystalLength, dEff, nPump, nSignal, nIdler, pumpPower, beamRadius }: { pumpWavelength: number; signalWavelength: number; crystalLength: number; dEff: number; nPump: number; nSignal: number; nIdler: number; pumpPower: number; beamRadius: number }) {
   const lambdaP = pumpWavelength * 1e-9;
@@ -18,7 +17,7 @@ function opaGain({ pumpWavelength, signalWavelength, crystalLength, dEff, nPump,
   const L = crystalLength * 1e-3;
   const w = beamRadius * 1e-6;
   const Ip = pumpPower / (Math.PI * w * w);
-  const gamma = (2 * deff / c) * Math.sqrt(omegaS * omegaI * Ip / (2 * eps0 * c * nPump * nSignal * nIdler));
+  const gamma = (2 * deff / c) * Math.sqrt(omegaS * omegaI * Ip / (2 * epsilon_0 * c * nPump * nSignal * nIdler));
   const G = 1 + Math.sinh(gamma * L) ** 2;
   const gaindB = 10 * Math.log10(G);
   return { G, gaindB, gamma, lambdaI: lambdaI * 1e9, omegaI };

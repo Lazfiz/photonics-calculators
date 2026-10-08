@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { h, m_u } from "../../../physics/constants";
 export default function MicrowaveSpectroscopyPage() {
   const [moleculeType, setMoleculeType] = useState("linear");
   const [bondLength, setBondLength] = useURLState("bondLength", 1.128); // N₂-like, in Å
@@ -16,10 +17,9 @@ export default function MicrowaveSpectroscopyPage() {
   const calcRotationalConstants = () => {
     // B = h / (8π²cI) in cm⁻¹
     // I = μ × r²
-    const mu = reducedMass * 1.66054e-27; // kg
+    const mu = reducedMass * m_u; // kg
     const r = bondLength * 1e-10; // m
     const I = mu * r * r;
-    const h = 6.626e-34;
     const c = 2.998e10;
     const B = h / (8 * Math.PI * Math.PI * c * I); // cm⁻¹
     const B_GHz = B * c / 1e9; // Hz → GHz

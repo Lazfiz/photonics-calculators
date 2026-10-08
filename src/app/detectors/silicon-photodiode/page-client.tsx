@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, h, q, k_B } from "../../../physics/constants";
 // Silicon Photodiode Parameters
 // Bandgap: E_g ≈ 1.12 eV at 300K → λ_c ≈ 1100 nm
 // QE: η = (1-R)·(1 - exp(-α·d)) with wavelength-dependent α
@@ -19,10 +20,6 @@ export default function SiliconPhotodiodePage() {
   const [area, setArea] = useURLState("area", 1); // mm²
   const [surfaceReflectivity, setSurfaceReflectivity] = useURLState("surfaceReflectivity", 0.05);
 
-  const k = 1.381e-23;
-  const q = 1.602e-19;
-  const h = 6.626e-34;
-  const c = 3e8;
 
   // Si bandgap temperature dependence (Varshni)
   // Eg0 chosen so that Eg(300K) ≈ 1.12 eV
@@ -73,7 +70,7 @@ export default function SiliconPhotodiodePage() {
 
   // Dark current (GR-dominated for Si at moderate bias)
   const areaCm2 = area * 1e-2;
-  const ni = 1.5e10 * Math.pow(temperature / 300, 1.5) * Math.exp(-Eg * q / (2 * k * temperature) + EgAt300 * q / (2 * k * 300));
+  const ni = 1.5e10 * Math.pow(temperature / 300, 1.5) * Math.exp(-Eg * q / (2 * k_B * temperature) + EgAt300 * q / (2 * k_B * 300));
   const tau = 1e-3; // carrier lifetime, s
   const darkCurrent = q * ni * areaCm2 * depletionWidth * 1e-4 / (2 * tau);
 
@@ -97,7 +94,7 @@ export default function SiliconPhotodiodePage() {
     return [{
       x: temps, y: temps.map(T => {
         const EgT = Eg0 - (alphaVarshni * T ** 2) / (T + betaVarshni);
-        const niT = 1.5e10 * Math.pow(T / 300, 1.5) * Math.exp(-EgT * q / (2 * k * T) + EgAt300 * q / (2 * k * 300));
+        const niT = 1.5e10 * Math.pow(T / 300, 1.5) * Math.exp(-EgT * q / (2 * k_B * T) + EgAt300 * q / (2 * k_B * 300));
         return (q * niT * areaCm2 * depletionWidth * 1e-4 / (2 * tau)) * 1e9;
       }), type: "scatter", mode: "lines", name: "I_dark", line: { color: "#f87171", width: 2 },
     }];

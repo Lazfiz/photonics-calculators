@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { q, m_u } from "../../../physics/constants";
 export default function PlasmaDepositionPage() {
   const [power, setPower] = useURLState("power", 500);
   const [pressure, setPressure] = useURLState("pressure", 5e-3);
@@ -39,7 +40,7 @@ export default function PlasmaDepositionPage() {
 
     // Electron density
     const E_field = P / (A * d * p * 133.322); // V/m (p in Torr → Pa: ×133.322)
-    const ne = (P * 0.01) / (Te_eV * 1.6e-19 * A * d * 1e6 * Math.sqrt(8 * Te_eV * 1.6e-19 / (Math.PI * gas.mw * 1.673e-27)));
+    const ne = (P * 0.01) / (Te_eV * q * A * d * 1e6 * Math.sqrt(8 * Te_eV * q / (Math.PI * gas.mw * m_u)));
 
     // Ion energy at substrate (simplified sheath model)
     const sheathVoltage = Math.min(P / (ne * e_charge(A) + 1e-10), 300);
@@ -66,14 +67,14 @@ export default function PlasmaDepositionPage() {
     return { Te_eV, ne, ionEnergy, Debye, depositionRate, ionBombEnergy, stickingCoeff, uniformity, sheathVoltage };
   }, [power, pressure, gasFlow, substrateTemp, frequency, electrodeGap, gasType]);
 
-  function e_charge(A: number) { return 1.6e-19 * 0.1 * A; }
+  function e_charge(A: number) { return q * 0.1 * A; }
 
   const sweepData = useMemo(() => {
     const pressures = Array.from({ length: 100 }, (_, i) => 1e-4 + i * 0.02 / 100);
     const Te = pressures.map(p => 2 + 0.5 * Math.log10(1 + p / 1e-3));
     const rates = pressures.map(p => {
       const te = 2 + 0.5 * Math.log10(1 + p / 1e-3);
-      const ne_est = (power * 0.01) / (te * 1.6e-19 * 0.01 * electrodeGap * 1e-3 * 1e6);
+      const ne_est = (power * 0.01) / (te * q * 0.01 * electrodeGap * 1e-3 * 1e6);
       return Math.min((power * 0.001 * 0.5) / (gas.mw * 10) * Math.exp(-p / 0.05), 5);
     });
     return [

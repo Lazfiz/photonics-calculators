@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function RingCavityPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
   const [roundTripLength, setRoundTripLength] = useURLState("roundTripLength", 300); // mm
@@ -53,7 +54,7 @@ export default function RingCavityPage() {
     }
 
     // Cavity properties
-    const fsr = 3e8 / (L * 1e-3); // Hz (c/L)
+    const fsr = c / (L * 1e-3); // Hz (c/L)
     const finesse = Math.PI * Math.sqrt(Rout * (1 - loss)) / (1 - Rout * (1 - loss));
     const linewidth = fsr / finesse;
     const thresholdGain = loss + (1 - Rout);
@@ -71,7 +72,7 @@ export default function RingCavityPage() {
     const detuning = Array.from({ length: N }, (_, i) => (-modeSpacing * 1.5 + 3 * modeSpacing * i) / (N - 1));
     const Fcoeff = 4 * Rout * (1 - loss) / Math.pow(1 - Rout * (1 - loss), 2);
     const cavityResponse = detuning.map(f => {
-      const delta = 2 * Math.PI * f * L * 1e-3 / 3e8;
+      const delta = 2 * Math.PI * f * L * 1e-3 / c;
       return 1 / (1 + Fcoeff * Math.sin(delta / 2) ** 2);
     });
 

@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function FluorescencePage() {
   const [tau, setTau] = useURLState("tau", 3);
   const [multiExp, setMultiExp] = useState(false);
@@ -42,8 +43,8 @@ export default function FluorescencePage() {
   // Exponential decay → Lorentzian spectrum: Δν_FWHM = 1/(2πτ)
   // E(t) ∝ exp(-t/2τ) since I = |E|² → power spectrum FWHM = 1/(2πτ)
   const deltaNu = 1 / (2 * Math.PI * tau * 1e-9); // Hz (τ in ns)
-  const centerFreq = 3e8 / (540e-9); // ~5.56e14 Hz for green
-  const fwhmNm = 3e8 * 1e9 * deltaNu / (centerFreq * centerFreq); // Δλ = λ²Δν/c
+  const centerFreq = c / (540e-9); // ~5.56e14 Hz for green
+  const fwhmNm = c * 1e9 * deltaNu / (centerFreq * centerFreq); // Δλ = λ²Δν/c
   const fwhmSpectrum = fwhmNm.toExponential(2);
   const fwhmSpectrumSimple = (1 / (2 * Math.PI)).toFixed(3); // Δν·τ = 1/(2π) ≈ 0.159 (dimensionless)
 

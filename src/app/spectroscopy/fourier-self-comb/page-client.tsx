@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function FourierSelfCombPage() {
   const [repetitionRate, setRepetitionRate] = useURLState("repetitionRate", 250); // MHz
   const [centerWavelength, setCenterWavelength] = useURLState("centerWavelength", 1550); // nm
@@ -13,7 +14,6 @@ export default function FourierSelfCombPage() {
   const [combLines, setCombLines] = useURLState("combLines", 50);
 
   const chartData = useMemo(() => {
-    const c = 3e8;
     const repFreq = repetitionRate * 1e6;
     const centerFreq = c / (centerWavelength * 1e-9);
     const deltaLambda = bandwidthNm * 1e-9;
@@ -61,7 +61,6 @@ export default function FourierSelfCombPage() {
     return traces;
   }, [repetitionRate, centerWavelength, bandwidthNm, combLines]);
 
-  const c = 3e8;
   const fRep = repetitionRate * 1e6;
   const spacingNm = (centerWavelength ** 2 * fRep * 1e-9) / c;
 

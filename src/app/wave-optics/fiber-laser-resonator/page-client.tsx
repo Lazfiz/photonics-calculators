@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c, h } from "../../../physics/constants";
 
 export default function FiberLaserResonatorPage() {
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 3); // m
@@ -30,8 +31,6 @@ export default function FiberLaserResonatorPage() {
   const g_th = L_rt / (2 * fiberLength);
 
   // Threshold pump power estimate (simplified)
-  const h = 6.626e-34;
-  const c = 3e8;
   const sigma_em = 2.5e-25; // m² typical Yb emission cross-section
   const tau = 0.84e-3; // ms Yb lifetime
   const Isat = h * c / (wavelength * 1e-9 * sigma_em * tau);

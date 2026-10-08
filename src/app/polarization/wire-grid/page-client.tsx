@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, mu_0 } from "../../../physics/constants";
 export default function WireGridPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1.55);
   const [wireSpacing, setWireSpacing] = useURLState("wireSpacing", 1.0);
@@ -22,11 +23,10 @@ export default function WireGridPage() {
   // and like a capacitive grid for E perpendicular
   // Using the Marcuvitz/Chen model approximation
 
-  const f = 3e8 / lam;
+  const f = c / lam;
   const omega = 2 * Math.PI * f;
-  const mu0 = 4 * Math.PI * 1e-7;
   const sigma = wireConductivity;
-  const skinDepth = Math.sqrt(2 / (omega * mu0 * sigma));
+  const skinDepth = Math.sqrt(2 / (omega * mu_0 * sigma));
 
   // Grid parameters
   const dutyCycle = wireDiameter / wireSpacing;
@@ -66,7 +66,7 @@ export default function WireGridPage() {
 
   const spectralData = useMemo(() => {
     const wls = Array.from({ length: 400 }, (_, i) => 0.3 + (i / 400) * 5.7);
-    const sD = Math.sqrt(2 / (2 * Math.PI * 3e8 / (wavelength * 1e-6) * 4 * Math.PI * 1e-7 * sigma));
+    const sD = Math.sqrt(2 / (2 * Math.PI * c / (wavelength * 1e-6) * mu_0 * sigma));
     const zsp = (1 / (sigma * sD)) / dutyCycle;
     const zspCap = Z0 / (Math.PI * normalizedSpacing * Math.log(1 / (Math.PI * normalizedDiameter / 2)));
 
@@ -74,7 +74,7 @@ export default function WireGridPage() {
       const kk = 2 * Math.PI / (w * 1e-6);
       const nsp = wireSpacing / w;
       const ndp = wireDiameter / w;
-      const skd = Math.sqrt(2 / (2 * Math.PI * 3e8 / (w * 1e-6) * 4 * Math.PI * 1e-7 * sigma));
+      const skd = Math.sqrt(2 / (2 * Math.PI * c / (w * 1e-6) * mu_0 * sigma));
       const zp = (1 / (sigma * skd)) / dutyCycle;
       const zs = Z0 / (Math.PI * nsp * Math.log(1 / (Math.PI * ndp / 2)));
       const tp = Math.abs(2 * Z0 * Math.cos(thetaI) / (2 * zp + Z0 * Math.cos(thetaI))) ** 2;
@@ -85,7 +85,7 @@ export default function WireGridPage() {
     const Tp = wls.map(w => {
       const nsp = wireSpacing / w;
       const ndp = wireDiameter / w;
-      const skd = Math.sqrt(2 / (2 * Math.PI * 3e8 / (w * 1e-6) * 4 * Math.PI * 1e-7 * sigma));
+      const skd = Math.sqrt(2 / (2 * Math.PI * c / (w * 1e-6) * mu_0 * sigma));
       const zp = (1 / (sigma * skd)) / dutyCycle;
       const zs = Z0 / (Math.PI * nsp * Math.log(1 / (Math.PI * ndp / 2)));
       const tp = Math.abs(2 * Z0 * Math.cos(thetaI) / (2 * zp + Z0 * Math.cos(thetaI))) ** 2;
@@ -109,7 +109,7 @@ export default function WireGridPage() {
     const angles = Array.from({ length: 200 }, (_, i) => (i / 200) * 89);
     const Ts = angles.map(a => {
       const th = a * Math.PI / 180;
-      const skd = Math.sqrt(2 / (2 * Math.PI * 3e8 / lam * 4 * Math.PI * 1e-7 * sigma));
+      const skd = Math.sqrt(2 / (2 * Math.PI * c / lam * mu_0 * sigma));
       const zp = (1 / (sigma * skd)) / dutyCycle;
       const zs = Z0 / (Math.PI * normalizedSpacing * Math.log(1 / (Math.PI * normalizedDiameter / 2)));
       return Math.abs(2 * zp / (2 * zp / Math.cos(th) + Z0)) ** 2;

@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function SelfPhaseModulationPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm
   const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 1); // nJ
@@ -51,7 +52,7 @@ export default function SelfPhaseModulationPage() {
     return [
       { x: t.map(v => v * 1e15), y: envelope, type: "scatter", mode: "lines", name: "Envelope", line: { color: "#60a5fa", width: 2 }, yaxis: "y" },
       { x: t.map(v => v * 1e15), y: phase.map(p => p / Math.PI), type: "scatter", mode: "lines", name: "φ_NL(t)/π", line: { color: "#f472b6", width: 2 }, yaxis: "y" },
-      { x: t.map(v => v * 1e15), y: chirp.map(c => c / 1e15), type: "scatter", mode: "lines", name: "Chirp (rad/fs)", line: { color: "#34d399", width: 2 }, yaxis: "y2" },
+      { x: t.map(v => v * 1e15), y: chirp.map(w => w / 1e15), type: "scatter", mode: "lines", name: "Chirp (rad/fs)", line: { color: "#34d399", width: 2 }, yaxis: "y2" },
     ];
   }, [wavelength, pulseEnergy, pulseDuration, beamWaist, n2, mediumLength, n0, pulseShape]);
 
@@ -94,7 +95,7 @@ export default function SelfPhaseModulationPage() {
   // Peak frequency shift
   const maxChirp = phiMax / tau; // rad/s at peak
   const maxShiftHz = maxChirp / (2 * Math.PI);
-  const maxShiftNm = maxShiftHz * (wavelength * 1e-9) ** 2 / 3e8 * 1e9;
+  const maxShiftNm = maxShiftHz * (wavelength * 1e-9) ** 2 / c * 1e9;
 
   return (
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Self-Phase Modulation (SPM)" description="Intensity-dependent phase shift and spectral broadening from the optical Kerr effect.">

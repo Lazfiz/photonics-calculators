@@ -7,6 +7,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { createRng } from "../../../physics/random";
+import { c } from "../../../physics/constants";
 export default function OTDRAnalysisPage() {
   const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100); // ns
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 50); // km
@@ -19,7 +20,6 @@ export default function OTDRAnalysisPage() {
   const [eventAtKm, setEventAtKm] = useURLState("eventAtKm", 25); // km
 
   const calc = useMemo(() => {
-    const c = 3e8;
     const n = refractiveIndex;
     const v_group = c / n;
 
@@ -60,7 +60,7 @@ export default function OTDRAnalysisPage() {
   const traceData = useMemo(() => {
     const rng = createRng(1); // fixed seed: same noise on server and client
     const n = refractiveIndex;
-    const v_group = 3e8 / n;
+    const v_group = c / n;
     const resolution = (pulseWidth * 1e-9 * v_group) / 2; // m
     const numPoints = Math.ceil(fiberLength * 1000 / resolution);
     const step = fiberLength / numPoints;
@@ -107,7 +107,7 @@ export default function OTDRAnalysisPage() {
     const pulses = [10, 30, 100, 300, 1000, 10000];
     return pulses.map(pw => ({
       x: [pw],
-      y: [((pw * 1e-9 * 3e8 / refractiveIndex) / 2)], // resolution in meters
+      y: [((pw * 1e-9 * c / refractiveIndex) / 2)], // resolution in meters
       type: "bar" as const, name: `${pw} ns`,
       marker: { color: pw === pulseWidth ? "#f87171" : "#4b5563" },
     }));

@@ -6,13 +6,13 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { N_A } from "../../../physics/constants";
 export default function AbsorptionCrossSectionPage() {
   const [extinctionCoeff, setExtinctionCoeff] = useURLState("extinctionCoeff", 50000);
   const [concentration, setConcentration] = useURLState("concentration", 0.001);
 
-  const NA = 6.022e23;
   // σ = ε × 1000 × ln(10) / N_A  (from A = εcl = σ·N_A·c·l / (1000·ln10))
-  const sigma = extinctionCoeff * 1000 * Math.LN10 / NA; // cm²
+  const sigma = extinctionCoeff * 1000 * Math.LN10 / N_A; // cm²
   const sigmaM2 = sigma * 1e-4; // m²
   const absorbance = extinctionCoeff * concentration * 1;
 
@@ -20,7 +20,7 @@ export default function AbsorptionCrossSectionPage() {
     const n = 200;
     const eMax = Math.max(extinctionCoeff * 2, 100000);
     const xs = Array.from({ length: n }, (_, i) => (i / (n - 1)) * eMax);
-    const ys = xs.map(e => e * 1000 * Math.LN10 / NA);
+    const ys = xs.map(e => e * 1000 * Math.LN10 / N_A);
 
     return [
       { x: xs, y: ys, type: "scatter" as const, mode: "lines" as const, name: "σ (cm²)", line: { color: "#60a5fa" } },

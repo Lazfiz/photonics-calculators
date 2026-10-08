@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function PulseCompressionPage() {
   const [inputDuration, setInputDuration] = useURLState("inputDuration", 100); // fs
   const [compressionRatio, setCompressionRatio] = useURLState("compressionRatio", 10);
@@ -13,9 +14,9 @@ export default function PulseCompressionPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 800);
 
   const outputDuration = inputDuration / compressionRatio;
-  const tlDuration = 0.44 * Math.pow(wavelength * 1e-9, 2) / (3e8 * inputBandwidth * 1e-9) * 1e15; // fs
+  const tlDuration = 0.44 * Math.pow(wavelength * 1e-9, 2) / (c * inputBandwidth * 1e-9) * 1e15; // fs
   const peakPowerGain = compressionRatio;
-  const deltaNu = 3e8 * inputBandwidth * 1e-9 / Math.pow(wavelength * 1e-9, 2); // Hz
+  const deltaNu = c * inputBandwidth * 1e-9 / Math.pow(wavelength * 1e-9, 2); // Hz
   const timeBandwidth = inputDuration * 1e-15 * deltaNu; // dimensionless
 
   const chartData = useMemo(() => {

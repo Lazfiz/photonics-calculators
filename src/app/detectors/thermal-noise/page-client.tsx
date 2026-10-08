@@ -1,26 +1,26 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { k_B } from "../../../physics/constants";
 export default function ThermalNoisePage() {
   const [resistance, setResistance] = useURLState("resistance", 1000); // Ohms
   const [temperature, setTemperature] = useURLState("temperature", 300); // K
   const [bandwidth, setBandwidth] = useURLState("bandwidth", 1e6); // Hz
-  const [kB] = useState(1.381e-23); // J/K
 
   const chartData = useMemo(() => {
     const resistances = Array.from({ length: 200 }, (_, i) => 10 * Math.pow(1e5, i / 200));
-    const vNoise = resistances.map(R => Math.sqrt(4 * kB * temperature * R * bandwidth));
+    const vNoise = resistances.map(R => Math.sqrt(4 * k_B * temperature * R * bandwidth));
     return [{ x: resistances, y: vNoise, type: "scatter" as const, mode: "lines" as const, name: "RMS noise voltage", line: { color: "#60a5fa" } }];
   }, [resistance, temperature, bandwidth]);
 
-  const vNoise = Math.sqrt(4 * kB * temperature * resistance * bandwidth);
+  const vNoise = Math.sqrt(4 * k_B * temperature * resistance * bandwidth);
   const iNoise = vNoise / resistance;
-  const pNoise = kB * temperature * bandwidth; // available noise power (matched load)
+  const pNoise = k_B * temperature * bandwidth; // available noise power (matched load)
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Johnson (Thermal) Noise" description="vn = √(4kBTRΔf). Thermal noise voltage across a resistor.">

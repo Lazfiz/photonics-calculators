@@ -8,6 +8,7 @@ import ResultCard from "../../../components/result-card";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, h, k_B, sigma_SB } from "../../../physics/constants";
 const currentHref = "/spectroscopy/blackbody";
 const temperaturePresets = [300, 1200, 3000, 5778];
 
@@ -21,11 +22,10 @@ export default function BlackbodyPage() {
     const wlMax = Math.max(15000, wienPeak * 5);
     const numPoints = 500;
     const wls = Array.from({ length: numPoints }, (_, i) => wlMin + i * (wlMax - wlMin) / (numPoints - 1));
-    const h = 6.626e-34, c = 3e8, k = 1.381e-23;
     const T = temperature;
     const spectralRadiance = wls.map((wl) => {
       const lam = wl * 1e-9;
-      const exp = h * c / (lam * k * T);
+      const exp = h * c / (lam * k_B * T);
       if (exp > 500) return 0;
       return (2 * h * c * c) / (Math.pow(lam, 5) * (Math.exp(exp) - 1)) * 1e-9;
     });
@@ -33,7 +33,7 @@ export default function BlackbodyPage() {
   }, [temperature]);
 
   const peakWavelength = 2897771.955 / temperature;
-  const totalPower = 5.67e-8 * Math.pow(temperature, 4);
+  const totalPower = sigma_SB * Math.pow(temperature, 4);
 
   return (
     <CalculatorShell

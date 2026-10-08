@@ -8,6 +8,7 @@ import InputSlider from "../../../components/input-slider";
 import RelatedCalculatorLinks from "../../../components/related-calculator-links";
 import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, h, q } from "../../../physics/constants";
 const wavelengthPresets = [405, 532, 850, 1310, 1550];
 const qePresets = [0.2, 0.5, 0.8, 0.95];
 const currentHref = "/detectors/responsivity";
@@ -16,7 +17,6 @@ export default function ResponsivityPage() {
   const [quantumEfficiency, setQuantumEfficiency] = useURLState("quantumEfficiency", 0.8);
   const [wavelength, setWavelength] = useURLState("wavelength", 1550);
 
-  const q = 1.602e-19, h = 6.626e-34, c = 3e8;
   const responsivity = (quantumEfficiency * q * wavelength * 1e-9) / (h * c);
   const photonsPerWatt = (wavelength * 1e-9) / (h * c);
   const photocurrentAt1mW_uA = responsivity * 1e-3 * 1e6;
@@ -25,7 +25,7 @@ export default function ResponsivityPage() {
     const wls = Array.from({ length: 250 }, (_, i) => 300 + i * 7);
     const r = wls.map((wl) => (quantumEfficiency * q * wl * 1e-9) / (h * c));
     return [{ name: "Responsivity", color: "#60a5fa", points: wls.map((x, i) => ({ x, y: r[i] })) }, { name: "Current point", color: "#22c55e", showPoints: true, points: [{ x: wavelength, y: responsivity }] }];
-  }, [quantumEfficiency, wavelength, q, h, c, responsivity]);
+  }, [quantumEfficiency, wavelength, responsivity]);
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Detector Responsivity" description="Interactive responsivity calculator from quantum efficiency and wavelength, with presets and wavelength sweeps.">

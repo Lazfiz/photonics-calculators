@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c, epsilon_0 } from "../../../physics/constants";
 
 export default function SecondHarmonicGenerationPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 800);
@@ -27,7 +28,7 @@ export default function SecondHarmonicGenerationPage() {
     const peakIntensity = (pulseEnergy * 1e-9) / (Math.PI * w0 * w0 * pulseWidth * 1e-15);
     const L_m = crystalLength * 1e-6;
     const chi2_mV = chi2 * 1e-12;
-    const shgEfficiency = 8 * Math.PI ** 2 * chi2_mV ** 2 * peakIntensity * L_m ** 2 / (Math.pow(n, 3) * lam * lam * 299792458 * 8.854e-12);
+    const shgEfficiency = 8 * Math.PI ** 2 * chi2_mV ** 2 * peakIntensity * L_m ** 2 / (Math.pow(n, 3) * lam * lam * c * epsilon_0);
     const fwdBwdRatio = 1;
     const spectralBandwidth = 0.44 / (pulseWidth * 1e-15) * 1e-12;
     return { shgNm, lateralRes, pulseEnergy, peakIntensity, coherenceLength, shgEfficiency: Math.min(shgEfficiency, 1), fwdBwdRatio, spectralBandwidth };

@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { k_B, m_u } from "../../../physics/constants";
 export default function ThermalEvaporationPage() {
   const [material, setMaterial] = useState("SiO2");
   const [sourceTemp, setSourceTemp] = useURLState("sourceTemp", 1400);
@@ -45,8 +46,8 @@ export default function ThermalEvaporationPage() {
 
     // Evaporation rate (Hertz-Knudsen)
     const alpha = 1.0; // evaporation coefficient
-    const m = mat.M * 1.673e-27; // mass per molecule (using amu)
-    const flux = alpha * P_vapor * 133.322 / Math.sqrt(2 * Math.PI * m * 1.38e-23 * T_K); // molecules/m²/s
+    const m = mat.M * m_u; // mass per molecule (using amu)
+    const flux = alpha * P_vapor * 133.322 / Math.sqrt(2 * Math.PI * m * k_B * T_K); // molecules/m²/s
 
     // Deposition rate at substrate (point source cos model)
     const cosTheta = 1; // normal incidence at center
@@ -67,12 +68,12 @@ export default function ThermalEvaporationPage() {
     const stoichFactor = Math.min(1.0, P_vapor / 1e-3) > 1 ? 1.0 : Math.sqrt(P_vapor * 1000);
 
     // Packing density estimate
-    const energyEvap = 1.5 * 1.38e-23 * T_K; // thermal energy ~ kT
-    const surfaceDiffusion = Math.exp(-0.5 / (1.38e-23 * T_sub / mat.dHvap * 1000));
+    const energyEvap = 1.5 * k_B * T_K; // thermal energy ~ kT
+    const surfaceDiffusion = Math.exp(-0.5 / (k_B * T_sub / mat.dHvap * 1000));
     const packingDensity = 0.6 + 0.2 * Math.min(surfaceDiffusion, 1) + 0.05 * Math.min(Kn, 1);
 
     // Molecular speed
-    const v_mol = Math.sqrt(8 * 1.38e-23 * T_K / (Math.PI * m));
+    const v_mol = Math.sqrt(8 * k_B * T_K / (Math.PI * m));
 
     return { P_vapor, depRate, mfpCm, Kn, uniformity85, v_mol, packingDensity, stoichFactor, flux };
   }, [material, sourceTemp, sourceSubstrateDist, sourceDiameter, chamberPressure, substrateTemp]);
@@ -83,8 +84,8 @@ export default function ThermalEvaporationPage() {
       const T_K = T + 273.15;
       const logP = mat.A - mat.B / T_K;
       const Pv = Math.pow(10, logP);
-      const m = mat.M * 1.673e-27;
-      const fl = Pv * 133.322 / Math.sqrt(2 * Math.PI * m * 1.38e-23 * T_K);
+      const m = mat.M * m_u;
+      const fl = Pv * 133.322 / Math.sqrt(2 * Math.PI * m * k_B * T_K);
       const d = sourceSubstrateDist * 1e-2;
       const r = (sourceDiameter / 2) * 1e-2;
       return fl * m * r * r / (d * d) * 1e9;

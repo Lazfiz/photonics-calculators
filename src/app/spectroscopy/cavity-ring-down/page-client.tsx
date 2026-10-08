@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function CavityRingDownPage() {
   const [mirrorReflectivity, setMirrorReflectivity] = useURLState("mirrorReflectivity", 99.99); // %
   const [cavityLength, setCavityLength] = useURLState("cavityLength", 100); // cm
@@ -19,7 +20,6 @@ export default function CavityRingDownPage() {
   const alphaSample = 2 * sampleAbsorbance * Math.LN10; // ×2 for round trip; convert A₁₀ to natural optical depth
   const totalLoss = Math.max(roundTripLoss + alphaSample, 1e-10);
 
-  const c = 2.998e8; // m/s
   const roundTripTime = 2 * L / c; // seconds
   const tau = roundTripTime / totalLoss; // ring-down time
 

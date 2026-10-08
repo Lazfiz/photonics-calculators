@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, h, q } from "../../../physics/constants";
 // PMT Gain Calculator
 // Total gain: G = δ^n where δ is per-stage gain, n is number of stages
 // Per-stage gain: δ = k·V_s^α (α ≈ 0.7-0.8 depending on dynode material)
@@ -21,9 +22,6 @@ export default function PmtGainPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 400); // nm
   const [amplifierNoise, setAmplifierNoise] = useURLState("amplifierNoise", 1000); // e- rms
 
-  const q = 1.602e-19;
-  const h = 6.626e-34;
-  const c = 3e8;
 
   // Dynode gain parameters (typical for Cs-Sb or Cu-Be dynodes)
   const alpha = 0.75; // exponent

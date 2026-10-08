@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, q, k_B, m_u } from "../../../physics/constants";
 export default function LibsAnalysisPage() {
   const [temperature, setTemperature] = useURLState("temperature", 10000); // K
   const [electronDensity, setElectronDensity] = useURLState("electronDensity", 1e17); // cm⁻³
@@ -16,7 +17,7 @@ export default function LibsAnalysisPage() {
   const starkWidth = 2 * 1e-16 * electronDensity; // rough: ~2w_e, w_e ~ 1e-16 * Ne for typical transitions
 
   // Doppler FWHM (nm)
-  const dopplerWidth = wavelength * Math.sqrt(8 * 1.380649e-23 * temperature * Math.log(2) / (1.66054e-27 * 3e8 ** 2 * 40)); // atomic mass ~40 amu (Ar-like)
+  const dopplerWidth = wavelength * Math.sqrt(8 * k_B * temperature * Math.log(2) / (m_u * c ** 2 * 40)); // atomic mass ~40 amu (Ar-like)
   const dopplerWidthNm = dopplerWidth; // already in nm (same unit as wavelength input)
 
   // Voigt approx (Gaussian + Lorentzian FWHM)
@@ -24,9 +25,8 @@ export default function LibsAnalysisPage() {
 
   // Boltzmann factor for ionization (simplified — not full Saha equation)
   // Full Saha: n_{i+1}·n_e/n_i = (2/Λ³)·(g_{i+1}/g_i)·exp(-χ_i/kT)
-  const k_B = 1.380649e-23;
   const ionizationEnergy = 7.0; // eV, Ar-like
-  const boltzmannFactor = Math.exp(-ionizationEnergy * 1.602e-19 / (k_B * temperature));
+  const boltzmannFactor = Math.exp(-ionizationEnergy * q / (k_B * temperature));
 
   const chartData = useMemo(() => {
     const x = Array.from({ length: 500 }, (_, i) => wavelength - spectralRange + i * (2 * spectralRange) / 500);

@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function PumpProbePage() {
   const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 400);
   const [probeWavelength, setProbeWavelength] = useURLState("probeWavelength", 800);
@@ -47,7 +48,6 @@ export default function PumpProbePage() {
     ];
   }, [pumpWavelength, probeWavelength, tau1, tau2, tMax]);
 
-  const c = 3e8;
   const pumpE = 1240 / pumpWavelength; // eV
   const probeE = 1240 / probeWavelength; // eV
 

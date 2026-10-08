@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { q } from "../../../physics/constants";
 export default function ChannelPMTPage() {
   const [numChannels, setNumChannels] = useURLState("numChannels", 16);
   const [channelGain, setChannelGain] = useURLState("channelGain", 1e4);
@@ -17,9 +18,9 @@ export default function ChannelPMTPage() {
 
   const numPE = photonsPerEvent * quantumEff * collectionEff;
   const results = useMemo(() => {
-    const chargePerPhoton = 1.6e-19 * channelGain * quantumEff * collectionEff;
-    const anodeSensitivity = chargePerPhoton / 1.6e-19;
-    const peakCurrent = (numPE * 1.6e-19 * channelGain) / (transitTimeSpread * 1e-12);
+    const chargePerPhoton = q * channelGain * quantumEff * collectionEff;
+    const anodeSensitivity = chargePerPhoton / q;
+    const peakCurrent = (numPE * q * channelGain) / (transitTimeSpread * 1e-12);
     const energyRes = numPE > 0 ? 2.355 / Math.sqrt(numPE) : 1;
     const totalDarkRate = darkCountRate * numChannels;
     return { channelGain, chargePerPhoton, anodeSensitivity, peakCurrent, energyRes, totalDarkRate };

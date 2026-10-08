@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c } from "../../../physics/constants";
 
 export default function RainAttenuationPage() {
   const [rainRate, setRainRate] = useURLState("rainRate", 25);
@@ -13,7 +14,7 @@ export default function RainAttenuationPage() {
   const calc = useMemo(() => {
     // Specific attenuation based on ITU-R P.838 simplified power-law
     const R = rainRate; // mm/h
-    const f = (3e8 / (wavelength * 1e-9)) / 1e9; // frequency in GHz
+    const f = (c / (wavelength * 1e-9)) / 1e9; // frequency in GHz
     // Simplified coefficients for ~1550 nm (~193 THz) — rain scattering is negligible at optical
     // Use Marshall-Palmer drop size distribution approach
     // At optical wavelengths, rain attenuation is mainly from scattering (Mie)

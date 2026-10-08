@@ -6,13 +6,14 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function CEPStabilizationPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 800);
   const [pulseDuration, setPulseDuration] = useURLState("pulseDuration", 5); // fs
   const [cepOffset, setCepOffset] = useURLState("cepOffset", 0); // rad
   const [cycles, setCycles] = useURLState("cycles", 2);
 
-  const period = wavelength * 1e-9 / 3e8 * 1e15; // fs
+  const period = wavelength * 1e-9 / c * 1e15; // fs
   const carrierFreq = 1 / period; // PHz
   const spectralWidth = 0.44 / pulseDuration; // THz (Gaussian TL)
   const phaseSlipPerCycle = 2 * Math.PI;

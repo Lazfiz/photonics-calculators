@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function DualCombSpectroscopyPage() {
   const [repRate1, setRepRate1] = useURLState("repRate1", 100); // MHz
   const [repRate2, setRepRate2] = useURLState("repRate2", 100.001); // MHz
@@ -14,7 +15,6 @@ export default function DualCombSpectroscopyPage() {
   const [centerWavelength, setCenterWavelength] = useURLState("centerWavelength", 1550); // nm
   const [numModes, setNumModes] = useURLState("numModes", 200000);
 
-  const c = 3e8;
   const frep1Hz = repRate1 * 1e6;
   const frep2Hz = repRate2 * 1e6;
   const deltaFrep = Math.abs(frep2Hz - frep1Hz);

@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, h, q, k_B } from "../../../physics/constants";
 // Photodiode: bandwidth ∝ 1/area due to junction capacitance C_j ∝ A
 // BW ≈ 1/(2π·R·C_j), ENBW = BW·π/2 for 1st-order RC LPF
 export default function PhotodiodeSpeedPage() {
@@ -16,7 +17,7 @@ export default function PhotodiodeSpeedPage() {
   const [areaMin, setAreaMin] = useURLState("areaMin", 0.001); // mm²
   const [areaMax, setAreaMax] = useURLState("areaMax", 10); // mm²
 
-  const responsivity = qe * 1.602e-19 * wavelength * 1e-9 / (6.626e-34 * 3e8);
+  const responsivity = qe * q * wavelength * 1e-9 / (h * c);
 
   const chartData = useMemo(() => {
     const areas = Array.from({ length: 300 }, (_, i) =>
@@ -43,7 +44,7 @@ export default function PhotodiodeSpeedPage() {
     const nep = areas.map((a, i) => {
       const bwHz = bw[i];
       const enbw = bwHz * Math.PI / 2; // ENBW for 1st-order RC LPF
-      const spectralNep = Math.sqrt(4 * 1.38e-23 * 300 / loadResistance) / responsivity;
+      const spectralNep = Math.sqrt(4 * k_B * 300 / loadResistance) / responsivity;
       return spectralNep * Math.sqrt(enbw) * 1e12; // pW (at 3dB BW)
     });
     return { areas, nep };

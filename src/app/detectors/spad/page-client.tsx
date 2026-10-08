@@ -7,6 +7,7 @@ import ResultCard from "../../../components/result-card";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, h } from "../../../physics/constants";
 // SPAD: Single-Photon Avalanche Diode
 // PDE = η · P_geiger · P_quench
 // Afterpulsing probability, dead time, DCR model
@@ -20,7 +21,7 @@ export default function SPADPage() {
   const [temp, setTemp] = useState(-20); // °C
 
   const powerW = Math.pow(10, opticalPower / 10) * 1e-3;
-  const photonEnergy = (6.626e-34 * 3e8) / (wavelength * 1e-9);
+  const photonEnergy = (h * c) / (wavelength * 1e-9);
   const photonsPerSec = powerW / photonEnergy;
 
   const dt = deadTime * 1e-9; // seconds

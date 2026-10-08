@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { q } from "../../../physics/constants";
 // PMT: Photomultiplier Tube
 // Gain = δ^n where δ = secondary emission ratio, n = number of dynodes
 // SNR = signal_electrons / sqrt((signal_electrons + dark_electrons) * ENF)
@@ -19,8 +20,8 @@ export default function PMTPage() {
 
   const gain = Math.pow(secondaryEmission, numDynodes);
   const signalElectrons = photonRate * qe;
-  const signalCurrent = signalElectrons * 1.602e-19 * gain;
-  const darkElectrons = (darkCurrent * 1e-9) / (1.602e-19 * gain);
+  const signalCurrent = signalElectrons * q * gain;
+  const darkElectrons = (darkCurrent * 1e-9) / (q * gain);
 
   // Gain vs dynode stages for different δ
   const gainVsDynodes = useMemo(() => {
@@ -38,7 +39,7 @@ export default function PMTPage() {
     const snrVals = deltas.map(d => {
       const g = Math.pow(d, numDynodes);
       const sig = photonRate * qe;
-      const darkE = (darkCurrent * 1e-9) / (1.602e-19 * g);
+      const darkE = (darkCurrent * 1e-9) / (q * g);
       const enf = d / (d - 1); // exact ENF for identical dynodes with Poisson statistics
       // SNR with noise bandwidth: rates / sqrt(2*BW*(rate_sum)*ENF)
       // Note: PMT gain cancels from SNR (amplifies signal and noise equally)

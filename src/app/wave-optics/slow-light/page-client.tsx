@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function SlowLightPage() {
   const [nGroup, setNGroup] = useURLState("nGroup", 10); // group index
   const [nBase, setNBase] = useURLState("nBase", 1.5);
@@ -13,19 +14,19 @@ export default function SlowLightPage() {
   const [bandwidth, setBandwidth] = useURLState("bandwidth", 1); // nm
   const [structureLength, setStructureLength] = useURLState("structureLength", 1); // mm
 
-  const vGroup = 3e8 / nGroup;
+  const vGroup = c / nGroup;
   const slowFactor = nBase / nGroup;
-  const delay = structureLength * 1e-3 * nGroup / 3e8 * 1e12; // ps
+  const delay = structureLength * 1e-3 * nGroup / c * 1e12; // ps
   const delayPerLength = delay / structureLength; // ps/mm
   const lossDb = 0.1 * nGroup; // approximate: more slowing = more loss
-  const bandwidthDelayProduct = bandwidth * 1e-9 * 3e8 / wavelength * delay * 1e-12; // dimensionless approx
-  const gvd = Math.pow(wavelength * 1e-9, 2) / (2 * Math.PI * 3e8) * (2 * nGroup / bandwidth) * 1e-9 * 1e24; // fs²/mm approx
+  const bandwidthDelayProduct = bandwidth * 1e-9 * c / wavelength * delay * 1e-12; // dimensionless approx
+  const gvd = Math.pow(wavelength * 1e-9, 2) / (2 * Math.PI * c) * (2 * nGroup / bandwidth) * 1e-9 * 1e24; // fs²/mm approx
 
   const chartData = useMemo(() => {
     const N = 300;
     const ns = Array.from({ length: N }, (_, i) => 1 + i / N * (nGroup - 1));
-    const vgs = ns.map(n => 3e8 / n);
-    const delays = ns.map(n => structureLength * 1e-3 * n / 3e8 * 1e12);
+    const vgs = ns.map(n => c / n);
+    const delays = ns.map(n => structureLength * 1e-3 * n / c * 1e12);
 
     // Dispersion curve near resonance (simplified Lorentzian)
     const freqs = Array.from({ length: N }, (_, i) => 190 + i / N * 20); // THz around 1550nm
@@ -69,7 +70,7 @@ export default function SlowLightPage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Group Velocity</p>
-          <p className="text-xl font-bold text-blue-400">{(vGroup / 3e8 * 100).toFixed(2)}% c</p>
+          <p className="text-xl font-bold text-blue-400">{(vGroup / c * 100).toFixed(2)}% c</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Delay</p>

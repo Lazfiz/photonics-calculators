@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c, h } from "../../../physics/constants";
 
 export default function QuantumKeyDistributionPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550);
@@ -21,9 +22,7 @@ export default function QuantumKeyDistributionPage() {
   const calc = useMemo(() => {
     const lambda = wavelength * 1e-9;
     const P_tx = Math.pow(10, (txPower - 30) / 10); // dBm → W
-    const h_planck = 6.626e-34;
-    const c = 3e8;
-    const E_photon = h_planck * c / lambda;
+    const E_photon = h * c / lambda;
 
     // Channel transmission
     const totalLoss = fiberLoss * range;
@@ -52,11 +51,11 @@ export default function QuantumKeyDistributionPage() {
 
     // Secure key rate (Lo-Ma-Chen decoy-state BB84, single-photon contribution)
     // R = 0.5 * f_rep * Q_1 * [1 - h(e_1)]
-    const h = (x: number) => {
+    const binaryEntropy = (x: number) => {
       if (x <= 0 || x >= 1) return 0;
       return -x * Math.log2(x) - (1 - x) * Math.log2(1 - x);
     };
-    const keyRate = 0.5 * repRate * Q1 * Math.max(0, 1 - h(e1));
+    const keyRate = 0.5 * repRate * Q1 * Math.max(0, 1 - binaryEntropy(e1));
 
     // Secret key fraction
     const skf = keyRate / (0.5 * repRate);
@@ -73,7 +72,7 @@ export default function QuantumKeyDistributionPage() {
         const y1 = y0 + eta * (1 - y0);
         const q1 = y1 * mu * Math.exp(-mu);
         const e1r = (0.01 * eta + 0.5 * y0) / (eta + y0);
-        const kr = 0.5 * repRate * q1 * Math.max(0, 1 - h(e1r));
+        const kr = 0.5 * repRate * q1 * Math.max(0, 1 - binaryEntropy(e1r));
         if (kr > 0) lo = r; else hi = r;
       }
       maxRange = lo;
@@ -93,8 +92,8 @@ export default function QuantumKeyDistributionPage() {
     const ranges = Array.from({ length: 100 }, (_, i) => 1 + i * 1); // 1-100 km
     const P_tx = Math.pow(10, (txPower - 30) / 10);
     const lambda = wavelength * 1e-9;
-    const mu = P_tx / (repRate * 6.626e-34 * 3e8 / lambda);
-    const h = (x: number) => {
+    const mu = P_tx / (repRate * h * c / lambda);
+    const binaryEntropy = (x: number) => {
       if (x <= 0 || x >= 1) return 0;
       return -x * Math.log2(x) - (1 - x) * Math.log2(1 - x);
     };
@@ -107,7 +106,7 @@ export default function QuantumKeyDistributionPage() {
       const Y1 = Y0 + eta * (1 - Y0);
       const Q1 = Y1 * mu * Math.exp(-mu);
       const e1 = (0.01 * eta + 0.5 * Y0) / (eta + Y0);
-      return 0.5 * repRate * Q1 * Math.max(0, 1 - h(e1)) / 1000; // kbps
+      return 0.5 * repRate * Q1 * Math.max(0, 1 - binaryEntropy(e1)) / 1000; // kbps
     });
 
     const cvQkd = ranges.map((r) => {
@@ -125,7 +124,7 @@ export default function QuantumKeyDistributionPage() {
     const ranges = Array.from({ length: 100 }, (_, i) => 1 + i * 1);
     const P_tx = Math.pow(10, (txPower - 30) / 10);
     const lambda = wavelength * 1e-9;
-    const mu = P_tx / (repRate * 6.626e-34 * 3e8 / lambda);
+    const mu = P_tx / (repRate * h * c / lambda);
 
     const qber = ranges.map((r) => {
       const totalLoss = fiberLoss * r;

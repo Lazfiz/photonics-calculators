@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { q } from "../../../physics/constants";
 const kB = 8.617e-5;
 
 export default function DarkNoiseTemperaturePage() {
@@ -19,7 +20,7 @@ export default function DarkNoiseTemperaturePage() {
   };
   const darkNoiseAtT = (Tc: number) => {
     const Id = darkCurrentAtT(Tc) * 1e-9;
-    return Math.sqrt(2 * 1.602e-19 * Id * bandwidth);
+    return Math.sqrt(2 * q * Id * bandwidth);
   };
 
   const chartData = useMemo(() => {

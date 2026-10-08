@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, epsilon_0 } from "../../../physics/constants";
 export default function DifferenceFrequencyPage() {
   const [lambdaPump, setLambdaPump] = useURLState("lambdaPump", 1064); // nm
   const [lambdaSignal, setLambdaSignal] = useURLState("lambdaSignal", 1550); // nm
@@ -25,13 +26,11 @@ export default function DifferenceFrequencyPage() {
   const area = Math.PI * (beamWaist * 1e-6) ** 2;
   const L = crystalLength * 1e-3;
   const d = deff * 1e-12;
-  const epsilon0 = 8.854e-12;
-  const c = 3e8;
   const lambdaOut = (lambdaDFG > 0 ? lambdaDFG : lambdaPump) * 1e-9;
 
   // Conversion efficiency (Boyd, Nonlinear Optics Ch.2): η = P_i/P_s
   // η = (8π² d² L²) / (ε₀ c n³ λ_i² A) × P_p
-  const eta = (8 * Math.PI ** 2 * d ** 2 * L ** 2) / (epsilon0 * c * n ** 3 * lambdaOut ** 2 * area) * (pumpPower * 1e-3);
+  const eta = (8 * Math.PI ** 2 * d ** 2 * L ** 2) / (epsilon_0 * c * n ** 3 * lambdaOut ** 2 * area) * (pumpPower * 1e-3);
   const pDFG = signalPower * 1e-3 * eta;
 
   // Tuning curve: DFG wavelength vs signal wavelength
@@ -51,7 +50,7 @@ export default function DifferenceFrequencyPage() {
   const powerData = useMemo(() => {
     const lengths = Array.from({ length: 200 }, (_, i) => 0.1 + i * 40 / 200);
     const powers = lengths.map(l => {
-      const e = (8 * Math.PI ** 2 * d ** 2 * (l * 1e-3) ** 2) / (epsilon0 * c * n ** 3 * lambdaOut ** 2 * area) * (pumpPower * 1e-3);
+      const e = (8 * Math.PI ** 2 * d ** 2 * (l * 1e-3) ** 2) / (epsilon_0 * c * n ** 3 * lambdaOut ** 2 * area) * (pumpPower * 1e-3);
       return signalPower * 1e-3 * e * 1e6;
     });
     return [

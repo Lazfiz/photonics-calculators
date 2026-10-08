@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c } from "../../../physics/constants";
 
 export default function FiberBraggGratingCalculator() {
   const [braggWavelength, setBraggWavelength] = useURLState("braggWavelength", 1550); // nm
@@ -57,7 +58,6 @@ export default function FiberBraggGratingCalculator() {
   const dispersion = useMemo(() => {
     if (gratingType !== "chirped" || chirpRate === 0) return 0;
     // D ≈ 2n_eff/(c · chirp_rate) ps/(nm·km)
-    const c = 3e8;
     const chirpNmPerM = chirpRate * 1e3; // nm/mm to nm/m
     return (2 * effectiveIndex) / (c * chirpNmPerM) * 1e12; // ps/nm for the grating
   }, [gratingType, chirpRate, effectiveIndex]);

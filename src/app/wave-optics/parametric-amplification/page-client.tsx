@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, epsilon_0 } from "../../../physics/constants";
 export default function ParametricAmplificationPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [pumpPower, setPumpPower] = useURLState("pumpPower", 500); // mW
@@ -16,16 +17,15 @@ export default function ParametricAmplificationPage() {
 
   // Parametric gain
   const lambdaP = wavelength;
-  const omegaP = 2 * Math.PI * 3e8 / (lambdaP * 1e-9);
+  const omegaP = 2 * Math.PI * c / (lambdaP * 1e-9);
   const n = 2.2; // typical PPLN
-  const epsilon0 = 8.854e-12;
   const dEff = chi2 * 1e-12; // m/V
 
   // Small-signal parametric gain coefficient (Boyd, Nonlinear Optics Ch.2)
   // For degenerate OPA: g = (2ωs·deff)/(n·c) · √(2Ip/(ε₀·n·c))
   // where ωs = ωp/2 for degenerate case
   const omegaS = omegaP / 2;
-  const gammaPA = (2 * omegaS * dEff) / (n * 3e8) * Math.sqrt(2 * pumpPower * 1e-3 / (epsilon0 * n * 3e8 * 8e-11));
+  const gammaPA = (2 * omegaS * dEff) / (n * c) * Math.sqrt(2 * pumpPower * 1e-3 / (epsilon_0 * n * c * 8e-11));
   // Simplified gain in dB: G ≈ 10 log10(cosh²(γPL))
   const gL = gammaPA * crystalLength * 1e-3;
   const gainLinear = Math.cosh(gL) ** 2;
@@ -47,7 +47,7 @@ export default function ParametricAmplificationPage() {
   const powerData = useMemo(() => {
     const powers = Array.from({ length: 200 }, (_, i) => 10 + i * 990 / 200);
     const gains = powers.map(P => {
-      const gam = (2 * omegaS * dEff) / (n * 3e8) * Math.sqrt(2 * P * 1e-3 / (epsilon0 * n * 3e8 * 8e-11));
+      const gam = (2 * omegaS * dEff) / (n * c) * Math.sqrt(2 * P * 1e-3 / (epsilon_0 * n * c * 8e-11));
       return 10 * Math.log10(Math.cosh(gam * crystalLength * 1e-3) ** 2);
     });
     return [
@@ -77,7 +77,7 @@ export default function ParametricAmplificationPage() {
   const gvm = walkoff * 1e-3; // fs/mm → ps/m
   const bandwidthHz = gvm > 0 ? 2.78 / (gvm * crystalLength * 1e-3) : 0;
   const bandwidth = bandwidthHz * 1e-12; // Hz → THz
-  const bwNm = bandwidthHz > 0 ? bandwidthHz * (wavelength * 1e-9) ** 2 / 3e8 * 1e9 : 0; // Hz → nm
+  const bwNm = bandwidthHz > 0 ? bandwidthHz * (wavelength * 1e-9) ** 2 / c * 1e9 : 0; // Hz → nm
 
   return (
     <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Parametric Amplification" description="Optical parametric amplification (OPA) gain and bandwidth in χ⁽²⁾ nonlinear crystals.">

@@ -1,32 +1,32 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { q, k_B } from "../../../physics/constants";
 export default function ResetNoisePage() {
   const [capacitance, setCapacitance] = useURLState("capacitance", 10e-15); // F (10 fF)
   const [temperature, setTemperature] = useURLState("temperature", 300); // K
-  const [kb, setKb] = useURLState("kb", 1.38e-23); // J/K
 
   const chartData = useMemo(() => {
     const caps = Array.from({ length: 200 }, (_, i) => 1e-15 * Math.pow(100, i / 200)); // 1fF to 100fF
     const noiseElectrons = caps.map(C => {
-      const noiseV = Math.sqrt(kb * temperature / C);
-      return noiseV * C / 1.6e-19;
+      const noiseV = Math.sqrt(k_B * temperature / C);
+      return noiseV * C / q;
     });
-    const noiseVoltage = caps.map(C => Math.sqrt(kb * temperature / C));
+    const noiseVoltage = caps.map(C => Math.sqrt(k_B * temperature / C));
     return [
       { x: caps, y: noiseElectrons, type: "scatter" as const, mode: "lines" as const, name: "Noise (e⁻)", line: { color: "#f87171" }, yaxis: "y" },
       { x: caps, y: noiseVoltage, type: "scatter" as const, mode: "lines" as const, name: "Noise voltage (V)", line: { color: "#60a5fa" }, yaxis: "y2" },
     ];
-  }, [capacitance, temperature, kb]);
+  }, [capacitance, temperature]);
 
-  const noiseV = Math.sqrt(kb * temperature / capacitance);
-  const noiseElectrons = noiseV * capacitance / 1.6e-19;
-  const conversionGain = 1.6e-19 / capacitance; // V/e-
+  const noiseV = Math.sqrt(k_B * temperature / capacitance);
+  const noiseElectrons = noiseV * capacitance / q;
+  const conversionGain = q / capacitance; // V/e-
 
   return (
     <CalculatorShell backHref="/detectors" backLabel="Detectors" title="KTC Reset Noise" description="KTC reset noise voltage, noise charge, and conversion gain for image sensors.">
