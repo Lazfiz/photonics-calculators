@@ -6,6 +6,9 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { coefficientOfFinesse, reflectingFinesse } from "../../../physics/thin-film/interference";
+import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
+
 export default function AmplitudeSplittingPage() {
   const [n1, setN1] = useURLState("n1", 1.0);
   const [nFilm, setNFilm] = useURLState("nFilm", 1.38);
@@ -15,41 +18,12 @@ export default function AmplitudeSplittingPage() {
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 2);
-    const r01 = (n1 - nFilm) / (n1 + nFilm);
-    const r12 = (nFilm - n2) / (nFilm + n2);
-    const r10 = -r01; // (nFilm - n1) / (nFilm + n1) = -r01
-    const t01 = 2 * n1 / (n1 + nFilm);
-    const t10 = 2 * nFilm / (n1 + nFilm);
-
-    // Sum multiple reflected beams (amplitude splitting)
-    const reflected = wls.map(wl => {
-      const delta = (4 * Math.PI * nFilm * thickness) / wl;
-      // Sum N internal reflections: round-trip coefficient is r10*r12
-      const N = 20;
-      let re = r01;
-      let im = 0;
-      for (let m = 1; m <= N; m++) {
-        const phase = -m * delta;
-        const amp = t01 * t10 * Math.pow(r10 * r12, m - 1) * r12;
-        re += amp * Math.cos(phase);
-        im += amp * Math.sin(phase);
-      }
-      return re * re + im * im;
-    });
-    const transmitted = wls.map(wl => {
-      const delta = (4 * Math.PI * nFilm * thickness) / wl;
-      const t01 = 2 * n1 / (n1 + nFilm);
-      const t12 = 2 * nFilm / (nFilm + n2);
-      // Multiple beam transmission: round-trip coefficient is r10*r12
-      let re = 0, im = 0;
-      for (let m = 0; m < 20; m++) {
-        const phase = -m * delta;
-        const amp = t01 * t12 * Math.pow(r10 * r12, m);
-        re += amp * Math.cos(phase);
-        im += amp * Math.sin(phase);
-      }
-      return re * re + im * im;
-    });
+    // The multiple-beam sum (see Theory) in closed form: the characteristic matrix of one film.
+    // T includes the admittance ratio n₂/n₁, so R + T = 1.
+    const stack = { incident: n1, layers: [{ n: nFilm, thickness: thickness * 1e-9 }], substrate: { n: n2 } };
+    const response = wls.map((wl) => stackResponse(stack, wl * 1e-9));
+    const reflected = response.map((r) => r.R);
+    const transmitted = response.map((r) => r.T);
     return [
       { x: wls, y: reflected, type: "scatter" as const, mode: "lines" as const, name: "Reflected", line: { color: "#f87171" } },
       { x: wls, y: transmitted, type: "scatter" as const, mode: "lines" as const, name: "Transmitted", line: { color: "#60a5fa" } },
@@ -58,8 +32,8 @@ export default function AmplitudeSplittingPage() {
 
   const r01 = (n1 - nFilm) / (n1 + nFilm);
   const r12 = (nFilm - n2) / (nFilm + n2);
-  const F = 4 * r01 * r12 / ((1 - r01 * r12) ** 2);
-  const finesse = Math.PI * Math.sqrt(Math.max(F, 0)) / 2;
+  const F = coefficientOfFinesse(r01 ** 2, r12 ** 2);
+  const finesse = reflectingFinesse(F);
 
   return (
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Amplitude Splitting" description="Multiple-beam interference from amplitude splitting at a thin film. Shows how partial reflections from each interface combine to form interference fringes.">
@@ -94,8 +68,9 @@ export default function AmplitudeSplittingPage() {
         <h2 className="text-lg font-semibold mb-3 text-gray-200">Amplitude Splitting Theory</h2>
         <div className="space-y-2 text-sm text-gray-300 font-mono">
           <p>Eᵣ = r₀₁ + t₀₁t₁₀r₁₂e^(−iδ) + t₀₁t₁₀r₁₂²r₁₀e^(−2iδ) + ...</p>
-          <p>Airy function: R = F·sin²(δ/2) / (1 + F·sin²(δ/2))</p>
-          <p>F = 4R₁R₂ / (1 − R₁R₂)²</p>
+          <p>Sum: r = (r₀₁ + r₁₂e^(−iδ)) / (1 + r₀₁r₁₂e^(−iδ)), &nbsp; T = (n₂/n₁)·|t|²</p>
+          <p>Airy function: T = T_max / (1 + F·sin²((δ − δ_max)/2))</p>
+          <p>F = 4√(R₁R₂) / (1 − √(R₁R₂))², &nbsp; R₁ = r₀₁², R₂ = r₁₂²</p>
           <p>Finesse ℱ = π√F / 2</p>
         </div>
       </div>
