@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 // Aluminum optical constants (simplified)
 function aluminumN(wlNm: number): { n: number; k: number } {
   const wl = wlNm / 1000;
@@ -33,58 +34,20 @@ export default function EnhancedAluminumPage() {
     const N = 400;
     const wls = Array.from({ length: N }, (_, i) => 200 + i * 1000 / N);
 
-    const R = wls.map(wl => {
+    // Air | overcoat | Al | Cr adhesion (n = 3.0, lossless here) | substrate
+    const resp = wls.map(wl => {
       const Al = aluminumN(wl);
-      const layers: { n: number; k: number; d: number }[] = [
-        { n: 3.0, k: 0, d: adhesionThick }, // Cr adhesion
-        { n: Al.n, k: Al.k, d: alThick },
-        { n: nProtect, k: 0, d: protectThick },
+      const layers = [
+        { n: nProtect, thickness: protectThick * 1e-9 },
+        { n: Al.n, k: Al.k, thickness: alThick * 1e-9 },
+        { n: 3.0, thickness: adhesionThick * 1e-9 },
       ];
-
-      let Mr = [[1, 0], [0, 1]] as [number, number][];
-      let Mi = [[0, 0], [0, 0]] as [number, number][];
-
-      for (const layer of layers) {
-        const delta = (2 * Math.PI * layer.n * layer.d) / wl;
-        const alpha = (2 * Math.PI * layer.k * layer.d) / wl;
-        const cd = Math.cos(delta) * Math.cosh(alpha);
-        const sd = Math.sin(delta) * Math.sinh(alpha);
-        const n2k2 = layer.n * layer.n + layer.k * layer.k;
-        const etaR = layer.n / n2k2, etaI = -layer.k / n2k2;
-
-        const Lr: [number, number][] = [[cd, -sd * etaR], [sd * layer.n, cd]];
-        const Li: [number, number][] = [[0, -sd * etaI], [sd * layer.k, 0]];
-
-        const newMr: [number, number][] = [
-          [Mr[0][0]*Lr[0][0]-Mi[0][0]*Li[0][0]+Mr[0][1]*Lr[1][0]-Mi[0][1]*Li[1][0],
-           Mr[0][0]*Lr[0][1]-Mi[0][0]*Li[0][1]+Mr[0][1]*Lr[1][1]-Mi[0][1]*Li[1][1]],
-          [Mr[1][0]*Lr[0][0]-Mi[1][0]*Li[0][0]+Mr[1][1]*Lr[1][0]-Mi[1][1]*Li[1][0],
-           Mr[1][0]*Lr[0][1]-Mi[1][0]*Li[0][1]+Mr[1][1]*Lr[1][1]-Mi[1][1]*Li[1][1]],
-        ];
-        const newMi: [number, number][] = [
-          [Mr[0][0]*Li[0][0]+Mi[0][0]*Lr[0][0]+Mr[0][1]*Li[1][0]+Mi[0][1]*Lr[1][0],
-           Mr[0][0]*Li[0][1]+Mi[0][0]*Lr[0][1]+Mr[0][1]*Li[1][1]+Mi[0][1]*Lr[1][1]],
-          [Mr[1][0]*Li[0][0]+Mi[1][0]*Lr[0][0]+Mr[1][1]*Li[1][0]+Mi[1][1]*Lr[1][0],
-           Mr[1][0]*Li[0][1]+Mi[1][0]*Lr[0][1]+Mr[1][1]*Li[1][1]+Mi[1][1]*Lr[1][1]],
-        ];
-        Mr = newMr;
-        Mi = newMi;
-      }
-
-      const nInc = 1.0;
-      const Ar = Mr[0][0]*nSub - Mr[1][0] - nInc*(Mr[1][1] - Mr[0][1]*nSub);
-      const Ai = Mi[0][0]*nSub - Mi[1][0] - nInc*(Mi[1][1] - Mi[0][1]*nSub);
-      const Br = Mr[0][0]*nSub + Mr[1][0] + nInc*(Mr[1][1] + Mr[0][1]*nSub);
-      const Bi = Mi[0][0]*nSub + Mi[1][0] + nInc*(Mi[1][1] + Mi[0][1]*nSub);
-      const rr = (Ar*Br+Ai*Bi)/(Br*Br+Bi*Bi);
-      const ri = (Ai*Br-Ar*Bi)/(Br*Br+Bi*Bi);
-      return rr*rr + ri*ri;
+      return stackResponse({ incident: 1, layers, substrate: { n: nSub } }, wl * 1e-9);
     });
 
-    return { wls, R };
-  }, [nSub, alThick, nProtect, protectThick, designWl, adhesionThick]);
+    return { wls, R: resp.map((r) => r.R), T: resp.map((r) => r.T), A: resp.map((r) => r.A) };
+  }, [nSub, alThick, nProtect, protectThick, adhesionThick]);
 
-  const T = tmm.R.map(r => Math.max(0, 1 - r));
   const designIdx = Math.round((designWl - 200) / 1000 * 400);
   const designR = tmm.R[Math.min(Math.max(designIdx, 0), 399)];
   const avgR = tmm.R.reduce((a, b) => a + b, 0) / tmm.R.length;
@@ -119,11 +82,12 @@ export default function EnhancedAluminumPage() {
       <div className="bg-gray-900 rounded-lg p-4">
         <ChartPanel data={[
           { x: tmm.wls, y: tmm.R, type: "scatter", mode: "lines", name: "Reflectance", line: { color: "#60a5fa" } },
-          { x: tmm.wls, y: T, type: "scatter", mode: "lines", name: "Transmittance", line: { color: "#34d399" } },
+          { x: tmm.wls, y: tmm.T, type: "scatter", mode: "lines", name: "Transmittance", line: { color: "#34d399" } },
+          { x: tmm.wls, y: tmm.A, type: "scatter", mode: "lines", name: "Absorptance", line: { color: "#fbbf24" } },
         ]} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
-          yaxis: { title: "R / T", gridcolor: "#374151", range: [0, 1.05] },
+          yaxis: { title: "R / T / A", gridcolor: "#374151", range: [0, 1.05] },
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>

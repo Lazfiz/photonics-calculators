@@ -6,6 +6,9 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { cavityFilterLayers } from "../../../physics/thin-film/cavity-filter";
+import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function BandpassFilterPage() {
   const [nH, setNH] = useURLState("nH", 2.35);
   const [nL, setNL] = useURLState("nL", 1.45);
@@ -18,53 +21,18 @@ export default function BandpassFilterPage() {
   const tmm = useMemo(() => {
     const N = 500;
     const wls = Array.from({ length: N }, (_, i) => centerWl * 0.7 + i * centerWl * 0.6 / N);
-    const R = wls.map(wl => {
-      // Fabry-Perot bandpass: [mirror] [cavity] [mirror]
-      // Mirror = cavityPairs of H/L quarter-wave
-      // Cavity = half-wave spacer (n*spacer at centerWl => 2*quarter-wave thickness)
-      const dH = centerWl / (4 * nH);
-      const dL = centerWl / (4 * nL);
-      const dSpacer = centerWl / (2 * spacerN); // half-wave
-
-      let M = [[1, 0], [0, 1]] as [number, number][];
-
-      const addLayer = (n: number, d: number) => {
-        const delta = (2 * Math.PI * n * d) / wl;
-        const c = Math.cos(delta), s = Math.sin(delta);
-        const eta = n;
-        const L: [number, number][] = [[c, -s / eta], [s * eta, c]];
-        M = [
-          [M[0][0]*L[0][0]+M[0][1]*L[1][0], M[0][0]*L[0][1]+M[0][1]*L[1][1]],
-          [M[1][0]*L[0][0]+M[1][1]*L[1][0], M[1][0]*L[0][1]+M[1][1]*L[1][1]],
-        ];
-      };
-
-      // First mirror (from substrate)
-      for (let p = 0; p < cavityPairs; p++) {
-        addLayer(nH, dH);
-        addLayer(nL, dL);
-      }
-      // Cavities
-      for (let c = 0; c < cavities; c++) {
-        addLayer(spacerN, dSpacer);
-        // Inter-cavity mirrors
-        for (let p = 0; p < cavityPairs; p++) {
-          addLayer(nH, dH);
-          addLayer(nL, dL);
-        }
-      }
-
-      const nInc = 1.0;
-      const num = M[0][0]*nSub + M[0][1]*nSub*nInc - M[1][0] - M[1][1]*nInc;
-      const den = M[0][0]*nSub + M[0][1]*nSub*nInc + M[1][0] + M[1][1]*nInc;
-      return (num / den) ** 2;
+    // Fabry-Perot bandpass: each cavity is (HL)^p S (LH)^p with a half-wave spacer S,
+    // cavities coupled by a quarter-wave L layer.
+    const layers = cavityFilterLayers({
+      nH, nL, nSpacer: spacerN, mirrorPairs: Math.round(cavityPairs), cavities: Math.round(cavities), spacerQuarterWaves: 2, lambda0: centerWl * 1e-9,
     });
+    const R = reflectanceSpectrum({ incident: 1, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
     return { wls, R };
   }, [nH, nL, nSub, centerWl, cavityPairs, cavities, spacerN]);
 
   const T = tmm.R.map(r => 1 - r);
   const peakT = Math.max(...T);
-  const peakWl = tmm.wls[T.indexOf(peakT)];
+  const peakWl = tmm.wls[T.indexOf(peakT)] ?? NaN;
 
   return (
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Bandpass Filter" description="Fabry-Perot bandpass — multi-cavity design with quarter-wave mirrors and half-wave spacers.">

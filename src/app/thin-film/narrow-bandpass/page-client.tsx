@@ -6,6 +6,9 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { cavityFilterLayers } from "../../../physics/thin-film/cavity-filter";
+import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function NarrowBandpassPage() {
   const [nH, setNH] = useURLState("nH", 2.35);
   const [nL, setNL] = useURLState("nL", 1.45);
@@ -18,42 +21,17 @@ export default function NarrowBandpassPage() {
   const tmm = useMemo(() => {
     const N = 800;
     const wls = Array.from({ length: N }, (_, i) => centerWl * 0.9 + i * centerWl * 0.2 / N);
-    const R = wls.map(wl => {
-      const dH = centerWl / (4 * nH);
-      const dL = centerWl / (4 * nL);
-      const dSpacer = centerWl / (2 * spacerN);
-
-      let M = [[1, 0], [0, 1]] as [number, number][];
-
-      const addLayer = (n: number, d: number) => {
-        const delta = (2 * Math.PI * n * d) / wl;
-        const c = Math.cos(delta), s = Math.sin(delta);
-        const L: [number, number][] = [[c, -s / n], [s * n, c]];
-        M = [
-          [M[0][0]*L[0][0]+M[0][1]*L[1][0], M[0][0]*L[0][1]+M[0][1]*L[1][1]],
-          [M[1][0]*L[0][0]+M[1][1]*L[1][0], M[1][0]*L[0][1]+M[1][1]*L[1][1]],
-        ];
-      };
-
-      // First mirror
-      for (let p = 0; p < mirrorPairs; p++) { addLayer(nH, dH); addLayer(nL, dL); }
-      // Cavities + inter-cavity mirrors
-      for (let c = 0; c < cavities; c++) {
-        addLayer(spacerN, dSpacer);
-        for (let p = 0; p < mirrorPairs; p++) { addLayer(nH, dH); addLayer(nL, dL); }
-      }
-
-      const nInc = 1.0;
-      const num = M[0][0]*nSub + M[0][1]*nSub*nInc - M[1][0] - M[1][1]*nInc;
-      const den = M[0][0]*nSub + M[0][1]*nSub*nInc + M[1][0] + M[1][1]*nInc;
-      return (num / den) ** 2;
+    // Each cavity is (HL)^p S (LH)^p with a half-wave spacer S, cavities coupled by a quarter-wave L layer.
+    const layers = cavityFilterLayers({
+      nH, nL, nSpacer: spacerN, mirrorPairs: Math.round(mirrorPairs), cavities: Math.round(cavities), spacerQuarterWaves: 2, lambda0: centerWl * 1e-9,
     });
+    const R = reflectanceSpectrum({ incident: 1, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
     return { wls, R };
   }, [nH, nL, nSub, centerWl, mirrorPairs, cavities, spacerN]);
 
   const T = tmm.R.map(r => 1 - r);
   const peakT = Math.max(...T);
-  const peakWl = tmm.wls[T.indexOf(peakT)];
+  const peakWl = tmm.wls[T.indexOf(peakT)] ?? NaN;
 
   // FWHM calculation
   const halfMax = peakT / 2;

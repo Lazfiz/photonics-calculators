@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { stackResponse, type Stack } from "../../../physics/thin-film/transfer-matrix";
+
 export default function MetalDielectricPage() {
   const [nMetal, setNMetal] = useURLState("nMetal", 0.5);
   const [kMetal, setKMetal] = useURLState("kMetal", 3.0);
@@ -13,44 +15,31 @@ export default function MetalDielectricPage() {
   const [dDielectric, setDDielectric] = useURLState("dDielectric", 50);
   const [dMetal, setDMetal] = useURLState("dMetal", 10);
   const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
+
+  // Air | dielectric overcoat | metal (n + ik) | substrate
+  const stack = useMemo<Stack>(() => ({
+    incident: 1,
+    layers: [
+      { n: nDielectric, thickness: dDielectric * 1e-9 },
+      { n: nMetal, k: kMetal, thickness: dMetal * 1e-9 },
+    ],
+    substrate: { n: nSub },
+  }), [nMetal, kMetal, nDielectric, dDielectric, dMetal, nSub]);
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 2);
-    const R = wls.map(wl => {
-      // Simplified metal-dielectric bilayer: absorbance + interference
-      // Metal complex refractive index: n_c = nMetal + i*kMetal
-      // Fresnel reflection at each interface
-      const nc = nMetal; // simplified
-      const kc = kMetal;
-      const r01 = (1 - nc) / (1 + nc);
-      const absorption = Math.exp(-4 * Math.PI * kc * dMetal / wl);
-      // Dielectric phase
-      const delta = (4 * Math.PI * nDielectric * dDielectric) / wl;
-      const r12 = (nDielectric - nc) / (nDielectric + nc);
-      const r23 = (nDielectric - nSub) / (nDielectric + nSub);
-      // Two-beam interference in dielectric layer with metal backing
-      const re = r01 + (1 - r01 * r01) * r12 * Math.cos(delta) * absorption;
-      const im = (1 - r01 * r01) * r12 * Math.sin(delta) * absorption;
-      return Math.min(re * re + im * im, 1);
-    });
-    const T = wls.map(wl => {
-      const absorption = Math.exp(-4 * Math.PI * kMetal * dMetal / wl);
-      const delta = (4 * Math.PI * nDielectric * dDielectric) / wl;
-      const t01 = 2 / (1 + nDielectric);
-      const t12 = 2 * nDielectric / (nDielectric + nSub);
-      const t = t01 * t12 * absorption * Math.abs(Math.cos(delta / 2));
-      return Math.min(t * t, 1 - R[wls.indexOf(wl)]);
-    });
-    const A = wls.map((_, i) => Math.max(0, 1 - R[i] - T[i]));
+    const resp = wls.map((wl) => stackResponse(stack, wl * 1e-9));
+    const R = resp.map((r) => r.R);
+    const T = resp.map((r) => r.T);
+    const A = resp.map((r) => r.A);
     return [
       { x: wls, y: R, type: "scatter" as const, mode: "lines" as const, name: "Reflectance", line: { color: "#f87171" } },
       { x: wls, y: T, type: "scatter" as const, mode: "lines" as const, name: "Transmittance", line: { color: "#60a5fa" } },
       { x: wls, y: A, type: "scatter" as const, mode: "lines" as const, name: "Absorptance", line: { color: "#fbbf24" } },
     ];
-  }, [nMetal, kMetal, nDielectric, dDielectric, dMetal, nSub, designWl]);
+  }, [stack]);
 
-  const absorption550 = Math.exp(-4 * Math.PI * kMetal * dMetal / 550);
+  const absorptance550 = stackResponse(stack, 550e-9).A;
   const nEff = nMetal * nMetal - kMetal * kMetal;
 
   return (
@@ -67,8 +56,8 @@ export default function MetalDielectricPage() {
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Metal Absorption @ 550nm</p>
-          <p className="text-xl font-bold text-yellow-400">{(absorption550 * 100).toFixed(1)}%</p>
+          <p className="text-sm text-gray-400">Absorptance @ 550 nm</p>
+          <p className="text-xl font-bold text-yellow-400">{(absorptance550 * 100).toFixed(1)}%</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">n²−k²</p>
@@ -84,7 +73,7 @@ export default function MetalDielectricPage() {
         <h2 className="text-lg font-semibold mb-3 text-gray-200">Metal-Dielectric Theory</h2>
         <div className="space-y-2 text-sm text-gray-300 font-mono">
           <p>Complex index: ñ = n + ik</p>
-          <p>Absorption: exp(−4πkd/λ)</p>
+          <p>Single-pass attenuation in the metal: exp(−4πkd/λ)</p>
           <p>Skin depth: δ = λ/(4πk)</p>
           <p>R + T + A = 1 (energy conservation)</p>
           <p>Dielectric overcoat tunes R via interference</p>

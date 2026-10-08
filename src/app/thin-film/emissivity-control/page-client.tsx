@@ -6,6 +6,9 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c1_radiation, c2_radiation } from "../../../physics/constants";
+import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function EmissivityControlPage() {
   const [nH, setNH] = useURLState("nH", 1.9);
   const [nL, setNL] = useURLState("nL", 1.1);
@@ -23,68 +26,21 @@ export default function EmissivityControlPage() {
     // Mid-IR range (2.5 - 25 µm) — thermal radiation
     const wls = Array.from({ length: N }, (_, i) => 2500 + i * 22500 / N);
 
-    const R = wls.map(wl => {
-      const dH = designWl / (4 * nH);
-      const dL = designWl / (4 * nL);
-      let M = [[1, 0], [0, 1]] as [number, number][];
+    // Quarter-wave stack air | (LH)^p | sub (H on the substrate)
+    const indices = Array.from({ length: 2 * pairs }, (_, j) => (j % 2 === 0 ? nL : nH));
+    const layers = quarterWaveLayers(indices, designWl * 1e-9);
+    const R = reflectanceSpectrum({ incident: 1, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
 
-      const addLayer = (n: number, d: number) => {
-        const delta = (2 * Math.PI * n * d) / wl;
-        const c = Math.cos(delta), s = Math.sin(delta);
-        const L: [number, number][] = [[c, -s / n], [s * n, c]];
-        M = [
-          [M[0][0]*L[0][0]+M[0][1]*L[1][0], M[0][0]*L[0][1]+M[0][1]*L[1][1]],
-          [M[1][0]*L[0][0]+M[1][1]*L[1][0], M[1][0]*L[0][1]+M[1][1]*L[1][1]],
-        ];
-      };
-
-      // Low-E: dielectric stack on Ag surface (simplified TMM model)
-      for (let p = 0; p < pairs; p++) { addLayer(nH, dH); addLayer(nL, dL); }
-
-      const nInc = 1.0;
-      const num = M[0][0]*nSub + M[0][1]*nSub*nInc - M[1][0] - M[1][1]*nInc;
-      const den = M[0][0]*nSub + M[0][1]*nSub*nInc + M[1][0] + M[1][1]*nInc;
-      const rStack = (num / den) ** 2;
-      // Combine with Ag layer reflectance (simplified cascade)
-      const rAg = 0.98; // Ag reflectance in mid-IR
-      return rAg * rStack + (1 - rStack) * rAg * 0.5; // simplified
-    });
-
-    // Better model: just use stack R with substrate reflectance
-    const Rsimple = wls.map(wl => {
-      const dH = designWl / (4 * nH);
-      const dL = designWl / (4 * nL);
-      let M = [[1, 0], [0, 1]] as [number, number][];
-
-      const addLayer = (n: number, d: number) => {
-        const delta = (2 * Math.PI * n * d) / wl;
-        const c = Math.cos(delta), s = Math.sin(delta);
-        const L: [number, number][] = [[c, -s / n], [s * n, c]];
-        M = [
-          [M[0][0]*L[0][0]+M[0][1]*L[1][0], M[0][0]*L[0][1]+M[0][1]*L[1][1]],
-          [M[1][0]*L[0][0]+M[1][1]*L[1][0], M[1][0]*L[0][1]+M[1][1]*L[1][1]],
-        ];
-      };
-
-      for (let p = 0; p < pairs; p++) { addLayer(nH, dH); addLayer(nL, dL); }
-
-      const nInc = 1.0;
-      const num = M[0][0]*nSub + M[0][1]*nSub*nInc - M[1][0] - M[1][1]*nInc;
-      const den = M[0][0]*nSub + M[0][1]*nSub*nInc + M[1][0] + M[1][1]*nInc;
-      return (num / den) ** 2;
-    });
-
-    return { wls, R: Rsimple };
+    return { wls, R };
   }, [nH, nL, nSub, designWl, pairs]);
 
   // Effective emissivity: weighted by Planck function at 300K
   const T = 300;
-  const c1 = 3.7418e-16, c2 = 1.4388e-2; // W·m², m·K
   const emissivity = useMemo(() => {
     let num = 0, den = 0;
     tmm.wls.forEach((wlNm, i) => {
       const wlM = wlNm * 1e-9;
-      const B = c1 / (Math.pow(wlM, 5) * (Math.exp(c2 / (wlM * T)) - 1));
+      const B = c1_radiation / (Math.pow(wlM, 5) * Math.expm1(c2_radiation / (wlM * T)));
       const e = 1 - tmm.R[i]; // Kirchhoff
       den += B;
       num += B * e;

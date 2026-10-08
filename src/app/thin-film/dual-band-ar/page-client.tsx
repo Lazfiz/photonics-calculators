@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function DualBandARPage() {
   const [nSub, setNSub] = useURLState("nSub", 1.52);
   const [wl1, setWl1] = useURLState("wl1", 450);
@@ -25,29 +27,13 @@ export default function DualBandARPage() {
     const d2 = wl2 / (4 * n2);
     const d3 = avgWl / (4 * n3);
 
-    const R = wls.map(wl => {
-      let M = [[1, 0], [0, 1]] as [number, number][];
-
-      const addLayer = (n: number, d: number) => {
-        const delta = (2 * Math.PI * n * d) / wl;
-        const c = Math.cos(delta), s = Math.sin(delta);
-        const L: [number, number][] = [[c, -s / n], [s * n, c]];
-        M = [
-          [M[0][0]*L[0][0]+M[0][1]*L[1][0], M[0][0]*L[0][1]+M[0][1]*L[1][1]],
-          [M[1][0]*L[0][0]+M[1][1]*L[1][0], M[1][0]*L[0][1]+M[1][1]*L[1][1]],
-        ];
-      };
-
-      // Stack from substrate: layer3, layer2, layer1 (top)
-      addLayer(n3, d3);
-      addLayer(n2, d2);
-      addLayer(n1, d1);
-
-      const nInc = 1.0;
-      const num = M[0][0]*nSub + M[0][1]*nSub*nInc - M[1][0] - M[1][1]*nInc;
-      const den = M[0][0]*nSub + M[0][1]*nSub*nInc + M[1][0] + M[1][1]*nInc;
-      return (num / den) ** 2;
-    });
+    // Air | layer 1 | layer 2 | layer 3 | substrate
+    const layers = [
+      { n: n1, thickness: d1 * 1e-9 },
+      { n: n2, thickness: d2 * 1e-9 },
+      { n: n3, thickness: d3 * 1e-9 },
+    ];
+    const R = reflectanceSpectrum({ incident: 1, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
 
     return { wls, R };
   }, [nSub, wl1, wl2, n1, n2, n3]);

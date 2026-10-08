@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function DoubleLayerARPage() {
   const [n1, setN1] = useURLState("n1", 1.38);
   const [n2, setN2] = useURLState("n2", 1.70);
@@ -15,36 +17,9 @@ export default function DoubleLayerARPage() {
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 400 }, (_, i) => 300 + i * 500 / 400);
-    const d1 = designWl / (4 * n1);
-    const d2 = designWl / (4 * n2);
-
-    const R = wls.map(wl => {
-      // Transfer matrix method for 2 layers
-      const delta1 = (2 * Math.PI * n1 * d1) / wl;
-      const delta2 = (2 * Math.PI * n2 * d2) / wl;
-
-      // Interface Fresnel coefficients
-      const r01 = (nInc - n1) / (nInc + n1);
-      const r12 = (n1 - n2) / (n1 + n2);
-      const r23 = (n2 - nSub) / (n2 + nSub);
-
-      // 2x2 matrices for each layer
-      // M_j = [[cos(d_j), -i*sin(d_j)/n_j], [-i*n_j*sin(d_j), cos(d_j)]]
-      // Product M = M1 * M2
-      const c1 = Math.cos(delta1), s1 = Math.sin(delta1);
-      const c2 = Math.cos(delta2), s2 = Math.sin(delta2);
-
-      // M1 * M2
-      const M11 = c1 * c2 - (s1 * s2 * n2) / n1;
-      const M12 = (-1 / n1) * c1 * s2 - (1 / n2) * s1 * c2;
-      const M21 = -n1 * s1 * c2 - n2 * c1 * s2;
-      const M22 = c1 * c2 - (n1 * s1 * s2) / n2;
-
-      // r = (M11*n_inc + M12*n_inc*n_sub - M21 - M22*n_sub) / (M11*n_inc + M12*n_inc*n_sub + M21 + M22*n_sub)
-      const num = M11 * nInc + M12 * nInc * nSub - M21 - M22 * nSub;
-      const den = M11 * nInc + M12 * nInc * nSub + M21 + M22 * nSub;
-      return (num / den) ** 2;
-    });
+    // Quarter-wave pair at λ₀: incident | n1 | n2 | substrate
+    const layers = quarterWaveLayers([n1, n2], designWl * 1e-9);
+    const R = reflectanceSpectrum({ incident: nInc, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
 
     const T = wls.map((_, i) => 1 - R[i]);
     return [

@@ -6,6 +6,9 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { cavityFilterLayers } from "../../../physics/thin-film/cavity-filter";
+import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function NotchFilterPage() {
   const [nH, setNH] = useURLState("nH", 2.35);
   const [nL, setNL] = useURLState("nL", 1.45);
@@ -17,55 +20,25 @@ export default function NotchFilterPage() {
   const tmm = useMemo(() => {
     const N = 500;
     const wls = Array.from({ length: N }, (_, i) => notchWl * 0.7 + i * notchWl * 0.6 / N);
-    const R = wls.map(wl => {
-      const dH = notchWl / (4 * nH);
-      const dL = notchWl / (4 * nL);
-      const dSpacer = notchWl / (2 * spacerN);
-
-      let M = [[1, 0], [0, 1]] as [number, number][];
-
-      const addLayer = (n: number, d: number) => {
-        const delta = (2 * Math.PI * n * d) / wl;
-        const c = Math.cos(delta), s = Math.sin(delta);
-        const L: [number, number][] = [[c, -s / n], [s * n, c]];
-        M = [
-          [M[0][0]*L[0][0]+M[0][1]*L[1][0], M[0][0]*L[0][1]+M[0][1]*L[1][1]],
-          [M[1][0]*L[0][0]+M[1][1]*L[1][0], M[1][0]*L[0][1]+M[1][1]*L[1][1]],
-        ];
-      };
-
-      // Bottom mirror
-      for (let p = 0; p < mirrorPairs; p++) { addLayer(nH, dH); addLayer(nL, dL); }
-      // Half-wave cavity (anti-reflection at center → notch = high T everywhere except at resonance where reflected)
-      // For a notch filter we want high reflection at center. Use quarter-wave cavity:
-      const dCavity = notchWl / (4 * spacerN); // quarter-wave → resonant reflection
-      addLayer(spacerN, dCavity);
-      // Top mirror
-      for (let p = 0; p < mirrorPairs; p++) { addLayer(nH, dH); addLayer(nL, dL); }
-
-      const nInc = 1.0;
-      const num = M[0][0]*nSub + M[0][1]*nSub*nInc - M[1][0] - M[1][1]*nInc;
-      const den = M[0][0]*nSub + M[0][1]*nSub*nInc + M[1][0] + M[1][1]*nInc;
-      return (num / den) ** 2;
+    // (HL)^p S (LH)^p with a quarter-wave "cavity" layer S: every layer is a quarter wave at the
+    // notch wavelength, so the stack reflects strongly there.
+    const layers = cavityFilterLayers({
+      nH, nL, nSpacer: spacerN, mirrorPairs: Math.round(mirrorPairs), cavities: 1, spacerQuarterWaves: 1, lambda0: notchWl * 1e-9,
     });
+    const R = reflectanceSpectrum({ incident: 1, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
     return { wls, R };
   }, [nH, nL, nSub, notchWl, mirrorPairs, spacerN]);
 
   const T = tmm.R.map(r => 1 - r);
   const minT = Math.min(...T);
-  const notchWlActual = tmm.wls[T.indexOf(minT)];
-  // FWHM
-  const halfMax = 1 - minT / 2;
-  let fwhm = 0;
-  let inNotch = false;
-  for (let i = 0; i < tmm.wls.length; i++) {
-    if (T[i] < halfMax) {
-      if (!inNotch) { inNotch = true; fwhm = tmm.wls[i]; }
-    } else if (inNotch) {
-      fwhm = tmm.wls[i] - fwhm;
-      break;
-    }
-  }
+  const minIdx = T.indexOf(minT);
+  const notchWlActual = tmm.wls[minIdx] ?? NaN;
+  // FWHM: the contiguous band around the minimum where T is below half depth, (1 + T_min) / 2
+  const halfDepth = (1 + minT) / 2;
+  let lo = minIdx, hi = minIdx;
+  while (lo > 0 && T[lo - 1] < halfDepth) lo--;
+  while (hi < T.length - 1 && T[hi + 1] < halfDepth) hi++;
+  const fwhm = minIdx >= 0 ? tmm.wls[hi] - tmm.wls[lo] : NaN;
 
   return (
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Notch Filter" description="Rejection notch filter — high reflectance at target wavelength, transmits elsewhere.">

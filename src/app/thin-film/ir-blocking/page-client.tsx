@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function IRBlockingPage() {
   const [nH, setNH] = useURLState("nH", 2.35);
   const [nL, setNL] = useURLState("nL", 1.45);
@@ -16,29 +18,10 @@ export default function IRBlockingPage() {
   const tmm = useMemo(() => {
     const N = 500;
     const wls = Array.from({ length: N }, (_, i) => 350 + i * 1200 / N);
-    const R = wls.map(wl => {
-      const dH = designWl / (4 * nH);
-      const dL = designWl / (4 * nL);
-      let M = [[1, 0], [0, 1]] as [number, number][];
-
-      const addLayer = (n: number, d: number) => {
-        const delta = (2 * Math.PI * n * d) / wl;
-        const c = Math.cos(delta), s = Math.sin(delta);
-        const L: [number, number][] = [[c, -s / n], [s * n, c]];
-        M = [
-          [M[0][0]*L[0][0]+M[0][1]*L[1][0], M[0][0]*L[0][1]+M[0][1]*L[1][1]],
-          [M[1][0]*L[0][0]+M[1][1]*L[1][0], M[1][0]*L[0][1]+M[1][1]*L[1][1]],
-        ];
-      };
-
-      // Long-pass blocking: H/L stack reflects IR
-      for (let p = 0; p < pairs; p++) { addLayer(nH, dH); addLayer(nL, dL); }
-
-      const nInc = 1.0;
-      const num = M[0][0]*nSub + M[0][1]*nSub*nInc - M[1][0] - M[1][1]*nInc;
-      const den = M[0][0]*nSub + M[0][1]*nSub*nInc + M[1][0] + M[1][1]*nInc;
-      return (num / den) ** 2;
-    });
+    // Long-pass blocking: quarter-wave stack air | (LH)^p | sub reflects IR
+    const indices = Array.from({ length: 2 * pairs }, (_, j) => (j % 2 === 0 ? nL : nH));
+    const layers = quarterWaveLayers(indices, designWl * 1e-9);
+    const R = reflectanceSpectrum({ incident: 1, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
     return { wls, R };
   }, [nH, nL, nSub, designWl, pairs]);
 

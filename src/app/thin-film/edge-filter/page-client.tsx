@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function EdgeFilterPage() {
   const [nH, setNH] = useURLState("nH", 2.35);
   const [nL, setNL] = useURLState("nL", 1.45);
@@ -17,32 +19,11 @@ export default function EdgeFilterPage() {
   const tmm = useMemo(() => {
     const N = 400;
     const wls = Array.from({ length: N }, (_, i) => designWl * 0.6 + i * designWl * 0.8 / N);
-    const R = wls.map(wl => {
-      const dH = designWl / (4 * nH);
-      const dL = designWl / (4 * nL);
-      let M = [[1, 0], [0, 1]] as [number, number][];
-      const layerNs = type === "long"
-        ? [nH, nL] // starts from substrate side
-        : [nL, nH];
-      for (let p = 0; p < pairs; p++) {
-        for (const n of layerNs) {
-          const d = n === nH ? dH : dL;
-          const delta = (2 * Math.PI * n * d) / wl;
-          const c = Math.cos(delta), s = Math.sin(delta);
-          const eta = n;
-          const newM: [number, number][] = [
-            [c, -s / eta],
-            [s * eta, c],
-          ];
-          M = [[M[0][0]*newM[0][0]+M[0][1]*newM[1][0], M[0][0]*newM[0][1]+M[0][1]*newM[1][1]],
-               [M[1][0]*newM[0][0]+M[1][1]*newM[1][0], M[1][0]*newM[0][1]+M[1][1]*newM[1][1]]];
-        }
-      }
-      const nInc = 1.0;
-      const num = M[0][0]*nSub + M[0][1]*nSub*nInc - M[1][0] - M[1][1]*nInc;
-      const den = M[0][0]*nSub + M[0][1]*nSub*nInc + M[1][0] + M[1][1]*nInc;
-      return (num / den) ** 2;
-    });
+    // Quarter-wave layers listed from the air side: long-pass air | (LH)^p | sub (H on the
+    // substrate), short-pass air | (HL)^p | sub.
+    const pair = type === "long" ? [nL, nH] : [nH, nL];
+    const layers = quarterWaveLayers(Array.from({ length: 2 * pairs }, (_, j) => pair[j % 2]), designWl * 1e-9);
+    const R = reflectanceSpectrum({ incident: 1, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
     return { wls, R };
   }, [nH, nL, nSub, designWl, pairs, type]);
 
