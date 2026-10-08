@@ -1,0 +1,317 @@
+import type { CalculatorEntry } from "../types";
+
+export const fiberOptics: CalculatorEntry[] = [
+  {
+    slug: "attenuation",
+    title: "Fiber Attenuation Calculator",
+    description: "Wavelength-dependent fiber attenuation: Rayleigh scattering, IR absorption, and OH peak.",
+    heading: "Wavelength-Dependent Attenuation",
+    lede: "Fiber attenuation spectrum showing Rayleigh scattering, IR absorption, and OH peak for standard fiber types.",
+  },
+  {
+    slug: "bend-insensitive",
+    title: "Bend-Insensitive Fiber Calculator",
+    description: "Design and analyze bend-insensitive fibers with depressed cladding trenches (ITU-T G.657).",
+    heading: "Bend-Insensitive Fiber Design",
+  },
+  {
+    slug: "bend-loss",
+    title: "Macro Bending Loss Calculator",
+    description: "Estimate macro-bending loss for single-mode fiber using simplified Marcuse formula.",
+    heading: "Macro Bending Loss",
+    lede: "Estimate macro-bending loss for single-mode fiber using simplified Marcuse formula. For more detailed analysis, see Macrobending Loss calculator.",
+  },
+  {
+    slug: "birefringence-fiber",
+    title: "Birefringence Fiber Calculator",
+    description: "Geometric (elliptical-core) and stress-induced birefringence and beat length of a single-mode fiber from core and cladding indices and core shape.",
+  },
+  {
+    slug: "chromatic-dispersion",
+    title: "Chromatic Dispersion Calculator",
+    description: "Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.",
+    heading: "Chromatic Dispersion (CD)",
+  },
+  {
+    slug: "connector-insertion-loss",
+    title: "Connector Insertion Loss Calculator",
+    description: "Calculate connector insertion loss from misalignment parameters and build link budgets for different connector types.",
+    heading: "Connector Insertion Loss",
+  },
+  {
+    slug: "connector-return",
+    title: "Connector Return Loss Calculator",
+    description: "Calculates return loss and insertion loss for fiber connectors with air gaps, lateral offsets, and angular misalignment.",
+    heading: "Connector Return Loss",
+    lede: "Calculates return loss (RL) and insertion loss (IL) for fiber connectors with air gaps, lateral offsets, and angular misalignment.\n        Fresnel: r = (n₁ − n₂)/(n₁ + n₂), RL = −20 log₁₀|r|. Physical contact (PC) eliminates air gap.",
+  },
+  {
+    slug: "connector-return-loss",
+    title: "Connector Return Loss Calculator",
+    description: "Calculate return loss (ORL) from fiber connectors based on polish type and index mismatch.",
+    heading: "Connector Return Loss",
+  },
+  {
+    slug: "coupling-efficiency",
+    title: "Fiber Coupling Efficiency Calculator",
+    description: "Estimate Gaussian-to-fiber coupling loss from NA mismatch, lateral offset, and angular misalignment.",
+    heading: "Fiber Coupling Efficiency",
+    keywords: ["fiber coupling", "alignment", "insertion loss"],
+    priority: 98,
+    related: [
+      {
+        href: "/fiber-optics/mode-field-diameter",
+        note: "Fiber mode size and coupling sensitivity.",
+      },
+      { href: "/fiber-optics/v-number", note: "Single-mode / multimode guidance." },
+      {
+        href: "/wave-optics/gaussian-beam",
+        note: "Beam waist and divergence feeding coupling performance.",
+      },
+      {
+        href: "/fiber-optics/splice-loss",
+        note: "Another alignment-sensitive fiber insertion problem.",
+      },
+    ],
+  },
+  {
+    slug: "d-shaped-fiber",
+    title: "D-Shaped Fiber Calculator",
+    description: "Birefringence, evanescent field, and polarization properties of D-shaped (flat) fibers.",
+    heading: "D-Shaped Fiber",
+  },
+  {
+    slug: "dispersion-comp",
+    title: "Dispersion Compensation Calculator",
+    description: "Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.",
+    heading: "Dispersion Compensation",
+    lede: "Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.\n        Total dispersion: Dtotal = D · L. Pulse broadening: Δτ = Dtotal · Δλ.\n        NRZ bit-rate limit: B ≤ 1/(4Δτ). DCF length: LDCF = D·L / |DDCF|.",
+  },
+  {
+    slug: "dispersion-compensation",
+    title: "Dispersion Compensation Calculator",
+    description: "GVD and TOD compensation analysis for fiber optic links.",
+    heading: "Dispersion Compensation",
+  },
+  {
+    slug: "dispersion-map",
+    title: "Dispersion Map Calculator",
+    description: "Design a dispersion map for a fiber link using SMF and DCF segments.",
+  },
+  {
+    slug: "dispersion-shifted",
+    title: "Dispersion-Shifted Fiber Calculator",
+    description: "Compare DSF, NZ-DSF, and DCF dispersion characteristics.",
+  },
+  {
+    slug: "fiber-amplifier",
+    title: "Fiber Amplifier Calculator",
+    description: "EDFA and YDFA gain, saturation, and noise figure analysis.",
+  },
+  {
+    slug: "fiber-bandwidth",
+    title: "Fiber Bandwidth Calculator",
+    description: "Calculate bandwidth limitations from chromatic dispersion, modal dispersion, and PMD.",
+    heading: "Fiber Bandwidth Calculation",
+    lede: "Calculate bandwidth limitations from chromatic dispersion, modal dispersion (MMF), and PMD for various fiber types and link configurations.",
+  },
+  {
+    slug: "fiber-bragg-grating",
+    title: "Fiber Bragg Grating Calculator",
+    description: "Calculate FBG reflectivity, bandwidth, and spectrum for uniform, apodized, and chirped gratings.",
+  },
+  {
+    slug: "fiber-bragg-grating-sensor",
+    title: "Fiber Bragg Grating Sensor Calculator",
+    description: "Calculate FBG wavelength shift for strain and temperature sensing applications.",
+    heading: "Fiber Bragg Grating Sensor",
+  },
+  {
+    slug: "fiber-bundle",
+    title: "Fiber Bundle Design Calculator",
+    description: "Calculate bundle geometry, fill factor, étendue, and coupling efficiency for fiber optic bundles.",
+    heading: "Fiber Bundle Design",
+  },
+  {
+    slug: "fiber-characterization",
+    title: "Fiber Characterization Calculator",
+    description: "Comprehensive fiber parameter calculation: V-number, MFD, effective area, nonlinear coefficient, dispersion, and confinement.",
+    heading: "Fiber Characterization",
+  },
+  {
+    slug: "fiber-coupler",
+    title: "Fiber Coupler Calculator",
+    description: "Calculate power splitting, transfer curves, and spectral response for directional fiber couplers.",
+  },
+  {
+    slug: "fiber-delay-line",
+    title: "Fiber Delay Line Calculator",
+    description: "Calculate propagation delay, pulse broadening, phase shift, and FSR for fiber optic delay lines.",
+  },
+  {
+    slug: "fiber-gyroscope",
+    title: "Fiber Optic Gyroscope (FOG)",
+    description: "Sagnac effect, scale factor, angle random walk, and bias stability for fiber optic gyroscopes.",
+  },
+  {
+    slug: "fiber-laser",
+    title: "Fiber Laser Output Power",
+    description: "Fiber laser output power, optical, Stokes and quantum efficiency, and output-coupler and cavity losses from pump power, wavelengths and slope efficiency.",
+  },
+  {
+    slug: "fiber-loop-mirror",
+    title: "Fiber Loop Mirror (Sagnac)",
+    description: "Sagnac fiber loop mirror reflectance, spectral response, and birefringent filter design.",
+  },
+  {
+    slug: "fiber-optic-sensor",
+    title: "Fiber Optic Sensors",
+    description: "Calculate sensitivity, resolution, and response for FBG, MZI, Fabry-Pérot, and evanescent fiber sensors.",
+  },
+  {
+    slug: "fiber-taper",
+    title: "Fiber Taper Calculator",
+    description: "Calculate fiber taper waist diameter, evanescent field penetration, and coupling parameters from pull length.",
+    heading: "Fiber Taper Calculation",
+    lede: "Calculate fiber taper waist diameter, evanescent field, and coupling parameters from pull length.",
+  },
+  {
+    slug: "link-budget",
+    title: "Fiber Link Budget Calculator",
+    description: "Calculate total optical link loss, received power, and link margin for fiber optic systems.",
+    heading: "Fiber Link Budget",
+    lede: "Total optical link loss budget calculator. Power budget vs. accumulated losses.",
+  },
+  {
+    slug: "low-water-peak",
+    title: "Low Water Peak Fiber",
+    description: "Analyze low water peak (LWP) fibers that reduce the OH⁻ absorption peak at 1383 nm, enabling E-band and full CWDM operation.",
+  },
+  {
+    slug: "macro-bend",
+    title: "Macro Bend Loss",
+    description: "Detailed macrobending loss calculation for single-mode fibers based on bend radius and wavelength.",
+    lede: "Quick macrobending loss estimate using empirical heuristic. For physically rigorous results, see Macrobending Loss calculator.",
+  },
+  {
+    slug: "macro-bending-loss",
+    title: "Macrobending Loss",
+    description: "Detailed macrobending loss calculation using the curvature radiation model for single-mode fiber.",
+  },
+  {
+    slug: "micro-bend",
+    title: "Micro Bend Loss",
+    description: "Calculate microbending loss from periodic perturbations in fiber geometry.",
+    lede: "Calculate microbending loss from periodic perturbations using Marcuse mode coupling theory.",
+  },
+  {
+    slug: "micro-bending-loss",
+    title: "Microbending Loss",
+    description: "Calculate microbending-induced loss from random perturbations, coating properties, and fiber parameters.",
+  },
+  {
+    slug: "mode-coupling",
+    title: "Coupled-Mode Power Transfer",
+    description: "Coupled-mode power transfer between two waveguides: coupled and through power, coupling efficiency and full-transfer length from κ and Δβ.",
+  },
+  {
+    slug: "mode-field-diameter",
+    title: "Mode Field Diameter",
+    description: "Calculate MFD, effective area, and spot size for single-mode fibers.",
+  },
+  {
+    slug: "multi-core",
+    title: "Multi-Core Fiber Crosstalk",
+    description: "Simplified coupled-mode estimate of inter-core coupling, crosstalk and packing density in a homogeneous multi-core fiber versus core pitch and length.",
+  },
+  {
+    slug: "nonlinear-effects",
+    title: "Nonlinear Effects in Fiber",
+    description: "Calculate SPM, XPM, FWM penalties, SBS/SRS thresholds, and nonlinear phase shift.",
+  },
+  {
+    slug: "nonzero-dispersion",
+    title: "Non-Zero Dispersion Shifted Fiber (NZ-DSF)",
+    description: "Design NZ-DSF fibers (G.655) with optimized dispersion for DWDM systems — balancing dispersion and nonlinearity.",
+  },
+  {
+    slug: "otdr-analysis",
+    title: "OTDR Analysis",
+    description: "Simulate OTDR traces, calculate spatial resolution, dynamic range, dead zones, and event analysis for fiber characterization.",
+  },
+  {
+    slug: "photonic-crystal",
+    title: "Photonic Crystal Fiber",
+    description: "Approximate NA, V-number, mode area, dispersion and confinement loss of an index-guiding photonic crystal fiber from hole pitch Λ and diameter d.",
+  },
+  {
+    slug: "polarization-controller",
+    title: "Fiber Polarization Controller",
+    description: "Retardation per paddle, bend-induced birefringence, quarter- and half-wave coil lengths and output polarization state of a fiber polarization controller.",
+  },
+  {
+    slug: "polarization-maintaining",
+    title: "Polarization-Maintaining Fiber",
+    description: "Birefringence, beat length, h-parameter and output extinction ratio of PANDA, bow-tie and elliptical-core PM fibers versus length and input PER.",
+  },
+  {
+    slug: "polarization-mode-dispersion",
+    title: "Polarization Mode Dispersion (PMD)",
+    description: "Calculate PMD-induced differential group delay (DGD), system penalties, and PMD-limited reach using Maxwellian statistics.",
+  },
+  {
+    slug: "pump-combiner",
+    title: "Fiber Pump Combiner",
+    description: "Combined pump power, loss, pump brightness and the NA² brightness-conservation check for an N×1 fiber pump combiner, plus signal insertion loss.",
+  },
+  {
+    slug: "rare-earth-doped",
+    title: "Rare-Earth-Doped Fiber Amplifier",
+    description: "Ion density, pump absorption, small-signal gain, saturation power and noise figure of an Er, Yb, Tm or Nd-doped fiber from doping and pump power.",
+  },
+  {
+    slug: "rare-earth-fiber",
+    title: "Rare-Earth Fiber Dopants",
+    description: "Pump bands, cross-sections, lifetime, absorption, small-signal gain and optimal length of Er, Yb, Tm and Ho-doped fibers from concentration and core size.",
+  },
+  {
+    slug: "sbs-threshold",
+    title: "SBS Threshold Power",
+    description: "Calculate Stimulated Brillouin Scattering threshold for optical fibers.",
+  },
+  {
+    slug: "side-polished",
+    title: "Side-Polished Fiber",
+    description: "Evanescent field interaction, phase matching, and spectral response of side-polished fiber devices.",
+  },
+  {
+    slug: "specialty-fiber",
+    title: "Specialty Fiber Types",
+    description: "Compare properties of specialty optical fibers: PM, PCF, rare-earth doped, chalcogenide, and fluoride.",
+  },
+  {
+    slug: "splice-loss",
+    title: "Fiber Splice Loss",
+    description: "Estimate splice/connector loss from lateral offset, angular misalignment, and end-face gap for single-mode fiber.",
+  },
+  {
+    slug: "srs-threshold",
+    title: "SRS Threshold Power",
+    description: "Calculate Stimulated Raman Scattering threshold for optical fibers.",
+  },
+  {
+    slug: "tapered-fiber",
+    title: "Tapered Fiber Design",
+    description: "Design adiabatic fiber tapers for mode conversion, evanescent field enhancement, and coupler fabrication.",
+  },
+  {
+    slug: "v-number",
+    title: "Fiber V-Number",
+    description: "Normalized frequency V = 2πa·NA/λ of a step-index fiber, NA from core and cladding indices, the single-mode check (V < 2.405) and the mode count.",
+  },
+  {
+    slug: "wdm-coupler",
+    title: "WDM Channel Plan",
+    description: "WDM channel wavelengths, frequency spacing, ITU-T grid type (CWDM or DWDM), total bandwidth, insertion loss and isolation from channel count and spacing.",
+  },
+];

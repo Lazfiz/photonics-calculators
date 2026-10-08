@@ -1,9 +1,5 @@
 import type { RelatedCalculatorItem } from "../components/related-calculator-links";
-import type { SearchItem } from "./search-index-types";
-import searchIndexData from "../generated/search-index.json";
-import { flagshipRelated } from "./flagship-related";
-
-const overrides: Record<string, RelatedCalculatorItem[]> = flagshipRelated;
+import { calculators, displayName, findCalculator, type Calculator } from "../registry";
 
 function titleWords(text: string) {
   return new Set(
@@ -14,30 +10,35 @@ function titleWords(text: string) {
   );
 }
 
-export function getRelatedCalculators(currentHref: string, limit = 4): RelatedCalculatorItem[] {
-  if (overrides[currentHref]) return overrides[currentHref].slice(0, limit);
+function item(calculator: Calculator, note?: string): RelatedCalculatorItem {
+  return { href: calculator.href, label: displayName(calculator), desc: note ?? calculator.description };
+}
 
-  const items = searchIndexData as unknown as SearchItem[];
-  const current = items.find((item) => item.href === currentHref);
+/** The registry's hand-picked links, else the same-category pages that share the most words. */
+export function getRelatedCalculators(currentHref: string, limit = 4): RelatedCalculatorItem[] {
+  const current = findCalculator(currentHref);
   if (!current) return [];
+  if (current.related) {
+    return current.related.slice(0, limit).flatMap((link) => {
+      const target = findCalculator(link.href);
+      return target ? [item(target, link.note)] : [];
+    });
+  }
 
   const currentWords = titleWords(`${current.title} ${current.description}`);
 
-  const scored = items
-    .filter((item) => item.href !== currentHref && item.kind === "page")
-    .map((item) => {
+  return calculators
+    .filter((c) => c.href !== currentHref && !c.hidden)
+    .map((c) => {
       let score = 0;
-      if (item.category === current.category) score += 5;
-      const words = titleWords(`${item.title} ${item.description}`);
-      for (const word of words) {
+      if (c.category === current.category) score += 5;
+      for (const word of titleWords(`${c.title} ${c.description}`)) {
         if (currentWords.has(word)) score += 1;
       }
-      return { item, score };
+      return { c, score };
     })
     .filter((entry) => entry.score > 0)
-    .sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title))
+    .sort((a, b) => b.score - a.score || a.c.title.localeCompare(b.c.title, "en"))
     .slice(0, limit)
-    .map(({ item }) => ({ href: item.href, label: item.title, desc: item.description }));
-
-  return scored;
+    .map(({ c }) => item(c));
 }
