@@ -57,6 +57,7 @@ the last); left are the `exposure-duration` leftovers and Phase 2 stage **2c**. 
 - **`ui-check` load mode** waits for an `<input>` with a React fiber; pages without inputs (e.g.
   `optical-glass-catalog`) fail with "not hydrated". Use a scratchpad copy that probes `button` instead. Wrap each
   run in `timeout 200`: a Chrome-startup hang otherwise blocks forever. Flake: loop up to 3 times.
+  In Git Bash set `MSYS_NO_PATHCONV=1`, or the `/category/slug` args become Windows paths ("invalid URL").
 - **Mutation check:** a scratchpad `mutate.mjs` (exact string replace → run one test → restore) is quicker than
   copying files by hand; use it only while no `check` is running.
 - **PDFs:** `pdftotext` is on the PATH (Git Bash `/mingw64/bin`); `curl` the PDF to the scratchpad first. WebFetch
