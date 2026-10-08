@@ -2,7 +2,7 @@
 
 **Start here:** read this file, then `docs/ROADMAP.md` (Phase 4, the kept-page bug list).
 - Session 18 checked PR #13 in production (Vercel success, `macro-bend` → 308, `ui-check` ALL PASS, 0 console
-  errors). It then fixed the safety-hazard weighting on `phase-4/hazard-weighting` (**PR #__**). Merge only after
+  errors). It then fixed the safety-hazard weighting on `phase-4/hazard-weighting` (**PR #14**). Merge only after
   the user approves, then run `ui-check` against production.
 
 ## State
