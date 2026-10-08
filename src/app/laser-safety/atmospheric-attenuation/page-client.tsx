@@ -1,136 +1,60 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import {
+  DB_PER_NEPER, aerosolExtinction, kimExponent, rayleighExtinction,
+} from "../../../physics/free-space-comms/atmospheric-attenuation";
+
+const fmt = (x: number, digits = 3) =>
+  !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
+
 export default function AtmosphericAttenuationPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 10600); // nm (CO2)
+  const [wavelength, setWavelength] = useURLState("wavelength", 10600); // nm (CO₂ laser)
   const [distance, setDistance] = useURLState("distance", 1000); // m
-  const [humidity, setHumidity] = useURLState("humidity", 50); // %
-  const [visibility, setVisibility] = useURLState("visibility", 23); // km (standard)
+  const [visibility, setVisibility] = useURLState("visibility", 23); // km
 
-  // Beer-Lambert: T = exp(-α * L)
-  // α depends on wavelength, humidity (H2O absorption), and scattering
   const results = useMemo(() => {
-    const wl = wavelength / 1000; // µm
-    const L = distance; // m
-    const H = humidity / 100;
-
-    // Molecular absorption coefficient (simplified, per km)
-    // Water vapor absorption peaks at ~0.94, 1.13, 1.38, 1.87, 2.7, 6.3 µm
-    const h2oAbsorption = (wlMicron: number, h: number) => {
-      const peaks = [
-        { center: 0.94, width: 0.05, strength: 0.5 },
-        { center: 1.13, width: 0.04, strength: 0.3 },
-        { center: 1.38, width: 0.08, strength: 2.0 },
-        { center: 1.87, width: 0.1, strength: 3.0 },
-        { center: 2.7, width: 0.3, strength: 5.0 },
-        { center: 6.3, width: 0.5, strength: 10.0 },
-      ];
-      let alpha = 0;
-      for (const p of peaks) {
-        alpha += p.strength * h * Math.exp(-((wlMicron - p.center) ** 2) / (2 * p.width ** 2));
-      }
-      return alpha; // km⁻¹
-    };
-
-    // CO2 absorption peak at 4.26 µm and 15 µm
-    const co2Absorption = (wlMicron: number) => {
-      const peaks = [
-        { center: 4.26, width: 0.1, strength: 50 },
-        { center: 15, width: 1, strength: 100 },
-      ];
-      let alpha = 0;
-      for (const p of peaks) {
-        alpha += p.strength * Math.exp(-((wlMicron - p.center) ** 2) / (2 * p.width ** 2));
-      }
-      return alpha;
-    };
-
-    // Rayleigh scattering (dominant at short wavelengths)
-    const rayleigh = 0.0084 * Math.pow(wl, -4) * 0.001; // km⁻¹ (approx)
-
-    // Mie scattering (aerosols) - simplified
-    const visKm = visibility;
-    const mie = 3.91 / visKm * Math.pow(0.55 / wl, 0.585); // km⁻¹
-
-    const alphaH2O = h2oAbsorption(wl, H);
-    const alphaCO2 = co2Absorption(wl);
-    const alphaRayleigh = rayleigh;
-    const alphaMie = mie;
-    const alphaTotal = alphaH2O + alphaCO2 + alphaRayleigh + alphaMie;
-
-    const transmission = Math.exp(-alphaTotal * L / 1000);
-    const attenuation_dB = -10 * Math.log10(transmission);
-
-    // Safe distance: where beam power drops to MPE level
-    // For NOHD: r_NOHD = sqrt(4*P / (π * E_MPE)) (ignoring attenuation)
-    // With attenuation: effective distance increases
-
+    const lambda = wavelength * 1e-9;
+    const alphaRayleigh = rayleighExtinction(lambda) * 1e3; // km⁻¹
+    const alphaAerosol = aerosolExtinction(lambda, visibility * 1e3) * 1e3; // km⁻¹
+    const alphaTotal = alphaRayleigh + alphaAerosol;
+    const transmission = Math.exp((-alphaTotal * distance) / 1000);
     return {
-      alphaH2O, alphaCO2, alphaRayleigh, alphaMie, alphaTotal,
-      transmission, attenuation_dB, L,
+      alphaRayleigh, alphaAerosol, alphaTotal, transmission,
+      attenuation_dB: (alphaTotal * distance * DB_PER_NEPER) / 1000, q: kimExponent(visibility * 1e3),
     };
-  }, [wavelength, distance, humidity, visibility]);
+  }, [wavelength, distance, visibility]);
 
   const chartData = useMemo(() => {
     const distances = Array.from({ length: 200 }, (_, i) => (i + 1) * (distance / 200));
-    const transmission = distances.map(d => Math.exp(-results.alphaTotal * d / 1000));
-    const dB = transmission.map(t => -10 * Math.log10(Math.max(t, 1e-10)));
-
     return [
-      { x: distances, y: transmission.map(t => t * 100), type: "scatter" as const, mode: "lines" as const, name: "Transmission (%)", yaxis: "y", line: { color: "#60a5fa", width: 2 } },
-      { x: distances, y: dB, type: "scatter" as const, mode: "lines" as const, name: "Attenuation (dB)", yaxis: "y2", line: { color: "#f87171", width: 2 } },
+      { x: distances, y: distances.map((d) => Math.exp((-results.alphaTotal * d) / 1000) * 100), type: "scatter" as const, mode: "lines" as const,
+        name: "Transmission (%)", yaxis: "y", line: { color: "#60a5fa", width: 2 } },
+      { x: distances, y: distances.map((d) => (results.alphaTotal * d * DB_PER_NEPER) / 1000), type: "scatter" as const, mode: "lines" as const,
+        name: "Attenuation (dB)", yaxis: "y2", line: { color: "#f87171", width: 2 } },
     ];
-  }, [results, distance]);
+  }, [results.alphaTotal, distance]);
 
   return (
     <>
-            
       <LaserSafetyDisclaimer />
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={20000} />
-        <ValidatedNumberInput label="Distance (m)" value={distance} onChange={setDistance} min={1} />
-        <ValidatedNumberInput label="Relative Humidity (%)" value={humidity} onChange={setHumidity} min={0} max={100} />
-        <ValidatedNumberInput label="Visibility (km)" value={visibility} onChange={setVisibility} min={0.1} step="0.1" />
+        <ValidatedNumberInput label="Distance (m)" value={distance} onChange={setDistance} min={1} max={1e7} />
+        <ValidatedNumberInput label="Visibility (km)" value={visibility} onChange={setVisibility} min={0.01} max={300} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Transmission</p>
-          <p className="text-3xl font-bold text-blue-400">{(results.transmission * 100).toFixed(2)}%</p>
-          <p className="text-sm text-gray-500 mt-1">at {distance} m</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Attenuation</p>
-          <p className="text-3xl font-bold text-amber-400">{results.attenuation_dB.toFixed(2)} dB</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Total α</p>
-          <p className="text-3xl font-bold text-green-400">{results.alphaTotal.toFixed(4)} km⁻¹</p>
-        </div>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-4 mb-8">
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
-          <p className="text-xs text-gray-400">H₂O abs.</p>
-          <p className="text-lg font-bold text-cyan-400">{results.alphaH2O.toFixed(3)}</p>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
-          <p className="text-xs text-gray-400">CO₂ abs.</p>
-          <p className="text-lg font-bold text-orange-400">{results.alphaCO2.toFixed(3)}</p>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
-          <p className="text-xs text-gray-400">Rayleigh</p>
-          <p className="text-lg font-bold text-purple-400">{results.alphaRayleigh.toFixed(6)}</p>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
-          <p className="text-xs text-gray-400">Mie</p>
-          <p className="text-lg font-bold text-pink-400">{results.alphaMie.toFixed(4)}</p>
-        </div>
+        <ResultCard label="Transmission" value={`${fmt(results.transmission * 100, 4)} %`} tone="blue" subtext={`at ${distance} m`} />
+        <ResultCard label="Attenuation" value={`${fmt(results.attenuation_dB)} dB`} tone="yellow" />
+        <ResultCard label="Total extinction α" value={`${fmt(results.alphaTotal)} km⁻¹`} tone="green" subtext={`${fmt(results.alphaTotal * DB_PER_NEPER)} dB/km`} />
+        <ResultCard label="Rayleigh" value={`${fmt(results.alphaRayleigh)} km⁻¹`} tone="purple" subtext="standard air, 15 °C, 1013 hPa" />
+        <ResultCard label="Aerosol (visibility)" value={`${fmt(results.alphaAerosol)} km⁻¹`} tone="red" subtext={`Kim q = ${fmt(results.q)}`} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
@@ -145,15 +69,21 @@ export default function AtmosphericAttenuationPage() {
         }} />
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-3">Formulas</h3>
-        <div className="text-gray-300 text-sm space-y-2 font-mono">
-          <p>T = exp(−α<sub>total</sub> × L)</p>
-          <p>α<sub>total</sub> = α<sub>H₂O</sub> + α<sub>CO₂</sub> + α<sub>Rayleigh</sub> + α<sub>Mie</sub></p>
-          <p>α<sub>Mie</sub> = 3.91/V × (0.55/λ)<sup>0.585</sup> km⁻¹ (V = visibility in km)</p>
-          <p>α<sub>Rayleigh</sub> ∝ λ<sup>−4</sup></p>
-          <p>Attenuation (dB) = −10 log₁₀(T)</p>
-        </div>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 text-sm text-gray-300 space-y-2">
+        <h3 className="text-lg font-semibold mb-1">Model</h3>
+        <p className="font-mono">T = exp(−α L),   α = α_Rayleigh + α_aerosol,   attenuation (dB) = 4.343 α L</p>
+        <p className="font-mono">α_aerosol = [3.912/V − α_Rayleigh(550 nm)] · (λ/550 nm)^(−q)</p>
+        <p>
+          Rayleigh scattering of standard sea-level air from its refractive index (Bucholtz, Appl. Opt. 34, 2765,
+          1995): 0.0115 km⁻¹ at 550 nm, falling as ≈ λ⁻⁴. The visibility V fixes the total extinction at 550 nm
+          (Koschmieder); the aerosol part scales with Kim&apos;s exponent q(V) (Kim et al., Proc. SPIE 4214, 26, 2001),
+          fitted in the visible and near IR. For mid-IR wavelengths it is only indicative.
+        </p>
+        <p className="text-gray-500">
+          Molecular absorption (water vapour, CO₂) is not included: real attenuation is higher in absorption bands and,
+          at 10.6 µm, from the water-vapour continuum. Ignoring it overestimates the transmitted power, which is the
+          conservative side for a hazard distance. Rain, snow and turbulence are not modelled either.
+        </p>
       </div>
     </>
   );

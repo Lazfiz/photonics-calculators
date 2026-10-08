@@ -25,7 +25,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "atmospheric-loss",
     title: "FSO Atmospheric Loss",
-    description: "Visibility-based (Kim) scattering plus water-vapour absorption: attenuation in dB/km, total path loss and transmittance of a free-space optical link.",
+    description: "Visibility-based aerosol (Kim) and Rayleigh scattering: attenuation in dB/km, total path loss and transmittance of a free-space optical link.",
   },
   {
     slug: "background-noise",
