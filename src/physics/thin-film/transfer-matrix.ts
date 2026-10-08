@@ -240,3 +240,12 @@ export function quarterWaveStackReflectance(incident: number, indices: readonly 
   for (let i = indices.length - 1; i >= 0; i--) Y = (indices[i] * indices[i]) / Y;
   return ((incident - Y) / (incident + Y)) ** 2;
 }
+
+/**
+ * Inner-layer index that makes a two-layer quarter-quarter AR coating reflectionless at λ₀ and normal
+ * incidence. The admittance Y = n_outer²·n_sub/n_inner² equals n₀ when n_inner = n_outer·√(n_sub/n₀)
+ * (Macleod, ch. 4, double-layer quarter-quarter coatings). NaN unless every index is > 0.
+ */
+export function quarterQuarterArInnerIndex(incident: number, nOuter: number, substrate: number): number {
+  return incident > 0 && nOuter > 0 && substrate > 0 ? nOuter * Math.sqrt(substrate / incident) : NaN;
+}

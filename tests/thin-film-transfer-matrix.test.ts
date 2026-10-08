@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import * as cx from "../src/physics/complex";
 import {
+  quarterQuarterArInnerIndex,
   quarterWaveLayers,
   quarterWaveStackReflectance,
   quarterWaveThickness,
@@ -107,6 +108,20 @@ test("transfer matrix: closed-form quarter-wave reflectance agrees with the matr
   // (HL)⁷ on 1.52: Y = (2.35/1.45)^14 · 1.52 ≈ 1303.6, R = ((1 − Y)/(1 + Y))² ≈ 0.99694
   close(quarterWaveStackReflectance(1, designs[1][1], 1.52), ((1 - 1.52 * (2.35 / 1.45) ** 14) / (1 + 1.52 * (2.35 / 1.45) ** 14)) ** 2, 1e-15, "(HL)⁷ formula");
   assert.ok(Number.isNaN(quarterWaveStackReflectance(1, [0], 1.52)), "n = 0");
+});
+
+// Macleod, Thin-Film Optical Filters, 4th ed., ch. 4: a quarter-quarter coating (outer n₁, inner n₂)
+// has Y = n₁² n_s / n₂², so R(λ₀) = 0 when n₂ = n₁ √(n_s/n₀). MgF₂ on 1.52 glass: n₂ = 1.38 √1.52 = 1.70138.
+test("transfer matrix: quarter-quarter AR inner index gives zero reflectance at λ₀", () => {
+  const wl = 550 * NM;
+  const n2 = quarterQuarterArInnerIndex(1, 1.38, 1.52);
+  close(n2, 1.70138, 1e-5, "n₂ in air");
+  close(quarterWaveStackReflectance(1, [1.38, n2], 1.52), 0, 1e-30, "closed form");
+  close(stackResponse({ incident: 1, layers: quarterWaveLayers([1.38, n2], wl), substrate: { n: 1.52 } }, wl).R, 0, 1e-15, "matrix");
+  // Immersed in water (n₀ = 1.33) the inner layer must be lower.
+  const n2w = quarterQuarterArInnerIndex(1.33, 1.38, 1.52);
+  close(stackResponse({ incident: 1.33, layers: quarterWaveLayers([1.38, n2w], wl), substrate: { n: 1.52 } }, wl).R, 0, 1e-15, "in water");
+  assert.ok(Number.isNaN(quarterQuarterArInnerIndex(0, 1.38, 1.52)), "n₀ = 0");
 });
 
 // One absorbing film: sum of the multiply reflected waves (Airy), Born & Wolf §1.6.4 and §14.4:

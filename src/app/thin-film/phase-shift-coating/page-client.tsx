@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+
 export default function PhaseShiftCoatingPage() {
   const [n1, setN1] = useURLState("n1", 1.0);
   const [nFilm, setNFilm] = useURLState("nFilm", 1.38);
@@ -16,24 +18,10 @@ export default function PhaseShiftCoatingPage() {
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 300 }, (_, i) => 300 + i * 2);
-    // Phase accumulated through film of fractional optical thickness
-    const phaseShift = wls.map(wl => {
-      const d = (fractionalThickness * designWl) / (4 * nFilm);
-      const delta = (4 * Math.PI * nFilm * d) / wl;
-      // Phase shift of reflected beam from film
-      const r01 = (n1 - nFilm) / (n1 + nFilm);
-      const r12 = (nFilm - nSubstrate) / (nFilm + nSubstrate);
-      // Total reflected amplitude with phase
-      const real = r01 + r12 * Math.cos(delta);
-      const imag = -r12 * Math.sin(delta);
-      return (real * real + imag * imag);
-    });
-    // Phase vs wavelength
-    const phaseRad = wls.map(wl => {
-      const d = (fractionalThickness * designWl) / (4 * nFilm);
-      return (4 * Math.PI * nFilm * d) / wl;
-    });
-    const phaseDeg = phaseRad.map(p => (p * 180) / Math.PI % 360);
+    // Film of fractional quarter-wave thickness; exact reflectance with all multiple reflections.
+    const d = (fractionalThickness * designWl) / (4 * nFilm);
+    const stack = { incident: n1, layers: [{ n: nFilm, thickness: d * 1e-9 }], substrate: { n: nSubstrate } };
+    const phaseShift = reflectanceSpectrum(stack, wls.map((wl) => wl * 1e-9));
     return [
       { x: wls, y: phaseShift, type: "scatter" as const, mode: "lines" as const, name: "Reflectance", line: { color: "#60a5fa" } },
     ];
@@ -80,8 +68,8 @@ export default function PhaseShiftCoatingPage() {
           <p>δ = (4π·n·d) / λ</p>
           <p>Quarter-wave: d = λ/(4n) → δ = π</p>
           <p>Half-wave: d = λ/(2n) → δ = 2π</p>
-          <p>r = r₀₁ + r₁₂·e^(−iδ)</p>
-          <p>R = |r₀₁|² + |r₁₂|² + 2·r₀₁·r₁₂·cos(δ)</p>
+          <p>r = (r₀₁ + r₁₂·e^(−iδ)) / (1 + r₀₁·r₁₂·e^(−iδ))</p>
+          <p>R = (r₀₁² + r₁₂² + 2·r₀₁·r₁₂·cos δ) / (1 + r₀₁²·r₁₂² + 2·r₀₁·r₁₂·cos δ)</p>
         </div>
       </div>
 
@@ -90,7 +78,7 @@ export default function PhaseShiftCoatingPage() {
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
-          yaxis: { title: "Reflectance", gridcolor: "#374151", range: [0, "auto"] },
+          yaxis: { title: "Reflectance", gridcolor: "#374151" },
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>

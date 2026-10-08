@@ -6,119 +6,67 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { pseudoOpticalConstants } from "../../../physics/thin-film/ellipsometry";
+import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
+
 export default function EllipsometryMeasurementPage() {
   const [psiDeg, setPsiDeg] = useURLState("psiDeg", 45);
   const [deltaDeg, setDeltaDeg] = useURLState("deltaDeg", 120);
   const [aoiDeg, setAoiDeg] = useURLState("aoiDeg", 70);
-  const [wavelength, setWavelength] = useURLState("wavelength", 633);
   const [nSubstrate, setNSubstrate] = useURLState("nSubstrate", 1.52);
 
   const results = useMemo(() => {
-    const psi = psiDeg * Math.PI / 180;
-    const delta = deltaDeg * Math.PI / 180;
     const theta = aoiDeg * Math.PI / 180;
-    const lambda = wavelength;
-    const ns = nSubstrate;
-
-    // Fresnel reflection coefficients ratio
-    const tanPsi = Math.tan(psi);
-    const rhoRe = tanPsi * Math.cos(delta);
-    const rhoIm = tanPsi * Math.sin(delta);
-
-    // Approximate n and k from psi, delta (single layer on substrate, no explicit thickness)
-    // Using inverted Fresnel equations for ambient(1.0)/film/substrate:
-    // tan(psi)*e^(i*delta) = rp/rs
-    // For absorbing film: N2 = n + ik
-    // Using the effective medium approximation for inversion:
-
-    const cosTheta = Math.cos(theta);
-    const sinTheta = Math.sin(theta);
-
-    // Brewster angle
-    const brewsterAngle = Math.atan(ns) * 180 / Math.PI;
-
-    // Pseudo-refractive index (from two-parameter model)
-    // <eps> = sin²θ [1 + tan²θ ((1-ρ)/(1+ρ))²]
-    const denomR = 1 + rhoRe;
-    const denomI = rhoIm;
-    const numR = 1 - rhoRe;
-    const numI = -rhoIm;
-    const ratR = (numR * denomR + numI * denomI) / (denomR * denomR + denomI * denomI);
-    const ratI = (numI * denomR - numR * denomI) / (denomR * denomR + denomI * denomI);
-    const tanTheta2 = sinTheta * sinTheta / (cosTheta * cosTheta);
-
-    // Pseudo-dielectric function
-    const eps1Re = sinTheta * sinTheta * (1 + tanTheta2 * (ratR * ratR - ratI * ratI));
-    const eps1Im = sinTheta * sinTheta * (2 * tanTheta2 * ratR * ratI);
-    const epsMag = Math.sqrt(eps1Re * eps1Re + eps1Im * eps1Im);
-    const epsPhase = Math.atan2(eps1Im, eps1Re);
-
-    // Pseudo-refractive index N = sqrt(epsilon)
-    const pseudoN = Math.sqrt(epsMag) * Math.cos(epsPhase / 2);
-    const pseudoK = Math.sqrt(epsMag) * Math.sin(epsPhase / 2);
-
-    // Reflectance for s and p polarization
-    const Rp = ((pseudoN * cosTheta - cosTheta) ** 2 + pseudoK ** 2 * cosTheta ** 2) /
-               ((pseudoN * cosTheta + cosTheta) ** 2 + pseudoK ** 2 * cosTheta ** 2);
-    const Rs = ((pseudoN - cosTheta) ** 2 + pseudoK ** 2) /
-               ((pseudoN + cosTheta) ** 2 + pseudoK ** 2);
-    const Ravg = (Rp + Rs) / 2;
-
-    // Thickness from phase (assuming n~1.5 for thin film, gives approximate d)
-    const nFilm = pseudoN;
-    const phaseTerm = delta - Math.PI;
-    const thickness = Math.abs(phaseTerm * lambda / (4 * Math.PI * nFilm * cosTheta));
-
-    return { pseudoN, pseudoK, eps1Re, eps1Im, Rp, Rs, Ravg, brewsterAngle, thickness, rhoRe, rhoIm };
-  }, [psiDeg, deltaDeg, aoiDeg, wavelength, nSubstrate]);
+    const pseudo = pseudoOpticalConstants(psiDeg * Math.PI / 180, deltaDeg * Math.PI / 180, theta);
+    // Reflectances of the bare pseudo-substrate at the measurement angle (NaN if ⟨k⟩ < 0).
+    const bare = { incident: 1, layers: [], substrate: { n: pseudo.n, k: pseudo.k } };
+    const Rs = stackResponse(bare, 633e-9, theta, "s").R;
+    const Rp = stackResponse(bare, 633e-9, theta, "p").R;
+    const brewsterAngle = Math.atan(nSubstrate) * 180 / Math.PI;
+    return { ...pseudo, Rs, Rp, Ravg: (Rs + Rp) / 2, brewsterAngle };
+  }, [psiDeg, deltaDeg, aoiDeg, nSubstrate]);
 
   const psiDeltaMap = useMemo(() => {
+    const theta = aoiDeg * Math.PI / 180;
     const psis = Array.from({ length: 50 }, (_, i) => i * 90 / 50);
     const deltas = Array.from({ length: 50 }, (_, j) => j * 360 / 50);
-    const z = deltas.map(d => psis.map(p => {
-      const psi = p * Math.PI / 180;
-      const delta = d * Math.PI / 180;
-      const tpsi = Math.tan(psi);
-      const rr = tpsi * Math.cos(delta);
-      const ri = tpsi * Math.sin(delta);
-      const eps = rr * rr + ri * ri;
-      return Math.sqrt(eps);
-    }));
+    const z = deltas.map(d => psis.map(p => pseudoOpticalConstants(p * Math.PI / 180, d * Math.PI / 180, theta).n));
     return [
-      { x: psis, y: deltas, z, type: "heatmap" as const, colorscale: "Viridis", showscale: true, colorbar: { title: { text: "|ρ|", font: { color: "#9ca3af" } }, tickfont: { color: "#9ca3af" } } }
+      { x: psis, y: deltas, z, zmin: 0, zmax: 5, type: "heatmap" as const, colorscale: "Viridis", showscale: true, colorbar: { title: { text: "⟨n⟩", font: { color: "#9ca3af" } }, tickfont: { color: "#9ca3af" } } },
+      { x: [psiDeg], y: [deltaDeg], type: "scatter" as const, mode: "markers" as const, name: "Measurement", marker: { color: "#f87171", size: 10, symbol: "x" } },
     ];
-  }, []);
+  }, [aoiDeg, psiDeg, deltaDeg]);
+
+  const fmt = (v: number) => (Number.isFinite(v) ? v.toFixed(4) : "—");
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Ellipsometry Measurement" description="Analyze ellipsometry data (Ψ, Δ) to extract pseudo-dielectric function, refractive index, and approximate film thickness.">
+    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Ellipsometry Measurement" description="Invert ellipsometry data (Ψ, Δ) to the pseudo-dielectric function and pseudo-refractive index (two-phase ambient/substrate model).">
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Ψ (degrees)" value={psiDeg} onChange={setPsiDeg} min={0} max={90} step="0.1" />
         <ValidatedNumberInput label="Δ (degrees)" value={deltaDeg} onChange={setDeltaDeg} min={0} max={360} step="0.1" />
         <ValidatedNumberInput label="Angle of Incidence (°)" value={aoiDeg} onChange={setAoiDeg} min={0} max={90} step="0.5" />
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
         <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSubstrate} onChange={setNSubstrate} step="0.01" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
-        <p className="text-gray-300">Pseudo-refractive index ⟨n⟩: <span className="text-blue-400 font-mono">{results.pseudoN.toFixed(4)}</span></p>
-        <p className="text-gray-300">Pseudo-extinction coeff ⟨k⟩: <span className="text-blue-400 font-mono">{results.pseudoK.toFixed(4)}</span></p>
-        <p className="text-gray-300">ε₁ (real): <span className="text-blue-400 font-mono">{results.eps1Re.toFixed(4)}</span></p>
-        <p className="text-gray-300">ε₂ (imag): <span className="text-blue-400 font-mono">{results.eps1Im.toFixed(4)}</span></p>
-        <p className="text-gray-300">R<sub>p</sub>: <span className="text-blue-400 font-mono">{results.Rp.toFixed(4)}</span></p>
-        <p className="text-gray-300">R<sub>s</sub>: <span className="text-blue-400 font-mono">{results.Rs.toFixed(4)}</span></p>
-        <p className="text-gray-300">R<sub>avg</sub>: <span className="text-blue-400 font-mono">{results.Ravg.toFixed(4)}</span></p>
-        <p className="text-gray-300">Brewster Angle: <span className="text-blue-400 font-mono">{results.brewsterAngle.toFixed(2)}°</span></p>
-        <p className="text-gray-300">Approx. Thickness: <span className="text-blue-400 font-mono">{results.thickness.toFixed(1)} nm</span></p>
+        <p className="text-gray-300">Pseudo-refractive index ⟨n⟩: <span className="text-blue-400 font-mono">{fmt(results.n)}</span></p>
+        <p className="text-gray-300">Pseudo-extinction coeff ⟨k⟩: <span className="text-blue-400 font-mono">{fmt(results.k)}</span></p>
+        <p className="text-gray-300">⟨ε₁⟩: <span className="text-blue-400 font-mono">{fmt(results.eps1)}</span></p>
+        <p className="text-gray-300">⟨ε₂⟩: <span className="text-blue-400 font-mono">{fmt(results.eps2)}</span></p>
+        <p className="text-gray-300">R<sub>p</sub> at θ: <span className="text-blue-400 font-mono">{fmt(results.Rp)}</span></p>
+        <p className="text-gray-300">R<sub>s</sub> at θ: <span className="text-blue-400 font-mono">{fmt(results.Rs)}</span></p>
+        <p className="text-gray-300">R<sub>avg</sub> at θ: <span className="text-blue-400 font-mono">{fmt(results.Ravg)}</span></p>
+        <p className="text-gray-300">Brewster angle of n<sub>substrate</sub>: <span className="text-blue-400 font-mono">{results.brewsterAngle.toFixed(2)}°</span></p>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 text-sm text-gray-400">
         <p className="font-semibold text-gray-200 mb-2">Key Formulas</p>
         <p>ρ = r<sub>p</sub>/r<sub>s</sub> = tan(Ψ)·e<sup>iΔ</sup></p>
         <p>⟨ε⟩ = sin²θ [1 + tan²θ·((1−ρ)/(1+ρ))²] (pseudo-dielectric function)</p>
-        <p>⟨N⟩ = √⟨ε⟩ = ⟨n⟩ + i⟨k⟩</p>
+        <p>⟨N⟩ = √⟨ε⟩ = ⟨n⟩ − i⟨k⟩, ⟨ε⟩ = ⟨ε₁⟩ − i⟨ε₂⟩ (Nebraska convention: Δ = 180° at normal incidence)</p>
+        <p>Exact for a bare substrate; with a film on top these are “pseudo” values, not material constants.</p>
         <p>Brewster angle θ<sub>B</sub> = arctan(n<sub>sub</sub>)</p>
-        <p>ρ = tan(Ψ)·(cos Δ + i·sin Δ)</p>
       </div>
 
       <ChartPanel data={psiDeltaMap} layout={{
@@ -127,7 +75,7 @@ export default function EllipsometryMeasurementPage() {
         yaxis: { title: "Δ (°)", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true
       }} />
-      <p className="text-gray-500 text-xs mt-2 text-center">Ψ-Δ map (|ρ|). Current measurement point marked by inputs above.</p>
+      <p className="text-gray-500 text-xs mt-2 text-center">⟨n⟩ over the Ψ-Δ plane at the current angle of incidence. The red × is the measurement.</p>
     </CalculatorShell>
   );
 }

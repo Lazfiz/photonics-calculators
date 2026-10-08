@@ -114,7 +114,44 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
     - `bandpass-filter`, `narrow-bandpass` and `notch-filter` repeated (HL)^p after the spacer instead of mirroring it. So the bandpasses had no passband at λ₀, and the notch had a dip at λ₀. New: `src/physics/thin-film/cavity-filter.ts` (4 golden tests, absentee-layer hand values).
     - `notch-filter`'s FWHM used the level 1 − T_min/2 and the first dip.
     - `dielectric-stack`'s peak R used the (HL)^N H formula for an (HL)^N plot. It showed 99.46 %; the value is 98.72 %.
-- Not yet compared with the module: thin-film pages that use closed forms rather than a matrix. They are `amplitude-splitting`, `angle-shift`, `ellipsometry-measurement`, `fabry-perot-filter`, `fresnel-equations`, `interference-conditions`, `multilayer-ar`, `phase-shift-coating`, `quarter-wave`, `single-ar`, `thermal-evaporation` and `wedge-film`.
+- Stage 1c (session 12, branch `phase-2/thin-film-closed-form`): the 12 closed-form thin-film pages were compared with the module at their defaults, with the old code copied verbatim:
+  - **Exact already** (≤ 7e-16):
+    - `fresnel-equations` is left as it is. Its R at exactly 90° is 1; the module rejects that angle.
+    - `quarter-wave` and `single-ar` (0–75°, s and p) now use the module.
+    - The Airy formulas of `wedge-film` and `fabry-perot-filter` are exact (checked against a free-standing slab).
+    - `angle-shift`: λ₀ cos θ_film is where the module's R minimum moves (to 4e-6 nm, s and p). Its "TE" and "TM" curves were the same formula. Now there is one curve, and the unused n_substrate input is gone.
+  - **Wrong:**
+    - `multilayer-ar`:
+      - The chart used a real "admittance" formula, so R reached 63.
+      - "Optimal n₂" showed (n₀n_s³)^¼ = 1.369. The quarter-quarter condition is n₁√(n_s/n₀) = 1.701.
+      - "Min R" was R at that wrong n₂, not R of the user's design (4.30 %).
+      - Now it uses the module and `quarterQuarterArInnerIndex`.
+    - `amplitude-splitting`:
+      - R (the 20-term beam sum) was exact. T lacked the n₂/n₁ admittance factor, so R + T ≈ 0.67.
+      - F = 4r₀₁r₁₂/(1 − r₀₁r₁₂)² went negative when r₀₁r₁₂ < 0 (a high-index film). The text had F = 4R₁R₂/(1 − R₁R₂)².
+      - It is now F = 4√(R₁R₂)/(1 − √(R₁R₂))².
+    - `interference-conditions`:
+      - The 0/π select defaulted to π, but the default indices (1 < 1.38 < 1.52) give a net phase of 0. So the chart's "constructive" peak sat on the true R minimum (552 nm).
+      - The cards ignored the select. A soap film showed constructive at 266 nm, but the R maximum is at 532 nm.
+      - The phase now comes from the index order, and the chart is the exact R.
+    - `phase-shift-coating`:
+      - Two-beam R = |r₀₁ + r₁₂e^(−iδ)|² was off by 1.5 % at the defaults and 18 % for n = 2.35. It now uses the exact R.
+      - Its y range `[0, "auto"]` drew R on a 0–1 axis with no ticks.
+    - `ellipsometry-measurement`:
+      - The pseudo-ε inversion was exact. But in the Nebraska convention (Δ < 180° for absorbers) it printed ⟨k⟩ and ε₂ negative: gold showed k = −3.5.
+      - "Rp" was the normal-incidence R at any angle. "Rs" was wrong (0.400 vs 0.308 for glass at 70°).
+      - "Approx. thickness" = |Δ − π|λ/(4πn cos θ) was invented. It is removed.
+      - The Ψ-Δ map plotted |ρ| = tan Ψ, which doesn't depend on Δ, and the "marked" point wasn't drawn. It now plots ⟨n⟩ and marks the point.
+    - `fabry-perot-filter`:
+      - FWHM = FSR/ℱ is the high-finesse limit. It was 8 % low at R = 0.3.
+      - It gave a width at R < 0.17, where T never falls to ½. It now uses 4 asin(1/√F).
+    - `wedge-film`:
+      - The position chart sampled 0.5 mm steps for 0.105 mm fringes (aliased), and drew R = 0 where d < 0 (half the chart).
+      - The spectra at x = −2 and −1 mm were silently dropped.
+      - Positions are now in units of the fringe spacing, starting at the film edge (−Δx/2).
+  - New modules: `src/physics/thin-film/interference.ts` (F, finesse, Airy width, net reflection phase, first extrema) and `ellipsometry.ts` (two-phase inversion).
+    - They have 8 golden tests: hand values from Born & Wolf §7.6.1 and Hecht §9.4.1, and round trips through the transfer matrix (glass, Si, Al and Au at 55–80°).
+  - `thermal-evaporation` isn't optics, so there was nothing to compare. Its issues are listed under Phase 4.
 - Thin-film models and labels for Phase 4 (left as they are):
   - Plain quarter-wave stacks labelled "long-pass" or "short-pass" (`edge-filter`, `long-pass`, `short-pass`, `ir-blocking`, `uv-blocking`, `wide-bandpass`, `solar-protection`): the HL/LH order barely changes the spectrum, and the edge comes from the plot window. Real edge filters use (L/2 H L/2)^N. `long-pass`'s "bandwidth = 700 − 1.1 λ₀" is made up.
   - `notch-filter` is a high-contrast quarter-wave stack, so its "notch" is 538 nm wide at the defaults. Real notch filters use low index contrast or a rugate profile.
@@ -123,6 +160,15 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - `enhanced-aluminum` and `protected-silver` use Drude n, k. The Al model has no 800 nm interband term and clamps n and k, and the "Cr" layer is lossless (n = 3.0). Use tabulated data (Rakić 1998).
   - `dielectric-high-reflector` promises dispersion: compute GDD from arg r (the module returns r).
   - `gradient-index` and `gradient-index-coating` are duplicates.
+  - `thermal-evaporation`:
+    - The deposition rate is mass flux × r²/d² × 1e9 with no ÷ρ, so it is ×2,200 (SiO₂) to ×19,300 (Au) too high.
+    - Its log₁₀P = A − B/T coefficients look about 10⁴ low. Al at 1,080 °C gives 3e-8 Torr, where about 1e-4 Torr is expected (Honig curves, or Alcock et al. 1984 for metals).
+    - The two errors partly cancel, so fix them together, with tabulated data. The oxide coefficients look invented.
+    - It uses m_p (1.673e-27) as the atomic mass unit. The constants codemod must map it to `m_u`, not `m_p`.
+    - Its mean free path is 0.005/P_Pa m, about 25 % below the air rule (6.6e-3/P_Pa m). The packing density and uniformity are heuristics.
+  - `phase-shift-coating` promises the phase of the reflected and transmitted light but plots only R. Plot arg r from the module. Its `numLayers` state is unused.
+  - `ellipsometry-measurement`: a film thickness needs a film model, e.g. a known film index and Azzam & Bashara's exact inversion for a transparent film.
+  - `multilayer-ar`: the default n₂ = 2.1 isn't an AR at λ₀. It gives 4.30 %, above bare glass's 4.26 %. The page now shows the optimum, 1.701. Consider n₂ ≈ 1.70 as the default, or a V-coat design.
 
 ## Phase 0 — safe, building, Claude-native (1 session)
 - [x] 0.1 **User, manual:** (the Defender exclusion is optional and wasn't done)
@@ -217,7 +263,7 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - [x] `src/physics/constants.ts` holds the exact SI constants plus CODATA 2022 measured values, with consistency tests. `src/lib/complex.ts` (unused) moved to `src/physics/complex.ts` and gained a stable `sqrt`.
   - [x] Thin-film pilot: `src/physics/thin-film/transfer-matrix.ts`. It handles complex N, oblique incidence (s and p), and R, T and A. It doesn't overflow on thick metal or evanescent layers. It has 11 golden tests (Fresnel, Brewster, TIR, AR, (HL)^N, Airy with an absorbing film, bulk metal, critical angle). 7 pages use it.
   - [x] Migrate the other thin-film pages with an inline matrix (25, see Phase 2 findings), in batches of ≤10 files, each compared before and after. `cavity-filter.ts` builds the Fabry-Perot designs. 32 pages use the module.
-  - [ ] Compare the 12 closed-form thin-film pages (listed in the Phase 2 findings) with the module.
+  - [x] Compare the 12 closed-form thin-film pages (listed in the Phase 2 findings) with the module. 10 pages changed. `fresnel-equations` was exact, and `thermal-evaporation` is deferred to Phase 4.
   - [ ] Replace the inline constants in 46 files (`c = 3e8` ×54, …) with imports from `constants.ts`, using a codemod. Expect last-digit changes.
 - [ ] Calculator registry as the single source of truth: slug, title, description, category, model tier, references, aliases. It generates the sitemap, search index, metadata, JSON-LD and related links at build time.
 - [ ] Merge the ~40 duplicates and add 301 redirects in `next.config.js`.
