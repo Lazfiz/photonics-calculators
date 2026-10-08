@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
+
 export default function WedgeFilmPage() {
   const [nFilm, setNFilm] = useURLState("nFilm", 1.5);
   const [nSub, setNSub] = useURLState("nSub", 1.52);
@@ -15,56 +17,36 @@ export default function WedgeFilmPage() {
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 600 / 500);
-    const r1 = (nInc - nFilm) / (nInc + nFilm);
-    const r2 = (nFilm - nSub) / (nFilm + nSub);
+    const reflectance = (dNm: number, wlNm: number) =>
+      stackResponse({ incident: nInc, layers: [{ n: nFilm, thickness: dNm * 1e-9 }], substrate: { n: nSub } }, wlNm * 1e-9).R;
 
-    // Wedge angle causes thickness to vary across the surface
-    // For a collimated beam at normal incidence, the thickness varies linearly
-    // Δd = tan(α) × position, but for a uniform beam, the effect is averaging
-    // Show R vs position for fixed wavelength, and R vs wavelength at different positions
-
-    const wedgeRad = wedgeAngleDeg * Math.PI / 180;
-    const positions = Array.from({ length: 200 }, (_, i) => (i - 100) * 0.5); // mm across surface
-
-    // At center, thickness = QWL
+    // The thickness grows by tan α across the surface; at the centre it is a quarter wave at λ₀.
+    const slopeNmPerMm = Math.tan(wedgeAngleDeg * Math.PI / 180) * 1e6;
     const dCenter = designWl / (4 * nFilm);
+    // Bright-to-bright spacing at λ₀ (thickness step λ₀/2n); the film edge (d = 0) is at −Δx/2.
+    const fringeSpacing = slopeNmPerMm > 0 ? designWl / (2 * nFilm * slopeNmPerMm) : NaN; // mm
 
-    // R vs wavelength at different positions
-    const traces: any[] = [];
-    const posValues = [-2, -1, 0, 1, 2]; // mm from center
-    const posColors = ["#f87171", "#fbbf24", "#60a5fa", "#34d399", "#a78bfa"];
+    // Spectra at x = 0, Δx/4, Δx/2, Δx and 2Δx: 1, 1.5, 2, 3 and 5 quarter waves thick.
+    const posFractions = [0, 0.25, 0.5, 1, 2];
+    const posColors = ["#60a5fa", "#34d399", "#fbbf24", "#f87171", "#a78bfa"];
+    const mainTraces = Number.isFinite(fringeSpacing)
+      ? posFractions.map((frac, i) => {
+          const x = frac * fringeSpacing;
+          const d = dCenter + x * slopeNmPerMm;
+          return {
+            x: wls, y: wls.map(wl => reflectance(d, wl)), type: "scatter" as const, mode: "lines" as const,
+            name: `x = ${x.toPrecision(3)} mm (d = ${d.toFixed(0)} nm)`, line: { color: posColors[i], width: 1.5 },
+          };
+        })
+      : [];
 
-    for (let pi = 0; pi < posValues.length; pi++) {
-      const d = dCenter + posValues[pi] * Math.tan(wedgeRad) * 1e6; // convert mm*rad to nm
-      if (d <= 0) continue;
-      const R = wls.map(wl => {
-        const delta = (2 * Math.PI * nFilm * d) / wl;
-        const cos2d = Math.cos(2 * delta);
-        const num = r1 * r1 + r2 * r2 + 2 * r1 * r2 * cos2d;
-        const den = 1 + r1 * r1 * r2 * r2 + 2 * r1 * r2 * cos2d;
-        return num / den;
-      });
-      traces.push({
-        x: wls, y: R, type: "scatter" as const, mode: "lines" as const,
-        name: `x = ${posValues[pi]} mm`, line: { color: posColors[pi], width: 1.5 },
-      });
-    }
+    // R vs position at λ₀ over 10 fringes from the film edge, 100 points per fringe.
+    const positions = Number.isFinite(fringeSpacing)
+      ? Array.from({ length: 1001 }, (_, i) => -fringeSpacing / 2 + (i * 10 * fringeSpacing) / 1000)
+      : [];
+    const R_vs_pos = positions.map(pos => reflectance(Math.max(dCenter + pos * slopeNmPerMm, 0), designWl));
 
-    // R vs position at design wavelength
-    const R_vs_pos = positions.map(pos => {
-      const d = dCenter + pos * Math.tan(wedgeRad) * 1e6;
-      if (d <= 0) return 0;
-      const delta = (2 * Math.PI * nFilm * d) / designWl;
-      const cos2d = Math.cos(2 * delta);
-      const num = r1 * r1 + r2 * r2 + 2 * r1 * r2 * cos2d;
-      const den = 1 + r1 * r1 * r2 * r2 + 2 * r1 * r2 * cos2d;
-      return num / den;
-    });
-
-    // Fringe spacing calculation
-    const fringeSpacing = designWl / (2 * nFilm * Math.tan(wedgeRad) * 1e6); // mm between fringes
-
-    return { mainTraces: traces, positions, R_vs_pos, fringeSpacing };
+    return { mainTraces, positions, R_vs_pos, fringeSpacing };
   }, [nFilm, nSub, nInc, designWl, wedgeAngleDeg]);
 
   const fringeSpacing = chartData.fringeSpacing;
@@ -93,7 +75,7 @@ export default function WedgeFilmPage() {
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         title: { text: "R vs Wavelength at Different Positions", font: { size: 13 } },
         xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
-        yaxis: { title: "Reflectance", gridcolor: "#374151", range: [0, 1.05] },
+        yaxis: { title: "Reflectance", gridcolor: "#374151" },
         margin: { t: 40, b: 40, l: 50, r: 20 }, autosize: true,
         legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0.3)", font: { size: 10 } },
       }} />
@@ -102,9 +84,9 @@ export default function WedgeFilmPage() {
 
       <ChartPanel data={[{ x: chartData.positions, y: chartData.R_vs_pos, type: "scatter" as const, mode: "lines" as const, name: `R at λ₀ = ${designWl} nm`, line: { color: "#fbbf24", width: 2 } }]} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
-        title: { text: "Reflectance vs Position (at design λ)", font: { size: 13 } },
+        title: { text: "Reflectance vs Position (at design λ), from the film edge", font: { size: 13 } },
         xaxis: { title: "Position from center (mm)", gridcolor: "#374151" },
-        yaxis: { title: "Reflectance", gridcolor: "#374151", range: [0, 1.05] },
+        yaxis: { title: "Reflectance", gridcolor: "#374151" },
         margin: { t: 40, b: 40, l: 50, r: 20 }, autosize: true,
       }} />
     </CalculatorShell>

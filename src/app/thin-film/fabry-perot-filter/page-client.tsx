@@ -6,6 +6,8 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { airyPeakWidth, coefficientOfFinesse, reflectingFinesse } from "../../../physics/thin-film/interference";
+
 export default function FabryPerotFilterPage() {
   const [nCavity, setNCavity] = useURLState("nCavity", 1.5);
   const [spacing, setSpacing] = useURLState("spacing", 500);
@@ -14,8 +16,7 @@ export default function FabryPerotFilterPage() {
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => wlCenter - 50 + i * 0.2);
-    const R = reflectance;
-    const F = 4 * R / ((1 - R) ** 2);
+    const F = coefficientOfFinesse(reflectance);
     const T = wls.map(wl => {
       const delta = (4 * Math.PI * nCavity * spacing) / wl;
       return 1 / (1 + F * Math.sin(delta / 2) ** 2);
@@ -30,10 +31,11 @@ export default function FabryPerotFilterPage() {
     ];
   }, [nCavity, spacing, reflectance, wlCenter]);
 
-  const F = 4 * reflectance / ((1 - reflectance) ** 2);
-  const finesse = Math.PI * Math.sqrt(F) / 2;
+  const F = coefficientOfFinesse(reflectance);
+  const finesse = reflectingFinesse(F);
   const fsr = (wlCenter * wlCenter) / (2 * nCavity * spacing);
-  const fwhm = fsr / finesse;
+  // Exact Airy half-width in phase, mapped to wavelength with dδ/dλ = 2π/FSR. NaN when T_min > ½.
+  const fwhm = (fsr * airyPeakWidth(F)) / (2 * Math.PI);
 
   return (
     <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Fabry-Pérot Filter" description="Fabry-Pérot etalon/filter transmission based on the Airy function. Explore how mirror reflectance and cavity spacing control spectral selectivity.">
@@ -48,7 +50,7 @@ export default function FabryPerotFilterPage() {
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Finesse</p>
-          <p className="text-xl font-bold text-green-400">{finesse.toFixed(2)}</p>
+          <p className="text-xl font-bold text-green-400">{Number.isFinite(finesse) ? finesse.toFixed(2) : "—"}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">FSR</p>
@@ -56,7 +58,7 @@ export default function FabryPerotFilterPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">FWHM</p>
-          <p className="text-xl font-bold text-yellow-400">{fwhm.toFixed(3)} nm</p>
+          <p className="text-xl font-bold text-yellow-400">{Number.isFinite(fwhm) ? `${fwhm.toFixed(3)} nm` : "— (T never falls below ½)"}</p>
         </div>
       </div>
 
@@ -68,7 +70,7 @@ export default function FabryPerotFilterPage() {
           <p>F = 4R/(1−R)²</p>
           <p>FSR = λ²/(2nd)</p>
           <p>ℱ = π√F/2</p>
-          <p>FWHM = FSR/ℱ</p>
+          <p>FWHM = FSR·(2/π)·asin(1/√F) ≈ FSR/ℱ</p>
         </div>
       </div>
 
