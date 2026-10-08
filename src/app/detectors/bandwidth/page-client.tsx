@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { q, k_B } from "../../../physics/constants";
 export default function BandwidthPage() {
   const [bandwidth, setBandwidth] = useURLState("bandwidth", 1e6);
   const [capacitancePF, setCapacitancePF] = useURLState("capacitance", 10);
@@ -14,14 +15,12 @@ export default function BandwidthPage() {
   const [photoCurrent, setPhotoCurrent] = useURLState("photoCurrent", 1e-6);
   const [temperature, setTemperature] = useURLState("temperature", 300);
 
-  const q = 1.6e-19;
-  const kB = 1.381e-23;
 
   const chartData = useMemo(() => {
     const bws = Array.from({ length: 200 }, (_, i) => 1e3 * Math.pow(1e7, i / 200));
     // TIA model: Johnson noise from feedback resistor Rf appears at output
     // v_Johnson = sqrt(4*kB*T*Rf*BW)
-    const johnsonNoise = bws.map(BW => Math.sqrt(4 * kB * temperature * feedbackR * BW));
+    const johnsonNoise = bws.map(BW => Math.sqrt(4 * k_B * temperature * feedbackR * BW));
     // Shot noise current through TIA: i_shot = sqrt(2*q*I*BW), v_out = i_shot * Rf
     const shotNoise = bws.map(BW => Math.sqrt(2 * q * photoCurrent * BW) * feedbackR);
     const totalNoise = bws.map((BW, i) => Math.sqrt(johnsonNoise[i] ** 2 + shotNoise[i] ** 2));
@@ -33,7 +32,7 @@ export default function BandwidthPage() {
   }, [bandwidth, capacitance, feedbackR, photoCurrent, temperature]);
 
   // TIA output noise voltages
-  const vJohnson = Math.sqrt(4 * kB * temperature * feedbackR * bandwidth);
+  const vJohnson = Math.sqrt(4 * k_B * temperature * feedbackR * bandwidth);
   const vShot = Math.sqrt(2 * q * photoCurrent * bandwidth) * feedbackR;
   const vTotal = Math.sqrt(vJohnson ** 2 + vShot ** 2);
   // RC bandwidth of detector junction

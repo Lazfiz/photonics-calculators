@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c, h } from "../../../physics/constants";
 
 export default function SolidStateLaserResonatorPage() {
   const [crystalLength, setCrystalLength] = useURLState("crystalLength", 10); // mm
@@ -52,8 +53,6 @@ export default function SolidStateLaserResonatorPage() {
   const totalLoss = crystalLoss + outputLoss + (1 - R_hr);
   const sigma_em = 2.8e-23; // m² Nd:YAG
   const tau_f = 230e-6; // s
-  const h = 6.626e-34;
-  const c = 3e8;
   const A_crystal = Math.PI * Math.pow(crystalDiameter / 2 * 1e-3, 2);
   const P_th = totalLoss * h * c / (wavelength * 1e-9 * sigma_em * tau_f) * A_crystal / (2 * L_crystal_cm / 100);
 

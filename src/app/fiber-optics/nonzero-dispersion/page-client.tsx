@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function NonzeroDispersionPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [length, setLength] = useURLState("length", 80); // km
@@ -30,7 +31,6 @@ export default function NonzeroDispersionPage() {
 
     // FWM phase mismatch: Δβ = (2πc/λ²) · D · Δλ²
     // D in ps/(nm·km) → SI: D_SI = D × 1e-6 s/m²
-    const c = 3e8; // m/s
     const lambda_m = lam * 1e-9; // m
     const D_SI = D * 1e-6; // s/m²
     const deltaLambda_m = deltaLambda * 1e-9; // m

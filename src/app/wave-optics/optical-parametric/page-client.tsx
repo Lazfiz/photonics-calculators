@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, epsilon_0 } from "../../../physics/constants";
 export default function OpticalParametricPage() {
   const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 532); // nm
   const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 1064); // nm
@@ -74,8 +75,8 @@ export default function OpticalParametricPage() {
   };
 
   // Parametric gain estimate for OPA mode
-  const omegaS = 2 * Math.PI * 3e8 / (signalWavelength * 1e-9);
-  const gOPA = (omegaS * deff * 1e-12) / (n * 3e8) * Math.sqrt(2 * pumpPower * 1e-3 / (8.854e-12 * n * 3e8 * area));
+  const omegaS = 2 * Math.PI * c / (signalWavelength * 1e-9);
+  const gOPA = (omegaS * deff * 1e-12) / (n * c) * Math.sqrt(2 * pumpPower * 1e-3 / (epsilon_0 * n * c * area));
   const gainOPA = 10 * Math.log10(Math.cosh(gOPA * crystalLength * 1e-3) ** 2);
 
   return (

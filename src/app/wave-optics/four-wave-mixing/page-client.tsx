@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, epsilon_0 } from "../../../physics/constants";
 export default function FourWaveMixingPage() {
   const [wavelengthPump, setWavelengthPump] = useURLState("wavelengthPump", 1064); // nm
   const [wavelengthSignal, setWavelengthSignal] = useURLState("wavelengthSignal", 1550); // nm
@@ -14,18 +15,18 @@ export default function FourWaveMixingPage() {
   const [coreArea, setCoreArea] = useURLState("coreArea", 50); // µm²
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // m
   // χ³ from n₂: χ³[esu] = (4n₀²/3)·n₂[esu], or in SI: χ³ = (4ε₀cn₀²/3)·n₂
-  const chi3_calc = (4 * 8.854e-12 * 3e8 * 1.45 * 1.45 / 3) * (n2 * 1e-20); // SI (m²/V²)
+  const chi3_calc = (4 * epsilon_0 * c * 1.45 * 1.45 / 3) * (n2 * 1e-20); // SI (m²/V²)
   const beta2 = 20; // ps²/km, typical silica GVD near 1 µm
 
   // Phase matching: 2ωp = ωs + ωi → 1/λi = 2/λp - 1/λs
   const lambdaI = 1 / (2 / wavelengthPump - 1 / wavelengthSignal);
-  const freqI = 3e8 / (lambdaI * 1e-9); // Hz
-  const freqP = 3e8 / (wavelengthPump * 1e-9);
-  const freqS = 3e8 / (wavelengthSignal * 1e-9);
+  const freqI = c / (lambdaI * 1e-9); // Hz
+  const freqP = c / (wavelengthPump * 1e-9);
+  const freqS = c / (wavelengthSignal * 1e-9);
 
   // Phase mismatch: Δβ ≈ β₂·Ω² (degenerate FWM, second-order dispersion)
   // Ω = ω_p - ω_s = 2πc(1/λs - 1/λp), β₂ in ps²/km → s²/m (×1e-27)
-  const Omega = 2 * Math.PI * 3e8 * (1 / (wavelengthSignal * 1e-9) - 1 / (wavelengthPump * 1e-9)); // rad/s
+  const Omega = 2 * Math.PI * c * (1 / (wavelengthSignal * 1e-9) - 1 / (wavelengthPump * 1e-9)); // rad/s
   const beta2_SI = beta2 * 1e-27; // ps²/km → s²/m
   const deltaBeta = beta2_SI * Omega * Omega; // rad/m
 

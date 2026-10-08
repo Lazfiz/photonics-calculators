@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 const MATERIALS: Record<string, { name: string; B: number[]; C: number[] }> = {
   BK7: { name: "BK7", B: [1.03961212, 0.231792344, 1.01046945], C: [0.00600069867, 0.0200179144, 103.560653] },
   FusedSilica: { name: "Fused Silica", B: [0.6961663, 0.4079426, 0.8974794], C: [0.0684043, 0.1162414, 9.896161] },
@@ -37,7 +38,6 @@ export default function GVDPage() {
 
     // GVD parameter β₂ = (λ²/(2πc)) * d²n/dλ² in s²/m
     // Convert to fs²/mm: multiply by 1e30 (s²→fs²) * 1e3 (m→mm)
-    const c = 3e8; // m/s
     const beta2 = (wl * 1e-6) ** 2 / (2 * Math.PI * c) * d2ndl2 / 1e-12; // fs²/mm (d2n is per µm², convert)
     // More carefully: d2n/dλ² is in µm⁻² = 1e12 m⁻²
     const beta2_si = (wl * 1e-6) ** 2 / (2 * Math.PI * c) * d2ndl2 * 1e12; // s²/m
@@ -67,7 +67,6 @@ export default function GVDPage() {
       const np = sellmeierN(wl + dw, mat.B, mat.C);
       const nm = sellmeierN(wl - dw, mat.B, mat.C);
       const d2 = (np - 2 * sellmeierN(wl, mat.B, mat.C) + nm) / (dw * dw);
-      const c = 3e8;
       return (wl * 1e-6) ** 2 / (2 * Math.PI * c) * d2 * 1e12 * 1e27; // ps²/km
     });
 

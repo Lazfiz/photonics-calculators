@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function DifferenceFrequencyGenPage() {
   const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 1064);
   const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 1550);
@@ -13,7 +14,6 @@ export default function DifferenceFrequencyGenPage() {
   const [walkOff, setWalkOff] = useURLState("walkOff", 0.5); // mrad
 
   const chartData = useMemo(() => {
-    const c = 3e8;
     const pumpFreq = c / (pumpWavelength * 1e-9);
     const signalFreq = c / (signalWavelength * 1e-9);
     const idlerFreq = pumpFreq - signalFreq;
@@ -43,7 +43,6 @@ export default function DifferenceFrequencyGenPage() {
     ];
   }, [pumpWavelength, signalWavelength, crystalLength, walkOff]);
 
-  const c = 3e8;
   const pumpFreq = c / (pumpWavelength * 1e-9);
   const signalFreq = c / (signalWavelength * 1e-9);
   const idlerFreq = pumpFreq - signalFreq;

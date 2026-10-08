@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c, h } from "../../../physics/constants";
 
 export default function BackgroundNoisePage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
@@ -39,7 +40,7 @@ export default function BackgroundNoisePage() {
     const PbgFilteredDBm = 10 * Math.log10(Math.max(PbgFiltered * 1e3, 1e-30));
 
     // Background photon rate
-    const photonEnergy = 6.626e-34 * 3e8 / lambda;
+    const photonEnergy = h * c / lambda;
     const photonRate = PbgFiltered / photonEnergy;
 
     // Background electrons per bit (at 1 Gbps)

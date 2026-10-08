@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { q } from "../../../physics/constants";
 export default function WellCapacityPage() {
   const [wellCapacity, setWellCapacity] = useURLState("wellCapacity", 50000); // e-
   const [readNoise, setReadNoise] = useURLState("readNoise", 5); // e- rms
@@ -15,7 +16,7 @@ export default function WellCapacityPage() {
   const chartData = useMemo(() => {
     const wells = Array.from({ length: 200 }, (_, i) => 1000 + (i / 200) * 199000);
     const dr = wells.map(w => 20 * Math.log10(w / readNoise));
-    const capacitance = wells.map(w => (w * 1.6e-19) / voltageSwing);
+    const capacitance = wells.map(w => (w * q) / voltageSwing);
     return [
       { x: wells, y: dr, type: "scatter" as const, mode: "lines" as const, name: "Dynamic range (dB)", line: { color: "#f87171" }, yaxis: "y" },
       { x: wells, y: capacitance, type: "scatter" as const, mode: "lines" as const, name: "Capacitance (F)", line: { color: "#60a5fa" }, yaxis: "y2" },
@@ -23,7 +24,7 @@ export default function WellCapacityPage() {
   }, [wellCapacity, readNoise, pixelSize, voltageSwing]);
 
   const dynamicRange = 20 * Math.log10(wellCapacity / readNoise);
-  const capacitance = (wellCapacity * 1.6e-19) / voltageSwing;
+  const capacitance = (wellCapacity * q) / voltageSwing;
   const fullWellElectronsPerArea = wellCapacity / (pixelSize * pixelSize);
   const minDetectable = 3 * readNoise;
   const usableBits = Math.log2(wellCapacity / readNoise);

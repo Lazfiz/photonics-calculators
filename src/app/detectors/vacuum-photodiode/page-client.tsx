@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, h, q, m_e } from "../../../physics/constants";
 export default function VacuumPhotodiodePage() {
   const [quantumEff, setQuantumEff] = useURLState("quantumEff", 0.25);
   const [anodeVoltage, setAnodeVoltage] = useURLState("anodeVoltage", 100); // V
@@ -17,9 +18,6 @@ export default function VacuumPhotodiodePage() {
   const [workFunction, setWorkFunction] = useURLState("workFunction", 2.0); // eV
 
   const results = useMemo(() => {
-    const h = 6.626e-34;
-    const c = 3e8;
-    const q = 1.6e-19;
     const cutoff = 1240 / workFunction;
     const actualQE = wavelength <= cutoff ? quantumEff : 0;
     const resp = (actualQE * q * wavelength * 1e-9) / (h * c);
@@ -32,7 +30,7 @@ export default function VacuumPhotodiodePage() {
     const vOut = (iPhoto + darkCurrent) * loadResistance;
     // Transit time: d ≈ 0.1*√(area), v_drift ≈ √(2*e*V/m)
     const cathodeAnodeGap = 0.1 * Math.sqrt(cathodeArea * 1e-6); // m
-    const driftVelocity = Math.sqrt(2 * q * anodeVoltage / (9.109e-31)); // m/s
+    const driftVelocity = Math.sqrt(2 * q * anodeVoltage / (m_e)); // m/s
     const transitTime = (2 * cathodeAnodeGap / driftVelocity) * 1e12; // ps (uniform E field: avg v = v_final/2)
     const bandwidth = 0.35 / (transitTime * 1e-12); // Hz
     // Shot-noise limited SNR: SNR = I_photo / √(2q(I_photo + I_dark)·BW)
@@ -43,9 +41,6 @@ export default function VacuumPhotodiodePage() {
 
   const chartData = useMemo(() => {
     const wavelengths = Array.from({ length: 200 }, (_, i) => 150 + i * 2.5);
-    const h = 6.626e-34;
-    const c = 3e8;
-    const q = 1.6e-19;
     // Simple QE model: rises at cutoff, peaks mid-band
     const cutoff = 1240 / workFunction; // nm, from work function
     const qe = wavelengths.map(l => {

@@ -6,11 +6,11 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function OpticalFrequencyCombPage() {
   const [repRate, setRepRate] = useURLState("repRate", 250); // MHz
   const [centerWavelength, setCenterWavelength] = useURLState("centerWavelength", 1550); // nm
   const [combLines, setCombLines] = useURLState("combLines", 50);
-  const c = 3e8;
 
   const chartData = useMemo(() => {
     const f0 = c / (centerWavelength * 1e-9);

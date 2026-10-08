@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function OpticalCoherencePage() {
   const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 1310);
   const [bandwidthNm, setBandwidthNm] = useURLState("bandwidthNm", 100);
@@ -19,7 +20,7 @@ export default function OpticalCoherencePage() {
   const wavelengthM = wavelengthNm * 1e-9;
   const bandwidthM = bandwidthNm * 1e-9;
   const coherenceLengthCalc = (2 * Math.LN2 / Math.PI) * (wavelengthM ** 2) / bandwidthM * 1e3; // mm
-  const coherenceTime = coherenceLengthCalc * 1e-3 / 3e8 * 1e15; // fs, τ_c = l_c / c
+  const coherenceTime = coherenceLengthCalc * 1e-3 / c * 1e15; // fs, τ_c = l_c / c
   const axialResolution = (2 * Math.LN2 / Math.PI) * (wavelengthM ** 2) / bandwidthM * 1e6 / (2 * refractiveIndex); // µm
   const lateralResolution = (0.37 * wavelengthM) / 0.05 * 1e6; // µm for NA=0.05 typical
   const opticalPathDiff = 2 * refractiveIndex * 0.5 * 1e-3; // for 0.5mm sample

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c } from "../../../physics/constants";
 
 interface BrillouinMaterial { name: string; n: number; rho: number; vA: number; p12: number; color: string }
 
@@ -25,7 +26,6 @@ function brillouinShift(n: number, vA: number, lambda_nm: number): number {
 }
 
 function brillouinGain(mat: BrillouinMaterial, lambda_nm: number, linewidth_MHz: number): number {
-  const c = 3e8;
   const n = mat.n;
   const lambda = lambda_nm * 1e-9;
   const p12 = mat.p12;

@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function TimeResolvedPage() {
   const [laserRepRate, setLaserRepRate] = useURLState("laserRepRate", 80); // MHz
   const [pulseWidthFs, setPulseWidthFs] = useURLState("pulseWidthFs", 100); // fs
@@ -53,7 +54,6 @@ export default function TimeResolvedPage() {
     ];
   }, [pulseWidthFs, instrumentResponse, lifetime, timeRange]);
 
-  const c = 3e8;
   const repPeriod = 1 / (laserRepRate * 1e6); // seconds
   const spectralWidth = 0.44 / (pulseWidthFs * 1e-15); // Hz, time-bandwidth product
   const spectralWidthNm = spectralWidth * (800e-9) ** 2 / c * 1e9; // approx for 800nm

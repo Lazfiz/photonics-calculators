@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function SumFrequencyGenPage() {
   const [visWavelength, setVisWavelength] = useURLState("visWavelength", 532);
   const [irMinCm, setIrMinCm] = useURLState("irMinCm", 2800);
@@ -13,7 +14,6 @@ export default function SumFrequencyGenPage() {
   const [resolution, setResolution] = useURLState("resolution", 200);
 
   const chartData = useMemo(() => {
-    const c = 3e8;
     const visFreq = c / (visWavelength * 1e-9);
     const shifts = Array.from({ length: resolution }, (_, i) => irMinCm + (i / resolution) * (irMaxCm - irMinCm));
 
@@ -52,7 +52,6 @@ export default function SumFrequencyGenPage() {
     ];
   }, [visWavelength, irMinCm, irMaxCm, resolution]);
 
-  const c = 3e8;
   const visFreq = c / (visWavelength * 1e-9);
   const midIrFreq = ((irMinCm + irMaxCm) / 2) * c * 100;
   const midSfgNm = c / (visFreq + midIrFreq) * 1e9;

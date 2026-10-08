@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, h } from "../../../physics/constants";
 export default function FiberGyroscopePage() {
   const [coilDiameter, setCoilDiameter] = useURLState("coilDiameter", 100); // mm
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 500); // m
@@ -25,7 +26,6 @@ export default function FiberGyroscopePage() {
 
     // Sagnac effect: Δφ = 4πLRΩ / (λc) where L = total fiber length, R = coil radius
     // Scale factor: S = 4πLR / (λc) (rad/s per rad/s)
-    const c = 3e8;
     const scaleFactor = 4 * Math.PI * L * R / (lambda * c); // rad/(rad/s)
     const sagnacConst = 4 * Math.PI * L * R / (lambda * c); // Δφ = sagnacConst × Ω
 
@@ -35,7 +35,7 @@ export default function FiberGyroscopePage() {
 
     // Noise
     const P_det = sourcePower * 1e-3 * Math.pow(10, -losses / 10);
-    const hc_over_lambda = 6.626e-34 * 3e8 / lambda; // photon energy (J), lambda already in meters
+    const hc_over_lambda = h * c / lambda; // photon energy (J), lambda already in meters
     const shotNoise = Math.sqrt(2 * hc_over_lambda / P_det); // rad/√Hz
     const thermalNoise = 1e-7; // rad/√Hz (typical)
     const RIN_noise = Math.pow(10, sourceRIN / 20) * P_det / (2 * hc_over_lambda); // simplified
@@ -64,9 +64,9 @@ export default function FiberGyroscopePage() {
       const R = coilDiameter * 1e-3 / 2;
       const A = Math.PI * R * R;
       const lambda = wavelength * 1e-9;
-      const sf = 4 * Math.PI * L * R / (lambda * 3e8);
+      const sf = 4 * Math.PI * L * R / (lambda * c);
       const P = sourcePower * 1e-3 * Math.pow(10, -losses / 10);
-      const sn = Math.sqrt(2 * 6.626e-34 * 3e8 / (wavelength * 1e-9 * P));
+      const sn = Math.sqrt(2 * h * c / (wavelength * 1e-9 * P));
       return sn / sf * (180 / Math.PI) * 3600;
     });
 

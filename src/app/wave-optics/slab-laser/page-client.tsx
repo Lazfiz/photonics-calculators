@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c, h } from "../../../physics/constants";
 
 export default function SlabLaserPage() {
   const [slabWidth, setSlabWidth] = useURLState("slabWidth", 10); // mm
@@ -17,7 +18,6 @@ export default function SlabLaserPage() {
   const [bounces, setBounces] = useURLState("bounces", 8);
   const [thermalLoad, setThermalLoad] = useURLState("thermalLoad", 5); // W/cm³
 
-  const h = 6.626e-34; const c = 3e8;
   const lambda_m = wavelength * 1e-9;
 
   // Slab geometry - zigzag path

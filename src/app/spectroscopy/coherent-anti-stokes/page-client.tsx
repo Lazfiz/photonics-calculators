@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, h, k_B } from "../../../physics/constants";
 export default function CoherentAntiStokesPage() {
   const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 532);
   const [stokesWavelength, setStokesWavelength] = useURLState("stokesWavelength", 630);
@@ -13,9 +14,6 @@ export default function CoherentAntiStokesPage() {
   const [maxShift, setMaxShift] = useURLState("maxShift", 4000);
 
   const chartData = useMemo(() => {
-    const c = 3e8;
-    const h = 6.626e-34;
-    const kB = 1.381e-23;
     const shifts = Array.from({ length: 500 }, (_, i) => (i / 500) * maxShift);
 
     const pumpFreq = c / (pumpWavelength * 1e-9);
@@ -63,7 +61,6 @@ export default function CoherentAntiStokesPage() {
     ];
   }, [pumpWavelength, stokesWavelength, maxShift]);
 
-  const c = 3e8;
   const pumpFreq = c / (pumpWavelength * 1e-9);
   const stokesFreq = c / (stokesWavelength * 1e-9);
   const vibFreqHz = pumpFreq - stokesFreq;
@@ -72,9 +69,7 @@ export default function CoherentAntiStokesPage() {
   const vibWavenumber = vibFreqHz / c * 1e-2;
 
   // Thermal population factor
-  const h = 6.626e-34;
-  const kB = 1.381e-23;
-  const thermalFactor = 1 / (Math.exp(h * vibFreqHz / (kB * temperature)) - 1);
+  const thermalFactor = 1 / (Math.exp(h * vibFreqHz / (k_B * temperature)) - 1);
 
   return (
     <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Coherent Anti-Stokes Raman Spectroscopy (CARS)" description="Four-wave mixing process: ω_CARS = ω_pump − ω_Stokes + ω_probe. Coherent, directional signal above fluorescence.">

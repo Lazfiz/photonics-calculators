@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c } from "../../../physics/constants";
 
 export default function PointAheadPage() {
   const [range, setRange] = useURLState("range", 40000); // km (LEO)
@@ -17,7 +18,6 @@ export default function PointAheadPage() {
     const lambda = wavelength * 1e-9;
 
     // Point-ahead angle (rad) = v / c (range cancels: angular displacement = v·R/c / R)
-    const c = 3e8;
     const thetaPA = v / c;
     const thetaPA_urad = thetaPA * 1e6;
 
@@ -39,7 +39,6 @@ export default function PointAheadPage() {
   }, [range, relVelocity, wavelength, txAperture]);
 
   const plotData = useMemo(() => {
-    const c = 3e8;
     const ranges = Array.from({ length: 200 }, (_, i) => 100 + i * 250); // km
     const paAngles = ranges.map((r) => relVelocity * 1e3 / c * 1e6);
     const tofs = ranges.map((r) => r * 1e3 / c);

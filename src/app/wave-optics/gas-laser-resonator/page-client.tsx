@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c, h } from "../../../physics/constants";
 
 export default function GasLaserResonatorPage() {
   const [tubeDiameter, setTubeDiameter] = useURLState("tubeDiameter", 6); // mm
@@ -22,7 +23,6 @@ export default function GasLaserResonatorPage() {
   };
 
   const params = gasParams[gasType] || gasParams.HeNe;
-  const h = 6.626e-34; const c = 3e8;
   const lambda_m = wavelength * 1e-9;
   const L_m = tubeLength / 1000;
   const L_cm = tubeLength / 10;

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c } from "../../../physics/constants";
 
 export default function FiberDelayLineCalculator() {
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 100); // m
@@ -16,7 +17,6 @@ export default function FiberDelayLineCalculator() {
 
   // Propagation time
   const delay = useMemo(() => {
-    const c = 3e8; // m/s
     return (refractiveIndex * fiberLength) / c; // seconds
   }, [fiberLength, refractiveIndex]);
 
@@ -24,7 +24,7 @@ export default function FiberDelayLineCalculator() {
   const delayPs = delay * 1e12; // picoseconds
 
   // Group velocity
-  const groupVelocity = 3e8 / refractiveIndex; // m/s
+  const groupVelocity = c / refractiveIndex; // m/s
 
   // Optical path length
   const opticalPathLength = refractiveIndex * fiberLength;
@@ -52,7 +52,6 @@ export default function FiberDelayLineCalculator() {
 
   // Free spectral range (if used as recirculating loop)
   const fsr = useMemo(() => {
-    const c = 3e8;
     return c / (refractiveIndex * fiberLength); // Hz
   }, [refractiveIndex, fiberLength]);
 
@@ -65,7 +64,7 @@ export default function FiberDelayLineCalculator() {
 
     for (let l = 0; l <= 500; l += 5) {
       lengths.push(l);
-      delays.push((refractiveIndex * l) / 3e8 * 1e9); // ns
+      delays.push((refractiveIndex * l) / c * 1e9); // ns
     }
 
     return [{ x: lengths, y: delays, type: "scatter" as const, mode: "lines" as const, name: "Delay (ns)", line: { color: "#3b82f6", width: 2 } }];

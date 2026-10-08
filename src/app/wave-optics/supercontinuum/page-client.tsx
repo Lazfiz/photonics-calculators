@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function SupercontinuumPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm pump
   const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 10); // nJ
@@ -44,11 +45,11 @@ export default function SupercontinuumPage() {
   // SC spectrum estimate (qualitative)
   const spectrumData = useMemo(() => {
     const wavelengths = Array.from({ length: 400 }, (_, i) => 300 + i * 1500 / 400);
-    const omega0 = 2 * Math.PI * 3e8 / (wavelength * 1e-9);
+    const omega0 = 2 * Math.PI * c / (wavelength * 1e-9);
     const spectrum = wavelengths.map(w => {
-      const omega = 2 * Math.PI * 3e8 / (w * 1e-9);
+      const omega = 2 * Math.PI * c / (w * 1e-9);
       const deltaOmega = omega - omega0;
-      const width = Nsoliton * 2 * Math.PI * 3e8 / (wavelength * 1e-9) / 20;
+      const width = Nsoliton * 2 * Math.PI * c / (wavelength * 1e-9) / 20;
       const solitonPart = Math.exp(-0.5 * (deltaOmega / width) ** 2);
       const dispersivePart = 0.3 * Math.exp(-0.5 * ((deltaOmega + width * 3) / (width * 2)) ** 2);
       const sfgPart = 0.2 * Math.exp(-0.5 * ((deltaOmega - width * 4) / (width * 1.5)) ** 2);

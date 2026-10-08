@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { N_A } from "../../../physics/constants";
 
 export default function FCSPage() {
   const [w0, setW0] = useURLState("w0", 0.3); // µm
@@ -18,7 +19,7 @@ export default function FCSPage() {
     const kappa = z0 / w0; // structure parameter
     const Veff = Math.PI ** 1.5 * w0 * w0 * z0 * 1e-15; // L (effective volume)
     const Veff_fL = Veff * 1e15; // femtoliters
-    const N = concentration * 1e-9 * 6.022e23 * Veff; // number of particles
+    const N = concentration * 1e-9 * N_A * Veff; // number of particles
     const G0 = 1 / N;
     const D = w0 * w0 * 1e-12 / (4 * tauD * 1e-3); // m²/s
     const D_um2s = D * 1e12;
@@ -47,7 +48,7 @@ export default function FCSPage() {
     const snrs = [];
     for (let c = 1; c <= 500; c += 5) {
       concs.push(c);
-      const n = c * 1e-9 * 6.022e23 * results.Veff;
+      const n = c * 1e-9 * N_A * results.Veff;
       const g0 = 1 / n;
       const cr = n * brightness;
       const snr = g0 * Math.sqrt(cr * 1e-3); // per ms bin

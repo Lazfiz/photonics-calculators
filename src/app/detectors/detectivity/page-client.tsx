@@ -6,7 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-const h = 6.626e-34, c = 3e8, q = 1.602e-19, kB = 1.381e-23;
+import { c, h, q, k_B } from "../../../physics/constants";
 
 export default function DetectivityPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 850);
@@ -22,7 +22,7 @@ export default function DetectivityPage() {
   const responsivity = qe * lambda * q / (h * c);
   const areaCm2 = area * 1e-2; // mm² → cm² (D* uses cm·Hz^½/W)
   const shotNoiseDark = Math.sqrt(2 * q * darkCurrent * 1e-9 * excessNoiseFactor * bandwidth * 1e6);
-  const thermalNoise = Math.sqrt(4 * kB * temperature * bandwidth * 1e6 / loadResistance);
+  const thermalNoise = Math.sqrt(4 * k_B * temperature * bandwidth * 1e6 / loadResistance);
   const totalNoise = Math.sqrt(shotNoiseDark ** 2 + thermalNoise ** 2);
   const nepSpectral = totalNoise / (responsivity * Math.sqrt(bandwidth * 1e6)); // W/√Hz
   const detectivity = Math.sqrt(areaCm2) / nepSpectral; // cm·Hz^½/W
@@ -34,7 +34,7 @@ export default function DetectivityPage() {
 
   const tempChart = useMemo(() => {
     const temps = Array.from({ length: 100 }, (_, i) => 200 + i * 2);
-    return [{ x: temps, y: temps.map(T => { const Idd = darkCurrent * 1e-9 * Math.pow(2, (T - temperature) / 7); const sn = Math.sqrt(2 * q * Idd * excessNoiseFactor * bandwidth * 1e6); const tn = Math.sqrt(4 * kB * T * bandwidth * 1e6 / loadResistance); const in2 = Math.sqrt(sn ** 2 + tn ** 2); return responsivity > 1e-10 ? Math.sqrt(areaCm2) * responsivity / (in2 / Math.sqrt(bandwidth * 1e6)) : 0; }), type: "scatter", mode: "lines", name: "D*", line: { color: "#f87171", width: 2 } }];
+    return [{ x: temps, y: temps.map(T => { const Idd = darkCurrent * 1e-9 * Math.pow(2, (T - temperature) / 7); const sn = Math.sqrt(2 * q * Idd * excessNoiseFactor * bandwidth * 1e6); const tn = Math.sqrt(4 * k_B * T * bandwidth * 1e6 / loadResistance); const in2 = Math.sqrt(sn ** 2 + tn ** 2); return responsivity > 1e-10 ? Math.sqrt(areaCm2) * responsivity / (in2 / Math.sqrt(bandwidth * 1e6)) : 0; }), type: "scatter", mode: "lines", name: "D*", line: { color: "#f87171", width: 2 } }];
   }, [darkCurrent, temperature, bandwidth, loadResistance, excessNoiseFactor, responsivity, areaCm2]);
 
   return (

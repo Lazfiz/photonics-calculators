@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function ModeLockedLaserPage() {
   const [repRate, setRepRate] = useURLState("repRate", 80); // MHz
   const [pulseDuration, setPulseDuration] = useURLState("pulseDuration", 100); // fs
@@ -32,7 +33,7 @@ export default function ModeLockedLaserPage() {
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">
-        <p className="text-gray-300">Cavity Length: <span className="text-blue-400 font-mono">{(3e8 / (2 * repRate * 1e6)).toFixed(2)} m</span></p>
+        <p className="text-gray-300">Cavity Length: <span className="text-blue-400 font-mono">{(c / (2 * repRate * 1e6)).toFixed(2)} m</span></p>
       </div>
 
       <ChartPanel data={chartData} layout={{

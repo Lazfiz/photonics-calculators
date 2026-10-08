@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c } from "../../../physics/constants";
 
 export default function SRSThresholdPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
@@ -27,7 +28,7 @@ export default function SRSThresholdPage() {
     const pth = 16 * Aeff / (gR * Leff); // W
 
     // Raman Stokes wavelength: 1/λ_s = 1/λ_p - Δν_R/c
-    const wlRaman = 1 / (1 / wl - ramanShift * 1e12 / 3e8);
+    const wlRaman = 1 / (1 / wl - ramanShift * 1e12 / c);
 
     // Gain spectrum (Gaussian approximation of silica Raman gain)
     const shifts = Array.from({ length: 100 }, (_, i) => (i + 1) * 0.2); // THz

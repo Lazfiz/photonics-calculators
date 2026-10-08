@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function ChromaticDispersionPage() {
   const [dispersionCoeff, setDispersionCoeff] = useURLState("dispersionCoeff", 0); // ps/(nm·km) at λ₀ (zero by definition)
   const [dispersionSlope, setDispersionSlope] = useURLState("dispersionSlope", 0.056); // ps/(nm²·km)
@@ -38,8 +39,7 @@ export default function ChromaticDispersionPage() {
     const T0 = pulseWidth / (2 * Math.sqrt(Math.LN2)); // ps, 1/e half-width
     // LD = T0²/|β₂| where β₂ = -λ²·D/(2πc) in ps²/km
     const lambda_m = wavelength * 1e-9; // nm → m
-    const c_ms = 2.998e8; // m/s
-    const beta2 = -(lambda_m ** 2 * D) / (2 * Math.PI * c_ms) * 1e21; // ps²/km
+    const beta2 = -(lambda_m ** 2 * D) / (2 * Math.PI * c) * 1e21; // ps²/km
     const LD = beta2 !== 0 ? T0 ** 2 / Math.abs(beta2) : Infinity; // km
 
     // Maximum data rate (3dB bandwidth limited by dispersion)

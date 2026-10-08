@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function KerrLensPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm
   const [beamWaist, setBeamWaist] = useURLState("beamWaist", 50); // µm
@@ -37,7 +38,7 @@ export default function KerrLensPage() {
   }, [wavelength, beamWaist, n2, crystalLength, n0, Pcr]);
 
   // GDD from Kerr effect
-  const gdd = n2_um * power * crystalLength * 1e3 / (Math.PI * Math.pow(beamWaist, 2) * 3e8); // fs²
+  const gdd = n2_um * power * crystalLength * 1e3 / (Math.PI * Math.pow(beamWaist, 2) * c); // fs²
   // Self-phase: Δφ_NL = k₀ · n₂ · I₀ · L, with I₀ = 2P/(πw₀²) for Gaussian peak
   const I0 = 2 * power / (Math.PI * Math.pow(beamWaist, 2)); // W/µm²
   const selfPhase = k * n2_um * I0 * crystalLength * 1e3; // rad

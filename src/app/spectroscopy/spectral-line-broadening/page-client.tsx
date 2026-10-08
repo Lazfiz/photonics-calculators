@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, k_B, m_u } from "../../../physics/constants";
 export default function SpectralLineBroadeningPage() {
   const [centerWl, setCenterWl] = useURLState("centerWl", 500); // nm
   const [temperature, setTemperature] = useURLState("temperature", 5000); // K
@@ -20,9 +21,8 @@ export default function SpectralLineBroadeningPage() {
     const x = Array.from({ length: 500 }, (_, i) => sigma0 - range + (2 * range * i) / 499);
 
     // Doppler FWHM: Δσ_D = σ0 * sqrt(8kT ln2 / mc²)
-    const k = 1.381e-23, c = 3e8, amu = 1.661e-27;
-    const m = molecularMass * amu;
-    const dopplerFWHM = sigma0 * Math.sqrt((8 * k * temperature * Math.LN2) / (m * c * c));
+    const m = molecularMass * m_u;
+    const dopplerFWHM = sigma0 * Math.sqrt((8 * k_B * temperature * Math.LN2) / (m * c * c));
     const dopplerGauss = dopplerFWHM / (2 * Math.sqrt(2 * Math.LN2));
 
     // Gaussian (Doppler)
@@ -55,10 +55,9 @@ export default function SpectralLineBroadeningPage() {
   }, [centerWl, temperature, molecularMass, pressure, gammaCol, naturalWidth]);
 
   // Compute values
-  const k = 1.381e-23, c = 3e8, amu = 1.661e-27;
-  const m = molecularMass * amu;
+  const m = molecularMass * m_u;
   const sigma0 = 1e7 / centerWl;
-  const dopplerFWHM = sigma0 * Math.sqrt((8 * k * temperature * Math.LN2) / (m * c * c));
+  const dopplerFWHM = sigma0 * Math.sqrt((8 * k_B * temperature * Math.LN2) / (m * c * c));
   const collisionalFWHM = 2 * gammaCol * pressure;
   const lorentzFWHM_disp = collisionalFWHM + naturalWidth;
   // Olivero-Longbothum Voigt FWHM approximation (same as chart)

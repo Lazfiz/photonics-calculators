@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c, h } from "../../../physics/constants";
 
 export default function RareEarthDopedFiberCalculator() {
   const [dopantType, setDopantType] = useState<"Er" | "Yb" | "ErYb" | "Tm" | "Nd">("Er");
@@ -30,8 +31,6 @@ export default function RareEarthDopedFiberCalculator() {
   const na = Math.sqrt(coreIndex ** 2 - claddingIndex ** 2);
   const lambdaS = signalWavelength * 1e-9;
   const lambdaP = pumpWavelength * 1e-9;
-  const h = 6.626e-34;
-  const c = 3e8;
 
   // Ion density from ppm (weight)
   const ionDensity = useMemo(() => {

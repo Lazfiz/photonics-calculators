@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, epsilon_0 } from "../../../physics/constants";
 export default function SumFrequencyPage() {
   const [lambda1, setLambda1] = useURLState("lambda1", 1064); // nm
   const [lambda2, setLambda2] = useURLState("lambda2", 1550); // nm
@@ -17,25 +18,23 @@ export default function SumFrequencyPage() {
 
   // Sum frequency: 1/λ_sum = 1/λ1 + 1/λ2
   const lambdaSum = 1 / (1 / lambda1 + 1 / lambda2);
-  const omegaSum = 2 * Math.PI * 3e8 / (lambdaSum * 1e-9);
+  const omegaSum = 2 * Math.PI * c / (lambdaSum * 1e-9);
 
   // Conversion efficiency (Boyd-Kleinman)
   const n = 1.8;
   const area = Math.PI * (beamWaist * 1e-6) ** 2;
   const L = crystalLength * 1e-3;
   const d = deff * 1e-12;
-  const epsilon0 = 8.854e-12;
-  const c = 3e8;
 
   // η ≈ (8π² d² L²) / (ε₀ c n³ λ²) × P/A — simplified plane-wave
-  const eta = (8 * Math.PI ** 2 * d ** 2 * L ** 2) / (epsilon0 * c * n ** 3 * (lambdaSum * 1e-9) ** 2 * area) * (power1 * 1e-3 / area);
+  const eta = (8 * Math.PI ** 2 * d ** 2 * L ** 2) / (epsilon_0 * c * n ** 3 * (lambdaSum * 1e-9) ** 2 * area) * (power1 * 1e-3 / area);
   const pSum = power1 * 1e-3 * eta * power2 * 1e-3;
 
   // Conversion efficiency vs crystal length
   const lengthData = useMemo(() => {
     const lengths = Array.from({ length: 200 }, (_, i) => 0.1 + i * 30 / 200);
     const effs = lengths.map(l => {
-      return (8 * Math.PI ** 2 * d ** 2 * (l * 1e-3) ** 2) / (epsilon0 * c * n ** 3 * (lambdaSum * 1e-9) ** 2 * area) * (power1 * 1e-3 / area) * 100;
+      return (8 * Math.PI ** 2 * d ** 2 * (l * 1e-3) ** 2) / (epsilon_0 * c * n ** 3 * (lambdaSum * 1e-9) ** 2 * area) * (power1 * 1e-3 / area) * 100;
     });
     return [
       { x: lengths, y: effs, type: "scatter", mode: "lines", name: "η vs L", line: { color: "#60a5fa", width: 2 } },

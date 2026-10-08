@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, h, q } from "../../../physics/constants";
 // Si vs InGaAs detector comparison
 // Si: 350-1100 nm, high QE, low dark current
 // InGaAs: 900-1700 nm (extended to 2600), higher dark current, lower QE at visible
@@ -15,7 +16,7 @@ export default function SiVsInGaAsPage() {
   const [temperature, setTemperature] = useURLState("temperature", 25);
 
   const powerW = Math.pow(10, opticalPowerDbm / 10) * 1e-3;
-  const photonEnergy = 6.626e-34 * 3e8 / (wavelength * 1e-9);
+  const photonEnergy = h * c / (wavelength * 1e-9);
   const photonRate = powerW / photonEnergy;
 
   // Si parameters
@@ -28,10 +29,9 @@ export default function SiVsInGaAsPage() {
   const inGaAsDarkCurrent = 5 * Math.pow(2, (temperature - 25) / 5); // nA (InGaAs doubles faster)
   const inGaAsNoiseFloor = 5e-12; // A/√Hz
 
-  const siSignal = photonRate * siQE * 1.602e-19;
-  const inGaAsSignal = photonRate * inGaAsQE * 1.602e-19;
+  const siSignal = photonRate * siQE * q;
+  const inGaAsSignal = photonRate * inGaAsQE * q;
 
-  const q = 1.602e-19;
   const bw = 1e6; // 1 MHz measurement bandwidth
   const siSNR = siSignal / Math.sqrt(2 * q * siSignal * bw + siNoiseFloor ** 2 * bw + 2 * q * siDarkCurrent * 1e-9 * bw);
   const inGaAsSNR = inGaAsSignal / Math.sqrt(2 * q * inGaAsSignal * bw + inGaAsNoiseFloor ** 2 * bw + 2 * q * inGaAsDarkCurrent * 1e-9 * bw);
@@ -64,20 +64,20 @@ export default function SiVsInGaAsPage() {
   const snrVsWavelength = useMemo(() => {
     const wls = Array.from({ length: 200 }, (_, i) => 400 + i * 7);
     const siSNRs = wls.map(wl => {
-      const pe = 6.626e-34 * 3e8 / (wl * 1e-9);
+      const pe = h * c / (wl * 1e-9);
       const pr = powerW / pe;
       const qe = getSiQE(wl);
-      const sig = pr * qe * 1.602e-19;
+      const sig = pr * qe * q;
       const dc = 0.01 * Math.pow(2, (temperature - 25) / 6) * 1e-9; // Si dark current in A
-      return qe > 0 ? sig / Math.sqrt(2 * 1.602e-19 * sig * 1e6 + siNoiseFloor ** 2 * 1e6 + 2 * 1.602e-19 * dc * 1e6) : 0;
+      return qe > 0 ? sig / Math.sqrt(2 * q * sig * 1e6 + siNoiseFloor ** 2 * 1e6 + 2 * q * dc * 1e6) : 0;
     });
     const inGaAsSNRs = wls.map(wl => {
-      const pe = 6.626e-34 * 3e8 / (wl * 1e-9);
+      const pe = h * c / (wl * 1e-9);
       const pr = powerW / pe;
       const qe = getInGaAsQE(wl);
-      const sig = pr * qe * 1.602e-19;
+      const sig = pr * qe * q;
       const dc = 5 * Math.pow(2, (temperature - 25) / 5) * 1e-9; // InGaAs dark current in A
-      return qe > 0 ? sig / Math.sqrt(2 * 1.602e-19 * sig * 1e6 + inGaAsNoiseFloor ** 2 * 1e6 + 2 * 1.602e-19 * dc * 1e6) : 0;
+      return qe > 0 ? sig / Math.sqrt(2 * q * sig * 1e6 + inGaAsNoiseFloor ** 2 * 1e6 + 2 * q * dc * 1e6) : 0;
     });
     return { wls, siSNRs, inGaAsSNRs };
   }, [powerW, siNoiseFloor, inGaAsNoiseFloor, temperature]);

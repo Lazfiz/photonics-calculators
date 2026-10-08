@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { q, m_u } from "../../../physics/constants";
 export default function SputteringDepositionPage() {
   const [targetMaterial, setTargetMaterial] = useState("SiO2");
   const [power, setPower] = useURLState("power", 300);
@@ -47,8 +48,8 @@ export default function SputteringDepositionPage() {
 
     // Deposition rate
     const J_ion = P / E_ion; // A (ion current)
-    const atomFlux = J_ion * sputterYield / 1.6e-19;
-    const depRate = (atomFlux * M_avg * 1.673e-27) / (target.density * 1e3 * 0.01) * 1e9; // nm/s
+    const atomFlux = J_ion * sputterYield / q;
+    const depRate = (atomFlux * M_avg * m_u) / (target.density * 1e3 * 0.01) * 1e9; // nm/s
     const depRateAngstrom = depRate * 10;
 
     // Kinetic energy of sputtered atoms
@@ -81,8 +82,8 @@ export default function SputteringDepositionPage() {
       const Eth = target.Us * 4;
       const Y = Math.max(gamma * Math.sqrt(Math.max(E_ion - Eth, 0)) * Math.max(E_ion - Eth, 0) / 1000, 0.01);
       const J_ion = P / E_ion;
-      const atomFlux = J_ion * Y / 1.6e-19;
-      return (atomFlux * (target.M1 + 2 * target.M2) / 3 * 1.673e-27) / (target.density * 1e3 * 0.01) * 1e9;
+      const atomFlux = J_ion * Y / q;
+      return (atomFlux * (target.M1 + 2 * target.M2) / 3 * m_u) / (target.density * 1e3 * 0.01) * 1e9;
     });
     const stresses = powers.map(P => 200 * Math.sqrt(P / 300) * 1.5);
     return [

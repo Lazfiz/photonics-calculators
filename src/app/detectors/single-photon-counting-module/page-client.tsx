@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, h } from "../../../physics/constants";
 export default function SPCMPage() {
   const [deadTime, setDeadTime] = useURLState("deadTime", 50); // ns
   const [darkCountRate, setDarkCountRate] = useURLState("darkCountRate", 100); // counts/s
@@ -15,8 +16,6 @@ export default function SPCMPage() {
   const [afterpulseProb, setAfterpulseProb] = useURLState("afterpulseProb", 0.02); // per-avalanche
 
   const results = useMemo(() => {
-    const h = 6.626e-34;
-    const c = 3e8;
     const freq = c / (wavelength * 1e-9);
     const photonsPerSec = incidentPower / (h * freq);
     const detectedRate = photonsPerSec * quantumEff;
@@ -36,8 +35,6 @@ export default function SPCMPage() {
 
   const chartData = useMemo(() => {
     const powers = Array.from({ length: 200 }, (_, i) => 1e-15 * Math.pow(1e6, i / 200));
-    const h = 6.626e-34;
-    const c = 3e8;
     const freq = c / (wavelength * 1e-9);
     const dt = deadTime * 1e-9;
     const detected = powers.map(p => (p / (h * freq)) * quantumEff);

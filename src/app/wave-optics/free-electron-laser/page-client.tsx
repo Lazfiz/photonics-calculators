@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c, q } from "../../../physics/constants";
 
 export default function FreeElectronLaserPage() {
   const [electronEnergy, setElectronEnergy] = useURLState("electronEnergy", 100); // MeV
@@ -14,7 +15,6 @@ export default function FreeElectronLaserPage() {
   const [beamEmittance, setBeamEmittance] = useURLState("beamEmittance", 5); // mm-mrad
   const [energySpread, setEnergySpread] = useURLState("energySpread", 0.001); // relative
 
-  const c = 2.998e8;
   const m_e = 0.511; // MeV/c²
   const gamma = electronEnergy / m_e + 1;
   const beta = Math.sqrt(1 - 1 / (gamma * gamma));
@@ -37,7 +37,7 @@ export default function FreeElectronLaserPage() {
   const L_sat = L_g * 10;
 
   // Saturated power estimate: P_beam = I × E_kin [W]
-  const P_beam = beamCurrent * electronEnergy * 1e6 * 1.6e-19; // W
+  const P_beam = beamCurrent * electronEnergy * 1e6 * q; // W
   const P_sat = rho * P_beam;
 
   // Slippage length

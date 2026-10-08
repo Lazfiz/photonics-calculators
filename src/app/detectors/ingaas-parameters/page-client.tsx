@@ -6,7 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-const k = 1.381e-23, q = 1.602e-19, h = 6.626e-34, c = 3e8;
+import { c, h, q, k_B } from "../../../physics/constants";
 
 export default function IngaasParametersPage() {
   const [temperature, setTemperature] = useURLState("temperature", 293);
@@ -27,10 +27,10 @@ export default function IngaasParametersPage() {
   const resp = (wl: number) => calcQE(wl) * wl * 1e-9 * q / (h * c);
 
   const areaCm2 = area * 1e-2;
-  const Vt = k * temperature / q;
+  const Vt = k_B * temperature / q;
   const Vrev = Math.max(0, -biasVoltage);
-  const diffDark = areaCm2 * 1e-8 * Math.pow(temperature / 300, 3) * Math.exp(EgT * q / k * (1 / 300 - 1 / temperature)) * (1 - Math.exp(-Vrev / (idealityFactor * Vt)));
-  const grDark = areaCm2 * 1e-6 * Math.pow(temperature / 300, 1.5) * Math.exp(-EgT * q / (2 * k * temperature)) * (1 - Math.exp(-Vrev / (2 * Vt)));
+  const diffDark = areaCm2 * 1e-8 * Math.pow(temperature / 300, 3) * Math.exp(EgT * q / k_B * (1 / 300 - 1 / temperature)) * (1 - Math.exp(-Vrev / (idealityFactor * Vt)));
+  const grDark = areaCm2 * 1e-6 * Math.pow(temperature / 300, 1.5) * Math.exp(-EgT * q / (2 * k_B * temperature)) * (1 - Math.exp(-Vrev / (2 * Vt)));
   const totalDark = diffDark + grDark;
   const R1550 = resp(1550);
   const nep1550 = Math.sqrt(2 * q * totalDark) / R1550;
@@ -46,7 +46,7 @@ export default function IngaasParametersPage() {
 
   const darkVsTemp = useMemo(() => {
     const temps = Array.from({ length: 150 }, (_, i) => 200 + i * 200 / 150);
-    return [{ x: temps, y: temps.map(T => { const egt = Eg - 2.7e-4 * (T - 300) * Math.abs(Eg - 0.5) / Eg; const vt = k * T / q; const vr = Math.max(0, -biasVoltage); const d = areaCm2 * 1e-8 * Math.pow(T / 300, 3) * Math.exp(egt * q / k * (1 / 300 - 1 / T)) * (1 - Math.exp(-vr / (idealityFactor * vt))); const g = areaCm2 * 1e-6 * Math.pow(T / 300, 1.5) * Math.exp(-egt * q / (2 * k * T)); return (d + g) * 1e9; }), type: "scatter", mode: "lines", name: "I_dark", line: { color: "#fbbf24", width: 2 } }];
+    return [{ x: temps, y: temps.map(T => { const egt = Eg - 2.7e-4 * (T - 300) * Math.abs(Eg - 0.5) / Eg; const vt = k_B * T / q; const vr = Math.max(0, -biasVoltage); const d = areaCm2 * 1e-8 * Math.pow(T / 300, 3) * Math.exp(egt * q / k_B * (1 / 300 - 1 / T)) * (1 - Math.exp(-vr / (idealityFactor * vt))); const g = areaCm2 * 1e-6 * Math.pow(T / 300, 1.5) * Math.exp(-egt * q / (2 * k_B * T)); return (d + g) * 1e9; }), type: "scatter", mode: "lines", name: "I_dark", line: { color: "#fbbf24", width: 2 } }];
   }, [Eg, biasVoltage, idealityFactor, areaCm2]);
 
   return (

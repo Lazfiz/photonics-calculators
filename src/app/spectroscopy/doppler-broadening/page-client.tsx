@@ -6,19 +6,17 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, k_B, m_u } from "../../../physics/constants";
 export default function DopplerBroadeningPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 632.8);
   const [temperature, setTemperature] = useURLState("temperature", 300);
   const [mass, setMass] = useURLState("mass", 20.18); // Neon in amu
 
-  const c = 3e8;
-  const kB = 1.381e-23;
-  const amu = 1.661e-27;
-  const m = mass * amu;
+  const m = mass * m_u;
 
   // Doppler FWHM: Δν_D = (ν₀/c)·√(8kT·ln2/m) = (1/λ)·√(8kT·ln2/m)
   const nu0 = c / (wavelength * 1e-9); // center frequency Hz
-  const deltaNuD = (nu0 / c) * Math.sqrt(8 * kB * temperature * Math.log(2) / m); // Hz
+  const deltaNuD = (nu0 / c) * Math.sqrt(8 * k_B * temperature * Math.log(2) / m); // Hz
   const fwhmNm = deltaNuD * (wavelength * 1e-9) ** 2 / c * 1e9; // nm
   const deltaNuHz = deltaNuD / 2; // HWHM in Hz (Gaussian: HWHM = FWHM/2)
 
@@ -56,7 +54,7 @@ export default function DopplerBroadeningPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Thermal Velocity</p>
-          <p className="text-2xl font-bold text-yellow-400">{Math.sqrt(2 * kB * temperature / m).toFixed(0)} m/s</p>
+          <p className="text-2xl font-bold text-yellow-400">{Math.sqrt(2 * k_B * temperature / m).toFixed(0)} m/s</p>
         </div>
       </div>
 

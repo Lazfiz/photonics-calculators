@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c, h, q, k_B } from "../../../physics/constants";
 
 export default function ReceiverFovPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
@@ -36,13 +37,9 @@ export default function ReceiverFovPage() {
     const collectionArea = Math.PI / 4 * Dr * Dr;
 
     // SNR for given signal power (proper radiometric model)
-    const e_charge = 1.6e-19;
-    const h_planck = 6.626e-34;
-    const c_light = 3e8;
-    const E_photon = h_planck * c_light / wl; // J
-    const responsivity = opticalEfficiency * e_charge / E_photon; // A/W
+    const E_photon = h * c / wl; // J
+    const responsivity = opticalEfficiency * q / E_photon; // A/W
     const BW_electrical = 1e9; // 1 GHz electrical bandwidth
-    const k_B = 1.38e-23;
     const T_noise = 300; // K
     const R_load = 50; // Ω
 
@@ -51,7 +48,7 @@ export default function ReceiverFovPage() {
       const Ps = Math.pow(10, s / 10) * 1e-3; // W
       const i_sig = responsivity * Ps;
       const i_bg = responsivity * Pb;
-      const shotNoiseVar = 2 * e_charge * (i_sig + i_bg) * BW_electrical;
+      const shotNoiseVar = 2 * q * (i_sig + i_bg) * BW_electrical;
       const thermalNoiseVar = 4 * k_B * T_noise * BW_electrical / R_load;
       return 10 * Math.log10(i_sig * i_sig / (shotNoiseVar + thermalNoiseVar));
     });

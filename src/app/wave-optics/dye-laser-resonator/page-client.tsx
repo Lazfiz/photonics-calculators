@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c, h, N_A } from "../../../physics/constants";
 
 export default function DyeLaserResonatorPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 590); // nm (Rhodamine 6G peak)
@@ -24,7 +25,6 @@ export default function DyeLaserResonatorPage() {
   };
 
   const dp = dyeParams[dyeName] || dyeParams["Rhodamine 6G"];
-  const h = 6.626e-34; const c = 3e8;
   const lambda_m = wavelength * 1e-9;
   const L_m = cavityLength / 1000;
   const R1m = R1 / 1000; const R2m = R2 / 1000;
@@ -46,7 +46,6 @@ export default function DyeLaserResonatorPage() {
   const beamWaist_um = w0 * 1e6;
 
   // Dye gain
-  const N_A = 6.022e23;
   const dyeDensity = concentration * N_A * 1e3; // m^-3
   const smallSignalGain = dp.sigma_em * dyeDensity * dp.quantum_yield * 0.3; // reduced by triplet losses
 

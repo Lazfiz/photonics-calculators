@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { q, N_A, m_u } from "../../../physics/constants";
 export default function IonAssistedDepositionPage() {
   const [ionEnergy, setIonEnergy] = useURLState("ionEnergy", 300);
   const [ionCurrent, setIonCurrent] = useURLState("ionCurrent", 50);
@@ -38,11 +39,10 @@ export default function IonAssistedDepositionPage() {
     // J/A = ion current density (A/m²), assume 10 cm² beam area
     const beamArea = 1e-3; // m² (10 cm²)
     const ionFlux = J / beamArea; // A/m²
-    const e = 1.6e-19;
-    const ionArrivalRate = ionFlux / e; // ions/m²/s
+    const ionArrivalRate = ionFlux / q; // ions/m²/s
 
     // Atom arrival rate from deposition rate
-    const atomArrivalRate = (r * 1e-9 * mat.density * 1e3 * 6.022e23) / (mat.density * 1e-3 * beamArea * M * 1.673e-27);
+    const atomArrivalRate = (r * 1e-9 * mat.density * 1e3 * N_A) / (mat.density * 1e-3 * beamArea * M * m_u);
     const J_ratio = ionArrivalRate / Math.max(atomArrivalRate, 1);
 
     // Estimated packing density improvement (empirical model)
@@ -76,8 +76,8 @@ export default function IonAssistedDepositionPage() {
       const J = ionCurrent * 1e-3;
       const beamArea = 1e-3;
       const ionFlux = J / beamArea;
-      const ionArrivalRate = ionFlux / 1.6e-19;
-      const atomArrivalRate = (depositionRate * 1e-9 * mat.density * 1e3 * 6.022e23) / (mat.molarMass * 1e-3 * beamArea * ionMass * 1.673e-27);
+      const ionArrivalRate = ionFlux / q;
+      const atomArrivalRate = (depositionRate * 1e-9 * mat.density * 1e3 * N_A) / (mat.molarMass * 1e-3 * beamArea * ionMass * m_u);
       const Jr = ionArrivalRate / Math.max(atomArrivalRate, 1);
       const basePacking = mat.packingDensity - 0.15;
       return Math.min(1.0, basePacking + 0.15 * (1 - Math.exp(-0.005 * E * Jr / Math.max(depositionRate, 0.01))));
@@ -86,8 +86,8 @@ export default function IonAssistedDepositionPage() {
       const J = ionCurrent * 1e-3;
       const beamArea = 1e-3;
       const ionFlux = J / beamArea;
-      const ionArrivalRate = ionFlux / 1.6e-19;
-      const atomArrivalRate = (depositionRate * 1e-9 * mat.density * 1e3 * 6.022e23) / (mat.molarMass * 1e-3 * beamArea * ionMass * 1.673e-27);
+      const ionArrivalRate = ionFlux / q;
+      const atomArrivalRate = (depositionRate * 1e-9 * mat.density * 1e3 * N_A) / (mat.molarMass * 1e-3 * beamArea * ionMass * m_u);
       const Jr = ionArrivalRate / Math.max(atomArrivalRate, 1);
       return 50 * Math.sqrt(E) * (Jr / 10) * (1 / Math.max(depositionRate, 0.01));
     });

@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { q, k_B } from "../../../physics/constants";
 export default function NEPPage() {
   const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 10); // nA
   const [responsivity, setResponsivity] = useURLState("responsivity", 0.8); // A/W
@@ -13,13 +14,11 @@ export default function NEPPage() {
   const [loadResistor, setLoadResistor] = useURLState("loadResistor", 50); // Ω
   const [detectorArea, setDetectorArea] = useURLState("detectorArea", 1); // mm²
 
-  const k = 1.381e-23;
-  const q = 1.602e-19;
 
   const calc = useMemo(() => {
     const A_cm2 = detectorArea * 1e-2; // mm² → cm² (Jones = cm·√Hz/W)
     const shotNoiseSq = 2 * q * (darkCurrent * 1e-9) * bandwidth;
-    const thermalNoiseSq = 4 * k * temperature * bandwidth / loadResistor;
+    const thermalNoiseSq = 4 * k_B * temperature * bandwidth / loadResistor;
     const totalNoiseCurrent = Math.sqrt(shotNoiseSq + thermalNoiseSq);
     const nep = totalNoiseCurrent / responsivity; // W (total NEP for bandwidth B)
     const nepSpectral = nep / Math.sqrt(bandwidth); // W/√Hz

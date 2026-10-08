@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function FiberCharacterizationPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550);
   const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4682);
@@ -36,7 +37,7 @@ export default function FiberCharacterizationPage() {
     const D = (S0 / 4) * (wavelength - Math.pow(lam0, 4) / Math.pow(wavelength, 3));
 
     // Group velocity
-    const beta1 = n1 / 3e8; // simplified
+    const beta1 = n1 / c; // simplified
     const v_g = 1 / beta1;
 
     // Nonlinear coefficient γ

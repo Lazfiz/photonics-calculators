@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c, h } from "../../../physics/constants";
 
 export default function ThinDiskLaserPage() {
   const [diskThickness, setDiskThickness] = useURLState("diskThickness", 200); // µm
@@ -27,7 +28,6 @@ export default function ThinDiskLaserPage() {
   const totalAbsorption = 1 - Math.pow(1 - singlePassAbs, numPasses);
 
   // Saturation intensity
-  const h = 6.626e-34; const c = 3e8;
   const sigma_em = 3e-25; // m² Yb:YAG at 1030nm
   const tau = 0.95e-3;
   const Isat = h * c / (wavelength * 1e-9 * sigma_em * tau);

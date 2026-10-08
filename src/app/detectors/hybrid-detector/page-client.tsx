@@ -6,6 +6,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, h, q, k_B } from "../../../physics/constants";
 export default function HybridDetectorPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 530);
   const [qe, setQe] = useURLState("qe", 0.9);
@@ -14,27 +15,27 @@ export default function HybridDetectorPage() {
   const [bandwidth, setBandwidth] = useURLState("bandwidth", 100);
   const [feedbackResistance, setFeedbackResistance] = useURLState("feedbackResistance", 1);
 
-  const responsivity = qe * 1.602e-19 * wavelength * 1e-9 / (6.626e-34 * 3e8);
+  const responsivity = qe * q * wavelength * 1e-9 / (h * c);
   const bwHz = bandwidth * 1e6;
   const Rf = feedbackResistance * 1e6;
   const currentNoise = inputNoiseCurrent * 1e-15 * Math.sqrt(bwHz);
   const voltageNoiseContrib = inputNoiseVoltage * 1e-9 * Math.sqrt(bwHz) / Rf;
-  const johnsonNoise = Math.sqrt(4 * 1.381e-23 * 300 * bwHz / Rf); // 4kT/R, T=300K
+  const johnsonNoise = Math.sqrt(4 * k_B * 300 * bwHz / Rf); // 4kT/R, T=300K
   const totalNoise = Math.sqrt(currentNoise ** 2 + voltageNoiseContrib ** 2 + johnsonNoise ** 2);
-  const nepSpectral = Math.sqrt(inputNoiseCurrent ** 2 * 1e-30 + inputNoiseVoltage ** 2 * 1e-18 / Rf ** 2 + 4 * 1.381e-23 * 300 / Rf) / responsivity * 1e15;
+  const nepSpectral = Math.sqrt(inputNoiseCurrent ** 2 * 1e-30 + inputNoiseVoltage ** 2 * 1e-18 / Rf ** 2 + 4 * k_B * 300 / Rf) / responsivity * 1e15;
   const nep = totalNoise / responsivity * 1e15;
-  const noiseElectrons = totalNoise / (1.602e-19 * 2 * bwHz); // ENC = i_noise / (2q·BW)
+  const noiseElectrons = totalNoise / (q * 2 * bwHz); // ENC = i_noise / (2q·BW)
 
   const nepVsBW = useMemo(() => {
     const bws = Array.from({ length: 200 }, (_, i) => 1 + i * 5);
-    return [{ x: bws, y: bws.map(bw => { const hz = bw * 1e6; const in_ = inputNoiseCurrent * 1e-15 * Math.sqrt(hz); const vn = inputNoiseVoltage * 1e-9 * Math.sqrt(hz) / Rf; const jn = Math.sqrt(4 * 1.381e-23 * 300 * hz / Rf); return Math.sqrt(in_ ** 2 + vn ** 2 + jn ** 2) / responsivity * 1e15; }), type: "scatter", mode: "lines", name: "NEP", line: { color: "#34d399" } }];
+    return [{ x: bws, y: bws.map(bw => { const hz = bw * 1e6; const in_ = inputNoiseCurrent * 1e-15 * Math.sqrt(hz); const vn = inputNoiseVoltage * 1e-9 * Math.sqrt(hz) / Rf; const jn = Math.sqrt(4 * k_B * 300 * hz / Rf); return Math.sqrt(in_ ** 2 + vn ** 2 + jn ** 2) / responsivity * 1e15; }), type: "scatter", mode: "lines", name: "NEP", line: { color: "#34d399" } }];
   }, [inputNoiseCurrent, inputNoiseVoltage, feedbackResistance, responsivity, bwHz, Rf]);
 
   const noiseVsGain = useMemo(() => {
     const gains = Array.from({ length: 200 }, (_, i) => 1e3 * Math.pow(1e7 / 1e3, i / 199));
     const cur = gains.map(() => inputNoiseCurrent * 1e-15 * Math.sqrt(bwHz) * 1e15);
     const vol = gains.map(g => inputNoiseVoltage * 1e-9 * Math.sqrt(bwHz) / g * 1e15);
-    const john = gains.map(g => Math.sqrt(4 * 1.381e-23 * 300 * bwHz / g) * 1e15);
+    const john = gains.map(g => Math.sqrt(4 * k_B * 300 * bwHz / g) * 1e15);
     return [
       { x: gains, y: cur, type: "scatter", mode: "lines", name: "Current noise", line: { color: "#f87171" } },
       { x: gains, y: vol, type: "scatter", mode: "lines", name: "Voltage noise", line: { color: "#60a5fa" } },

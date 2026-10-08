@@ -6,12 +6,13 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
 export default function CavityDumpedLaserPage() {
   const [repRate, setRepRate] = useURLState("repRate", 80); // MHz
   const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 10); // μJ
   const [cavityLength, setCavityLength] = useURLState("cavityLength", 1.5); // m
 
-  const roundTripNs = (2 * cavityLength) / 3e8 * 1e9; // ns
+  const roundTripNs = (2 * cavityLength) / c * 1e9; // ns
   const avgPower = repRate * 1e6 * pulseEnergy * 1e-6; // W (MHz × μJ → W)
   const peakPower = pulseEnergy * 1e-6 / (roundTripNs * 1e-9); // W (energy / duration)
 

@@ -3,9 +3,9 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { c, epsilon_0 } from "../../../physics/constants";
 
 const hc = 1.986446e-25; // J·m
-const c = 3e8;
 
 function parametricGain({ pumpWavelength, signalWavelength, crystalLength, dEff, nPump, nSignal, nIdler, pumpPower, beamRadius, walkOff }: { pumpWavelength: number; signalWavelength: number; crystalLength: number; dEff: number; nPump: number; nSignal: number; nIdler: number; pumpPower: number; beamRadius: number; walkOff: number }) {
   const lambdaP = pumpWavelength * 1e-9;
@@ -15,12 +15,11 @@ function parametricGain({ pumpWavelength, signalWavelength, crystalLength, dEff,
   const omegaS = 2 * Math.PI * c / lambdaS;
   const omegaI = omegaP - omegaS;
   const deff = dEff * 1e-12;
-  const eps0 = 8.854e-12;
   const w = beamRadius * 1e-6;
   const Ip = pumpPower / (Math.PI * w * w);
   // Standard parametric gain coefficient (Boyd, Nonlinear Optics Ch.2):
   // γ² = 2·ωs·ωi·d²eff·Ip / (ε₀·nₚ·nₛ·nᵢ·c³)
-  const gamma = deff * Math.sqrt(2 * omegaS * omegaI * Ip / (eps0 * nPump * nSignal * nIdler * c * c * c));
+  const gamma = deff * Math.sqrt(2 * omegaS * omegaI * Ip / (epsilon_0 * nPump * nSignal * nIdler * c * c * c));
   // Walk-off reduces effective interaction length via aperture length: L_a = √π·w/ρ
   const walkOffRad = (walkOff * Math.PI) / 180;
   const L = crystalLength * 1e-3;
@@ -55,7 +54,6 @@ export default function OPOCalculator() {
   );
 
   const thresholdPower = useMemo(() => {
-    const eps0 = 8.854e-12;
     const deff = dEff * 1e-12;
     const L = crystalLength * 1e-3;
     const w = beamRadius * 1e-6;
@@ -63,7 +61,7 @@ export default function OPOCalculator() {
     // Boyd, Nonlinear Optics Ch.2 — SRO threshold:
     // P_th = (α·π³·w₀²·ε₀·c·nₚ·nₛ·nᵢ) / (8·d²eff·ωₛ·ωᵢ·L²)
     const omegaI = omegaP - omegaS;
-    const Pth = (alpha * Math.PI ** 3 * w * w * eps0 * c * nPump * nSignal * nIdler) / (8 * deff * deff * omegaS * omegaI * L * L);
+    const Pth = (alpha * Math.PI ** 3 * w * w * epsilon_0 * c * nPump * nSignal * nIdler) / (8 * deff * deff * omegaS * omegaI * L * L);
     return Math.abs(Pth);
   }, [pumpWavelength, crystalLength, dEff, nPump, nSignal, nIdler, beamRadius, cavityLoss, omegaP, omegaS]);
 

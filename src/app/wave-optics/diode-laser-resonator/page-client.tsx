@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { q } from "../../../physics/constants";
 
 export default function DiodeLaserResonatorPage() {
   const [cavityLength, setCavityLength] = useURLState("cavityLength", 300); // µm
@@ -29,7 +30,6 @@ export default function DiodeLaserResonatorPage() {
   const d_cm = activeThickness * 1e-4;
   const eta_i = 0.8; // internal quantum efficiency
   const Gamma = 0.02; // confinement factor
-  const q = 1.6e-19;
   const tau_n = 2e-9; // carrier lifetime (s) — typical for GaAs
   const J_th = q * d_cm * g_th / (Gamma * eta_i * tau_n); // A/cm²
 

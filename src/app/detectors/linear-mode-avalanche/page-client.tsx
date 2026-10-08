@@ -5,6 +5,7 @@ import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { c, h, q } from "../../../physics/constants";
 // McIntyre excess noise factor: F(M) = k·M + (1-k)·(2 - 1/M)
 // k = ionization ratio (β/α for electron-initiated APDs)
 // References: McIntyre 1966, Nature Communications Materials 2024
@@ -29,9 +30,6 @@ export default function LinearModeAPDPage() {
   const effectiveF = useCustomF ? customF : mcIntyre(gain);
 
   const results = useMemo(() => {
-    const h = 6.626e-34;
-    const c = 3e8;
-    const q = 1.6e-19;
     const resp = (quantumEff * q * wavelength * 1e-9) / (h * c); // A/W
     const iPhoto = incidentPower * resp;
     const iPhotoOut = iPhoto * gain;
@@ -50,9 +48,6 @@ export default function LinearModeAPDPage() {
 
   const { chartData, fMax } = useMemo(() => {
     const gains =Array.from({ length: 200 }, (_, i) => 1 + i * 500 / 200);
-    const h = 6.626e-34;
-    const c = 3e8;
-    const q = 1.6e-19;
     const resp = (quantumEff * q * wavelength * 1e-9) / (h * c);
     const iPhoto = incidentPower * resp;
     const signal = gains.map(g => iPhoto * g);
