@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -34,7 +33,7 @@ export default function FluorescenceQuantumYieldPage() {
   }, [sampleInt, refInt, sampleAbs, refAbs, refQY, qy, useRefrIdx, refrIdxSample, refrIdxRef]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fluorescence Quantum Yield" description="Φ = Φ_ref · (I_s/I_ref) · (A_ref/A_s) · (n_s/n_ref)² — comparative method using a reference standard.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Sample Integrated Intensity" value={sampleInt} onChange={setSampleInt} min={0} />
@@ -83,6 +82,6 @@ export default function FluorescenceQuantumYieldPage() {
           margin: { t: 30 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

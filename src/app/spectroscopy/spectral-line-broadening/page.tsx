@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/spectral-line-broadening' },
-    title: 'Spectral Line Broadening',
-  description: 'Doppler, collisional, natural, and Voigt broadening mechanisms.'
-};
+const href = "/spectroscopy/spectral-line-broadening";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Spectral Line Broadening',
-  'Doppler, collisional, natural, and Voigt broadening mechanisms.',
-  'https://photonics-calculators.vercel.app/spectroscopy/spectral-line-broadening',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

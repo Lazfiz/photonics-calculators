@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -53,7 +52,7 @@ export default function PhotonicBandgapPage() {
   }, [nHigh, nLow, fillFraction, numPeriods, freqNorm]);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Photonic Bandgap" description="1D photonic crystal band structure and reflectivity.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Lattice Constant a (nm)" value={latticeConst} onChange={setLatticeConst} />
@@ -94,6 +93,6 @@ export default function PhotonicBandgapPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

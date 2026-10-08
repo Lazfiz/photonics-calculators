@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -58,7 +57,7 @@ export default function AvalancheGainPage() {
   }, []);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Avalanche Photodiode Gain" description="APD multiplication gain, excess noise factor (McIntyre), and material comparison." maxWidthClassName="max-w-5xl">
+    <>
       <div role="group" aria-label="Options" className="flex gap-2 mb-6">
         {(["Si", "InGaAs", "Ge"] as const).map(m => (
           <button key={m} onClick={() => handleMaterialChange(m)} className={`px-4 py-2 rounded text-sm font-medium ${material === m ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}>{materialParams[m].label}</button>
@@ -89,6 +88,6 @@ export default function AvalancheGainPage() {
         <p>Large-M asymptote: F ≈ kM + 2(1-k)  (linear in M, not a power law)</p>
         <p>n = empirical gain exponent (device-specific, not a fundamental material constant)</p>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

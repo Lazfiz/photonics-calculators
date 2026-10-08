@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c } from "../../../physics/constants";
@@ -95,7 +94,7 @@ export default function BirefringenceCalculator() {
   };
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Birefringence Fiber Calculator" description="Geometric (elliptical-core) and stress-induced birefringence and beat length of a single-mode fiber from core and cladding indices and core shape.">
+    <>
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -144,6 +143,6 @@ export default function BirefringenceCalculator() {
         <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
           <ChartPanel data={plotData} layout={layout} />
         </div>
-    </CalculatorShell>
+    </>
   );
 }

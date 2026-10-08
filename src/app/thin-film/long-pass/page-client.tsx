@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -37,8 +36,7 @@ export default function LongPassPage() {
   const bandwidth = 700 - edgeWl;
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Long Pass Filter" description="Quarter-wave stack (HL)N long-pass filter. Transmits λ &gt; λedge, reflects shorter wavelengths.
-        Rmax ≈ [(nH/nL)2N − 1]² / [(nH/nL)2N + 1]².">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>H</sub> (high index)</>} value={nH} onChange={setNH} step="0.01" />
@@ -61,6 +59,6 @@ export default function LongPassPage() {
         yaxis: { title: "R / T", gridcolor: "#374151", range: [0, 1.05] },
         margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true,
       }} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 // Sapphire (Al₂O₃) - uniaxial crystal, ordinary and extraordinary rays
@@ -72,7 +71,7 @@ export default function SapphirePropertiesPage() {
   }, []);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Sapphire (Al₂O₃) Properties" description="Uniaxial crystal. Sellmeier equations for ordinary and extraordinary rays.">
+    <>
             
       <div className="mb-4">
         <label className="text-sm text-gray-400">Wavelength: {wavelength} nm</label>
@@ -98,7 +97,7 @@ export default function SapphirePropertiesPage() {
         <ChartPanel data={birefChart.data} layout={birefChart.layout} config={plotConfig} />
         <div className="lg:col-span-2"><ChartPanel data={thermalChart.data} layout={thermalChart.layout} config={plotConfig} /></div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }
 

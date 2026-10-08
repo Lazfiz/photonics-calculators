@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -29,7 +28,7 @@ export default function GeigerModeAPDPage() {
   }, [overbias, tempCoeff, darkCountRate]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Geiger-Mode APD" description="SPAD: breakdown voltage, overbias, temperature effects, PDE, and dark count rate.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Overbias (V)" value={overbias} onChange={setOverbias} step="0.1" />
         <ValidatedNumberInput label="Temperature (°C)" value={temperature} onChange={setTemperature} />
@@ -47,6 +46,6 @@ export default function GeigerModeAPDPage() {
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>ΔVbr = β·(T−Tref)</p><p>PDE ≈ 0.15·V_over(eff), PDE=0 at breakdown</p><p>R_max = 1/τ_dead, DCR(T) = DCR₀·2^((T−25)/10)·(Veff/Vref)</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Temperature (°C)", gridcolor: "#374151" }, yaxis: { title: "Vbr Shift (V)", gridcolor: "#374151" }, yaxis2: { title: "PDE", gridcolor: "#374151", overlaying: "y", side: "right", range: [0, 1] }, yaxis3: { title: "DCR (cps)", type: "log", gridcolor: "#374151", overlaying: "y", side: "right", anchor: "free", position: 0.95 } }} />
-    </CalculatorShell>
+    </>
   );
 }

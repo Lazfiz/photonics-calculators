@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -80,7 +79,7 @@ export default function OpticalParametricPage() {
   const gainOPA = 10 * Math.log10(Math.cosh(gOPA * crystalLength * 1e-3) ** 2);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="OPA / OPO Design" description="Optical parametric oscillator and amplifier design — tuning curves, thresholds, and gain bandwidth.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">Energy:</span> 1/λ<sub>p</sub> = 1/λ<sub>s</sub> + 1/λ<sub>i</sub></p>
@@ -140,6 +139,6 @@ export default function OpticalParametricPage() {
           <ChartPanel data={gainBWData} layout={gainLayout} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

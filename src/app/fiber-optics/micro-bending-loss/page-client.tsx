@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -129,7 +128,7 @@ export default function MicrobendingLossPage() {
   }, [wavelength, coreRadius, coreNA, rmsAmplitude]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Microbending Loss" description="Calculate microbending-induced loss from random perturbations, coating properties, and fiber parameters.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="10" />
@@ -213,6 +212,6 @@ export default function MicrobendingLossPage() {
           <p>Typical: L_c = 100-1000 µm, A_rms = 0.01-0.5 µm</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

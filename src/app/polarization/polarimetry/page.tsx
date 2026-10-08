@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/polarization/polarimetry' },
-    title: 'Polarimetry Basics',
-  description: 'Explore Stokes parameters, Poincaré sphere representation, and analyzer measurements for polarization state characterization.'
-};
+const href = "/polarization/polarimetry";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Polarimetry Basics',
-  'Explore Stokes parameters, Poincaré sphere representation, and analyzer measurements for polarization state characterization.',
-  'https://photonics-calculators.vercel.app/polarization/polarimetry',
-  { category: 'Polarization' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

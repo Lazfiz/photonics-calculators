@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -121,7 +120,7 @@ export default function AdhesionTestingPage() {
   }, [criticalLoad, tipRadius]);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Adhesion Testing" description="Model thin film adhesion properties from scratch test, peel test, tape test, and bend test. Calculate adhesion energy, interfacial shear strength, and critical loads.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Test Method</span>
@@ -228,6 +227,6 @@ export default function AdhesionTestingPage() {
           }} />
         </>
       )}
-    </CalculatorShell>
+    </>
   );
 }

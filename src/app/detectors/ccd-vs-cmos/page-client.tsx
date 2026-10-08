@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -38,7 +37,7 @@ export default function CcdVsCmosPage() {
   const results = Object.entries(sensors).map(([key, s]) => ({ key, snr: calcSNR(signal, s.readNoise, s.darkCurrent, exposureTime, s.wellCapacity, s.enf2), sensor: s }));
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="CCD vs CMOS Sensor Comparison" description="Compare sensor architectures — SNR, dynamic range, and performance metrics.">
+    <>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Signal (e⁻)" value={signal} onChange={setSignal} min={1} />
         <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} min={0.001} step="0.1" />
@@ -70,6 +69,6 @@ export default function CcdVsCmosPage() {
         <p>Other sensors use F² = 1 (no excess noise)</p>
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Signal (e⁻)", gridcolor: "#374151", type: "log" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -33,7 +32,7 @@ export default function PhaseShiftCoatingPage() {
   const r12 = (nFilm - nSubstrate) / (nFilm + nSubstrate);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Phase Shift Coatings" description="Phase shift accumulated in thin film coatings. Explore how film thickness and refractive index affect the optical phase of reflected and transmitted light.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="n (incident medium)" value={n1} onChange={setN1} min={0.1} step="0.01" />
@@ -82,6 +81,6 @@ export default function PhaseShiftCoatingPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

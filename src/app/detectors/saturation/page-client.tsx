@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -38,7 +37,7 @@ export default function SaturationPage() {
   const gainE = fullWellCapacity / dnMax; // e-/DN
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Detector Saturation" description="Full well capacity, dynamic range, SNR at saturation, and nonlinearity rolloff model.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Full Well Capacity (e⁻)" value={fullWellCapacity} onChange={setFullWellCapacity} />
         <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} />
@@ -63,6 +62,6 @@ export default function SaturationPage() {
         yaxis2: { title: "Nonlinearity (%)", gridcolor: "#374151", overlaying: "y", side: "right", titlefont: { color: "#f87171" }, tickfont: { color: "#f87171" } },
         margin: { t: 20, b: 40, l: 70, r: 60 }, autosize: true, showlegend: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

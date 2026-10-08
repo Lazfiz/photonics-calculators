@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -40,7 +39,7 @@ export default function EllipsometryMeasurementPage() {
   const fmt = (v: number) => (Number.isFinite(v) ? v.toFixed(4) : "—");
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Ellipsometry Measurement" description="Invert ellipsometry data (Ψ, Δ) to the pseudo-dielectric function and pseudo-refractive index (two-phase ambient/substrate model).">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Ψ (degrees)" value={psiDeg} onChange={setPsiDeg} min={0} max={90} step="0.1" />
@@ -76,6 +75,6 @@ export default function EllipsometryMeasurementPage() {
         margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true
       }} />
       <p className="text-gray-500 text-xs mt-2 text-center">⟨n⟩ over the Ψ-Δ plane at the current angle of incidence. The red × is the measurement.</p>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -58,7 +57,7 @@ export default function GradientIndexCoatingPage() {
   ];
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Gradient Index Coating" description="Gradient-index (GRIN) antireflection coatings use a continuously varying refractive index to suppress Fresnel reflections over a broad bandwidth.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="n (incident)" value={n1} onChange={setN1} min={0.1} step="0.01" />
@@ -122,6 +121,6 @@ export default function GradientIndexCoatingPage() {
           }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

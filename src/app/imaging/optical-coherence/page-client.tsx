@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -56,7 +55,7 @@ export default function OpticalCoherencePage() {
   }, [wavelengthNm, bandwidthNm]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Optical Coherence Theory" description="Temporal coherence, coherence length, axial resolution, and SNR estimation for OCT systems.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -110,6 +109,6 @@ export default function OpticalCoherencePage() {
           <ChartPanel data={axialResChart} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Bandwidth (nm)" }, yaxis: { title: "Axial Resolution (µm)" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -46,7 +45,7 @@ export default function FresnelEquationsPage() {
   const Rnormal = Math.pow((n1 - n2) / (n1 + n2), 2);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Fresnel Equations" description="Reflectance vs. angle of incidence at a dielectric interface. Shows s-polarization, p-polarization, Brewster&apos;s angle, and total internal reflection.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="n₁ (incident medium)" value={n1} onChange={setN1} min={0.1} step="0.01" />
@@ -90,6 +89,6 @@ export default function FresnelEquationsPage() {
           legend: { x: 0.02, y: 0.98 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

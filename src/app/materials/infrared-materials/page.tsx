@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/infrared-materials' },
-    title: 'Infrared Materials',
-  description: 'Ge, Si, ZnSe, chalcogenides — refractive index and properties for IR optics',
-};
+const href = "/materials/infrared-materials";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Infrared Materials',
-  'Ge, Si, ZnSe, chalcogenides — refractive index and properties for IR optics',
-  'https://photonics-calculators.vercel.app/materials/infrared-materials',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

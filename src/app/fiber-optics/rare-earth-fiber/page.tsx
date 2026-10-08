@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/rare-earth-fiber' },
-    title: 'Rare-Earth Fiber Dopants',
-  description: 'Pump bands, cross-sections, lifetime, absorption, small-signal gain and optimal length of Er, Yb, Tm and Ho-doped fibers from concentration and core size.'
-};
+const href = "/fiber-optics/rare-earth-fiber";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Rare-Earth Fiber Dopants',
-  'Pump bands, cross-sections, lifetime, absorption, small-signal gain and optimal length of Er, Yb, Tm and Ho-doped fibers from concentration and core size.',
-  'https://photonics-calculators.vercel.app/fiber-optics/rare-earth-fiber',
-  { category: 'Fiber Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

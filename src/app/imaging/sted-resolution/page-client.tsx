@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -39,7 +38,7 @@ export default function STEDResolutionPage() {
   }, [na, saturationFactor]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="STED Super-Resolution Calculator" description="Calculate STED (Stimulated Emission Depletion) microscopy resolution based on saturation intensity and depletion parameters.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Excitation λ (nm)" value={wavelength} onChange={setWavelength} min={400} max={800} />
@@ -94,6 +93,6 @@ export default function STEDResolutionPage() {
           }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

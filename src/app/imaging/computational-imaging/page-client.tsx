@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -47,7 +46,7 @@ export default function ComputationalImagingPage() {
   };
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Computational Imaging" description="Multi-view fusion, resolution scaling, and SNR improvement through computational techniques.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -115,6 +114,6 @@ export default function ComputationalImagingPage() {
           <p>Resolution improvement beyond the diffraction limit requires that the measurements encode high-frequency information (e.g., SIM, multi-view tomography, or ptychography).</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

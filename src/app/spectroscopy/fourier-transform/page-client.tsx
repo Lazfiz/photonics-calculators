@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -49,7 +48,7 @@ export default function FourierTransformPage() {
   const resolution = 100 / nPoints;
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fourier Transform Basics" description="Decompose a composite time-domain signal into its frequency components via DFT.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Frequency 1 (Hz)" value={freq1} onChange={setFreq1} min={0.1} />
@@ -86,6 +85,6 @@ export default function FourierTransformPage() {
         yaxis2: { title: "Magnitude", gridcolor: "#374151" },
         height: 700, margin: { t: 30, b: 40 },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

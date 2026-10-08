@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -62,7 +61,7 @@ export default function AbsorptionPage() {
   }, [material, wavelength, calc]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Absorption Coefficient" description="Wavelength-dependent absorption coefficient α(λ) and transmission through material thickness.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -99,6 +98,6 @@ export default function AbsorptionPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

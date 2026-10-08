@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/dielectric-high-reflector' },
-    title: 'Dielectric High Reflector',
-  description: 'Quarter-wave dielectric stack HR mirror — stopband width, peak reflectance, and dispersion.'
-};
+const href = "/thin-film/dielectric-high-reflector";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Dielectric High Reflector',
-  'Quarter-wave dielectric stack HR mirror — stopband width, peak reflectance, and dispersion.',
-  'https://photonics-calculators.vercel.app/thin-film/dielectric-high-reflector',
-  { category: 'Thin Film' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

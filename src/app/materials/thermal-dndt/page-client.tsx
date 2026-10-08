@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -40,7 +39,7 @@ export default function ThermalDnDtPage() {
   }, [material, baseTemp, deltaT, baseN, calc]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Thermo-Optic Coefficient (dn/dT)" description="Temperature-dependent refractive index change. Positive dn/dT means n increases with temperature.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -82,6 +81,6 @@ export default function ThermalDnDtPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -42,7 +41,7 @@ export default function ExcessNoisePage() {
   }, [quantumEff, excessNoise]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Excess Noise Factor" description="APD excess noise vs gain — McIntyre model for different semiconductor materials." maxWidthClassName="max-w-5xl">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Multiplication Gain (M)" value={gain} onChange={setGain} min={1} step="10" />
         <ValidatedNumberInput label="Ionization Ratio k" value={kFactor} onChange={setKFactor} min={0.001} max={1} step="0.01" />
@@ -57,6 +56,6 @@ export default function ExcessNoisePage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>F(M) = k·M + (2 − 1/M)·(1 − k)  [McIntyre]</p><p>Si: k≈0.02, InGaAs: k≈0.5, Ge: k≈0.7</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Gain M", gridcolor: "#374151", type: "log" }, yaxis: { title: "F", gridcolor: "#374151" } }} />
       <ChartPanel data={snrChart} layout={{ xaxis: { title: "Photons", gridcolor: "#374151", type: "log" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} title="SNR: PIN vs APD" />
-    </CalculatorShell>
+    </>
   );
 }

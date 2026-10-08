@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -60,7 +59,7 @@ export default function TwoPhotonMicroscopyPage() {
   }, [wavelength, na, lateralRes, axialRes]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Two-Photon Microscopy Calculator" description="Calculate resolution, excitation volume, peak intensity, and depth penetration for two-photon fluorescence microscopy.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Excitation λ (nm)" value={wavelength} onChange={setWavelength} min={680} max={1100} />
@@ -135,6 +134,6 @@ export default function TwoPhotonMicroscopyPage() {
           <ChartPanel data={depthChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af", size: 11 }, title: { text: "Power & Signal vs Depth", font: { size: 13 } }, xaxis: { title: "Depth (µm)", gridcolor: "#374151" }, yaxis: { title: "Power / Signal (a.u.)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 40, b: 55 } }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

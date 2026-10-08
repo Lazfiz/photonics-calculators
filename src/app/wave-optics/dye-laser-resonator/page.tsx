@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/wave-optics/dye-laser-resonator' },
-    title: 'Dye Laser Resonator',
-  description: 'Cavity stability, beam waist, small-signal and threshold gain, triplet loss versus flow speed and output power of a Rhodamine or Coumarin dye laser.'
-};
+const href = "/wave-optics/dye-laser-resonator";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Dye Laser Resonator',
-  'Cavity stability, beam waist, small-signal and threshold gain, triplet loss versus flow speed and output power of a Rhodamine or Coumarin dye laser.',
-  'https://photonics-calculators.vercel.app/wave-optics/dye-laser-resonator',
-  { category: 'Wave Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href} maxWidthClassName="max-w-6xl">
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

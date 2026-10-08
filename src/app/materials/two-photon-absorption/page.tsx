@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/two-photon-absorption' },
-    title: 'Two-Photon Absorption',
-  description: 'Nonlinear absorption coefficient PA and intensity-dependent transmission. TPA becomes significant at high peak intensities (pulsed lasers).',
-};
+const href = "/materials/two-photon-absorption";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Two-Photon Absorption',
-  'Nonlinear absorption coefficient PA and intensity-dependent transmission. TPA becomes significant at high peak intensities (pulsed lasers).',
-  'https://photonics-calculators.vercel.app/materials/two-photon-absorption',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

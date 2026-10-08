@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -114,7 +113,7 @@ export default function SolitonPage() {
   };
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Soliton Propagation" description="Fundamental and higher-order soliton dynamics via split-step Fourier simulation.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">NLS:</span> i ∂A/∂z = (β₂/2) ∂²A/∂T² − γ|A|²A</p>
@@ -154,6 +153,6 @@ export default function SolitonPage() {
       <div className="bg-gray-900 rounded-lg p-4">
         <ChartPanel data={chartData} layout={plotLayout} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

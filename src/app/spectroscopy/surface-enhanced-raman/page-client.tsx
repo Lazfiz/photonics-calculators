@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -61,7 +60,7 @@ export default function SurfaceEnhancedRamanPage() {
   const detectionLimit = normalIntensity / enhancementFactor;
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Surface-Enhanced Raman Spectroscopy (SERS)" description="EM and chemical enhancement mechanisms, hotspots, and detection limit estimation.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Enhancement Factor G" value={enhancementFactor} onChange={setEnhancementFactor} min={1} />
@@ -120,6 +119,6 @@ export default function SurfaceEnhancedRamanPage() {
           <li>• <strong className="text-red-400">Single-molecule SERS</strong>: Achievable at hotspots with G &gt; 10⁹</li>
         </ul>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

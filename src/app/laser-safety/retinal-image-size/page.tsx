@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/retinal-image-size' },
-    title: 'Retinal Image Size',
-  description: 'Calculates retinal spot size from corneal beam parameters, including diffraction and geometric contributions per ANSI Z136.1.'
-};
+const href = "/laser-safety/retinal-image-size";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Retinal Image Size',
-  'Calculates retinal spot size from corneal beam parameters, including diffraction and geometric contributions per ANSI Z136.1.',
-  'https://photonics-calculators.vercel.app/laser-safety/retinal-image-size',
-  { category: 'Laser Safety' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/quartz-crystal' },
-      title: 'Quartz Crystal (SiO) Properties',
-  description: 'Uniaxial positive, optically active, piezoelectric. Sellmeier dispersion for o & e rays.',
-};
+const href = "/materials/quartz-crystal";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Quartz Crystal (SiO) Properties',
-  'Uniaxial positive, optically active, piezoelectric. Sellmeier dispersion for o & e rays.',
-  'https://photonics-calculators.vercel.app/materials/quartz-crystal',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

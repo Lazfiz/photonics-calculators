@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -57,7 +56,7 @@ export default function SumFrequencyGenPage() {
   const midSfgNm = c / (visFreq + midIrFreq) * 1e9;
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Sum Frequency Generation Spectroscopy" description="Surface-specific vibrational probe. SFG is forbidden in centrosymmetric media — only surfaces and interfaces contribute.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Visible Beam Wavelength (nm)" value={visWavelength} onChange={setVisWavelength} min={300} max={1000} />
@@ -90,6 +89,6 @@ export default function SumFrequencyGenPage() {
           showlegend: true, legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

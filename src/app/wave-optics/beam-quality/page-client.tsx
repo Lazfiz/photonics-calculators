@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -36,7 +35,7 @@ export default function BeamQualityPage() {
   }, [wavelength, m2, w0meas, zRmeas]);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Beam Quality M² Measurement" description="Detailed beam quality analysis from measured parameters.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
@@ -82,6 +81,6 @@ export default function BeamQualityPage() {
           yaxis: { title: "w(z) (µm)", gridcolor: "#374151" }, margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

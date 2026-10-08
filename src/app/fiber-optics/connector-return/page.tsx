@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/connector-return' },
-    title: 'Connector Return Loss Calculator',
-    description: 'Calculates return loss and insertion loss for fiber connectors with air gaps, lateral offsets, and angular misalignment.'
-};
+const href = "/fiber-optics/connector-return";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Connector Return Loss Calculator',
-  'Calculates return loss and insertion loss for fiber connectors with air gaps, lateral offsets, and angular misalignment.',
-  'https://photonics-calculators.vercel.app/fiber-optics/connector-return',
-  { category: 'Fiber Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

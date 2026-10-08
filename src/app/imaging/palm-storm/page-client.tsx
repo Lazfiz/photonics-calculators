@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -46,7 +45,7 @@ export default function PALMSTORMPage() {
   }, [localizationPrecision, diffractionLimit]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="PALM/STORM Localization Calculator" description="Estimate effective resolution for single-molecule localization microscopy (PALM/STORM) based on localization precision and labeling density.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={900} />
@@ -98,6 +97,6 @@ export default function PALMSTORMPage() {
           }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

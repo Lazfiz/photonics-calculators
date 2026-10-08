@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -66,7 +65,7 @@ export default function TwoDimensionalSpectroscopyPage() {
 
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Two-Dimensional (2D) Spectroscopy" description="Correlates excitation and detection frequencies via three-pulse photon echo. Reveals coupling, energy transfer, and homogeneous vs inhomogeneous broadening.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Excitation Center (cm⁻¹)" value={excitationCenter} onChange={setExcitationCenter} min={1000} max={30000} />
@@ -99,6 +98,6 @@ export default function TwoDimensionalSpectroscopyPage() {
           margin: { t: 40, r: 20, b: 50, l: 60 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

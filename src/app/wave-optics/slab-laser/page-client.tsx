@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c, h } from "../../../physics/constants";
@@ -99,7 +98,7 @@ export default function SlabLaserPage() {
   const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Zigzag Slab Laser" description="Bounce angle, temperature rise, optical path difference per bounce and slope efficiency of a zigzag slab laser from slab geometry and thermal load." maxWidthClassName="max-w-6xl">
+    <>
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Slab Width (mm)" value={slabWidth} onChange={setSlabWidth} /></div>
@@ -135,6 +134,6 @@ export default function SlabLaserPage() {
         <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">η_slope vs Slab Length</h3><ChartPanel data={extractVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Length (mm)" }, yaxis: { ...plotLayout.yaxis, title: "η_slope (%)" } }} /></div>
         <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Mode Size vs Bounces</h3><ChartPanel data={modeVsBounces} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Bounces" }, yaxis: { ...plotLayout.yaxis, title: "Mode (mm)" } }} /></div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

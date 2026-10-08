@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -56,7 +55,7 @@ export default function StructuredIlluminationPage() {
   };
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Structured Illumination Microscopy" description="SIM resolution enhancement and OTF expansion via patterned illumination.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -118,6 +117,6 @@ export default function StructuredIlluminationPage() {
           <p>The SNR penalty arises because information is redistributed across multiple frequency components; weakly modulated structures require more raw photon budget.</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

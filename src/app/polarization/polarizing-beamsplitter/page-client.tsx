@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -75,7 +74,7 @@ export default function PBSPage() {
   }, [cutAngleDeg, criticalO, criticalE]);
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Polarizing Beamsplitter (PBS) Design" description="Design polarizing beamsplitter cubes and prisms based on birefringent crystals with air-gap TIR separation.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">θ<sub>c,o</sub> = arcsin(1/n<sub>o</sub>), θ<sub>c,e</sub> = arcsin(1/n<sub>e</sub>)</p>
@@ -138,6 +137,6 @@ export default function PBSPage() {
           }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

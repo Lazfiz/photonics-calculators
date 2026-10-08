@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -92,7 +91,7 @@ export default function DoubleRefractionPage() {
   }, [opd]);
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Double Refraction (Birefringence)" description="Calculate ordinary and extraordinary ray paths, walk-off angle, lateral separation, and retardation in uniaxial crystals.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">n<sub>eff</sub>(θ) = n<sub>o</sub>n<sub>e</sub>/√(n<sub>o</sub>²sin²θ + n<sub>e</sub>²cos²θ)</p>
@@ -173,6 +172,6 @@ export default function DoubleRefractionPage() {
           margin: { t: 20, r: 20, b: 50, l: 50 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

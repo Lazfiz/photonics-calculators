@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -61,7 +60,7 @@ export default function ThreePhotonMicroscopyPage() {
   }, [wavelength, na, lateralRes3P]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Three-Photon Microscopy Calculator" description="Calculate resolution, excitation volume, and depth penetration for three-photon excitation microscopy at 1300+ nm.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Excitation λ (nm)" value={wavelength} onChange={setWavelength} min={1000} max={1800} />
@@ -135,6 +134,6 @@ export default function ThreePhotonMicroscopyPage() {
           <ChartPanel data={depthChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af", size: 11 }, title: { text: "Signal vs Depth (1P/2P/3P)", font: { size: 13 } }, xaxis: { title: "Depth (µm)", gridcolor: "#374151" }, yaxis: { title: "Relative Signal", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 40, b: 55 } }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

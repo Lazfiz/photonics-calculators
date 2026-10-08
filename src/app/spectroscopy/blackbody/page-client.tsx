@@ -1,15 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c, h, k_B, sigma_SB, b_Wien } from "../../../physics/constants";
-const currentHref = "/spectroscopy/blackbody";
 const temperaturePresets = [300, 1200, 3000, 5778];
 
 export default function BlackbodyPage() {
@@ -36,12 +32,7 @@ export default function BlackbodyPage() {
   const totalPower = sigma_SB * Math.pow(temperature, 4);
 
   return (
-    <CalculatorShell
-      backHref="/spectroscopy"
-      backLabel="Spectroscopy"
-      title="Blackbody Radiation"
-      description="Planck's law spectral radiance curve, Wien's displacement law, and Stefan-Boltzmann total power."
-    >
+    <>
       <div className="mb-5 flex flex-wrap gap-2">
         {temperaturePresets.map((preset) => (
           <button
@@ -78,8 +69,6 @@ export default function BlackbodyPage() {
         yScale="log"
         series={series}
       />
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

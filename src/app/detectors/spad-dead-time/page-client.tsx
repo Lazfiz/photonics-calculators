@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 
@@ -66,7 +65,7 @@ export default function SpadDeadTimePage() {
   }, [tau]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="SPAD Dead Time" description="Dead time effects on measured count rates, pile-up loss, and correction for SPAD detectors.">
+    <>
             
       <div role="group" aria-label="Options" className="flex gap-2 mb-6">
         {(["nonparalyzable", "paralyzable"] as const).map(m => (
@@ -137,6 +136,6 @@ export default function SpadDeadTimePage() {
         <p>Paralyzable: R_meas = R·exp(-R·τ)</p>
         <p>Correction (NP): R_true = R_meas / (1 - R_meas·τ)</p>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

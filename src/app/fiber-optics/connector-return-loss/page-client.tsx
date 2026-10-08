@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -29,7 +28,7 @@ export default function ConnectorReturnLossPage() {
   }, [n1, n2, fresnelRL]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Connector Return Loss" description="Calculate return loss (ORL) from fiber connectors based on polish type and index mismatch.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -74,6 +73,6 @@ export default function ConnectorReturnLossPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c, h } from "../../../physics/constants";
@@ -105,7 +104,7 @@ export default function RareEarthDopedFiberCalculator() {
   };
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Rare-Earth-Doped Fiber Amplifier" description="Ion density, pump absorption, small-signal gain, saturation power and noise figure of an Er, Yb, Tm or Nd-doped fiber from doping and pump power.">
+    <>
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -165,6 +164,6 @@ export default function RareEarthDopedFiberCalculator() {
         <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
           <ChartPanel data={plotData} layout={layout} />
         </div>
-    </CalculatorShell>
+    </>
   );
 }

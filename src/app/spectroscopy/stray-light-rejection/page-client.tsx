@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -49,7 +48,7 @@ export default function StrayLightRejectionPage() {
   const absorbanceError = Math.abs(measuredAbs - absorbance);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Stray Light Rejection" description="Impact of stray light on photometric accuracy. Critical for high-absorbance measurements.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Stray Light Ratio" value={strayLightRatio} onChange={setStrayLightRatio} min={0} />
@@ -88,6 +87,6 @@ export default function StrayLightRejectionPage() {
         yaxis2: { title: "Photometric Error (%)", gridcolor: "#374151" },
         height: 500, margin: { t: 30, b: 40 },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

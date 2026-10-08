@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -36,7 +35,7 @@ export default function DispersionMapPage() {
   }, [lengthSMF, lengthDCF, dispSMF, dispDCF, slopeSMF, slopeDCF, wavelength, netDispersion]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Dispersion Map Calculator" description="Design a dispersion map for a fiber link using SMF and DCF segments.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="SMF Length (km)" value={lengthSMF} onChange={setLengthSMF} min={0} max={500} />
@@ -74,6 +73,6 @@ export default function DispersionMapPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -74,7 +73,7 @@ export default function DualCombSpectroscopyPage() {
   }, [deltaFrep, deltaFceo, frep1Hz, numModes]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Dual-Comb Spectroscopy Calculator" description="Model dual-comb spectroscopy parameters: resolution, bandwidth, update rate, and multi-heterodyne RF spectrum.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Comb 1 Rep Rate (MHz)" value={repRate1} onChange={setRepRate1} min={10} step="0.1" />
@@ -130,6 +129,6 @@ export default function DualCombSpectroscopyPage() {
           margin: { t: 40, r: 20, b: 50, l: 60 }, legend: { bgcolor: "transparent" },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

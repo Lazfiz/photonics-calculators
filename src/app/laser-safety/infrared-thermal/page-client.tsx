@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
@@ -95,7 +94,7 @@ export default function InfraredThermalPage() {
   };
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Infrared Thermal Limits" description="Calculates MPE for infrared lasers (780nm–1000µm) covering corneal thermal and retinal thermal hazards per ANSI Z136.1.">
+    <>
             
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
@@ -145,6 +144,6 @@ export default function InfraredThermalPage() {
       </div>
 
       <ChartPanel data={chartData} layout={layout} className="w-full h-[400px]" />
-    </CalculatorShell>
+    </>
   );
 }

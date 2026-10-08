@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -29,7 +28,7 @@ export default function ResetNoisePage() {
   const conversionGain = q / capacitance; // V/e-
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="KTC Reset Noise" description="KTC reset noise voltage, noise charge, and conversion gain for image sensors.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Capacitance (F)" value={capacitance} onChange={setCapacitance} step="1e-15" />
         <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} step="1" />
@@ -48,6 +47,6 @@ export default function ResetNoisePage() {
         yaxis2: { title: "Noise voltage (V)", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 70, r: 70 }, autosize: true, showlegend: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

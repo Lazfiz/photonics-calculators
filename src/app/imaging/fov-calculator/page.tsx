@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/fov-calculator' },
-    title: 'Field of View Calculator',
-  description: 'Calculate sample FOV from sensor dimensions and system magnification.'
-};
+const href = "/imaging/fov-calculator";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Field of View Calculator',
-  'Calculate sample FOV from sensor dimensions and system magnification.',
-  'https://photonics-calculators.vercel.app/imaging/fov-calculator',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

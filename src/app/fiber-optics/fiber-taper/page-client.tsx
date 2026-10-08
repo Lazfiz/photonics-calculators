@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -56,7 +55,7 @@ export default function FiberTaperPage() {
   }, [initialDia, heaterWidth]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Taper Calculation" description="Calculate fiber taper waist diameter, evanescent field, and coupling parameters from pull length.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Pull Length (μm)" value={pullLength} onChange={setPullLength} min={0} />
@@ -104,6 +103,6 @@ export default function FiberTaperPage() {
         legend: { x: 0.01, y: 0.99 },
         margin: { t: 30, r: 60 },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

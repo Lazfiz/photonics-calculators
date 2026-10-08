@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -24,7 +23,7 @@ export default function NAFNumberPage() {
   const airyDiameter = 2.44 * 0.55e-6 * fNumber * 1e6; // μm diameter at 550nm
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="NA ↔ f/# Conversion" description="NA = 1/(2·f/#) for objects at infinity. Relates numerical aperture to f-number.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="f/#" value={fNumber} onChange={setFNumber} min={0.5} step="0.1" />
@@ -37,6 +36,6 @@ export default function NAFNumberPage() {
       </div>
 
       <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "f/#", gridcolor: "#374151" }, yaxis: { title: "Value", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true, showlegend: true }} />
-    </CalculatorShell>
+    </>
   );
 }

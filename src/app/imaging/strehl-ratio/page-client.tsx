@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -42,7 +41,7 @@ export default function StrehlRatioPage() {
   }, [wfeRmsWave, strehl]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Strehl Ratio Calculator" description="Estimate the Strehl ratio from wavefront error using the Maréchal approximation.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">S ≈ exp(−(2π · σ / λ)²)</p>
@@ -88,6 +87,6 @@ export default function StrehlRatioPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

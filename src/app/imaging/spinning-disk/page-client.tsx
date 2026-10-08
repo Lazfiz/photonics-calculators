@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -45,7 +44,7 @@ export default function SpinningDiskPage() {
   }, [na, wavelength, n]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Spinning Disk Confocal Calculator" description="Pinhole size, optical sectioning, and frame rate for spinning disk confocal microscopy.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -96,6 +95,6 @@ export default function SpinningDiskPage() {
         <h2 className="text-lg font-semibold mb-4">Optical Section &amp; Signal vs Pinhole Size</h2>
         <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Pinhole size (Airy units)", gridcolor: "#333" }, yaxis: { title: "Section thickness (nm)", gridcolor: "#333" }, yaxis2: { title: "Relative signal", overlaying: "y", side: "right", gridcolor: "#333" }, legend: { font: { size: 11 } }, margin: { l: 70, r: 70, t: 20, b: 60 } }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

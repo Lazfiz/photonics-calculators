@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/two-photon-excitation' },
-    title: 'Two-Photon Excitation Calculator',
-  description: 'Calculate two-photon excitation wavelength, peak power, and pulse energy from laser parameters.'
-};
+const href = "/imaging/two-photon-excitation";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Two-Photon Excitation Calculator',
-  'Calculate two-photon excitation wavelength, peak power, and pulse energy from laser parameters.',
-  'https://photonics-calculators.vercel.app/imaging/two-photon-excitation',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

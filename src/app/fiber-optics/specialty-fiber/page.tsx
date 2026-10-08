@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/specialty-fiber' },
-    title: 'Specialty Fiber Types',
-  description: 'Compare properties of specialty optical fibers: PM, PCF, rare-earth doped, chalcogenide, and fluoride.'
-};
+const href = "/fiber-optics/specialty-fiber";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Specialty Fiber Types',
-  'Compare properties of specialty optical fibers: PM, PCF, rare-earth doped, chalcogenide, and fluoride.',
-  'https://photonics-calculators.vercel.app/fiber-optics/specialty-fiber',
-  { category: 'Fiber Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

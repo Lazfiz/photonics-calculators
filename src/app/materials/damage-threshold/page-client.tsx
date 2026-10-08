@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -80,7 +79,7 @@ export default function DamageThresholdPage() {
   }, [selected]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Laser Damage Threshold" description="LIDT for pulsed and CW laser optics">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono">
         <p>LIDT(τ) = LIDT_ref · (τ/τ_ref)^0.5 &nbsp;|&nbsp; F = E/A &nbsp;|&nbsp; I = P/A</p>
@@ -139,6 +138,6 @@ export default function DamageThresholdPage() {
          
         />
       )}
-    </CalculatorShell>
+    </>
   );
 }

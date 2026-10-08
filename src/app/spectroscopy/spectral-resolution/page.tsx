@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/spectral-resolution' },
-    title: 'Spectral Resolution Calculator',
-  description: 'Compare spectral resolution across grating, prism, and Fabry-Pérot spectrometers.'
-};
+const href = "/spectroscopy/spectral-resolution";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Spectral Resolution Calculator',
-  'Compare spectral resolution across grating, prism, and Fabry-Pérot spectrometers.',
-  'https://photonics-calculators.vercel.app/spectroscopy/spectral-resolution',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/fourier-transform' },
-    title: 'Fourier Transform Basics',
-  description: 'Decompose a composite time-domain signal into its frequency components via DFT.'
-};
+const href = "/spectroscopy/fourier-transform";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Fourier Transform Basics',
-  'Decompose a composite time-domain signal into its frequency components via DFT.',
-  'https://photonics-calculators.vercel.app/spectroscopy/fourier-transform',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

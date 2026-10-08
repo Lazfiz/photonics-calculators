@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/corneal-vs-retinal' },
-    title: 'Corneal vs Retinal Limits',
-  description: "Compares corneal MPE with equivalent retinal irradiance, showing the eye's focusing gain and which limit governs."
-};
+const href = "/laser-safety/corneal-vs-retinal";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Corneal vs Retinal Limits',
-  "Compares corneal MPE with equivalent retinal irradiance, showing the eye's focusing gain and which limit governs.",
-  'https://photonics-calculators.vercel.app/laser-safety/corneal-vs-retinal',
-  { category: 'Laser Safety' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

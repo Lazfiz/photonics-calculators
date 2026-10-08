@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/chromatic-dispersion' },
-    title: 'Chromatic Dispersion Calculator',
-    description: 'Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.'
-};
+const href = "/fiber-optics/chromatic-dispersion";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Chromatic Dispersion Calculator',
-  'Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.',
-  'https://photonics-calculators.vercel.app/fiber-optics/chromatic-dispersion',
-  { category: 'Fiber Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/extended-source' },
-    title: 'Extended Source Correction (C₆)',
-  description: 'C₆ angular subtense correction factor for extended source laser hazard evaluation per ANSI Z136.'
-};
+const href = "/laser-safety/extended-source";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Extended Source Correction (C₆)',
-  'C₆ angular subtense correction factor for extended source laser hazard evaluation per ANSI Z136.',
-  'https://photonics-calculators.vercel.app/laser-safety/extended-source',
-  { category: 'Laser Safety' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

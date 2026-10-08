@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -68,7 +67,7 @@ export default function DualCombSpectroscopyPage() {
   }, [repRate1, repRate2]);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Dual-Comb Spectroscopy" description="High-resolution spectroscopy using two frequency combs with slightly different repetition rates.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Rep Rate 1 (MHz)" value={repRate1} onChange={setRepRate1} step="0.001" />
@@ -107,6 +106,6 @@ export default function DualCombSpectroscopyPage() {
           margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

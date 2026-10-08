@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/cooling-benefit' },
-    title: 'Cooling Benefit Calculator',
-    description: 'Dark current reduction and SNR improvement from thermoelectric (TEC) or cryogenic cooling.'
-};
+const href = "/detectors/cooling-benefit";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Cooling Benefit Calculator',
-  'Dark current reduction and SNR improvement from thermoelectric (TEC) or cryogenic cooling.',
-  'https://photonics-calculators.vercel.app/detectors/cooling-benefit',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

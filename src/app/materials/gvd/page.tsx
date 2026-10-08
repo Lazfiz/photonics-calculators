@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/gvd' },
-      title: 'Group Velocity Dispersion (GVD)',
-  description: 'Calculate d²n/d² and dispersion parameter from Sellmeier coefficients.',
-};
+const href = "/materials/gvd";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Group Velocity Dispersion (GVD)',
-  'Calculate d²n/d² and dispersion parameter from Sellmeier coefficients.',
-  'https://photonics-calculators.vercel.app/materials/gvd',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

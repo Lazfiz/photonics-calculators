@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/sensor-cmos' },
-    title: 'CMOS Sensor Design',
-  description: 'Pixel design parameters, dynamic range, noise floor, and sensitivity calculations.'
-};
+const href = "/imaging/sensor-cmos";
 
-const jsonLd = generateCalculatorJsonLd(
-  'CMOS Sensor Design',
-  'Pixel design parameters, dynamic range, noise floor, and sensitivity calculations.',
-  'https://photonics-calculators.vercel.app/imaging/sensor-cmos',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/infrared-spectroscopy' },
-    title: 'Infrared (IR) Spectroscopy',
-  description: 'Molecular vibrational absorption in the mid-infrared region (400–4000 cm⁻¹).',
-};
+const href = "/spectroscopy/infrared-spectroscopy";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Infrared (IR) Spectroscopy',
-  'Molecular vibrational absorption in the mid-infrared region (400–4000 cm⁻¹).',
-  'https://photonics-calculators.vercel.app/spectroscopy/infrared-spectroscopy',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

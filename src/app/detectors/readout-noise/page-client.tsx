@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -28,7 +27,7 @@ export default function ReadoutNoisePage() {
   const readNoiseLimitedSignal = readNoise ** 2; // signal where shot = read noise
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Readout Noise" description="Readout noise, dark current, shot noise, and SNR analysis for image sensors.">
+    <>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label={<>Read noise σ<sub>read</sub> (e⁻ rms)</>} value={readNoise} onChange={setReadNoise} step="1" />
         <ValidatedNumberInput label="Dark current (e⁻/s/pixel)" value={darkCurrent} onChange={setDarkCurrent} step="0.01" />
@@ -48,6 +47,6 @@ export default function ReadoutNoisePage() {
         yaxis2: { title: "SNR", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 70, r: 60 }, autosize: true, showlegend: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

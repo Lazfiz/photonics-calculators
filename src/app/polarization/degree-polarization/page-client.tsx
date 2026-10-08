@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -91,7 +90,7 @@ export default function DegreeOfPolarizationPage() {
   };
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Degree of Polarization" description="Calculate DoP from Stokes parameters, decompose into polarized and unpolarized components.">
+    <>
             
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
@@ -202,6 +201,6 @@ export default function DegreeOfPolarizationPage() {
           <p>Spectral DoP: DoP_avg = √(⟨S₁⟩² + ⟨S₂⟩² + ⟨S₃⟩²) / S₀</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
@@ -59,13 +58,10 @@ export default function UVExposurePage() {
   const fmtSci = (v: number) => v < 1e-4 ? v.toExponential(2) : v < 0.01 ? v.toExponential(2) : v.toFixed(4);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety">
+    <>
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
       <div className="max-w-4xl mx-auto">
-        
-        <h1 className="text-3xl font-bold mb-2">UV Exposure Limits</h1>
-        <p className="text-gray-400 mb-8">Calculate UV exposure limits based on ICNIRP/ACGIH actinic UV weighting for 180–400 nm.</p>
 
         <div className="bg-[#12121a] rounded-xl p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4">Formulas</h2>
@@ -141,6 +137,6 @@ export default function UVExposurePage() {
           />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

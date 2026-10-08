@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -88,7 +87,7 @@ export default function StressMeasurementPage() {
   }, [radius, deflection, poissonRatio, youngsModulus, substrateThickness, nFilm]);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Thin Film Stress Measurement" description="Calculate film stress from substrate curvature using the Stoney equation. Includes thermal stress decomposition and stored elastic energy.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Substrate Radius (mm)" value={radius} onChange={setRadius} step="0.5" />
@@ -132,6 +131,6 @@ export default function StressMeasurementPage() {
         yaxis2: { title: "Energy (mJ/m²)", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 50, r: 50 }, autosize: true, legend: { x: 0.01, y: 0.99 }
       }} />
-    </CalculatorShell>
+    </>
   );
 }

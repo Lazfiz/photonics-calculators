@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
@@ -108,7 +107,7 @@ export default function UVBlueHazardPage() {
   };
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="UV / Blue Light Hazard" description="Calculates weighted hazard using the blue light B(λ) and UV S(λ) action spectra per IEC 62471 / ICNIRP guidelines.">
+    <>
             
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
@@ -160,6 +159,6 @@ export default function UVBlueHazardPage() {
       </div>
 
       <ChartPanel data={chartData} layout={layout} className="w-full h-[400px]" />
-    </CalculatorShell>
+    </>
   );
 }

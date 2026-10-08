@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 // Crystalline Quartz (SiO₂) - uniaxial positive crystal
@@ -74,7 +73,7 @@ export default function QuartzCrystalPage() {
   }, [wavelength, opticalRot]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Quartz Crystal (SiO₂) Properties" description="Uniaxial positive, optically active, piezoelectric. Sellmeier dispersion for o & e rays.">
+    <>
             
       <div className="mb-4">
         <label className="text-sm text-gray-400">Wavelength: {wavelength} nm</label>
@@ -102,7 +101,7 @@ export default function QuartzCrystalPage() {
         <ChartPanel data={birefChart.data} layout={birefChart.layout} config={plotConfig} />
         <div className="lg:col-span-2"><ChartPanel data={rotationChart.data} layout={rotationChart.layout} config={plotConfig} /></div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }
 

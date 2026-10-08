@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -121,7 +120,7 @@ export default function FiberBandwidthPage() {
   }, [fiberType, wavelength, sourceLinewidth, modalBW, calc.B_total]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Bandwidth Calculation" description="Calculate bandwidth limitations from chromatic dispersion, modal dispersion (MMF), and PMD for various fiber types and link configurations.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -212,6 +211,6 @@ export default function FiberBandwidthPage() {
           <p>Rule: Δτ &lt; T_bit/3 for &lt;1dB penalty</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

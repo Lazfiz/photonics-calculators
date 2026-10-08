@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
@@ -82,13 +81,10 @@ export default function ScannedMPEPage() {
   }, [wavelength, spotDiam, scanWidth]);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety">
+    <>
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
       <div className="max-w-4xl mx-auto">
-        
-        <h1 className="text-3xl font-bold mb-2">Scanned Beam MPE</h1>
-        <p className="text-gray-400 mb-8">Calculate MPE for scanned laser beams based on dwell time per point.</p>
 
         <div className="bg-[#12121a] rounded-xl p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4">Formulas</h2>
@@ -162,6 +158,6 @@ export default function ScannedMPEPage() {
           />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

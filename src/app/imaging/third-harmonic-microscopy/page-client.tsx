@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -53,7 +52,7 @@ export default function ThirdHarmonicMicroscopyPage() {
   }, [power, peakPower, spotArea, thgSignal]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Third-Harmonic Generation Microscopy Calculator" description="Calculate THG wavelength, signal intensity, and resolution for label-free interface and heterogeneity imaging.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Excitation λ (nm)" value={wavelength} onChange={setWavelength} min={1000} max={1800} />
@@ -122,6 +121,6 @@ export default function ThirdHarmonicMicroscopyPage() {
           <ChartPanel data={depthChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af", size: 11 }, title: { text: "Signal Attenuation vs Depth", font: { size: 13 } }, xaxis: { title: "Depth (µm)", gridcolor: "#374151" }, yaxis: { title: "Relative Signal", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 40, b: 55 } }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

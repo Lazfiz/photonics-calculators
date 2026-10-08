@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -83,7 +82,7 @@ export default function ChromaticDispersionPage() {
   }, [calc.D, sourceLineWidth, pulseWidth, modulationBW]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Chromatic Dispersion (CD)" description="Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="D at λ₀ (ps/nm/km)" value={dispersionCoeff} onChange={setDispersionCoeff} step="0.5" />
@@ -166,6 +165,6 @@ export default function ChromaticDispersionPage() {
           <p>SMF-28: D=17 ps/nm/km @1550nm, S=0.056 ps/nm²/km, λ₀=1310nm</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

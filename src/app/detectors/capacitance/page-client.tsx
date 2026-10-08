@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -39,7 +38,7 @@ export default function CapacitancePage() {
   }, [zeroBiasCap, builtInVoltage, totalResistance, m]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Junction Capacitance" description="Photodiode junction capacitance vs reverse bias, doping profile, and RC bandwidth impact." maxWidthClassName="max-w-5xl">
+    <>
       <div role="group" aria-label="Options" className="flex gap-2 mb-6">
         {(["abrupt", "graded", "hyperabrupt"] as const).map(p => (
           <button key={p} onClick={() => setGradingProfile(p)} className={`px-4 py-2 rounded text-sm font-medium capitalize ${gradingProfile === p ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}>{p}</button>
@@ -62,6 +61,6 @@ export default function CapacitancePage() {
         <ChartPanel data={bwVsBias} layout={{ xaxis: { title: "Reverse Bias (V)", gridcolor: "#374151" }, yaxis: { title: "f_3dB (MHz)", gridcolor: "#374151" } }} title="Bandwidth vs Bias" />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mt-6 text-sm text-gray-300 font-mono space-y-1"><p>C_j = C_j0 / (1 + V_R/V_bi)^m</p><p>f_3dB = 1 / (2π·(R_L + R_s)·C_j)</p></div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -63,10 +62,7 @@ export default function BeamsplitterPage() {
   }, [nH, nL, nSub, nInc, designWl, targetR]);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Beamsplitter Design" description="Dielectric beamsplitters split light into reflected and transmitted beams. A single quarter-wave
-        layer gives R &lt; 50% for most materials; multilayer (HL)N stacks approach 100%.
-        A 50/50 split is achieved with specific layer thicknesses (non-quarter-wave) or by selecting
-        the appropriate number of layer pairs near the stop band edge.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>H</sub> (high index)</>} value={nH} onChange={setNH} step="0.01" />
@@ -88,6 +84,6 @@ export default function BeamsplitterPage() {
         margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true,
         legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0.3)", font: { size: 10 } },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -66,7 +65,7 @@ export default function SpectralCalibrationPage() {
   const dispersionNm = spectralWidth / pixelCount;
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Calibration" description="Wavelength calibration using known emission lines and linear/polynomial fitting.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Pixel Count" value={pixelCount} onChange={setPixelCount} min={64} />
@@ -113,6 +112,6 @@ export default function SpectralCalibrationPage() {
         yaxis: { title: "Residual (nm)", gridcolor: "#374151" },
         height: 250, margin: { t: 20, b: 40 },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

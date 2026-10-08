@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -34,7 +33,7 @@ export default function ElectronMultiplyingPage() {
   }, [signalElectrons, darkCurrent, emccdReadNoise, scmosSNR]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="EMCCD vs sCMOS" description="Compare electron-multiplying CCD with sCMOS for low-light imaging." maxWidthClassName="max-w-5xl">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Signal (e⁻/pix/frame)" value={signalElectrons} onChange={setSignalElectrons} min={0.1} step="1" />
         <ValidatedNumberInput label="Dark Current (e⁻/pix/frame)" value={darkCurrent} onChange={setDarkCurrent} min={0} step="0.001" />
@@ -53,6 +52,6 @@ export default function ElectronMultiplyingPage() {
         <ChartPanel data={snrVsSignal} layout={{ xaxis: { title: "Signal (e⁻/pix/frame)", gridcolor: "#374151" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} title="SNR vs Signal" />
         <ChartPanel data={snrVsGain} layout={{ xaxis: { title: "EM Gain", gridcolor: "#374151", type: "log" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} title="EMCCD SNR vs Gain" />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

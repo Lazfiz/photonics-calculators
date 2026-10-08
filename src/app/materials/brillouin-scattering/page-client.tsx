@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c } from "../../../physics/constants";
@@ -69,7 +68,7 @@ export default function BrillouinScatteringPage() {
   }, [material, linewidth]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Brillouin Scattering" description="Stimulated Brillouin scattering (SBS): frequency shift, gain coefficient, and power threshold in optical fibers and bulk materials.">
+    <>
             
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <div>
@@ -111,6 +110,6 @@ export default function BrillouinScatteringPage() {
         <p className="font-mono bg-gray-800 p-2 rounded">P<sub>th</sub> ≈ 21·A<sub>eff</sub> / (g_B · L<sub>eff</sub>) | Γ_B = Brillouin linewidth</p>
         <p className="mt-2 text-xs">Acoustic velocity: V_A = {mat.vA} m/s. SBS is a major power limit in narrow-linewidth fiber systems.</p>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

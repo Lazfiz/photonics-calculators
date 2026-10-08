@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -38,7 +37,7 @@ export default function DetectivityPage() {
   }, [darkCurrent, temperature, bandwidth, loadResistance, excessNoiseFactor, responsivity, areaCm2]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Detectivity (D*)" description="Specific detectivity from NEP, area, and bandwidth. D* = √(A·Δf) / NEP" maxWidthClassName="max-w-5xl">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={3000} step="10" />
         <ValidatedNumberInput label="Quantum Efficiency" value={qe} onChange={setQe} min={0.01} max={1} step="0.01" />
@@ -61,6 +60,6 @@ export default function DetectivityPage() {
         <ChartPanel data={tempChart} layout={{ xaxis: { title: "Temperature (K)", gridcolor: "#374151" }, yaxis: { title: "D* (cm·Hz^½/W)", gridcolor: "#374151" } }} title="D* vs Temperature" />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mt-6 text-sm text-gray-300 font-mono space-y-1"><p>D* = √A / NEP_spectral</p><p>NEP_spectral = i_n / (R · √Δf),  R = η·q·λ / (h·c)</p><p>i²_shot = 2·q·I_d·F·Δf,  i²_thermal = 4·k·T·Δf / R_L</p></div>
-    </CalculatorShell>
+    </>
   );
 }

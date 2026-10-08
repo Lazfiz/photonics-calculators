@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -72,7 +71,7 @@ export default function MicrowaveSpectroscopyPage() {
   const maxJ_observed = maxJ_pop + 0.5;
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Microwave / Rotational Spectroscopy" description="Pure rotational transitions for molecular structure determination (1–300 GHz).">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -142,6 +141,6 @@ export default function MicrowaveSpectroscopyPage() {
           <li>• <strong className="text-red-400">Isotopologues</strong>: Different reduced masses → different B → resolved lines</li>
         </ul>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -104,7 +103,7 @@ export default function BirefringentCrystalsPage() {
   }, [selected]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Birefringent Crystals" description="Ordinary (nₒ) and extraordinary (nₑ) refractive indices">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div>
@@ -147,6 +146,6 @@ export default function BirefringentCrystalsPage() {
        
        
       />
-    </CalculatorShell>
+    </>
   );
 }

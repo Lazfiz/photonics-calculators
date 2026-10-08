@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -61,7 +60,7 @@ export default function PlenopticCameraPage() {
   }, [microLensPitchUm, pixelPitchUm, microLensFocalMm]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Plenoptic Camera Design" description="Light field camera parameters: spatial-angular tradeoff, refocusing range, and data budgets.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -121,6 +120,6 @@ export default function PlenopticCameraPage() {
           <ChartPanel data={tradeoffChart} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "px/µ-lens" }, yaxis: { title: "Eff. Spatial Res. (µm)" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -46,7 +45,7 @@ export default function ImageDistancePage() {
   }, [f, o, i, valid]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Thin Lens Image Distance" description="Calculate image distance, magnification, and conjugate ratio for a thin lens.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">1/f = 1/o + 1/i</p>
@@ -95,6 +94,6 @@ export default function ImageDistancePage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

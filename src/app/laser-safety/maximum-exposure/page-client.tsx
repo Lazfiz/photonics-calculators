@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
@@ -105,13 +104,10 @@ export default function MaximumExposurePage() {
   };
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety">
+    <>
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
       <div className="max-w-4xl mx-auto">
-        
-        <h1 className="text-3xl font-bold mb-2">Maximum Exposure Duration</h1>
-        <p className="text-gray-400 mb-8">Given a laser’s parameters, calculate the maximum safe exposure time before exceeding MPE.</p>
 
         <div className="bg-[#12121a] rounded-xl p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4">Formulas</h2>
@@ -184,6 +180,6 @@ export default function MaximumExposurePage() {
           <p className="text-sm text-gray-500 mt-3">The crossing point shows t<sub>max</sub> — the maximum safe exposure duration.</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

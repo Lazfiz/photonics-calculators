@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/plasma-deposition' },
-    title: 'Plasma Deposition',
-  description: 'Model plasma-enhanced deposition parameters: electron temperature, ion density, sheath voltage, and deposition rate.'
-};
+const href = "/thin-film/plasma-deposition";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Plasma Deposition',
-  'Model plasma-enhanced deposition parameters: electron temperature, ion density, sheath voltage, and deposition rate.',
-  'https://photonics-calculators.vercel.app/thin-film/plasma-deposition',
-  { category: 'Thin Film' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -74,7 +73,7 @@ export default function CoherentAntiStokesRamanPage() {
   const spectralRes = 0.441 / (pulseWidth * 1e-12 * c * 100); // Gaussian time-bandwidth product
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Coherent Anti-Stokes Raman Scattering (CARS)" description="Four-wave mixing process for label-free vibrational imaging with chemical specificity.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Pump Wavelength ω₁ (nm)" value={pumpWavelength} onChange={setPumpWavelength} min={200} max={2000} />
@@ -125,6 +124,6 @@ export default function CoherentAntiStokesRamanPage() {
           <li>• <strong className="text-yellow-400">Disadvantages</strong>: non-resonant background, requires two synchronized lasers</li>
         </ul>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

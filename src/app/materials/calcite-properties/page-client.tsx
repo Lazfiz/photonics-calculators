@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 // Calcite (CaCO₃) - uniaxial negative crystal, very strong birefringence
@@ -94,7 +93,7 @@ export default function CalcitePropertiesPage() {
   }, [angle, no, ne, walkoff]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Calcite (CaCO₃) Properties" description="Uniaxial negative crystal with the largest birefringence of common optical crystals. Δn ≈ 0.172 at 589nm.">
+    <>
             
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
@@ -131,7 +130,7 @@ export default function CalcitePropertiesPage() {
         <ChartPanel data={birefChart.data} layout={birefChart.layout} config={plotConfig} />
         <div className="lg:col-span-2"><ChartPanel data={walkoffChart.data} layout={walkoffChart.layout} config={plotConfig} /></div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -30,7 +29,7 @@ export default function WellCapacityPage() {
   const usableBits = Math.log2(wellCapacity / readNoise);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Well Capacity & Dynamic Range" description="DR = 20·log₁₀(Nwell/σread). C = Nwell·q/Vswing. Larger wells → more DR but slower charge transfer.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Well capacity (e⁻)" value={wellCapacity} onChange={setWellCapacity} step="1000" />
@@ -54,6 +53,6 @@ export default function WellCapacityPage() {
         yaxis2: { title: "Capacitance (F)", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 70, r: 70 }, autosize: true, showlegend: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

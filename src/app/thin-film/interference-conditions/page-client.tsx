@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -31,7 +30,7 @@ export default function InterferenceConditionsPage() {
   const formatNm = (m: number) => (Number.isFinite(m) ? `${(m * 1e9).toFixed(1)} nm` : "—");
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Thin Film Interference Conditions" description="Constructive and destructive interference patterns from a single thin film, accounting for phase shifts at boundaries.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="n (film)" value={nFilm} onChange={setNFilm} min={0.1} step="0.01" />
@@ -79,6 +78,6 @@ export default function InterferenceConditionsPage() {
           legend: { x: 0.02, y: 0.98 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

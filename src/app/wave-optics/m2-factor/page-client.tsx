@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -49,7 +48,7 @@ export default function M2FactorPage() {
   }, [wavelength, w0]);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Beam Quality Factor M²" description="M² = (π w₀ θ)/λ. M² = 1 for ideal Gaussian, higher for multimode beams.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} />
@@ -86,6 +85,6 @@ export default function M2FactorPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { x: 0.7, y: 0.05 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

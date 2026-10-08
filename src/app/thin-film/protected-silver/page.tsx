@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/protected-silver' },
-    title: 'Protected Silver Mirror',
-  description: 'Protected silver coating — high reflectance UV-Vis-IR with dielectric overcoat and adhesion layer.'
-};
+const href = "/thin-film/protected-silver";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Protected Silver Mirror',
-  'Protected silver coating — high reflectance UV-Vis-IR with dielectric overcoat and adhesion layer.',
-  'https://photonics-calculators.vercel.app/thin-film/protected-silver',
-  { category: 'Thin Film' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

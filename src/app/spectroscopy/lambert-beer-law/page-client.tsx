@@ -1,17 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
 const concentrationPresets = [0.001, 0.01, 0.05, 0.1];
 const pathPresets = [0.1, 1, 5, 10];
 const epsilonPresets = [1000, 10000, 50000, 100000];
-const currentHref = "/spectroscopy/lambert-beer-law";
 
 export default function LambertBeerLawPage() {
   const [concentration, setConcentration] = useURLState("concentration", 0.01);
@@ -48,7 +44,7 @@ export default function LambertBeerLawPage() {
   const xLabel = plotVar === "conc" ? "Concentration (mol/L)" : plotVar === "path" ? "Path Length (cm)" : "ε (L·mol⁻¹·cm⁻¹)";
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Lambert-Beer Law Calculator" description="Comprehensive Beer-Lambert law analysis with sliders, presets, and interactive parameter sweeps.">
+    <>
       <div className="mb-5 space-y-3">
         <div className="flex flex-wrap gap-2">
           {concentrationPresets.map((preset) => (
@@ -99,8 +95,6 @@ export default function LambertBeerLawPage() {
       </div>
 
       <SimpleLineChart title="Beer-Lambert sweep" xLabel={xLabel} yLabel="Value" yScale="log" series={series} />
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

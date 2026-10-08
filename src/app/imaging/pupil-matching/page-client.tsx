@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -36,7 +35,7 @@ export default function PupilMatchingPage() {
   const totalMag = objectiveMag * eyepieceMag;
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Pupil Matching in Microscopy" description="Exit pupil = (2·ftube·NA)/(Mobj·Meyepiece). Match to eye pupil (2-8mm) for optimal brightness.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Objective NA" value={objectiveNA} onChange={setObjectiveNA} step="0.01" />
@@ -54,6 +53,6 @@ export default function PupilMatchingPage() {
       </div>
 
       <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Objective NA", gridcolor: "#374151" }, yaxis: { title: "Pupil Diameter (mm)", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true, showlegend: true }} />
-    </CalculatorShell>
+    </>
   );
 }

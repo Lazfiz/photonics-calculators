@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
@@ -110,7 +109,7 @@ export default function ScanningMPEPage() {
   };
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Scanned Beam MPE" description="Calculates the effective MPE for scanning laser beams where dwell time per retinal point is reduced compared to stationary exposure.">
+    <>
             
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
@@ -163,6 +162,6 @@ export default function ScanningMPEPage() {
       </div>
 
       <ChartPanel data={chartData} layout={layout} className="w-full h-[400px]" />
-    </CalculatorShell>
+    </>
   );
 }

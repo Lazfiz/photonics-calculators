@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -87,7 +86,7 @@ export default function FilamentationPage() {
   const Bintegral = (2 * Math.PI / (wavelength * 1e-9)) * n2 * 1e-20 * Iclamped * Lfil;
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Filamentation Dynamics" description="Laser filamentation — balance of Kerr self-focusing, plasma defocusing, and diffraction.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">P<sub>cr</sub></span> = 3.77 λ² / (8π n₀ n₂)</p>
@@ -152,6 +151,6 @@ export default function FilamentationPage() {
           <ChartPanel data={intensityData} layout={intLayout} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

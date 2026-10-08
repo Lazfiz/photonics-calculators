@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -98,7 +97,7 @@ export default function SelfPhaseModulationPage() {
   const maxShiftNm = maxShiftHz * (wavelength * 1e-9) ** 2 / c * 1e9;
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Self-Phase Modulation (SPM)" description="Intensity-dependent phase shift and spectral broadening from the optical Kerr effect.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">φ<sub>NL</sub>(t)</span> = −n₂ I(t) k L = −(n₂ ω/c) I(t) L</p>
@@ -167,6 +166,6 @@ export default function SelfPhaseModulationPage() {
           <ChartPanel data={spectrumData} layout={spectrumLayout} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

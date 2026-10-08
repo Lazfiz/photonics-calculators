@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -86,10 +85,7 @@ export default function EnvironmentalStabilityPage() {
   }, [nH, nL, nSub, nInc, numPairs, designWl, humidityPct, tempC]);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Environmental Stability" description="Environmental factors shift thin film spectral performance. Temperature changes refractive index
-        (thermo-optic effect, dn/dT) and layer thickness (thermal expansion, CTE). Humidity causes water
-        absorption in porous layers (especially SiO₂), changing both n and d. Dense films (TiO₂, Ta₂O₅)
-        are more environmentally stable. Understanding these shifts is critical for field deployment.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>H</sub> (e.g. TiO₂)</>} value={nH} onChange={setNH} step="0.01" />
@@ -127,6 +123,6 @@ export default function EnvironmentalStabilityPage() {
         yaxis: { title: "Δλ (nm)", gridcolor: "#374151" },
         margin: { t: 40, b: 40, l: 50, r: 20 }, autosize: true,
       }} />
-    </CalculatorShell>
+    </>
   );
 }

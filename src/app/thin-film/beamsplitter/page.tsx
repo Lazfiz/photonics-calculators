@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/beamsplitter' },
-      title: 'Beamsplitter Design',
-  description: 'Dielectric beamsplitters split light into reflected and transmitted beams. A single quarter-wave',
-};
+const href = "/thin-film/beamsplitter";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Beamsplitter Design',
-  'Dielectric beamsplitters split light into reflected and transmitted beams. A single quarter-wave',
-  'https://photonics-calculators.vercel.app/thin-film/beamsplitter',
-  { category: 'Thin Film' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

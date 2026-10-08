@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -52,7 +51,7 @@ export default function PumpProbePage() {
   const probeE = hc_eV_nm / probeWavelength; // eV
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Pump-Probe Spectroscopy" description="Ultrafast dynamics via time-resolved differential transmission. GSB, SE, and ESA contributions.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} min={200} max={2000} />
@@ -86,6 +85,6 @@ export default function PumpProbePage() {
           showlegend: true, legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

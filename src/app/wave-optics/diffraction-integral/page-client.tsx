@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -79,7 +78,7 @@ export default function DiffractionIntegralPage() {
   }, [wavelength, apertureType, apertureSize, propDist, observationSize]);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Diffraction Integral Calculator" description="Fresnel/Kirchhoff diffraction patterns.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
@@ -143,7 +142,7 @@ export default function DiffractionIntegralPage() {
           }} />
         </div>
       )}
-    </CalculatorShell>
+    </>
   );
 }
 

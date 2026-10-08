@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/skin-hazard' },
-    title: 'Skin Hazard Assessment',
-  description: 'Evaluate skin exposure risk from laser irradiation per ANSI Z136.1 simplified skin MPE.'
-};
+const href = "/laser-safety/skin-hazard";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Skin Hazard Assessment',
-  'Evaluate skin exposure risk from laser irradiation per ANSI Z136.1 simplified skin MPE.',
-  'https://photonics-calculators.vercel.app/laser-safety/skin-hazard',
-  { category: 'Laser Safety' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

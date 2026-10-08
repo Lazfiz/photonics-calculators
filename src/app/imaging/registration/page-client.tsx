@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -102,7 +101,7 @@ export default function RegistrationPage() {
   }, [transformation]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Image Registration" description="Calculate transformation parameters, registration accuracy, and evaluate different registration approaches.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -192,6 +191,6 @@ export default function RegistrationPage() {
           <p><span className="text-blue-400">RMSE:</span> RMSE = √(Σ(x̂ᵢ − xᵢ)² / N)</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

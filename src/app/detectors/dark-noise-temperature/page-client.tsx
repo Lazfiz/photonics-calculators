@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -31,7 +30,7 @@ export default function DarkNoiseTemperaturePage() {
   }, [darkCurrent25, eg, bandwidth]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Dark Noise vs Temperature" description="Temperature dependence of dark current and dark noise in photodiodes/CCDs.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Dark Current at 25°C (nA)" value={darkCurrent25} onChange={setDarkCurrent25} min={0.001} step="0.1" />
         <ValidatedNumberInput label="Bandgap (eV)" value={eg} onChange={setEg} min={0.5} max={2} step="0.01" />
@@ -45,6 +44,6 @@ export default function DarkNoiseTemperaturePage() {
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>I_dark(T) = I₀ · (T/T_ref)^(3/2) · exp[−E_g/(2k) · (1/T − 1/T_ref)]</p><p>σ_dark = √(2q · I_dark · Δf)</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Temperature (°C)", gridcolor: "#374151" }, yaxis: { title: "Dark Current (nA)", gridcolor: "#374151", type: "log" }, yaxis2: { title: "Dark Noise (nA rms)", gridcolor: "#374151", overlaying: "y", side: "right", type: "log" } }} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
 interface Material {
@@ -52,7 +51,7 @@ export default function PhotoelasticPage() {
   const phaseShift = 2 * Math.PI * dn / (wavelength * 1e-9); // rad/m
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Photoelastic Constants" description="Stress-induced birefringence: Δn = C · σ, where C is the stress-optic coefficient">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div>
@@ -117,6 +116,6 @@ export default function PhotoelasticPage() {
           </tbody>
         </table>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

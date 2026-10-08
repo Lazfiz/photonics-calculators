@@ -1,12 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
 const detectorPresets = {
   silicon: { label: "Silicon (Si)", fill: 0.95, gain: 1.0 },
@@ -16,7 +13,6 @@ const detectorPresets = {
 } as const;
 
 type DetType = keyof typeof detectorPresets;
-const currentHref = "/detectors/quantum-efficiency";
 
 function qeAt(detType: DetType, w: number, fillFactor: number, microlensGain: number) {
   let base = 0;
@@ -72,7 +68,7 @@ export default function QuantumEfficiencyPage() {
   }, [detType, fillFactor, microlensGain]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Quantum Efficiency" description="Interactive detector QE explorer with detector presets, fill factor, microlens gain, and wavelength response curves.">
+    <>
       <div className="mb-5 flex flex-wrap gap-2">
         {(Object.entries(detectorPresets) as [DetType, typeof detectorPresets[DetType]][]).map(([key, preset]) => (
           <button key={key} onClick={() => { setDetType(key); setFillFactor(preset.fill); setMicrolensGain(preset.gain); }} className={`rounded-full border px-3 py-1 text-sm transition ${detType === key ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>{preset.label}</button>
@@ -96,8 +92,6 @@ export default function QuantumEfficiencyPage() {
       </div>
 
       <SimpleLineChart title="Detector quantum efficiency" xLabel="Wavelength (nm)" yLabel="QE (%)" series={chartSeries} />
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -110,7 +109,7 @@ export default function ConoscopicPage() {
   }, [dn, d, lam, maxAngleDeg]);
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Conoscopic Observation" description="Simulate conoscopic interference figures (isochromates and isogyres) for uniaxial and biaxial crystals between crossed polarizers.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">δ(θ) = 2π Δn d sin²θ / λ, I = sin²(δ/2)</p>
@@ -181,6 +180,6 @@ export default function ConoscopicPage() {
           }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

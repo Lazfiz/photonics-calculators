@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
@@ -42,12 +41,7 @@ export default function OpticalDensityPage() {
   }, [result]);
 
   return (
-    <CalculatorShell
-      backHref="/laser-safety"
-      backLabel="Laser Safety"
-      title="Optical Density (CW point-source pre-check)"
-      description="Required OD pre-check derived from the same bounded CW point-source MPE branch as the MPE page."
-    >
+    <>
       <LaserSafetyDisclaimer />
       <LaserSafetyCwBounds />
       <LaserSafetyCwReferences />
@@ -93,6 +87,6 @@ export default function OpticalDensityPage() {
       )}
 
       <LaserSafetySuiteLinks currentHref="/laser-safety/optical-density" />
-    </CalculatorShell>
+    </>
   );
 }

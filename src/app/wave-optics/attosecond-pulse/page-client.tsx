@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -35,7 +34,7 @@ export default function AttosecondPulsePage() {
   }, [cutoffOrder]);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Attosecond Pulse Generation" description="High-harmonic generation and isolated attosecond pulse parameters.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Driving Wavelength λ (nm)" value={wavelength} onChange={setWavelength} />
@@ -75,6 +74,6 @@ export default function AttosecondPulsePage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

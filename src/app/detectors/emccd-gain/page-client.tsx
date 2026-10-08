@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -46,7 +45,7 @@ export default function EmccdGainPage() {
   }, [totalGain, darkElectrons, readNoise, emReadNoise, crossoverSignal]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="EMCCD Gain Calculator" description="EM gain stages, excess noise (F=√2), and SNR advantage over conventional CCD." maxWidthClassName="max-w-5xl">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="EM Stages" value={numStages} onChange={setNumStages} min={100} max={1000} step="1" />
         <ValidatedNumberInput label="Clock Voltage (V)" value={clockVoltage} onChange={setClockVoltage} min={30} max={60} step="1" />
@@ -72,6 +71,6 @@ export default function EmccdGainPage() {
         <ChartPanel data={snrChart} layout={{ xaxis: { title: "Signal (e⁻/pix)", gridcolor: "#374151" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} title="SNR vs Signal" />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mt-6 text-sm text-gray-300 font-mono space-y-1"><p>G = g^N, g = 1 + α·(V_clock − V_threshold)</p><p>F = √2 (stochastic multiplication)</p><p>SNR_EMCCD = S·G / √(2·G²·(S+D) + σ_read²)</p></div>
-    </CalculatorShell>
+    </>
   );
 }

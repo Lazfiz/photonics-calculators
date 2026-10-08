@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/notch-filter' },
-    title: 'Notch Filter',
-  description: 'Rejection notch filter — high reflectance at target wavelength, transmits elsewhere.'
-};
+const href = "/thin-film/notch-filter";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Notch Filter',
-  'Rejection notch filter — high reflectance at target wavelength, transmits elsewhere.',
-  'https://photonics-calculators.vercel.app/thin-film/notch-filter',
-  { category: 'Thin Film' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -101,7 +100,7 @@ export default function AgingEffectsPage() {
   }, [selected, tempFactor, laserFluence, initialStress]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Aging of Optical Materials" description="Long-term degradation: transmission loss, solarization, compaction, stress relaxation">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono">
         <p>T(t) = 100 - rate·t·A(T) &nbsp;|&nbsp; Solarization: loss ∝ (D-D_th)^0.5 &nbsp;|&nbsp; Compaction: Δρ = rate·F·t</p>
@@ -174,6 +173,6 @@ export default function AgingEffectsPage() {
        
        
       />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/stray-light-rejection' },
-    title: 'Stray Light Rejection',
-  description: 'Impact of stray light on photometric accuracy. Critical for high-absorbance measurements.'
-};
+const href = "/spectroscopy/stray-light-rejection";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Stray Light Rejection',
-  'Impact of stray light on photometric accuracy. Critical for high-absorbance measurements.',
-  'https://photonics-calculators.vercel.app/spectroscopy/stray-light-rejection',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

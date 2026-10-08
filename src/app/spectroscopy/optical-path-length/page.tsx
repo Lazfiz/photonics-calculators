@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/optical-path-length' },
-      title: 'Optical Path Length Calculator',
-  description: 'OPL = n d N / cos() — effective path through a medium.',
-};
+const href = "/spectroscopy/optical-path-length";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Optical Path Length Calculator',
-  'OPL = n d N / cos() — effective path through a medium.',
-  'https://photonics-calculators.vercel.app/spectroscopy/optical-path-length',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

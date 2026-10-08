@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -103,7 +102,7 @@ export default function PhotonicCrystalFiberCalculator() {
   };
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Photonic Crystal Fiber" description="Approximate NA, V-number, mode area, dispersion and confinement loss of an index-guiding photonic crystal fiber from hole pitch Λ and diameter d.">
+    <>
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -150,6 +149,6 @@ export default function PhotonicCrystalFiberCalculator() {
         <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
           <ChartPanel data={plotData} layout={layout} />
         </div>
-    </CalculatorShell>
+    </>
   );
 }

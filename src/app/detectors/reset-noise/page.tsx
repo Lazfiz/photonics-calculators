@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/reset-noise' },
-    title: 'KTC Reset Noise',
-    description: 'KTC reset noise voltage, noise charge, and conversion gain for image sensors.'
-};
+const href = "/detectors/reset-noise";
 
-const jsonLd = generateCalculatorJsonLd(
-  'KTC Reset Noise',
-  'KTC reset noise voltage, noise charge, and conversion gain for image sensors.',
-  'https://photonics-calculators.vercel.app/detectors/reset-noise',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

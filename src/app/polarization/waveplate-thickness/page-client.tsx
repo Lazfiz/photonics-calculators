@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -63,7 +62,7 @@ export default function WaveplateThicknessPage() {
   ];
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Waveplate Thickness Calculator" description="Calculate required crystal thickness for waveplates of any retardance order.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">d = Δ·λ / (n_e − n_o)</p>
@@ -124,6 +123,6 @@ export default function WaveplateThicknessPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

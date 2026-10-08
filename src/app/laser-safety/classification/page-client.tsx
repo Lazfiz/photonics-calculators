@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -158,7 +157,7 @@ export default function ClassificationPage() {
   }, []);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Laser Classification (IEC 60825-1:2014)" description="Laser product classification per IEC 60825-1 Edition 3.0 (2014). CW and simplified pulsed AEL thresholds with C_A and C_B correction factors.">
+    <>
       <LaserSafetyDisclaimer />
 
       <div className="bg-blue-950/50 border border-blue-800/50 rounded-lg p-4 mb-6">
@@ -292,6 +291,6 @@ export default function ClassificationPage() {
           C_A = 10^(0.002(λ-700)) for 700-1050 nm. Values are CW simplified — pulsed, scan, and extended-source rules omitted.
         </p>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

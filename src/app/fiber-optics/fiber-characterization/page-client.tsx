@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -86,7 +85,7 @@ export default function FiberCharacterizationPage() {
   }, [coreIndex, claddingIndex, coreRadius]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Characterization" description="Comprehensive fiber parameter calculation: V-number, MFD, effective area, nonlinear coefficient, dispersion, and confinement.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={800} max={1700} />
@@ -171,6 +170,6 @@ export default function FiberCharacterizationPage() {
           <p>θ_a = arcsin(NA) [acceptance half-angle]</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/scanning-mpe' },
-    title: 'Scanned Beam MPE',
-  description: 'Calculates the effective MPE for scanning laser beams where dwell time per retinal point is reduced compared to stationary exposure.'
-};
+const href = "/laser-safety/scanning-mpe";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Scanned Beam MPE',
-  'Calculates the effective MPE for scanning laser beams where dwell time per retinal point is reduced compared to stationary exposure.',
-  'https://photonics-calculators.vercel.app/laser-safety/scanning-mpe',
-  { category: 'Laser Safety' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

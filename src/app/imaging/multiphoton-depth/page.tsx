@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/multiphoton-depth' },
-    title: 'Multiphoton Imaging Depth Calculator',
-  description: 'Two-photon excitation depth penetration, resolution, and laser parameters.'
-};
+const href = "/imaging/multiphoton-depth";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Multiphoton Imaging Depth Calculator',
-  'Two-photon excitation depth penetration, resolution, and laser parameters.',
-  'https://photonics-calculators.vercel.app/imaging/multiphoton-depth',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

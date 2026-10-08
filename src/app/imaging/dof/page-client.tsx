@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -42,7 +41,7 @@ export default function DepthOfFieldPage() {
   }, [wavelength, n, pixelSize, magnification]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Depth of Field" description="Microscope depth of field including diffraction and detector contributions.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -99,6 +98,6 @@ export default function DepthOfFieldPage() {
          
         />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

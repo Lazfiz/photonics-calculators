@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -87,7 +86,7 @@ export default function ScintillationIndexPage() {
   }, [wavelength, cn2, range, waveType]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Scintillation and Coherence Length" description="Rytov variance, scintillation index, Fried parameter, coherence length and coherence time for plane or spherical waves versus Cn² and range." maxWidthClassName="max-w-5xl">
+    <>
       
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -136,6 +135,6 @@ export default function ScintillationIndexPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/sapphire-properties' },
-    title: 'Sapphire (AlO₃) Properties',
-  description: 'Uniaxial crystal. Sellmeier equations for ordinary and extraordinary rays.'
-};
+const href = "/materials/sapphire-properties";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Sapphire (AlO₃) Properties',
-  'Uniaxial crystal. Sellmeier equations for ordinary and extraordinary rays.',
-  'https://photonics-calculators.vercel.app/materials/sapphire-properties',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

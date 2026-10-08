@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { createRng } from "../../../physics/random";
@@ -79,7 +78,7 @@ export default function CircularDichroismPage() {
   };
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Circular Dichroism" description="Calculate CD parameters: ΔA, Δε, molar ellipticity, and g-factor from absorbance of left and right circularly polarized light.">
+    <>
             
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
@@ -177,6 +176,6 @@ export default function CircularDichroismPage() {
           <p>For proteins: α-helix signature at 208, 222 nm (negative)</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

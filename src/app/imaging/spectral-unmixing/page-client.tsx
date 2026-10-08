@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -93,7 +92,7 @@ export default function SpectralUnmixingPage() {
   const reconstructionError = method === "nnls" ? 0.5 + noiseLevel * 0.08 : method === "cls" ? 1.2 + noiseLevel * 0.15 : 2.5 + noiseLevel * 0.25;
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Spectral Unmixing" description="Decompose mixed spectral signals into constituent endmember abundances using linear unmixing methods.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -181,6 +180,6 @@ export default function SpectralUnmixingPage() {
           <p><span className="text-blue-400">Reconstruction error:</span> RMSE = √(Σ(rᵢ − r̂ᵢ)² / N)</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

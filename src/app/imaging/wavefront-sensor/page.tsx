@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/wavefront-sensor' },
-    title: 'Shack-Hartmann Wavefront Sensor Calculator',
-  description: 'Design parameters for Shack-Hartmann wavefront sensors including spot size, sensitivity, and dynamic range.'
-};
+const href = "/imaging/wavefront-sensor";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Shack-Hartmann Wavefront Sensor Calculator',
-  'Design parameters for Shack-Hartmann wavefront sensors including spot size, sensitivity, and dynamic range.',
-  'https://photonics-calculators.vercel.app/imaging/wavefront-sensor',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

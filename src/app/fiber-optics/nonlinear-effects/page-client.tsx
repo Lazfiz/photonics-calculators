@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -99,7 +98,7 @@ export default function NonlinearEffectsPage() {
   }, [power, length, alpha, gamma]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Nonlinear Effects in Fiber" description="Calculate SPM, XPM, FWM penalties, SBS/SRS thresholds, and nonlinear phase shift.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Launch Power (dBm)" value={power} onChange={setPower} step="0.5" />
@@ -186,6 +185,6 @@ export default function NonlinearEffectsPage() {
           <p>Typical: γ=1.3 W⁻¹km⁻¹ (SMF), A_eff=80µm², n₂=2.6×10⁻²⁰ m²/W</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -125,7 +124,7 @@ export default function WireGridPage() {
   }, [lam, sigma, dutyCycle, normalizedSpacing, normalizedDiameter]);
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Wire Grid Polarizer Calculator" description="Model wire grid polarizers — metallic wires on a substrate that reflect E∥ and transmit E⊥.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">E ∥ wires → reflected (conductive grid), E ⊥ wires → transmitted (capacitive grid)</p>
@@ -188,6 +187,6 @@ export default function WireGridPage() {
           }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

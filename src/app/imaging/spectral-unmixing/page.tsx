@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/spectral-unmixing' },
-    title: 'Spectral Unmixing',
-  description: 'Decompose mixed spectral signals into constituent endmember abundances using linear unmixing methods.'
-};
+const href = "/imaging/spectral-unmixing";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Spectral Unmixing',
-  'Decompose mixed spectral signals into constituent endmember abundances using linear unmixing methods.',
-  'https://photonics-calculators.vercel.app/imaging/spectral-unmixing',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

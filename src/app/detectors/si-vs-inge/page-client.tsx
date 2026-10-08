@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -83,7 +82,7 @@ export default function SiVsInGaAsPage() {
   }, [powerW, siNoiseFloor, inGaAsNoiseFloor, temperature]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Si vs InGaAs Detectors" description="Compare silicon and InGaAs photodetectors: QE spectra, SNR, dark current, and wavelength performance.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="10" />
         <ValidatedNumberInput label="Optical Power (dBm)" value={opticalPowerDbm} onChange={setOpticalPowerDbm} step="1" />
@@ -130,6 +129,6 @@ export default function SiVsInGaAsPage() {
           margin: { t: 40, r: 20, b: 50, l: 60 }, legend: { bgcolor: "transparent", font: { size: 10 } },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

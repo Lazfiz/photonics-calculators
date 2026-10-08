@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { q, c, h } from "../../../physics/constants";
@@ -104,7 +103,7 @@ export default function DiodeLaserResonatorPage() {
   const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Diode Laser Resonator" description="Threshold gain and current, differential efficiency and far-field divergence of a Fabry–Pérot diode laser from cavity length and facet reflectivity." maxWidthClassName="max-w-6xl">
+    <>
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Cavity Length (µm)" value={cavityLength} onChange={setCavityLength} /></div>
@@ -141,6 +140,6 @@ export default function DiodeLaserResonatorPage() {
         <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Threshold Gain vs Cavity Length</h3><ChartPanel data={gthVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "L (µm)" }, yaxis: { ...plotLayout.yaxis, title: "g_th (cm⁻¹)" } }} /></div>
         <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">η_d vs Cavity Length</h3><ChartPanel data={etaVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "L (µm)" }, yaxis: { ...plotLayout.yaxis, title: "η_d (%)" } }} /></div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

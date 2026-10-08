@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -79,7 +78,7 @@ export default function PSFCalculatorPage() {
   }, [wavelength, na, refractiveIndex, axialFWHM]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Point Spread Function Calculator" description="Visualize the 2D and 1D point spread function (PSF) for a diffraction-limited system.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={2000} />
@@ -150,6 +149,6 @@ export default function PSFCalculatorPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

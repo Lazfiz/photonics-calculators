@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/spad' },
-    title: 'SPAD Detector Calculator',
-    description: 'Single-photon avalanche diode — PDE, DCR, dead time, afterpulsing, and SNR analysis.'
-};
+const href = "/detectors/spad";
 
-const jsonLd = generateCalculatorJsonLd(
-  'SPAD Detector Calculator',
-  'Single-photon avalanche diode — PDE, DCR, dead time, afterpulsing, and SNR analysis.',
-  'https://photonics-calculators.vercel.app/detectors/spad',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

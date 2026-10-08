@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/raman-scattering' },
-    title: 'Raman Scattering',
-  description: 'Spontaneous and stimulated Raman scattering cross-sections and gain spectra for common optical materials.'
-};
+const href = "/materials/raman-scattering";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Raman Scattering',
-  'Spontaneous and stimulated Raman scattering cross-sections and gain spectra for common optical materials.',
-  'https://photonics-calculators.vercel.app/materials/raman-scattering',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

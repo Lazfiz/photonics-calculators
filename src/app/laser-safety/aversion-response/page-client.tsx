@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
@@ -74,7 +73,7 @@ export default function AversionResponsePage() {
   }, []);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Aversion Response Time" description="Calculates MPE at the natural aversion/blink response time (0.25 s) and Class 2 limits per ANSI Z136.1 / IEC 60825-1.">
+    <>
             
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
@@ -127,6 +126,6 @@ export default function AversionResponsePage() {
           <p>Class 2 limit: P ≤ 1 mW (visible, relies on aversion response)</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/wave-optics/beam-waist-matching' },
-    title: 'Beam Waist Matching',
-  description: 'Find the optimal lens for coupling one Gaussian mode into another.'
-};
+const href = "/wave-optics/beam-waist-matching";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Beam Waist Matching',
-  'Find the optimal lens for coupling one Gaussian mode into another.',
-  'https://photonics-calculators.vercel.app/wave-optics/beam-waist-matching',
-  { category: 'Wave Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

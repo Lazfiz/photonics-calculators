@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -55,7 +54,7 @@ export default function ApodizationPage() {
   }, [nPoints]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Apodization Functions" description="Window functions and their instrument line shapes (ILS). Trade-off: resolution vs sidelobe suppression.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Number of Points" value={nPoints} onChange={setNPoints} min={4} max={2048} />
@@ -76,6 +75,6 @@ export default function ApodizationPage() {
         yaxis2: { title: "ILS (norm)", gridcolor: "#374151", anchor: "x2", range: [-0.3, 1.1] },
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true, showlegend: false
       }} />
-    </CalculatorShell>
+    </>
   );
 }

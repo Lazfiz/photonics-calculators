@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
@@ -39,12 +38,7 @@ export default function NOHDPage() {
   }, [result]);
 
   return (
-    <CalculatorShell
-      backHref="/laser-safety"
-      backLabel="Laser Safety"
-      title="Nominal Ocular Hazard Distance (NOHD)"
-      description="Bounded engineering pre-check for CW point-source direct-beam NOHD using the same restricted MPE branch as the MPE page."
-    >
+    <>
       <LaserSafetyDisclaimer />
       <LaserSafetyCwBounds />
       <LaserSafetyCwReferences />
@@ -97,6 +91,6 @@ export default function NOHDPage() {
       )}
 
       <LaserSafetySuiteLinks currentHref="/laser-safety/nohd" />
-    </CalculatorShell>
+    </>
   );
 }

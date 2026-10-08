@@ -1,19 +1,15 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
 const presets = [
   { label: "Tight pointing", wavelength: 1550, txBeamWaist: 2.5, jitterRMS: 0.5, misalign: 0.2, rxAperture: 10 },
   { label: "Moderate jitter", wavelength: 1550, txBeamWaist: 2.5, jitterRMS: 2, misalign: 1, rxAperture: 10 },
   { label: "Small aperture", wavelength: 1550, txBeamWaist: 2.5, jitterRMS: 1, misalign: 0.5, rxAperture: 4 },
 ];
-const currentHref = "/free-space-comms/pointing-loss";
 
 export default function PointingLossPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550);
@@ -69,7 +65,7 @@ export default function PointingLossPage() {
   }, [wavelength, txBeamWaist, misalign, rxAperture, jitterRMS, calc.totalLoss]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free-Space Comms" title="Pointing Loss" description="Interactive FSO pointing-loss calculator with jitter, misalignment, beam waist, and aperture coupling.">
+    <>
       <div className="mb-5 flex flex-wrap gap-2">
         {presets.map((preset) => (
           <button key={preset.label} onClick={() => { setWavelength(preset.wavelength); setTxBeamWaist(preset.txBeamWaist); setJitterRMS(preset.jitterRMS); setMisalign(preset.misalign); setRxAperture(preset.rxAperture); }} className={`rounded-full border px-3 py-1 text-sm transition ${wavelength === preset.wavelength && txBeamWaist === preset.txBeamWaist && jitterRMS === preset.jitterRMS && misalign === preset.misalign && rxAperture === preset.rxAperture ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>{preset.label}</button>
@@ -94,8 +90,6 @@ export default function PointingLossPage() {
       </div>
 
       <SimpleLineChart title="Loss vs jitter RMS" xLabel="Jitter RMS (μrad)" yLabel="Loss (dB)" series={series} />
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

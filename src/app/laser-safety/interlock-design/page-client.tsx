@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
@@ -123,7 +122,7 @@ export default function InterlockDesignPage() {
   }, [results]);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Interlock Time Calculation" description="Calculates required interlock/shutter response time based on laser hazard level. IEC 60825-1 and ANSI Z136.1 require interlocks to terminate emission before exposure exceeds MPE.">
+    <>
             
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
@@ -202,6 +201,6 @@ export default function InterlockDesignPage() {
           <p>Requirement: t<sub>total</sub> &lt; t<sub>max_safe</sub></p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

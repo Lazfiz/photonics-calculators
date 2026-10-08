@@ -1,6 +1,5 @@
 "use client";
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c, epsilon_0, h } from "../../../physics/constants";
@@ -110,7 +109,7 @@ export default function OPOCalculator() {
   const axisStyle = { gridcolor: "#333", zerolinecolor: "#444", color: "#ccc" };
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Optical Parametric Oscillator" description="Parametric gain, walk-off-limited interaction length and singly-resonant OPO threshold from pump wavelength, d_eff, beam radius and cavity loss." maxWidthClassName="max-w-6xl">
+    <>
 
       {/* Formulas */}
       <div className="bg-gray-900 rounded-lg p-4 mb-6 border border-gray-800">
@@ -193,6 +192,6 @@ export default function OPOCalculator() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

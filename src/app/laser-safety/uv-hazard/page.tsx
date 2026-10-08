@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/uv-hazard' },
-      title: 'UV Hazard Calculator',
-  description: 'UV hazard assessment using ACGIH actinic UV weighting function S(). Covers 200–400 nm spectral region.',
-};
+const href = "/laser-safety/uv-hazard";
 
-const jsonLd = generateCalculatorJsonLd(
-  'UV Hazard Calculator',
-  'UV hazard assessment using ACGIH actinic UV weighting function S(). Covers 200–400 nm spectral region.',
-  'https://photonics-calculators.vercel.app/laser-safety/uv-hazard',
-  { category: 'Laser Safety' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

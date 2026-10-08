@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -76,7 +75,7 @@ export default function DispersionShiftedCalculator() {
   const totalAttenuation = p.attenuation * fiberLength;
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Dispersion-Shifted Fiber Calculator" description="Compare DSF, NZ-DSF, and DCF dispersion characteristics.">
+    <>
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -126,6 +125,6 @@ export default function DispersionShiftedCalculator() {
         <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
           <ChartPanel data={plotData} layout={layout} />
         </div>
-    </CalculatorShell>
+    </>
   );
 }

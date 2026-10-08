@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/ultrafast-laser-safety' },
-    title: 'Ultrafast Laser Safety Calculator',
-  description: 'Evaluate single-pulse, average-power, and PRF-corrected MPE for femtosecond/picosecond laser systems.'
-};
+const href = "/laser-safety/ultrafast-laser-safety";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Ultrafast Laser Safety Calculator',
-  'Evaluate single-pulse, average-power, and PRF-corrected MPE for femtosecond/picosecond laser systems.',
-  'https://photonics-calculators.vercel.app/laser-safety/ultrafast-laser-safety',
-  { category: 'Laser Safety' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

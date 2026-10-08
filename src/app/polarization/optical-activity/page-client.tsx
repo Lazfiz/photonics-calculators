@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -107,7 +106,7 @@ export default function OpticalActivityPage() {
   };
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Optical Activity" description="Calculate optical rotation from specific rotation, concentration, and path length with wavelength/temperature corrections.">
+    <>
             
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
@@ -266,6 +265,6 @@ export default function OpticalActivityPage() {
           </table>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -45,7 +44,7 @@ export default function BoxcarIntegratorPage() {
   }, [snrPerGate]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Boxcar Integrator" description="Gated signal averaging — recover repetitive signals from noise.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Gate Width (ns)" value={gateWidth} onChange={setGateWidth} min={1} />
         <ValidatedNumberInput label="Pulse Width (ns)" value={pulseWidth} onChange={setPulseWidth} min={10} />
@@ -68,6 +67,6 @@ export default function BoxcarIntegratorPage() {
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Time (ns)", gridcolor: "#374151" }, yaxis: { title: "Signal (mV)", gridcolor: "#374151" } }} title="Signal with Gate Window" />
       <h2 className="text-xl font-bold mt-8 mb-4">SNR vs Averages</h2>
       <ChartPanel data={snrVsAvg} layout={{ xaxis: { title: "Number of Averages", gridcolor: "#374151", type: "log" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} />
-    </CalculatorShell>
+    </>
   );
 }

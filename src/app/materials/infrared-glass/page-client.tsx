@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 interface IRMaterial {
@@ -61,7 +60,7 @@ export default function InfraredGlassPage() {
   }, []);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Infrared Optical Materials" description="Compare IR transmitting materials. n(T) = n₂₅ + (dn/dT)(T - 25°C)">
+    <>
             
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-6">
         {Object.keys(MATERIALS).map(key => (
@@ -85,7 +84,7 @@ export default function InfraredGlassPage() {
         <ChartPanel data={rangeChart.data} layout={rangeChart.layout} config={plotConfig} />
         <ChartPanel data={propsChart.data} layout={propsChart.layout} config={plotConfig} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }
 

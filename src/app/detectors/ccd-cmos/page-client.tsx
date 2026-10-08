@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -30,7 +29,7 @@ export default function CCDvsCMOSPage() {
   }, [fullWell, readNoiseCCD, readNoiseCMOS, darkCurrent, exposureTime]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="CCD vs CMOS Comparison" description="Compare SNR and dynamic range between CCD and CMOS detectors.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Pixel Size (µm)" value={pixelSize} onChange={setPixelSize} min={1} step="any" />
         <ValidatedNumberInput label="CCD Read Noise (e⁻)" value={readNoiseCCD} onChange={setReadNoiseCCD} min={0.5} step="0.5" />
@@ -46,6 +45,6 @@ export default function CCDvsCMOSPage() {
         <ResultCard label="CMOS Dynamic Range" value={`${(20 * Math.log10(dynamicRangeCMOS)).toFixed(1)} dB`} tone="purple" />
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Signal (e⁻)", gridcolor: "#374151" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} />
-    </CalculatorShell>
+    </>
   );
 }

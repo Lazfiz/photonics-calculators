@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -81,7 +80,7 @@ export default function FiberGyroscopePage() {
   }, [coilDiameter, fiberLength, wavelength, sourcePower, losses]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Optic Gyroscope (FOG)" description="Sagnac effect, scale factor, angle random walk, and bias stability for fiber optic gyroscopes.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Coil Diameter (mm)" value={coilDiameter} onChange={setCoilDiameter} min={1} />
@@ -134,6 +133,6 @@ export default function FiberGyroscopePage() {
         legend: { x: 0.01, y: 0.99 },
         margin: { t: 30 },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

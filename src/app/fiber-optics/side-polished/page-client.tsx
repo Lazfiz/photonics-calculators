@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -70,7 +69,7 @@ export default function SidePolishedPage() {
   }, [remainingClad, coreDia, wavelength, n_core, n_clad]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Side-Polished Fiber" description="Evanescent field interaction, phase matching, and spectral response of side-polished fiber devices.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Remaining Cladding (μm)" value={remainingClad} onChange={setRemainingClad} min={0} step="0.1" />
@@ -119,6 +118,6 @@ export default function SidePolishedPage() {
         legend: { x: 0.01, y: 0.99 },
         margin: { t: 30, r: 60 },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/stimulated-raman-microscopy' },
-    title: 'Stimulated Raman Scattering Microscopy Calculator',
-  description: 'Calculate SRS signal levels, SNR, resolution, and imaging speed for label-free chemical imaging.'
-};
+const href = "/imaging/stimulated-raman-microscopy";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Stimulated Raman Scattering Microscopy Calculator',
-  'Calculate SRS signal levels, SNR, resolution, and imaging speed for label-free chemical imaging.',
-  'https://photonics-calculators.vercel.app/imaging/stimulated-raman-microscopy',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

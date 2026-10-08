@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -63,7 +62,7 @@ export default function PMDPage() {
   }, [calc]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Polarization Mode Dispersion (PMD)" description="Calculate PMD-induced differential group delay (DGD), system penalties, and PMD-limited reach using Maxwellian statistics.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="PMD Coefficient (ps/√km)" value={pmdCoeff} onChange={setPmdCoeff} min={0.01} step="0.01" />
@@ -130,6 +129,6 @@ export default function PMDPage() {
           <p>Modern fiber: PMD &lt; 0.1 ps/√km (G.652.D), legacy: up to 2 ps/√km</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

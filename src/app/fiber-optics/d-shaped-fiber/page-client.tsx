@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -70,7 +69,7 @@ export default function DShapedFiberPage() {
   }, [cladDia, coreDia, flatDepth, wavelength, n_core, n_clad]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="D-Shaped Fiber" description="Birefringence, evanescent field, and polarization properties of D-shaped (flat) fibers.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Cladding Ø (μm)" value={cladDia} onChange={setCladDia} min={10} />
@@ -118,6 +117,6 @@ export default function DShapedFiberPage() {
         legend: { x: 0.01, y: 0.99 },
         margin: { t: 30, r: 60 },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

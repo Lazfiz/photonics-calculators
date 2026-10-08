@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -37,7 +36,7 @@ export default function SNDRPage() {
   const enob = (sndr - 1.76) / 6.02;
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="SNDR Calculator" description="Signal-to-Noise-and-Distortion Ratio. SNDR = Psignal/(Pnoise + Pdistortion).">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Signal Power (W)" value={signalPower} onChange={setSignalPower} step="0.01" />
@@ -55,6 +54,6 @@ export default function SNDRPage() {
       </div>
 
       <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "ADC Bits", gridcolor: "#374151", dtick: 2 }, yaxis: { title: "dB", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true, showlegend: true }} />
-    </CalculatorShell>
+    </>
   );
 }

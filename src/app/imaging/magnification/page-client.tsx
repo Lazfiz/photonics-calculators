@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -25,7 +24,7 @@ export default function MagnificationPage() {
   }, [tubeFocal, camFocal, objFocal, totalMag]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Total Magnification Calculator" description="Calculate total system magnification from objective, tube lens, and camera adapter lens.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Objective Focal Length (mm)" value={objFocal} onChange={setObjFocal} min={1} step="any" />
@@ -56,6 +55,6 @@ export default function MagnificationPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

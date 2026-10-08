@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -75,7 +74,7 @@ export default function RareEarthAbsorptionPage() {
   const absorptionPerCm = 1 - Math.exp(-alpha * 0.01);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Rare Earth Absorption Spectra" description="Absorption cross-sections for common rare-earth dopants in silica: Er³⁺, Nd³⁺, Yb³⁺, Tm³⁺, Ho³⁺.">
+    <>
             
       <div className="mb-6">
         <div className="flex flex-wrap gap-2 mb-4">
@@ -115,6 +114,6 @@ export default function RareEarthAbsorptionPage() {
         })}
         <div className="mt-4 text-sm text-gray-400 font-mono bg-gray-800 p-2 rounded">α = σ<sub>abs</sub>(λ) · N (m⁻¹) | Beer-Lambert: T = exp(−α · L)</div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

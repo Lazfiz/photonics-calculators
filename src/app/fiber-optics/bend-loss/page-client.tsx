@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -58,7 +57,7 @@ export default function BendLossPage() {
   }, [radius, wavelength, coreIndex, claddingIndex]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Macro Bending Loss" description="Estimate macro-bending loss for single-mode fiber using simplified Marcuse formula. For more detailed analysis, see Macrobending Loss calculator.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Bend Radius (mm)" value={radius} onChange={setRadius} min={1} step="any" />
@@ -90,6 +89,6 @@ export default function BendLossPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/wave-optics/supercontinuum' },
-    title: 'Supercontinuum Generation',
-  description: 'Broadband SC generation in photonic crystal fibers via soliton fission, SPM, and dispersive wave generation.'
-};
+const href = "/wave-optics/supercontinuum";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Supercontinuum Generation',
-  'Broadband SC generation in photonic crystal fibers via soliton fission, SPM, and dispersive wave generation.',
-  'https://photonics-calculators.vercel.app/wave-optics/supercontinuum',
-  { category: 'Wave Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

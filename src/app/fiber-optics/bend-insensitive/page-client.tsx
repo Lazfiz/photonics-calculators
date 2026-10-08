@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -104,7 +103,7 @@ export default function BendInsensitivePage() {
   }, [wavelength, trenchWidth]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Bend-Insensitive Fiber Design" description="Design and analyze bend-insensitive fibers with depressed cladding trenches (ITU-T G.657).">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Bend Radius (mm)" value={radius} onChange={setRadius} min={1} step="any" />
@@ -175,6 +174,6 @@ export default function BendInsensitivePage() {
           <p>G.657.A: ≤0.75 dB @ R=10mm, G.657.B: ≤0.25 dB @ R=7.5mm</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

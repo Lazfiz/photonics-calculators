@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -73,7 +72,7 @@ export default function DeconvolutionPage() {
   const improvedLateral = lateralRes / improvementFactor;
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Image Deconvolution" description="Compare deconvolution algorithms: OTF analysis, convergence behavior, and resolution recovery.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -143,6 +142,6 @@ export default function DeconvolutionPage() {
           <p><span className="text-blue-400">Noise amplification:</span> |1/H| → ∞ as |H| → 0</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

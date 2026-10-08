@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
@@ -53,12 +52,7 @@ export default function ViewingDistancePage() {
     d >= 1000 ? (d / 1000).toFixed(2) + " km" : d >= 1 ? d.toFixed(2) + " m" : (d * 100).toFixed(1) + " cm";
 
   return (
-    <CalculatorShell
-      backHref="/laser-safety"
-      backLabel="Laser Safety"
-      title="Safe Viewing Distance (CW point-source pre-check)"
-      description="Simplified direct-beam viewing-distance estimate built from the same bounded CW point-source assumptions as the MPE and NOHD pages."
-    >
+    <>
       <LaserSafetyDisclaimer />
       <LaserSafetyCwBounds />
       <LaserSafetyCwReferences />
@@ -105,6 +99,6 @@ export default function ViewingDistancePage() {
       )}
 
       <LaserSafetySuiteLinks currentHref="/laser-safety/viewing-distance" />
-    </CalculatorShell>
+    </>
   );
 }

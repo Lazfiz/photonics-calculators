@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 
@@ -64,7 +63,7 @@ export default function OpticalGlassCatalogPage() {
   }, [selected]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Optical Glass Catalog" description="Interactive glass map and dispersion curves. Sellmeier: n²(λ) = 1 + Σ Biλ²/(λ² - Ci)">
+    <>
             
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-3">Select Glasses (click to toggle)</h3>
@@ -101,7 +100,7 @@ export default function OpticalGlassCatalogPage() {
           </tbody>
         </table>
       </div>
-    </CalculatorShell>
+    </>
   );
 }
 

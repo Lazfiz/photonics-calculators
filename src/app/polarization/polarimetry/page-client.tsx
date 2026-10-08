@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -108,7 +107,7 @@ export default function PolarimetryPage() {
   }, [s0, s1, s2, analyzerAngleDeg]);
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Polarimetry Basics" description="Explore Stokes parameters, Poincaré sphere representation, and analyzer measurements for polarization state characterization.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">S = [S₀, S₁, S₂, S₃]ᵀ</p>
@@ -187,6 +186,6 @@ export default function PolarimetryPage() {
           <div><p className="text-xs text-gray-500">S₃</p><p className="font-mono text-purple-400">{s3.toFixed(3)}</p></div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -44,7 +43,7 @@ export default function CrosstalkPage() {
   const mtfAtNyquist = 1 / (1 + Math.pow(Math.PI * diffusionLength / pixelPitch, 2));
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Pixel Crosstalk" description="Optical and electrical crosstalk between adjacent pixels due to charge diffusion.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Pixel Pitch (μm)" value={pixelPitch} onChange={setPixelPitch} />
         <ValidatedNumberInput label="Diffusion Length (μm)" value={diffusionLength} onChange={setDiffusionLength} />
@@ -58,6 +57,6 @@ export default function CrosstalkPage() {
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "x (μm)", gridcolor: "#374151" }, yaxis: { title: "y (μm)", gridcolor: "#374151" } }} title="Charge Collection Map" />
       <ChartPanel data={crosstalkLine} layout={{ xaxis: { title: "Pixel Pitch (μm)", gridcolor: "#374151" }, yaxis: { title: "Crosstalk (%)", gridcolor: "#374151" } }} title="Crosstalk vs Pitch" />
-    </CalculatorShell>
+    </>
   );
 }

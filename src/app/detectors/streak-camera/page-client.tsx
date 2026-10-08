@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -37,7 +36,7 @@ export default function StreakCameraPage() {
   }, [sweepSpeed, slitWidth, magnification, ccdPixelSize, temporalResolution]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Streak Camera" description="Streak camera basics calculator. Models temporal resolution, sweep speed, time window, and spatial resolution trade-offs.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Sweep Speed (mm/ns)" value={sweepSpeed} onChange={setSweepSpeed} step="0.5" />
@@ -71,6 +70,6 @@ export default function StreakCameraPage() {
         yaxis2: { title: "Time Window (ps)", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 70, r: 80 }, autosize: true, showlegend: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

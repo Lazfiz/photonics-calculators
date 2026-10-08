@@ -1,19 +1,15 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
 const presets = [
   { label: "Short urban", txPower: 10, txGain: 25, range: 1, rxGain: 30, wavelength: 1550, atmosphere: 3, misc: 2 },
   { label: "Campus", txPower: 15, txGain: 30, range: 2, rxGain: 35, wavelength: 1550, atmosphere: 4, misc: 2 },
   { label: "Long link", txPower: 20, txGain: 35, range: 5, rxGain: 40, wavelength: 1550, atmosphere: 6, misc: 3 },
 ];
-const currentHref = "/free-space-comms/link-budget";
 
 export default function LinkBudgetPage() {
   const [txPower, setTxPower] = useURLState("txPower", 10);
@@ -48,7 +44,7 @@ export default function LinkBudgetPage() {
   }, [txPower, txGain, rxGain, wavelength, atmosphere, misc, range, calc.pr]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free-Space Comms" title="FSO Link Budget" description="Interactive free-space optical link budget with presets, sliders, and received-power versus range view.">
+    <>
       <div className="mb-5 flex flex-wrap gap-2">
         {presets.map((preset) => (
           <button
@@ -80,8 +76,6 @@ export default function LinkBudgetPage() {
       </div>
 
       <SimpleLineChart title="Received power vs range" xLabel="Range (km)" yLabel="Received power (dBm)" series={series} />
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -38,7 +37,7 @@ export default function PixelFovPage() {
   }, [effectivePixelUm, focalLengthMm, fovDeg]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Pixel Field of View" description="Calculate the angular field of view per pixel from pixel size and focal length.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">θ_pixel = arctan(p / f) ≈ p / f</p>
@@ -88,6 +87,6 @@ export default function PixelFovPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

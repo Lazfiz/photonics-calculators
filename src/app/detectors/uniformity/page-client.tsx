@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -56,7 +55,7 @@ export default function UniformityPage() {
   const snr = meanSignal / totalNoise;
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Photoresponse Non-Uniformity" description="PRNU measures the spatial variation in pixel sensitivity across the sensor array. σPRNU = PRNU% × mean signal.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Mean Signal (e⁻)" value={meanSignal} onChange={setMeanSignal} />
@@ -87,6 +86,6 @@ export default function UniformityPage() {
         yaxis: { title: "Count", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true, showlegend: true, bargap: 0.05
       }} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -72,7 +71,7 @@ export default function CoherentAntiStokesPage() {
   const thermalFactor = 1 / (Math.exp(h * vibFreqHz / (k_B * temperature)) - 1);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Coherent Anti-Stokes Raman Spectroscopy (CARS)" description="Four-wave mixing process: ω_CARS = ω_pump − ω_Stokes + ω_probe. Coherent, directional signal above fluorescence.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} min={200} max={2000} />
@@ -105,6 +104,6 @@ export default function CoherentAntiStokesPage() {
           showlegend: true, legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

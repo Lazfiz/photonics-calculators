@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -38,7 +37,7 @@ export default function FabryPerotFilterPage() {
   const fwhm = (fsr * airyPeakWidth(F)) / (2 * Math.PI);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Fabry-Pérot Filter" description="Fabry-Pérot etalon/filter transmission based on the Airy function. Explore how mirror reflectance and cavity spacing control spectral selectivity.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="n (cavity)" value={nCavity} onChange={setNCavity} min={0.1} step="0.01" />
@@ -84,6 +83,6 @@ export default function FabryPerotFilterPage() {
           legend: { x: 0.02, y: 0.98 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

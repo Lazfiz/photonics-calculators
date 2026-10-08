@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/cavity-ring-down' },
-    title: 'Cavity Ring-Down Spectroscopy',
-  description: 'Model CRDS ring-down time, sensitivity, and finesse. Visualize exponential decay with and without sample absorption.'
-};
+const href = "/spectroscopy/cavity-ring-down";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Cavity Ring-Down Spectroscopy',
-  'Model CRDS ring-down time, sensitivity, and finesse. Visualize exponential decay with and without sample absorption.',
-  'https://photonics-calculators.vercel.app/spectroscopy/cavity-ring-down',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

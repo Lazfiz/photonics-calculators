@@ -1,12 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c, hc_eV_nm } from "../../../physics/constants";
 
@@ -17,7 +14,6 @@ const rangePresets = [
   { label: "FTIR common", min: 2500, max: 25000 },
 ];
 const singlePresets = [532, 632.8, 1064, 1550, 3400, 10600];
-const currentHref = "/spectroscopy/wavenumber-converter";
 
 export default function WavenumberConverterPage() {
   const [wavelengthMin, setWavelengthMin] = useURLState("wavelengthMin", 400);
@@ -40,7 +36,7 @@ export default function WavenumberConverterPage() {
   }, [wavelengthMin, wavelengthMax]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Wavenumber Converter" description="Convert wavelength, wavenumber, frequency, and energy with presets, sliders, and range sweeps.">
+    <>
       <div className="mb-5 flex flex-wrap gap-2">
         {rangePresets.map((preset) => (
           <button key={preset.label} onClick={() => { setWavelengthMin(preset.min); setWavelengthMax(preset.max); }} className={`rounded-full border px-3 py-1 text-sm transition ${wavelengthMin === preset.min && wavelengthMax === preset.max ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>
@@ -89,8 +85,6 @@ export default function WavenumberConverterPage() {
       </div>
 
       <SimpleLineChart title="Wavelength relationships" xLabel="Wavelength (nm)" yLabel="Value" yScale="log" series={series} />
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

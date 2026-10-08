@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/readout-noise' },
-    title: 'Readout Noise',
-    description: 'Readout noise, dark current, shot noise, and SNR analysis for image sensors.'
-};
+const href = "/detectors/readout-noise";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Readout Noise',
-  'Readout noise, dark current, shot noise, and SNR analysis for image sensors.',
-  'https://photonics-calculators.vercel.app/detectors/readout-noise',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -51,7 +50,7 @@ export default function OpticalWaveguidePage() {
   }, [nCore, nClad, wavelength, coreWidth, vNumber]);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Optical Waveguide Modes" description="Slab waveguide mode analysis: V-number, NA, and effective index.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Core Index n₁" value={nCore} onChange={setNCore} step="any" />
@@ -91,6 +90,6 @@ export default function OpticalWaveguidePage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

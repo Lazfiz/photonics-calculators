@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -52,7 +51,7 @@ export default function PhaseCorrectionPage() {
   }, [idealPhase, noisyPhase, corrected, method, x]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Phase Correction Methods" description="Compare Mertz, Forman, and power spectrum methods for interferogram phase correction (FTIR).">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="OPD Points" value={opdPoints} onChange={setOpdPoints} min={32} max={2048} step="32" />
@@ -91,6 +90,6 @@ export default function PhaseCorrectionPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

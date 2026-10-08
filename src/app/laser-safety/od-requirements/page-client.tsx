@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
@@ -50,12 +49,7 @@ export default function ODRequirementsPage() {
   }, [power, targetIrradiance]);
 
   return (
-    <CalculatorShell
-      backHref="/laser-safety"
-      backLabel="Laser Safety"
-      title="OD Requirements (manual validated-MPE mode)"
-      description="Use this only when you already have a validated irradiance limit from a standards-backed calculation. This page is just the attenuation math wrapper."
-    >
+    <>
       <LaserSafetyDisclaimer />
       <LaserSafetyCwBounds />
       <LaserSafetyCwReferences />
@@ -91,6 +85,6 @@ export default function ODRequirementsPage() {
       <SimpleLineChart title="Transmitted power vs optical density" xLabel="Optical density" yLabel="Value" yScale="log" series={[{ name: "Transmitted power (W)", color: "#60a5fa", points: chartData[0].x.map((x: number, i: number) => ({ x, y: chartData[0].y[i] })) }, { name: "Target irradiance (W/cm²)", color: "#f87171", dashed: true, points: chartData[1].x.map((x: number, i: number) => ({ x, y: chartData[1].y[i] })) }]} />
 
       <LaserSafetySuiteLinks currentHref="/laser-safety/od-requirements" />
-    </CalculatorShell>
+    </>
   );
 }

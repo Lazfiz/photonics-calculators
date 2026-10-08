@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -69,7 +68,7 @@ export default function FluorescenceSpectraPage() {
   }, [data, dye1, dye2, showOverlap]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Fluorescence Spectra Overlap Calculator" description="Compare excitation/emission spectra, spectral overlap, and filter crosstalk.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -113,6 +112,6 @@ export default function FluorescenceSpectraPage() {
         <h2 className="text-lg font-semibold mb-4">Spectral Comparison</h2>
         <ChartPanel data={spectraPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#333" }, yaxis: { title: "Normalized intensity", gridcolor: "#333" }, legend: { font: { size: 10 }, orientation: "h", y: -0.15 }, margin: { l: 60, r: 20, t: 20, b: 80 } }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

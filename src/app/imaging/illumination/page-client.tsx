@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -42,7 +41,7 @@ export default function IlluminationPage() {
   }, [objNa]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Köhler Illumination Calculator" description="Design parameters for Köhler illumination including conjugate planes, fill factor, and field of view.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -88,6 +87,6 @@ export default function IlluminationPage() {
         <h2 className="text-lg font-semibold mb-4">Resolution vs Condenser/Objective NA Ratio</h2>
         <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "NA_cond / NA_obj", gridcolor: "#333" }, yaxis: { title: "Resolution (nm)", gridcolor: "#333" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

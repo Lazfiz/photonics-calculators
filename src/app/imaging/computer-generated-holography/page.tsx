@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/computer-generated-holography' },
-    title: 'Computer-Generated Holography',
-  description: 'CGH fundamentals: SLM parameters, diffraction efficiency, hologram memory, and reconstruction geometry.'
-};
+const href = "/imaging/computer-generated-holography";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Computer-Generated Holography',
-  'CGH fundamentals: SLM parameters, diffraction efficiency, hologram memory, and reconstruction geometry.',
-  'https://photonics-calculators.vercel.app/imaging/computer-generated-holography',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

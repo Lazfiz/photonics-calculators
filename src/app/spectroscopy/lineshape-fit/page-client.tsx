@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -77,7 +76,7 @@ export default function LineshapeFitPage() {
     : profile === "gaussian" ? fwhmG : fwhmL;
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Lineshape Fitting" description="Voigt, Gaussian, and Lorentzian line profiles — compare convolution effects on spectral lines.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -123,6 +122,6 @@ export default function LineshapeFitPage() {
         yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151" },
         margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { bgcolor: "transparent" },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

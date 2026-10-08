@@ -1,14 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
-const currentHref = "/imaging/airy-disk";
 
 export default function AiryDiskPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 550);
@@ -29,7 +25,7 @@ export default function AiryDiskPage() {
   }, [wavelength, na, airyRadiusUm]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Airy Disk Size Calculator" description="Calculate the Airy disk radius and Abbe diffraction limit based on wavelength and numerical aperture.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <InputSlider label="Wavelength" value={wavelength} onChange={setWavelength} min={300} max={2000} step={1} unit="nm" />
         <InputSlider label="Numerical Aperture" value={na} onChange={setNa} min={0.1} max={1.5} step={0.01} />
@@ -43,8 +39,6 @@ export default function AiryDiskPage() {
       </div>
 
       <SimpleLineChart title="Diffraction-limited spot size vs NA" xLabel="Numerical aperture" yLabel="Size (µm)" series={series} />
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

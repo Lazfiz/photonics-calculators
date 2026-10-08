@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/transparency-range' },
-    title: 'Transparency Range',
-  description: 'UV cutoff to IR cutoff for common optical materials',
-};
+const href = "/materials/transparency-range";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Transparency Range',
-  'UV cutoff to IR cutoff for common optical materials',
-  'https://photonics-calculators.vercel.app/materials/transparency-range',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

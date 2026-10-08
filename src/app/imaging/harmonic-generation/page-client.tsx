@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -52,7 +51,7 @@ export default function HarmonicGenerationPage() {
   }, [wavelength, na, pulseWidth, repetitionRate]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Harmonic Generation Microscopy Calculator" description="Calculate harmonic wavelengths, peak intensities, and conversion efficiencies for nonlinear harmonic generation microscopy.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Fundamental λ (nm)" value={wavelength} onChange={setWavelength} min={400} max={1600} />
@@ -107,6 +106,6 @@ export default function HarmonicGenerationPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <ChartPanel data={efficiencyChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, title: { text: "Conversion Efficiency vs Power", font: { size: 14 } }, xaxis: { title: "Average Power (mW)", gridcolor: "#374151" }, yaxis: { title: "Relative Efficiency", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.15 }, margin: { t: 40, b: 50 } }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

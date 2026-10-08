@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -39,7 +38,7 @@ export default function BackIlluminationPage() {
   const sensitivityGain = 10 * Math.log10(snrImprovement);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Back-Illuminated vs Front-Illuminated" description="Back-illuminated sensors bypass gate structures for higher QE and better blue/UV response.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Front-illuminated peak QE" value={fiQE} onChange={setFiQE} min={0} max={1} step="0.05" />
         <ValidatedNumberInput label="Back-illuminated peak QE" value={biQE} onChange={setBiQE} min={0} max={1} step="0.05" />
@@ -59,6 +58,6 @@ export default function BackIlluminationPage() {
         <p>For read-noise-limited regime: SNR improvement ≈ QE ratio directly</p>
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "QE (%)", gridcolor: "#374151" }, yaxis2: { title: "Improvement", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
-    </CalculatorShell>
+    </>
   );
 }

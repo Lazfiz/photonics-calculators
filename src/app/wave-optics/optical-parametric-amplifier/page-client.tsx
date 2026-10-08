@@ -1,6 +1,5 @@
 "use client";
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c, epsilon_0 } from "../../../physics/constants";
@@ -67,7 +66,7 @@ export default function OPACalculator() {
   const ax = { gridcolor: "#333", zerolinecolor: "#444", color: "#ccc" };
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Optical Parametric Amplifier" description="Parametric power gain of an OPA from pump intensity, d_eff, refractive indices and crystal length, versus pump power, length and signal wavelength." maxWidthClassName="max-w-6xl">
+    <>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 border border-gray-800">
         <h3 className="text-cyan-400 font-semibold mb-2">Key Equations</h3>
@@ -124,6 +123,6 @@ export default function OPACalculator() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -62,7 +61,7 @@ export default function PhotorefractivePage() {
   }, []);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Photorefractive Effect" description="Light-induced refractive index changes via space-charge fields in electro-optic materials. Key for holographic storage, phase conjugation, and beam coupling.">
+    <>
             
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <div>
@@ -118,6 +117,6 @@ export default function PhotorefractivePage() {
           <p><strong>Semiconductors</strong> (GaAs, InP): fast response, IR-sensitive, lower gain but GHz speeds.</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

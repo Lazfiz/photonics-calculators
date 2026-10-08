@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -93,7 +92,7 @@ export default function SputteringDepositionPage() {
   }, [targetMaterial, gasType]);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Sputtering Deposition" description="Calculate sputter yield, deposition rate, thermalization, and film stress for magnetron sputtering processes.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Target Material</span>
@@ -138,6 +137,6 @@ export default function SputteringDepositionPage() {
         yaxis2: { title: "Stress (MPa)", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 50, r: 50 }, autosize: true, legend: { x: 0.01, y: 0.99 }
       }} />
-    </CalculatorShell>
+    </>
   );
 }

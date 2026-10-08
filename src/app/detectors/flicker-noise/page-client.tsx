@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -27,7 +26,7 @@ export default function FlickerNoisePage() {
   const cornerFreq = kf * current ** alpha / thermalPSD;
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="1/f Flicker Noise" description="Flicker noise: S_i(f) = K_f · I^α / f. Noise spectral density falls as 1/f.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="K_f (A^(2−α))" value={kf} onChange={setKf} step="1e-25" />
         <ValidatedNumberInput label="Current (A)" value={current} onChange={setCurrent} step="1e-7" />
@@ -42,6 +41,6 @@ export default function FlickerNoisePage() {
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono"><p>σ_flicker = √(K_f · I^α · ln(f_high/f_low))</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Frequency (Hz)", type: "log", gridcolor: "#374151" }, yaxis: { title: "PSD (A²/Hz)", type: "log", gridcolor: "#374151" } }} />
-    </CalculatorShell>
+    </>
   );
 }

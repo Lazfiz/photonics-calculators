@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/polarization/poincare-sphere' },
-    title: 'Poincaré Sphere',
-  description: 'Interactive visualization of polarization states on the Poincaré sphere.'
-};
+const href = "/polarization/poincare-sphere";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Poincaré Sphere',
-  'Interactive visualization of polarization states on the Poincaré sphere.',
-  'https://photonics-calculators.vercel.app/polarization/poincare-sphere',
-  { category: 'Polarization' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

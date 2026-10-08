@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
@@ -27,12 +26,7 @@ export default function NEPPage() {
   }, [darkCurrent, responsivity, bandwidth, temperature, loadResistor, detectorArea]);
 
   return (
-    <CalculatorShell
-      backHref="/detectors"
-      backLabel="Detectors"
-      title="Noise Equivalent Power (NEP) & Detectivity (D*)"
-      description="Calculate NEP and specific detectivity D* from detector noise sources: shot noise, thermal (Johnson) noise, and dark current."
-    >
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Dark Current (nA)" value={darkCurrent} onChange={setDarkCurrent} step="any" />
         <ValidatedNumberInput label="Responsivity (A/W)" value={responsivity} onChange={setResponsivity} step="any" />
@@ -56,6 +50,6 @@ export default function NEPPage() {
         <p>NEP = i<sub>noise</sub> / R (total power equivalent)</p>
         <p>D* = √(A · B) / NEP (Jones — cm·√Hz/W)</p>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

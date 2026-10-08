@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/etalon-fsr' },
-      title: 'Etalon Free Spectral Range',
-  description: 'Fabry-Pérot etalon: FSR = ²/(2nd cos ). Transmission follows the Airy function.',
-};
+const href = "/spectroscopy/etalon-fsr";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Etalon Free Spectral Range',
-  'Fabry-Pérot etalon: FSR = ²/(2nd cos ). Transmission follows the Airy function.',
-  'https://photonics-calculators.vercel.app/spectroscopy/etalon-fsr',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

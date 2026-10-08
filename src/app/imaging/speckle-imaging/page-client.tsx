@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -53,7 +52,7 @@ export default function SpeckleImagingPage() {
   }, [beamRad, rayleighRange]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Speckle Imaging" description="Speckle size, contrast, averaging strategies, and surface roughness effects.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -109,6 +108,6 @@ export default function SpeckleImagingPage() {
           <ChartPanel data={beamSizeChart} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Distance (mm)" }, yaxis: { title: "Beam Radius (mm)" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

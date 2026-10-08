@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -23,7 +22,7 @@ export default function ThermalNoisePage() {
   const pNoise = k_B * temperature * bandwidth; // available noise power (matched load)
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Johnson (Thermal) Noise" description="vn = √(4kBTRΔf). Thermal noise voltage across a resistor.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Resistance (Ω)" value={resistance} onChange={setResistance} />
@@ -39,6 +38,6 @@ export default function ThermalNoisePage() {
       </div>
 
       <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Resistance (Ω)", type: "log", gridcolor: "#374151" }, yaxis: { title: "Noise Voltage (V)", type: "log", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 70, r: 20 }, autosize: true }} />
-    </CalculatorShell>
+    </>
   );
 }

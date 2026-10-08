@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/pulsed-mpe' },
-      title: 'Pulsed Laser MPE',
-  description: 'Repetitive pulse MPE with N⁻⁰²⁵ correction factor. Simplified ANSI Z136 model.',
-};
+const href = "/laser-safety/pulsed-mpe";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Pulsed Laser MPE',
-  'Repetitive pulse MPE with N⁻⁰²⁵ correction factor. Simplified ANSI Z136 model.',
-  'https://photonics-calculators.vercel.app/laser-safety/pulsed-mpe',
-  { category: 'Laser Safety' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

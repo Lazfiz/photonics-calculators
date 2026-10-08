@@ -1,12 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
 interface Material {
   name: string;
@@ -26,7 +23,6 @@ const materials: Record<string, Material> = {
 
 const wavelengthPresets = [486.1, 532, 589.3, 632.8, 1064, 1310, 1550];
 const colors = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4"];
-const currentHref = "/materials/sellmeier";
 
 function sellmeier(m: Material, lambdaUm: number): number {
   const l2 = lambdaUm * lambdaUm;
@@ -67,7 +63,7 @@ export default function SellmeierPage() {
   }, [mat, wavelength]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Sellmeier Equation" description="Interactive dispersion explorer using Sellmeier coefficients to compute refractive index versus wavelength.">
+    <>
       <div className="mb-5 flex flex-wrap gap-2">
         {wavelengthPresets.map((preset) => (
           <button
@@ -118,8 +114,6 @@ export default function SellmeierPage() {
       </div>
 
       <SimpleLineChart title="Dispersion curves" xLabel="Wavelength (nm)" yLabel="Refractive index n" series={series} />
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

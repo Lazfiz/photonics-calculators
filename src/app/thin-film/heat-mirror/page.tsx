@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/heat-mirror' },
-      title: 'Heat Mirror Design',
-  description: 'Heat mirrors reflect infrared (thermal radiation) while transmitting visible light.',
-};
+const href = "/thin-film/heat-mirror";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Heat Mirror Design',
-  'Heat mirrors reflect infrared (thermal radiation) while transmitting visible light.',
-  'https://photonics-calculators.vercel.app/thin-film/heat-mirror',
-  { category: 'Thin Film' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

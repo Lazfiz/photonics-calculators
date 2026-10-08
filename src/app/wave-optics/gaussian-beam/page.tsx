@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/wave-optics/gaussian-beam' },
-    title: 'Gaussian Beam Propagation',
-  description: 'Explore how wavelength and waist size shape Rayleigh range, divergence, and Gaussian beam envelope.'
-};
+const href = "/wave-optics/gaussian-beam";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Gaussian Beam Propagation',
-  'Explore how wavelength and waist size shape Rayleigh range, divergence, and Gaussian beam envelope.',
-  'https://photonics-calculators.vercel.app/wave-optics/gaussian-beam',
-  { category: 'Wave Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

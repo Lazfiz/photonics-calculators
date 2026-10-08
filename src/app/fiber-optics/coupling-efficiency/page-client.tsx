@@ -1,15 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
 const wavelengthPresets = [850, 1310, 1550];
-const currentHref = "/fiber-optics/coupling-efficiency";
 
 export default function CouplingEfficiencyCalculator() {
   const [sourceNa, setSourceNa] = useURLState("sourceNa", 0.22);
@@ -42,12 +38,7 @@ export default function CouplingEfficiencyCalculator() {
   }, [w0, angularCoupling, naMismatchLoss, lateralOffset, totalCoupling]);
 
   return (
-    <CalculatorShell
-      backHref="/fiber-optics"
-      backLabel="Fiber Optics"
-      title="Fiber Coupling Efficiency"
-      description="Estimate Gaussian-to-fiber coupling loss from NA mismatch, lateral offset, and angular misalignment."
-    >
+    <>
       <div className="mb-5 flex flex-wrap gap-2">
         {wavelengthPresets.map((preset) => (
           <button key={preset} onClick={() => setWavelength(preset)} className={`rounded-full border px-3 py-1 text-sm transition ${wavelength === preset ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>{preset} nm</button>
@@ -83,8 +74,6 @@ export default function CouplingEfficiencyCalculator() {
         yLabel="Coupling efficiency (%)"
         series={series}
       />
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

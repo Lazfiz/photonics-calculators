@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/signal-to-noise' },
-    title: 'Imaging Signal-to-Noise Ratio',
-  description: 'Comprehensive SNR calculation for microscopy imaging systems.'
-};
+const href = "/imaging/signal-to-noise";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Imaging Signal-to-Noise Ratio',
-  'Comprehensive SNR calculation for microscopy imaging systems.',
-  'https://photonics-calculators.vercel.app/imaging/signal-to-noise',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

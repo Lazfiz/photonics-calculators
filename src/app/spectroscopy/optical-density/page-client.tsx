@@ -1,15 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
 const odPresets = [0.1, 0.3, 1, 2, 3, 4, 6];
-const currentHref = "/spectroscopy/optical-density";
 
 export default function OpticalDensityPage() {
   const [transmission, setTransmission] = useURLState("transmission", 1);
@@ -33,7 +29,7 @@ export default function OpticalDensityPage() {
   }, [abs, trans]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Optical Density" description="Convert optical density (OD), transmission, and attenuation with presets and interactive sliders.">
+    <>
       <div className="mb-5 flex flex-wrap gap-2">
         {odPresets.map((preset) => (
           <button key={preset} onClick={() => { setAbsorbance(preset); setInputMode("abs"); }} className={`rounded-full border px-3 py-1 text-sm transition ${inputMode === "abs" && absorbance === preset ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>
@@ -70,8 +66,6 @@ export default function OpticalDensityPage() {
       </div>
 
       <SimpleLineChart title="Transmission and absorption vs optical density" xLabel="Optical Density (OD)" yLabel="Percentage (%)" yScale="log" series={series} />
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

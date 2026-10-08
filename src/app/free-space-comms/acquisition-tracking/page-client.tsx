@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -71,7 +70,7 @@ export default function AcquisitionTrackingPage() {
   }, [uncertainty, scanRate]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="FSO Acquisition and Tracking" description="Acquisition probability, scan lines and scan time over the uncertainty cone, beacon SNR and margin, and tracking jitter for a free-space optical terminal." maxWidthClassName="max-w-5xl">
+    <>
             
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -119,6 +118,6 @@ export default function AcquisitionTrackingPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

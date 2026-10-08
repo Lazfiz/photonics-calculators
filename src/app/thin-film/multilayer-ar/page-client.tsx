@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -32,7 +31,7 @@ export default function MultilayerARPage() {
   const designR = quarterWaveStackReflectance(nInc, [n1, n2], nSub);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Two-Layer AR Coating" description="Design a two-layer quarter-wave anti-reflection coating. Zero reflectance at λ₀ when n₂ = n₁√(n_sub/n_inc).">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="n₁ (outer layer)" value={n1} onChange={setN1} step="0.01" />
@@ -50,6 +49,6 @@ export default function MultilayerARPage() {
       </div>
 
       <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "Reflectance", gridcolor: "#374151", range: [0, 0.5] }, margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true }} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -78,7 +77,7 @@ export default function CTEPage() {
   }, [selected, tempStart, length]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Coefficient of Thermal Expansion" description="Thermal expansion of optical materials">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300">
         <p className="font-mono">ΔL = L₀ · ∫α(T) dT &nbsp;|&nbsp; CTE α in ×10⁻⁶ /K</p>
@@ -131,6 +130,6 @@ export default function CTEPage() {
        
        
       />
-    </CalculatorShell>
+    </>
   );
 }

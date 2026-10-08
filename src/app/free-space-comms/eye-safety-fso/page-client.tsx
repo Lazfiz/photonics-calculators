@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -122,7 +121,7 @@ export default function EyeSafetyFsoPage() {
   }, [txPower, beamDivergence, wavelength, exposureTime]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="FSO Eye Safety" description="Simplified educational estimate of MPE, NOHD, laser class and safety factor for an FSO transmitter. Not for safety decisions; use IEC 60825-1." maxWidthClassName="max-w-5xl">
+    <>
             
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -177,6 +176,6 @@ export default function EyeSafetyFsoPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

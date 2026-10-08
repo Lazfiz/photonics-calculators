@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -42,7 +41,7 @@ export default function IntensifiedCCDPage() {
   }, [pc.qe, electronGain, ccdReadNoise]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Intensified CCD (ICCD)" description="Photocathode → MCP → phosphor → CCD gain chain with gating and noise analysis." maxWidthClassName="max-w-5xl">
+    <>
       <div className="flex flex-wrap gap-2 mb-6">
         <div className="rounded-lg border border-gray-800 bg-gray-900 p-3"><label className="block text-xs text-gray-400">Photocathode</label><select value={photocathodeType} onChange={e => setPhotocathodeType(e.target.value as any)} className="mt-1 bg-gray-950 border border-gray-700 rounded px-2 py-1 text-sm text-white">{Object.entries(photocathodes).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></div>
         <div className="rounded-lg border border-gray-800 bg-gray-900 p-3"><label className="block text-xs text-gray-400">Phosphor</label><select value={phosphorType} onChange={e => setPhosphorType(e.target.value as any)} className="mt-1 bg-gray-950 border border-gray-700 rounded px-2 py-1 text-sm text-white">{Object.entries(phosphors).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></div>
@@ -65,6 +64,6 @@ export default function IntensifiedCCDPage() {
         <ChartPanel data={gainChart} layout={{ xaxis: { title: "MCP Gain", gridcolor: "#374151", type: "log" }, yaxis: { title: "Signal / Noise (e⁻)", gridcolor: "#374151", type: "log" }, yaxis2: { title: "SNR", gridcolor: "#374151", overlaying: "y", side: "right" } }} title="SNR vs MCP Gain" />
         <ChartPanel data={gateChart} layout={{ xaxis: { title: "Gate Width (ns)", gridcolor: "#374151" }, yaxis: { title: "BG / Read Noise", gridcolor: "#374151", type: "log" } }} title="Background vs Gate" />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

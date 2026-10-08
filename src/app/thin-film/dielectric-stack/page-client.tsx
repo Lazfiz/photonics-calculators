@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -32,7 +31,7 @@ export default function DielectricStackPage() {
   const bandwidthNm = (4 * designWl) / Math.PI * Math.asin((1 - nL / nH) / (1 + nL / nH));
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Dielectric Stack Theory" description="Quarter-wave dielectric stack reflectance. Alternating high/low index layers create high-reflectance mirrors — the basis of dielectric mirrors and VCSELs.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="n (high index)" value={nH} onChange={setNH} min={0.1} step="0.01" />
@@ -79,6 +78,6 @@ export default function DielectricStackPage() {
           legend: { x: 0.02, y: 0.98 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

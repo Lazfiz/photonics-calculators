@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c, h } from "../../../physics/constants";
@@ -111,7 +110,7 @@ export default function SolidStateLaserResonatorPage() {
   const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Solid State Laser Resonator" description="Two-mirror resonator stability g₁g₂, beam waist and radius along the cavity, and slope efficiency and output power of a solid-state laser." maxWidthClassName="max-w-6xl">
+    <>
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4">
@@ -187,6 +186,6 @@ export default function SolidStateLaserResonatorPage() {
           <ChartPanel data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output (W)" } }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

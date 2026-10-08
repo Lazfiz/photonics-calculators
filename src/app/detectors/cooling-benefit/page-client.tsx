@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -46,7 +45,7 @@ export default function CoolingBenefitPage() {
   const inGaAsReduction = darkCurrent25InGaAs / darkCurrentDiff(coolTemp, darkCurrent25InGaAs, egInGaAs);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Cooling Benefit Calculator" description="Dark current reduction and SNR improvement from thermoelectric (TEC) or cryogenic cooling.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Si Bandgap (eV)" value={egSi} onChange={setEgSi} min={0.5} max={2} step="0.01" />
         <ValidatedNumberInput label="InGaAs Bandgap (eV)" value={egInGaAs} onChange={setEgInGaAs} min={0.3} max={1.5} step="0.01" />
@@ -64,6 +63,6 @@ export default function CoolingBenefitPage() {
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>Si (generation-recombination): I ∝ T^(3/2) · exp(−E_g/2kT)</p><p>InGaAs (diffusion-limited): I ∝ T³ · exp(−E_g/kT)</p><p>SNR = S / √(S + I_dark·t + σ_read²)</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Temperature (°C)", gridcolor: "#374151" }, yaxis: { title: "Dark Current (e⁻/s)", gridcolor: "#374151", type: "log" }, yaxis2: { title: "SNR", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
-    </CalculatorShell>
+    </>
   );
 }

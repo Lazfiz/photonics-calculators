@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -55,7 +54,7 @@ export default function TaperedFiberPage() {
   }, [inputDia, outputDia, taperLength, coreDia]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Tapered Fiber Design" description="Design adiabatic fiber tapers for mode conversion, evanescent field enhancement, and coupler fabrication.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Input Cladding Ø (μm)" value={inputDia} onChange={setInputDia} min={1} />
@@ -105,6 +104,6 @@ export default function TaperedFiberPage() {
         legend: { x: 0.01, y: 0.99 },
         margin: { t: 30 },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

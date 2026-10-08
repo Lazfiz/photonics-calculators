@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/fiber-coupler' },
-    title: 'Fiber Coupler Calculator',
-    description: 'Calculate power splitting, transfer curves, and spectral response for directional fiber couplers.'
-};
+const href = "/fiber-optics/fiber-coupler";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Fiber Coupler Calculator',
-  'Calculate power splitting, transfer curves, and spectral response for directional fiber couplers.',
-  'https://photonics-calculators.vercel.app/fiber-optics/fiber-coupler',
-  { category: 'Fiber Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

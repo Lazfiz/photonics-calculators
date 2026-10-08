@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -57,7 +56,7 @@ export default function LowCoherencePage() {
   }, [referenceReflectivity, sampleReflectivity, fringeVisibility]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Low Coherence Interferometry" description="Interferogram modelling, coherence gating, fringe visibility, and depth scanning parameters.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -113,6 +112,6 @@ export default function LowCoherencePage() {
           <ChartPanel data={depthResChart} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Refractive Index" }, yaxis: { title: "Axial Res. (µm)" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

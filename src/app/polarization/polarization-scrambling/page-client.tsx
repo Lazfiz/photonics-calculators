@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { createRng, gaussian } from "../../../physics/random";
@@ -92,7 +91,7 @@ export default function PolarizationScramblingPage() {
   };
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Polarization Scrambling" description="Simulate polarization scrambling: how randomizing polarization state reduces residual polarization.">
+    <>
             
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
@@ -191,6 +190,6 @@ export default function PolarizationScramblingPage() {
           <p>Residual DoP ∝ 1/√N for random scrambling</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

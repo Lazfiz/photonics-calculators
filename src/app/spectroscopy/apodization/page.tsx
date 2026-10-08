@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/apodization' },
-    title: 'Apodization Functions',
-  description: 'Window functions and their instrument line shapes (ILS). Trade-off: resolution vs sidelobe suppression.'
-};
+const href = "/spectroscopy/apodization";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Apodization Functions',
-  'Window functions and their instrument line shapes (ILS). Trade-off: resolution vs sidelobe suppression.',
-  'https://photonics-calculators.vercel.app/spectroscopy/apodization',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

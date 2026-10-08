@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -66,7 +65,7 @@ export default function NearInfraredPage() {
   const region = wavelengthEnd <= 1100 ? "NIR-A (780-1100 nm)" : wavelengthStart >= 1100 && wavelengthEnd <= 1350 ? "NIR-B (1100-1350 nm)" : wavelengthStart >= 1350 ? "NIR-C (1350-2500 nm)" : "Multi-region";
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Near-Infrared (NIR) Spectroscopy" description="Overtone and combination band analysis for non-destructive composition measurement.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Wavelength Start (nm)" value={wavelengthStart} onChange={setWavelengthStart} min={780} max={2500} />
@@ -116,6 +115,6 @@ export default function NearInfraredPage() {
           ))}
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/fresnel-equations' },
-    title: 'Fresnel Equations',
-  description: "Reflectance vs. angle of incidence at a dielectric interface. Shows s-polarization, p-polarization, Brewster's angle, and total internal reflection."
-};
+const href = "/thin-film/fresnel-equations";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Fresnel Equations',
-  "Reflectance vs. angle of incidence at a dielectric interface. Shows s-polarization, p-polarization, Brewster's angle, and total internal reflection.",
-  'https://photonics-calculators.vercel.app/thin-film/fresnel-equations',
-  { category: 'Thin Film' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

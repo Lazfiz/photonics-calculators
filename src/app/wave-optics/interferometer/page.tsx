@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/wave-optics/interferometer' },
-    title: 'Interferometer Visibility',
-  description: 'Michelson / Mach-Zehnder interferometer intensity vs path difference. Visibility limited by mirror reflectivity.'
-};
+const href = "/wave-optics/interferometer";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Interferometer Visibility',
-  'Michelson / Mach-Zehnder interferometer intensity vs path difference. Visibility limited by mirror reflectivity.',
-  'https://photonics-calculators.vercel.app/wave-optics/interferometer',
-  { category: 'Wave Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

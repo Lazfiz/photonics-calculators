@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -54,9 +53,7 @@ export default function PartialReflectorPage() {
   const Rdesign = quarterWaveStackReflectance(nInc, [nFilm], nSub);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Partial Reflector Design" description="Partial reflectors (output couplers, etalon mirrors) provide controlled reflectance between
-        bare substrate and full HR. A single dielectric layer at QWL gives R determined by nfilm.
-        Adjusting the thickness ratio tunes R via thin-film interference.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>film</sub></>} value={nFilm} onChange={setNFilm} step="0.01" />
@@ -90,6 +87,6 @@ export default function PartialReflectorPage() {
         yaxis: { title: "R (at λ₀)", gridcolor: "#374151", range: [0, 1.05] },
         margin: { t: 40, b: 40, l: 50, r: 20 }, autosize: true,
       }} />
-    </CalculatorShell>
+    </>
   );
 }

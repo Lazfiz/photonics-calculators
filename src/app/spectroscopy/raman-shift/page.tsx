@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/raman-shift' },
-    title: 'Raman Shift Calculator',
-  description: 'Convert between Raman shift (cm⁻¹), scattered wavelength, and energy for any excitation laser.'
-};
+const href = "/spectroscopy/raman-shift";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Raman Shift Calculator',
-  'Convert between Raman shift (cm⁻¹), scattered wavelength, and energy for any excitation laser.',
-  'https://photonics-calculators.vercel.app/spectroscopy/raman-shift',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

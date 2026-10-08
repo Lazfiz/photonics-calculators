@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/coherent-raman-microscopy' },
-    title: 'Coherent Raman Microscopy Calculator',
-  description: 'Calculate Stokes wavelengths, spectral resolution, and spatial resolution for CARS and SRS microscopy.'
-};
+const href = "/imaging/coherent-raman-microscopy";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Coherent Raman Microscopy Calculator',
-  'Calculate Stokes wavelengths, spectral resolution, and spatial resolution for CARS and SRS microscopy.',
-  'https://photonics-calculators.vercel.app/imaging/coherent-raman-microscopy',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/thermal-dndt' },
-    title: 'Thermo-Optic Coefficient (dn/dT)',
-  description: 'Temperature-dependent refractive index change. Positive dn/dT means n increases with temperature.'
-};
+const href = "/materials/thermal-dndt";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Thermo-Optic Coefficient (dn/dT)',
-  'Temperature-dependent refractive index change. Positive dn/dT means n increases with temperature.',
-  'https://photonics-calculators.vercel.app/materials/thermal-dndt',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

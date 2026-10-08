@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/bend-insensitive' },
-    title: 'Bend-Insensitive Fiber Calculator',
-    description: 'Design and analyze bend-insensitive fibers with depressed cladding trenches (ITU-T G.657).'
-};
+const href = "/fiber-optics/bend-insensitive";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Bend-Insensitive Fiber Calculator',
-  'Design and analyze bend-insensitive fibers with depressed cladding trenches (ITU-T G.657).',
-  'https://photonics-calculators.vercel.app/fiber-optics/bend-insensitive',
-  { category: 'Fiber Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

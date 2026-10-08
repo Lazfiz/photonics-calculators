@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -36,7 +35,7 @@ export default function AmplitudeSplittingPage() {
   const finesse = reflectingFinesse(F);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Amplitude Splitting" description="Multiple-beam interference from amplitude splitting at a thin film. Shows how partial reflections from each interface combine to form interference fringes.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="n₁ (incident)" value={n1} onChange={setN1} min={0.1} step="0.01" />
@@ -85,6 +84,6 @@ export default function AmplitudeSplittingPage() {
           legend: { x: 0.02, y: 0.98 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

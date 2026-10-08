@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -43,7 +42,7 @@ export default function WideBandpassPage() {
   const peakWl = tmm.wls[tmm.Tcombined.indexOf(peakT)];
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Wide Bandpass Filter" description="Cascaded short-pass + long-pass quarter-wave stacks for broad transmission bands.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>high</sub></>} value={nH} onChange={setNH} step="0.01" />
@@ -82,6 +81,6 @@ export default function WideBandpassPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { orientation: "h", y: 1.12 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

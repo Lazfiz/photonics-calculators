@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -42,7 +41,7 @@ export default function CosmicRaysPage() {
   }, [fluxPerSec, exposureTime]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Cosmic Ray Detection" description="Cosmic ray flux and impact on imaging sensors — estimate hit rates and affected pixels.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Sensor Area (cm²)" value={sensorArea} onChange={setSensorArea} min={0.01} step="0.1" />
         <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} min={0.001} step="0.1" />
@@ -63,6 +62,6 @@ export default function CosmicRaysPage() {
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Exposure Time (s)", gridcolor: "#374151" }, yaxis: { title: "Cosmic Ray Hits", gridcolor: "#374151" } }} />
       <h2 className="text-xl font-bold mt-8 mb-4">Hits vs Sensor Area</h2>
       <ChartPanel data={areaVsHits} layout={{ xaxis: { title: "Sensor Area (cm²)", gridcolor: "#374151" }, yaxis: { title: "Expected Hits per Frame", gridcolor: "#374151" } }} />
-    </CalculatorShell>
+    </>
   );
 }

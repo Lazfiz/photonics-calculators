@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/verdet-constant' },
-      title: 'Verdet Constant',
-  description: 'Faraday rotation: = V B L, where V ∝ 1/² for paramagnetic materials',
-};
+const href = "/materials/verdet-constant";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Verdet Constant',
-  'Faraday rotation: = V B L, where V ∝ 1/² for paramagnetic materials',
-  'https://photonics-calculators.vercel.app/materials/verdet-constant',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

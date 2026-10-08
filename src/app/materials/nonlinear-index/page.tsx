@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/nonlinear-index' },
-      title: 'Nonlinear Refractive Index (n)',
-  description: 'Kerr effect: n = n I, where I is the optical intensity',
-};
+const href = "/materials/nonlinear-index";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Nonlinear Refractive Index (n)',
-  'Kerr effect: n = n I, where I is the optical intensity',
-  'https://photonics-calculators.vercel.app/materials/nonlinear-index',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

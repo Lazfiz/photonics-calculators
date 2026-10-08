@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -97,7 +96,7 @@ export default function ContaminationPage() {
   }, [selectedMat, selectedCont, ppm, mat, cont]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Contamination Effects" description="Particle contamination impact on optical surfaces">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono">
         <p>Scatter ∝ particle density × Mie(λ) &nbsp;|&nbsp; Absorption ∝ α_cont × density &nbsp;|&nbsp; P(t) = P₀·(1+rt)·(1-C)^⌊t/T⌋</p>
@@ -161,6 +160,6 @@ export default function ContaminationPage() {
        
        
       />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -97,7 +96,7 @@ export default function ConnectorInsertionLossPage() {
   }, [connectorType, polishType]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Connector Insertion Loss" description="Calculate connector insertion loss from misalignment parameters and build link budgets for different connector types.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -192,6 +191,6 @@ export default function ConnectorInsertionLossPage() {
           <p>Typical IL: {connectorType}-{polishType} = {calc.typicalLossPer} dB, RL = {calc.typicalRL} dB</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

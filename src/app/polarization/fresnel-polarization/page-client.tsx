@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -81,7 +80,7 @@ export default function FresnelPolarizationPage() {
   }, [n1, n2]);
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Fresnel Polarization Calculator" description="Compute Fresnel reflection/transmission coefficients and analyze polarization-dependent effects at dielectric interfaces. Uses Born &amp; Wolf sign convention (r_p sign differs from thin-film Macleod convention).">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">rs = (n₁cosθᵢ − n₂cosθₜ)/(n₁cosθᵢ + n₂cosθₜ)</p>
@@ -164,6 +163,6 @@ export default function FresnelPolarizationPage() {
           }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

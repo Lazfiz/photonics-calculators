@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/second-harmonic' },
-    title: 'Second Harmonic Generation Calculator',
-  description: 'SHG signal estimation, coherence length, and phase matching for nonlinear imaging.'
-};
+const href = "/imaging/second-harmonic";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Second Harmonic Generation Calculator',
-  'SHG signal estimation, coherence length, and phase matching for nonlinear imaging.',
-  'https://photonics-calculators.vercel.app/imaging/second-harmonic',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/resolution' },
-    title: 'Spectral Resolution',
-  description: 'Resolving power and minimum resolvable wavelength for a diffraction grating spectrometer.'
-};
+const href = "/spectroscopy/resolution";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Spectral Resolution',
-  'Resolving power and minimum resolvable wavelength for a diffraction grating spectrometer.',
-  'https://photonics-calculators.vercel.app/spectroscopy/resolution',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

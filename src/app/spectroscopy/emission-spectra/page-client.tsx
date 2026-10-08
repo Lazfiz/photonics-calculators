@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -55,7 +54,7 @@ export default function EmissionSpectraPage() {
   }, [centerWL, fwhm, asymmetry, peakIntensity, nPeaks, peak2WL, peak2Fwhm, peak2Intensity]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Emission Spectra Fitting" description="Model photoluminescence emission with asymmetric Gaussian line shapes.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Peak 1 Center (nm)" value={centerWL} onChange={setCenterWL} min={300} max={1000} />
@@ -95,6 +94,6 @@ export default function EmissionSpectraPage() {
           margin: { t: 40 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

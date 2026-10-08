@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c } from "../../../physics/constants";
@@ -41,7 +40,7 @@ export default function RainAttenuationPage() {
   }, [range]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Rain Attenuation" description="Specific and total attenuation of a free-space optical link in rain from the rain rate with the power law α = k·Rᵃ, for a given range." maxWidthClassName="max-w-5xl">
+    <>
       
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
                 <p className="text-cyan-300 mt-1 font-mono">α = k · R^α_coeff &nbsp; [dB/km], &nbsp; Total = α × L</p>
@@ -86,6 +85,6 @@ export default function RainAttenuationPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

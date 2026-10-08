@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -96,7 +95,7 @@ export default function PmtGainPage() {
   }, [numStages, photocathodeQE, darkCurrent, amplifierNoise]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title={"PMT Gain & SNR"} description="PMT dynode gain, voltage dependence, anode responsivity, and SNR analysis.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Number of Dynode Stages" value={numStages} onChange={setNumStages} min={6} max={14} step="1" />
         <ValidatedNumberInput label="Stage Voltage (V)" value={stageVoltage} onChange={setStageVoltage} min={50} max={200} step="5" />
@@ -141,6 +140,6 @@ export default function PmtGainPage() {
         <p>F = δ / (δ−1) (excess noise factor)</p>
         <p>SNR = η·G·P·τ / √(η·G²·P·τ·F + G·F·I<sub>dark</sub>·τ/q + σ<sub>amp</sub>²)</p>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -38,7 +37,7 @@ export default function ConfocalResolutionPage() {
   }, [wavelength, na, refractiveIndex, confocalLateral, confocalAxial]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Confocal Resolution Calculator" description="Compare lateral and axial resolution between widefield and confocal microscopy with adjustable pinhole size.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={2000} />
@@ -79,6 +78,6 @@ export default function ConfocalResolutionPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

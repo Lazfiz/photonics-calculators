@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -85,7 +84,7 @@ export default function GlansPrismPage() {
   }, [nO, nE, criticalO, criticalE]);
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Glan Prism Polarizer Design" description="Compare Glan-Taylor (air gap) and Glan-Thompson (cemented) polarizer designs based on calcite or other birefringent crystals.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">θ<sub>c,o</sub> = arcsin(n<sub>gap</sub>/n<sub>o</sub>), θ<sub>c,e</sub> = arcsin(n<sub>gap</sub>/n<sub>e</sub>)</p>
@@ -163,6 +162,6 @@ export default function GlansPrismPage() {
           margin: { t: 20, r: 20, b: 50, l: 50 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -34,8 +33,7 @@ export default function DoubleLayerARPage() {
   const optN2 = Math.pow(nInc * nSub * nSub * nSub, 0.25);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Two-Layer AR Coating" description="Transfer-matrix method for two-layer V-coat or W-coat AR designs. Both layers at quarter-wave optical thickness.
-        Optimal indices: n₁ = (ninc³ · nsub)¼, n₂ = (ninc · nsub³)¼.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="n₁ (outer layer)" value={n1} onChange={setN1} step="0.01" />
@@ -58,6 +56,6 @@ export default function DoubleLayerARPage() {
         yaxis: { title: "R / T", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true,
       }} />
-    </CalculatorShell>
+    </>
   );
 }

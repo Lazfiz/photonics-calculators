@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c, q } from "../../../physics/constants";
@@ -105,7 +104,7 @@ export default function FreeElectronLaserPage() {
   const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Free-Electron Laser" description="FEL resonance wavelength, Pierce parameter ρ, 1D gain length and saturation power from electron energy, undulator period, K and peak current." maxWidthClassName="max-w-6xl">
+    <>
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Electron Energy (MeV)" value={electronEnergy} onChange={setElectronEnergy} /></div>
@@ -142,6 +141,6 @@ export default function FreeElectronLaserPage() {
         <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Power Evolution</h3><ChartPanel data={powerEvolution} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "z (m)" }, yaxis: { ...plotLayout.yaxis, title: "P (W)" } }} /></div>
         <div className="bg-gray-800 rounded-lg p-4 md:col-span-2"><h3 className="font-semibold mb-2">Harmonic Spectrum</h3><ChartPanel data={spectrumData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "Relative Intensity" }, barmode: "group" }} /></div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

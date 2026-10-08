@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -65,7 +64,7 @@ export default function CavityStabilityPage() {
   }, [r1, r2, L, calc]);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Cavity Stability Diagram" description="Two-mirror cavity stability: g₁ = 1 - L/R₁, g₂ = 1 - L/R₂. Stable when 0 ≤ g₁g₂ ≤ 1.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="R₁ - Mirror 1 ROC (mm)" value={r1} onChange={setR1} step="any" />
@@ -102,6 +101,6 @@ export default function CavityStabilityPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

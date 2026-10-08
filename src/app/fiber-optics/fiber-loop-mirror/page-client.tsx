@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -68,7 +67,7 @@ export default function FiberLoopMirrorPage() {
   }, [includePM, wavelength, birefringence, fiberLength]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Loop Mirror (Sagnac)" description="Sagnac fiber loop mirror reflectance, spectral response, and birefringent filter design.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Coupling Ratio (%)" value={couplingRatio} onChange={setCouplingRatio} min={0} max={100} />
@@ -130,6 +129,6 @@ export default function FiberLoopMirrorPage() {
           margin: { t: 40 },
         }} />
       )}
-    </CalculatorShell>
+    </>
   );
 }

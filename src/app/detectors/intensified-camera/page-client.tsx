@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -41,7 +40,7 @@ export default function IntensifiedCameraPage() {
   }, [photocathodeQE, mcpGain, phosphorEff, fiberCoupling, ccdQE, ccdReadNoise, noiseFactor]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Intensified Camera (ICCD)" description="Gain chain: photocathode → MCP → phosphor → fiber optic → CCD. Noise and sensitivity analysis." maxWidthClassName="max-w-5xl">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Photocathode QE" value={photocathodeQE} onChange={setPhotocathodeQE} min={0.01} max={1} step="0.01" />
         <ValidatedNumberInput label="MCP Gain" value={mcpGain} onChange={setMcpGain} />
@@ -61,6 +60,6 @@ export default function IntensifiedCameraPage() {
         <ChartPanel data={gainChart} layout={{ xaxis: { title: "MCP Gain", gridcolor: "#374151", type: "log" }, yaxis: { title: "Electron Gain", gridcolor: "#374151", type: "log" }, yaxis2: { title: "Eff. Read Noise (e⁻)", gridcolor: "#374151", type: "log", overlaying: "y", side: "right" } }} title="Gain vs MCP" />
         <ChartPanel data={sensitivityChart} layout={{ xaxis: { title: "Photons/pix/frame", gridcolor: "#374151" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} title="ICCD vs EMCCD Sensitivity" />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

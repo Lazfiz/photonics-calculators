@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/intensified-camera' },
-    title: 'Intensified Camera (ICCD)',
-    description: 'Gain chain: photocathode → MCP → phosphor → fiber optic → CCD. Noise and sensitivity analysis.'
-};
+const href = "/detectors/intensified-camera";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Intensified Camera (ICCD)',
-  'Gain chain: photocathode → MCP → phosphor → fiber optic → CCD. Noise and sensitivity analysis.',
-  'https://photonics-calculators.vercel.app/detectors/intensified-camera',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href} maxWidthClassName="max-w-5xl">
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

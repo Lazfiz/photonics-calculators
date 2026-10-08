@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -90,7 +89,7 @@ export default function ElectronSpectroscopyPage() {
   ];
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Electron Spectroscopy (XPS/UPS)" description="Photoelectron spectroscopy for surface composition, chemical state, and electronic structure.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Photon Energy (eV)" value={photonEnergy} onChange={setPhotonEnergy} min={10} max={10000} />
@@ -178,6 +177,6 @@ export default function ElectronSpectroscopyPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,14 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
-const currentHref = "/spectroscopy/ftir-resolution";
 
 export default function FtirResolutionPage() {
   const [maxOPD, setMaxOPD] = useURLState("maxOPD", 1.0);
@@ -61,12 +57,7 @@ export default function FtirResolutionPage() {
   }, [maxOPD, apodization]);
 
   return (
-    <CalculatorShell
-      backHref="/spectroscopy"
-      backLabel="Spectroscopy"
-      title="FTIR Resolution Calculator"
-      description="Spectral resolution from maximum optical path difference (OPD) and apodization function."
-    >
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <InputSlider label="Max OPD" value={maxOPD} onChange={setMaxOPD} min={0.01} max={10} step={0.01} unit="cm" />
         <InputSlider label="Spectral range" value={spectralRange} onChange={setSpectralRange} min={100} max={8000} step={10} unit="cm⁻¹" />
@@ -99,8 +90,6 @@ export default function FtirResolutionPage() {
         <SimpleLineChart title="Resolution vs max OPD" xLabel="Max OPD (cm)" yLabel="Resolution (cm⁻¹)" series={resolutionSeries} />
         <SimpleLineChart title="Apodized interferogram" xLabel="OPD (cm)" yLabel="Signal (a.u.)" series={interferogramSeries} />
       </div>
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 
@@ -61,7 +60,7 @@ export default function UVMaterialsPage() {
   }, [selected]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="UV Optical Materials" description="Deep UV to near-UV materials comparison. Sellmeier: n² = 1 + Σ Biλ²/(λ² - Ci)">
+    <>
             
       <div className="flex flex-wrap gap-2 mb-6">
         {Object.keys(MATERIALS).map(key => (
@@ -73,7 +72,7 @@ export default function UVMaterialsPage() {
         <ChartPanel data={uvChart.data} layout={uvChart.layout} config={plotConfig} />
         <ChartPanel data={dispersionChart.data} layout={dispersionChart.layout} config={plotConfig} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }
 

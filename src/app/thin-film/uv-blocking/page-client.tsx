@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -39,7 +38,7 @@ export default function UVBlockingPage() {
   const avgVisT = visIdx.reduce((s, i) => s + T[i], 0) / visIdx.length;
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="UV Blocking Filter" description="Quarter-wave stack designed to reflect UV (200–400 nm) while transmitting visible light.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>high</sub></>} value={nH} onChange={setNH} step="0.01" />
@@ -82,6 +81,6 @@ export default function UVBlockingPage() {
           ],
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

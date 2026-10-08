@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -77,7 +76,7 @@ export default function LaguerreGaussianPage() {
   }, [waist, p, l]);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Laguerre-Gaussian Modes" description="Donut modes with orbital angular momentum.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
@@ -124,6 +123,6 @@ export default function LaguerreGaussianPage() {
           yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151" }, margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

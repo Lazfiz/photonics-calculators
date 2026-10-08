@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -50,7 +49,7 @@ export default function AfocalPage() {
   }, [f1Mm, f2Mm, separationMm, angularMag, idealSep]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Afocal System Calculator" description="Design and analyze afocal (telescopic) relay systems — Keplerian and Galilean configurations.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">M_ang = −f₁ / f₂ &nbsp;(afocal, d = f₁ + f₂)</p>
@@ -107,6 +106,6 @@ export default function AfocalPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

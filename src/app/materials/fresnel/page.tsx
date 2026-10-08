@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/fresnel' },
-    title: 'Fresnel Equations',
-  description: 'Interactive Fresnel reflection and transmission at a dielectric interface with sliders, presets, and angle sweeps.'
-};
+const href = "/materials/fresnel";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Fresnel Equations',
-  'Interactive Fresnel reflection and transmission at a dielectric interface with sliders, presets, and angle sweeps.',
-  'https://photonics-calculators.vercel.app/materials/fresnel',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

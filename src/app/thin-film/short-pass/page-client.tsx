@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -35,8 +34,7 @@ export default function ShortPassPage() {
   }, [nH, nL, nSub, nInc, numPairs, designWl]);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Short Pass Filter" description="Quarter-wave stack (LH)N short-pass filter. Transmits λ &lt; λedge, reflects longer wavelengths.
-        Uses reversed layer order compared to long-pass design.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>H</sub> (high index)</>} value={nH} onChange={setNH} step="0.01" />
@@ -59,6 +57,6 @@ export default function ShortPassPage() {
         yaxis: { title: "R / T", gridcolor: "#374151", range: [0, 1.05] },
         margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true,
       }} />
-    </CalculatorShell>
+    </>
   );
 }

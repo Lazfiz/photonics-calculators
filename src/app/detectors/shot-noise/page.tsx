@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/shot-noise' },
-    title: 'Shot Noise',
-    description: 'Shot noise current, SNR, and noise vs signal analysis for photodetectors.'
-};
+const href = "/detectors/shot-noise";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Shot Noise',
-  'Shot noise current, SNR, and noise vs signal analysis for photodetectors.',
-  'https://photonics-calculators.vercel.app/detectors/shot-noise',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

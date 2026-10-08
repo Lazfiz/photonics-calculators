@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/crystal-birefringence' },
-    title: 'Crystal Birefringence Data',
-  description: 'n = |nₒ − nₑ| for uniaxial and birefringent crystals at selected wavelength',
-};
+const href = "/materials/crystal-birefringence";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Crystal Birefringence Data',
-  'n = |nₒ − nₑ| for uniaxial and birefringent crystals at selected wavelength',
-  'https://photonics-calculators.vercel.app/materials/crystal-birefringence',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

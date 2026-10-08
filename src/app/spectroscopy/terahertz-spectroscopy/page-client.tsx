@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -70,7 +69,7 @@ export default function TerahertzSpectroscopyPage() {
   const photonEnergyMax = 33.356 * maxFreq;
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Terahertz (THz) Spectroscopy" description="Probing low-energy excitations: phonon modes, hydrogen bonding, lattice vibrations (0.1–10 THz).">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Frequency Start (THz)" value={freqStart} onChange={setFreqStart} min={0.01} max={10} />
@@ -139,6 +138,6 @@ export default function TerahertzSpectroscopyPage() {
           <li>• <strong className="text-red-400">Biomolecules</strong>: Protein collective modes, DNA backbone vibrations</li>
         </ul>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

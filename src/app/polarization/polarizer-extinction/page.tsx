@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/polarization/polarizer-extinction' },
-    title: 'Polarizer Extinction Ratio',
-  description: "Analyze extinction ratio, Malus's law with imperfect polarizers, and cascaded extinction performance."
-};
+const href = "/polarization/polarizer-extinction";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Polarizer Extinction Ratio',
-  "Analyze extinction ratio, Malus's law with imperfect polarizers, and cascaded extinction performance.",
-  'https://photonics-calculators.vercel.app/polarization/polarizer-extinction',
-  { category: 'Polarization' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

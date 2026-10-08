@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -35,7 +34,7 @@ export default function BandpassFilterPage() {
   const peakWl = tmm.wls[T.indexOf(peakT)] ?? NaN;
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Bandpass Filter" description="Fabry-Perot bandpass — multi-cavity design with quarter-wave mirrors and half-wave spacers.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>high</sub></>} value={nH} onChange={setNH} step="0.01" />
@@ -73,6 +72,6 @@ export default function BandpassFilterPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }
