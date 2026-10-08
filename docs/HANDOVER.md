@@ -1,53 +1,52 @@
-# Handover — 2026-10-08 (session 21 → session 22)
+# Handover — 2026-10-08 (session 22 → session 23)
 
-**Start here:** read this file, then `docs/ROADMAP.md` (Phase 4 findings: only the imaging items are left; or
-Phase 2 stage 2c).
-- PR #16 (findings batch 2) is merged and live; production `ui-check` passed (full suite + the 8 pages, comment on
-  the PR).
-- Session 21 fixed findings batch 3 on `phase-4/findings-batch-3` (**PR #17**). Merge only after the user approves,
-  then run `ui-check` against production.
+**Start here:** read this file, then `docs/ROADMAP.md`. The Phase 4 findings list is done (the imaging group was
+the last); left are the `exposure-duration` leftovers and Phase 2 stage **2c**. Ask the user which.
+- PR #17 (findings batch 3) was merged and checked on production before this session.
+- Session 22 fixed the imaging findings on `phase-4/imaging-findings` (**PR #18**). Merge only after the user
+  approves, then run `ui-check` against production (incl. a load check of the 8 pages).
 
 ## State
-- **`phase-4/findings-batch-3`** (on `main` 95ebaa04), one commit per topic plus docs:
-  1. `spectral-resolution`: `src/physics/spectroscopy/spectral-resolution.ts` (order guard, λ/(mN) floor, Airy FP).
-  2. `lambert-beer-law`: `…/lambert-beer-law.ts` (default 10 µM → A = 0.5).
-  3. `fluorescence-lifetime`: `…/fluorescence-lifetime.ts` (intensity- and amplitude-weighted ⟨τ⟩, Φ).
-  4. `pointing-loss`: `src/physics/free-space-comms/pointing-loss.ts` (Marcum-Q mean capture, range input).
-  5. `scintillation` + `adaptive-optics`: `…/free-space-comms/turbulence.ts` (shared).
-  6. `atmospheric-loss` + `laser-safety/atmospheric-attenuation`: `…/free-space-comms/atmospheric-attenuation.ts`.
-  7. `docs`: ROADMAP ("Findings batch 3", findings marked fixed), this file.
-- **Gates:** `check` green on the final code tree (tsc 0, eslint 0 errors, 1,187 warnings, was 1,195; 165 tests).
-  Each module's test caught a mutation of its formula (8/8, incl. re-inserting the old bugs). `build` green.
+- **`phase-4/imaging-findings`** (on `main` 20ec0776), one commit per topic plus docs:
+  1. `two-photon-microscopy`, `three-photon-microscopy`, `multiphoton-depth`: `src/physics/imaging/multiphoton-focus.ts`.
+  2. `third-harmonic-microscopy` (uses the same module).
+  3. `coherent-raman`: `…/imaging/coherent-raman.ts`.
+  4. `second-harmonic-generation`: `…/imaging/second-harmonic-generation.ts` (Boyd–Kleinman h by Simpson).
+  5. `super-resolution`: `…/imaging/super-resolution.ts`.
+  6. `shack-hartmann`: `…/imaging/shack-hartmann.ts`.
+  7. `docs`: ROADMAP ("Imaging findings", parent findings box ticked), this file.
+- **Gates:** `check` green on the final code tree (tsc 0, eslint 0 errors, 1,166 warnings, was 1,187; 190 tests,
+  was 165). `build` green (490 static pages); local production server: the 8 pages load with 0 console
+  errors (`ui-check` load mode) and show the expected default values.
+  A scratchpad `mutate.mjs` caught 17/17 formula mutations (incl. re-inserting the old 0.61λ/NA waist and STED baseline).
 
 ## Decisions (this session)
-- Coefficients I couldn't verify from memory were checked by web search before use: Andrews & Phillips'
-  aperture-averaged plane-wave σ_I²(D) (0.49/0.51, 0.65d², 1.11, 0.90d², 0.62d²) and the Parenti-Sasiela halo
-  term (1 − e^(−σ²))/(1 + (D/r₀)²).
-- `atmospheric-attenuation`: Rayleigh from first principles (Peck & Reeder index, King factor 1.048, N_s = p/k_BT),
-  tested against Hansen & Travis 1974 (−0.46 % at 0.4–1.55 µm). The aerosol part is 3.912/V minus Rayleigh at
-  550 nm, so the visibility definition holds exactly. Invented H₂O/CO₂ peaks were removed rather than replaced:
-  no verified line data; leaving absorption out is conservative for the NOHD page.
-- `pointing-loss`: the jitter-averaged capture is exact as a single Gaussian of variance w²/4 + s² (convolution),
-  so no fading-pdf integral is needed; the Marcum Q is a 1-D erf integral (`gaussianDiscFraction`).
-- `scintillation` lost its BER chart (SNR/(1 + σ_I²) was ad hoc; BER lives on `ber`); it now shows the fade
-  probabilities the registry promised.
-- References without section numbers where I wasn't sure of them (Hecht §9.6.1 kept; Born & Wolf dropped).
-- New URL keys: spectral-resolution `mode`, `gratingWidth`, `beamWidth`; fluorescence `model`, `tauRad`;
-  pointing `range`; AO `windSpeed`. Dropped: atmospheric-loss `altitude`, `humidity`, `temperature`;
-  atmospheric-attenuation `humidity`. Default changes: prism `dispersion` 1e-4 (was 0.02), Beer-Lambert
-  `concentration` 1e-5.
+- `three-photon-microscopy` wasn't on the findings list but had the same Airy-as-waist error plus invented
+  0.235λ/NA, 0.36λ/NA²; fixed with the shared module (commit 1).
+- Focus model everywhere: Zipfel 2003's Gaussian fit to I², extended to I and I³ via w = 2ω_xy. Coefficients were
+  confirmed by search (an arXiv SRS paper reproduces 404 nm / 1.22 µm / 0.166 µm³ from them) and checked against the
+  exact paraxial Airy pattern in the tests. Pulses are Gaussian (P_peak = 0.94 E/τ; the old pages used E/τ).
+- SHG keeps the slab-of-uniform-χ⁽²⁾ model but focused (Boyd–Kleinman, B = 0, centred focus, paraxial). With normal
+  dispersion and L ≫ b the SH is suppressed, which the page now says. No closed form for h with σ ≠ 0: Simpson with
+  ≥ 10 points per unit τ and per radian, capped at 4 × 10⁵ (chart worst case ≈ 40 ms).
+- PALM: shot-noise limit only (no pixel-size/background inputs); the page cites Thompson 2002 and Mortensen 2010
+  for what that leaves out. Zhang's 0.21λ/NA wasn't readable online, so the test fits the Airy itself (0.206).
+- Shack-Hartmann dynamic range: Akondi & Dubra 2021 eq. 2 with the image width = zero-to-zero spot diameter.
+  Default lenslet shape is square (sinc² spot); the old page implied circular (1.22).
+- `multiphoton-depth` default µ_s 6 mm⁻¹ from Kobat, Horton & Xu 2011 (5–6 attenuation lengths ≈ 0.8–1 mm at 800 nm
+  in vivo). Kobat 2009's 55 µm is fixed tissue, not used.
+- URL keys. New: coherent-raman `mode` (was component state), `linewidth`, `chiNR`; third-harmonic `scatteringCoeff`;
+  shack-hartmann `lensletShape`, `photons`. Dropped: shack-hartmann `dynamicRangeWaves`, `numSubapertures`.
+  Changed meaning: SHG `dn` is signed n(2ω) − n(ω) (was |Δn|), `chi2` is d_eff. Default: multiphoton-depth
+  `scattering` 6 (was 0.1).
+- Depth charts on log axes drop points below 1e-10 (SimpleChart would clamp them flat).
 
 ## Next actions
-1. Push, CI, ask before merging PR #17, then `ui-check` production (incl. a load check of the 8 pages). The local
-   production build passed the same load check (0 console errors) and showed the expected values.
-2. Then the **imaging** findings (last Phase 4 findings group): `two-photon-microscopy`,
-   `third-harmonic-microscopy`, `coherent-raman` (Airy radius used as the Gaussian waist, 2P focal volume ≈ 7×
-   too large), `multiphoton-depth` (reuse `twoPhotonAxialFwhm`), `second-harmonic-generation` (no sinc², plane-wave
-   L²), `super-resolution` (Rayleigh 0.61λ/NA in the FWHM-based STED law), `shack-hartmann` (Airy radius as spot
-   size, no dynamic range). Or stage **2c**. Ask the user.
-3. `exposure-duration` leftovers are still listed in the hazard-weighting ROADMAP sub-item.
+1. Push, CI, ask before merging PR #18, then `ui-check` production with a load check of the 8 pages.
+2. Then stage **2c** (tier + references per registry entry, shown on each page) or the `exposure-duration` leftovers
+   (unchecked item at the end of Phase 4). Ask the user.
 
-## Ship flow (worked fourteen times)
+## Ship flow (worked fifteen times)
 - **Push:** `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`.
 - **CI:** `gh pr create --body-file f`, then `gh pr checks <n> --watch`.
 - **Preview:** behind Vercel SSO (302 to `vercel.com/sso-api`). Use a local `npm run build` + `npx next start -p 3100`.
@@ -60,15 +59,16 @@ Phase 2 stage 2c).
   run in `timeout 200`: a Chrome-startup hang otherwise blocks forever. Flake: loop up to 3 times.
 - **Mutation check:** a scratchpad `mutate.mjs` (exact string replace → run one test → restore) is quicker than
   copying files by hand; use it only while no `check` is running.
+- **PDFs:** `pdftotext` is on the PATH (Git Bash `/mingw64/bin`); `curl` the PDF to the scratchpad first. WebFetch
+  can't read PDFs, and arXiv HTML may 404 for new papers.
+- **TS syntax:** `-x ** 2` is a parse error (esbuild "Unexpected **"); write `-(x ** 2)` or `-x * x`.
 - **Redirect test:** `tests/redirects.test.ts` greps `src/` for removed hrefs (whole `/<category>/<slug>` matches).
 - **λ in m → nm:** `lambda * 1e9` gives 700.0000000000001 for 700e-9; `hazard-weighting.ts` rounds (`toNm`).
-- **Standards PDFs:** WebFetch can't read PDFs. `curl` them to the scratchpad, then a small Node inflate +
-  `Tj`/`TJ` extractor.
 - **Physics modules:** SI in, SI out; pages convert at the boundary. Conventions are in the module headers.
 - **Scratch scripts** that import repo modules need absolute paths (`C:/dev/photonics-calculators/src/...`);
   run them with `npx tsx`. Never start a Bash command with a bare `cat > file` (it waits on stdin); use a heredoc.
-- **`SimpleChart`** (what `ChartPanel` renders for scatter/bar): no `shapes`; unnamed traces stay out of the legend;
-  skips NaN; on a log axis it clamps 0 to 1e-10. Filter NaN/∞ in the page anyway (Plotly fallback).
+- **`SimpleChart`** (what `ChartPanel` renders for scatter/bar): no `shapes`, no second x axis; unnamed traces stay
+  out of the legend; skips NaN; on a log axis it clamps values below 1e-10 to 1e-10. Filter NaN/∞ in the page anyway.
 - **Local production server:** `npx next start -p 3100`. Kill it with
   `netstat -ano | grep ':3100 .*LISTENING'` → `taskkill //PID <pid> //F //T`.
 - **Timings:** `tsc` ≈ 4 min, `check` ≈ 6 min, `build` ≈ 6–10 min. Run long ones in the background. Don't edit
