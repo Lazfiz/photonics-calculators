@@ -12,11 +12,6 @@ export const waveOptics: CalculatorEntry[] = [
     description: "High-harmonic generation and isolated attosecond pulse parameters.",
   },
   {
-    slug: "beam-quality",
-    title: "Beam Quality M² Measurement",
-    description: "Detailed beam quality analysis from measured parameters.",
-  },
-  {
     slug: "beam-waist-matching",
     title: "Beam Waist Matching",
     description: "Find the optimal lens for coupling one Gaussian mode into another.",
@@ -74,11 +69,6 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Threshold gain and current, differential efficiency and far-field divergence of a Fabry–Pérot diode laser from cavity length and facet reflectivity.",
   },
   {
-    slug: "dual-comb-spectroscopy",
-    title: "Dual-Comb Spectroscopy",
-    description: "High-resolution spectroscopy using two frequency combs with slightly different repetition rates.",
-  },
-  {
     slug: "dye-laser-resonator",
     title: "Dye Laser Resonator",
     description: "Cavity stability, beam waist, small-signal and threshold gain, triplet loss versus flow speed and output power of a Rhodamine or Coumarin dye laser.",
@@ -122,7 +112,6 @@ export const waveOptics: CalculatorEntry[] = [
     keywords: ["rayleigh range", "beam waist", "divergence"],
     priority: 100,
     related: [
-      { href: "/wave-optics/beam-quality", note: "M² and non-ideal beam propagation context." },
       {
         href: "/wave-optics/m2-factor",
         note: "Compare ideal Gaussian behavior with real beams.",
@@ -175,6 +164,7 @@ export const waveOptics: CalculatorEntry[] = [
     title: "Beam Quality Factor M²",
     description: "M² = ( w₀ )/. M² = 1 for ideal Gaussian, higher for multimode beams.",
     lede: "M² = (π w₀ θ)/λ. M² = 1 for ideal Gaussian, higher for multimode beams.",
+    keywords: ["Beam Quality M² Measurement"],
   },
   {
     slug: "mode-locked-laser",
@@ -192,14 +182,10 @@ export const waveOptics: CalculatorEntry[] = [
     description: "Precision spectroscopy and metrology using a train of equally spaced narrow spectral lines.",
   },
   {
-    slug: "optical-parametric",
-    title: "OPA / OPO Design",
-    description: "Optical parametric oscillator and amplifier design — tuning curves, thresholds, and gain bandwidth.",
-  },
-  {
     slug: "optical-parametric-amplifier",
     title: "Optical Parametric Amplifier",
     description: "Parametric power gain of an OPA from pump intensity, d_eff, refractive indices and crystal length, versus pump power, length and signal wavelength.",
+    keywords: ["OPA / OPO Design"],
   },
   {
     slug: "optical-parametric-oscillator",

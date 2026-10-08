@@ -10,11 +10,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "adaptive-optics",
     title: "Adaptive Optics Calculator",
     description: "AO correction performance, Strehl ratio, and deformable mirror requirements.",
-  },
-  {
-    slug: "adaptive-optics-microscopy",
-    title: "Adaptive Optics in Microscopy",
-    description: "Wavefront correction, Strehl ratio recovery, and resolution improvement for deep-tissue imaging.",
+    keywords: ["Adaptive Optics in Microscopy"],
   },
   {
     slug: "afocal",
@@ -32,7 +28,7 @@ export const imaging: CalculatorEntry[] = [
       { href: "/imaging/adaptive-optics" },
       { href: "/imaging/afocal" },
       { href: "/imaging/cleared-tissue" },
-      { href: "/imaging/coherent-anti-stokes" },
+      { href: "/imaging/coherent-raman" },
     ],
   },
   {
@@ -41,19 +37,10 @@ export const imaging: CalculatorEntry[] = [
     description: "Optical clearing tissue imaging: resolution, transmission, ballistic photon fraction, and RI matching.",
   },
   {
-    slug: "coherent-anti-stokes",
-    title: "CARS Imaging Calculator",
-    description: "Coherent Anti-Stokes Raman Scattering: vibrational shift, CARS wavelength, and laser parameters.",
-  },
-  {
     slug: "coherent-raman",
     title: "Coherent Raman (CARS/SRS) Calculator",
     description: "Coherent Anti-Stokes Raman Scattering and Stimulated Raman Scattering signal estimation.",
-  },
-  {
-    slug: "coherent-raman-microscopy",
-    title: "Coherent Raman Microscopy Calculator",
-    description: "Calculate Stokes wavelengths, spectral resolution, and spatial resolution for CARS and SRS microscopy.",
+    keywords: ["CARS Imaging", "Coherent Raman Microscopy"],
   },
   {
     slug: "computational-imaging",
@@ -80,7 +67,6 @@ export const imaging: CalculatorEntry[] = [
     slug: "contrast-methods",
     title: "Phase Contrast & DIC Calculator",
     description: "Contrast calculations for phase contrast and differential interference contrast microscopy.",
-    heading: "Phase Contrast &amp; DIC Calculator",
   },
   {
     slug: "deconvolution",
@@ -106,6 +92,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "dynamic-range",
     title: "Dynamic Range Calculator",
     description: "Imaging system dynamic range, noise floor, and ADC-limited performance analysis.",
+    keywords: ["Full Well Capacity vs SNR"],
   },
   {
     slug: "expansion-microscopy",
@@ -133,11 +120,6 @@ export const imaging: CalculatorEntry[] = [
     description: "Calculate diffusion coefficients from Fluorescence Recovery After Photobleaching data.",
   },
   {
-    slug: "harmonic-generation",
-    title: "Harmonic Generation Microscopy Calculator",
-    description: "Calculate harmonic wavelengths, peak intensities, and conversion efficiencies for nonlinear harmonic generation microscopy.",
-  },
-  {
     slug: "hyperspectral-microscopy",
     title: "Hyperspectral Microscopy",
     description: "Configure hyperspectral data cubes: spectral range, bands, data size, acquisition time, and SNR tradeoffs.",
@@ -161,16 +143,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "light-sheet",
     title: "Light Sheet Microscopy Calculator",
     description: "Light sheet thickness, resolution, and Rayleigh range for LSFM/SPIM.",
-  },
-  {
-    slug: "light-sheet-microscopy",
-    title: "Light Sheet Microscopy Design Calculator",
-    description: "Full light sheet microscope design parameters: sheet geometry, tilt geometry, and volume imaging.",
-  },
-  {
-    slug: "light-sheet-thickness",
-    title: "Light Sheet Thickness Calculator",
-    description: "Calculate the thickness and propagation characteristics of a Gaussian light sheet for light-sheet fluorescence microscopy (LSFM).",
+    keywords: ["Light Sheet Microscopy Design", "Light Sheet Thickness"],
   },
   {
     slug: "low-coherence",
@@ -208,11 +181,6 @@ export const imaging: CalculatorEntry[] = [
     slug: "optical-power",
     title: "Optical Power (Diopters)",
     description: "Convert between focal length and optical power, with an eye model reference.",
-  },
-  {
-    slug: "optical-sectioning",
-    title: "Optical Sectioning Calculator",
-    description: "Optical section thickness for confocal and widefield microscopy.",
   },
   {
     slug: "optical-sectioning-thickness",
@@ -261,19 +229,10 @@ export const imaging: CalculatorEntry[] = [
     description: "Abbe and Rayleigh lateral resolution limits for diffraction-limited imaging.",
   },
   {
-    slug: "second-harmonic",
-    title: "Second Harmonic Generation Calculator",
-    description: "SHG signal estimation, coherence length, and phase matching for nonlinear imaging.",
-  },
-  {
     slug: "second-harmonic-generation",
     title: "Second Harmonic Generation (SHG) Calculator",
     description: "SHG signal properties, wavelength conversion, and imaging resolution for collagen and other non-centrosymmetric structures.",
-  },
-  {
-    slug: "second-harmonic-microscopy",
-    title: "Second-Harmonic Generation Microscopy Calculator",
-    description: "Calculate SHG wavelength, resolution, phase matching, and signal strength for SHG microscopy of collagen, muscle, and other non-centrosymmetric structures.",
+    keywords: ["Harmonic Generation Microscopy", "Second-Harmonic Generation Microscopy"],
   },
   {
     slug: "selective-plane",
@@ -294,6 +253,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "shack-hartmann",
     title: "Shack-Hartmann Sensor",
     description: "SHWFS design: spot size, centroid precision, sensitivity, dynamic range, and sub-aperture layout.",
+    keywords: ["Wavefront Sensing", "Shack-Hartmann Wavefront Sensor"],
   },
   {
     slug: "signal-to-noise",
@@ -319,11 +279,6 @@ export const imaging: CalculatorEntry[] = [
     slug: "spinning-disk",
     title: "Spinning Disk Confocal Calculator",
     description: "Pinhole size, optical sectioning, and frame rate for spinning disk confocal microscopy.",
-  },
-  {
-    slug: "sted-resolution",
-    title: "STED Super-Resolution Calculator",
-    description: "Calculate STED (Stimulated Emission Depletion) microscopy resolution based on saturation intensity and depletion parameters.",
   },
   {
     slug: "stimulated-raman-microscopy",
@@ -354,6 +309,7 @@ export const imaging: CalculatorEntry[] = [
     slug: "super-resolution",
     title: "Super-Resolution Calculator",
     description: "STED and PALM/STORM resolution limits beyond the diffraction barrier.",
+    keywords: ["STED Super-Resolution"],
   },
   {
     slug: "telecentricity",
@@ -361,14 +317,10 @@ export const imaging: CalculatorEntry[] = [
     description: "Telecentric lenses maintain constant magnification regardless of object distance. Chief rays are parallel to optical axis.",
   },
   {
-    slug: "third-harmonic-generation",
-    title: "Third Harmonic Generation (THG) Calculator",
-    description: "THG imaging parameters for interface and membrane contrast in biological samples.",
-  },
-  {
     slug: "third-harmonic-microscopy",
     title: "Third-Harmonic Generation Microscopy Calculator",
     description: "Calculate THG wavelength, signal intensity, and resolution for label-free interface and heterogeneity imaging.",
+    keywords: ["Third Harmonic Generation (THG)"],
   },
   {
     slug: "three-photon-microscopy",
@@ -381,34 +333,15 @@ export const imaging: CalculatorEntry[] = [
     description: "Evanescent field penetration depth for Total Internal Reflection Fluorescence microscopy.",
   },
   {
-    slug: "two-photon",
-    title: "Two-Photon Microscopy Calculator",
-    description: "Excitation wavelength, resolution, and pulse parameters for two-photon fluorescence microscopy.",
-  },
-  {
-    slug: "two-photon-excitation",
-    title: "Two-Photon Excitation Calculator",
-    description: "Calculate two-photon excitation wavelength, peak power, and pulse energy from laser parameters.",
-  },
-  {
     slug: "two-photon-microscopy",
     title: "Two-Photon Microscopy Calculator",
     description: "Calculate resolution, excitation volume, peak intensity, and depth penetration for two-photon fluorescence microscopy.",
+    keywords: ["Two-Photon Excitation"],
   },
   {
     slug: "wavefront-error",
     title: "Wavefront Error Analysis",
     description: "Analyze wavefront error in waves RMS, compute Strehl ratio, and check diffraction-limited condition.",
-  },
-  {
-    slug: "wavefront-sensing",
-    title: "Wavefront Sensing",
-    description: "Wavefront error analysis, Zernike decomposition, Strehl ratio, and sensor sensitivity.",
-  },
-  {
-    slug: "wavefront-sensor",
-    title: "Shack-Hartmann Wavefront Sensor Calculator",
-    description: "Design parameters for Shack-Hartmann wavefront sensors including spot size, sensitivity, and dynamic range.",
   },
   {
     slug: "working-distance",

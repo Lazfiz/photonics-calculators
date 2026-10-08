@@ -1,7 +1,7 @@
 ---
 paths:
   - "src/app/**"
-  - "next.config.js"
+  - "next.config.mjs"
 ---
 # Next.js app code (Next 16, App Router)
 
@@ -17,4 +17,6 @@ paths:
   `tests/registry.test.ts` checks this.
 - Keep pages statically prerenderable: no request-time APIs in calculator pages.
 - Plotly loads only via `next/dynamic` with `ssr: false`, and only on pages that need it.
-- URL/slug changes need a 301 redirect in `next.config.js` and a registry update (the sitemap follows).
+- URL/slug changes need a redirect: add `"/old/href": "/new/href"` to `src/registry/redirects.json`
+  (`next.config.mjs` serves it; `tests/redirects.test.ts` checks it) and update the registry (the sitemap
+  follows). Merging a page into another: the same, then `scripts/codemods/2026-10-08-merge-duplicates.ts --write`.

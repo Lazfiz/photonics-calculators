@@ -24,7 +24,7 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 - `src/components/input-slider.tsx`: the number field passes unclamped values (e.g. NA=0 causes ÷0) until blur.
 - `src/components/calculator-shell.tsx`: `ShareButton` reads `window` during render, causing a hydration mismatch. The breadcrumb check `i < breadcrumbs.length` is always true.
 - `src/components/simple-chart.tsx`: the log axis clamps at 1e-10, and `Infinity` is not filtered (only `isNaN`).
-- Duplicates that disagree (~40 pairs):
+- ~~Duplicates that disagree (~40 pairs)~~: merged in session 17 (52 pages into 44 with redirects; see Phase 2):
   - `fiber-optics/dispersion-comp` (0.25/Δτ) vs `dispersion-compensation` (1/Δτ)
   - `macro-bend` (made-up power law) vs `macro-bending-loss` (Marcuse-type, uses plane-wave β)
   - imaging second-harmonic ×3, two-photon ×3, light-sheet ×3, wavefront-sens* ×3
@@ -182,7 +182,7 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
   - `emissivity-control` shows ε = 1 − R for a transparent lossless stack, which is T. Kirchhoff needs ε = A.
   - `enhanced-aluminum` and `protected-silver` use Drude n, k. The Al model has no 800 nm interband term and clamps n and k, and the "Cr" layer is lossless (n = 3.0). Use tabulated data (Rakić 1998).
   - `dielectric-high-reflector` promises dispersion: compute GDD from arg r (the module returns r).
-  - `gradient-index` and `gradient-index-coating` are duplicates.
+  - ~~`gradient-index` and `gradient-index-coating` are duplicates.~~ Merged (session 17).
   - `thermal-evaporation`:
     - The deposition rate is mass flux × r²/d² × 1e9 with no ÷ρ, so it is ×2,200 (SiO₂) to ×19,300 (Au) too high.
     - Its log₁₀P = A − B/T coefficients look about 10⁴ low. Al at 1,080 °C gives 3e-8 Torr, where about 1e-4 Torr is expected (Honig curves, or Alcock et al. 1984 for metals).
@@ -191,13 +191,29 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
     - Its mean free path is 0.005/P_Pa m, about 25 % below the air rule (6.6e-3/P_Pa m). The packing density and uniformity are heuristics.
   - `phase-shift-coating` promises the phase of the reflected and transmitted light but plots only R. Plot arg r from the module. Its `numLayers` state is unused.
   - `ellipsometry-measurement`: a film thickness needs a film model, e.g. a known film index and Azzam & Bashara's exact inversion for a transparent film.
-  - `multilayer-ar`: the default n₂ = 2.1 isn't an AR at λ₀. It gives 4.30 %, above bare glass's 4.26 %. The page now shows the optimum, 1.701. Consider n₂ ≈ 1.70 as the default, or a V-coat design.
+  - ~~`multilayer-ar`~~ (merged into `double-layer-ar`, session 17): the default n₂ = 2.1 isn't an AR at λ₀. It gives 4.30 %, above bare glass's 4.26 %. The page now shows the optimum, 1.701. Consider n₂ ≈ 1.70 as the default, or a V-coat design.
 - Found while building the registry (stage 2a):
   - Production search showed wrong titles and descriptions (see the `search-index.json` note above).
   - The category index pages listed 254 of 524 calculators (fiber-optics: 3 of 54). They now list all visible ones.
   - `/about` had no metadata, so it inherited the layout's canonical `/` and said "536" calculators. It now has its own canonical and reads the count.
   - The sitemap gave the home page priority 0.8: its `route === ''` check never matched `'/'`.
   - Hidden (quarantined) laser-safety pages are still in the sitemap, as before. Decide whether they should be.
+- Stage 2b regression, fixed in session 17 (`d28be16e`): the page text moved from JSX attributes, which decode HTML entities, into registry strings, which React prints as they are. 17 strings showed `&apos;`, `&lt;`, `&quot;` or `&amp;`, and `edge-filter`'s description was a JSX expression. `tests/registry.test.ts` now fails on entities, line breaks and braces.
+- Found while merging duplicates (session 17). Four `physics-reviewer` batches compared 47 groups. These are issues in the **kept** pages, most severe first; each "port later" names a feature the dropped page had.
+  - **Safety, understates the hazard:** `laser-safety/blue-light-hazard` uses a Gaussian B(λ): 0.034× IEC 62471's 10^((450−λ)/50) at 532 nm and ≈0 from 560 nm (1 mW over 2 mm at 560 nm shows "Exempt"). `laser-safety/uv-hazard`'s S(λ) is 0.1–0.6× the ICNIRP/ACGIH table at 280–305 nm, so t_max is up to 10× too long. `exposure-duration` falls back to 1 ms for UV, and its chart uses 0.01 W/cm² as the UV MPE (the limit is 3 mJ/cm²). Use the standard tables.
+  - `fiber-optics/macro-bending-loss` prints 0 everywhere: exp(−R·Δβ) with a plane-wave Δβ = k(n₁−n₂) gives 1e-133 dB/turn at 15 mm. Use Marcuse's exp(−2γ³R/(3β²)) with the LP01 eigenvalue γ. Golden: a = 4.1 µm, NA 0.1246, 1550 nm gives 0.11 dB/turn at 15 mm, 3.1 at 10 mm, 16 at 7.5 mm (Marcuse 1976, JOSA 66, 216). Port later: n₁/n₂ inputs and dB/m.
+  - `imaging/optical-sectioning-thickness`: the diffraction term is in nm and the pinhole term in µm (L24–26), so the pinhole has almost no effect (2.44 µm shown, 3.54 µm corrected).
+  - `wave-optics/optical-parametric-oscillator` (kept separate): P_th lacks c² (1e-15 W, "above threshold" for any pump), the signal is fixed at 1.2 × pump, and dn/dT is invented.
+  - `spectroscopy/apodization-comparison`: 5 of 9 windows use cos(2πx/halfN) where cos(πx/halfN) is needed, so the first sidelobes are −3…−6 dB instead of −31…−92 dB.
+  - `spectroscopy/dual-comb-spectroscopy`: the RF spectrum is folded twice (max 25 MHz, not f_rep/2 = 50 MHz), and there is no alias-free limit B ≤ f_rep²/(2Δf_rep).
+  - `thin-film/stress-measurement` (kept separate): "Center deflection (µm)" is used as metres, κ = h/R² should be 2h/a², and the film modulus is n × 200 GPa. `coating-stress` (kept, `stress` merged in) uses 1 − ν² where Stoney's biaxial form has 1 − ν (1.24× at ν = 0.17).
+  - `materials/infrared-glass` evaluates n at a fixed 4 µm with wrong Sellmeier sets (Ge 2.89, not 4.02; MgF₂ < 1). The dropped `infrared-materials` fits were also wrong. `materials/optical-glass-catalog`: 7 of 10 Sellmeier sets don't reproduce their own n_d. `materials/chromatic-dispersion` (retitled "Material Dispersion (Sellmeier)"): see the open item above.
+  - `fiber-optics/dispersion-comp`: the DCF length cancels exactly, so the residual, penalty and "compensated" curve are always 0. The default D_DCF = −17 isn't a DCF. Port later: slope, TOD and the dispersion map.
+  - `fiber-optics/polarization-mode-dispersion` calls PMD·√L the "rms" DGD. G.650.2 defines it as the mean, so the mean and σ are 8 % low.
+  - `free-space-comms/pointing-loss` has a fixed 1 km range and adds jitter as an offset. `free-space-comms/adaptive-optics`' servo-lag term has an extra (D/r₀)^(5/3). `free-space-comms/scintillation` jumps at σ_R² = 1, and its aperture averaging uses (D/r₀)^(5/3) instead of Andrews & Phillips.
+  - Imaging: `two-photon-microscopy`, `third-harmonic-microscopy` and `coherent-raman` use the Airy radius as the Gaussian waist (the 2P focal volume is ≈7× too large). `second-harmonic-generation` has no sinc²(ΔkL/2) and uses the plane-wave L² at L ≫ z_R. `super-resolution` feeds the Rayleigh 0.61λ/NA into the FWHM-based STED law. `shack-hartmann` calls the Airy radius the "spot size" and never computes the dynamic range.
+  - Spectroscopy: `spectral-resolution` returns NaN for unreachable orders and has no diffraction floor (port the R = mN floor from the dropped `resolution`). `lambert-beer-law` defaults to A = 500. `fluorescence-lifetime` shows the amplitude-weighted ⟨τ⟩ where the text promises intensity-weighted (port Σaτ²/Σaτ).
+  - Not merged (different calculations): `stray-light` (retitled "Grating Ghosts & Stray Light") / `stray-light-rejection`; `fiber-optics/chromatic-dispersion` / `materials/chromatic-dispersion`; `free-space-comms/atmospheric-loss` / `laser-safety/atmospheric-attenuation` (loss labels Np/km as dB/km; attenuation's Rayleigh term is 125× low); `optical-parametric-amplifier` / `-oscillator`; `uv-hazard` / `blue-light-hazard`; `well-capacity` / `dynamic-range`; `stress-measurement` / `coating-stress`.
 
 ## Phase 0 — safe, building, Claude-native (1 session)
 - [x] 0.1 **User, manual:** (the Defender exclusion is optional and wasn't done)
@@ -307,7 +323,11 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
     - JSON-LD: the generated FAQPage is gone (its questions weren't on the page, which Google's structured-data rules don't allow, and FAQ rich results are limited to government/health sites). `about` and the breadcrumb say "Free-Space Comms" (the old pages said "Free Space Comms"). `jsonLdHtml` escapes `<`. `lib/related-calculators.ts` is deleted (its word-overlap fallback was unused), and so is the client-import exception.
     - Tests: `tests/calculator-pages.test.ts` replaces `page-json-ld.test.ts`. It checks that each page.tsx has only its own href and that no page-client renders an `<h1>`, plus golden metadata/JSON-LD and the `<` escape.
   - [ ] **2c — trust data.** `tier` and `references` per entry (with Phase 4), shown on each page.
-- [ ] Merge the ~40 duplicates and add 301 redirects in `next.config.js`.
+- [x] Merge the ~40 duplicates and add 301 redirects in `next.config.js`. Session 17, branch `phase-2/duplicates`: 52 pages merged into 44 (524 → 472 calculators).
+  - 47 candidate groups (title/slug similarity, then their inputs and outputs) went to four `physics-reviewer` batches. The keeper has the correct physics and covers what the other pages' users came for. Groups that compute different things stay; see the Phase 2 findings.
+  - `src/registry/redirects.json` (removed href → keeper) is the only list. `next.config.mjs` (was `next.config.js`; ESLint forbids `require`) serves it as permanent redirects (308). `scripts/codemods/2026-10-08-merge-duplicates.ts` removed the entries and page dirs, added the old titles to the keepers' `keywords` (33) and retargeted related links.
+  - `tests/redirects.test.ts`: one hop to a registered page, served by `next.config.mjs`, and no href in `src/` pointing at a removed page. `tests/registry.test.ts`: titles are unique.
+  - To merge another page later: add it to `redirects.json` and run the codemod with `--write`.
 - [ ] As pages move to pure physics modules, fix the `useMemo` deps and `any`. Then set `preserve-manual-memoization` and `no-explicit-any` back to `error`.
 
 ## Phase 3 — graphics & performance (~1 week)
@@ -320,3 +340,4 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 - [ ] Golden-value tests for the top 50 calculators by traffic, then by category.
 - [ ] Model-tier badge (Exact / Textbook approximation / Illustrative) with references on each page.
 - [ ] Rewrite or label the heuristic models (macro-bend, second-harmonic, …).
+- [ ] Fix the kept-page bugs found while merging duplicates (Phase 2 findings, "Found while merging duplicates"): the two hazard-weighting pages first, then `macro-bending-loss` (prints 0), `optical-sectioning-thickness` (nm/µm), the OPO threshold and `apodization-comparison`.

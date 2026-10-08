@@ -10,11 +10,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
     slug: "adaptive-optics",
     title: "Adaptive Optics for FSO",
     description: "Fried parameter r₀, Greenwood frequency, isoplanatic angle and Strehl ratio with and without adaptive optics for a free-space optical link.",
-  },
-  {
-    slug: "adaptive-optics-gain",
-    title: "Adaptive Optics Strehl Gain",
-    description: "Fitting and Greenwood temporal error, corrected Strehl ratio, AO gain, and the actuators and bandwidth needed for a target Strehl in turbulence.",
+    keywords: ["Adaptive Optics Strehl Gain"],
   },
   {
     slug: "aperture-averaging",
@@ -109,18 +105,13 @@ export const freeSpaceComms: CalculatorEntry[] = [
     description: "Point-ahead angle from relative velocity, transmit beamwidth, time of flight and required pointing accuracy for LEO, GEO and deep-space laser links.",
   },
   {
-    slug: "pointing-error",
-    title: "Pointing Error Loss",
-    description: "Calculate pointing loss from beam jitter for FSO links.",
-  },
-  {
     slug: "pointing-loss",
     title: "Pointing Loss",
     description: "Interactive free-space optical pointing-loss calculator with jitter, misalignment, and aperture coupling.",
     lede: "Interactive FSO pointing-loss calculator with jitter, misalignment, beam waist, and aperture coupling.",
+    keywords: ["Pointing Error Loss"],
     related: [
       { href: "/free-space-comms/point-ahead" },
-      { href: "/free-space-comms/pointing-error" },
       { href: "/free-space-comms/quantum-key-distribution" },
       { href: "/free-space-comms/rain-attenuation" },
     ],
@@ -144,11 +135,7 @@ export const freeSpaceComms: CalculatorEntry[] = [
     slug: "scintillation",
     title: "Scintillation Index",
     description: "Rytov variance, aperture averaging, and fade probability for atmospheric turbulence.",
-  },
-  {
-    slug: "scintillation-index",
-    title: "Scintillation and Coherence Length",
-    description: "Rytov variance, scintillation index, Fried parameter, coherence length and coherence time for plane or spherical waves versus Cn² and range.",
+    keywords: ["Scintillation and Coherence Length"],
   },
   {
     slug: "security",

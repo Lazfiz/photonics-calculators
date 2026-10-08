@@ -21,7 +21,6 @@ export const polarization: CalculatorEntry[] = [
     title: "Brewster-Angle Polarizer",
     description: "Design Brewster-angle polarizers using tilted glass plates. At Brewster's angle, p-polarized light has zero reflection.",
     heading: "Brewster Polarizer Design",
-    lede: "Design Brewster-angle polarizers using tilted glass plates. At Brewster&apos;s angle, p-polarized light has zero reflection.",
   },
   {
     slug: "circular-dichroism",
@@ -55,21 +54,11 @@ export const polarization: CalculatorEntry[] = [
     description: "Calculate ordinary and extraordinary ray paths, walk-off angle, lateral separation, and retardation in uniaxial crystals.",
   },
   {
-    slug: "ellipsometry",
-    title: "Ellipsometry",
-    description: "Calculate Ψ, from Fresnel equations; model thin film interference in ellipsometry.",
-    lede: "Calculate Ψ, Δ from Fresnel equations; model thin film interference in ellipsometry.",
-  },
-  {
-    slug: "extinction-ratio",
-    title: "Extinction Ratio",
-    description: "Calculate polarizer extinction ratio, transmission, and cascaded performance.",
-  },
-  {
     slug: "fresnel-polarization",
     title: "Fresnel Polarization Calculator",
     description: "Compute Fresnel reflection/transmission coefficients and analyze polarization-dependent effects at dielectric interfaces.",
-    lede: "Compute Fresnel reflection/transmission coefficients and analyze polarization-dependent effects at dielectric interfaces. Uses Born &amp; Wolf sign convention (r_p sign differs from thin-film Macleod convention).",
+    lede: "Compute Fresnel reflection/transmission coefficients and analyze polarization-dependent effects at dielectric interfaces. Uses Born & Wolf sign convention (r_p sign differs from thin-film Macleod convention).",
+    keywords: ["Fresnel Equations"],
   },
   {
     slug: "glans-prism",
@@ -117,11 +106,6 @@ export const polarization: CalculatorEntry[] = [
     description: "Model orthoscopic observation of birefringent samples with rotating stage. Calculate intensity vs rotation angle and interference colors.",
   },
   {
-    slug: "pmd",
-    title: "Polarization Mode Dispersion",
-    description: "Calculate PMD-induced DGD, Maxwellian statistics, and system penalties.",
-  },
-  {
     slug: "poincare-sphere",
     title: "Poincaré Sphere",
     description: "Interactive visualization of polarization states on the Poincaré sphere.",
@@ -140,7 +124,6 @@ export const polarization: CalculatorEntry[] = [
     slug: "polarizer-extinction",
     title: "Polarizer Extinction Ratio",
     description: "Analyze extinction ratio, Malus's law with imperfect polarizers, and cascaded extinction performance.",
-    lede: "Analyze extinction ratio, Malus&apos;s law with imperfect polarizers, and cascaded extinction performance.",
   },
   {
     slug: "polarizer-types",

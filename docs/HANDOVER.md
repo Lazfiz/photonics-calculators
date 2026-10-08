@@ -1,73 +1,66 @@
-# Handover — 2026-10-08 (session 16 → session 17)
+# Handover — 2026-10-08 (session 17 → session 18)
 
 **Start here:** read this file, then `docs/ROADMAP.md` (Phase 2).
-- PR #11 (registry, stage 2a) was merged this session. Production `ui-check` passed 37/37 with 0 console
-  errors; `/fiber-optics` lists 54 calculators and `/search-index.json` has 528 entries.
-- Session 16 built stage 2b on `phase-2/pages-from-registry` (**PR #12**). The user approved the merge, and
-  it was merged at the end of the session. The production check result is a comment on PR #12. If it's
-  missing, run `ui-check` against production first.
+- Session 17 merged the duplicate calculators on `phase-2/duplicates` (**PR #13**): 52 pages into 44, so
+  524 calculators became 472. Merge it only after the user approves, then run `ui-check` against production.
 - Next: the next unchecked ROADMAP item (see Next actions).
 
 ## State
-- **`main`** has PR #12's commits:
-  1. `refactor(pages)`: server `CalculatorShell`, `src/registry/metadata.ts`, the codemod and its output
-     (1,048 files), 8 laser-safety pages by hand, tests.
-  2. `docs`: CLAUDE.md, the `new-calculator` skill, the `nextjs` rule, the ROADMAP and this file.
-- **Gates:** `check` tsc 0 errors, eslint 0 errors (1,330 warnings), tests 91/91. `build` 542/542 pages.
-  Local `ui-check` 37/37, 0 console errors; load mode on 8 changed pages, 0 console errors. CI green.
-  The preview served one `<h1>`, the BreadcrumbList, no FAQPage and "Free-Space Comms".
+- **`phase-2/duplicates`** (3 commits on `main` 3d325fd3):
+  1. `fix(registry)` (`d28be16e`): HTML entities, line breaks and a JSX expression in 26 registry strings. Stage 2b
+     moved the text out of JSX attributes (which decode `&apos;`), so 17 strings showed entities on the page.
+  2. `refactor(registry)`: the merge. `src/registry/redirects.json` + `next.config.mjs` `redirects()`, the codemod
+     `scripts/codemods/2026-10-08-merge-duplicates.ts`, 104 deleted files, 2 retitles, tests.
+  3. `docs`: ROADMAP (findings, Phase 4 item), CLAUDE.md count, this file.
+- **Gates:** see the PR. `check`: tsc 0 errors, eslint 0 errors (1,231 warnings), tests 96/96. `build` 490/490 pages; the routes manifest has the 52 redirects (308).
+- **Local tsc gotcha:** after deleting pages, `.next/types` and `.next/dev/types` still import them, so tsc reports
+  TS2307 there. Delete both folders (generated, gitignored); a build recreates them. CI is unaffected.
 
-## How a calculator page works now
-- `page.tsx` (15 lines, no text): `const href = "/<category>/<slug>"`, `metadata = calculatorMetadata(href)`,
-  `<CalculatorShell href={href} [maxWidthClassName]><PageClient /></CalculatorShell>`.
-- `src/components/calculator-shell.tsx` is a **server** component. It reads the registry entry and renders
-  the JSON-LD (WebPage + BreadcrumbList), breadcrumbs, `<h1>` = `heading ?? title`, lede =
-  `lede ?? description`, `ShareButton` (`share-button.tsx`, client), `ErrorBoundary` around the children,
-  and the related links (only entries with `related`, at most 4).
-- `page-client.tsx` returns a fragment: inputs, results and charts. No `<h1>`, no shell, no registry.
-- **Guards:** `tests/calculator-pages.test.ts` (each page.tsx holds only its own href; no client `<h1>`;
-  golden metadata and JSON-LD; `<` escaped). `tests/registry.test.ts` fails if any `"use client"` file
-  reaches `src/registry/` (no exceptions left; a client importing `calculator-shell` trips it).
-- **Changing a heading, description or related links** = edit the registry entry only.
+## How merging works now
+- `src/registry/redirects.json` (`"/old/href": "/kept/href"`) is the one list. `next.config.mjs` serves it as
+  `permanent: true` (308). To merge another page: add the pair and run
+  `npx tsx scripts/codemods/2026-10-08-merge-duplicates.ts --write`. It removes the entry and the page dir, adds the
+  old title to the keeper's `keywords`, and retargets `related`. Hand-fix other hrefs: `tests/redirects.test.ts`
+  lists any href in `src/` that points at a removed page (e.g. the curated `src/app/laser-safety/page.tsx`).
+- `tests/registry.test.ts` now also fails on duplicate titles and on entities, line breaks or braces in the text.
 
-## Decisions (user-approved this session)
-- The generated FAQPage JSON-LD is gone: its questions weren't on the page (Google's rules), and FAQ rich
-  results are limited to government/health sites. Don't add structured data the page doesn't show.
-- The 8 laser-safety pages that had their own `<h1>` now show the registry's cautious descriptions.
+## Decisions (this session)
+- Keeper = correct physics first, then coverage of the dropped pages' use. Choices that differ from the reviewers:
+  `thin-film/stress` → `coating-stress` (both stress → curvature; `stress-measurement` is the inverse and has a
+  10⁶ unit bug, so it stays separate); `imaging/coherent-anti-stokes` → `imaging/coherent-raman` (imaging intent).
+- Not merged (different calculations): see "Found while merging duplicates" in the ROADMAP's Phase 2 findings.
+- The user chose to finish the merge first and fix the bugs found in kept pages later (the site has little
+  traffic and the laser-safety pages carry disclaimers). They are a Phase 4 checkbox, safety pages first.
 
 ## Next actions
-1. Check that PR #12 has the production-check comment (`gh pr view 12 --comments`).
-2. Next ROADMAP items (Phase 2): the ~40 duplicates with 301 redirects in `next.config` (the registry
-   makes this easier: drop the entry, add the redirect), or 2c (tier/references, with Phase 4). Small and
-   self-contained: the `chromatic-dispersion` Sellmeier module (Malitson 1965).
+1. After the merge: check the Vercel status, `ui-check` production, and spot-check a redirect
+   (`curl -sI <prod>/fiber-optics/macro-bend` → 308 to `/fiber-optics/macro-bending-loss`).
+2. ROADMAP Phase 2: 2c (tier/references, with Phase 4), or the kept-page bug list (Phase 4 checkbox). Small and
+   self-contained: `materials/chromatic-dispersion` Sellmeier module (Malitson 1965), and `macro-bending-loss`
+   (Marcuse; golden values are in the findings).
 
-## Ship flow (worked nine times)
+## Ship flow (worked ten times)
 - **Push:** `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`.
 - **CI:** `gh pr create --body-file f`, then `gh pr checks <n> --watch`.
 - **Preview:** `list_deployments` (filter by `sha`) gives the URL; `web_fetch_vercel_url` fetches it
-  (team `team_LaEJuanZGFVc5UHhLD6LRaiq`, project `prj_wTWqQ2nFEuhYGHa06aUYA6Cb4XIH`). Big pages are saved
-  to a file; grep it. Or test a local `npx next start -p 3100`.
+  (team `team_LaEJuanZGFVc5UHhLD6LRaiq`, project `prj_wTWqQ2nFEuhYGHa06aUYA6Cb4XIH`). Or a local `npx next start -p 3100`.
 - **Merge:** ask the user, then `gh pr merge <n> --merge`. Wait for the Vercel status
   (`gh api repos/Lazfiz/photonics-calculators/commits/<sha>/status`), then run `ui-check` against production.
 
 ## Non-obvious facts
-- **Physics modules:** SI in, SI out; pages convert at the boundary. For the conventions (layer order,
-  e^(−iωt), the Nebraska convention in ellipsometry), see the module headers and `git show cc452854:docs/HANDOVER.md`.
-- **Tests:** `node:test`. Check that a test can fail by mutating in place (`cp` the file to the
-  scratchpad and restore it afterwards).
-- **Scratch scripts that import `typescript`** from the scratchpad need the absolute path
-  `C:/dev/photonics-calculators/node_modules/typescript/lib/typescript.js`.
-- **Shell quoting:** `node -e '…'` breaks on any apostrophe in the script; use a scratchpad `.cjs` file.
-- **Page edits:** use a Node script per file, guarded by markers (it throws if a marker isn't found). More
-  than 10 files needs the codemod skill (latest template: `scripts/codemods/2026-10-08-pages-from-registry.ts`).
+- **Physics modules:** SI in, SI out; pages convert at the boundary. Conventions are in the module headers.
+- **Tests:** `node:test`. Check that a test can fail by mutating in place (copy the file to the scratchpad, restore it).
+- **Scratch scripts** that import `typescript` or `ts-morph` from the scratchpad need absolute paths into
+  `C:/dev/photonics-calculators/node_modules/`. `node -e '…'` breaks on apostrophes; use a `.cjs` file.
+- **ts-morph:** removing or inserting an object's last property drops the trailing comma the registry uses; the merge
+  codemod re-adds it.
+- **Page edits:** use a Node script per file, guarded by markers. More than 10 files needs the codemod skill.
 - **`SimpleChart`:** it ignores `rangemode`, `range: [0, "auto"]` breaks the axis, and it skips NaN.
-- **`ui-check`:** flakes on Chrome startup (loop up to 3 times until `ALL PASS` or `FAILED`); load mode
-  prints `ALL PASS` even with errors (read `console errors/warnings: N`); in Git Bash set `MSYS_NO_PATHCONV=1`;
-  pages without an `<input>` always report "not hydrated".
-- **Local production server:** port 3000 may be another project's dev server (leave it alone). Use
-  `npx next start -p 3100`. Kill it with `netstat -ano | grep ':3100 .*LISTENING'` → `taskkill //PID <pid> //F //T`.
-- **Timings:** `tsc` ≈ 4 min, `check` ≈ 6 min, `build` ≈ 6–10 min, the codemod dry run ≈ 40 s. Run long ones
-  in the background. Don't edit `.ts` files while `check` runs.
+- **`ui-check`:** flakes on Chrome startup (loop up to 3 times until `ALL PASS` or `FAILED`); load mode prints
+  `ALL PASS` even with errors (read `console errors/warnings: N`); in Git Bash set `MSYS_NO_PATHCONV=1`; pages
+  without an `<input>` always report "not hydrated".
+- **Local production server:** use `npx next start -p 3100` (port 3000 may be another project). Kill it with
+  `netstat -ano | grep ':3100 .*LISTENING'` → `taskkill //PID <pid> //F //T`.
+- **Timings:** `tsc` ≈ 4 min, `check` ≈ 6 min, `build` ≈ 6–10 min. Run long ones in the background. Don't edit
+  `.ts` files while `check` runs.
 - **Committing:** `git commit -F msg -- <paths>`. Untracked files need `git add` first.
-- **Deliberately unfixed until Phase 4:** `ion-assisted-deposition`, `point-ahead` (×2),
-  `environmental-stability`, `thermal-evaporation`, and the thin-film items in the ROADMAP.

@@ -1,8 +1,18 @@
+// Merged duplicate calculators: old href → the page that replaced it. tests/redirects.test.ts checks it.
+import calculatorRedirects from './src/registry/redirects.json' with { type: 'json' };
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   typescript: {
     ignoreBuildErrors: false,
+  },
+  async redirects() {
+    return Object.entries(calculatorRedirects).map(([source, destination]) => ({
+      source,
+      destination,
+      permanent: true,
+    }));
   },
   async headers() {
     return [
@@ -35,4 +45,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig;
+export default nextConfig;

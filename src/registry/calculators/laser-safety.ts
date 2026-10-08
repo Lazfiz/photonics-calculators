@@ -41,6 +41,7 @@ export const laserSafety: CalculatorEntry[] = [
     slug: "blue-light-hazard",
     title: "Blue Light Hazard",
     description: "Simplified educational estimate of B(λ)-weighted blue-light irradiance and risk group. Not for safety decisions; use IEC 62471.",
+    keywords: ["UV / Blue Light Hazard"],
   },
   {
     slug: "classification",
@@ -59,7 +60,6 @@ export const laserSafety: CalculatorEntry[] = [
     slug: "corneal-vs-retinal",
     title: "Corneal vs Retinal Limits",
     description: "Compares corneal MPE with equivalent retinal irradiance, showing the eye's focusing gain and which limit governs.",
-    lede: "Compares corneal MPE with equivalent retinal irradiance, showing the eye&apos;s focusing gain and which limit governs.",
   },
   {
     slug: "diffuse-reflection",
@@ -80,6 +80,7 @@ export const laserSafety: CalculatorEntry[] = [
     slug: "exposure-duration",
     title: "Maximum Safe Exposure Duration",
     description: "Calculate the maximum safe exposure time for a CW laser beam based on MPE limits.",
+    keywords: ["Maximum Exposure Duration"],
   },
   {
     slug: "extended-source",
@@ -91,7 +92,6 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Eye-Safe Wavelength",
     description: "Identifies the eye-safe wavelength bands (1400–1500 nm, 1500–1800 nm) where corneal absorption protects the retina. Compare your laser's fluence against spectral MPE.",
     heading: "Eye-Safe Wavelength Region",
-    lede: "Identifies the eye-safe wavelength bands (1400–1500 nm, 1500–1800 nm) where corneal absorption protects the retina. Compare your laser&apos;s fluence against spectral MPE.",
   },
   {
     slug: "fiber-laser-safety",
@@ -136,11 +136,6 @@ export const laserSafety: CalculatorEntry[] = [
     hidden: true,
   },
   {
-    slug: "maximum-exposure",
-    title: "Maximum Exposure Duration",
-    description: "Simplified educational estimate of the longest exposure before the MPE is reached. Not for safety decisions; use ANSI Z136.1.",
-  },
-  {
     slug: "medical-laser-safety",
     title: "Medical Laser Safety Calculator",
     description: "Analyze irradiance, fluence, thermal relaxation, and OD for medical/surgical laser systems.",
@@ -163,7 +158,6 @@ export const laserSafety: CalculatorEntry[] = [
     slug: "multiple-wavelength",
     title: "Multiple Wavelength MPE",
     description: "Calculates additive hazard ratios for multiple laser wavelengths. Sum of ratios must be < 1 for safety per ANSI Z136.1 Section 8.",
-    lede: "Calculates additive hazard ratios for multiple laser wavelengths. Sum of ratios must be &lt; 1 for safety per ANSI Z136.1 Section 8.",
   },
   {
     slug: "nohd",
@@ -232,12 +226,6 @@ export const laserSafety: CalculatorEntry[] = [
     description: "Analyzes hazard when a scanning laser fails to scan, causing the beam to dwell on a single point. IEC 60825-1 scan failure assessment.",
   },
   {
-    slug: "scanned-mpe",
-    title: "Scanned Beam MPE",
-    description: "Simplified educational estimate of dwell time, pulses per point and scanned-beam MPE versus scan frequency. Not for safety decisions; use ANSI Z136.1.",
-    hidden: true,
-  },
-  {
     slug: "scanning-mpe",
     title: "Scanned Beam MPE",
     description: "Calculates the effective MPE for scanning laser beams where dwell time per retinal point is reduced compared to stationary exposure.",
@@ -267,12 +255,6 @@ export const laserSafety: CalculatorEntry[] = [
     slug: "ultrafast-laser-safety",
     title: "Ultrafast Laser Safety Calculator",
     description: "Evaluate single-pulse, average-power, and PRF-corrected MPE for femtosecond/picosecond laser systems.",
-  },
-  {
-    slug: "uv-blue-hazard",
-    title: "UV / Blue Light Hazard",
-    description: "Calculates weighted hazard using the blue light B() and UV S() action spectra per IEC 62471 / ICNIRP guidelines.",
-    lede: "Calculates weighted hazard using the blue light B(λ) and UV S(λ) action spectra per IEC 62471 / ICNIRP guidelines.",
   },
   {
     slug: "uv-exposure",

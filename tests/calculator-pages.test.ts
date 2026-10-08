@@ -24,7 +24,7 @@ function walk(node: ts.Node, visit: (node: ts.Node) => void) {
 }
 
 test("calculator pages have a full set of page.tsx files", () => {
-  assert.ok(pages.length >= 500, `only ${pages.length} pages found`);
+  assert.ok(pages.length >= 450, `only ${pages.length} pages found`);
 });
 
 test("each page.tsx passes its own href to calculatorMetadata and CalculatorShell, and no text", () => {
@@ -69,24 +69,24 @@ test("no page-client.tsx renders its own <h1>", () => {
 });
 
 test("calculatorMetadata: canonical, title and description from the entry", () => {
-  assert.deepEqual(calculatorMetadata("/fiber-optics/bend-loss"), {
-    alternates: { canonical: "https://photonics-calculators.vercel.app/fiber-optics/bend-loss" },
-    title: "Macro Bending Loss Calculator",
-    description: "Estimate macro-bending loss for single-mode fiber using simplified Marcuse formula.",
+  assert.deepEqual(calculatorMetadata("/fiber-optics/chromatic-dispersion"), {
+    alternates: { canonical: "https://photonics-calculators.vercel.app/fiber-optics/chromatic-dispersion" },
+    title: "Chromatic Dispersion Calculator",
+    description: "Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.",
   });
   assert.throws(() => calculatorMetadata("/fiber-optics/no-such-page"));
 });
 
 test("calculatorJsonLd: WebPage and a breadcrumb that matches the page, no FAQ", () => {
-  const calculator = getCalculator("/fiber-optics/bend-loss");
-  const url = `${SITE_URL}/fiber-optics/bend-loss`;
+  const calculator = getCalculator("/fiber-optics/chromatic-dispersion");
+  const url = `${SITE_URL}/fiber-optics/chromatic-dispersion`;
   assert.deepEqual(calculatorJsonLd(calculator), {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "WebPage",
-        name: "Macro Bending Loss Calculator",
-        description: "Estimate macro-bending loss for single-mode fiber using simplified Marcuse formula.",
+        name: "Chromatic Dispersion Calculator",
+        description: "Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.",
         url,
         isPartOf: { "@type": "WebSite", name: "Photonics Calculators", url: SITE_URL },
         about: { "@type": "Thing", name: "Fiber Optics" },
@@ -97,7 +97,7 @@ test("calculatorJsonLd: WebPage and a breadcrumb that matches the page, no FAQ",
           { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
           { "@type": "ListItem", position: 2, name: "Fiber Optics", item: `${SITE_URL}/fiber-optics` },
           // The visible heading, not the <title>.
-          { "@type": "ListItem", position: 3, name: "Macro Bending Loss", item: url },
+          { "@type": "ListItem", position: 3, name: "Chromatic Dispersion (CD)", item: url },
         ],
       },
     ],

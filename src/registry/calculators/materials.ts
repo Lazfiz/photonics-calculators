@@ -57,14 +57,8 @@ export const materials: CalculatorEntry[] = [
   },
   {
     slug: "chromatic-dispersion",
-    title: "Chromatic Dispersion",
-    description: "Material dispersion dn/d from Sellmeier coefficients",
-    lede: "Material dispersion dn/dλ from Sellmeier coefficients",
-  },
-  {
-    slug: "coefficient-thermal-expansion",
-    title: "Coefficient of Thermal Expansion",
-    description: "Thermal expansion of optical materials",
+    title: "Material Dispersion (Sellmeier)",
+    description: "Material dispersion dn/dλ from Sellmeier coefficients.",
   },
   {
     slug: "color-centers",
@@ -104,18 +98,6 @@ export const materials: CalculatorEntry[] = [
     description: "Heavy-metal fluoride glasses for mid-IR fiber optics and low-loss transmission",
   },
   {
-    slug: "fresnel",
-    title: "Fresnel Equations",
-    description: "Interactive Fresnel reflection and transmission at a dielectric interface with sliders, presets, and angle sweeps.",
-    lede: "Reflection and transmission at a dielectric interface with angle sweeps, presets, and polarization split.",
-    related: [
-      { href: "/materials/electro-optic" },
-      { href: "/materials/fluoride-glass" },
-      { href: "/materials/group-index" },
-      { href: "/materials/gvd" },
-    ],
-  },
-  {
     slug: "group-index",
     title: "Group Index (ng)",
     description: "ng = n − dn/d — the effective index seen by optical pulses",
@@ -142,11 +124,7 @@ export const materials: CalculatorEntry[] = [
     title: "Infrared Optical Materials",
     description: "Compare IR transmitting materials. n(T) = n₅ + (dn/dT)(T - 25°C)",
     lede: "Compare IR transmitting materials. n(T) = n₂₅ + (dn/dT)(T - 25°C)",
-  },
-  {
-    slug: "infrared-materials",
-    title: "Infrared Materials",
-    description: "Ge, Si, ZnSe, chalcogenides — refractive index and properties for IR optics",
+    keywords: ["Infrared Materials"],
   },
   {
     slug: "magneto-optic",
@@ -175,6 +153,7 @@ export const materials: CalculatorEntry[] = [
     title: "Optical Glass Catalog",
     description: "Interactive glass map and dispersion curves. Sellmeier: n²() = 1 + Σ Bi²/(² - Ci)",
     lede: "Interactive glass map and dispersion curves. Sellmeier: n²(λ) = 1 + Σ Biλ²/(λ² - Ci)",
+    keywords: ["Schott Glass Catalog"],
   },
   {
     slug: "photoelastic",
@@ -220,12 +199,6 @@ export const materials: CalculatorEntry[] = [
     heading: "Sapphire (Al₂O₃) Properties",
   },
   {
-    slug: "schott-glass",
-    title: "Schott Glass Catalog",
-    description: "Refractive index n() from SCHOTT Sellmeier coefficients",
-    lede: "Refractive index n(λ) from SCHOTT Sellmeier coefficients",
-  },
-  {
     slug: "sellmeier",
     title: "Sellmeier Equation",
     description: "Calculate refractive index from Sellmeier coefficients across wavelength.",
@@ -234,7 +207,7 @@ export const materials: CalculatorEntry[] = [
     priority: 94,
     related: [
       { href: "/materials/sapphire-properties" },
-      { href: "/materials/schott-glass" },
+      { href: "/materials/optical-glass-catalog" },
       { href: "/materials/semiconductor-bandgap" },
       { href: "/materials/thermal-conductivity-optics" },
     ],
@@ -259,6 +232,7 @@ export const materials: CalculatorEntry[] = [
     title: "Thermal Expansion",
     description: "L = T L — dimensional change from temperature",
     lede: "ΔL = α · ΔT · L — dimensional change from temperature",
+    keywords: ["Coefficient of Thermal Expansion"],
   },
   {
     slug: "transparency-range",

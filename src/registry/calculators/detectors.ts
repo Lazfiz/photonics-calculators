@@ -42,14 +42,10 @@ export const detectors: CalculatorEntry[] = [
     description: "Photodiode junction capacitance vs reverse bias, doping profile, and RC bandwidth impact.",
   },
   {
-    slug: "ccd-cmos",
-    title: "CCD vs CMOS Comparison",
-    description: "Compare SNR and dynamic range between CCD and CMOS detectors.",
-  },
-  {
     slug: "ccd-vs-cmos",
     title: "CCD vs CMOS Sensor Comparison",
     description: "Compare sensor architectures — SNR, dynamic range, and performance metrics.",
+    keywords: ["CCD vs CMOS Comparison"],
   },
   {
     slug: "channel-photomultiplier",
@@ -65,11 +61,6 @@ export const detectors: CalculatorEntry[] = [
     slug: "cosmic-rays",
     title: "Cosmic Ray Detection",
     description: "Cosmic ray flux and impact on imaging sensors — estimate hit rates and affected pixels.",
-  },
-  {
-    slug: "crosstalk",
-    title: "Pixel Crosstalk",
-    description: "Optical and electrical crosstalk between adjacent pixels due to charge diffusion.",
   },
   {
     slug: "dark-current",
@@ -97,11 +88,6 @@ export const detectors: CalculatorEntry[] = [
     description: "EM gain — noise analysis, optimal gain, and SNR comparison.",
   },
   {
-    slug: "emccd-gain",
-    title: "EMCCD Gain Calculator",
-    description: "EM gain stages, excess noise (F=√2), and SNR advantage over conventional CCD.",
-  },
-  {
     slug: "excess-noise",
     title: "Excess Noise Factor",
     description: "APD excess noise vs gain — McIntyre model for different semiconductor materials.",
@@ -111,11 +97,6 @@ export const detectors: CalculatorEntry[] = [
     title: "1/f Flicker Noise",
     description: "Flicker noise: S_I(f) = K_f · I^α / f. Noise spectral density falls as 1/f.",
     lede: "Flicker noise: S_i(f) = K_f · I^α / f. Noise spectral density falls as 1/f.",
-  },
-  {
-    slug: "full-well",
-    title: "Full Well Capacity vs SNR",
-    description: "Analyze how full well capacity affects signal-to-noise ratio and dynamic range.",
   },
   {
     slug: "gain-bandwidth",
@@ -143,14 +124,10 @@ export const detectors: CalculatorEntry[] = [
     description: "InₓGa₁₋ₓAs bandgap, cutoff wavelength, QE, dark current, NEP for SWIR detectors.",
   },
   {
-    slug: "intensified-camera",
-    title: "Intensified Camera (ICCD)",
-    description: "Gain chain: photocathode → MCP → phosphor → fiber optic → CCD. Noise and sensitivity analysis.",
-  },
-  {
     slug: "intensified-ccd",
     title: "Intensified CCD (ICCD)",
     description: "Photocathode → MCP → phosphor → CCD gain chain with gating and noise analysis.",
+    keywords: ["Intensified Camera (ICCD)"],
   },
   {
     slug: "linear-mode-avalanche",
@@ -201,11 +178,7 @@ export const detectors: CalculatorEntry[] = [
     slug: "pmt",
     title: "Photomultiplier Tube (PMT)",
     description: "PMT gain, signal current, excess noise factor, and SNR from dynode parameters.",
-  },
-  {
-    slug: "pmt-gain",
-    title: "PMT Gain & SNR",
-    description: "PMT dynode gain, voltage dependence, anode responsivity, and SNR analysis.",
+    keywords: ["PMT Gain & SNR"],
   },
   {
     slug: "quantum-efficiency",
@@ -213,7 +186,6 @@ export const detectors: CalculatorEntry[] = [
     description: "Detector QE explorer: Si, InGaAs, CCD, CMOS presets with fill factor and microlens gain.",
     lede: "Interactive detector QE explorer with detector presets, fill factor, microlens gain, and wavelength response curves.",
     related: [
-      { href: "/detectors/pmt-gain" },
       { href: "/detectors/pmt" },
       { href: "/detectors/readout-noise" },
       { href: "/detectors/reset-noise" },

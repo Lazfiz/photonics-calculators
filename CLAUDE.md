@@ -1,6 +1,6 @@
 # Photonics Calculators
 
-~524 interactive optics/photonics calculators (laser safety, fiber, thin film, imaging,
+~472 interactive optics/photonics calculators (laser safety, fiber, thin film, imaging,
 spectroscopy, detectors, materials, wave optics, polarization, free-space comms).
 Next.js 16 App Router + React 19 + TypeScript (strict) + Tailwind 4, statically prerendered on
 Vercel: https://photonics-calculators.vercel.app. Developed with Claude Code only.
