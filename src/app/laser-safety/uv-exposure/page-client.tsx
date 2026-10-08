@@ -1,61 +1,34 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { actinicUvWeight, uvMaxIrradiance, UV_LIMIT_PERIOD } from "../../../physics/laser-safety/hazard-weighting";
 
 export default function UVExposurePage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 254); // nm (UV-C, mercury line)
   const [exposureTime, setExposureTime] = useURLState("exposureTime", 8); // hours
   const [beamArea, setBeamArea] = useURLState("beamArea", 1); // cm²
 
-  // UV exposure limits (ICNIRP / ACGIH TLV)
-  // For UV (180-400nm):
-  // Actinic UV weighting function S(λ) - peaks at ~270nm
-  // TLV = 3 mJ/cm² (for S(λ)-weighted, 8hr exposure)
-  //
-  // S(λ) simplified:
-  // S(λ) = 1 at 270nm, falls off on both sides
-  // MPE(t) = TLV / t for long exposures (simplified)
-  // MPE = 0.003 J/cm² for unweighted 270nm, 8hr
-
-  const uvWeight = (lambda: number): number => {
-    // Simplified ACGIH actinic UV weighting
-    if (lambda < 180 || lambda > 400) return 0;
-    // Gaussian approximation centered at 270nm
-    return Math.exp(-Math.pow((lambda - 270) / 30, 2));
-  };
-
+  // S(λ) and the limits: src/physics/laser-safety/hazard-weighting.ts (ICNIRP 2004 Table 1). SI inside.
   const results = useMemo(() => {
-    const t = exposureTime * 3600; // seconds
-    const S = uvWeight(wavelength);
-
-    // TLV: 3 mJ/cm² S(λ)-weighted per 8-hour day
-    // Equivalent irradiance limit: 3e-3 / 28800 ≈ 1.04×10⁻⁷ W/cm² at peak
-    const tlv = 3e-3; // J/cm² (weighted)
-    const dailyLimit = tlv; // J/cm² S-weighted
-
-    // Maximum permissible irradiance for given exposure
-    const mpeIrradiance = dailyLimit / t; // W/cm² (S-weighted)
-    // Unweighted: divide by S(λ)
-    const mpeUnweighted = S > 0 ? mpeIrradiance / S : Infinity; // W/cm²
-    const mpeUnweightedJ = mpeUnweighted * t; // J/cm² unweighted for the exposure time
-
-    // How much of the TLV is used in the given time
-    const tlvFraction = t / 28800; // fraction of 8hr day
-
-    return { S, mpeIrradiance, mpeUnweighted, mpeUnweightedJ, tlvFraction, dailyLimit };
+    const t = exposureTime * 3600; // s
+    const S = actinicUvWeight(wavelength * 1e-9);
+    const mpeUnweighted = uvMaxIrradiance(wavelength * 1e-9, t) / 1e4; // W/cm², within both limits
+    const mpeUnweightedJ = mpeUnweighted * t; // J/cm² over the exposure
+    const tlvFraction = t / UV_LIMIT_PERIOD; // fraction of the 8 h period the limits apply to
+    return { S, mpeUnweighted, mpeUnweightedJ, tlvFraction };
   }, [wavelength, exposureTime]);
 
   const chartData = useMemo(() => {
-    const wls = Array.from({ length: 200 }, (_, i) => 180 + (i / 199) * 220);
-    const weights = wls.map(uvWeight);
+    const wls = Array.from({ length: 221 }, (_, i) => 180 + i);
+    const weights = wls.map((w) => actinicUvWeight(w * 1e-9));
     return { wls, weights };
   }, []);
 
-  const fmtSci = (v: number) => v < 1e-4 ? v.toExponential(2) : v < 0.01 ? v.toExponential(2) : v.toFixed(4);
+  const fmtSci = (v: number) => v === Infinity ? "no limit" : v !== 0 && v < 0.01 ? v.toExponential(2) : v.toFixed(4);
 
   return (
     <>
@@ -66,9 +39,9 @@ export default function UVExposurePage() {
         <div className="bg-[#12121a] rounded-xl p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4">Formulas</h2>
           <div className="bg-[#0d0d14] rounded-lg p-4 font-mono text-sm space-y-2">
-            <p>TLV = 3 mJ/cm² (S(λ)-weighted, 8h day)</p>
-            <p>E<sub>MPE</sub>(t) = TLV / t  (S-weighted irradiance)</p>
-            <p>E<sub>unweighted</sub> = E<sub>MPE</sub> / S(λ)</p>
+            <p>Actinic: Σ E<sub>λ</sub> S(λ) Δλ · t ≤ 3 mJ/cm² within 8 h (ICNIRP 2004, S(λ) from its Table 1)</p>
+            <p>E<sub>max</sub>(t) = 3 mJ/cm² / (S(λ) · t)  (single wavelength)</p>
+            <p>UVA eye, 315–400 nm: E · t ≤ 1 J/cm² unweighted within 8 h, so E<sub>max</sub> ≤ 1 J/cm² / t</p>
             <p>S(270 nm) = 1 (peak weighting)</p>
           </div>
         </div>
@@ -92,7 +65,7 @@ export default function UVExposurePage() {
           <h2 className="text-lg font-semibold mb-4">Results</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "S(λ) Weight", value: results.S.toFixed(4), unit: "" },
+              { label: "S(λ) Weight", value: results.S !== 0 && results.S < 0.01 ? results.S.toExponential(2) : results.S.toPrecision(3), unit: "" },
               { label: "MPE Irradiance", value: fmtSci(results.mpeUnweighted), unit: "W/cm²" },
               { label: "MPE Energy", value: fmtSci(results.mpeUnweightedJ), unit: "J/cm²" },
               { label: "Max Power (source)", value: fmtSci(results.mpeUnweighted * beamArea), unit: "W" },
@@ -106,8 +79,8 @@ export default function UVExposurePage() {
           <div className="mt-4 bg-[#0d0d14] rounded-lg p-3">
             <p className="text-sm text-gray-400">
               {results.tlvFraction <= 1
-                ? `✅ Within TLV: ${(results.tlvFraction * 100).toFixed(1)}% of 8-hour daily limit`
-                : `⚠️ Exceeds TLV: ${(results.tlvFraction * 100).toFixed(1)}% of 8-hour daily limit`}
+                ? `The limits apply per 8-hour period; this exposure is ${(results.tlvFraction * 100).toFixed(1)}% of it.`
+                : `⚠️ Longer than the 8-hour period the limits are defined for (${(results.tlvFraction * 100).toFixed(1)}% of it).`}
             </p>
           </div>
         </div>
@@ -119,16 +92,15 @@ export default function UVExposurePage() {
               {
                 x: chartData.wls, y: chartData.weights, type: "scatter", mode: "lines",
                 name: "S(λ)", line: { color: "#a855f7", width: 2 },
-                fill: "tozeroy", fillcolor: "rgba(168,85,247,0.15)",
               },
-              {
-                x: [wavelength], y: [uvWeight(wavelength)], type: "scatter", mode: "markers",
+              ...(results.S > 0 ? [{
+                x: [wavelength], y: [results.S], type: "scatter", mode: "markers",
                 name: "Selected λ", marker: { color: "#ef4444", size: 12 },
-              },
+              }] : []),
             ]}
             layout={{
               xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#1f2937" },
-              yaxis: { title: "S(λ)", color: "#9ca3af", gridcolor: "#1f2937", range: [0, 1.1] },
+              yaxis: { title: "S(λ)", color: "#9ca3af", gridcolor: "#1f2937", type: "log" },
               paper_bgcolor: "transparent", plot_bgcolor: "transparent",
               font: { color: "#9ca3af" }, margin: { t: 30, r: 30, b: 50, l: 50 },
             }}
