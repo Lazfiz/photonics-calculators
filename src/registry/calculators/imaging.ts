@@ -80,7 +80,6 @@ export const imaging: CalculatorEntry[] = [
     slug: "contrast-methods",
     title: "Phase Contrast & DIC Calculator",
     description: "Contrast calculations for phase contrast and differential interference contrast microscopy.",
-    heading: "Phase Contrast &amp; DIC Calculator",
   },
   {
     slug: "deconvolution",

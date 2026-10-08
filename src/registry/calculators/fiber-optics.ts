@@ -43,7 +43,7 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Connector Return Loss Calculator",
     description: "Calculates return loss and insertion loss for fiber connectors with air gaps, lateral offsets, and angular misalignment.",
     heading: "Connector Return Loss",
-    lede: "Calculates return loss (RL) and insertion loss (IL) for fiber connectors with air gaps, lateral offsets, and angular misalignment.\n        Fresnel: r = (n₁ − n₂)/(n₁ + n₂), RL = −20 log₁₀|r|. Physical contact (PC) eliminates air gap.",
+    lede: "Calculates return loss (RL) and insertion loss (IL) for fiber connectors with air gaps, lateral offsets, and angular misalignment. Fresnel: r = (n₁ − n₂)/(n₁ + n₂), RL = −20 log₁₀|r|. Physical contact (PC) eliminates air gap.",
   },
   {
     slug: "connector-return-loss",
@@ -85,7 +85,7 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Dispersion Compensation Calculator",
     description: "Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.",
     heading: "Dispersion Compensation",
-    lede: "Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.\n        Total dispersion: Dtotal = D · L. Pulse broadening: Δτ = Dtotal · Δλ.\n        NRZ bit-rate limit: B ≤ 1/(4Δτ). DCF length: LDCF = D·L / |DDCF|.",
+    lede: "Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements. Total dispersion: Dtotal = D · L. Pulse broadening: Δτ = Dtotal · Δλ. NRZ bit-rate limit: B ≤ 1/(4Δτ). DCF length: LDCF = D·L / |DDCF|.",
   },
   {
     slug: "dispersion-compensation",

@@ -59,7 +59,6 @@ export const laserSafety: CalculatorEntry[] = [
     slug: "corneal-vs-retinal",
     title: "Corneal vs Retinal Limits",
     description: "Compares corneal MPE with equivalent retinal irradiance, showing the eye's focusing gain and which limit governs.",
-    lede: "Compares corneal MPE with equivalent retinal irradiance, showing the eye&apos;s focusing gain and which limit governs.",
   },
   {
     slug: "diffuse-reflection",
@@ -91,7 +90,6 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Eye-Safe Wavelength",
     description: "Identifies the eye-safe wavelength bands (1400–1500 nm, 1500–1800 nm) where corneal absorption protects the retina. Compare your laser's fluence against spectral MPE.",
     heading: "Eye-Safe Wavelength Region",
-    lede: "Identifies the eye-safe wavelength bands (1400–1500 nm, 1500–1800 nm) where corneal absorption protects the retina. Compare your laser&apos;s fluence against spectral MPE.",
   },
   {
     slug: "fiber-laser-safety",
@@ -163,7 +161,6 @@ export const laserSafety: CalculatorEntry[] = [
     slug: "multiple-wavelength",
     title: "Multiple Wavelength MPE",
     description: "Calculates additive hazard ratios for multiple laser wavelengths. Sum of ratios must be < 1 for safety per ANSI Z136.1 Section 8.",
-    lede: "Calculates additive hazard ratios for multiple laser wavelengths. Sum of ratios must be &lt; 1 for safety per ANSI Z136.1 Section 8.",
   },
   {
     slug: "nohd",

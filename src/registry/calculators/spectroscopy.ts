@@ -250,7 +250,6 @@ export const spectroscopy: CalculatorEntry[] = [
     title: "Optical Penetration Depth",
     description: "Calculate optical penetration depth from complex refractive index ñ = n + ik. Includes oblique incidence via Snell's law.",
     heading: "Penetration Depth Calculator",
-    lede: "Calculate optical penetration depth from complex refractive index ñ = n + ik. Includes oblique incidence via Snell&apos;s law.",
   },
   {
     slug: "phase-correction",
