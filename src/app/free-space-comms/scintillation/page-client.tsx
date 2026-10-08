@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { erfc } from "../../../physics/math";
@@ -78,7 +77,7 @@ export default function ScintillationPage() {
   }, [wavelength, distance, cz, apertureDiameter]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Scintillation Index" description="Rytov variance, aperture averaging, and fade probability for atmospheric turbulence.">
+    <>
             
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
@@ -148,7 +147,7 @@ export default function ScintillationPage() {
           />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -42,7 +41,7 @@ export default function EmGainPage() {
   }, [inputSignal, enf2, clockInducedCharge, readNoise]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="EMCCD Gain Calculator" description="EM gain — noise analysis, optimal gain, and SNR comparison.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="EM Gain" value={emGain} onChange={setEmGain} min={1} max={10000} />
         <ValidatedNumberInput label="Input Signal (e⁻)" value={inputSignal} onChange={setInputSignal} min={0.01} step="0.5" />
@@ -61,6 +60,6 @@ export default function EmGainPage() {
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>SNR_EM = S / √(F²(G)·(S + CIC) + (σ_read/G)²)</p><p>F²(G) = F²_∞ − (F²_∞ − 1)/G  (→1 at G=1, →F²_∞ at high G)</p><p>F_∞ ≈ √2 at high gain (Robbins & Hadwen 2003)</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "EM Gain", gridcolor: "#374151", type: "log" }, yaxis: { title: "SNR Ratio (EM / conv)", gridcolor: "#374151" } }} />
-    </CalculatorShell>
+    </>
   );
 }

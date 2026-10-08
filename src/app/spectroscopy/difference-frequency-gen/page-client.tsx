@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -53,7 +52,7 @@ export default function DifferenceFrequencyGenPage() {
   const walkOffDisplacement = crystalLength * walkOff * 1e-3; // mm × mrad → mm (displacement at crystal exit)
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Difference Frequency Generation" description="Generate tunable mid-IR via DFG: ω_idler = ω_pump − ω_signal. Essential for IR spectroscopy sources.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} min={300} max={3000} />
@@ -89,6 +88,6 @@ export default function DifferenceFrequencyGenPage() {
           showlegend: true, legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

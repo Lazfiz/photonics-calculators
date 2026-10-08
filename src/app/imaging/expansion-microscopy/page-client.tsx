@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -41,7 +40,7 @@ export default function ExpansionMicroscopyPage() {
   }, [originalRes, na]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Expansion Microscopy Calculator" description="ExM effective resolution, probe size reduction, and expansion trade-offs.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -85,6 +84,6 @@ export default function ExpansionMicroscopyPage() {
         <h2 className="text-lg font-semibold mb-4">Effective Resolution vs Expansion Factor</h2>
         <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Expansion Factor (×)", gridcolor: "#333" }, yaxis: { title: "Resolution (nm)", gridcolor: "#333" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

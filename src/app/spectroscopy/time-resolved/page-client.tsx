@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -59,7 +58,7 @@ export default function TimeResolvedPage() {
   const spectralWidthNm = spectralWidth * (800e-9) ** 2 / c * 1e9; // approx for 800nm
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Time-Resolved Spectroscopy" description="TCSPC and streak camera fundamentals. IRF convolution, temporal resolution, and decay analysis.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Laser Rep Rate (MHz)" value={laserRepRate} onChange={setLaserRepRate} min={1} max={1000} />
@@ -93,6 +92,6 @@ export default function TimeResolvedPage() {
           showlegend: true, legend: { x: 0.99, y: 0.99, bgcolor: "rgba(0,0,0,0)", xanchor: "right" },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

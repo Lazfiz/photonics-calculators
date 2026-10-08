@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -68,7 +67,7 @@ export default function NonzeroDispersionPage() {
   }, [length, calc]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Non-Zero Dispersion Shifted Fiber (NZ-DSF)" description="Design NZ-DSF fibers (G.655) with optimized dispersion for DWDM systems — balancing dispersion and nonlinearity.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={1300} max={1650} />
@@ -134,6 +133,6 @@ export default function NonzeroDispersionPage() {
           <p>Trade-off: Low D → more FWM; High D → more compensation needed</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -61,7 +60,7 @@ export default function LockinAmplifierPage() {
   }, [noiseDensity, refFreq, timeConstant, filterOrder]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Lock-in Amplifier" description="Lock-in amplifier: demodulation gain, ENBW, noise rejection, and SNR improvement.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Signal Frequency (Hz)" value={signalFreq} onChange={setSignalFreq} min={1} />
         <ValidatedNumberInput label="Reference Frequency (Hz)" value={refFreq} onChange={setRefFreq} min={1} />
@@ -94,6 +93,6 @@ export default function LockinAmplifierPage() {
         yaxis2: { title: "Transfer", gridcolor: "#374151", overlaying: "y", side: "right", range: [-0.1, 1.2] },
         margin: { t: 30, r: 60, b: 50, l: 80 }, legend: { bgcolor: "transparent", font: { size: 10 } },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

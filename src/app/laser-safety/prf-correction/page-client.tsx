@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
@@ -63,7 +62,7 @@ export default function PRFCorrectionPage() {
   };
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="PRF Correction Factor" description="Calculates the repetitive-pulse correction factor Cp for pulsed laser MPE per ANSI Z136.1 §8.">
+    <>
             
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
@@ -108,6 +107,6 @@ export default function PRFCorrectionPage() {
       </div>
 
       <ChartPanel data={chartData} layout={layout} className="w-full h-[400px]" />
-    </CalculatorShell>
+    </>
   );
 }

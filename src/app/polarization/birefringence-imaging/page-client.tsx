@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -121,7 +120,7 @@ export default function BirefringenceImagingPage() {
   }, [delta, compensatorRet, polRad, polarizerAngleDeg]);
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Birefringence Imaging" description="Simulate quantitative birefringence imaging with polarizer/analyzer rotation and compensators. Visualize stress-induced birefringence patterns.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">I = sin²(α-β)·cos²(δ/2) + sin²(δ/2)·cos²(2φ+α-β)</p>
@@ -212,6 +211,6 @@ export default function BirefringenceImagingPage() {
           margin: { t: 20, r: 20, b: 50, l: 50 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

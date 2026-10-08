@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -90,7 +89,7 @@ export default function VNumberCalculator() {
   };
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber V-Number" description={"Normalized frequency V = 2πa·NA/λ of a step-index fiber, NA from core and cladding indices, the single-mode check (V < 2.405) and the mode count."}>
+    <>
 
                 
         <div className="grid md:grid-cols-2 gap-8">
@@ -191,6 +190,6 @@ export default function VNumberCalculator() {
            
           />
         </div>
-    </CalculatorShell>
+    </>
   );
 }

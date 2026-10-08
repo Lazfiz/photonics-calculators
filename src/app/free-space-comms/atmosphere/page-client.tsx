@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -64,7 +63,7 @@ export default function AtmospherePage() {
   }, [results.totalCoeff]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Atmospheric Transmission" description="Molecular and aerosol extinction for free-space optical links.">
+    <>
             
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
@@ -128,7 +127,7 @@ export default function AtmospherePage() {
           />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
@@ -46,7 +45,7 @@ export default function UVHazardPage() {
   }, [wavelength]);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="UV Hazard Calculator" description="UV hazard assessment using ACGIH actinic UV weighting function S(λ). Covers 200–400 nm spectral region.">
+    <>
             
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
@@ -83,6 +82,6 @@ export default function UVHazardPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

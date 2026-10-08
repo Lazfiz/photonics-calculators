@@ -21,15 +21,6 @@ function parse(file: string) {
   return ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.ESNext, true, ts.ScriptKind.TSX);
 }
 
-function walk(node: ts.Node, visit: (node: ts.Node) => void) {
-  visit(node);
-  node.forEachChild((child) => walk(child, visit));
-}
-
-function literal(node: ts.Node | undefined): string | undefined {
-  return node && (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) ? node.text : undefined;
-}
-
 test("the registry has exactly one entry per calculator page", () => {
   const onDisk = pageFiles.map((file) => "/" + file.split("/").slice(2, 4).join("/")).sort();
   assert.deepEqual(calculators.map((c) => c.href).sort(), onDisk);
@@ -52,44 +43,6 @@ test("entries are complete and their overrides aren't redundant", () => {
     assert.notEqual(c.lede, c.description, `${c.href}: lede equals description`);
     for (const link of c.related ?? []) assert.ok(findCalculator(link.href), `${c.href}: related ${link.href}`);
   }
-});
-
-// Until stage 2b generates them, each page repeats its registry text: metadata in page.tsx and the
-// CalculatorShell heading in page-client.tsx. They must agree with the registry.
-test("each page's metadata and heading match its registry entry", () => {
-  const mismatches: string[] = [];
-  for (const file of pageFiles) {
-    const c = findCalculator("/" + file.split("/").slice(2, 4).join("/"))!;
-    walk(parse(file), (node) => {
-      if (
-        ts.isVariableDeclaration(node) &&
-        node.name.getText() === "metadata" &&
-        node.initializer &&
-        ts.isObjectLiteralExpression(node.initializer)
-      ) {
-        for (const p of node.initializer.properties) {
-          if (!ts.isPropertyAssignment(p)) continue;
-          const name = p.name.getText();
-          if (name === "title" && literal(p.initializer) !== c.title) mismatches.push(`${file}: title`);
-          if (name === "description" && literal(p.initializer) !== c.description) mismatches.push(`${file}: description`);
-        }
-      }
-    });
-    const client = file.replace(/page\.tsx$/, "page-client.tsx");
-    if (!existsSync(client)) continue;
-    walk(parse(client), (node) => {
-      if (!(ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node))) return;
-      if (node.tagName.getText() !== "CalculatorShell") return;
-      for (const a of node.attributes.properties) {
-        if (!ts.isJsxAttribute(a) || !a.initializer || !ts.isStringLiteral(a.initializer)) continue;
-        const name = a.name.getText();
-        if (name === "title" && a.initializer.text !== (c.heading ?? c.title)) mismatches.push(`${client}: title`);
-        if (name === "description" && a.initializer.text !== (c.lede ?? c.description))
-          mismatches.push(`${client}: description`);
-      }
-    });
-  }
-  assert.deepEqual(mismatches, []);
 });
 
 test("the search index has every visible page and category, and nothing hidden", () => {
@@ -120,9 +73,7 @@ test("the home page counts every calculator", () => {
 });
 
 // The registry is ~200 KB of strings. It must stay out of client bundles: no "use client" module may
-// import it, directly or through other modules. related-calculators is the one known exception until
-// stage 2b passes related links as server props.
-const CLIENT_ALLOWED = new Set(["src/lib/related-calculators.ts"]);
+// import it, directly or through other modules. Pages get it through the server CalculatorShell.
 
 function resolveImport(from: string, spec: string): string | undefined {
   let base: string;
@@ -164,7 +115,7 @@ test("no client component pulls the registry into its bundle", () => {
     reaches.set(file, null);
     let result: string[] | null = null;
     if (file.startsWith("src/registry/")) result = [file];
-    else if (!CLIENT_ALLOWED.has(file)) {
+    else {
       for (const dep of valueImports(file)) {
         const sub = chain(dep);
         if (sub) {

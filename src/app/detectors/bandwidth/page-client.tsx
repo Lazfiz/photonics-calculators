@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -39,7 +38,7 @@ export default function BandwidthPage() {
   const bw3dB = 1 / (2 * Math.PI * feedbackR * capacitance);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Bandwidth vs Noise Trade-off" description="Noise increases with √Δf. Wider bandwidth = faster response but more noise.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Measurement Bandwidth (Hz)" value={bandwidth} onChange={setBandwidth} min={1} />
         <ValidatedNumberInput label="Junction Capacitance (pF)" value={capacitancePF} onChange={setCapacitancePF} min={0.1} />
@@ -60,6 +59,6 @@ export default function BandwidthPage() {
         <p>RC bandwidth: f_3dB = 1/(2π·Rf·C) — set by feedback R and detector capacitance</p>
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Bandwidth (Hz)", type: "log", gridcolor: "#374151" }, yaxis: { title: "Output Noise Voltage (V)", type: "log", gridcolor: "#374151" } }} />
-    </CalculatorShell>
+    </>
   );
 }

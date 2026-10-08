@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -45,7 +44,7 @@ export default function AdaptiveOpticsPage() {
   }, [rmsWavefront]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Adaptive Optics Calculator" description="AO correction performance, Strehl ratio, and deformable mirror requirements.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -92,6 +91,6 @@ export default function AdaptiveOpticsPage() {
           legend: { font: { size: 11 } }, margin: { l: 60, r: 60, t: 20, b: 60 }
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

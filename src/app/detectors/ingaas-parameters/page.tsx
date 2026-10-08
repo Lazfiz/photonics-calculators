@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/ingaas-parameters' },
-    title: 'InGaAs Detector Parameters',
-    description: 'InₓGa₁₋ₓAs bandgap, cutoff wavelength, QE, dark current, NEP for SWIR detectors.'
-};
+const href = "/detectors/ingaas-parameters";
 
-const jsonLd = generateCalculatorJsonLd(
-  'InGaAs Detector Parameters',
-  'InₓGa₁₋ₓAs bandgap, cutoff wavelength, QE, dark current, NEP for SWIR detectors.',
-  'https://photonics-calculators.vercel.app/detectors/ingaas-parameters',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href} maxWidthClassName="max-w-5xl">
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

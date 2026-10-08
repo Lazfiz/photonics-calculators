@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/ellipsometry-measurement' },
-    title: 'Ellipsometry Measurement',
-  description: 'Invert ellipsometry data (Psi, Delta) to the pseudo-dielectric function and pseudo-refractive index of a substrate.'
-};
+const href = "/thin-film/ellipsometry-measurement";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Ellipsometry Measurement',
-  'Invert ellipsometry data (Psi, Delta) to the pseudo-dielectric function and pseudo-refractive index of a substrate.',
-  'https://photonics-calculators.vercel.app/thin-film/ellipsometry-measurement',
-  { category: 'Thin Film' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

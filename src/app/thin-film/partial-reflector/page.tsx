@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/partial-reflector' },
-      title: 'Partial Reflector Design',
-  description: 'Partial reflectors (output couplers, etalon mirrors) provide controlled reflectance between',
-};
+const href = "/thin-film/partial-reflector";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Partial Reflector Design',
-  'Partial reflectors (output couplers, etalon mirrors) provide controlled reflectance between',
-  'https://photonics-calculators.vercel.app/thin-film/partial-reflector',
-  { category: 'Thin Film' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

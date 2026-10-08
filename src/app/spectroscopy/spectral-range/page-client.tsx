@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -76,7 +75,7 @@ export default function SpectralRangePage() {
   const pixelResolution = spectralRange / detectorPixels;
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Range Calculator" description="Spectral coverage, resolution, and dispersion for a grating-based spectrometer.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Groove Density (l/mm)" value={grooveDensity} onChange={setGrooveDensity} min={50} />
@@ -127,6 +126,6 @@ export default function SpectralRangePage() {
         yaxis: { title: "Dispersion (nm/mm)", gridcolor: "#374151" },
         height: 300, margin: { t: 20, b: 40 },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

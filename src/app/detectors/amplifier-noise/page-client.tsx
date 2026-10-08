@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -37,7 +36,7 @@ export default function AmplifierNoisePage() {
   }, [en, gain, signal]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Amplifier Noise" description="Input-referred noise sets the detection floor. σ_amp = e_n.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Input noise eₙ (e⁻ rms)" value={en} onChange={setEn} step="0.5" min={0.1} />
         <ValidatedNumberInput label="Conversion gain (e⁻/DN)" value={gain} onChange={setGain} step="0.1" min={0.1} />
@@ -56,6 +55,6 @@ export default function AmplifierNoisePage() {
         <p>S_min = (9 + √(81 + 36·eₙ²)) / 2 — signal at which total SNR = 3</p>
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Input noise eₙ (e⁻ rms)", gridcolor: "#374151" }, yaxis: { title: "Noise (DN)", gridcolor: "#374151" }, yaxis2: { title: "SNR", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
-    </CalculatorShell>
+    </>
   );
 }

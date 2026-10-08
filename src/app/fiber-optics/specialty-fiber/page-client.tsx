@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -65,7 +64,7 @@ export default function SpecialtyFiberPage() {
   }, [fiber]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Specialty Fiber Types" description="Compare properties of specialty optical fibers: PM, PCF, rare-earth doped, chalcogenide, and fluoride.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -134,6 +133,6 @@ export default function SpecialtyFiberPage() {
           <p>P_total = P₀ · 10<sup>-αL/10</sup></p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

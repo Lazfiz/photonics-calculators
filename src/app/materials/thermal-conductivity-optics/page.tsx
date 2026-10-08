@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/thermal-conductivity-optics' },
-    title: 'Thermal Conductivity for Optics',
-  description: 'Heat transport in optical substrates',
-};
+const href = "/materials/thermal-conductivity-optics";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Thermal Conductivity for Optics',
-  'Heat transport in optical substrates',
-  'https://photonics-calculators.vercel.app/materials/thermal-conductivity-optics',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -88,7 +87,7 @@ export default function HermiteGaussianPage() {
   const orthogonality = m === n ? 1 : 0;
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Hermite-Gaussian Modes (TEMmn)" description="Rectangular higher-order Gaussian beam modes.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
@@ -137,6 +136,6 @@ export default function HermiteGaussianPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

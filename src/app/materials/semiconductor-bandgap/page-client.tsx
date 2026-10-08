@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import { hc_eV_nm } from "../../../physics/constants";
@@ -64,7 +63,7 @@ export default function SemiconductorBandgapPage() {
   const visRegion = useMemo(() => [{ x: [380, 750, 750, 380], y: [0, 0, 5, 5], type: "scatter" as const, fill: "toself" as const, fillcolor: "rgba(255,255,255,0.05)", line: { color: "transparent" }, showlegend: false, hoverinfo: "skip" as const }], []);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Semiconductor Bandgap" description="Bandgap energy and absorption edge vs temperature using the Varshni equation. Direct vs indirect gap materials.">
+    <>
             
       <div className="mb-6 flex flex-wrap gap-2">
         {Object.entries(SEMICONDUCTORS).map(([key, s]) => (
@@ -101,6 +100,6 @@ export default function SemiconductorBandgapPage() {
         <p className="font-mono bg-gray-800 p-2 rounded mb-2">E<sub>g</sub>(T) = E<sub>g0</sub> − αT² / (T + β)</p>
         <p className="font-mono bg-gray-800 p-2 rounded">λ<sub>edge</sub> = hc / E<sub>g</sub> = 1239.84 / E<sub>g</sub>(eV) nm</p>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

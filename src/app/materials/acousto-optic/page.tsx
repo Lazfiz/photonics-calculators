@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/acousto-optic' },
-    title: 'Acousto-Optic Materials',
-  description: 'Acousto-optic figure of merit, Bragg angle, and deflection calculations',
-};
+const href = "/materials/acousto-optic";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Acousto-Optic Materials',
-  'Acousto-optic figure of merit, Bragg angle, and deflection calculations',
-  'https://photonics-calculators.vercel.app/materials/acousto-optic',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

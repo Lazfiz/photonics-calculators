@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -46,7 +45,7 @@ export default function StressPage() {
   const curvature = 1 / R;
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Coating Stress & Curvature" description="Stoney's equation: σ = E·ts²/(6·R·tf). Relates film stress to substrate curvature.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Film Stress (MPa, compressive = negative)" value={filmStress} onChange={setFilmStress} />
@@ -69,6 +68,6 @@ export default function StressPage() {
         yaxis2: { title: "Curvature (m⁻¹)", gridcolor: "#374151", anchor: "x2" },
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true, showlegend: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

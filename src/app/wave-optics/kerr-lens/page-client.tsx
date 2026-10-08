@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -52,7 +51,7 @@ export default function KerrLensPage() {
   };
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Kerr Lens Mode Locking" description="Self-focusing and Kerr-lens effect in nonlinear media for ultrashort pulse generation.">
+    <>
             
       {/* Formulas */}
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
@@ -93,6 +92,6 @@ export default function KerrLensPage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-8">
         <ChartPanel data={chartData} layout={plotLayout} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

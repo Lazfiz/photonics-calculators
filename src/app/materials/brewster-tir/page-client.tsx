@@ -1,12 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
 const interfacePresets = [
   { label: "Air → Glass", n1: 1.0, n2: 1.5 },
@@ -14,7 +11,6 @@ const interfacePresets = [
   { label: "Air → Water", n1: 1.0, n2: 1.33 },
   { label: "Silica → Air", n1: 1.45, n2: 1.0 },
 ];
-const currentHref = "/materials/brewster-tir";
 
 export default function BrewsterTIRPage() {
   const [n1, setN1] = useURLState("n1", 1.0);
@@ -61,7 +57,7 @@ export default function BrewsterTIRPage() {
   }, [n1, n2, brewster, critical]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Brewster Angle & Total Internal Reflection" description="Interactive Brewster-angle and critical-angle explorer with common interface presets.">
+    <>
       <div className="mb-5 flex flex-wrap gap-2">
         {interfacePresets.map((preset) => (
           <button key={preset.label} onClick={() => { setN1(preset.n1); setN2(preset.n2); }} className={`rounded-full border px-3 py-1 text-sm transition ${n1 === preset.n1 && n2 === preset.n2 ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>
@@ -90,8 +86,6 @@ export default function BrewsterTIRPage() {
         xaxis: { visible: false, range: [-3, 8] }, yaxis: { visible: false, range: [-4, 4], scaleanchor: "x", scaleratio: 1 },
         margin: { t: 10, r: 10, b: 10, l: 10 }, showlegend: true, legend: { x: 0.02, y: 0.98, bgcolor: "rgba(0,0,0,0)" },
       }} />
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/bpsk-qpsk' },
-    title: 'BPSK and QPSK Error Rates',
-  description: 'Bit and symbol error rates of BPSK, Gray-coded QPSK and OQPSK versus Eb/N0, with spectral efficiency, bandwidth, required receive power and margin.'
-};
+const href = "/free-space-comms/bpsk-qpsk";
 
-const jsonLd = generateCalculatorJsonLd(
-  'BPSK and QPSK Error Rates',
-  'Bit and symbol error rates of BPSK, Gray-coded QPSK and OQPSK versus Eb/N0, with spectral efficiency, bandwidth, required receive power and margin.',
-  'https://photonics-calculators.vercel.app/free-space-comms/bpsk-qpsk',
-  { category: 'Free Space Comms' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href} maxWidthClassName="max-w-5xl">
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

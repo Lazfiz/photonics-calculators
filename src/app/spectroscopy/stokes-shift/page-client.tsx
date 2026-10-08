@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -32,7 +31,7 @@ export default function StokesShiftPage() {
   }, [absPeak, emPeak, absFWHM, emFWHM]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Stokes Shift Calculator" description="Δν̃ = ν̃_abs − ν̃_em — energy difference between absorption and emission maxima.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Absorption Peak (nm)" value={absPeak} onChange={setAbsPeak} min={200} max={1500} />
@@ -72,6 +71,6 @@ export default function StokesShiftPage() {
           margin: { t: 40 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

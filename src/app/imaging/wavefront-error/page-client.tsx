@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -40,7 +39,7 @@ export default function WavefrontErrorPage() {
   }, [rmsError, numZernike]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Wavefront Error Analysis" description="Analyze wavefront error in waves RMS, compute Strehl ratio, and check diffraction-limited condition.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Reference λ (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={300} max={2000} />
@@ -100,6 +99,6 @@ export default function WavefrontErrorPage() {
           }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

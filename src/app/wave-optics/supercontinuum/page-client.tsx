@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -77,7 +76,7 @@ export default function SupercontinuumPage() {
   };
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Supercontinuum Generation" description="Broadband SC generation in photonic crystal fibers via soliton fission, SPM, and dispersive wave generation.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">N</span> = √(P<sub>peak</sub> / P<sub>0</sub>) — soliton number</p>
@@ -142,6 +141,6 @@ export default function SupercontinuumPage() {
           <ChartPanel data={spectrumData} layout={spectrumLayout} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

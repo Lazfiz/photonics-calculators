@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -54,7 +53,7 @@ export default function StimulatedRamanPage() {
   const maxStokesGain = stokesPower * (Math.exp(ramanGainCoeff * pumpPower * 1e-3 * pathLength) - 1);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Stimulated Raman Scattering (SRS)" description="Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Raman Shift (cm⁻¹)" value={ramanShift} onChange={setRamanShift} min={100} max={4500} />
@@ -127,6 +126,6 @@ export default function StimulatedRamanPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

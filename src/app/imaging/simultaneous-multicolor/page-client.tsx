@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -93,7 +92,7 @@ export default function SimultaneousMulticolorPage() {
   };
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Simultaneous Multicolor Imaging" description="Calculate spectral separation, crosstalk, timing budgets, and SNR for multi-channel fluorescence imaging.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -189,6 +188,6 @@ export default function SimultaneousMulticolorPage() {
           <p><span className="text-blue-400">Crosstalk:</span> CT(i,j) = exp(−Δλ²/(2(σᵢ²+σⱼ²))) × CT_base</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/photonic-crystal' },
-    title: 'Photonic Crystal Fiber',
-  description: 'Approximate NA, V-number, mode area, dispersion and confinement loss of an index-guiding photonic crystal fiber from hole pitch Λ and diameter d.'
-};
+const href = "/fiber-optics/photonic-crystal";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Photonic Crystal Fiber',
-  'Approximate NA, V-number, mode area, dispersion and confinement loss of an index-guiding photonic crystal fiber from hole pitch Λ and diameter d.',
-  'https://photonics-calculators.vercel.app/fiber-optics/photonic-crystal',
-  { category: 'Fiber Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

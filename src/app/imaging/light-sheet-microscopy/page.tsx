@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/light-sheet-microscopy' },
-    title: 'Light Sheet Microscopy Design Calculator',
-  description: 'Full light sheet microscope design parameters: sheet geometry, tilt geometry, and volume imaging.'
-};
+const href = "/imaging/light-sheet-microscopy";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Light Sheet Microscopy Design Calculator',
-  'Full light sheet microscope design parameters: sheet geometry, tilt geometry, and volume imaging.',
-  'https://photonics-calculators.vercel.app/imaging/light-sheet-microscopy',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

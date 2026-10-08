@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -28,7 +27,7 @@ export default function PhotonTransferPage() {
   const dynamicRange = 20 * Math.log10(wellCapacity / readNoise); // dB
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Photon Transfer Curve (PTC)" description="Photon transfer curve: noise vs signal, variance analysis, conversion gain, and dynamic range.">
+    <>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Conversion gain K (e⁻/DN)" value={gain} onChange={setGain} step="0.1" />
         <ValidatedNumberInput label="Read noise (e⁻)" value={readNoise} onChange={setReadNoise} step="1" />
@@ -49,6 +48,6 @@ export default function PhotonTransferPage() {
         yaxis2: { title: "Variance (DN²)", gridcolor: "#374151", overlaying: "y", side: "right", type: "log" },
         margin: { t: 20, b: 40, l: 70, r: 20 }, autosize: true, showlegend: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/transient-absorption' },
-    title: 'Transient Absorption Spectroscopy',
-  description: 'A spectra vs delay time. Decompose into GSB, ESA, and SE contributions across the probe range.'
-};
+const href = "/spectroscopy/transient-absorption";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Transient Absorption Spectroscopy',
-  'A spectra vs delay time. Decompose into GSB, ESA, and SE contributions across the probe range.',
-  'https://photonics-calculators.vercel.app/spectroscopy/transient-absorption',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

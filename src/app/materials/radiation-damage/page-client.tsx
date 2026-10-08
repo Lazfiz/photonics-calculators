@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -77,7 +76,7 @@ export default function RadiationDamagePage() {
   }, [selected, thickness]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Radiation Damage Effects" description="Radiation-induced absorption and transmission loss in optical materials">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono">
         <p>α_ind = α₁M · Dose &nbsp;|&nbsp; T = exp(-α·d) &nbsp;|&nbsp; Recovery: α(t) = α₀·exp(-t/τ) + α_perm</p>
@@ -142,6 +141,6 @@ export default function RadiationDamagePage() {
        
        
       />
-    </CalculatorShell>
+    </>
   );
 }

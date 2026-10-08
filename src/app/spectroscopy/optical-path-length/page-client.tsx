@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -48,7 +47,7 @@ export default function OpticalPathLengthPage() {
   }, [physicalLength, refractiveIndex, numPasses, angleRad, sweepParam]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Optical Path Length Calculator" description="OPL = n·d·N/cos(θ_internal). External angle converted via Snell's law.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Physical Length (cm)" value={physicalLength} onChange={setPhysicalLength} min={0} />
@@ -95,6 +94,6 @@ export default function OpticalPathLengthPage() {
           margin: { t: 30 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

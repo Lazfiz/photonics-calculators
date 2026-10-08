@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -84,7 +83,7 @@ export default function DenoisingAlgorithmsPage() {
   }, []);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Denoising Algorithms" description="Compare denoising methods: noise reduction, detail preservation, and SNR improvement tradeoffs.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -191,6 +190,6 @@ export default function DenoisingAlgorithmsPage() {
           <p><span className="text-blue-400">SSIM:</span> SSIM(x,y) = (2µ_xµ_y + c₁)(2σ_xy + c₂) / (µ_x² + µ_y² + c₁)(σ_x² + σ_y² + c₂)</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 
@@ -41,7 +40,7 @@ export default function AbbeNumberPage() {
   }, [material, calc]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Abbe Number (Vd)" description="Calculate Abbe number from Sellmeier coefficients. Vd = (nD - 1)/(nF - nC).">
+    <>
             
       <div className="mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -80,6 +79,6 @@ export default function AbbeNumberPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/uniformity' },
-    title: 'Photoresponse Non-Uniformity Calculator',
-    description: 'PRNU, DSNU, and spatial uniformity analysis for image sensors.'
-};
+const href = "/detectors/uniformity";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Photoresponse Non-Uniformity Calculator',
-  'PRNU, DSNU, and spatial uniformity analysis for image sensors.',
-  'https://photonics-calculators.vercel.app/detectors/uniformity',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

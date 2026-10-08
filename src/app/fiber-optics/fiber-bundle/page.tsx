@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/fiber-bundle' },
-    title: 'Fiber Bundle Design Calculator',
-    description: 'Calculate bundle geometry, fill factor, étendue, and coupling efficiency for fiber optic bundles.'
-};
+const href = "/fiber-optics/fiber-bundle";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Fiber Bundle Design Calculator',
-  'Calculate bundle geometry, fill factor, étendue, and coupling efficiency for fiber optic bundles.',
-  'https://photonics-calculators.vercel.app/fiber-optics/fiber-bundle',
-  { category: 'Fiber Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

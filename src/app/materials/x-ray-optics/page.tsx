@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/x-ray-optics' },
-      title: 'X-ray Optics Materials',
-  description: 'X-ray refractive index: n = 1 - - i. For hard X-rays, , ∝ ² ∝ 1/E².',
-};
+const href = "/materials/x-ray-optics";
 
-const jsonLd = generateCalculatorJsonLd(
-  'X-ray Optics Materials',
-  'X-ray refractive index: n = 1 - - i. For hard X-rays, , ∝ ² ∝ 1/E².',
-  'https://photonics-calculators.vercel.app/materials/x-ray-optics',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

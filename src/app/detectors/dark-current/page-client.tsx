@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -31,7 +30,7 @@ export default function DarkCurrentPage() {
   const dcAtMax = darkCurrentAtT(tempMax);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Dark Current vs Temperature" description="Silicon detector dark current — exponential doubling model. I_dark(T) = I₀ · 2^((T−T₀)/T_d).">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Dark Current at 25°C (e⁻/pix/s)" value={darkCurrent25} onChange={setDarkCurrent25} min={0.001} step="0.01" />
         <ValidatedNumberInput label="Doubling Temperature (°C)" value={tempFactor} onChange={setTempFactor} min={3} max={12} step="0.5" />
@@ -46,6 +45,6 @@ export default function DarkCurrentPage() {
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>I_dark(T) = I₀ · 2^((T − T₀) / T_d)</p><p>σ_dark = √(I_dark · t_exp)</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Temperature (°C)", gridcolor: "#374151" }, yaxis: { title: "Dark Current (e⁻/pix/s)", gridcolor: "#374151", type: "log" }, yaxis2: { title: "Electrons (e⁻)", gridcolor: "#374151", overlaying: "y", side: "right", type: "log" } }} />
-    </CalculatorShell>
+    </>
   );
 }

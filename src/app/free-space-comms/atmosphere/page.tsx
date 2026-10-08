@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/atmosphere' },
-    title: 'Atmospheric Transmission',
-  description: 'Molecular and aerosol extinction for free-space optical links.'
-};
+const href = "/free-space-comms/atmosphere";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Atmospheric Transmission',
-  'Molecular and aerosol extinction for free-space optical links.',
-  'https://photonics-calculators.vercel.app/free-space-comms/atmosphere',
-  { category: 'Free Space Comms' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

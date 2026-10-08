@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/streak-camera' },
-    title: 'Streak Camera Calculator',
-    description: 'Temporal resolution, sweep speed, time window, and spatial resolution for streak cameras.'
-};
+const href = "/detectors/streak-camera";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Streak Camera Calculator',
-  'Temporal resolution, sweep speed, time window, and spatial resolution for streak cameras.',
-  'https://photonics-calculators.vercel.app/detectors/streak-camera',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

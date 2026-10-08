@@ -1,12 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
 interface FresnelResult {
   Rs: number;
@@ -35,7 +32,6 @@ const interfacePresets = [
   { label: "Air → Water", n1: 1.0, n2: 1.33 },
   { label: "Silica → Air", n1: 1.45, n2: 1.0 },
 ];
-const currentHref = "/materials/fresnel";
 
 export default function FresnelPage() {
   const [n1, setN1] = useURLState("n1", 1.0);
@@ -56,7 +52,7 @@ export default function FresnelPage() {
   }, [n1, n2, angle, result.R_avg]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Fresnel Equations" description="Reflection and transmission at a dielectric interface with angle sweeps, presets, and polarization split.">
+    <>
       <div className="mb-5 flex flex-wrap gap-2">
         {interfacePresets.map((preset) => (
           <button
@@ -95,8 +91,6 @@ export default function FresnelPage() {
       </div>
 
       <SimpleLineChart title="Reflectance vs angle" xLabel="Angle of incidence (°)" yLabel="Reflectance (%)" series={series} />
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -110,7 +109,7 @@ export default function ElectroOpticPage() {
   }, []);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Electro-Optic Coefficients" description="Pockels effect materials for modulators, Q-switches, and phase shifters">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
         <div>
@@ -188,6 +187,6 @@ export default function ElectroOpticPage() {
        
        
       />
-    </CalculatorShell>
+    </>
   );
 }

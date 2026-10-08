@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
@@ -26,7 +25,7 @@ export default function PeakPowerPage() {
   }, [avgPower, dutyCycle]);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Peak Power Calculator" description="Convert average power to peak power for pulsed lasers. Essential for assessing single-pulse hazards.">
+    <>
             
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
@@ -62,6 +61,6 @@ export default function PeakPowerPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

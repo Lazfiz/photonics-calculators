@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/exposure-duration' },
-    title: 'Maximum Safe Exposure Duration',
-  description: 'Calculate the maximum safe exposure time for a CW laser beam based on MPE limits.'
-};
+const href = "/laser-safety/exposure-duration";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Maximum Safe Exposure Duration',
-  'Calculate the maximum safe exposure time for a CW laser beam based on MPE limits.',
-  'https://photonics-calculators.vercel.app/laser-safety/exposure-duration',
-  { category: 'Laser Safety' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

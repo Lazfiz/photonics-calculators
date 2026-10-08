@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/em-gain' },
-    title: 'EMCCD Gain Calculator',
-    description: 'EM gain — noise analysis, optimal gain, and SNR comparison.'
-};
+const href = "/detectors/em-gain";
 
-const jsonLd = generateCalculatorJsonLd(
-  'EMCCD Gain Calculator',
-  'EM gain — noise analysis, optimal gain, and SNR comparison.',
-  'https://photonics-calculators.vercel.app/detectors/em-gain',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

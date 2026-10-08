@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -83,7 +82,7 @@ export default function MicroscopePolarizerPage() {
   }, [na, extinctionRatio]);
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Microscope Polarizer Calculator" description="Analyze polarization effects in microscopy: extinction, retardance sensitivity, NA degradation, and Michel-Lévy colors.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">T = cos²(θ) [Malus&apos;s law], T<sub>cross</sub> = 1/ER</p>
@@ -161,6 +160,6 @@ export default function MicroscopePolarizerPage() {
           legend: { font: { color: "#9ca3af" } },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

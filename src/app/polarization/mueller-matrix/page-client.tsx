@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 
@@ -118,7 +117,7 @@ export default function MuellerMatrixPage() {
   }, [inputStokes, outputStokes]);
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Mueller Matrix Calculator" description="Chain optical elements using Mueller matrices and compute output Stokes vector.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">S_out = M_n · M_(n-1) · … · M₁ · S_in</p>
@@ -192,6 +191,6 @@ export default function MuellerMatrixPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

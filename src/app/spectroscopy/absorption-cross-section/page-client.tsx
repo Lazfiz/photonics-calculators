@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -29,7 +28,7 @@ export default function AbsorptionCrossSectionPage() {
   }, [extinctionCoeff, sigma]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Absorption Cross-Section Calculator" description="σ = ε · 1000 · ln(10) / N_A — convert molar extinction coefficient to molecular cross-section.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="ε (L·mol⁻¹·cm⁻¹)" value={extinctionCoeff} onChange={setExtinctionCoeff} min={0} />
@@ -69,6 +68,6 @@ export default function AbsorptionCrossSectionPage() {
           margin: { t: 30 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

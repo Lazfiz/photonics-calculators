@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -61,7 +60,7 @@ export default function WavelengthSelectionPage() {
   }, [calc]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="FSO Wavelength Selection" description="Compare 850, 1064, 1310 and 1550 nm for an FSO link by eye safety, atmospheric loss, range and data rate, and get a recommended wavelength." maxWidthClassName="max-w-5xl">
+    <>
       
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
                 <p className="text-gray-500 mt-1">850 nm (VCSEL), 1064 nm, 1310 nm, 1550 nm (eye-safe), 10 μm (CO₂ laser)</p>
@@ -114,6 +113,6 @@ export default function WavelengthSelectionPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

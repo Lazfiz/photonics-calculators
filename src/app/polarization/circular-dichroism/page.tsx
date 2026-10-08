@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/polarization/circular-dichroism' },
-    title: 'Circular Dichroism',
-  description: 'Calculate CD parameters: A, , molar ellipticity, and g-factor from absorbance of left and right circularly polarized light.'
-};
+const href = "/polarization/circular-dichroism";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Circular Dichroism',
-  'Calculate CD parameters: A, , molar ellipticity, and g-factor from absorbance of left and right circularly polarized light.',
-  'https://photonics-calculators.vercel.app/polarization/circular-dichroism',
-  { category: 'Polarization' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

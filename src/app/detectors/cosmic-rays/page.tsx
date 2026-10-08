@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/cosmic-rays' },
-    title: 'Cosmic Ray Detection',
-    description: 'Cosmic ray flux and impact on imaging sensors — estimate hit rates and affected pixels.'
-};
+const href = "/detectors/cosmic-rays";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Cosmic Ray Detection',
-  'Cosmic ray flux and impact on imaging sensors — estimate hit rates and affected pixels.',
-  'https://photonics-calculators.vercel.app/detectors/cosmic-rays',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
@@ -76,7 +75,7 @@ export default function ExposureDurationPage() {
   }, [lam, beamIrradiance]);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Maximum Safe Exposure Duration" description="Calculate the maximum safe exposure time for a CW laser beam based on MPE limits.">
+    <>
             
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
@@ -110,6 +109,6 @@ export default function ExposureDurationPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/silicon-photodiode' },
-    title: 'Silicon Photodiode',
-    description: 'Si photodiode parameters: bandgap, QE, responsivity, dark current, and spectral response.'
-};
+const href = "/detectors/silicon-photodiode";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Silicon Photodiode',
-  'Si photodiode parameters: bandgap, QE, responsivity, dark current, and spectral response.',
-  'https://photonics-calculators.vercel.app/detectors/silicon-photodiode',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

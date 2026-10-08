@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/wedge-film' },
-      title: 'Wedge Thin Film',
-  description: 'Wedged thin films have a linearly varying thickness across the surface, creating spatially',
-};
+const href = "/thin-film/wedge-film";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Wedge Thin Film',
-  'Wedged thin films have a linearly varying thickness across the surface, creating spatially',
-  'https://photonics-calculators.vercel.app/thin-film/wedge-film',
-  { category: 'Thin Film' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

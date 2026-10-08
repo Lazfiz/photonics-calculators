@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -32,7 +31,7 @@ export default function PulseCompressionPage() {
   }, [inputDuration, outputDuration]);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Pulse Compression" description="Transform-limited pulse compression via chirp compensation.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Input Pulse Duration (fs FWHM)" value={inputDuration} onChange={setInputDuration} />
@@ -72,6 +71,6 @@ export default function PulseCompressionPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

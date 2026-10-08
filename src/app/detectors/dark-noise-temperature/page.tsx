@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/dark-noise-temperature' },
-    title: 'Dark Noise vs Temperature',
-    description: 'Temperature dependence of dark current and dark noise in photodiodes/CCDs.'
-};
+const href = "/detectors/dark-noise-temperature";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Dark Noise vs Temperature',
-  'Temperature dependence of dark current and dark noise in photodiodes/CCDs.',
-  'https://photonics-calculators.vercel.app/detectors/dark-noise-temperature',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

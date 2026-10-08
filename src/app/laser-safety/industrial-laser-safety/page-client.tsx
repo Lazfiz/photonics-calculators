@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
@@ -65,7 +64,7 @@ export default function IndustrialLaserSafetyPage() {
   }, [power, beamDia, divergence, reflectedPower, mpeWcm2, nohd]);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Industrial Laser Safety Calculator" description="Assess direct beam, specular/diffuse reflections, NOHD, and OD for industrial cutting/welding lasers.">
+    <>
             
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
@@ -124,6 +123,6 @@ export default function IndustrialLaserSafetyPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

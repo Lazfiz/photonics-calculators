@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -26,7 +25,7 @@ export default function InjectionLockingPage() {
   const lockingRange = Math.sqrt(masterPower / slavePower) * lockingBW;
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Injection Locking" description="Phase-locking a slave laser to a master laser through optical injection.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Master Power (mW)" value={masterPower} onChange={setMasterPower} step="1" />
@@ -44,6 +43,6 @@ export default function InjectionLockingPage() {
         yaxis: { title: "Lock Status", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

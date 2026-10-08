@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -40,7 +39,7 @@ export default function SpectralResponsePage() {
   const cutoffLong = peakWavelength + 2.5 * sigma;
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Spectral Response" description="R(λ) = η(λ) · q · λ / (h·c). Responsivity and quantum efficiency as a function of wavelength.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Peak Responsivity (A/W)" value={responsivityPeak} onChange={setResponsivityPeak} />
@@ -62,6 +61,6 @@ export default function SpectralResponsePage() {
         yaxis2: { title: "QE (%)", gridcolor: "#374151", overlaying: "y", side: "right", range: [0, 100] },
         margin: { t: 20, b: 40, l: 70, r: 60 }, autosize: true, showlegend: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

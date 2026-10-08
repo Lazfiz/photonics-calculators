@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c, h } from "../../../physics/constants";
@@ -141,7 +140,7 @@ export default function QuantumKeyDistributionPage() {
   }, [fiberLoss, detectorEfficiency, darkCountRate, repRate, wavelength, txPower]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="QKD Secure Key Rate" description="Decoy-state BB84 secure key rate, QBER, single-photon yield and maximum range versus channel loss, detector efficiency, dark counts and pulse rate." maxWidthClassName="max-w-5xl">
+    <>
       
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -204,6 +203,6 @@ export default function QuantumKeyDistributionPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

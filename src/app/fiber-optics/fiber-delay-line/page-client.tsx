@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c } from "../../../physics/constants";
@@ -103,7 +102,7 @@ export default function FiberDelayLineCalculator() {
   };
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Delay Line Calculator" description="Calculate propagation delay, pulse broadening, phase shift, and FSR for fiber optic delay lines.">
+    <>
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -164,6 +163,6 @@ export default function FiberDelayLineCalculator() {
             <ChartPanel data={dispersionCurve} layout={layout2} />
           </div>
         </div>
-    </CalculatorShell>
+    </>
   );
 }

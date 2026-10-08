@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/modulation-transfer' },
-    title: 'Modulation Transfer Function (MTF)',
-    description: 'Image sensor MTF: pixel aperture, charge diffusion, and optical blur contributions.'
-};
+const href = "/detectors/modulation-transfer";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Modulation Transfer Function (MTF)',
-  'Image sensor MTF: pixel aperture, charge diffusion, and optical blur contributions.',
-  'https://photonics-calculators.vercel.app/detectors/modulation-transfer',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

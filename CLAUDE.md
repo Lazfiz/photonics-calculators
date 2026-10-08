@@ -29,27 +29,29 @@ the repo times out (Defender + `node_modules`). Keep tool output small: tail and
 
 ## Architecture
 **Current**
-- `src/app/<category>/<slug>/page.tsx`: server component with `metadata` + JSON-LD
-  (`lib/json-ld.tsx`); `tests/page-json-ld.test.ts` checks the JSON-LD equals `metadata`.
-- `src/app/<category>/<slug>/page-client.tsx`: `"use client"`; inputs, **physics inline**, charts.
-- `src/components/`: `calculator-shell`, `validated-number-input`, `input-slider`, `result-card`,
+- `src/app/<category>/<slug>/page.tsx`: 15 lines, no text. `const href`, `metadata =
+  calculatorMetadata(href)`, `<CalculatorShell href={href}><PageClient /></CalculatorShell>`
+  (`tests/calculator-pages.test.ts`).
+- `src/components/calculator-shell.tsx`: **server** component. From the registry entry it renders the
+  JSON-LD (WebPage + BreadcrumbList), breadcrumbs, `<h1>`, lede, `ShareButton` (client) and related links.
+- `src/app/<category>/<slug>/page-client.tsx`: `"use client"`; inputs, **physics inline**, charts. No
+  `<h1>`, no shell.
+- `src/components/`: `validated-number-input`, `input-slider`, `result-card`,
   `simple-chart` / `simple-line-chart` (SVG), `chart-panel` / `plotly-chart` (Plotly).
 - `src/hooks/use-url-state.ts`: input state mirrored to the URL query.
 - `src/registry/`: one entry per calculator (title, description, heading/lede overrides, keywords,
-  priority, hidden, related) in `calculators/<category>.ts`, plus `categories.ts`. It generates the
+  priority, hidden, related) in `calculators/<category>.ts`, plus `categories.ts`. It generates each
+  page's metadata and JSON-LD (`metadata.ts`), its heading, breadcrumbs and related links (the shell), the
   sitemap, `/search-index.json` (`src/app/search-index.json/route.ts`), counts, home categories and the
   category index pages (`components/category-index.tsx`). **Server-only:** client components get data as
-  props; `tests/registry.test.ts` fails on a client import chain (one exception: `related-calculators`).
-- Page metadata, JSON-LD and the `CalculatorShell` title still repeat the registry text (test-checked)
-  until ROADMAP Phase 2 stage 2b generates them.
-- `src/lib/`: a few extracted physics modules (`geiger-mode-avalanche`, `laser-safety-*`), related links
-  (`related-calculators.ts`), `home-categories.ts` (a view of the registry).
+  props; `tests/registry.test.ts` fails on any client import chain that reaches it.
+- `src/lib/`: a few extracted physics modules (`geiger-mode-avalanche`, `laser-safety-*`),
+  `home-categories.ts` (a view of the registry).
 
 **Target** (ROADMAP Phase 2+)
 - `src/physics/constants.ts` (CODATA) + `src/physics/<category>/<slug>.ts` pure SI functions,
   each with golden-value tests in `tests/`.
-- One calculator registry (slug, title, description, category, model tier, references, aliases)
-  that generates sitemap, search index, metadata, JSON-LD and related links at build time.
+- Registry entries gain model tier and references (stage 2c), shown on each page.
 - `page-client.tsx` only wires inputs → physics function → results/charts.
 
 ## Hard rules

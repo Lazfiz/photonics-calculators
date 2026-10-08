@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -59,7 +58,7 @@ export default function SensorCCMPage() {
   };
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="CCD/CCM Sensor Design" description="CCD sensor parameters, cooling requirements, dark current, and dynamic range analysis.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -135,6 +134,6 @@ export default function SensorCCMPage() {
           <p>Deep-cooled CCDs (-70°C to -100°C) achieve dark current &lt;0.001 e⁻/s, enabling hour-long exposures. EMCCDs add on-chip electron multiplication for sub-electron effective read noise at the cost of excess noise factor √2.</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

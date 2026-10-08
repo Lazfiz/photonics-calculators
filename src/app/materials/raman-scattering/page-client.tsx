@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 interface RamanMaterial { name: string; shift: number; linewidth: number; gain: number; color: string }
@@ -51,7 +50,7 @@ export default function RamanScatteringPage() {
   };
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Raman Scattering" description="Spontaneous and stimulated Raman scattering cross-sections and gain spectra for common optical materials.">
+    <>
             
       <div className="mb-6 flex flex-wrap gap-2">
         {Object.entries(MATERIALS).map(([key, m]) => (
@@ -83,6 +82,6 @@ export default function RamanScatteringPage() {
         <p className="font-mono bg-gray-800 p-2 rounded mb-2">g_R(ν̃) = g_R<sub>peak</sub> · exp[−(ν̃ − ν̃₀)² / 2σ²]</p>
         <p className="font-mono bg-gray-800 p-2 rounded">P<sub>S</sub> = g_R · P<sub>p</sub> · L<sub>eff</sub> · A<sub>eff</sub> | SRS threshold ≈ 16·A<sub>eff</sub> / (g_R · L<sub>eff</sub>)</p>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

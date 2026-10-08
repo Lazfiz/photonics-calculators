@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -68,7 +67,7 @@ export default function DichroicPolarizerPage() {
   }, [kE, kO, lam]);
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Dichroic Polarizer" description="Model absorption-based dichroic polarizers using complex refractive indices. One polarization state is strongly absorbed while the other transmits.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">T = exp(-4π k d / λ), where k = extinction coefficient</p>
@@ -136,6 +135,6 @@ export default function DichroicPolarizerPage() {
           }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

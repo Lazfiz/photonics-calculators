@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
@@ -82,7 +81,7 @@ export default function EyeSafeWavelengthPage() {
   }, [results, pulseWidth]);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Eye-Safe Wavelength Region" description="Identifies the eye-safe wavelength bands (1400–1500 nm, 1500–1800 nm) where corneal absorption protects the retina. Compare your laser&apos;s fluence against spectral MPE.">
+    <>
             
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
@@ -149,6 +148,6 @@ export default function EyeSafeWavelengthPage() {
           <p>Corneal hazard zone: &lt; 400 nm (UV) and &gt; 1400 nm (IR absorbed)</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

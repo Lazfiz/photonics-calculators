@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 
 
 type ElementType = "polarizer-h" | "polarizer-v" | "polarizer-45" | "polarizer-135" | "qwp-fast-h" | "qwp-fast-v" | "hwp-fast-h" | "hwp-fast-v" | "rotator";
@@ -126,7 +125,7 @@ export default function JonesCalculusPage() {
   const transmission = inputIntensity > 0 ? outputIntensity / inputIntensity : 0;
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Jones Calculus" description="Chain Jones matrices for polarizers, waveplates, and rotators. Up to 5 elements.">
+    <>
             
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Input */}
@@ -227,6 +226,6 @@ export default function JonesCalculusPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

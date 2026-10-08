@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 
@@ -62,7 +61,7 @@ export default function SPADPage() {
   }, [pde, dcr, deadTime, afterpulseProb, photonEnergy]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="SPAD Detector Calculator" description="Single-photon avalanche diode — PDE, DCR, dead time, afterpulsing, and SNR analysis.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Peak PDE" value={pde} onChange={setPde} min={0.01} max={1} step="0.01" />
@@ -110,6 +109,6 @@ export default function SPADPage() {
           margin: { t: 40, r: 20, b: 50, l: 60 }, legend: { bgcolor: "transparent", font: { size: 10 } },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

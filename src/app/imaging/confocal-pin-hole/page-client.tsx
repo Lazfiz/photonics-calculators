@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -36,7 +35,7 @@ export default function ConfocalPinholePage() {
   const lateralRes = 0.61 * wavelength / na;
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Confocal Pinhole Size" description="Optimal pinhole ≈ 1 Airy unit (dAU/M). Trade-off: resolution vs signal.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
@@ -53,6 +52,6 @@ export default function ConfocalPinholePage() {
       </div>
 
       <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Pinhole Size (Airy Units)", gridcolor: "#374151" }, yaxis: { title: "Axial Resolution (nm)", gridcolor: "#374151" }, yaxis2: { title: "Throughput", gridcolor: "#374151", overlaying: "y", side: "right", range: [0, 1.05] }, margin: { t: 20, b: 40, l: 60, r: 60 }, autosize: true, showlegend: true }} />
-    </CalculatorShell>
+    </>
   );
 }

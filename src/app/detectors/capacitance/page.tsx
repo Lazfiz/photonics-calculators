@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/capacitance' },
-    title: 'Junction Capacitance',
-    description: 'Photodiode junction capacitance vs reverse bias, doping profile, and RC bandwidth impact.'
-};
+const href = "/detectors/capacitance";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Junction Capacitance',
-  'Photodiode junction capacitance vs reverse bias, doping profile, and RC bandwidth impact.',
-  'https://photonics-calculators.vercel.app/detectors/capacitance',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href} maxWidthClassName="max-w-5xl">
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

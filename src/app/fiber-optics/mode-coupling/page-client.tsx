@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -78,7 +77,7 @@ export default function ModeCouplingCalculator() {
   const couplingEfficiency = (coupledPower / inputPower) * 100;
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Coupled-Mode Power Transfer" description="Coupled-mode power transfer between two waveguides: coupled and through power, coupling efficiency and full-transfer length from κ and Δβ.">
+    <>
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -119,6 +118,6 @@ export default function ModeCouplingCalculator() {
         <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
           <ChartPanel data={plotData} layout={layout} />
         </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/apodization-comparison' },
-    title: 'Apodization Comparison',
-  description: 'Compare 9 window functions and their instrument line shapes (ILS). Select windows to overlay.'
-};
+const href = "/spectroscopy/apodization-comparison";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Apodization Comparison',
-  'Compare 9 window functions and their instrument line shapes (ILS). Select windows to overlay.',
-  'https://photonics-calculators.vercel.app/spectroscopy/apodization-comparison',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

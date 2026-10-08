@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/free-space-comms/link-budget' },
-    title: 'FSO Link Budget',
-  description: 'Interactive free-space optical link budget with sliders, presets, and received-power versus range view.'
-};
+const href = "/free-space-comms/link-budget";
 
-const jsonLd = generateCalculatorJsonLd(
-  'FSO Link Budget',
-  'Interactive free-space optical link budget with sliders, presets, and received-power versus range view.',
-  'https://photonics-calculators.vercel.app/free-space-comms/link-budget',
-  { category: 'Free Space Comms' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

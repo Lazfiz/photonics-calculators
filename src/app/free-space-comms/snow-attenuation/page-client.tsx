@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -41,7 +40,7 @@ export default function SnowAttenuationPage() {
   }, [range]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Snow Attenuation" description="Specific and total attenuation of a free-space optical link in dry or wet snow from the snowfall rate (water equivalent), with equivalent visibility." maxWidthClassName="max-w-5xl">
+    <>
       
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
                 <p className="text-cyan-300 mt-1 font-mono">α = k_s · S^α_s &nbsp; [dB/km]</p>
@@ -90,6 +89,6 @@ export default function SnowAttenuationPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

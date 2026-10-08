@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -57,7 +56,7 @@ export default function TwoPhotonAbsorptionPage() {
   }, [material, wavelength, thickness]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Two-Photon Absorption" description="Nonlinear absorption coefficient β₂PA and intensity-dependent transmission. TPA becomes significant at high peak intensities (pulsed lasers).">
+    <>
             
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <div>
@@ -99,6 +98,6 @@ export default function TwoPhotonAbsorptionPage() {
         <p className="font-mono bg-gray-800 p-2 rounded">L<sub>eff</sub> = [1 − exp(−α₂PA · L)] / α₂PA | α₂PA = β₂PA · I</p>
         <p className="mt-2 text-xs">Bandgap wavelength: λ_g = {mat.lambda_g} nm. Two-photon absorption occurs when 2·ℏ·ω &gt; E_g, i.e., λ &lt; 2·λ_g.</p>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

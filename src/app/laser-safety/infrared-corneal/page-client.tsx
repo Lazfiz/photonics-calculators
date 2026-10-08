@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
@@ -91,13 +90,10 @@ export default function InfraredCornealPage() {
   }, [wavelength]);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety">
+    <>
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
       <div className="max-w-4xl mx-auto">
-        
-        <h1 className="text-3xl font-bold mb-2">IR Corneal Exposure</h1>
-        <p className="text-gray-400 mb-8">Calculate corneal MPE for infrared lasers (1400nm–1mm) per IEC 60825-1.</p>
 
         <div className="bg-[#12121a] rounded-xl p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4">Formulas</h2>
@@ -160,6 +156,6 @@ export default function InfraredCornealPage() {
           />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

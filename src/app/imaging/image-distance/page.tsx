@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/image-distance' },
-    title: 'Thin Lens Image Distance',
-  description: 'Calculate image distance, magnification, and conjugate ratio for a thin lens.'
-};
+const href = "/imaging/image-distance";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Thin Lens Image Distance',
-  'Calculate image distance, magnification, and conjugate ratio for a thin lens.',
-  'https://photonics-calculators.vercel.app/imaging/image-distance',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

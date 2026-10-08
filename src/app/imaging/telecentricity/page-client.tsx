@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -45,7 +44,7 @@ export default function TelecentricityPage() {
   const chiefRayAngle = Math.atan(Math.tan(maxFieldAngle * Math.PI / 180) / magnification) * 180 / Math.PI;
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Telecentric Lens Design" description="Telecentric lenses maintain constant magnification regardless of object distance. Chief rays are parallel to optical axis.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Magnification" value={magnification} onChange={setMagnification} step="0.1" />
@@ -63,6 +62,6 @@ export default function TelecentricityPage() {
       </div>
 
       <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Object Defocus Δz (mm)", gridcolor: "#374151" }, yaxis: { title: "Effective Magnification", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true, showlegend: true }} />
-    </CalculatorShell>
+    </>
   );
 }

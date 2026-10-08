@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -51,7 +50,7 @@ export default function ProtectedSilverPage() {
   const avgR = tmm.R.reduce((a, b) => a + b, 0) / tmm.R.length;
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Protected Silver Mirror" description="Protected silver coating — high reflectance UV-Vis-IR with dielectric overcoat and adhesion layer.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
@@ -89,6 +88,6 @@ export default function ProtectedSilverPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -57,7 +56,7 @@ export default function VacuumPhotodiodePage() {
   }, [quantumEff, workFunction]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Vacuum Photodiode" description="Vacuum photodiode calculator. Models photoemission, responsivity, dark current (thermionic emission), and frequency response.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Quantum Efficiency" value={quantumEff} onChange={setQuantumEff} min={0} max={1} step="0.01" />
@@ -95,6 +94,6 @@ export default function VacuumPhotodiodePage() {
         yaxis2: { title: "Responsivity (mA/W)", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 70, r: 80 }, autosize: true, showlegend: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

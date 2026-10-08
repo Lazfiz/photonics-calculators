@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -71,7 +70,7 @@ export default function HyperspectralMicroscopyPage() {
   }, [spectralBands, spatialPixels, bitDepth, dataSizeMb]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Hyperspectral Microscopy" description="Configure hyperspectral data cubes: spectral range, bands, data size, acquisition time, and SNR tradeoffs.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -145,6 +144,6 @@ export default function HyperspectralMicroscopyPage() {
           <p><span className="text-blue-400">SNR:</span> SNR(dB) = 20 · log₁₀(Signal / Noise)</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

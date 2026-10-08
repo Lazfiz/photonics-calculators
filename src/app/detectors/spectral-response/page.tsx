@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/spectral-response' },
-    title: 'Spectral Response Calculator',
-    description: 'Responsivity and quantum efficiency as a function of wavelength.'
-};
+const href = "/detectors/spectral-response";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Spectral Response Calculator',
-  'Responsivity and quantum efficiency as a function of wavelength.',
-  'https://photonics-calculators.vercel.app/detectors/spectral-response',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

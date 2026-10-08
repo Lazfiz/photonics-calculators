@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -114,7 +113,7 @@ export default function OTDRAnalysisPage() {
   }, [pulseWidth, refractiveIndex]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="OTDR Analysis" description="Simulate OTDR traces, calculate spatial resolution, dynamic range, dead zones, and event analysis for fiber characterization.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Pulse Width (ns)" value={pulseWidth} onChange={setPulseWidth} min={1} />
@@ -197,6 +196,6 @@ export default function OTDRAnalysisPage() {
           <p>Trade-off: Short pulse → better resolution, less range; Long pulse → more range, less resolution</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

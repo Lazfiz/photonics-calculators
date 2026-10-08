@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -45,7 +44,7 @@ export default function FogAttenuationPage() {
   }, [range, fogModel]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Fog Attenuation" description="Optical attenuation in fog from visibility with the Kim or Kruse model: exponent q, attenuation coefficient, total path loss and transmitted fraction." maxWidthClassName="max-w-5xl">
+    <>
       
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
                 <p className="text-cyan-300 mt-1 font-mono">β = 3.91 / V · (λ/0.55)^(-q) &nbsp; [dB/km]</p>
@@ -94,6 +93,6 @@ export default function FogAttenuationPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

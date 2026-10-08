@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -45,7 +44,7 @@ export default function DualBandARPage() {
   const R2 = r2 >= 0 ? tmm.R[r2] : 0;
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Dual-Band AR Coating" description="Three-layer anti-reflection coating optimized for two distinct wavelength bands.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
@@ -88,6 +87,6 @@ export default function DualBandARPage() {
           ],
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

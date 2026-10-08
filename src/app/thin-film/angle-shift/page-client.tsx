@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -29,7 +28,7 @@ export default function AngleShiftPage() {
   const shiftAt45 = designWl * cos45film;
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Angle-Dependent Blue Shift" description="How the effective design wavelength shifts with angle of incidence (blue shift).">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>film</sub></>} value={nFilm} onChange={setNFilm} step="0.01" />
@@ -43,6 +42,6 @@ export default function AngleShiftPage() {
       </div>
 
       <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Angle of Incidence (°)", gridcolor: "#374151" }, yaxis: { title: "Effective λ (nm)", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true }} />
-    </CalculatorShell>
+    </>
   );
 }

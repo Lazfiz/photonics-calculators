@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c, h } from "../../../physics/constants";
@@ -120,7 +119,7 @@ export default function GasLaserResonatorPage() {
   const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Gas Laser Resonator" description="Stability g₁g₂, beam waist, Fresnel number, optimal output coupling and output power of a HeNe or CO₂ laser from tube size and mirror radii." maxWidthClassName="max-w-6xl">
+    <>
             
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-800 rounded-lg p-4">
@@ -163,6 +162,6 @@ export default function GasLaserResonatorPage() {
         <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">P_out vs OC Reflectivity</h3><ChartPanel data={poutVsR} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "R_oc" }, yaxis: { ...plotLayout.yaxis, title: "P_out (W)" } }} /></div>
         <div className="bg-gray-800 rounded-lg p-4 md:col-span-2"><h3 className="font-semibold mb-2">Optimal OC vs Small-Signal Gain</h3><ChartPanel data={optRData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "g₀ (m⁻¹)" }, yaxis: { ...plotLayout.yaxis, title: "R_opt" } }} /></div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

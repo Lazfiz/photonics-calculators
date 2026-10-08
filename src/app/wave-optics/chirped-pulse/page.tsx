@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/wave-optics/chirped-pulse' },
-    title: 'Chirped Pulse Amplification (CPA)',
-  description: 'Stretch, amplify, compress — bypassing damage thresholds.'
-};
+const href = "/wave-optics/chirped-pulse";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Chirped Pulse Amplification (CPA)',
-  'Stretch, amplify, compress — bypassing damage thresholds.',
-  'https://photonics-calculators.vercel.app/wave-optics/chirped-pulse',
-  { category: 'Wave Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

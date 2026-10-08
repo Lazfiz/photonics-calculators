@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/absorption' },
-      title: 'Beer-Lambert Absorption',
-  description: 'A = cl — absorbance from molar extinction coefficient, concentration, and path length.',
-};
+const href = "/spectroscopy/absorption";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Beer-Lambert Absorption',
-  'A = cl — absorbance from molar extinction coefficient, concentration, and path length.',
-  'https://photonics-calculators.vercel.app/spectroscopy/absorption',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

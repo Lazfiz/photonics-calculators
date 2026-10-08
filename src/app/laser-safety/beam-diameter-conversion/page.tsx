@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/beam-diameter-conversion' },
-    title: 'Beam Diameter Conversion',
-  description: 'Convert Gaussian beam diameters between the 1/e², 1/e and FWHM definitions and the waist radius w₀, with relative intensity levels.'
-};
+const href = "/laser-safety/beam-diameter-conversion";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Beam Diameter Conversion',
-  'Convert Gaussian beam diameters between the 1/e², 1/e and FWHM definitions and the waist radius w₀, with relative intensity levels.',
-  'https://photonics-calculators.vercel.app/laser-safety/beam-diameter-conversion',
-  { category: 'Laser Safety' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

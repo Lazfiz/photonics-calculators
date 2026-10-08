@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/solar-protection' },
-    title: 'Solar Protection Coating',
-  description: 'Dual-stack design: UV + IR blocking for glazing and solar control applications.'
-};
+const href = "/thin-film/solar-protection";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Solar Protection Coating',
-  'Dual-stack design: UV + IR blocking for glazing and solar control applications.',
-  'https://photonics-calculators.vercel.app/thin-film/solar-protection',
-  { category: 'Thin Film' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

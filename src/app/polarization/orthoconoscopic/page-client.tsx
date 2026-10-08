@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -87,7 +86,7 @@ export default function OrthoconoscopicPage() {
   }, [polarizerAngleDeg, rotAngleDeg]);
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Orthoscopic Observation" description="Model orthoscopic observation of birefringent samples with rotating stage. Calculate intensity vs rotation angle and interference colors.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">I<sub>crossed</sub> = sin²(2φ) · sin²(δ/2), I<sub>parallel</sub> = 1 - sin²(2φ) · sin²(δ/2)</p>
@@ -173,6 +172,6 @@ export default function OrthoconoscopicPage() {
           margin: { t: 20, r: 20, b: 50, l: 50 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

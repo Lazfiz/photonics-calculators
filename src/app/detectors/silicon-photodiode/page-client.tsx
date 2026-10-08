@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -114,7 +113,7 @@ export default function SiliconPhotodiodePage() {
   }, [surfaceReflectivity, cutoffWavelength]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Silicon Photodiode" description="Si photodiode parameters: bandgap, QE, responsivity, dark current, and spectral response.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} min={200} max={400} step="5" />
         <ValidatedNumberInput label="Depletion Width (μm)" value={depletionWidth} onChange={setDepletionWidth} min={1} max={500} step="1" />
@@ -165,6 +164,6 @@ export default function SiliconPhotodiodePage() {
         <p>R(λ) = η·q·λ/(h·c)</p>
         <p>I_dark ∝ n_i · W · A / τ</p>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

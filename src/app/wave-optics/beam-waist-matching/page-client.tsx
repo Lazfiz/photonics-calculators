@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -104,7 +103,7 @@ export default function BeamWaistMatchingPage() {
   };
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Beam Waist Matching" description="Find the optimal lens for coupling one Gaussian mode into another.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">M</span> = w₀,out / w₀,in (magnification)</p>
@@ -147,6 +146,6 @@ export default function BeamWaistMatchingPage() {
         <h3 className="text-sm text-gray-400 mb-2">Beam Propagation (with optimal lens)</h3>
         <ChartPanel data={profileData} layout={layout2} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

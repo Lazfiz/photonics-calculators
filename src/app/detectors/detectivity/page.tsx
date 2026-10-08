@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/detectivity' },
-    title: 'Detectivity (D*)',
-    description: 'Specific detectivity from NEP, area, and bandwidth. D* = √(A·Δf) / NEP'
-};
+const href = "/detectors/detectivity";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Detectivity (D*)',
-  'Specific detectivity from NEP, area, and bandwidth. D* = √(A·Δf) / NEP',
-  'https://photonics-calculators.vercel.app/detectors/detectivity',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href} maxWidthClassName="max-w-5xl">
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

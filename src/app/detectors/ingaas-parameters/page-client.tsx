@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -50,7 +49,7 @@ export default function IngaasParametersPage() {
   }, [Eg, biasVoltage, idealityFactor, areaCm2]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="InGaAs Detector Parameters" description="InₓGa₁₋ₓAs bandgap, cutoff wavelength, QE, dark current, NEP for SWIR detectors." maxWidthClassName="max-w-5xl">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} min={200} max={400} step="5" />
         <ValidatedNumberInput label="Indium Fraction (x)" value={indiumFraction} onChange={setIndiumFraction} min={0} max={1} step="0.01" />
@@ -73,6 +72,6 @@ export default function IngaasParametersPage() {
         <ChartPanel data={spectralQE} layout={{ xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "QE (%)", gridcolor: "#374151" } }} title="Spectral QE" />
         <ChartPanel data={darkVsTemp} layout={{ xaxis: { title: "Temperature (K)", gridcolor: "#374151" }, yaxis: { title: "I_dark (nA)", type: "log", gridcolor: "#374151" } }} title="Dark vs Temperature" />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

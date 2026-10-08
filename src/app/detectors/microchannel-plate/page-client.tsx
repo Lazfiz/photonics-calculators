@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
@@ -40,7 +39,7 @@ export default function MicrochannelPlatePage() {
   }, [numPlates, channelDiameter, channelLength]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Microchannel Plate" description="MCP gain, spatial resolution, and effective QE for photon detectors.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Number of Plates" value={numPlates} onChange={setNumPlates} min={1} max={3} />
         <ValidatedNumberInput label="Channel Diameter (µm)" value={channelDiameter} onChange={setChannelDiameter} />
@@ -74,6 +73,6 @@ export default function MicrochannelPlatePage() {
         yaxis: { title: "Gain", type: "log", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 70, r: 60 }, autosize: true, showlegend: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

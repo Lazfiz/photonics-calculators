@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { bpskBer, qpskSer, requiredEbN0dB } from "../../../physics/free-space-comms/bpsk-qpsk";
@@ -55,7 +54,7 @@ export default function BpskQpskPage() {
   }, []);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="BPSK and QPSK Error Rates" description="Bit and symbol error rates of BPSK, Gray-coded QPSK and OQPSK versus Eb/N0, with spectral efficiency, bandwidth, required receive power and margin." maxWidthClassName="max-w-5xl">
+    <>
             
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -117,6 +116,6 @@ export default function BpskQpskPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

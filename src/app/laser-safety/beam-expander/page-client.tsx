@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
@@ -28,7 +27,7 @@ export default function BeamExpanderPage() {
   }, [power, beamDia]);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Beam Expander Safety" description="Calculate power density reduction from beam expansion. Critical for ensuring safe irradiance levels.">
+    <>
             
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
@@ -64,6 +63,6 @@ export default function BeamExpanderPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

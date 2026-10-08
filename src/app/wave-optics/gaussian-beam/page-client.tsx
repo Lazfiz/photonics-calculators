@@ -1,15 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
 const wavelengthPresets = [532, 1064, 1550];
-const currentHref = "/wave-optics/gaussian-beam";
 
 export default function GaussianBeamPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550);
@@ -30,12 +26,7 @@ export default function GaussianBeamPage() {
   }, [waist, zR]);
 
   return (
-    <CalculatorShell
-      backHref="/wave-optics"
-      backLabel="Wave Optics"
-      title="Gaussian Beam Propagation"
-      description="Explore how wavelength and waist size shape Rayleigh range, divergence, and beam envelope."
-    >
+    <>
       <div className="mb-5 flex flex-wrap gap-2">
         {wavelengthPresets.map((preset) => (
           <button
@@ -72,8 +63,6 @@ export default function GaussianBeamPage() {
         yLabel="Beam radius w(z) (µm)"
         series={series}
       />
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

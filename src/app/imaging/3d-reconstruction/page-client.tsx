@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -82,7 +81,7 @@ export default function Reconstruction3DPage() {
   }, [axialRes, lateralRes, wavelengthNm, excitationNA]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="3D Reconstruction Methods" description="Compare 3D reconstruction approaches: resolution, sampling, voxel budgets, and method tradeoffs.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -161,6 +160,6 @@ export default function Reconstruction3DPage() {
           <p><span className="text-blue-400">Voxel aspect ratio:</span> AR = Δz / Δxy</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

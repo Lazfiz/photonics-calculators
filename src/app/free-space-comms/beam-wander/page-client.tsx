@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -31,7 +30,7 @@ export default function BeamWanderPage() {
   }, [pathLength, beamRadius, wavelength]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Beam Wander" description="RMS turbulence-induced beam wander and the resulting pointing loss of a Gaussian beam versus Cn², path length, beam radius and wavelength." maxWidthClassName="max-w-5xl">
+    <>
       
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -67,6 +66,6 @@ export default function BeamWanderPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/wave-optics/optical-parametric-oscillator' },
-    title: 'Optical Parametric Oscillator',
-  description: 'Parametric gain, walk-off-limited interaction length and singly-resonant OPO threshold from pump wavelength, d_eff, beam radius and cavity loss.'
-};
+const href = "/wave-optics/optical-parametric-oscillator";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Optical Parametric Oscillator',
-  'Parametric gain, walk-off-limited interaction length and singly-resonant OPO threshold from pump wavelength, d_eff, beam radius and cavity loss.',
-  'https://photonics-calculators.vercel.app/wave-optics/optical-parametric-oscillator',
-  { category: 'Wave Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href} maxWidthClassName="max-w-6xl">
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

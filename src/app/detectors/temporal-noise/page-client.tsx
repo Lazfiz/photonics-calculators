@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -55,7 +54,7 @@ export default function TemporalNoisePage() {
   const totalNoiseWithF = Math.sqrt(readNoise**2 + darkShotNoise**2 + oneOverFNoise**2);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Temporal Noise" description="1/f noise, white (shot) noise, and read noise as functions of frequency and integration time.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} />
@@ -88,6 +87,6 @@ export default function TemporalNoisePage() {
         yaxis: { title: "Noise (e⁻ rms)", type: "log", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 70, r: 20 }, autosize: true, showlegend: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

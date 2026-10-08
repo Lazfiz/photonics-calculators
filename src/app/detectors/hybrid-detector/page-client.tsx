@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -45,7 +44,7 @@ export default function HybridDetectorPage() {
   }, [inputNoiseCurrent, inputNoiseVoltage, bwHz]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Hybrid Detector Design" description="Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization." maxWidthClassName="max-w-5xl">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="10" />
         <ValidatedNumberInput label="Quantum Efficiency" value={qe} onChange={setQe} min={0.01} max={1} step="0.01" />
@@ -65,6 +64,6 @@ export default function HybridDetectorPage() {
         <ChartPanel data={nepVsBW} layout={{ xaxis: { title: "BW (MHz)", gridcolor: "#374151" }, yaxis: { title: "NEP (fW)", gridcolor: "#374151" } }} title="NEP vs Bandwidth" />
         <ChartPanel data={noiseVsGain} layout={{ xaxis: { title: "R_f (Ω)", gridcolor: "#374151", type: "log" }, yaxis: { title: "Noise (fA)", gridcolor: "#374151", type: "log" } }} title="Noise vs Feedback R" />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

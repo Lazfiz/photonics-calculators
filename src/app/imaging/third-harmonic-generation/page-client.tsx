@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -45,7 +44,7 @@ export default function ThirdHarmonicGenerationPage() {
   }, [na]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Third Harmonic Generation (THG) Calculator" description="THG imaging parameters for interface and membrane contrast in biological samples.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -91,6 +90,6 @@ export default function ThirdHarmonicGenerationPage() {
         <h2 className="text-lg font-semibold mb-4">THG Wavelength &amp; Resolution vs Excitation Wavelength</h2>
         <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Excitation λ (nm)", gridcolor: "#333" }, yaxis: { title: "THG λ (nm)", gridcolor: "#333", side: "left" }, yaxis2: { title: "Lateral res (nm)", gridcolor: "#333", side: "right", overlaying: "y" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 60, t: 20, b: 60 } }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

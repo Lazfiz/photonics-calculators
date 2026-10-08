@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -43,7 +42,7 @@ export default function SumFrequencyMicroscopyPage() {
   }, [lambda1, lambda2, energySFG]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Sum-Frequency Generation Microscopy Calculator" description="Calculate SFG wavelengths, energies, and beam parameters for sum-frequency generation microscopy.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Beam 1 λ (nm)" value={lambda1} onChange={setLambda1} min={400} max={1600} />
@@ -92,6 +91,6 @@ export default function SumFrequencyMicroscopyPage() {
           <ChartPanel data={energyChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af", size: 11 }, title: { text: "Photon Energy vs Beam 2 λ", font: { size: 13 } }, xaxis: { title: "Beam 2 λ (nm)", gridcolor: "#374151" }, yaxis: { title: "Energy (eV)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 40, b: 55 } }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -70,7 +69,7 @@ export default function SumFrequencyPage() {
   };
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Sum Frequency Generation (SFG)" description="Upconversion via χ⁽²⁾: ω1 + ω2 → ω3 with phase matching.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">Energy:</span> 1/λ<sub>3</sub> = 1/λ<sub>1</sub> + 1/λ<sub>2</sub></p>
@@ -115,6 +114,6 @@ export default function SumFrequencyPage() {
           <ChartPanel data={tuningData} layout={tuningLayout} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

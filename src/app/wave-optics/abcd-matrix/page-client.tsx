@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
@@ -83,7 +82,7 @@ export default function ABCDMatrixPage() {
   }, [elements, inputHeight, inputAngle]);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="ABCD Matrix Calculator" description="Build an optical system from sequential elements and compute the ray transfer matrix.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Input Ray Height (mm)" value={inputHeight} onChange={setInputHeight} step="any" />
@@ -137,6 +136,6 @@ export default function ABCDMatrixPage() {
           {result.isImaging && <p className="text-sm text-yellow-400 mt-2">✓ Imaging condition (B ≈ 0)</p>}
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

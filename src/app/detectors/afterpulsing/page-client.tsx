@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -64,7 +63,7 @@ export default function AfterpulsingPage() {
   }, [trapLifetime, trapEfficiency, countRate]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Afterpulsing in APDs" description="Afterpulse probability, trap dynamics, and dead time trade-offs in avalanche photodiodes.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Primary Trap Lifetime (ns)" value={trapLifetime} onChange={setTrapLifetime} min={0.1} step="1" />
         <ValidatedNumberInput label="Trap Efficiency" value={trapEfficiency} onChange={setTrapEfficiency} min={0.001} max={1} step="0.01" />
@@ -86,6 +85,6 @@ export default function AfterpulsingPage() {
       <ChartPanel data={chartData as any} layout={{ xaxis: { title: { text: "Dead Time (ns)" }, gridcolor: "#374151" }, yaxis: { title: { text: "Afterpulse Probability (%)" }, gridcolor: "#374151" } }} />
       <h2 className="text-xl font-bold mt-8 mb-4">Rate vs Dead Time</h2>
       <ChartPanel data={rateVsDeadTime as any} layout={{ xaxis: { title: { text: "Dead Time (ns)" }, gridcolor: "#374151" }, yaxis: { title: { text: "Afterpulse Rate (cps)" }, gridcolor: "#374151" }, yaxis2: { title: { text: "Measured Rate (Mcps)" }, gridcolor: "#374151", overlaying: "y", side: "right" } }} />
-    </CalculatorShell>
+    </>
   );
 }

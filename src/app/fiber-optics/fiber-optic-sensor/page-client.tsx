@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -119,7 +118,7 @@ export default function FiberOpticSensorPage() {
   }, [sensorType, wavelength, gaugeLength, cavityLength, n_eff, temperature]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Optic Sensors" description="Calculate sensitivity, resolution, and response for FBG, MZI, Fabry-Pérot, and evanescent fiber sensors.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -266,6 +265,6 @@ export default function FiberOpticSensorPage() {
         legend: { x: 0.01, y: 0.99 },
         margin: { t: 30 },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

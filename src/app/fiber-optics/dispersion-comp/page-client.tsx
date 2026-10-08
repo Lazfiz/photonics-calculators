@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -46,9 +45,7 @@ export default function DispersionCompPage() {
   const penaltyDb = 10 * Math.log10(Math.max(1e-10, 1 + penaltyLinear));
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Dispersion Compensation" description="Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.
-        Total dispersion: Dtotal = D · L. Pulse broadening: Δτ = Dtotal · Δλ.
-        NRZ bit-rate limit: B ≤ 1/(4Δτ). DCF length: LDCF = D·L / |DDCF|.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="D (ps/nm/km)" value={dispersion} onChange={setDispersion} step="0.1" />
@@ -76,6 +73,6 @@ export default function DispersionCompPage() {
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true,
         legend: { x: 0.02, y: 0.98 },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

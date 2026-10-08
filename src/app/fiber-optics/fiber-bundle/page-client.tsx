@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -69,7 +68,7 @@ export default function FiberBundlePage() {
   }, [fiberCladDia, fillFactor]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Bundle Design" description="Calculate bundle geometry, fill factor, étendue, and coupling efficiency for fiber optic bundles.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Number of Fibers" value={fiberCount} onChange={setFiberCount} min={1} />
@@ -131,6 +130,6 @@ export default function FiberBundlePage() {
         legend: { x: 0.01, y: 0.99 },
         margin: { t: 30, r: 60 },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

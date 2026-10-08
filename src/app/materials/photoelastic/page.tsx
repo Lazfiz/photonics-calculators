@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/photoelastic' },
-      title: 'Photoelastic Constants',
-  description: 'Stress-induced birefringence: n = C , where C is the stress-optic coefficient',
-};
+const href = "/materials/photoelastic";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Photoelastic Constants',
-  'Stress-induced birefringence: n = C , where C is the stress-optic coefficient',
-  'https://photonics-calculators.vercel.app/materials/photoelastic',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

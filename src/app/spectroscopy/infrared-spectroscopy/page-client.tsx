@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -53,7 +52,7 @@ export default function InfraredSpectroscopyPage() {
   const selectedBands = bands.filter(b => b.center >= wavenumberStart && b.center <= wavenumberEnd);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Infrared (IR) Spectroscopy" description="Molecular vibrational absorption in the mid-infrared region (400–4000 cm⁻¹).">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Range Start (cm⁻¹)" value={wavenumberStart} onChange={setWavenumberStart} min={400} max={4000} />
@@ -110,6 +109,6 @@ export default function InfraredSpectroscopyPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

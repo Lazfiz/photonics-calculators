@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -58,7 +57,7 @@ export default function PenetrationDepthPage() {
   }, [alpha, skinDepthNm]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Penetration Depth Calculator" description="Calculate optical penetration depth from complex refractive index ñ = n + ik. Includes oblique incidence via Snell&apos;s law.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Wavelength λ₀ (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={100} step="10" />
@@ -107,6 +106,6 @@ export default function PenetrationDepthPage() {
           margin: { t: 40, r: 20, b: 50, l: 60 }, legend: { bgcolor: "transparent" },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -51,7 +50,7 @@ export default function CoherentAntiStokesPage() {
   }, [pumpWavelength]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="CARS Imaging Calculator" description="Coherent Anti-Stokes Raman Scattering: vibrational shift, CARS wavelength, and laser parameters.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -102,6 +101,6 @@ export default function CoherentAntiStokesPage() {
         <h2 className="text-lg font-semibold mb-4">Raman Shift &amp; CARS λ vs Stokes Wavelength</h2>
         <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Stokes λ (nm)", gridcolor: "#333" }, yaxis: { title: "Raman shift (cm⁻¹)", gridcolor: "#333", side: "left" }, yaxis2: { title: "CARS λ (nm)", gridcolor: "#333", side: "right", overlaying: "y" }, legend: { font: { size: 11 } }, margin: { l: 70, r: 60, t: 20, b: 60 } }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -101,7 +100,7 @@ export default function ThermalEvaporationPage() {
   }, [material, sourceSubstrateDist, sourceDiameter]);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Thermal Evaporation" description="Model thermal evaporation: vapor pressure, deposition rate, mean free path, and film uniformity using Hertz-Knudsen and Clausius-Clapeyron equations.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Material</span>
@@ -141,6 +140,6 @@ export default function ThermalEvaporationPage() {
         yaxis2: { title: "Vapor Pressure (Torr)", gridcolor: "#374151", overlaying: "y", side: "right", type: "log" },
         margin: { t: 20, b: 40, l: 50, r: 50 }, autosize: true, legend: { x: 0.01, y: 0.99 }
       }} />
-    </CalculatorShell>
+    </>
   );
 }

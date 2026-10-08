@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/d-shaped-fiber' },
-    title: 'D-Shaped Fiber Calculator',
-    description: 'Birefringence, evanescent field, and polarization properties of D-shaped (flat) fibers.'
-};
+const href = "/fiber-optics/d-shaped-fiber";
 
-const jsonLd = generateCalculatorJsonLd(
-  'D-Shaped Fiber Calculator',
-  'Birefringence, evanescent field, and polarization properties of D-shaped (flat) fibers.',
-  'https://photonics-calculators.vercel.app/fiber-optics/d-shaped-fiber',
-  { category: 'Fiber Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

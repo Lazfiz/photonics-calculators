@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -129,7 +128,7 @@ export default function FiberAmplifierCalculator() {
   };
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Amplifier Calculator" description="EDFA and YDFA gain, saturation, and noise figure analysis.">
+    <>
                 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -203,6 +202,6 @@ export default function FiberAmplifierCalculator() {
             <ChartPanel data={gainVsPump} layout={layout2} />
           </div>
         </div>
-    </CalculatorShell>
+    </>
   );
 }

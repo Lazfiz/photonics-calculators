@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -68,7 +67,7 @@ export default function AbsorptionDepthPage() {
   }] : [];
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Absorption Depth Calculator" description="Calculate absorption depth δ = 1/α and explore spectral dependence for common optical materials.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -123,6 +122,6 @@ export default function AbsorptionDepthPage() {
         yaxis: { title: "δ (μm)", gridcolor: "#374151", type: "log" },
         margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { bgcolor: "transparent" },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

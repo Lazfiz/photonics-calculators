@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -161,7 +160,7 @@ export default function ModeMatchingPage() {
   }, [wavelength, w1, w2, d, solutions, d_mm, zR1, zR2]);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Mode Matching" description="Find the optimal lens for coupling one Gaussian beam mode into another.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 font-mono text-sm text-gray-300">
         <pre>{`q = z + i·z_R   (complex beam parameter)
@@ -213,6 +212,6 @@ Single thin lens mode matcher: find f and s
           margin: { t: 30, r: 30, b: 50, l: 70 }, showlegend: true, legend: { x: 0, y: 1.15, orientation: "h" },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

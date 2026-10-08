@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/electro-optic' },
-    title: 'Electro-Optic Coefficients',
-  description: 'Pockels effect materials for modulators, Q-switches, and phase shifters',
-};
+const href = "/materials/electro-optic";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Electro-Optic Coefficients',
-  'Pockels effect materials for modulators, Q-switches, and phase shifters',
-  'https://photonics-calculators.vercel.app/materials/electro-optic',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

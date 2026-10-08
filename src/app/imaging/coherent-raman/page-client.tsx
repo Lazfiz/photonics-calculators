@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c } from "../../../physics/constants";
@@ -81,7 +80,7 @@ export default function CoherentRamanPage() {
   }, [repRate, pulseWidth, results.w0]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Coherent Raman (CARS/SRS) Calculator" description="Coherent Anti-Stokes Raman Scattering and Stimulated Raman Scattering signal estimation.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -142,6 +141,6 @@ export default function CoherentRamanPage() {
           <ChartPanel data={powerPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Power (mW)", gridcolor: "#333" }, yaxis: { title: "Normalized signal", gridcolor: "#333" }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -58,8 +57,7 @@ export default function CoatingStressPage() {
   }, [sigmaFilm, eSub, tSub, numLayers]);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Coating Stress &amp; Curvature" description="Stoney equation: κ = 6σfdf / (Ests²). 
-        Relates thin-film stress to substrate curvature. Valid for thin films (df ≪ ts).">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>σ<sub>film</sub> (MPa)</>} value={sigmaFilm} onChange={setSigmaFilm} step="10" />
@@ -94,6 +92,6 @@ export default function CoatingStressPage() {
         yaxis: { title: "Curvature (m⁻¹)", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true,
       }} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -54,7 +53,7 @@ export default function GiresTournoisPage() {
   const gddCenter = gtiGdd(gti, wavelength * 1e-9) * 1e30; // fs²
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Gires-Tournois Interferometer" description="Dispersion control via a GTI — constant reflectivity with tunable group delay dispersion.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">δ</span> = 4πnL / λ (round-trip phase)</p>
@@ -96,6 +95,6 @@ export default function GiresTournoisPage() {
         <h3 className="text-sm text-gray-400 mb-2">Group Delay</h3>
         <ChartPanel data={gdData} layout={layout2} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

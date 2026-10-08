@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -45,7 +44,7 @@ export default function LibsAnalysisPage() {
   }, [wavelength, dopplerWidthNm, starkWidth, spectralRange]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="LIBS Analysis Calculator" description="Laser-Induced Breakdown Spectroscopy: model plasma line broadening (Stark + Doppler) and estimate plasma conditions.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Plasma Temperature T (K)" value={temperature} onChange={setTemperature} min={1000} step="1000" />
@@ -87,6 +86,6 @@ export default function LibsAnalysisPage() {
         yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151" },
         margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { bgcolor: "transparent" },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

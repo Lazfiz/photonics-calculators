@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -43,7 +42,7 @@ export default function InterferometerPage() {
   }, [armDiff, wavelength, reflectivity, calc]);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Interferometer Visibility" description="Michelson / Mach-Zehnder interferometer intensity vs path difference. Visibility limited by mirror reflectivity.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -87,6 +86,6 @@ export default function InterferometerPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

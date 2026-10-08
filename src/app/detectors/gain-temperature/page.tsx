@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/gain-temperature' },
-    title: 'Gain vs Temperature',
-    description: 'Temperature dependence of detector gain for APDs and PMTs.'
-};
+const href = "/detectors/gain-temperature";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Gain vs Temperature',
-  'Temperature dependence of detector gain for APDs and PMTs.',
-  'https://photonics-calculators.vercel.app/detectors/gain-temperature',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href} maxWidthClassName="max-w-5xl">
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

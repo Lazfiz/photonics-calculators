@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -51,9 +50,7 @@ export default function WavelengthSeparationPage() {
   }, [nH, nL, nSub, nInc, numPairs, designWl, bandwidthFactor]);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Wavelength Separation" description="Wavelength separation coatings combine multiple quarter-wave stacks at different design wavelengths
-        to reflect specific bands while transmitting others. Two stacks centered at λ₁ and λ₂ = 1.25·λ₁
-        demonstrate dichroic behavior. The combined stack shows how reflectance bands add when cascaded.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>H</sub></>} value={nH} onChange={setNH} step="0.01" />
@@ -77,6 +74,6 @@ export default function WavelengthSeparationPage() {
         margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true,
         legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0.3)", font: { size: 10 } },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

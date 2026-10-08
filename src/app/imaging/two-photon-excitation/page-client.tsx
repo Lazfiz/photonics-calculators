@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -34,7 +33,7 @@ export default function TwoPhotonExcitationPage() {
   }, [avgPower, repRate, pulseWidth, peakPower]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Two-Photon Excitation Calculator" description="Calculate two-photon excitation wavelength, peak power, and pulse energy from laser parameters.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-8">
         <ValidatedNumberInput label="1P Excitation λ (nm)" value={exWavelength} onChange={setExWavelength} min={300} max={900} />
@@ -91,6 +90,6 @@ export default function TwoPhotonExcitationPage() {
           }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

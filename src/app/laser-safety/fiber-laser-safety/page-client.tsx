@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
@@ -41,7 +40,7 @@ export default function FiberLaserSafetyPage() {
   }, [power, attenuation, fiberCoreDia, mpeWcm2]);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Fiber Laser Safety Calculator" description="Analyze output power, fiber facet irradiance, and NOHD for fiber laser systems (1064/1550 nm typical).">
+    <>
             
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
@@ -93,6 +92,6 @@ export default function FiberLaserSafetyPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

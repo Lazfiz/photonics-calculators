@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -80,8 +79,7 @@ export default function ConnectorReturnLossPage() {
   }, [coreRadius]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Connector Return Loss" description="Calculates return loss (RL) and insertion loss (IL) for fiber connectors with air gaps, lateral offsets, and angular misalignment.
-        Fresnel: r = (n₁ − n₂)/(n₁ + n₂), RL = −20 log₁₀|r|. Physical contact (PC) eliminates air gap.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>core</sub></>} value={n1} onChange={setN1} step="0.0001" />
@@ -117,6 +115,6 @@ export default function ConnectorReturnLossPage() {
         yaxis: { title: "IL (dB)", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true,
       }} />
-    </CalculatorShell>
+    </>
   );
 }

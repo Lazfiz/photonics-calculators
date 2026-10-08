@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -120,7 +119,7 @@ export default function AcoustoOpticPage() {
   }, []);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Acousto-Optic Materials" description="Acousto-optic figure of merit, Bragg angle, and deflection calculations">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
         <div>
@@ -196,6 +195,6 @@ export default function AcoustoOpticPage() {
        
        
       />
-    </CalculatorShell>
+    </>
   );
 }

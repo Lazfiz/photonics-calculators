@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -22,7 +21,7 @@ export default function SNRAveragingPage() {
   const improvement = Math.sqrt(maxScans);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="SNR Improvement with Co-Adding" description="SNR improves as √N where N is the number of co-added scans. Signal adds linearly, noise as √N.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Single-scan SNR" value={snrSingle} onChange={setSnrSingle} min={0.1} />
@@ -37,6 +36,6 @@ export default function SNRAveragingPage() {
       </div>
 
       <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Number of Scans", type: "log", gridcolor: "#374151" }, yaxis: { title: "SNR", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true }} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -31,7 +30,7 @@ export default function QuarterWavePage() {
   const designR = quarterWaveStackReflectance(nInc, [nFilm], nSub);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Quarter-Wave Thickness" description="Quarter-wave optical thickness (QWOT): nd = λ/4. Optimal AR when nfilm = √(ninc·nsub).">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>film</sub></>} value={nFilm} onChange={setNFilm} step="0.01" />
@@ -47,6 +46,6 @@ export default function QuarterWavePage() {
       </div>
 
       <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "R / T", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true }} />
-    </CalculatorShell>
+    </>
   );
 }

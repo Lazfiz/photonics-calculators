@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -65,7 +64,7 @@ export default function FourierSelfCombPage() {
   const spacingNm = (centerWavelength ** 2 * fRep * 1e-9) / c;
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Fourier Self-Comb Spectroscopy" description="Optical frequency comb from a single microresonator. Dual-comb spectroscopy without two separate lasers.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Repetition Rate f_rep (MHz)" value={repetitionRate} onChange={setRepetitionRate} min={1} max={10000} />
@@ -98,6 +97,6 @@ export default function FourierSelfCombPage() {
           showlegend: true, legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -91,7 +90,7 @@ export default function PolymerPolarizerPage() {
   }, [Aperp, d]);
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Polymer (Sheet) Polarizer" description="Model iodine-doped PVA film polarizers (e.g., H-sheet). Absorption-based dichroic polarizers with selectable dichroic ratio and film thickness.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">T<sub>∥</sub> = exp(-α<sub>∥</sub> · c · d), T<sub>⊥</sub> = exp(-α<sub>⊥</sub> · c · d)</p>
@@ -165,6 +164,6 @@ export default function PolymerPolarizerPage() {
           margin: { t: 20, r: 60, b: 50, l: 60 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

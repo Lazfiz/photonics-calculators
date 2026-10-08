@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -24,7 +23,7 @@ export default function ModeLockedLaserPage() {
   const peakPower = (1.5 * pulseDuration * 1e-15 * repRate * 1e6) / 1;
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Mode-Locked Laser" description="Ultrashort pulse generation through passive or active mode-locking.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Rep Rate (MHz)" value={repRate} onChange={setRepRate} step="1" />
@@ -42,6 +41,6 @@ export default function ModeLockedLaserPage() {
         yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

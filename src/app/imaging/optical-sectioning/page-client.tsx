@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -42,7 +41,7 @@ export default function OpticalSectioningPage() {
   }, [na, wavelength, n]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Optical Sectioning Calculator" description="Optical section thickness for confocal and widefield microscopy.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -79,6 +78,6 @@ export default function OpticalSectioningPage() {
         <h2 className="text-lg font-semibold mb-4">Section Thickness vs Pinhole Size (AU)</h2>
         <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Pinhole (AU)", gridcolor: "#333" }, yaxis: { title: "Axial extent (µm)", gridcolor: "#333" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

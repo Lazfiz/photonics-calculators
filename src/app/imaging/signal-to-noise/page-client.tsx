@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -67,7 +66,7 @@ export default function SignalToNoisePage() {
   };
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Imaging Signal-to-Noise Ratio" description="Comprehensive SNR calculation for microscopy imaging systems.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -155,6 +154,6 @@ export default function SignalToNoisePage() {
           <p>Binning improves SNR by combining charge from adjacent pixels (signal scales as B², shot noise as B), but reduces spatial resolution. Frame averaging improves SNR as √N at the cost of temporal resolution. The Rose criterion (SNR ≥ 5) is a practical threshold for reliable feature detection.</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

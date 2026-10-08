@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -60,7 +59,7 @@ export default function HardCoatingPage() {
   const arMismatch = Math.abs(thickness - idealThickness) / idealThickness * 100;
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Hard Coating Design" description="Abrasion-resistant optical coating — balance mechanical hardness with optical performance.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>coating</sub></>} value={nCoat} onChange={setNCoat} step="0.01" />
@@ -124,6 +123,6 @@ export default function HardCoatingPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

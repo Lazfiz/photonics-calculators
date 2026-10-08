@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -59,7 +58,7 @@ export default function ContrastMethodsPage() {
   }, [na, wavelength, n, phaseShift, shearAmount, dnSample]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Phase Contrast &amp; DIC Calculator" description="Contrast calculations for phase contrast and differential interference contrast microscopy.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -112,6 +111,6 @@ export default function ContrastMethodsPage() {
         <h2 className="text-lg font-semibold mb-4">Contrast vs Sample Thickness</h2>
         <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Thickness (µm)", gridcolor: "#333" }, yaxis: { title: "Contrast (fraction)", gridcolor: "#333" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

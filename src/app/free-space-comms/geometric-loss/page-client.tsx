@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -42,7 +41,7 @@ export default function GeometricLossPage() {
   }, [txBeamDivergence, rxAperture]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="FSO Geometric Loss" description="Beam diameter at the receiver, geometric spreading loss and coupling efficiency from transmitter divergence, apertures, range and wavelength." maxWidthClassName="max-w-5xl">
+    <>
       
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
                 <p className="text-cyan-300 mt-1 font-mono">L_geo = 10·log₁₀(A_rx / A_beam) = 20·log₁₀(d_rx / d_beam)</p>
@@ -86,6 +85,6 @@ export default function GeometricLossPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

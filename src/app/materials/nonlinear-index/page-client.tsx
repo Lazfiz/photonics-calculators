@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
 interface Material {
@@ -40,7 +39,7 @@ export default function NonlinearIndexPage() {
   // Let's keep it simple: show Δn and self-phase modulation
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Nonlinear Refractive Index (n₂)" description="Kerr effect: Δn = n₂ · I, where I is the optical intensity">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div>
@@ -87,6 +86,6 @@ export default function NonlinearIndexPage() {
           </tbody>
         </table>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

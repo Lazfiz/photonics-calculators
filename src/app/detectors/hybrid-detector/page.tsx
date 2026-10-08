@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/hybrid-detector' },
-    title: 'Hybrid Detector Design',
-    description: 'Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.'
-};
+const href = "/detectors/hybrid-detector";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Hybrid Detector Design',
-  'Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.',
-  'https://photonics-calculators.vercel.app/detectors/hybrid-detector',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href} maxWidthClassName="max-w-5xl">
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

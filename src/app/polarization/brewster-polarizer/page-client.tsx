@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -101,7 +100,7 @@ export default function BrewsterPolarizerPage() {
   const TpStack = TpSingle ** numSurfaces;
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Brewster Polarizer Design" description="Design Brewster-angle polarizers using tilted glass plates. At Brewster&apos;s angle, p-polarized light has zero reflection.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">θ<sub>B</sub> = arctan(n₂/n₁)</p>
@@ -165,6 +164,6 @@ export default function BrewsterPolarizerPage() {
           }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

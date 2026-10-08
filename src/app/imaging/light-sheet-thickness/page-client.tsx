@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -37,7 +36,7 @@ export default function LightSheetThicknessPage() {
   }, [sheetLength, zRUm]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Light Sheet Thickness Calculator" description="Calculate the thickness and propagation characteristics of a Gaussian light sheet for light-sheet fluorescence microscopy (LSFM).">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={350} max={800} />
@@ -87,6 +86,6 @@ export default function LightSheetThicknessPage() {
           }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

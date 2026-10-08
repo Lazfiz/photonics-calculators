@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/polarization/orthoconoscopic' },
-    title: 'Orthoscopic Observation',
-  description: 'Model orthoscopic observation of birefringent samples with rotating stage. Calculate intensity vs rotation angle and interference colors.'
-};
+const href = "/polarization/orthoconoscopic";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Orthoscopic Observation',
-  'Model orthoscopic observation of birefringent samples with rotating stage. Calculate intensity vs rotation angle and interference colors.',
-  'https://photonics-calculators.vercel.app/polarization/orthoconoscopic',
-  { category: 'Polarization' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

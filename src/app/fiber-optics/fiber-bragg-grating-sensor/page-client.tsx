@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -120,7 +119,7 @@ export default function FiberBraggGratingSensorPage() {
   }, [strainSensitivity, tempSensitivity]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Fiber Bragg Grating Sensor" description="Calculate FBG wavelength shift for strain and temperature sensing applications.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Grating Period Λ (nm)" value={gratingPeriod} onChange={setGratingPeriod} step="1" />
@@ -211,6 +210,6 @@ export default function FiberBraggGratingSensorPage() {
           <p>Cross-sensitivity requires compensation techniques (dual-grating, etc.)</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

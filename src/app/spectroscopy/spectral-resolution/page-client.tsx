@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -41,7 +40,7 @@ export default function SpectralResolutionPage() {
   }, [currentRes, gratingWL]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Resolution Calculator" description="Compare spectral resolution across grating, prism, and Fabry-Pérot spectrometers.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -101,6 +100,6 @@ export default function SpectralResolutionPage() {
         yaxis: { title: "Normalized Intensity", gridcolor: "#374151", range: [0, 1.1] },
         margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { bgcolor: "transparent" },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

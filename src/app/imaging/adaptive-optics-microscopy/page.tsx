@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/adaptive-optics-microscopy' },
-    title: 'Adaptive Optics in Microscopy',
-  description: 'Wavefront correction, Strehl ratio recovery, and resolution improvement for deep-tissue imaging.'
-};
+const href = "/imaging/adaptive-optics-microscopy";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Adaptive Optics in Microscopy',
-  'Wavefront correction, Strehl ratio recovery, and resolution improvement for deep-tissue imaging.',
-  'https://photonics-calculators.vercel.app/imaging/adaptive-optics-microscopy',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

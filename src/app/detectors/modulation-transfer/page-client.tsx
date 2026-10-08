@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
@@ -59,7 +58,7 @@ export default function ModulationTransferPage() {
     Math.exp(-0.5 * Math.pow(kNyquist * opticalBlur, 2));
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Modulation Transfer Function (MTF)" description="Image sensor MTF: pixel aperture, charge diffusion, and optical blur contributions.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Pixel Pitch (μm)" value={pixelPitch} onChange={setPixelPitch} />
         <ValidatedNumberInput label="Diffusion Length (μm)" value={diffusionLength} onChange={setDiffusionLength} />
@@ -80,6 +79,6 @@ export default function ModulationTransferPage() {
         shapes: [{ type: "line" as const, x0: nyquist, x1: nyquist, y0: 0, y1: 1, line: { color: "#6b7280", width: 1, dash: "dot" } }],
         margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true, showlegend: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -87,7 +86,7 @@ export default function ApodizationComparisonPage() {
   }, [selected, nPoints]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Apodization Comparison" description="Compare 9 window functions and their instrument line shapes (ILS). Select windows to overlay.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="N Points" value={nPoints} onChange={setNPoints} min={16} max={2048} />
@@ -118,6 +117,6 @@ export default function ApodizationComparisonPage() {
         yaxis2: { title: "Magnitude (dB)", gridcolor: "#374151", range: [viewDb, 5] },
         height: 500, margin: { t: 30, b: 40 }, legend: { font: { size: 10 } },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

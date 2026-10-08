@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
@@ -78,7 +77,7 @@ export default function DiffuseReflectionPage() {
   const riskColor = hazardRatio > 10 ? "text-red-500" : hazardRatio > 1 ? "text-yellow-400" : "text-green-400";
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Diffuse Reflection Hazard" description="Evaluate hazard from Lambertian (diffuse) reflections off matte surfaces. Uses extended-source MPE.">
+    <>
             
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
@@ -119,6 +118,6 @@ export default function DiffuseReflectionPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

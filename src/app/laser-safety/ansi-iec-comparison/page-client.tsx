@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -78,7 +77,7 @@ export default function AnsiIecComparisonPage() {
   };
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="ANSI vs IEC MPE Comparison" description="Compares Maximum Permissible Exposure (ANSI Z136.1) with Accessible Emission Limits (IEC 60825-1) across wavelengths.">
+    <>
             
       <LaserSafetyDisclaimer />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -121,6 +120,6 @@ export default function AnsiIecComparisonPage() {
       </div>
 
       <ChartPanel data={chartData} layout={layout} className="w-full h-[400px]" />
-    </CalculatorShell>
+    </>
   );
 }

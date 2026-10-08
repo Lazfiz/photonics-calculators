@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -115,7 +114,7 @@ export default function ChalcogenideGlassPage() {
   }, [selected, plotMode]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Chalcogenide Glass Properties" description="IR-transparent glasses for thermal imaging, sensing, and nonlinear optics">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-6">
         <div>
@@ -175,6 +174,6 @@ export default function ChalcogenideGlassPage() {
        
        
       />
-    </CalculatorShell>
+    </>
   );
 }

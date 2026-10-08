@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -95,7 +94,7 @@ export default function FRAPPage() {
   }, [tauHalf]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="FRAP Diffusion Coefficient Calculator" description="Calculate diffusion coefficients from Fluorescence Recovery After Photobleaching data.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -141,6 +140,6 @@ export default function FRAPPage() {
           <ChartPanel data={diffPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Bleach radius w₀ (µm)", gridcolor: "#333" }, yaxis: { title: "D (µm²/s)", gridcolor: "#333" }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

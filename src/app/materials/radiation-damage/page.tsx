@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/materials/radiation-damage' },
-    title: 'Radiation Damage Effects',
-  description: 'Radiation-induced absorption and transmission loss in optical materials',
-};
+const href = "/materials/radiation-damage";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Radiation Damage Effects',
-  'Radiation-induced absorption and transmission loss in optical materials',
-  'https://photonics-calculators.vercel.app/materials/radiation-damage',
-  { category: 'Materials' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

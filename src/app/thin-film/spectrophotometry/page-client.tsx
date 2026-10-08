@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -45,7 +44,7 @@ export default function SpectrophotometryPage() {
   const qwoThickness = 550 / (4 * nFilm);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Spectrophotometry" description="Model spectrophotometric R, T, A spectra for a single absorbing thin film using transfer matrix method with complex refractive index.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>film</sub></>} value={nFilm} onChange={setNFilm} step="0.01" />
@@ -78,6 +77,6 @@ export default function SpectrophotometryPage() {
         yaxis: { title: "R / T / A", gridcolor: "#374151", range: [0, 1.05] },
         margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true, legend: { x: 0.01, y: 0.99 }
       }} />
-    </CalculatorShell>
+    </>
   );
 }

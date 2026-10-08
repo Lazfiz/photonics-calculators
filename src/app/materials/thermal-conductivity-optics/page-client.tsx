@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -59,7 +58,7 @@ export default function ThermalConductivityPage() {
   }, []);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Thermal Conductivity for Optics" description="Heat transport in optical substrates">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono">
         <p>R_th = d / (k · A) &nbsp;|&nbsp; ΔT = P · R_th &nbsp;|&nbsp; k(T) = A + BT + CT²</p>
@@ -115,6 +114,6 @@ export default function ThermalConductivityPage() {
        
        
       />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -56,7 +55,7 @@ export default function MichelsonInterferometerPage() {
   const resolvingPower = maxOPD / wavelength;
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Michelson Interferometer" description="Interferogram → spectrum via Fourier transform. Core of FTIR spectroscopy.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Central λ (μm)" value={wavelength} onChange={setWavelength} min={0.1} />
@@ -92,6 +91,6 @@ export default function MichelsonInterferometerPage() {
         yaxis2: { title: "Spectral Intensity", gridcolor: "#374151" },
         height: 700, margin: { t: 30, b: 40 },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

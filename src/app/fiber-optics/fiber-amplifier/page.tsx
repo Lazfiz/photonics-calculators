@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/fiber-amplifier' },
-    title: 'Fiber Amplifier Calculator',
-    description: 'EDFA and YDFA gain, saturation, and noise figure analysis.'
-};
+const href = "/fiber-optics/fiber-amplifier";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Fiber Amplifier Calculator',
-  'EDFA and YDFA gain, saturation, and noise figure analysis.',
-  'https://photonics-calculators.vercel.app/fiber-optics/fiber-amplifier',
-  { category: 'Fiber Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

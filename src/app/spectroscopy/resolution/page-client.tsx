@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
@@ -20,7 +19,7 @@ export default function ResolutionPage() {
   const angleOfIncidence = Math.abs(sinTheta) <= 1 ? Math.asin(sinTheta) * 180 / Math.PI : NaN;
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Resolution" description="Resolving power and minimum resolvable wavelength for a diffraction grating spectrometer.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Grating (lines/mm)" value={gratingLines} onChange={setGratingLines} />
@@ -50,6 +49,6 @@ export default function ResolutionPage() {
         <p>Δλ<sub>min</sub> = λ / R</p>
         <p>sin(θ) = mλ / d = mλ × (lines/mm) × 10<sup>-6</sup></p>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -27,7 +26,7 @@ export default function QSwitchedLaserPage() {
   const avgPower = pulseEnergy * repRate; // W
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Q-Switched Laser" description="High-energy pulse generation through repetitive Q-switching of a laser cavity.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Rep Rate (kHz)" value={repRate} onChange={setRepRate} step="1" />
@@ -47,6 +46,6 @@ export default function QSwitchedLaserPage() {
         yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

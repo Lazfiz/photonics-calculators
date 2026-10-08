@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -75,7 +74,7 @@ export default function SpectralDeconvolutionPage() {
   const peakFractions = totalArea > 0 ? peakAreas.map((a, i) => `${i + 1}: ${((a / totalArea) * 100).toFixed(1)}%`).join(" · ") : "N/A (zero area)";
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Deconvolution" description="Decompose overlapping spectral bands into individual Gaussian components.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -146,6 +145,6 @@ export default function SpectralDeconvolutionPage() {
           showlegend: true,
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

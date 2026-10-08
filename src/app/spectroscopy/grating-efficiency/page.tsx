@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/grating-efficiency' },
-    title: 'Grating Efficiency Calculator',
-  description: 'Estimate diffraction grating efficiency based on groove density, blaze angle, and wavelength.'
-};
+const href = "/spectroscopy/grating-efficiency";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Grating Efficiency Calculator',
-  'Estimate diffraction grating efficiency based on groove density, blaze angle, and wavelength.',
-  'https://photonics-calculators.vercel.app/spectroscopy/grating-efficiency',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

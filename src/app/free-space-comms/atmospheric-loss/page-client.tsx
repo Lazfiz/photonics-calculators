@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -94,7 +93,7 @@ export default function AtmosphericLossPage() {
   }, [visibility, humidity, temperature, altitude]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="FSO Atmospheric Loss" description="Visibility-based (Kim) scattering plus water-vapour absorption: attenuation in dB/km, total path loss and transmittance of a free-space optical link." maxWidthClassName="max-w-5xl">
+    <>
       
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -136,6 +135,6 @@ export default function AtmosphericLossPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

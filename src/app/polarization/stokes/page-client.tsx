@@ -1,11 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import InputSlider from "../../../components/input-slider";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
 type Preset = "linear-h" | "linear-v" | "linear-45" | "linear-135" | "rcp" | "lcp" | "elliptical";
 
@@ -19,7 +16,6 @@ const presets: Record<Preset, { I: number; Q: number; U: number; V: number; labe
   elliptical: { I: 1, Q: 0.5, U: 0.5, V: 0.5, label: "Elliptical" },
 };
 
-const currentHref = "/polarization/stokes";
 
 export default function StokesPage() {
   const [I, setI] = useURLState("I", 1);
@@ -59,7 +55,7 @@ export default function StokesPage() {
   const statePoint = I > 0 ? { x: [Q / I], y: [U / I], z: [V / I] } : { x: [0], y: [0], z: [0] };
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Stokes Parameters" description="Analyze polarization state from Stokes vector components with sliders, presets, and Poincaré sphere visualization.">
+    <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Stokes Vector Input</h2>
@@ -117,9 +113,7 @@ export default function StokesPage() {
           />
         </div>
       </div>
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }
 

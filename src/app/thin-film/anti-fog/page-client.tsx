@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -47,7 +46,7 @@ export default function AntiFogPage() {
   const surfaceEnergy = cosTheta * 72.8; // mN/m, relative to water (γ_water = 72.8 mN/m)
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Anti-Fog Coating Design" description="Hydrophilic thin film that spreads condensation into a uniform water layer, minimizing scattering.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>coating</sub></>} value={nCoat} onChange={setNCoat} step="0.01" />
@@ -93,6 +92,6 @@ export default function AntiFogPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { orientation: "h", y: 1.12 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/fluorescence-spectra' },
-    title: 'Fluorescence Spectra Overlap Calculator',
-  description: 'Compare excitation/emission spectra, spectral overlap, and filter crosstalk.'
-};
+const href = "/imaging/fluorescence-spectra";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Fluorescence Spectra Overlap Calculator',
-  'Compare excitation/emission spectra, spectral overlap, and filter crosstalk.',
-  'https://photonics-calculators.vercel.app/imaging/fluorescence-spectra',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

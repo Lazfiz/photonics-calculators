@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -89,7 +88,7 @@ export default function MacrobendingLossPage() {
   }, [bendRadius, coreRadius, coreNA]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Macrobending Loss" description="Detailed macrobending loss calculation using the curvature radiation model for single-mode fiber.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Bend Radius (mm)" value={bendRadius} onChange={setBendRadius} min={1} step="0.5" />
@@ -150,6 +149,6 @@ export default function MacrobendingLossPage() {
           <p>ITU-T G.657: Bend-insensitive fiber specs at R=7.5, 10, 15, 30mm</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

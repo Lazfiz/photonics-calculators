@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -56,11 +55,9 @@ export default function PowerDensityPage() {
   };
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety">
+    <>
       <LaserSafetyDisclaimer />
       <div className="max-w-4xl mx-auto">
-<h1 className="text-3xl font-bold mb-2">Power Density Calculator</h1>
-        <p className="text-gray-400 mb-8">Calculate irradiance (W/cm²) from laser power and beam diameter for Gaussian and top-hat profiles.</p>
 
         <div className="bg-[#12121a] rounded-xl p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4">Formulas</h2>
@@ -128,6 +125,6 @@ export default function PowerDensityPage() {
           />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
@@ -89,7 +88,7 @@ export default function AtmosphericAttenuationPage() {
   }, [results, distance]);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Atmospheric Attenuation" description="Calculates atmospheric beam attenuation using Beer-Lambert law with water vapor absorption, CO₂ absorption, Rayleigh and Mie scattering. Useful for outdoor laser safety NOHD calculations.">
+    <>
             
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
@@ -156,6 +155,6 @@ export default function AtmosphericAttenuationPage() {
           <p>Attenuation (dB) = −10 log₁₀(T)</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

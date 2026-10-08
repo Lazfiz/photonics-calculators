@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/ccd-vs-cmos' },
-    title: 'CCD vs CMOS Sensor Comparison',
-    description: 'Compare sensor architectures — SNR, dynamic range, and performance metrics.'
-};
+const href = "/detectors/ccd-vs-cmos";
 
-const jsonLd = generateCalculatorJsonLd(
-  'CCD vs CMOS Sensor Comparison',
-  'Compare sensor architectures — SNR, dynamic range, and performance metrics.',
-  'https://photonics-calculators.vercel.app/detectors/ccd-vs-cmos',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

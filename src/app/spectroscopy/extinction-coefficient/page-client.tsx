@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -30,7 +29,7 @@ export default function ExtinctionCoefficientPage() {
   }, [concentration, pathLength, absorbance, extinctionCoeff]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Extinction Coefficient" description="Calculate molar and specific extinction coefficients from absorbance measurements. Beer-Lambert law: ε = A / (c·l).">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Absorbance (A)" value={absorbance} onChange={setAbsorbance} min={0} />
@@ -70,6 +69,6 @@ export default function ExtinctionCoefficientPage() {
           margin: { t: 30, r: 60, b: 50, l: 70 }, legend: { x: 0.01, y: 0.99 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/detectors/channel-photomultiplier' },
-    title: 'Channel Photomultiplier (Multi-Channel PMT)',
-    description: 'Multi-channel PMT: gain staging, energy resolution, and timing.'
-};
+const href = "/detectors/channel-photomultiplier";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Channel Photomultiplier (Multi-Channel PMT)',
-  'Multi-channel PMT: gain staging, energy resolution, and timing.',
-  'https://photonics-calculators.vercel.app/detectors/channel-photomultiplier',
-  { category: 'Detectors' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

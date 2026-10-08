@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -52,7 +51,7 @@ export default function StrayLightPage() {
   const rejectionDB = scatterFraction > 0 ? 10 * Math.log10(1 / scatterFraction) : Infinity;
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Stray Light Rejection" description="Ghost order analysis and stray light estimation for grating-based spectrometers.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Grating (lines/mm)" value={gratingLines} onChange={setGratingLines} min={50} max={3600} />
@@ -89,6 +88,6 @@ export default function StrayLightPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { x: 0.6, y: 0.99 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

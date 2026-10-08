@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { c } from "../../../physics/constants";
@@ -74,7 +73,7 @@ export default function SecondHarmonicPage() {
   }, [results.coherenceLength]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Second Harmonic Generation Calculator" description="SHG signal estimation, coherence length, and phase matching for nonlinear imaging.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -124,6 +123,6 @@ export default function SecondHarmonicPage() {
           <ChartPanel data={phasePlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Thickness (µm)", gridcolor: "#333" }, yaxis: { title: "Relative efficiency", gridcolor: "#333", range: [0, 1.1] }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -26,7 +25,7 @@ export default function ConcentrationPage() {
   }, [absorbance, pathLength, extinctionCoeff, cMax, concentration]);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Concentration from Absorbance" description="c = A / (ε·l) — determine concentration from measured absorbance using Beer-Lambert law.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <ValidatedNumberInput label="Absorbance (A)" value={absorbance} onChange={setAbsorbance} min={0} />
@@ -68,6 +67,6 @@ export default function ConcentrationPage() {
           margin: { t: 30 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

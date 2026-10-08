@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -137,7 +136,7 @@ export default function PolymerOpticsPage() {
   }, []);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Polymer Optical Materials" description="Refractive index, dispersion, and loss data for optical polymers">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
         <div>
@@ -198,6 +197,6 @@ export default function PolymerOpticsPage() {
        
        
       />
-    </CalculatorShell>
+    </>
   );
 }

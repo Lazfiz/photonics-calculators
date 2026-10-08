@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -65,7 +64,7 @@ export default function SpectralLineBroadeningPage() {
   const totalFWHM = Math.pow(fG**5 + 2.69269*fG**4*fL + 2.42843*fG**3*fL**2 + 4.47163*fG**2*fL**3 + 0.07842*fG*fL**4 + fL**5, 0.2);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Spectral Line Broadening" description="Doppler, collisional, natural, and Voigt broadening mechanisms.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Center λ (nm)" value={centerWl} onChange={setCenterWl} min={100} />
@@ -103,6 +102,6 @@ export default function SpectralLineBroadeningPage() {
         yaxis: { title: "Normalized Intensity", gridcolor: "#374151", range: [-0.05, 1.1] },
         height: 500, margin: { t: 30, b: 40 },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

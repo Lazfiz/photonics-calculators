@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -27,7 +26,7 @@ export default function OpticalFrequencyCombPage() {
   }, [repRate, centerWavelength, combLines]);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Optical Frequency Comb" description="Precision spectroscopy and metrology using a train of equally spaced narrow spectral lines.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Rep Rate (MHz)" value={repRate} onChange={setRepRate} step="1" />
@@ -46,6 +45,6 @@ export default function OpticalFrequencyCombPage() {
         yaxis: { title: "Amplitude", gridcolor: "#374151" },
         margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

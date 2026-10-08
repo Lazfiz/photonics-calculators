@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -80,7 +79,7 @@ export default function ParametricAmplificationPage() {
   const bwNm = bandwidthHz > 0 ? bandwidthHz * (wavelength * 1e-9) ** 2 / c * 1e9 : 0; // Hz → nm
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Parametric Amplification" description="Optical parametric amplification (OPA) gain and bandwidth in χ⁽²⁾ nonlinear crystals.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">G</span> = cosh²(g · L)</p>
@@ -124,6 +123,6 @@ export default function ParametricAmplificationPage() {
           <ChartPanel data={powerData} layout={powerLayout} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

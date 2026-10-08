@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -48,7 +47,7 @@ export default function SecondHarmonicMicroscopyPage() {
   }, [deltaK, thickness, sincFactor]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Second-Harmonic Generation Microscopy Calculator" description="Calculate SHG wavelength, resolution, phase matching, and signal strength for SHG microscopy of collagen, muscle, and other non-centrosymmetric structures.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Excitation λ (nm)" value={wavelength} onChange={setWavelength} min={600} max={1300} />
@@ -103,6 +102,6 @@ export default function SecondHarmonicMicroscopyPage() {
           <ChartPanel data={phaseChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af", size: 11 }, title: { text: "Phase Matching vs Thickness", font: { size: 13 } }, xaxis: { title: "Thickness (µm)", gridcolor: "#374151" }, yaxis: { title: "Efficiency (a.u.)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 40, b: 55 } }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

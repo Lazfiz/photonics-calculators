@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
@@ -74,7 +73,7 @@ export default function SkinHazardPage() {
   const riskColor = hazardRatio > 100 ? "text-red-500" : hazardRatio > 10 ? "text-orange-400" : hazardRatio > 1 ? "text-yellow-400" : "text-green-400";
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Skin Hazard Assessment" description="Evaluate skin exposure risk from laser irradiation per ANSI Z136.1 simplified skin MPE.">
+    <>
             
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
@@ -109,6 +108,6 @@ export default function SkinHazardPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

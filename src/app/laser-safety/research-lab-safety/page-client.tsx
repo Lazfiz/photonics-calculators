@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
@@ -89,7 +88,7 @@ export default function ResearchLabSafetyPage() {
   }, [totalPower, beamDia, divergence, labLength, labWidth]);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Research Lab Laser Safety Calculator" description="Evaluate laser hazard zones, OD requirements, beam path analysis, and room coverage for research labs.">
+    <>
             
       <LaserSafetyDisclaimer />
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
@@ -154,6 +153,6 @@ export default function ResearchLabSafetyPage() {
           margin: { t: 30, r: 80, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

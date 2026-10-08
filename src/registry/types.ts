@@ -1,6 +1,6 @@
 // The calculator registry: one entry per page under src/app/<category>/<slug>/. The sitemap, the
 // search index, the counts, the home page and the category index pages are generated from it.
-// tests/registry.test.ts checks it against the file system and against each page's metadata.
+// tests/registry.test.ts checks it against the file system; CalculatorShell renders each page from it.
 
 export const CATEGORY_IDS = [
   "detectors",

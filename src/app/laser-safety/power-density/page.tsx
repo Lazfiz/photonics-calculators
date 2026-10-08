@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/power-density' },
-    title: 'Power Density Calculator',
-  description: 'Peak and average irradiance of a Gaussian beam from power and 1/e² diameter, with the beam area and the radial intensity profile.'
-};
+const href = "/laser-safety/power-density";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Power Density Calculator',
-  'Peak and average irradiance of a Gaussian beam from power and 1/e² diameter, with the beam area and the radial intensity profile.',
-  'https://photonics-calculators.vercel.app/laser-safety/power-density',
-  { category: 'Laser Safety' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

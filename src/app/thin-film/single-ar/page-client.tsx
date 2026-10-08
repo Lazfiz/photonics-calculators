@@ -1,12 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
@@ -17,7 +14,6 @@ function snellAngle(nFrom: number, nTo: number, thetaFrom: number) {
 }
 
 const substratePresets = [1.45, 1.52, 1.76];
-const currentHref = "/thin-film/single-ar";
 
 export default function SingleARPage() {
   const [nSubstrate, setNSubstrate] = useURLState("nSubstrate", 1.52);
@@ -51,12 +47,7 @@ export default function SingleARPage() {
   );
 
   return (
-    <CalculatorShell
-      backHref="/thin-film"
-      backLabel="Thin Film"
-      title="Single Layer AR Coating"
-      description="Quarter-wave antireflection coating design with Snell’s law and explicit s/p polarization handling at oblique incidence."
-    >
+    <>
       <div className="mb-5 flex flex-wrap gap-2">
         {substratePresets.map((preset) => (
           <button key={preset} onClick={() => setNSubstrate(preset)} className={`rounded-full border px-3 py-1 text-sm transition ${nSubstrate === preset ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>nₛ = {preset}</button>
@@ -91,8 +82,6 @@ export default function SingleARPage() {
         yLabel="Reflectance (%)"
         series={series}
       />
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

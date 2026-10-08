@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/viewing-distance' },
-    title: 'Safe Viewing Distance (CW point-source pre-check)',
-  description: 'Bounded CW point-source direct-beam viewing-distance pre-check using the same assumptions as the MPE and NOHD pages.'
-};
+const href = "/laser-safety/viewing-distance";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Safe Viewing Distance (CW point-source pre-check)',
-  'Bounded CW point-source direct-beam viewing-distance pre-check using the same assumptions as the MPE and NOHD pages.',
-  'https://photonics-calculators.vercel.app/laser-safety/viewing-distance',
-  { category: 'Laser Safety' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

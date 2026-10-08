@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -38,7 +37,7 @@ export default function AntibloomingPage() {
   const leakedCharge = excessCharge * (1 - chargeDumpEfficiency);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Anti-Blooming Design" description="Anti-blooming shunts excess charge to drain when well exceeds threshold. Trade-off: charge dump efficiency vs full well capacity and linearity.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Full well capacity (e⁻)" value={wellCapacity} onChange={setWellCapacity} step="1000" min={1000} />
         <ValidatedNumberInput label="AB threshold (fraction of well)" value={abThreshold} onChange={setAbThreshold} min={0} max={1} step="0.05" />
@@ -58,6 +57,6 @@ export default function AntibloomingPage() {
         <p>Note: real AB circuits have gradual onset — this uses a hard-threshold approximation</p>
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Incident electrons (e⁻)", gridcolor: "#374151" }, yaxis: { title: "Collected (e⁻)", gridcolor: "#374151" }, yaxis2: { title: "Collection Efficiency (%)", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -110,7 +109,7 @@ export default function CavityModeSpacingPage() {
   };
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Cavity Mode Spacing" description="Axial and transverse mode structure of optical resonators.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
         <p><span className="text-blue-400">FSR</span> = c / (2nL)</p>
@@ -156,6 +155,6 @@ export default function CavityModeSpacingPage() {
           <ChartPanel data={[...stabData, { x: [g1], y: [g2], type: "scatter" as const, mode: "markers" as const, marker: { color: "#f87171", size: 12 }, name: "This cavity" }]} layout={layout2} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

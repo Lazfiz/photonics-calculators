@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -92,7 +91,7 @@ export default function BirefringentPolarizerPage() {
   };
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Birefringent Polarizer Design" description="Compare Glan, Wollaston, Rochon, and Senarmont polarizer designs using birefringent crystal prisms.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">Δn = n<sub>o</sub> - n<sub>e</sub>, Wollaston deviation ≈ 2Δn·tan(α)</p>
@@ -174,6 +173,6 @@ export default function BirefringentPolarizerPage() {
           }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

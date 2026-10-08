@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -50,7 +49,7 @@ export default function LightFieldPage() {
   };
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Light Field Microscopy" description="Angular resolution, spatial-angular tradeoff, and synthetic aperture parameters.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -116,6 +115,6 @@ export default function LightFieldPage() {
           <p>The spatial-angular tradeoff means increasing angular sampling (more rays per microlens) reduces spatial sampling and vice versa. Synthetic aperture techniques can recover resolution by computationally combining views.</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

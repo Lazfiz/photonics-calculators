@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -89,7 +88,7 @@ export default function LiquidCrystalPolarizerPage() {
   }, [neNo, lambda, mode, twistAngle, twistRad]);
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Liquid Crystal Polarizer" description="Model transmission through twisted nematic (TN), super-twisted nematic (STN), vertically aligned (VA), and electrically controlled birefringence (ECB) LC cells.">
+    <>
             
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
         <p className="text-gray-300 text-sm font-mono">δ = 2π Δn d / λ, T<sub>TN</sub> = sin²(½π√(1+u²)) / (1+u²)</p>
@@ -159,6 +158,6 @@ export default function LiquidCrystalPolarizerPage() {
           }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

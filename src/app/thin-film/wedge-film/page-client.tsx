@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -52,10 +51,7 @@ export default function WedgeFilmPage() {
   const fringeSpacing = chartData.fringeSpacing;
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Wedge Thin Film" description="Wedged thin films have a linearly varying thickness across the surface, creating spatially
-        varying interference. Used in optical testing (Newton&apos;s rings, Fizeau interferometry),
-        anti-reflection edge filters, and precision thickness measurement. The fringe spacing
-        Δx = λ / (2n·tan α) determines the spatial period of constructive interference.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>film</sub></>} value={nFilm} onChange={setNFilm} step="0.01" />
@@ -89,6 +85,6 @@ export default function WedgeFilmPage() {
         yaxis: { title: "Reflectance", gridcolor: "#374151" },
         margin: { t: 40, b: 40, l: 50, r: 20 }, autosize: true,
       }} />
-    </CalculatorShell>
+    </>
   );
 }

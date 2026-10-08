@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -37,9 +36,7 @@ export default function ColdMirrorPage() {
   const rMax = quarterWaveStackReflectance(nInc, Array.from({ length: numPairs * 2 }, (_, j) => (j % 2 === 0 ? nH : nL)), nSub);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Cold Mirror Design" description="Cold mirrors reflect visible light while transmitting infrared. Used in projector systems,
-        illumination optics, and laser setups to separate visible from IR (heat). The (HL)N stack
-        is a high-reflector centered in the visible band, while IR passes through the stop band edges.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>H</sub> (high index)</>} value={nH} onChange={setNH} step="0.01" />
@@ -63,6 +60,6 @@ export default function ColdMirrorPage() {
         yaxis: { title: "R / T", gridcolor: "#374151", range: [0, 1.05] },
         margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true,
       }} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -31,7 +30,7 @@ export default function GainBandwidthPage() {
   }, [gainDC, gbwProduct, feedbackFraction]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Gain-Bandwidth Product" description="GBW = A₀ · f₋₃dB. The product of DC gain and bandwidth is constant for a single-pole system.">
+    <>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="DC Gain (V/V)" value={gainDC} onChange={setGainDC} />
         <ValidatedNumberInput label="GBW Product (Hz)" value={gbwProduct} onChange={setGbwProduct} />
@@ -44,6 +43,6 @@ export default function GainBandwidthPage() {
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono"><p>A(f) = A₀ / √(1 + (f/f₋₃dB)²)</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Frequency (Hz)", type: "log", gridcolor: "#374151" }, yaxis: { title: "Gain (V/V)", type: "log", gridcolor: "#374151" } }} />
-    </CalculatorShell>
+    </>
   );
 }

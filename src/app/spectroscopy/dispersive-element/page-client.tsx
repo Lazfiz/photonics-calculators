@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -62,7 +61,7 @@ export default function DispersiveElementPage() {
   const resolvingPower = order * grooveDensity; // per mm of grating width: R = m·N, N = grooves/mm
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Dispersive Element Design" description="Diffraction grating parameters: grating equation, angular/linear dispersion, blaze profile.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Groove Density (l/mm)" value={grooveDensity} onChange={setGrooveDensity} min={50} />
@@ -107,6 +106,6 @@ export default function DispersiveElementPage() {
         yaxis3: { title: "Efficiency (%)", gridcolor: "#374151", range: [0, 110] },
         height: 900, margin: { t: 30, b: 40 },
       }} />
-    </CalculatorShell>
+    </>
   );
 }

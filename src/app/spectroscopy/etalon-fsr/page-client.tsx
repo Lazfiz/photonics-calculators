@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -36,7 +35,7 @@ export default function EtalonFSRPage() {
   const FSR_nm = fsrDesign * 1000;
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Etalon Free Spectral Range" description="Fabry-Pérot etalon: FSR = λ²/(2nd cos θ). Transmission follows the Airy function.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="n (gap index)" value={n} onChange={setN} step="0.01" />
@@ -58,6 +57,6 @@ export default function EtalonFSRPage() {
         yaxis2: { title: "FSR (μm)", gridcolor: "#374151", overlaying: "y", side: "right" },
         margin: { t: 20, b: 40, l: 60, r: 60 }, autosize: true, showlegend: true
       }} />
-    </CalculatorShell>
+    </>
   );
 }

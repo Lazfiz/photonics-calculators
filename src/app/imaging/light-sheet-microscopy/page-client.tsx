@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -41,7 +40,7 @@ export default function LightSheetMicroscopyPage() {
   }, [sampleThickness, results.sheetThickness]);
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Light Sheet Microscopy Design Calculator" description="Full light sheet microscope design parameters: sheet geometry, tilt geometry, and volume imaging.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -84,6 +83,6 @@ export default function LightSheetMicroscopyPage() {
         <h2 className="text-lg font-semibold mb-4">Working Distance &amp; Sheet Thickness vs Tilt Angle</h2>
         <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Tilt Angle (°)", gridcolor: "#333" }, yaxis: { title: "µm", gridcolor: "#333" }, legend: { font: { size: 11 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

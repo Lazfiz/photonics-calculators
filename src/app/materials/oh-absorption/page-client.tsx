@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -56,7 +55,7 @@ export default function OHAbsorptionPage() {
   const totalLoss = loss1550 * fiberLength;
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="OH Absorption in Silica" description="Hydroxyl (OH⁻) absorption peaks in silica fibers and bulk glass. The fundamental OH stretch at 2.72 µm and overtones at 1.38 µm and 0.94 µm dominate loss spectra.">
+    <>
             
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div>
@@ -95,6 +94,6 @@ export default function OHAbsorptionPage() {
           <p className="font-mono bg-gray-800 p-2 rounded">α<sub>OH</sub>(λ) = Σ A<sub>i</sub> · C<sub>OH</sub> · exp[−(λ − λ<sub>i</sub>)² / 2σ²]</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

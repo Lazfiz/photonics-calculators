@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -53,10 +52,7 @@ export default function AngleTuningPage() {
   }, [nH, nL, nSub, nInc, numPairs, designWl]);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Angle Tuning of Coatings" description="Changing the angle of incidence shifts the spectral response of thin film coatings toward
-        shorter wavelengths (blue shift). TE (s-polarization) and TM (p-polarization) respond differently,
-        with TM showing reduced reflectance at Brewster&apos;s angle. The shift follows
-        λ(θ) ≈ λ₀·√(1 − (n₀ sin θ/neff)²).">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>H</sub></>} value={nH} onChange={setNH} step="0.01" />
@@ -90,6 +86,6 @@ export default function AngleTuningPage() {
         yaxis: { title: "λ_center (nm)", gridcolor: "#374151" },
         margin: { t: 40, b: 40, l: 50, r: 20 }, autosize: true,
       }} />
-    </CalculatorShell>
+    </>
   );
 }

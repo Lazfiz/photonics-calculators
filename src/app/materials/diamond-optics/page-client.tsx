@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 // Diamond Sellmeier: D. D. Duvvuri, et al.
@@ -76,7 +75,7 @@ export default function DiamondOpticsPage() {
   }, []);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Diamond Optics" description="Diamond — the ultimate optical material. Bandgap: 5.47 eV. n ≈ 2.42.">
+    <>
             
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 bg-gray-900 rounded-lg">
         <div><div className="text-gray-400 text-xs">n at {wavelength}nm</div><div className="text-2xl font-bold text-blue-400">{n.toFixed(4)}</div></div>
@@ -104,7 +103,7 @@ export default function DiamondOpticsPage() {
           <ChartPanel data={compareChart.data} layout={compareChart.layout} config={plotConfig} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }
 

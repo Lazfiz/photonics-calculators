@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/laser-safety/maximum-exposure' },
-    title: 'Maximum Exposure Duration',
-  description: 'Simplified educational estimate of the longest exposure before the MPE is reached. Not for safety decisions; use ANSI Z136.1.'
-};
+const href = "/laser-safety/maximum-exposure";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Maximum Exposure Duration',
-  'Simplified educational estimate of the longest exposure before the MPE is reached. Not for safety decisions; use ANSI Z136.1.',
-  'https://photonics-calculators.vercel.app/laser-safety/maximum-exposure',
-  { category: 'Laser Safety' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

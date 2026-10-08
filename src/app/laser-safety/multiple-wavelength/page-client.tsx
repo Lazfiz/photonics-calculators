@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
@@ -57,7 +56,7 @@ export default function MultipleWavelengthPage() {
   }, [results]);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Multiple Wavelength MPE" description="Calculates additive hazard ratios for multiple laser wavelengths. Sum of ratios must be &lt; 1 for safety per ANSI Z136.1 Section 8.">
+    <>
             
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
@@ -130,6 +129,6 @@ export default function MultipleWavelengthPage() {
           <p>Multiple wavelength rule: ANSI Z136.1 §8 — spectral additivity</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -87,7 +86,7 @@ export default function BesselBeamPage() {
   }, [wavelength, alpha, maxR]);
 
   return (
-    <CalculatorShell backHref="/wave-optics" backLabel="Wave Optics" title="Bessel Beam Calculator" description="Non-diffracting beam profiles and propagation.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
@@ -134,6 +133,6 @@ export default function BesselBeamPage() {
           yaxis: { title: "y (µm)", gridcolor: "#374151" }, margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

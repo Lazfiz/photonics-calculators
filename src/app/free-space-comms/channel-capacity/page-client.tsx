@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -67,7 +66,7 @@ export default function ChannelCapacityPage() {
   }, [bandwidth, fecOverhead]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="FSO Channel Capacity" description="Shannon capacity, achievable rate of OOK, PSK and 16-QAM after FEC overhead, gap to Shannon and required SNR for a given bandwidth and SNR." maxWidthClassName="max-w-5xl">
+    <>
             
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -118,6 +117,6 @@ export default function ChannelCapacityPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

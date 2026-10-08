@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/thin-film/adhesion-testing' },
-    title: 'Adhesion Testing',
-  description: 'Model thin film adhesion properties from scratch test, peel test, tape test, and bend test. Calculate adhesion energy, interfacial shear strength, and critical loads.'
-};
+const href = "/thin-film/adhesion-testing";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Adhesion Testing',
-  'Model thin film adhesion properties from scratch test, peel test, tape test, and bend test. Calculate adhesion energy, interfacial shear strength, and critical loads.',
-  'https://photonics-calculators.vercel.app/thin-film/adhesion-testing',
-  { category: 'Thin Film' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

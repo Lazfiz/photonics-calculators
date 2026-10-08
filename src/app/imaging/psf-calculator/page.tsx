@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/psf-calculator' },
-    title: 'Point Spread Function Calculator',
-  description: 'Visualize the 2D and 1D point spread function (PSF) for a diffraction-limited system.'
-};
+const href = "/imaging/psf-calculator";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Point Spread Function Calculator',
-  'Visualize the 2D and 1D point spread function (PSF) for a diffraction-limited system.',
-  'https://photonics-calculators.vercel.app/imaging/psf-calculator',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

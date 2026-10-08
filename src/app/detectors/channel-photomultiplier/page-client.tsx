@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -35,7 +34,7 @@ export default function ChannelPMTPage() {
   }, [channelGain, quantumEff, collectionEff, numPE]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Channel Photomultiplier (Multi-Channel PMT)" description="Multi-channel PMT: gain staging, energy resolution, and timing.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Number of Channels" value={numChannels} onChange={setNumChannels} min={1} max={64} />
         <ValidatedNumberInput label="Channel Gain" value={channelGain} onChange={setChannelGain} />
@@ -55,6 +54,6 @@ export default function ChannelPMTPage() {
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>G_per_channel = G_channel</p><p>I_peak ≈ N_pe · e · G / TTS (upper bound; real pulse width &gt; TTS)</p><p>ΔE/E (FWHM) = 2.355 / √(N_pe) [Poisson limit]</p><p>N_pe = N_photons · η · ε_coll</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Channel Gain", type: "log", gridcolor: "#374151" }, yaxis: { title: "e⁻ per photon", type: "log", gridcolor: "#374151" }, yaxis2: { title: "Energy Res. (%FWHM)", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
@@ -75,7 +74,7 @@ export default function AELLimitsPage() {
   }, []);
 
   return (
-    <CalculatorShell backHref="/laser-safety" backLabel="Laser Safety" title="Accessible Emission Limits (AEL)" description="IEC 60825-1 laser classification AEL thresholds. Simplified model for educational reference.">
+    <>
             
       <LaserSafetyDisclaimer />
       <LaserSafetyQuarantineBanner />
@@ -106,6 +105,6 @@ export default function AELLimitsPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

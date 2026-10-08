@@ -1,17 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
 import InputSlider from "../../../components/input-slider";
-import RelatedCalculatorLinks from "../../../components/related-calculator-links";
-import { getRelatedCalculators } from "../../../lib/related-calculators";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c, h, q } from "../../../physics/constants";
 const wavelengthPresets = [405, 532, 850, 1310, 1550];
 const qePresets = [0.2, 0.5, 0.8, 0.95];
-const currentHref = "/detectors/responsivity";
 
 export default function ResponsivityPage() {
   const [quantumEfficiency, setQuantumEfficiency] = useURLState("quantumEfficiency", 0.8);
@@ -28,7 +24,7 @@ export default function ResponsivityPage() {
   }, [quantumEfficiency, wavelength, responsivity]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Detector Responsivity" description="Interactive responsivity calculator from quantum efficiency and wavelength, with presets and wavelength sweeps.">
+    <>
       <div className="mb-5 flex flex-wrap gap-2">
         {wavelengthPresets.map((preset) => (
           <button key={`w-${preset}`} onClick={() => setWavelength(preset)} className={`rounded-full border px-3 py-1 text-sm transition ${wavelength === preset ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}>{preset} nm</button>
@@ -55,8 +51,6 @@ export default function ResponsivityPage() {
       </div>
 
       <SimpleLineChart title="Responsivity vs wavelength" xLabel="Wavelength (nm)" yLabel="Responsivity (A/W)" series={chartSeries} />
-
-      <RelatedCalculatorLinks currentHref={currentHref} items={getRelatedCalculators(currentHref)} />
-    </CalculatorShell>
+    </>
   );
 }

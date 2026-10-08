@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 interface ColorCenter { name: string; crystal: string; peak_nm: number; fwhm_nm: number; sigma_abs: number; sigma_em: number; color: string; defect: string }
@@ -47,7 +46,7 @@ export default function ColorCentersPage() {
   }, [selected]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Color Centers in Crystals" description="Point defects and impurity centers: absorption/emission spectra, cross-sections, and ZPL characteristics. Key for quantum emitters and tunable lasers.">
+    <>
             
       <div className="mb-6 flex flex-wrap gap-2">
         {Object.entries(COLOR_CENTERS).map(([key, cc]) => (
@@ -88,6 +87,6 @@ export default function ColorCentersPage() {
           <p><strong>Ti:Sapphire</strong>: broad vibronic band (660-1100 nm), tunable laser workhorse.</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

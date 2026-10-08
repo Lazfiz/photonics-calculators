@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -56,7 +55,7 @@ export default function AdaptiveOpticsMicroscopyPage() {
   };
 
   return (
-    <CalculatorShell backHref="/imaging" backLabel="Imaging" title="Adaptive Optics in Microscopy" description="Wavefront correction, Strehl ratio recovery, and resolution improvement for deep-tissue imaging.">
+    <>
             
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -126,6 +125,6 @@ export default function AdaptiveOpticsMicroscopyPage() {
           <p>The number of Zernike modes required depends on the aberration complexity: shallow tissue needs few modes, while deep or heterogeneous samples may need 50+ modes. Guide stars (fluorescent beads, multiphoton-excited fluorescence) enable wavefront sensing within the sample.</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

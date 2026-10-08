@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { hc_eV_nm } from "../../../physics/constants";
 
@@ -85,7 +84,7 @@ export default function XRayOpticsPage() {
   }, [selected]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="X-ray Optics Materials" description="X-ray refractive index: n = 1 - δ - iβ. For hard X-rays, δ,β ∝ λ² ∝ 1/E².">
+    <>
                   <p className="text-gray-500 text-sm mb-6">Penetration depth: L = λ/(4πβ). Critical angle: θ<sub>c</sub> = √(2δ).</p>
 
       <div role="group" aria-label="Options" className="flex flex-wrap gap-2 mb-6">
@@ -99,7 +98,7 @@ export default function XRayOpticsPage() {
         <ChartPanel data={betaChart.data} layout={betaChart.layout} config={plotConfig} />
         <ChartPanel data={penetrationChart.data} layout={penetrationChart.layout} config={plotConfig} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -80,7 +79,7 @@ export default function RetarderPage() {
   const orientationAngle = 0.5 * Math.atan2(S2, S1);
 
   return (
-    <CalculatorShell backHref="/polarization" backLabel="Polarization" title="Waveplate / Retarder" description="Polarization state transformation by a birefringent waveplate with variable retardance and fast-axis orientation.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Retardance (°)" value={retardanceDeg} onChange={setRetardanceDeg} step="1" />
@@ -118,6 +117,6 @@ export default function RetarderPage() {
         <p>Γ = retardance, θ = fast axis angle</p>
         <p>Stokes: S₀ = |Eₓ|² + |Eᵧ|², S₁ = |Eₓ|² - |Eᵧ|², S₂ = 2Re(EₓEᵧ*), S₃ = -2Im(EₓEᵧ*)</p>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

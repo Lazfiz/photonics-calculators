@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -62,7 +61,7 @@ export default function VerdetConstantPage() {
   }, [selected]);
 
   return (
-    <CalculatorShell backHref="/materials" backLabel="Materials" title="Verdet Constant" description="Faraday rotation: θ = V · B · L, where V ∝ 1/λ² for paramagnetic materials">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div>
@@ -115,6 +114,6 @@ export default function VerdetConstantPage() {
        
        
       />
-    </CalculatorShell>
+    </>
   );
 }

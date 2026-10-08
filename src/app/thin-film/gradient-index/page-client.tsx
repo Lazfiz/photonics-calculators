@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -55,7 +54,7 @@ export default function GradientIndexPage() {
   const designR = tmm.R[Math.round(tmm.wls.length / 2)];
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Gradient Index Coating" description="Continuously graded refractive index coating — broadband AR with no sharp interfaces.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
@@ -109,6 +108,6 @@ export default function GradientIndexPage() {
           }} />
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

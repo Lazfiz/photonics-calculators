@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/imaging/coherent-raman' },
-    title: 'Coherent Raman (CARS/SRS) Calculator',
-  description: 'Coherent Anti-Stokes Raman Scattering and Stimulated Raman Scattering signal estimation.'
-};
+const href = "/imaging/coherent-raman";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Coherent Raman (CARS/SRS) Calculator',
-  'Coherent Anti-Stokes Raman Scattering and Stimulated Raman Scattering signal estimation.',
-  'https://photonics-calculators.vercel.app/imaging/coherent-raman',
-  { category: 'Imaging' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

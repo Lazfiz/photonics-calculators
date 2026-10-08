@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -27,7 +26,7 @@ export default function FullWellPage() {
   }, [fullWell, readNoise, signal, snr]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Full Well Capacity vs SNR" description="Analyze how full well capacity affects signal-to-noise ratio and dynamic range.">
+    <>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Full Well Capacity (e⁻)" value={fullWell} onChange={setFullWell} min={1000} step="1000" />
         <ValidatedNumberInput label="Read Noise (e⁻)" value={readNoise} onChange={setReadNoise} min={0.5} step="0.5" />
@@ -40,6 +39,6 @@ export default function FullWellPage() {
         <ResultCard label="Saturation" value={`${saturation.toFixed(1)}%`} tone={saturation > 90 ? "red" : "green"} />
       </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Signal (e⁻)", gridcolor: "#374151" }, yaxis: { title: "SNR", gridcolor: "#374151" }, yaxis2: { title: "Shot Noise (e⁻)", overlaying: "y", side: "right", gridcolor: "#374151" } }} />
-    </CalculatorShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -51,7 +50,7 @@ export default function PhotodiodeSpeedPage() {
   }, [loadResistance, responsivity]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title={"Photodiode Speed & Bandwidth"} description="RC-limited bandwidth, junction capacitance, and NEP vs area for photodiodes.">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="10" />
         <ValidatedNumberInput label="Quantum Efficiency" value={qe} onChange={setQe} min={0.01} max={1} step="0.01" />
@@ -94,6 +93,6 @@ export default function PhotodiodeSpeedPage() {
           margin: { t: 40, r: 20, b: 50, l: 70 }, legend: { bgcolor: "transparent", font: { size: 10 } },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

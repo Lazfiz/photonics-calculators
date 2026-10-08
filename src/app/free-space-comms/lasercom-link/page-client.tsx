@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 
@@ -63,7 +62,7 @@ export default function LasercomLinkPage() {
   }, [txPower, txAperture, rxAperture, wavelength, txEfficiency, rxEfficiency, pointingLoss, atmosLoss]);
 
   return (
-    <CalculatorShell backHref="/free-space-comms" backLabel="Free Space Comms" title="Lasercom Link Budget" description="Lasercom link budget with Gaussian-beam transmit and receive gains, free-space path loss, spot size at the receiver, and pointing and atmospheric losses." maxWidthClassName="max-w-5xl">
+    <>
             
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
@@ -114,6 +113,6 @@ export default function LasercomLinkPage() {
           </div>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }

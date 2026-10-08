@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/spectroscopy/wavenumber-converter' },
-    title: 'Wavenumber Converter',
-  description: 'Convert wavelength, wavenumber, frequency, and energy with sliders, presets, and range sweeps.'
-};
+const href = "/spectroscopy/wavenumber-converter";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Wavenumber Converter',
-  'Convert wavelength, wavenumber, frequency, and energy with sliders, presets, and range sweeps.',
-  'https://photonics-calculators.vercel.app/spectroscopy/wavenumber-converter',
-  { category: 'Spectroscopy' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

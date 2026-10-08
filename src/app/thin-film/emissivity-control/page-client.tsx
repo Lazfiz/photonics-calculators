@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -51,7 +50,7 @@ export default function EmissivityControlPage() {
   const E = tmm.R.map(r => 1 - r);
 
   return (
-    <CalculatorShell backHref="/thin-film" backLabel="Thin Film" title="Emissivity Control" description="Low-emissivity (Low-E) coating for thermal insulation — Kirchhoff's law: ε = 1 - R.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>high</sub> (dielectric)</>} value={nH} onChange={setNH} step="0.01" />
@@ -87,6 +86,6 @@ export default function EmissivityControlPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

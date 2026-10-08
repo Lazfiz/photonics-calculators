@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
@@ -56,12 +55,7 @@ export default function MPEPage() {
   }, [wavelength]);
 
   return (
-    <CalculatorShell
-      backHref="/laser-safety"
-      backLabel="Laser Safety"
-      title="Maximum Permissible Exposure (MPE)"
-      description="Quarantined educational MPE view: bounded small-source ocular direct-beam branch with explicitly implemented ANSI-style time slices (1 ms to 3×10^4 s). Unsupported regimes are disabled instead of approximated."
-    >
+    <>
       <LaserSafetyDisclaimer />
       <LaserSafetyCwBounds />
       <LaserSafetyCwReferences />
@@ -150,6 +144,6 @@ export default function MPEPage() {
       )}
 
       <LaserSafetySuiteLinks currentHref="/laser-safety/mpe" />
-    </CalculatorShell>
+    </>
   );
 }

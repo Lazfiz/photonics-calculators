@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -25,7 +24,7 @@ export default function JacquinotPage() {
   const jacquinotAdv = (2 * Math.PI) / (wavenumber * maxOPD);
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Jacquinot Advantage" description="Maximum solid angle of an FTIR interferometer: Ω = 2π/(ν̃·L). True Jacquinot advantage = T_FT/T_G is the throughput ratio vs a grating spectrometer.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Max OPD (cm)" value={maxOPD} onChange={setMaxOPD} step="0.1" />
@@ -38,6 +37,6 @@ export default function JacquinotPage() {
       </div>
 
       <ChartPanel data={chartData} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Wavenumber (cm⁻¹)", gridcolor: "#374151" }, yaxis: { title: "Solid Angle Ω (sr)", gridcolor: "#374151" }, margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true }} />
-    </CalculatorShell>
+    </>
   );
 }

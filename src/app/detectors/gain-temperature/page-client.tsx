@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -47,7 +46,7 @@ export default function GainTemperaturePage() {
   }, [detectorType, gainRef, tempCoeff, pmtCoeff]);
 
   return (
-    <CalculatorShell backHref="/detectors" backLabel="Detectors" title="Gain vs Temperature" description="Temperature dependence of detector gain for APDs and PMTs." maxWidthClassName="max-w-5xl">
+    <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div className="rounded-lg border border-gray-800 bg-gray-900 p-4"><label className="block text-sm text-gray-300">Detector Type</label><select value={detectorType} onChange={e => setDetectorType(e.target.value as any)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white"><option value="apd">APD</option><option value="pmt">PMT</option></select></div>
         <ValidatedNumberInput label={`Gain at ${tempRef}°C`} value={gainRef} onChange={setGainRef} min={1} step="10" />
@@ -67,6 +66,6 @@ export default function GainTemperaturePage() {
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>APD: M(T) = M_ref / (1 + α·ΔT)</p><p>PMT: M(T) = M₀ · exp(β·ΔT)</p></div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Temperature (°C)", gridcolor: "#374151" }, yaxis: { title: "Gain", gridcolor: "#374151" }, yaxis2: { title: "Gain (dB)", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
       <ChartPanel data={stabilityChart} layout={{ xaxis: { title: "ΔT from Reference (°C)", gridcolor: "#374151" }, yaxis: { title: "Gain Change (%)", gridcolor: "#374151" } }} title="Gain Change vs ΔT" />
-    </CalculatorShell>
+    </>
   );
 }

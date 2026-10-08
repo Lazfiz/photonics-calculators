@@ -1,25 +1,15 @@
-import type { Metadata } from "next";
-import { generateCalculatorJsonLd, JsonLdScript } from '../../../lib/json-ld';
+import CalculatorShell from "@/components/calculator-shell";
+import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-export const metadata: Metadata = {
-    alternates: { canonical: 'https://photonics-calculators.vercel.app/fiber-optics/dispersion-map' },
-    title: 'Dispersion Map Calculator',
-    description: 'Design a dispersion map for a fiber link using SMF and DCF segments.'
-};
+const href = "/fiber-optics/dispersion-map";
 
-const jsonLd = generateCalculatorJsonLd(
-  'Dispersion Map Calculator',
-  'Design a dispersion map for a fiber link using SMF and DCF segments.',
-  'https://photonics-calculators.vercel.app/fiber-optics/dispersion-map',
-  { category: 'Fiber Optics' }
-);
+export const metadata = calculatorMetadata(href);
 
 export default function Page() {
   return (
-    <>
-      <JsonLdScript data={jsonLd} />
+    <CalculatorShell href={href}>
       <PageClient />
-    </>
+    </CalculatorShell>
   );
 }

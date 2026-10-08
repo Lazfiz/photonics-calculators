@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -43,7 +42,7 @@ export default function RamanSpectroscopyPage() {
   ];
 
   return (
-    <CalculatorShell backHref="/spectroscopy" backLabel="Spectroscopy" title="Raman Spectroscopy" description="Stokes and anti-Stokes wavelength shift vs Raman shift. Inelastic scattering fundamentals.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="Laser Wavelength (nm)" value={laserWavelength} onChange={setLaserWavelength} min={200} max={2000} />
@@ -78,6 +77,6 @@ export default function RamanSpectroscopyPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { x: 0.01, y: 0.99 },
         }} />
       </div>
-    </CalculatorShell>
+    </>
   );
 }

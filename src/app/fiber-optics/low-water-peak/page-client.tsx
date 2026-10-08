@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import CalculatorShell from "../../../components/calculator-shell";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -70,7 +69,7 @@ export default function LowWaterPeakPage() {
   }, [calc]);
 
   return (
-    <CalculatorShell backHref="/fiber-optics" backLabel="Fiber Optics" title="Low Water Peak Fiber" description="Analyze low water peak (LWP) fibers that reduce the OH⁻ absorption peak at 1383 nm, enabling E-band and full CWDM operation.">
+    <>
             
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
@@ -146,6 +145,6 @@ export default function LowWaterPeakPage() {
           <p className="font-mono">ITU-T G.652.C/D specifies max attenuation in 1310-1625nm range</p>
         </div>
       </div>
-    </CalculatorShell>
+    </>
   );
 }
