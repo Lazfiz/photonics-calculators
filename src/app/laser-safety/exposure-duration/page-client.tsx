@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { uvLaserCornealMpe, uvLaserMaxDuration } from "../../../physics/laser-safety/hazard-weighting";
 export default function ExposureDurationPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 532);
   const [power, setPower] = useURLState("power", 100); // mW
@@ -25,7 +26,11 @@ export default function ExposureDurationPage() {
     // Irradiance limit: irrad < MPE/t = 1.8e-3 * t^(-0.25)
     // t_max = (1.8e-3 / irrad)^4 ... but capped at T_max for the regime
 
-    if (lam >= 0.4 && lam < 0.7) {
+    if (lam >= 0.18 && lam < 0.4) {
+      // UV: IEC 60825-1:2014 Table A.1, in SI (src/physics/laser-safety/hazard-weighting.ts).
+      // Infinity = within the MPE for 3×10⁴ s; NaN = under 1 ns.
+      return uvLaserMaxDuration(lam * 1e-6, irrad * 1e4);
+    } else if (lam >= 0.4 && lam < 0.7) {
       // MPE irradiance for CW: 1.8e-3 * t^(-0.25) W/cm² (for t < 10s)
       // 1.8e-3 * t^(-0.25) = irrad => t = (1.8e-3/irrad)^4
       const tCalc = Math.pow(1.8e-3 / irrad, 4);
@@ -40,7 +45,7 @@ export default function ExposureDurationPage() {
       return Math.min(0.1 / irrad, 10);
     }
     return 0.001;
-  }, [wavelength, power, beamDiameter, lam]);
+  }, [power, beamDiameter, lam]);
 
   const beamIrradiance = useMemo(() => {
     const beamArea = Math.PI * Math.pow(beamDiameter / 20, 2);
@@ -50,7 +55,9 @@ export default function ExposureDurationPage() {
   const chartData = useMemo(() => {
     const times = Array.from({ length: 200 }, (_, i) => Math.pow(10, -4 + i * 0.04));
     let mpeFn: (t: number) => number;
-    if (lam >= 0.4 && lam < 0.7) {
+    if (lam >= 0.18 && lam < 0.4) {
+      mpeFn = (t) => uvLaserCornealMpe(lam * 1e-6, t) / t / 1e4; // J/m² → W/cm²
+    } else if (lam >= 0.4 && lam < 0.7) {
       mpeFn = (t) => 1.8e-3 * Math.pow(t, -0.25);
     } else if (lam >= 0.7 && lam < 1.4) {
       const CA = Math.pow(10, 0.02 * (lam - 0.7));
@@ -93,7 +100,9 @@ export default function ExposureDurationPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Max Safe Exposure Time</p>
           <p className="text-2xl font-bold text-green-400">
-            {maxSafeTime < 0.001 ? (maxSafeTime * 1e6).toFixed(1) + " µs" :
+            {maxSafeTime === Infinity ? "> 30 000 s (8 h)" :
+              Number.isNaN(maxSafeTime) ? "< 1 ns" :
+              maxSafeTime < 0.001 ? (maxSafeTime * 1e6).toFixed(1) + " µs" :
               maxSafeTime < 1 ? (maxSafeTime * 1000).toFixed(2) + " ms" :
               maxSafeTime.toFixed(3) + " s"}
           </p>

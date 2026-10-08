@@ -264,8 +264,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "uv-hazard",
     title: "UV Hazard Calculator",
-    description: "UV hazard assessment using ACGIH actinic UV weighting function S(). Covers 200–400 nm spectral region.",
-    lede: "UV hazard assessment using ACGIH actinic UV weighting function S(λ). Covers 200–400 nm spectral region.",
+    description: "UV hazard assessment with the ICNIRP/ACGIH actinic weighting function S(λ) and the UVA eye limit. Covers 180–400 nm.",
   },
   {
     slug: "viewing-distance",
