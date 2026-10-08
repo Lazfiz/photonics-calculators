@@ -58,7 +58,7 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "chromatic-dispersion",
     title: "Material Dispersion (Sellmeier)",
-    description: "Material dispersion dn/dλ from Sellmeier coefficients.",
+    description: "Refractive index, group index, GVD β₂ and dispersion D from published Sellmeier formulas for crystals, fused silica and SCHOTT glasses.",
   },
   {
     slug: "color-centers",
@@ -122,8 +122,8 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "infrared-glass",
     title: "Infrared Optical Materials",
-    description: "Compare IR transmitting materials. n(T) = n₅ + (dn/dT)(T - 25°C)",
-    lede: "Compare IR transmitting materials. n(T) = n₂₅ + (dn/dT)(T - 25°C)",
+    description: "Compare IR transmitting materials (Ge, Si, ZnSe, ZnS, fluorides, NaCl): refractive index at any wavelength and temperature, transmission range and thermal properties.",
+    lede: "Compare IR transmitting materials. n(λ, T) = n(λ, T₀) + (dn/dT)(T − T₀), with n(λ, T₀) from each material's published Sellmeier formula.",
     keywords: ["Infrared Materials"],
   },
   {
@@ -151,8 +151,8 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "optical-glass-catalog",
     title: "Optical Glass Catalog",
-    description: "Interactive glass map and dispersion curves. Sellmeier: n²() = 1 + Σ Bi²/(² - Ci)",
-    lede: "Interactive glass map and dispersion curves. Sellmeier: n²(λ) = 1 + Σ Biλ²/(λ² - Ci)",
+    description: "Interactive glass map and dispersion curves for SCHOTT optical glasses, with catalog n_d, V_d, density and dn/dT.",
+    lede: "Interactive glass map and dispersion curves. Sellmeier: n²(λ) = 1 + Σ Bᵢλ²/(λ² − Cᵢ), with SCHOTT catalog coefficients.",
     keywords: ["Schott Glass Catalog"],
   },
   {
