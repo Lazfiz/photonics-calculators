@@ -3,15 +3,19 @@
 **Start here:** read this file, then `docs/ROADMAP.md` (Phase 2).
 - PR #11 (registry, stage 2a) was merged this session. Production `ui-check` passed 37/37 with 0 console
   errors; `/fiber-optics` lists 54 calculators and `/search-index.json` has 528 entries.
-- Session 16 built stage 2b on branch `phase-2/pages-from-registry` (**PR #12**).
-- Next: merge PR #12 (ask the user first), then the next unchecked ROADMAP item.
+- Session 16 built stage 2b on `phase-2/pages-from-registry` (**PR #12**). The user approved the merge, and
+  it was merged at the end of the session. The production check result is a comment on PR #12. If it's
+  missing, run `ui-check` against production first.
+- Next: the next unchecked ROADMAP item (see Next actions).
 
 ## State
-- **`phase-2/pages-from-registry`**, two commits on `main`:
+- **`main`** has PR #12's commits:
   1. `refactor(pages)`: server `CalculatorShell`, `src/registry/metadata.ts`, the codemod and its output
      (1,048 files), 8 laser-safety pages by hand, tests.
   2. `docs`: CLAUDE.md, the `new-calculator` skill, the `nextjs` rule, the ROADMAP and this file.
-- **Gates:** see the PR (filled in at the end of the session).
+- **Gates:** `check` tsc 0 errors, eslint 0 errors (1,330 warnings), tests 91/91. `build` 542/542 pages.
+  Local `ui-check` 37/37, 0 console errors; load mode on 8 changed pages, 0 console errors. CI green.
+  The preview served one `<h1>`, the BreadcrumbList, no FAQPage and "Free-Space Comms".
 
 ## How a calculator page works now
 - `page.tsx` (15 lines, no text): `const href = "/<category>/<slug>"`, `metadata = calculatorMetadata(href)`,
@@ -32,10 +36,10 @@
 - The 8 laser-safety pages that had their own `<h1>` now show the registry's cautious descriptions.
 
 ## Next actions
-1. PR #12: check CI and the preview, ask the user, then `gh pr merge 12 --merge`. Then run `ui-check`
-   against production, and check one page's JSON-LD (no FAQPage, BreadcrumbList present).
-2. Next ROADMAP items: 2c (tier/references, with Phase 4), the ~40 duplicates with 301 redirects, or the
-   small `chromatic-dispersion` Sellmeier module (Malitson 1965).
+1. Check that PR #12 has the production-check comment (`gh pr view 12 --comments`).
+2. Next ROADMAP items (Phase 2): the ~40 duplicates with 301 redirects in `next.config` (the registry
+   makes this easier: drop the entry, add the redirect), or 2c (tier/references, with Phase 4). Small and
+   self-contained: the `chromatic-dispersion` Sellmeier module (Malitson 1965).
 
 ## Ship flow (worked nine times)
 - **Push:** `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`.
