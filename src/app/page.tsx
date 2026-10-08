@@ -3,6 +3,7 @@ import AboutFooter from "./about-footer";
 import PhotonicsHeroMap from "../components/home/photonics-hero-map";
 import SiteSearch from "../components/home/site-search";
 import {
+  featuredHeroCategories,
   homeCategories,
   totalCalculatorCount,
 } from "../lib/home-categories";
@@ -46,7 +47,7 @@ export default function Home() {
               </Link>
             </div>
 
-            <SiteSearch />
+            <SiteSearch total={totalCalculatorCount} />
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
@@ -65,7 +66,7 @@ export default function Home() {
           </div>
 
           <div>
-            <PhotonicsHeroMap />
+            <PhotonicsHeroMap featuredCategories={featuredHeroCategories} />
           </div>
         </div>
       </section>

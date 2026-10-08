@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { totalCalculatorCount } from "../../lib/home-categories";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "https://photonics-calculators.vercel.app/about" },
+  title: "About",
+  description: "A free, open-source collection of interactive optics and photonics calculators.",
+};
 
 export default function AboutPage() {
   return (
@@ -17,7 +25,7 @@ export default function AboutPage() {
 
         <section className="mt-8 space-y-4">
           <p>
-            Photonics Calculators is a free, open-source collection of 536
+            Photonics Calculators is a free, open-source collection of {totalCalculatorCount}
             interactive tools covering the breadth of optics and photonics — from
             laser safety and fiber optics to thin-film coatings, wave optics, and
             free-space communications.
@@ -103,7 +111,7 @@ export default function AboutPage() {
             href="/"
             className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors"
           >
-            Browse All 536 Calculators
+            Browse All {totalCalculatorCount} Calculators
           </Link>
         </section>
       </div>

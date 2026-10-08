@@ -4,10 +4,7 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import CategoryDetailPanel from "./category-detail-panel";
-import {
-  featuredHeroCategories,
-  type HomeCategory,
-} from "../../lib/home-categories";
+import type { HomeCategory } from "../../lib/home-categories";
 
 type BranchId = "spectroscopy" | "imaging" | "thin-film";
 
@@ -73,18 +70,18 @@ function endpointChipStroke(category: HomeCategory, active: boolean) {
   return active ? `${category.accentFrom}aa` : "rgba(255,255,255,0.12)";
 }
 
-export default function PhotonicsHeroMap() {
+export default function PhotonicsHeroMap({ featuredCategories }: { featuredCategories: HomeCategory[] }) {
   const router = useRouter();
   const [hovered, setHovered] = useState<BranchId | null>(null);
   const [selected, setSelected] = useState<BranchId>("spectroscopy");
 
   const categories = useMemo(
     () =>
-      Object.fromEntries(featuredHeroCategories.map((category) => [category.id, category])) as Record<
+      Object.fromEntries(featuredCategories.map((category) => [category.id, category])) as Record<
         BranchId,
         HomeCategory
       >,
-    []
+    [featuredCategories]
   );
 
   const activeId = hovered ?? selected;
@@ -160,7 +157,7 @@ export default function PhotonicsHeroMap() {
                   <stop offset="0.62" stopColor="#f8fafc" stopOpacity="0.98" />
                   <stop offset="1" stopColor="#c4b5fd" stopOpacity="0.85" />
                 </linearGradient>
-                {featuredHeroCategories.map((category) => (
+                {featuredCategories.map((category) => (
                   <linearGradient
                     key={category.id}
                     id={`route-${category.id}`}

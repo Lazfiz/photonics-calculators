@@ -1,0 +1,295 @@
+import type { CalculatorEntry } from "../types";
+
+export const thinFilm: CalculatorEntry[] = [
+  {
+    slug: "adhesion-testing",
+    title: "Adhesion Testing",
+    description: "Model thin film adhesion properties from scratch test, peel test, tape test, and bend test. Calculate adhesion energy, interfacial shear strength, and critical loads.",
+  },
+  {
+    slug: "amplitude-splitting",
+    title: "Amplitude Splitting",
+    description: "Multiple-beam interference from amplitude splitting at a thin film. Shows how partial reflections from each interface combine to form interference fringes.",
+  },
+  {
+    slug: "angle-shift",
+    title: "Angle-Dependent Blue Shift",
+    description: "How the effective design wavelength shifts with angle of incidence (blue shift).",
+  },
+  {
+    slug: "angle-tuning",
+    title: "Angle Tuning of Coatings",
+    description: "Changing the angle of incidence shifts the spectral response of thin film coatings toward",
+    lede: "Changing the angle of incidence shifts the spectral response of thin film coatings toward\n        shorter wavelengths (blue shift). TE (s-polarization) and TM (p-polarization) respond differently,\n        with TM showing reduced reflectance at Brewster&apos;s angle. The shift follows\n        λ(θ) ≈ λ₀·√(1 − (n₀ sin θ/neff)²).",
+  },
+  {
+    slug: "anti-fog",
+    title: "Anti-Fog Coating Design",
+    description: "Hydrophilic thin film that spreads condensation into a uniform water layer, minimizing scattering.",
+  },
+  {
+    slug: "bandpass-filter",
+    title: "Bandpass Filter",
+    description: "Fabry-Perot bandpass — multi-cavity design with quarter-wave mirrors and half-wave spacers.",
+  },
+  {
+    slug: "beamsplitter",
+    title: "Beamsplitter Design",
+    description: "Dielectric beamsplitters split light into reflected and transmitted beams. A single quarter-wave",
+    lede: "Dielectric beamsplitters split light into reflected and transmitted beams. A single quarter-wave\n        layer gives R &lt; 50% for most materials; multilayer (HL)N stacks approach 100%.\n        A 50/50 split is achieved with specific layer thicknesses (non-quarter-wave) or by selecting\n        the appropriate number of layer pairs near the stop band edge.",
+  },
+  {
+    slug: "bragg-reflector",
+    title: "Bragg Reflector",
+    description: "Dielectric distributed Bragg reflector — reflectance spectrum and stopband design.",
+  },
+  {
+    slug: "coating-stress",
+    title: "Coating Stress amp; Curvature",
+    description: "Stoney equation: κ = 6fdf / (Ests²).",
+    heading: "Coating Stress &amp; Curvature",
+    lede: "Stoney equation: κ = 6σfdf / (Ests²). \n        Relates thin-film stress to substrate curvature. Valid for thin films (df ≪ ts).",
+  },
+  {
+    slug: "cold-mirror",
+    title: "Cold Mirror Design",
+    description: "Cold mirrors reflect visible light while transmitting infrared. Used in projector systems",
+    lede: "Cold mirrors reflect visible light while transmitting infrared. Used in projector systems,\n        illumination optics, and laser setups to separate visible from IR (heat). The (HL)N stack\n        is a high-reflector centered in the visible band, while IR passes through the stop band edges.",
+  },
+  {
+    slug: "dichroic",
+    title: "Dichroic Beam Splitter",
+    description: "Dichroic beam splitter at oblique incidence. Shows s- and p-polarisation splitting characteristic of dichroic filters used at 45°.",
+    lede: "Dichroic beam splitter at oblique incidence. Shows s- and p-polarisation splitting characteristic of dichroic filters used at 45°.\n        Effective optical thickness shifts with cos(θ).",
+  },
+  {
+    slug: "dielectric-high-reflector",
+    title: "Dielectric High Reflector",
+    description: "Quarter-wave dielectric stack HR mirror — stopband width, peak reflectance, and dispersion.",
+  },
+  {
+    slug: "dielectric-stack",
+    title: "Dielectric Stack Theory",
+    description: "Quarter-wave dielectric stack reflectance. Alternating high/low index layers create high-reflectance mirrors — the basis of dielectric mirrors and VCSELs.",
+  },
+  {
+    slug: "double-layer-ar",
+    title: "Two-Layer AR Coating",
+    description: "Transfer-matrix method for two-layer V-coat or W-coat AR designs. Both layers at quarter-wave optical thickness.",
+    lede: "Transfer-matrix method for two-layer V-coat or W-coat AR designs. Both layers at quarter-wave optical thickness.\n        Optimal indices: n₁ = (ninc³ · nsub)¼, n₂ = (ninc · nsub³)¼.",
+  },
+  {
+    slug: "dual-band-ar",
+    title: "Dual-Band AR Coating",
+    description: "Three-layer anti-reflection coating optimized for two distinct wavelength bands.",
+  },
+  {
+    slug: "edge-filter",
+    title: "Edge Filter Design",
+    description: "{type === \"long\" ? \"Long-pass\" : \"Short-pass\"} edge filter — quarter-wave stack transition region and cut-on/cut-off wavelength.",
+    lede: "{type === &quot;long&quot; ? &quot;Long-pass&quot; : &quot;Short-pass&quot;} edge filter — quarter-wave stack transition region and cut-on/cut-off wavelength.",
+  },
+  {
+    slug: "ellipsometry-measurement",
+    title: "Ellipsometry Measurement",
+    description: "Invert ellipsometry data (Psi, Delta) to the pseudo-dielectric function and pseudo-refractive index of a substrate.",
+    lede: "Invert ellipsometry data (Ψ, Δ) to the pseudo-dielectric function and pseudo-refractive index (two-phase ambient/substrate model).",
+  },
+  {
+    slug: "emissivity-control",
+    title: "Emissivity Control",
+    description: "Low-emissivity (Low-E) coating for thermal insulation — Kirchhoff",
+    lede: "Low-emissivity (Low-E) coating for thermal insulation — Kirchhoff's law: ε = 1 - R.",
+  },
+  {
+    slug: "enhanced-aluminum",
+    title: "Enhanced Aluminum Mirror",
+    description: "Aluminum mirror with dielectric overcoat to boost reflectance in the visible.",
+  },
+  {
+    slug: "environmental-stability",
+    title: "Environmental Stability",
+    description: "Environmental factors shift thin film spectral performance. Temperature changes refractive index",
+    lede: "Environmental factors shift thin film spectral performance. Temperature changes refractive index\n        (thermo-optic effect, dn/dT) and layer thickness (thermal expansion, CTE). Humidity causes water\n        absorption in porous layers (especially SiO₂), changing both n and d. Dense films (TiO₂, Ta₂O₅)\n        are more environmentally stable. Understanding these shifts is critical for field deployment.",
+  },
+  {
+    slug: "fabry-perot-filter",
+    title: "Fabry-Pérot Filter",
+    description: "Fabry-Pérot etalon/filter transmission based on the Airy function. Explore how mirror reflectance and cavity spacing control spectral selectivity.",
+  },
+  {
+    slug: "fresnel-equations",
+    title: "Fresnel Equations",
+    description: "Reflectance vs. angle of incidence at a dielectric interface. Shows s-polarization, p-polarization, Brewster's angle, and total internal reflection.",
+    lede: "Reflectance vs. angle of incidence at a dielectric interface. Shows s-polarization, p-polarization, Brewster&apos;s angle, and total internal reflection.",
+  },
+  {
+    slug: "gradient-index",
+    title: "Gradient Index Coating",
+    description: "Continuously graded refractive index coating — broadband AR with no sharp interfaces.",
+  },
+  {
+    slug: "gradient-index-coating",
+    title: "Gradient Index Coating",
+    description: "Gradient-index (GRIN) antireflection coatings use a continuously varying refractive index to suppress Fresnel reflections over a broad bandwidth.",
+  },
+  {
+    slug: "hard-coating",
+    title: "Hard Coating Design",
+    description: "Abrasion-resistant optical coating — balance mechanical hardness with optical performance.",
+  },
+  {
+    slug: "heat-mirror",
+    title: "Heat Mirror Design",
+    description: "Heat mirrors reflect infrared (thermal radiation) while transmitting visible light.",
+    lede: "Heat mirrors reflect infrared (thermal radiation) while transmitting visible light.\n        A quarter-wave stack centered in the IR (e.g., 8–12 μm) reflects thermal radiation from room-temperature objects.\n        Solar radiation (~0.3–2.5 μm) passes through. Critical for energy-efficient windows and thermal management.",
+  },
+  {
+    slug: "interference-conditions",
+    title: "Thin Film Interference Conditions",
+    description: "Constructive and destructive interference patterns from a single thin film, accounting for phase shifts at boundaries.",
+  },
+  {
+    slug: "ion-assisted-deposition",
+    title: "Ion-Assisted Deposition (IAD)",
+    description: "Design ion beam parameters for improved packing density and stress control. Models ion-to-atom ratio, packing density, and compressive stress.",
+  },
+  {
+    slug: "ir-blocking",
+    title: "IR Blocking Filter",
+    description: "Long-pass quarter-wave stack reflecting near-IR while transmitting visible light.",
+  },
+  {
+    slug: "long-pass",
+    title: "Long Pass Filter",
+    description: "Quarter-wave stack (HL)N long-pass filter. Transmits > edge, reflects shorter wavelengths.",
+    lede: "Quarter-wave stack (HL)N long-pass filter. Transmits λ &gt; λedge, reflects shorter wavelengths.\n        Rmax ≈ [(nH/nL)2N − 1]² / [(nH/nL)2N + 1]².",
+  },
+  {
+    slug: "metal-dielectric",
+    title: "Metal-Dielectric Coatings",
+    description: "Metal-dielectric coating design. Explore how a dielectric overcoat modifies the reflectance, transmittance, and absorptance of a thin metal layer.",
+  },
+  {
+    slug: "multilayer-ar",
+    title: "Two-Layer AR Coating",
+    description: "Design a two-layer quarter-wave anti-reflection coating. Zero reflectance at the design wavelength when n2 = n1·√(nsub/ninc).",
+    lede: "Design a two-layer quarter-wave anti-reflection coating. Zero reflectance at λ₀ when n₂ = n₁√(n_sub/n_inc).",
+  },
+  {
+    slug: "narrow-bandpass",
+    title: "Narrow Bandpass Filter",
+    description: "High-finesse Fabry-Perot with multiple cavities for ultra-narrow transmission peaks.",
+  },
+  {
+    slug: "notch-filter",
+    title: "Notch Filter",
+    description: "Rejection notch filter — high reflectance at target wavelength, transmits elsewhere.",
+  },
+  {
+    slug: "partial-reflector",
+    title: "Partial Reflector Design",
+    description: "Partial reflectors (output couplers, etalon mirrors) provide controlled reflectance between",
+    lede: "Partial reflectors (output couplers, etalon mirrors) provide controlled reflectance between\n        bare substrate and full HR. A single dielectric layer at QWL gives R determined by nfilm.\n        Adjusting the thickness ratio tunes R via thin-film interference.",
+  },
+  {
+    slug: "phase-shift-coating",
+    title: "Phase Shift Coatings",
+    description: "Phase shift accumulated in thin film coatings. Explore how film thickness and refractive index affect the optical phase of reflected and transmitted light.",
+  },
+  {
+    slug: "plasma-deposition",
+    title: "Plasma Deposition",
+    description: "Model plasma-enhanced deposition parameters: electron temperature, ion density, sheath voltage, and deposition rate.",
+  },
+  {
+    slug: "protected-silver",
+    title: "Protected Silver Mirror",
+    description: "Protected silver coating — high reflectance UV-Vis-IR with dielectric overcoat and adhesion layer.",
+  },
+  {
+    slug: "quarter-wave",
+    title: "Quarter-Wave Thickness",
+    description: "Quarter-wave optical thickness (QWOT): nd = /4. Optimal AR when nfilm = (nincnsub).",
+    lede: "Quarter-wave optical thickness (QWOT): nd = λ/4. Optimal AR when nfilm = √(ninc·nsub).",
+  },
+  {
+    slug: "short-pass",
+    title: "Short Pass Filter",
+    description: "Quarter-wave stack (LH)N short-pass filter. Transmits < edge, reflects longer wavelengths.",
+    lede: "Quarter-wave stack (LH)N short-pass filter. Transmits λ &lt; λedge, reflects longer wavelengths.\n        Uses reversed layer order compared to long-pass design.",
+  },
+  {
+    slug: "single-ar",
+    title: "Single Layer AR Coating",
+    description: "Quarter-wave antireflection coating design with Snell's law and explicit s/p polarization handling at oblique incidence.",
+    lede: "Quarter-wave antireflection coating design with Snell’s law and explicit s/p polarization handling at oblique incidence.",
+    keywords: ["anti reflection", "quarter wave", "fresnel"],
+    priority: 98,
+    related: [
+      {
+        href: "/thin-film/double-layer-ar",
+        note: "Extend the AR concept to a higher-performance stack.",
+      },
+      { href: "/thin-film/multilayer-ar", note: "Broader-band AR design direction." },
+      {
+        href: "/thin-film/fresnel-equations",
+        note: "Interface reflection/transmission fundamentals.",
+      },
+      { href: "/materials/brewster-tir", note: "Angle-dependent reflection behavior." },
+    ],
+  },
+  {
+    slug: "solar-protection",
+    title: "Solar Protection Coating",
+    description: "Dual-stack design: UV + IR blocking for glazing and solar control applications.",
+  },
+  {
+    slug: "spectrophotometry",
+    title: "Spectrophotometry",
+    description: "Model spectrophotometric R, T, A spectra for a single absorbing thin film using transfer matrix method with complex refractive index.",
+  },
+  {
+    slug: "sputtering-deposition",
+    title: "Sputtering Deposition",
+    description: "Calculate sputter yield, deposition rate, thermalization, and film stress for magnetron sputtering processes.",
+  },
+  {
+    slug: "stress",
+    title: "Coating Stress & Curvature",
+    description: "Stoney",
+    lede: "Stoney's equation: σ = E·ts²/(6·R·tf). Relates film stress to substrate curvature.",
+  },
+  {
+    slug: "stress-measurement",
+    title: "Thin Film Stress Measurement",
+    description: "Calculate film stress from substrate curvature using the Stoney equation. Includes thermal stress decomposition and stored elastic energy.",
+  },
+  {
+    slug: "thermal-evaporation",
+    title: "Thermal Evaporation",
+    description: "Model thermal evaporation: vapor pressure, deposition rate, mean free path, and film uniformity using Hertz-Knudsen and Clausius-Clapeyron equations.",
+  },
+  {
+    slug: "uv-blocking",
+    title: "UV Blocking Filter",
+    description: "Quarter-wave stack designed to reflect UV (200–400 nm) while transmitting visible light.",
+  },
+  {
+    slug: "wavelength-separation",
+    title: "Wavelength Separation",
+    description: "Wavelength separation coatings combine multiple quarter-wave stacks at different design wavelengths",
+    lede: "Wavelength separation coatings combine multiple quarter-wave stacks at different design wavelengths\n        to reflect specific bands while transmitting others. Two stacks centered at λ₁ and λ₂ = 1.25·λ₁\n        demonstrate dichroic behavior. The combined stack shows how reflectance bands add when cascaded.",
+  },
+  {
+    slug: "wedge-film",
+    title: "Wedge Thin Film",
+    description: "Wedged thin films have a linearly varying thickness across the surface, creating spatially",
+    lede: "Wedged thin films have a linearly varying thickness across the surface, creating spatially\n        varying interference. Used in optical testing (Newton&apos;s rings, Fizeau interferometry),\n        anti-reflection edge filters, and precision thickness measurement. The fringe spacing\n        Δx = λ / (2n·tan α) determines the spatial period of constructive interference.",
+  },
+  {
+    slug: "wide-bandpass",
+    title: "Wide Bandpass Filter",
+    description: "Cascaded short-pass + long-pass quarter-wave stacks for broad transmission bands.",
+  },
+];

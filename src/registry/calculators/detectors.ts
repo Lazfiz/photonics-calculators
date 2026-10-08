@@ -1,0 +1,336 @@
+import type { CalculatorEntry } from "../types";
+
+export const detectors: CalculatorEntry[] = [
+  {
+    slug: "afterpulsing",
+    title: "Afterpulsing in APDs",
+    description: "Afterpulse probability, trap dynamics, and dead time trade-offs in avalanche photodiodes.",
+  },
+  {
+    slug: "amplifier-noise",
+    title: "Amplifier Noise",
+    description: "Input-referred noise sets the detection floor. σ_amp = e_n.",
+  },
+  {
+    slug: "antiblooming",
+    title: "Anti-Blooming Design",
+    description: "Anti-blooming shunts excess charge to drain when well exceeds threshold. Trade-off: charge dump efficiency vs full well capacity and linearity.",
+  },
+  {
+    slug: "avalanche-gain",
+    title: "Avalanche Photodiode Gain",
+    description: "APD multiplication gain, excess noise factor (McIntyre), and material comparison.",
+  },
+  {
+    slug: "back-illumination",
+    title: "Back-Illuminated vs Front-Illuminated",
+    description: "Back-illuminated sensors bypass gate structures for higher QE and better blue/UV response.",
+  },
+  {
+    slug: "bandwidth",
+    title: "Bandwidth vs Noise Trade-off",
+    description: "Noise increases with √Δf. Wider bandwidth = faster response but more noise.",
+  },
+  {
+    slug: "boxcar-integrator",
+    title: "Boxcar Integrator",
+    description: "Gated signal averaging — recover repetitive signals from noise.",
+  },
+  {
+    slug: "capacitance",
+    title: "Junction Capacitance",
+    description: "Photodiode junction capacitance vs reverse bias, doping profile, and RC bandwidth impact.",
+  },
+  {
+    slug: "ccd-cmos",
+    title: "CCD vs CMOS Comparison",
+    description: "Compare SNR and dynamic range between CCD and CMOS detectors.",
+  },
+  {
+    slug: "ccd-vs-cmos",
+    title: "CCD vs CMOS Sensor Comparison",
+    description: "Compare sensor architectures — SNR, dynamic range, and performance metrics.",
+  },
+  {
+    slug: "channel-photomultiplier",
+    title: "Channel Photomultiplier (Multi-Channel PMT)",
+    description: "Multi-channel PMT: gain staging, energy resolution, and timing.",
+  },
+  {
+    slug: "cooling-benefit",
+    title: "Cooling Benefit Calculator",
+    description: "Dark current reduction and SNR improvement from thermoelectric (TEC) or cryogenic cooling.",
+  },
+  {
+    slug: "cosmic-rays",
+    title: "Cosmic Ray Detection",
+    description: "Cosmic ray flux and impact on imaging sensors — estimate hit rates and affected pixels.",
+  },
+  {
+    slug: "crosstalk",
+    title: "Pixel Crosstalk",
+    description: "Optical and electrical crosstalk between adjacent pixels due to charge diffusion.",
+  },
+  {
+    slug: "dark-current",
+    title: "Dark Current vs Temperature",
+    description: "Silicon detector dark current — exponential doubling model. I_dark(T) = I₀ · 2^((T−T₀)/T_d).",
+  },
+  {
+    slug: "dark-noise-temperature",
+    title: "Dark Noise vs Temperature",
+    description: "Temperature dependence of dark current and dark noise in photodiodes/CCDs.",
+  },
+  {
+    slug: "detectivity",
+    title: "Detectivity (D*)",
+    description: "Specific detectivity from NEP, area, and bandwidth. D* = √(A·Δf) / NEP",
+  },
+  {
+    slug: "electron-multiplying",
+    title: "EMCCD vs sCMOS",
+    description: "Compare electron-multiplying CCD with sCMOS for low-light imaging.",
+  },
+  {
+    slug: "em-gain",
+    title: "EMCCD Gain Calculator",
+    description: "EM gain — noise analysis, optimal gain, and SNR comparison.",
+  },
+  {
+    slug: "emccd-gain",
+    title: "EMCCD Gain Calculator",
+    description: "EM gain stages, excess noise (F=√2), and SNR advantage over conventional CCD.",
+  },
+  {
+    slug: "excess-noise",
+    title: "Excess Noise Factor",
+    description: "APD excess noise vs gain — McIntyre model for different semiconductor materials.",
+  },
+  {
+    slug: "flicker-noise",
+    title: "1/f Flicker Noise",
+    description: "Flicker noise: S_I(f) = K_f · I^α / f. Noise spectral density falls as 1/f.",
+    lede: "Flicker noise: S_i(f) = K_f · I^α / f. Noise spectral density falls as 1/f.",
+  },
+  {
+    slug: "full-well",
+    title: "Full Well Capacity vs SNR",
+    description: "Analyze how full well capacity affects signal-to-noise ratio and dynamic range.",
+  },
+  {
+    slug: "gain-bandwidth",
+    title: "Gain-Bandwidth Product",
+    description: "GBW = A₀ · f₋₃dB. The product of DC gain and bandwidth is constant for a single-pole system.",
+  },
+  {
+    slug: "gain-temperature",
+    title: "Gain vs Temperature",
+    description: "Temperature dependence of detector gain for APDs and PMTs.",
+  },
+  {
+    slug: "geiger-mode-avalanche",
+    title: "Geiger-Mode APD",
+    description: "SPAD: breakdown voltage, overbias, temperature effects, PDE, and dark count rate.",
+  },
+  {
+    slug: "hybrid-detector",
+    title: "Hybrid Detector Design",
+    description: "Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.",
+  },
+  {
+    slug: "ingaas-parameters",
+    title: "InGaAs Detector Parameters",
+    description: "InₓGa₁₋ₓAs bandgap, cutoff wavelength, QE, dark current, NEP for SWIR detectors.",
+  },
+  {
+    slug: "intensified-camera",
+    title: "Intensified Camera (ICCD)",
+    description: "Gain chain: photocathode → MCP → phosphor → fiber optic → CCD. Noise and sensitivity analysis.",
+  },
+  {
+    slug: "intensified-ccd",
+    title: "Intensified CCD (ICCD)",
+    description: "Photocathode → MCP → phosphor → CCD gain chain with gating and noise analysis.",
+  },
+  {
+    slug: "linear-mode-avalanche",
+    title: "Linear-Mode Avalanche Photodiode",
+    description: "McIntyre excess noise factor F(M), signal current and shot noise of a linear-mode APD versus gain, ionization ratio k and dark current.",
+  },
+  {
+    slug: "lockin-amplifier",
+    title: "Lock-in Amplifier",
+    description: "Lock-in amplifier: demodulation gain, ENBW, noise rejection, and SNR improvement.",
+  },
+  {
+    slug: "microchannel-plate",
+    title: "Microchannel Plate",
+    description: "MCP gain, spatial resolution, and effective QE for photon detectors.",
+  },
+  {
+    slug: "modulation-transfer",
+    title: "Modulation Transfer Function (MTF)",
+    description: "Image sensor MTF: pixel aperture, charge diffusion, and optical blur contributions.",
+  },
+  {
+    slug: "nep",
+    title: "Noise Equivalent Power (NEP) & Detectivity (D*)",
+    description: "Calculate NEP and specific detectivity D* from detector noise sources: shot noise, thermal (Johnson) noise, and dark current.",
+  },
+  {
+    slug: "photodiode-speed",
+    title: "Photodiode Speed & Bandwidth",
+    description: "RC-limited bandwidth, junction capacitance, and NEP vs area for photodiodes.",
+  },
+  {
+    slug: "photon-counting",
+    title: "Photon Counting Statistics",
+    description: "Poisson statistics, SNR, dead time corrections, and count distributions.",
+  },
+  {
+    slug: "photon-transfer",
+    title: "Photon Transfer Curve (PTC)",
+    description: "Photon transfer curve: noise vs signal, variance analysis, conversion gain, and dynamic range.",
+  },
+  {
+    slug: "pixel-crosstalk",
+    title: "Pixel Crosstalk & MTF",
+    description: "Charge diffusion and electrical crosstalk: wavelength-dependent absorption depth, total crosstalk, and MTF degradation.",
+  },
+  {
+    slug: "pmt",
+    title: "Photomultiplier Tube (PMT)",
+    description: "PMT gain, signal current, excess noise factor, and SNR from dynode parameters.",
+  },
+  {
+    slug: "pmt-gain",
+    title: "PMT Gain & SNR",
+    description: "PMT dynode gain, voltage dependence, anode responsivity, and SNR analysis.",
+  },
+  {
+    slug: "quantum-efficiency",
+    title: "Quantum Efficiency",
+    description: "Detector QE explorer: Si, InGaAs, CCD, CMOS presets with fill factor and microlens gain.",
+    lede: "Interactive detector QE explorer with detector presets, fill factor, microlens gain, and wavelength response curves.",
+    related: [
+      { href: "/detectors/pmt-gain" },
+      { href: "/detectors/pmt" },
+      { href: "/detectors/readout-noise" },
+      { href: "/detectors/reset-noise" },
+    ],
+  },
+  {
+    slug: "readout-noise",
+    title: "Readout Noise",
+    description: "Readout noise, dark current, shot noise, and SNR analysis for image sensors.",
+  },
+  {
+    slug: "reset-noise",
+    title: "KTC Reset Noise",
+    description: "KTC reset noise voltage, noise charge, and conversion gain for image sensors.",
+  },
+  {
+    slug: "responsivity",
+    title: "Detector Responsivity",
+    description: "Detector responsivity from quantum efficiency and wavelength with wavelength sweep.",
+    lede: "Interactive responsivity calculator from quantum efficiency and wavelength, with presets and wavelength sweeps.",
+    related: [
+      { href: "/detectors/readout-noise" },
+      { href: "/detectors/reset-noise" },
+      { href: "/detectors/saturation" },
+      { href: "/detectors/shot-noise" },
+    ],
+  },
+  {
+    slug: "saturation",
+    title: "Detector Saturation",
+    description: "Full well capacity, dynamic range, SNR at saturation, and nonlinearity rolloff model.",
+  },
+  {
+    slug: "shot-noise",
+    title: "Shot Noise",
+    description: "Shot noise current, SNR, and noise vs signal analysis for photodetectors.",
+  },
+  {
+    slug: "si-vs-inge",
+    title: "Si vs InGaAs Detectors",
+    description: "Compare silicon and InGaAs photodetectors: QE spectra, SNR, dark current, and wavelength performance.",
+  },
+  {
+    slug: "silicon-photodiode",
+    title: "Silicon Photodiode",
+    description: "Si photodiode parameters: bandgap, QE, responsivity, dark current, and spectral response.",
+  },
+  {
+    slug: "single-photon-counting-module",
+    title: "Single-Photon Counting Module",
+    description: "SPCM dead time correction, SNR, dark count effects, and afterpulsing analysis.",
+  },
+  {
+    slug: "sndr",
+    title: "SNDR Calculator",
+    description: "Signal-to-Noise-and-Distortion Ratio, SFDR, THD, and ENOB for ADC analysis.",
+    lede: "Signal-to-Noise-and-Distortion Ratio. SNDR = Psignal/(Pnoise + Pdistortion).",
+  },
+  {
+    slug: "spad",
+    title: "SPAD Detector Calculator",
+    description: "Single-photon avalanche diode — PDE, DCR, dead time, afterpulsing, and SNR analysis.",
+  },
+  {
+    slug: "spad-dead-time",
+    title: "SPAD Dead Time Calculator",
+    description: "Non-paralyzable and paralyzable dead time models for SPAD detectors.",
+    heading: "SPAD Dead Time",
+    lede: "Dead time effects on measured count rates, pile-up loss, and correction for SPAD detectors.",
+  },
+  {
+    slug: "spectral-response",
+    title: "Spectral Response Calculator",
+    description: "Responsivity and quantum efficiency as a function of wavelength.",
+    heading: "Spectral Response",
+    lede: "R(λ) = η(λ) · q · λ / (h·c). Responsivity and quantum efficiency as a function of wavelength.",
+  },
+  {
+    slug: "streak-camera",
+    title: "Streak Camera Calculator",
+    description: "Temporal resolution, sweep speed, time window, and spatial resolution for streak cameras.",
+    heading: "Streak Camera",
+    lede: "Streak camera basics calculator. Models temporal resolution, sweep speed, time window, and spatial resolution trade-offs.",
+  },
+  {
+    slug: "temporal-noise",
+    title: "Temporal Noise Calculator",
+    description: "1/f noise, white noise, and read noise as functions of frequency and integration time.",
+    heading: "Temporal Noise",
+    lede: "1/f noise, white (shot) noise, and read noise as functions of frequency and integration time.",
+  },
+  {
+    slug: "thermal-noise",
+    title: "Johnson (Thermal) Noise Calculator",
+    description: "Thermal noise voltage, current, and power across a resistor.",
+    heading: "Johnson (Thermal) Noise",
+    lede: "vn = √(4kBTRΔf). Thermal noise voltage across a resistor.",
+  },
+  {
+    slug: "uniformity",
+    title: "Photoresponse Non-Uniformity Calculator",
+    description: "PRNU, DSNU, and spatial uniformity analysis for image sensors.",
+    heading: "Photoresponse Non-Uniformity",
+    lede: "PRNU measures the spatial variation in pixel sensitivity across the sensor array. σPRNU = PRNU% × mean signal.",
+  },
+  {
+    slug: "vacuum-photodiode",
+    title: "Vacuum Photodiode Calculator",
+    description: "Photoemission, responsivity, dark current, and frequency response for vacuum photodiodes.",
+    heading: "Vacuum Photodiode",
+    lede: "Vacuum photodiode calculator. Models photoemission, responsivity, dark current (thermionic emission), and frequency response.",
+  },
+  {
+    slug: "well-capacity",
+    title: "Well Capacity & Dynamic Range Calculator",
+    description: "Well capacity, dynamic range, pixel capacitance, and usable bit depth for image sensors.",
+    heading: "Well Capacity & Dynamic Range",
+    lede: "DR = 20·log₁₀(Nwell/σread). C = Nwell·q/Vswing. Larger wells → more DR but slower charge transfer.",
+  },
+];
