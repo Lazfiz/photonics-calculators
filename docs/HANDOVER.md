@@ -1,7 +1,7 @@
 # Handover — 2026-10-08 (session 17 → session 18)
 
 **Start here:** read this file, then `docs/ROADMAP.md` (Phase 2).
-- Session 17 merged the duplicate calculators on `phase-2/duplicates` (**PR #__PR__**): 52 pages into 44, so
+- Session 17 merged the duplicate calculators on `phase-2/duplicates` (**PR #13**): 52 pages into 44, so
   524 calculators became 472. Merge it only after the user approves, then run `ui-check` against production.
 - Next: the next unchecked ROADMAP item (see Next actions).
 
