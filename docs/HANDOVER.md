@@ -3,37 +3,38 @@
 **Start here:** read this file, then `docs/ROADMAP.md`. With the `exposure-duration` leftovers done, every item from
 the Phase 4 findings list is fixed. Next is Phase 2 stage **2c** (tier + references per registry entry, shown on
 each page), unless the user picks something else (Phase 3 charts; Phase 4 golden tests for the top 50).
-- PR #18 (imaging findings) was merged and checked on production before this session.
-- Session 23 fixed `laser-safety/exposure-duration` on `phase-4/exposure-duration` (**PR**, see below). Merge only
-  after the user approves, then run `ui-check` against production (load check of `/laser-safety/exposure-duration`).
+- **PR #19** (`phase-4/exposure-duration`) is merged (`df9e0869`) and checked on production (full `ui-check` suite
+  + page values; comment on the PR).
+- The user then asked for ICNIRP wherever the IEC values can't be checked: **`phase-4/uv-laser-icnirp`** switches the
+  UV branch (PR, see below). Merge only after the user approves, then `ui-check` production and check that
+  `/laser-safety/exposure-duration?wavelength=350&power=0.05` shows 2060 s (10⁴ J/m² at 4.86 W/m²; was "> 30 000 s").
 
 ## State
-- **`phase-4/exposure-duration`** (on `main` a8970431), one fix commit plus docs:
-  1. `fix(laser-safety)`: `src/physics/laser-safety/eye-exposure-limits.ts` + `tests/laser-safety-eye-exposure-limits.test.ts`,
-     page rewritten, UV laser MPE functions removed from `hazard-weighting.ts` (and their test).
-  2. `docs`: ROADMAP (box ticked, details under the last Phase 4 item), this file.
-- **Gates:** see the PR. 11 new tests; a scratchpad `mutate.mjs` caught 18/18 formula mutations (incl. the old
-  page's errors: C_A exponent, 0.1 J/cm² at 1.5–1.8 µm, 18 µs / 5×10⁻³ J/m², 1/e vs 1/e²).
+- `src/physics/laser-safety/eye-exposure-limits.ts` + `tests/laser-safety-eye-exposure-limits.test.ts` hold all
+  point-source eye limits (180 nm – 1 mm); `hazard-weighting.ts` keeps only the incoherent S(λ)/B(λ) limits.
+- **`phase-4/uv-laser-icnirp`** (on `main` df9e0869): one `fix(laser-safety)` commit (module UV branch, tests, page
+  text) plus docs (ROADMAP, this file). 12 tests in the file; 6/6 UV mutations caught (PR #19: 18/18).
 
 ## Decisions (this session)
-- Source: ICNIRP 2013 laser guidelines (open PDF: icnirp.org/cms/upload/publications/ICNIRPLaser180gdl_2013.pdf),
-  not IEC 60825-1 (paywalled). `pdftotext -layout` scrambles Table 5's rows and prints µ as "m" ("5 ms" is 5 µs);
-  each value was checked against the energy column (×π(3.5 mm)²) and continuity at the joints.
+- Source: ICNIRP 2013 laser guidelines (open PDF: icnirp.org/cms/upload/publications/ICNIRPLaser180gdl_2013.pdf).
+  IEC 60825-1 is paywalled; its free preview stops before Annex A. Read the tables with `pdftotext -raw`:
+  `-layout` shifts Table 5 rows and prints µ as "m" ("5 ms" is 5 µs).
+- UV is ICNIRP now: 1 nm steps 302–315 nm, 10⁴ J/m² for 315–400 nm to 30 ks (no 10 W/m² step). EU Directive
+  2006/25/EC Annex II Table 2.3 (image at legislation.gov.uk `/eudr/2006/25/annex/II`) confirms the ≥ 10 s values.
+  It dates from 2006, before ICNIRP 2013 changed C_C (not checked: its Table 2.5); don't cite it for 1150–1400 nm.
 - Point source only (C_E = 1, T₂ = 10 s). Dual limits use min(thermal, photochemical). The table's note e ("thermal
   below T₁, photochemical above") gives the same as the min from 400 to 500 nm. From 500 to 600 nm above 100 s it
   would allow C_B W/m² > 10 W/m², so the min is the safer reading.
 - 1150–1400 nm adds the anterior-eye limit, 2 × skin (eye-only exposure, Table 5 note d). It binds above ≈ 1315 nm.
 - The beam is a Gaussian with a 1/e² diameter (data-sheet convention), averaged over the limiting aperture. Not done:
   ICNIRP's advice to use the actual irradiance for beams < 1 mm (stated on the page).
-- UV kept IEC values (10 W/m² after 10³ s for 315–400 nm); ICNIRP keeps 10⁴ J/m² to 30 ks. Logged as open in
-  ROADMAP, not changed.
 - Wavelength range extended to 1 mm (same table). URL key `aperture` (pupil) dropped; other keys unchanged.
 
 ## Next actions
-1. Push, open the PR, CI, ask before merging, then `ui-check` production with a load check of the page.
+1. Push `phase-4/uv-laser-icnirp`, open the PR, CI, ask before merging, then `ui-check` production.
 2. Then stage **2c** (or what the user picks).
 
-## Ship flow (worked sixteen times)
+## Ship flow (worked seventeen times)
 - **Push:** `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`.
 - **CI:** `gh pr create --body-file f`, then `gh pr checks <n> --watch`.
 - **Preview:** behind Vercel SSO (302 to `vercel.com/sso-api`). Use a local `npm run build` + `npx next start -p 3100`.

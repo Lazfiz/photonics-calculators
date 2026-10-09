@@ -58,16 +58,29 @@ test("which limits apply, and their apertures (Tables 5, 7, 8)", () => {
   assert.ok(Number.isNaN(limitingAperture(uv, 4e4)));
 });
 
-test("limit values from Table 5 (and the UV laser MPE of IEC 60825-1:2014 Table A.1)", () => {
+test("UV steps: ICNIRP 2013 Table 5 and EU Directive 2006/25/EC Annex II Table 2.3", () => {
+  // ICNIRP rows "302 ≤ λ < 303: 40 J/m²" … "313 ≤ λ < 315: 6.3 kJ/m²", 1 ns – 30 ks. The Directive lists the same
+  // values from 10 s, labelled by the upper wavelength (303: 40 … 314: 6.3×10³), and 30 J/m² for 180–302 nm.
+  const rows: [number, number][] = [
+    [180, 30], [301.9, 30], [302, 40], [303, 60], [304, 100], [305, 160], [306, 250], [307, 400], [308, 630],
+    [309, 1e3], [310, 1.6e3], [311, 2.5e3], [312, 4e3], [313, 6.3e3], [314.9, 6.3e3],
+  ];
+  for (const [l, H] of rows) assert.equal(exposureLimit(limitOf(nm(l), "cornealUv"), 100), H, `${l} nm`);
+  // 315–400 nm: 10⁴ J/m² from 10 s to 30 ks (both sources; no 10 W/m² after 10³ s).
+  assert.equal(exposureLimit(limitOf(nm(350), "cornealUv"), 3e4), 1e4);
+  assert.equal(exposureLimit(limitOf(nm(399), "cornealUv"), 1e3), 1e4);
+});
+
+test("limit values from Table 5", () => {
   const uv = (l: number) => limitOf(nm(l), "cornealUv");
   assert.equal(exposureLimit(uv(254), 1), 30);
-  // 310 nm: C₂ = 10^(0.2·15) = 1000 J/m²; C₁(1 µs) = 5.6e3·10^(−1.5) = 177.1 J/m².
-  assertRel(exposureLimit(uv(310), 1e-6), 5.6e3 * Math.pow(10, -1.5), 1e-12, "C₁ at 310 nm, 1 µs");
-  assertRel(exposureLimit(uv(310), 1), 1000, 1e-12, "C₂ at 310 nm");
-  // 350 nm: C₁ to 10 s, 10⁴ J/m² to 1000 s, then 10 W/m².
+  // 310 nm: 1.6 kJ/m², and "also not to exceed" 5.6×10³ t^0.25 J/m² below 10 s: 177.1 J/m² at 1 µs.
+  assertRel(exposureLimit(uv(310), 1e-6), 5.6e3 * Math.pow(10, -1.5), 1e-12, "5.6 t^0.25 kJ at 310 nm, 1 µs");
+  assert.equal(exposureLimit(uv(310), 1), 1600);
+  // 350 nm: 5.6×10³ t^0.25 J/m² to 10 s, then 10⁴ J/m².
   assertRel(exposureLimit(uv(350), 1), 5600, 1e-12, "350 nm, 1 s");
   assert.equal(exposureLimit(uv(350), 100), 1e4);
-  assertRel(exposureLimit(uv(350), 1e4), 1e5, 1e-12, "350 nm, 10⁴ s");
+  assert.equal(exposureLimit(uv(350), 1e4), 1e4);
   const vis = limitOf(nm(532), "retinalThermal");
   assert.equal(exposureLimit(vis, 1e-6), 2e-3);
   assertRel(exposureLimit(vis, 0.25), 18 * Math.pow(0.25, 0.75), 1e-12, "18 t^0.75 at 0.25 s");
@@ -158,14 +171,17 @@ test("mid and far IR: limits with the time-dependent aperture", () => {
   assertRel(exposureDuration(nm(1450), 10, 0).tMax, 1e3 / (10 / area(1e-3)), 1e-9, "1450 nm");
 });
 
-test("UV laser MPE durations at a uniform irradiance (IEC 60825-1:2014 Table A.1)", () => {
+test("UV durations at a uniform irradiance", () => {
   const t = (l: number, E: number) => exposureDuration(nm(l), uniform(E).P, uniform(E).d).tMax;
   assertRel(t(254, 100), 0.3, 1e-4, "254 nm, 100 W/m²");
-  assertRel(t(350, 1e3), Math.pow(5.6, 4 / 3), 1e-4, "350 nm, 1 kW/m² (C₁)");
+  assertRel(t(350, 1e3), Math.pow(5.6, 4 / 3), 1e-4, "350 nm, 1 kW/m² (5.6 t^0.25 kJ)");
   assertRel(t(350, 100), 100, 1e-4, "350 nm, 100 W/m² (10⁴ J/m²)");
-  assertRel(t(310, 1e4), 0.1, 1e-4, "310 nm, 10 kW/m² (C₂)");
-  assertRel(t(310, 10), 100, 1e-4, "310 nm, 10 W/m²");
-  assert.equal(t(350, 5), Infinity);
+  // 310 nm, 10 kW/m²: 1.6 kJ/m² at 0.16 s (5.6 t^0.25 kJ = 3.5 kJ/m² there, not binding).
+  assertRel(t(310, 1e4), 0.16, 1e-4, "310 nm, 10 kW/m²");
+  assertRel(t(310, 10), 160, 1e-4, "310 nm, 10 W/m²");
+  // 350 nm, 5 W/m²: 10⁴ J/m² at 2000 s. The IEC values used before allowed 10 W/m² after 10³ s (no limit).
+  assertRel(t(350, 5), 2000, 1e-4, "350 nm, 5 W/m²");
+  assert.equal(t(350, 0.3), Infinity, "10⁴ J/m² / 0.3 W/m² = 33 ks > 30 ks");
   assert.equal(t(254, 1e-4), Infinity);
 });
 
