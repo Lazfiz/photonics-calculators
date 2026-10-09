@@ -24,10 +24,11 @@ thin-film audit, part 1, on branch `phase-4/thin-film-audit` (PR #22). PR #21 (s
   DOIs as `https://doi.org/10.…`, no URL inside a citation).
 
 ## Next actions
-1. PR #22: ask before merging, then `ui-check` production plus `/thin-film/fabry-perot-filter` (nearest peak 500 nm,
-   order 3, FWHM 11.9 nm), `/thin-film/angle-tuning` and the badge on `/thin-film/bragg-reflector`.
-2. Then thin-film part 2 (an `edge-filter.ts` module; ask whether to merge `long-pass`/`short-pass` into `edge-filter`),
-   part 3 and part 4, one session each. Other tracks: Phase 3 charts, top-50 golden tests.
+1. Done: PR #22 merged (`96cdcbc0`); production `ui-check` suite + the 21 pages passed (comment on the PR).
+2. Thin-film part 2 on branch `phase-4/thin-film-edge-filters` (created from `main` after #22): an `edge-filter.ts`
+   module, then the 9 pages in ROADMAP part 2. **The user decided: merge `long-pass` and `short-pass` into `edge-filter`**
+   (add them to `src/registry/redirects.json`, run `scripts/codemods/2026-10-08-merge-duplicates.ts --write`; their old
+   titles become keywords). Then part 3 and part 4, one session each. Other tracks: Phase 3 charts, top-50 golden tests.
 
 ## Ship flow (worked nineteen times)
 - **Push:** `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`.
