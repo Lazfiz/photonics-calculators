@@ -181,3 +181,68 @@ export function besselI0(x: number): number {
   for (let k = 0; k < N; k++) sum += Math.exp(x * Math.cos((2 * Math.PI * k) / N));
   return sum / N;
 }
+
+/*
+ * Sampled search and averages for smooth functions of one variable (spectra, transfer curves).
+ */
+
+/**
+ * First x where f crosses `level`, going from a to b (a > b is allowed): f is sampled at `intervals` + 1
+ * evenly spaced points and the first bracket (sign change of f − level) is bisected until it is
+ * 1e-13·|b − a| wide (at most 100 halvings). A crossing narrower than one sample interval can be missed. Returns a if
+ * f(a) = level, NaN if f(a) is NaN or there is no sign change before b.
+ */
+export function firstCrossing(f: (x: number) => number, a: number, b: number, level: number, intervals = 200): number {
+  if (!(Number.isFinite(a) && Number.isFinite(b) && intervals >= 1)) return NaN;
+  const fa = f(a) - level;
+  if (Number.isNaN(fa)) return NaN;
+  if (fa === 0) return a;
+  const n = Math.ceil(intervals);
+  let lo = a;
+  for (let i = 1; i <= n; i++) {
+    const x = a + ((b - a) * i) / n;
+    const fx = f(x) - level;
+    if (Number.isNaN(fx)) return NaN;
+    if (fx === 0) return x;
+    if (fx > 0 !== fa > 0) {
+      let hi = x;
+      const tol = 1e-13 * Math.abs(b - a);
+      for (let k = 0; k < 100 && Math.abs(hi - lo) > tol; k++) {
+        const mid = (lo + hi) / 2;
+        const fm = f(mid) - level;
+        if (fm === 0) return mid;
+        if (fm > 0 === fa > 0) lo = mid;
+        else hi = mid;
+      }
+      return (lo + hi) / 2;
+    }
+    lo = x;
+  }
+  return NaN;
+}
+
+/**
+ * Mean (trapezoidal rule), minimum and maximum of f over [a, b] from `intervals` + 1 evenly spaced
+ * samples. NaN in every field if a or b isn't finite, a ≥ b, or a sample is NaN.
+ */
+export function intervalStats(
+  f: (x: number) => number,
+  a: number,
+  b: number,
+  intervals = 400,
+): { mean: number; min: number; max: number } {
+  const nan = { mean: NaN, min: NaN, max: NaN };
+  if (!(Number.isFinite(a) && Number.isFinite(b) && a < b && intervals >= 1)) return nan;
+  const n = Math.ceil(intervals);
+  let sum = 0;
+  let min = Infinity;
+  let max = -Infinity;
+  for (let i = 0; i <= n; i++) {
+    const y = f(a + ((b - a) * i) / n);
+    if (Number.isNaN(y)) return nan;
+    sum += i === 0 || i === n ? y / 2 : y;
+    if (y < min) min = y;
+    if (y > max) max = y;
+  }
+  return { mean: sum / n, min, max };
+}

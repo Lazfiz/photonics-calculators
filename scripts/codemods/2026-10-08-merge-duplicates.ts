@@ -48,8 +48,13 @@ function stringProp(obj: ObjectLiteralExpression, name: string): string | undefi
 const entries = new Map<string, ObjectLiteralExpression>();
 for (const file of files) {
   const category = file.getBaseNameWithoutExtension();
-  const [declaration] = file.getVariableStatements().flatMap((s) => s.getDeclarations());
-  const array = declaration.getInitializerIfKindOrThrow(SyntaxKind.ArrayLiteralExpression);
+  // The exported entry array; citation helpers (arrow functions) may come first.
+  const array = file
+    .getVariableStatements()
+    .flatMap((s) => s.getDeclarations())
+    .map((d) => d.getInitializerIfKind(SyntaxKind.ArrayLiteralExpression))
+    .find((a) => a !== undefined);
+  if (!array) throw new Error(`${file.getFilePath()}: no entry array`);
   for (const element of array.getElements()) {
     const obj = element.asKindOrThrow(SyntaxKind.ObjectLiteralExpression);
     entries.set(`/${category}/${stringProp(obj, "slug")}`, obj);

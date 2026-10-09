@@ -7,6 +7,8 @@ import {
   besselK,
   erf,
   erfc,
+  firstCrossing,
+  intervalStats,
   lnFactorial,
   normalCdf,
   poissonCdf,
@@ -107,4 +109,26 @@ test("Bessel edge cases", () => {
   assert.equal(besselK(0, 0), Infinity);
   assert.ok(Number.isNaN(besselK(0, -1)));
   assert.ok(Number.isNaN(besselJ(0.5, 1))); // integer orders only
+});
+
+// cos x crosses 0 at π/2 and 0.5 at π/3 (exact). Scanning from 3 down to 0 meets π/2 first for level 0.
+test("firstCrossing: bisects the first sign change in the scan direction", () => {
+  assert.ok(Math.abs(firstCrossing(Math.cos, 0, 3, 0) - Math.PI / 2) < 1e-12);
+  assert.ok(Math.abs(firstCrossing(Math.cos, 3, 0, 0) - Math.PI / 2) < 1e-12);
+  assert.ok(Math.abs(firstCrossing(Math.cos, 3, 0, 0.5) - Math.PI / 3) < 1e-12);
+  // sin on [0, 10]: crossings of 0.5 at π/6, 5π/6, …; the first is π/6.
+  assert.ok(Math.abs(firstCrossing(Math.sin, 0, 10, 0.5) - Math.PI / 6) < 1e-12);
+  assert.equal(firstCrossing(Math.cos, 0, 1, 1), 0); // f(a) = level
+  assert.ok(Number.isNaN(firstCrossing(Math.cos, 0, 1, 2)), "no crossing");
+  assert.ok(Number.isNaN(firstCrossing(() => NaN, 0, 1, 0)));
+});
+
+// Trapezoidal rule for x² on [0, 1] with n intervals: 1/3 + 1/(6n²) (error term h²/12·[f′(1) − f′(0)]).
+test("intervalStats: trapezoidal mean, min and max", () => {
+  const s = intervalStats((x) => x * x, 0, 1, 400);
+  assert.ok(Math.abs(s.mean - (1 / 3 + 1 / (6 * 400 * 400))) < 1e-15, `${s.mean}`);
+  assert.equal(s.min, 0);
+  assert.equal(s.max, 1);
+  assert.ok(Number.isNaN(intervalStats((x) => x, 1, 1).mean), "empty interval");
+  assert.ok(Number.isNaN(intervalStats(() => NaN, 0, 1).max));
 });
