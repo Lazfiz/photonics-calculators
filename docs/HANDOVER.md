@@ -1,36 +1,35 @@
-# Handover — 2026-10-09 (session 24 → session 25)
+# Handover — 2026-10-09 (session 25 → session 26)
 
-**Start here:** read this file, then `docs/ROADMAP.md`. Stage **2c** (trust data) is done on branch
-`phase-2/trust-data`: **PR #21**, CI green. Phase 2 has one box left (`useMemo` deps and `any`). Merge the PR only after the
-user approves, then run `ui-check` on production and look at one reviewed and one unreviewed page (badge and section).
+**Start here:** read this file, then `docs/ROADMAP.md` (Phase 4, "Audit the unreviewed pages"). Session 25 did the
+thin-film audit, part 1, on branch `phase-4/thin-film-audit` (PR #22). PR #21 (stage 2c) is merged and live.
 
 ## State
-- `phase-2/trust-data` (on `main` 04e825f9, PR #20 merged): `feat(registry)` infrastructure, `feat(registry)` data
-  for 34 pages, `docs` (skills, `physics.md`, ROADMAP, this file). `check` green (204 tests), `build` green.
-- Every calculator page now shows a "Model: …" badge under the lede (it links to `#model`) and a "Model and
-  references" section after the calculator, then the related links. 34 pages have a tier (12 exact, 22 textbook);
-  438 say "Not yet reviewed". `/about#model-tiers` explains the tiers with counts. JSON-LD lists references as `citation`.
+- 40 pages audited by four `physics-reviewer` batches (39 thin-film pages on the modules + `wave-optics/gires-tournois`):
+  9 OK, 14 questionable, 17 bugs. Findings and fixes per page are in ROADMAP Phase 4 (thin-film parts 1–4).
+- Part 1 (this PR): 21 pages fixed where needed, with trust data (14 exact, 6 textbook, 1 illustrative), so 55 of 472
+  pages have a tier. New tested modules `physics/thin-film/quarter-wave-stack.ts` and `graded-index.ts`; `interference.ts`
+  gained `airyPeakNear`. The registry's `thin-film.ts` has `macleod()`, `bornWolf()` and `hecht()` citation helpers.
+- The other 19 pages stay "Not yet reviewed" until fixed: part 2 (edge filters), part 3 (readouts, phase), part 4 (metals, one-offs).
 
-## Decisions (this session)
-- The user chose "Not yet reviewed" for unaudited pages, rather than showing nothing or auditing all 472 first.
-- Only audited pages get a tier: Phase 1 (`ber`, `bpsk-qpsk`) and sessions 18–23. The ~40 thin-film pages on
-  `transfer-matrix.ts` (plus `interference`, `cavity-filter`, `ellipsometry`) and `gires-tournois` stay unreviewed:
-  the matrix is exact, but the rest of each page was never audited. They're the obvious next audit batch.
-- Sources come from the modules' headers and tests only. DOIs come from Crossref, accepted only when volume, first page
-  and year match; titles and page ranges are from Crossref too. Books without a verifiable edition keep none (Agrawal NLFO,
-  Saleh & Teich). Boyd *Nonlinear Optics* is cited as the 3rd ed. (2008): §2.7–2.10 match it, and the OPO module says so.
-- A mixed model takes the lower tier and says what is exact in `modelNote` (e.g. `coherent-raman`: wavelengths exact).
-- `infrared-glass` is textbook, not illustrative: the index is verified, and the note flags the unchecked dn/dT, κ and Knoop values.
-- Tier rules (test-enforced): exact/textbook need ≥ 1 reference; no references or note without a tier; URLs are https,
-  DOIs as `https://doi.org/10.…`; no URL inside a citation. Illustrative may have no reference.
+## Decisions
+- The user picked the thin-film audit over Phase 3 charts, top-50 tests and the Phase 2 lint box.
+- A page gets a tier only once it is OK or fixed; bug pages wait for their batch (no interim "illustrative").
+- Ad hoc readouts were replaced by tested closed forms, not just relabelled: the angle shift is λ₀(cos θ_H + cos θ_L)/2,
+  the Fabry-Perot cards use the nearest order and its exact FWHM, and the graded index is a midpoint staircase.
+- Defaults changed where they hid the physics: `gradient-index` n_surface 1.1; `ellipsometry-measurement` bulk Si at 70°
+  (Ψ 10.573°, Δ 179.230°; its Brewster input, unrelated to Ψ and Δ, is gone); `wavelength-separation` λ₂/λ₁ = 1.4 (URL key
+  `sepRatio`; the stop bands overlap below 1.359).
+- Kept from session 24: DOIs only from Crossref (volume, first page and year match); books without a verifiable edition get
+  no DOI; a mixed model takes the lower tier. Tier rules are test-enforced (exact/textbook need ≥ 1 reference, https URLs,
+  DOIs as `https://doi.org/10.…`, no URL inside a citation).
 
 ## Next actions
-1. PR #21 is open with CI green. Ask before merging (`gh pr merge 21 --merge`), then `ui-check` production plus
-   `/laser-safety/exposure-duration` (badge "Model: Exact", two references, a doi link) and `/about#model-tiers`.
-2. Then the user's pick: Phase 4 audits that fill trust data (thin-film batch first, `physics-reviewer` in batches of
-   ≤ 10, then a registry edit per page), Phase 3 charts, or golden tests for the top 50.
+1. PR #22: ask before merging, then `ui-check` production plus `/thin-film/fabry-perot-filter` (nearest peak 500 nm,
+   order 3, FWHM 11.9 nm), `/thin-film/angle-tuning` and the badge on `/thin-film/bragg-reflector`.
+2. Then thin-film part 2 (an `edge-filter.ts` module; ask whether to merge `long-pass`/`short-pass` into `edge-filter`),
+   part 3 and part 4, one session each. Other tracks: Phase 3 charts, top-50 golden tests.
 
-## Ship flow (worked eighteen times)
+## Ship flow (worked nineteen times)
 - **Push:** `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`.
 - **CI:** `gh pr create --body-file f`, then `gh pr checks <n> --watch`.
 - **Preview:** behind Vercel SSO (302 to `vercel.com/sso-api`). Use a local `npm run build` + `npx next start -p 3100`.
@@ -67,3 +66,7 @@ user approves, then run `ui-check` on production and look at one reviewed and on
 - **Timings:** `tsc` ≈ 1.5–4 min, `check` ≈ 6 min, `build` ≈ 6–10 min. Run long ones in the background. Don't edit
   `.ts` files while `check` runs (draft in the scratchpad instead).
 - **Committing:** `git commit -F msg -- <paths>`. Untracked files need `git add` first.
+- **Book chapters:** Crossref lists a book's chapters as `<book doi>-c<N>` (`api.crossref.org/works/10.1201/9781420073034-c7`
+  → "Edge Filters"). Check chapter numbers there instead of trusting a reviewer's memory.
+- **`useURLState` doesn't clamp:** `?numPairs=1e9` hung `environmental-stability`. Clamp layer counts in the page.
+- **`ChartPanel` → `SimpleChart`** for plain scatter charts; it reads `null` as 0, so break a line by splitting it into traces.
