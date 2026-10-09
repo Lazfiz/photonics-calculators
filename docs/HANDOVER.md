@@ -1,7 +1,7 @@
 # Handover — 2026-10-09 (session 24 → session 25)
 
 **Start here:** read this file, then `docs/ROADMAP.md`. Stage **2c** (trust data) is done on branch
-`phase-2/trust-data` (PR below). Phase 2 has one box left (`useMemo` deps and `any`). Merge the PR only after the
+`phase-2/trust-data`: **PR #21**, CI green. Phase 2 has one box left (`useMemo` deps and `any`). Merge the PR only after the
 user approves, then run `ui-check` on production and look at one reviewed and one unreviewed page (badge and section).
 
 ## State
@@ -25,7 +25,7 @@ user approves, then run `ui-check` on production and look at one reviewed and on
   DOIs as `https://doi.org/10.…`; no URL inside a citation. Illustrative may have no reference.
 
 ## Next actions
-1. Push `phase-2/trust-data`, open the PR, CI, ask before merging, then `ui-check` production plus
+1. PR #21 is open with CI green. Ask before merging (`gh pr merge 21 --merge`), then `ui-check` production plus
    `/laser-safety/exposure-duration` (badge "Model: Exact", two references, a doi link) and `/about#model-tiers`.
 2. Then the user's pick: Phase 4 audits that fill trust data (thin-film batch first, `physics-reviewer` in batches of
    ≤ 10, then a registry edit per page), Phase 3 charts, or golden tests for the top 50.
