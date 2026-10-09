@@ -6,117 +6,157 @@ import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { uvLaserCornealMpe, uvLaserMaxDuration } from "../../../physics/laser-safety/hazard-weighting";
+import {
+  apertureIrradiance, exposureDuration, exposureLimit, eyeLimits, limitingAperture, T_MAX, T_MIN, type EyeLimitKind,
+} from "../../../physics/laser-safety/eye-exposure-limits";
+
+const LIMIT_LABELS: Record<EyeLimitKind, string> = {
+  cornealUv: "Cornea (UV)",
+  retinalThermal: "Retina, thermal",
+  retinalPhotochemical: "Retina, photochemical (blue light)",
+  anteriorSegment: "Anterior eye (2 × skin limit)",
+  cornealIr: "Cornea (IR)",
+};
+const LIMIT_COLORS: Record<EyeLimitKind, string> = {
+  cornealUv: "#c084fc",
+  retinalThermal: "#60a5fa",
+  retinalPhotochemical: "#a78bfa",
+  anteriorSegment: "#34d399",
+  cornealIr: "#fbbf24",
+};
+
+function fmtTime(t: number): string {
+  if (t === Infinity) return "> 30 000 s (8.3 h)";
+  if (Number.isNaN(t)) return "< 1 ns";
+  if (t < 1e-6) return (t * 1e9).toPrecision(3) + " ns";
+  if (t < 1e-3) return (t * 1e6).toPrecision(3) + " µs";
+  if (t < 1) return (t * 1e3).toPrecision(3) + " ms";
+  return (t >= 100 ? t.toFixed(0) : t.toPrecision(3)) + " s";
+}
+
+const fmtNum = (x: number) =>
+  x === 0 ? "0" : x >= 1e5 || x < 1e-2 ? x.toExponential(2) : x >= 100 ? x.toFixed(0) : x.toPrecision(3);
+
 export default function ExposureDurationPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 532);
+  const [wavelength, setWavelength] = useURLState("wavelength", 532); // nm
   const [power, setPower] = useURLState("power", 100); // mW
-  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 3); // mm
-  const [aperture, setAperture] = useURLState("aperture", 7); // mm (pupil)
+  const [beamDiameter, setBeamDiameter] = useURLState("beamDiameter", 3); // mm, 1/e²
 
-  const lam = wavelength / 1000; // µm
-
-  // Calculate maximum safe exposure time
-  const maxSafeTime = useMemo(() => {
-    const beamArea = Math.PI * Math.pow(beamDiameter / 20, 2); // cm²
-    const irrad = power / 1000 / beamArea; // W/cm²
-
-    // MPE formulas: find t where MPE(t) = irradiance
-    // 400-700nm: MPE = 1.8*t^0.75 mJ/cm² = 1.8e-3 * t^0.75 J/cm²
-    // Set 1.8e-3 * t^0.75 = irrad * t => for CW: MPE_H = 1.8e-3 * t^0.75
-    // Irradiance limit: irrad < MPE/t = 1.8e-3 * t^(-0.25)
-    // t_max = (1.8e-3 / irrad)^4 ... but capped at T_max for the regime
-
-    if (lam >= 0.18 && lam < 0.4) {
-      // UV: IEC 60825-1:2014 Table A.1, in SI (src/physics/laser-safety/hazard-weighting.ts).
-      // Infinity = within the MPE for 3×10⁴ s; NaN = under 1 ns.
-      return uvLaserMaxDuration(lam * 1e-6, irrad * 1e4);
-    } else if (lam >= 0.4 && lam < 0.7) {
-      // MPE irradiance for CW: 1.8e-3 * t^(-0.25) W/cm² (for t < 10s)
-      // 1.8e-3 * t^(-0.25) = irrad => t = (1.8e-3/irrad)^4
-      const tCalc = Math.pow(1.8e-3 / irrad, 4);
-      return Math.min(tCalc, 10); // max 10s for visible
-    } else if (lam >= 0.7 && lam < 1.4) {
-      const CA = Math.pow(10, 0.02 * (lam - 0.7));
-      const tCalc = Math.pow(1.8e-3 * CA / irrad, 4);
-      return Math.min(tCalc, 100);
-    } else if (lam >= 1.4 && lam < 1.8) {
-      // MPE = 0.1 J/cm² for t < 10s => irradiance = 0.1/t
-      // 0.1/t = irrad => t = 0.1/irrad
-      return Math.min(0.1 / irrad, 10);
-    }
-    return 0.001;
-  }, [power, beamDiameter, lam]);
-
-  const beamIrradiance = useMemo(() => {
-    const beamArea = Math.PI * Math.pow(beamDiameter / 20, 2);
-    return power / 1000 / beamArea;
-  }, [power, beamDiameter]);
+  // ICNIRP 2013 point-source eye limits: src/physics/laser-safety/eye-exposure-limits.ts. SI inside.
+  const lambda = wavelength * 1e-9;
+  const P = power * 1e-3;
+  const d = beamDiameter * 1e-3;
+  const result = useMemo(() => exposureDuration(lambda, P, d), [lambda, P, d]);
 
   const chartData = useMemo(() => {
-    const times = Array.from({ length: 200 }, (_, i) => Math.pow(10, -4 + i * 0.04));
-    let mpeFn: (t: number) => number;
-    if (lam >= 0.18 && lam < 0.4) {
-      mpeFn = (t) => uvLaserCornealMpe(lam * 1e-6, t) / t / 1e4; // J/m² → W/cm²
-    } else if (lam >= 0.4 && lam < 0.7) {
-      mpeFn = (t) => 1.8e-3 * Math.pow(t, -0.25);
-    } else if (lam >= 0.7 && lam < 1.4) {
-      const CA = Math.pow(10, 0.02 * (lam - 0.7));
-      mpeFn = (t) => 1.8e-3 * CA * Math.pow(t, -0.25);
-    } else if (lam >= 1.4 && lam < 1.8) {
-      mpeFn = (t) => t < 10 ? 0.1 / t : 0.01;
-    } else {
-      mpeFn = () => 0.01;
+    const times = Array.from({ length: 271 }, (_, i) => T_MIN * Math.pow(T_MAX / T_MIN, i / 270));
+    const finite = (ys: number[]) => {
+      const keep = ys.map((y) => Number.isFinite(y) && y > 0);
+      return { x: times.filter((_, i) => keep[i]), y: ys.filter((_, i) => keep[i]) };
+    };
+    const limits = eyeLimits(lambda);
+    const traces: Record<string, unknown>[] = limits.map((limit) => ({
+      ...finite(times.map((t) => exposureLimit(limit, t) / t)),
+      type: "scatter", mode: "lines", name: `Limit: ${LIMIT_LABELS[limit.kind]}`,
+      line: { color: LIMIT_COLORS[limit.kind] },
+    }));
+    // One beam curve per distinct averaging aperture (thermal and photochemical share 7 mm).
+    const seen = new Set<string>();
+    for (const limit of limits) {
+      const key = JSON.stringify(limit.apertures);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const fixed = limit.apertures.length === 1;
+      traces.push({
+        ...finite(times.map((t) => apertureIrradiance(P, d, limitingAperture(limit, t)))),
+        type: "scatter", mode: "lines",
+        name: fixed ? `Beam over ${(limit.apertures[0].d * 1e3).toFixed(1)} mm` : "Beam over 1 → 3.5 mm",
+        line: { color: "#f87171", dash: seen.size === 1 ? "dash" : "dot" },
+      });
     }
-    return [
-      {
-        x: times, y: times.map(mpeFn),
-        type: "scatter" as const, mode: "lines" as const, name: "MPE Irradiance",
-        line: { color: "#60a5fa" }
-      },
-      {
-        x: times, y: times.map(() => beamIrradiance),
-        type: "scatter" as const, mode: "lines" as const, name: "Beam Irradiance",
-        line: { color: "#f87171", dash: "dash" }
-      }
-    ];
-  }, [lam, beamIrradiance]);
+    const first = result.limits.find((l) => l.kind === result.limiting);
+    if (first && Number.isFinite(first.tMax) && first.irradiance > 0) {
+      traces.push({
+        x: [first.tMax], y: [first.irradiance], type: "scatter", mode: "markers", name: "t_max",
+        marker: { color: "#f87171", size: 9 },
+      });
+    }
+    return traces;
+  }, [lambda, P, d, result]);
 
   return (
     <>
-            
       <LaserSafetyDisclaimer />
-      <div className="grid gap-4 sm:grid-cols-4 mb-8">
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={1800} />
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={1000000} step="any" />
         <ValidatedNumberInput label="Power (mW)" value={power} onChange={setPower} min={0.001} step="any" />
-        <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDiameter} onChange={setBeamDiameter} min={0.01} step="any" />
-        <ValidatedNumberInput label="Pupil Diameter (mm)" value={aperture} onChange={setAperture} min={1} max={7} />
+        <ValidatedNumberInput label="Beam Diameter, 1/e² (mm)" value={beamDiameter} onChange={setBeamDiameter} min={0.01} step="any" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Beam Irradiance</p>
-          <p className="text-2xl font-bold text-yellow-400">{beamIrradiance.toFixed(3)} W/cm²</p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 mb-4">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Max Safe Exposure Time</p>
-          <p className="text-2xl font-bold text-green-400">
-            {maxSafeTime === Infinity ? "> 30 000 s (8 h)" :
-              Number.isNaN(maxSafeTime) ? "< 1 ns" :
-              maxSafeTime < 0.001 ? (maxSafeTime * 1e6).toFixed(1) + " µs" :
-              maxSafeTime < 1 ? (maxSafeTime * 1000).toFixed(2) + " ms" :
-              maxSafeTime.toFixed(3) + " s"}
+          <p className="text-2xl font-bold text-green-400">{fmtTime(result.tMax)}</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <p className="text-sm text-gray-400">Limited by</p>
+          <p className="text-2xl font-bold text-yellow-400">
+            {result.limiting ? LIMIT_LABELS[result.limiting] : "No limit reached in 30 000 s"}
           </p>
         </div>
       </div>
+
+      <div className="overflow-x-auto mb-4">
+        <table className="w-full text-sm text-left text-gray-300">
+          <thead className="text-gray-400 border-b border-gray-800">
+            <tr>
+              <th className="py-2 pr-4 font-normal">Limit</th>
+              <th className="py-2 pr-4 font-normal">Max time</th>
+              <th className="py-2 pr-4 font-normal">Aperture (mm)</th>
+              <th className="py-2 pr-4 font-normal">Beam irradiance over it (W/m²)</th>
+              <th className="py-2 font-normal">Limit (J/m²)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {result.limits.map((l) => (
+              <tr key={l.kind} className="border-b border-gray-900">
+                <td className="py-2 pr-4">{LIMIT_LABELS[l.kind]}</td>
+                <td className="py-2 pr-4">{fmtTime(l.tMax)}</td>
+                <td className="py-2 pr-4">{(l.aperture * 1e3).toFixed(2)}</td>
+                <td className="py-2 pr-4">{fmtNum(l.irradiance)}</td>
+                <td className="py-2">{fmtNum(l.limit)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="text-xs text-gray-500 mt-2">
+          Aperture, irradiance and limit are at the limit&apos;s max time (at 30 000 s if it isn&apos;t reached).
+        </p>
+      </div>
+
+      <p className="text-sm text-gray-400 mb-8">
+        Exposure limits for the eye from ICNIRP 2013 (Health Phys. 105:271, Tables 3, 5, 7 and 8) for a point source
+        (intrabeam viewing of a collimated beam, C_E = 1) and a CW exposure of 1 ns to 30 000 s; the UV values are
+        IEC 60825-1:2014 Table A.1. The beam is a round Gaussian, centred, and its
+        power is averaged over the limiting aperture: 7 mm for the retina; 1 mm, growing to 3.5 mm at 10 s, in the UV and
+        from 1.4 µm to 100 µm; 11 mm beyond. A smaller pupil does not raise the limits. From 400 to 600 nm the thermal
+        and the photochemical limits both apply; from 1150 to 1400 nm the retinal limit and twice the skin limit for the
+        cornea and lens. Not covered: pulses, extended sources, and beams under 1 mm, for which ICNIRP advises using the
+        actual irradiance rather than the aperture average.
+      </p>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           font: { color: "#9ca3af" },
           xaxis: { title: "Exposure Time (s)", type: "log", gridcolor: "#374151" },
-          yaxis: { title: "Irradiance (W/cm²)", type: "log", gridcolor: "#374151" },
+          yaxis: { title: "Irradiance (W/m²)", type: "log", gridcolor: "#374151" },
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
+        <p className="text-xs text-gray-500 mt-2">
+          Each limit as an irradiance, H(t)/t, and the beam irradiance over that limit&apos;s aperture. The beam is safe
+          up to the first crossing.
+        </p>
       </div>
     </>
   );

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   actinicUvWeight, blueLightSmallSourceMaxDuration, blueLightSmallSourceRiskGroup, blueLightWeight,
-  uvExposureFraction, uvHazard, uvLaserCornealMpe, uvLaserMaxDuration, uvMaxIrradiance,
+  uvExposureFraction, uvHazard, uvMaxIrradiance,
 } from "../src/physics/laser-safety/hazard-weighting";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
@@ -93,31 +93,4 @@ test("Blue light, small source: limits and IEC 62471 risk groups", () => {
   assert.equal(blueLightSmallSourceRiskGroup(400.01), "RG3");
   assert.equal(blueLightSmallSourceMaxDuration(1), Infinity);
   assertRel(blueLightSmallSourceMaxDuration(400), 0.25, 1e-12, "t_max at the RG2 limit");
-});
-
-test("UV laser MPE at the cornea, IEC 60825-1:2014 Table A.1", () => {
-  assert.equal(uvLaserCornealMpe(nm(254), 1), 30);
-  // 310 nm: C₂ = 10^(0.2·15) = 1000 J/m², T₁ = 10^(0.8·15)·1e-15 = 1 ms; C₁(1 µs) = 5.6e3·10^(−1.5) = 177.1 J/m².
-  assertRel(uvLaserCornealMpe(nm(310), 1e-6), 5.6e3 * Math.pow(10, -1.5), 1e-12, "C₁ at 310 nm, 1 µs");
-  assertRel(uvLaserCornealMpe(nm(310), 1), 1000, 1e-12, "C₂ at 310 nm");
-  // 350 nm: C₁ to 10 s, 10⁴ J/m² to 1000 s, then 10 W/m² (ANSI Z136.1: 0.56 t^0.25 J/cm², 1 J/cm², 1 mW/cm²).
-  assertRel(uvLaserCornealMpe(nm(350), 1), 5600, 1e-12, "350 nm, 1 s");
-  assert.equal(uvLaserCornealMpe(nm(350), 100), 1e4);
-  assert.equal(uvLaserCornealMpe(nm(350), 1e4), 1e5);
-  // Max duration: E·t = MPE(t).
-  assertRel(uvLaserMaxDuration(nm(254), 100), 0.3, 1e-12, "254 nm, 100 W/m²");
-  assertRel(uvLaserMaxDuration(nm(350), 1e3), Math.pow(5.6, 4 / 3), 1e-12, "350 nm, 1 kW/m² (C₁)");
-  assertRel(uvLaserMaxDuration(nm(350), 100), 100, 1e-12, "350 nm, 100 W/m² (10⁴ J/m²)");
-  assertRel(uvLaserMaxDuration(nm(310), 1e4), 0.1, 1e-12, "310 nm, 10 kW/m² (C₂)");
-  assertRel(uvLaserMaxDuration(nm(310), 10), 100, 1e-12, "310 nm, 10 W/m²");
-  for (const [l, E] of [[254, 100], [310, 1e4], [350, 1e3], [350, 100]]) {
-    const t = uvLaserMaxDuration(nm(l), E);
-    assertRel(E * t, uvLaserCornealMpe(nm(l), t), 1e-9, `E·t = MPE at ${l} nm`);
-  }
-  // Edges: within the MPE for the whole 3×10⁴ s, or outside the table.
-  assert.equal(uvLaserMaxDuration(nm(350), 5), Infinity);
-  assert.equal(uvLaserMaxDuration(nm(254), 1e-4), Infinity);
-  assert.ok(Number.isNaN(uvLaserCornealMpe(nm(179), 1)));
-  assert.ok(Number.isNaN(uvLaserCornealMpe(nm(254), 4e4)));
-  assert.ok(Number.isNaN(uvLaserMaxDuration(nm(254), 1e12)));
 });

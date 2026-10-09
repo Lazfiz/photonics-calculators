@@ -13,9 +13,7 @@
  *   IEC 62471:2006 Table 4.2 (which rounds 385 nm to 0.013). Small source (α < 11 mrad), eqns 15–17:
  *   H_B ≤ 100 J/m² for 0.25 s ≤ t < 100 s, E_B ≤ 1 W/m² for t ≥ 100 s. Risk groups for a small source,
  *   IEC 62471:2006 Table 6.1: Exempt 1 W/m² (10⁴ s), RG1 1 W/m² (100 s), RG2 400 W/m² (0.25 s).
- * - Laser MPE at the cornea, 180–400 nm, 10⁻⁹ s ≤ t ≤ 3×10⁴ s: IEC 60825-1:2014 Table A.1 (= ANSI Z136.1
- *   Table 5a). 180–302.5 nm: 30 J/m². 302.5–315 nm: C₁ for t < T₁, else C₂, i.e. min(C₁, C₂). 315–400 nm: C₁ to
- *   10 s, 10⁴ J/m² to 10³ s, then 10 W/m². C₁ = 5.6×10³ t^0.25 J/m², C₂ = 10^(0.2(λ − 295)) J/m² (λ in nm).
+ * The laser MPE at the cornea (UV included) is in `eye-exposure-limits.ts`.
  *
  * A narrowband source of irradiance E at λ has the weighted irradiance E·S(λ) (or E·B(λ)): the sum
  * Σ E_λ S(λ) Δλ collapses to one term.
@@ -148,38 +146,4 @@ const BLUE_LIGHT_SMALL_SOURCE_GROUPS: readonly (readonly [RiskGroup, number])[] 
 export function blueLightSmallSourceRiskGroup(E_B: number): RiskGroup {
   for (const [group, limit] of BLUE_LIGHT_SMALL_SOURCE_GROUPS) if (E_B <= limit) return group;
   return "RG3";
-}
-
-/** C₁ = 5.6×10³ t^0.25, J/m² (IEC 60825-1:2014 Table 9). */
-const c1 = (t: number) => 5.6e3 * Math.pow(t, 0.25);
-
-/** Laser MPE at the cornea, J/m², for 180 nm ≤ λ ≤ 400 nm and 10⁻⁹ s ≤ t ≤ 3×10⁴ s; NaN outside. */
-export function uvLaserCornealMpe(lambda: number, t: number): number {
-  const nm = toNm(lambda);
-  if (!(nm >= 180 && nm <= 400 && t >= 1e-9 && t <= 3e4)) return NaN;
-  if (nm < 302.5) return 30;
-  if (nm < 315) return Math.min(c1(t), Math.pow(10, 0.2 * (nm - 295)));
-  if (t <= 10) return c1(t);
-  if (t <= 1e3) return 1e4;
-  return 10 * t;
-}
-
-/**
- * Longest exposure, s, before a CW irradiance E (W/m²) at λ (m) first exceeds the UV laser MPE at the cornea.
- * Infinity if it stays within the MPE for 3×10⁴ s; NaN outside 180–400 nm, for E < 0, or below 10⁻⁹ s.
- */
-export function uvLaserMaxDuration(lambda: number, E: number): number {
-  const nm = toNm(lambda);
-  if (!(nm >= 180 && nm <= 400 && E >= 0)) return NaN;
-  if (E === 0) return Infinity;
-  // E·t ≤ C₁(t) ⇔ t ≤ (5.6×10³ / E)^(4/3).
-  const tC1 = Math.pow(5.6e3 / E, 4 / 3);
-  let t: number;
-  if (nm < 302.5) t = 30 / E;
-  else if (nm < 315) t = Math.min(tC1, Math.pow(10, 0.2 * (nm - 295)) / E);
-  else if (tC1 <= 10) t = tC1;
-  else if (E <= 10) return Infinity; // 10 W/m² holds from 10³ s on
-  else t = 1e4 / E; // 10 s < t < 10³ s here
-  if (t < 1e-9) return NaN;
-  return t > 3e4 ? Infinity : t;
 }

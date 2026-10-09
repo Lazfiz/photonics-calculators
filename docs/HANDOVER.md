@@ -1,52 +1,39 @@
-# Handover — 2026-10-08 (session 22 → session 23)
+# Handover — 2026-10-09 (session 23 → session 24)
 
-**Start here:** read this file, then `docs/ROADMAP.md`. The Phase 4 findings list is done (the imaging group was
-the last); left are the `exposure-duration` leftovers and Phase 2 stage **2c**. Ask the user which.
-- PR #17 (findings batch 3) was merged and checked on production before this session.
-- Session 22 fixed the imaging findings on `phase-4/imaging-findings` (**PR #18**). Merge only after the user
-  approves, then run `ui-check` against production (incl. a load check of the 8 pages).
+**Start here:** read this file, then `docs/ROADMAP.md`. With the `exposure-duration` leftovers done, every item from
+the Phase 4 findings list is fixed. Next is Phase 2 stage **2c** (tier + references per registry entry, shown on
+each page), unless the user picks something else (Phase 3 charts; Phase 4 golden tests for the top 50).
+- PR #18 (imaging findings) was merged and checked on production before this session.
+- Session 23 fixed `laser-safety/exposure-duration` on `phase-4/exposure-duration` (**PR**, see below). Merge only
+  after the user approves, then run `ui-check` against production (load check of `/laser-safety/exposure-duration`).
 
 ## State
-- **`phase-4/imaging-findings`** (on `main` 20ec0776), one commit per topic plus docs:
-  1. `two-photon-microscopy`, `three-photon-microscopy`, `multiphoton-depth`: `src/physics/imaging/multiphoton-focus.ts`.
-  2. `third-harmonic-microscopy` (uses the same module).
-  3. `coherent-raman`: `…/imaging/coherent-raman.ts`.
-  4. `second-harmonic-generation`: `…/imaging/second-harmonic-generation.ts` (Boyd–Kleinman h by Simpson).
-  5. `super-resolution`: `…/imaging/super-resolution.ts`.
-  6. `shack-hartmann`: `…/imaging/shack-hartmann.ts`.
-  7. `docs`: ROADMAP ("Imaging findings", parent findings box ticked), this file.
-- **Gates:** `check` green on the final code tree (tsc 0, eslint 0 errors, 1,166 warnings, was 1,187; 190 tests,
-  was 165). `build` green (490 static pages); local production server: the 8 pages load with 0 console
-  errors (`ui-check` load mode) and show the expected default values.
-  A scratchpad `mutate.mjs` caught 17/17 formula mutations (incl. re-inserting the old 0.61λ/NA waist and STED baseline).
+- **`phase-4/exposure-duration`** (on `main` a8970431), one fix commit plus docs:
+  1. `fix(laser-safety)`: `src/physics/laser-safety/eye-exposure-limits.ts` + `tests/laser-safety-eye-exposure-limits.test.ts`,
+     page rewritten, UV laser MPE functions removed from `hazard-weighting.ts` (and their test).
+  2. `docs`: ROADMAP (box ticked, details under the last Phase 4 item), this file.
+- **Gates:** see the PR. 11 new tests; a scratchpad `mutate.mjs` caught 18/18 formula mutations (incl. the old
+  page's errors: C_A exponent, 0.1 J/cm² at 1.5–1.8 µm, 18 µs / 5×10⁻³ J/m², 1/e vs 1/e²).
 
 ## Decisions (this session)
-- `three-photon-microscopy` wasn't on the findings list but had the same Airy-as-waist error plus invented
-  0.235λ/NA, 0.36λ/NA²; fixed with the shared module (commit 1).
-- Focus model everywhere: Zipfel 2003's Gaussian fit to I², extended to I and I³ via w = 2ω_xy. Coefficients were
-  confirmed by search (an arXiv SRS paper reproduces 404 nm / 1.22 µm / 0.166 µm³ from them) and checked against the
-  exact paraxial Airy pattern in the tests. Pulses are Gaussian (P_peak = 0.94 E/τ; the old pages used E/τ).
-- SHG keeps the slab-of-uniform-χ⁽²⁾ model but focused (Boyd–Kleinman, B = 0, centred focus, paraxial). With normal
-  dispersion and L ≫ b the SH is suppressed, which the page now says. No closed form for h with σ ≠ 0: Simpson with
-  ≥ 10 points per unit τ and per radian, capped at 4 × 10⁵ (chart worst case ≈ 40 ms).
-- PALM: shot-noise limit only (no pixel-size/background inputs); the page cites Thompson 2002 and Mortensen 2010
-  for what that leaves out. Zhang's 0.21λ/NA wasn't readable online, so the test fits the Airy itself (0.206).
-- Shack-Hartmann dynamic range: Akondi & Dubra 2021 eq. 2 with the image width = zero-to-zero spot diameter.
-  Default lenslet shape is square (sinc² spot); the old page implied circular (1.22).
-- `multiphoton-depth` default µ_s 6 mm⁻¹ from Kobat, Horton & Xu 2011 (5–6 attenuation lengths ≈ 0.8–1 mm at 800 nm
-  in vivo). Kobat 2009's 55 µm is fixed tissue, not used.
-- URL keys. New: coherent-raman `mode` (was component state), `linewidth`, `chiNR`; third-harmonic `scatteringCoeff`;
-  shack-hartmann `lensletShape`, `photons`. Dropped: shack-hartmann `dynamicRangeWaves`, `numSubapertures`.
-  Changed meaning: SHG `dn` is signed n(2ω) − n(ω) (was |Δn|), `chi2` is d_eff. Default: multiphoton-depth
-  `scattering` 6 (was 0.1).
-- Depth charts on log axes drop points below 1e-10 (SimpleChart would clamp them flat).
+- Source: ICNIRP 2013 laser guidelines (open PDF: icnirp.org/cms/upload/publications/ICNIRPLaser180gdl_2013.pdf),
+  not IEC 60825-1 (paywalled). `pdftotext -layout` scrambles Table 5's rows and prints µ as "m" ("5 ms" is 5 µs);
+  each value was checked against the energy column (×π(3.5 mm)²) and continuity at the joints.
+- Point source only (C_E = 1, T₂ = 10 s). Dual limits use min(thermal, photochemical). The table's note e ("thermal
+  below T₁, photochemical above") gives the same as the min from 400 to 500 nm. From 500 to 600 nm above 100 s it
+  would allow C_B W/m² > 10 W/m², so the min is the safer reading.
+- 1150–1400 nm adds the anterior-eye limit, 2 × skin (eye-only exposure, Table 5 note d). It binds above ≈ 1315 nm.
+- The beam is a Gaussian with a 1/e² diameter (data-sheet convention), averaged over the limiting aperture. Not done:
+  ICNIRP's advice to use the actual irradiance for beams < 1 mm (stated on the page).
+- UV kept IEC values (10 W/m² after 10³ s for 315–400 nm); ICNIRP keeps 10⁴ J/m² to 30 ks. Logged as open in
+  ROADMAP, not changed.
+- Wavelength range extended to 1 mm (same table). URL key `aperture` (pupil) dropped; other keys unchanged.
 
 ## Next actions
-1. Push, CI, ask before merging PR #18, then `ui-check` production with a load check of the 8 pages.
-2. Then stage **2c** (tier + references per registry entry, shown on each page) or the `exposure-duration` leftovers
-   (unchecked item at the end of Phase 4). Ask the user.
+1. Push, open the PR, CI, ask before merging, then `ui-check` production with a load check of the page.
+2. Then stage **2c** (or what the user picks).
 
-## Ship flow (worked fifteen times)
+## Ship flow (worked sixteen times)
 - **Push:** `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`.
 - **CI:** `gh pr create --body-file f`, then `gh pr checks <n> --watch`.
 - **Preview:** behind Vercel SSO (302 to `vercel.com/sso-api`). Use a local `npm run build` + `npx next start -p 3100`.
@@ -58,16 +45,18 @@ the last); left are the `exposure-duration` leftovers and Phase 2 stage **2c**. 
   `optical-glass-catalog`) fail with "not hydrated". Use a scratchpad copy that probes `button` instead. Wrap each
   run in `timeout 200`: a Chrome-startup hang otherwise blocks forever. Flake: loop up to 3 times.
   In Git Bash set `MSYS_NO_PATHCONV=1`, or the `/category/slug` args become Windows paths ("invalid URL").
-- **Mutation check:** a scratchpad `mutate.mjs` (exact string replace → run one test → restore) is quicker than
-  copying files by hand; use it only while no `check` is running.
+- **Mutation check:** a scratchpad `mutate.mjs` (exact string replace → run one test → restore, in `try/finally`) is
+  quicker than copying files by hand; use it only while no `check` is running.
 - **PDFs:** `pdftotext` is on the PATH (Git Bash `/mingw64/bin`); `curl` the PDF to the scratchpad first. WebFetch
-  can't read PDFs, and arXiv HTML may 404 for new papers.
+  can't read PDFs, and arXiv HTML may 404 for new papers. Springer pages redirect to a login; try the
+  `…/counter/pdf/<doi>.pdf` URL of open-access journals.
 - **TS syntax:** `-x ** 2` is a parse error (esbuild "Unexpected **"); write `-(x ** 2)` or `-x * x`.
 - **Redirect test:** `tests/redirects.test.ts` greps `src/` for removed hrefs (whole `/<category>/<slug>` matches).
-- **λ in m → nm:** `lambda * 1e9` gives 700.0000000000001 for 700e-9; `hazard-weighting.ts` rounds (`toNm`).
+- **λ in m → nm:** `lambda * 1e9` gives 700.0000000000001 for 700e-9; the laser-safety modules round (`toNm`).
 - **Physics modules:** SI in, SI out; pages convert at the boundary. Conventions are in the module headers.
 - **Scratch scripts** that import repo modules need absolute paths (`C:/dev/photonics-calculators/src/...`);
   run them with `npx tsx`. Never start a Bash command with a bare `cat > file` (it waits on stdin); use a heredoc.
+  No `python3` in Git Bash; use node.
 - **`SimpleChart`** (what `ChartPanel` renders for scatter/bar): no `shapes`, no second x axis; unnamed traces stay
   out of the legend; skips NaN; on a log axis it clamps values below 1e-10 to 1e-10. Filter NaN/∞ in the page anyway.
 - **Local production server:** `npx next start -p 3100`. Kill it with
