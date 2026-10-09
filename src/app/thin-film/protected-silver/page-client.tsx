@@ -59,6 +59,7 @@ export default function ProtectedSilverPage() {
         <ValidatedNumberInput label="Overcoat Thickness (nm)" value={protectThick} onChange={setProtectThick} />
         <ValidatedNumberInput label={<>n<sub>adhesion</sub></>} value={nAdhesion} onChange={setNAdhesion} step="0.01" />
         <ValidatedNumberInput label="Adhesion Layer (nm)" value={adhesionThick} onChange={setAdhesionThick} />
+        <p className="sm:col-span-2 -mt-2 text-xs text-gray-500">Adhesion layer: lossless; under opaque Ag it barely affects R.</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
@@ -73,8 +74,9 @@ export default function ProtectedSilverPage() {
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-4">
-        <h3 className="text-sm font-semibold text-gray-300 mb-2">Formulas</h3>
-                              </div>
+        <h3 className="text-sm font-semibold text-gray-300 mb-2">Silver model</h3>
+        <p className="text-sm text-gray-300">Ag is a Drude fit (ε∞ = 5, ħω_p = 9.01 eV, ħγ = 0.048 eV). It matches measured silver from about 450 nm to 1200 nm but misses the interband edge near 320 nm, so R below about 400 nm is too high.</p>
+      </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <ChartPanel data={[

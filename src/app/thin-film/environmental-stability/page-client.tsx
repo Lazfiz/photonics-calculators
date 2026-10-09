@@ -11,10 +11,12 @@ export default function EnvironmentalStabilityPage() {
   const [nL, setNL] = useURLState("nL", 1.45);
   const [nSub, setNSub] = useURLState("nSub", 1.52);
   const [nInc, setNInc] = useURLState("nInc", 1.0);
-  const [numPairs, setNumPairs] = useURLState("numPairs", 5);
+  const [numPairsRaw, setNumPairs] = useURLState("numPairs", 5);
   const [designWl, setDesignWl] = useURLState("designWl", 550);
   const [humidityPct, setHumidityPct] = useURLState("humidityPct", 50);
   const [tempC, setTempC] = useURLState("tempC", 25);
+  // useURLState does not clamp URL values: keep the stack to the input range (a huge N would hang the page).
+  const numPairs = Math.min(50, Math.max(1, Math.round(numPairsRaw)));
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 600 / 500);
@@ -92,7 +94,7 @@ export default function EnvironmentalStabilityPage() {
         <ValidatedNumberInput label={<>n<sub>L</sub> (e.g. SiO₂)</>} value={nL} onChange={setNL} step="0.01" />
         <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
         <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} step="0.01" />
-        <ValidatedNumberInput label="Number of pairs (N)" value={numPairs} onChange={setNumPairs} min={1} max={20} />
+        <ValidatedNumberInput label="Number of pairs (N)" value={numPairs} onChange={setNumPairs} min={1} max={50} />
         <ValidatedNumberInput label="Design λ₀ (nm)" value={designWl} onChange={setDesignWl} step="10" />
         <ValidatedNumberInput label="Temperature (°C)" value={tempC} onChange={setTempC} min={-50} max={200} step="5" />
         <ValidatedNumberInput label="Relative Humidity (%)" value={humidityPct} onChange={setHumidityPct} min={0} max={100} step="5" />
@@ -103,6 +105,7 @@ export default function EnvironmentalStabilityPage() {
         <p className="text-gray-300 text-xs">CTE: 8×10⁻⁶ /°C (TiO₂), 0.5×10⁻⁶ /°C (SiO₂)</p>
         <p className="text-gray-300 text-xs">Humidity Δn: 0.02 × RH/100 (SiO₂ porous), 0.002 × RH/100 (TiO₂ dense)</p>
         <p className="text-gray-300 text-xs mt-1">Total center shift: Δλ/λ₀ ≈ (α + dn/dT·n⁻¹)·ΔT + humidity correction</p>
+        <p className="text-gray-400 text-xs mt-2">dn/dT, the thermal expansion and the humidity Δn are assumed typical values, not calibrated data. Humidity changes the index only. The nominal curve is at 25 °C and 0 % RH.</p>
       </div>
 
       <ChartPanel data={chartData.mainTraces} layout={{

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { quarterWaveStackReflectance, quarterWaveThickness, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+import { quarterWaveStackReflectance, quarterWaveThickness, reflectanceSpectrum, stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 export default function PartialReflectorPage() {
   const [nFilm, setNFilm] = useURLState("nFilm", 1.7);
@@ -15,7 +15,8 @@ export default function PartialReflectorPage() {
   const [designWl, setDesignWl] = useURLState("designWl", 550);
 
   const chartData = useMemo(() => {
-    const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 600 / 500);
+    // Window 0.5–1.5 λ₀ (501 points, so λ₀ is a grid point)
+    const wls = Array.from({ length: 501 }, (_, i) => designWl * (0.5 + i / 500));
     const lambdas = wls.map((wl) => wl * 1e-9);
     // One film of `ratio` quarter-waves at λ₀
     const filmSpectrum = (ratio: number) => {
@@ -26,7 +27,7 @@ export default function PartialReflectorPage() {
     // Single layer
     const R_single = filmSpectrum(thicknessRatio);
 
-    const traces: any[] = [
+    const traces: Record<string, unknown>[] = [
       { x: wls, y: R_single, type: "scatter" as const, mode: "lines" as const,
         name: `Single layer (${thicknessRatio} × λ₀/4n)`, line: { color: "#60a5fa", width: 2 } },
     ];
@@ -50,22 +51,34 @@ export default function PartialReflectorPage() {
     return { mainTraces: traces, nRange, R_vs_n };
   }, [nFilm, nSub, nInc, thicknessRatio, designWl]);
 
+  // R of a quarter-wave film (closed form), and R at λ₀ for the film of the entered thickness
   const Rdesign = quarterWaveStackReflectance(nInc, [nFilm], nSub);
+  const Rthis = stackResponse(
+    {
+      incident: nInc,
+      layers: [{ n: nFilm, thickness: thicknessRatio * quarterWaveThickness(nFilm, designWl * 1e-9) }],
+      substrate: { n: nSub },
+    },
+    designWl * 1e-9,
+  ).R;
+  const pct = (x: number) => (Number.isFinite(x) ? `${(x * 100).toFixed(2)}%` : "—");
+  const thickness_nm = (thicknessRatio * designWl) / (4 * nFilm);
 
   return (
     <>
-            
+
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label={<>n<sub>film</sub></>} value={nFilm} onChange={setNFilm} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} step="0.01" />
-        <ValidatedNumberInput label="Design λ₀ (nm)" value={designWl} onChange={setDesignWl} step="10" />
+        <ValidatedNumberInput label={<>n<sub>film</sub></>} value={nFilm} onChange={setNFilm} min={0.1} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} min={0.1} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="Design λ₀ (nm)" value={designWl} onChange={setDesignWl} min={1} step="10" />
         <ValidatedNumberInput label="Thickness ratio (d / λ₀/4n)" value={thicknessRatio} onChange={setThicknessRatio} min={0.1} max={3} step="0.05" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
-        <p className="text-gray-300">R<sub>design</sub> (QWL) = <span className="text-blue-400 font-mono">{(Rdesign * 100).toFixed(2)}%</span></p>
-        <p className="text-gray-300">d = <span className="text-blue-400 font-mono">{(thicknessRatio * designWl / (4 * nFilm)).toFixed(1)} nm</span></p>
+        <p className="text-gray-300">R for a quarter-wave film = <span className="text-blue-400 font-mono">{pct(Rdesign)}</span></p>
+        <p className="text-gray-300">R at λ₀ for this thickness = <span className="text-blue-400 font-mono">{pct(Rthis)}</span></p>
+        <p className="text-gray-300">d = <span className="text-blue-400 font-mono">{Number.isFinite(thickness_nm) ? thickness_nm.toFixed(1) : "—"} nm</span></p>
         <p className="text-gray-300 text-xs mt-2">R = [r₁² + r₂² + 2r₁r₂cos(2δ)] / [1 + r₁²r₂² + 2r₁r₂cos(2δ)] where δ = 2πn<sub>f</sub>d/λ</p>
       </div>
 

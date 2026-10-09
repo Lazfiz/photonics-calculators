@@ -5,6 +5,7 @@ import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { stopBandCentreAtAngle } from "../../../physics/thin-film/quarter-wave-stack";
 import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
 
 export default function DichroicPage() {
@@ -12,9 +13,12 @@ export default function DichroicPage() {
   const [nL, setNL] = useURLState("nL", 1.45);
   const [nSub, setNSub] = useURLState("nSub", 1.52);
   const [nInc, setNInc] = useURLState("nInc", 1.0);
-  const [numPairs, setNumPairs] = useURLState("numPairs", 7);
+  const [numPairsRaw, setNumPairs] = useURLState("numPairs", 7);
   const [designWl, setDesignWl] = useURLState("designWl", 550);
-  const [aoi, setAoi] = useURLState("aoi", 45);
+  const [aoiRaw, setAoi] = useURLState("aoi", 45);
+  // useURLState does not clamp URL values, so clamp here and use these everywhere.
+  const numPairs = Math.min(30, Math.max(1, Math.round(numPairsRaw)));
+  const aoi = Math.min(89, Math.max(0, aoiRaw));
 
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 700 / 500);
@@ -34,6 +38,14 @@ export default function DichroicPage() {
     ];
   }, [nH, nL, nSub, nInc, numPairs, designWl, aoi]);
 
+  // Angles inside the high- and low-index layers (Snell), and the first-order stop-band centre at this angle.
+  const angleRad = (aoi * Math.PI) / 180;
+  const sinInc = nInc * Math.sin(angleRad);
+  const cosH = Math.sqrt(1 - (sinInc / nH) ** 2);
+  const cosL = Math.sqrt(1 - (sinInc / nL) ** 2);
+  const centreNm = stopBandCentreAtAngle(designWl * 1e-9, nH, nL, angleRad, nInc) * 1e9;
+  const fmt = (v: number, digits: number) => (Number.isFinite(v) ? v.toFixed(digits) : "—");
+
   return (
     <>
             
@@ -42,15 +54,15 @@ export default function DichroicPage() {
         <ValidatedNumberInput label={<>n<sub>L</sub></>} value={nL} onChange={setNL} step="0.01" />
         <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
         <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} step="0.01" />
-        <ValidatedNumberInput label="Pairs (N)" value={numPairs} onChange={setNumPairs} min={1} max={20} />
+        <ValidatedNumberInput label="Pairs (N)" value={numPairs} onChange={setNumPairs} min={1} max={30} />
         <ValidatedNumberInput label="Design λ₀ (nm)" value={designWl} onChange={setDesignWl} />
         <ValidatedNumberInput label="Angle of incidence (°)" value={aoi} onChange={setAoi} min={0} max={89} step="1" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
-        <p className="text-gray-300">cos(θ) = <span className="text-blue-400 font-mono">{Math.cos((aoi * Math.PI) / 180).toFixed(4)}</span></p>
+        <p className="text-gray-300">cos θ<sub>H</sub> = <span className="text-blue-400 font-mono">{fmt(cosH, 3)}</span>, cos θ<sub>L</sub> = <span className="text-blue-400 font-mono">{fmt(cosL, 3)}</span> (angles inside the layers)</p>
         <p className="text-gray-300">Total layers = <span className="text-blue-400 font-mono">{numPairs * 2}</span></p>
-        <p className="text-gray-300 text-xs mt-2">Note: Slight pol-splitting visible at 45° — real designs use modified thicknesses to compensate.</p>
+        <p className="text-gray-300 text-xs mt-2">Stop-band centre at θ ≈ λ₀(cos θ<sub>H</sub> + cos θ<sub>L</sub>)/2 = <span className="text-blue-400 font-mono">{fmt(centreNm, 1)} nm</span> (first order). The p band is narrower than the s band.</p>
       </div>
 
       <ChartPanel data={chartData} layout={{

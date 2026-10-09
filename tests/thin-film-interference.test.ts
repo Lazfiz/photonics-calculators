@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  airyPeakNear,
   airyPeakWidth,
   coefficientOfFinesse,
   firstReflectionExtrema,
@@ -98,4 +99,25 @@ test("interference: first reflection extrema are the extrema of the exact R(λ)"
   const Y = 1.38 ** 2 / 1.52;
   close(stackResponse(film(1, 1.38, 100 * NM, 1.52), 552 * NM).R, ((1 - Y) / (1 + Y)) ** 2, 1e-15, "MgF₂ quarter-wave R"); // 0.0126008
   assert.ok(Number.isNaN(firstReflectionExtrema(1, 1.38, 1.52, 0).constructive), "d = 0");
+});
+
+// Born & Wolf, 7th ed., §7.6.1: peaks at δ = 4πnd/λ = 2πm, half maxima at δ = 2πm ± w/2 with
+// w = 4 asin(1/√F). Hand values for nd = 1.5 × 500 nm = 750 nm, R = 0.8 (F = 80, w = 0.4481506):
+// near 550 nm m = round(1500/550) = 3, λ₃ = 500 nm, FSR = 500/3 = 166.67 nm,
+// FWHM = 4π·750 [1/(6π − w/2) − 1/(6π + w/2)] = 11.8892 nm; m = 2 (λ₂ = 750 nm): 26.7555 nm.
+test("interference: nearest Airy peak, its FSR and exact width", () => {
+  const p = airyPeakNear(750 * NM, 550 * NM, 80);
+  assert.equal(p.order, 3);
+  close(p.wavelength / NM, 500, 1e-9, "λ₃");
+  close(p.fsr / NM, 500 / 3, 1e-9, "FSR");
+  close(p.fwhm / NM, 11.8892, 1e-4, "FWHM, m = 3");
+  close(airyPeakNear(750 * NM, 760 * NM, 80).fwhm / NM, 26.7555, 1e-4, "FWHM, m = 2");
+  // The width in wavelength is ≈ FSR·w/(2π) for a narrow peak (first order): 11.887 nm here.
+  close(p.fwhm / ((p.fsr * airyPeakWidth(80)) / (2 * Math.PI)), 1, 1e-3, "first-order width");
+  // Edge cases: λ ≫ 2nd still gives order 1; F < 1 has no half-maximum width.
+  const far = airyPeakNear(750 * NM, 5000 * NM, 80);
+  assert.equal(far.order, 1);
+  close(far.wavelength / NM, 1500, 1e-9, "λ₁");
+  assert.ok(Number.isNaN(airyPeakNear(750 * NM, 550 * NM, 0.5).fwhm), "F < 1");
+  assert.ok(Number.isNaN(airyPeakNear(0, 550 * NM, 80).order), "nd = 0");
 });

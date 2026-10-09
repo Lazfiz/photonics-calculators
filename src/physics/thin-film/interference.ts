@@ -35,6 +35,35 @@ export function airyPeakWidth(F: number): number {
   return F >= 1 ? 4 * Math.asin(1 / Math.sqrt(F)) : NaN;
 }
 
+export interface AiryPeak {
+  /** Interference order m ≥ 1. */
+  order: number;
+  /** Peak wavelength 2nd/m, m. */
+  wavelength: number;
+  /** Free spectral range at the peak, λ_m²/(2nd) = λ_m/m (first order in 1/m), m. */
+  fsr: number;
+  /** Exact half-intensity width in wavelength, λ(2πm − w/2) − λ(2πm + w/2), w = airyPeakWidth(F); NaN for F < 1. */
+  fwhm: number;
+}
+
+/**
+ * Transmission peak of an ideal etalon (normal incidence, no mirror phase, round-trip phase δ = 4πnd/λ)
+ * nearest a wavelength: order m = round(2nd/λ), at least 1. opticalThickness = nd and wavelength in m.
+ * The half-maximum points are at δ = 2πm ± w/2, i.e. λ = 4πnd/(2πm ∓ w/2) (Born & Wolf §7.6.1).
+ * NaN fields unless nd > 0, λ > 0 and F ≥ 0.
+ */
+export function airyPeakNear(opticalThickness: number, wavelength: number, F: number): AiryPeak {
+  if (!(opticalThickness > 0 && wavelength > 0 && F >= 0)) return { order: NaN, wavelength: NaN, fsr: NaN, fwhm: NaN };
+  const order = Math.max(1, Math.round((2 * opticalThickness) / wavelength));
+  const peak = (2 * opticalThickness) / order;
+  const halfWidth = airyPeakWidth(F) / 2;
+  const at = (delta: number) => (4 * Math.PI * opticalThickness) / delta;
+  const centre = 2 * Math.PI * order;
+  // The lower half-maximum point needs δ > 0: a peak wider than its own order has no lower edge.
+  const fwhm = halfWidth < centre ? at(centre - halfWidth) - at(centre + halfWidth) : NaN;
+  return { order, wavelength: peak, fsr: peak / order, fwhm };
+}
+
 /**
  * Net phase difference, beyond the path 2nd, between the beams reflected at the two faces of a film
  * at normal incidence. A reflection off a higher index adds π, so the result is 0 or π.

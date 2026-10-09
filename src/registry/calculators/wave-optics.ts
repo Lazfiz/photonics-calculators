@@ -127,6 +127,15 @@ export const waveOptics: CalculatorEntry[] = [
     slug: "gires-tournois",
     title: "Gires-Tournois Interferometer",
     description: "Dispersion control via a GTI — constant reflectivity with tunable group delay dispersion.",
+    tier: "exact",
+    modelNote: "Lossless GTI: a layer of index n between a front reflector of reflectance R₁ and a 100 % back mirror, normal incidence, constant n and mirror phase. Real mirrors add loss, dispersion and a finite bandwidth.",
+    references: [
+      { citation: "Gires F., Tournois P. (1964). C. R. Acad. Sci. Paris 258, 6112. The lossless GTI phase." },
+      {
+        citation: "Kuhl J., Heppner J. (1986). Compression of femtosecond optical pulses with dielectric multilayer interferometers. IEEE J. Quantum Electron. 22, 182–185.",
+        url: "https://doi.org/10.1109/jqe.1986.1072855",
+      },
+    ],
   },
   {
     slug: "gouy-phase",

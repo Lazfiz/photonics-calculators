@@ -74,6 +74,9 @@ export default function SingleARPage() {
           The external angle propagates through each interface with Snell’s law, and the coating reflectance is evaluated separately for
           <span className="text-pink-300"> s-polarized</span> and <span className="text-green-300"> p-polarized</span> light before averaging.
         </p>
+        <p className="mt-2">
+          The film is a quarter wave at the chosen angle (d = λ₀/(4n₁ cos θ₁)), so each angle shows a coating designed for that angle.
+        </p>
       </div>
 
       <SimpleLineChart

@@ -9,21 +9,19 @@ import { pseudoOpticalConstants } from "../../../physics/thin-film/ellipsometry"
 import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
 
 export default function EllipsometryMeasurementPage() {
-  const [psiDeg, setPsiDeg] = useURLState("psiDeg", 45);
-  const [deltaDeg, setDeltaDeg] = useURLState("deltaDeg", 120);
+  const [psiDeg, setPsiDeg] = useURLState("psiDeg", 10.573);
+  const [deltaDeg, setDeltaDeg] = useURLState("deltaDeg", 179.230);
   const [aoiDeg, setAoiDeg] = useURLState("aoiDeg", 70);
-  const [nSubstrate, setNSubstrate] = useURLState("nSubstrate", 1.52);
 
   const results = useMemo(() => {
     const theta = aoiDeg * Math.PI / 180;
     const pseudo = pseudoOpticalConstants(psiDeg * Math.PI / 180, deltaDeg * Math.PI / 180, theta);
-    // Reflectances of the bare pseudo-substrate at the measurement angle (NaN if ⟨k⟩ < 0).
+    // Reflectances of the bare pseudo-substrate (no layers, so the wavelength only has to be valid, not shown) at the measurement angle (NaN if ⟨k⟩ < 0).
     const bare = { incident: 1, layers: [], substrate: { n: pseudo.n, k: pseudo.k } };
     const Rs = stackResponse(bare, 633e-9, theta, "s").R;
     const Rp = stackResponse(bare, 633e-9, theta, "p").R;
-    const brewsterAngle = Math.atan(nSubstrate) * 180 / Math.PI;
-    return { ...pseudo, Rs, Rp, Ravg: (Rs + Rp) / 2, brewsterAngle };
-  }, [psiDeg, deltaDeg, aoiDeg, nSubstrate]);
+    return { ...pseudo, Rs, Rp, Ravg: (Rs + Rp) / 2 };
+  }, [psiDeg, deltaDeg, aoiDeg]);
 
   const psiDeltaMap = useMemo(() => {
     const theta = aoiDeg * Math.PI / 180;
@@ -41,12 +39,12 @@ export default function EllipsometryMeasurementPage() {
   return (
     <>
             
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
+      <div className="grid gap-4 sm:grid-cols-2 mb-2">
         <ValidatedNumberInput label="Ψ (degrees)" value={psiDeg} onChange={setPsiDeg} min={0} max={90} step="0.1" />
         <ValidatedNumberInput label="Δ (degrees)" value={deltaDeg} onChange={setDeltaDeg} min={0} max={360} step="0.1" />
         <ValidatedNumberInput label="Angle of Incidence (°)" value={aoiDeg} onChange={setAoiDeg} min={0} max={90} step="0.5" />
-        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSubstrate} onChange={setNSubstrate} step="0.01" />
       </div>
+      <p className="text-gray-500 text-xs mb-8">Default: bulk Si at 633 nm and 70° (N = 3.882 − 0.019i in this page’s N = n − ik convention)</p>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
         <p className="text-gray-300">Pseudo-refractive index ⟨n⟩: <span className="text-blue-400 font-mono">{fmt(results.n)}</span></p>
@@ -56,7 +54,6 @@ export default function EllipsometryMeasurementPage() {
         <p className="text-gray-300">R<sub>p</sub> at θ: <span className="text-blue-400 font-mono">{fmt(results.Rp)}</span></p>
         <p className="text-gray-300">R<sub>s</sub> at θ: <span className="text-blue-400 font-mono">{fmt(results.Rs)}</span></p>
         <p className="text-gray-300">R<sub>avg</sub> at θ: <span className="text-blue-400 font-mono">{fmt(results.Ravg)}</span></p>
-        <p className="text-gray-300">Brewster angle of n<sub>substrate</sub>: <span className="text-blue-400 font-mono">{results.brewsterAngle.toFixed(2)}°</span></p>
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 text-sm text-gray-400">
@@ -65,7 +62,6 @@ export default function EllipsometryMeasurementPage() {
         <p>⟨ε⟩ = sin²θ [1 + tan²θ·((1−ρ)/(1+ρ))²] (pseudo-dielectric function)</p>
         <p>⟨N⟩ = √⟨ε⟩ = ⟨n⟩ − i⟨k⟩, ⟨ε⟩ = ⟨ε₁⟩ − i⟨ε₂⟩ (Nebraska convention: Δ = 180° at normal incidence)</p>
         <p>Exact for a bare substrate; with a film on top these are “pseudo” values, not material constants.</p>
-        <p>Brewster angle θ<sub>B</sub> = arctan(n<sub>sub</sub>)</p>
       </div>
 
       <ChartPanel data={psiDeltaMap} layout={{
