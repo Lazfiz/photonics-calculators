@@ -43,6 +43,57 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+/**
+ * Axis ticks over [min, max]. Linear: about `count` ticks at a step of 1, 2, 5 or 10 × 10^k (the first
+ * not below (max − min)/count), each computed as k·step so rounding doesn't accumulate. Log: the decades,
+ * plus 2× and 5× when the axis spans at most 4 decades.
+ */
+export function niceTicks(min: number, max: number, count: number, log: boolean): number[] {
+  if (log) {
+    const lo = Math.ceil(Math.log10(Math.max(min, 1e-10)));
+    const hi = Math.floor(Math.log10(Math.max(max, 1e-10)));
+    const ticks: number[] = [];
+    for (let p = lo; p <= hi; p++) {
+      ticks.push(Math.pow(10, p));
+      if (hi - lo <= 4) { ticks.push(2 * Math.pow(10, p)); ticks.push(5 * Math.pow(10, p)); }
+    }
+    return ticks.filter(t => t >= min * 0.9 && t <= max * 1.1);
+  }
+  const range = max - min;
+  if (range <= 0 || !isFinite(range)) return [];
+  const rough = range / count;
+  if (rough <= 0 || !isFinite(rough)) return [];
+  const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+  const step = ([1, 2, 5, 10].find(n => n * mag >= rough) ?? 10) * mag;
+  const ticks: number[] = [];
+  // 1e-9 of a step absorbs rounding at the ends (3 × 1e-15 > 3e-15).
+  const tol = step * 1e-9;
+  for (let k = Math.ceil((min - tol) / step); k * step <= max + tol && ticks.length < 100; k++) ticks.push(k * step || 0); // || 0: no −0
+  return ticks;
+}
+
+/**
+ * Tick label with as many digits as the axis step needs, so neighbours never print the same: k/M only
+ * when the step is ≥ 100 / 1e5 (steps are 1, 2 or 5 × 10^k, so one decimal then suffices), else the
+ * decimals of the step; exponents below 0.01. `ticks` are the axis's ticks (log axes: steps vary).
+ */
+export function formatTick(v: number, ticks: readonly number[]): string {
+  const step = ticks.length > 1 ? Math.abs(ticks[1] - ticks[0]) : NaN;
+  const linear = ticks.length < 3 || Math.abs(ticks[2] - ticks[1] - (ticks[1] - ticks[0])) <= 1e-9 * step;
+  if (!linear || !(step > 0)) {
+    if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(1) + "M";
+    if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(1) + "k";
+    if (Math.abs(v) < 0.01 && v !== 0) return v.toExponential(1);
+    return Number.isInteger(v) ? v.toString() : v.toFixed(2);
+  }
+  if (Math.abs(v) >= 1e6 && step >= 1e5) return (v / 1e6).toFixed(1) + "M";
+  if (Math.abs(v) >= 1e3 && step >= 100) return (v / 1e3).toFixed(1) + "k";
+  if (v === 0) return "0";
+  const decade = (x: number) => Math.floor(Math.log10(x) + 1e-9);
+  if (step < 0.01) return v.toExponential(Math.max(0, decade(Math.abs(v)) - decade(step)));
+  return v.toFixed(Math.max(0, -decade(step)));
+}
+
 /** Wraps children and reports container width via ResizeObserver */
 function ResponsiveContainer({ children, className }: { children: (width: number) => React.ReactNode; className: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -164,41 +215,10 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
     return mt + plotH - ((n - y2Min) / (y2Max - y2Min)) * plotH;
   };
 
-  function niceTicks(min: number, max: number, count: number, log: boolean): number[] {
-    if (log) {
-      const lo = Math.ceil(Math.log10(Math.max(min, 1e-10)));
-      const hi = Math.floor(Math.log10(Math.max(max, 1e-10)));
-      const ticks: number[] = [];
-      for (let p = lo; p <= hi; p++) {
-        ticks.push(Math.pow(10, p));
-        if (hi - lo <= 4) { ticks.push(2 * Math.pow(10, p)); ticks.push(5 * Math.pow(10, p)); }
-      }
-      return ticks.filter(t => t >= min * 0.9 && t <= max * 1.1);
-    }
-    const range = max - min;
-    if (range <= 0 || !isFinite(range)) return [];
-    const rough = range / count;
-    if (rough <= 0 || !isFinite(rough)) return [];
-    const mag = Math.pow(10, Math.floor(Math.log10(rough)));
-    const nice = [1, 2, 5, 10].find(n => n * mag >= rough) || 10 * mag;
-    const ticks: number[] = [];
-    let t = Math.ceil(min / nice) * nice;
-    let safety = 0;
-    while (t <= max && safety < 100) { ticks.push(t); t += nice; safety++; }
-    return ticks;
-  }
-
   const xTicks = niceTicks(rawXMin, rawXMax, 6, xLog);
   const yTicks = niceTicks(rawYMin, rawYMax, 6, yLog);
   const y2Ticks = hasDualY ? niceTicks(rawY2Min, rawY2Max, 6, y2Log) : [];
 
-  function formatTick(v: number): string {
-    if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(1) + "M";
-    if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(1) + "k";
-    if (Math.abs(v) < 0.01 && v !== 0) return v.toExponential(1);
-    if (Number.isInteger(v)) return v.toString();
-    return v.toFixed(2);
-  }
 
   const paths = data.map((trace, ti) => {
     const tx = trace.x ?? [];
@@ -251,15 +271,15 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
         )}
 
         {/* X tick labels */}
-        {xTicks.map(v => (
+        {xTicks.map((v, _, all) => (
           <text key={`xl${v}`} x={toSvgX(v)} y={mt + plotH + 18} textAnchor="middle"
-            fill={textColor} fontSize={11}>{formatTick(v)}</text>
+            fill={textColor} fontSize={11}>{formatTick(v, all)}</text>
         ))}
 
         {/* Y tick labels */}
-        {yTicks.map(v => (
+        {yTicks.map((v, _, all) => (
           <text key={`yl${v}`} x={ml - 8} y={toSvgY(v) + 4} textAnchor="end"
-            fill={textColor} fontSize={11}>{formatTick(v)}</text>
+            fill={textColor} fontSize={11}>{formatTick(v, all)}</text>
         ))}
 
         {/* X axis label */}
@@ -278,9 +298,9 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
         )}
 
         {/* Y2 axis (right) */}
-        {hasDualY && y2Ticks.map(v => (
+        {hasDualY && y2Ticks.map((v, _, all) => (
           <text key={`y2l${v}`} x={ml + plotWRef + 8} y={toSvgY2(v) + 4} textAnchor="start"
-            fill="#f97316" fontSize={11}>{formatTick(v)}</text>
+            fill="#f97316" fontSize={11}>{formatTick(v, all)}</text>
         ))}
         {hasDualY && y2Label && (
           <text x={w - 8} y={mt + plotHRef / 2} textAnchor="middle" fill="#f97316" fontSize={13}
