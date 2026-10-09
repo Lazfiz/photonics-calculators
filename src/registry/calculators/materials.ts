@@ -59,6 +59,20 @@ export const materials: CalculatorEntry[] = [
     slug: "chromatic-dispersion",
     title: "Material Dispersion (Sellmeier)",
     description: "Refractive index, group index, GVD β₂ and dispersion D from published Sellmeier formulas for crystals, fused silica and SCHOTT glasses.",
+    tier: "exact",
+    modelNote: "Exact for the published Sellmeier formula inside its fit range, with analytic derivatives. The formula is itself a fit to measurements (typically ±1e-5 to ±1e-4 in n) at the temperature of those measurements.",
+    references: [
+      {
+        citation: "refractiveindex.info database (CC0). Sellmeier data sets for fused silica and nine crystals, each with its original reference shown on the page.",
+      },
+      {
+        citation: "SCHOTT optical glass catalog (Zemax AGF 2017-01-20). Sellmeier coefficients of 10 glasses.",
+      },
+      {
+        citation: "Agrawal G. P. Nonlinear Fiber Optics, §1.2.3. Group-velocity dispersion β₂ and dispersion parameter D.",
+      },
+      { citation: "Saleh B. E. A., Teich M. C. Fundamentals of Photonics, ch. 5. Dispersion parameter D." },
+    ],
   },
   {
     slug: "color-centers",
@@ -125,6 +139,16 @@ export const materials: CalculatorEntry[] = [
     description: "Compare IR transmitting materials (Ge, Si, ZnSe, ZnS, fluorides, NaCl): refractive index at any wavelength and temperature, transmission range and thermal properties.",
     lede: "Compare IR transmitting materials. n(λ, T) = n(λ, T₀) + (dn/dT)(T − T₀), with n(λ, T₀) from each material's published Sellmeier formula.",
     keywords: ["Infrared Materials"],
+    tier: "textbook",
+    modelNote: "Index from published Sellmeier fits inside their ranges, shifted linearly by one typical dn/dT. The dn/dT, thermal conductivity and Knoop hardness are data-sheet values not yet checked against sources.",
+    references: [
+      {
+        citation: "refractiveindex.info database (CC0). Sellmeier data sets, each with its original reference shown on the page. Used for Ge, Si, ZnSe, ZnS, CaF₂, BaF₂, MgF₂ and NaCl.",
+      },
+      {
+        citation: "Crystran data sheet (KRS-5) and Amorphous Materials data sheet (AMTIR-1). Index at 10 µm, the only dispersion data for these two.",
+      },
+    ],
   },
   {
     slug: "magneto-optic",
@@ -154,6 +178,16 @@ export const materials: CalculatorEntry[] = [
     description: "Interactive glass map and dispersion curves for SCHOTT optical glasses, with catalog n_d, V_d, density and dn/dT.",
     lede: "Interactive glass map and dispersion curves. Sellmeier: n²(λ) = 1 + Σ Bᵢλ²/(λ² − Cᵢ), with SCHOTT catalog coefficients.",
     keywords: ["Schott Glass Catalog"],
+    tier: "exact",
+    modelNote: "SCHOTT catalog values: Sellmeier fits that reproduce each glass's catalog n_d to 1e-5 and V_d to 0.01, and the TIE-19 absolute dn/dT at 20 °C. Valid inside each fit's wavelength range.",
+    references: [
+      {
+        citation: "SCHOTT optical glass catalog (Zemax AGF 2017-01-20). Sellmeier coefficients, n_d, V_d and density.",
+      },
+      {
+        citation: "SCHOTT (2016). TIE-19, temperature coefficient of the absolute refractive index (D₀, D₁, D₂, E₀, E₁, λ_TK).",
+      },
+    ],
   },
   {
     slug: "photoelastic",

@@ -72,6 +72,16 @@ export const fiberOptics: CalculatorEntry[] = [
     description: "Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements.",
     heading: "Dispersion Compensation",
     lede: "Calculates chromatic dispersion limits and DCF (dispersion-compensating fiber) requirements: the rms pulse broadening of a span, the 4Bσ ≤ 1 bit-rate limit and power penalty, the DCF length that cancels the dispersion at one wavelength, and the residual dispersion that a slope mismatch leaves across the band.",
+    tier: "textbook",
+    modelNote: "Linear dispersion model D(λ) = D + S(λ − λ₀) for a broad Gaussian source. Not included: narrow-linewidth sources, dispersion curvature, PMD, nonlinear effects and DCF loss.",
+    references: [
+      {
+        citation: "Agrawal G. P. (2021). Fiber-Optic Communication Systems, 5th ed., §2.4.3 and §5.4.4. Wiley.",
+      },
+      {
+        citation: "NPTEL, Optical Communication, Module 12, “System degradation and power penalty”. Tabulated power-penalty values used as a check.",
+      },
+    ],
   },
   {
     slug: "dispersion-map",
@@ -172,6 +182,25 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Macrobending Loss",
     description: "Detailed macrobending loss calculation using the curvature radiation model for single-mode fiber.",
     keywords: ["Macro Bending Loss", "Macro Bend Loss"],
+    tier: "textbook",
+    modelNote: "Marcuse's asymptotic curvature loss (R much larger than a) for the LP01 mode of a step-index, weakly guiding fibre. Not modelled: the elasto-optic correction (R_eff ≈ 1.28 R), coating reflections, transition loss.",
+    references: [
+      {
+        citation: "Marcuse D. (1976). Curvature loss formula for optical fibers. J. Opt. Soc. Am. 66, 216. Curvature loss formula for an LP_ν mode, used here for LP01.",
+        url: "https://doi.org/10.1364/josa.66.000216",
+      },
+      {
+        citation: "Snyder A. W., Love J. D. (1983). Optical Waveguide Theory, bend-loss chapter. Chapman and Hall. Normalized power attenuation coefficient of the fundamental mode of a step profile.",
+      },
+      {
+        citation: "Gloge D. (1971). Weakly Guiding Fibers. Appl. Opt. 10, 2252. Eigenvalue equation of the LP01 mode (U and W).",
+        url: "https://doi.org/10.1364/ao.10.002252",
+      },
+      {
+        citation: "Marcuse D. (1977). Loss Analysis of Single-Mode Fiber Splices. Bell Syst. Tech. J. 56, 703–718. Gaussian fit of the mode-field radius.",
+        url: "https://doi.org/10.1002/j.1538-7305.1977.tb00534.x",
+      },
+    ],
   },
   {
     slug: "micro-bend",
@@ -229,6 +258,21 @@ export const fiberOptics: CalculatorEntry[] = [
     slug: "polarization-mode-dispersion",
     title: "Polarization Mode Dispersion (PMD)",
     description: "Calculate PMD-induced differential group delay (DGD), its Maxwellian outage probability, and PMD-limited reach.",
+    tier: "textbook",
+    modelNote: "First-order PMD of a long, randomly coupled fibre: Maxwellian DGD with mean PMD·√L. The 10 % bit-period limit is a design rule of thumb. Not modelled: second-order PMD, component PMD and the penalty itself.",
+    references: [
+      {
+        citation: "Kogelnik H., Jopson R. M., Nelson L. E. (2002). Polarization-mode dispersion. In Optical Fiber Telecommunications IVB.",
+      },
+      {
+        citation: "Poole C. D. (1988). Statistical treatment of polarization dispersion in single-mode fiber. Opt. Lett. 13, 687. Maxwellian statistics of the DGD.",
+        url: "https://doi.org/10.1364/ol.13.000687",
+      },
+      { citation: "ITU-T G.650.2. The PMD value as the mean DGD." },
+      {
+        citation: "Duelk M. (2006). IEEE 802.3 HSSG, Nov. 2006, duelk_02_1106. Probability 4.2×10⁻⁵ that the DGD exceeds 3 times its mean.",
+      },
+    ],
   },
   {
     slug: "pump-combiner",

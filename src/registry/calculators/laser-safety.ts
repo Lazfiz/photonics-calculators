@@ -15,6 +15,26 @@ export const laserSafety: CalculatorEntry[] = [
     slug: "atmospheric-attenuation",
     title: "Atmospheric Attenuation",
     description: "Beam attenuation along an outdoor path from Rayleigh scattering and visibility-based aerosol extinction (Beer-Lambert). Molecular absorption is left out, the conservative side for laser safety NOHD estimates.",
+    tier: "textbook",
+    modelNote: "Rayleigh plus an empirical aerosol law from the visibility, only a rough guide beyond 1.55 µm. Molecular absorption, rain and snow are not modelled, so transmission is overestimated (conservative for hazard distances).",
+    references: [
+      {
+        citation: "Bucholtz A. (1995). Rayleigh-scattering calculations for the terrestrial atmosphere. Appl. Opt. 34, 2765. Rayleigh scattering of standard sea-level air, eqs. (2)–(4).",
+        url: "https://doi.org/10.1364/ao.34.002765",
+      },
+      {
+        citation: "Kim I. I., McArthur B., Korevaar E. (2001). Comparison of laser beam propagation at 785 nm and 1550 nm in fog and haze for optical wireless communications. Proc. SPIE 4214, 26–37. Visibility-based aerosol exponent q.",
+        url: "https://doi.org/10.1117/12.417512",
+      },
+      {
+        citation: "Peck E. R., Reeder K. (1972). Dispersion of Air. J. Opt. Soc. Am. 62, 958. Refractive index of standard air, fitted 0.23–1.69 µm.",
+        url: "https://doi.org/10.1364/josa.62.000958",
+      },
+      {
+        citation: "Hansen J. E., Travis L. D. (1974). Light scattering in planetary atmospheres. Space Sci. Rev. 16, 527–610. Cross-check of the Rayleigh coefficient (0.46 % difference).",
+        url: "https://doi.org/10.1007/bf00168069",
+      },
+    ],
   },
   {
     slug: "aversion-response",
@@ -41,6 +61,17 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Blue Light Hazard",
     description: "Simplified educational estimate of B(λ)-weighted blue-light irradiance and risk group. Not for safety decisions; use IEC 62471.",
     keywords: ["UV / Blue Light Hazard"],
+    tier: "exact",
+    modelNote: "Tabulated B(λ), small-source limits and IEC risk groups for a monochromatic beam; irradiance is the beam power over the 1/e² circle. Not modelled: extended sources, pulses and broadband spectra.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to incoherent visible and infrared radiation. Health Phys. 105(1), 74–96. Table 2 (B(λ)) and eqns 15–17 (small-source limits).",
+        url: "https://doi.org/10.1097/hp.0b013e318289a611",
+      },
+      {
+        citation: "IEC 62471:2006. Table 4.2 (B(λ) for 500–600 nm) and Table 6.1 (risk groups, small source).",
+      },
+    ],
   },
   {
     slug: "classification",
@@ -80,6 +111,17 @@ export const laserSafety: CalculatorEntry[] = [
     title: "Maximum Safe Exposure Duration",
     description: "Calculate the maximum safe exposure time for a CW laser beam based on MPE limits.",
     keywords: ["Maximum Exposure Duration"],
+    tier: "exact",
+    modelNote: "ICNIRP point-source eye limits (180 nm – 1 mm, 1 ns – 30 ks) for a CW round TEM₀₀ beam centred on the averaging aperture. Not modelled: extended sources, pulses, and the actual-irradiance advice for beams under 1 mm.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 3, 5, 7 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "EU Directive 2006/25/EC, Annex II, Table 2.3. Cross-check of the UV exposure limits from 10 s.",
+      },
+    ],
   },
   {
     slug: "extended-source",
@@ -259,11 +301,29 @@ export const laserSafety: CalculatorEntry[] = [
     slug: "uv-exposure",
     title: "UV Exposure Limits",
     description: "Simplified educational estimate of actinic UV exposure limits with S(λ) weighting. Not for safety decisions; use IEC 62471.",
+    tier: "exact",
+    modelNote: "Monochromatic source: S(λ)-weighted limit of 30 J/m² plus ICNIRP's unweighted UVA limit of 10⁴ J/m² (315–400 nm), within 8 h. ACGIH and IEC relax the UVA limit after 1000 s; ICNIRP, used here, does not.",
+    references: [
+      {
+        citation: "ICNIRP (2004). Guidelines on limits of exposure to ultraviolet radiation of wavelengths between 180 nm and 400 nm (incoherent optical radiation). Health Phys. 87(2), 171–186. Table 1 (S(λ) and the exposure limits).",
+        url: "https://doi.org/10.1097/00004032-200408000-00006",
+      },
+      { citation: "IEC 62471:2006. Table 4.1 (the same S(λ) values)." },
+    ],
   },
   {
     slug: "uv-hazard",
     title: "UV Hazard Calculator",
     description: "UV hazard assessment with the ICNIRP/ACGIH actinic weighting function S(λ) and the UVA eye limit. Covers 180–400 nm.",
+    tier: "exact",
+    modelNote: "Monochromatic source: S(λ)-weighted limit of 30 J/m² plus ICNIRP's unweighted UVA limit of 10⁴ J/m² (315–400 nm), within 8 h. ACGIH and IEC relax the UVA limit after 1000 s; ICNIRP, used here, does not.",
+    references: [
+      {
+        citation: "ICNIRP (2004). Guidelines on limits of exposure to ultraviolet radiation of wavelengths between 180 nm and 400 nm (incoherent optical radiation). Health Phys. 87(2), 171–186. Table 1 (S(λ) and the exposure limits).",
+        url: "https://doi.org/10.1097/00004032-200408000-00006",
+      },
+      { citation: "IEC 62471:2006. Table 4.1 (the same S(λ) values)." },
+    ],
   },
   {
     slug: "viewing-distance",
