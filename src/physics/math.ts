@@ -246,3 +246,28 @@ export function intervalStats(
   }
   return { mean: sum / n, min, max };
 }
+
+/**
+ * Phases (rad) with the 2π jumps removed: each step from the previous finite value is brought into
+ * (−π, π]. Correct while the true phase changes by less than π between samples. NaN entries stay NaN
+ * and don't break the chain.
+ */
+export function unwrapPhase(phases: readonly number[]): number[] {
+  const out: number[] = [];
+  let prev = NaN;
+  let offset = 0;
+  for (const p of phases) {
+    if (!Number.isFinite(p)) {
+      out.push(NaN);
+      continue;
+    }
+    if (Number.isFinite(prev)) {
+      let step = p + offset - prev;
+      step -= 2 * Math.PI * Math.ceil((step - Math.PI) / (2 * Math.PI));
+      offset = prev + step - p;
+    }
+    prev = p + offset;
+    out.push(prev);
+  }
+  return out;
+}

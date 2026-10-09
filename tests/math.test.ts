@@ -15,6 +15,7 @@ import {
   poissonPmf,
   poissonSf,
   qFunction,
+  unwrapPhase,
 } from "../src/physics/math";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
@@ -131,4 +132,21 @@ test("intervalStats: trapezoidal mean, min and max", () => {
   assert.equal(s.max, 1);
   assert.ok(Number.isNaN(intervalStats((x) => x, 1, 1).mean), "empty interval");
   assert.ok(Number.isNaN(intervalStats(() => NaN, 0, 1).max));
+});
+
+test("unwrapPhase: recovers a phase ramp wrapped by atan2, NaN passes through", () => {
+  // φ = 0.9·k + 2: steps of 0.9 rad (< π), wrapped into (−π, π] by atan2.
+  const truth = Array.from({ length: 40 }, (_, k) => 0.9 * k + 2);
+  const wrapped = truth.map((p) => Math.atan2(Math.sin(p), Math.cos(p)));
+  const out = unwrapPhase(wrapped);
+  for (let k = 0; k < truth.length; k++) {
+    assert.ok(Math.abs(out[k] - truth[k]) < 1e-12, `k = ${k}: ${out[k]} vs ${truth[k]}`);
+  }
+  // A step across ±π, and a NaN in the middle (the chain continues across it).
+  const down = unwrapPhase([3, -3, 2.5, NaN, 2]);
+  assert.ok(Math.abs(down[1] - (2 * Math.PI - 3)) < 1e-12, `${down[1]}`);
+  assert.ok(Math.abs(down[2] - 2.5) < 1e-12, `${down[2]}`);
+  assert.ok(Number.isNaN(down[3]));
+  assert.ok(Math.abs(down[4] - 2) < 1e-12, `${down[4]}`);
+  assert.deepEqual(unwrapPhase([]), []);
 });
