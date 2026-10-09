@@ -1,12 +1,23 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { totalCalculatorCount } from "../../lib/home-categories";
+import { calculators } from "../../registry";
+import { TIERS, UNREVIEWED, type TierInfo } from "../../registry/tiers";
+import type { ModelTier } from "../../registry/types";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://photonics-calculators.vercel.app/about" },
   title: "About",
   description: "A free, open-source collection of interactive optics and photonics calculators.",
 };
+
+const tierRows: (TierInfo & { count: number })[] = [
+  ...(Object.keys(TIERS) as ModelTier[]).map((tier) => ({
+    ...TIERS[tier],
+    count: calculators.filter((c) => c.tier === tier).length,
+  })),
+  { ...UNREVIEWED, count: calculators.filter((c) => !c.tier).length },
+];
 
 export default function AboutPage() {
   return (
@@ -41,6 +52,24 @@ export default function AboutPage() {
             spreadsheet every time they needed a quick NOHD or ABCD matrix
             calculation.
           </p>
+        </section>
+
+        <section id="model-tiers" className="mt-12 scroll-mt-6">
+          <h2 className="text-2xl font-semibold text-white">Model Tiers</h2>
+          <p className="mt-4 text-sm text-gray-400">
+            Each calculator page shows how far its model can be trusted, and the references it was checked
+            against. The pages are being reviewed one by one.
+          </p>
+          <dl className="mt-4 space-y-3 text-sm">
+            {tierRows.map((row) => (
+              <div key={row.label}>
+                <dt className="font-medium text-white">
+                  {row.label} <span className="font-normal text-gray-500">({row.count} pages)</span>
+                </dt>
+                <dd className="text-gray-400">{row.definition}</dd>
+              </div>
+            ))}
+          </dl>
         </section>
 
         <section className="mt-12">

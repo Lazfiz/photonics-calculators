@@ -57,9 +57,35 @@ test("titles are unique", () => {
 test("the text has no HTML entities, line breaks or code", () => {
   for (const c of calculators) {
     // React prints strings as they are, so "&apos;" shows up on the page.
-    for (const text of [c.title, c.description, c.heading, c.lede]) {
+    for (const text of [c.title, c.description, c.heading, c.lede, c.modelNote, ...(c.references ?? []).map((r) => r.citation)]) {
       assert.doesNotMatch(text ?? "", /&[a-z]+;|&#\d+;|\bamp;|\n|[{}]/, c.href);
     }
+  }
+});
+
+test("trust data: a tier comes from an audit that cites its sources, and references are well formed", () => {
+  for (const c of calculators) {
+    const references = c.references ?? [];
+    if (!c.tier) {
+      assert.equal(references.length, 0, `${c.href}: references without a tier`);
+      assert.equal(c.modelNote, undefined, `${c.href}: a model note without a tier`);
+    }
+    if (c.tier === "exact" || c.tier === "textbook") {
+      assert.ok(references.length > 0, `${c.href}: a ${c.tier} model cites at least one reference`);
+    }
+    if (c.modelNote !== undefined) assert.ok(c.modelNote.trim() === c.modelNote && c.modelNote.length > 0, c.href);
+    for (const { citation, url } of references) {
+      assert.ok(citation.trim() === citation && citation.length >= 15, `${c.href}: citation "${citation}"`);
+      assert.doesNotMatch(citation, /https?:|doi\.org/i, `${c.href}: the link goes in url, not the citation`);
+      if (url === undefined) continue;
+      assert.match(url, /^https:\/\/\S+$/, `${c.href}: ${url}`);
+      // DOIs as https://doi.org/10.…, not dx.doi.org or "doi:".
+      if (/doi\.org/.test(url)) assert.match(url, /^https:\/\/doi\.org\/10\.\d{4,9}\/\S+$/, `${c.href}: ${url}`);
+      assert.ok(new URL(url).hostname, url);
+    }
+    const urls = references.flatMap((r) => (r.url ? [r.url] : []));
+    assert.equal(new Set(urls).size, urls.length, `${c.href}: duplicate reference URL`);
+    assert.equal(new Set(references.map((r) => r.citation)).size, references.length, `${c.href}: duplicate citation`);
   }
 });
 

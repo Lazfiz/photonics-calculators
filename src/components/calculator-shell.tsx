@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import ErrorBoundary from "./error-boundary";
+import { ModelBadge, ModelReferences } from "./model-references";
 import RelatedCalculatorLinks, { type RelatedCalculatorItem } from "./related-calculator-links";
 import ShareButton from "./share-button";
 import { JsonLdScript } from "../lib/json-ld";
@@ -24,8 +25,8 @@ function relatedCalculators(calculator: Calculator): RelatedCalculatorItem[] {
 
 /**
  * The frame of every calculator page, rendered by its page.tsx around the client component: JSON-LD,
- * breadcrumbs, heading, lede, share button and related links, all from the registry entry. A server
- * component: the registry stays out of client bundles.
+ * breadcrumbs, heading, lede, share button, model tier, the "Model and references" section and related
+ * links, all from the registry entry. A server component: the registry stays out of client bundles.
  */
 export default function CalculatorShell({ href, children, maxWidthClassName = "max-w-4xl" }: CalculatorShellProps) {
   const calculator = getCalculator(href);
@@ -59,10 +60,12 @@ export default function CalculatorShell({ href, children, maxWidthClassName = "m
             <p className="text-gray-400 flex-1">{calculator.lede ?? calculator.description}</p>
             <ShareButton />
           </div>
-          <ErrorBoundary>
-            {children}
-            {related.length > 0 && <RelatedCalculatorLinks currentHref={href} items={related} />}
-          </ErrorBoundary>
+          <p className="mb-4">
+            <ModelBadge tier={calculator.tier} />
+          </p>
+          <ErrorBoundary>{children}</ErrorBoundary>
+          <ModelReferences calculator={calculator} />
+          {related.length > 0 && <RelatedCalculatorLinks currentHref={href} items={related} />}
         </div>
       </main>
     </>

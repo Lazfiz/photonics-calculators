@@ -2,8 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import ts from "typescript";
 
+import { ModelBadge, ModelReferences, referenceLinkText } from "../src/components/model-references";
 import { jsonLdHtml } from "../src/lib/json-ld";
 import { getCalculator } from "../src/registry";
 import { calculatorJsonLd, calculatorMetadata, SITE_URL } from "../src/registry/metadata";
@@ -112,4 +115,45 @@ test("jsonLdHtml escapes < so a string can't close the script tag", () => {
   const html = jsonLdHtml({ name: "a</script><script>alert(1)</script>" });
   assert.doesNotMatch(html, /</);
   assert.deepEqual(JSON.parse(html), { name: "a</script><script>alert(1)</script>" });
+});
+
+// Synthetic trust data, so these tests don't change as audits fill in the registry.
+const audited = {
+  ...getCalculator("/fiber-optics/chromatic-dispersion"),
+  tier: "textbook" as const,
+  modelNote: "Linear dispersion only.",
+  references: [
+    { citation: "Agrawal G. P. (2021). Fiber-Optic Communication Systems, 5th ed., §2.4. Wiley." },
+    { citation: "Example A. (2000). A paper on <dispersion>. J. Ex. 1, 2.", url: "https://doi.org/10.1000/x%3Cy%3E" },
+  ],
+};
+
+test("calculatorJsonLd lists the references as citations, with a url only where the entry has one", () => {
+  const graph = (calculatorJsonLd(audited) as { "@graph": Record<string, unknown>[] })["@graph"];
+  assert.deepEqual(graph[0].citation, [
+    { "@type": "CreativeWork", name: audited.references[0].citation },
+    { "@type": "CreativeWork", name: audited.references[1].citation, url: audited.references[1].url },
+  ]);
+  assert.equal("citation" in (calculatorJsonLd(getCalculator("/fiber-optics/chromatic-dispersion")) as { "@graph": object[] })["@graph"][0], false);
+});
+
+test("the model badge and section: tier, definition, note and numbered references; unreviewed without a tier", () => {
+  assert.equal(referenceLinkText("https://doi.org/10.1000/x%3Cy%3E"), "doi:10.1000/x<y>");
+  assert.equal(referenceLinkText("https://www.icnirp.org/cms/upload/a.pdf"), "icnirp.org");
+
+  const html = renderToStaticMarkup(createElement(ModelReferences, { calculator: audited }));
+  assert.match(html, /^<section id="model" aria-labelledby="model-heading"/);
+  assert.match(html, /<h2 id="model-heading"[^>]*>Model and references<\/h2>/);
+  assert.match(html, /Textbook approximation\.<\/span> A standard approximation/);
+  assert.match(html, /href="\/about#model-tiers"/);
+  assert.match(html, /<p[^>]*>Linear dispersion only\.<\/p>/);
+  assert.match(html, /<ol[^>]*><li>Agrawal G\. P\. \(2021\)[^<]*<\/li><li>Example A\. \(2000\)\. A paper on &lt;dispersion&gt;/);
+  assert.match(html, /<a href="https:\/\/doi\.org\/10\.1000\/x%3Cy%3E" rel="noopener noreferrer"[^>]*>doi:10\.1000\/x&lt;y&gt;<\/a>/);
+  assert.match(renderToStaticMarkup(createElement(ModelBadge, { tier: "textbook" })), /href="#model"[^>]*>Model: Textbook approximation</);
+
+  const unreviewed = getCalculator("/fiber-optics/chromatic-dispersion");
+  const plain = renderToStaticMarkup(createElement(ModelReferences, { calculator: { ...unreviewed, tier: undefined, references: undefined, modelNote: undefined } }));
+  assert.match(plain, /Not yet reviewed\.<\/span> This page&#x27;s model hasn&#x27;t been checked/);
+  assert.doesNotMatch(plain, /<ol|<p[^>]*>Linear/);
+  assert.match(renderToStaticMarkup(createElement(ModelBadge, {})), />Model: Not yet reviewed</);
 });
