@@ -48,6 +48,18 @@ export const thinFilm: CalculatorEntry[] = [
     title: "Coating Stress & Curvature",
     description: "Substrate curvature and radius from thin-film stress with the Stoney equation.",
     lede: "Stoney equation: relates thin-film stress to substrate curvature. Valid for thin films (film thickness ≪ substrate thickness).",
+    tier: "textbook",
+    modelNote: "Stoney's equation with the substrate's biaxial modulus, for a coating much thinner than the substrate, small deflections, uniform stress and an isotropic substrate. The forces of identical layers add.",
+    references: [
+      {
+        citation: "Stoney G. G. (1909). The tension of metallic films deposited by electrolysis. Proc. R. Soc. Lond. A 82, 172–175.",
+        url: "https://doi.org/10.1098/rspa.1909.0021",
+      },
+      {
+        citation: "Janssen G. C. A. M. et al. (2009). Celebrating the 100th anniversary of the Stoney equation for film stress: Developments from polycrystalline steel strips to single crystal silicon wafers. Thin Solid Films 517, 1858–1867.",
+        url: "https://doi.org/10.1016/j.tsf.2008.07.014",
+      },
+    ],
   },
   {
     slug: "cold-mirror",
@@ -238,6 +250,19 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "stress-measurement",
     title: "Thin Film Stress Measurement",
     description: "Calculate film stress from substrate curvature using the Stoney equation. Includes thermal stress decomposition and stored elastic energy.",
+    tier: "textbook",
+    modelNote: "Stoney's equation with the substrate's biaxial modulus, for a thin film, small deflections, uniform equibiaxial stress and an isotropic substrate. The thermal-mismatch stress assumes a much thicker substrate.",
+    references: [
+      {
+        citation: "Stoney G. G. (1909). The tension of metallic films deposited by electrolysis. Proc. R. Soc. Lond. A 82, 172–175.",
+        url: "https://doi.org/10.1098/rspa.1909.0021",
+      },
+      {
+        citation: "Janssen G. C. A. M. et al. (2009). Celebrating the 100th anniversary of the Stoney equation for film stress: Developments from polycrystalline steel strips to single crystal silicon wafers. Thin Solid Films 517, 1858–1867.",
+        url: "https://doi.org/10.1016/j.tsf.2008.07.014",
+      },
+      { citation: "Freund L. B., Suresh S. (2003). Thin Film Materials, ch. 2. Thermal mismatch strain." },
+    ],
   },
   {
     slug: "thermal-evaporation",

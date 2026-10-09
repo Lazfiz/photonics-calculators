@@ -18,7 +18,8 @@ paths:
 - **Numerics:** prefer closed forms. Use `log1p`/`expm1` near 0, and avoid catastrophic cancellation. Bisection or
   scan loops need explicit bounds and iteration caps. State the tolerance.
 - **Model tier:** label every calculator Exact / Textbook approximation / Illustrative, and cite the
-  reference (book + equation, or paper + DOI) in a code comment next to the formula.
+  reference (book + equation, or paper + DOI) in a code comment next to the formula. After an audit, put the
+  same tier, a `modelNote` and the `references` in the registry entry; the page shows them.
   No unexplained fudge factors. If a prefactor is empirical, cite where it comes from.
 - **Tests:** a formula change ships a golden-value test in `tests/` (`node:test` + `assert/strict`)
   comparing against a published value or an independent hand calculation, with the source cited in the test.

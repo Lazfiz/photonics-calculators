@@ -191,6 +191,21 @@ export const waveOptics: CalculatorEntry[] = [
     slug: "optical-parametric-oscillator",
     title: "Optical Parametric Oscillator",
     description: "Parametric gain, walk-off-limited interaction length and singly-resonant OPO threshold from pump wavelength, d_eff, beam radius and cavity loss.",
+    tier: "textbook",
+    modelNote: "Plane-wave estimate: perfect phase matching, no pump depletion, no focusing optimisation, idler not resonated. Walk-off enters only by capping the crystal length at the aperture length.",
+    references: [
+      {
+        citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.8 and §2.9. Academic Press. Parametric gain coefficient and singly resonant threshold.",
+      },
+      {
+        citation: "Boyd G. D., Kleinman D. A. (1968). Parametric Interaction of Focused Gaussian Light Beams. J. Appl. Phys. 39, 3597–3639. Walk-off aperture length l_a = √π w/ρ.",
+        url: "https://doi.org/10.1063/1.1656831",
+      },
+      {
+        citation: "Myers L. E. et al. (1995). Quasi-phase-matched optical parametric oscillators in bulk periodically poled LiNbO₃. J. Opt. Soc. Am. B 12, 2102. Wavelength form of the gain coefficient, equal to Boyd's.",
+        url: "https://doi.org/10.1364/josab.12.002102",
+      },
+    ],
   },
   {
     slug: "optical-waveguide",

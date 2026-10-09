@@ -30,5 +30,8 @@ Formulas: <one line each>
 Findings: [severity] file:line, issue, why, and the fix in one line
 Numeric check: inputs → expected (source) vs got
 Test to add: <golden value + reference>
+Registry: tier, modelNote (≤ 220 chars: assumptions, what is not modelled), references (citations + DOI URLs you actually checked)
 ```
+Once the page is fixed (or found OK), the fixing session puts that `tier`, `modelNote` and `references` in its registry
+entry (`src/registry/calculators/<category>.ts`): the page then shows the tier instead of "Not yet reviewed".
 Don't edit files. This skill is read-only and reports only.

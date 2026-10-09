@@ -15,13 +15,18 @@ export function calculatorMetadata(href: string): Metadata {
 }
 
 /**
- * WebPage plus a BreadcrumbList that matches the visible breadcrumb (Home › category › heading).
- * Only what the page shows: no generated FAQ, which Google's structured-data rules don't allow for
- * content that isn't on the page.
+ * WebPage plus a BreadcrumbList that matches the visible breadcrumb (Home › category › heading), and the
+ * references the page lists as `citation`. Only what the page shows: no generated FAQ, which Google's
+ * structured-data rules don't allow for content that isn't on the page.
  */
 export function calculatorJsonLd(calculator: Calculator): object {
   const category = getCategory(calculator.category);
   const url = `${SITE_URL}${calculator.href}`;
+  const citation = (calculator.references ?? []).map((reference) => ({
+    "@type": "CreativeWork",
+    name: reference.citation,
+    ...(reference.url ? { url: reference.url } : {}),
+  }));
   return {
     "@context": "https://schema.org",
     "@graph": [
@@ -32,6 +37,7 @@ export function calculatorJsonLd(calculator: Calculator): object {
         url,
         isPartOf: { "@type": "WebSite", name: "Photonics Calculators", url: SITE_URL },
         about: { "@type": "Thing", name: category.label },
+        ...(citation.length > 0 ? { citation } : {}),
       },
       {
         "@type": "BreadcrumbList",

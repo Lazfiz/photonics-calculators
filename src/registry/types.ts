@@ -17,11 +17,16 @@ export const CATEGORY_IDS = [
 
 export type CategoryId = (typeof CATEGORY_IDS)[number];
 
-/** How far a page's model can be trusted. Filled in during Phase 4. */
+/**
+ * How far a page's model can be trusted, set by a physics audit (Phase 4). The definitions shown to readers are in
+ * `tiers.ts`; a page without a tier says its model hasn't been reviewed.
+ */
 export type ModelTier = "exact" | "textbook" | "illustrative";
 
 export interface Reference {
+  /** Authors (year). Title. Venue or publisher, plus the equation, section or table used. No URL. */
   citation: string;
+  /** `https://doi.org/10.…` when there is a DOI, else an https link to an open copy. */
   url?: string;
 }
 
@@ -49,7 +54,11 @@ export interface CalculatorEntry {
   hidden?: true;
   /** Hand-picked related calculators, shown by pages that render related links. */
   related?: RelatedLink[];
+  /** Set by a physics audit; unset means "not yet reviewed". */
   tier?: ModelTier;
+  /** One or two sentences under the tier: what the model assumes or leaves out. */
+  modelNote?: string;
+  /** The sources the audit checked the model against. Required for the exact and textbook tiers. */
   references?: Reference[];
 }
 

@@ -13,7 +13,8 @@ description: Add a new calculator page end-to-end - physics module, golden test,
    source, and ≥1 edge case. Run `npm test`.
 3. **Registry:** add an entry to `src/registry/calculators/<category>.ts` (sorted by slug): `title` (the
    `<title>`), a real `description` (no "Interactive X calculator for photonics…" placeholder), and
-   `heading`/`lede` only if the `<h1>` and the text under it should differ. The page's metadata, JSON-LD,
+   `heading`/`lede` only if the `<h1>` and the text under it should differ, and the trust data: `tier`,
+   `modelNote` (assumptions, what is not modelled) and `references` (`https://doi.org/…` URLs), shown on the page. The page's metadata, JSON-LD,
    heading, breadcrumbs and related links, plus the sitemap, search, counts and category list, all come
    from this entry.
 4. **Server page:** `src/app/<category>/<slug>/page.tsx`. Copy any calculator's page.tsx and change its

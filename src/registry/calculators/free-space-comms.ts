@@ -11,6 +11,25 @@ export const freeSpaceComms: CalculatorEntry[] = [
     title: "Adaptive Optics for FSO",
     description: "Fried parameter r₀, Greenwood frequency, isoplanatic angle and Strehl ratio with and without adaptive optics for a free-space optical link.",
     keywords: ["Adaptive Optics Strehl Gain"],
+    tier: "textbook",
+    modelNote: "One uniform turbulent layer with one wind speed; the corrected Zernike modes are taken as about the actuator count. Not modelled: wavefront-sensor noise, anisoplanatism and scintillation.",
+    references: [
+      {
+        citation: "Andrews L. C., Phillips R. L. (2005). Laser Beam Propagation through Random Media, 2nd ed. SPIE. Plane-wave Fried parameter and isoplanatic angle for constant Cn².",
+      },
+      {
+        citation: "Noll R. J. (1976). Zernike polynomials and atmospheric turbulence. J. Opt. Soc. Am. 66, 207. Uncorrected phase variance and the residual after correcting J Zernike modes.",
+        url: "https://doi.org/10.1364/josa.66.000207",
+      },
+      {
+        citation: "Greenwood D. P. (1977). Bandwidth specification for adaptive optics systems. J. Opt. Soc. Am. 67, 390. Greenwood frequency and servo-lag variance of a first-order loop.",
+        url: "https://doi.org/10.1364/josa.67.000390",
+      },
+      {
+        citation: "Parenti R. R., Sasiela R. J. (1994). Laser-guide-star systems for astronomical applications. J. Opt. Soc. Am. A 11, 288. Semi-empirical Strehl ratio with the seeing halo.",
+        url: "https://doi.org/10.1364/josaa.11.000288",
+      },
+    ],
   },
   {
     slug: "aperture-averaging",
@@ -26,6 +45,26 @@ export const freeSpaceComms: CalculatorEntry[] = [
     slug: "atmospheric-loss",
     title: "FSO Atmospheric Loss",
     description: "Visibility-based aerosol (Kim) and Rayleigh scattering: attenuation in dB/km, total path loss and transmittance of a free-space optical link.",
+    tier: "textbook",
+    modelNote: "Rayleigh scattering of standard sea-level air plus an empirical aerosol law scaled from the visibility, fitted up to 1.55 µm. Not modelled: molecular absorption bands, rain and snow, turbulence, geometric loss.",
+    references: [
+      {
+        citation: "Bucholtz A. (1995). Rayleigh-scattering calculations for the terrestrial atmosphere. Appl. Opt. 34, 2765. Rayleigh scattering of standard sea-level air, eqs. (2)–(4).",
+        url: "https://doi.org/10.1364/ao.34.002765",
+      },
+      {
+        citation: "Kim I. I., McArthur B., Korevaar E. (2001). Comparison of laser beam propagation at 785 nm and 1550 nm in fog and haze for optical wireless communications. Proc. SPIE 4214, 26–37. Visibility-based aerosol exponent q.",
+        url: "https://doi.org/10.1117/12.417512",
+      },
+      {
+        citation: "Peck E. R., Reeder K. (1972). Dispersion of Air. J. Opt. Soc. Am. 62, 958. Refractive index of standard air, fitted 0.23–1.69 µm.",
+        url: "https://doi.org/10.1364/josa.62.000958",
+      },
+      {
+        citation: "Hansen J. E., Travis L. D. (1974). Light scattering in planetary atmospheres. Space Sci. Rev. 16, 527–610. Cross-check of the Rayleigh coefficient (0.46 % difference).",
+        url: "https://doi.org/10.1007/bf00168069",
+      },
+    ],
   },
   {
     slug: "background-noise",
@@ -41,11 +80,26 @@ export const freeSpaceComms: CalculatorEntry[] = [
     slug: "ber",
     title: "Photon-Counting BER (OOK and DPSK)",
     description: "Exact Poisson bit error rate of photon-counting OOK and DPSK receivers versus detected photons per bit and dark plus background counts.",
+    tier: "exact",
+    modelNote: "Exact for an ideal photon-counting receiver: equiprobable bits, Poisson signal and noise counts. Not modelled: dead time, intersymbol interference, timing jitter or interferometer phase error.",
+    references: [
+      {
+        citation: "Caplan D. O. (2008). Laser communication transmitter and receiver design. In Majumdar A. K., Ricklin J. C. (eds.), Free-Space Laser Communications, pp. 109–246. Springer. Photon-counting quantum limits of OOK and DPSK.",
+        url: "https://doi.org/10.1007/978-0-387-28677-8_4",
+      },
+    ],
   },
   {
     slug: "bpsk-qpsk",
     title: "BPSK and QPSK Error Rates",
     description: "Bit and symbol error rates of BPSK, Gray-coded QPSK and OQPSK versus Eb/N0, with spectral efficiency, bandwidth, required receive power and margin.",
+    tier: "textbook",
+    modelNote: "Error rates are exact for ideal coherent detection in AWGN (perfect carrier and timing recovery). The required-power line uses a fixed kT = −174 dBm/Hz and a 3 dB noise figure, which the cited text does not cover.",
+    references: [
+      {
+        citation: "Proakis J. G., Salehi M. (2008). Digital Communications, 5th ed. McGraw-Hill. Binary antipodal signalling and Gray-coded QPSK.",
+      },
+    ],
   },
   {
     slug: "channel-capacity",
@@ -115,6 +169,14 @@ export const freeSpaceComms: CalculatorEntry[] = [
       { href: "/free-space-comms/quantum-key-distribution" },
       { href: "/free-space-comms/rain-attenuation" },
     ],
+    tier: "exact",
+    modelNote: "Exact for a Gaussian beam in vacuum with a static offset and isotropic Gaussian jitter, averaged over the jitter. Not modelled: atmospheric loss, turbulence (beam wander, spreading, scintillation), TX truncation.",
+    references: [
+      {
+        citation: "Farid A. A., Hranilovic S. (2007). Outage Capacity Optimization for Free-Space Optical Links With Pointing Errors. J. Lightwave Technol. 25, 1702–1710. The small-aperture jitter result, which the exact mean capture reduces to for an aperture much smaller than the beam.",
+        url: "https://doi.org/10.1109/jlt.2007.899174",
+      },
+    ],
   },
   {
     slug: "quantum-key-distribution",
@@ -136,6 +198,13 @@ export const freeSpaceComms: CalculatorEntry[] = [
     title: "Scintillation Index",
     description: "Rytov variance, aperture averaging, and fade probability for atmospheric turbulence.",
     keywords: ["Scintillation and Coherence Length"],
+    tier: "textbook",
+    modelNote: "Plane wave on a horizontal path with constant Cn² and a Kolmogorov spectrum without inner scale. Fade probabilities assume log-normal irradiance, which is optimistic in moderate to strong turbulence.",
+    references: [
+      {
+        citation: "Andrews L. C., Phillips R. L. (2005). Laser Beam Propagation through Random Media, 2nd ed. SPIE. Plane-wave Rytov variance, Fried parameter and aperture-averaged scintillation index.",
+      },
+    ],
   },
   {
     slug: "security",

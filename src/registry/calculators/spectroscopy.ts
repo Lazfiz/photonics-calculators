@@ -18,6 +18,18 @@ export const spectroscopy: CalculatorEntry[] = [
     title: "Apodization Comparison",
     description: "Compare 9 window functions and their instrument line shapes (ILS). Select windows to overlay.",
     keywords: ["Apodization Functions"],
+    tier: "exact",
+    modelNote: "Window definitions and their line shapes. Sidelobe and equivalent-noise-bandwidth values are measured from the windows at N = 512; Harris's Gaussian ENBW does not fit his own definition.",
+    references: [
+      {
+        citation: "Harris F. J. (1978). On the use of windows for harmonic analysis with the discrete Fourier transform. Proc. IEEE 66, 51–83. Cosine-sum windows (eq. 30–32) and the coefficients of Table I.",
+        url: "https://doi.org/10.1109/proc.1978.10837",
+      },
+      {
+        citation: "Nuttall A. H. (1981). Some windows with very good sidelobe behavior. IEEE Trans. ASSP 29, 84–91. Four-term window with a continuous first derivative.",
+        url: "https://doi.org/10.1109/tassp.1981.1163506",
+      },
+    ],
   },
   {
     slug: "blackbody",
@@ -78,6 +90,14 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "dual-comb-spectroscopy",
     title: "Dual-Comb Spectroscopy Calculator",
     description: "Model dual-comb spectroscopy parameters: resolution, bandwidth, update rate, and multi-heterodyne RF spectrum.",
+    tier: "exact",
+    modelNote: "Comb equation and sampling arithmetic. The mapping from optical tooth to RF beat is alias-free only if the band's image stays in one half-band, which needs Δν ≤ f_r²/(2|Δf_r|) and suitable offset frequencies.",
+    references: [
+      {
+        citation: "Coddington I., Newbury N., Swann W. (2016). Dual-comb spectroscopy. Optica 3, 414.",
+        url: "https://doi.org/10.1364/optica.3.000414",
+      },
+    ],
   },
   {
     slug: "electron-spectroscopy",
@@ -105,6 +125,17 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "fluorescence-lifetime",
     title: "Fluorescence Lifetime Calculator",
     description: "Model single and bi-exponential fluorescence decay curves. Calculate intensity-weighted average lifetimes.",
+    tier: "exact",
+    modelNote: "Exact definitions of the fractional intensities and of the intensity- and amplitude-weighted averages of a multi-exponential decay. Φ = ⟨τ⟩_amp/τ_rad assumes one radiative rate for all components.",
+    references: [
+      {
+        citation: "Lakowicz J. R. (2006). Principles of Fluorescence Spectroscopy, 3rd ed., ch. 4. Springer.",
+      },
+      {
+        citation: "Sillen A., Engelborghs Y. (1998). The Correct Use of ‘Average’ Fluorescence Parameters. Photochem. Photobiol. 67, 475–486.",
+        url: "https://doi.org/10.1111/j.1751-1097.1998.tb09443.x",
+      },
+    ],
   },
   {
     slug: "fluorescence-quantum-yield",
@@ -173,6 +204,13 @@ export const spectroscopy: CalculatorEntry[] = [
       { href: "/spectroscopy/jacquinot" },
       { href: "/spectroscopy/libs-analysis" },
       { href: "/spectroscopy/lineshape-fit" },
+    ],
+    tier: "exact",
+    modelNote: "Exact for monochromatic light and a dilute solution of non-interacting absorbers. Not modelled: scattering, fluorescence and stray light; absorbers interact above about 10 mM and absorbance reads low above A ≈ 2.",
+    references: [
+      {
+        citation: "IUPAC Compendium of Chemical Terminology (Gold Book), entries “absorbance” and “molar (decadic) absorption coefficient”.",
+      },
     ],
   },
   {
@@ -280,6 +318,12 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "spectral-resolution",
     title: "Spectral Resolution Calculator",
     description: "Compare spectral resolution across grating, prism, and Fabry-Pérot spectrometers.",
+    tier: "textbook",
+    modelNote: "The slit and diffraction limits are computed separately and the resolution is taken as the larger; the real line shape is their convolution. Aberrations and detector pixels are not modelled.",
+    references: [
+      { citation: "Palmer C., Loewen E. (2005). Diffraction Grating Handbook, 6th ed., ch. 2. Newport." },
+      { citation: "Hecht E. (2016). Optics, 5th ed., §9.6.1. Fabry-Pérot resolution δλ = FSR/ℱ." },
+    ],
   },
   {
     slug: "stimulated-raman",
