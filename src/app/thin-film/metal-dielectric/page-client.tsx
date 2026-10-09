@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -38,15 +38,20 @@ export default function MetalDielectricPage() {
     ];
   }, [stack]);
 
-  const absorptance550 = stackResponse(stack, 550e-9).A;
+  const wavelength_nm = 550;
+  const absorptance550 = stackResponse(stack, wavelength_nm * 1e-9).A;
   const nEff = nMetal * nMetal - kMetal * kMetal;
+  // 1/α = λ/(4πk) is the depth at which the INTENSITY falls to 1/e; the field amplitude falls to 1/e at λ/(2πk).
+  const intensityDepth_nm = wavelength_nm / (4 * Math.PI * kMetal);
+  const fieldDepth_nm = wavelength_nm / (2 * Math.PI * kMetal);
+  const fixed = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
 
   return (
     <>
-            
+
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="n (metal, real part)" value={nMetal} onChange={setNMetal} min={0} step="0.05" />
-        <ValidatedNumberInput label="k (metal, extinction coeff)" value={kMetal} onChange={setKMetal} min={0} step="0.1" />
+        <ValidatedNumberInput label="k (metal, extinction coeff)" value={kMetal} onChange={setKMetal} min={0.001} step="0.1" />
         <ValidatedNumberInput label="n (dielectric)" value={nDielectric} onChange={setNDielectric} min={0.1} step="0.01" />
         <ValidatedNumberInput label="Dielectric Thickness (nm)" value={dDielectric} onChange={setDDielectric} min={0} step="5" />
         <ValidatedNumberInput label="Metal Thickness (nm)" value={dMetal} onChange={setDMetal} min={1} step="1" />
@@ -56,15 +61,22 @@ export default function MetalDielectricPage() {
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Absorptance @ 550 nm</p>
-          <p className="text-xl font-bold text-yellow-400">{(absorptance550 * 100).toFixed(1)}%</p>
+          <p className="text-xl font-bold text-yellow-400">
+            {Number.isFinite(absorptance550) ? `${(absorptance550 * 100).toFixed(1)}%` : "—"}
+          </p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">n²−k²</p>
-          <p className="text-xl font-bold text-green-400">{nEff.toFixed(2)}</p>
+          <p className="text-xl font-bold text-green-400">{fixed(nEff, 2)}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Skin depth ≈ λ/(4πk)</p>
-          <p className="text-xl font-bold text-red-400">{(550 / (4 * Math.PI * kMetal)).toFixed(1)} nm</p>
+          <p className="text-sm text-gray-400">Intensity penetration depth 1/α = λ/(4πk) @ 550 nm</p>
+          <p className="text-xl font-bold text-red-400">
+            {Number.isFinite(intensityDepth_nm) ? `${intensityDepth_nm.toFixed(1)} nm` : "—"}
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            field (1/e amplitude) depth λ/(2πk) = {Number.isFinite(fieldDepth_nm) ? `${fieldDepth_nm.toFixed(1)} nm` : "—"}
+          </p>
         </div>
       </div>
 
@@ -73,9 +85,12 @@ export default function MetalDielectricPage() {
         <div className="space-y-2 text-sm text-gray-300 font-mono">
           <p>Complex index: ñ = n + ik</p>
           <p>Single-pass attenuation in the metal: exp(−4πkd/λ)</p>
-          <p>Skin depth: δ = λ/(4πk)</p>
+          <p>Intensity penetration depth: 1/α = λ/(4πk); field (amplitude) depth: λ/(2πk)</p>
           <p>R + T + A = 1 (energy conservation)</p>
           <p>Dielectric overcoat tunes R via interference</p>
+          <p className="text-xs text-gray-400 font-sans">
+            n and k are held constant over the plotted range. Real metals are dispersive, so use the n, k for the wavelength of interest.
+          </p>
         </div>
       </div>
 

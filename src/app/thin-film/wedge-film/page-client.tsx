@@ -39,7 +39,7 @@ export default function WedgeFilmPage() {
         })
       : [];
 
-    // R vs position at λ₀ over 10 fringes from the film edge, 100 points per fringe.
+    // R vs position at λ₀ over 10 fringes starting at the film edge (x = −Δx/2, d = 0), 100 points per fringe; x = 0 is where d = λ₀/4n.
     const positions = Number.isFinite(fringeSpacing)
       ? Array.from({ length: 1001 }, (_, i) => -fringeSpacing / 2 + (i * 10 * fringeSpacing) / 1000)
       : [];
@@ -58,12 +58,12 @@ export default function WedgeFilmPage() {
         <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
         <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} step="0.01" />
         <ValidatedNumberInput label="Design λ₀ (nm)" value={designWl} onChange={setDesignWl} step="10" />
-        <ValidatedNumberInput label="Wedge angle α (degrees)" value={wedgeAngleDeg} onChange={setWedgeAngleDeg} min={0.001} max={10} step="0.001" />
+        <ValidatedNumberInput label="Wedge angle α (degrees)" value={wedgeAngleDeg} onChange={setWedgeAngleDeg} min={0.001} max={2} step="0.001" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
-        <p className="text-gray-300">Fringe spacing Δx = <span className="text-blue-400 font-mono">{fringeSpacing.toFixed(3)} mm</span></p>
-        <p className="text-gray-300">Thickness at center = <span className="text-blue-400 font-mono">{(designWl / (4 * nFilm)).toFixed(1)} nm</span></p>
+        <p className="text-gray-300">Fringe spacing Δx = <span className="text-blue-400 font-mono">{Number.isFinite(fringeSpacing) ? `${fringeSpacing.toFixed(3)} mm` : "—"}</span></p>
+        <p className="text-gray-300">Thickness at x = 0 = <span className="text-blue-400 font-mono">{(designWl / (4 * nFilm)).toFixed(1)} nm</span></p>
         <p className="text-gray-300 text-xs mt-2">Δx = λ / (2·n<sub>f</sub>·tan α) — spacing between adjacent bright fringes</p>
       </div>
 
@@ -80,8 +80,8 @@ export default function WedgeFilmPage() {
 
       <ChartPanel data={[{ x: chartData.positions, y: chartData.R_vs_pos, type: "scatter" as const, mode: "lines" as const, name: `R at λ₀ = ${designWl} nm`, line: { color: "#fbbf24", width: 2 } }]} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
-        title: { text: "Reflectance vs Position (at design λ), from the film edge", font: { size: 13 } },
-        xaxis: { title: "Position from center (mm)", gridcolor: "#374151" },
+        title: { text: "Reflectance vs Position (at design λ)", font: { size: 13 } },
+        xaxis: { title: "Position x (mm), x = 0 where d = λ₀/4n", gridcolor: "#374151" },
         yaxis: { title: "Reflectance", gridcolor: "#374151" },
         margin: { t: 40, b: 40, l: 50, r: 20 }, autosize: true,
       }} />

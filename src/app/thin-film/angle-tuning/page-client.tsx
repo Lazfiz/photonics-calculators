@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { clampToRange } from "../../../lib/number-input";
+import { stopBandCentreAtAngle } from "../../../physics/thin-film/quarter-wave-stack";
 import { quarterWaveLayers, reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
 
 export default function AngleTuningPage() {
@@ -12,16 +14,20 @@ export default function AngleTuningPage() {
   const [nL, setNL] = useURLState("nL", 1.45);
   const [nSub, setNSub] = useURLState("nSub", 1.52);
   const [nInc, setNInc] = useURLState("nInc", 1.0);
-  const [numPairs, setNumPairs] = useURLState("numPairs", 5);
+  const [numPairsRaw, setNumPairs] = useURLState("numPairs", 5);
   const [designWl, setDesignWl] = useURLState("designWl", 550);
 
+  // The URL isn't range-checked: use an integer number of pairs in 1–30 everywhere.
+  const numPairs = Math.round(clampToRange(numPairsRaw, 1, 30));
+
   const chartData = useMemo(() => {
-    const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 600 / 500);
+    // Window 0.6–1.3 λ₀ (701 points)
+    const wls = Array.from({ length: 701 }, (_, i) => designWl * (0.6 + (0.7 * i) / 700));
     const lambdas = wls.map((wl) => wl * 1e-9);
     const indices = Array.from({ length: numPairs * 2 }, (_, j) => (j % 2 === 0 ? nH : nL));
     const stack = { incident: nInc, layers: quarterWaveLayers(indices, designWl * 1e-9), substrate: { n: nSub } };
 
-    const traces: any[] = [];
+    const traces: Record<string, unknown>[] = [];
     const angles = [0, 15, 30, 45];
     const angleColors = ["#60a5fa", "#34d399", "#fbbf24", "#f87171"];
 
@@ -40,32 +46,38 @@ export default function AngleTuningPage() {
       });
     }
 
-    // Center wavelength shift vs angle
-    const angleSweep = Array.from({ length: 90 }, (_, i) => i);
-    // For a QWL stack, λ(θ) ≈ λ₀ × cos(θ_eff), approximate shift
-    const lambdaShift = angleSweep.map(a => {
-      const aRad = a * Math.PI / 180;
-      return designWl * Math.sqrt(1 - Math.pow(nInc * Math.sin(aRad) / ((nH + nL) / 2), 2));
-    });
+    // Centre wavelength vs angle, first order: λ_c(θ) = λ₀(cos θ_H + cos θ_L)/2. Angles where the light
+    // doesn't propagate in both layers give NaN and are skipped.
+    const angleSweep: number[] = [];
+    const lambdaShift: number[] = [];
+    for (let a = 0; a <= 89; a++) {
+      const centre_nm = stopBandCentreAtAngle(designWl * 1e-9, nH, nL, (a * Math.PI) / 180, nInc) * 1e9;
+      if (!Number.isFinite(centre_nm)) continue;
+      angleSweep.push(a);
+      lambdaShift.push(centre_nm);
+    }
 
     return { mainTraces: traces, angleSweep, lambdaShift };
   }, [nH, nL, nSub, nInc, numPairs, designWl]);
 
   return (
     <>
-            
+
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label={<>n<sub>H</sub></>} value={nH} onChange={setNH} step="0.01" />
         <ValidatedNumberInput label={<>n<sub>L</sub></>} value={nL} onChange={setNL} step="0.01" />
         <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
         <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} step="0.01" />
-        <ValidatedNumberInput label="Number of pairs (N)" value={numPairs} onChange={setNumPairs} min={1} max={20} />
-        <ValidatedNumberInput label="Design λ₀ (nm)" value={designWl} onChange={setDesignWl} step="10" />
+        <ValidatedNumberInput label="Number of pairs (N)" value={numPairs} onChange={setNumPairs} min={1} max={30} step="1" />
+        <ValidatedNumberInput label="Design λ₀ (nm)" value={designWl} onChange={setDesignWl} min={1} step="10" />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
         <p className="text-gray-300">Total layers = <span className="text-blue-400 font-mono">{numPairs * 2}</span></p>
         <p className="text-gray-300 text-xs">Solid lines = TE (s-pol), Dashed = TM (p-pol). Each color = different angle.</p>
+        <p className="text-gray-300 text-xs font-mono">
+          λ_c(θ) ≈ λ₀(cos θ_H + cos θ_L)/2, cos θ_i = √(1 − (n₀ sin θ/n_i)²) (first order)
+        </p>
       </div>
 
       <ChartPanel data={chartData.mainTraces} layout={{

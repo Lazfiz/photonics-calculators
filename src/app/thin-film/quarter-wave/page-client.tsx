@@ -33,10 +33,10 @@ export default function QuarterWavePage() {
     <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label={<>n<sub>film</sub></>} value={nFilm} onChange={setNFilm} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} step="0.01" />
-        <ValidatedNumberInput label="Design λ (nm)" value={designWl} onChange={setDesignWl} />
+        <ValidatedNumberInput label={<>n<sub>film</sub></>} value={nFilm} onChange={setNFilm} min={0.1} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} min={0.1} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>incident</sub></>} value={nInc} onChange={setNInc} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="Design λ (nm)" value={designWl} onChange={setDesignWl} min={1} />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6">

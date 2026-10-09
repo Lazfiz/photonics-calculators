@@ -13,8 +13,11 @@ export default function BandpassFilterPage() {
   const [nL, setNL] = useURLState("nL", 1.45);
   const [nSub, setNSub] = useURLState("nSub", 1.52);
   const [centerWl, setCenterWl] = useURLState("centerWl", 1550);
-  const [cavityPairs, setCavityPairs] = useURLState("cavityPairs", 3);
-  const [cavities, setCavities] = useURLState("cavities", 2);
+  const [cavityPairsRaw, setCavityPairs] = useURLState("cavityPairs", 3);
+  const [cavitiesRaw, setCavities] = useURLState("cavities", 2);
+  // useURLState does not clamp URL values: keep to the input ranges so a crafted link cannot build a huge stack.
+  const cavityPairs = Math.min(15, Math.max(1, Math.round(cavityPairsRaw)));
+  const cavities = Math.min(6, Math.max(1, Math.round(cavitiesRaw)));
   const [spacerN, setSpacerN] = useURLState("spacerN", 2.1);
 
   const tmm = useMemo(() => {
@@ -23,7 +26,7 @@ export default function BandpassFilterPage() {
     // Fabry-Perot bandpass: each cavity is (HL)^p S (LH)^p with a half-wave spacer S,
     // cavities coupled by a quarter-wave L layer.
     const layers = cavityFilterLayers({
-      nH, nL, nSpacer: spacerN, mirrorPairs: Math.round(cavityPairs), cavities: Math.round(cavities), spacerQuarterWaves: 2, lambda0: centerWl * 1e-9,
+      nH, nL, nSpacer: spacerN, mirrorPairs: cavityPairs, cavities, spacerQuarterWaves: 2, lambda0: centerWl * 1e-9,
     });
     const R = reflectanceSpectrum({ incident: 1, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
     return { wls, R };
@@ -37,29 +40,32 @@ export default function BandpassFilterPage() {
     <>
             
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label={<>n<sub>high</sub></>} value={nH} onChange={setNH} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>low</sub></>} value={nL} onChange={setNL} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>high</sub></>} value={nH} onChange={setNH} min={0.1} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>low</sub></>} value={nL} onChange={setNL} min={0.1} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} min={0.1} step="0.01" />
         <ValidatedNumberInput label="Center λ (nm)" value={centerWl} onChange={setCenterWl} />
         <ValidatedNumberInput label="Mirror Pairs" value={cavityPairs} onChange={setCavityPairs} min={1} max={15} />
         <ValidatedNumberInput label="Cavities" value={cavities} onChange={setCavities} min={1} max={6} />
-        <ValidatedNumberInput label="Spacer n" value={spacerN} onChange={setSpacerN} step="0.01" />
+        <ValidatedNumberInput label="Spacer n" value={spacerN} onChange={setSpacerN} min={0.1} step="0.01" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Peak Transmittance</p>
-          <p className="text-3xl font-bold text-blue-400">{(peakT * 100).toFixed(2)}%</p>
+          <p className="text-sm text-gray-400">Maximum T on the plotted grid</p>
+          <p className="text-3xl font-bold text-blue-400">{Number.isFinite(peakT) ? `${(peakT * 100).toFixed(2)}%` : "—"}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Peak Wavelength</p>
-          <p className="text-3xl font-bold text-green-400">{peakWl.toFixed(1)} nm</p>
+          <p className="text-sm text-gray-400">Wavelength of maximum T on the plotted grid</p>
+          <p className="text-3xl font-bold text-green-400">{Number.isFinite(peakWl) ? `${peakWl.toFixed(1)} nm` : "—"}</p>
         </div>
       </div>
 
+      <p className="text-sm text-gray-400 mb-4">There are no matching layers, so the peak T is below 100 % and the passband ripples (Macleod, Thin-Film Optical Filters, ch. 8).</p>
+
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-4">
         <h3 className="text-sm font-semibold text-gray-300 mb-2">Formulas</h3>
-                              </div>
+        <p className="text-sm text-gray-300">Each cavity (HL)^p S (LH)^p, S = half-wave spacer; cavities coupled by a quarter-wave L layer; T = 1 − R (lossless)</p>
+      </div>
 
       <div className="bg-gray-900 rounded-lg p-4">
         <ChartPanel data={[

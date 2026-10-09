@@ -35,8 +35,8 @@ export default function InterferenceConditionsPage() {
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <ValidatedNumberInput label="n (film)" value={nFilm} onChange={setNFilm} min={0.1} step="0.01" />
         <ValidatedNumberInput label="Thickness (nm)" value={thickness} onChange={setThickness} min={1} step="1" />
-        <ValidatedNumberInput label="n (incident)" value={nIncident} onChange={setNIncident} step="0.01" />
-        <ValidatedNumberInput label="n (substrate)" value={nSubstrate} onChange={setNSubstrate} step="0.01" />
+        <ValidatedNumberInput label="n (incident)" value={nIncident} onChange={setNIncident} min={0.1} step="0.01" />
+        <ValidatedNumberInput label="n (substrate)" value={nSubstrate} onChange={setNSubstrate} min={0.1} step="0.01" />
         <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
           <p className="text-sm text-gray-300">Net reflection phase shift (from the index order)</p>
           <p className="mt-3 font-mono text-white">{Number.isNaN(phase) ? "— (a face doesn’t reflect)" : phase === 0 ? "0 (both or neither reflection off a higher index)" : "π (one reflection off a higher index)"}</p>
@@ -49,11 +49,11 @@ export default function InterferenceConditionsPage() {
           <p className="text-xl font-bold text-green-400">{opd.toFixed(1)} nm</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">1st constructive λ (reflection)</p>
+          <p className="text-sm text-gray-400">Longest constructive λ (m = 1)</p>
           <p className="text-xl font-bold text-blue-400">{formatNm(extrema.constructive)}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">1st destructive λ (reflection)</p>
+          <p className="text-sm text-gray-400">Longest destructive λ</p>
           <p className="text-xl font-bold text-red-400">{formatNm(extrema.destructive)}</p>
         </div>
       </div>
