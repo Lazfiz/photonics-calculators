@@ -136,8 +136,8 @@ export default function ExposureDurationPage() {
 
       <p className="text-sm text-gray-400 mb-8">
         Exposure limits for the eye from ICNIRP 2013 (Health Phys. 105:271, Tables 3, 5, 7 and 8) for a point source
-        (intrabeam viewing of a collimated beam, C_E = 1) and a CW exposure of 1 ns to 30 000 s; the UV values are
-        IEC 60825-1:2014 Table A.1. The beam is a round Gaussian, centred, and its
+        (intrabeam viewing of a collimated beam, C_E = 1) and a CW exposure of 1 ns to 30 000 s. From 10 s on, the UV
+        limits equal the EU limit values (Directive 2006/25/EC, Annex II, Table 2.3). The beam is a round Gaussian, centred, and its
         power is averaged over the limiting aperture: 7 mm for the retina; 1 mm, growing to 3.5 mm at 10 s, in the UV and
         from 1.4 µm to 100 µm; 11 mm beyond. A smaller pupil does not raise the limits. From 400 to 600 nm the thermal
         and the photochemical limits both apply; from 1150 to 1400 nm the retinal limit and twice the skin limit for the

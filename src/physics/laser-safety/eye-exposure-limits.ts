@@ -7,10 +7,10 @@
  * Source: ICNIRP, "Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm",
  * Health Phys. 105(3), 271–295 (2013): Table 3 (C_A, C_B, C_C), Table 5 (eye), Table 7 (skin), Table 8 (apertures).
  * Point source: α ≤ α_min = 1.5 mrad, so C_E = 1 and T₂ = 10 s. All limits run from 1 ns to 30 ks.
- * - 180–400 nm, cornea: IEC 60825-1:2014 Table A.1, as `hazard-weighting.ts` had it since session 18: 30 J/m² below
- *   302.5 nm; min(C₁, C₂) to 315 nm; 315–400 nm C₁ to 10 s, 10⁴ J/m² to 10³ s, then 10 W/m². C₁ = 5.6×10³ t^0.25 J/m²,
- *   C₂ = 10^(0.2(λ − 295)) J/m². ICNIRP's Table 5 gives C₂ in 1 nm steps from 302 nm and keeps 10⁴ J/m² for
- *   315–400 nm up to 30 ks (no 10 W/m² step).
+ * - 180–400 nm, cornea: 30 J/m² below 302 nm, then 1 nm steps from 40 J/m² (302–303 nm) to 6.3 kJ/m² (313–315 nm),
+ *   all to 30 ks and "also not to exceed" 5.6×10³ t^0.25 J/m² below 10 s; 315–400 nm 5.6×10³ t^0.25 J/m² to 10 s,
+ *   then 10⁴ J/m² to 30 ks. EU Directive 2006/25/EC Annex II Table 2.3 has the same values from 10 s. (The IEC
+ *   60825-1 values used before session 23 had a continuous 10^(0.2(λ − 295)) J/m² and 10 W/m² after 10³ s.)
  * - 400–700 nm, retinal thermal: 2×10⁻³ J/m² to 5 µs, 18 t^0.75 J/m² to 10 s, then 10 W/m². 400–600 nm, retinal
  *   photochemical, from 10 s: 100 C_B J/m² to 100 s, then C_B W/m². Both apply (Table 5's "dual limits").
  * - 700–1050 nm: 2×10⁻³ C_A J/m² to 5 µs, 18 C_A t^0.75 J/m² to 10 s, then 10 C_A W/m². 1050–1400 nm:
@@ -73,6 +73,12 @@ const CORNEAL_APERTURE: AperturePiece[] = [
   { t0: 10, t1: T_MAX, d: 3.5e-3, q: 0 },
 ];
 
+/** ICNIRP 2013 Table 5, 302–315 nm: [lower edge (nm), J/m²]; each step runs to the next edge, the last to 315 nm. */
+const UVB_STEPS: readonly (readonly [number, number])[] = [
+  [302, 40], [303, 60], [304, 100], [305, 160], [306, 250], [307, 400], [308, 630], [309, 1.0e3], [310, 1.6e3],
+  [311, 2.5e3], [312, 4.0e3], [313, 6.3e3],
+];
+
 /** C_A (C₄ in IEC 60825-1), 400–1400 nm: 1 below 700 nm, 10^(0.002(λ − 700)) to 1050 nm, then 5. */
 export function correctionCA(lambda: number): number {
   const nm = toNm(lambda);
@@ -97,11 +103,12 @@ export function eyeLimits(lambda: number): EyeLimit[] {
   if (!(nm >= 180 && nm <= 1e6)) return [];
   if (nm < 400) {
     let uv: Piece[];
-    if (nm < 302.5) uv = pieces([T_MIN, T_MAX], [[30, 0]]);
-    else if (nm < 315) {
-      const c2 = Math.pow(10, 0.2 * (nm - 295));
-      uv = pieces([T_MIN, Math.pow(c2 / 5.6e3, 4), T_MAX], [[5.6e3, 0.25], [c2, 0]]); // min(C₁, C₂)
-    } else uv = pieces([T_MIN, 10, 1e3, T_MAX], [[5.6e3, 0.25], [1e4, 0], [10, 1]]);
+    if (nm < 315) {
+      // min(5.6×10³ t^0.25, H): the two meet at (H/5.6×10³)⁴, below 1 ns for 30 J/m², 1.6 s for 6.3 kJ/m².
+      let H = 30;
+      for (const [edge, value] of UVB_STEPS) if (nm >= edge) H = value;
+      uv = pieces([T_MIN, Math.max(T_MIN, Math.pow(H / 5.6e3, 4)), T_MAX], [[5.6e3, 0.25], [H, 0]]);
+    } else uv = pieces([T_MIN, 10, T_MAX], [[5.6e3, 0.25], [1e4, 0]]);
     return [{ kind: "cornealUv", pieces: uv, apertures: CORNEAL_APERTURE }];
   }
   if (nm < 1400) {
