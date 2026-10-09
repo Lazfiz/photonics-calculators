@@ -336,6 +336,7 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 
 ## Phase 3 — graphics & performance (~1 week)
 - [ ] Chart rewrite: real pixel width (not a scaled viewBox), hover crosshair and readout, NaN/Infinity filtering, log axes down to 1e-18, PNG/CSV export.
+  - Seen in session 25 (production too): `SimpleChart` crowds the x tick labels ("1.5k5k5k…" on `gires-tournois`, unreadable on `fabry-perot-filter`), piles the y2 tick labels into one smudge (GTI's GDD axis), shows a single y tick on `fabry-perot-filter`, and reads `null` as 0 (so a break in a line needs separate traces).
 - [ ] Plotly via `react-plotly.js/factory` with a partial bundle; drop the extra dependency.
 - [ ] Related links as server props (removes the ~46 KB gz chunk). Read URL state before first paint.
 - [ ] Turn on Vercel Speed Insights and set a JS budget in CI.
