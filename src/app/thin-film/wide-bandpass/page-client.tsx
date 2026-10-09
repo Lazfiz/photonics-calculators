@@ -62,9 +62,9 @@ export default function WideBandpassPage() {
     const Rf = wls.map((wl) => stackResponse(front, wl * NM).R);
     const Rb = wls.map((wl) => stackResponse(back, wl * NM).R);
     return [
-      { x: wls, y: wls.map((_, i) => incoherentLosslessFaces(Rf[i], Rb[i]).T), type: "scatter", mode: "lines", name: "Filter T (both faces)", line: { color: "#60a5fa", width: 2 } },
-      { x: wls, y: Rf.map((r) => 1 - r), type: "scatter", mode: "lines", name: "Front face T (long-pass)", line: { color: "#34d399", width: 1, dash: "dot" } },
-      { x: wls, y: Rb.map((r) => 1 - r), type: "scatter", mode: "lines", name: "Back face T (short-pass)", line: { color: "#a78bfa", width: 1, dash: "dot" } },
+      { x: wls, y: wls.map((_, i) => incoherentLosslessFaces(Rf[i], Rb[i]).T), type: "scatter", mode: "lines", name: "Filter T", line: { color: "#60a5fa", width: 2 } },
+      { x: wls, y: Rf.map((r) => 1 - r), type: "scatter", mode: "lines", name: "Front face", line: { color: "#34d399", width: 1, dash: "dot" } },
+      { x: wls, y: Rb.map((r) => 1 - r), type: "scatter", mode: "lines", name: "Back face", line: { color: "#a78bfa", width: 1, dash: "dot" } },
     ];
   }, [valid, results, cutOn, cutOff, front, back]);
 

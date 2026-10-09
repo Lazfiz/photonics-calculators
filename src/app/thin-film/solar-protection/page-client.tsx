@@ -85,7 +85,7 @@ export default function SolarProtectionPage() {
     if (!ready) return [];
     const wls = Array.from({ length: 1501 }, (_, i) => 280 + (2220 * i) / 1500);
     const traces: Record<string, unknown>[] = [
-      { x: wls, y: wls.map((wl) => transmittance(wl * NM)), type: "scatter", mode: "lines", name: "Coated pane T", line: { color: "#60a5fa", width: 2 } },
+      { x: wls, y: wls.map((wl) => transmittance(wl * NM)), type: "scatter", mode: "lines", name: "Coated pane", line: { color: "#60a5fa", width: 2 } },
     ];
     if (g173) {
       const idx = g173.G173_WAVELENGTHS_NM.flatMap((w, i) => (w <= 2500 ? [i] : []));
@@ -93,7 +93,7 @@ export default function SolarProtectionPage() {
       traces.push({
         x: idx.map((i) => g173.G173_WAVELENGTHS_NM[i]),
         y: idx.map((i) => g173.G173_GLOBAL_TILT[i] / peak),
-        type: "scatter", mode: "lines", name: "AM1.5 G sunlight (scaled)", line: { color: "#fbbf24", width: 1 },
+        type: "scatter", mode: "lines", name: "Sunlight", line: { color: "#fbbf24", width: 1 },
       });
     }
     return traces;
@@ -156,6 +156,7 @@ export default function SolarProtectionPage() {
         <p className="text-gray-300 text-xs mt-2">
           Each band is covered by edge-filter stacks in series. The two faces add in intensity, T = T₁T₂/(1 − R₁R₂), and every
           transmittance is weighted by the ASTM G173 global-tilt spectrum: T = ∫T(λ)E(λ)dλ / ∫E(λ)dλ over the band.
+          The chart&apos;s sunlight curve is that spectrum scaled to its peak.
         </p>
       </div>
 
