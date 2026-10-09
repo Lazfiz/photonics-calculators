@@ -1,4 +1,16 @@
-import type { CalculatorEntry } from "../types";
+import type { CalculatorEntry, Reference } from "../types";
+
+// Chapters of the 4th edition, titles checked on Crossref: 2 Basic Theory, 4 Antireflection Coatings,
+// 5 Neutral Mirrors and Beam Splitters, 6 Multilayer High-Reflectance Coatings, 8 Band-Pass Filters,
+// 9 Tilted Coatings, 12 Factors Affecting Layer and Coating Properties.
+const macleod = (where: string): Reference => ({
+  citation: `Macleod H. A. (2010). Thin-Film Optical Filters, 4th ed., ${where}. CRC Press.`,
+  url: "https://doi.org/10.1201/9781420073034",
+});
+const bornWolf = (where: string): Reference => ({
+  citation: `Born M., Wolf E. (1999). Principles of Optics, 7th ed., ${where}. Cambridge University Press.`,
+});
+const hecht = (where: string): Reference => ({ citation: `Hecht E. (2016). Optics, 5th ed., ${where}.` });
 
 export const thinFilm: CalculatorEntry[] = [
   {
@@ -10,6 +22,9 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "amplitude-splitting",
     title: "Amplitude Splitting",
     description: "Multiple-beam interference from amplitude splitting at a thin film. Shows how partial reflections from each interface combine to form interference fringes.",
+    tier: "exact",
+    modelNote: "A lossless film between semi-infinite media at normal incidence, coherent multiple beams, constant indices. R and T come from the exact characteristic matrix; the Airy finesse needs F ≥ 1.",
+    references: [macleod("ch. 2 (characteristic matrix)"), bornWolf("§7.6.1 (Airy formulae, finesse)"), hecht("§9.4")],
   },
   {
     slug: "angle-shift",
@@ -19,8 +34,11 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "angle-tuning",
     title: "Angle Tuning of Coatings",
-    description: "Changing the angle of incidence shifts the spectral response of thin film coatings toward",
-    lede: "Changing the angle of incidence shifts the spectral response of thin film coatings toward shorter wavelengths (blue shift). TE (s-polarization) and TM (p-polarization) respond differently, with TM showing reduced reflectance at Brewster's angle. The shift follows λ(θ) ≈ λ₀·√(1 − (n₀ sin θ/neff)²).",
+    description: "Changing the angle of incidence shifts the spectral response of thin-film coatings toward shorter wavelengths: s and p spectra of a quarter-wave stack versus angle.",
+    lede: "Changing the angle of incidence shifts the spectral response of thin-film coatings toward shorter wavelengths (blue shift). TE (s) and TM (p) respond differently: the p stop band narrows as the angle grows. The centre follows λ(θ) ≈ λ₀(cos θ_H + cos θ_L)/2, where θ_H and θ_L are the angles inside the layers.",
+    tier: "textbook",
+    modelNote: "Exact s and p transfer-matrix spectra of a lossless (HL)^N quarter-wave stack with constant indices. The centre-wavelength curve is the first-order rule λ₀(cos θ_H + cos θ_L)/2, not a fit to the spectra.",
+    references: [macleod("ch. 2 (phase thickness, tilted admittances) and ch. 9 (tilted coatings)")],
   },
   {
     slug: "anti-fog",
@@ -31,6 +49,9 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "bandpass-filter",
     title: "Bandpass Filter",
     description: "Fabry-Perot bandpass — multi-cavity design with quarter-wave mirrors and half-wave spacers.",
+    tier: "exact",
+    modelNote: "Transfer matrix of (HL)^p S (LH)^p cavities with half-wave spacers and quarter-wave couplers, normal incidence, constant lossless indices, back surface ignored. No matching layers, so peak T is below 100 %.",
+    references: [macleod("ch. 2 and ch. 8 (multiple-cavity band-pass filters)")],
   },
   {
     slug: "beamsplitter",
@@ -42,6 +63,12 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "bragg-reflector",
     title: "Bragg Reflector",
     description: "Dielectric distributed Bragg reflector — reflectance spectrum and stopband design.",
+    tier: "exact",
+    modelNote: "Transfer matrix of an (HL)^N quarter-wave stack at normal incidence with constant, lossless indices; back surface ignored. Peak R and the stop-band edges (of an infinite stack) are closed forms.",
+    references: [
+      macleod("ch. 2 and ch. 6 (quarter-wave stack, high-reflectance zone)"),
+      bornWolf("§1.6.5 (periodically stratified media)"),
+    ],
   },
   {
     slug: "coating-stress",
@@ -72,6 +99,9 @@ export const thinFilm: CalculatorEntry[] = [
     title: "Dichroic Beam Splitter",
     description: "Dichroic beam splitter at oblique incidence. Shows s- and p-polarisation splitting characteristic of dichroic filters used at 45°.",
     lede: "Dichroic beam splitter at oblique incidence. Shows s- and p-polarisation splitting characteristic of dichroic filters used at 45°. Effective optical thickness shifts with cos(θ).",
+    tier: "exact",
+    modelNote: "Transfer matrix for s and p with constant, lossless indices; layers are quarter waves at normal incidence; back surface ignored. Unpolarized R is the mean of R_s and R_p. The centre shift shown is first order.",
+    references: [macleod("ch. 2 (tilted admittances) and ch. 9 (tilted coatings)")],
   },
   {
     slug: "dielectric-high-reflector",
@@ -82,12 +112,21 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "dielectric-stack",
     title: "Dielectric Stack Theory",
     description: "Quarter-wave dielectric stack reflectance. Alternating high/low index layers create high-reflectance mirrors — the basis of dielectric mirrors and VCSELs.",
+    tier: "exact",
+    modelNote: "Transfer matrix of an (HL)^N quarter-wave stack at normal incidence with constant, lossless indices; back surface ignored. Peak R at λ₀ and the stop-band edges (of an infinite stack) are closed forms.",
+    references: [
+      macleod("ch. 2 and ch. 6 (quarter-wave stack, high-reflectance zone)"),
+      bornWolf("§1.6.5 (periodically stratified media)"),
+    ],
   },
   {
     slug: "double-layer-ar",
     title: "Two-Layer AR Coating",
-    description: "Transfer-matrix method for two-layer V-coat or W-coat AR designs. Both layers at quarter-wave optical thickness.",
-    lede: "Transfer-matrix method for two-layer V-coat or W-coat AR designs. Both layers at quarter-wave optical thickness. Optimal indices: n₁ = (ninc³ · nsub)¼, n₂ = (ninc · nsub³)¼.",
+    description: "Transfer-matrix method for two-layer quarter-quarter (V-coat) AR designs. Both layers at quarter-wave optical thickness.",
+    lede: "Transfer-matrix method for two-layer quarter-quarter (V-coat) AR designs. Both layers at quarter-wave optical thickness. Zero reflectance at λ₀ when n₂ = n₁·√(nsub/ninc), for example n₁ = (ninc³ · nsub)¼ and n₂ = (ninc · nsub³)¼.",
+    tier: "exact",
+    modelNote: "Two lossless quarter-wave layers with constant indices at normal incidence on a semi-infinite substrate. R(λ₀) and the zero-reflection n₂ are closed forms. Not modelled: dispersion, absorption, the back surface.",
+    references: [macleod("ch. 2 and ch. 4 (quarter-quarter double-layer coatings)")],
   },
   {
     slug: "dual-band-ar",
@@ -104,6 +143,15 @@ export const thinFilm: CalculatorEntry[] = [
     title: "Ellipsometry Measurement",
     description: "Invert ellipsometry data (Psi, Delta) to the pseudo-dielectric function and pseudo-refractive index of a substrate.",
     lede: "Invert ellipsometry data (Ψ, Δ) to the pseudo-dielectric function and pseudo-refractive index (two-phase ambient/substrate model).",
+    tier: "exact",
+    modelNote: "Two-phase (ambient/substrate) inversion of Ψ and Δ, exact for a bare, isotropic, semi-infinite substrate. With films, roughness or anisotropy, ⟨n⟩ and ⟨k⟩ are pseudo-values, not material constants.",
+    references: [
+      { citation: "Azzam R. M. A., Bashara N. M. (1977). Ellipsometry and Polarized Light, ch. 4 (ambient-substrate system). North-Holland." },
+      {
+        citation: "Aspnes D. E. (1985). The accurate determination of optical properties by ellipsometry. In Palik E. D. (ed.), Handbook of Optical Constants of Solids, 89–112. Academic Press.",
+        url: "https://doi.org/10.1016/b978-0-08-054721-3.50010-1",
+      },
+    ],
   },
   {
     slug: "emissivity-control",
@@ -119,18 +167,39 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "environmental-stability",
     title: "Environmental Stability",
-    description: "Environmental factors shift thin film spectral performance. Temperature changes refractive index",
-    lede: "Environmental factors shift thin film spectral performance. Temperature changes refractive index (thermo-optic effect, dn/dT) and layer thickness (thermal expansion, CTE). Humidity causes water absorption in porous layers (especially SiO₂), changing both n and d. Dense films (TiO₂, Ta₂O₅) are more environmentally stable. Understanding these shifts is critical for field deployment.",
+    description: "How temperature and humidity shift a quarter-wave stack's spectrum through the layers' thermo-optic coefficient, thermal expansion and water uptake.",
+    lede: "Environmental factors shift thin-film spectral performance. Temperature changes the refractive index (thermo-optic effect, dn/dT) and the layer thickness (thermal expansion, CTE). Water adsorbed in porous layers (especially evaporated SiO₂) raises their index; this page models that index change only. Dense films (TiO₂, Ta₂O₅) are more stable.",
+    tier: "illustrative",
+    modelNote: "Coherent (HL)^N stack by transfer matrix. Temperature acts through assumed dn/dT and free-film expansion, humidity through an assumed linear Δn. Uncalibrated; no stress, hysteresis or dispersion.",
+    references: [
+      macleod("ch. 2 and ch. 12 (factors affecting layer and coating properties)"),
+      {
+        citation: "Macleod H. A., Richmond D. (1976). Moisture penetration patterns in thin films. Thin Solid Films 37, 163–169.",
+        url: "https://doi.org/10.1016/0040-6090(76)90179-6",
+      },
+    ],
   },
   {
     slug: "fabry-perot-filter",
     title: "Fabry-Pérot Filter",
     description: "Fabry-Pérot etalon/filter transmission based on the Airy function. Explore how mirror reflectance and cavity spacing control spectral selectivity.",
+    tier: "textbook",
+    modelNote: "Ideal Airy etalon: two identical lossless mirrors of constant R, normal incidence, no mirror phase, absorption or dispersion. Dielectric-mirror cavities add a wavelength-dependent R and penetration depth.",
+    references: [bornWolf("§7.6.1 (Airy formulae, half-intensity width)"), hecht("§9.6 (Fabry-Perot interferometer)")],
   },
   {
     slug: "gradient-index",
     title: "Gradient Index Coating",
-    description: "Continuously graded refractive index coating — broadband AR with no sharp interfaces.",
+    description: "Graded-index coating from the substrate index to a low surface index: broadband AR from a smooth profile (linear, cosine or exponential).",
+    tier: "textbook",
+    modelNote: "The profile is a staircase of at least 50 lossless sublayers (10 or more per λ/n), each by exact matrix. Constant indices, normal incidence, an abrupt step at the surface. Not modelled: dispersion, porosity, scatter.",
+    references: [
+      {
+        citation: "Southwell W. H. (1983). Gradient-index antireflection coatings. Opt. Lett. 8, 584–586.",
+        url: "https://doi.org/10.1364/ol.8.000584",
+      },
+      macleod("ch. 2 (characteristic matrix)"),
+    ],
   },
   {
     slug: "hard-coating",
@@ -147,6 +216,9 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "interference-conditions",
     title: "Thin Film Interference Conditions",
     description: "Constructive and destructive interference patterns from a single thin film, accounting for phase shifts at boundaries.",
+    tier: "exact",
+    modelNote: "A lossless single film between semi-infinite media at normal incidence, constant indices. The extrema of the exact R(λ) lie at 2nd = mλ or (m + ½)λ, depending on the index order.",
+    references: [hecht("§9.4 (thin-film fringes, phase change on reflection)"), bornWolf("§7.6.1"), macleod("ch. 2")],
   },
   {
     slug: "ion-assisted-deposition",
@@ -168,6 +240,9 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "metal-dielectric",
     title: "Metal-Dielectric Coatings",
     description: "Metal-dielectric coating design. Explore how a dielectric overcoat modifies the reflectance, transmittance, and absorptance of a thin metal layer.",
+    tier: "exact",
+    modelNote: "Transfer matrix for the entered constant n, k of the metal and constant indices elsewhere, normal incidence, back surface ignored. Real metals are dispersive: the spectrum holds near the wavelength of the n, k.",
+    references: [macleod("ch. 2 (absorbing layers)")],
   },
   {
     slug: "narrow-bandpass",
@@ -182,8 +257,11 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "partial-reflector",
     title: "Partial Reflector Design",
-    description: "Partial reflectors (output couplers, etalon mirrors) provide controlled reflectance between",
+    description: "Reflectance of a single dielectric layer for partial reflectors (output couplers, etalon mirrors), from the bare substrate up to the quarter-wave maximum.",
     lede: "Partial reflectors (output couplers, etalon mirrors) provide controlled reflectance between bare substrate and full HR. A single dielectric layer at QWL gives R determined by nfilm. Adjusting the thickness ratio tunes R via thin-film interference.",
+    tier: "exact",
+    modelNote: "Exact reflectance of one lossless film with constant indices at normal incidence (transfer matrix, equal to the two-surface Airy sum); back surface ignored. No multilayer or target-R design.",
+    references: [macleod("ch. 2 and ch. 5 (neutral mirrors and beam splitters)"), hecht("§9.4")],
   },
   {
     slug: "phase-shift-coating",
@@ -198,13 +276,25 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "protected-silver",
     title: "Protected Silver Mirror",
-    description: "Protected silver coating — high reflectance UV-Vis-IR with dielectric overcoat and adhesion layer.",
+    description: "Protected silver coating — high reflectance from the visible to the IR with dielectric overcoat and adhesion layer.",
+    tier: "textbook",
+    modelNote: "Transfer matrix with a Drude fit for Ag (ε∞ = 5), good from 450 to 1200 nm but too reflective below 400 nm (interband edge). Lossless dielectrics with constant indices. Not modelled: tarnish, film-dependent n, k.",
+    references: [
+      {
+        citation: "Johnson P. B., Christy R. W. (1972). Optical constants of the noble metals. Phys. Rev. B 6, 4370–4379.",
+        url: "https://doi.org/10.1103/physrevb.6.4370",
+      },
+      macleod("ch. 2"),
+    ],
   },
   {
     slug: "quarter-wave",
     title: "Quarter-Wave Thickness",
-    description: "Quarter-wave optical thickness (QWOT): nd = /4. Optimal AR when nfilm = (nincnsub).",
+    description: "Quarter-wave optical thickness (QWOT): nd = λ/4, and the single-layer reflectance at the design wavelength. Zero reflectance when nfilm = √(ninc·nsub).",
     lede: "Quarter-wave optical thickness (QWOT): nd = λ/4. Optimal AR when nfilm = √(ninc·nsub).",
+    tier: "exact",
+    modelNote: "One lossless quarter-wave layer with constant indices at normal incidence on a semi-infinite substrate. R(λ₀) is a closed form and the spectrum a transfer matrix. Not modelled: dispersion, absorption, back surface.",
+    references: [macleod("ch. 2 and ch. 4 (single-layer antireflection coatings)")],
   },
   {
     slug: "short-pass",
@@ -217,6 +307,9 @@ export const thinFilm: CalculatorEntry[] = [
     title: "Single Layer AR Coating",
     description: "Quarter-wave antireflection coating design with Snell's law and explicit s/p polarization handling at oblique incidence.",
     lede: "Quarter-wave antireflection coating design with Snell’s law and explicit s/p polarization handling at oblique incidence.",
+    tier: "exact",
+    modelNote: "One lossless layer with constant indices, a quarter wave at the chosen angle; s and p by tilted admittances. Not modelled: dispersion, absorption, the substrate's back surface, thickness errors.",
+    references: [macleod("ch. 2 (tilted admittances) and ch. 4 (single-layer antireflection coatings)"), bornWolf("§1.6")],
     keywords: ["anti reflection", "quarter wave", "fresnel"],
     priority: 98,
     related: [
@@ -240,6 +333,9 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "spectrophotometry",
     title: "Spectrophotometry",
     description: "Model spectrophotometric R, T, A spectra for a single absorbing thin film using transfer matrix method with complex refractive index.",
+    tier: "exact",
+    modelNote: "A coherent single film with a constant complex index on a semi-infinite substrate, s and p by transfer matrix. T is the light entering the substrate; a real slab's back surface is not included.",
+    references: [macleod("ch. 2 (absorbing films)"), bornWolf("§1.6")],
   },
   {
     slug: "sputtering-deposition",
@@ -277,14 +373,20 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "wavelength-separation",
     title: "Wavelength Separation",
-    description: "Wavelength separation coatings combine multiple quarter-wave stacks at different design wavelengths",
-    lede: "Wavelength separation coatings combine multiple quarter-wave stacks at different design wavelengths to reflect specific bands while transmitting others. Two stacks centered at λ₁ and λ₂ = 1.25·λ₁ demonstrate dichroic behavior. The combined stack shows how reflectance bands add when cascaded.",
+    description: "Wavelength separation coatings combine quarter-wave stacks at different design wavelengths to reflect some bands and transmit others.",
+    lede: "Wavelength separation coatings combine multiple quarter-wave stacks at different design wavelengths to reflect specific bands while transmitting others. Two stacks centered at λ₁ and λ₂ demonstrate dichroic behavior; their stop bands stay apart only above a minimum ratio λ₂/λ₁. The combined stack shows how reflectance bands add when cascaded.",
+    tier: "exact",
+    modelNote: "Transfer matrix of two (HL)^N quarter-wave stacks at λ₁ and λ₂, alone and cascaded, normal incidence, constant lossless indices. No matching layers between the stacks; a demonstration, not a dichroic design.",
+    references: [macleod("ch. 2 and ch. 6 (high-reflectance zone width)")],
   },
   {
     slug: "wedge-film",
     title: "Wedge Thin Film",
-    description: "Wedged thin films have a linearly varying thickness across the surface, creating spatially",
+    description: "Wedged thin films have a linearly varying thickness across the surface, creating fringes of equal thickness with spacing λ/(2n·tan α).",
     lede: "Wedged thin films have a linearly varying thickness across the surface, creating spatially varying interference. Used in optical testing (Newton's rings, Fizeau interferometry), anti-reflection edge filters, and precision thickness measurement. The fringe spacing Δx = λ / (2n·tan α) determines the spatial period of constructive interference.",
+    tier: "textbook",
+    modelNote: "Thin-wedge approximation at normal incidence: each point is a plane-parallel film of the local thickness, with exact matrix R. Small angles only; beam tilt, fringe localization and coherence length are ignored.",
+    references: [hecht("§9.4 (fringes of equal thickness)"), bornWolf("§7.5"), macleod("ch. 2")],
   },
   {
     slug: "wide-bandpass",
