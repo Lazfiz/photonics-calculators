@@ -1,8 +1,8 @@
 import type { CalculatorEntry, Reference } from "../types";
 
 // Chapters of the 4th edition, titles checked on Crossref: 2 Basic Theory, 4 Antireflection Coatings,
-// 5 Neutral Mirrors and Beam Splitters, 6 Multilayer High-Reflectance Coatings, 8 Band-Pass Filters,
-// 9 Tilted Coatings, 12 Factors Affecting Layer and Coating Properties.
+// 5 Neutral Mirrors and Beam Splitters, 6 Multilayer High-Reflectance Coatings, 7 Edge Filters,
+// 8 Band-Pass Filters, 9 Tilted Coatings, 12 Factors Affecting Layer and Coating Properties.
 const macleod = (where: string): Reference => ({
   citation: `Macleod H. A. (2010). Thin-Film Optical Filters, 4th ed., ${where}. CRC Press.`,
   url: "https://doi.org/10.1201/9781420073034",
@@ -11,6 +11,15 @@ const bornWolf = (where: string): Reference => ({
   citation: `Born M., Wolf E. (1999). Principles of Optics, 7th ed., ${where}. Cambridge University Press.`,
 });
 const hecht = (where: string): Reference => ({ citation: `Hecht E. (2016). Optics, 5th ed., ${where}.` });
+// DOIs matched on Crossref (volume, first page, year) and resolving.
+const epstein: Reference = {
+  citation: "Epstein L. I. (1952). The design of optical filters. J. Opt. Soc. Am. 42, 806.",
+  url: "https://doi.org/10.1364/JOSA.42.000806",
+};
+const astmG173: Reference = {
+  citation: "ASTM G173-03 (reapproved 2020). Standard Tables for Reference Solar Spectral Irradiances: Direct Normal and Hemispherical on 37° Tilted Surface. ASTM International.",
+  url: "https://doi.org/10.1520/G0173-03R20",
+};
 
 export const thinFilm: CalculatorEntry[] = [
   {
@@ -91,8 +100,11 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "cold-mirror",
     title: "Cold Mirror Design",
-    description: "Cold mirrors reflect visible light while transmitting infrared. Used in projector systems",
-    lede: "Cold mirrors reflect visible light while transmitting infrared. Used in projector systems, illumination optics, and laser setups to separate visible from IR (heat). The (HL)N stack is a high-reflector centered in the visible band, while IR passes through the stop band edges.",
+    description: "Cold mirror design: long-pass quarter-wave stacks in series reflect the visible and transmit the infrared. Mean R, IR transmittance and the edge.",
+    lede: "Cold mirrors reflect visible light and transmit the infrared, keeping heat out of projector and illumination optics. One quarter-wave stack reflects too narrow a band, so long-pass edge-filter stacks in series cover the visible.",
+    tier: "exact",
+    modelNote: "Transfer matrix of long-pass edge-filter stacks in series covering the reflected band; lossless constant indices, normal incidence, semi-infinite substrate. A starting design: no matching layers or optimization.",
+    references: [macleod("ch. 6 and ch. 7 (edge filters, extending the reflection zone)"), epstein],
   },
   {
     slug: "dichroic",
@@ -136,7 +148,11 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "edge-filter",
     title: "Edge Filter Design",
-    description: "Long-pass and short-pass edge filters: quarter-wave stack transition region and cut-on/cut-off wavelength.",
+    description: "Long-pass and short-pass quarter-wave edge filters, (H/2 L H/2)^N and (L/2 H L/2)^N: design wavelength for an edge, 50 % point and R/T spectrum.",
+    keywords: ["Long Pass Filter", "Short Pass Filter"],
+    tier: "exact",
+    modelNote: "Transfer matrix of (H/2 L H/2)^N or (L/2 H L/2)^N, lossless constant indices, normal incidence, semi-infinite substrate. λ₀ puts the infinite stack's zone edge at the edge wavelength.",
+    references: [macleod("ch. 6 (zone width) and ch. 7 (edge filters, symmetric periods)"), epstein],
   },
   {
     slug: "ellipsometry-measurement",
@@ -228,13 +244,10 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "ir-blocking",
     title: "IR Blocking Filter",
-    description: "Long-pass quarter-wave stack reflecting near-IR while transmitting visible light.",
-  },
-  {
-    slug: "long-pass",
-    title: "Long Pass Filter",
-    description: "Quarter-wave stack (HL)N long-pass filter. Transmits > edge, reflects shorter wavelengths.",
-    lede: "Quarter-wave stack (HL)N long-pass filter. Transmits λ > λedge, reflects shorter wavelengths. Rmax ≈ [(nH/nL)2N − 1]² / [(nH/nL)2N + 1]².",
+    description: "IR-blocking filter (hot mirror): short-pass quarter-wave stacks in series reflect the near IR and transmit the visible.",
+    tier: "exact",
+    modelNote: "Transfer matrix of short-pass edge-filter stacks in series covering the blocked band; lossless constant indices, normal incidence, semi-infinite substrate. A starting design: no matching layers or optimization.",
+    references: [macleod("ch. 6 and ch. 7 (edge filters, extending the reflection zone)"), epstein],
   },
   {
     slug: "metal-dielectric",
@@ -297,12 +310,6 @@ export const thinFilm: CalculatorEntry[] = [
     references: [macleod("ch. 2 and ch. 4 (single-layer antireflection coatings)")],
   },
   {
-    slug: "short-pass",
-    title: "Short Pass Filter",
-    description: "Quarter-wave stack (LH)N short-pass filter. Transmits < edge, reflects longer wavelengths.",
-    lede: "Quarter-wave stack (LH)N short-pass filter. Transmits λ < λedge, reflects longer wavelengths. Uses reversed layer order compared to long-pass design.",
-  },
-  {
     slug: "single-ar",
     title: "Single Layer AR Coating",
     description: "Quarter-wave antireflection coating design with Snell's law and explicit s/p polarization handling at oblique incidence.",
@@ -327,7 +334,10 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "solar-protection",
     title: "Solar Protection Coating",
-    description: "Dual-stack design: UV + IR blocking for glazing and solar control applications.",
+    description: "All-dielectric solar-control coating on glass: UV and near-IR reflectors, with transmittances weighted by the ASTM G173 AM1.5 solar spectrum.",
+    tier: "exact",
+    modelNote: "Edge-filter stacks in series on the two faces of lossless glass, normal incidence, faces added incoherently; weighted by the ASTM G173 global spectrum. Real glass absorbs in the IR.",
+    references: [macleod("ch. 2 (incoherent reflection) and ch. 7 (edge filters)"), astmG173],
   },
   {
     slug: "spectrophotometry",
@@ -368,7 +378,10 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "uv-blocking",
     title: "UV Blocking Filter",
-    description: "Quarter-wave stack designed to reflect UV (200–400 nm) while transmitting visible light.",
+    description: "UV-blocking filter: long-pass quarter-wave stacks in series reflect the UV and transmit the visible.",
+    tier: "exact",
+    modelNote: "Transfer matrix of long-pass edge-filter stacks in series covering the blocked band; lossless constant indices (real oxides absorb in the UV), normal incidence, semi-infinite substrate. No optimization.",
+    references: [macleod("ch. 6 and ch. 7 (edge filters, extending the reflection zone)"), epstein],
   },
   {
     slug: "wavelength-separation",
@@ -391,6 +404,9 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "wide-bandpass",
     title: "Wide Bandpass Filter",
-    description: "Cascaded short-pass + long-pass quarter-wave stacks for broad transmission bands.",
+    description: "Wide band-pass filter from a long-pass edge filter on one face and a short-pass on the other: 50 % points, width and peak transmittance.",
+    tier: "exact",
+    modelNote: "Long-pass and short-pass edge filters on the two faces, transfer matrix, lossless constant indices, normal incidence; faces added incoherently. No blockers outside the two reflection zones.",
+    references: [macleod("ch. 2 (incoherent reflection), ch. 7 (edge filters) and ch. 8 (band-pass filters)"), epstein],
   },
 ];
