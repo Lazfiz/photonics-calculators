@@ -77,7 +77,7 @@ export default function UltrafastLaserSafetyPage() {
               label="Eyewear OD needed"
               value={ratio > 1 ? fmtNum(od) : "0 (within)"}
               tone={ratio > 1 ? "red" : "green"}
-              subtext={`At the output, ${fmtNum(T)} s; the single-pulse rule alone gives ${fmtNum(odSingle)}`}
+              subtext={`At the output, ${fmtNum(T)} s. The single-pulse rule alone ${odSingle > 0 ? `gives OD ${fmtNum(odSingle)}` : "would call it safe"}`}
             />
             <ResultCard
               label="NOHD"

@@ -45,7 +45,7 @@ export default function EyeSafeWavelengthPage() {
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 301 }, (_, i) => 180 * Math.pow(20000 / 180, i / 300));
     const traces: Record<string, unknown>[] = [
-      { ...finiteXY(wls, wls.map((nm) => maxPulseEnergy(nm * 1e-9, d, train)?.qMax ?? NaN)), type: "scatter", mode: "lines", name: "Max energy per pulse", line: { color: "#60a5fa" } },
+      { ...finiteXY(wls, wls.map((nm) => maxPulseEnergy(nm * 1e-9, d, train)?.qMax ?? NaN)), type: "scatter", mode: "lines", name: "Pulse train", line: { color: "#60a5fa" } },
     ];
     if (train.prf > 0) {
       traces.push({ ...finiteXY(wls, wls.map((nm) => maxPulseEnergy(nm * 1e-9, d, single)?.qMax ?? NaN)), type: "scatter", mode: "lines", name: "One pulse", line: { color: "#fbbf24", dash: "dot" } });
@@ -117,7 +117,7 @@ export default function EyeSafeWavelengthPage() {
           margin: { t: 30, r: 30, b: 50, l: 70 },
         }} />
         <p className="text-xs text-gray-500 mt-2">
-          Largest energy per pulse of this width, repetition rate and beam within the eye limits, 180 nm to 20 µm; dotted: one pulse.
+          Largest energy per pulse of this width, repetition rate and beam within the eye limits, 180 nm to 20 µm, for the train and (dotted) one pulse.
         </p>
       </div>
     </>
