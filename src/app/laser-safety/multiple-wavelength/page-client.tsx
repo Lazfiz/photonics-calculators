@@ -1,133 +1,195 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
+import { useMemo } from "react";
+import { fmtNum, fmtPower, LIMIT_LABELS } from "../../../components/eye-limit-labels";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { T_MAX, T_MIN } from "../../../physics/laser-safety/eye-exposure-limits";
+import { EYE_SITES, multipleWavelengthExposure, type EyeSite } from "../../../physics/laser-safety/multiple-wavelength";
+
+const SITE_LABELS: Record<EyeSite, string> = { retina: "Retina", anteriorEye: "Anterior eye (cornea and lens)" };
+const LINE_COLORS = ["#60a5fa", "#34d399", "#f87171", "#fbbf24", "#c084fc", "#f472b6", "#22d3ee", "#a3e635"];
+
+const parseList = (s: string) =>
+  s
+    .split(/[,;\s]+/)
+    .filter((x) => x.trim() !== "")
+    .map(Number);
+
 export default function MultipleWavelengthPage() {
-  const [wavelengths, setWavelengths] = useState("532, 650, 808");
-  const [powers, setPowers] = useState("100, 50, 200");
-  const [exposure, setExposure] = useURLState("exposure", 0.25);
+  const [wavelengths, setWavelengths] = useURLState("wavelengths", "450, 520, 638, 1550"); // nm
+  const [powers, setPowers] = useURLState("powers", "0.4, 0.4, 0.4, 10"); // mW
+  const [beamDia, setBeamDia] = useURLState("beamDia", 1); // mm, 1/e², shared by every line
+  const [exposure, setExposure] = useURLState("exposure", 0.25); // s
 
-  const results = useMemo(() => {
-    const wls = wavelengths.split(",").map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
-    const pws = powers.split(",").map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
-    const t = exposure;
+  // ICNIRP 2013 eye limits and its multiple-wavelength rule: src/physics/laser-safety/multiple-wavelength.ts. SI inside.
+  const wls = useMemo(() => parseList(wavelengths), [wavelengths]);
+  const pws = useMemo(() => parseList(powers), [powers]);
+  const d = Math.max(beamDia, 0) * 1e-3;
+  const t = Math.min(Math.max(exposure, T_MIN), T_MAX);
 
-    if (wls.length !== pws.length || wls.length === 0) return null;
+  const listError =
+    wls.length === 0
+      ? "Enter at least one wavelength."
+      : wls.length !== pws.length
+        ? `${wls.length} wavelengths but ${pws.length} powers: give one power per wavelength.`
+        : wls.some((x) => !(x >= 180 && x <= 1e6))
+          ? "Every wavelength must lie between 180 nm and 1 mm (1 000 000 nm)."
+          : pws.some((x) => !(x >= 0))
+            ? "Powers must be numbers ≥ 0."
+            : null;
 
-    // MPE for each wavelength
-    const mpes = wls.map(wl => {
-      const lam = wl / 1000;
-      if (lam >= 0.4 && lam < 0.7) return 1.8e-3 * Math.pow(t, 0.75);
-      if (lam >= 0.7 && lam < 1.05) return 1.8e-3 * Math.pow(10, 0.02 * (lam - 0.7)) * Math.pow(t, 0.75);
-      if (lam >= 1.05 && lam < 1.4) return t > 10 ? 0.01 : 0.01;
-      if (lam >= 1.4 && lam <= 1.8) return 0.1;
-      return 1e-3;
-    });
-
-    // Hazard ratio per wavelength: (P_beam / MPE)
-    const ratios = wls.map((wl, i) => {
-      const beamArea = Math.PI * 0.1 * 0.1; // 1cm limiting aperture, 0.1cm radius
-      const irradiance = (pws[i] / 1000) / beamArea; // W/cm²
-      const mpeIrradiance = mpes[i] / t; // W/cm²
-      return irradiance / mpeIrradiance;
-    });
-
-    const totalRatio = ratios.reduce((a, b) => a + b, 0);
-
-    return { wls, pws, mpes, ratios, totalRatio };
-  }, [wavelengths, powers, exposure]);
-
-  const chartData = useMemo(() => {
-    if (!results) return [];
-    return [
-      {
-        x: results.wls.map(w => `${w} nm`),
-        y: results.ratios,
-        type: "bar" as const,
-        name: "Hazard Ratio",
-        marker: { color: results.ratios.map(r => r > 1 ? "#f87171" : "#60a5fa") },
-      },
-    ];
-  }, [results]);
+  const result = useMemo(
+    () => (listError ? null : multipleWavelengthExposure(wls.map((nm, i) => ({ lambda: nm * 1e-9, P: pws[i] * 1e-3 })), d, t)),
+    [listError, wls, pws, d, t],
+  );
+  const valid = result !== null && !Number.isNaN(result.ratio);
+  const exceeds = valid && result.ratio > 1;
+  const scale = valid ? Math.max(1.25, result.ratio * 1.05) : 1.25;
 
   return (
     <>
-            
       <LaserSafetyDisclaimer />
-      <LaserSafetyQuarantineBanner />
-      <div className="grid gap-4 mb-6">
+      <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Wavelengths (nm, comma-separated)</span>
-          <input type="text" value={wavelengths} onChange={e => setWavelengths(e.target.value)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+          <input
+            type="text"
+            value={wavelengths}
+            onChange={(e) => setWavelengths(e.target.value)}
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white"
+          />
         </label>
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Powers (mW, comma-separated, same order)</span>
-          <input type="text" value={powers} onChange={e => setPowers(e.target.value)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white" />
+          <span className="text-sm text-gray-300">Powers (mW, same order)</span>
+          <input
+            type="text"
+            value={powers}
+            onChange={(e) => setPowers(e.target.value)}
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white"
+          />
         </label>
-        <ValidatedNumberInput label="Exposure Time (s)" value={exposure} onChange={setExposure} min={1e-9} step="any" />
+        <ValidatedNumberInput label="Beam diameter at the eye, 1/e² (mm)" value={beamDia} onChange={setBeamDia} min={0} step="any" />
+        <div>
+          <ValidatedNumberInput label="Exposure time (s)" value={exposure} onChange={setExposure} min={1e-9} max={30000} step="any" />
+          <p className="text-xs text-gray-500 mt-2">
+            0.25 s (the blink reflex) only protects against visible beams; use 10 s or more when a line is invisible.
+          </p>
+        </div>
       </div>
 
-      {results && (
+      {listError ? <p className="text-amber-300 mb-8">{listError}</p> : null}
+
+      {valid ? (
         <>
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-6">
-            <p className="text-sm text-gray-400">Total Hazard Ratio (Σ Hᵢ/MPEᵢ)</p>
-            <p className={`text-3xl font-bold ${results.totalRatio < 1 ? "text-green-400" : "text-red-400"}`}>
-              {results.totalRatio.toFixed(4)}
-            </p>
-            <p className={`text-sm mt-1 ${results.totalRatio < 1 ? "text-green-500" : "text-red-500"}`}>
-              {results.totalRatio < 1 ? "✓ Within MPE limits" : "✗ EXCEEDS MPE — protection required"}
-            </p>
+          <div className="grid gap-4 sm:grid-cols-3 mb-6">
+            {EYE_SITES.map((site) => (
+              <ResultCard
+                key={site}
+                label={`${SITE_LABELS[site]}: sum of shares`}
+                value={fmtNum(result.sites[site])}
+                tone={result.sites[site] > 1 ? "red" : "green"}
+                subtext={result.sites[site] > 1 ? "Exceeds the limits" : "Within the limits"}
+              />
+            ))}
+            <ResultCard
+              label="Whole beam"
+              value={exceeds ? "Exceeds the limits" : "Within the limits"}
+              tone={exceeds ? "red" : "green"}
+              subtext={
+                exceeds
+                  ? `Attenuate every line by ${fmtNum(result.ratio)}× (OD ${Math.log10(result.ratio).toFixed(2)}) at least`
+                  : `Largest sum ${fmtNum(result.ratio)}`
+              }
+            />
           </div>
 
-          <div className="bg-gray-900 rounded-lg p-4 mb-6">
-            <ChartPanel data={chartData} layout={{
-              paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-              font: { color: "#9ca3af" },
-              xaxis: { title: "Wavelength", gridcolor: "#374151" },
-              yaxis: { title: "Hazard Ratio (H/MPE)", gridcolor: "#374151" },
-              margin: { t: 30, r: 30, b: 50, l: 70 },
-              shapes: [{ type: "line", x0: -0.5, x1: results.wls.length - 0.5, y0: 1, y1: 1, line: { color: "#f87171", width: 2, dash: "dash" } }],
-            }} />
-          </div>
-
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-3">Per-Wavelength Breakdown</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-gray-300">
-                <thead><tr className="text-gray-400 border-b border-gray-700">
-                  <th className="text-left py-2">λ (nm)</th><th className="text-left py-2">Power (mW)</th>
-                  <th className="text-left py-2">MPE (J/cm²)</th><th className="text-left py-2">Hazard Ratio</th>
-                </tr></thead>
-                <tbody>
-                  {results.wls.map((wl, i) => (
-                    <tr key={i} className="border-b border-gray-800">
-                      <td className="py-2">{wl}</td><td className="py-2">{results.pws[i]}</td>
-                      <td className="py-2">{results.mpes[i].toFixed(4)}</td>
-                      <td className={`py-2 ${results.ratios[i] > 1 ? "text-red-400" : "text-blue-400"}`}>{results.ratios[i].toFixed(4)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 space-y-4">
+            {EYE_SITES.map((site) => (
+              <div key={site}>
+                <p className="text-sm text-gray-300 mb-1">{SITE_LABELS[site]}</p>
+                <div
+                  className="relative h-6 rounded bg-gray-950 overflow-hidden flex"
+                  role="img"
+                  aria-label={`${SITE_LABELS[site]}: the lines' shares add to ${fmtNum(result.sites[site])} of the limit`}
+                >
+                  {result.lines.map((line, i) =>
+                    line.sites[site] > 0 ? (
+                      <div
+                        key={i}
+                        title={`${wls[i]} nm: ${fmtNum(line.sites[site])}`}
+                        style={{ width: `${(Math.min(line.sites[site], scale) / scale) * 100}%`, background: LINE_COLORS[i % LINE_COLORS.length] }}
+                      />
+                    ) : null,
+                  )}
+                  <div className="absolute top-0 bottom-0 border-l-2 border-dashed border-red-400" style={{ left: `${(1 / scale) * 100}%` }} />
+                </div>
+              </div>
+            ))}
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400">
+              {wls.map((nm, i) => (
+                <span key={i} className="flex items-center gap-1">
+                  <span className="inline-block w-3 h-3 rounded-sm" style={{ background: LINE_COLORS[i % LINE_COLORS.length] }} />
+                  {nm} nm
+                </span>
+              ))}
+              <span className="text-red-300">dashed: the limit (sum = 1)</span>
             </div>
           </div>
-        </>
-      )}
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mt-6">
-        <h3 className="text-lg font-semibold mb-3">Formulas</h3>
-        <div className="text-gray-300 text-sm space-y-2 font-mono">
-          <p>Hᵢ / MPEᵢ = Eᵢ / MPEᵢ (hazard ratio per wavelength)</p>
-          <p>Σ (Hᵢ / MPEᵢ) &lt; 1 → SAFE (all wavelengths additive)</p>
-          <p>Σ (Hᵢ / MPEᵢ) ≥ 1 → EXCEEDS MPE</p>
-          <p>Multiple wavelength rule: ANSI Z136.1 §8 — spectral additivity</p>
-        </div>
+          <div className="overflow-x-auto mb-6">
+            <table className="w-full text-sm text-left text-gray-300">
+              <thead className="text-gray-400 border-b border-gray-800">
+                <tr>
+                  <th className="py-2 pr-4 font-normal">λ (nm)</th>
+                  <th className="py-2 pr-4 font-normal">Power</th>
+                  <th className="py-2 pr-4 font-normal">Limit</th>
+                  <th className="py-2 pr-4 font-normal">Largest power alone</th>
+                  <th className="py-2 font-normal">Share (P / largest)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.lines.map((line, i) =>
+                  line.limits.map((l, j) => (
+                    <tr key={`${i}-${l.kind}`} className={j === line.limits.length - 1 ? "border-b border-gray-800" : ""}>
+                      <td className="py-1 pr-4">{j === 0 ? wls[i] : ""}</td>
+                      <td className="py-1 pr-4">{j === 0 ? fmtPower(line.P) : ""}</td>
+                      <td className="py-1 pr-4">{LIMIT_LABELS[l.kind]}</td>
+                      <td className="py-1 pr-4">{l.pMax === Infinity ? "applies from 10 s" : fmtPower(l.pMax)}</td>
+                      <td className={`py-1 ${l.share > 1 ? "text-red-400" : ""}`}>{fmtNum(l.share)}</td>
+                    </tr>
+                  )),
+                )}
+                <tr className="text-gray-400">
+                  <td className="py-2 pr-4" colSpan={2}>Same limit, all lines</td>
+                  <td className="py-2" colSpan={3}>
+                    {Object.entries(result.limits)
+                      .map(([kind, sum]) => `${LIMIT_LABELS[kind as keyof typeof LIMIT_LABELS]}: ${fmtNum(sum)}`)
+                      .join(" · ")}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : null}
+
+      <div className="text-sm text-gray-400 space-y-2">
+        <p>
+          ICNIRP 2013 (Health Phys. 105:271, p. 279): wavelengths absorbed in the same tissue add; wavelengths absorbed in
+          different tissues, such as the retina and the cornea, are assessed independently. Each line&apos;s share of a
+          limit is its power over the largest power that stays within that limit for every exposure up to t, averaged
+          over the limit&apos;s aperture (7 mm for the retina; 1–3.5 mm for the cornea; 3.5 mm for the anterior-segment
+          limit at 1150–1400 nm). A line&apos;s share of a tissue is its largest share there (one line&apos;s thermal and
+          blue-light retinal limits are met separately); the shares then add over the lines, and each tissue&apos;s sum
+          must stay at or below 1.
+        </p>
+        <p>
+          All lines are taken as one co-aligned beam of the diameter above, viewed for the same time. The retinal limits
+          are for a point source (the conservative case). Not modelled: skin, pulses and pulse trains.
+        </p>
       </div>
     </>
   );
