@@ -2,40 +2,14 @@
 
 import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
+import { fmtNum, fmtTime, LIMIT_COLORS, LIMIT_LABELS } from "../../../components/eye-limit-labels";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  apertureIrradiance, exposureDuration, exposureLimit, eyeLimits, limitingAperture, T_MAX, T_MIN, type EyeLimitKind,
+  apertureIrradiance, exposureDuration, exposureLimit, eyeLimits, limitingAperture, T_MAX, T_MIN,
 } from "../../../physics/laser-safety/eye-exposure-limits";
-
-const LIMIT_LABELS: Record<EyeLimitKind, string> = {
-  cornealUv: "Cornea (UV)",
-  retinalThermal: "Retina, thermal",
-  retinalPhotochemical: "Retina, photochemical (blue light)",
-  anteriorSegment: "Anterior eye (2 × skin limit)",
-  cornealIr: "Cornea (IR)",
-};
-const LIMIT_COLORS: Record<EyeLimitKind, string> = {
-  cornealUv: "#c084fc",
-  retinalThermal: "#60a5fa",
-  retinalPhotochemical: "#a78bfa",
-  anteriorSegment: "#34d399",
-  cornealIr: "#fbbf24",
-};
-
-function fmtTime(t: number): string {
-  if (t === Infinity) return "> 30 000 s (8.3 h)";
-  if (Number.isNaN(t)) return "< 1 ns";
-  if (t < 1e-6) return (t * 1e9).toPrecision(3) + " ns";
-  if (t < 1e-3) return (t * 1e6).toPrecision(3) + " µs";
-  if (t < 1) return (t * 1e3).toPrecision(3) + " ms";
-  return (t >= 100 ? t.toFixed(0) : t.toPrecision(3)) + " s";
-}
-
-const fmtNum = (x: number) =>
-  x === 0 ? "0" : x >= 1e5 || x < 1e-2 ? x.toExponential(2) : x >= 100 ? x.toFixed(0) : x.toPrecision(3);
 
 export default function ExposureDurationPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 532); // nm
