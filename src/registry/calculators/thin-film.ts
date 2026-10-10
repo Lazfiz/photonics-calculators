@@ -16,6 +16,10 @@ const epstein: Reference = {
   citation: "Epstein L. I. (1952). The design of optical filters. J. Opt. Soc. Am. 42, 806.",
   url: "https://doi.org/10.1364/JOSA.42.000806",
 };
+const babicCorzine: Reference = {
+  citation: "Babic D. I., Corzine S. W. (1992). Analytic expressions for the reflection delay, penetration depth, and absorptance of quarter-wave dielectric mirrors. IEEE J. Quantum Electron. 28, 514.",
+  url: "https://doi.org/10.1109/3.123281",
+};
 const astmG173: Reference = {
   citation: "ASTM G173-03 (reapproved 2020). Standard Tables for Reference Solar Spectral Irradiances: Direct Normal and Hemispherical on 37° Tilted Surface. ASTM International.",
   url: "https://doi.org/10.1520/G0173-03R20",
@@ -65,8 +69,11 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "beamsplitter",
     title: "Beamsplitter Design",
-    description: "Dielectric beamsplitters split light into reflected and transmitted beams. A single quarter-wave",
-    lede: "Dielectric beamsplitters split light into reflected and transmitted beams. A single quarter-wave layer gives R < 50% for most materials; multilayer (HL)N stacks approach 100%. A 50/50 split is achieved with specific layer thicknesses (non-quarter-wave) or by selecting the appropriate number of layer pairs near the stop band edge.",
+    description: "Design a dielectric beamsplitter for a target reflectance: the single-layer index it needs, quarter-wave stack reflectances, a thinned-layer design and an all-quarter-wave H M H design.",
+    lede: "Dielectric beamsplitters split light into reflected and transmitted beams. A single quarter-wave layer of ZnS reflects only 32 % from air on glass; 50 % would need n ≈ 2.98. Quarter-wave stacks H, HLH, HLHLH step up to 32, 66 and 85 %. For 50 %, thin one layer of HLH (exact at λ₀ only) or use H M H with n_M ≈ 1.86 (flat at λ₀).",
+    tier: "exact",
+    modelNote: "Transfer matrix at normal incidence, constant lossless indices, back surface ignored. A plate splitter at 45° splits s and p differently; not modelled.",
+    references: [macleod("ch. 2 and ch. 5 (beam splitters)")],
   },
   {
     slug: "bragg-reflector",
@@ -119,6 +126,9 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "dielectric-high-reflector",
     title: "Dielectric High Reflector",
     description: "Quarter-wave dielectric stack HR mirror — stopband width, peak reflectance, and dispersion.",
+    tier: "exact",
+    modelNote: "Transfer matrix of (HL)^N H or (LH)^N quarter-wave stacks, normal incidence, constant lossless indices, back surface ignored. Group delay and GDD are central differences of arg r.",
+    references: [macleod("ch. 2 and ch. 6 (multilayer high-reflectance coatings)"), bornWolf("§1.6.5 (periodically stratified media)"), babicCorzine],
   },
   {
     slug: "dielectric-stack",
@@ -260,12 +270,19 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "narrow-bandpass",
     title: "Narrow Bandpass Filter",
-    description: "High-finesse Fabry-Perot with multiple cavities for ultra-narrow transmission peaks.",
+    description: "Multiple-cavity Fabry-Perot filter with long quarter-wave mirrors: a narrow, flat-topped pass band, its FWHM, peak transmittance and ripple.",
+    tier: "exact",
+    modelNote: "Transfer matrix of (HL)^p S (LH)^p cavities with half-wave spacers and quarter-wave couplers, normal incidence, constant lossless indices, back surface ignored. FWHM by bisection, not from the plot grid.",
+    references: [macleod("ch. 2 and ch. 8 (multiple-cavity band-pass filters)")],
   },
   {
     slug: "notch-filter",
     title: "Notch Filter",
     description: "Rejection notch filter — high reflectance at target wavelength, transmits elsewhere.",
+    lede: "A notch filter reflects a narrow band and transmits elsewhere. A quarter-wave stack of two close indices does this: the index contrast sets the notch width, the number of pairs its depth (optical density).",
+    tier: "exact",
+    modelNote: "Transfer matrix of a lossless quarter-wave stack (HL)^N at normal incidence, back surface ignored. No apodization or AR layers, so the side lobes and the outer-face ripple remain.",
+    references: [macleod("ch. 2 and ch. 6 (quarter-wave stacks)")],
   },
   {
     slug: "partial-reflector",
@@ -280,6 +297,9 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "phase-shift-coating",
     title: "Phase Shift Coatings",
     description: "Phase shift accumulated in thin film coatings. Explore how film thickness and refractive index affect the optical phase of reflected and transmitted light.",
+    tier: "exact",
+    modelNote: "One lossless film between semi-infinite media at normal incidence, coherent. r and t come from the exact characteristic matrix; phases use e^(−iωt), as Born & Wolf do (Macleod's signs are opposite).",
+    references: [bornWolf("§1.6.4 (a homogeneous dielectric film)"), macleod("ch. 2 (characteristic matrix)")],
   },
   {
     slug: "plasma-deposition",

@@ -242,3 +242,45 @@ test("transfer matrix: unpolarized reflectance is the mean of s and p", () => {
     close(unpolarizedResponse(stack, wl, 50 * DEG).T, 1 - u[i], 1e-14, `T_u(${wl})`);
   });
 });
+
+// Single film, normal incidence, e^(−iωt): Born & Wolf, Principles of Optics, 7th ed., §1.6.4,
+//   r = (r₁₂ + r₂₃ e^(2iβ))/(1 + r₁₂r₂₃ e^(2iβ)),  t = t₁₂t₂₃ e^(iβ)/(1 + r₁₂r₂₃ e^(2iβ)),  β = 2πn₂h/λ,
+// with the normal-incidence Fresnel coefficients r = (n₁ − n₂)/(n₁ + n₂), t = 2n₁/(n₁ + n₂).
+test("transfer matrix: r and t of a single film match the Airy formulae", () => {
+  const n1 = 1, n2 = 2.35, n3 = 1.52, h = 137 * NM;
+  for (const wl of [400 * NM, 633 * NM, 1064 * NM]) {
+    const beta = (2 * Math.PI * n2 * h) / wl;
+    const r12 = (n1 - n2) / (n1 + n2), r23 = (n2 - n3) / (n2 + n3);
+    const t12 = (2 * n1) / (n1 + n2), t23 = (2 * n2) / (n2 + n3);
+    const e2 = cx.exp(cx.complex(0, 2 * beta));
+    const den = cx.add(cx.complex(1), cx.scale(e2, r12 * r23));
+    const r = cx.div(cx.add(cx.complex(r12), cx.scale(e2, r23)), den);
+    const t = cx.div(cx.scale(cx.exp(cx.complex(0, beta)), t12 * t23), den);
+    const res = stackResponse({ incident: n1, layers: [{ n: n2, thickness: h }], substrate: { n: n3 } }, wl);
+    close(res.r.re, r.re, 1e-14, `Re r(${wl})`);
+    close(res.r.im, r.im, 1e-14, `Im r(${wl})`);
+    close(res.t.re, t.re, 1e-14, `Re t(${wl})`);
+    close(res.t.im, t.im, 1e-14, `Im t(${wl})`);
+  }
+});
+
+// Macleod, Thin-Film Optical Filters, 4th ed., ch. 2: T = Re(η_sub)/η₀ · |t|² with tilted admittances
+// η_s = N cos θ, η_p = N/cos θ, also with an absorbing layer and at oblique incidence.
+test("transfer matrix: T = Re(η_sub)/η₀ |t|² for s and p, absorbing layer at 40°", () => {
+  const theta = 40 * DEG;
+  const stack: Stack = {
+    incident: 1,
+    layers: [{ n: 2.0, k: 0.3, thickness: 80 * NM }, { n: 1.4, thickness: 120 * NM }],
+    substrate: { n: 1.6 },
+  };
+  const cosSub = Math.sqrt(1 - (Math.sin(theta) / 1.6) ** 2);
+  for (const pol of ["s", "p"] as const) {
+    const res = stackResponse(stack, 600 * NM, theta, pol);
+    const etaSub = pol === "s" ? 1.6 * cosSub : 1.6 / cosSub;
+    const eta0 = pol === "s" ? Math.cos(theta) : 1 / Math.cos(theta);
+    close(res.T, (etaSub / eta0) * cx.abs2(res.t), 1e-14, `T(${pol})`);
+    assert.ok(res.A > 0.05, `the layer absorbs (${pol}): A = ${res.A}`);
+  }
+  // Invalid input: t is NaN like the other fields.
+  assert.ok(Number.isNaN(stackResponse(stack, -1).t.re));
+});

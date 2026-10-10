@@ -1,38 +1,35 @@
-# Handover — 2026-10-09 (session 26 → session 27)
+# Handover — 2026-10-09 (session 27 → session 28)
 
-**Start here:** read this file, then `docs/ROADMAP.md` (Phase 4, "Audit the unreviewed pages"). Session 26 did
-thin-film part 2 (edge filters) on branch `phase-4/thin-film-edge-filters` (PR #23).
+**Start here:** read this file, then `docs/ROADMAP.md` (Phase 4, "Audit the unreviewed pages"). Session 27 did
+thin-film part 3 (readouts and phase) on branch `phase-4/thin-film-readouts` (PR #24).
 
 ## State
-- New tested modules: `physics/thin-film/edge-filter.ts` (symmetric-period edge filters, design λ₀ from the edge,
-  50 % point of the actual stack, stacks in series covering a band, incoherent two-face sum), `physics/astm-g173.ts`
-  (ASTM G173 global tilt, 2002 points) and `math.ts` `firstCrossing` / `intervalStats` (part 3 needs the half-maximum
-  search: use `firstCrossing`).
-- `long-pass` and `short-pass` merged into `edge-filter` (472 → 470 pages). `cold-mirror`, `ir-blocking`, `uv-blocking`
-  share `components/blocking-filter-calculator.tsx`; `wide-bandpass` and `solar-protection` use one coating per face.
-- 6 pages got trust data (all exact), so 61 of 470 pages have a tier. `heat-mirror` moved to part 4 (needs Ag/ITO).
-- Also in the PR, as its own commit: the site-wide `SimpleChart` tick bug (Phase 3). `niceTicks` stepped by the bare
-  multiplier (2, not 200), crowding x labels and leaving one y tick; `formatTick` now prints the digits the step
-  needs. Both exported and tested (`tests/simple-chart.test.ts`). Checked on `gires-tournois` and the new pages.
+- `transfer-matrix.ts`: `StackResponse.t` (tangential-field ratio 2η₀/(η₀B + C)) and `reflectionGroupDelay` (GD and
+  GDD from central differences of arg r). Sign: with e^(−iωt), the delay is +d(arg r)/dω.
+- `quarter-wave-stack.ts`: `reflectionBandEdges` (first crossing of a level out from λ₀; mirrors in g), the semi-infinite
+  mirror delay `quarterWaveMirrorDelay`, `quarterWavePairsForReflectance` (tanh²). `cavity-filter.ts`: `cavityPassband`
+  (FWHM by log scan + bisection). New `beamsplitter.ts`. `math.ts`: `unwrapPhase`.
+- `bandpass-filter` and `narrow-bandpass` share `components/cavity-bandpass-calculator.tsx` (same model, different
+  defaults and URL key for the pairs). They are near-duplicates now; merging them is the user's call (not asked yet).
+- 5 pages got trust data (all exact): 66 of 470 pages have a tier.
 
 ## Decisions
-- Stacks in series, not a linear chirp: 2 × 10 periods give mean R 99.5 % over 400–700 nm, a 20-period geometric chirp
-  93 % with soft edges (the end periods are few). The stack next to the pass band faces the incident medium (less
-  pass-band ripple on glass; a design choice, stated in the module).
-- Blocking pages take a blocked band and a pass band as inputs and report mean/min R, mean/min T and the 50 % point.
-  They warn when a stack's third-order zone (λ₀/(3 ± Δg)) falls in the pass band.
-- `uv-blocking` defaults to n_H 2.1 / n_L 1.47 (TiO₂-like 2.3 absorbs in the UV). `solar-protection` defaults to IR
-  720–1300 nm: wider (1800 nm) puts a third-order zone in the blue and drops visible T to 63 %.
-- The G173 table is loaded with a dynamic `import()` after hydration (rule: no large static data in `page-client`).
+- `dielectric-high-reflector` defaults to (HL)ᴺH (high index on both faces, the textbook HR); (LH)ᴺ, the old design,
+  is an option (`outer=low`). The audit's 383 nm / 6.718 fs were for (LH)¹⁰.
+- `notch-filter` is now a low-contrast quarter-wave stack (1.63/1.46, 40 pairs, 532 nm). There is no cavity input; old
+  `spacerN` / `mirrorPairs` links fall back to the defaults.
+- `beamsplitter` shows two designs for the target: a thinned HLH (exact at λ₀, but on a slope) and an all-quarter-wave
+  H M H (flat top, needs n_M = n_H²/n₁). The slope was seen on the chart, so the page says it.
+- OD comes from the transfer matrix's T, not 1 − R (which loses its digits as R → 1).
 - Kept from earlier sessions: DOIs only from Crossref; a page gets a tier only once OK or fixed; mixed model → lower tier.
 
 ## Next actions
-1. PR #23: CI, local production check, then ask the user to merge; after merge, `ui-check` against production.
-2. Thin-film part 3 (readouts and phase): `narrow-bandpass`, `dielectric-high-reflector`, `bandpass-filter`,
-   `phase-shift-coating`, `notch-filter`, `beamsplitter` (ROADMAP part 3). Then part 4 (metals, `heat-mirror`).
+1. PR #24: CI, then ask the user to merge; after merge, `ui-check` against production and the six pages' values.
+2. Thin-film part 4 (metals and one-offs): `heat-mirror`, `enhanced-aluminum`, `protected-silver`, `dual-band-ar`,
+   `hard-coating`, `anti-fog`, `emissivity-control` (ROADMAP part 4; needs tabulated Ag/Al/ITO data, Rakić 1998).
    Other tracks: Phase 3 charts, top-50 golden tests.
 
-## Ship flow (worked twenty times)
+## Ship flow (worked twenty-one times)
 - **Push:** `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`.
 - **CI:** `gh pr create --body-file f`, then `gh pr checks <n> --watch`.
 - **Preview:** behind Vercel SSO. Use a local `npm run build` + `npx next start -p 3100`.
@@ -40,28 +37,24 @@ thin-film part 2 (edge filters) on branch `phase-4/thin-film-edge-filters` (PR #
   (`gh api repos/Lazfiz/photonics-calculators/commits/<sha>/status`), then run `ui-check` against production.
 
 ## Non-obvious facts
-- **Removing pages leaves stale `.next/types/validator.ts`** that fails `tsc` ("Cannot find module …/page.js").
-  Delete `.next/types` (ignored build output) and re-run `check`.
-- **Merge codemod** (`scripts/codemods/2026-10-08-merge-duplicates.ts`): add redirects, dry run, `--write`
-  (it `git rm`s the page dirs). It now finds the entry array after citation helpers.
+- **Whole-quarter-wave symmetry:** a lossless stack of whole quarter waves at λ₀ (normal incidence) has
+  R(g) = R(2 − g) in g = λ₀/λ. Band edges and FWHMs scan one side only; the tests check the mirror.
+- **Mirror delay:** τ = λ₀n₀/(2cΔn) with H outermost, λ₀n_Hn_L/(2cn₀Δn) with L outermost; GDD(λ₀) = 0.
 - **Trust data:** tier, `modelNote` (≤ 220 chars), references in `src/registry/calculators/<category>.ts`. Check DOIs
   on Crossref (`api.crossref.org/works?query.bibliographic=…`, volume + first page; ≥ 1 s between requests) and that
-  `https://doi.org/<doi>` answers 302. ASTM standards have DOIs (`10.1520/G0173-03R20`). Never take a DOI from memory.
-- **Network:** `www.nrel.gov` doesn't resolve from this machine; GitHub raw does (G173 came from pvlib's copy,
-  verified by its integrals 1347.9 / 1000.4 / 900.1 W m⁻²).
-- **Edge-filter physics:** symmetric period p/2 q p/2 has E² = n_p²(cos φ + κ)/(cos φ − κ), φ = πg/2,
-  κ = (n_q − n_p)/(n_q + n_p); N periods = one Herpin layer (E, Nγ), cos γ = cos²φ − ½(ρ + 1/ρ) sin²φ. The test uses it.
-- **Rendering in tests:** `renderToStaticMarkup(createElement(Component, props))` works in `node:test` via tsx.
+  `https://doi.org/<doi>` answers 302. Never take a DOI from memory.
+- **Chrome extension** may be disconnected: use `scripts/ui-check.mjs <base> load /a /b` (console errors) and
+  headless Chrome `--headless=new --virtual-time-budget=8000 --screenshot=C:/…/x.png --window-size=1280,2900 <url>`
+  (the screenshot path must be a Windows path, not `/c/...`).
+- **Dev server for checks:** `npx next dev -p 3200`; stop it before `npm run build` (both use `.next`).
+- **Killing a server in Git Bash:** with `MSYS_NO_PATHCONV=1` use `taskkill /PID <pid> /F /T`; without it, `//PID`.
+- **Removing pages leaves stale `.next/types/validator.ts`** that fails `tsc`. Delete `.next/types` and re-run `check`.
 - **tsx scratch scripts:** wrap in `async function main()`; import repo modules by absolute `C:/dev/...` paths.
-  In Git Bash, a `node -e '…'` body breaks on an apostrophe; use a heredoc (`node - <<'EOF'`) or Edit.
-- **`ui-check` load mode** waits for an `<input>` with a React fiber; wrap runs in `timeout 200`, loop up to 3 times,
-  and set `MSYS_NO_PATHCONV=1` in Git Bash.
-- **Screenshots without the extension:** headless Chrome `--headless=new --screenshot=<png> --window-size=W,H <url>`.
-- **Local production server:** `npx next start -p 3100`; kill with `netstat -ano | grep ':3100 .*LISTENING'` →
-  `taskkill //PID <pid> //F //T`.
+  A Bash heredoc with mixed quoting can fail to parse; then write the file with the Write tool.
+- **`Math.max(...arr)`** overflows the stack at ~1e5 elements; use `reduce`.
 - **Timings:** `tsc` ≈ 1.5–4 min, `check` ≈ 6 min, `build` ≈ 6–10 min. Background them; don't edit `.ts` during `check`.
 - **Committing:** `git commit -F msg -- <paths>`. Untracked files need `git add` first.
-- **`useURLState` doesn't clamp:** clamp layer/period counts in the page (`clampToRange`).
-- **`SimpleChart`**: no `shapes`; skips NaN; reads `null` as 0; legend names longer than ~14 characters are clipped.
-  `ChartPanel` → `SimpleChart` for plain scatter charts.
+- **`useURLState` doesn't clamp:** clamp counts in the page (`clampToRange`).
+- **`SimpleChart`**: no `shapes`; skips NaN; reads `null` as 0; legend names longer than ~14 characters are clipped;
+  `yaxis: "y2"` on a trace plus `layout.yaxis2` gives a right axis. `ChartPanel` takes a `title`.
 - **TS syntax:** `-x ** 2` is a parse error; write `-(x ** 2)`.

@@ -16,9 +16,14 @@
  * where N cos θ = √(N² − n₀² sin² θ₀) (Snell) is the root with Im ≥ 0, so evanescent and absorbing
  * layers decay. r = (η₀ − Y)/(η₀ + Y) with Y = C/B, so r_p = r_s at normal incidence
  * (Born & Wolf's r_p has the opposite sign; R, T and A don't depend on this choice).
+ * t = 2η₀/(η₀B + C) is the ratio of the tangential electric fields, transmitted (at the substrate
+ * face) over incident (at the front face), so T = Re(η_sub)/η₀ · |t|² (Macleod ch. 2). For s, and at
+ * normal incidence, it is the field ratio of Born & Wolf §1.6.4. With e^(−iωt), a delay τ multiplies
+ * a coefficient by e^(iωτ), so the group delay is +d(arg r)/dω (Macleod's sign is the opposite).
  */
 
 import { sqrt as csqrt, type Complex } from "../complex";
+import { c } from "../constants";
 
 export type Polarization = "s" | "p";
 
@@ -45,6 +50,8 @@ export interface Stack {
 export interface StackResponse {
   /** Amplitude reflection coefficient (admittance convention, see the file header). */
   r: Complex;
+  /** Amplitude transmission coefficient of the tangential electric field (see the file header). */
+  t: Complex;
   /** Reflectance. */
   R: number;
   /** Transmittance into the substrate. */
@@ -53,7 +60,7 @@ export interface StackResponse {
   A: number;
 }
 
-const INVALID: StackResponse = { r: { re: NaN, im: NaN }, R: NaN, T: NaN, A: NaN };
+const INVALID: StackResponse = { r: { re: NaN, im: NaN }, t: { re: NaN, im: NaN }, R: NaN, T: NaN, A: NaN };
 
 function validMedium(m: Medium): boolean {
   const k = m.k ?? 0;
@@ -194,14 +201,44 @@ export function stackResponse(
   const subFlux = (ur * vr + ui * vi) * Math.exp(-2 * logScale);
   const T = (4 * eta0 * subFlux) / DD;
   const A = (4 * eta0 * (Br * Cr + Bi * Ci - subFlux)) / DD;
-  return { r, R: r.re * r.re + r.im * r.im, T, A };
+  // [B C] = (M/e^logScale)[u v] and [u v] = u·[1 η_sub], so the unscaled η₀B + C is (Dr + iDi)·e^logScale/u.
+  const tScale = 2 * eta0 * Math.exp(-logScale);
+  const t = { re: (tScale * (ur * Dr + ui * Di)) / DD, im: (tScale * (ui * Dr - ur * Di)) / DD };
+  return { r, t, R: r.re * r.re + r.im * r.im, T, A };
 }
 
-/** Response to unpolarized light: the mean of the s and p responses (r is not defined). */
-export function unpolarizedResponse(stack: Stack, wavelength: number, angle = 0): Omit<StackResponse, "r"> {
+/** Response to unpolarized light: the mean of the s and p responses (r and t are not defined). */
+export function unpolarizedResponse(stack: Stack, wavelength: number, angle = 0): Omit<StackResponse, "r" | "t"> {
   const s = stackResponse(stack, wavelength, angle, "s");
   const pp = stackResponse(stack, wavelength, angle, "p");
   return { R: (s.R + pp.R) / 2, T: (s.T + pp.T) / 2, A: (s.A + pp.A) / 2 };
+}
+
+/**
+ * Group delay τ = d(arg r)/dω (s) and group-delay dispersion d²(arg r)/dω² (s²) on reflection, with the
+ * front face as the reference plane (sign: see the file header). Central differences at ω ± h,
+ * h = 2·10⁻⁴ ω, with each phase step taken as arg(r₂ r₁*), so no unwrapping is needed. Truncation
+ * error ≈ (h/Ω)²/6 relative, Ω being the frequency scale on which τ changes (< 1e-6 inside a
+ * quarter-wave stop band); rounding of λ adds ≈ 1e-15 rad/h² (≈ 1e-38 s² near 1 µm) to the GDD.
+ * NaN if r is NaN or 0 at any of the three points.
+ */
+export function reflectionGroupDelay(
+  stack: Stack,
+  wavelength: number,
+  angle = 0,
+  polarization: Polarization = "s",
+): { groupDelay: number; gdd: number } {
+  const w = (2 * Math.PI * c) / wavelength;
+  const h = 2e-4 * w;
+  const at = (omega: number) => stackResponse(stack, (2 * Math.PI * c) / omega, angle, polarization).r;
+  const lo = at(w - h), mid = at(w), hi = at(w + h);
+  // arg(a b*) = atan2(Im a·Re b − Re a·Im b, Re a·Re b + Im a·Im b)
+  const dArg = (a: Complex, b: Complex) => Math.atan2(a.im * b.re - a.re * b.im, a.re * b.re + a.im * b.im);
+  const up = dArg(hi, mid);
+  const down = dArg(mid, lo);
+  const zero = [lo, mid, hi].some((r) => r.re === 0 && r.im === 0);
+  if (!(Number.isFinite(up) && Number.isFinite(down)) || zero) return { groupDelay: NaN, gdd: NaN };
+  return { groupDelay: (up + down) / (2 * h), gdd: (up - down) / (h * h) };
 }
 
 /** Reflectance at each vacuum wavelength (m). */
