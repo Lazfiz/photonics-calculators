@@ -46,6 +46,28 @@ export function finiteXY(xs: readonly number[], ys: readonly number[]): { x: num
   return { x: xs.filter((_, i) => keep[i]), y: ys.filter((_, i) => keep[i]) };
 }
 
+/**
+ * Line traces for the runs of finite, positive y, so a gap breaks the line (SimpleChart joins across skipped points).
+ * Only the first run carries the legend name.
+ */
+export function segmentedLine(xs: readonly number[], ys: readonly number[], name: string, line: Record<string, unknown>): Record<string, unknown>[] {
+  const runs: { x: number[]; y: number[] }[] = [];
+  let run: { x: number[]; y: number[] } | null = null;
+  ys.forEach((y, i) => {
+    if (!(Number.isFinite(y) && y > 0)) {
+      run = null;
+      return;
+    }
+    if (!run) {
+      run = { x: [], y: [] };
+      runs.push(run);
+    }
+    run.x.push(xs[i]);
+    run.y.push(y);
+  });
+  return runs.map((r, i) => ({ ...r, type: "scatter", mode: "lines", line, ...(i === 0 ? { name } : {}) }));
+}
+
 /** An energy in J as J / mJ / µJ / nJ. */
 export function fmtEnergy(j: number): string {
   return fmtPower(j).replace(/W$/, "J");

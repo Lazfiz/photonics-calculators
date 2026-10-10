@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { finiteXY, fmtNum, fmtPower, LIMIT_LABELS } from "../../../components/eye-limit-labels";
+import { fmtNum, fmtPower, LIMIT_LABELS, segmentedLine } from "../../../components/eye-limit-labels";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
@@ -46,9 +46,10 @@ export default function CornealVsRetinalPage() {
   const chartData = useMemo(() => {
     const wls = Array.from({ length: 401 }, (_, i) => 180 * Math.pow(20000 / 180, i / 400));
     const curve = (retina: boolean) => wls.map((nm) => tissueMax(eyeLimits(nm * 1e-9), retina, d, t)?.pMax ?? NaN);
+    // The cornea curve has a gap at 400–1150 nm, where only the retinal limits apply.
     const traces: Record<string, unknown>[] = [
-      { ...finiteXY(wls, curve(true)), type: "scatter", mode: "lines", name: "Retina", line: { color: "#60a5fa" } },
-      { ...finiteXY(wls, curve(false)), type: "scatter", mode: "lines", name: "Cornea / lens", line: { color: "#fbbf24" } },
+      ...segmentedLine(wls, curve(true), "Retina", { color: "#60a5fa" }),
+      ...segmentedLine(wls, curve(false), "Cornea / lens", { color: "#fbbf24" }),
     ];
     const here = Math.min(r.retina?.pMax ?? Infinity, r.front?.pMax ?? Infinity);
     if (Number.isFinite(here)) {
