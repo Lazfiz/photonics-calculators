@@ -1,156 +1,102 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
+import { useMemo } from "react";
+import { AEL_LABELS, CLASS_TONES, fmtNum, fmtPower } from "../../../components/eye-limit-labels";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { classifyCw, type ClassCheck } from "../../../physics/laser-safety/laser-classes";
+
+/** Largest power of the beam within a class under every applied condition, W. */
+const classMax = (c: ClassCheck) => Math.min(c.condition3.power, c.condition1?.power ?? Infinity);
+
 export default function EnclosureClassPage() {
-  const [laserPower, setLaserPower] = useURLState("laserPower", 5000); // mW
+  const [laserPower, setLaserPower] = useURLState("laserPower", 5000); // mW inside the enclosure
   const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [apertureSize, setApertureSize] = useURLState("apertureSize", 5); // mm (largest opening)
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 100); // s (inspection/maintenance)
-  const [workingDistance, setWorkingDistance] = useURLState("workingDistance", 30); // cm (to aperture)
+  const [beamDia, setBeamDia] = useURLState("beamDia", 2); // mm, 1/e² at the opening
+  const [divergence, setDivergence] = useURLState("divergence", 1); // mrad, 1/e² full angle
+  const [apertureSize, setApertureSize] = useURLState("apertureSize", 5); // mm, opening diameter
+  const [windowOD, setWindowOD] = useURLState("windowOD", 4); // optical density over the opening
 
-  const results = useMemo(() => {
-    const P = laserPower / 1000; // W
-    const lam = wavelength / 1000; // µm
-    const a = apertureSize / 10; // cm
-    const t = exposureTime;
-    const r = workingDistance; // cm
+  // SI inside; classes from src/physics/laser-safety/laser-classes.ts.
+  const lambda = wavelength * 1e-9;
+  const P = Math.max(laserPower, 0) * 1e-3;
+  const d = Math.max(beamDia, 1e-3) * 1e-3;
+  const phi = Math.max(divergence, 0) * 1e-3;
+  const D = Math.max(apertureSize, 0) * 1e-3;
+  const od = Math.max(windowOD, 0);
 
-    // MPE for the wavelength and exposure time
-    let mpe: number; // J/cm²
-    if (lam >= 0.4 && lam < 0.7) {
-      mpe = 1.8e-3 * Math.pow(Math.min(t, 10), 0.75);
-    } else if (lam >= 0.7 && lam < 1.05) {
-      const CA = Math.pow(10, 0.02 * (lam - 0.7));
-      mpe = 1.8e-3 * CA * Math.pow(Math.min(t, 10), 0.75);
-    } else if (lam >= 1.05 && lam < 1.4) {
-      mpe = t > 10 ? 0.1 : 0.01 * t;
-    } else if (lam >= 1.4 && lam <= 1.8) {
-      mpe = 0.1;
-    } else {
-      mpe = 1e-3;
-    }
-
-    const mpeIrr = mpe / t; // W/cm²
-
-    // Emission through aperture: treat as a point source
-    // Irradiance at distance r: E = P / (4π r²) for isotropic
-    // For directed beam through aperture: E ≈ P / (π (a/2 + r*div)²)
-    // Simplified: use solid angle of aperture at distance r
-    const solidAngle = Math.PI * a * a / (4 * r * r); // sr (approx)
-    const powerThroughAperture = P * 0.01; // assume 1% leakage
-    const irradianceAtDistance = powerThroughAperture / (Math.PI * (a / 2) ** 2); // W/cm² at aperture
-    const irradianceAtR = irradianceAtDistance * (a / (2 * r)) ** 2; // spreading
-
-    // Or simpler: E = P_leak / (π r²)
-    const E_at_r = powerThroughAperture / (Math.PI * r * r); // W/cm²
-
-    // Accessible Emission Limit (AEL) for Class 1
-    // Class 1 AEL: emission ≤ MPE at closest point of human access
-    const class1AEL = mpeIrr * Math.PI * 0.35 * 0.35; // W (7mm limiting aperture, r=3.5mm=0.35cm)
-
-    // Determine enclosure class
-    const emissionPower = powerThroughAperture;
-    let enclosureClass: string;
-    let description: string;
-
-    if (emissionPower <= class1AEL) {
-      enclosureClass = "Class 1 Enclosure";
-      description = "Emission ≤ MPE. Safe under all conditions. No protective eyewear required.";
-    } else if (emissionPower <= class1AEL * 10) {
-      enclosureClass = "Enhanced Class 1";
-      description = "Emission slightly above Class 1 AEL. Administrative controls recommended.";
-    } else if (emissionPower <= 0.5) {
-      enclosureClass = "Class 2 Enclosure";
-      description = "Visible emission ≤ 1 mW. Aversion response provides protection.";
-    } else if (emissionPower <= 500) {
-      enclosureClass = "Class 3B Enclosure";
-      description = "Significant emission. Protective eyewear and interlocks REQUIRED.";
-    } else {
-      enclosureClass = "Class 4 Enclosure";
-      description = "High-power emission. Full safety controls: interlocks, eyewear, barriers, LSO required.";
-    }
-
-    // Required OD for inspection
-    const ratio = E_at_r / mpeIrr;
-    const requiredOD = Math.max(0, Math.log10(ratio));
-
-    return {
-      mpe: mpe * 1000, mpeIrr, E_at_r, class1AEL, emissionPower,
-      enclosureClass, description, requiredOD, ratio,
-      powerThroughAperture,
-    };
-  }, [laserPower, wavelength, apertureSize, exposureTime, workingDistance]);
-
-  const chartData = useMemo(() => {
-    const distances = Array.from({ length: 200 }, (_, i) => 5 + i * 2);
-    const irradiance = distances.map(r => results.powerThroughAperture / (Math.PI * r * r));
-    const mpeLine = distances.map(() => results.mpeIrr);
-
-    return [
-      { x: distances, y: irradiance, type: "scatter" as const, mode: "lines" as const, name: "Irradiance at distance", line: { color: "#f87171", width: 2 } },
-      { x: distances, y: mpeLine, type: "scatter" as const, mode: "lines" as const, name: "MPE Irradiance", line: { color: "#60a5fa", dash: "dash" } },
-    ];
-  }, [results]);
+  // The opening passes the centred Gaussian's share 1 − exp(−2D²/d²); the window attenuates it by 10^−OD.
+  const throughOpening = P * -Math.expm1((-2 * D * D) / (d * d));
+  const accessible = throughOpening * Math.pow(10, -od);
+  const r = useMemo(() => classifyCw(lambda, accessible, { d, phi }), [lambda, accessible, d, phi]);
+  const [c1, , c3R] = r.checks;
+  const odFor = (c: ClassCheck) => Math.max(0, Math.log10(throughOpening / classMax(c)));
 
   return (
     <>
-            
       <LaserSafetyDisclaimer />
-      <LaserSafetyQuarantineBanner />
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Laser Power (mW)" value={laserPower} onChange={setLaserPower} min={0.001} step="any" />
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={20000} />
-        <ValidatedNumberInput label="Aperture Size (mm)" value={apertureSize} onChange={setApertureSize} min={0.1} step="0.1" />
-        <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} min={1e-9} step="any" />
-        <ValidatedNumberInput label="Working Distance (cm)" value={workingDistance} onChange={setWorkingDistance} min={1} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Laser power inside (mW)" value={laserPower} onChange={setLaserPower} min={0} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={1000000} step="any" />
+        <ValidatedNumberInput label="Beam diameter at the opening, 1/e² (mm)" value={beamDia} onChange={setBeamDia} min={0.001} step="any" />
+        <ValidatedNumberInput label="Divergence, 1/e² full angle (mrad)" value={divergence} onChange={setDivergence} min={0} step="any" />
+        <ValidatedNumberInput label="Opening diameter (mm)" value={apertureSize} onChange={setApertureSize} min={0} step="any" />
+        <ValidatedNumberInput label="Window or filter OD over the opening" value={windowOD} onChange={setWindowOD} min={0} step="any" />
       </div>
 
-      <div className={`bg-gray-900 border rounded-lg p-6 mb-6 ${results.enclosureClass.includes("Class 1") ? "border-green-700" : "border-red-700"}`}>
-        <p className="text-sm text-gray-400">Enclosure Classification</p>
-        <p className={`text-2xl font-bold ${results.enclosureClass.includes("Class 1") ? "text-green-400" : "text-red-400"}`}>{results.enclosureClass}</p>
-        <p className="text-sm text-gray-400 mt-2">{results.description}</p>
-      </div>
+      {r.laserClass ? (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-4">
+            <ResultCard
+              label="Accessible emission"
+              value={fmtPower(accessible)}
+              subtext={`${fmtPower(throughOpening)} through the opening, × 10^−${fmtNum(od)}`}
+              tone="cyan"
+            />
+            <ResultCard label="Class of the product (IEC 60825-1:2014)" value={`Class ${r.laserClass}`} tone={CLASS_TONES[r.laserClass]} />
+            <ResultCard
+              label="Class 1 limit for this beam"
+              value={fmtPower(classMax(c1))}
+              subtext={c1.condition3.limiting ? `${AEL_LABELS[c1.condition3.limiting]}, time base ${fmtNum(c1.condition3.timeBase)} s` : undefined}
+              tone="green"
+            />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+            <ResultCard
+              label="OD the opening needs for Class 1"
+              value={`OD ${odFor(c1).toFixed(2)}`}
+              subtext={odFor(c1) > od ? `${fmtNum(odFor(c1) - od)} more than now` : "met"}
+              tone={odFor(c1) > od ? "red" : "green"}
+            />
+            <ResultCard
+              label="OD for Class 3R"
+              value={Number.isFinite(classMax(c3R)) ? `OD ${odFor(c3R).toFixed(2)}` : "no Class 3R here"}
+              tone="orange"
+            />
+          </div>
+        </>
+      ) : (
+        <p className="text-amber-300 mb-8">IEC 60825-1 covers 180 nm to 1 mm.</p>
+      )}
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Leakage Power (est. 1%)</p>
-          <p className="text-3xl font-bold text-amber-400">{(results.powerThroughAperture * 1000).toFixed(2)} mW</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Irradiance at {workingDistance} cm</p>
-          <p className="text-3xl font-bold text-blue-400">{results.E_at_r.toFixed(4)} W/cm²</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Required OD at {workingDistance} cm</p>
-          <p className="text-3xl font-bold text-purple-400">OD {results.requiredOD.toFixed(1)}</p>
-        </div>
-      </div>
-
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <ChartPanel data={chartData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" },
-          xaxis: { title: "Distance (cm)", gridcolor: "#374151" },
-          yaxis: { title: "Irradiance (W/cm²)", gridcolor: "#374151", type: "log" },
-          margin: { t: 30, r: 30, b: 50, l: 70 },
-          legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
-        }} />
-      </div>
-
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-3">Formulas</h3>
-        <div className="text-gray-300 text-sm space-y-2 font-mono">
-          <p>E(r) = P<sub>leak</sub> / (π × r²) [W/cm²]</p>
-          <p>Class 1 AEL: P ≤ MPE × π × (0.7)² [W]</p>
-          <p>Classification: compare emission to AEL thresholds</p>
-          <p>Required OD = log₁₀(E / E<sub>MPE</sub>)</p>
-        </div>
+      <div className="text-sm text-gray-400 space-y-2">
+        <p>
+          A product that encloses a stronger laser is classified by what a person can reach outside it, the accessible
+          emission (IEC 60825-1:2014). Here that is the beam escaping through one opening, attenuated by a window or
+          filter over it; the product class follows from the class limits for that beam: a 7 mm stop 100 mm away for
+          the naked eye (at 400–1400 nm; the corneal stop in the infrared, 1 mm in the UV) and a 50 mm stop at 2 m for
+          binoculars, over a 100 s time base (30 000 s in the UV). A Class 1 product keeps the emission below the
+          Class 1 limit in normal operation; panels that open onto the stronger beam need safety interlocks, or tools
+          to remove them and warning labels (IEC 60825-1).
+        </p>
+        <p>
+          The opening passes the centred Gaussian beam&apos;s share 1 − exp(−2D²/d²); the escaping beam is treated as a
+          Gaussian of the same size (a clipped beam diffracts more, which lowers the hazard far from it). Not modelled:
+          scattered and diffuse leakage, several openings, pulses, and whether the window or guard survives the beam
+          (IEC 60825-4 tests laser guards).
+        </p>
       </div>
     </>
   );

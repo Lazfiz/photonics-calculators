@@ -77,7 +77,7 @@ function pieces(joints: readonly number[], forms: readonly (readonly [number, nu
 
 export const fixedAperture = (d: number): AperturePiece[] => [{ t0: T_MIN, t1: T_MAX, d, q: 0 }];
 /** 1 mm below 0.35 s, 1.5 t^0.375 mm to 10 s, then 3.5 mm (ICNIRP 2013 Table 8). */
-const CORNEAL_APERTURE: AperturePiece[] = [
+export const CORNEAL_APERTURE: AperturePiece[] = [
   { t0: T_MIN, t1: 0.35, d: 1e-3, q: 0 },
   { t0: 0.35, t1: 10, d: 1.5e-3, q: 0.375 },
   { t0: 10, t1: T_MAX, d: 3.5e-3, q: 0 },
