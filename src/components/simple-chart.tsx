@@ -53,8 +53,9 @@ export function niceTicks(min: number, max: number, count: number, log: boolean)
     const lo = Math.ceil(Math.log10(Math.max(min, 1e-10)));
     const hi = Math.floor(Math.log10(Math.max(max, 1e-10)));
     const ticks: number[] = [];
-    for (let p = lo; p <= hi; p++) {
-      ticks.push(Math.pow(10, p));
+    // From the decade below lo, so a range starting mid-decade (180 → 20 000) still gets its 200 and 500.
+    for (let p = lo - 1; p <= hi; p++) {
+      if (p >= lo) ticks.push(Math.pow(10, p));
       if (hi - lo <= 4) { ticks.push(2 * Math.pow(10, p)); ticks.push(5 * Math.pow(10, p)); }
     }
     return ticks.filter(t => t >= min * 0.9 && t <= max * 1.1);
