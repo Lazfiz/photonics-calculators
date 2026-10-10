@@ -1,97 +1,119 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+import { luminousWeightedMean } from "../../../physics/cie-photometry";
+import { dropletTirFraction, N_WATER, tirOnsetAngle, waterFilmResponse, waterSurfaceTension, wetting } from "../../../physics/thin-film/anti-fog";
+import { stackResponse } from "../../../physics/thin-film/transfer-matrix";
+
+const NM = 1e-9;
+const DEG = Math.PI / 180;
+const pct = (x: number, digits = 1) => (Number.isFinite(x) ? `${(x * 100).toFixed(digits)} %` : "—");
 
 export default function AntiFogPage() {
   const [nCoat, setNCoat] = useURLState("nCoat", 1.33);
   const [nSub, setNSub] = useURLState("nSub", 1.52);
-  const [designWl, setDesignWl] = useURLState("designWl", 550);
   const [thickness, setThickness] = useURLState("thickness", 120);
   const [contactAngle, setContactAngle] = useURLState("contactAngle", 15);
+  const [waterTemp, setWaterTemp] = useURLState("waterTemp", 20);
 
-  // Anti-fog principle: hydrophilic coating → low contact angle → uniform water film
-  // Optically: thin film acts as partial AR at visible wavelengths
-  // Key metric: no scattering from water droplets when surface is hydrophilic (θ < 30°)
+  const valid = nCoat > 0 && nSub > 0 && thickness >= 0 && contactAngle >= 0 && contactAngle <= 180 && waterTemp >= -25 && waterTemp <= 100;
+  const coating = useMemo(() => [{ n: nCoat, thickness: thickness * NM }], [nCoat, thickness]);
 
-  const tmm = useMemo(() => {
-    const N = 500;
-    const wls = Array.from({ length: N }, (_, i) => 350 + i * 500 / N);
-    const d = thickness; // nm
+  const optics = useMemo(() => {
+    if (!valid) return null;
+    const dry = (lam: number) => stackResponse({ incident: 1, layers: coating, substrate: { n: nSub } }, lam);
+    const underFilm = (lam: number) => waterFilmResponse(coating, nSub, lam);
+    const x = Array.from({ length: 401 }, (_, i) => 380 + i);
+    return {
+      Tdry: luminousWeightedMean((lam) => dry(lam).T),
+      Twet: luminousWeightedMean((lam) => underFilm(lam).T),
+      bareT: 1 - ((nSub - 1) / (nSub + 1)) ** 2,
+      x,
+      dryT: x.map((w) => dry(w * NM).T),
+      wetT: x.map((w) => underFilm(w * NM).T),
+    };
+  }, [valid, coating, nSub]);
 
-    const wlsM = wls.map((wl) => wl * 1e-9);
-    const coating = { n: nCoat, thickness: d * 1e-9 };
-    // Air | coating | substrate
-    const R = reflectanceSpectrum({ incident: 1, layers: [coating], substrate: { n: nSub } }, wlsM);
-
-    // With a uniform 1 µm water film on top (fog on a hydrophilic surface): air | water | coating | substrate
-    const water = { n: 1.33, thickness: 1000e-9 };
-    const RwithWater = reflectanceSpectrum({ incident: 1, layers: [water, coating], substrate: { n: nSub } }, wlsM);
-
-    return { wls, R, RwithWater };
-  }, [nCoat, nSub, thickness]);
-
-  const T = tmm.R.map(r => 1 - r);
-  const TwithWater = tmm.RwithWater.map(r => 1 - r);
-  const avgT = T.reduce((a, b) => a + b) / T.length;
-  const avgTwithWater = TwithWater.reduce((a, b) => a + b) / TwithWater.length;
-
-  // Surface energy from contact angle (Young's equation approximation)
-  // γ_sv = γ_sl + γ_lv · cos(θ) → cos(θ) close to 1 means hydrophilic
-  const cosTheta = Math.cos(contactAngle * Math.PI / 180);
-  const surfaceEnergy = cosTheta * 72.8; // mN/m, relative to water (γ_water = 72.8 mN/m)
+  const gamma = waterSurfaceTension(waterTemp + 273.15);
+  const wet = wetting(gamma, contactAngle * DEG);
+  const tir = dropletTirFraction(contactAngle * DEG);
+  const onset = tirOnsetAngle() / DEG;
+  const tirCurve = useMemo(() => {
+    const x = Array.from({ length: 91 }, (_, i) => i);
+    return { x, y: x.map((a) => 100 * dropletTirFraction(a * DEG)) };
+  }, []);
 
   return (
     <>
-            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label={<>n<sub>coating</sub></>} value={nCoat} onChange={setNCoat} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
-        <ValidatedNumberInput label="Coating thickness (nm)" value={thickness} onChange={setThickness} />
-        <ValidatedNumberInput label="Contact angle (°)" value={contactAngle} onChange={setContactAngle} min={0} max={90} />
+        <ValidatedNumberInput label="Water contact angle on the coating (°)" value={contactAngle} onChange={setContactAngle} min={0} max={180} step="1" />
+        <ValidatedNumberInput label="Water temperature (°C)" value={waterTemp} onChange={setWaterTemp} min={-25} max={100} step="1" />
+        <ValidatedNumberInput label={<>n<sub>coating</sub></>} value={nCoat} onChange={setNCoat} min={1} max={4} step="0.01" />
+        <ValidatedNumberInput label="Coating thickness (nm)" value={thickness} onChange={setThickness} min={0} max={10000} step="1" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} min={1} max={4} step="0.01" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Dry T (avg)</p>
-          <p className="text-2xl font-bold text-blue-400">{(avgT * 100).toFixed(1)}%</p>
+      {!valid && <p className="text-yellow-400 text-sm mb-6">Set positive indices, a thickness ≥ 0, a contact angle in 0–180° and water at −25 to 100 °C.</p>}
+
+      {valid && optics && (
+        <div className="grid gap-4 sm:grid-cols-3 mb-6">
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <p className="text-sm text-gray-400">Light transmittance τ<sub>v</sub> into the substrate</p>
+            <p className="text-2xl font-bold text-blue-400">{pct(optics.Tdry)}</p>
+            <p className="text-sm text-gray-500 mt-1">Under a water film: {pct(optics.Twet)}; uncoated dry: {pct(optics.bareT)}</p>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <p className="text-sm text-gray-400">Droplet area returning light by TIR</p>
+            <p className={`text-2xl font-bold ${tir > 0 ? "text-red-400" : "text-green-400"}`}>{contactAngle > 90 ? "θ > 90°: not modelled" : pct(tir)}</p>
+            <p className="text-sm text-gray-500 mt-1">Zero below θ = {onset.toFixed(1)}° (n<sub>water</sub> = {N_WATER})</p>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <p className="text-sm text-gray-400">Adhesion tension γ cos θ</p>
+            <p className="text-2xl font-bold text-amber-400">{(wet.adhesionTension * 1e3).toFixed(1)} mN/m</p>
+            <p className="text-sm text-gray-500 mt-1">Work of adhesion γ(1 + cos θ) = {(wet.workOfAdhesion * 1e3).toFixed(1)} mN/m; γ = {(gamma * 1e3).toFixed(2)} mN/m</p>
+          </div>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">With fog T (avg)</p>
-          <p className="text-2xl font-bold text-cyan-400">{(avgTwithWater * 100).toFixed(1)}%</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Surface Energy</p>
-          <p className="text-2xl font-bold text-green-400">{surfaceEnergy.toFixed(1)} mN/m</p>
-        </div>
+      )}
+
+      <div className="bg-gray-900 rounded p-4 mb-6">
+        <p className="text-gray-300 text-xs">
+          Fog is condensed water. On a surface it wets poorly it forms droplets, spherical caps that refract light away from the line of
+          sight; above a contact angle of asin(1/n<sub>w</sub>) = {onset.toFixed(1)}° part of each droplet sends light back by total internal
+          reflection, a fraction 1 − (1/(n<sub>w</sub> sin θ))² of its footprint (geometric optics, light crossing the window along the normal, θ ≤ 90°).
+          A hydrophilic anti-fog coating makes θ small, so the water spreads into a continuous film that only adds a weak, flat
+          reflection: the film is taken as thick and uneven (no fringes) and added incoherently. The contact angle sets the wetting, not the
+          optics of the film. γ cos θ (Young: γ<sub>sv</sub> − γ<sub>sl</sub>) is the adhesion tension, not the coating&apos;s surface energy;
+          γ is water&apos;s surface tension from IAPWS (2014). τ<sub>v</sub> weights T with D65 × V(λ); one face, lossless layers, constant
+          indices (water 1.333).
+        </p>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-4">
-        <h3 className="text-sm font-semibold text-gray-300 mb-2">Formulas</h3>
-        <div className="text-sm text-gray-300 space-y-1 font-mono">
-          <p>TMM: M = [[cos(δ), i·sin(δ)/η], [i·η·sin(δ), cos(δ)]]</p>
-          <p>δ = 2πn·d / λ (phase thickness)</p>
-          <p>R = |r|² where r = (A·n_sub - D·n_inc + i(B·n_sub·n_inc - C·n_inc)) / (...)</p>
-          <p>Surface energy: γ = γ_water · cos(θ_contact)</p>
+      {optics && (
+        <div className="mb-6">
+          <ChartPanel title="Transmittance into the substrate" data={[
+            { x: optics.x, y: optics.dryT, type: "scatter", mode: "lines", name: "Dry", line: { color: "#60a5fa" } },
+            { x: optics.x, y: optics.wetT, type: "scatter", mode: "lines", name: "Water film", line: { color: "#22d3ee", dash: "dash" } },
+          ]} layout={{
+            paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
+            xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
+            yaxis: { title: "T", gridcolor: "#374151" },
+            margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true,
+          }} />
         </div>
-      </div>
+      )}
 
-      <div className="bg-gray-900 rounded-lg p-4">
-        <ChartPanel data={[
-          { x: tmm.wls, y: T, type: "scatter", mode: "lines", name: "Dry T", line: { color: "#60a5fa", width: 2 } },
-          { x: tmm.wls, y: TwithWater, type: "scatter", mode: "lines", name: "With fog T", line: { color: "#22d3ee", width: 2 } },
-          { x: tmm.wls, y: tmm.R, type: "scatter", mode: "lines", name: "Dry R", line: { color: "#f87171", width: 1, dash: "dot" } },
-        ]} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
-          yaxis: { title: "R / T", gridcolor: "#374151", range: [0, 1.05] },
-          margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { orientation: "h", y: 1.12 },
-        }} />
-      </div>
+      <ChartPanel title="Droplets: share of the footprint lost to total internal reflection" data={[
+        { x: tirCurve.x, y: tirCurve.y, type: "scatter", mode: "lines", name: "TIR fraction (%)", line: { color: "#f87171" } },
+        { x: contactAngle <= 90 ? [contactAngle] : [], y: contactAngle <= 90 ? [100 * tir] : [], type: "scatter", mode: "markers", name: "This coating", marker: { color: "#fbbf24", size: 9 } },
+      ]} layout={{
+        paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
+        xaxis: { title: "Contact angle (°)", gridcolor: "#374151" },
+        yaxis: { title: "Fraction (%)", gridcolor: "#374151", range: [0, 100] },
+        margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true,
+      }} />
     </>
   );
 }

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  biaxialStrain, biaxialStrainEnergy, curvatureFromDeflection, deflectionFromCurvature, stoneyCurvature, stoneyStress,
+  biaxialStrain, biaxialStrainEnergy, curvatureFromDeflection, delaminationThickness, deflectionFromCurvature, stoneyCurvature, stoneyStress,
   thermalMismatchStress,
 } from "../src/physics/thin-film/stoney";
 
@@ -55,4 +55,14 @@ test("thermal-mismatch stress, strain and stored energy", () => {
   assertRel(biaxialStrain(s, 70 * GPa, 0.17), 2.1e-6 * -375, 1e-12, "ε");
   // U = σ² t (1 − ν)/E: hand 100 MPa, 1 µm, 70 GPa, ν 0.17 → 1e16 · 1e-6 · 0.83 / 7e10 = 0.11857 J/m².
   assertRel(biaxialStrainEnergy(100 * MPa, 1e-6, 70 * GPa, 0.17), 0.11857, 1e-4, "U");
+});
+
+test("delamination thickness: stored energy equals the interface toughness", () => {
+  // Hand: Γ = 5 J/m², σ = −500 MPa, E_f = 73 GPa, ν_f = 0.17 → 5 · 73e9 / (0.83 · 2.5e17) = 1.7590 µm.
+  const tc = delaminationThickness(5, -500 * MPa, 73 * GPa, 0.17);
+  assertRel(tc, 1.759e-6, 1e-4, "t_c");
+  // At t_c the stored energy is Γ.
+  assertRel(biaxialStrainEnergy(-500 * MPa, tc, 73 * GPa, 0.17), 5, 1e-12, "U(t_c)");
+  assert.equal(delaminationThickness(5, 0, 73 * GPa, 0.17), Infinity);
+  assert.ok(Number.isNaN(delaminationThickness(0, 1e8, 73 * GPa, 0.17)));
 });

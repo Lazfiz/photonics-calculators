@@ -70,3 +70,17 @@ export function biaxialStrainEnergy(sigma: number, tF: number, Ef: number, nuF: 
   if (!(Ef > 0 && nuF < 1)) return NaN;
   return (sigma * sigma * tF * (1 - nuF)) / Ef;
 }
+
+/**
+ * Film thickness at which the stored elastic energy U = σ² t_f (1 − ν_f)/E_f reaches the interface toughness Γ
+ * (J/m²): t_c = Γ E_f / ((1 − ν_f) σ²), m. A debond can't release more energy per unit area than the film stores,
+ * so below t_c the film can't delaminate whatever its flaws (J. W. Hutchinson, Z. Suo, "Mixed mode cracking in
+ * layered materials", Adv. Appl. Mech. (1991), pp. 63–191, doi:10.1016/S0065-2156(08)70164-9). Above t_c it may:
+ * edge cracks, buckles (compressive films) and channel cracks (tensile films) release only part of U.
+ * Infinity for σ = 0; NaN for invalid inputs.
+ */
+export function delaminationThickness(toughness: number, sigma: number, Ef: number, nuF: number): number {
+  if (!(toughness > 0 && Ef > 0 && nuF < 1 && Number.isFinite(sigma))) return NaN;
+  if (sigma === 0) return Infinity;
+  return (toughness * Ef) / ((1 - nuF) * sigma * sigma);
+}

@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+import { firstCrossing } from "../../../physics/math";
+import { dualBandReflectance, fitDualBandAr } from "../../../physics/thin-film/dual-band-ar";
+
+const NM = 1e-9;
+const pct = (x: number, digits = 3) => (Number.isFinite(x) ? `${(x * 100).toFixed(digits)} %` : "—");
+const LEVEL = 0.01;
 
 export default function DualBandARPage() {
   const [nSub, setNSub] = useURLState("nSub", 1.52);
@@ -15,78 +19,92 @@ export default function DualBandARPage() {
   const [n2, setN2] = useURLState("n2", 2.1);
   const [n3, setN3] = useURLState("n3", 1.65);
 
-  const tmm = useMemo(() => {
-    const N = 500;
-    const wls = Array.from({ length: N }, (_, i) => 350 + i * 900 / N);
+  const valid = nSub > 0 && n1 > 0 && n2 > 0 && n3 > 0 && wl1 >= 200 && wl1 <= 5000 && wl2 >= 200 && wl2 <= 5000;
+  const problem = useMemo(
+    () => ({ incident: 1, indices: [n1, n2, n3], substrate: nSub, lambda1: wl1 * NM, lambda2: wl2 * NM }),
+    [n1, n2, n3, nSub, wl1, wl2],
+  );
+  const fit = useMemo(() => (valid ? fitDualBandAr(problem) : null), [valid, problem]);
 
-    // Optimize thicknesses for dual-band AR using quarter-wave at each wavelength
-    // Layer 1 (top): quarter-wave at λ1, Layer 2: quarter-wave at λ2, Layer 3: quarter-wave at geometric mean
-    const avgWl = Math.sqrt(wl1 * wl2);
-    const d1 = wl1 / (4 * n1);
-    const d2 = wl2 / (4 * n2);
-    const d3 = avgWl / (4 * n3);
+  // Width of the band around each design wavelength where R stays below 1 %.
+  const bands = useMemo(() => {
+    if (!fit) return null;
+    const R = (lam: number) => dualBandReflectance(problem, fit.thicknesses, lam);
+    const width = (lam: number) => {
+      if (!(R(lam) < LEVEL)) return null;
+      const lo = firstCrossing(R, lam, lam * 0.5, LEVEL, 400);
+      const hi = firstCrossing(R, lam, lam * 1.5, LEVEL, 400);
+      // No crossing within λ/2 … 1.5λ: report the scan limit.
+      return { lo: Number.isFinite(lo) ? lo : lam * 0.5, hi: Number.isFinite(hi) ? hi : lam * 1.5, open: [!Number.isFinite(lo), !Number.isFinite(hi)] };
+    };
+    return [width(problem.lambda1), width(problem.lambda2)];
+  }, [fit, problem]);
 
-    // Air | layer 1 | layer 2 | layer 3 | substrate
-    const layers = [
-      { n: n1, thickness: d1 * 1e-9 },
-      { n: n2, thickness: d2 * 1e-9 },
-      { n: n3, thickness: d3 * 1e-9 },
-    ];
-    const R = reflectanceSpectrum({ incident: 1, layers, substrate: { n: nSub } }, wls.map((wl) => wl * 1e-9));
+  const spectrum = useMemo(() => {
+    if (!fit) return null;
+    const lo = 0.7 * Math.min(wl1, wl2), hi = 1.3 * Math.max(wl1, wl2);
+    const x = Array.from({ length: 601 }, (_, i) => lo + ((hi - lo) * i) / 600);
+    return { x, R: x.map((w) => 100 * dualBandReflectance(problem, fit.thicknesses, w * NM)) };
+  }, [fit, problem, wl1, wl2]);
 
-    return { wls, R };
-  }, [nSub, wl1, wl2, n1, n2, n3]);
-
-  const T = tmm.R.map(r => 1 - r);
-  const r1 = tmm.wls.findIndex(w => Math.abs(w - wl1) < 2);
-  const r2 = tmm.wls.findIndex(w => Math.abs(w - wl2) < 2);
-  const R1 = r1 >= 0 ? tmm.R[r1] : 0;
-  const R2 = r2 >= 0 ? tmm.R[r2] : 0;
+  const bare = ((nSub - 1) / (nSub + 1)) ** 2;
+  const bandText = (b: { lo: number; hi: number; open: boolean[] } | null) =>
+    b ? `${b.open[0] ? "≤ " : ""}${(b.lo / NM).toFixed(0)} – ${b.open[1] ? "≥ " : ""}${(b.hi / NM).toFixed(0)} nm` : "R ≥ 1 % at the centre";
 
   return (
     <>
-            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
-        <ValidatedNumberInput label="Band 1 λ (nm)" value={wl1} onChange={setWl1} />
-        <ValidatedNumberInput label="Band 2 λ (nm)" value={wl2} onChange={setWl2} />
-        <ValidatedNumberInput label={<>n<sub>1</sub> (top layer)</>} value={n1} onChange={setN1} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>2</sub> (middle layer)</>} value={n2} onChange={setN2} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>3</sub> (bottom layer)</>} value={n3} onChange={setN3} step="0.01" />
+        <ValidatedNumberInput label="Wavelength λ₁ (nm)" value={wl1} onChange={setWl1} min={200} max={5000} step="1" />
+        <ValidatedNumberInput label="Wavelength λ₂ (nm)" value={wl2} onChange={setWl2} min={200} max={5000} step="1" />
+        <ValidatedNumberInput label={<>n<sub>1</sub> (outer layer)</>} value={n1} onChange={setN1} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>2</sub> (middle layer)</>} value={n2} onChange={setN2} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>3</sub> (layer on the substrate)</>} value={n3} onChange={setN3} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} min={1} max={5} step="0.01" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">R at λ₁ = {wl1} nm</p>
-          <p className="text-3xl font-bold text-blue-400">{(R1 * 100).toFixed(4)}%</p>
-          <p className="text-sm text-gray-500 mt-1">d₁ = {(wl1 / (4 * n1)).toFixed(1)} nm</p>
+      {!valid && <p className="text-yellow-400 text-sm mb-6">Set positive indices and wavelengths in 200–5000 nm.</p>}
+
+      {fit && (
+        <div className="grid gap-4 sm:grid-cols-3 mb-6">
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <p className="text-sm text-gray-400">R at λ₁ = {wl1} nm</p>
+            <p className="text-2xl font-bold text-blue-400">{pct(fit.R1)}</p>
+            <p className="text-sm text-gray-500 mt-1">R &lt; 1 %: {bandText(bands?.[0] ?? null)}</p>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <p className="text-sm text-gray-400">R at λ₂ = {wl2} nm</p>
+            <p className="text-2xl font-bold text-green-400">{pct(fit.R2)}</p>
+            <p className="text-sm text-gray-500 mt-1">R &lt; 1 %: {bandText(bands?.[1] ?? null)}</p>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <p className="text-sm text-gray-400">Fitted thicknesses (outer → substrate)</p>
+            <p className="text-lg font-bold text-amber-400 font-mono">{fit.thicknesses.map((d) => (d / NM).toFixed(1)).join(" / ")} nm</p>
+            <p className="text-sm text-gray-500 mt-1">Uncoated face: R = {pct(bare, 2)}</p>
+          </div>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">R at λ₂ = {wl2} nm</p>
-          <p className="text-3xl font-bold text-green-400">{(R2 * 100).toFixed(4)}%</p>
-          <p className="text-sm text-gray-500 mt-1">d₂ = {(wl2 / (4 * n2)).toFixed(1)} nm</p>
-        </div>
+      )}
+
+      <div className="bg-gray-900 rounded p-4 mb-6">
+        <p className="text-gray-300 text-xs">
+          The three thicknesses are fitted to minimise R(λ₁) + R(λ₂): a grid search with each layer between 0 and a half wave at the
+          longer wavelength, refined by Nelder–Mead. Three layers have enough freedom for two zeros only for some index sets; otherwise the
+          fit returns the best compromise it finds, which need not be the global one. Quarter waves at each wavelength (the usual first
+          guess) don&apos;t work: with the defaults they leave 12.9 % at 1064 nm. Exact transfer matrix at normal incidence, lossless layers
+          with constant indices (real coating materials disperse, which shifts a dual-band design), substrate back face ignored.
+        </p>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-4">
-        <h3 className="text-sm font-semibold text-gray-300 mb-2">Formulas</h3>
-                              </div>
-
-      <div className="bg-gray-900 rounded-lg p-4">
-        <ChartPanel data={[
-          { x: tmm.wls, y: tmm.R, type: "scatter", mode: "lines", name: "Reflectance", line: { color: "#f87171" } },
-          { x: tmm.wls, y: T, type: "scatter", mode: "lines", name: "Transmittance", line: { color: "#60a5fa" } },
+      {spectrum && (
+        <ChartPanel title="Reflectance of the fitted coating" data={[
+          { x: spectrum.x, y: spectrum.R, type: "scatter", mode: "lines", name: "R (%)", line: { color: "#f87171" } },
+          { x: [wl1, wl2], y: [100 * (fit?.R1 ?? NaN), 100 * (fit?.R2 ?? NaN)], type: "scatter", mode: "markers", name: "λ₁, λ₂", marker: { color: "#fbbf24", size: 8 } },
         ]} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
-          yaxis: { title: "R / T", gridcolor: "#374151", range: [0, 1.05] },
-          margin: { t: 30, r: 30, b: 50, l: 70 },
-          shapes: [
-            { type: "line", x0: wl1, x1: wl1, y0: 0, y1: 1, line: { color: "#fbbf24", width: 1, dash: "dash" } },
-            { type: "line", x0: wl2, x1: wl2, y0: 0, y1: 1, line: { color: "#fbbf24", width: 1, dash: "dash" } },
-          ],
+          paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
+          xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
+          yaxis: { title: "R (%)", gridcolor: "#374151", rangemode: "tozero" },
+          margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true,
         }} />
-      </div>
+      )}
     </>
   );
 }
