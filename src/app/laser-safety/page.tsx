@@ -27,6 +27,9 @@ const icnirpTools: CalcLink[] = [
   { name: "Diode Laser Safety", href: "/laser-safety/diode-laser-safety", desc: "NOHD and OD of an elliptical diode beam (slow and fast axis)." },
   { name: "Fiber Laser Safety", href: "/laser-safety/fiber-laser-safety", desc: "NOHD and OD of a bare single-mode or multimode fiber end." },
   { name: "Industrial Laser Safety", href: "/laser-safety/industrial-laser-safety", desc: "Direct-beam NOHD, diffuse reflection from the workpiece, eyewear OD." },
+  { name: "Medical Laser Safety", href: "/laser-safety/medical-laser-safety", desc: "Focusing handpiece: NOHD beyond the focus, eyewear OD, spot fluence and thermal relaxation time." },
+  { name: "Multiple Wavelength", href: "/laser-safety/multiple-wavelength", desc: "Several lines in one beam: which add (same tissue) and which count independently." },
+  { name: "Retinal Image Size", href: "/laser-safety/retinal-image-size", desc: "Apparent source of a beam: retinal image and α with the eye accommodating." },
   { name: "Aversion Response Time", href: "/laser-safety/aversion-response", desc: "Largest visible power within the 0.25 s blink / aversion limit." },
 ];
 
@@ -36,11 +39,10 @@ const educationalReferences: CalcLink[] = [
   { name: "Beam Diameter Conversion", href: "/laser-safety/beam-diameter-conversion", desc: "Convert 1/e², 1/e, and FWHM beam widths." },
   { name: "Beam Expander", href: "/laser-safety/beam-expander", desc: "Basic beam expansion and irradiance scaling helper." },
   { name: "Green Laser Pointer", href: "/laser-safety/green-laser-pointer", desc: "Educational notes on pointer hazards and IR leakage concerns." },
-  { name: "Medical Laser Safety", href: "/laser-safety/medical-laser-safety", desc: "General medical-laser safety context page." },
   { name: "Peak Power", href: "/laser-safety/peak-power", desc: "Pulse energy / pulse duration / peak power math helper." },
   { name: "Power Density", href: "/laser-safety/power-density", desc: "Irradiance math helper from power and beam size." },
   { name: "Research Lab Safety", href: "/laser-safety/research-lab-safety", desc: "Educational lab-process and programmatic safety overview." },
-  { name: "Retinal Image Size", href: "/laser-safety/retinal-image-size", desc: "Geometric helper for retinal spot / image-size concepts." },
+  { name: "Thermal Lens Hazard", href: "/laser-safety/thermal-lens-hazard", desc: "Heating of an eyewear filter or lens by the beam it absorbs, and how long it lasts." },
   { name: "Ultrafast Laser Safety", href: "/laser-safety/ultrafast-laser-safety", desc: "Educational overview of ultrafast-specific safety concerns." },
 ];
 
@@ -48,10 +50,8 @@ const quarantinedTopics: CalcLink[] = [
   { name: "AEL Limits", href: "/laser-safety/ael-limits", desc: "Standards-heavy classification logic — quarantined." },
   { name: "Blue Light Hazard", href: "/laser-safety/blue-light-hazard", desc: "Photochemical / spectral-weighting topic — quarantined." },
   { name: "Enclosure Class", href: "/laser-safety/enclosure-class", desc: "Facility/process/policy-heavy topic — quarantined." },
-  { name: "Multiple Wavelength", href: "/laser-safety/multiple-wavelength", desc: "Additive multi-wavelength hazard logic — quarantined." },
   { name: "PRF Correction", href: "/laser-safety/prf-correction", desc: "Pulse repetition correction logic — quarantined." },
   { name: "Scan Failure", href: "/laser-safety/scan-failure", desc: "Failure-mode scanning safety topic — quarantined." },
-  { name: "Thermal Lens Hazard", href: "/laser-safety/thermal-lens-hazard", desc: "Protective-filter / lens failure topic — quarantined." },
   { name: "UV Exposure", href: "/laser-safety/uv-exposure", desc: "UV exposure limits topic — quarantined." },
   { name: "UV Hazard", href: "/laser-safety/uv-hazard", desc: "UV hazard evaluation — quarantined." },
 ];

@@ -1,163 +1,138 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
+import { finiteXY, fmtDistance, fmtNum } from "../../../components/eye-limit-labels";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { ALPHA_MIN, correctionCE } from "../../../physics/laser-safety/eye-exposure-limits";
+import { gaussianApparentSource, MAX_ACCOMMODATION } from "../../../physics/laser-safety/retinal-image";
+
+const R_MIN = 1e-3; // m, chart range
+const R_MAX = 100;
 
 export default function RetinalImageSizePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 632);
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 2); // mm at cornea
-  const [beamDivergence, setBeamDivergence] = useURLState("beamDivergence", 1); // mrad
-  const [viewingDistance, setViewingDistance] = useURLState("viewingDistance", 100); // cm
-  const [eyeLength, setEyeLength] = useURLState("eyeLength", 17); // mm (standard)
+  const [wavelength, setWavelength] = useURLState("wavelength", 808); // nm
+  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 0.4); // mm, 1/e² at the waist
+  const [beamDivergence, setBeamDivergence] = useURLState("beamDivergence", 200); // mrad, 1/e² full angle
+  const [viewingDistance, setViewingDistance] = useURLState("viewingDistance", 10); // cm from the waist to the eye
 
-  // Retinal image size depends on:
-  // - Beam diameter at cornea
-  // - Beam divergence
-  // - Eye's focal length (~17mm)
-  // - Diffraction limit
-  //
-  // Geometric image: d_retina ≈ d_cornea × (f_eye / viewing_distance)
-  // For collimated beam: d_retina ≈ f_eye × θ_divergence (if beam fills pupil)
-  // Diffraction limit: d_diff = 2.44 × λ × f / d_pupil (Airy disk diameter)
-  // Actual image ≈ max(geometric, diffraction) approximately RSS
+  // Embedded-Gaussian beam and an accommodating 17 mm eye: src/physics/laser-safety/retinal-image.ts. SI inside.
+  const lambda = Math.max(wavelength, 1) * 1e-9;
+  const d0 = Math.max(beamDiam, 1e-6) * 1e-3;
+  const theta = Math.max(beamDivergence, 0) * 1e-3;
+  const r = Math.max(viewingDistance, 0) * 1e-2;
 
-  const results = useMemo(() => {
-    const lam = wavelength * 1e-6; // mm
-    const dCornea = beamDiam; // mm
-    const theta = beamDivergence / 1000; // rad
-    const fEye = eyeLength; // mm
-    const D = viewingDistance * 10; // mm
-
-    // For a collimated beam filling the pupil:
-    // Geometric retinal image from divergence
-    const dRetinaDiv = fEye * theta; // mm
-
-    // For a focused source at distance D:
-    const dRetinaGeom = dCornea * fEye / D; // mm
-
-    // Diffraction-limited spot (Airy disk, 1st zero)
-    const pupilDiam = Math.min(dCornea, 7); // mm (max pupil ~7mm)
-    const dDiff = 2.44 * lam * fEye / pupilDiam; // mm
-
-    // Effective retinal image (RSS of geometric + diffraction)
-    const dRetinaEffective = Math.sqrt(dRetinaDiv * dRetinaDiv + dDiff * dDiff);
-
-    // Angular subtense α = d_retina / f_eye (radians)
-    const alphaRad = dRetinaEffective / fEye;
-    const alphaMrad = alphaRad * 1000; // mrad
-
-    // Classification thresholds
-    const alphaMin = 1.5; // mrad (point source)
-    const alphaMax = 100; // mrad (extended source)
-
-    const sourceType = alphaMrad < alphaMin ? "Point Source" :
-                       alphaMrad < alphaMax ? "Small Extended" : "Extended Source";
-
-    // CA factor (wavelength correction for retinal hazard)
-    const lamMicron = wavelength / 1000;
-    const CA = lamMicron >= 0.7 && lamMicron < 1.05 ?
-      Math.pow(10, 0.02 * (lamMicron - 0.7)) : 1;
-
-    return {
-      dRetinaDiv: dRetinaDiv * 1000, // µm
-      dRetinaGeom: dRetinaGeom * 1000, // µm
-      dDiff: dDiff * 1000, // µm
-      dRetinaEffective: dRetinaEffective * 1000, // µm
-      alphaMrad,
-      sourceType,
-      CA,
-      pupilDiam,
-    };
-  }, [wavelength, beamDiam, beamDivergence, viewingDistance, eyeLength]);
+  const s = useMemo(() => gaussianApparentSource(lambda, d0, theta, r), [lambda, d0, theta, r]);
+  const valid = !Number.isNaN(s.alpha);
+  const point = s.alpha <= ALPHA_MIN;
+  const ce = correctionCE(s.alpha, 10);
+  const belowDiffraction = (theta * Math.PI * d0) / (4 * lambda) < 1;
 
   const chartData = useMemo(() => {
-    const divergences = Array.from({ length: 100 }, (_, i) => 0.1 + i * 0.2);
-    const fEye = eyeLength;
-    const lam = wavelength * 1e-6;
-    const pupilDiam = Math.min(beamDiam, 7);
-
-    const retinalSizes = divergences.map(div => {
-      const theta = div / 1000;
-      const dDiv = fEye * theta * 1000;
-      const dDiff = 2.44 * lam * fEye / pupilDiam * 1000;
-      return Math.sqrt(dDiv * dDiv + dDiff * dDiff);
-    });
-
-    const diffLimit = divergences.map(() => 2.44 * lam * fEye / pupilDiam * 1000);
-    const alphaMinLine = divergences.map(() => 1.5 * eyeLength / 1000 * 1000); // µm at αmin
-
+    const rs = Array.from({ length: 201 }, (_, i) => R_MIN * Math.pow(R_MAX / R_MIN, i / 200));
+    const alphas = rs.map((x) => gaussianApparentSource(lambda, d0, theta, x).alpha * 1e3);
+    const line = finiteXY(rs, alphas);
+    const here = finiteXY([r], [s.alpha * 1e3]);
     return [
-      { x: divergences, y: retinalSizes, type: "scatter" as const, mode: "lines" as const, name: "Effective Retinal Image (µm)", line: { color: "#60a5fa" } },
-      { x: divergences, y: diffLimit, type: "scatter" as const, mode: "lines" as const, name: "Diffraction Limit (µm)", line: { color: "#f472b6", dash: "dash" } },
-      { x: divergences, y: alphaMinLine, type: "scatter" as const, mode: "lines" as const, name: "α_min threshold", line: { color: "#fbbf24", dash: "dot" } },
+      { ...line, type: "scatter", mode: "lines", name: "α", line: { color: "#60a5fa" } },
+      { x: [R_MIN, R_MAX], y: [1.5, 1.5], type: "scatter", mode: "lines", name: "α_min", line: { color: "#fbbf24", dash: "dash" } },
+      { x: [R_MIN, R_MAX], y: [100, 100], type: "scatter", mode: "lines", name: "α_max", line: { color: "#f87171", dash: "dot" } },
+      { ...here, type: "scatter", mode: "markers", name: "Your eye", marker: { color: "#ffffff", size: 8 } },
     ];
-  }, [wavelength, beamDiam, eyeLength]);
-
-  const layout = {
-    paper_bgcolor: "#030712",
-    plot_bgcolor: "#030712",
-    font: { color: "#9ca3af" },
-    xaxis: { title: "Beam Divergence (mrad)", gridcolor: "#1f2937", color: "#9ca3af" },
-    yaxis: { title: "Retinal Image Size (µm)", gridcolor: "#1f2937", color: "#9ca3af" },
-    margin: { t: 30, b: 50, l: 70, r: 20 },
-    legend: { font: { color: "#d1d5db" } },
-  };
+  }, [lambda, d0, theta, r, s.alpha]);
 
   return (
     <>
-            
       <LaserSafetyDisclaimer />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <div>
-          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Beam Diameter at Cornea (mm)" value={beamDiam} onChange={setBeamDiam} step="0.1" />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Beam Divergence (mrad)" value={beamDivergence} onChange={setBeamDivergence} step="0.1" />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Viewing Distance (cm)" value={viewingDistance} onChange={setViewingDistance} />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Eye Length (mm)" value={eyeLength} onChange={setEyeLength} step="0.5" />
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={1400} step="any" />
+        <ValidatedNumberInput label="Beam diameter at the waist, 1/e² (mm)" value={beamDiam} onChange={setBeamDiam} min={0.001} step="any" />
+        <ValidatedNumberInput label="Divergence, 1/e² full angle (mrad)" value={beamDivergence} onChange={setBeamDivergence} min={0} step="any" />
+        <ValidatedNumberInput label="Distance from the waist to the eye (cm)" value={viewingDistance} onChange={setViewingDistance} min={0} step="any" />
       </div>
+      {belowDiffraction ? (
+        <p className="text-amber-300 text-sm mb-4">
+          That divergence is below the diffraction limit 4λ/(πd₀) = {fmtNum((4 * lambda) / (Math.PI * d0) * 1e3)} mrad
+          of a TEM₀₀ beam with this waist; it is taken as M² = 1.
+        </p>
+      ) : null}
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">Retinal Image</div>
-          <div className="text-2xl font-bold text-blue-400">{results.dRetinaEffective.toFixed(1)}</div>
-          <div className="text-xs text-gray-500">µm</div>
+      {valid ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+          <ResultCard
+            label="Apparent source subtense α"
+            value={`${fmtNum(s.alpha * 1e3)} mrad`}
+            tone={point ? "green" : "orange"}
+            subtext={
+              point
+                ? "Point source (α ≤ α_min = 1.5 mrad): the limits apply without C_E"
+                : `Extended source: C_E = ${fmtNum(ce)} for exposures of 0.25 s or more`
+            }
+          />
+          <ResultCard
+            label="Retinal image diameter, 1/e²"
+            value={`${fmtNum(s.retinalDiameter * 1e6)} µm`}
+            tone="blue"
+            subtext={`63 % (1/e) diameter ${fmtNum((s.retinalDiameter / Math.SQRT2) * 1e6)} µm`}
+          />
+          <ResultCard
+            label="Beam at the eye, 1/e²"
+            value={`${fmtNum(s.dCornea * 1e3)} mm`}
+            tone="purple"
+            subtext={s.dCornea > 7e-3 ? "Overfills a 7 mm pupil" : "Inside a 7 mm pupil"}
+          />
+          <ResultCard
+            label="Wavefront curvature radius at the eye"
+            value={s.curvature > 0 ? fmtDistance(1 / s.curvature) : "flat (∞)"}
+            tone="cyan"
+          />
+          <ResultCard
+            label="Accommodation used"
+            value={`${fmtNum(s.accommodation)} D of ${MAX_ACCOMMODATION}`}
+            tone={s.defocus > 0 ? "yellow" : "gray"}
+            subtext={s.defocus > 0 ? `${fmtNum(s.defocus)} D left out of focus (the waist is nearer than 100 mm)` : "The eye brings the image to focus"}
+          />
+          <ResultCard label="Beam quality M²" value={fmtNum(s.M2)} tone="gray" />
         </div>
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">Diffraction Limit</div>
-          <div className="text-2xl font-bold text-pink-400">{results.dDiff.toFixed(1)}</div>
-          <div className="text-xs text-gray-500">µm</div>
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">Angular Subtense</div>
-          <div className="text-2xl font-bold text-yellow-400">{results.alphaMrad.toFixed(2)}</div>
-          <div className="text-xs text-gray-500">mrad</div>
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">Source Type</div>
-          <div className={`text-lg font-bold ${results.sourceType === "Point Source" ? "text-green-400" : "text-orange-400"}`}>{results.sourceType}</div>
-        </div>
+      ) : (
+        <p className="text-amber-300 mb-6">Enter a positive wavelength and waist diameter.</p>
+      )}
+
+      {valid ? (
+        <ChartPanel
+          data={chartData}
+          layout={{
+            xaxis: { title: "Distance from the waist to the eye (m)", type: "log" },
+            yaxis: { title: "Apparent source subtense α (mrad)", type: "log" },
+          }}
+          title="Apparent source against viewing distance"
+        />
+      ) : null}
+      <p className="text-xs text-gray-500 mt-2 mb-6">
+        The chart shows α against the distance from the waist (log scales), with α_min = 1.5 mrad and α_max = 100 mrad
+        dashed. Nearer than 100 mm the eye can&apos;t focus and the blurred image grows.
+      </p>
+
+      <div className="text-sm text-gray-400 space-y-2">
+        <p>
+          The apparent source is the object the eye images to the smallest retinal spot within its accommodation range,
+          100 mm to infinity (IEC 60825-1:2014). For a beam that is its waist: seen from r, the beam has the 1/e² radius (d₀/2)√(1 +
+          (r/z<sub>R</sub>)²) and a wavefront of radius r(1 + (z<sub>R</sub>/r)²), z<sub>R</sub> = d₀/θ. The eye (a
+          17 mm air-equivalent lens) adds up to 10 dioptres to cancel that curvature and images the waist; α is the 63 %
+          image diameter over 17 mm, which far from the waist is d₀/(√2 r). A beam wider than the pupil is diffraction
+          limited by the 7 mm pupil; a waist nearer than 100 mm stays out of focus.
+        </p>
+        <p>
+          A TEM₀₀ (M² = 1) beam seen from r ≥ 100 mm has α ≤ √(λ/(πr)) (the largest when z<sub>R</sub> = r): at 100 mm
+          1.42 mrad at 633 nm, so a point source in the visible, and at most 1.84 mrad at 1064 nm. Beams of poor quality
+          (fibre-coupled diodes, multimode fibres, stacks) or a waist inside 100 mm give larger sources, which raises the retinal thermal limit by C<sub>E</sub> = α/α<sub>min</sub> (up to α<sub>max</sub>).
+          Not modelled: aberrations of the eye (below 1.5 mrad they don&apos;t matter), a beam converging to a waist
+          behind the eye.
+        </p>
       </div>
-
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 font-mono text-sm text-gray-300">
-        <p className="text-gray-500 mb-1">Key Formulas:</p>
-        <p>d<sub>retina</sub> = f<sub>eye</sub> × θ<sub>div</sub> (collimated beam)</p>
-        <p>d<sub>Airy</sub> = 2.44 × λ × f<sub>eye</sub> / d<sub>pupil</sub></p>
-        <p>d<sub>eff</sub> = √(d<sub>geo</sub>² + d<sub>diff</sub>²)</p>
-        <p>α<sub>min</sub> = 1.5 mrad (point source threshold) | α<sub>max</sub> = 100 mrad (extended)</p>
-      </div>
-
-      <ChartPanel data={chartData} layout={layout} className="w-full h-[400px]" />
     </>
   );
 }

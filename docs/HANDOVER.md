@@ -1,37 +1,37 @@
-# Handover — 2026-10-10 (session 31 → session 32)
+# Handover — 2026-10-10 (session 32 → session 33)
 
-**Start here:** read this file, then `docs/ROADMAP.md` (Phase 4, "Laser-safety part 3a" done; 3b, 4, 5 open).
-Session 31 merged PR #27 (part 2; production checked) and did laser-safety part 3a on branch `phase-4/laser-safety-beams`.
+**Start here:** read this file, then `docs/ROADMAP.md` (Phase 4, laser-safety parts 3a and 3b done; 4 and 5 open).
+PR #28 (part 3a) is merged and live (`840f8312`, production checked in session 31). Session 32 did part 3b on branch
+`phase-4/laser-safety-apps`.
 
 ## State
-- New `src/physics/laser-safety/hazard-distance.ts`: `limitSafeDiameter` (closed-form inverse of `limitMaxPower` in d),
-  NOHD for round/elliptical beams with linear or Gaussian spread, `requiredOpticalDensity`, `limitMaxIrradiance`,
-  diffuse viewing (`diffuseExposure`, `diffuseHazardDistance`). Oracle gained an optional open field of view
-  (`eyeLimits(λ, α, "open")`, ICNIRP 2013 eqn 5), default unchanged.
-- `viewing-distance` + `beam-divergence-hazards` merged into `nohd` (464 pages). Five pages rebuilt and tiered (93 of 464):
-  `nohd` exact; `diffuse-reflection`, `diode-laser-safety`, `fiber-laser-safety`, `industrial-laser-safety` textbook. They
-  moved to the landing page's "ICNIRP 2013 limits" group. Shared UI: `components/hazard-ratio-chart.tsx`, `fmtDistance`.
+- New tested modules in `src/physics/laser-safety/`: `multiple-wavelength.ts` (shares P/P_max per ICNIRP limit, added per
+  tissue: retina; anterior eye), `filter-heating.ts` (Gaussian beam on an insulated plate, face or volume absorption;
+  PC, PMMA, N-BK7), `surgical-laser.ts` (TRT, handpiece divergence b₀/f, 4λf/(πb₀)); `retinal-image.ts` gained
+  `gaussianApparentSource` (embedded-Gaussian beam, eye accommodating 0–10 D). 12/12 mutations caught.
+- Four pages fixed and tiered (97 of 464): `multiple-wavelength` exact; `medical-laser-safety`, `retinal-image-size`,
+  `thermal-lens-hazard` textbook. No laser-safety page in parts 1–3 keeps a quarantine banner.
 
 ## Decisions
-- NOHD averages the Gaussian beam over each limit's aperture (as the oracle does), so it is a little shorter than the
-  standards' peak-irradiance (√(4P/(πE)) − a)/φ: 97.77 vs 98.02 m at the `nohd` defaults. Pages say so.
-- Diffuse viewing counts the whole spot (open field of view, C_E = α²/(α_min α_max) above α_max): conservative for
-  Gaussian spots and for blue light (γ_ph not modelled). Far-field ρP/(πr²); pages warn below 10 spot diameters.
-- Diode: elliptical beam = round beam of equal peak irradiance √(d_x d_y); default t 10 s (invisible NIR), FWHM option.
-- Fiber: default single-mode (λ/(πw₀) from the MFD, conservative); multimode fills the NA (2 tan asin NA). Old links
-  with only `na` now open as single-mode.
-- Part 3 split: 3b (medical, multiple-wavelength, thermal-lens, retinal-image-size) next session.
+- Multiple wavelengths: ICNIRP 2013 p. 279 adds exposures absorbed in the same tissue ("for practical purposes" even
+  for different mechanisms) and treats different tissues independently. A line's share of a tissue is its largest
+  share there (one line's thermal and blue-light limits are met separately, not summed). UV + IR at the cornea add (safe).
+- Medical: the OD uses the beam at the focus (all power inside the aperture, the worst case); the lens-side OD is a
+  subtext. NOHD is measured beyond the focus (ANSI lens-on-laser). TRT = time for a Gaussian centre temperature of
+  1/e width d to halve: d²/(16κ) cylinder, d²/(27.2κ) sphere, 3d²/(16κ) layer.
+- Retinal image: α is the 63 % image diameter over 17 mm with the eye focused for the smallest image (IEC apparent
+  source). Beams overfilling the pupil: max(M²/w, 2/D) keeps the image of a multimode waist (not the pupil cap).
+- Filter heating: limit = glass transition − 25 °C; no cooling (errs high for long exposures); stress not modelled.
 
 ## Next actions
-1. PR for `phase-4/laser-safety-beams`: CI, then ask the user to merge; after merge, `ui-check` on production and spot
-   values at the defaults: nohd 97.8 m (gaussian 99.8 m); diffuse-reflection 0.637 W/m², α 7.07 mrad, ratio 2.67e-3,
-   no hazard distance; diode 16.0 m, OD 2.90; fiber 1.66 m (multi 0.933 m); industrial 7.13 km, OD 6.31, diffuse 2.76 m.
-   Redirects: `/laser-safety/viewing-distance` and `/laser-safety/beam-divergence-hazards` → `/laser-safety/nohd`.
-2. Laser-safety part 3b. `multiple-wavelength`: ICNIRP 2013 p. 279 — additive only for the same absorption site and
-   mechanism (retina thermal, retina photochemical, cornea); different tissues count independently.
-3. Parts 4–5 (classes/AEL; pulses). Green-pointer, research-lab, lidar NOHDs go on `hazard-distance.ts` there.
+1. PR for `phase-4/laser-safety-apps`: CI, then ask the user to merge; after merge, `ui-check` on production and spot
+   values at the defaults: multiple-wavelength retina 1.22, anterior eye 0.275, OD 0.09; retinal-image-size α 2.83 mrad,
+   C_E 1.89, M² 77.8; thermal-lens-hazard +730 K at 5 s, T_g in 87.9 ms, 0.313 W max; medical NOHD 2.00 m, OD 3.02
+   (lens 2.52), 31 800 W/cm², TRT 4.81 ms.
+2. Laser-safety part 4 (classes and AEL; check the 1250–1400 nm anterior-segment limit against IEC 60825-1:2014 first),
+   then part 5 (pulses). Green-pointer, research-lab, lidar NOHDs go on `hazard-distance.ts` there.
 
-## Ship flow (worked twenty-four times)
+## Ship flow (worked twenty-five times)
 - **Push:** `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`.
 - **CI:** `gh pr create --body-file f`, then `gh pr checks <n> --watch`.
 - **Preview:** behind Vercel SSO. Use a local `npm run build` + `npx next start -p 3100`.

@@ -287,8 +287,22 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "medical-laser-safety",
     title: "Medical Laser Safety Calculator",
-    description: "Analyze irradiance, fluence, thermal relaxation, and OD for medical/surgical laser systems.",
-    knownIssue: "The thermal relaxation time is 10⁴× too small (m² mixed with cm²/s), the 1400–2600 nm limit is up to 3× too high, and the UV limit is a flat 3 mW/cm² (up to 100× too high).",
+    description: "Surgical laser with a focusing handpiece: NOHD beyond the focus and eyewear OD on the ICNIRP 2013 eye limits, with the spot's power density, fluence and the target's thermal relaxation time.",
+    tier: "textbook",
+    modelNote: "Lens-on-laser beam spreading at b₀/f from the focus; ICNIRP 2013 point-source eye limits over each aperture, exposures up to t; TRT: a Gaussian centre temperature halves. Not modelled: bare fibres, pulses, skin.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers, Appendix B (lens-on-laser hazard zone); ANSI Z136.3-2018, Safe Use of Lasers in Health Care.",
+      },
+      {
+        citation: "Anderson, R. R. & Parrish, J. A. (1983). Selective photothermolysis: precise microsurgery by selective absorption of pulsed radiation. Science 220, 524–527.",
+        url: "https://doi.org/10.1126/science.6836297",
+      },
+    ],
   },
   {
     slug: "mpe",
@@ -319,8 +333,15 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "multiple-wavelength",
     title: "Multiple Wavelength MPE",
-    description: "Calculates additive hazard ratios for multiple laser wavelengths. Sum of ratios must be < 1 for safety per ANSI Z136.1 Section 8.",
-    knownIssue: "The 1050–1400 nm limit is a constant 0.01 J/cm² (up to 200× too high at 1 ms), the visible limits miss the photochemical limit beyond 10 s, and the irradiance uses a fixed 2 mm area instead of the 7 mm aperture.",
+    description: "Eye exposure to a beam with several wavelengths on the ICNIRP 2013 limits: lines absorbed in the same tissue add, while the retina and the cornea count independently.",
+    tier: "exact",
+    modelNote: "ICNIRP 2013 eye limits per line (point source, averaged over each aperture, exposures up to t); shares add per tissue (retina; cornea and lens) as on p. 279. Not modelled: skin, pulses, lines of different beam size.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. p. 279 (multiple wavelengths), Tables 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+    ],
   },
   {
     slug: "nohd",
@@ -448,7 +469,21 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "retinal-image-size",
     title: "Retinal Image Size",
-    description: "Calculates retinal spot size from corneal beam parameters, including diffraction and geometric contributions per ANSI Z136.1.",
+    description: "Apparent source of a laser beam: retinal image diameter and angular subtense α with the eye accommodating from 100 mm to infinity, for any waist size and beam quality M².",
+    tier: "textbook",
+    modelNote: "Embedded-Gaussian beam (M²) from its waist; 17 mm air-equivalent eye accommodating 0–10 D; 7 mm pupil diffraction; α from the 63 % image diameter. Not modelled: aberrations of the eye, beams converging behind it.",
+    references: [
+      {
+        citation: "IEC 60825-1:2014, Safety of laser products – Part 1. Definitions of the apparent source and the angular subtense (63 % energy diameter); accommodation from 100 mm to infinity.",
+      },
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Table 2 (α_min, α_max, C_E).",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "ISO 11146-1:2021, Lasers and laser-related equipment – Test methods for laser beam widths, divergence angles and beam propagation ratios (M²).",
+      },
+    ],
   },
   {
     slug: "scan-failure",
@@ -479,7 +514,21 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "thermal-lens-hazard",
     title: "Thermal Lens Hazard",
-    description: "Evaluate thermal lensing risk to protective eyewear and optical components from absorbed laser power.",
+    description: "Temperature rise of a laser eyewear filter or lens at the beam centre, absorbed at the face or through the thickness, and the time until it softens.",
+    tier: "textbook",
+    modelNote: "Gaussian beam heating a laterally infinite plate with insulated faces, absorbed at the face or evenly in depth; constant properties and no cooling, so long exposures err high. Not modelled: thermal stress, dye bleaching.",
+    references: [
+      {
+        citation: "Carslaw, H. S. & Jaeger, J. C. (1959). Conduction of Heat in Solids, 2nd ed. Oxford University Press. Instantaneous point source and the method of images.",
+      },
+      {
+        citation: "Lax, M. (1977). Temperature rise induced by a laser beam. J. Appl. Phys. 48, 3919–3924.",
+        url: "https://doi.org/10.1063/1.324265",
+      },
+      {
+        citation: "EN 207:2017, Personal eye-protection equipment – Filters and eye-protectors against laser radiation (5 s CW test).",
+      },
+    ],
   },
   {
     slug: "thermal-vs-photochemical",
