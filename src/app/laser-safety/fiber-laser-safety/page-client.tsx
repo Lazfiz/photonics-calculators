@@ -156,9 +156,9 @@ export default function FiberLaserSafetyPage() {
         A bare fiber end is a Gaussian beam with its waist at the end face, so its diameter at range r is √(d² + (rφ)²).
         Single-mode: the mode diffracts at the half-angle λ/(πw₀). Multimode: the beam fills the NA (real profiles are not
         Gaussian, and NA is sometimes quoted at 5 % rather than 1/e²). The limits are ICNIRP 2013 (Health Phys. 105:271)
-        at any wavelength, for one exposure of up to t, averaged over each limit&apos;s aperture. The fiber core seen from
-        100 mm is far below 1.5 mrad, so it is a point source. Connectors, splices and lensed or collimated outputs change
-        the beam.
+        at any wavelength, for one exposure of up to t, averaged over each limit&apos;s aperture, for a point source: a core
+        up to 150 µm seen from 100 mm subtends at most 1.5 mrad (a larger core would raise the retinal limit, so this
+        errs safe). Connectors, splices and lensed or collimated outputs change the beam.
       </p>
 
       {valid && P > 0 ? (

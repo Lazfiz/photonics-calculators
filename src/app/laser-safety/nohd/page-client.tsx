@@ -128,7 +128,7 @@ export default function NOHDPage() {
             <option value="gaussian">Gaussian √(a² + (rφ)²), waist at the aperture</option>
           </select>
           <p className="mt-2 text-xs leading-5 text-gray-400">
-            The linear form is the standards&apos; and errs on the safe side near the aperture.
+            The linear form is the standards&apos;. A beam with its waist at the aperture widens more slowly, so the Gaussian NOHD is a little longer.
           </p>
         </div>
       </div>
