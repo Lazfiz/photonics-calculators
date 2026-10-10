@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  apertureIrradiance, correctionCA, correctionCB, correctionCC, exposureDuration, exposureLimit, eyeLimits,
+  ALPHA_MIN, alphaMax, apertureIrradiance, correctionCA, correctionCB, correctionCC, correctionCE, exposureDuration,
+  exposureLimit, eyeLimits, limitMaxPower, photochemicalCrossover, timeT2,
   limitingAperture, limitMaxDuration, T_MAX, T_MIN, type EyeLimit, type EyeLimitKind,
 } from "../src/physics/laser-safety/eye-exposure-limits";
 
@@ -215,4 +216,99 @@ test("the solver agrees with a scan of E(t)·t > H(t) over 1 ns – 30 ks", () =
       else assert.ok(tMax > grid[i - 1] * (1 - 1e-9) && tMax <= grid[i] * (1 + 1e-9), `${label}, scan ${grid[i]}`);
     }
   }
+});
+
+test("extended sources: C_E, α_max and T₂ (ICNIRP 2013 Tables 2 and 4)", () => {
+  assert.equal(alphaMax(1e-4), 5e-3);
+  assertRel(alphaMax(0.01), 0.02, 1e-12, "α_max = 200 t^0.5 mrad at 10 ms");
+  assertRel(alphaMax(1e-3), 0.2 * Math.sqrt(1e-3), 1e-12, "6.32 mrad at 1 ms");
+  assertRel(alphaMax(625e-6), 5e-3, 1e-12, "α_max joins 5 mrad at 625 µs");
+  assert.equal(alphaMax(1), 0.1);
+  assert.equal(correctionCE(1e-3, 1), 1);
+  assertRel(correctionCE(0.015, 1), 10, 1e-12, "C_E = α/α_min");
+  assertRel(correctionCE(0.05, 0.01), 20 / 1.5, 1e-12, "α > α_max(10 ms) = 20 mrad: C_E = α_max/α_min");
+  assertRel(correctionCE(0.05, 1e-4), 5 / 1.5, 1e-12, "below 625 µs α_max = 5 mrad");
+  assertRel(correctionCE(0.2, 100), 100 / 1.5, 1e-12, "α > 100 mrad");
+  assert.equal(timeT2(ALPHA_MIN), 10);
+  assertRel(timeT2(0.01), 10 * Math.pow(10, 8.5 / 98.5), 1e-12, "T₂(10 mrad) = 12.20 s");
+  assertRel(timeT2(0.05), 31.07, 1e-3, "T₂(50 mrad)");
+  assertRel(timeT2(0.1), 100, 1e-12, "T₂(100 mrad)");
+  assert.equal(timeT2(0.2), 100);
+});
+
+test("extended-source retinal thermal limit (Table 5 with C_E and T₂)", () => {
+  const thermal = (l: number, alpha: number) => {
+    const x = eyeLimits(nm(l), alpha).find((k) => k.kind === "retinalThermal");
+    assert.ok(x);
+    return x;
+  };
+  // Hand values: 18 C_E t^0.75 J/m² to T₂, then 18 C_E T₂^−0.25 W/m²; C_A = C_C = 1 in the visible.
+  assertRel(exposureLimit(thermal(550, 0.01), 1), 120, 1e-12, "550 nm, 10 mrad, 1 s: 18 × 6.667");
+  assertRel(exposureLimit(thermal(550, 0.01), 100), 100 * 120 * Math.pow(12.1982, -0.25), 1e-5, "beyond T₂ = 12.2 s: 64.2 W/m²");
+  assertRel(exposureLimit(thermal(532, 0.05), 0.01), 18 * (20 / 1.5) * Math.pow(0.01, 0.75), 1e-12, "α > α_max(10 ms)");
+  assertRel(exposureLimit(thermal(532, 0.05), 1e-4), 0.06, 1e-12, "C_E = 5/1.5 below 625 µs");
+  assertRel(exposureLimit(thermal(532, 0.2), 1000) / 1000, 1200 / Math.sqrt(10), 1e-12, "200 mrad: T₂ = 100 s, 379 W/m²");
+  assertRel(exposureLimit(thermal(1064, 0.01), 1), 600, 1e-12, "1064 nm: 90 C_C C_E t^0.75 (C_A = 5)");
+  // A point source keeps Table 5's 10 C_A C_C W/m² from 10 s, whatever α ≤ α_min says.
+  for (const a of [0, 1e-3, ALPHA_MIN]) {
+    assert.deepEqual(thermal(808, a).pieces, thermal(808, 0).pieces, `α = ${a}`);
+    assertRel(exposureLimit(thermal(808, a), 100) / 100, 10 * correctionCA(nm(808)), 1e-12, "point source, 808 nm");
+  }
+  // Only the thermal limit changes: the photochemical limit is not raised by C_E.
+  assert.deepEqual(limitOf(nm(450), "retinalPhotochemical"), eyeLimits(nm(450), 0.05)[1]);
+  // Joints: continuous except the tables' rounded 5 µs / 13 µs step (≤ 5 %).
+  for (const l of [450, 700, 905, 1064, 1300]) {
+    for (const a of [2e-3, 4e-3, 0.02, 0.1, 0.3]) {
+      const limit = thermal(l, a);
+      for (const s of limit.pieces.slice(1)) {
+        const left = exposureLimit(limit, s.t0 * (1 - 1e-12));
+        assertRel(exposureLimit(limit, s.t0), left, s.t0 < 2e-5 ? 0.06 : 1e-9, `${l} nm, α = ${a}, t = ${s.t0} s`);
+      }
+    }
+  }
+  // The duration solver handles the falling t^1.25 piece.
+  const r = exposureDuration(nm(532), 0.01, 1e-3, 0.05);
+  assert.equal(r.limits.length, 2);
+  const tThermal = r.limits[0].tMax;
+  assertRel(apertureIrradiance(0.01, 1e-3, 7e-3) * tThermal, exposureLimit(thermal(532, 0.05), tThermal), 1e-9, "E·t = H at t_max");
+});
+
+test("max power: Table 5's power column, and agreement with limitMaxDuration", () => {
+  // Table 5: from 100 s, 10 W/m² through 7 mm is 0.39 mW (thermal, 532 nm; the photochemical is 43.7 W/m²).
+  assertRel(limitMaxPower(limitOf(nm(532), "retinalThermal"), 0, 100), 10 * area(7e-3), 1e-12, "0.385 mW");
+  // Class 2 at 0.25 s: 18 t^0.75 J/m² over 7 mm, 3 mm beam: 0.980 mW (as aversion-response.ts).
+  assertRel(limitMaxPower(limitOf(nm(532), "retinalThermal"), 3e-3, 0.25), 0.9797e-3, 1e-4, "0.980 mW");
+  // UV 350 nm, 1 s, a point-like beam: the 1 mm aperture just before 0.35 s sets it, 5.6e3 · 0.35^−0.75 · π(1 mm)²/4.
+  const uv = eyeLimits(nm(350))[0];
+  assertRel(limitMaxPower(uv, 0, 1), 5.6e3 * Math.pow(0.35, -0.75) * area(1e-3), 1e-12, "9.67 mW");
+  assert.ok(Number.isNaN(limitMaxPower(uv, -1, 1)) && Number.isNaN(limitMaxPower(uv, 1e-3, 1e5)), "domain");
+  const cases: [number, number, number, number][] = [
+    [254, 0, 1e-6, 0], [310, 2e-3, 3, 0], [350, 0, 1, 0], [350, 5e-3, 100, 0], [445, 0, 50, 0], [480, 4e-3, 300, 0],
+    [532, 1e-3, 0.25, 0], [532, 3e-3, 1e-3, 0.05], [808, 2e-3, 10, 0], [905, 1e-3, 1e-5, 0.2], [1064, 1e-3, 1e4, 0.01],
+    [1300, 2e-3, 0.5, 0], [1550, 0, 5, 0], [1550, 8e-3, 1e-8, 0], [2000, 0.5e-3, 20, 0], [10600, 4e-3, 0.3, 0],
+    [2e5, 5e-3, 3e3, 0],
+  ];
+  for (const [l, d, t, a] of cases) {
+    for (const limit of eyeLimits(nm(l), a)) {
+      const p = limitMaxPower(limit, d, t);
+      if (t < limit.pieces[0].t0) {
+        assert.equal(p, Infinity, `${limit.kind} doesn't apply before ${limit.pieces[0].t0} s`);
+        continue;
+      }
+      const label = `${limit.kind} at ${l} nm, d = ${d} m, t = ${t} s, α = ${a}: ${p} W`;
+      assert.ok(limitMaxDuration(limit, p * (1 - 1e-6), d) >= t * (1 - 1e-9), `${label} lasts`);
+      assert.ok(limitMaxDuration(limit, p * (1 + 1e-6), d) <= t * (1 + 1e-9), `${label} is the most`);
+    }
+  }
+});
+
+test("thermal vs photochemical: the crossover is ICNIRP's T₁ for a point source (Table 4)", () => {
+  assert.equal(photochemicalCrossover(nm(440)), 10, "below 450 nm: 10 s");
+  assert.equal(photochemicalCrossover(nm(450)), 10);
+  assertRel(photochemicalCrossover(nm(480)), 10 * Math.pow(10, 0.02 * 30), 1e-9, "T₁ = 10·10^(0.02(λ − 450)) = 39.8 s");
+  assertRel(photochemicalCrossover(nm(499)), 10 * Math.pow(10, 0.02 * 49), 1e-9, "499 nm: 95.5 s");
+  assert.ok(Number.isNaN(photochemicalCrossover(nm(550))), "550 nm point source: 10 W/m² < C_B = 100 W/m², thermal throughout");
+  // 550 nm, α = 100 mrad: thermal 18 C_E t^0.75 with C_E = 66.7 meets 100 C_B = 10⁴ J/m² at (10⁴/1200)^(4/3) = 16.9 s.
+  assertRel(photochemicalCrossover(nm(550), 0.1), Math.pow(1e4 / 1200, 4 / 3), 1e-9, "extended source");
+  assert.ok(Number.isNaN(photochemicalCrossover(nm(650))) && Number.isNaN(photochemicalCrossover(nm(350))), "no dual limit");
 });
