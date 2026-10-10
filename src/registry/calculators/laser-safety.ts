@@ -68,12 +68,6 @@ export const laserSafety: CalculatorEntry[] = [
     ],
   },
   {
-    slug: "beam-divergence-hazards",
-    title: "Beam Divergence Hazards",
-    description: "Model Gaussian beam propagation and hazard distance based on beam divergence and MPE limits.",
-    knownIssue: "The MPE is a fixed 0.1 or 0.01 W/cm² whatever the wavelength and time (up to 60× too high in the near IR), so the NOHD is 4–10× too short; the divergence input is not used.",
-  },
-  {
     slug: "beam-expander",
     title: "Beam Expander Safety",
     description: "Irradiance of a beam before and after an M× expander: it falls by M², while the divergence falls by M, so far from it the hazard distance grows.",
@@ -132,14 +126,40 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "diffuse-reflection",
     title: "Diffuse Reflection Hazard",
-    description: "Evaluate hazard from Lambertian (diffuse) reflections off matte surfaces. Uses extended-source MPE.",
-    knownIssue: "The irradiance uses the pupil area instead of the spot area (51× too low for a 50 mm spot), the extended-source factor is inverted, and the UV limit is 33× too high.",
+    description: "Eye hazard of viewing a laser spot on a matte (Lambertian) surface: corneal irradiance, extended-source limit, diffuse hazard distance and OD, on the ICNIRP 2013 limits.",
+    tier: "textbook",
+    modelNote: "Lambertian spot ρP/(πr²) (r ≫ spot), an extended source of α = d₆₃/r with ICNIRP 2013 C_E (open field of view, eqn 5); one exposure up to t. Errs high close up, and for blue light from spots over 11 mrad.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Table 2 and eqn 5 (C_E), Tables 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "IEC 60825-1:2014, Safety of laser products – Part 1. Clause 3.10: angular subtense from the 63 % (1/e) diameter.",
+      },
+      {
+        citation: "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers. Appendix B: nominal hazard zone, NOHD and optical density.",
+      },
+    ],
   },
   {
     slug: "diode-laser-safety",
     title: "Diode Laser Safety Calculator",
-    description: "Calculate MPE, NOHD, and OD requirements for diode laser bars/stacks with asymmetric divergence.",
-    knownIssue: "The MPE falls as t^−0.75 instead of t^−0.25 (2–32× too high below 1 s), 808 nm uses the 0.25 s blink time, UV gets a flat 0.01 W/cm², and the NOHD formula is off by a factor 1/a.",
+    description: "NOHD and eyewear OD for a diode laser beam with different slow- and fast-axis divergence (1/e² or FWHM), on the ICNIRP 2013 eye limits.",
+    tier: "textbook",
+    modelNote: "Elliptical beam as the round beam of equal peak irradiance (√(d_x d_y)), each axis a + rφ; ICNIRP 2013 point-source eye limits averaged over each aperture, one exposure up to t. Not modelled: extended-source bars, pulses.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers. Appendix B: nominal hazard zone, NOHD and optical density.",
+      },
+      {
+        citation: "IEC TR 60825-14:2004, Safety of laser products – Part 14: A user's guide. Hazard distances and protective eyewear.",
+      },
+    ],
   },
   {
     slug: "enclosure-class",
@@ -195,8 +215,21 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "fiber-laser-safety",
     title: "Fiber Laser Safety Calculator",
-    description: "Analyze output power, fiber facet irradiance, and NOHD for fiber laser systems (1064/1550 nm typical).",
-    knownIssue: "The two MPE values are swapped (0.1 W/cm² for retinal wavelengths, 8–60× too high), the NOHD formula is off by a factor 1/a, and arcsin(NA), a half-angle, is used as the full angle.",
+    description: "Output power, NOHD and eyewear OD of a bare fiber end (single-mode or multimode), on the ICNIRP 2013 eye limits.",
+    tier: "textbook",
+    modelNote: "Fiber end as a Gaussian waist: single-mode diffracts at λ/(πw₀), multimode fills the NA; ICNIRP 2013 eye limits averaged over each aperture, one exposure up to t. Real multimode profiles aren't Gaussian.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers. Appendix B: nominal hazard zone, NOHD and optical density.",
+      },
+      {
+        citation: "IEC TR 60825-14:2004, Safety of laser products – Part 14: A user's guide. Hazard distances and protective eyewear.",
+      },
+    ],
   },
   {
     slug: "green-laser-pointer",
@@ -207,8 +240,21 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "industrial-laser-safety",
     title: "Industrial Laser Safety Calculator",
-    description: "Assess direct beam, specular/diffuse reflections, NOHD, and OD for industrial cutting/welding lasers.",
-    knownIssue: "The NOHD formula is off by a factor 1/a (4507 km at the defaults), the MPE ignores exposure time, C_A and UV, and the exposure-time input is unused.",
+    description: "Direct-beam NOHD, diffuse-reflection hazard distance and eyewear OD for industrial cutting and welding lasers, on the ICNIRP 2013 eye limits.",
+    tier: "textbook",
+    modelNote: "Direct-beam NOHD (a + rφ) and Lambertian diffuse reflection (extended source, ICNIRP C_E with an open field of view) on the ICNIRP 2013 eye limits, one exposure up to t. Not checked: filter damage, plume.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Table 2 and eqn 5 (C_E), Tables 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers. Appendix B: nominal hazard zone, NOHD and optical density.",
+      },
+      {
+        citation: "IEC TR 60825-14:2004, Safety of laser products – Part 14: A user's guide. Hazard distances and protective eyewear.",
+      },
+    ],
   },
   {
     slug: "infrared-hazard",
@@ -279,19 +325,22 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "nohd",
     title: "Nominal Ocular Hazard Distance (NOHD)",
-    description: "Bounded CW point-source NOHD pre-check for educational use only. Based on ANSI Z136.1 direct-beam ocular MPE calculations.",
-    lede: "Bounded engineering pre-check for CW point-source direct-beam NOHD using the same restricted MPE branch as the MPE page.",
-    keywords: ["nominal ocular hazard distance"],
+    description: "Nominal ocular hazard distance of a direct laser beam at any wavelength from 180 nm to 1 mm, on the ICNIRP 2013 eye limits, with linear or Gaussian beam spread.",
+    lede: "Distance beyond which a direct beam is within every eye exposure limit for an exposure of up to t, from the beam's power, diameter and divergence.",
+    keywords: ["nominal ocular hazard distance", "Beam Divergence Hazards", "Safe Viewing Distance"],
     priority: 90,
-    tier: "textbook",
-    modelNote: "NOHD = (√(4P/(πE)) − a)/φ with 1/e values (1/e² inputs ÷ √2), averaged over the 7 mm aperture, on the MPE page's limit. Round beam; not modelled: atmosphere, optical aids, pulses.",
+    tier: "exact",
+    modelNote: "ICNIRP 2013 eye limits (180 nm – 1 mm, one exposure up to t) for a Gaussian beam averaged over each limit's aperture, spreading as a + rφ or √(a² + (rφ)²). Not modelled: atmosphere, optical aids, pulse trains.",
     references: [
       {
-        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Table 5 (eye) and Table 8 (apertures).",
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2, 5 and 8.",
         url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
       },
       {
-        citation: "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers: direct-beam NOHD and optical density of a CW point source.",
+        citation: "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers. Appendix B: nominal hazard zone, NOHD and optical density.",
+      },
+      {
+        citation: "IEC TR 60825-14:2004, Safety of laser products – Part 14: A user's guide. Hazard distances and protective eyewear.",
       },
     ],
   },
@@ -479,23 +528,5 @@ export const laserSafety: CalculatorEntry[] = [
       },
       { citation: "IEC 62471:2006. Table 4.1 (the same S(λ) values)." },
     ],
-  },
-  {
-    slug: "viewing-distance",
-    title: "Safe Viewing Distance (CW point-source pre-check)",
-    description: "Bounded CW point-source direct-beam viewing-distance pre-check using the same assumptions as the MPE and NOHD pages.",
-    lede: "Simplified direct-beam viewing-distance estimate built from the same bounded CW point-source assumptions as the MPE and NOHD pages.",
-    priority: 84,
-    tier: "textbook",
-    modelNote: "The NOHD model: (√(4P/(πE)) − a)/φ with 1/e values (1/e² inputs ÷ √2), averaged over the 7 mm aperture, on the MPE page's limit. Round beam; not modelled: atmosphere, optical aids, pulses.",
-    references: [
-      {
-        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Table 5 (eye) and Table 8 (apertures).",
-        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
-      },
-      {
-        citation: "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers: direct-beam NOHD and optical density of a CW point source.",
-      },
-    ],
-  },
+  }
 ];

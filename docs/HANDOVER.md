@@ -1,38 +1,37 @@
-# Handover — 2026-10-10 (session 30 → session 31)
+# Handover — 2026-10-10 (session 31 → session 32)
 
-**Start here:** read this file, then `docs/ROADMAP.md` (Phase 4, "Laser-safety part 2" done; parts 3–5 open).
-Session 30 did laser-safety part 2 on branch `phase-4/laser-safety-limits`.
+**Start here:** read this file, then `docs/ROADMAP.md` (Phase 4, "Laser-safety part 3a" done; 3b, 4, 5 open).
+Session 31 merged PR #27 (part 2; production checked) and did laser-safety part 3a on branch `phase-4/laser-safety-beams`.
 
 ## State
-- The user approved every merge candidate: `skin-hazard` → `skin-mpe` and `corneal-limits`, `infrared-corneal`,
-  `infrared-thermal` → `infrared-hazard` (done; 466 pages), `viewing-distance` + `beam-divergence-hazards` → `nohd`
-  (part 3), `pulsed-mpe` + `multiple-pulse` + `prf-correction` → one page (part 5).
-- Oracle `src/physics/laser-safety/eye-exposure-limits.ts` now has extended sources (optional α: C_E, α_max(t), T₂),
-  `limitMaxPower` (inverse of `limitMaxDuration`) and `photochemicalCrossover` (Table 4's T₁). New
-  `skin-exposure-limits.ts` (Table 7) and `retinal-image.ts` (17 mm eye, 25.5 µm floor). UI helpers:
-  `components/eye-limit-labels.ts` (labels, colours, formatters, `finiteXY`).
-- Seven pages fixed and tiered (89 of 466): `skin-mpe`, `infrared-hazard`, `thermal-vs-photochemical`,
-  `extended-source`, `eye-safe-wavelength` exact; `corneal-vs-retinal`, `retinal-hazard` textbook. Landing page has a
-  new "ICNIRP 2013 limits" group. `retinal-image-size` moved to part 3.
+- New `src/physics/laser-safety/hazard-distance.ts`: `limitSafeDiameter` (closed-form inverse of `limitMaxPower` in d),
+  NOHD for round/elliptical beams with linear or Gaussian spread, `requiredOpticalDensity`, `limitMaxIrradiance`,
+  diffuse viewing (`diffuseExposure`, `diffuseHazardDistance`). Oracle gained an optional open field of view
+  (`eyeLimits(λ, α, "open")`, ICNIRP 2013 eqn 5), default unchanged.
+- `viewing-distance` + `beam-divergence-hazards` merged into `nohd` (464 pages). Five pages rebuilt and tiered (93 of 464):
+  `nohd` exact; `diffuse-reflection`, `diode-laser-safety`, `fiber-laser-safety`, `industrial-laser-safety` textbook. They
+  moved to the landing page's "ICNIRP 2013 limits" group. Shared UI: `components/hazard-ratio-chart.tsx`, `fmtDistance`.
 
 ## Decisions
-- Merged pages keep `skin-mpe` and `infrared-hazard` (old titles became keywords via the merge codemod).
-- Max power = least H/(t·E₁) over all durations up to t (consistent with the first-crossing duration); the rounded
-  table joints make it ≤ 2.5 % below the limit at t alone. Pages say so.
-- `eye-safe-wavelength` is single-pulse until part 5's pulse-train module; its rep-rate input fed nothing.
-- Skin limit for beams < 1 mm: the page shows the peak-irradiance comparison (Table 7 note b) next to the 3.5 mm one.
-- Kept: DOIs only from Crossref; a page gets a tier only once OK or fixed; mixed model → lower tier.
+- NOHD averages the Gaussian beam over each limit's aperture (as the oracle does), so it is a little shorter than the
+  standards' peak-irradiance (√(4P/(πE)) − a)/φ: 97.77 vs 98.02 m at the `nohd` defaults. Pages say so.
+- Diffuse viewing counts the whole spot (open field of view, C_E = α²/(α_min α_max) above α_max): conservative for
+  Gaussian spots and for blue light (γ_ph not modelled). Far-field ρP/(πr²); pages warn below 10 spot diameters.
+- Diode: elliptical beam = round beam of equal peak irradiance √(d_x d_y); default t 10 s (invisible NIR), FWHM option.
+- Fiber: default single-mode (λ/(πw₀) from the MFD, conservative); multimode fills the NA (2 tan asin NA). Old links
+  with only `na` now open as single-mode.
+- Part 3 split: 3b (medical, multiple-wavelength, thermal-lens, retinal-image-size) next session.
 
 ## Next actions
-1. PR for `phase-4/laser-safety-limits`: CI, then ask the user to merge; after merge, `ui-check` on production and spot
-   values at the defaults: skin-mpe 1.00e5 J/m², max 151 mW, 6.64×; infrared-hazard max 15.4 mW, 649×;
-   thermal-vs-photochemical photochemical governs from 10 s (480 nm: 39.8 s); extended-source C_E 33.3, T₂ 31.1 s,
-   1.69e4 J/m² (33.7× the point source: Table 5 rounds 18·10^−0.25 to 10); corneal-vs-retinal retina 208 mW, cornea
-   201 mW; eye-safe-wavelength 1064 nm 785 nJ, 1550 nm 102 mJ; retinal-hazard 25.5 µm, 1.96e7 W/m², max 0.980 mW.
-2. Laser-safety part 3 (beam and application pages, merges into `nohd`, `retinal-image-size`), then parts 4–5.
-3. Stale `.next/types` after deleting pages breaks local `tsc`: delete `.next/types` and `.next/dev/types`.
+1. PR for `phase-4/laser-safety-beams`: CI, then ask the user to merge; after merge, `ui-check` on production and spot
+   values at the defaults: nohd 97.8 m (gaussian 99.8 m); diffuse-reflection 0.637 W/m², α 7.07 mrad, ratio 2.67e-3,
+   no hazard distance; diode 16.0 m, OD 2.90; fiber 1.66 m (multi 0.933 m); industrial 7.13 km, OD 6.31, diffuse 2.76 m.
+   Redirects: `/laser-safety/viewing-distance` and `/laser-safety/beam-divergence-hazards` → `/laser-safety/nohd`.
+2. Laser-safety part 3b. `multiple-wavelength`: ICNIRP 2013 p. 279 — additive only for the same absorption site and
+   mechanism (retina thermal, retina photochemical, cornea); different tissues count independently.
+3. Parts 4–5 (classes/AEL; pulses). Green-pointer, research-lab, lidar NOHDs go on `hazard-distance.ts` there.
 
-## Ship flow (worked twenty-three times)
+## Ship flow (worked twenty-four times)
 - **Push:** `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`.
 - **CI:** `gh pr create --body-file f`, then `gh pr checks <n> --watch`.
 - **Preview:** behind Vercel SSO. Use a local `npm run build` + `npx next start -p 3100`.
@@ -40,6 +39,12 @@ Session 30 did laser-safety part 2 on branch `phase-4/laser-safety-limits`.
   (`gh api repos/Lazfiz/photonics-calculators/commits/<sha>/status`), then run `ui-check` against production.
 
 ## Non-obvious facts
+- **ICNIRP 2013 text:** `curl -sL -o x.pdf https://www.icnirp.org/cms/upload/publications/ICNIRPLaser180gdl_2013.pdf`,
+  then `pdftotext -layout`. Extended sources and eqn 5 near line 340, additivity near line 570.
+- **Registry scripts:** an entry sliced up to `
+  },` has no newline after its last property; match `(?=
+|$)`.
+  `git checkout -- src/registry/...` also reverts a merge codemod run: re-run the (idempotent) codemod.
 - **ICNIRP oracle from the shell:** `npx tsx -e 'import { eyeLimits, exposureLimit } from
   "C:/dev/photonics-calculators/src/physics/laser-safety/eye-exposure-limits.ts"; …'` works (static absolute import).
 - **Scratch scripts that import packages** (ts-morph) from the scratchpad need `NODE_PATH=C:/dev/photonics-calculators/node_modules`.

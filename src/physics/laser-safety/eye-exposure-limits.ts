@@ -26,6 +26,10 @@
  *   0.1–1 mm. "No modifications of the exposure limits are permitted for reduced energy entering an assumed pupil
  *   size less than 7 mm" (ICNIRP 2013).
  *
+ * Field of view: by default the exposure of a source larger than α_max is measured with γ = α_max and C_E stops at
+ * α_max/α_min. With an open field of view (all of a homogeneous, circular source counted) C_E = α²/(α_min α_max)
+ * above α_max (eqn 5), and between 625 µs and t_α the thermal limit goes as t^0.25 instead of t^1.25.
+ *
  * Not modelled: repetitive pulses (a single pulse is an exposure of its own duration), the advice to use the actual
  * irradiance of beams narrower than 1 mm (ICNIRP Table 5 note c), and the photochemical field of view γ_ph: it sets
  * how an extended source's exposure is measured, not the limit, which C_E doesn't raise.
@@ -112,11 +116,19 @@ export function alphaMax(t: number): number {
 }
 
 /**
- * C_E for an apparent source subtending α (rad), duration t (s): 1 up to α_min, α/α_min up to α_max, then α_max/α_min
- * with the field of view γ = α_max (ICNIRP 2013 Table 2; eqn 5's α²/(α_min α_max) is for an open field of view).
+ * How an extended source's exposure is measured: a field of view γ = α_max ("limited", ICNIRP 2013 Table 2) or all of
+ * a homogeneous, circular source ("open", eqn 5).
  */
-export function correctionCE(alpha: number, t: number): number {
-  return Math.max(Math.min(alpha, alphaMax(t)), ALPHA_MIN) / ALPHA_MIN;
+export type FieldOfView = "limited" | "open";
+
+/**
+ * C_E for an apparent source subtending α (rad), duration t (s): 1 up to α_min, α/α_min up to α_max, then α_max/α_min
+ * with the field of view γ = α_max, or α²/(α_min α_max) with an open field of view (ICNIRP 2013 Table 2, eqn 5).
+ */
+export function correctionCE(alpha: number, t: number, fieldOfView: FieldOfView = "limited"): number {
+  const aMax = alphaMax(t);
+  if (fieldOfView === "open" && alpha > aMax) return (alpha * alpha) / (ALPHA_MIN * aMax);
+  return Math.max(Math.min(alpha, aMax), ALPHA_MIN) / ALPHA_MIN;
 }
 
 /** T₂, s: 10 s up to α_min, 10·10^((α − 1.5 mrad)/98.5 mrad) to 100 mrad, then 100 s (ICNIRP 2013 Table 4). */
@@ -130,25 +142,28 @@ export function timeT2(alpha: number): number {
  * 1050 nm) a constant h_s C_E, then k C_E t^0.75 with k = 18 C_A (90 C_C above 1050 nm), and from T₂ the irradiance
  * k C_E T₂^−0.25. A point source keeps Table 5's rounded 10 C_A C_C W/m² from 10 s (18·10^−0.25 = 10.1). C_E grows
  * with α_max(t), so an extended source has up to two more joints: 625 µs, and t_α = (α / 200 mrad)², where α_max
- * reaches α (between them C_E = 200 t^0.5 / 1.5, so H ∝ t^1.25).
+ * reaches α (between them C_E = 200 t^0.5 / 1.5, so H ∝ t^1.25; with an open field of view C_E = α²/(1.5 · 200 t^0.5),
+ * so H ∝ t^0.25).
  */
-function retinalThermalPieces(nm: number, ca: number, cc: number, alpha: number): Piece[] {
+function retinalThermalPieces(nm: number, ca: number, cc: number, alpha: number, fieldOfView: FieldOfView): Piece[] {
   const [ts, hs, k] = nm < 1050 ? [5e-6, 2e-3 * ca, 18 * ca] : [13e-6, 2e-2 * cc, 90 * cc];
   if (!(alpha > ALPHA_MIN)) return pieces([T_MIN, ts, 10, T_MAX], [[hs, 0], [k, 0.75], [10 * ca * cc, 1]]);
   const T2 = timeT2(alpha);
   const tAlpha = Math.min(Math.max(Math.pow(alpha / 0.2, 2), 625e-6), 0.25);
-  const ce = (t: number) => correctionCE(alpha, t);
+  const ce = (t: number) => correctionCE(alpha, t, fieldOfView);
+  const growing: [number, number] = fieldOfView === "open" ? [(k * alpha * alpha) / (0.2 * ALPHA_MIN), 0.25] : [(k * 0.2) / ALPHA_MIN, 1.25];
   return pieces(
     [T_MIN, ts, 625e-6, tAlpha, T2, T_MAX],
-    [[hs * ce(T_MIN), 0], [k * ce(ts), 0.75], [(k * 0.2) / ALPHA_MIN, 1.25], [k * ce(T2), 0.75], [k * ce(T2) * Math.pow(T2, -0.25), 1]],
+    [[hs * ce(T_MIN), 0], [k * ce(ts), 0.75], growing, [k * ce(T2), 0.75], [k * ce(T2) * Math.pow(T2, -0.25), 1]],
   );
 }
 
 /**
  * The limits that apply to the eye at λ (m), 180 nm ≤ λ ≤ 1 mm; empty outside. α (rad) is the angular subtense of the
- * apparent source; it only changes the retinal thermal limit, and up to α_min (the default) it is a point source.
+ * apparent source; it only changes the retinal thermal limit, and up to α_min (the default) it is a point source. The
+ * field of view matters only above α_max (see correctionCE).
  */
-export function eyeLimits(lambda: number, alpha = 0): EyeLimit[] {
+export function eyeLimits(lambda: number, alpha = 0, fieldOfView: FieldOfView = "limited"): EyeLimit[] {
   const nm = toNm(lambda);
   if (!(nm >= 180 && nm <= 1e6)) return [];
   if (nm < 400) {
@@ -164,7 +179,7 @@ export function eyeLimits(lambda: number, alpha = 0): EyeLimit[] {
   if (nm < 1400) {
     const ca = correctionCA(lambda);
     const cc = correctionCC(lambda);
-    const thermal = retinalThermalPieces(nm, ca, cc, alpha);
+    const thermal = retinalThermalPieces(nm, ca, cc, alpha, fieldOfView);
     const limits: EyeLimit[] = [{ kind: "retinalThermal", pieces: thermal, apertures: fixedAperture(7e-3) }];
     if (nm < 600) {
       const cb = correctionCB(lambda);

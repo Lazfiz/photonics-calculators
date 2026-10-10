@@ -236,6 +236,21 @@ test("extended sources: C_E, α_max and T₂ (ICNIRP 2013 Tables 2 and 4)", () =
   assert.equal(timeT2(0.2), 100);
 });
 
+test("open field of view: C_E = α²/(α_min α_max) above α_max (ICNIRP 2013 eqn 5)", () => {
+  assertRel(correctionCE(0.2, 100, "open"), 0.04 / (1.5e-3 * 0.1), 1e-12, "266.7 at 200 mrad");
+  assertRel(correctionCE(0.05, 0.01, "open"), 0.0025 / (1.5e-3 * 0.02), 1e-12, "83.3 at 10 ms");
+  assertRel(correctionCE(0.015, 1, "open"), 10, 1e-12, "below α_max: α/α_min either way");
+  // Counting the whole of a homogeneous source raises the limit by (α/α_max)², at every duration where α > α_max.
+  const limited = eyeLimits(1064e-9, 0.2)[0];
+  const open = eyeLimits(1064e-9, 0.2, "open")[0];
+  for (const [t, aMax] of [[1e-6, 5e-3], [0.01, 0.02], [0.1, 0.2 * Math.sqrt(0.1)], [1, 0.1], [1000, 0.1]] as const) {
+    assertRel(exposureLimit(open, t) / exposureLimit(limited, t), (0.2 / aMax) ** 2, 1e-9, `t = ${t} s`);
+  }
+  // Between 625 µs and 0.25 s: 90 α²/(1.5 mrad × 200 mrad) t^0.25 = 1.2×10⁴ t^0.25 J/m² for α = 200 mrad.
+  assertRel(exposureLimit(open, 0.01), 1.2e4 * Math.pow(0.01, 0.25), 1e-12, "t^0.25 piece");
+  assert.deepEqual(eyeLimits(532e-9, 4e-3, "open"), eyeLimits(532e-9, 4e-3), "α ≤ 5 mrad is below α_max at every t");
+});
+
 test("extended-source retinal thermal limit (Table 5 with C_E and T₂)", () => {
   const thermal = (l: number, alpha: number) => {
     const x = eyeLimits(nm(l), alpha).find((k) => k.kind === "retinalThermal");
