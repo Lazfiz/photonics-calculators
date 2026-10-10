@@ -40,6 +40,8 @@ const GUARDS: Guard[] = [
 
 const srcDir = path.join(process.cwd(), "src");
 const constantsFile = path.join(srcDir, "physics", "constants.ts");
+// Measured data tables, copied verbatim: a value can sit near a constant by chance (the wavelength 8.308 µm in the Ag table vs R_gas).
+const dataTables = new Set([path.join(srcDir, "physics", "materials", "silver-yang-2015.ts")]);
 
 function inlineConstants(file: string): string[] {
   const sf = ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true);
@@ -66,7 +68,7 @@ test("no physical constant is written as a literal outside src/physics/constants
   const files = readdirSync(srcDir, { recursive: true, encoding: "utf8" })
     .filter((f) => /\.tsx?$/.test(f))
     .map((f) => path.join(srcDir, f))
-    .filter((f) => f !== constantsFile);
+    .filter((f) => f !== constantsFile && !dataTables.has(f));
   assert.ok(files.length > 1000, `only ${files.length} source files found`);
   const hits = files.flatMap(inlineConstants);
   assert.deepEqual(hits, [], "import these from src/physics/constants.ts instead");
