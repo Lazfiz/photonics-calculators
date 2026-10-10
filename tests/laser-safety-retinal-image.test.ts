@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  MIN_RETINAL_IMAGE, pupilPower, retinalGain, retinalImageDiameter, retinalIrradiance,
+  gaussianApparentSource, MIN_RETINAL_IMAGE, pupilPower, retinalGain, retinalImageDiameter, retinalIrradiance,
 } from "../src/physics/laser-safety/retinal-image";
 
 // ICNIRP, Health Phys. 105(3), 271–295 (2013), doi:10.1097/HP.0b013e3182983fd4: α_min = 1.5 mrad (Table 2), and "for
@@ -34,4 +34,48 @@ test("gain and retinal irradiance", () => {
   // The gain links the two: retinal = gain × corneal irradiance averaged over 7 mm.
   const corneal = pupilPower(1e-3, 2e-3) / (Math.PI * 7e-3 ** 2 / 4);
   assertRel(retinalIrradiance(1e-3, 2e-3, MIN_RETINAL_IMAGE), retinalGain(MIN_RETINAL_IMAGE) * corneal, 1e-12, "gain");
+});
+
+// Apparent source: IEC 60825-1:2014, "the real or virtual object that forms the smallest possible retinal image
+// (considering the accommodation range of the human eye)", 100 mm to infinity; α from the 63 % (1/e) diameter.
+// Gaussian beam: w(r) = w₀√(1 + (r/z_R)²), R = r(1 + (z_R/r)²), M² = θπd₀/(4λ) (ISO 11146-1). Hand calculations.
+test("apparent source of a TEM₀₀ beam: the eye focuses it to 4λf/(πd)", () => {
+  // At the waist (r = 0) the wavefront is flat: no accommodation, the diffraction spot of the 2 mm beam.
+  const s = gaussianApparentSource(633e-9, 2e-3, (4 * 633e-9) / (Math.PI * 2e-3), 0);
+  assertRel(s.M2, 1, 1e-12, "M²");
+  assertRel(s.retinalDiameter, (4 * 633e-9 * 17e-3) / (Math.PI * 2e-3), 1e-12, "4λf/(πd)");
+  assert.equal(s.accommodation, 0);
+  // A TEM₀₀ beam wider than the pupil at the eye (0.5 mm waist, 10 m away: 16 mm): the 7 mm pupil diffracts, 4λf/(πD).
+  const wide = gaussianApparentSource(633e-9, 0.5e-3, (4 * 633e-9) / (Math.PI * 0.5e-3), 10);
+  assert.ok(wide.dCornea > 7e-3 && wide.defocus === 0);
+  assertRel(wide.retinalDiameter, (4 * 633e-9 * 17e-3) / (Math.PI * 7e-3), 1e-12, "pupil-limited");
+  // A divergence below the TEM₀₀ value is read as M² = 1.
+  assert.equal(gaussianApparentSource(633e-9, 2e-3, 1e-5, 1).M2, 1);
+  // 1 mm, 1 mrad He-Ne at 1 m: a point source (α ≪ 1.5 mrad).
+  assert.ok(gaussianApparentSource(633e-9, 1e-3, 1e-3, 1).alpha < 1.5e-3);
+  // The largest α of a TEM₀₀ beam at r has z_R = r (d₀ = √(4λr/π)): √(λ/(πr)), 1.840 mrad at 1064 nm and 100 mm.
+  const d0 = Math.sqrt((4 * 1064e-9 * 0.1) / Math.PI);
+  assertRel(gaussianApparentSource(1064e-9, d0, (4 * 1064e-9) / (Math.PI * d0), 0.1).alpha, Math.sqrt(1064e-9 / (Math.PI * 0.1)), 1e-12, "z_R = r");
+  assertRel(Math.sqrt(1064e-9 / (Math.PI * 0.1)), 1.840e-3, 1e-3, "value");
+});
+
+test("apparent source of a multimode beam: the image of its waist", () => {
+  // d₀ = 0.4 mm, θ = 0.2 rad, 808 nm (M² = 77.8), seen from 0.2 m: z_R = 2 mm, 1/R = 5.0 D within the 10 D range,
+  // so the eye images the waist: α = d₀ / (√2 √(r² + z_R²)) = 1.41414 mrad.
+  const s = gaussianApparentSource(808e-9, 0.4e-3, 0.2, 0.2);
+  assertRel(s.M2, (0.2 * Math.PI * 0.4e-3) / (4 * 808e-9), 1e-12, "M²");
+  assertRel(s.curvature, 0.2 / (0.04 + 4e-6), 1e-12, "1/R");
+  assert.equal(s.defocus, 0);
+  assertRel(s.alpha, 0.4e-3 / (Math.SQRT2 * Math.hypot(0.2, 2e-3)), 1e-12, "α");
+  assertRel(s.alpha, 1.41414e-3, 1e-5, "α value");
+  // From 50 mm (nearer than the 100 mm near point): 1/R = 19.968 D, 10 D accommodated; the beam (10.0 mm) overfills
+  // the pupil, so the blur radius is 3.5 mm × 17 mm × 9.968 D = 0.5931 mm, with the waist image (67.9 µm) in quadrature.
+  const near = gaussianApparentSource(808e-9, 0.4e-3, 0.2, 0.05);
+  const delta = 0.05 / (0.0025 + 4e-6) - 10;
+  const blur = 3.5e-3 * 17e-3 * delta;
+  const image = (0.2 * 0.4e-3 * 17e-3) / (4 * 0.2e-3 * Math.hypot(1, 25));
+  assertRel(near.defocus, delta, 1e-12, "defocus");
+  assertRel(near.alpha, (Math.SQRT2 * Math.hypot(blur, image)) / 17e-3, 1e-12, "α near");
+  assertRel(near.alpha, 49.66e-3, 1e-3, "α near, value");
+  assert.ok(Number.isNaN(gaussianApparentSource(808e-9, 0.4e-3, 0.2, -1).alpha), "r < 0");
 });
