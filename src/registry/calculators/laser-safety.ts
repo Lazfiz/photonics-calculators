@@ -275,13 +275,13 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "eye-safe-wavelength",
     title: "Eye-Safe Wavelength",
-    description: "Largest single-pulse energy within the ICNIRP 2013 eye limits across the spectrum for your pulse width and beam, showing why 1.4–2.6 µm lasers are called eye-safe.",
+    description: "Largest energy per pulse within the ICNIRP 2013 eye limits across the spectrum for your pulse width, repetition rate and beam: why 1.4–2.6 µm lasers are called eye-safe, and how a pulse train narrows the margin.",
     heading: "Eye-Safe Wavelength Region",
     tier: "exact",
-    modelNote: "ICNIRP 2013 point-source eye limits for one pulse of 1 ns – 30 ks, round Gaussian beam averaged over each aperture. Pulse trains (average power, N^−0.25) are not applied.",
+    modelNote: "ICNIRP 2013 point-source eye limits with the repetitive-pulse rules (single pulse, pulse groups, C_P) and the sub-ns rows; round Gaussian beam averaged over each aperture.",
     references: [
       {
-        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 3, 5 and 8.",
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 3, 5 and 8; repetitive pulse exposures (p. 287).",
         url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
       },
     ],
@@ -368,9 +368,15 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "lidar-safety",
     title: "LiDAR Laser Safety Calculator",
-    description: "Analyze pulse energy, PRF-corrected MPE, and NOHD for LiDAR systems (905/1550 nm).",
-    hidden: true,
-    knownIssue: "The visible average-power limit is 2.5 W/cm² (1000× too high), the pulse limit has a 10⁻³ slip above 100 ns, 1550 nm uses the retinal limit, and the NOHD formula is off by a factor 1/a.",
+    description: "Eye safety of a stationary lidar beam (905 or 1550 nm) on the ICNIRP 2013 limits: the repetitive-pulse rule that binds, NOHD, exposure at a viewing distance and eyewear OD.",
+    tier: "textbook",
+    modelNote: "ICNIRP 2013 repetitive-pulse rules on the eye limits; round Gaussian beam widening as a + rφ, averaged over each aperture. Stationary beam (the worst case, a scanner failure); scanning not modelled.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Repetitive pulse exposures (p. 287), Tables 4, 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+    ],
   },
   {
     slug: "medical-laser-safety",
@@ -410,13 +416,6 @@ export const laserSafety: CalculatorEntry[] = [
         citation: "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers. Table 5a: point-source ocular MPE.",
       },
     ],
-  },
-  {
-    slug: "multiple-pulse",
-    title: "Multiple Pulse Correction",
-    description: "Evaluates all three ANSI Z136.1 rules for repetitive pulse exposure and selects the most restrictive MPE.",
-    hidden: true,
-    knownIssue: "The pulse energy is read as energy per cm², so a beam inside the 7 mm aperture is 2.6× more hazardous than shown; the single-pulse limit and C_A are not the ICNIRP values.",
   },
   {
     slug: "multiple-wavelength",
@@ -518,18 +517,23 @@ export const laserSafety: CalculatorEntry[] = [
     ],
   },
   {
-    slug: "prf-correction",
-    title: "PRF Correction Factor",
-    description: "Calculates the repetitive-pulse correction factor Cp for pulsed laser MPE per ANSI Z136.1 §8.",
-    knownIssue: "C_P = N^−0.25 is not floored at one pulse, so below N = 1 the corrected limit exceeds the single-pulse limit. The average-power rule and pulse grouping are missing.",
-  },
-  {
     slug: "pulsed-mpe",
     title: "Pulsed Laser MPE",
-    description: "Repetitive pulse MPE with N⁻⁰²⁵ correction factor. Simplified ANSI Z136 model.",
-    lede: "Repetitive pulse MPE with N⁻⁰·²⁵ correction factor. Simplified ANSI Z136 model.",
-    hidden: true,
-    knownIssue: "The t^0.75 law is used below 5 µs, where the limit is flat, so nanosecond limits are 100–1000× too low; pulses are counted over 0.25 s even for invisible beams, which makes that limit up to 2.5× too high.",
+    description: "Largest energy per pulse of a repetitively pulsed laser within the ICNIRP 2013 eye limits: single pulse, average power over every pulse group, and the C_P = N^−0.25 rule, from 100 fs pulses to CW-like trains.",
+    lede: "Eye exposure limit of a pulse train, 180 nm to 1 mm: the three repetitive-pulse rules, which one binds, and the eyewear OD needed.",
+    keywords: ["Multiple Pulse Correction", "PRF Correction Factor", "repetitive pulse MPE", "C_P correction factor"],
+    tier: "exact",
+    modelNote: "ICNIRP 2013 repetitive-pulse rules 1–3 (C_P with T_i grouping) on the eye limits, sub-ns rows included; regular train, round Gaussian beam over each aperture. Not modelled: bursts, scanning, skin.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Repetitive pulse exposures (p. 287), Tables 4, 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "Schulmeister, K. (2017). The new edition of the international laser product safety standard IEC 60825-1. White paper, Seibersdorf Laboratories. Multiple pulses, C₅ and pulse groups.",
+        url: "https://www.seibersdorf-laboratories.at/fileadmin/user_upload/docs/le/las/publ/whitepaper_iec-60825-1.pdf",
+      },
+    ],
   },
   {
     slug: "research-lab-safety",
@@ -649,8 +653,15 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "ultrafast-laser-safety",
     title: "Ultrafast Laser Safety Calculator",
-    description: "Evaluate single-pulse, average-power, and PRF-corrected MPE for femtosecond/picosecond laser systems.",
-    knownIssue: "The OD comes from the single-pulse limit only and ignores the average-power limit that governs MHz trains (OD 2 shown where about OD 7 is needed); the femtosecond limit is 21× too high.",
+    description: "Eye safety of femtosecond and picosecond lasers on the ICNIRP 2013 limits: sub-ns single-pulse limits, the average-power rule that governs MHz trains, eyewear OD and NOHD.",
+    tier: "textbook",
+    modelNote: "ICNIRP 2013 repetitive-pulse rules with the sub-ns rows (1 mJ/m² from 100 fs to 10 ps); round Gaussian beam over each aperture, NOHD with a + rφ. Not modelled: bursts, harmonics, eyewear saturation.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Repetitive pulse exposures (p. 287), Tables 4, 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+    ],
   },
   {
     slug: "uv-exposure",

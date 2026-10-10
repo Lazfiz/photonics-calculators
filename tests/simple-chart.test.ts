@@ -20,6 +20,10 @@ test("niceTicks: log axis", () => {
   // A range that starts mid-decade keeps the 2× and 5× ticks below its first power of ten (they were dropped).
   assert.deepEqual(niceTicks(180, 20000, 6, true), [200, 500, 1000, 2000, 5000, 10000, 20000]);
   assert.deepEqual(niceTicks(0.3, 40, 6, true), [0.5, 1, 2, 5, 10, 20]);
+  // Below 10⁻¹⁰ (pulse energies in J, femtosecond limits): the decades continue; they used to stop at 10⁻¹⁰.
+  const tiny = niceTicks(3e-14, 2e-6, 6, true);
+  assert.equal(tiny.length, 8);
+  assert.ok(Math.abs(tiny[0] / 1e-13 - 1) < 1e-12 && Math.abs(tiny[7] / 1e-6 - 1) < 1e-12, tiny.join(", "));
 });
 
 // Labels carry the digits the step needs: 20 nm steps near 1.5 µm used to print "1.5k" five times.

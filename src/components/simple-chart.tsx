@@ -48,10 +48,13 @@ function hexToRgba(hex: string, alpha: number): string {
  * not below (max − min)/count), each computed as k·step so rounding doesn't accumulate. Log: the decades,
  * plus 2× and 5× when the axis spans at most 4 decades.
  */
+/** Smallest value a log axis maps; it only guards log10 against 0 or negatives (data ≤ 0 is skipped on log axes). */
+const LOG_FLOOR = 1e-300;
+
 export function niceTicks(min: number, max: number, count: number, log: boolean): number[] {
   if (log) {
-    const lo = Math.ceil(Math.log10(Math.max(min, 1e-10)));
-    const hi = Math.floor(Math.log10(Math.max(max, 1e-10)));
+    const lo = Math.ceil(Math.log10(Math.max(min, LOG_FLOOR)));
+    const hi = Math.floor(Math.log10(Math.max(max, LOG_FLOOR)));
     const ticks: number[] = [];
     // From the decade below lo, so a range starting mid-decade (180 → 20 000) still gets its 200 and 500.
     for (let p = lo - 1; p <= hi; p++) {
@@ -158,9 +161,12 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
     }
   }
 
-  const allX = data.flatMap(t => ((t.x ?? []) as (number | string)[]).slice(0, 10000).map(Number)).filter(n => !isNaN(n));
-  const allY1 = data.flatMap((t, i) => y2TraceIndices.has(i) ? [] : ((t.y ?? []) as (number | string)[]).slice(0, 10000).map(Number)).filter(n => !isNaN(n));
-  const allY2 = data.flatMap((t, i) => y2TraceIndices.has(i) ? ((t.y ?? []) as (number | string)[]).slice(0, 10000).map(Number) : []).filter(n => !isNaN(n));
+  const xLog = xaxis?.type === "log";
+  const yLog = yaxis?.type === "log";
+  const y2Log = (yaxis2?.type as string) === "log";
+  const allX = data.flatMap(t => ((t.x ?? []) as (number | string)[]).slice(0, 10000).map(Number)).filter(n => Number.isFinite(n) && (!xLog || n > 0));
+  const allY1 = data.flatMap((t, i) => y2TraceIndices.has(i) ? [] : ((t.y ?? []) as (number | string)[]).slice(0, 10000).map(Number)).filter(n => Number.isFinite(n) && (!yLog || n > 0));
+  const allY2 = data.flatMap((t, i) => y2TraceIndices.has(i) ? ((t.y ?? []) as (number | string)[]).slice(0, 10000).map(Number) : []).filter(n => Number.isFinite(n) && (!y2Log || n > 0));
   const allY = hasDualY ? [...allY1, ...allY2] : allY1;
 
   if (allX.length === 0 || allY.length === 0) return null;
@@ -179,14 +185,11 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
   if (yRange) { yMin = yRange[0]; yMax = yRange[1]; }
   if (y2Range) { y2Min = y2Range[0]; y2Max = y2Range[1]; }
 
-  const xLog = xaxis?.type === "log";
-  const yLog = yaxis?.type === "log";
-  const y2Log = (yaxis2?.type as string) === "log";
   const rawXMin = xMin, rawXMax = xMax, rawYMin = yMin, rawYMax = yMax;
   const rawY2Min = y2Min, rawY2Max = y2Max;
-  if (xLog) { xMin = Math.log10(Math.max(xMin, 1e-10)); xMax = Math.log10(Math.max(xMax, 1e-10)); }
-  if (yLog) { yMin = Math.log10(Math.max(yMin, 1e-10)); yMax = Math.log10(Math.max(yMax, 1e-10)); }
-  if (y2Log) { y2Min = Math.log10(Math.max(y2Min, 1e-10)); y2Max = Math.log10(Math.max(y2Max, 1e-10)); }
+  if (xLog) { xMin = Math.log10(Math.max(xMin, LOG_FLOOR)); xMax = Math.log10(Math.max(xMax, LOG_FLOOR)); }
+  if (yLog) { yMin = Math.log10(Math.max(yMin, LOG_FLOOR)); yMax = Math.log10(Math.max(yMax, LOG_FLOOR)); }
+  if (y2Log) { y2Min = Math.log10(Math.max(y2Min, LOG_FLOOR)); y2Max = Math.log10(Math.max(y2Max, LOG_FLOOR)); }
 
   const xSpan = xMax - xMin || 1;
   const ySpan = yMax - yMin || 1;
@@ -202,17 +205,17 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
 
   const toSvgX = (v: number) => {
     let n = v;
-    if (xLog) n = Math.log10(Math.max(n, 1e-10));
+    if (xLog) n = Math.log10(Math.max(n, LOG_FLOOR));
     return ml + ((n - xMin) / (xMax - xMin)) * effectivePlotW;
   };
   const toSvgY = (v: number) => {
     let n = v;
-    if (yLog) n = Math.log10(Math.max(n, 1e-10));
+    if (yLog) n = Math.log10(Math.max(n, LOG_FLOOR));
     return mt + plotH - ((n - yMin) / (yMax - yMin)) * plotH;
   };
   const toSvgY2 = (v: number) => {
     let n = v;
-    if (y2Log) n = Math.log10(Math.max(n, 1e-10));
+    if (y2Log) n = Math.log10(Math.max(n, LOG_FLOOR));
     return mt + plotH - ((n - y2Min) / (y2Max - y2Min)) * plotH;
   };
 
@@ -230,7 +233,8 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
     for (let i = 0; i < Math.min(tx.length, ty.length); i++) {
       const xv = Number(tx[i]);
       const yv = Number(ty[i]);
-      if (isNaN(xv) || isNaN(yv)) continue;
+      if (!Number.isFinite(xv) || !Number.isFinite(yv)) continue;
+      if ((xLog && !(xv > 0)) || ((y2TraceIndices.has(ti) ? y2Log : yLog) && !(yv > 0))) continue;
       points.push(`${toSvgX(xv)},${yMap(yv)}`);
     }
     return points;
@@ -320,7 +324,7 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
           return tx.map((xv, i) => {
             const x = Number(xv), y = Number(ty[i]);
             if (isNaN(x) || isNaN(y)) return null;
-            const base = yLog ? Math.log10(Math.max(yMin > 0 ? yMin : 1e-10, 1e-10)) : Math.min(0, yMin);
+            const base = yLog ? Math.pow(10, yMin) : Math.min(0, yMin); // log: the bottom of the plot
             const bx = toSvgX(x) - barW / 2;
             const by = toSvgY(y);
             const bh = toSvgY(base) - by;
