@@ -25,6 +25,47 @@ const astmG173: Reference = {
   url: "https://doi.org/10.1520/G0173-03R20",
 };
 
+const rakic: Reference = {
+  citation: "Rakić A. D., Djurišić A. B., Elazar J. M., Majewski M. L. (1998). Optical properties of metallic films for vertical-cavity optoelectronic devices. Appl. Opt. 37, 5271–5283.",
+  url: "https://doi.org/10.1364/AO.37.005271",
+};
+const yangAg: Reference = {
+  citation: "Yang H. U., D'Archangel J., Sundheimer M. L., Tucker E., Boreman G. D., Raschke M. B. (2015). Optical dielectric function of silver. Phys. Rev. B 91, 235137.",
+  url: "https://doi.org/10.1103/PhysRevB.91.235137",
+};
+const fanBachner: Reference = {
+  citation: "Fan J. C. C., Bachner F. J. (1976). Transparent heat mirrors for solar-energy applications. Appl. Opt. 15, 1012.",
+  url: "https://doi.org/10.1364/AO.15.001012",
+};
+const cieV: Reference = {
+  citation: "CIE (2019). CIE spectral luminous efficiency for photopic vision (dataset).",
+  url: "https://doi.org/10.25039/CIE.DS.dktna2s3",
+};
+const cieD65: Reference = {
+  citation: "CIE (2022). CIE standard illuminant D65 (dataset).",
+  url: "https://doi.org/10.25039/CIE.DS.hjfjmt59",
+};
+const stoney1909: Reference = {
+  citation: "Stoney G. G. (1909). The tension of metallic films deposited by electrolysis. Proc. R. Soc. Lond. A 82, 172–175.",
+  url: "https://doi.org/10.1098/rspa.1909.0021",
+};
+const hutchinsonSuo: Reference = {
+  citation: "Hutchinson J. W., Suo Z. (1991). Mixed mode cracking in layered materials. Adv. Appl. Mech., 63–191.",
+  url: "https://doi.org/10.1016/S0065-2156(08)70164-9",
+};
+const iapwsSurface: Reference = {
+  citation: "IAPWS R1-76(2014). Revised Release on Surface Tension of Ordinary Water Substance.",
+  url: "https://iapws.org/technical-guidance/release/Surf-H2O",
+};
+const vargaftik: Reference = {
+  citation: "Vargaftik N. B., Volkov B. N., Voljak L. D. (1983). International tables of the surface tension of water. J. Phys. Chem. Ref. Data 12, 817–820.",
+  url: "https://doi.org/10.1063/1.555688",
+};
+const nelderMead: Reference = {
+  citation: "Nelder J. A., Mead R. (1965). A simplex method for function minimization. Comput. J. 7, 308–313.",
+  url: "https://doi.org/10.1093/comjnl/7.4.308",
+};
+
 export const thinFilm: CalculatorEntry[] = [
   {
     slug: "adhesion-testing",
@@ -56,7 +97,11 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "anti-fog",
     title: "Anti-Fog Coating Design",
-    description: "Hydrophilic thin film that spreads condensation into a uniform water layer, minimizing scattering.",
+    description: "Hydrophilic anti-fog coating: transmittance dry and under a water film, the share of a droplet's footprint lost to total internal reflection, and the wetting tension from the contact angle.",
+    lede: "Fog scatters because condensed water forms droplets. A hydrophilic coating lowers the contact angle so the water spreads into a film, which costs only a weak, flat reflection.",
+    tier: "textbook",
+    modelNote: "Coating and a thick water film added incoherently (transfer matrix, normal incidence, lossless layers, constant indices). Droplets: spherical caps in geometric optics, TIR share of the footprint for θ ≤ 90°.",
+    references: [macleod("ch. 2 (thick incoherent layers)"), hecht("ch. 4 (total internal reflection)"), iapwsSurface, vargaftik],
   },
   {
     slug: "bandpass-filter",
@@ -153,7 +198,10 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "dual-band-ar",
     title: "Dual-Band AR Coating",
-    description: "Three-layer anti-reflection coating optimized for two distinct wavelength bands.",
+    description: "Three-layer anti-reflection coating fitted for two wavelengths: thicknesses, residual reflectance and the band below 1 % around each.",
+    tier: "exact",
+    modelNote: "Exact transfer matrix of three lossless layers with constant indices at normal incidence. Thicknesses fitted (grid + Nelder–Mead, each ≤ a half wave at the longer λ) to minimise R(λ₁) + R(λ₂).",
+    references: [macleod("ch. 4 (multilayer antireflection coatings)"), nelderMead],
   },
   {
     slug: "edge-filter",
@@ -182,13 +230,19 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "emissivity-control",
     title: "Emissivity Control",
-    description: "Low-emissivity (Low-E) coating for thermal insulation — Kirchhoff",
-    lede: "Low-emissivity (Low-E) coating for thermal insulation — Kirchhoff's law: ε = 1 - R.",
+    description: "Thermal emittance of a coated opaque surface from Kirchhoff's law: low-e metal films and overcoats, Planck-weighted over a band at any temperature.",
+    lede: "Kirchhoff's law: a surface emits as well as it absorbs. On an opaque substrate the absorptance is 1 − R, so a coating that reflects the thermal infrared, such as a thin metal film, lowers the emittance.",
+    tier: "textbook",
+    modelNote: "Normal emittance 1 − R of a coated opaque substrate (transfer matrix), Planck-weighted over the band. Ag: Yang et al. 2015 data; Al, Cr: Rakić LD; lossless overcoat. Hemispherical ε differs.",
+    references: [yangAg, rakic, macleod("ch. 2 (absorbing layers)")],
   },
   {
     slug: "enhanced-aluminum",
     title: "Enhanced Aluminum Mirror",
-    description: "Aluminum mirror with dielectric overcoat to boost reflectance in the visible.",
+    description: "Aluminium mirror with quarter-wave enhancing pairs: reflectance at the design wavelength and over 400–700 nm, against bare Al.",
+    tier: "exact",
+    modelNote: "Transfer matrix at normal incidence: quarter-wave (H L)ᴺ pairs on Al over an optional Cr layer. Al and Cr from the Rakić et al. 1998 Lorentz–Drude model; dielectrics lossless with constant n.",
+    references: [macleod("ch. 5 (metal mirrors and reflection-enhancing layers)"), rakic],
   },
   {
     slug: "environmental-stability",
@@ -230,13 +284,19 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "hard-coating",
     title: "Hard Coating Design",
-    description: "Abrasion-resistant optical coating — balance mechanical hardness with optical performance.",
+    description: "Single hard coating on a lens or window: reflectance and the absentee (half-wave) thickness, substrate bow from film stress (Stoney), and the thickness below which the film cannot delaminate.",
+    tier: "textbook",
+    modelNote: "Optics: exact one-layer transfer matrix, lossless. Stress: Stoney (film ≪ substrate, small bow) and the energy bound (1 − ν)σ²t/E < Γ against delamination. Hardness and scratch resistance not modelled.",
+    references: [macleod("ch. 4 (single-layer coatings)"), stoney1909, hutchinsonSuo],
   },
   {
     slug: "heat-mirror",
     title: "Heat Mirror Design",
-    description: "Heat mirrors reflect infrared (thermal radiation) while transmitting visible light.",
-    lede: "Heat mirrors reflect infrared (thermal radiation) while transmitting visible light. A quarter-wave stack centered in the IR (e.g., 8–12 μm) reflects thermal radiation from room-temperature objects. Solar radiation (~0.3–2.5 μm) passes through. Critical for energy-efficient windows and thermal management.",
+    description: "Transparent heat mirror (low-e glass): a thin silver film between two high-index layers. Light and solar transmittance of the pane and the thermal emittance of the coated face.",
+    lede: "A heat mirror passes visible light and reflects thermal infrared. A silver film about 10–15 nm thick between two high-index layers (TiO₂/Ag/TiO₂) does both: it transmits most of the light and keeps the emittance low.",
+    tier: "textbook",
+    modelNote: "Transfer matrix at normal incidence; Ag from Yang et al. 2015, dielectric with constant n. Lossless glass, back face added incoherently. ε is the Planck-weighted normal 1 − R, not hemispherical.",
+    references: [fanBachner, yangAg, cieV, cieD65, astmG173, macleod("ch. 2 (absorbing layers, incoherent substrate)")],
   },
   {
     slug: "interference-conditions",
@@ -310,15 +370,9 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "protected-silver",
     title: "Protected Silver Mirror",
     description: "Protected silver coating — high reflectance from the visible to the IR with dielectric overcoat and adhesion layer.",
-    tier: "textbook",
-    modelNote: "Transfer matrix with a Drude fit for Ag (ε∞ = 5), good from 450 to 1200 nm but too reflective below 400 nm (interband edge). Lossless dielectrics with constant indices. Not modelled: tarnish, film-dependent n, k.",
-    references: [
-      {
-        citation: "Johnson P. B., Christy R. W. (1972). Optical constants of the noble metals. Phys. Rev. B 6, 4370–4379.",
-        url: "https://doi.org/10.1103/physrevb.6.4370",
-      },
-      macleod("ch. 2"),
-    ],
+    tier: "exact",
+    modelNote: "Transfer matrix at normal incidence: overcoat, Ag and adhesion layer on the substrate. Ag from Yang et al. 2015 (template-stripped, the best case); dielectrics lossless with constant n.",
+    references: [yangAg, macleod("ch. 5 (protected metal mirrors)")],
   },
   {
     slug: "quarter-wave",
