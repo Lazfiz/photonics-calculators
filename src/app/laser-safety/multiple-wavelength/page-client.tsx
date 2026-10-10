@@ -124,7 +124,7 @@ export default function MultipleWavelengthPage() {
                       />
                     ) : null,
                   )}
-                  <div className="absolute top-0 bottom-0 border-l-2 border-dashed border-red-400" style={{ left: `${(1 / scale) * 100}%` }} />
+                  <div className="absolute top-0 bottom-0 border-l-2 border-dashed border-white" style={{ left: `${(1 / scale) * 100}%` }} />
                 </div>
               </div>
             ))}
@@ -135,7 +135,7 @@ export default function MultipleWavelengthPage() {
                   {nm} nm
                 </span>
               ))}
-              <span className="text-red-300">dashed: the limit (sum = 1)</span>
+              <span className="text-gray-300">white dashed line: the limit (sum = 1)</span>
             </div>
           </div>
 

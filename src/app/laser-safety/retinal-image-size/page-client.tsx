@@ -119,8 +119,8 @@ export default function RetinalImageSizePage() {
       <div className="text-sm text-gray-400 space-y-2">
         <p>
           The apparent source is the object the eye images to the smallest retinal spot within its accommodation range,
-          100 mm to infinity (IEC 60825-1:2014). For a beam that is the waist: seen from r, the beam is (d₀/2)√(1 +
-          (r/z<sub>R</sub>)²) wide with a wavefront of radius r(1 + (z<sub>R</sub>/r)²), z<sub>R</sub> = d₀/θ. The eye (a
+          100 mm to infinity (IEC 60825-1:2014). For a beam that is its waist: seen from r, the beam has the 1/e² radius (d₀/2)√(1 +
+          (r/z<sub>R</sub>)²) and a wavefront of radius r(1 + (z<sub>R</sub>/r)²), z<sub>R</sub> = d₀/θ. The eye (a
           17 mm air-equivalent lens) adds up to 10 dioptres to cancel that curvature and images the waist; α is the 63 %
           image diameter over 17 mm, which far from the waist is d₀/(√2 r). A beam wider than the pupil is diffraction
           limited by the 7 mm pupil; a waist nearer than 100 mm stays out of focus.
