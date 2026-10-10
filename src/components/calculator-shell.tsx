@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import ErrorBoundary from "./error-boundary";
-import { ModelBadge, ModelReferences } from "./model-references";
+import { KnownIssueNotice, ModelBadge, ModelReferences } from "./model-references";
 import RelatedCalculatorLinks, { type RelatedCalculatorItem } from "./related-calculator-links";
 import ShareButton from "./share-button";
 import { JsonLdScript } from "../lib/json-ld";
@@ -63,6 +63,7 @@ export default function CalculatorShell({ href, children, maxWidthClassName = "m
           <p className="mb-4">
             <ModelBadge tier={calculator.tier} />
           </p>
+          {calculator.knownIssue && <KnownIssueNotice text={calculator.knownIssue} />}
           <ErrorBoundary>{children}</ErrorBoundary>
           <ModelReferences calculator={calculator} />
           {related.length > 0 && <RelatedCalculatorLinks currentHref={href} items={related} />}
