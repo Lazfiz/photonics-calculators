@@ -21,7 +21,7 @@ const icnirpTools: CalcLink[] = [
   { name: "Thermal vs Photochemical", href: "/laser-safety/thermal-vs-photochemical", desc: "The two retinal limits at 400–600 nm and when the blue-light one takes over." },
   { name: "Extended Source", href: "/laser-safety/extended-source", desc: "C_E, α_max and T₂ for a source larger than 1.5 mrad." },
   { name: "Retinal Hazard", href: "/laser-safety/retinal-hazard", desc: "Retinal image size, irradiance and the retinal limits for a beam." },
-  { name: "Eye-Safe Wavelength", href: "/laser-safety/eye-safe-wavelength", desc: "Single-pulse limits across the spectrum: why 1.4–2.6 µm is called eye-safe." },
+  { name: "Eye-Safe Wavelength", href: "/laser-safety/eye-safe-wavelength", desc: "Energy per pulse across the spectrum, one pulse or a train: why 1.4–2.6 µm is called eye-safe." },
   { name: "NOHD", href: "/laser-safety/nohd", desc: "Nominal ocular hazard distance of a direct beam, linear or Gaussian spread." },
   { name: "Diffuse Reflection", href: "/laser-safety/diffuse-reflection", desc: "Viewing a laser spot on a matte surface: extended-source limit and hazard distance." },
   { name: "Diode Laser Safety", href: "/laser-safety/diode-laser-safety", desc: "NOHD and OD of an elliptical diode beam (slow and fast axis)." },
@@ -31,6 +31,12 @@ const icnirpTools: CalcLink[] = [
   { name: "Multiple Wavelength", href: "/laser-safety/multiple-wavelength", desc: "Several lines in one beam: which add (same tissue) and which count independently." },
   { name: "Retinal Image Size", href: "/laser-safety/retinal-image-size", desc: "Apparent source of a beam: retinal image and α with the eye accommodating." },
   { name: "Aversion Response Time", href: "/laser-safety/aversion-response", desc: "Largest visible power within the 0.25 s blink / aversion limit." },
+];
+
+const pulseTools: CalcLink[] = [
+  { name: "Pulsed Laser MPE", href: "/laser-safety/pulsed-mpe", desc: "Largest energy per pulse of a pulse train: single pulse, average power and C_P, and the rule that binds." },
+  { name: "Ultrafast Laser Safety", href: "/laser-safety/ultrafast-laser-safety", desc: "Femtosecond and picosecond lasers: sub-ns limits, the average-power rule of MHz trains, OD and NOHD." },
+  { name: "LiDAR Laser Safety", href: "/laser-safety/lidar-safety", desc: "Stationary 905 or 1550 nm lidar beam: NOHD, exposure at a viewing distance, eyewear OD." },
 ];
 
 const classTools: CalcLink[] = [
@@ -49,12 +55,10 @@ const educationalReferences: CalcLink[] = [
   { name: "Peak Power", href: "/laser-safety/peak-power", desc: "Pulse energy / pulse duration / peak power math helper." },
   { name: "Power Density", href: "/laser-safety/power-density", desc: "Irradiance math helper from power and beam size." },
   { name: "Thermal Lens Hazard", href: "/laser-safety/thermal-lens-hazard", desc: "Heating of an eyewear filter or lens by the beam it absorbs, and how long it lasts." },
-  { name: "Ultrafast Laser Safety", href: "/laser-safety/ultrafast-laser-safety", desc: "Educational overview of ultrafast-specific safety concerns." },
 ];
 
 const quarantinedTopics: CalcLink[] = [
   { name: "Blue Light Hazard", href: "/laser-safety/blue-light-hazard", desc: "Photochemical / spectral-weighting topic — quarantined." },
-  { name: "PRF Correction", href: "/laser-safety/prf-correction", desc: "Pulse repetition correction logic — quarantined." },
   { name: "Scan Failure", href: "/laser-safety/scan-failure", desc: "Failure-mode scanning safety topic — quarantined." },
   { name: "UV Exposure", href: "/laser-safety/uv-exposure", desc: "UV exposure limits topic — quarantined." },
   { name: "UV Hazard", href: "/laser-safety/uv-hazard", desc: "UV hazard evaluation — quarantined." },
@@ -151,6 +155,13 @@ export default function LaserSafetyPage() {
       />
 
       <Section
+        title="Pulsed lasers (ICNIRP 2013)"
+        subtitle="The repetitive-pulse rules (single pulse, every pulse group, C_P) on the same tested limits, with the sub-nanosecond rows. Stationary beams; scanning is not covered yet."
+        tone="cyan"
+        items={pulseTools}
+      />
+
+      <Section
         title="Laser classes (IEC 60825-1:2014)"
         subtitle="Accessible emission limits rebuilt from the same tested ICNIRP 2013 limits (IEC's own values in the UV), for CW lasers. Educational: classifying a product needs the standard and measurements."
         tone="cyan"
@@ -173,7 +184,7 @@ export default function LaserSafetyPage() {
 
       <div className="mb-10 rounded-xl border border-fuchsia-500/20 bg-fuchsia-950/10 p-4 text-sm leading-6 text-fuchsia-100">
         <p className="font-semibold text-fuchsia-200">Hidden from nav (still reachable by direct URL)</p>
-        <p className="mt-2">pulsed-mpe, scanning-mpe, lidar-safety, interlock-design, and multiple-pulse</p>
+        <p className="mt-2">scanning-mpe and interlock-design</p>
       </div>
     </div>
   );

@@ -1,131 +1,151 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
+import { useCallback, useMemo } from "react";
+import { fmtDistance, fmtEnergy, fmtNum, fmtPower, LIMIT_LABELS } from "../../../components/eye-limit-labels";
+import HazardRatioChart from "../../../components/hazard-ratio-chart";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-
+import PulseTrainTable from "../../../components/pulse-train-table";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { T_MAX } from "../../../physics/laser-safety/eye-exposure-limits";
+import { effectiveDiameterAt, rangeToDiameter, roundBeam } from "../../../physics/laser-safety/hazard-distance";
+import { pulseTrainLimits, pulseTrainSafeDiameter } from "../../../physics/laser-safety/pulse-train";
+
+const RULE_NAMES = { 1: "single pulse", 2: "average power", 3: "C_P × single pulse" } as const;
+const presets: readonly [number, string][] = [[905, "905 nm diode"], [1550, "1550 nm fibre"]];
+
 export default function LidarSafetyPage() {
-  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 10); // µJ
-  const [repRate, setRepRate] = useURLState("repRate", 200); // kHz
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 5); // ns
+  const [pulseEnergyRaw, setPulseEnergy] = useURLState("pulseEnergy", 10); // µJ
+  const [repRateRaw, setRepRate] = useURLState("repRate", 200); // kHz
+  const [pulseWidthRaw, setPulseWidth] = useURLState("pulseWidth", 5); // ns
   const [wavelength, setWavelength] = useURLState("wavelength", 905); // nm
-  const [beamDia, setBeamDia] = useURLState("beamDia", 3); // mm
-  const [divergence, setDivergence] = useURLState("divergence", 3); // mrad
-  const [scanRange, setScanRange] = useURLState("scanRange", 100); // m
+  const [beamDiaRaw, setBeamDia] = useURLState("beamDia", 3); // mm, 1/e²
+  const [divergenceRaw, setDivergence] = useURLState("divergence", 3); // mrad, 1/e² full angle
+  const [rangeRaw, setRange] = useURLState("scanRange", 10); // m, where the eye is
+  const [exposureRaw, setExposure] = useURLState("exposureTime", 10); // s
 
-  const avgPower = pulseEnergy * 1e-6 * repRate * 1e3; // W
-  const prf = repRate * 1e3; // Hz
+  // URL values aren't range-checked: clamp them here. SI inside; physics in src/physics/laser-safety/pulse-train.ts.
+  const lambda = wavelength * 1e-9;
+  const Q = Math.max(pulseEnergyRaw, 0) * 1e-6;
+  const prf = Math.max(repRateRaw, 0) * 1e3;
+  const tau = Math.max(pulseWidthRaw, 1e-4) * 1e-9;
+  const T = Math.min(Math.max(exposureRaw, tau), T_MAX);
+  const d = Math.max(beamDiaRaw, 1e-3) * 1e-3;
+  const phi = Math.max(divergenceRaw, 0) * 1e-3;
+  const range = Math.max(rangeRaw, 0);
+  const overlap = prf * tau > 1;
 
-  // MPE for 905nm (retinal hazard, single pulse)
-  const singlePulseMpeJcm2 = 5e-7; // J/cm² for t < 1 ns to ~10 ns (simplified)
-  // For longer pulses
-  const tPulse = pulseWidth * 1e-9;
-  const mpeSingle = tPulse < 1e-7 ? 5e-7 : 1.8 * Math.pow(tPulse, 0.75) * 1e-3 * 1e-3;
+  const beam = useMemo(() => roundBeam(d, phi), [d, phi]);
+  const train = useMemo(() => ({ duration: tau, prf, exposure: T }), [tau, prf, T]);
+  const dEye = effectiveDiameterAt(beam, range);
+  const atEye = useMemo(() => pulseTrainLimits(lambda, dEye, train), [lambda, dEye, train]);
+  const atOutput = useMemo(() => pulseTrainLimits(lambda, d, train), [lambda, d, train]);
+  const covered = atEye.limits.length > 0 && Number.isFinite(atEye.qMax);
+  const ratioEye = Q / atEye.qMax;
+  const ratioOut = Q / atOutput.qMax;
+  const nohd = useMemo(() => rangeToDiameter(beam, pulseTrainSafeDiameter(lambda, Q, train)), [beam, lambda, Q, train]);
+  const nohdFinite = Number.isFinite(nohd) && nohd > 0;
 
-  // Average MPE for scanning (0.25s)
-  const avgMpeWcm2 = wavelength <= 700 ? 2.5 : 1.8 / (Math.pow(0.25, 0.75) * 1000);
-
-  // PRF correction
-  const nPulses = Math.min(prf * 0.25, 86400);
-  const prfCorrection = Math.pow(nPulses, -0.25);
-  const correctedMpe = mpeSingle * prfCorrection;
-
-  const beamAreaCm2 = Math.PI * Math.pow(beamDia / 20, 2);
-  const pulseEdensity = (pulseEnergy * 1e-6) / beamAreaCm2;
-  const safetyRatio = correctedMpe > 0 ? pulseEdensity / correctedMpe : Infinity;
-
-  // NOHD
-  const nohd = useMemo(() => {
-    const a = (beamDia / 2) / 1000;
-    const phi = divergence / 1000;
-    const mpeW = avgMpeWcm2 * 1e4; // W/m²
-    const factor = 1.27 * avgPower / (mpeW * a * a);
-    if (factor <= 1) return 0;
-    return (1 / phi) * (Math.sqrt(factor) - 1);
-  }, [avgPower, beamDia, divergence, avgMpeWcm2]);
-
-  // Beam at scan range
-  const beamDiaAtRange = beamDia + scanRange * divergence;
-  const beamAreaAtRange = Math.PI * Math.pow(beamDiaAtRange / 20, 2);
-  const pulseDensityAtRange = (pulseEnergy * 1e-6) / beamAreaAtRange;
-  const odRequired = safetyRatio > 1 ? Math.ceil(Math.log10(safetyRatio)) : 0;
-
-  const chartData = useMemo(() => {
-    const distances = Array.from({ length: 100 }, (_, i) => i * Math.max(nohd, 200) * 1.3 / 100);
-    const pulseE = distances.map(z => {
-      const bd = beamDia + z * divergence;
-      return (pulseEnergy * 1e-6) / (Math.PI * Math.pow(bd / 20, 2)) * 1e6; // µJ/cm²
-    });
-    const avgIrr = distances.map(z => {
-      const bd = beamDia + z * divergence;
-      return avgPower / (Math.PI * Math.pow(bd / 20, 2)); // W/cm²
-    });
-    return [
-      { x: distances, y: pulseE, type: "scatter" as const, mode: "lines" as const, name: "Pulse energy density", line: { color: "#60a5fa" },
-        yaxis: "y" },
-      { x: [0, Math.max(...distances)], y: [correctedMpe * 1e6, correctedMpe * 1e6], type: "scatter" as const, mode: "lines" as const, name: "PRF-corrected MPE", line: { color: "#f87171", dash: "dash" },
-        yaxis: "y" },
-      { x: distances, y: avgIrr, type: "scatter" as const, mode: "lines" as const, name: "Avg irradiance", line: { color: "#a78bfa" },
-        yaxis: "y2" },
-    ];
-  }, [pulseEnergy, beamDia, divergence, avgPower, correctedMpe, nohd]);
+  const ratios = useCallback(
+    (r: number) => pulseTrainLimits(lambda, effectiveDiameterAt(beam, r), train).limits.map((l) => ({ kind: l.kind, ratio: Q / l.qMax })),
+    [lambda, beam, train, Q],
+  );
+  const rMin = nohdFinite ? Math.max(nohd * 1e-3, 0.01) : 0.01;
+  const rMax = nohdFinite ? Math.max(nohd * 10, rMin * 10) : 1000;
+  const markers = useMemo(() => {
+    const m: { r: number; y?: number; label: string }[] = [];
+    if (nohdFinite) m.push({ r: nohd, label: "NOHD" });
+    if (range > 0 && Number.isFinite(ratioEye) && ratioEye > 0) m.push({ r: range, y: ratioEye, label: "Viewing distance" });
+    return m;
+  }, [nohdFinite, nohd, range, ratioEye]);
 
   return (
     <>
-            
       <LaserSafetyDisclaimer />
-      <LaserSafetyQuarantineBanner />
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Pulse Energy (µJ)" value={pulseEnergy} onChange={setPulseEnergy} />
-        <ValidatedNumberInput label="Rep Rate (kHz)" value={repRate} onChange={setRepRate} />
-        <ValidatedNumberInput label="Pulse Width (ns)" value={pulseWidth} onChange={setPulseWidth} step="0.1" />
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-        <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDia} onChange={setBeamDia} />
-        <ValidatedNumberInput label="Divergence (mrad)" value={divergence} onChange={setDivergence} step="0.1" />
-        <ValidatedNumberInput label="Scan Range (m)" value={scanRange} onChange={setScanRange} />
+      <div className="mb-5 flex flex-wrap gap-2">
+        {presets.map(([nm, name]) => (
+          <button
+            key={nm}
+            type="button"
+            onClick={() => setWavelength(nm)}
+            className={`rounded-full border px-3 py-1 text-sm transition ${wavelength === nm ? "border-red-400 bg-red-500/15 text-red-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}
+          >
+            {name}
+          </button>
+        ))}
       </div>
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <p className="text-sm text-gray-400">Average Power</p>
-          <p className="text-2xl font-bold text-blue-400">{avgPower.toFixed(2)} W</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <p className="text-sm text-gray-400">PRF-corrected MPE</p>
-          <p className="text-2xl font-bold text-green-400">{(correctedMpe * 1e6).toFixed(4)} µJ/cm²</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <p className="text-sm text-gray-400">NOHD (avg power)</p>
-          <p className="text-2xl font-bold text-red-400">{nohd.toFixed(1)} m</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <p className="text-sm text-gray-400">Pulse E at {scanRange}m</p>
-          <p className="text-2xl font-bold text-yellow-400">{(pulseDensityAtRange * 1e6).toFixed(4)} µJ/cm²</p>
-        </div>
+        <ValidatedNumberInput label="Pulse energy (µJ)" value={pulseEnergyRaw} onChange={setPulseEnergy} min={0} step="any" />
+        <ValidatedNumberInput label="Repetition rate (kHz, 0 = one pulse)" value={repRateRaw} onChange={setRepRate} min={0} step="any" />
+        <ValidatedNumberInput label="Pulse duration (ns)" value={pulseWidthRaw} onChange={setPulseWidth} min={1e-4} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={1000000} step="any" />
+        <ValidatedNumberInput label="Beam diameter at the window, 1/e² (mm)" value={beamDiaRaw} onChange={setBeamDia} min={0.001} step="any" />
+        <ValidatedNumberInput label="Full-angle divergence, 1/e² (mrad)" value={divergenceRaw} onChange={setDivergence} min={0} step="any" />
+        <ValidatedNumberInput label="Viewing distance (m)" value={rangeRaw} onChange={setRange} min={0} step="any" />
+        <ValidatedNumberInput label="Exposure time (s)" value={exposureRaw} onChange={setExposure} min={1e-13} max={30000} step="any" />
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-8">
-        <h3 className="text-sm font-semibold text-gray-300 mb-2">Formulas</h3>
-        <div className="text-xs text-gray-400 space-y-1">
-          <p>P<sub>avg</sub> = E<sub>p</sub> × f<sub>rep</sub></p>
-          <p>MPE<sub>single</sub> ≈ 5 × 10<sup>−7</sup> J/cm² (τ &lt; 100 ns, 400–1050 nm)</p>
-          <p>MPE<sub>corrected</sub> = MPE<sub>single</sub> × N<sup>−0.25</sup> where N = f<sub>rep</sub> × T</p>
-          <p>E(z) = E<sub>p</sub> / (π(d₀ + zφ)²/4)</p>
-        </div>
+      {overlap ? (
+        <p className="text-amber-300 mb-4">The pulses overlap: the repetition rate times the pulse duration is above 1.</p>
+      ) : !covered ? (
+        <p className="text-amber-300 mb-4">The eye limits cover 180 nm to 1 mm.</p>
+      ) : (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
+            <ResultCard label="Average power" value={fmtPower(Q * prf)} tone="blue" subtext={`Peak power E/τ: ${fmtPower(Q / tau)}`} />
+            <ResultCard
+              label="NOHD (stationary beam)"
+              value={nohd === Infinity ? "∞ (the beam doesn't spread)" : nohd === 0 ? "0 — within at the window" : fmtDistance(nohd)}
+              tone={nohd === 0 ? "green" : "red"}
+              subtext={`Exposures up to ${fmtNum(T)} s, beam a + rφ`}
+            />
+            <ResultCard
+              label={`At ${fmtDistance(range)}: pulse / max`}
+              value={`${fmtNum(ratioEye)}×`}
+              tone={ratioEye > 1 ? "red" : "green"}
+              subtext={`Max ${fmtEnergy(atEye.qMax)} per pulse (${atEye.limiting ? LIMIT_LABELS[atEye.limiting] : ""}, ${atEye.rule ? RULE_NAMES[atEye.rule] : ""})`}
+            />
+            <ResultCard
+              label="Eyewear OD at the window"
+              value={ratioOut > 1 ? fmtNum(Math.log10(ratioOut)) : "0 (within)"}
+              tone={ratioOut > 1 ? "red" : "green"}
+              subtext={`Beam ${fmtNum(d * 1e3)} mm; at ${fmtDistance(range)} it is ${fmtNum(dEye * 1e3)} mm`}
+            />
+          </div>
+          <p className="text-sm text-gray-300 mb-2">Each rule for an eye at the viewing distance:</p>
+          <PulseTrainTable result={atEye} energy={Q} />
+        </>
+      )}
+
+      <div className="text-sm text-gray-400 mb-8 space-y-2">
+        <p>
+          A lidar beam is a pulse train: the ICNIRP 2013 repetitive-pulse rules hold each pulse to the single-pulse limit,
+          every group of pulses (up to the whole exposure) to the limit for the time it spans, and on the retina each
+          pulse to C_P times the single-pulse limit. At 905 nm and hundreds of kHz the average-power rule binds; at
+          1550 nm the cornea absorbs the beam and its limit (1 mm aperture below 0.35 s, growing to 3.5 mm at 10 s) is
+          far higher, which is why 1550 nm lidars can emit much more. 10 s is ICNIRP&apos;s exposure for unintended viewing
+          in the near infrared.
+        </p>
+        <p>
+          This is the stationary beam: the worst case, and what a scanner failure leaves. A scanning lidar sweeps the beam
+          across the pupil, so each pass is a short pulse group and the limits are higher (not modelled here). NOHD is
+          the distance where the beam&apos;s 1/e² diameter a + rφ has grown enough for every rule, on the averaging apertures
+          (7 mm on the retina). Not modelled: scanning, several beams overlapping, optical aids (binoculars lengthen the
+          NOHD), atmospheric attenuation, the IEC 60825-1 class of the product.
+        </p>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4">
-        <ChartPanel data={chartData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" }, xaxis: { title: "Distance (m)", gridcolor: "#374151" },
-          yaxis: { title: "Pulse Energy Density (µJ/cm²)", gridcolor: "#374151", type: "log", color: "#60a5fa" },
-          yaxis2: { title: "Avg Irradiance (W/cm²)", gridcolor: "#374151", type: "log", overlaying: "y", side: "right", color: "#a78bfa" },
-          margin: { t: 30, r: 70, b: 50, l: 70 },
-        }} />
-      </div>
+      {covered && !overlap ? (
+        <div className="bg-gray-900 rounded-lg p-4">
+          <HazardRatioChart ratios={ratios} rMin={rMin} rMax={rMax} markers={markers} />
+          <p className="text-xs text-gray-500 mt-2">
+            Pulse energy over the largest allowed energy per pulse against distance, for each eye limit, as the beam widens.
+            The beam is within the limits where every line is below the dashed line; the NOHD is where the highest crosses
+            it.
+          </p>
+        </div>
+      ) : null}
     </>
   );
 }
