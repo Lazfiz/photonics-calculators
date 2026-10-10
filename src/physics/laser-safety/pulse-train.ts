@@ -22,10 +22,12 @@
  *    c. Pulses of T_i or shorter: 1 for T ≤ 0.25 s; beyond, 5 n^−0.25 for more than 600 pulses (here min(1, 5 n^−0.25)).
  *       ICNIRP applies this in the visible only to intentional viewing, i.e. a T chosen above 0.25 s. IEC 60825-1:2014
  *       floors it at 0.4 (Schulmeister 2017); ICNIRP states no floor, so none here.
- *    Pulses closer than T_i count as one (IEC 60825-1:2014 4.3 f; ANSI Z136.1 applies C_P to "pulses and pulse
+ *    Pulses closer than T_i also count as one (IEC 60825-1:2014 4.3 f; ANSI Z136.1 applies C_P to "pulses and pulse
  *    groups"): the k pulses that fit in T_i are one pulse of duration T_i and energy kQ, so the energy per pulse is
- *    C_P·G(T_i)/k with n the number of groups. For a regular point-source train rule 2 is lower whenever this applies;
- *    it binds for large sources, whose average limit C_E raises more than the single-pulse one.
+ *    C_P·G(T_i)/k with n the number of groups. ICNIRP counts single pulses, and below 10 ps G(T_i)/k can exceed G(τ)
+ *    (the T_i limit has C_A, the femtosecond one doesn't), so the lower of the two readings is used. For a regular
+ *    point-source train rule 2 is lower whenever grouping applies; it binds for large sources, whose average limit C_E
+ *    raises more than the single-pulse one.
  * T_i (Table 4) is 5 µs for 400–1050 nm and 13 µs for 1050–1400 nm, where Table 5's flat short-pulse piece ends.
  *
  * Below 1 ns (Table 5): the retinal thermal limit is 1.0 C_E mJ/m² (× C_C from 1050 nm, no C_A) from 100 fs to 10 ps
@@ -222,19 +224,21 @@ export function pulseTrainLimits(lambda: number, d: number, train: PulseTrain, a
   const limits = pulseLimits(lambda, alpha).map((limit): TrainLimit => {
     const singlePulse = limitMaxEnergy(limit, d, tau);
     const { q: group, n: groupPulses } = groupRule(limit, d, tau, f, N);
-    let reduced = Infinity;
-    let cp = 1;
-    let cpCount = 0;
-    let perGroup = 1;
+    let rule3 = { reduced: Infinity, cp: 1, cpCount: 0, perGroup: 1 };
     if (limit.kind === "retinalThermal" && N >= 2) {
       const Ti = timeTi(lambda);
       const inT2 = Math.min(N, pulsesIn(Math.min(T, timeT2(alpha)), tau, f));
-      perGroup = tau < Ti ? Math.min(N, pulsesIn(Ti, tau, f)) : 1;
-      const tEff = perGroup > 1 ? Ti : tau;
-      cpCount = Math.ceil(inT2 / perGroup);
-      cp = correctionCP(lambda, alpha, cpCount, tEff, T);
-      reduced = (cp * limitMaxEnergy(limit, d, tEff)) / perGroup;
+      const cp = correctionCP(lambda, alpha, inT2, tau, T);
+      rule3 = { reduced: cp * singlePulse, cp, cpCount: inT2, perGroup: 1 };
+      const k = tau < Ti ? Math.min(N, pulsesIn(Ti, tau, f)) : 1;
+      if (k > 1) {
+        const groups = Math.ceil(inT2 / k);
+        const cpGroups = correctionCP(lambda, alpha, groups, Ti, T);
+        const reduced = (cpGroups * limitMaxEnergy(limit, d, Ti)) / k;
+        if (reduced < rule3.reduced) rule3 = { reduced, cp: cpGroups, cpCount: groups, perGroup: k };
+      }
     }
+    const { reduced, cp, cpCount, perGroup } = rule3;
     const values = [singlePulse, group, reduced];
     const i = argMin(values);
     return { kind: limit.kind, singlePulse, group, groupPulses, reduced, cp, cpCount, perGroup, qMax: values[i], rule: (i + 1) as PulseRule };

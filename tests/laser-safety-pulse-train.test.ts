@@ -123,6 +123,13 @@ test("Pulses within T_i: rule 2 adds them, rule 3 counts them as one", () => {
   assert.equal(r.rule, 2);
   // Rule 3 compares 400 pulses with the limit at T_i: 18 C_A (5 µs)^0.75 / 400.
   assertRel(r.reduced, (18 * CA * Math.pow(5e-6, 0.75) * A7) / 400, 1e-12, "rule 3");
+  // 800 nm, 100 fs at 300 kHz for 10 s: pairs fit in T_i, but counted singly (ICNIRP) the 3×10⁶ pulses give the lower
+  // limit, 5·(3×10⁶)^−0.25 × 1 mJ/m² = 0.120 mJ/m², than pairs on the T_i limit, 5·(1.5×10⁶)^−0.25 × 18 C_A (5 µs)^0.75 / 2
+  // = 0.216 mJ/m² (the T_i limit has C_A, the femtosecond one doesn't).
+  const fs = retina(nm(800), 0, { duration: 1e-13, prf: 3e5, exposure: 10 });
+  assert.equal(fs.perGroup, 1);
+  assert.equal(fs.cpCount, 3e6);
+  assertRel(fs.reduced, 5 * Math.pow(3e6, -0.25) * 1e-3 * A7, 1e-12, "fs pulses counted singly");
   // A 100 mrad source, 532 nm, 1 ns at 1 MHz for 10 s: groups of 5 pulses, 2×10⁶ groups within T₂ = 100 s,
   // C_P = 5·(2×10⁶)^−0.25 = 0.1330 on 18 C_E (5 µs)^0.75, C_E = 5/1.5: 1.69×10⁻⁴ J/m². Without grouping it would be
   // 5·(10⁷)^−0.25 × 2 C_E mJ/m² = 5.9×10⁻⁴. The best group, 626 pulses just past 625 µs (2400 t^1.25), allows 3.79×10⁻⁴.
