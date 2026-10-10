@@ -74,7 +74,68 @@ test("rejects unsupported wavelengths outside bounded ocular suite", () => {
 test("unit helpers stay explicit", () => {
   assert.equal(powerMwToW(500), 0.5);
   assert.equal(divergenceMradToRad(1.2), 0.0012);
-  assert.ok(Math.abs(cornealIrradianceWcm2(1000, 2) - (1 / (Math.PI * 0.1 * 0.1))) < 1e-12);
+});
+
+// Golden values: ICNIRP 2013 (Health Phys. 105(3), 271, doi:10.1097/HP.0b013e3182983fd4) Table 5, retinal thermal
+// 18 t^0.75 J/m² to 10 s, then 10 C_A W/m²; Table 8, 7 mm aperture. NOHD = (D − a)/φ, D = √(4P/(π E_MPE)), 1/e values
+// (ANSI Z136.1 App. B), checked by hand.
+function assertRel(actual: number, expected: number, tol: number, label: string) {
+  assert.ok(Math.abs(actual / expected - 1) < tol, `${label}: ${actual} vs ${expected}`);
+}
+
+test("the MPE at 532 nm, 0.25 s and the 10 s joint (the lower of the two pieces)", () => {
+  const r = calculateEducationalContinuousMpe(532, 0.25);
+  assert.equal(r.status, "supported");
+  if (r.status !== "supported") return;
+  assertRel(r.radiantExposureMpe_mJcm2, 0.636396, 1e-5, "H(0.25 s)");
+  assertRel(r.equivalentIrradianceMpe_mWcm2, 2.545584, 1e-5, "E(0.25 s)");
+  for (const nm of [430, 470, 550, 850]) {
+    const at10 = calculateEducationalContinuousMpe(nm, 10);
+    assert.equal(at10.status, "supported");
+    if (at10.status !== "supported") return;
+    // 18 · 10^0.75 = 101.2 J/m² above 10 W/m² × 10 s: the joint takes the 10 s piece.
+    assert.ok(at10.radiantExposureMpe_mJcm2 <= 10 * (nm > 700 ? Math.pow(10, 2 * (nm / 1000 - 0.7)) : 1) + 1e-9, `${nm} nm`);
+  }
+});
+
+test("irradiance is averaged over the 7 mm aperture", () => {
+  // Narrower beams put all of P into the aperture; wider ones show their 1/e peak 4P/(πd²).
+  assertRel(cornealIrradianceWcm2(500, 3), 0.5 / (Math.PI * 0.35 ** 2), 1e-12, "3 mm");
+  assertRel(cornealIrradianceWcm2(500, 0.5), 0.5 / (Math.PI * 0.35 ** 2), 1e-12, "0.5 mm");
+  assertRel(cornealIrradianceWcm2(500, 10), 0.5 / (Math.PI * 0.5 ** 2), 1e-12, "10 mm");
+});
+
+test("OD for 500 mW at 532 nm, 0.25 s: 2.708 for any beam narrower than 7 mm", () => {
+  for (const beamDefinition of ["1/e", "1/e2"] as const) {
+    const r = cwPointSourceOdPrecheck({ wavelengthNm: 532, exposureS: 0.25, powerMw: 500, beamDiameterMm: 3, beamDefinition });
+    assert.equal(r.status, "supported");
+    if (r.status !== "supported") return;
+    assertRel(r.requiredOd, Math.log10(0.5 / (Math.PI * 0.35 ** 2) / 2.545584e-3), 1e-6, beamDefinition);
+    assertRel(r.requiredOd, 2.7079, 1e-4, beamDefinition);
+  }
+});
+
+test("NOHD starts the beam at its own diameter, not at 7 mm", () => {
+  const nohd = (beamDefinition: "1/e" | "1/e2", powerMw = 100, divergenceMrad = 1, beamDiameterMm = 2) => {
+    const r = cwPointSourceNohdPrecheck({ wavelengthNm: 532, exposureS: 0.25, powerMw, beamDiameterMm, divergenceMrad, beamDefinition });
+    assert.equal(r.status, "supported");
+    return r.status === "supported" ? r : undefined;
+  };
+  // D = √(4 · 0.1 W/(π · 2.545584e-3 W/cm²)) = 7.0725 cm.
+  assertRel(nohd("1/e")!.nohdM, 68.725, 1e-4, "1/e: (70.725 − 2)/1");
+  assertRel(nohd("1/e2")!.nohdM, (70.725 - 2 / Math.SQRT2) / (1 / Math.SQRT2), 1e-4, "1/e²: values ÷ √2");
+  assertRel(nohd("1/e2")!.nohdM, 98.020, 1e-4, "1/e² default");
+  assertRel(nohd("1/e", 500, 0.5)!.nohdM, 312.28, 1e-4, "500 mW, 0.5 mrad");
+  assertRel(nohd("1/e", 5, 1, 1)!.nohdM, 14.81, 1e-3, "5 mW, 1 mm, 1 mrad");
+  const r = nohd("1/e")!;
+  assertRel(r.diameterAtNohdCm, 7.0725, 1e-4, "diameter at the NOHD is D");
+  assertRel(r.irradianceAtDistance(r.nohdM), r.targetIrradianceWcm2, 1e-9, "the chart meets the target at the NOHD");
+  // Edges: below ≈ 0.98 mW nothing is hazardous through 7 mm; a beam that doesn't spread stays hazardous.
+  assert.equal(nohd("1/e", 0.9)!.nohdM, 0);
+  assert.ok(nohd("1/e", 1.0)!.nohdM > 0);
+  assert.equal(nohd("1/e", 100, 0)!.nohdM, Infinity);
+  const bad = cwPointSourceNohdPrecheck({ wavelengthNm: 532, exposureS: 0.25, powerMw: 100, beamDiameterMm: 2, divergenceMrad: 1, safetyFactor: 0 });
+  assert.equal(bad.status, "unsupported");
 });
 
 test("OD precheck gets stricter when safety factor increases", () => {

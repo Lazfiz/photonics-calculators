@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
@@ -10,17 +10,27 @@ import LaserSafetyCwReferences from "../../../components/laser-safety-cw-referen
 import LaserSafetyCwScope from "../../../components/laser-safety-cw-scope";
 import LaserSafetySuiteLinks from "../../../components/laser-safety-suite-links";
 import { cwPointSourceOdPrecheck } from "../../../lib/laser-safety-cw-suite";
+import LaserSafetyBeamDefinition, { parseBeamDefinition } from "../../../components/laser-safety-beam-definition";
 import { useURLState } from "../../../hooks/use-url-state";
+import { clampToRange } from "../../../lib/number-input";
 export default function OpticalDensityPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 532);
-  const [power, setPower] = useURLState("power", 500);
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 3);
-  const [exposure, setExposure] = useURLState("exposure", 0.25);
-  const [safetyFactor, setSafetyFactor] = useURLState("safetyFactor", 10);
+  // URL values aren't range-checked: clamp them to the sliders' ranges.
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 532);
+  const [powerRaw, setPower] = useURLState("power", 500);
+  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 3);
+  const [exposureRaw, setExposure] = useURLState("exposure", 0.25);
+  const [safetyFactorRaw, setSafetyFactor] = useURLState("safetyFactor", 10);
+  const [beamDefinitionRaw, setBeamDefinition] = useURLState("beamDefinition", "1/e2");
+  const wavelength = clampToRange(wavelengthRaw, 400, 1050);
+  const power = clampToRange(powerRaw, 1, 5000);
+  const beamDiam = clampToRange(beamDiamRaw, 0.5, 10);
+  const exposure = clampToRange(exposureRaw, 0.001, 30000);
+  const safetyFactor = clampToRange(safetyFactorRaw, 1, 20);
+  const beamDefinition = parseBeamDefinition(beamDefinitionRaw);
 
   const result = useMemo(
-    () => cwPointSourceOdPrecheck({ wavelengthNm: wavelength, exposureS: exposure, powerMw: power, beamDiameterMm: beamDiam, safetyFactor }),
-    [wavelength, power, beamDiam, exposure, safetyFactor]
+    () => cwPointSourceOdPrecheck({ wavelengthNm: wavelength, exposureS: exposure, powerMw: power, beamDiameterMm: beamDiam, beamDefinition, safetyFactor }),
+    [wavelength, power, beamDiam, exposure, beamDefinition, safetyFactor]
   );
 
   const chartData = useMemo(() => {
@@ -53,13 +63,14 @@ export default function OpticalDensityPage() {
         <InputSlider label="Beam diameter" value={beamDiam} onChange={setBeamDiam} min={0.5} max={10} step={0.1} unit="mm" />
         <InputSlider label="Exposure time" value={exposure} onChange={setExposure} min={0.001} max={30000} step={0.001} unit="s" />
         <InputSlider label="Safety factor" value={safetyFactor} onChange={setSafetyFactor} min={1} max={20} step={1} />
+        <LaserSafetyBeamDefinition value={beamDefinition} onChange={setBeamDefinition} withDivergence={false} />
       </div>
 
       {result.status === "supported" ? (
         <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
             <ResultCard label="Required OD" value={`OD ${result.requiredOd.toFixed(2)}`} tone="red" subtext="Round up for eyewear selection" />
-            <ResultCard label="Beam irradiance" value={`${result.irradianceWcm2.toFixed(3)} W/cm²`} tone="blue" />
+            <ResultCard label="Beam irradiance" value={`${result.irradianceWcm2.toFixed(3)} W/cm²`} tone="blue" subtext="Averaged over the 7 mm aperture" />
             <ResultCard label="Target irradiance" value={`${result.targetIrradianceWcm2.toExponential(2)} W/cm²`} tone="yellow" subtext="MPE / safety factor" />
             <ResultCard label="Transmitted power" value={`${result.transmittedPowerMw.toFixed(4)} mW`} tone="green" subtext="At required OD" />
           </div>

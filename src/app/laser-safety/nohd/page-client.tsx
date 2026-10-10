@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
@@ -10,20 +10,31 @@ import LaserSafetyCwReferences from "../../../components/laser-safety-cw-referen
 import LaserSafetyCwScope from "../../../components/laser-safety-cw-scope";
 import LaserSafetySuiteLinks from "../../../components/laser-safety-suite-links";
 import { cwPointSourceNohdPrecheck } from "../../../lib/laser-safety-cw-suite";
+import LaserSafetyBeamDefinition, { parseBeamDefinition } from "../../../components/laser-safety-beam-definition";
 import { useURLState } from "../../../hooks/use-url-state";
+import { clampToRange } from "../../../lib/number-input";
 const powerPresets = [5, 100, 1000];
 
 export default function NOHDPage() {
-  const [power, setPower] = useURLState("power", 100);
-  const [wavelength, setWavelength] = useURLState("wavelength", 532);
-  const [exposure, setExposure] = useURLState("exposure", 0.25);
-  const [beamDia, setBeamDia] = useURLState("beamDia", 2);
-  const [divergence, setDivergence] = useURLState("divergence", 1);
-  const [safetyFactor, setSafetyFactor] = useURLState("safetyFactor", 1);
+  // URL values aren't range-checked: clamp them to the sliders' ranges.
+  const [powerRaw, setPower] = useURLState("power", 100);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 532);
+  const [exposureRaw, setExposure] = useURLState("exposure", 0.25);
+  const [beamDiaRaw, setBeamDia] = useURLState("beamDia", 2);
+  const [divergenceRaw, setDivergence] = useURLState("divergence", 1);
+  const [safetyFactorRaw, setSafetyFactor] = useURLState("safetyFactor", 1);
+  const [beamDefinitionRaw, setBeamDefinition] = useURLState("beamDefinition", "1/e2");
+  const power = clampToRange(powerRaw, 1, 5000);
+  const wavelength = clampToRange(wavelengthRaw, 400, 1050);
+  const exposure = clampToRange(exposureRaw, 0.001, 30000);
+  const beamDia = clampToRange(beamDiaRaw, 0.5, 10);
+  const divergence = clampToRange(divergenceRaw, 0.1, 5);
+  const safetyFactor = clampToRange(safetyFactorRaw, 1, 20);
+  const beamDefinition = parseBeamDefinition(beamDefinitionRaw);
 
   const result = useMemo(
-    () => cwPointSourceNohdPrecheck({ wavelengthNm: wavelength, exposureS: exposure, powerMw: power, beamDiameterMm: beamDia, divergenceMrad: divergence, safetyFactor }),
-    [wavelength, exposure, power, beamDia, divergence, safetyFactor]
+    () => cwPointSourceNohdPrecheck({ wavelengthNm: wavelength, exposureS: exposure, powerMw: power, beamDiameterMm: beamDia, divergenceMrad: divergence, beamDefinition, safetyFactor }),
+    [wavelength, exposure, power, beamDia, divergence, beamDefinition, safetyFactor]
   );
 
   const chartData = useMemo(() => {
@@ -57,14 +68,15 @@ export default function NOHDPage() {
         <InputSlider label="Beam diameter" value={beamDia} onChange={setBeamDia} min={0.5} max={10} step={0.1} unit="mm" />
         <InputSlider label="Full-angle divergence" value={divergence} onChange={setDivergence} min={0.1} max={5} step={0.1} unit="mrad" />
         <InputSlider label="Safety factor" value={safetyFactor} onChange={setSafetyFactor} min={1} max={20} step={1} />
+        <LaserSafetyBeamDefinition value={beamDefinition} onChange={setBeamDefinition} />
       </div>
 
       {result.status === "supported" ? (
         <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
-            <ResultCard label="NOHD" value={`${result.nohdM.toFixed(2)} m`} tone="red" subtext="Direct beam" />
+            <ResultCard label="NOHD" value={`${result.nohdM.toFixed(2)} m`} tone="red" subtext="Direct beam, (D − a)/φ with 1/e values" />
             <ResultCard label="Target irradiance" value={`${result.targetIrradianceWcm2.toExponential(2)} W/cm²`} tone="yellow" subtext="MPE / safety factor" />
-            <ResultCard label="Diameter at NOHD" value={`${result.diameterAtNohdCm.toFixed(2)} cm`} tone="blue" subtext="Beam diameter model" />
+            <ResultCard label="Diameter at NOHD" value={`${result.diameterAtNohdCm.toFixed(2)} cm`} tone="blue" subtext="1/e diameter, D = √(4P/(π E))" />
             <ResultCard label="MPE branch" value={result.mpe.regime} tone="green" subtext={result.mpe.scope} />
           </div>
 
