@@ -59,6 +59,7 @@ Session 30 did laser-safety part 2 on branch `phase-4/laser-safety-limits`.
   `--headless=new --virtual-time-budget=8000 --screenshot=C:/…/x.png --window-size=1280,2900 <url>`.
 - **Dev server:** `npx next dev -p 3200`; stop it before `npm run build` (both use `.next`). Kill in Git Bash with
   `MSYS_NO_PATHCONV=1 taskkill /PID <pid> /F /T`.
+  Stopping a background `next start` task leaves its `node` child on the port: find it with `netstat -ano | grep :3100`.
 - **Timings:** `tsc` ≈ 1.5–4 min, `check` ≈ 6 min, `build` ≈ 6–10 min. Background them; don't edit `.ts` during `check`.
 - **Committing:** `git commit -F msg -- <paths>`; untracked files need `git add` first.
 - **`useURLState` doesn't clamp:** clamp in the page (`clampToRange`). It also takes string defaults.
