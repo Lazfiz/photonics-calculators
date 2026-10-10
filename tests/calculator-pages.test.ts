@@ -6,7 +6,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import ts from "typescript";
 
-import { ModelBadge, ModelReferences, referenceLinkText } from "../src/components/model-references";
+import { KnownIssueNotice, ModelBadge, ModelReferences, referenceLinkText } from "../src/components/model-references";
 import { jsonLdHtml } from "../src/lib/json-ld";
 import { getCalculator } from "../src/registry";
 import { calculatorJsonLd, calculatorMetadata, SITE_URL } from "../src/registry/metadata";
@@ -156,4 +156,13 @@ test("the model badge and section: tier, definition, note and numbered reference
   assert.match(plain, /Not yet reviewed\.<\/span> This page&#x27;s model hasn&#x27;t been checked/);
   assert.doesNotMatch(plain, /<ol|<p[^>]*>Linear/);
   assert.match(renderToStaticMarkup(createElement(ModelBadge, {})), />Model: Not yet reviewed</);
+});
+
+test("a known issue shows as a warning box above the calculator", () => {
+  const html = renderToStaticMarkup(createElement(KnownIssueNotice, { text: "The NOHD is 1/a too long." }));
+  assert.match(html, /^<div role="note"/);
+  assert.match(html, />Known error, under repair<\/p><p[^>]*>The NOHD is 1\/a too long\.<\/p>/);
+  assert.match(html, /Don&#x27;t use this page&#x27;s numbers until it is fixed\./);
+  const shell = readFileSync("src/components/calculator-shell.tsx", "utf8");
+  assert.match(shell, /\{calculator\.knownIssue && <KnownIssueNotice text=\{calculator\.knownIssue\} \/>\}\s*<ErrorBoundary>/);
 });

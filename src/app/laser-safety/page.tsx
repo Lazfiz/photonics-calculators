@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { categoryMetadata } from "../../components/category-index";
 import LaserSafetyDisclaimer from "../../components/laser-safety-disclaimer";
+import { getCalculator } from "../../registry";
 
 export const metadata = categoryMetadata("laser-safety");
 
@@ -89,6 +90,11 @@ function Section({
             className="rounded-lg border border-gray-800 bg-gray-900 p-5 transition hover:border-blue-500 hover:bg-gray-900/80"
           >
             <h3 className="text-lg font-semibold text-white">{calc.name}</h3>
+            {getCalculator(calc.href).knownIssue && (
+              <p className="mt-2 inline-block rounded-full border border-red-500/70 bg-red-950/50 px-2.5 py-0.5 text-xs font-medium text-red-200">
+                Known error, under repair
+              </p>
+            )}
             <p className="mt-1 text-sm text-gray-400">{calc.desc}</p>
           </Link>
         ))}
@@ -147,7 +153,7 @@ export default function LaserSafetyPage() {
 
       <div className="mb-10 rounded-xl border border-fuchsia-500/20 bg-fuchsia-950/10 p-4 text-sm leading-6 text-fuchsia-100">
         <p className="font-semibold text-fuchsia-200">Hidden from nav (still reachable by direct URL)</p>
-        <p className="mt-2">classification, pulsed-mpe, scanned-mpe, scanning-mpe, lidar-safety, interlock-design, and multiple-pulse</p>
+        <p className="mt-2">classification, pulsed-mpe, scanning-mpe, lidar-safety, interlock-design, and multiple-pulse</p>
       </div>
     </div>
   );

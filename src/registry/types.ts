@@ -60,6 +60,11 @@ export interface CalculatorEntry {
   modelNote?: string;
   /** The sources the audit checked the model against. Required for the exact and textbook tiers. */
   references?: Reference[];
+  /**
+   * An error an audit found and nobody has fixed yet, in one or two sentences. The shell shows it in a warning box
+   * above the calculator. A page with a known issue has no tier; the fix removes it.
+   */
+  knownIssue?: string;
 }
 
 export interface Calculator extends CalculatorEntry {

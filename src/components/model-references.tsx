@@ -28,6 +28,17 @@ export function ModelBadge({ tier }: { tier?: ModelTier }) {
   );
 }
 
+/** The warning above the calculator on a page with an unfixed error (registry `knownIssue`). */
+export function KnownIssueNotice({ text }: { text: string }) {
+  return (
+    <div role="note" className="mb-6 rounded-xl border-2 border-red-500/70 bg-red-950/50 p-4 text-sm">
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-300">Known error, under repair</p>
+      <p className="mt-2 text-red-100">{text}</p>
+      <p className="mt-2 font-semibold text-red-100">Don&apos;t use this page&apos;s numbers until it is fixed.</p>
+    </div>
+  );
+}
+
 /** The section after the calculator: the tier and what it means, the model's assumptions, the sources. */
 export function ModelReferences({ calculator }: { calculator: Calculator }) {
   const info = tierInfo(calculator.tier);

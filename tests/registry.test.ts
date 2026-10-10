@@ -57,9 +57,18 @@ test("titles are unique", () => {
 test("the text has no HTML entities, line breaks or code", () => {
   for (const c of calculators) {
     // React prints strings as they are, so "&apos;" shows up on the page.
-    for (const text of [c.title, c.description, c.heading, c.lede, c.modelNote, ...(c.references ?? []).map((r) => r.citation)]) {
+    for (const text of [c.title, c.description, c.heading, c.lede, c.modelNote, c.knownIssue, ...(c.references ?? []).map((r) => r.citation)]) {
       assert.doesNotMatch(text ?? "", /&[a-z]+;|&#\d+;|\bamp;|\n|[{}]/, c.href);
     }
+  }
+});
+
+test("a known issue: one or two plain sentences, on a page without a tier (the fix sets the tier)", () => {
+  for (const c of calculators) {
+    if (c.knownIssue === undefined) continue;
+    assert.equal(c.tier, undefined, `${c.href}: a tier and a known issue`);
+    assert.ok(c.knownIssue.trim() === c.knownIssue && c.knownIssue.length >= 40 && c.knownIssue.length <= 240, c.href);
+    assert.match(c.knownIssue, /.$/, `${c.href}: ends with a full stop`);
   }
 });
 

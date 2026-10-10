@@ -1,4 +1,5 @@
 export const laserSafetyReferencePoints = [
+  "ICNIRP (2013), Health Phys. 105(3), 271–295, Table 5: the limits here match its point-source eye limits to 0.25 % over 400–1050 nm and 1 ms to 3×10^4 s (checked against the site's tested ICNIRP module).",
   "ANSI Z136.1 — ocular MPE tables, correction-factor framework (C_A / C_B), limiting apertures, and time-domain rules.",
   "IEC 60825-1 — product-classification / AEL framework (separate from this bounded pre-check suite).",
   "OSHA Technical Manual, Section III Chapter 6 — visible blue-light photochemical hazard becomes important for 0.400–0.550 µm exposures greater than 10 s.",
@@ -131,7 +132,7 @@ export function calculateEducationalContinuousMpe(
   }
 
   if (wavelengthNm < 450) {
-    if (exposureS <= 10) {
+    if (exposureS < 10) {
       return supported(
         "Visible retinal thermal short-exposure branch",
         "CW / small-source / point-source ocular branch, 1 ms to 10 s",
@@ -177,7 +178,7 @@ export function calculateEducationalContinuousMpe(
     const cb = correctionCb(wavelengthNm);
     const t1 = crossoverT1Seconds(wavelengthNm)!;
 
-    if (exposureS <= 10) {
+    if (exposureS < 10) {
       return supported(
         "Visible retinal thermal short-exposure branch",
         "CW / small-source / point-source ocular branch, 1 ms to 10 s",
@@ -235,7 +236,7 @@ export function calculateEducationalContinuousMpe(
   }
 
   if (wavelengthNm < 700) {
-    if (exposureS <= 10) {
+    if (exposureS < 10) {
       return supported(
         "Visible retinal thermal branch",
         "CW / small-source / point-source ocular branch, 1 ms to 10 s",
@@ -264,7 +265,7 @@ export function calculateEducationalContinuousMpe(
 
   const ca = correctionCa(wavelengthNm);
 
-  if (exposureS <= 10) {
+  if (exposureS < 10) {
     const radiantExposure = thermalBase_mJcm2 * ca;
     return supported(
       "Near-IR retinal thermal branch",
