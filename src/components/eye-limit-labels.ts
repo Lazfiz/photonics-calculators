@@ -72,3 +72,14 @@ export function segmentedLine(xs: readonly number[], ys: readonly number[], name
 export function fmtEnergy(j: number): string {
   return fmtPower(j).replace(/W$/, "J");
 }
+
+/** A distance in m as km / m / cm / mm; Infinity is "∞". */
+export function fmtDistance(m: number): string {
+  if (m === Infinity) return "∞";
+  if (!Number.isFinite(m)) return "—";
+  if (m === 0) return "0 m";
+  if (m >= 1000) return `${fmtNum(m / 1e3)} km`;
+  if (m >= 1) return `${fmtNum(m)} m`;
+  if (m >= 0.01) return `${fmtNum(m * 100)} cm`;
+  return `${fmtNum(m * 1e3)} mm`;
+}
