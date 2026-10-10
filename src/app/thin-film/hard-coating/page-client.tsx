@@ -1,128 +1,164 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { reflectanceSpectrum } from "../../../physics/thin-film/transfer-matrix";
+import { intervalStats } from "../../../physics/math";
+import { biaxialStrainEnergy, deflectionFromCurvature, delaminationThickness, stoneyCurvature } from "../../../physics/thin-film/stoney";
+import { quarterWaveStackReflectance, stackResponse } from "../../../physics/thin-film/transfer-matrix";
+
+const NM = 1e-9;
+const pct = (x: number, digits = 2) => (Number.isFinite(x) ? `${(x * 100).toFixed(digits)} %` : "—");
 
 export default function HardCoatingPage() {
   const [nCoat, setNCoat] = useURLState("nCoat", 2.1);
   const [nSub, setNSub] = useURLState("nSub", 1.52);
   const [designWl, setDesignWl] = useURLState("designWl", 550);
   const [thickness, setThickness] = useURLState("thickness", 200);
-  const [hardness, setHardness] = useURLState("hardness", 1200);
-  const [stressGPa, setStressGPa] = useURLState("stressGPa", 0.5);
+  // Stress in MPa, tensile > 0 (the usual thin-film sign). New key: the old "stressGPa" had the sign the other way.
+  const [stressMPa, setStressMPa] = useURLState("stressMPa", -500);
+  const [Ef, setEf] = useURLState("Ef", 150);
+  const [nuF, setNuF] = useURLState("nuF", 0.25);
+  const [toughness, setToughness] = useURLState("toughness", 5);
+  const [Es, setEs] = useURLState("Es", 72);
+  const [nuS, setNuS] = useURLState("nuS", 0.22);
+  const [tSubMm, setTSubMm] = useURLState("tSub", 1);
+  const [diamMm, setDiamMm] = useURLState("diam", 25);
 
-  // Hard coatings: SiO₂, Al₂O₃, Si₃N₄, TiO₂, diamond-like carbon
-  // Key properties: hardness, Young's modulus, stress, adhesion
-  // Optical: typically acts as partial AR when thickness ≈ λ/(4n)
+  const opticsValid = nCoat > 0 && nSub > 0 && thickness >= 0 && designWl >= 200 && designWl <= 5000;
+  const mechValid = Ef > 0 && Es > 0 && nuF < 0.5 && nuF >= 0 && nuS < 0.5 && nuS >= 0 && toughness > 0 && tSubMm > 0 && diamMm > 0;
+  const lambda0 = designWl * NM;
+  const d = thickness * NM;
 
-  const materials = [
-    { name: "SiO₂", n: 1.46, H: 800, E: 73, stress: -0.3 },
-    { name: "Al₂O₃", n: 1.63, H: 1200, E: 150, stress: -0.4 },
-    { name: "Si₃N₄", n: 2.0, H: 1600, E: 220, stress: -0.8 },
-    { name: "TiO₂", n: 2.35, H: 1100, E: 230, stress: -0.6 },
-    { name: "DLC", n: 2.2, H: 3000, E: 500, stress: -2.0 },
-  ];
+  const optics = useMemo(() => {
+    if (!opticsValid) return null;
+    const coated = (lam: number) => stackResponse({ incident: 1, layers: [{ n: nCoat, thickness: d }], substrate: { n: nSub } }, lam).R;
+    const bare = ((nSub - 1) / (nSub + 1)) ** 2;
+    const halfWave = designWl / (2 * nCoat);
+    const order = Math.max(1, Math.round(thickness / halfWave));
+    return {
+      R0: coated(lambda0),
+      bare,
+      vis: intervalStats(coated, 400 * NM, 700 * NM, 300),
+      qw: quarterWaveStackReflectance(1, [nCoat], nSub),
+      halfWave,
+      nearestAbsentee: order * halfWave,
+      x: Array.from({ length: 601 }, (_, i) => 300 + i),
+      coated,
+    };
+  }, [opticsValid, nCoat, nSub, d, designWl, thickness, lambda0]);
 
-  const selectedMaterial = materials.find(m => Math.abs(m.n - nCoat) < 0.2) || null;
+  const spectrum = useMemo(() => (optics ? optics.x.map((w) => optics.coated(w * NM)) : null), [optics]);
 
-  const tmm = useMemo(() => {
-    const N = 500;
-    const wls = Array.from({ length: N }, (_, i) => 300 + i * 600 / N);
-    const d = thickness;
+  const mech = useMemo(() => {
+    if (!mechValid) return null;
+    const sigma = stressMPa * 1e6, E_f = Ef * 1e9, E_s = Es * 1e9, tS = tSubMm * 1e-3;
+    const kappa = stoneyCurvature(sigma, d, E_s, nuS, tS);
+    return {
+      kappa,
+      bow: deflectionFromCurvature(kappa, (diamMm * 1e-3) / 2),
+      U: biaxialStrainEnergy(sigma, d, E_f, nuF),
+      tc: delaminationThickness(toughness, sigma, E_f, nuF),
+    };
+  }, [mechValid, stressMPa, Ef, Es, nuF, nuS, tSubMm, diamMm, toughness, d]);
 
-    // Air | coating | substrate
-    const R = reflectanceSpectrum(
-      { incident: 1, layers: [{ n: nCoat, thickness: d * 1e-9 }], substrate: { n: nSub } },
-      wls.map((wl) => wl * 1e-9),
-    );
-
-    return { wls, R };
-  }, [nCoat, nSub, thickness]);
-
-  const T = tmm.R.map(r => 1 - r);
-
-  // Critical stress for delamination (Griffith criterion simplified)
-  const adhesionEnergy = 5; // J/m² typical for good adhesion
-  const criticalStress = Math.sqrt(2 * adhesionEnergy * hardness * 1e9 / (Math.PI * 1e-6));
-
-  // Scratch resistance (Buckle delamination threshold)
-  const buckleThreshold = stressGPa > 0 ? `Low risk (compressive)` :
-    stressGPa < -1 ? `High risk: ${(-stressGPa).toFixed(1)} GPa tension` :
-    `Moderate: ${(-stressGPa).toFixed(1)} GPa tension`;
-
-  // Quarter-wave AR condition check
-  const idealThickness = designWl / (4 * nCoat);
-  const arMismatch = Math.abs(thickness - idealThickness) / idealThickness * 100;
+  const highIndex = nCoat * nCoat > nSub;
 
   return (
     <>
-            
+      <h3 className="text-sm font-semibold text-gray-300 mb-2">Optics</h3>
+      <div className="grid gap-4 sm:grid-cols-2 mb-6">
+        <ValidatedNumberInput label={<>n<sub>coating</sub></>} value={nCoat} onChange={setNCoat} min={1} max={4} step="0.01" />
+        <ValidatedNumberInput label="Thickness (nm)" value={thickness} onChange={setThickness} min={0} max={20000} step="1" />
+        <ValidatedNumberInput label="Design wavelength λ₀ (nm)" value={designWl} onChange={setDesignWl} min={200} max={5000} step="1" />
+        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} min={1} max={4} step="0.01" />
+      </div>
+      <h3 className="text-sm font-semibold text-gray-300 mb-2">Stress and adhesion</h3>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label={<>n<sub>coating</sub></>} value={nCoat} onChange={setNCoat} step="0.01" />
-        <ValidatedNumberInput label={<>n<sub>substrate</sub></>} value={nSub} onChange={setNSub} step="0.01" />
-        <ValidatedNumberInput label="Thickness (nm)" value={thickness} onChange={setThickness} />
-        <ValidatedNumberInput label="Hardness (HK₀.₀₁)" value={hardness} onChange={setHardness} />
-        <ValidatedNumberInput label="Stress (GPa, negative=tension)" value={stressGPa} onChange={setStressGPa} step="0.1" />
+        <ValidatedNumberInput label="Film stress σ (MPa, tensile > 0, compressive < 0)" value={stressMPa} onChange={setStressMPa} min={-10000} max={10000} step="10" />
+        <ValidatedNumberInput label="Interface toughness Γ (J/m²)" value={toughness} onChange={setToughness} min={0.01} max={1000} step="0.1" />
+        <ValidatedNumberInput label={<>Film modulus E<sub>f</sub> (GPa)</>} value={Ef} onChange={setEf} min={1} max={1200} step="1" />
+        <ValidatedNumberInput label={<>Film Poisson ratio ν<sub>f</sub></>} value={nuF} onChange={setNuF} min={0} max={0.49} step="0.01" />
+        <ValidatedNumberInput label={<>Substrate modulus E<sub>s</sub> (GPa)</>} value={Es} onChange={setEs} min={1} max={1200} step="1" />
+        <ValidatedNumberInput label={<>Substrate Poisson ratio ν<sub>s</sub></>} value={nuS} onChange={setNuS} min={0} max={0.49} step="0.01" />
+        <ValidatedNumberInput label="Substrate thickness (mm)" value={tSubMm} onChange={setTSubMm} min={0.01} max={100} step="0.1" />
+        <ValidatedNumberInput label="Substrate diameter (mm)" value={diamMm} onChange={setDiamMm} min={1} max={1000} step="1" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Avg Transmittance</p>
-          <p className="text-2xl font-bold text-blue-400">{(T.reduce((a, b) => a + b) / T.length * 100).toFixed(1)}%</p>
+      {!opticsValid && <p className="text-yellow-400 text-sm mb-4">Optics: set positive indices, a thickness ≥ 0 and λ₀ in 200–5000 nm.</p>}
+      {!mechValid && <p className="text-yellow-400 text-sm mb-4">Stress: set positive moduli, toughness and sizes, and Poisson ratios in 0–0.49.</p>}
+
+      {optics && (
+        <div className="grid gap-4 sm:grid-cols-3 mb-6">
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <p className="text-sm text-gray-400">R at λ₀ (coated face)</p>
+            <p className="text-2xl font-bold text-blue-400">{pct(optics.R0)}</p>
+            <p className="text-sm text-gray-500 mt-1">Uncoated: {pct(optics.bare)}</p>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <p className="text-sm text-gray-400">Mean R, 400–700 nm</p>
+            <p className="text-2xl font-bold text-green-400">{pct(optics.vis.mean)}</p>
+            <p className="text-sm text-gray-500 mt-1">Range {pct(optics.vis.min)} – {pct(optics.vis.max)}</p>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <p className="text-sm text-gray-400">Nearest absentee thickness</p>
+            <p className="text-2xl font-bold text-amber-400">{optics.nearestAbsentee.toFixed(1)} nm</p>
+            <p className="text-sm text-gray-500 mt-1">Multiples of λ₀/(2n) = {optics.halfWave.toFixed(1)} nm keep R(λ₀) at the uncoated value</p>
+          </div>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">AR Thickness (QW)</p>
-          <p className="text-2xl font-bold text-green-400">{idealThickness.toFixed(0)} nm</p>
+      )}
+
+      {mech && (
+        <div className="grid gap-4 sm:grid-cols-3 mb-6">
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <p className="text-sm text-gray-400">Substrate bow over the diameter</p>
+            <p className="text-2xl font-bold text-blue-400">{Number.isFinite(mech.bow) ? `${(Math.abs(mech.bow) * 1e6).toFixed(3)} µm` : "—"}</p>
+            <p className="text-sm text-gray-500 mt-1">
+              {mech.kappa === 0 ? "Flat" : `Radius ${(1 / Math.abs(mech.kappa)).toFixed(1)} m, film side ${mech.kappa > 0 ? "concave (tensile)" : "convex (compressive)"}`}
+            </p>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <p className="text-sm text-gray-400">Stored elastic energy U</p>
+            <p className="text-2xl font-bold text-green-400">{mech.U.toPrecision(3)} J/m²</p>
+            <p className="text-sm text-gray-500 mt-1">(1 − ν<sub>f</sub>)σ²t/E<sub>f</sub>; Γ = {toughness} J/m²</p>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <p className="text-sm text-gray-400">Thickness where U = Γ</p>
+            <p className={`text-2xl font-bold ${thickness * NM < mech.tc ? "text-green-400" : "text-red-400"}`}>
+              {Number.isFinite(mech.tc) ? `${(mech.tc * 1e6).toPrecision(3)} µm` : "∞ (no stress)"}
+            </p>
+            <p className="text-sm text-gray-500 mt-1">
+              {thickness * NM < mech.tc ? "Thinner: it cannot delaminate, whatever its flaws" : "Thicker: it can delaminate from a flaw"}
+            </p>
+          </div>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">QW Mismatch</p>
-          <p className="text-2xl font-bold text-yellow-400">{arMismatch.toFixed(1)}%</p>
-        </div>
+      )}
+
+      <div className="bg-gray-900 rounded p-4 mb-6">
+        <p className="text-gray-300 text-xs">
+          Optics: one lossless layer on the substrate (exact transfer matrix, normal incidence, back face ignored). A quarter wave gives
+          R = ((n<sub>s</sub> − n²)/(n<sub>s</sub> + n²))² = {optics ? pct(optics.qw) : "—"} at λ₀, which is{" "}
+          {highIndex ? "a reflectance maximum (n > √n_s): a high-index hard coat is not an AR coat" : "an AR minimum (n < √n_s)"}; a half
+          wave is absentee. Thick hard coats ripple, so their mean R over the band is what counts. Stress: Stoney&apos;s equation gives the
+          substrate curvature 6σt(1 − ν<sub>s</sub>)/(E<sub>s</sub>t<sub>s</sub>²) (film ≪ substrate, small bow); the bow is the sagitta over
+          the radius. A debond can&apos;t release more energy per area than the film stores, so a film thinner than t<sub>c</sub> = ΓE
+          <sub>f</sub>/((1 − ν<sub>f</sub>)σ²) can&apos;t delaminate (Hutchinson &amp; Suo 1991); above it, compressive films buckle and
+          tensile films crack from flaws, at thicknesses that depend on flaw size. Hardness and scratch resistance aren&apos;t modelled.
+        </p>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-4">
-        <h3 className="text-sm font-semibold text-gray-300 mb-2">Material Reference</h3>
-        <div className="overflow-x-auto">
-          <table className="text-sm text-gray-400 w-full">
-            <thead><tr className="text-gray-500">
-              <th className="text-left py-1 pr-4">Material</th>
-              <th className="text-right py-1 pr-4">n</th>
-              <th className="text-right py-1 pr-4">H (HK)</th>
-              <th className="text-right py-1">σ (GPa)</th>
-            </tr></thead>
-            <tbody>
-              {materials.map(m => (
-                <tr key={m.name} className={selectedMaterial?.name === m.name ? "text-blue-400" : ""}>
-                  <td className="py-1 pr-4">{m.name}</td>
-                  <td className="text-right py-1 pr-4">{m.n}</td>
-                  <td className="text-right py-1 pr-4">{m.H}</td>
-                  <td className="text-right py-1">{m.stress}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-4">
-        <h3 className="text-sm font-semibold text-gray-300 mb-2">Formulas</h3>
-                                      </div>
-
-      <div className="bg-gray-900 rounded-lg p-4">
-        <ChartPanel data={[
-          { x: tmm.wls, y: T, type: "scatter", mode: "lines", name: "Transmittance", line: { color: "#60a5fa", width: 2 } },
-          { x: tmm.wls, y: tmm.R, type: "scatter", mode: "lines", name: "Reflectance", line: { color: "#f87171", width: 1 } },
+      {spectrum && optics && (
+        <ChartPanel title="Reflectance of the coated face" data={[
+          { x: optics.x, y: spectrum, type: "scatter", mode: "lines", name: "Coated", line: { color: "#f87171" } },
+          { x: [300, 900], y: [optics.bare, optics.bare], type: "scatter", mode: "lines", name: "Uncoated", line: { color: "#9ca3af", dash: "dash" } },
         ]} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
-          yaxis: { title: "R / T", gridcolor: "#374151", range: [0, 1.05] },
-          margin: { t: 30, r: 30, b: 50, l: 70 },
+          paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
+          xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
+          yaxis: { title: "R", gridcolor: "#374151", rangemode: "tozero" },
+          margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true,
         }} />
-      </div>
+      )}
     </>
   );
 }
