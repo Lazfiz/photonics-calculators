@@ -17,6 +17,9 @@ test("niceTicks: linear step scales with the range", () => {
 
 test("niceTicks: log axis", () => {
   assert.deepEqual(niceTicks(1, 1000, 6, true), [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000]);
+  // A range that starts mid-decade keeps the 2× and 5× ticks below its first power of ten (they were dropped).
+  assert.deepEqual(niceTicks(180, 20000, 6, true), [200, 500, 1000, 2000, 5000, 10000, 20000]);
+  assert.deepEqual(niceTicks(0.3, 40, 6, true), [0.5, 1, 2, 5, 10, 20]);
 });
 
 // Labels carry the digits the step needs: 20 nm steps near 1.5 µm used to print "1.5k" five times.

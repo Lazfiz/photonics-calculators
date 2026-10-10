@@ -113,16 +113,21 @@ export const laserSafety: CalculatorEntry[] = [
     knownIssue: "Class 1 is set at 100 mW beyond 1400 nm (the limit is about 10 mW) and at 0.39 mW in the UV (the limit is microwatts or less), so some Class 3R and 3B lasers are shown as Class 1.",
   },
   {
-    slug: "corneal-limits",
-    title: "Corneal Exposure Limits",
-    description: "Corneal MPE across UV, visible, and IR spectral regions. Simplified model.",
-    knownIssue: "The UV limit is an invented 1/λ² law, up to 3000× too high at 250 nm; C_A is wrong and the 400–600 nm photochemical limit is missing.",
-  },
-  {
     slug: "corneal-vs-retinal",
     title: "Corneal vs Retinal Limits",
-    description: "Compares corneal MPE with equivalent retinal irradiance, showing the eye's focusing gain and which limit governs.",
-    knownIssue: "The eye focal length is 1.7 mm instead of 17 mm, so the retinal spot and the focusing gain are wrong by orders of magnitude; the UV limit is 33× too high at 300 nm.",
+    description: "Which part of the eye limits a laser exposure from 180 nm to 1 mm: the largest safe power under the ICNIRP 2013 retinal and corneal limits, the retinal image size and the cornea-to-retina gain.",
+    tier: "textbook",
+    modelNote: "Limits: ICNIRP 2013, point source (exact). Retinal image: a 17 mm eye focusing a TEM₀₀ beam to 4λf/(πd), at least 25.5 µm (α_min); no absorption in the eye. Pulse trains not covered.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2, 3, 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "Sliney, D. H. & Wolbarsht, M. L. (1980). Safety with Lasers and Other Optical Sources. Plenum, New York. The 17 mm reduced eye.",
+        url: "https://doi.org/10.1007/978-1-4899-3596-0",
+      },
+    ],
   },
   {
     slug: "diffuse-reflection",
@@ -161,15 +166,31 @@ export const laserSafety: CalculatorEntry[] = [
   },
   {
     slug: "extended-source",
-    title: "Extended Source Correction (C₆)",
-    description: "C₆ angular subtense correction factor for extended source laser hazard evaluation per ANSI Z136.",
+    title: "Extended Source Correction (C_E)",
+    description: "ICNIRP 2013 extended-source correction C_E (C₆ in IEC 60825-1), α_max and T₂, and the retinal thermal limit of a source larger than 1.5 mrad against a point source.",
+    keywords: ["Extended Source Correction (C₆)"],
+    tier: "exact",
+    modelNote: "ICNIRP 2013 C_E with γ = α_max, the time-dependent α_max and T₂, on the retinal thermal limit (400–1400 nm). Not modelled: the photochemical field of view and the radiance limits.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2, 3, 4 and 5.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+    ],
   },
   {
     slug: "eye-safe-wavelength",
     title: "Eye-Safe Wavelength",
-    description: "Identifies the eye-safe wavelength bands (1400–1500 nm, 1500–1800 nm) where corneal absorption protects the retina. Compare your laser's fluence against spectral MPE.",
+    description: "Largest single-pulse energy within the ICNIRP 2013 eye limits across the spectrum for your pulse width and beam, showing why 1.4–2.6 µm lasers are called eye-safe.",
     heading: "Eye-Safe Wavelength Region",
-    knownIssue: "The single-pulse limits use made-up t^0.75 forms (2.5–280× too high at 400–1400 nm), and the retinal gain (17 mm/a)² is over 5000× too low.",
+    tier: "exact",
+    modelNote: "ICNIRP 2013 point-source eye limits for one pulse of 1 ns – 30 ks, round Gaussian beam averaged over each aperture. Pulse trains (average power, N^−0.25) are not applied.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 3, 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+    ],
   },
   {
     slug: "fiber-laser-safety",
@@ -190,22 +211,18 @@ export const laserSafety: CalculatorEntry[] = [
     knownIssue: "The NOHD formula is off by a factor 1/a (4507 km at the defaults), the MPE ignores exposure time, C_A and UV, and the exposure-time input is unused.",
   },
   {
-    slug: "infrared-corneal",
-    title: "IR Corneal Exposure",
-    description: "Simplified educational estimate of the infrared corneal MPE and maximum safe power. Not for safety decisions; use ANSI Z136.1 or IEC 60825-1.",
-    knownIssue: "UV is given the visible retinal law (3× too high), the infrared limits are invented t^0.5 laws (3–56× off), and C_A is wrong.",
-  },
-  {
     slug: "infrared-hazard",
-    title: "Infrared Hazard Calculator",
-    description: "Assess corneal and retinal IR hazard for 780 nm – 106 µm lasers. Covers IR-A, IR-B, and IR-C regions.",
-    knownIssue: "The irradiance is in W/mm² but labelled W/cm², so the hazard ratio is 100× too low, and the 780–1400 nm limit grows with time (up to 285× too high at 1000 s).",
-  },
-  {
-    slug: "infrared-thermal",
-    title: "Infrared Thermal Limits",
-    description: "Calculates MPE for infrared lasers (780nm–1000µm) covering corneal thermal and retinal thermal hazards per ANSI Z136.1.",
-    knownIssue: "The 1400–2600 nm limit falls as t^−0.25 instead of t^−0.75, so it is 3× too high at 10 s; above 1050 nm C_A is not capped at 5 and C_C is missing.",
+    title: "Infrared and Corneal Eye Limits",
+    description: "ICNIRP 2013 eye exposure limits at any wavelength from 180 nm to 1 mm: corneal, anterior-eye and retinal limits with their apertures, and the largest safe power for an exposure time.",
+    keywords: ["Corneal Exposure Limits", "IR Corneal Exposure", "Infrared Thermal Limits", "Infrared Hazard Calculator"],
+    tier: "exact",
+    modelNote: "ICNIRP 2013 point-source eye limits (180 nm – 1 mm, 1 ns – 30 ks) for a round TEM₀₀ beam centred on each averaging aperture. Not modelled: pulse trains, extended sources, beams under 1 mm.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 3, 5, 7 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+    ],
   },
   {
     slug: "interlock-design",
@@ -365,7 +382,19 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "retinal-hazard",
     title: "Retinal Hazard Calculator",
-    description: "Estimate retinal irradiance and image size from corneal laser parameters. Simplified model assuming emmetropic eye.",
+    description: "Retinal image size and irradiance of a laser beam viewed directly, from its wavelength, power, diameter and the pupil, compared with the ICNIRP 2013 retinal limits.",
+    tier: "textbook",
+    modelNote: "A 17 mm eye focusing a TEM₀₀ beam to 4λf/(πd), at least 25.5 µm (α_min); retinal irradiance before absorption. Limits: ICNIRP 2013 retinal, point source, 400–1400 nm.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2, 3, 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "Sliney, D. H. & Wolbarsht, M. L. (1980). Safety with Lasers and Other Optical Sources. Plenum, New York. The 17 mm reduced eye.",
+        url: "https://doi.org/10.1007/978-1-4899-3596-0",
+      },
+    ],
   },
   {
     slug: "retinal-image-size",
@@ -385,16 +414,18 @@ export const laserSafety: CalculatorEntry[] = [
     knownIssue: "The scanning benefit compares a single-pass limit with a 10 s limit, the dwell time ignores the time the beam takes to cross the pupil, and C_A is wrong.",
   },
   {
-    slug: "skin-hazard",
-    title: "Skin Hazard Assessment",
-    description: "Evaluate skin exposure risk from laser irradiation per ANSI Z136.1 simplified skin MPE.",
-    knownIssue: "The UV limit rises with exposure time (up to 10⁵× too high at 1000 s), and the 400–1400 nm limit uses the eye’s retinal law instead of the skin limit (1000× too low).",
-  },
-  {
     slug: "skin-mpe",
-    title: "Skin MPE Calculator",
-    description: "Maximum permissible exposure for skin (ANSI Z136 simplified). Not for clinical safety decisions.",
-    knownIssue: "The 180–302 nm limit grows as t^0.75 where ICNIRP’s is constant (up to 2300× too high at 30 ks), the 302–315 nm steps are missing, and C_A is ignored.",
+    title: "Skin MPE and Hazard Calculator",
+    description: "ICNIRP 2013 skin exposure limit from 180 nm to 1 mm: the limit for your exposure time, the beam's irradiance over 3.5 mm and the largest safe power.",
+    keywords: ["Skin Hazard Assessment", "Skin MPE Calculator"],
+    tier: "exact",
+    modelNote: "ICNIRP 2013 Table 7 skin limit, 1 ns – 30 ks, with the large-area rule above 1400 nm; round Gaussian beam averaged over 3.5 mm. Not modelled: pulse trains, and beams under 1 mm.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 3, 5, 7 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+    ],
   },
   {
     slug: "thermal-lens-hazard",
@@ -403,9 +434,17 @@ export const laserSafety: CalculatorEntry[] = [
   },
   {
     slug: "thermal-vs-photochemical",
-    title: "Thermal vs Photochemical MPE",
-    description: "Educational comparison of thermal and photochemical retinal MPE versus wavelength and exposure time, showing which mechanism sets the limit.",
-    knownIssue: "The photochemical limit grows as √t from 0 s with an invented weighting (10× too high at 450 nm and 100 s), so beyond 10 s the page names the wrong limiting mechanism.",
+    title: "Thermal vs Photochemical Retinal Limits",
+    description: "The two ICNIRP 2013 retinal limits at 400–600 nm against exposure time, for a point or an extended source, and the time from which the blue-light (photochemical) limit governs.",
+    keywords: ["Thermal vs Photochemical MPE"],
+    tier: "exact",
+    modelNote: "ICNIRP 2013 retinal thermal (with C_E and T₂) and photochemical limits, 400–600 nm, as corneal exposure over 7 mm. The photochemical field of view of an extended source is not applied.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2, 3, 4 and 5.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+    ],
   },
   {
     slug: "ultrafast-laser-safety",

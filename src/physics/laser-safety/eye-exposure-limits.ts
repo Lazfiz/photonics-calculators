@@ -1,12 +1,14 @@
 /**
- * Exposure limits (EL, the MPE) of the eye for a CW laser beam viewed as a point source, and the longest exposure
- * that stays within them. SI units: wavelength in m, time in s, power in W, diameters in m, irradiance in W/m²,
- * radiant exposure in J/m² (the tables are indexed in nm, as published).
+ * Exposure limits (EL, the MPE) of the eye for a CW laser beam or a single pulse, and the longest exposure or the
+ * largest power that stays within them. SI units: wavelength in m, time in s, power in W, diameters in m, angles in
+ * rad, irradiance in W/m², radiant exposure in J/m² (the tables are indexed in nm, as published).
  * Model tier: exact, i.e. the tabulated limits; the beam is a round TEM₀₀ Gaussian centred on the averaging aperture.
  *
  * Source: ICNIRP, "Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm",
- * Health Phys. 105(3), 271–295 (2013): Table 3 (C_A, C_B, C_C), Table 5 (eye), Table 7 (skin), Table 8 (apertures).
- * Point source: α ≤ α_min = 1.5 mrad, so C_E = 1 and T₂ = 10 s. All limits run from 1 ns to 30 ks.
+ * Health Phys. 105(3), 271–295 (2013): Table 2 (C_E, α_max), Table 3 (C_A, C_B, C_C), Table 4 (T₂), Table 5 (eye),
+ * Table 7 (skin), Table 8 (apertures). Point source: α ≤ α_min = 1.5 mrad, so C_E = 1 and T₂ = 10 s. An extended
+ * source (α > 1.5 mrad, optional argument) raises the retinal thermal limit by C_E(α, t) up to T₂(α), then holds the
+ * irradiance at T₂'s value: 18 C_A C_C C_E T₂^−0.25 W/m². All limits run from 1 ns to 30 ks.
  * - 180–400 nm, cornea: 30 J/m² below 302 nm, then 1 nm steps from 40 J/m² (302–303 nm) to 6.3 kJ/m² (313–315 nm),
  *   all to 30 ks and "also not to exceed" 5.6×10³ t^0.25 J/m² below 10 s; 315–400 nm 5.6×10³ t^0.25 J/m² to 10 s,
  *   then 10⁴ J/m² to 30 ks. EU Directive 2006/25/EC Annex II Table 2.3 has the same values from 10 s. (The IEC
@@ -24,9 +26,9 @@
  *   0.1–1 mm. "No modifications of the exposure limits are permitted for reduced energy entering an assumed pupil
  *   size less than 7 mm" (ICNIRP 2013).
  *
- * Not modelled: extended sources (C_E > 1, T₂ > 10 s), pulses, the advice to use the actual irradiance of beams
- * narrower than 1 mm (ICNIRP Table 5 note c), and the photochemical field of view γ_ph (it doesn't matter for a
- * point source).
+ * Not modelled: repetitive pulses (a single pulse is an exposure of its own duration), the advice to use the actual
+ * irradiance of beams narrower than 1 mm (ICNIRP Table 5 note c), and the photochemical field of view γ_ph: it sets
+ * how an extended source's exposure is measured, not the limit, which C_E doesn't raise.
  */
 
 /** Shortest and longest exposure durations the limits are tabulated for, s. */
@@ -37,7 +39,7 @@ export const T_MAX = 3e4;
 const toNm = (lambda: number) => Math.round(lambda * 1e15) / 1e6;
 
 /** On [t0, t1) the limit is H(t) = a·t^p J/m² (p = 1 is an irradiance limit of a W/m²). */
-interface Piece {
+export interface Piece {
   readonly t0: number;
   readonly t1: number;
   readonly a: number;
@@ -45,19 +47,23 @@ interface Piece {
 }
 
 /** On [t0, t1) the averaging aperture has the diameter D(t) = d·t^q, m. */
-interface AperturePiece {
+export interface AperturePiece {
   readonly t0: number;
   readonly t1: number;
   readonly d: number;
   readonly q: number;
 }
 
-export type EyeLimitKind = "cornealUv" | "retinalThermal" | "retinalPhotochemical" | "anteriorSegment" | "cornealIr";
-
-export interface EyeLimit {
-  readonly kind: EyeLimitKind;
+/** A limit in time pieces and the aperture it is averaged over (eye here, skin in `skin-exposure-limits.ts`). */
+export interface TabulatedLimit {
   readonly pieces: readonly Piece[];
   readonly apertures: readonly AperturePiece[];
+}
+
+export type EyeLimitKind = "cornealUv" | "retinalThermal" | "retinalPhotochemical" | "anteriorSegment" | "cornealIr";
+
+export interface EyeLimit extends TabulatedLimit {
+  readonly kind: EyeLimitKind;
 }
 
 /** Pieces from the joints t₀ < t₁ < … and one [a, p] form per interval. */
@@ -65,7 +71,7 @@ function pieces(joints: readonly number[], forms: readonly (readonly [number, nu
   return forms.map(([a, p], i) => ({ t0: joints[i], t1: joints[i + 1], a, p })).filter((s) => s.t1 > s.t0);
 }
 
-const fixedAperture = (d: number): AperturePiece[] => [{ t0: T_MIN, t1: T_MAX, d, q: 0 }];
+export const fixedAperture = (d: number): AperturePiece[] => [{ t0: T_MIN, t1: T_MAX, d, q: 0 }];
 /** 1 mm below 0.35 s, 1.5 t^0.375 mm to 10 s, then 3.5 mm (ICNIRP 2013 Table 8). */
 const CORNEAL_APERTURE: AperturePiece[] = [
   { t0: T_MIN, t1: 0.35, d: 1e-3, q: 0 },
@@ -97,8 +103,52 @@ export function correctionCC(lambda: number): number {
   return nm < 1150 ? 1 : nm < 1200 ? Math.pow(10, 0.018 * (nm - 1150)) : 8 + Math.pow(10, 0.04 * (nm - 1250));
 }
 
-/** The limits that apply to the eye at λ (m), 180 nm ≤ λ ≤ 1 mm; empty outside. */
-export function eyeLimits(lambda: number): EyeLimit[] {
+/** α_min, rad: a source subtending less is a point source (ICNIRP 2013 Table 2). */
+export const ALPHA_MIN = 1.5e-3;
+
+/** α_max, rad, at exposure duration t (s): 5 mrad below 625 µs, 200 t^0.5 mrad to 0.25 s, then 100 mrad (Table 2). */
+export function alphaMax(t: number): number {
+  return t < 625e-6 ? 5e-3 : t <= 0.25 ? 0.2 * Math.sqrt(t) : 0.1;
+}
+
+/**
+ * C_E for an apparent source subtending α (rad), duration t (s): 1 up to α_min, α/α_min up to α_max, then α_max/α_min
+ * with the field of view γ = α_max (ICNIRP 2013 Table 2; eqn 5's α²/(α_min α_max) is for an open field of view).
+ */
+export function correctionCE(alpha: number, t: number): number {
+  return Math.max(Math.min(alpha, alphaMax(t)), ALPHA_MIN) / ALPHA_MIN;
+}
+
+/** T₂, s: 10 s up to α_min, 10·10^((α − 1.5 mrad)/98.5 mrad) to 100 mrad, then 100 s (ICNIRP 2013 Table 4). */
+export function timeT2(alpha: number): number {
+  if (alpha <= ALPHA_MIN) return 10;
+  return alpha <= 0.1 ? 10 * Math.pow(10, (alpha - ALPHA_MIN) / 0.0985) : 100;
+}
+
+/**
+ * Retinal thermal limit, 400–1400 nm (ICNIRP 2013 Table 5). Below the short-pulse joint t_s (5 µs; 13 µs above
+ * 1050 nm) a constant h_s C_E, then k C_E t^0.75 with k = 18 C_A (90 C_C above 1050 nm), and from T₂ the irradiance
+ * k C_E T₂^−0.25. A point source keeps Table 5's rounded 10 C_A C_C W/m² from 10 s (18·10^−0.25 = 10.1). C_E grows
+ * with α_max(t), so an extended source has up to two more joints: 625 µs, and t_α = (α / 200 mrad)², where α_max
+ * reaches α (between them C_E = 200 t^0.5 / 1.5, so H ∝ t^1.25).
+ */
+function retinalThermalPieces(nm: number, ca: number, cc: number, alpha: number): Piece[] {
+  const [ts, hs, k] = nm < 1050 ? [5e-6, 2e-3 * ca, 18 * ca] : [13e-6, 2e-2 * cc, 90 * cc];
+  if (!(alpha > ALPHA_MIN)) return pieces([T_MIN, ts, 10, T_MAX], [[hs, 0], [k, 0.75], [10 * ca * cc, 1]]);
+  const T2 = timeT2(alpha);
+  const tAlpha = Math.min(Math.max(Math.pow(alpha / 0.2, 2), 625e-6), 0.25);
+  const ce = (t: number) => correctionCE(alpha, t);
+  return pieces(
+    [T_MIN, ts, 625e-6, tAlpha, T2, T_MAX],
+    [[hs * ce(T_MIN), 0], [k * ce(ts), 0.75], [(k * 0.2) / ALPHA_MIN, 1.25], [k * ce(T2), 0.75], [k * ce(T2) * Math.pow(T2, -0.25), 1]],
+  );
+}
+
+/**
+ * The limits that apply to the eye at λ (m), 180 nm ≤ λ ≤ 1 mm; empty outside. α (rad) is the angular subtense of the
+ * apparent source; it only changes the retinal thermal limit, and up to α_min (the default) it is a point source.
+ */
+export function eyeLimits(lambda: number, alpha = 0): EyeLimit[] {
   const nm = toNm(lambda);
   if (!(nm >= 180 && nm <= 1e6)) return [];
   if (nm < 400) {
@@ -114,10 +164,7 @@ export function eyeLimits(lambda: number): EyeLimit[] {
   if (nm < 1400) {
     const ca = correctionCA(lambda);
     const cc = correctionCC(lambda);
-    const thermal =
-      nm < 1050
-        ? pieces([T_MIN, 5e-6, 10, T_MAX], [[2e-3 * ca, 0], [18 * ca, 0.75], [10 * ca * cc, 1]])
-        : pieces([T_MIN, 13e-6, 10, T_MAX], [[2e-2 * cc, 0], [90 * cc, 0.75], [10 * ca * cc, 1]]);
+    const thermal = retinalThermalPieces(nm, ca, cc, alpha);
     const limits: EyeLimit[] = [{ kind: "retinalThermal", pieces: thermal, apertures: fixedAperture(7e-3) }];
     if (nm < 600) {
       const cb = correctionCB(lambda);
@@ -149,13 +196,13 @@ const findPiece = <T extends { t0: number; t1: number }>(list: readonly T[], t: 
   list.find((s) => t >= s.t0 && (t < s.t1 || (t === T_MAX && s.t1 === T_MAX)));
 
 /** The limit as radiant exposure, J/m², at exposure duration t (s); NaN where it isn't defined. */
-export function exposureLimit(limit: EyeLimit, t: number): number {
+export function exposureLimit(limit: TabulatedLimit, t: number): number {
   const s = findPiece(limit.pieces, t);
   return s ? s.a * Math.pow(t, s.p) : NaN;
 }
 
 /** Diameter, m, of the aperture the exposure is averaged over at duration t (s); NaN outside 1 ns – 30 ks. */
-export function limitingAperture(limit: EyeLimit, t: number): number {
+export function limitingAperture(limit: TabulatedLimit, t: number): number {
   const s = findPiece(limit.apertures, t);
   return s ? s.d * Math.pow(t, s.q) : NaN;
 }
@@ -174,11 +221,13 @@ export function apertureIrradiance(P: number, d: number, D: number): number {
  * E(t)·t > H(t). Infinity if it stays within the limit for 30 ks; NaN if it already exceeds it at 1 ns, or for
  * P < 0 or d < 0.
  *
- * Each piece has H = a t^p and either a fixed aperture or D ∝ t^0.375 with p ≤ 0.25. On it, E(t)·t / H(t) doesn't
- * decrease (E·D² is the power inside D and grows with D), so the first crossing is found by bisection in log t to
- * a relative 1e-12. A limit can drop at a joint, so the start of every piece is checked first.
+ * Each piece has H = a t^p and either a fixed aperture or D ∝ t^0.375 with p ≤ 0.25. On it, E(t)·t / H(t) is
+ * monotonic: with a fixed aperture it goes as t^(1−p) (falling only on an extended source's t^1.25 piece), and with
+ * the growing aperture it doesn't decrease (E·D² is the power inside D and grows with D). So the first crossing is
+ * found by bisection in log t to a relative 1e-12, and a falling piece, checked at its start, has none inside. A
+ * limit can drop at a joint, so the start of every piece is checked first.
  */
-export function limitMaxDuration(limit: EyeLimit, P: number, d: number): number {
+export function limitMaxDuration(limit: TabulatedLimit, P: number, d: number): number {
   if (!(P >= 0 && d >= 0)) return NaN;
   if (P === 0) return Infinity;
   for (const s of limit.pieces) {
@@ -200,6 +249,65 @@ export function limitMaxDuration(limit: EyeLimit, P: number, d: number): number 
     }
   }
   return Infinity;
+}
+
+/**
+ * Largest CW power, W, of a beam (1/e² diameter d, m) that stays within the limit for an exposure of t (s): the least
+ * H(t′) / (t′·E₁(t′)) over 1 ns ≤ t′ ≤ t, with E₁ the irradiance per watt over the aperture at t′. limitMaxDuration
+ * of that power is t. The ratio is monotonic on each piece (see limitMaxDuration), so only the ends of every piece,
+ * cut at t, are evaluated, each with its own piece's formula (the value just before a joint counts too).
+ * For a single pulse of duration t the largest energy is t times this. NaN for d < 0 or t outside 1 ns – 30 ks.
+ */
+export function limitMaxPower(limit: TabulatedLimit, d: number, t: number): number {
+  if (!(d >= 0 && t >= T_MIN && t <= T_MAX)) return NaN;
+  let pMax = Infinity;
+  for (const s of limit.pieces) {
+    for (const ap of limit.apertures) {
+      const t0 = Math.max(s.t0, ap.t0);
+      const end = Math.min(s.t1, ap.t1);
+      if (!(end > t0 && t0 <= t)) continue;
+      for (const x of [t0, Math.min(end, t)]) {
+        pMax = Math.min(pMax, (s.a * Math.pow(x, s.p)) / (x * apertureIrradiance(1, d, ap.d * Math.pow(x, ap.q))));
+      }
+    }
+  }
+  return pMax;
+}
+
+/**
+ * Exposure duration, s, from which the retinal photochemical limit is at or below the thermal one, 400–600 nm, for a
+ * source subtending α (rad); NaN if the thermal limit stays lower to 30 ks, or outside 400–600 nm. Once lower, the
+ * photochemical limit stays lower (it is constant to 100 s and ∝ t after; the thermal one grows as t^0.75 to T₂ ≤ 100 s
+ * and ∝ t after), so a log-spaced scan and bisection (relative 1e-12) find the joint. For a point source this is
+ * ICNIRP 2013 Table 4's T₁ up to 500 nm: 10 s below 450 nm, then 10·C_B s. Above 500 nm Table 4 gives T₁ = 100 s, but
+ * a point source's thermal limit (10 W/m²) stays below the photochemical one (C_B > 10 W/m²); only a larger α reaches it.
+ */
+export function photochemicalCrossover(lambda: number, alpha = 0): number {
+  const limits = eyeLimits(lambda, alpha);
+  const thermal = limits.find((l) => l.kind === "retinalThermal");
+  const photo = limits.find((l) => l.kind === "retinalPhotochemical");
+  if (!thermal || !photo) return NaN;
+  const lower = (t: number) => exposureLimit(photo, t) <= exposureLimit(thermal, t);
+  const t0 = photo.pieces[0].t0;
+  if (lower(t0)) return t0;
+  const n = 400;
+  let lo = t0;
+  for (let i = 1; i <= n; i++) {
+    const hi = t0 * Math.pow(T_MAX / t0, i / n);
+    if (!lower(hi)) {
+      lo = hi;
+      continue;
+    }
+    let a = lo;
+    let b = hi;
+    for (let k = 0; k < 200 && b / a - 1 > 1e-12; k++) {
+      const mid = Math.sqrt(a * b);
+      if (lower(mid)) b = mid;
+      else a = mid;
+    }
+    return b;
+  }
+  return NaN;
 }
 
 export interface LimitDuration {
@@ -224,9 +332,12 @@ export interface ExposureDuration {
   readonly limits: readonly LimitDuration[];
 }
 
-/** Every eye limit at λ (m) for a CW beam of power P (W) and 1/e² diameter d (m), and the one reached first. */
-export function exposureDuration(lambda: number, P: number, d: number): ExposureDuration {
-  const limits = eyeLimits(lambda).map((limit): LimitDuration => {
+/**
+ * Every eye limit at λ (m) for a CW beam of power P (W) and 1/e² diameter d (m), and the one reached first; α (rad)
+ * is the apparent source's angular subtense (default: a point source).
+ */
+export function exposureDuration(lambda: number, P: number, d: number, alpha = 0): ExposureDuration {
+  const limits = eyeLimits(lambda, alpha).map((limit): LimitDuration => {
     const tMax = limitMaxDuration(limit, P, d);
     const tEval = Number.isNaN(tMax) ? T_MIN : Math.min(Math.max(tMax, limit.pieces[0].t0), T_MAX);
     const aperture = limitingAperture(limit, tEval);

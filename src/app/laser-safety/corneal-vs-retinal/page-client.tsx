@@ -1,160 +1,133 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
+import { fmtNum, fmtPower, LIMIT_LABELS, segmentedLine } from "../../../components/eye-limit-labels";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  eyeLimits, limitMaxPower, T_MAX, T_MIN, type EyeLimit, type EyeLimitKind,
+} from "../../../physics/laser-safety/eye-exposure-limits";
+import { retinalGain, retinalImageDiameter, retinalIrradiance } from "../../../physics/laser-safety/retinal-image";
+
+const RETINAL: readonly EyeLimitKind[] = ["retinalThermal", "retinalPhotochemical"];
+
+/** The lowest max power among the limits of one tissue, and which limit it is; null if the tissue has none at λ. */
+function tissueMax(limits: EyeLimit[], retina: boolean, d: number, t: number) {
+  let best: { kind: EyeLimitKind; pMax: number } | null = null;
+  for (const l of limits) {
+    if (RETINAL.includes(l.kind) !== retina) continue;
+    const pMax = limitMaxPower(l, d, t);
+    if (!best || pMax < best.pMax) best = { kind: l.kind, pMax };
+  }
+  return best;
+}
 
 export default function CornealVsRetinalPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 800);
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10);
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 3); // mm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1300); // nm
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // s
+  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 3); // mm, 1/e²
 
-  // Corneal MPE: limits irradiance at the front surface of the eye
-  // Retinal MPE: limits irradiance at the retina (much lower due to focusing)
-  // The eye acts as a ~17mm focal length lens, concentrating beam by ~(pupil/retina_spot)²
-  //
-  // Corneal MPE for retinal hazard region (400-1400nm):
-  //   MPE_corneal = MPE_retinal × (π/4) × α² × (1/d_eff²)
-  //   where α = angular subtense, d_eff = effective pupil diameter
-  //
-  // Simplified: Retinal irradiance = Corneal irradiance × (d_pupil/f_eye)²
-  //   Gain ≈ (7mm/17mm)² ≈ 170,000×
+  // ICNIRP 2013 eye limits and the eye's retinal image: src/physics/laser-safety/. SI inside.
+  const lambda = wavelength * 1e-9;
+  const t = Math.min(Math.max(exposureTime, T_MIN), T_MAX);
+  const d = Math.max(beamDiam, 0.01) * 1e-3;
 
-  const results = useMemo(() => {
-    const lam = wavelength / 1000; // µm
-    const t = exposureTime;
-
-    // Corneal MPE (irradiance, W/cm²) for 400-700nm CW
-    let mpeCorneal: number; // W/cm²
-    if (lam >= 0.4 && lam < 0.7) {
-      mpeCorneal = t <= 0.7 ? 1.8e-3 / Math.pow(t, 0.25) : 1e-3 / Math.pow(t, 0.25);
-    } else if (lam >= 0.7 && lam < 1.05) {
-      const CA = Math.pow(10, 0.02 * (lam - 0.7));
-      const tEff = Math.min(t, 0.7);
-      mpeCorneal = 1.8e-3 * CA / Math.pow(tEff, 0.25);
-    } else if (lam >= 1.05 && lam < 1.4) {
-      // 1050-1400nm: corneal limits start dominating
-      const C = 5;
-      mpeCorneal = 1.8e-3 * C / Math.pow(Math.min(t, 0.7), 0.25);
-    } else {
-      mpeCorneal = 0.01; // UV simplified
-    }
-
-    // Retinal irradiance gain
-    const fEye = 0.0017; // m
-    const dPupil = Math.min(beamDiam, 7) / 1000; // m
-    const gain = Math.pow(dPupil / fEye, 2);
-
-    // Retinal irradiance at corneal MPE
-    const retinalIrradiance = mpeCorneal * gain; // W/cm² (at retina)
-
-    // Retinal spot size (diffraction limited)
-    const lamM = wavelength * 1e-9;
-    const retinalSpotDiam = 2.44 * lamM * fEye; // m
-    const retinalSpotUm = retinalSpotDiam * 1e6;
-
-    // Retinal MPE (irradiance at retina)
-    // For extended source: higher MPE, for point source: lower
-    const alpha = 1.5e-3; // rad (point source minimum)
-    const mpeRetinalIrradiance = mpeCorneal * Math.pow(alpha * fEye * 100, 2) * Math.PI / 4 / Math.pow(retinalSpotUm / 10000, 2);
-
-    // Which limit is more restrictive?
-    const corneaLimitPower = mpeCorneal * Math.PI * Math.pow(0.1, 2); // power through 1mm aperture
-    const foveolaArea = Math.PI * Math.pow(retinalSpotUm / 2 * 1e-4, 2); // cm²
-    const retinaLimitPower = mpeRetinalIrradiance * foveolaArea;
-
-    return {
-      mpeCorneal,
-      retinalIrradiance,
-      gain,
-      retinalSpotUm,
-      corneaLimitPower,
-      retinaLimitPower,
-      dominantLimit: corneaLimitPower < retinaLimitPower ? "Corneal" : "Retinal",
-    };
-  }, [wavelength, exposureTime, beamDiam]);
+  const r = useMemo(() => {
+    const limits = eyeLimits(lambda);
+    const retina = tissueMax(limits, true, d, t);
+    const front = tissueMax(limits, false, d, t);
+    const s = retinalImageDiameter(lambda, d);
+    return { retina, front, s, gain: retinalGain(s) };
+  }, [lambda, d, t]);
 
   const chartData = useMemo(() => {
-    const wls = Array.from({ length: 500 }, (_, i) => 300 + i * 2.2);
-    const t = exposureTime;
-
-    const cornealVals = wls.map(w => {
-      const lam = w / 1000;
-      if (lam >= 0.4 && lam < 0.7) return t <= 0.7 ? 1.8e-3 / Math.pow(t, 0.25) : 1e-3 / Math.pow(t, 0.25);
-      if (lam >= 0.7 && lam < 1.05) return 1.8e-3 * Math.pow(10, 0.02 * (lam - 0.7)) / Math.pow(Math.min(t, 0.7), 0.25);
-      if (lam >= 1.05 && lam < 1.4) return 1.8e-3 * 5 / Math.pow(Math.min(t, 0.7), 0.25);
-      return 0.01;
-    });
-
-    const retinalVals = cornealVals.map((mc, i) => {
-      const fEye = 0.0017;
-      const dPupil = Math.min(beamDiam, 7) / 1000;
-      return mc * Math.pow(dPupil / fEye, 2);
-    });
-
-    return [
-      { x: wls, y: cornealVals, type: "scatter" as const, mode: "lines" as const, name: "Corneal MPE (W/cm²)", line: { color: "#60a5fa" } },
-      { x: wls, y: retinalVals, type: "scatter" as const, mode: "lines" as const, name: "Retinal Irradiance (W/cm²)", line: { color: "#f87171" } },
+    const wls = Array.from({ length: 401 }, (_, i) => 180 * Math.pow(20000 / 180, i / 400));
+    const curve = (retina: boolean) => wls.map((nm) => tissueMax(eyeLimits(nm * 1e-9), retina, d, t)?.pMax ?? NaN);
+    // The cornea curve has a gap at 400–1150 nm, where only the retinal limits apply.
+    const traces: Record<string, unknown>[] = [
+      ...segmentedLine(wls, curve(true), "Retina", { color: "#60a5fa" }),
+      ...segmentedLine(wls, curve(false), "Cornea / lens", { color: "#fbbf24" }),
     ];
-  }, [wavelength, exposureTime, beamDiam]);
+    const here = Math.min(r.retina?.pMax ?? Infinity, r.front?.pMax ?? Infinity);
+    if (Number.isFinite(here)) {
+      traces.push({ x: [wavelength], y: [here], type: "scatter", mode: "markers", name: "λ", marker: { color: "#f87171", size: 9 } });
+    }
+    return traces;
+  }, [d, t, r, wavelength]);
 
-  const layout = {
-    paper_bgcolor: "#030712",
-    plot_bgcolor: "#030712",
-    font: { color: "#9ca3af" },
-    xaxis: { title: "Wavelength (nm)", gridcolor: "#1f2937", color: "#9ca3af" },
-    yaxis: { title: "Irradiance (W/cm²)", gridcolor: "#1f2937", color: "#9ca3af", type: "log" as const },
-    margin: { t: 30, b: 50, l: 70, r: 20 },
-    legend: { font: { color: "#d1d5db" } },
-  };
+  const governing = r.retina && (!r.front || r.retina.pMax <= r.front.pMax) ? r.retina : r.front;
+  const reachesRetina = r.retina !== null;
 
   return (
     <>
-            
       <LaserSafetyDisclaimer />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div>
-          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} step="0.1" />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Beam/Pupil Diameter (mm)" value={beamDiam} onChange={setBeamDiam} step="0.1" />
-        </div>
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={1000000} step="any" />
+        <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} min={1e-9} max={30000} step="any" />
+        <ValidatedNumberInput label="Beam Diameter, 1/e² (mm)" value={beamDiam} onChange={setBeamDiam} min={0.01} step="any" />
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">Corneal MPE</div>
-          <div className="text-2xl font-bold text-blue-400">{results.mpeCorneal.toExponential(2)}</div>
-          <div className="text-xs text-gray-500">W/cm²</div>
+      {governing ? (
+        <div className="grid gap-4 sm:grid-cols-3 mb-4">
+          <ResultCard
+            label="Retina: max power"
+            value={r.retina ? fmtPower(r.retina.pMax) : "not reached (absorbed in front)"}
+            subtext={r.retina ? LIMIT_LABELS[r.retina.kind] : undefined}
+            tone="blue"
+          />
+          <ResultCard
+            label="Cornea / lens: max power"
+            value={r.front ? fmtPower(r.front.pMax) : "no separate limit"}
+            subtext={r.front ? LIMIT_LABELS[r.front.kind] : "the retinal limits protect the front of the eye"}
+            tone="yellow"
+          />
+          <ResultCard label="Tissue at risk first" value={RETINAL.includes(governing.kind) ? "Retina" : "Cornea / lens"} subtext={LIMIT_LABELS[governing.kind]} tone="red" />
         </div>
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">Focusing Gain</div>
-          <div className="text-2xl font-bold text-yellow-400">{results.gain.toExponential(2)}×</div>
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">Retinal Spot</div>
-          <div className="text-2xl font-bold text-pink-400">{results.retinalSpotUm.toFixed(1)}</div>
-          <div className="text-xs text-gray-500">µm</div>
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">Dominant Limit</div>
-          <div className={`text-xl font-bold ${results.dominantLimit === "Corneal" ? "text-blue-400" : "text-red-400"}`}>{results.dominantLimit}</div>
-        </div>
-      </div>
+      ) : (
+        <p className="text-amber-300 mb-4">The eye limits cover 180 nm to 1 mm.</p>
+      )}
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 font-mono text-sm text-gray-300">
-        <p className="text-gray-500 mb-1">Key Formulas:</p>
-        <p>E<sub>retina</sub> = E<sub>cornea</sub> × (d<sub>pupil</sub> / f<sub>eye</sub>)²</p>
-        <p>Gain = (7mm / 17mm)² ≈ 1.7 × 10⁵ (for full pupil)</p>
-        <p>d<sub>Airy</sub> = 2.44 × λ × f<sub>eye</sub> / d<sub>pupil</sub></p>
-        <p className="text-yellow-400 mt-2">⚠ For 400-1400nm, retinal limits usually govern; corneal limits govern outside this range</p>
-      </div>
+      {reachesRetina && r.retina && (
+        <div className="grid gap-4 sm:grid-cols-3 mb-4">
+          <ResultCard label="Retinal image diameter" value={`${fmtNum(r.s * 1e6)} µm`} subtext="no smaller than 25.5 µm (α_min × 17 mm)" tone="cyan" />
+          <ResultCard label="Retina / cornea irradiance gain" value={`${fmtNum(r.gain)}×`} subtext="vs the corneal irradiance over 7 mm" tone="cyan" />
+          <ResultCard
+            label="Retinal irradiance at that power"
+            value={`${fmtNum(retinalIrradiance(r.retina.pMax, d, r.s))} W/m²`}
+            subtext="before absorption in the eye"
+            tone="cyan"
+          />
+        </div>
+      )}
 
-      <ChartPanel data={chartData} layout={layout} className="w-full h-[400px]" />
+      <p className="text-sm text-gray-400 mb-8">
+        Which part of the eye limits the exposure, from the ICNIRP 2013 eye limits (Health Phys. 105:271, Tables 3, 5
+        and 8). From 400 to 1400 nm the cornea and lens pass the beam and the eye focuses it on the retina; ICNIRP puts
+        the cornea-to-retina irradiance gain for a point source at about 100 000. Here the eye is a 17 mm lens that
+        focuses a TEM₀₀ beam to 4λf/(πd), but never below 25.5 µm (α_min = 1.5 mrad), so the gain is (7 mm / image)²,
+        at most 7.5×10⁴. In the UV and from 1400 nm the cornea and lens absorb the beam and only the corneal limits apply.
+        From 1150 to 1400 nm both apply: the retinal limit (C_C rises as water absorbs more) and twice the skin limit
+        for the cornea and lens. Each limit is a corneal exposure averaged over its aperture (7 mm retinal, 3.5 mm
+        anterior, 1 → 3.5 mm corneal); the max power is for this beam, staying within the limit at every duration up to
+        t. Absorption in the ocular media is not modelled.
+      </p>
+
+      <div className="bg-gray-900 rounded-lg p-4">
+        <ChartPanel data={chartData} layout={{
+          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+          font: { color: "#9ca3af" },
+          xaxis: { title: "Wavelength (nm)", type: "log", gridcolor: "#374151" },
+          yaxis: { title: "Max power (W)", type: "log", gridcolor: "#374151" },
+          margin: { t: 30, r: 30, b: 50, l: 70 },
+        }} />
+        <p className="text-xs text-gray-500 mt-2">
+          Largest power of this beam within the retinal and the corneal limits, 180 nm to 20 µm, for the chosen time.
+          The lower curve governs.
+        </p>
+      </div>
     </>
   );
 }
