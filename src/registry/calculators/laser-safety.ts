@@ -4,14 +4,52 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "ael-limits",
     title: "Accessible Emission Limits (AEL)",
-    description: "IEC 60825-1 laser classification AEL thresholds. Simplified model for educational reference.",
-    knownIssue: "Pulsed AELs are 1000× too high (mW·s multiplied by 1000 and labelled mJ), Class 1 outside the visible is a flat 1 µW, and Class 2 is offered at every wavelength.",
+    description: "IEC 60825-1:2014 accessible emission limits of Classes 1, 2, 3R and 3B from 180 nm to 1 mm: for one emission of a given duration, and for a CW laser over the class time base.",
+    tier: "textbook",
+    modelNote: "AELs rebuilt from the limits they come from (ICNIRP 2013 from 400 nm, IEC's UV values over 1 mm), so within IEC's two-figure rounding; Class 3B cap at 1250–1400 nm, EU A11 optional. Not modelled: pulse trains, Class 1C.",
+    references: [
+      {
+        citation: "IEC 60825-1:2014. Safety of laser products – Part 1: Equipment classification and requirements. 4.3 e) (time bases), Tables 3–8 (AELs), Table 10 (measurement conditions).",
+        url: "https://webstore.iec.ch/en/publication/3587",
+      },
+      {
+        citation: "IEC 60825-1:1993+A1:1997+A2:2001. Tables 1–4 (AELs of Classes 1, 2, 3R and 3B) and Table 10: the UV and Class 3B values used here.",
+      },
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2–5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "Schulmeister, K. (2017). The new edition of the international laser product safety standard IEC 60825-1. White paper, Seibersdorf Laboratories. AELs from the MPEs; Class 3B cap at 1250–1400 nm.",
+        url: "https://www.seibersdorf-laboratories.at/fileadmin/user_upload/docs/le/las/publ/whitepaper_iec-60825-1.pdf",
+      },
+      {
+        citation: "Schulmeister, K. (2022). The European Amendment A11:2021 to EN 60825-1. White paper, Seibersdorf Laboratories. Skin AEL at 1250–1400 nm.",
+        url: "https://www.seibersdorf-laboratories.at/fileadmin/user_upload/docs/le/las/publ/whitepaper_a11_to_en_60825-1.pdf",
+      },
+    ],
   },
   {
     slug: "ansi-iec-comparison",
-    title: "ANSI vs IEC MPE Comparison",
-    description: "Compares Maximum Permissible Exposure (ANSI Z136.1) with Accessible Emission Limits (IEC 60825-1) across wavelengths.",
-    knownIssue: "The IEC column uses 7.9×10⁻⁴ (the AEL factor is 7×10⁻⁴), the C_A exponent is 100× off, and UV and wavelengths above 1050 nm are flat placeholders, so the ANSI/IEC differences shown are artefacts.",
+    title: "Exposure Limit (MPE) vs Emission Limit (AEL)",
+    description: "The eye exposure limit (MPE, ICNIRP 2013) against the Class 1 accessible emission limit (AEL, IEC 60825-1:2014) from 180 nm to 1 mm: where they agree, where they part, and how ANSI Z136.1 differs.",
+    keywords: ["ANSI vs IEC", "MPE vs AEL", "ANSI IEC comparison"],
+    tier: "textbook",
+    modelNote: "MPE: least ICNIRP 2013 eye limit over its aperture. AEL: IEC 60825-1:2014 Class 1 rebuilt from it (IEC's own UV values, Class 3B cap at 1250–1400 nm). ANSI Z136.1 values not computed (tables not public).",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2–5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "IEC 60825-1:2014. Safety of laser products – Part 1: Equipment classification and requirements. Tables 3–8 (AELs), Annex A (MPEs).",
+        url: "https://webstore.iec.ch/en/publication/3587",
+      },
+      {
+        citation: "Schulmeister, K. (2017). The new edition of the international laser product safety standard IEC 60825-1. White paper, Seibersdorf Laboratories. AELs from the MPEs; ANSI Z136.1-2014 differences.",
+        url: "https://www.seibersdorf-laboratories.at/fileadmin/user_upload/docs/le/las/publ/whitepaper_iec-60825-1.pdf",
+      },
+    ],
   },
   {
     slug: "atmospheric-attenuation",
@@ -100,11 +138,33 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "classification",
     title: "Laser Classification — IEC 60825-1:2014",
-    description: "Laser product classification per IEC 60825-1 Edition 3.0 (2014). CW and pulsed AEL thresholds with C_A and C_B correction factors.",
+    description: "Class of a CW laser under IEC 60825-1:2014 (1, 1M, 2, 2M, 3R, 3B or 4) from its power, wavelength, beam diameter and divergence, with the naked-eye and binocular measurement conditions.",
     heading: "Laser Classification (IEC 60825-1:2014)",
-    lede: "Laser product classification per IEC 60825-1 Edition 3.0 (2014). CW and simplified pulsed AEL thresholds with C_A and C_B correction factors.",
-    hidden: true,
-    knownIssue: "Class 1 is set at 100 mW beyond 1400 nm (the limit is about 10 mW) and at 0.39 mW in the UV (the limit is microwatts or less), so some Class 3R and 3B lasers are shown as Class 1.",
+    lede: "Class of a CW laser product from 180 nm to 1 mm: the accessible emission limits rebuilt from the eye limits, with the beam measured through the naked-eye and binocular stops.",
+    keywords: ["laser class calculator", "IEC 60825-1 classification"],
+    tier: "textbook",
+    modelNote: "CW AELs rebuilt from ICNIRP 2013 (IEC's UV values) over each stop: 100 mm from the waist (Condition 3), 50 mm at 2 m (Condition 1, 400–1400 nm only); within IEC's rounding. Not modelled: pulses, scanning, Class 1C.",
+    references: [
+      {
+        citation: "IEC 60825-1:2014. Safety of laser products – Part 1: Equipment classification and requirements. 4.3 e) (time bases), 5.3 (classes), Tables 3–8 (AELs), Table 10 (measurement conditions).",
+        url: "https://webstore.iec.ch/en/publication/3587",
+      },
+      {
+        citation: "IEC 60825-1:1993+A1:1997+A2:2001. Tables 1–4 (AELs of Classes 1, 2, 3R and 3B) and Table 10: the UV and Class 3B values used here.",
+      },
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2–5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "Schulmeister, K. (2017). The new edition of the international laser product safety standard IEC 60825-1. White paper, Seibersdorf Laboratories. Measurement conditions; Class 3B cap at 1250–1400 nm.",
+        url: "https://www.seibersdorf-laboratories.at/fileadmin/user_upload/docs/le/las/publ/whitepaper_iec-60825-1.pdf",
+      },
+      {
+        citation: "Schulmeister, K. (2022). The European Amendment A11:2021 to EN 60825-1. White paper, Seibersdorf Laboratories. Skin AEL at 1250–1400 nm.",
+        url: "https://www.seibersdorf-laboratories.at/fileadmin/user_upload/docs/le/las/publ/whitepaper_a11_to_en_60825-1.pdf",
+      },
+    ],
   },
   {
     slug: "corneal-vs-retinal",
@@ -164,8 +224,22 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "enclosure-class",
     title: "Enclosure Classification",
-    description: "Determines laser enclosure safety class based on emission through apertures, per IEC 60825-1 and ANSI Z136.1. Evaluates whether the enclosure provides Class 1 protection.",
-    knownIssue: "A 50 mW invisible leak is labelled a Class 2 enclosure protected by the blink reflex; the 1 % leakage is invented, the opening size is unused and the thresholds mix W and mW.",
+    description: "Class of a product that encloses a stronger laser, from the beam escaping through an opening and the window over it (IEC 60825-1:2014), and the optical density the opening needs for Class 1.",
+    tier: "textbook",
+    modelNote: "Accessible emission: the centred Gaussian's share through the opening × 10^−OD, classed with the IEC 60825-1:2014 CW AELs (classification page). Not modelled: scattered leakage, several openings, pulses, guard damage.",
+    references: [
+      {
+        citation: "IEC 60825-1:2014. Safety of laser products – Part 1: Equipment classification and requirements. Protective housing, accessible emission, Tables 3–8 (AELs).",
+        url: "https://webstore.iec.ch/en/publication/3587",
+      },
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2–5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "IEC 60825-4:2006+A1:2008+A2:2011. Safety of laser products – Part 4: Laser guards.",
+      },
+    ],
   },
   {
     slug: "exposure-duration",
@@ -234,8 +308,22 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "green-laser-pointer",
     title: "Green Laser Pointer Safety",
-    description: "Safety analysis for 532 nm DPSS green laser pointers — NOHD, flashblindness, retinal hazard, and classification.",
-    knownIssue: "A 5 mW pointer is labelled Class 2 (it is 3R) and 50–500 mW as 2M or 3R (they are 3B); the NOHD formula is off by a factor 1/a (16.7 km instead of about 12 m).",
+    description: "Class, NOHD and dazzle distances of a laser pointer: its IEC 60825-1:2014 class, the nominal ocular hazard distance on the ICNIRP 2013 limits, and how far it causes flash-blindness, glare and distraction (ICAO levels).",
+    tier: "textbook",
+    modelNote: "Class: IEC 60825-1:2014 CW AELs. NOHD: ICNIRP 2013, 0.25 s if visible (else 10 s), beam d + rφ. Dazzle: peak irradiance vs the ICAO levels, not weighted by eye sensitivity. Not modelled: IR leakage, atmosphere.",
+    references: [
+      {
+        citation: "IEC 60825-1:2014. Safety of laser products – Part 1: Equipment classification and requirements. Tables 3–8 (AELs), Table 10 (measurement conditions).",
+        url: "https://webstore.iec.ch/en/publication/3587",
+      },
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "ICAO (2003). Doc 9815, Manual on Laser Emitters and Flight Safety; Annex 11. Laser-beam free (50 nW/cm²), critical (5 µW/cm²) and sensitive (100 µW/cm²) flight zones.",
+      },
+    ],
   },
   {
     slug: "industrial-laser-safety",
@@ -446,8 +534,22 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "research-lab-safety",
     title: "Research Lab Laser Safety Calculator",
-    description: "Evaluate laser hazard zones, OD requirements, beam path analysis, and room coverage for research labs.",
-    knownIssue: "The class table is wrong (4 mW shown as Class 1, 1 W visible as Class 2, Class 3B up to 500 W), and the NOHD formula is off by a factor 1/a (hundreds of km).",
+    description: "Class, NOHD, eyewear OD and diffuse-reflection hazard of a CW laser in a lab, and whether the direct beam is still hazardous at the walls (IEC 60825-1:2014 class, ICNIRP 2013 eye limits).",
+    tier: "textbook",
+    modelNote: "Class: IEC 60825-1:2014 CW AELs. NOHD (d + rφ), eyewear OD and white-wall diffuse reflection on the ICNIRP 2013 eye limits for the exposure time. Not modelled: pulses, specular paths, skin, several beams.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2–5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "IEC 60825-1:2014. Safety of laser products – Part 1: Equipment classification and requirements. Tables 3–8 (AELs).",
+        url: "https://webstore.iec.ch/en/publication/3587",
+      },
+      {
+        citation: "IEC TR 60825-14:2004, Safety of laser products – Part 14: A user's guide. Hazard distances, protective eyewear, controls.",
+      },
+    ],
   },
   {
     slug: "retinal-hazard",

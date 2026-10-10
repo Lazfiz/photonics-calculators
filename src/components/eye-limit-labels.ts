@@ -1,4 +1,5 @@
 import type { EyeLimitKind } from "../physics/laser-safety/eye-exposure-limits";
+import type { AelKind, LaserClass } from "../physics/laser-safety/laser-classes";
 
 /** Display names of the ICNIRP eye limits (`eye-exposure-limits.ts`). */
 export const LIMIT_LABELS: Record<EyeLimitKind, string> = {
@@ -15,6 +16,29 @@ export const LIMIT_COLORS: Record<EyeLimitKind, string> = {
   retinalPhotochemical: "#a78bfa",
   anteriorSegment: "#34d399",
   cornealIr: "#fbbf24",
+};
+
+/** Display names of the IEC 60825-1 AELs (`laser-classes.ts`). */
+export const AEL_LABELS: Record<AelKind, string> = {
+  cornealUv: "Cornea (UV)",
+  retinalThermal: "Retina, thermal",
+  retinalPhotochemical: "Retina, photochemical (blue light)",
+  cornealIr: "Cornea (IR)",
+  ultraviolet: "UV (IEC values, 1 mm stop)",
+  class2: "Class 2 (C₆ × 1 mW)",
+  class3B: "Class 3B cap (0.5 W)",
+  skinA11: "Skin AEL (EN A11, EU)",
+};
+
+/** Colours of the laser classes, as text classes. */
+export const CLASS_TONES: Record<LaserClass, "green" | "cyan" | "yellow" | "orange" | "red" | "purple"> = {
+  "1": "green",
+  "1M": "cyan",
+  "2": "yellow",
+  "2M": "yellow",
+  "3R": "orange",
+  "3B": "red",
+  "4": "purple",
 };
 
 /** A duration in s as ns / µs / ms / s; Infinity is "> 30 000 s", NaN "< 1 ns". */
