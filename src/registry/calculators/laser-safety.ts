@@ -41,12 +41,31 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "aversion-response",
     title: "Aversion Response Time",
-    description: "Calculates MPE at the natural aversion/blink response time (0.25 s) and Class 2 limits per ANSI Z136.1 / IEC 60825-1.",
+    description: "Retinal limit at the 0.25 s blink response and the power it allows into a 7 mm pupil, about 1 mW: the basis of Class 2. Visible beams only.",
+    tier: "exact",
+    modelNote: "ICNIRP retinal thermal limit 18 t^0.75 J/m² at t = 0.25 s, 400–700 nm only, and the power it allows through a 7 mm pupil: 0.98 mW, rounded to the 1 mW Class 2 limit. Not modelled: extended sources.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Table 5 (eye) and Table 8 (apertures).",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "IEC 60825-1:2014, Safety of laser products: the Class 2 AEL of 1 mW for 400–700 nm, with a 0.25 s time base.",
+      },
+    ],
   },
   {
     slug: "beam-diameter-conversion",
     title: "Beam Diameter Conversion",
     description: "Convert Gaussian beam diameters between the 1/e², 1/e and FWHM definitions and the waist radius w₀, with relative intensity levels.",
+    tier: "exact",
+    modelNote: "TEM₀₀ round beam I = I₀ exp(−2r²/w²): d(1/e²) = 2w, d(1/e) = d(1/e²)/√2, FWHM = √(ln2/2) d(1/e²) = 0.5887 d(1/e²). Not modelled: elliptical or non-Gaussian beams, second-moment widths.",
+    references: [
+      {
+        citation: "Saleh B. E. A., Teich M. C. (1991). Fundamentals of Photonics, ch. 3 (Beam Optics): Gaussian beam intensity and power. Wiley.",
+        url: "https://doi.org/10.1002/0471213748",
+      },
+    ],
   },
   {
     slug: "beam-divergence-hazards",
@@ -57,7 +76,15 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "beam-expander",
     title: "Beam Expander Safety",
-    description: "Calculate power density reduction from beam expansion. Critical for ensuring safe irradiance levels.",
+    description: "Irradiance of a beam before and after an M× expander: it falls by M², while the divergence falls by M, so far from it the hazard distance grows.",
+    tier: "exact",
+    modelNote: "Irradiance 4P/(πd²) before and after an ideal M× expander, no losses; with the 1/e diameter d it is the Gaussian peak. Not modelled: aperture averaging and the far-field NOHD, which grows about M-fold.",
+    references: [
+      {
+        citation: "Saleh B. E. A., Teich M. C. (1991). Fundamentals of Photonics, ch. 3 (Beam Optics): Gaussian beam intensity and power. Wiley.",
+        url: "https://doi.org/10.1002/0471213748",
+      },
+    ],
   },
   {
     slug: "blue-light-hazard",
@@ -204,9 +231,20 @@ export const laserSafety: CalculatorEntry[] = [
     slug: "mpe",
     title: "Maximum Permissible Exposure (MPE)",
     description: "Bounded CW point-source MPE pre-check for 400–1050 nm and 1 ms to 3×10⁴ s using explicitly implemented ANSI-style table slices.",
-    lede: "Quarantined educational MPE view: bounded small-source ocular direct-beam branch with explicitly implemented ANSI-style time slices (1 ms to 3×10^4 s). Unsupported regimes are disabled instead of approximated.",
+    lede: "Bounded pre-check: CW point-source retinal limit for 400–1050 nm and 1 ms to 3×10⁴ s, matching ICNIRP 2013. Unsupported regimes are disabled instead of approximated.",
     keywords: ["maximum permissible exposure"],
     priority: 92,
+    tier: "exact",
+    modelNote: "CW point-source retinal limits through the 7 mm aperture, 400–1050 nm and 1 ms to 3×10⁴ s; they match ICNIRP 2013 Table 5 to 0.25 %. Not modelled: pulses, extended sources, UV and above 1050 nm, skin.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Table 5 (eye) and Table 8 (apertures).",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers. Table 5a: point-source ocular MPE.",
+      },
+    ],
   },
   {
     slug: "multiple-pulse",
@@ -228,6 +266,17 @@ export const laserSafety: CalculatorEntry[] = [
     lede: "Bounded engineering pre-check for CW point-source direct-beam NOHD using the same restricted MPE branch as the MPE page.",
     keywords: ["nominal ocular hazard distance"],
     priority: 90,
+    tier: "textbook",
+    modelNote: "NOHD = (√(4P/(πE)) − a)/φ with 1/e values (1/e² inputs ÷ √2), averaged over the 7 mm aperture, on the MPE page's limit. Round beam; not modelled: atmosphere, optical aids, pulses.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Table 5 (eye) and Table 8 (apertures).",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers: direct-beam NOHD and optical density of a CW point source.",
+      },
+    ],
   },
   {
     slug: "od-requirements",
@@ -236,6 +285,17 @@ export const laserSafety: CalculatorEntry[] = [
     heading: "OD Requirements (manual validated-MPE mode)",
     lede: "Use this only when you already have a validated irradiance limit from a standards-backed calculation. This page is just the attenuation math wrapper.",
     priority: 86,
+    tier: "textbook",
+    modelNote: "OD = log₁₀(E/E_limit) for an irradiance limit you supply, with E averaged over the 7 mm aperture (the 1/e peak of a wider beam). No wavelength, time or pulse logic is applied.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Table 5 (eye) and Table 8 (apertures).",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers: direct-beam NOHD and optical density of a CW point source.",
+      },
+    ],
   },
   {
     slug: "optical-density",
@@ -244,16 +304,43 @@ export const laserSafety: CalculatorEntry[] = [
     lede: "Required OD pre-check derived from the same bounded CW point-source MPE branch as the MPE page.",
     keywords: ["laser eyewear", "od calculator"],
     priority: 88,
+    tier: "textbook",
+    modelNote: "OD = log₁₀(E/E_MPE), E averaged over the 7 mm aperture (the 1/e peak of a wider beam), on the MPE page's limit. CW and one wavelength; filter damage and EN 207 ratings are not modelled.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Table 5 (eye) and Table 8 (apertures).",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers: direct-beam NOHD and optical density of a CW point source.",
+      },
+    ],
   },
   {
     slug: "peak-power",
     title: "Peak Power Calculator",
-    description: "Convert average power to peak power for pulsed lasers. Essential for assessing single-pulse hazards.",
+    description: "Pulse energy, duration and peak power of a pulsed laser from average power, repetition rate and duty cycle, for rectangular, Gaussian and sech² pulses.",
+    tier: "exact",
+    modelNote: "E = P/f, τ = D/f and P_peak = P/D for rectangular pulses; Gaussian and sech² pulses of the same FWHM peak at 0.939 and 0.881 E/τ. Not modelled: pulse pedestals or an MPE comparison.",
+    references: [
+      {
+        citation: "Diels J.-C., Rudolph W. (2006). Ultrashort Laser Pulse Phenomena, 2nd ed., ch. 1 (Fundamentals): pulse shapes and their FWHM. Academic Press.",
+        url: "https://doi.org/10.1016/b978-012215493-5/50002-1",
+      },
+    ],
   },
   {
     slug: "power-density",
     title: "Power Density Calculator",
     description: "Peak and average irradiance of a Gaussian beam from power and 1/e² diameter, with the beam area and the radial intensity profile.",
+    tier: "exact",
+    modelNote: "Closed forms for a round beam: Gaussian peak 2P/(πw²) = 8P/(πd²), mean over the 1/e² disc P/(πw²), top-hat P/A. Not modelled: aperture averaging for an MPE, clipping, non-Gaussian profiles.",
+    references: [
+      {
+        citation: "Saleh B. E. A., Teich M. C. (1991). Fundamentals of Photonics, ch. 3 (Beam Optics): Gaussian beam intensity and power. Wiley.",
+        url: "https://doi.org/10.1002/0471213748",
+      },
+    ],
   },
   {
     slug: "prf-correction",
@@ -360,5 +447,16 @@ export const laserSafety: CalculatorEntry[] = [
     description: "Bounded CW point-source direct-beam viewing-distance pre-check using the same assumptions as the MPE and NOHD pages.",
     lede: "Simplified direct-beam viewing-distance estimate built from the same bounded CW point-source assumptions as the MPE and NOHD pages.",
     priority: 84,
+    tier: "textbook",
+    modelNote: "The NOHD model: (√(4P/(πE)) − a)/φ with 1/e values (1/e² inputs ÷ √2), averaged over the 7 mm aperture, on the MPE page's limit. Round beam; not modelled: atmosphere, optical aids, pulses.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Table 5 (eye) and Table 8 (apertures).",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers: direct-beam NOHD and optical density of a CW point source.",
+      },
+    ],
   },
 ];
