@@ -15,17 +15,25 @@ const boundedPrecheckTools: CalcLink[] = [
   { name: "Safe Viewing Distance", href: "/laser-safety/viewing-distance", desc: "Viewing-distance pre-check using the same bounded CW point-source assumptions." },
 ];
 
+const icnirpTools: CalcLink[] = [
+  { name: "Exposure Duration", href: "/laser-safety/exposure-duration", desc: "Longest safe exposure of a CW beam at any wavelength from 180 nm to 1 mm." },
+  { name: "Infrared & Corneal Eye Limits", href: "/laser-safety/infrared-hazard", desc: "Every eye limit at a wavelength and exposure time: aperture, limit and max power." },
+  { name: "Skin MPE", href: "/laser-safety/skin-mpe", desc: "Skin limit (180 nm – 1 mm) and how a beam compares with it." },
+  { name: "Corneal vs Retinal", href: "/laser-safety/corneal-vs-retinal", desc: "Which part of the eye limits the exposure, across the spectrum." },
+  { name: "Thermal vs Photochemical", href: "/laser-safety/thermal-vs-photochemical", desc: "The two retinal limits at 400–600 nm and when the blue-light one takes over." },
+  { name: "Extended Source", href: "/laser-safety/extended-source", desc: "C_E, α_max and T₂ for a source larger than 1.5 mrad." },
+  { name: "Retinal Hazard", href: "/laser-safety/retinal-hazard", desc: "Retinal image size, irradiance and the retinal limits for a beam." },
+  { name: "Eye-Safe Wavelength", href: "/laser-safety/eye-safe-wavelength", desc: "Single-pulse limits across the spectrum: why 1.4–2.6 µm is called eye-safe." },
+  { name: "Aversion Response Time", href: "/laser-safety/aversion-response", desc: "Largest visible power within the 0.25 s blink / aversion limit." },
+];
+
 const educationalReferences: CalcLink[] = [
   { name: "ANSI / IEC Comparison", href: "/laser-safety/ansi-iec-comparison", desc: "High-level comparison of the standards families." },
   { name: "Atmospheric Attenuation", href: "/laser-safety/atmospheric-attenuation", desc: "Beer–Lambert style attenuation helper for outdoor concepts." },
-  { name: "Aversion Response Time", href: "/laser-safety/aversion-response", desc: "Educational look at the 0.25 s blink / aversion convention." },
   { name: "Beam Diameter Conversion", href: "/laser-safety/beam-diameter-conversion", desc: "Convert 1/e², 1/e, and FWHM beam widths." },
   { name: "Beam Divergence Hazards", href: "/laser-safety/beam-divergence-hazards", desc: "Educational geometry around divergence and hazard distance." },
   { name: "Beam Expander", href: "/laser-safety/beam-expander", desc: "Basic beam expansion and irradiance scaling helper." },
-  { name: "Corneal vs Retinal", href: "/laser-safety/corneal-vs-retinal", desc: "Concept page on where different wavelengths deposit damage." },
   { name: "Diode Laser Safety", href: "/laser-safety/diode-laser-safety", desc: "Educational notes on diode beam properties and safety implications." },
-  { name: "Exposure Duration", href: "/laser-safety/exposure-duration", desc: "General educational reference about exposure duration as a safety variable." },
-  { name: "Eye-Safe Wavelength", href: "/laser-safety/eye-safe-wavelength", desc: "Educational discussion of longer-wavelength ocular hazard differences." },
   { name: "Fiber Laser Safety", href: "/laser-safety/fiber-laser-safety", desc: "Educational context for fiber-laser-specific safety issues." },
   { name: "Green Laser Pointer", href: "/laser-safety/green-laser-pointer", desc: "Educational notes on pointer hazards and IR leakage concerns." },
   { name: "Industrial Laser Safety", href: "/laser-safety/industrial-laser-safety", desc: "General industrial laser safety context page." },
@@ -34,26 +42,17 @@ const educationalReferences: CalcLink[] = [
   { name: "Power Density", href: "/laser-safety/power-density", desc: "Irradiance math helper from power and beam size." },
   { name: "Research Lab Safety", href: "/laser-safety/research-lab-safety", desc: "Educational lab-process and programmatic safety overview." },
   { name: "Retinal Image Size", href: "/laser-safety/retinal-image-size", desc: "Geometric helper for retinal spot / image-size concepts." },
-  { name: "Thermal vs Photochemical", href: "/laser-safety/thermal-vs-photochemical", desc: "Educational comparison of damage mechanisms." },
   { name: "Ultrafast Laser Safety", href: "/laser-safety/ultrafast-laser-safety", desc: "Educational overview of ultrafast-specific safety concerns." },
 ];
 
 const quarantinedTopics: CalcLink[] = [
   { name: "AEL Limits", href: "/laser-safety/ael-limits", desc: "Standards-heavy classification logic — quarantined." },
   { name: "Blue Light Hazard", href: "/laser-safety/blue-light-hazard", desc: "Photochemical / spectral-weighting topic — quarantined." },
-  { name: "Corneal Limits", href: "/laser-safety/corneal-limits", desc: "Corneal limit logic is broader than the bounded suite supports." },
   { name: "Diffuse Reflection", href: "/laser-safety/diffuse-reflection", desc: "Extended-source / Lambertian hazard page — quarantined." },
   { name: "Enclosure Class", href: "/laser-safety/enclosure-class", desc: "Facility/process/policy-heavy topic — quarantined." },
-  { name: "Extended Source", href: "/laser-safety/extended-source", desc: "Extended-source corrections are too easy to misuse in simplified form." },
-  { name: "Infrared Corneal", href: "/laser-safety/infrared-corneal", desc: "IR corneal branch is standards-heavy and quarantined." },
-  { name: "Infrared Hazard", href: "/laser-safety/infrared-hazard", desc: "Broad IR hazard page — quarantined." },
-  { name: "Infrared Thermal", href: "/laser-safety/infrared-thermal", desc: "Thermal IR hazard topic — quarantined." },
   { name: "Multiple Wavelength", href: "/laser-safety/multiple-wavelength", desc: "Additive multi-wavelength hazard logic — quarantined." },
   { name: "PRF Correction", href: "/laser-safety/prf-correction", desc: "Pulse repetition correction logic — quarantined." },
-  { name: "Retinal Hazard", href: "/laser-safety/retinal-hazard", desc: "Retinal hazard evaluation beyond bounded pre-check scope." },
   { name: "Scan Failure", href: "/laser-safety/scan-failure", desc: "Failure-mode scanning safety topic — quarantined." },
-  { name: "Skin Hazard", href: "/laser-safety/skin-hazard", desc: "Skin hazard branch outside current bounded scope." },
-  { name: "Skin MPE", href: "/laser-safety/skin-mpe", desc: "Skin MPE branch outside current bounded scope." },
   { name: "Thermal Lens Hazard", href: "/laser-safety/thermal-lens-hazard", desc: "Protective-filter / lens failure topic — quarantined." },
   { name: "UV Exposure", href: "/laser-safety/uv-exposure", desc: "UV exposure limits topic — quarantined." },
   { name: "UV Hazard", href: "/laser-safety/uv-hazard", desc: "UV hazard evaluation — quarantined." },
@@ -67,11 +66,12 @@ function Section({
 }: {
   title: string;
   subtitle: string;
-  tone: "green" | "blue" | "fuchsia";
+  tone: "green" | "cyan" | "blue" | "fuchsia";
   items: CalcLink[];
 }) {
   const toneClasses = {
     green: "border-green-500/30 bg-green-950/15 text-green-100",
+    cyan: "border-cyan-500/30 bg-cyan-950/15 text-cyan-100",
     blue: "border-blue-500/30 bg-blue-950/15 text-blue-100",
     fuchsia: "border-fuchsia-500/30 bg-fuchsia-950/15 text-fuchsia-100",
   };
@@ -115,10 +115,14 @@ export default function LaserSafetyPage() {
       </p>
       <LaserSafetyDisclaimer />
 
-      <div className="grid gap-4 md:grid-cols-3 mb-8">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="rounded-xl border border-green-500/30 bg-green-950/15 p-4">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-300">Bounded pre-check</p>
           <p className="mt-2 text-sm text-green-100">5 pages in a shared CW point-source mini-suite with explicit assumptions and unsupported-regime rejection.</p>
+        </div>
+        <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/15 p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">ICNIRP 2013 limits</p>
+          <p className="mt-2 text-sm text-cyan-100">Pages on one tested module of the ICNIRP 2013 eye and skin limits, 180 nm to 1 mm, with golden-value tests.</p>
         </div>
         <div className="rounded-xl border border-blue-500/30 bg-blue-950/15 p-4">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-300">Educational references</p>
@@ -135,6 +139,13 @@ export default function LaserSafetyPage() {
         subtitle="These are the only laser-safety pages currently being shaped toward semi-serious engineering pre-check use. Scope is narrow and explicit."
         tone="green"
         items={boundedPrecheckTools}
+      />
+
+      <Section
+        title="ICNIRP 2013 eye and skin limits"
+        subtitle="One tested implementation of the ICNIRP 2013 tables, for single exposures of 1 ns to 30 000 s. Educational: not a substitute for a laser safety officer or the standards."
+        tone="cyan"
+        items={icnirpTools}
       />
 
       <Section

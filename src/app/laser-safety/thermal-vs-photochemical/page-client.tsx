@@ -1,153 +1,103 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
+import { finiteXY, fmtNum, fmtPower, fmtTime, LIMIT_COLORS, LIMIT_LABELS } from "../../../components/eye-limit-labels";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  correctionCB, correctionCE, exposureLimit, eyeLimits, limitMaxPower, photochemicalCrossover, T_MAX, timeT2,
+} from "../../../physics/laser-safety/eye-exposure-limits";
 
 export default function ThermalVsPhotochemicalPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 450); // nm
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 1); // seconds
-  const [spotSize, setSpotSize] = useURLState("spotSize", 1); // mm
+  const [exposureTime, setExposureTime] = useURLState("exposureTime", 100); // s
+  const [alphaMrad, setAlphaMrad] = useURLState("alpha", 1.5); // mrad, apparent source
 
-  // IEC 60825-1 distinguishes thermal and photochemical MPEs.
-  // The applicable MPE is the MORE RESTRICTIVE of the two.
-  //
-  // Thermal MPE (400-700nm): MPE_th = 1.8×10⁻³ × t^0.75 J/cm² (t ≤ 10s)
-  // For t > 10s: 10.1 mJ/cm² (corneal), retinal limit applies
-  //
-  // Photochemical MPE (300-700nm):
-  // MPE_ph = 10^(0.02(λ-450)) × 0.01 × t^0.5 J/cm² (λ: 400-600nm)
-  // Actually: photochemical limit kicks in for λ > 400nm at long exposures
-  // Simplified: MPE_ph depends on retinal blue-light weighting
+  // ICNIRP 2013 retinal limits: src/physics/laser-safety/eye-exposure-limits.ts. SI inside.
+  const lambda = Math.min(Math.max(wavelength, 400), 600) * 1e-9;
+  const t = Math.min(Math.max(exposureTime, 1e-6), T_MAX);
+  const alpha = Math.max(alphaMrad, 0) * 1e-3;
 
-  const results = useMemo(() => {
-    const lam = wavelength; // nm
-    const t = Math.max(exposureTime, 1e-6);
-    const a = spotSize / 10; // cm
-
-    // Correction factor C_A for near-IR (700-1050nm)
-    let CA = 1;
-    if (lam >= 700 && lam <= 1050) {
-      CA = Math.pow(10, 0.02 * (lam / 1000 - 0.7));
-    }
-
-    // Thermal MPE for retinal exposure (400-1050nm)
-    // For t = 10⁻⁵ to 10s: MPE = 1.8×10⁻³ × CA × t^0.75 J/cm² (small source)
-    let mpeThermal: number;
-    if (t <= 10) {
-      mpeThermal = 1.8e-3 * CA * Math.pow(t, 0.75);
-    } else {
-      mpeThermal = 1.8e-3 * CA * Math.pow(10, 0.75); // ~10.1 mJ/cm²
-    }
-
-    // Photochemical (actinic UV/blue) MPE
-    // Dominant for 400-500nm at long exposures
-    // Simplified model: MPE_ph = H_photochemical limit
-    // For 400-600nm: MPE_ph = 10^(-(λ-450)/50) × 0.01 × t^0.5 J/cm² (approximate)
-    let mpePhotochemical: number;
-    if (lam >= 300 && lam <= 600) {
-      // Blue-light hazard weighting function B(λ)
-      const B = lam <= 450 ? 1 : Math.exp(-Math.pow((lam - 450) / 50, 2));
-      // Photochemical MPE increases with time as sqrt(t) for long exposures
-      const baseMPE = 0.01 * Math.pow(t, 0.5);
-      mpePhotochemical = baseMPE / Math.max(B, 0.01);
-    } else {
-      mpePhotochemical = Infinity; // No photochemical limit above 600nm
-    }
-
-    // Limiting MPE
-    const mpeLimiting = Math.min(mpeThermal, mpePhotochemical);
-    const limitingType = mpeThermal <= mpePhotochemical ? "Thermal" : "Photochemical";
-
-    return { mpeThermal, mpePhotochemical, mpeLimiting, limitingType, CA };
-  }, [wavelength, exposureTime, spotSize]);
+  const r = useMemo(() => {
+    const limits = eyeLimits(lambda, alpha);
+    const thermal = limits.find((l) => l.kind === "retinalThermal")!;
+    const photo = limits.find((l) => l.kind === "retinalPhotochemical") ?? null; // none from 600 nm
+    const hTh = exposureLimit(thermal, t);
+    const hPh = photo ? exposureLimit(photo, t) : NaN; // NaN below 10 s
+    return {
+      thermal, photo, hTh, hPh,
+      pTh: limitMaxPower(thermal, 0, t),
+      pPh: photo ? limitMaxPower(photo, 0, t) : NaN,
+      governing: photo && Number.isFinite(hPh) && hPh <= hTh ? photo.kind : thermal.kind,
+      crossover: photochemicalCrossover(lambda, alpha),
+    };
+  }, [lambda, alpha, t]);
 
   const chartData = useMemo(() => {
-    const wls = Array.from({ length: 200 }, (_, i) => 300 + (i / 199) * 400);
-    const thermal = wls.map(l => {
-      const t = Math.max(exposureTime, 1e-6);
-      let CA = 1;
-      if (l >= 700) CA = Math.pow(10, 0.02 * (l / 1000 - 0.7));
-      return (1.8e-3 * CA * Math.pow(Math.min(t, 10), 0.75)) * 1000;
-    });
-    const photochemical = wls.map(l => {
-      const t = Math.max(exposureTime, 1e-6);
-      if (l > 600) return 1000; // off chart
-      const B = l <= 450 ? 1 : Math.exp(-Math.pow((l - 450) / 50, 2));
-      return (0.01 * Math.pow(t, 0.5) / Math.max(B, 0.01)) * 1000;
-    });
-    return { wls, thermal, photochemical };
-  }, [exposureTime]);
+    const times = Array.from({ length: 241 }, (_, i) => 1e-6 * Math.pow(T_MAX / 1e-6, i / 240));
+    const traces: Record<string, unknown>[] = [r.thermal, ...(r.photo ? [r.photo] : [])].map((limit) => ({
+      ...finiteXY(times, times.map((x) => exposureLimit(limit, x) / x)),
+      type: "scatter", mode: "lines", name: limit.kind === "retinalThermal" ? "Thermal" : "Photochemical",
+      line: { color: LIMIT_COLORS[limit.kind] },
+    }));
+    const governingH = r.governing === "retinalThermal" ? r.hTh : r.hPh;
+    traces.push({ x: [t], y: [governingH / t], type: "scatter", mode: "markers", name: "t", marker: { color: "#f87171", size: 9 } });
+    return traces;
+  }, [r, t]);
 
   return (
     <>
       <LaserSafetyDisclaimer />
-      <div className="max-w-4xl mx-auto">
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Wavelength (nm, 400–600)" value={wavelength} onChange={setWavelength} min={400} max={600} step="any" />
+        <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} min={1e-6} max={30000} step="any" />
+        <ValidatedNumberInput label="Source Subtense α (mrad)" value={alphaMrad} onChange={setAlphaMrad} min={0} max={1000} step="any" />
+      </div>
 
-        <div className="bg-[#12121a] rounded-xl p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">Formulas</h2>
-          <div className="bg-[#0d0d14] rounded-lg p-4 font-mono text-sm space-y-2">
-            <p>Thermal: MPE<sub>th</sub> = 1.8×10⁻³ × C<sub>A</sub> × t^0.75 J/cm²</p>
-            <p>C<sub>A</sub> = 10^(0.02(λ−700))  for 700–1050 nm, else 1</p>
-            <p>Photochemical: MPE<sub>ph</sub> = H(λ) × t^0.5 J/cm²  (300–600 nm)</p>
-            <p>Limiting MPE = min(MPE<sub>th</sub>, MPE<sub>ph</sub>)</p>
-          </div>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
+        <ResultCard label="Thermal limit at t" value={`${fmtNum(r.hTh)} J/m²`} subtext={`${fmtNum(r.hTh / t)} W/m², ${fmtPower(r.pTh)} through 7 mm`} tone="blue" />
+        <ResultCard
+          label="Photochemical limit at t"
+          value={Number.isFinite(r.hPh) ? `${fmtNum(r.hPh)} J/m²` : r.photo ? "applies from 10 s" : "none from 600 nm"}
+          subtext={Number.isFinite(r.hPh) ? `${fmtNum(r.hPh / t)} W/m², ${fmtPower(r.pPh)} through 7 mm` : undefined}
+          tone="purple"
+        />
+        <ResultCard label="Governing at t" value={LIMIT_LABELS[r.governing]} tone="yellow" />
+        <ResultCard
+          label="Photochemical governs from"
+          value={Number.isFinite(r.crossover) ? fmtTime(r.crossover) : "never (thermal lower to 30 000 s)"}
+          tone="green"
+        />
+      </div>
+      <p className="text-sm text-gray-400 mb-8">
+        C_B = {fmtNum(correctionCB(lambda))}, C_E = {fmtNum(correctionCE(alpha, t))} at t, T₂ = {fmtNum(timeT2(alpha))} s.
+      </p>
 
-        <div className="bg-[#12121a] rounded-xl p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">Input</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} step="any" />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Spot Size (mm)" value={spotSize} onChange={setSpotSize} step="0.1" />
-            </div>
-          </div>
-        </div>
+      <p className="text-sm text-gray-400 mb-8">
+        Retinal limits from ICNIRP 2013 (Health Phys. 105:271, Tables 2–5), as corneal radiant exposure averaged over
+        7 mm. Thermal: 18 C_E t^0.75 J/m² (2 mJ/m² below 5 µs), and from T₂ a constant irradiance; a point source
+        (α ≤ 1.5 mrad) has 10 W/m² from 10 s. Photochemical (blue light), from 10 s: 100 C_B J/m² to 100 s, then
+        C_B W/m², with C_B = 1 up to 450 nm and 10^(0.02(λ − 450)) above; C_E does not raise it. Both apply and the lower
+        one governs. For a point source the photochemical limit takes over at ICNIRP&apos;s T₁: 10 s below 450 nm, 10 C_B
+        s up to 500 nm; above 500 nm the 10 W/m² thermal limit stays lower. A larger source raises only the thermal
+        limit, so the photochemical one takes over sooner and at longer wavelengths. For an extended source the
+        photochemical exposure is measured over an 11 mrad field of view (to 100 s), which this page does not do.
+      </p>
 
-        <div className="bg-[#12121a] rounded-xl p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">Results</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: "Thermal MPE", value: (results.mpeThermal * 1000).toFixed(3), unit: "mJ/cm²", color: "#ef4444" },
-              { label: "Photochemical MPE", value: results.mpePhotochemical === Infinity ? "N/A" : (results.mpePhotochemical * 1000).toFixed(3), unit: "mJ/cm²", color: "#3b82f6" },
-              { label: "Limiting MPE", value: (results.mpeLimiting * 1000).toFixed(3), unit: "mJ/cm²", color: "#22c55e" },
-              { label: "Limiting Type", value: results.limitingType, unit: "", color: "#f59e0b" },
-            ].map(item => (
-              <div key={item.label} className="bg-[#0d0d14] rounded-lg p-4">
-                <p className="text-xs text-gray-500 mb-1">{item.label}</p>
-                <p className="text-xl font-bold">{item.value} <span className="text-sm text-gray-400">{item.unit}</span></p>
-              </div>
-            ))}
-          </div>
-          {results.CA !== 1 && (
-            <p className="text-sm text-gray-400 mt-3">C<sub>A</sub> correction factor: {results.CA.toFixed(3)}</p>
-          )}
-        </div>
-
-        <div className="bg-[#12121a] rounded-xl p-6">
-          <h2 className="text-lg font-semibold mb-4">MPE vs Wavelength</h2>
-          <ChartPanel
-            data={[
-              { x: chartData.wls, y: chartData.thermal, type: "scatter", mode: "lines", name: "Thermal", line: { color: "#ef4444", width: 2 } },
-              { x: chartData.wls, y: chartData.photochemical, type: "scatter", mode: "lines", name: "Photochemical", line: { color: "#3b82f6", width: 2, dash: "dash" } },
-            ]}
-            layout={{
-              xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#1f2937" },
-              yaxis: { title: "MPE (mJ/cm²)", color: "#9ca3af", gridcolor: "#1f2937", type: "log" },
-              paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-              font: { color: "#9ca3af" }, legend: { orientation: "h", y: -0.2 },
-              margin: { t: 30, r: 30, b: 60, l: 70 },
-            }}
-           
-           
-          />
-        </div>
+      <div className="bg-gray-900 rounded-lg p-4">
+        <ChartPanel data={chartData} layout={{
+          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+          font: { color: "#9ca3af" },
+          xaxis: { title: "Exposure Time (s)", type: "log", gridcolor: "#374151" },
+          yaxis: { title: "Limit as irradiance H/t (W/m²)", type: "log", gridcolor: "#374151" },
+          margin: { t: 30, r: 30, b: 50, l: 70 },
+        }} />
+        <p className="text-xs text-gray-500 mt-2">
+          Both retinal limits as irradiance at the cornea against exposure time; the lower curve governs.
+        </p>
       </div>
     </>
   );
