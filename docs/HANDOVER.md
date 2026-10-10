@@ -1,33 +1,36 @@
-# Handover — 2026-10-10 (session 29 → session 30)
+# Handover — 2026-10-10 (session 30 → session 31)
 
-**Start here:** read this file, then `docs/ROADMAP.md` (Phase 4, "Laser-safety audit, part 1" and parts 2–5).
-Session 29 audited the 44 untiered laser-safety pages on branch `phase-4/laser-safety-audit` (PR #26).
+**Start here:** read this file, then `docs/ROADMAP.md` (Phase 4, "Laser-safety part 2" done; parts 3–5 open).
+Session 30 did laser-safety part 2 on branch `phase-4/laser-safety-limits`.
 
 ## State
-- Audit (four `physics-reviewer` batches against `eye-exposure-limits.ts`, ICNIRP 2013): 2 OK, 6 questionable,
-  36 bugs, 28 of them understating a hazard. Findings with numbers are in the ROADMAP part 1–5 items.
-- Containment (the user's choice): registry `knownIssue` → red "Known error, under repair" box from the shell
-  (`KnownIssueNotice` in `components/model-references.tsx`) and a tag on the laser-safety landing page. On the
-  29 bug pages not yet fixed. A page with a `knownIssue` can't have a tier (`tests/registry.test.ts`).
-- Fixed and tiered (82 of 470 tiered): shared CW suite (`src/lib/laser-safety-cw-suite.ts`: 7 mm averaging, NOHD
-  from the beam's own diameter, 1/e² or 1/e via `beamDefinition`), `nohd`, `viewing-distance`, `optical-density`,
-  `od-requirements` (textbook); `beam-expander`, `peak-power`, `beam-diameter-conversion`, `aversion-response`
-  (new modules in `src/physics/laser-safety/`), `mpe`, `power-density` (exact).
+- The user approved every merge candidate: `skin-hazard` → `skin-mpe` and `corneal-limits`, `infrared-corneal`,
+  `infrared-thermal` → `infrared-hazard` (done; 466 pages), `viewing-distance` + `beam-divergence-hazards` → `nohd`
+  (part 3), `pulsed-mpe` + `multiple-pulse` + `prf-correction` → one page (part 5).
+- Oracle `src/physics/laser-safety/eye-exposure-limits.ts` now has extended sources (optional α: C_E, α_max(t), T₂),
+  `limitMaxPower` (inverse of `limitMaxDuration`) and `photochemicalCrossover` (Table 4's T₁). New
+  `skin-exposure-limits.ts` (Table 7) and `retinal-image.ts` (17 mm eye, 25.5 µm floor). UI helpers:
+  `components/eye-limit-labels.ts` (labels, colours, formatters, `finiteXY`).
+- Seven pages fixed and tiered (89 of 466): `skin-mpe`, `infrared-hazard`, `thermal-vs-photochemical`,
+  `extended-source`, `eye-safe-wavelength` exact; `corneal-vs-retinal`, `retinal-hazard` textbook. Landing page has a
+  new "ICNIRP 2013 limits" group. `retinal-image-size` moved to part 3.
 
 ## Decisions
-- Containment = warning box only; no hiding (the user picked it over hide / box + hide).
-- Beam inputs default to 1/e² (data sheets) and are ÷ √2 to the standards' 1/e: a mislabelled input errs safe.
-- The CW suite stays in `src/lib` (mW/cm² units) until part 2 rebuilds it in SI on the ICNIRP module.
-- The oracle's C_C = 8 + 10^(0.04(λ − 1250)) is ICNIRP 2013 / IEC 2014; a reviewer's "C₇ = 8" was IEC 2007.
+- Merged pages keep `skin-mpe` and `infrared-hazard` (old titles became keywords via the merge codemod).
+- Max power = least H/(t·E₁) over all durations up to t (consistent with the first-crossing duration); the rounded
+  table joints make it ≤ 2.5 % below the limit at t alone. Pages say so.
+- `eye-safe-wavelength` is single-pulse until part 5's pulse-train module; its rep-rate input fed nothing.
+- Skin limit for beams < 1 mm: the page shows the peak-irradiance comparison (Table 7 note b) next to the 3.5 mm one.
 - Kept: DOIs only from Crossref; a page gets a tier only once OK or fixed; mixed model → lower tier.
 
 ## Next actions
-1. PR #26: CI, then ask the user to merge; after merge, `ui-check` on production and spot values (nohd 98.02 m,
-   viewing-distance 443.3 m, optical-density OD 3.71, beam-expander 31.83 W/cm², peak-power 10.00 kW,
-   aversion-response 0.980 mW; a red box on `/laser-safety/lidar-safety`).
-2. Laser-safety part 2 (eye and skin limits on the oracle, `skinLimits`), then parts 3–5. Ask the user about the
-   merge candidates first (the two skin pages; the four corneal/IR pages; `viewing-distance` → `nohd`;
-   `beam-divergence-hazards` → `nohd`; the three pulse pages).
+1. PR for `phase-4/laser-safety-limits`: CI, then ask the user to merge; after merge, `ui-check` on production and spot
+   values at the defaults: skin-mpe 1.00e5 J/m², max 151 mW, 6.64×; infrared-hazard max 15.4 mW, 649×;
+   thermal-vs-photochemical photochemical governs from 10 s (480 nm: 39.8 s); extended-source C_E 33.3, T₂ 31.1 s,
+   1.69e4 J/m² (33.7× the point source: Table 5 rounds 18·10^−0.25 to 10); corneal-vs-retinal retina 208 mW, cornea
+   201 mW; eye-safe-wavelength 1064 nm 785 nJ, 1550 nm 102 mJ; retinal-hazard 25.5 µm, 1.96e7 W/m², max 0.980 mW.
+2. Laser-safety part 3 (beam and application pages, merges into `nohd`, `retinal-image-size`), then parts 4–5.
+3. Stale `.next/types` after deleting pages breaks local `tsc`: delete `.next/types` and `.next/dev/types`.
 
 ## Ship flow (worked twenty-three times)
 - **Push:** `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`.
