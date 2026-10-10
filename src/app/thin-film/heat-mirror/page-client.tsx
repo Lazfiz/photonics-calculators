@@ -96,8 +96,8 @@ export default function HeatMirrorPage() {
       {solar && (
         <div className="mb-6">
           <ChartPanel title="Pane, solar range" data={[
-            { x: solar.x, y: solar.T, type: "scatter", mode: "lines", name: "Transmittance", line: { color: "#34d399" } },
-            { x: solar.x, y: solar.R, type: "scatter", mode: "lines", name: "Reflectance", line: { color: "#f87171" } },
+            { x: solar.x, y: solar.T, type: "scatter", mode: "lines", name: "T", line: { color: "#34d399" } },
+            { x: solar.x, y: solar.R, type: "scatter", mode: "lines", name: "R", line: { color: "#f87171" } },
           ]} layout={{
             paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
             xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },

@@ -32,8 +32,8 @@ export default function AntiFogPage() {
       Twet: luminousWeightedMean((lam) => underFilm(lam).T),
       bareT: 1 - ((nSub - 1) / (nSub + 1)) ** 2,
       x,
-      dryT: x.map((w) => dry(w * NM).T),
-      wetT: x.map((w) => underFilm(w * NM).T),
+      dryT: x.map((w) => 100 * dry(w * NM).T),
+      wetT: x.map((w) => 100 * underFilm(w * NM).T),
     };
   }, [valid, coating, nSub]);
 
@@ -99,14 +99,14 @@ export default function AntiFogPage() {
           ]} layout={{
             paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
             xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
-            yaxis: { title: "T", gridcolor: "#374151" },
+            yaxis: { title: "T (%)", gridcolor: "#374151" },
             margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true,
           }} />
         </div>
       )}
 
       <ChartPanel title="Droplets: share of the footprint lost to total internal reflection" data={[
-        { x: tirCurve.x, y: tirCurve.y, type: "scatter", mode: "lines", name: "TIR fraction (%)", line: { color: "#f87171" } },
+        { x: tirCurve.x, y: tirCurve.y, type: "scatter", mode: "lines", name: "TIR (%)", line: { color: "#f87171" } },
         { x: contactAngle <= 90 ? [contactAngle] : [], y: contactAngle <= 90 ? [100 * tir] : [], type: "scatter", mode: "markers", name: "This coating", marker: { color: "#fbbf24", size: 9 } },
       ]} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },

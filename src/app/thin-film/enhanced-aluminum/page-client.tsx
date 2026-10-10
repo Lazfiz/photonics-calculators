@@ -103,9 +103,9 @@ export default function EnhancedAluminumPage() {
 
       {spectrum && (
         <ChartPanel title="Reflectance" data={[
-          { x: spectrum.x, y: spectrum.R, type: "scatter", mode: "lines", name: `Enhanced (${pairs} pair${pairs === 1 ? "" : "s"})`, line: { color: "#60a5fa" } },
+          { x: spectrum.x, y: spectrum.R, type: "scatter", mode: "lines", name: "Enhanced", line: { color: "#60a5fa" } },
           { x: spectrum.x, y: spectrum.bare, type: "scatter", mode: "lines", name: "Bare Al", line: { color: "#9ca3af", dash: "dash" } },
-          { x: spectrum.x, y: spectrum.A, type: "scatter", mode: "lines", name: "Absorptance", line: { color: "#fbbf24" } },
+          { x: spectrum.x, y: spectrum.A, type: "scatter", mode: "lines", name: "A", line: { color: "#fbbf24" } },
         ]} layout={{
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },

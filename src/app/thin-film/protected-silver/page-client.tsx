@@ -103,8 +103,8 @@ export default function ProtectedSilverPage() {
         <ChartPanel title="Reflectance, transmittance and absorptance" data={[
           { x: spectrum.x, y: spectrum.R, type: "scatter", mode: "lines", name: "R, protected", line: { color: "#60a5fa" } },
           { x: spectrum.x, y: spectrum.bare, type: "scatter", mode: "lines", name: "R, bare Ag", line: { color: "#9ca3af", dash: "dash" } },
-          { x: spectrum.x, y: spectrum.T, type: "scatter", mode: "lines", name: "Transmittance", line: { color: "#34d399" } },
-          { x: spectrum.x, y: spectrum.A, type: "scatter", mode: "lines", name: "Absorptance", line: { color: "#fbbf24" } },
+          { x: spectrum.x, y: spectrum.T, type: "scatter", mode: "lines", name: "T", line: { color: "#34d399" } },
+          { x: spectrum.x, y: spectrum.A, type: "scatter", mode: "lines", name: "A", line: { color: "#fbbf24" } },
         ]} layout={{
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
