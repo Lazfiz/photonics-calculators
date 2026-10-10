@@ -2,10 +2,9 @@ import Link from "next/link";
 
 const suiteLinks = [
   { href: "/laser-safety/mpe", label: "MPE", desc: "Bounded direct-beam MPE pre-check" },
-  { href: "/laser-safety/nohd", label: "NOHD", desc: "Hazard-distance pre-check" },
+  { href: "/laser-safety/nohd", label: "NOHD", desc: "Direct-beam hazard distance, 180 nm – 1 mm" },
   { href: "/laser-safety/optical-density", label: "Optical Density", desc: "OD from bounded MPE branch" },
   { href: "/laser-safety/od-requirements", label: "OD Requirements", desc: "Manual validated-limit OD math" },
-  { href: "/laser-safety/viewing-distance", label: "Viewing Distance", desc: "Distance pre-check from same branch" },
 ];
 
 export default function LaserSafetySuiteLinks({ currentHref }: { currentHref: string }) {

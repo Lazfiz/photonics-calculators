@@ -9,10 +9,8 @@ type CalcLink = { name: string; href: string; desc: string };
 
 const boundedPrecheckTools: CalcLink[] = [
   { name: "MPE", href: "/laser-safety/mpe", desc: "Bounded CW point-source MPE pre-check (1 ms to 3×10^4 s within explicitly implemented table slices, 400–1050 nm)." },
-  { name: "NOHD", href: "/laser-safety/nohd", desc: "Direct-beam NOHD pre-check derived from the same bounded MPE branch." },
   { name: "Optical Density", href: "/laser-safety/optical-density", desc: "Required OD pre-check derived from the same bounded MPE branch." },
   { name: "OD Requirements", href: "/laser-safety/od-requirements", desc: "Manual validated-MPE mode for attenuation / eyewear OD math only." },
-  { name: "Safe Viewing Distance", href: "/laser-safety/viewing-distance", desc: "Viewing-distance pre-check using the same bounded CW point-source assumptions." },
 ];
 
 const icnirpTools: CalcLink[] = [
@@ -24,6 +22,11 @@ const icnirpTools: CalcLink[] = [
   { name: "Extended Source", href: "/laser-safety/extended-source", desc: "C_E, α_max and T₂ for a source larger than 1.5 mrad." },
   { name: "Retinal Hazard", href: "/laser-safety/retinal-hazard", desc: "Retinal image size, irradiance and the retinal limits for a beam." },
   { name: "Eye-Safe Wavelength", href: "/laser-safety/eye-safe-wavelength", desc: "Single-pulse limits across the spectrum: why 1.4–2.6 µm is called eye-safe." },
+  { name: "NOHD", href: "/laser-safety/nohd", desc: "Nominal ocular hazard distance of a direct beam, linear or Gaussian spread." },
+  { name: "Diffuse Reflection", href: "/laser-safety/diffuse-reflection", desc: "Viewing a laser spot on a matte surface: extended-source limit and hazard distance." },
+  { name: "Diode Laser Safety", href: "/laser-safety/diode-laser-safety", desc: "NOHD and OD of an elliptical diode beam (slow and fast axis)." },
+  { name: "Fiber Laser Safety", href: "/laser-safety/fiber-laser-safety", desc: "NOHD and OD of a bare single-mode or multimode fiber end." },
+  { name: "Industrial Laser Safety", href: "/laser-safety/industrial-laser-safety", desc: "Direct-beam NOHD, diffuse reflection from the workpiece, eyewear OD." },
   { name: "Aversion Response Time", href: "/laser-safety/aversion-response", desc: "Largest visible power within the 0.25 s blink / aversion limit." },
 ];
 
@@ -31,12 +34,8 @@ const educationalReferences: CalcLink[] = [
   { name: "ANSI / IEC Comparison", href: "/laser-safety/ansi-iec-comparison", desc: "High-level comparison of the standards families." },
   { name: "Atmospheric Attenuation", href: "/laser-safety/atmospheric-attenuation", desc: "Beer–Lambert style attenuation helper for outdoor concepts." },
   { name: "Beam Diameter Conversion", href: "/laser-safety/beam-diameter-conversion", desc: "Convert 1/e², 1/e, and FWHM beam widths." },
-  { name: "Beam Divergence Hazards", href: "/laser-safety/beam-divergence-hazards", desc: "Educational geometry around divergence and hazard distance." },
   { name: "Beam Expander", href: "/laser-safety/beam-expander", desc: "Basic beam expansion and irradiance scaling helper." },
-  { name: "Diode Laser Safety", href: "/laser-safety/diode-laser-safety", desc: "Educational notes on diode beam properties and safety implications." },
-  { name: "Fiber Laser Safety", href: "/laser-safety/fiber-laser-safety", desc: "Educational context for fiber-laser-specific safety issues." },
   { name: "Green Laser Pointer", href: "/laser-safety/green-laser-pointer", desc: "Educational notes on pointer hazards and IR leakage concerns." },
-  { name: "Industrial Laser Safety", href: "/laser-safety/industrial-laser-safety", desc: "General industrial laser safety context page." },
   { name: "Medical Laser Safety", href: "/laser-safety/medical-laser-safety", desc: "General medical-laser safety context page." },
   { name: "Peak Power", href: "/laser-safety/peak-power", desc: "Pulse energy / pulse duration / peak power math helper." },
   { name: "Power Density", href: "/laser-safety/power-density", desc: "Irradiance math helper from power and beam size." },
@@ -48,7 +47,6 @@ const educationalReferences: CalcLink[] = [
 const quarantinedTopics: CalcLink[] = [
   { name: "AEL Limits", href: "/laser-safety/ael-limits", desc: "Standards-heavy classification logic — quarantined." },
   { name: "Blue Light Hazard", href: "/laser-safety/blue-light-hazard", desc: "Photochemical / spectral-weighting topic — quarantined." },
-  { name: "Diffuse Reflection", href: "/laser-safety/diffuse-reflection", desc: "Extended-source / Lambertian hazard page — quarantined." },
   { name: "Enclosure Class", href: "/laser-safety/enclosure-class", desc: "Facility/process/policy-heavy topic — quarantined." },
   { name: "Multiple Wavelength", href: "/laser-safety/multiple-wavelength", desc: "Additive multi-wavelength hazard logic — quarantined." },
   { name: "PRF Correction", href: "/laser-safety/prf-correction", desc: "Pulse repetition correction logic — quarantined." },
@@ -118,7 +116,7 @@ export default function LaserSafetyPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="rounded-xl border border-green-500/30 bg-green-950/15 p-4">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-300">Bounded pre-check</p>
-          <p className="mt-2 text-sm text-green-100">5 pages in a shared CW point-source mini-suite with explicit assumptions and unsupported-regime rejection.</p>
+          <p className="mt-2 text-sm text-green-100">3 pages in a shared CW point-source mini-suite with explicit assumptions and unsupported-regime rejection.</p>
         </div>
         <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/15 p-4">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">ICNIRP 2013 limits</p>
