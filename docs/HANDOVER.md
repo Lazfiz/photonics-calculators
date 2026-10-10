@@ -1,36 +1,39 @@
-# Handover — 2026-10-10 (session 33 → session 34)
+# Handover — 2026-10-10 (session 34 → session 35)
 
-**Start here:** read this file, then `docs/ROADMAP.md` (Phase 4, laser-safety parts 3a, 3b and 4 done; 5 open).
-PR #29 (part 3b) was merged in session 33 (`5798ba64`); production `ui-check` and the spot values passed. Session 33 did
-part 4 on branch `phase-4/laser-safety-classes`.
+**Start here:** read this file, then `docs/ROADMAP.md` (Phase 4: laser-safety part 5a done; 5b open).
+PR #30 (part 4) was merged before session 34 (`d1bb0963`). Session 34 did part 5a on branch `phase-4/laser-safety-pulses`.
 
 ## State
-- New tested modules in `src/physics/laser-safety/`: `laser-classes.ts` (IEC 60825-1:2014 AELs of Classes 1/1M/2/2M/3R/
-  3B, time bases, CW classification under Conditions 3 and 1; 18/18 mutations caught) and `visual-interference.ts`
-  (ICAO flight-zone dazzle ranges). `eye-exposure-limits.ts` now exports `CORNEAL_APERTURE`.
-- Six pages fixed and tiered textbook (102 of 464 carry a tier): `classification` (unhidden), `ael-limits`,
-  `ansi-iec-comparison` (re-scoped to MPE vs AEL with the user), `green-laser-pointer`, `research-lab-safety`,
-  `enclosure-class`. They form a new landing-page group "Laser classes (IEC 60825-1:2014)".
+- New tested module `src/physics/laser-safety/pulse-train.ts`: ICNIRP 2013's three repetitive-pulse rules on the
+  eye-limit oracle, Table 5's sub-ns rows (100 fs – 1 ns), C_P cases a/b/c, T_i grouping, `pulseTrainSafeDiameter`
+  for NOHDs. 7 tests, 23/23 mutations caught (scratchpad `mutate-pt.cjs` pattern).
+- `multiple-pulse` + `prf-correction` merged into `pulsed-mpe` (462 pages). Fixed and tiered: `pulsed-mpe`,
+  `eye-safe-wavelength` (exact), `ultrafast-laser-safety`, `lidar-safety` (textbook): 105 of 462 tiered.
+- Shared UI: `components/pulse-train-table.tsx`, `components/pulse-train-chart.tsx`. Landing page group
+  "Pulsed lasers (ICNIRP 2013)". Only `scanning-mpe` and `interlock-design` still carry `knownIssue` in laser-safety.
+- Site-wide (own commit): `SimpleChart` log axes no longer floor at 1e-10; values ≤ 0 and non-finite ones are skipped.
 
 ## Decisions
-- AELs are rebuilt from the limits (MPE × stop area): ICNIRP 2013 from 400 nm (= IEC 2014), IEC's own UV values over a
-  1 mm stop below 400 nm. Tier textbook: IEC's tables round to two figures (0.385 vs 0.39 mW; 9.62 vs 10 mW).
-- 1250–1400 nm: IEC 2014 caps Classes 1, 1M, 3R at the 3B AEL (0.5 W, 7 mm) instead of ICNIRP's anterior-segment
-  limit; EN A11:2021 skin AEL (≈0.1 W, corneal stop) is an EU option. Source: Schulmeister white papers 2017/2022.
-- CW only. Visible Classes 2/3R use C₆ × 1 mW / 5 mW from 0.25 s (IEC's Class 1 piece just below 0.25 s gives 0.99 mW).
-- Condition 3: each AEL's own stop 100 mm from the waist (302.5 nm – 4 µm); Condition 1 (50 mm at 2 m) at 400–1400 nm
-  only. Class 3B measured through 7 mm. A 1e-9 relative tolerance on class boundaries (5 mW is 3R).
-- `ansi-iec-comparison`: ANSI Z136.1 tables aren't public, so no ANSI numbers; Schulmeister 2017's two ANSI differences
-  are stated in words.
+- Rule 1 is H(τ) at τ alone, the limit for one pulse (not `limitMaxPower`·τ, the CW reading that also checks shorter
+  times; they differ only by joint rounding and on an extended source's t^1.25 piece).
+- C_P counts n within min(T, T₂) (ICNIRP's definition). Case c (pulses ≤ T_i, T > 0.25 s) is min(1, 5 n^−0.25) with no
+  floor: IEC 2014 floors it at 0.4, ICNIRP states none (stricter). Visible: ICNIRP applies case c only to intentional
+  viewing, i.e. when the user picks T > 0.25 s.
+- Pulses within T_i: one effective pulse of duration T_i and energy kQ for C_P (IEC 4.3 f; Schulmeister 2017 "pulse
+  groups"). For a regular point-source train rule 2 is always lower then; it binds for large sources (α ≈ 100 mrad).
+- Below 100 fs, and on the cornea below 1 ns, the irradiance is held at the shortest tabulated value (ICNIRP's text).
+- Rule 3 with pulses inside T_i: the lower of ICNIRP's single-pulse count and IEC's T_i groups (below 10 ps the T_i
+  limit has C_A and the fs one doesn't, so grouping alone was less strict and the curve jumped up).
+- Part 5 split: 5a pulse trains (done), 5b scanning and interlocks.
 
 ## Next actions
-1. PR for `phase-4/laser-safety-classes`: CI, then ask the user to merge; after merge, `ui-check` on production and spot
-   values at the defaults: classification Class 3R (Class 1 9.62 mW, 3R 48.1 mW); ael-limits Class 1 7.70×10⁻⁸ J (10 ns,
-   633 nm), CW 0.385 mW; MPE vs AEL 7.85 mJ vs 96.2 mJ, ratio 0.0816 (355 nm, 100 s); green pointer Class 3R, NOHD 16.4 m,
-   flash-blind 92.8 m, glare 419 m, distraction 4.20 km; research lab Class 3B, NOHD 197 m, OD 2.95, diffuse 1.54 cm;
-   enclosure Class 1 (500 µW accessible), OD 3.41 for Class 1, 2.72 for 3R.
-2. Laser-safety part 5 (pulses and scanning, ROADMAP): pulse-train module (single pulse, average, N^−0.25, T_i grouping;
-   the 3B pulse values are in `laser-classes.ts`), then lidar NOHD on `hazard-distance.ts`.
+1. PR for `phase-4/laser-safety-pulses`: CI, then ask the user to merge; after merge, `ui-check` on production and spot
+   values at the defaults: pulsed-mpe 385 nJ max per pulse (retina, rule 3, C_P = 0.5), 2.60×, OD 0.415, max average
+   0.385 mW; ultrafast OD 3.21 (single pulse alone: within), NOHD 396 m, average 1 W; lidar NOHD 146.5 m, 172× at 10 m,
+   window OD 3.30 (1550 preset: NOHD 22.8 m); eye-safe 1550 nm row 1.56 mJ, "Cornea (IR) (average)", 64.3×.
+   Redirects: `/laser-safety/multiple-pulse` and `/laser-safety/prf-correction` → `/laser-safety/pulsed-mpe`.
+2. Laser-safety part 5b (ROADMAP): `scanning-mpe`, `scan-failure`, `interlock-design` on `pulse-train.ts` (a scanned
+   beam = pulse train: pass duration (d + 7 mm)/v, rate = scan rate); then regroup the landing page.
 3. Open (ROADMAP part 4 notes): IEC 60825-1 Ed. 4 (2026) not checked; Ed. 3's UV/IR Condition 3 stop and Condition 1
    outside 400–1400 nm unverified; the oracle's skin dual limit for huge open-field sources (diffuse-reflection).
 
@@ -42,6 +45,11 @@ part 4 on branch `phase-4/laser-safety-classes`.
   (`gh api repos/Lazfiz/photonics-calculators/commits/<sha>/status`), then run `ui-check` against production.
 
 ## Non-obvious facts
+- **Deleted pages break `tsc`** through stale `.next/types/validator.ts`: `rm -rf .next/types`, then `npm run check`.
+- **ICNIRP pulse rules:** `pdftotext -f 18 -l 18 icnirp.pdf` (reading order) for p. 287; Table 5's sub-ns rows need
+  `pdftotext -f 14 -l 14 -raw`. Symbols: `e` ≤, `G` <, `9` >, `Q` ≥, `j` minus, `ms` in T_i is µs.
+- **Shell edits:** backticks inside a double-quoted `node -e "…"` run as commands; write the script to a file with
+  a quoted heredoc (`<<'EOF'`).
 - **IEC 60825-1 sources:** Ed. 3 isn't public. Schulmeister's white papers (Seibersdorf, `.../publ/whitepaper_iec-60825-1.pdf`,
   `.../whitepaper_a11_to_en_60825-1.pdf`, need a browser user agent for curl) and the Ed. 1.2 text (Tables 1–4, 10; its
   rotated pages read with `pdftotext -f N -l N -raw`). Don't link the Ed. 1.2 copy (licensed file).
@@ -58,6 +66,8 @@ part 4 on branch `phase-4/laser-safety-classes`.
   commit, copy the full file back, commit.
 - **Trust data:** tier, `modelNote` (≤ 220 chars), references in `src/registry/calculators/<category>.ts`. Check DOIs
   on Crossref (`api.crossref.org/works?query.bibliographic=…`; ≥ 1 s apart) and that `https://doi.org/<doi>` gives 302.
+- **ui-check** failed with `webSocketDebuggerUrl` of undefined: this Chrome starts `--headless=new` without a page
+  target, so the script now opens one (`/json/new`). Never `taskkill /IM chrome.exe` (kills the user's browser).
 - **Chrome extension** may be disconnected: use `scripts/ui-check.mjs <base> load /a /b` and headless Chrome
   `--headless=new --virtual-time-budget=8000 --screenshot=C:/…/x.png --window-size=1280,2900 <url>`.
 - **ui-check paths in Git Bash:** prefix `MSYS_NO_PATHCONV=1`.
