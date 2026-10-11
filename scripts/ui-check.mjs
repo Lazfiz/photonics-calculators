@@ -35,6 +35,11 @@ for (let i = 0; i < 75; i++) {
   }
   await sleep(200);
 }
+// Newer Chrome builds start `--headless=new` without a page target: open one.
+if (!targets.some((t) => t.type === "page")) {
+  await fetch(`http://127.0.0.1:${PORT}/json/new?about:blank`, { method: "PUT" });
+  targets = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json();
+}
 const ws = new WebSocket(targets.find((t) => t.type === "page").webSocketDebuggerUrl);
 await new Promise((r) => ws.addEventListener("open", r, { once: true }));
 

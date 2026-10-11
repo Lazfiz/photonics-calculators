@@ -1,113 +1,122 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
+import { useMemo } from "react";
+import { fmtDistance, fmtEnergy, fmtNum, fmtPower, LIMIT_LABELS } from "../../../components/eye-limit-labels";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-
+import PulseTrainChart from "../../../components/pulse-train-chart";
+import PulseTrainTable from "../../../components/pulse-train-table";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { T_MAX } from "../../../physics/laser-safety/eye-exposure-limits";
+import { rangeToDiameter, roundBeam } from "../../../physics/laser-safety/hazard-distance";
+import { pulseTrainLimits, pulseTrainSafeDiameter } from "../../../physics/laser-safety/pulse-train";
+
+const RULE_NAMES = { 1: "single pulse", 2: "average power", 3: "C_P × single pulse" } as const;
+
 export default function UltrafastLaserSafetyPage() {
-  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 1); // µJ
-  const [repRate, setRepRate] = useURLState("repRate", 80); // MHz
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 100); // fs
+  const [pulseEnergyRaw, setPulseEnergy] = useURLState("pulseEnergy", 0.0125); // µJ
+  const [repRateRaw, setRepRate] = useURLState("repRate", 80); // MHz
+  const [pulseWidthRaw, setPulseWidth] = useURLState("pulseWidth", 100); // fs
   const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm
-  const [beamDia, setBeamDia] = useURLState("beamDia", 2); // mm
-  const [divergence, setDivergence] = useURLState("divergence", 1); // mrad
+  const [beamDiaRaw, setBeamDia] = useURLState("beamDia", 2); // mm, 1/e²
+  const [divergenceRaw, setDivergence] = useURLState("divergence", 1); // mrad, 1/e² full angle
+  const [exposureRaw, setExposure] = useURLState("exposureTime", 10); // s
 
-  const avgPower = pulseEnergy * 1e-6 * repRate * 1e6; // W
-  const peakPower = pulseEnergy * 1e-6 / (pulseWidth * 1e-15); // W
-  const peakIrradiance = peakPower / (Math.PI * Math.pow(beamDia / 20000, 2)); // W/cm²
+  // URL values aren't range-checked: clamp them here. SI inside; physics in src/physics/laser-safety/pulse-train.ts.
+  const lambda = wavelength * 1e-9;
+  const Q = Math.max(pulseEnergyRaw, 0) * 1e-6;
+  const tau = Math.max(pulseWidthRaw, 1) * 1e-15;
+  const prf = Math.max(repRateRaw, 0) * 1e6;
+  const T = Math.min(Math.max(exposureRaw, tau), T_MAX);
+  const d = Math.max(beamDiaRaw, 1e-3) * 1e-3;
+  const phi = Math.max(divergenceRaw, 0) * 1e-3;
+  const overlap = prf * tau > 1;
 
-  // Single-pulse MPE (simplified, 400-1400 nm)
-  const singlePulseMpe = useMemo(() => {
-    const t = pulseWidth * 1e-15;
-    if (t < 1e-9) return 5e-7; // 0.5 µJ/cm² for ultrashort (simplified)
-    return 1.8 * Math.pow(t, 0.75) * 1e-3 * 1e-3; // J/cm²
-  }, [pulseWidth]);
-
-  // Average power MPE (for 80 MHz rep rate, use 0.25s exposure)
-  const avgMpeWcm2 = 1.8 / (Math.pow(0.25, 0.75) * 1000); // W/cm²
-  const beamAreaCm2 = Math.PI * Math.pow(beamDia / 20, 2);
-  const avgIrradiance = avgPower / beamAreaCm2;
-
-  // PRF correction for multiple pulses
-  const nPulses = Math.min(repRate * 1e6 * 0.25, 86400);
-  const prfCorrection = Math.pow(nPulses, -0.25);
-  const correctedMpe = singlePulseMpe * prfCorrection;
-
-  const singlePulseEdensity = (pulseEnergy * 1e-6) / beamAreaCm2; // J/cm²
-
-  const safetyRatio = singlePulseMpe > 0 ? singlePulseEdensity / singlePulseMpe : Infinity;
-  const odRequired = safetyRatio > 1 ? Math.ceil(Math.log10(safetyRatio)) : 0;
-
-  const chartData = useMemo(() => {
-    const widths = Array.from({ length: 80 }, (_, i) => 10 + i * 24); // 10 fs to ~2 ps
-    const mpes = widths.map(t => {
-      const ts = t * 1e-15;
-      if (ts < 1e-9) return 5e-7;
-      return 1.8 * Math.pow(ts, 0.75) * 1e-3 * 1e-3;
-    });
-    const energies = widths.map(t => {
-      const pp = pulseEnergy * 1e-6 / (t * 1e-15);
-      return pp / (Math.PI * Math.pow(beamDia / 20000, 2));
-    });
-    return [
-      { x: widths, y: mpes.map(v => v * 1e6), type: "scatter" as const, mode: "lines" as const, name: "Single-pulse MPE", line: { color: "#f87171", dash: "dash" } },
-      { x: widths, y: energies.map(v => singlePulseEdensity * 1e6), type: "scatter" as const, mode: "lines" as const, name: "Your pulse density", line: { color: "#60a5fa" } },
-    ];
-  }, [pulseEnergy, beamDia, singlePulseEdensity]);
+  const train = useMemo(() => ({ duration: tau, prf, exposure: T }), [tau, prf, T]);
+  const result = useMemo(() => pulseTrainLimits(lambda, d, train), [lambda, d, train]);
+  const covered = result.limits.length > 0 && Number.isFinite(result.qMax);
+  const ratio = Q / result.qMax;
+  const od = ratio > 1 ? Math.log10(ratio) : 0;
+  // The single-pulse rule on its own, as an ultrafast safety check often stops there.
+  const singleOnly = Math.min(...result.limits.map((l) => l.singlePulse));
+  const odSingle = Q > singleOnly ? Math.log10(Q / singleOnly) : 0;
+  const nohd = useMemo(() => {
+    const dSafe = pulseTrainSafeDiameter(lambda, Q, train);
+    return rangeToDiameter(roundBeam(d, phi), dSafe);
+  }, [lambda, Q, train, d, phi]);
 
   return (
     <>
-            
       <LaserSafetyDisclaimer />
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Pulse Energy (µJ)" value={pulseEnergy} onChange={setPulseEnergy} step="0.1" />
-        <ValidatedNumberInput label="Rep Rate (MHz)" value={repRate} onChange={setRepRate} />
-        <ValidatedNumberInput label="Pulse Width (fs)" value={pulseWidth} onChange={setPulseWidth} />
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-        <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDia} onChange={setBeamDia} />
-        <ValidatedNumberInput label="Divergence (mrad)" value={divergence} onChange={setDivergence} step="0.1" />
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <p className="text-sm text-gray-400">Average Power</p>
-          <p className="text-2xl font-bold text-blue-400">{avgPower.toFixed(1)} W</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <p className="text-sm text-gray-400">Peak Power</p>
-          <p className="text-2xl font-bold text-purple-400">{(peakPower / 1e6).toFixed(1)} MW</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <p className="text-sm text-gray-400">Single-pulse MPE</p>
-          <p className="text-2xl font-bold text-green-400">{(singlePulseMpe * 1e6).toFixed(3)} µJ/cm²</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <p className="text-sm text-gray-400">Min OD Required</p>
-          <p className="text-2xl font-bold text-yellow-400">OD{odRequired}+</p>
-        </div>
+        <ValidatedNumberInput label="Pulse energy (µJ)" value={pulseEnergyRaw} onChange={setPulseEnergy} min={0} step="any" />
+        <ValidatedNumberInput label="Repetition rate (MHz, 0 = one pulse)" value={repRateRaw} onChange={setRepRate} min={0} step="any" />
+        <ValidatedNumberInput label="Pulse duration (fs)" value={pulseWidthRaw} onChange={setPulseWidth} min={1} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={1000000} step="any" />
+        <ValidatedNumberInput label="Beam diameter, 1/e² (mm)" value={beamDiaRaw} onChange={setBeamDia} min={0.001} step="any" />
+        <ValidatedNumberInput label="Full-angle divergence, 1/e² (mrad)" value={divergenceRaw} onChange={setDivergence} min={0} step="any" />
+        <ValidatedNumberInput label="Exposure time (s)" value={exposureRaw} onChange={setExposure} min={1e-15} max={30000} step="any" />
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-8">
-        <h3 className="text-sm font-semibold text-gray-300 mb-2">Key Formulas</h3>
-        <div className="text-xs text-gray-400 space-y-1">
-          <p>P<sub>avg</sub> = E<sub>p</sub> × f<sub>rep</sub></p>
-          <p>P<sub>peak</sub> = E<sub>p</sub> / τ<sub>p</sub></p>
-          <p>MPE<sub>single</sub> ≈ 5 × 10<sup>−7</sup> J/cm² (t &lt; 1 ns, 400–1400 nm)</p>
-          <p>MPE<sub>avg</sub> ≈ 1.8 × t<sup>−0.75</sup> × 10<sup>−3</sup> W/cm² (t = 0.25 s)</p>
-          <p>MPE<sub>corrected</sub> = MPE<sub>single</sub> × N<sup>−0.25</sup> (PRF correction)</p>
-        </div>
+      {overlap ? (
+        <p className="text-amber-300 mb-4">The pulses overlap: the repetition rate times the pulse duration is above 1.</p>
+      ) : !covered ? (
+        <p className="text-amber-300 mb-4">The eye limits cover 180 nm to 1 mm.</p>
+      ) : (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
+            <ResultCard label="Average power" value={fmtPower(Q * prf)} tone="blue" subtext={`Peak power E/τ: ${fmtPower(Q / tau)}`} />
+            <ResultCard
+              label="Max energy per pulse"
+              value={fmtEnergy(result.qMax)}
+              tone="yellow"
+              subtext={`${result.limiting ? LIMIT_LABELS[result.limiting] : ""}, ${result.rule ? RULE_NAMES[result.rule] : ""}`}
+            />
+            <ResultCard
+              label="Eyewear OD needed"
+              value={ratio > 1 ? fmtNum(od) : "0 (within)"}
+              tone={ratio > 1 ? "red" : "green"}
+              subtext={`At the output, ${fmtNum(T)} s. The single-pulse rule alone ${odSingle > 0 ? `gives OD ${fmtNum(odSingle)}` : "would call it safe"}`}
+            />
+            <ResultCard
+              label="NOHD"
+              value={nohd === Infinity ? "∞ (the beam doesn't spread)" : nohd === 0 ? "0 — within at the output" : fmtDistance(nohd)}
+              tone={nohd === 0 ? "green" : "red"}
+              subtext="Direct beam, diameter a + rφ"
+            />
+          </div>
+          <PulseTrainTable result={result} energy={Q} />
+        </>
+      )}
+
+      <div className="text-sm text-gray-400 mb-8 space-y-2">
+        <p>
+          A mode-locked oscillator puts tens of millions of pulses into the eye each second, so the average power, not the
+          single pulse, sets the limit: ICNIRP 2013&apos;s rule 2 holds every group of pulses to the limit for the time it
+          spans, up to the whole exposure. Pulses closer together than T_i (5 µs below 1050 nm, 13 µs above) also count as
+          one pulse for the C_P rule. The single-pulse limits below 1 ns are ICNIRP 2013 Table 5&apos;s: 1 mJ/m² over the
+          7 mm pupil from 100 fs to 10 ps (× C_C above 1050 nm; no C_A), 2 C_A mJ/m² from 10 ps; shorter than 100 fs, and
+          on the cornea below 1 ns, the irradiance is held at the shortest tabulated value.
+        </p>
+        <p>
+          Below 10 ps the retina is damaged by non-linear effects (laser-induced breakdown) rather than heat, which is why
+          ICNIRP drops C_A there; it states that its limits also preclude non-linear injury. Eyewear for ultrafast lasers
+          must keep its OD at the peak power: absorbing filters can saturate or bleach, so EN 207 tests mode-locked lasers separately (&quot;M&quot;). Use 0.25 s for an accidental
+          glance at a visible beam and 10 s for the near infrared. Not modelled: pulse bursts, supercontinuum and harmonic
+          lines (see the multiple-wavelength page), atmospheric attenuation, focusing optics.
+        </p>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4">
-        <ChartPanel data={chartData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" }, xaxis: { title: "Pulse Width (fs)", gridcolor: "#374151" },
-          yaxis: { title: "Energy Density (µJ/cm²)", gridcolor: "#374151", type: "log" },
-          margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} />
-      </div>
+      {covered && !overlap ? (
+        <div className="bg-gray-900 rounded-lg p-4">
+          <PulseTrainChart lambda={lambda} d={d} duration={tau} exposure={T} energy={Q} prf={prf} />
+          <p className="text-xs text-gray-500 mt-2">
+            Largest energy per pulse against the repetition rate at the output, for this pulse duration and exposure. Above a
+            few kHz the average-power rule falls as 1/f and takes over from the single-pulse limit.
+          </p>
+        </div>
+      ) : null}
     </>
   );
 }

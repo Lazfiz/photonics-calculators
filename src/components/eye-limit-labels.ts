@@ -92,8 +92,9 @@ export function segmentedLine(xs: readonly number[], ys: readonly number[], name
   return runs.map((r, i) => ({ ...r, type: "scatter", mode: "lines", line, ...(i === 0 ? { name } : {}) }));
 }
 
-/** An energy in J as J / mJ / µJ / nJ. */
+/** An energy in J as J / mJ / µJ / nJ / pJ / fJ. */
 export function fmtEnergy(j: number): string {
+  if (j > 0 && j < 1e-9) return j >= 1e-12 ? `${fmtNum(j * 1e12)} pJ` : `${fmtNum(j * 1e15)} fJ`;
   return fmtPower(j).replace(/W$/, "J");
 }
 
