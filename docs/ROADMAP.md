@@ -476,8 +476,43 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
       (stationary beam; default 905 nm, 10 µJ, 5 ns, 200 kHz, 3 mm / 3 mrad, 10 s: NOHD 146.5 m, 172× at 10 m, OD 3.30 at
       the window; 1550 nm: NOHD 22.8 m). Landing page: new group "Pulsed lasers (ICNIRP 2013)".
     - Was: `pulsed-mpe` (t^0.75 below 5 µs: 1100× low at 1064 nm / 10 ns; N over 0.25 s for NIR), `multiple-pulse` (µJ read as µJ/cm²: shows 1.12× over, really 7.3×), `prf-correction` (no N ≥ 1 floor: C_P > 1), `ultrafast-laser-safety` (OD from the single pulse only: OD 2 vs ≈ 7; fs limit 21× high), `lidar-safety` (visible average limit 2.5 W/cm², 1000× high; 10⁻³ slip above 100 ns; 1550 nm uses the retinal law; NOHD divided by a).
-  - [ ] **Laser-safety part 5b: scanning and interlocks.** `scanning-mpe` ("benefit" = per-pass over 10 s limit; dwell d/v ignores the pupil crossing; C_A wrong), `interlock-design` (safe time 0.39 ms vs 78.5 ns at 1064 nm; 1 m/s approach speed; visible floored at 1 µs). Questionable: `scan-failure` (scan inputs feed nothing; no λ; beam area). A scanned beam is a pulse train on `pulse-train.ts` (pass duration = pupil crossing (d + 7 mm)/v, repetition = scan rate; IEC 60825-1:2014 5.4.3 note 3 for retinal scanning). Optionally a scanned-lidar mode on `lidar-safety`. Then regroup the landing page.
-  - Landing page `src/app/laser-safety/page.tsx`: regroup once the parts land (the "Educational references" group holds most of the bug pages); it still links the redirected `scanned-mpe`.
+  - [x] **Laser-safety part 5b: scanning and interlocks** (session 35, branch `phase-4/laser-safety-scanning`). With it every
+    laser-safety page (40) is tiered and none carries a `knownIssue` (site-wide: 107 of 461 tiered, no `knownIssue` left).
+    - New `src/physics/laser-safety/scanned-beam.ts` (11 tests; 20/22 mutations caught, the 2 others equivalent): each pass
+      of a CW beam over an averaging aperture is one pulse (ICNIRP 2013 p. 287; K. Schulmeister, "Extended source AEL
+      analysis of scanned laser emission for IEC 60825-1", white paper Ed. 2, Seibersdorf 2025, 4.2.5 and 6.2.3). Its
+      duration is the half-power width W/v of η(x), the Gaussian beam's fraction through an offset circular aperture
+      (IEC 60825-1 3.69), and its energy P·L/v with L = ∫η dx (all of the pass). Both from a 1-D integral across the
+      aperture (y = R sin θ, Simpson 64; checked against 1 − exp(−2D²/d²), the Rice-distribution radial form and both
+      asymptotes). Per limit: 7 mm for the retina; the cornea's 1 → 3.5 mm, where a pass longer than 0.35 s sets its
+      own aperture (fixed point) and each group uses the aperture at T_n. The rules run on G(t) = H(t)·A(t)·v/L(D(t)),
+      in watts of beam power, through `trainLimit` (pulse-train.ts refactor; its tests unchanged). Stationary retinal
+      image (eye focused on the pivot point: IEC's default evaluation, the most restrictive), eye on the scan centre,
+      triangle (2 passes per period) or sawtooth / polygon (1 per sweep); "noClearance" when the sweep is shorter
+      than aperture + beam. The pass is D/v, not the (d + 7 mm)/v planned here (that is the full width, not the FWHM).
+    - New `src/physics/laser-safety/interlock.ts` (3 tests; 9/10 mutations caught, the survivor was a redundant
+      condition, removed): eye in the beam for max(0, T − S/K), against `exposureDuration`'s t_max; ISO 13855 approach
+      speeds K = 2.0 m/s (hand, arm) and 1.6 m/s (body), no intrusion allowance; longest stopping time S/K + t_max,
+      shortest distance K(T − t_max).
+    - `scan-failure` merged into `scanning-mpe` (461 pages; redirect + merge codemod): the time a stopped beam takes to
+      exceed the limits is the scan-failure safeguard's budget. `scanning-mpe` textbook (default 532 nm, 5 mW, 1 mm /
+      1 mrad at 1 m, 30° at 100 Hz both ways, 0.25 s: 66.2 µs passes at 104.7 m/s, 50 in 0.25 s, rule 1 binds at
+      7.68 mW, 0.651×, 7.84× the still beam's 0.980 mW; a stopped beam exceeds the limit after 368 µs; chart of max
+      power against distance). `interlock-design` textbook (default 5 W, 1064 nm, 5 mm, 50 ms, 50 cm, 2 m/s: t_max
+      157 ns, reach 250 ms, fast enough, shortest distance 10.0 cm). ICNIRP Table 5 at 1050–1400 nm, 10 ps – 13 µs, is
+      20 C_C mJ/m²: t_max is 157 ns, not the 78.5 ns noted above (that was 10 mJ/m²).
+    - Shared: `PulseTrainTable` takes `value` and `unit="pass"` (beam powers); `components/exposure-time-chart.tsx`
+      (limits as H(t)/t against the beam over each aperture, with marks) extracted from `exposure-duration`.
+    - Landing page regrouped: eye and skin limits; hazard distances, eyewear and interlocks; pulsed and scanned beams;
+      classes; UV and blue light; beam helpers. The quarantine summary boxes and the hidden-pages note are gone.
+    - Was: `scanning-mpe` ("benefit" = one pass's limit over a 10 s limit; dwell d/v ignored the pupil crossing; C_A
+      wrong; no power input), `interlock-design` (0.01 J/cm² / E above 1050 nm: 0.39 ms vs 157 ns; human reaction time
+      added to the shutter time; 1 m/s; visible floored at 1 µs), `scan-failure` (scan inputs fed nothing; no λ;
+      visible limit at every wavelength).
+    - Not modelled: scan turning points (slower, passes in pairs), sinusoidal and raster scans, pulsed scanned lasers
+      (each pass a group of pulses), a moving retinal image; a scanned-lidar mode on `lidar-safety` (optional).
+    - Found, not fixed: the registry descriptions of `blue-light-hazard` and `uv-exposure` still say "Simplified
+      educational estimate … Not for safety decisions" (stale since session 18, when both were rebuilt on ICNIRP).
 - [ ] Rewrite or label the heuristic models (macro-bend, second-harmonic, …). Macro-bend (session 19) and second-harmonic (session 22) are rewritten.
 - [x] Fix the kept-page bugs found while merging duplicates (Phase 2 findings, "Found while merging duplicates"): the two hazard-weighting pages first, then `macro-bending-loss` (prints 0), `optical-sectioning-thickness` (nm/µm), the OPO threshold and `apodization-comparison`.
   - [x] **Hazard weighting** (session 18, branch `phase-4/hazard-weighting`). `src/physics/laser-safety/hazard-weighting.ts`, SI in and out:
