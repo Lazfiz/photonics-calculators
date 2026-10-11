@@ -57,15 +57,30 @@ function band(t: RetarderType, lambda0: number, target: number): [number, number
   let a = i0, b = i0;
   while (a > 0 && ok(l(a - 1))) a--;
   while (b < N && ok(l(b + 1))) b++;
-  return [l(a), l(b)];
+  // Refine each edge between its last good and first bad grid point (multi-order bands are narrower than a step).
+  const edge = (good: number, bad: number) => {
+    for (let k = 0; k < 40; k++) {
+      const mid = 0.5 * (good + bad);
+      if (ok(mid)) good = mid;
+      else bad = mid;
+    }
+    return good;
+  };
+  return [a > 0 ? edge(l(a), l(a - 1)) : l(a), b < N ? edge(l(b), l(b + 1)) : l(b)];
+}
+
+/** Band in nm: one decimal when it is narrower than 20 nm. */
+function bandText([a, b]: [number, number]): string {
+  const digits = (b - a) * 1e9 < 20 ? 1 : 0;
+  return `${fix(a * 1e9, digits)}–${fix(b * 1e9, digits)}`;
 }
 
 export default function RetarderTypesPage() {
   const [wavelengthNm, setWavelength] = useURLState("wavelength", 550);
   const [targetInput, setTarget] = useURLState("retardance", 0.25);
   const [orderInput, setOrder] = useURLState("order", 10);
-  const [lambda1Nm, setLambda1] = useURLState("lambda1", 450);
-  const [lambda2Nm, setLambda2] = useURLState("lambda2", 700);
+  const [lambda1Nm, setLambda1] = useURLState("lambda1", 510);
+  const [lambda2Nm, setLambda2] = useURLState("lambda2", 600);
 
   // useURLState doesn't clamp: keep URL values inside the input ranges.
   const lambda0 = clamp(wavelengthNm, 350, 1800) * 1e-9;
@@ -197,7 +212,7 @@ export default function RetarderTypesPage() {
                   <td className="py-2 px-2">{r.t.plates}</td>
                   <td className="text-right py-2 px-2 font-mono">{fix(r.at, 4)}</td>
                   <td className="text-right py-2 px-2 font-mono">
-                    {Number.isFinite(r.band[0]) ? `${fix(r.band[0] * 1e9, 0)}–${fix(r.band[1] * 1e9, 0)}` : "—"}
+                    {Number.isFinite(r.band[0]) ? bandText(r.band) : "—"}
                   </td>
                   <td className="text-right py-2 px-2 font-mono">{fix(r.tilt, 4)}</td>
                   <td className="py-2 px-2 text-gray-400">{r.t.note}</td>

@@ -573,7 +573,8 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
       `waveplate-order` (|Δn|, fast axis, 0.75 = swapped QWP), `retarder-types` (five modelled types; temperature chart and
       unsourced spec table replaced by computed ±1 % band and 5° tilt change), `liquid-crystal-polarizer` (Jones TN with any
       polarizer and analyzer, presets, VA as a uniformly tilted layer; tier textbook). Three `knownIssue`s dropped (13 left).
-    - The quartz + MgF₂ achromat (450/700 nm) is 7 % high at 550 nm: a two-point design, sensitive to Δn at 1e-5.
+    - The quartz + MgF₂ achromat designed at 450/700 nm is 7 % high at 550 nm: a two-point design, sensitive to Δn at 1e-5.
+      The page defaults to 510/600 nm (±1 % from 495 to 625 nm; zero order: 545–555 nm).
   - [ ] **Polarization part 3: polarizers.** A shared Glan TIR window (signed, external half-field, cemented case) and
     Fresnel with complex r in TIR. Pages: `glans-prism`, `birefringent-polarizer` (Wollaston 2Δn tan α is fine to < 1 %),
     `polarizing-beamsplitter` (rebuild as a MacNeille cube on `transfer-matrix.ts`, or rename), `brewster-polarizer`
