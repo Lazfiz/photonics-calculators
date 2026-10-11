@@ -18,7 +18,7 @@ const limitTools: CalcLink[] = [
   { name: "Retinal Image Size", href: "/laser-safety/retinal-image-size", desc: "Apparent source of a beam: retinal image and α with the eye accommodating." },
   { name: "Aversion Response Time", href: "/laser-safety/aversion-response", desc: "Largest visible power within the 0.25 s blink / aversion limit." },
   { name: "Multiple Wavelength", href: "/laser-safety/multiple-wavelength", desc: "Several lines in one beam: which add (same tissue) and which count independently." },
-  { name: "MPE (400–1050 nm)", href: "/laser-safety/mpe", desc: "CW point-source MPE for 400–1050 nm and 1 ms to 3×10⁴ s." },
+  { name: "MPE", href: "/laser-safety/mpe", desc: "Every eye limit at a wavelength (180 nm – 1 mm) and exposure time (1 ns – 30 000 s)." },
 ];
 
 const hazardTools: CalcLink[] = [
@@ -28,8 +28,8 @@ const hazardTools: CalcLink[] = [
   { name: "Fiber Laser Safety", href: "/laser-safety/fiber-laser-safety", desc: "NOHD and OD of a bare single-mode or multimode fiber end." },
   { name: "Industrial Laser Safety", href: "/laser-safety/industrial-laser-safety", desc: "Direct-beam NOHD, diffuse reflection from the workpiece, eyewear OD." },
   { name: "Medical Laser Safety", href: "/laser-safety/medical-laser-safety", desc: "Focusing handpiece: NOHD beyond the focus, eyewear OD, spot fluence and thermal relaxation time." },
-  { name: "Optical Density", href: "/laser-safety/optical-density", desc: "Eyewear OD for a CW point source, 400–1050 nm." },
-  { name: "OD Requirements", href: "/laser-safety/od-requirements", desc: "OD from an exposure and a limit you already have." },
+  { name: "Optical Density", href: "/laser-safety/optical-density", desc: "Eyewear OD for a CW beam, 180 nm – 1 mm." },
+  { name: "OD Requirements", href: "/laser-safety/od-requirements", desc: "OD from an exposure limit you supply and its aperture." },
   { name: "Laser Interlock Timing", href: "/laser-safety/interlock-design", desc: "Does the interlock stop the beam before an eye can reach it? Approach time, limit time, longest stopping time." },
 ];
 

@@ -1,10 +1,10 @@
 import Link from "next/link";
 
 const suiteLinks = [
-  { href: "/laser-safety/mpe", label: "MPE", desc: "Bounded direct-beam MPE pre-check" },
+  { href: "/laser-safety/mpe", label: "MPE", desc: "Eye limits at any wavelength and exposure time" },
   { href: "/laser-safety/nohd", label: "NOHD", desc: "Direct-beam hazard distance, 180 nm – 1 mm" },
-  { href: "/laser-safety/optical-density", label: "Optical Density", desc: "OD from bounded MPE branch" },
-  { href: "/laser-safety/od-requirements", label: "OD Requirements", desc: "Manual validated-limit OD math" },
+  { href: "/laser-safety/optical-density", label: "Optical Density", desc: "Eyewear OD for a CW beam, 180 nm – 1 mm" },
+  { href: "/laser-safety/od-requirements", label: "OD Requirements", desc: "OD from a limit you supply" },
 ];
 
 export default function LaserSafetySuiteLinks({ currentHref }: { currentHref: string }) {
@@ -12,7 +12,7 @@ export default function LaserSafetySuiteLinks({ currentHref }: { currentHref: st
 
   return (
     <div className="mt-8 rounded-xl border border-gray-800 bg-gray-900/80 p-4">
-      <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Related bounded-suite tools</p>
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Related direct-beam tools</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {links.map((item) => (
           <Link key={item.href} href={item.href} className="rounded-lg border border-gray-700 bg-gray-950/70 p-3 transition hover:border-blue-500 hover:bg-gray-950">
