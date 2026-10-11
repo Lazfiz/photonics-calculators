@@ -83,7 +83,7 @@ export default function PulsedMPEPage() {
               subtext={prf > 0 ? `Yours: ${fmtPower(Q * prf)}` : "One pulse"}
             />
           </div>
-          <PulseTrainTable result={result} energy={Q} />
+          <PulseTrainTable result={result} value={Q} />
         </>
       )}
 
