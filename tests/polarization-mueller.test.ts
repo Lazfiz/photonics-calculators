@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 
 import { circularPolarizer, linearPolarizer, linearRetarder, rotator } from "../src/physics/polarization/jones";
 import {
-  type MuellerMatrix, applyMueller, bandAveragedRetardance, chainMueller, muellerCircularPolarizer,
+  type MuellerMatrix, applyMueller, bandAveragedRetardance, bandAveragedRetardanceSweep, chainMueller,
+  muellerCircularPolarizer, muellerRetarderBandSweep,
   muellerDepolarizer, muellerFromJones, muellerPolarizer, muellerRetarder, muellerRetarderBandAveraged,
   muellerRotator,
 } from "../src/physics/polarization/mueller";
@@ -95,4 +96,20 @@ test("Mueller: a narrow band averages to the sinc law; zero bandwidth is the pla
   assert.equal(bandAveragedRetardance(0, 1e-6, 0.5e-6, 1.5e-6).meanCos, 1);
   assert.ok(Number.isNaN(bandAveragedRetardance(1e6, 1e-6, 0.5e-6, 1.5e-6).meanCos));
   assert.ok(Number.isNaN(bandAveragedRetardance(10, 1e-6, -1e-6, 1.5e-6).meanCos));
+});
+
+test("Mueller: the cumulative bandwidth sweep matches the band average computed band by band", () => {
+  const widths = [0, 20e-9, 37e-9, 100e-9, 100e-9, 400e-9];
+  const sweep = bandAveragedRetardanceSweep(83.3, 550e-9, widths);
+  widths.forEach((b, i) => {
+    const direct = bandAveragedRetardance(83.3, 550e-9, 550e-9 - b / 2, 550e-9 + b / 2);
+    assert.ok(Math.abs(sweep.meanCos[i] - direct.meanCos) < 1e-6, `⟨cos Γ⟩ at ${b}: ${sweep.meanCos[i]} vs ${direct.meanCos}`);
+    assert.ok(Math.abs(sweep.meanSin[i] - direct.meanSin) < 1e-6, `⟨sin Γ⟩ at ${b}: ${sweep.meanSin[i]} vs ${direct.meanSin}`);
+  });
+  const M = muellerRetarderBandSweep(83.3, 550e-9, widths, 45 * deg);
+  assertMat(M[3], muellerRetarderBandAveraged(83.3, 550e-9, 100e-9, 45 * deg), 1e-6, "sweep matrix");
+  // Edges: a width that shrinks, or reaches λ = 0, makes it and every later band NaN.
+  const bad = bandAveragedRetardanceSweep(5, 550e-9, [0, 100e-9, 50e-9, 200e-9]);
+  assert.deepEqual(bad.meanCos.map(Number.isNaN), [false, false, true, true]);
+  assert.ok(Number.isNaN(bandAveragedRetardanceSweep(5, 550e-9, [1100e-9]).meanSin[0]));
 });
