@@ -71,13 +71,21 @@ the repo times out (Defender + `node_modules`). Keep tool output small: tail and
    merge via PR. No force-push.
 
 ## Working style (quota)
-- One ROADMAP phase/stage per session; end with an updated `docs/HANDOVER.md` (≤80 lines),
-  ticked ROADMAP boxes, then `/clear`.
-- Main session designs and reviews. Routine multi-file edits → `implementer` agent (Sonnet) with
-  goal, allowed files, gates, ≤40-line report. Physics review of a batch → `physics-reviewer`.
+- One ROADMAP phase/stage per session. End with `/handover` (one-line ROADMAP tick, HANDOVER ≤80 lines),
+  then `/clear`.
+- Main session (Opus) designs, does the physics, and reviews. Small fixes stay inline. Delegate when the output would
+  be large next to the brief:
+  - routine multi-file edits → `implementer` (Sonnet): goal, allowed files, gates, ≤40-line report;
+  - mechanical checks (gate logs, inventories, live pages) → `checker` (Haiku, read-only, ≤15 lines);
+  - physics review of a batch → `physics-reviewer` (Opus, high effort, read-only).
+  Review the diffs that agents produce before committing them.
 - Long commands (`tsc`, `build`, `npm ci`) run in the background; don't poll.
 
-## Skills & rules
-- Skills: `/verify` (gates + live check), `/physics-audit <slug>`, `/new-calculator`, `/codemod`.
+## Skills, scripts & rules
+- Skills: `/verify` (gates + live check), `/ship` (push → PR → CI → merge on the user's yes → production check),
+  `/handover`, `/physics-audit <slug>`, `/new-calculator`, `/codemod`.
+- Scripts: `npx tsx scripts/tier-status.ts [category]` (tier counts, untiered slugs), `node scripts/crossref.mjs <doi>
+  | -q "<citation>"` (check references), `node scripts/post-merge-check.mjs <sha> <cat>/<slug>=<value> …`
+  (production values + headless load), `node scripts/ui-check.mjs` (hydration and console errors).
 - Path-scoped rules in `.claude/rules/`: `physics.md`, `ui.md`, `nextjs.md`.
 - Old AI-tool reviews are in `docs/archive/reviews/`. They're stale; don't trust them.
