@@ -271,3 +271,19 @@ export function unwrapPhase(phases: readonly number[]): number[] {
   }
   return out;
 }
+
+/**
+ * Largest eigenvalue of a symmetric 3×3 matrix (row-major), trigonometric method of O. K. Smith, "Eigenvalues of a
+ * symmetric 3 × 3 matrix", Commun. ACM 4, 168 (1961), doi:10.1145/355578.366316. The smallest is −λ_max(−A).
+ */
+export function largestSymmetricEigenvalue(A: readonly number[]): number {
+  const p1 = A[1] ** 2 + A[2] ** 2 + A[5] ** 2;
+  if (p1 === 0) return Math.max(A[0], A[4], A[8]);
+  const q = (A[0] + A[4] + A[8]) / 3;
+  const p = Math.sqrt(((A[0] - q) ** 2 + (A[4] - q) ** 2 + (A[8] - q) ** 2 + 2 * p1) / 6);
+  const b = [(A[0] - q) / p, A[1] / p, A[2] / p, A[4] / p - q / p, A[5] / p, (A[8] - q) / p];
+  // det of B = [[b0, b1, b2], [b1, b3, b4], [b2, b4, b5]].
+  const det = b[0] * (b[3] * b[5] - b[4] * b[4]) - b[1] * (b[1] * b[5] - b[4] * b[2]) + b[2] * (b[1] * b[4] - b[3] * b[2]);
+  const r = Math.min(1, Math.max(-1, det / 2));
+  return q + 2 * p * Math.cos(Math.acos(r) / 3);
+}
