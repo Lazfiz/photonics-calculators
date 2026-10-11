@@ -37,7 +37,7 @@
  *
  * Rule 1 uses the limit at τ alone, as written. (`limitMaxPower`·τ, the CW reading, also holds every shorter part of
  * the pulse to its limit; the two differ only by the tables' rounding at joints and on an extended source's t^1.25
- * piece.) Not modelled: irregular trains and bursts, scanned beams, skin, the advice to use the actual radiant exposure
+ * piece.) Scanned beams: `scanned-beam.ts`. Not modelled: irregular trains and bursts, skin, the advice to use the actual radiant exposure
  * of beams narrower than 1 mm (Table 5 note c).
  */
 
@@ -135,7 +135,7 @@ export function correctionCP(lambda: number, alpha: number, n: number, tau: numb
  * inside a piece, so it is scanned there (64 points in log t, then golden-section search) and the n beside the dip
  * are added.
  */
-function groupRule(limit: TabulatedLimit, d: number, tau: number, f: number, N: number): { q: number; n: number } {
+function groupRule(limit: TabulatedLimit, G: (t: number) => number, tau: number, f: number, N: number): { q: number; n: number } {
   if (!(N >= 2)) return { q: Infinity, n: 0 };
   const tPair = tau + 1 / f;
   const TN = tau + (N - 1) / f;
@@ -144,7 +144,7 @@ function groupRule(limit: TabulatedLimit, d: number, tau: number, f: number, N: 
   const add = (n: number) => {
     for (const m of [n - 1, n, n + 1]) if (m >= 2 && m <= N) candidates.add(m);
   };
-  const g = (t: number) => limitMaxEnergy(limit, d, t) / (f * (t - tau) + 1);
+  const g = (t: number) => G(t) / (f * (t - tau) + 1);
   for (const s of [...limit.pieces, ...limit.apertures]) for (const t of [s.t0, s.t1]) if (t > tPair && t < TN) add(nAt(t));
   for (const ap of limit.apertures) {
     if (ap.q === 0) continue;
@@ -169,7 +169,7 @@ function groupRule(limit: TabulatedLimit, d: number, tau: number, f: number, N: 
   let q = Infinity;
   let nBest = 0;
   for (const n of candidates) {
-    const v = limitMaxEnergy(limit, d, tau + (n - 1) / f) / n;
+    const v = G(tau + (n - 1) / f) / n;
     if (v < q) [q, nBest] = [v, n];
   }
   return { q, n: nBest };
@@ -213,6 +213,37 @@ export interface TrainLimits {
 const argMin = (xs: readonly number[]) => xs.reduce((best, x, i) => (x < xs[best] ? i : best), 0);
 
 /**
+ * One eye limit (from `pulseLimits`) of a valid pulse train at λ (m) under the three rules, from a source subtending
+ * α (rad). G(t) is the largest energy per pulse when one pulse's worth is delivered in t (s): increasing, Infinity
+ * where the limit doesn't apply, and of the form c·t^p wherever the limit's piece and aperture are fixed (as for
+ * `limitMaxEnergy`). The rules' values are in G's unit.
+ */
+export function trainLimit(lambda: number, limit: EyeLimit, train: PulseTrain, G: (t: number) => number, alpha = 0): TrainLimit {
+  const N = pulseCount(train);
+  const { duration: tau, prf: f, exposure: T } = train;
+  const singlePulse = G(tau);
+  const { q: group, n: groupPulses } = groupRule(limit, G, tau, f, N);
+  let rule3 = { reduced: Infinity, cp: 1, cpCount: 0, perGroup: 1 };
+  if (limit.kind === "retinalThermal" && N >= 2) {
+    const Ti = timeTi(lambda);
+    const inT2 = Math.min(N, pulsesIn(Math.min(T, timeT2(alpha)), tau, f));
+    const cp = correctionCP(lambda, alpha, inT2, tau, T);
+    rule3 = { reduced: cp * singlePulse, cp, cpCount: inT2, perGroup: 1 };
+    const k = tau < Ti ? Math.min(N, pulsesIn(Ti, tau, f)) : 1;
+    if (k > 1) {
+      const groups = Math.ceil(inT2 / k);
+      const cpGroups = correctionCP(lambda, alpha, groups, Ti, T);
+      const reduced = (cpGroups * G(Ti)) / k;
+      if (reduced < rule3.reduced) rule3 = { reduced, cp: cpGroups, cpCount: groups, perGroup: k };
+    }
+  }
+  const { reduced, cp, cpCount, perGroup } = rule3;
+  const values = [singlePulse, group, reduced];
+  const i = argMin(values);
+  return { kind: limit.kind, singlePulse, group, groupPulses, reduced, cp, cpCount, perGroup, qMax: values[i], rule: (i + 1) as PulseRule };
+}
+
+/**
  * Every eye limit at λ (m) for a pulse train in a beam of 1/e² diameter d (m) at the eye, from a source subtending α
  * (rad; default a point source): the largest energy per pulse under each rule, and the one that binds.
  */
@@ -220,29 +251,7 @@ export function pulseTrainLimits(lambda: number, d: number, train: PulseTrain, a
   const N = pulseCount(train);
   const invalid: TrainLimits = { pulses: NaN, limits: [], qMax: NaN, limiting: null, rule: null };
   if (Number.isNaN(N) || !(d >= 0)) return invalid;
-  const { duration: tau, prf: f, exposure: T } = train;
-  const limits = pulseLimits(lambda, alpha).map((limit): TrainLimit => {
-    const singlePulse = limitMaxEnergy(limit, d, tau);
-    const { q: group, n: groupPulses } = groupRule(limit, d, tau, f, N);
-    let rule3 = { reduced: Infinity, cp: 1, cpCount: 0, perGroup: 1 };
-    if (limit.kind === "retinalThermal" && N >= 2) {
-      const Ti = timeTi(lambda);
-      const inT2 = Math.min(N, pulsesIn(Math.min(T, timeT2(alpha)), tau, f));
-      const cp = correctionCP(lambda, alpha, inT2, tau, T);
-      rule3 = { reduced: cp * singlePulse, cp, cpCount: inT2, perGroup: 1 };
-      const k = tau < Ti ? Math.min(N, pulsesIn(Ti, tau, f)) : 1;
-      if (k > 1) {
-        const groups = Math.ceil(inT2 / k);
-        const cpGroups = correctionCP(lambda, alpha, groups, Ti, T);
-        const reduced = (cpGroups * limitMaxEnergy(limit, d, Ti)) / k;
-        if (reduced < rule3.reduced) rule3 = { reduced, cp: cpGroups, cpCount: groups, perGroup: k };
-      }
-    }
-    const { reduced, cp, cpCount, perGroup } = rule3;
-    const values = [singlePulse, group, reduced];
-    const i = argMin(values);
-    return { kind: limit.kind, singlePulse, group, groupPulses, reduced, cp, cpCount, perGroup, qMax: values[i], rule: (i + 1) as PulseRule };
-  });
+  const limits = pulseLimits(lambda, alpha).map((limit) => trainLimit(lambda, limit, train, (t) => limitMaxEnergy(limit, d, t), alpha));
   if (limits.length === 0) return { ...invalid, pulses: N };
   const worst = limits[argMin(limits.map((l) => l.qMax))];
   return { pulses: N, limits, qMax: worst.qMax, limiting: worst.kind, rule: worst.rule };
