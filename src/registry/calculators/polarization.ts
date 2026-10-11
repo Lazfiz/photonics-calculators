@@ -22,11 +22,67 @@ const goldsteinJones = goldstein("ch. The Jones Matrix Formalism, pp. 201–231"
 const goldsteinStokes = goldstein("chs. The Polarization Ellipse, pp. 49–58, and Stokes Polarization Parameters, pp. 59–91");
 const goldsteinMueller = goldstein("ch. Mueller Matrices for Polarizing Components, pp. 93–115");
 
+// Born & Wolf 7th ed. chapters checked on Crossref (doi:10.1017/CBO9781139644181.0nn): Basic properties of the
+// electromagnetic field pp. 1–74 (.010), Optics of crystals pp. 790–852 (.024).
+const bornWolfCrystals: Reference = {
+  citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed., ch. 15 Optics of crystals, pp. 790–852. Cambridge University Press.",
+  url: "https://doi.org/10.1017/CBO9781139644181.024",
+};
+const bornWolfTir: Reference = {
+  citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed., §1.5.4 Total reflection (Fresnel rhomb). Cambridge University Press.",
+  url: "https://doi.org/10.1017/CBO9781139644181.010",
+};
+const hechtRetarders: Reference = {
+  citation: "Hecht E. (2002). Optics, 4th ed., §8.4 Birefringence and §8.7 Retarders. Addison-Wesley.",
+};
+const veiras2010: Reference = {
+  citation: "Veiras F. E., Perez L. I., Garea M. T. (2010). Phase shift formulas in uniaxial media: an application to waveplates. Appl. Opt. 49, 2769.",
+  url: "https://doi.org/10.1364/AO.49.002769",
+};
+const ghosh1999: Reference = {
+  citation: "Ghosh G. (1999). Dispersion-equation coefficients for the refractive index and birefringence of calcite and quartz crystals. Opt. Commun. 163, 95–102.",
+  url: "https://doi.org/10.1016/S0030-4018(99)00091-7",
+};
+const dodge1984: Reference = {
+  citation: "Dodge M. J. (1984). Refractive properties of magnesium fluoride. Appl. Opt. 23, 1980–1985.",
+  url: "https://doi.org/10.1364/AO.23.001980",
+};
+// The 1972 paper is a meeting abstract; refractiveindex.info takes the formula from Dodge's 1986 handbook chapter.
+const malitsonDodge1972: Reference = {
+  citation: "Malitson I. H., Dodge M. J. (1972). Refractive index and birefringence of synthetic sapphire. J. Opt. Soc. Am. 62, 1405 (abstract); formula in Dodge M. J. (1986), Handbook of Laser Science and Technology vol. IV, part 2, p. 30, CRC Press.",
+};
+const lomheim1978: Reference = {
+  citation: "Lomheim T. S., DeShazer L. G. (1978). Optical-absorption intensities of trivalent neodymium in the uniaxial crystal yttrium orthovanadate. J. Appl. Phys. 49, 5517–5522: YVO₄ dispersion formula.",
+  url: "https://doi.org/10.1063/1.324471",
+};
+const zelmon1997: Reference = {
+  citation: "Zelmon D. E., Small D. L., Jundt D. (1997). Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol% magnesium oxide-doped lithium niobate. J. Opt. Soc. Am. B 14, 3319–3322.",
+  url: "https://doi.org/10.1364/JOSAB.14.003319",
+};
+const devore1951: Reference = {
+  citation: "DeVore J. R. (1951). Refractive indices of rutile and sphalerite. J. Opt. Soc. Am. 41, 416–419.",
+  url: "https://doi.org/10.1364/JOSA.41.000416",
+};
+const crystalData = [ghosh1999, dodge1984, malitsonDodge1972, lomheim1978, zelmon1997, devore1951];
+const schottBk7: Reference = {
+  citation: "SCHOTT optical glass catalog (Zemax AGF 2017-01-20): N-BK7 Sellmeier coefficients.",
+};
+const goochTarry: Reference = {
+  citation: "Gooch C. H., Tarry H. A. (1975). The optical properties of twisted nematic liquid crystal structures with twist angles ≤90 degrees. J. Phys. D: Appl. Phys. 8, 1575–1584.",
+  url: "https://doi.org/10.1088/0022-3727/8/13/020",
+};
+const yehGu: Reference = {
+  citation: "Yeh P., Gu C. (1999). Optics of Liquid Crystal Displays: Jones matrix of a twisted nematic layer. Wiley.",
+};
+
 export const polarization: CalculatorEntry[] = [
   {
     slug: "birefringence",
     title: "Birefringence & Retardation",
     description: "Phase retardation from crystal birefringence, thickness, and wavelength.",
+    tier: "exact",
+    modelNote: "Γ = 2πΔn·d/λ at normal incidence on a plate with its optic axis in the faces; Δn(λ) from published Sellmeier fits, or constant. Not modelled: tilt, temperature, reflections.",
+    references: [hechtRetarders, bornWolfCrystals, ...crystalData],
   },
   {
     slug: "birefringence-imaging",
@@ -84,7 +140,9 @@ export const polarization: CalculatorEntry[] = [
     slug: "double-refraction",
     title: "Double Refraction (Birefringence)",
     description: "Calculate ordinary and extraordinary ray paths, walk-off angle, lateral separation, and retardation in uniaxial crystals.",
-    knownIssue: "The angle of incidence is used as the angle to the optic axis, so the default shows no walk-off; the index jumps from n_e to n_o just off 0°, and the spectral chart plots half-waves as waves.",
+    tier: "exact",
+    modelNote: "Plane waves into a lossless uniaxial plate, optic axis in the plane of incidence: e wave on the index ellipsoid, ray along its normal, Γ = k₀d(k_z,e − k_z,o). Not modelled: reflections, optical activity.",
+    references: [bornWolfCrystals, veiras2010, ...crystalData],
   },
   {
     slug: "fresnel-polarization",
@@ -119,7 +177,9 @@ export const polarization: CalculatorEntry[] = [
     slug: "liquid-crystal-polarizer",
     title: "Liquid Crystal Polarizer",
     description: "Model transmission through twisted nematic (TN), super-twisted nematic (STN), vertically aligned (VA), and electrically controlled birefringence (ECB) LC cells.",
-    knownIssue: "The twisted-nematic transmission is not the Gooch-Tarry result, the charts use a second formula (flat 99 % while the card shows 0.45 %), a twist of 0 gives NaN and the supertwisted formula has no source.",
+    tier: "textbook",
+    modelNote: "Uniformly twisted layer in the cell plane (Jones matrix, Gooch-Tarry), or a uniformly tilted VA layer; ideal polarizers, normal incidence. Not modelled: pretilt, field-driven director profile, Δn dispersion.",
+    references: [goochTarry, yehGu, bornWolfCrystals],
   },
   {
     slug: "microscope-polarizer",
@@ -208,8 +268,10 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "retarder-types",
     title: "Retarder Types Comparison",
-    description: "Compare waveplate and retarder types: bandwidth, accuracy, temperature sensitivity.",
-    knownIssue: "The achromatic and Fresnel-rhomb curves are random placeholder numbers, the zero-order curve is a 0.1 mm plate (562 % error at 550 nm), and the birefringence dispersion law is invented.",
+    description: "Compare zero-order, multi-order, compound, achromatic and Fresnel-rhomb retarders: retardance against wavelength and tilt.",
+    tier: "exact",
+    modelNote: "Ideal plates, Γ = 2πΔn·d/λ (tilted: k₀d(k_z,e − k_z,o)), Δn(λ) from Sellmeier fits; rhomb phase from total internal reflection in N-BK7. Not modelled: temperature, reflections, coatings.",
+    references: [hechtRetarders, veiras2010, bornWolfTir, ghosh1999, dodge1984, schottBk7],
   },
   {
     slug: "stokes",
@@ -232,11 +294,17 @@ export const polarization: CalculatorEntry[] = [
     slug: "waveplate-order",
     title: "Waveplate Order",
     description: "Calculate waveplate order, retardation, and wavelength-dependent performance.",
+    tier: "exact",
+    modelNote: "Order and leftover fraction of |Δn|·d/λ; crossed-polarizer transmission sin²(Γ/2) with the plate at 45°; Δn(λ) from published Sellmeier fits. Not modelled: tilt, temperature, reflections.",
+    references: [hechtRetarders, ...crystalData],
   },
   {
     slug: "waveplate-thickness",
     title: "Waveplate Thickness Calculator",
     description: "Calculate required crystal thickness for waveplates of any retardance order.",
+    tier: "exact",
+    modelNote: "d = (m + f)λ/|Δn| for a plate with its optic axis in the faces at normal incidence; Δn(λ) from published Sellmeier fits. Compound plates: axes crossed, d₁ − d₂. Not modelled: tilt, temperature.",
+    references: [hechtRetarders, ...crystalData],
   },
   {
     slug: "wire-grid",
