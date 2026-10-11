@@ -343,7 +343,7 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 
 ## Phase 4 — physics quality (ongoing)
 - [ ] Golden-value tests for the top 50 calculators by traffic, then by category.
-- [x] Model-tier badge (Exact / Textbook approximation / Illustrative) with references on each page: stage 2c (session 24). 34 of 472 pages had a tier, 55 after session 25, 61 of 470 after session 26, 66 after session 27, 72 after session 28, 82 after session 29, 89 of 466 after session 30, 93 of 464 after session 31; the rest say "Not yet reviewed".
+- [x] Model-tier badge (Exact / Textbook approximation / Illustrative) with references on each page: stage 2c (session 24). 34 of 472 pages had a tier, 55 after session 25, 61 of 470 after session 26, 66 after session 27, 72 after session 28, 82 after session 29, 89 of 466 after session 30, 93 of 464 after session 31, 107 of 461 at session 37; the rest say "Not yet reviewed".
 - [ ] Audit the unreviewed pages and fill in their `tier`, `modelNote` and `references` (`physics-audit`, then the registry entry). Quick first batch: the thin-film pages on `transfer-matrix.ts`.
   - [x] **Thin-film audit, part 1** (session 25, branch `phase-4/thin-film-audit`). Four `physics-reviewer` batches audited the 39 thin-film pages on the modules plus `wave-optics/gires-tournois`: 9 OK, 14 questionable, 17 bugs. 21 pages are fixed (where needed) and have trust data: 14 exact, 6 textbook, 1 illustrative.
     - New tested modules: `physics/thin-film/quarter-wave-stack.ts` (Macleod's zone half-width Δg = (2/π) asin((n_H − n_L)/(n_H + n_L)), edges λ₀/(1 ± Δg), the non-overlap ratio (1 + Δg)/(1 − Δg), first-order centre at angle λ₀(cos θ_H + cos θ_L)/2) and `graded-index.ts` (midpoint staircase, ≥ 10 sublayers per λ/n). `interference.ts` gained `airyPeakNear` (nearest order, exact FWHM in wavelength).
@@ -530,6 +530,45 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
     - Stale text: the quarantine banner (blue-light-hazard, uv-exposure, uv-hazard) is deleted; the shared disclaimer,
       the category description and the two "Simplified educational estimate" registry descriptions are rewritten.
     - Still optional: a scanned-lidar mode on `lidar-safety`.
+  - [x] **Polarization audit, part 0** (session 37, branch `phase-4/polarization-audit`). Four `physics-reviewer` batches
+    audited the 33 polarization pages (none tiered, no `src/physics/polarization/`): **1 OK, 11 questionable, 21 bugs**.
+    The 21 bug pages have a registry `knownIssue`; each fix removes it and sets the tier. Reviewers had no web access:
+    verify every citation, section and DOI before it goes in a registry entry.
+    - **Convention (decided):** Goldstein/Collett site-wide. Time factor e^{i(ωt−kz)}; RCP = [1, i]/√2 (clockwise seen by
+      the receiver); S3 = 2 Im(Ex* Ey) > 0 for RCP; retarder with the fast axis at 0°: diag(1, e^{−iΓ}); +θ is
+      counter-clockwise looking into the beam, for polarizers, retarders and rotators alike. The Mueller pages,
+      `poincare-sphere` and `retarder`'s phase already match. Each page states it in its `modelNote`.
+    - Cross-page: the "Rutile" preset 1.973/2.165 (YVO₄-like) is in five pages; rutile is ≈ 2.613/2.909 at 589 nm. Indices
+      are hard-coded at all wavelengths; `sellmeier-data.ts` has only MgF₂ ordinary. Glan-type angle conventions differ in
+      three pages. Wavelength inputs are dead in several pages. Out of scope but flagged: `materials/birefringent-crystals`
+      lists the fused-silica Malitson set as quartz; `materials/crystal-birefringence` rutile 2.454/2.493.
+  - [ ] **Polarization part 1: Jones, Mueller, Stokes.** New `physics/polarization/{jones,mueller,stokes}.ts` (element
+    builders, rotation, chains in order, `stokesFromJones`, handedness from S3, `isPhysicalStokes`, Mueller realisability
+    d ∈ [−1/3, 1]). Pages: `retarder` (back-rotation R(θ) not R(−θ): HWP 22.5° on H must give S2 = 1), `jones-chain`
+    (reverse loop: H → [P45, PV] must be 0.25; handedness = sign Im Ey; |E_in|² not normalised, 134 %), `jones-calculus`
+    (RCP/LCP presets vs diag(1, −i); `angle || 45`), `mueller-polarimetry` (rotator turns −θ; depolarizer % unbounded;
+    retarder axis fixed), `mueller-matrix` (rotator sense), `degree-polarization` ("33 %" preset is 99.9 %; NaN χ for
+    unpolarized; undersampled spectral mode), `stokes`, `polarimetry`, `poincare-sphere` (no |S| ≤ S0 check; upper
+    hemisphere only; "Right Circular" for ellipses; dead analyzer/retarder code in `polarimetry`).
+    Golden values: (1, .8, .3, .2) → DOP 0.8775, ψ 10.278°, χ 6.587°; (1, .5, .3, .2) → DOP 0.6164, ψ 15.48°, χ 9.47°;
+    QWP fast-H · (1, 0, 1, 0) = (1, 0, 0, −1); polarizer 30° on H → 0.75.
+  - [ ] **Polarization part 2: birefringent crystals.** A uniaxial Sellmeier table (quartz and calcite Ghosh 1999, MgF₂
+    Dodge 1984, sapphire, LiNbO₃ Zelmon 1997, YVO₄, rutile Devore 1951) and `physics/polarization/uniaxial.ts` (n(θ),
+    walk-off, retardance, waveplate orders, compound zero-order d₁ − d₂, Gooch-Tarry). Pages: `double-refraction` (AOI
+    used as the axis angle; n(0°) = n_e; ρ_max calcite 6.26° at 41.87°), `waveplate-thickness` ((m + ¼)λ/Δn), `waveplate-order`
+    (negative Δn), `birefringence` (crossings), `retarder-types` (random curves; invented dispersion), `liquid-crystal-polarizer`
+    (Gooch-Tarry: Δn·d = (√3/2)λ at 90° → T∥ = 0; Δn .2, 5 µm, 550 nm → T∥ 0.008686; twist 0 → cos²(δ/2)).
+  - [ ] **Polarization part 3: polarizers.** A shared Glan TIR window (signed, external half-field, cemented case) and
+    Fresnel with complex r in TIR. Pages: `glans-prism`, `birefringent-polarizer` (Wollaston 2Δn tan α is fine to < 1 %),
+    `polarizing-beamsplitter` (rebuild as a MacNeille cube on `transfer-matrix.ts`, or rename), `brewster-polarizer`
+    (cos θt; pile of plates P(m = 1, 2, 4, 10) = .1567, .2709, .4264, .6501), `fresnel-polarization`, `dichroic-polarizer`
+    and `polymer-polarizer` (k₁, k₂ sheet algebra; log-domain extinction), `polarizer-extinction` (label only),
+    `polarizer-types` (sourced specs), `wire-grid` (shunt-sheet t = 2Z/(2Z + Z₀); T + R ≤ 1; p ≪ λ check).
+  - [ ] **Polarization part 4: optical activity, microscopy, scrambling.** `optical-activity` (one temperature coefficient;
+    Drude for sucrose; M_W input), `circular-dichroism` (drop the fixed structure panel; residue count), `conoscopic`
+    (crystal angle sin θc = NA/n̄; 2V), `orthoconoscopic` and `birefringence-imaging` (specimen angle; Michel-Lévy colour
+    needs the CIE 1931 colour-matching functions), `microscope-polarizer`, `depolarization` (closed-form sinc average),
+    `polarization-scrambling` (retarder-based scrambler).
 - [ ] Rewrite or label the heuristic models (macro-bend, second-harmonic, …). Macro-bend (session 19) and second-harmonic (session 22) are rewritten.
 - [x] Fix the kept-page bugs found while merging duplicates (Phase 2 findings, "Found while merging duplicates"): the two hazard-weighting pages first, then `macro-bending-loss` (prints 0), `optical-sectioning-thickness` (nm/µm), the OPO threshold and `apodization-comparison`.
   - [x] **Hazard weighting** (session 18, branch `phase-4/hazard-weighting`). `src/physics/laser-safety/hazard-weighting.ts`, SI in and out:

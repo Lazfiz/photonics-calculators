@@ -1,35 +1,36 @@
-# Handover — 2026-10-11 (session 36 → session 37)
+# Handover — 2026-10-11 (session 37 → session 38)
 
-**Start here:** read this file, then `docs/ROADMAP.md`. Laser safety is done, loose ends included. PR #32 (part 5b) is
-merged and was checked on production in session 35 (the `scan-failure` redirect is live). Session 36 cleared the laser-safety
-loose ends on branch `phase-4/laser-safety-loose-ends` (PR: see `gh pr list`). Next: the user picks the next Phase 4
-track (another category audit, Phase 3 charts or top-50 golden tests).
+**Start here:** read this file, then the polarization items in `docs/ROADMAP.md` Phase 4 ("Polarization audit, part 0"
+and parts 1–4). Laser safety is finished: PR #33 is merged and was checked on production (ui-check passed on 8 pages,
+and every spot value matched). Session 37 audited the 33 polarization pages on branch `phase-4/polarization-audit`
+(PR: see `gh pr list`). **Next: polarization part 1 (Jones, Mueller, Stokes).**
 
 ## State
-- Oracle (`eye-exposure-limits.ts`): Table 5 note d over 400–1400 nm. The anterior-eye limit is the skin limit below
-  700 nm and twice it above (was 1150–1400 nm only). It binds only at 1150–1400 nm or for a large open-field source.
-- `mpe` and `optical-density` now use the tested modules (180 nm – 1 mm, 1 ns – 30 ks); `od-requirements` uses
-  `apertureIrradiance` with an aperture input. The "bounded CW suite" is gone: `lib/laser-safety-mpe.ts`,
-  `lib/laser-safety-cw-suite.ts`, `tests/laser-safety-cw.test.ts`, the cw-bounds/references/scope boxes.
-- The quarantine banner component is deleted. The shared disclaimer, the category description and the
-  blue-light/UV descriptions are rewritten.
+- Audit: 1 OK (`polarizer-extinction`), 11 questionable, 21 bugs. The 21 bug pages carry a registry `knownIssue`
+  (red "Known error, under repair" box). Nothing is tiered yet: 107 of 461 pages have a tier.
+- The ROADMAP parts list each page's findings and golden values. The four full reviewer reports aren't kept; each
+  part re-runs `physics-audit` on its pages only if it needs more detail than the ROADMAP gives.
+- No `src/physics/polarization/` yet. `src/physics/complex.ts` exists; `jones-calculus` and `jones-chain` carry local
+  copies of the complex helpers, so delete those.
 
 ## Decisions
-- Visible lines' anterior-eye shares add to the cornea's in `multiple-wavelength` (same tissue, conservative; ICNIRP
-  p. 279). Default cornea 0.275 → 0.279.
-- `mpe`: the MPE is the lowest H among the limits in force at t; "max power, narrow beam" is the lowest
-  `limitMaxPower(limit, 0, t)`. `optical-density` tier exact (as `nohd`); `od-requirements` exact (Gaussian average).
-- IEC 60825-1 Ed. 4 isn't published: the July 2026 BSI item is a draft for comment (DC 26/30510571); IEC's series
-  package lists 60825-1:2014. Re-check the classes when it appears.
+- **Sign convention: Goldstein/Collett on every page.** e^{i(ωt−kz)}; RCP = [1, i]/√2, clockwise seen by the receiver;
+  S3 = 2 Im(Ex* Ey), positive for RCP; fast axis at 0°: diag(1, e^{−iΓ}); +θ is counter-clockwise looking into the
+  beam, for polarizers, retarders and rotators. Mueller rotator(+θ) = [[c, −s], [s, c]] in the (S1, S2) block, c = cos 2θ.
+  The Mueller QWP block [[0, 1], [−1, 0]] in (S2, S3) already matches. Put one `CONVENTION` note in the module header.
+- Flag only the bug pages: the notice tells readers "Don't use this page's numbers", which is too strong for the
+  questionable ones.
+- The reviewers had no web access. Verify each citation (Goldstein 3rd ed., Chipman/Lam/Young 2018, Born & Wolf, Hecht,
+  Collett's Field Guide, Jones 1941 doi:10.1364/JOSA.31.000488) before it goes in `references`.
 
 ## Next actions
-1. PR for `phase-4/laser-safety-loose-ends`: CI, ask the user to merge. After the merge, run `ui-check` on production
-   and spot-check these values. mpe 6.36 J/m², 0.980 mW, "Retina, thermal". optical-density OD 3.71, OD 4 rounded,
-   2.71 without the factor. od-requirements 1.30 W/cm², OD 2.72. diffuse-reflection hazard distance 2.85 mm.
-   multiple-wavelength cornea 0.279. The blue-light-hazard, uv-exposure and uv-hazard pages show no "Quarantined" box.
-2. Optional: a scanned-lidar mode on `lidar-safety`.
+1. PR for `phase-4/polarization-audit` (knownIssue × 21, ROADMAP, this file): CI, then ask the user to merge.
+2. Part 1 on a new branch `phase-4/polarization-jones`. Write `physics/polarization/{jones,mueller,stokes}.ts` with golden
+   tests (the ROADMAP values plus Malus and HWP 22.5° → S2 = 1). Then move the nine pages onto them, drop each
+   `knownIssue`, and set tier, `modelNote` and references. Hand the page wiring to `implementer` once the modules pass.
+3. Parts 2–4 follow in later sessions, one part per session.
 
-## Ship flow (worked twenty-seven times)
+## Ship flow (worked twenty-eight times)
 - **Push:** `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`.
 - **CI:** `gh pr create --body-file f`, then `gh pr checks <n> --watch`.
 - **Preview:** behind Vercel SSO. Use a local `npm run build` + `npx next start -p 3100`.
