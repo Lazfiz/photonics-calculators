@@ -1,35 +1,33 @@
-# Handover — 2026-10-11 (session 35 → session 36)
+# Handover — 2026-10-11 (session 36 → session 37)
 
-**Start here:** read this file, then `docs/ROADMAP.md`. Laser safety is done (parts 1–5b): all 40 pages tiered, no
-`knownIssue` left anywhere. Next: the next unchecked ROADMAP item (the audit of other categories, or Phase 3/5 items).
-PR #31 (part 5a) was merged and checked on production in session 35. Session 35 did part 5b on branch
-`phase-4/laser-safety-scanning` (PR: see `gh pr list`).
+**Start here:** read this file, then `docs/ROADMAP.md`. Laser safety is done, loose ends included. PR #32 (part 5b) is
+merged and was checked on production in session 35 (the `scan-failure` redirect is live). Session 36 cleared the laser-safety
+loose ends on branch `phase-4/laser-safety-loose-ends` (PR: see `gh pr list`). Next: the user picks the next Phase 4
+track (another category audit, Phase 3 charts or top-50 golden tests).
 
 ## State
-- New `src/physics/laser-safety/scanned-beam.ts` (11 tests): each pass of a CW beam over an aperture is a pulse of
-  half-power duration W/v carrying P·L/v (L = ∫η dx); per-limit apertures; rules via `trainLimit` in watts.
-- `pulse-train.ts`: per-limit rules extracted as `trainLimit(lambda, limit, train, G, alpha)` (behaviour unchanged).
-- New `src/physics/laser-safety/interlock.ts` (3 tests): eye in the beam for max(0, T − S/K) vs `exposureDuration`.
-- Pages: `scanning-mpe` (textbook, absorbs `scan-failure`: 461 pages), `interlock-design` (textbook). Landing page
-  regrouped into six groups. `PulseTrainTable` has `value` + `unit="pass"`; new `components/exposure-time-chart.tsx`
-  (also used by `exposure-duration`).
+- Oracle (`eye-exposure-limits.ts`): Table 5 note d over 400–1400 nm. The anterior-eye limit is the skin limit below
+  700 nm and twice it above (was 1150–1400 nm only). It binds only at 1150–1400 nm or for a large open-field source.
+- `mpe` and `optical-density` now use the tested modules (180 nm – 1 mm, 1 ns – 30 ks); `od-requirements` uses
+  `apertureIrradiance` with an aperture input. The "bounded CW suite" is gone: `lib/laser-safety-mpe.ts`,
+  `lib/laser-safety-cw-suite.ts`, `tests/laser-safety-cw.test.ts`, the cw-bounds/references/scope boxes.
+- The quarantine banner component is deleted. The shared disclaimer, the category description and the
+  blue-light/UV descriptions are rewritten.
 
 ## Decisions
-- Pulse per pass (ICNIRP p. 287; Schulmeister 2025 white paper on scanned emission): duration = FWHM of the power
-  behind the aperture (IEC 60825-1 3.69), energy = the whole pass. Not (d + 7 mm)/v as the ROADMAP planned.
-- Stationary retinal image (eye focused on the scan pivot): IEC's default evaluation and the most restrictive one.
-- Eye on the centre of the scan line; triangle = 2 passes per period, sawtooth/polygon = 1. Turning points, sinusoidal,
-  raster and pulsed scanned lasers are stated as not modelled.
-- Interlock: ISO 13855's S = K·T without intrusion allowance; K is an input (2.0 m/s default, 1.6 m/s body).
-- `interlock-design` t_max at 1064 nm is 157 ns (Table 5: 20 C_C mJ/m²); the old ROADMAP's 78.5 ns was wrong.
+- Visible lines' anterior-eye shares add to the cornea's in `multiple-wavelength` (same tissue, conservative; ICNIRP
+  p. 279). Default cornea 0.275 → 0.279.
+- `mpe`: the MPE is the lowest H among the limits in force at t; "max power, narrow beam" is the lowest
+  `limitMaxPower(limit, 0, t)`. `optical-density` tier exact (as `nohd`); `od-requirements` exact (Gaussian average).
+- IEC 60825-1 Ed. 4 isn't published: the July 2026 BSI item is a draft for comment (DC 26/30510571); IEC's series
+  package lists 60825-1:2014. Re-check the classes when it appears.
 
 ## Next actions
-1. PR for `phase-4/laser-safety-scanning`: CI, ask the user to merge; after merge `ui-check` on production and spot
-   values: scanning-mpe 7.68 mW max (rule 1), 0.651×, 66.2 µs pass, 7.84×, still beam 0.980 mW, stopped 368 µs;
-   interlock-design 157 ns, 250 ms, "Fast enough", 10.0 cm. Redirect `/laser-safety/scan-failure` → `scanning-mpe`.
-2. Small follow-up: the registry descriptions of `blue-light-hazard` and `uv-exposure` are stale ("Simplified
-   educational estimate"); optional scanned-lidar mode on `lidar-safety`.
-3. Open (ROADMAP part 4 notes): IEC 60825-1 Ed. 4 (2026) not checked; the oracle's skin dual limit for huge sources.
+1. PR for `phase-4/laser-safety-loose-ends`: CI, ask the user to merge. After the merge, run `ui-check` on production
+   and spot-check these values. mpe 6.36 J/m², 0.980 mW, "Retina, thermal". optical-density OD 3.71, OD 4 rounded,
+   2.71 without the factor. od-requirements 1.30 W/cm², OD 2.72. diffuse-reflection hazard distance 2.85 mm.
+   multiple-wavelength cornea 0.279. The blue-light-hazard, uv-exposure and uv-hazard pages show no "Quarantined" box.
+2. Optional: a scanned-lidar mode on `lidar-safety`.
 
 ## Ship flow (worked twenty-seven times)
 - **Push:** `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`.
@@ -40,13 +38,14 @@ PR #31 (part 5a) was merged and checked on production in session 35. Session 35 
 - **Spot values on production:** `curl -s <url> | sed 's/<[^>]*>/ /g'` and grep: the prerendered HTML has the defaults.
 
 ## Non-obvious facts
-- **Deleted pages break `tsc`** through stale `.next/types/validator.ts`: `rm -rf .next/types`, then `npm run check`.
+- **Deleted pages or modules break `tsc`** through stale `.next/types/validator.ts`: `rm -rf .next/types`, then `npm run check`.
 - **Shell:** a heredoc with apostrophes in its body fails in this Bash tool ("unexpected EOF"): write scripts with the
-  Write tool. Backticks inside a double-quoted `node -e "…"` run as commands.
+  Write tool, or a quoted heredoc (`<<'EOF'`) into a scratchpad `.mjs`. Backticks inside a double-quoted `node -e "…"` run as commands.
 - **Seibersdorf PDFs** need a browser user agent and the `www.seibersdorf-laboratories.at/fileadmin/user_upload/docs/
   le/las/publ/<file>.pdf` path (the `laser-led-lamp-safety.` host returns HTML).
 - **ICNIRP 2013 text:** `curl -sL -o x.pdf https://www.icnirp.org/cms/upload/publications/ICNIRPLaser180gdl_2013.pdf`;
-  Table 5 rows: `pdftotext -f 14 -l 14 -raw` (symbols: `e` ≤, `G` <, `9` >, `j` minus, `ms` in T_i is µs).
+  Table 5 and its notes: `pdftotext -f 14 -l 15 -raw` (symbols: `e` ≤, `G` <, `9` >, `j` minus, `ms` in T_i is µs);
+  additivity p. 279 (`-f 9 -l 11`).
 - **IEC 60825-1:** Ed. 3 isn't public; use Schulmeister's white papers. Don't link the Ed. 1.2 copy (licensed file).
 - **ISO 13855** isn't public: K = 2000 mm/s (S ≤ 500 mm), else 1600 mm/s; the 2024 edition adds D_DS and Z terms.
 - **Registry scripts:** an entry sliced up to `\n  },` has no newline after its last property; match `(?=\n|$)`.

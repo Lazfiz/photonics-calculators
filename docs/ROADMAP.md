@@ -424,7 +424,7 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
       2 W on PC: +730 K at 5 s, T_g reached in 88 ms; the unused λ input is gone). Landing page: the first three moved to
       "ICNIRP 2013 limits", `thermal-lens-hazard` to "Educational references".
     - Findings fixed: `medical-laser-safety` (TRT 10⁴× small, m² vs cm²/s; corneal IR as t^−0.25; flat UV; OD from the treatment spot, not the delivery beam), `multiple-wavelength` (1050–1400 nm flat 0.01 J/cm²: 198× high at 1 ms; fixed 2 mm area; sums across tissue classes; ICNIRP 2013 p. 279: additive only for the same site and mechanism, e.g. retina thermal, retina photochemical, cornea), questionable `thermal-lens-hazard` (material ignored in ΔT; stress unused) and `retinal-image-size` (divergence treated as α; needs the apparent source of a Gaussian beam and the eye's accommodation range).
-    - Still open after part 5a: none of the NOHD-by-a pages (lidar fixed in 5a; green-pointer and research-lab in part 4). `optical-density`/`od-requirements` still use the 400–1050 nm CW suite (`requiredOpticalDensity` covers 180 nm – 1 mm).
+    - Still open after part 5a: none of the NOHD-by-a pages (lidar fixed in 5a; green-pointer and research-lab in part 4). `optical-density`/`od-requirements` still use the 400–1050 nm CW suite (`requiredOpticalDensity` covers 180 nm – 1 mm). Fixed in session 36.
     - Session-29 findings for part 3 (3a and 3b): Six pages compute NOHD = (1/φ)(√(1.27P/(MPE·a²)) − 1), the standard value divided by a (diode, fiber, green-pointer, industrial, research-lab, lidar: 4 507 km, 59 km, 16.7 km). `beam-divergence-hazards` (MPE fixed 0.1 or 0.01 W/cm²; NOHD 54 vs 331 m at 1064 nm; divergence input unused; 10 km cap; duplicates `nohd`), `diffuse-reflection` (E uses the pupil area, not the spot area: 51× low at 50 mm; C_E inverted; UV 33× high), `diode-laser-safety` (t^−0.75: 2–32× high below 1 s; 0.25 s at 808 nm; flat UV), `fiber-laser-safety` (MPE values swapped, 8–60× high; asin(NA) half-angle used as the full angle), `industrial-laser-safety` (fixed MPE; exposure time unused), `medical-laser-safety` (TRT 10⁴× small, m² vs cm²/s; corneal IR as t^−0.25; flat UV), `multiple-wavelength` (1050–1400 nm flat 0.01 J/cm²: 198× high at 1 ms; fixed 2 mm area; sums across tissue classes). Questionable: `thermal-lens-hazard` (material ignored in ΔT; stress unused), `retinal-image-size` (from part 2: divergence treated as α; needs the apparent source of a Gaussian beam and the eye's accommodation range). Merges approved in session 30: `viewing-distance` and `beam-divergence-hazards` → `nohd`. `diffuse-reflection` can use the oracle's C_E (α from spot size / distance) and `limitMaxPower`.
   - [x] **Laser-safety part 4: classes and AEL** (session 33, branch `phase-4/laser-safety-classes`). New tested modules
     `laser-classes.ts` (Class 1/1M/2/2M/3R/3B/4 AELs and CW classification, 18/18 mutations caught) and
@@ -445,9 +445,10 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
       through the corneal stop, 0.1 W (option). UV: IEC keeps its own MPEs (continuous C₂, 10 W/m² after 10³ s) over a 1 mm
       stop, not ICNIRP's steps/3.5 mm. Class 3R doesn't exist below 302.5 nm. 3B: 1.5 mW (<302.5 nm), 5×10⁻⁵ C₂ W, 0.5 W.
     - Not verified (Ed. 3 text needed): the Condition 3 stop in the UV/IR (here each AEL's own stop; Ed. 1.2 measured power
-      AELs through 7 mm), Condition 1 outside 400–1400 nm (Ed. 1.2: 25 mm at 2 m; not modelled). IEC 60825-1 Ed. 4 was
-      published in 2026 (BS EN IEC 60825-1:2026, July); not checked. ANSI Z136.1 tables aren't public: no ANSI numbers.
-    - Found, not fixed: the oracle applies ICNIRP's eye-only dual limit (2 × skin) only at 1150–1400 nm, but Table 5 note d
+      AELs through 7 mm), Condition 1 outside 400–1400 nm (Ed. 1.2: 25 mm at 2 m; not modelled). IEC 60825-1 Ed. 4 is not
+      published (session 36): the July 2026 BSI item is a draft for comment (DC 26/30510571, 154 pp.), and IEC's
+      60825:2026 series package still holds IEC 60825-1:2014. Re-check the classes when Ed. 4 appears. ANSI Z136.1 tables aren't public: no ANSI numbers.
+    - Found, fixed in session 36: the oracle applied ICNIRP's eye-only dual limit (2 × skin) only at 1150–1400 nm, but Table 5 note d
       also caps the retinal limit at the skin limit in the visible (2 × skin in the IR) for large sources. It matters only
       for huge α with an open field of view, e.g. `diffuse-reflection` of a 10 cm spot at 10 cm (C_E ≈ 3300: retinal
       21 kJ/m² vs skin 7.8 kJ/m² at 0.25 s).
@@ -511,8 +512,24 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
       visible limit at every wavelength).
     - Not modelled: scan turning points (slower, passes in pairs), sinusoidal and raster scans, pulsed scanned lasers
       (each pass a group of pulses), a moving retinal image; a scanned-lidar mode on `lidar-safety` (optional).
-    - Found, not fixed: the registry descriptions of `blue-light-hazard` and `uv-exposure` still say "Simplified
+    - Found, fixed in session 36: the registry descriptions of `blue-light-hazard` and `uv-exposure` still said "Simplified
       educational estimate … Not for safety decisions" (stale since session 18, when both were rebuilt on ICNIRP).
+  - [x] **Laser-safety loose ends** (session 36, branch `phase-4/laser-safety-loose-ends`).
+    - Table 5 note d in the oracle: the anterior-eye limit now covers 400–1400 nm, the skin limit below 700 nm and
+      twice it above (was 1150–1400 nm only). A point source never reaches it below 1150 nm (tested over 400–1149 nm,
+      1 ns – 30 ks); a large source with an open field of view does: a 10 cm spot at 10 cm, 532 nm, 0.25 s is held to
+      7.78 kJ/m² instead of 21.2 kJ/m². `diffuse-reflection` at its defaults (0.5 W reflected at 1064 nm, 10 s) now
+      shows a 2.85 mm hazard distance (anterior eye) instead of none. `multiple-wavelength` adds the visible lines'
+      anterior shares to the cornea's (same tissue; conservative, p. 279): default cornea 0.275 → 0.279. 4/4 mutations.
+    - `mpe` and `optical-density` moved from the 400–1050 nm "bounded CW suite" to the tested modules: every limit at
+      180 nm – 1 mm and 1 ns – 30 ks (`mpe`: per-limit H, H/t, aperture, narrow-beam max power; `optical-density`:
+      `requiredOpticalDensity`, OD against exposure time). `od-requirements` averages a Gaussian over an aperture
+      input (new key `aperture`, default 7 mm; same defaults: OD 2.716). Defaults unchanged: 6.36 J/m² at 532 nm /
+      0.25 s; OD 3.708 (2.708 without the factor 10). Deleted `lib/laser-safety-mpe.ts`, `lib/laser-safety-cw-suite.ts`,
+      their test and the bounds/references/scope boxes; all three pages tiered exact.
+    - Stale text: the quarantine banner (blue-light-hazard, uv-exposure, uv-hazard) is deleted; the shared disclaimer,
+      the category description and the two "Simplified educational estimate" registry descriptions are rewritten.
+    - Still optional: a scanned-lidar mode on `lidar-safety`.
 - [ ] Rewrite or label the heuristic models (macro-bend, second-harmonic, …). Macro-bend (session 19) and second-harmonic (session 22) are rewritten.
 - [x] Fix the kept-page bugs found while merging duplicates (Phase 2 findings, "Found while merging duplicates"): the two hazard-weighting pages first, then `macro-bending-loss` (prints 0), `optical-sectioning-thickness` (nm/µm), the OPO threshold and `apodization-comparison`.
   - [x] **Hazard weighting** (session 18, branch `phase-4/hazard-weighting`). `src/physics/laser-safety/hazard-weighting.ts`, SI in and out:
