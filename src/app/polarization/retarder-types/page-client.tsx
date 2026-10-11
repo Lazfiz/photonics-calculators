@@ -1,169 +1,239 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { createRng } from "../../../physics/random";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { birefringenceOf, resolveIndices } from "../../../components/crystal-select";
+import { fix } from "../../../components/polarization-format";
+import { refractiveIndex } from "../../../physics/materials/sellmeier";
+import { SCHOTT_GLASSES } from "../../../physics/materials/sellmeier-data";
+import {
+  achromaticPair, plateThickness, tirAnglesForPhase, tirMaxPhase, tirPhaseDifference,
+} from "../../../physics/polarization/retarders";
+import { plateRetardance, plateWaves } from "../../../physics/polarization/uniaxial";
 
-const RETARDERS = [
-  { name: "Zero-Order Quartz", order: 0, material: "Quartz", retardationAccuracy: "λ/300", bandwidth: "±1%", tempCoeff: 1.0e-5, damage: 500, price: "$$" },
-  { name: "Multi-Order Quartz", order: 10, material: "Quartz", retardationAccuracy: "λ/200", bandwidth: "±2%", tempCoeff: 1.0e-5, damage: 500, price: "$" },
-  { name: "Achromatic (Quartz+MgF₂)", order: 0, material: "Quartz/MgF₂", retardationAccuracy: "λ/100", bandwidth: "±15%", tempCoeff: 1.0e-5, damage: 500, price: "$$$" },
-  { name: "Fresnel Rhomb", order: 0, material: "BK7 Glass", retardationAccuracy: "λ/50", bandwidth: "Broad", tempCoeff: 1.0e-5, damage: 100, price: "$$" },
-  { name: "Babinet-Soleil", order: "variable", material: "Quartz", retardationAccuracy: "λ/50", bandwidth: "±1%", tempCoeff: 1.0e-5, damage: 500, price: "$$" },
-  { name: "Polymer Film (λ/4)", order: 0, material: "Polymer", retardationAccuracy: "λ/100", bandwidth: "±10%", tempCoeff: 1.0e-4, damage: 1, price: "$" },
-  { name: "Liquid Crystal", order: "tunable", material: "LC Cell", retardationAccuracy: "λ/500", bandwidth: "±5%", tempCoeff: 1.0e-4, damage: 10, price: "$$$" },
-  { name: "Electro-Optic (Pockels)", order: "tunable", material: "KDP/BBO", retardationAccuracy: "λ/200", bandwidth: "DC–GHz", tempCoeff: 1.0e-5, damage: 500, price: "$$$$" },
-];
+const DEG = Math.PI / 180;
+const TWO_PI = 2 * Math.PI;
+const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
+const fold = (w: number) => w - Math.floor(w);
+// Common range of the quartz, MgF₂ and N-BK7 fits, m.
+const RANGE: [number, number] = [300e-9, 2000e-9];
+const TOLERANCE = 0.01; // bandwidth: |Γ − target| ≤ 1 % of the target
+const TILT = 5 * DEG;
+const COLORS = ["#3b82f6", "#ef4444", "#f59e0b", "#22c55e", "#a855f7"];
+
+const dnQuartz = birefringenceOf("quartz", NaN);
+const dnMgF2 = birefringenceOf("mgf2", NaN);
+const nBK7 = (lambda: number) => refractiveIndex(SCHOTT_GLASSES["N-BK7"].model, lambda);
+
+/** e-relative-to-o retardance (waves) of a plate with its axis in the faces at azimuth φ from the tilt plane. */
+function tiltedWaves(crystal: "quartz" | "mgf2", d: number, azimuth: number, lambda: number, tilt: number) {
+  const { no, ne } = resolveIndices(crystal, lambda, NaN, NaN);
+  const w = plateWaves(no, ne, { nIncident: 1, incidence: tilt, axisPolar: Math.PI / 2, axisAzimuth: azimuth });
+  return plateRetardance(w, d, lambda) / TWO_PI;
+}
+
+interface RetarderType {
+  name: string;
+  plates: string;
+  /** Retardance in waves at λ (unfolded) and with the beam tilted in the plane holding the first plate's axis. */
+  waves: (lambda: number, tilt: number) => number;
+  /** Fold to one wave before comparing with the target (multi-order plates). */
+  folded: boolean;
+  note: string;
+}
+
+/** Contiguous band around λ₀ where the (folded) retardance stays within the tolerance of the target, m. */
+function band(t: RetarderType, lambda0: number, target: number): [number, number] {
+  const N = 4000;
+  const l = (i: number) => RANGE[0] * (RANGE[1] / RANGE[0]) ** (i / N);
+  const ok = (x: number) => {
+    const w = Math.abs(t.waves(x, 0));
+    return Math.abs((t.folded ? fold(w) : w) - target) <= TOLERANCE * target;
+  };
+  const i0 = Math.round((N * Math.log(lambda0 / RANGE[0])) / Math.log(RANGE[1] / RANGE[0]));
+  if (!ok(l(i0))) return [NaN, NaN];
+  let a = i0, b = i0;
+  while (a > 0 && ok(l(a - 1))) a--;
+  while (b < N && ok(l(b + 1))) b++;
+  // Refine each edge between its last good and first bad grid point (multi-order bands are narrower than a step).
+  const edge = (good: number, bad: number) => {
+    for (let k = 0; k < 40; k++) {
+      const mid = 0.5 * (good + bad);
+      if (ok(mid)) good = mid;
+      else bad = mid;
+    }
+    return good;
+  };
+  return [a > 0 ? edge(l(a), l(a - 1)) : l(a), b < N ? edge(l(b), l(b + 1)) : l(b)];
+}
+
+/** Band in nm: one decimal when it is narrower than 20 nm. */
+function bandText([a, b]: [number, number]): string {
+  const digits = (b - a) * 1e9 < 20 ? 1 : 0;
+  return `${fix(a * 1e9, digits)}–${fix(b * 1e9, digits)}`;
+}
 
 export default function RetarderTypesPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [retardance, setRetardance] = useURLState("retardance", 0.25); // waves
-  const [temperature, setTemperature] = useURLState("temperature", 25);
-  const [thickness, setThickness] = useURLState("thickness", 0.1); // mm for quartz
+  const [wavelengthNm, setWavelength] = useURLState("wavelength", 550);
+  const [targetInput, setTarget] = useURLState("retardance", 0.25);
+  const [orderInput, setOrder] = useURLState("order", 10);
+  const [lambda1Nm, setLambda1] = useURLState("lambda1", 510);
+  const [lambda2Nm, setLambda2] = useURLState("lambda2", 600);
 
-  const dnQuartz = 0.0091; // at 550nm
-  const dnMgF2 = 0.012; // at 550nm
+  // useURLState doesn't clamp: keep URL values inside the input ranges.
+  const lambda0 = clamp(wavelengthNm, 350, 1800) * 1e-9;
+  const R = clamp(targetInput, 0.05, 0.95);
+  const m = Math.round(clamp(orderInput, 1, 100));
+  const lambda1 = clamp(lambda1Nm, 350, 1800) * 1e-9;
+  const lambda2 = clamp(lambda2Nm, 350, 1800) * 1e-9;
 
-  // Phase error vs wavelength for different retarder types
-  const wavelengthSweep = useMemo(() => {
-    const wls = Array.from({ length: 200 }, (_, i) => 400 + i * 5.5);
-    // Zero-order quartz: very flat
-    const zeroOrder = wls.map((wl) => {
-      const dn = 0.0091 * (550 / wl) ** 1.5; // approximate dispersion
-      const actualRet = (dn * thickness * 1e-3) / (wl * 1e-9);
-      const targetRet = retardance;
-      return Math.abs(actualRet - targetRet) / targetRet * 100;
+  const types = useMemo<RetarderType[]>(() => {
+    const dn0 = dnQuartz(lambda0);
+    const d0 = plateThickness(dn0, lambda0, R);
+    const dm = plateThickness(dn0, lambda0, m + R);
+    const dWhole = plateThickness(dn0, lambda0, m);
+    const ach = achromaticPair(dnQuartz, dnMgF2, lambda1, lambda2, R);
+    // Fresnel rhomb: the fewest pairs of reflections whose 45°-or-less phase each adds up to R; cut at the larger angle.
+    const n0 = nBK7(lambda0);
+    const reflections = 2 * Math.ceil((R * TWO_PI) / (2 * tirMaxPhase(n0).delta));
+    const theta = tirAnglesForPhase(n0, (R * TWO_PI) / reflections)[1];
+    return [
+      { name: "Zero order", plates: `quartz ${fix(d0 * 1e6, 1)} µm`, folded: false,
+        waves: (l, t) => tiltedWaves("quartz", d0, 0, l, t), note: "Thin plate, often cemented to a window." },
+      { name: `Multi-order (m = ${m})`, plates: `quartz ${fix(dm * 1e6, 1)} µm`, folded: true,
+        waves: (l, t) => tiltedWaves("quartz", dm, 0, l, t), note: "One thick plate: right only near λ₀." },
+      { name: "Compound zero order", plates: `quartz ${fix(dm * 1e6, 1)} − ${fix(dWhole * 1e6, 1)} µm, crossed`, folded: false,
+        waves: (l, t) => tiltedWaves("quartz", dm, 0, l, t) - tiltedWaves("quartz", dWhole, Math.PI / 2, l, t),
+        note: "Zero-order dispersion, multi-order tilt sensitivity." },
+      { name: "Achromatic", plates: `quartz ${fix(ach.d1 * 1e6, 1)} + MgF₂ ${fix(ach.d2 * 1e6, 1)} µm, crossed`, folded: false,
+        waves: (l, t) => ach.sign * (tiltedWaves("quartz", ach.d1, 0, l, t) - tiltedWaves("mgf2", ach.d2, Math.PI / 2, l, t)),
+        note: "Exact at λ₁ and λ₂." },
+      { name: "Fresnel rhomb", plates: `N-BK7, ${reflections} reflections at ${fix(theta / DEG, 2)}°`, folded: false,
+        waves: (l, t) => {
+          const n = nBK7(l);
+          return (reflections * tirPhaseDifference(n, theta + Math.asin(Math.sin(t) / n))) / TWO_PI;
+        },
+        note: "Total internal reflection: nearly achromatic; displaces the beam." },
+    ];
+  }, [lambda0, R, m, lambda1, lambda2]);
+
+  const rows = useMemo(() => types.map((t) => {
+    const w0 = Math.abs(t.waves(lambda0, 0));
+    return {
+      t,
+      at: t.folded ? fold(w0) : w0,
+      band: band(t, lambda0, R),
+      tilt: Math.abs(t.waves(lambda0, TILT)) - w0,
+    };
+  }), [types, lambda0, R]);
+
+  const spectral = useMemo(() => {
+    const l = Array.from({ length: 600 }, (_, i) => 350e-9 * (1100 / 350) ** (i / 599));
+    return types.map((t, k) => ({
+      x: l.map((x) => x * 1e9),
+      y: l.map((x) => { const w = Math.abs(t.waves(x, 0)); return t.folded ? fold(w) : w; }),
+      name: t.name, type: "scatter" as const, mode: "lines" as const,
+      line: { color: COLORS[k], width: 2, dash: k === 2 ? ("dot" as const) : undefined },
+    }));
+  }, [types]);
+
+  const tiltChart = useMemo(() => {
+    const a = Array.from({ length: 101 }, (_, i) => i * 0.1);
+    return types.map((t, k) => {
+      const w0 = Math.abs(t.waves(lambda0, 0));
+      return {
+        x: a, y: a.map((x) => Math.abs(t.waves(lambda0, x * DEG)) - w0),
+        name: t.name, type: "scatter" as const, mode: "lines" as const, line: { color: COLORS[k], width: 2 },
+      };
     });
-    // Multi-order: oscillates rapidly
-    const multiOrder = wls.map((wl) => {
-      const dn = 0.0091 * (550 / wl) ** 1.5;
-      const actualRet = (dn * thickness * 10 * 1e-3) / (wl * 1e-9);
-      const targetRet = retardance * 10;
-      const frac = actualRet - Math.floor(actualRet);
-      return Math.abs(frac - (retardance % 1)) / (retardance % 1) * 100;
-    });
-    // Achromatic: very flat (fixed seed: same curve on server and client)
-    const rng = createRng(1);
-    const achromatic = wls.map(() => rng() * 0.3 + 0.1);
-    // Fresnel rhomb: flat
-    const fresnel = wls.map(() => rng() * 0.5 + 0.2);
+  }, [types, lambda0]);
 
-    return { wls, zeroOrder, multiOrder, achromatic, fresnel };
-  }, [wavelength, retardance, thickness]);
-
-  // Temperature sensitivity
-  const tempSweep = useMemo(() => {
-    const temps = Array.from({ length: 100 }, (_, i) => 15 + i * 0.3);
-    const dn0 = dnQuartz;
-    const quartz = temps.map((t) => {
-      const dn = dn0 * (1 + 1.0e-5 * (t - 25));
-      const ret = (dn * thickness * 1e-3) / (wavelength * 1e-9);
-      return (ret - retardance) / retardance * 100;
-    });
-    const polymer = temps.map((t) => {
-      const dn = dn0 * (1 + 1.0e-4 * (t - 25));
-      const ret = (dn * thickness * 1e-3) / (wavelength * 1e-9);
-      return (ret - retardance) / retardance * 100;
-    });
-    return { temps, quartz, polymer };
-  }, [wavelength, retardance, thickness]);
-
-  const plotLayout: Partial<Plotly.Layout> = {
-    paper_bgcolor: "transparent",
-    plot_bgcolor: "#111827",
-    font: { color: "#e5e7eb" },
-    margin: { t: 30, b: 40, l: 50, r: 10 },
-    xaxis: { color: "#9ca3af", gridcolor: "#374151" },
-    yaxis: { color: "#9ca3af", gridcolor: "#374151" },
+  const plotLayout = (x: string, y: string) => ({
+    paper_bgcolor: "transparent", plot_bgcolor: "#111827", font: { color: "#e5e7eb" },
+    margin: { t: 30, b: 40, l: 60, r: 10 }, height: 320,
+    xaxis: { color: "#9ca3af", gridcolor: "#374151", title: x },
+    yaxis: { color: "#9ca3af", gridcolor: "#374151", title: y },
     legend: { font: { color: "#9ca3af" } },
-  };
+  });
 
   return (
     <>
-            
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <h2 className="text-lg font-semibold mb-4">Parameters</h2>
-          {[
-            { label: "Wavelength (nm)", val: wavelength, set: setWavelength, step: 1 },
-            { label: "Target retardance (waves)", val: retardance, set: setRetardance, step: 0.01 },
-            { label: "Temperature (°C)", val: temperature, set: setTemperature, step: 0.5 },
-            { label: "Crystal thickness (mm)", val: thickness, set: setThickness, step: 0.01 },
-          ].map(({ label, val, set, step }) => (
-            <div key={label} className="mb-3">
-              <ValidatedNumberInput label={label} value={val} onChange={set} />
-            </div>
-          ))}
-          <div className="mt-3 flex flex-wrap gap-2">
-            {[0.25, 0.5, 1.0].map((r) => (
-              <button key={r} onClick={() => setRetardance(r)}
-                className="px-3 py-1 text-xs bg-gray-800 border border-gray-700 rounded hover:border-blue-500">
-                λ/{(1 / r).toFixed(0)}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <h2 className="text-lg font-semibold mb-4">Retardance Error vs Wavelength</h2>
-          <ChartPanel data={[
-            { x: wavelengthSweep.wls, y: wavelengthSweep.zeroOrder, name: "Zero-Order", type: "scatter", mode: "lines", line: { color: "#3b82f6" } },
-            { x: wavelengthSweep.wls, y: wavelengthSweep.multiOrder, name: "Multi-Order", type: "scatter", mode: "lines", line: { color: "#ef4444" } },
-            { x: wavelengthSweep.wls, y: wavelengthSweep.achromatic, name: "Achromatic", type: "scatter", mode: "lines", line: { color: "#22c55e" } },
-            { x: wavelengthSweep.wls, y: wavelengthSweep.fresnel, name: "Fresnel Rhomb", type: "scatter", mode: "lines", line: { color: "#a855f7" } },
-          ]} layout={{ ...plotLayout, height: 300, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "Error (%)" } }} />
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-4">
+        <ValidatedNumberInput label="Design wavelength λ₀ (nm)" value={wavelengthNm} onChange={setWavelength} min={350} max={1800} step="1" />
+        <ValidatedNumberInput label="Target retardance (waves)" value={targetInput} onChange={setTarget} min={0.05} max={0.95} step="0.01" />
+        <ValidatedNumberInput label="Multi-order m" value={orderInput} onChange={setOrder} min={1} max={100} step="1" />
+        <ValidatedNumberInput label="Achromat λ₁ (nm)" value={lambda1Nm} onChange={setLambda1} min={350} max={1800} step="1" />
+        <ValidatedNumberInput label="Achromat λ₂ (nm)" value={lambda2Nm} onChange={setLambda2} min={350} max={1800} step="1" />
+      </div>
+      <div className="flex flex-wrap gap-2 mb-6">
+        {[0.25, 0.5].map((r) => (
+          <button key={r} onClick={() => setTarget(r)}
+            className="px-3 py-1 text-xs bg-gray-800 border border-gray-700 rounded hover:border-blue-500">
+            λ/{(1 / r).toFixed(0)}
+          </button>
+        ))}
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mt-6">
-        <h2 className="text-lg font-semibold mb-4">Temperature Sensitivity</h2>
-        <ChartPanel data={[
-          { x: tempSweep.temps, y: tempSweep.quartz, name: "Quartz (α≈1×10⁻⁵/°C)", type: "scatter", mode: "lines", line: { color: "#3b82f6" } },
-          { x: tempSweep.temps, y: tempSweep.polymer, name: "Polymer (α≈1×10⁻⁴/°C)", type: "scatter", mode: "lines", line: { color: "#f59e0b" } },
-        ]} layout={{ ...plotLayout, height: 300, xaxis: { ...plotLayout.xaxis, title: "Temperature (°C)" }, yaxis: { ...plotLayout.yaxis, title: "Retardance Error (%)" } }} />
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mb-6">
+        <h2 className="text-lg font-semibold mb-4">Retardance against wavelength (multi-order folded to one wave)</h2>
+        <ChartPanel data={spectral} layout={plotLayout("Wavelength (nm)", "Retardance (waves)")} />
+        <p className="text-xs text-gray-500 mt-2">The compound zero-order curve (dotted) lies on the zero-order one: only d₁ − d₂ counts at normal incidence.</p>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mt-6">
-        <h2 className="text-lg font-semibold mb-4">Type Comparison Table</h2>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mb-6">
+        <h2 className="text-lg font-semibold mb-4">Retardance change against tilt at λ₀</h2>
+        <ChartPanel data={tiltChart} layout={plotLayout("Angle of incidence (°)", "Change (waves)")} />
+        <p className="text-xs text-gray-500 mt-2">
+          Tilt in the plane holding the first plate&apos;s optic axis (the rhomb: in its plane of reflection). Tilting about the
+          other axis changes the sign for the plates.
+        </p>
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+        <h2 className="text-lg font-semibold mb-4">Comparison at λ₀ = {fix(lambda0 * 1e9, 0)} nm, target {fix(R, 3)} waves</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-gray-400 border-b border-gray-700">
                 <th className="text-left py-2 px-2">Type</th>
-                <th className="text-left py-2 px-2">Material</th>
-                <th className="text-right py-2 px-2">Order</th>
-                <th className="text-right py-2 px-2">Accuracy</th>
-                <th className="text-right py-2 px-2">Bandwidth</th>
-                <th className="text-right py-2 px-2">Temp. Coeff</th>
-                <th className="text-right py-2 px-2">Damage (W/cm²)</th>
+                <th className="text-left py-2 px-2">Plates</th>
+                <th className="text-right py-2 px-2">Retardance (waves)</th>
+                <th className="text-right py-2 px-2">Band within ±1 % (nm)</th>
+                <th className="text-right py-2 px-2">Change at 5° tilt (waves)</th>
+                <th className="text-left py-2 px-2">Note</th>
               </tr>
             </thead>
             <tbody>
-              {RETARDERS.map((r) => (
-                <tr key={r.name} className="border-b border-gray-800 hover:bg-gray-800/50">
-                  <td className="py-2 px-2 font-medium">{r.name}</td>
-                  <td className="py-2 px-2">{r.material}</td>
-                  <td className="text-right py-2 px-2">{r.order}</td>
-                  <td className="text-right py-2 px-2">{r.retardationAccuracy}</td>
-                  <td className="text-right py-2 px-2">{r.bandwidth}</td>
-                  <td className="text-right py-2 px-2">{r.tempCoeff.toExponential(0)}/°C</td>
-                  <td className="text-right py-2 px-2">{r.damage}</td>
+              {rows.map((r) => (
+                <tr key={r.t.name} className="border-b border-gray-800">
+                  <td className="py-2 px-2 font-medium">{r.t.name}</td>
+                  <td className="py-2 px-2">{r.t.plates}</td>
+                  <td className="text-right py-2 px-2 font-mono">{fix(r.at, 4)}</td>
+                  <td className="text-right py-2 px-2 font-mono">
+                    {Number.isFinite(r.band[0]) ? bandText(r.band) : "—"}
+                  </td>
+                  <td className="text-right py-2 px-2 font-mono">{fix(r.tilt, 4)}</td>
+                  <td className="py-2 px-2 text-gray-400">{r.t.note}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <p className="text-xs text-gray-500 mt-3">
+          Indices: quartz (Ghosh 1999), MgF₂ (Dodge 1984), N-BK7 (SCHOTT). Bands are searched from 300 to 2000 nm. The
+          achromat&apos;s curve depends on Δn at the 10⁻⁵ level; real plates are trimmed after polishing.
+        </p>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mt-6">
         <h2 className="text-lg font-semibold mb-3">Key Formulas</h2>
         <div className="space-y-2 text-sm text-gray-300 font-mono">
-          <p>Γ = (2π · Δn · d) / λ &nbsp;— retardance in radians</p>
-          <p>Δn(T) = Δn₀ · (1 + α · ΔT) &nbsp;— temperature dependence</p>
-          <p>For λ/4 plate: Γ = π/2, output is circular from linear at 45°</p>
-          <p>For λ/2 plate: Γ = π, rotates linear polarization by 2θ</p>
-          <p>Achromatic condition: (Δn₁ · d₁ + Δn₂ · d₂) / λ = const</p>
+          <p>Γ = 2π·Δn(λ)·d/λ; order-m plate: d = (m + f)·λ₀/|Δn(λ₀)|</p>
+          <p>Crossed plates: Γ = 2π(Δn₁d₁ − Δn₂d₂)/λ; achromat: Γ(λ₁) = Γ(λ₂) = target</p>
+          <p>Tilted plate: Γ = (2πd/λ)(k<sub>z,e</sub> − k<sub>z,o</sub>)</p>
+          <p>Total internal reflection: tan(δ/2) = cos θ·√(sin²θ − 1/n²)/sin²θ</p>
         </div>
       </div>
     </>

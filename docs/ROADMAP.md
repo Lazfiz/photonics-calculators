@@ -557,12 +557,24 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
       analyzer-angle input.
     - Golden values: (1, .8, .3, .2) → DOP 0.8775, ψ 10.278°, χ 6.587°; (1, .5, .3, .2) → DOP 0.6164, ψ 15.48°, χ 9.47°;
       QWP fast-H · (1, 0, 1, 0) = (1, 0, 0, −1); polarizer 30° on H → 0.75; HWP 22.5° on H → S2 = 1; H → [P45, PV] = 0.25.
-  - [ ] **Polarization part 2: birefringent crystals.** A uniaxial Sellmeier table (quartz and calcite Ghosh 1999, MgF₂
-    Dodge 1984, sapphire, LiNbO₃ Zelmon 1997, YVO₄, rutile Devore 1951) and `physics/polarization/uniaxial.ts` (n(θ),
-    walk-off, retardance, waveplate orders, compound zero-order d₁ − d₂, Gooch-Tarry). Pages: `double-refraction` (AOI
-    used as the axis angle; n(0°) = n_e; ρ_max calcite 6.26° at 41.87°), `waveplate-thickness` ((m + ¼)λ/Δn), `waveplate-order`
-    (negative Δn), `birefringence` (crossings), `retarder-types` (random curves; invented dispersion), `liquid-crystal-polarizer`
-    (Gooch-Tarry: Δn·d = (√3/2)λ at 90° → T∥ = 0; Δn .2, 5 µm, 550 nm → T∥ 0.008686; twist 0 → cos²(δ/2)).
+  - [x] **Polarization part 2: birefringent crystals** (session 39, branch `phase-4/polarization-crystals`).
+    `physics/materials/uniaxial-data.ts`: o and e Sellmeier sets for quartz and calcite (Ghosh 1999), MgF₂ (Dodge 1984),
+    sapphire (Malitson & Dodge 1972, formula from Dodge 1986), YVO₄ (Lomheim & DeShazer 1978; Shi 2001 needs a λ² term
+    `sellmeier.ts` lacks), LiNbO₃ (Zelmon 1997), rutile (DeVore 1951); DOIs on Crossref. Each set is tested against the
+    published coefficient strings (1e-9) and an independent set: Hecht Table 8.1 at 589.3 nm, Radhakrishnan 1951, Li 1980
+    (MgF₂ only to 1 µm: 7.6e-4 apart at 2 µm), Malitson 1962, Smith 1976 and Jundt 1997 (LiNbO₃), Shi 2001, Bond 1965.
+    Physics split three ways: `polarization/uniaxial.ts` (n(θ), signed walk-off and its peak, o/e refraction into a plate
+    for any axis direction, separation, Γ = k₀d(k_z,e − k_z,o), Veiras 2010), `retarders.ts` ((m + f)λ/|Δn|, order, compound,
+    full-wave wavelengths, two-material achromat with a sign flag, TIR phase and rhomb angles, Born & Wolf 48°37′/54°37′)
+    and `twisted-nematic.ts` (closed-form Jones R(−Φ)·exp(K), tested against a 4000-slab product; Gooch-Tarry). 21-mutation
+    check passed (5 coefficient typos survived until the published-strings test). Shared `components/crystal-select.tsx`.
+    - Pages: `double-refraction` (separate optic-axis and incidence inputs; calcite 10 mm at 45° → 1.0921 mm), `birefringence`
+      (|Δn| crossings with dispersion), `waveplate-thickness` ((m + f)λ/|Δn|, compound pair, folded drift chart),
+      `waveplate-order` (|Δn|, fast axis, 0.75 = swapped QWP), `retarder-types` (five modelled types; temperature chart and
+      unsourced spec table replaced by computed ±1 % band and 5° tilt change), `liquid-crystal-polarizer` (Jones TN with any
+      polarizer and analyzer, presets, VA as a uniformly tilted layer; tier textbook). Three `knownIssue`s dropped (13 left).
+    - The quartz + MgF₂ achromat designed at 450/700 nm is 7 % high at 550 nm: a two-point design, sensitive to Δn at 1e-5.
+      The page defaults to 510/600 nm (±1 % from 495 to 625 nm; zero order: 545–555 nm).
   - [ ] **Polarization part 3: polarizers.** A shared Glan TIR window (signed, external half-field, cemented case) and
     Fresnel with complex r in TIR. Pages: `glans-prism`, `birefringent-polarizer` (Wollaston 2Δn tan α is fine to < 1 %),
     `polarizing-beamsplitter` (rebuild as a MacNeille cube on `transfer-matrix.ts`, or rename), `brewster-polarizer`

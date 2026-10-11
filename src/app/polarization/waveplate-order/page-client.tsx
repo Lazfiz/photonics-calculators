@@ -1,100 +1,93 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { CrystalNote, CrystalSelect, birefringenceOf, isCrystalId, materialRange } from "../../../components/crystal-select";
+import { fix, plateTypeLabel } from "../../../components/polarization-format";
+import { plateOrder, plateThickness } from "../../../physics/polarization/retarders";
+
+const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
+const CHART_RANGE: [number, number] = [300e-9, 1100e-9];
 
 export default function WaveplateOrderPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 550); // nm
-  const [birefringence, setBirefringence] = useURLState("birefringence", 0.009); // Δn
-  const [thickness, setThickness] = useURLState("thickness", 100); // μm
+  const [material, setMaterial] = useURLState("crystal", "quartz");
+  const [customDn, setCustomDn] = useURLState("birefringence", 0.009);
+  const [wavelengthNm, setWavelengthNm] = useURLState("wavelength", 550);
+  const [thicknessUm, setThicknessUm] = useURLState("thickness", 100);
 
-  const results = useMemo(() => {
-    const ret = birefringence * thickness * 1e3; // nm retardation
-    const phase = (2 * Math.PI * ret) / wavelength; // radians
-    const order = ret / wavelength; // fractional order
-    const integerOrder = Math.floor(order);
-    const fractionalOrder = order - integerOrder;
-    const orderType = integerOrder === 0 ? "Zero-order" : integerOrder === 1 ? "First-order" : `${integerOrder}-th order`;
-    const waveplateType = Math.abs(fractionalOrder - 0.5) < 0.01 ? "Half-wave (λ/2)" : Math.abs(fractionalOrder - 0.25) < 0.01 ? "Quarter-wave (λ/4)" : "Other";
+  // useURLState doesn't clamp: keep URL values inside the input ranges.
+  const lambda = clamp(wavelengthNm, 200, 7000) * 1e-9;
+  const d = clamp(thicknessUm, 0.1, 50000) * 1e-6;
+  const cDn = clamp(customDn, -1, 1);
 
-    // Transmission vs wavelength (for waveplate between crossed polarizers)
-    const wls = Array.from({ length: 200 }, (_, i) => 300 + i * 4);
-    const transmission = wls.map((wl) => {
-      const r = birefringence * thickness * 1e3;
-      const ph = (2 * Math.PI * r) / wl;
-      return Math.pow(Math.sin(ph / 2), 2); // crossed polarizer transmission
-    });
+  const dnOf = useMemo(() => birefringenceOf(material, cDn), [material, cDn]);
+  const dn = dnOf(lambda);
+  const o = plateOrder(dn, d, lambda);
+  const phase = 2 * Math.PI * o.waves;
 
-    // Phase vs wavelength
-    const phaseVsWl = wls.map((wl) => ((birefringence * thickness * 1e3 / wl) * 360) % 360);
-
-    return { ret, phase, order, integerOrder, fractionalOrder, orderType, waveplateType, wls, transmission, phaseVsWl };
-  }, [wavelength, birefringence, thickness]);
-
-  // Calculate required thickness for specific waveplate types
-  const thicknessFor = useMemo(() => {
-    // thickness = (fraction × λ) / Δn, with λ in nm → result in meters
-    const qwp = (wavelength * 1e-9 / 4) / birefringence; // meters
-    const hwp = (wavelength * 1e-9 / 2) / birefringence;
-    return { qwp, hwp };
-  }, [wavelength, birefringence]);
+  const curves = useMemo(() => {
+    const [lo, hi] = materialRange(material, CHART_RANGE);
+    const a = Math.max(lo, CHART_RANGE[0]), b = Math.min(hi, CHART_RANGE[1]);
+    // Enough points to resolve the fastest fringe: ≥ 20 per wave of retardance change across the range.
+    const span = (Math.abs(dnOf(a)) * d) / a - (Math.abs(dnOf(b)) * d) / b;
+    const N = Math.min(20000, Math.max(400, Math.ceil(20 * Math.abs(span))));
+    const l = Array.from({ length: N }, (_, i) => a + ((b - a) * i) / (N - 1));
+    const waves = l.map((x) => (Math.abs(dnOf(x)) * d) / x);
+    return {
+      nm: l.map((x) => x * 1e9),
+      transmission: waves.map((w) => Math.sin(Math.PI * w) ** 2),
+      phaseDeg: waves.map((w) => (w - Math.floor(w)) * 360),
+    };
+  }, [material, dnOf, d]);
 
   return (
     <>
-            
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <h2 className="text-lg font-semibold mb-4">Parameters</h2>
-          {[
-            { label: "Wavelength (nm)", val: wavelength, set: setWavelength },
-            { label: "Birefringence Δn", val: birefringence, set: setBirefringence },
-            { label: "Thickness (μm)", val: thickness, set: setThickness },
-          ].map(({ label, val, set }) => (
-            <div key={label} className="mb-3">
-              <ValidatedNumberInput label={label} value={val} onChange={set} step="any" />
-            </div>
-          ))}
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-2">
+        <CrystalSelect value={material} onChange={setMaterial} />
+        {!isCrystalId(material) && (
+          <ValidatedNumberInput label="Birefringence Δn" value={customDn} onChange={setCustomDn} min={-1} max={1} step="0.0001" />
+        )}
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={200} max={7000} step="1" />
+        <ValidatedNumberInput label="Thickness (μm)" value={thicknessUm} onChange={setThicknessUm} min={0.1} max={50000} step="any" />
+      </div>
+      <CrystalNote material={material} lambda={lambda} />
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Results</h2>
           <div className="space-y-3">
-            <ResultRow label="Retardation" value={`${results.ret.toFixed(2)} nm`} />
-            <ResultRow label="Phase Retardation" value={`${results.phase.toFixed(2)} rad (${(results.phase * 180 / Math.PI).toFixed(1)}°)`} />
-            <ResultRow label="Order (Γ/λ)" value={results.order.toFixed(4)} />
-            <ResultRow label="Integer Order" value={results.integerOrder.toString()} />
-            <ResultRow label="Fractional Order" value={results.fractionalOrder.toFixed(4)} />
-            <ResultRow label="Order Type" value={results.orderType} />
-            <ResultRow label="Waveplate Type" value={results.waveplateType} />
-            <ResultRow label="QWP Thickness" value={`${(thicknessFor.qwp * 1e6).toFixed(1)} μm`} />
-            <ResultRow label="HWP Thickness" value={`${(thicknessFor.hwp * 1e6).toFixed(1)} μm`} />
+            <ResultRow label="Birefringence Δn = nₑ − nₒ" value={fix(dn, 5)} />
+            <ResultRow label="Retardation |Δn|·d" value={`${fix(Math.abs(dn) * d * 1e9, 2)} nm`} />
+            <ResultRow label="Phase retardation" value={`${fix(phase, 3)} rad (${fix(phase * 180 / Math.PI, 1)}°)`} />
+            <ResultRow label="Waves |Δn|·d/λ" value={fix(o.waves, 4)} />
+            <ResultRow label="Order" value={Number.isFinite(o.waves) ? (o.order === 0 ? "0 (zero order)" : String(o.order)) : "—"} />
+            <ResultRow label="Fraction of a wave left over" value={`${fix(o.fraction, 4)} (${fix(o.fraction * 360, 1)}°)`} />
+            <ResultRow label="Acts as" value={plateTypeLabel(o.fraction)} />
+            <ResultRow label="Fast axis" value={!Number.isFinite(dn) || dn === 0 ? "—" : dn > 0 ? "ordinary (⊥ optic axis)" : "extraordinary (optic axis)"} />
+            <ResultRow label="Zero-order QWP / HWP" value={`${fix(plateThickness(dn, lambda, 0.25) * 1e6, 2)} / ${fix(plateThickness(dn, lambda, 0.5) * 1e6, 2)} μm`} />
           </div>
         </div>
-
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <h2 className="text-lg font-semibold mb-4">Transmission Between Crossed Polarizers</h2>
-          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.wls, y: results.transmission, line: { color: "#3b82f6", width: 2 }, fill: "tozeroy", fillcolor: "rgba(59,130,246,0.1)" }]}
+          <h2 className="text-lg font-semibold mb-1">Transmission between crossed polarizers</h2>
+          <p className="text-xs text-gray-500 mb-3">Plate axes at 45° to the polarizer: T = sin²(Γ/2).</p>
+          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: curves.nm, y: curves.transmission, line: { color: "#3b82f6", width: 1.5 } }]}
             layout={{
               xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
               yaxis: { title: "Transmission", color: "#9ca3af", gridcolor: "#374151", range: [0, 1.05] },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-           
-           
           />
         </div>
-
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <h2 className="text-lg font-semibold mb-4">Phase Retardation vs Wavelength</h2>
-          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.wls, y: results.phaseVsWl, line: { color: "#22c55e", width: 2 } }]}
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 lg:col-span-2">
+          <h2 className="text-lg font-semibold mb-4">Retardance against wavelength, folded to one wave</h2>
+          <ChartPanel data={[{ type: "scatter" as const, mode: "markers" as const, x: curves.nm, y: curves.phaseDeg, marker: { color: "#22c55e", size: 2 } }]}
             layout={{
               xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "Phase (°)", color: "#9ca3af", gridcolor: "#374151", range: [0, 360] },
+              yaxis: { title: "Retardance mod 360 (°)", color: "#9ca3af", gridcolor: "#374151", range: [0, 360] },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-           
-           
           />
         </div>
       </div>

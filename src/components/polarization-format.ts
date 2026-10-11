@@ -28,6 +28,16 @@ export function stateLabel(S: Stokes): string {
   return shape === "circular" ? `${side} circular` : `${side}-handed elliptical`;
 }
 
+/** What a plate with this leftover fraction of a wave does, within ±tol waves of a quarter, half or whole wave. */
+export function plateTypeLabel(fraction: number, tol = 0.01): string {
+  if (!Number.isFinite(fraction)) return "—";
+  if (fraction < tol || fraction > 1 - tol) return "full-wave (no net retardance)";
+  if (Math.abs(fraction - 0.25) < tol) return "quarter-wave";
+  if (Math.abs(fraction - 0.5) < tol) return "half-wave";
+  if (Math.abs(fraction - 0.75) < tol) return "quarter-wave, fast and slow axes swapped";
+  return "no standard plate (not ¼, ½ or 1 wave)";
+}
+
 /** The sign convention, for pages that name a handedness. */
 export const CONVENTION_NOTE =
   "Convention (Goldstein): RCP = [1, i]/√2 turns clockwise as seen by the receiver; S₃ > 0 is right-handed.";

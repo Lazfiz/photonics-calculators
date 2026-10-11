@@ -1,163 +1,175 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { fix } from "../../../components/polarization-format";
+import { goochTarryMinimum, lcTransmission } from "../../../physics/polarization/twisted-nematic";
+import { extraordinaryIndex } from "../../../physics/polarization/uniaxial";
+
+const DEG = Math.PI / 180;
+const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
+
+interface Preset { label: string; cell: "twisted" | "va"; twist: number; polarizer: number; analyzer: number }
+const PRESETS: Preset[] = [
+  { label: "TN, normally white", cell: "twisted", twist: 90, polarizer: 0, analyzer: 90 },
+  { label: "TN, normally black", cell: "twisted", twist: 90, polarizer: 0, analyzer: 0 },
+  { label: "240° supertwist, polarizers ±45°", cell: "twisted", twist: 240, polarizer: 45, analyzer: -45 },
+  { label: "ECB (no twist), crossed at 45°", cell: "twisted", twist: 0, polarizer: 45, analyzer: -45 },
+  { label: "VA, crossed at 45°", cell: "va", twist: 0, polarizer: 45, analyzer: -45 },
+];
+
 export default function LiquidCrystalPolarizerPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [neNo, setNeNo] = useURLState("neNo", 0.2); // Δn = ne - no
-  const [cellThickness, setCellThickness] = useURLState("cellThickness", 5); // μm
-  const [twistAngle, setTwistAngle] = useURLState("twistAngle", 90);
-  const [preTiltDeg, setPreTiltDeg] = useURLState("preTiltDeg", 2);
-  const [mode, setMode] = useState<"tn" | "stn" | "van" | "ecb">("tn");
+  const [cellInput, setCell] = useURLState("cell", "twisted");
+  const [wavelengthNm, setWavelength] = useURLState("wavelength", 550);
+  const [dnInput, setDn] = useURLState("neNo", 0.2);
+  const [noInput, setNo] = useURLState("no", 1.5);
+  const [thicknessUm, setThickness] = useURLState("cellThickness", 5);
+  const [twistDeg, setTwist] = useURLState("twistAngle", 90);
+  const [polarizerDeg, setPolarizer] = useURLState("polarizer", 0);
+  const [analyzerDeg, setAnalyzer] = useURLState("analyzer", 0);
+  const [tiltDeg, setTilt] = useURLState("tilt", 30);
 
-  const preTilt = preTiltDeg * Math.PI / 180;
-  const twistRad = twistAngle * Math.PI / 180;
-  const d = cellThickness * 1e-6;
-  const lambda = wavelength * 1e-9;
-  const delta = (2 * Math.PI * neNo * d) / lambda;
+  // useURLState doesn't clamp: keep URL values inside the input ranges.
+  const va = cellInput === "va";
+  const lambda = clamp(wavelengthNm, 380, 780) * 1e-9;
+  const dn = clamp(dnInput, 0.01, 0.5);
+  const no = clamp(noInput, 1.3, 2);
+  const d = clamp(thicknessUm, 0.5, 30) * 1e-6;
+  const twist = va ? 0 : clamp(twistDeg, -360, 360) * DEG;
+  const pol = clamp(polarizerDeg, -180, 180) * DEG;
+  const ana = clamp(analyzerDeg, -180, 180) * DEG;
+  const tilt = clamp(tiltDeg, 0, 90) * DEG;
 
-  // TN mode: Gooch-Tarry condition (Gooch & Tarry, Applied Physics 8, 1975)
-  // T = sin²(φ√(1+u²)/2) / (1+u²), u = δ/φ = (2πΔnd/λ) / φ
-  // For 90° twist (φ=π/2): u = 4Δnd/λ, first minimum at u=√3/2
-  const uTN = delta / twistRad;
-  const ttn = Math.sin(twistRad / 2 * Math.sqrt(1 + uTN ** 2)) ** 2 / (1 + uTN ** 2);
+  // VA: the director leans `tilt` from the cell normal; at normal incidence the wave sees n(tilt) − n_o.
+  const dnE = va ? extraordinaryIndex(no, no + dn, tilt) - no : dn;
+  const gamma = (2 * Math.PI * dnE * d) / lambda;
+  const T = lcTransmission(twist, gamma, pol, ana);
+  const firstMin = (goochTarryMinimum(1) * lambda) / dn;
 
-  // VAN (VA) mode: T = sin²(δ/2) · sin²(2φ)
-  // At normal incidence with no voltage: LC aligned homeotropically, T ≈ 0
-  // With voltage: director tilts, T increases
-  const tVAzeroV = 0.02; // dark state leakage
-  const tVAmax = Math.min(1, Math.sin(delta / 2) ** 2);
+  const applyPreset = (p: Preset) => {
+    setCell(p.cell);
+    setTwist(p.twist);
+    setPolarizer(p.polarizer);
+    setAnalyzer(p.analyzer);
+    if (p.cell === "va") setTilt(0);
+  };
 
-  // ECB mode
-  const tECB = Math.sin(delta / 2) ** 2;
+  const spectral = useMemo(() => {
+    const l = Array.from({ length: 300 }, (_, i) => 380 + (i * 400) / 299);
+    return [{
+      x: l, y: l.map((x) => lcTransmission(twist, (2 * Math.PI * dnE * d) / (x * 1e-9), pol, ana)),
+      type: "scatter" as const, mode: "lines" as const, name: "Transmission", line: { color: "#60a5fa", width: 2 },
+    }];
+  }, [twist, pol, ana, dnE, d]);
 
-  // STN mode: dΔn/λ typically 0.8-1.2, twist 180-270°
-  const uSTN = (2 * neNo * d) / lambda;
-  const tSTN = Math.sin(Math.PI / 2 * Math.sqrt(1 + (uSTN * Math.sin(twistRad / 2)) ** 2)) ** 2 /
-    (1 + (uSTN * Math.sin(twistRad / 2)) ** 2);
+  const second = useMemo(() => {
+    if (va) {
+      const t = Array.from({ length: 181 }, (_, i) => i * 0.5);
+      const y = t.map((x) => {
+        const g = (2 * Math.PI * (extraordinaryIndex(no, no + dn, x * DEG) - no) * d) / lambda;
+        return lcTransmission(0, g, pol, ana);
+      });
+      return { x: t, y, title: "Director tilt from the normal (°)", minima: [] as number[] };
+    }
+    const r = Array.from({ length: 301 }, (_, i) => i * 0.01);
+    const y = r.map((x) => lcTransmission(twist, 2 * Math.PI * x, pol, ana));
+    const minima = Math.abs(Math.abs(twist) - Math.PI / 2) < 1e-9 ? [1, 2, 3].map(goochTarryMinimum) : [];
+    return { x: r, y, title: "Δn·d/λ", minima };
+  }, [va, no, dn, d, lambda, pol, ana, twist]);
 
-  const trans = mode === "tn" ? ttn : mode === "stn" ? tSTN : mode === "van" ? tVAmax : tECB;
-
-  const spectralData = useMemo(() => {
-    const wls = Array.from({ length: 300 }, (_, i) => 380 + (i / 300) * 420);
-    const Tvals = wls.map(w => {
-      const l = w * 1e-9;
-      const dlt = (2 * Math.PI * neNo * d) / l;
-      if (mode === "tn") {
-        const u = (2 * neNo * d) / (l * Math.sqrt(1 + (twistAngle * Math.PI / (2 * Math.PI)) ** 2));
-        return Math.sin(Math.PI / 2 * Math.sqrt(1 + u ** 2)) ** 2 / (1 + u ** 2);
-      } else if (mode === "stn") {
-        const u = (2 * neNo * d) / l;
-        return Math.sin(Math.PI / 2 * Math.sqrt(1 + (u * Math.sin(twistRad / 2)) ** 2)) ** 2 /
-          (1 + (u * Math.sin(twistRad / 2)) ** 2);
-      } else if (mode === "van") {
-        return Math.min(1, Math.sin(dlt / 2) ** 2);
-      } else {
-        return Math.sin(dlt / 2) ** 2;
-      }
-    });
-    return [
-      { x: wls, y: Tvals, type: "scatter" as const, mode: "lines" as const, name: "Transmission", line: { color: "#60a5fa", width: 2 } },
-    ];
-  }, [neNo, d, mode, twistAngle, twistRad]);
-
-  const thicknessData = useMemo(() => {
-    const ths = Array.from({ length: 200 }, (_, i) => 1 + (i / 200) * 15);
-    const Tvals = ths.map(t => {
-      const dd = t * 1e-6;
-      const dlt = (2 * Math.PI * neNo * dd) / lambda;
-      if (mode === "tn") {
-        const u = (2 * neNo * dd) / (lambda * Math.sqrt(1 + (twistAngle * Math.PI / (2 * Math.PI)) ** 2));
-        return Math.sin(Math.PI / 2 * Math.sqrt(1 + u ** 2)) ** 2 / (1 + u ** 2);
-      } else if (mode === "stn") {
-        const u = (2 * neNo * dd) / lambda;
-        return Math.sin(Math.PI / 2 * Math.sqrt(1 + (u * Math.sin(twistRad / 2)) ** 2)) ** 2 /
-          (1 + (u * Math.sin(twistRad / 2)) ** 2);
-      } else if (mode === "van") {
-        return Math.min(1, Math.sin(dlt / 2) ** 2);
-      } else {
-        return Math.sin(dlt / 2) ** 2;
-      }
-    });
-    return [
-      { x: ths, y: Tvals, type: "scatter" as const, mode: "lines" as const, name: "Transmission", line: { color: "#f87171", width: 2 } },
-    ];
-  }, [neNo, lambda, mode, twistAngle, twistRad]);
+  const layout = (x: string) => ({
+    paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+    xaxis: { title: x, gridcolor: "#374151" },
+    yaxis: { title: "Transmission", gridcolor: "#374151", range: [-0.05, 1.05] },
+    margin: { t: 20, r: 20, b: 50, l: 50 }, height: 300, showlegend: false,
+  });
 
   return (
     <>
-            
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm font-mono">δ = 2π Δn d / λ, T<sub>TN</sub> = sin²(½π√(1+u²)) / (1+u²)</p>
-        <p className="text-gray-300 text-sm font-mono">u = 2Δnd / (λ·√(1 + (φ/2π)²)), T<sub>ECB</sub> = sin²(δ/2)</p>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-gray-300 text-sm font-mono space-y-1">
+        <p>Γ = 2πΔn·d/λ, &nbsp;X = √(Φ² + (Γ/2)²), &nbsp;J = R(−Φ)·[cos X·I + (sin X/X)·[[−iΓ/2, Φ], [−Φ, iΓ/2]]]</p>
+        <p>90° TN, polarizer along the entrance director, parallel analyzer: T∥ = sin²X/(1 + u²), u = 2Δn·d/λ (Gooch &amp; Tarry)</p>
+        <p>VA: Δn<sub>eff</sub> = n(θ<sub>tilt</sub>) − n<sub>o</sub>, &nbsp;1/n(θ)² = cos²θ/n<sub>o</sub>² + sin²θ/n<sub>e</sub>²</p>
       </div>
 
-      <div role="group" aria-label="Options" className="flex gap-4 mb-6">
-        {(["tn", "stn", "van", "ecb"] as const).map(m => (
-          <button key={m} onClick={() => setMode(m)} className={`text-sm px-4 py-2 rounded ${mode === m ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 border border-gray-600"}`}>
-            {m === "tn" ? "TN (90°)" : m === "stn" ? "STN" : m === "van" ? "VA" : "ECB"}
+      <div className="flex flex-wrap gap-2 mb-6" role="group" aria-label="Presets">
+        {PRESETS.map((p) => (
+          <button key={p.label} onClick={() => applyPreset(p)} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">
+            {p.label}
           </button>
         ))}
+        {!va && (
+          <button onClick={() => setThickness(Number((firstMin * 1e6).toFixed(3)))} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">
+            d at the first Gooch-Tarry minimum
+          </button>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={380} max={780} step="10" />
-        <ValidatedNumberInput label="Δn (birefringence)" value={neNo} onChange={setNeNo} min={0.01} max={0.5} step="0.01" />
-        <ValidatedNumberInput label="Cell Thickness (μm)" value={cellThickness} onChange={setCellThickness} min={1} max={20} step="0.5" />
-        <ValidatedNumberInput label="Twist Angle (°)" value={twistAngle} onChange={setTwistAngle} min={0} max={270} step="10" />
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-6">
-        <button onClick={() => { setNeNo(0.076); setCellThickness(5); setTwistAngle(90); }} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">5CB (TN)</button>
-        <button onClick={() => { setNeNo(0.14); setCellThickness(4); setTwistAngle(240); }} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">STN Typical</button>
-        <button onClick={() => { setNeNo(0.12); setCellThickness(3.5); setTwistAngle(0); }} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">VA Typical</button>
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Cell</span>
+          <select value={va ? "va" : "twisted"} onChange={(e) => setCell(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            <option value="twisted">Twisted or planar (director in the cell plane)</option>
+            <option value="va">Vertically aligned (director tilted from the normal)</option>
+          </select>
+        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthNm} onChange={setWavelength} min={380} max={780} step="10" />
+        <ValidatedNumberInput label="Δn = nₑ − nₒ" value={dnInput} onChange={setDn} min={0.01} max={0.5} step="0.01" />
+        <ValidatedNumberInput label="Cell thickness (μm)" value={thicknessUm} onChange={setThickness} min={0.5} max={30} step="0.1" />
+        {va ? (
+          <>
+            <ValidatedNumberInput label="nₒ" value={noInput} onChange={setNo} min={1.3} max={2} step="0.01" />
+            <ValidatedNumberInput label="Director tilt from normal (°)" value={tiltDeg} onChange={setTilt} min={0} max={90} step="1" />
+          </>
+        ) : (
+          <ValidatedNumberInput label="Twist angle Φ (°)" value={twistDeg} onChange={setTwist} min={-360} max={360} step="10" />
+        )}
+        <ValidatedNumberInput label="Polarizer (° from entrance director)" value={polarizerDeg} onChange={setPolarizer} min={-180} max={180} step="5" />
+        <ValidatedNumberInput label="Analyzer (° from entrance director)" value={analyzerDeg} onChange={setAnalyzer} min={-180} max={180} step="5" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Phase Retardation δ</p>
-          <p className="text-2xl font-bold text-blue-400">{delta.toFixed(2)} rad</p>
-          <p className="text-xs text-gray-500">{(delta / Math.PI).toFixed(2)}π</p>
+          <p className="text-sm text-gray-400">Retardance Γ</p>
+          <p className="text-2xl font-bold text-blue-400">{fix(gamma, 3)} rad</p>
+          <p className="text-xs text-gray-500">{fix(gamma / (2 * Math.PI), 3)} waves{va ? `; Δn_eff = ${fix(dnE, 4)}` : ""}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">dΔn/λ</p>
-          <p className="text-2xl font-bold text-green-400">{(neNo * cellThickness / wavelength).toFixed(3)}</p>
+          <p className="text-sm text-gray-400">Δn·d/λ</p>
+          <p className="text-2xl font-bold text-green-400">{fix((dnE * d) / lambda, 3)}</p>
+          {!va && Math.abs(Math.abs(twist) - Math.PI / 2) < 1e-9 && <p className="text-xs text-gray-500">first minimum at √3/2 = 0.866: d = {fix(firstMin * 1e6, 3)} μm</p>}
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Transmission</p>
-          <p className="text-2xl font-bold text-yellow-400">{(trans * 100).toFixed(1)}%</p>
+          <p className="text-2xl font-bold text-yellow-400">{fix(T * 100, 2)} %</p>
+          <p className="text-xs text-gray-500">of the light after the first polarizer</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Mode</p>
-          <p className="text-2xl font-bold text-purple-400">{mode.toUpperCase()}</p>
+          <p className="text-sm text-gray-400">Configuration</p>
+          <p className="text-sm font-mono text-gray-200">{va ? `VA, tilt ${fix(tilt / DEG, 0)}°` : `twist ${fix(twist / DEG, 0)}°`}</p>
+          <p className="text-sm font-mono text-gray-200">P {fix(pol / DEG, 0)}°, A {fix(ana / DEG, 0)}°</p>
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
+      <div className="grid gap-4 sm:grid-cols-2 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h3 className="text-sm text-gray-400 mb-2">Spectral Transmission</h3>
-          <ChartPanel data={spectralData} layout={{
-            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-            font: { color: "#9ca3af" },
-            xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
-            yaxis: { title: "Transmission", gridcolor: "#374151", range: [-0.05, 1.05] },
-            margin: { t: 20, r: 20, b: 50, l: 50 }, height: 300,
-          }} />
+          <h3 className="text-sm text-gray-400 mb-2">Transmission against wavelength (Δn held constant)</h3>
+          <ChartPanel data={spectral} layout={layout("Wavelength (nm)")} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h3 className="text-sm text-gray-400 mb-2">Transmission vs Cell Thickness</h3>
-          <ChartPanel data={thicknessData} layout={{
-            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-            font: { color: "#9ca3af" },
-            xaxis: { title: "Thickness (μm)", gridcolor: "#374151" },
-            yaxis: { title: "Transmission", gridcolor: "#374151", range: [-0.05, 1.05] },
-            margin: { t: 20, r: 20, b: 50, l: 50 }, height: 300,
-          }} />
+          <h3 className="text-sm text-gray-400 mb-2">{va ? "Transmission against director tilt" : "Transmission against Δn·d/λ"}</h3>
+          <ChartPanel data={[
+            { x: second.x, y: second.y, type: "scatter" as const, mode: "lines" as const, name: "Transmission", line: { color: "#f87171", width: 2 } },
+            ...(second.minima.length ? [{ x: second.minima, y: second.minima.map((x) => lcTransmission(twist, 2 * Math.PI * x, pol, ana)), type: "scatter" as const, mode: "markers" as const, name: "Gooch-Tarry points (√3/2, √15/2, √35/2)", marker: { color: "#fbbf24", size: 8 } }] : []),
+          ]} layout={layout(second.title)} />
         </div>
       </div>
+      <p className="text-xs text-gray-500">
+        Angles are counter-clockwise looking into the beam, from the entrance director (VA: from the plane the director leans
+        in). Not modelled: pretilt, the field-dependent director profile, dispersion of Δn, oblique viewing, reflections.
+      </p>
     </>
   );
 }
