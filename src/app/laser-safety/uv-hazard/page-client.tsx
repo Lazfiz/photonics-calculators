@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
@@ -38,7 +37,6 @@ export default function UVHazardPage() {
     <>
             
       <LaserSafetyDisclaimer />
-      <LaserSafetyQuarantineBanner />
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={400} />
         <ValidatedNumberInput label="Irradiance (W/cm²)" value={spectralIrr} onChange={setSpectralIrr} min={0} step="any" />

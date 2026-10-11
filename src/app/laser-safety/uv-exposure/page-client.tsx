@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
 import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
 import { actinicUvWeight, uvMaxIrradiance, UV_LIMIT_PERIOD } from "../../../physics/laser-safety/hazard-weighting";
 
@@ -33,7 +32,6 @@ export default function UVExposurePage() {
   return (
     <>
       <LaserSafetyDisclaimer />
-      <LaserSafetyQuarantineBanner />
       <div className="max-w-4xl mx-auto">
 
         <div className="bg-[#12121a] rounded-xl p-6 mb-6">

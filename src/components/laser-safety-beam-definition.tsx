@@ -1,7 +1,9 @@
 "use client";
 
 import { useId } from "react";
-import type { BeamDefinition } from "../lib/laser-safety-cw-suite";
+
+/** How a beam diameter or divergence is quoted: at 1/e² of the peak irradiance (data sheets) or at 1/e (the standards). */
+export type BeamDefinition = "1/e2" | "1/e";
 
 /** Parses the `beamDefinition` URL value; anything else is the data-sheet convention, 1/e². */
 export function parseBeamDefinition(value: string): BeamDefinition {

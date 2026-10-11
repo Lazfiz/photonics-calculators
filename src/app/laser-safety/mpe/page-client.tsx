@@ -1,147 +1,160 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import InputSlider from "../../../components/input-slider";
-import ResultCard from "../../../components/result-card";
+import { finiteXY, fmtNum, fmtPower, fmtTime, LIMIT_COLORS, LIMIT_LABELS } from "../../../components/eye-limit-labels";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import LaserSafetyCwBounds from "../../../components/laser-safety-cw-bounds";
-import LaserSafetyCwReferences from "../../../components/laser-safety-cw-references";
-import LaserSafetyCwScope from "../../../components/laser-safety-cw-scope";
 import LaserSafetySuiteLinks from "../../../components/laser-safety-suite-links";
-import { calculateEducationalContinuousMpe } from "../../../lib/laser-safety-mpe";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-const wavelengthPresets = [450, 532, 850, 1050];
-const exposurePresets = [0.001, 0.25, 1, 10, 30, 100, 600, 3600];
+import {
+  exposureLimit, eyeLimits, limitingAperture, limitMaxPower, T_MAX, T_MIN,
+} from "../../../physics/laser-safety/eye-exposure-limits";
+
+const wavelengthPresets = [355, 532, 905, 1064, 1550, 10600]; // nm
+const exposurePresets = [1e-9, 1e-6, 1e-3, 0.25, 10, 100, 3e4]; // s
+
+const linkClass = "underline hover:text-white";
 
 export default function MPEPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 532);
-  const [exposure, setExposure] = useURLState("exposure", 0.25);
+  const [wavelength, setWavelength] = useURLState("wavelength", 532); // nm
+  const [exposureRaw, setExposure] = useURLState("exposure", 0.25); // s
 
-  const result = useMemo(() => calculateEducationalContinuousMpe(wavelength, exposure), [wavelength, exposure]);
+  // URL values aren't range-checked: clamp the time; outside 180 nm – 1 mm there are no limits and the page says so.
+  const exposure = Math.min(Math.max(exposureRaw, T_MIN), T_MAX);
+  const lambda = wavelength * 1e-9;
+
+  // ICNIRP 2013 eye limits for a point source: src/physics/laser-safety/eye-exposure-limits.ts. SI inside.
+  const limits = useMemo(() => eyeLimits(lambda), [lambda]);
+  // The limits in force at t (the photochemical one starts at 10 s).
+  const rows = useMemo(
+    () =>
+      limits
+        .map((limit) => {
+          const H = exposureLimit(limit, exposure);
+          return { limit, D: limitingAperture(limit, exposure), H, pMax: limitMaxPower(limit, 0, exposure) };
+        })
+        .filter((r) => Number.isFinite(r.H)),
+    [limits, exposure],
+  );
+  // The lowest radiant exposure is the MPE of a beam wider than the apertures; for a narrow beam the apertures differ,
+  // so the lowest power decides.
+  const mpe = rows.reduce<(typeof rows)[number] | null>((m, r) => (!m || r.H < m.H ? r : m), null);
+  const narrow = rows.reduce<(typeof rows)[number] | null>((m, r) => (!m || r.pMax < m.pMax ? r : m), null);
 
   const chartData = useMemo(() => {
-    const logMin = -3;
-    const logMax = Math.log10(3e4);
-    const times = Array.from({ length: 240 }, (_, i) => Math.pow(10, logMin + (i / 239) * (logMax - logMin))); // 1 ms to 3×10^4 s
-    const radiantExposure = times.map((t) => {
-      const sample = calculateEducationalContinuousMpe(wavelength, t);
-      return sample.status === "supported" ? sample.radiantExposureMpe_mJcm2 : null;
-    });
-    const irradiance = times.map((t) => {
-      const sample = calculateEducationalContinuousMpe(wavelength, t);
-      return sample.status === "supported" ? sample.equivalentIrradianceMpe_mWcm2 : null;
-    });
+    const times = Array.from({ length: 271 }, (_, i) => T_MIN * Math.pow(T_MAX / T_MIN, i / 270));
+    const traces: Record<string, unknown>[] = limits.map((limit) => ({
+      ...finiteXY(times, times.map((t) => exposureLimit(limit, t))),
+      type: "scatter", mode: "lines", name: LIMIT_LABELS[limit.kind],
+      line: { color: LIMIT_COLORS[limit.kind] },
+    }));
+    if (mpe && mpe.H > 0) {
+      traces.push({ x: [exposure], y: [mpe.H], type: "scatter", mode: "markers", name: "MPE at t", marker: { color: "#f87171", size: 10 } });
+    }
+    return traces;
+  }, [limits, mpe, exposure]);
 
-    return [
-      {
-        x: times,
-        y: radiantExposure,
-        type: "scatter" as const,
-        mode: "lines",
-        name: "Radiant exposure Hₘₚₑ (mJ/cm²)",
-        line: { color: "#60a5fa", width: 3 },
-      },
-      {
-        x: times,
-        y: irradiance,
-        type: "scatter" as const,
-        mode: "lines",
-        name: "Equivalent irradiance Eₘₚₑ (mW/cm²)",
-        line: { color: "#f59e0b", width: 3, dash: "dash" },
-        yaxis: "y2",
-      },
-    ];
-  }, [wavelength]);
+  const presetClass = (active: boolean, tone: string) =>
+    `rounded-full border px-3 py-1 text-sm transition ${active ? tone : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`;
 
   return (
     <>
       <LaserSafetyDisclaimer />
-      <LaserSafetyCwBounds />
-      <LaserSafetyCwReferences />
-
-      <LaserSafetyCwScope />
 
       <div className="mb-5 flex flex-wrap gap-2">
         {wavelengthPresets.map((preset) => (
-          <button
-            key={preset}
-            onClick={() => setWavelength(preset)}
-            className={`rounded-full border px-3 py-1 text-sm transition ${wavelength === preset ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}
-          >
+          <button key={preset} type="button" onClick={() => setWavelength(preset)} className={presetClass(wavelength === preset, "border-blue-400 bg-blue-500/15 text-blue-200")}>
             {preset} nm
           </button>
         ))}
         {exposurePresets.map((preset) => (
-          <button
-            key={preset}
-            onClick={() => setExposure(preset)}
-            className={`rounded-full border px-3 py-1 text-sm transition ${exposure === preset ? "border-purple-400 bg-purple-500/15 text-purple-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}
-          >
-            {preset < 1 ? `${preset * 1000} ms` : preset < 60 ? `${preset}s` : preset < 3600 ? `${(preset / 60).toFixed(preset % 60 === 0 ? 0 : 1)} min` : `${(preset / 3600).toFixed(preset % 3600 === 0 ? 0 : 1)} h`}
+          <button key={preset} type="button" onClick={() => setExposure(preset)} className={presetClass(exposure === preset, "border-purple-400 bg-purple-500/15 text-purple-200")}>
+            {fmtTime(preset)}
           </button>
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 mb-8">
-        <InputSlider label="Wavelength" value={wavelength} onChange={setWavelength} min={400} max={1050} step={1} unit="nm" />
-        <InputSlider label="Exposure time" value={exposure} onChange={setExposure} min={0.001} max={30000} step={0.001} unit="s" />
+      <div className="grid gap-4 sm:grid-cols-2 mb-8">
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={1000000} step="any" />
+        <ValidatedNumberInput label="Exposure time (s)" value={exposure} onChange={setExposure} min={1e-9} max={30000} step="any" />
       </div>
 
-      {result.status === "supported" ? (
+      {mpe && narrow ? (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
-            <ResultCard label="Radiant exposure Hₘₚₑ" value={`${result.radiantExposureMpe_mJcm2.toFixed(3)} mJ/cm²`} tone="blue" />
-            <ResultCard label="Equivalent irradiance Eₘₚₑ" value={`${result.equivalentIrradianceMpe_mWcm2.toFixed(3)} mW/cm²`} tone="yellow" />
-            <ResultCard label="Hazard regime" value={result.regime} tone="red" />
-            <ResultCard label="Scope" value={result.scope} tone="green" />
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+            <ResultCard label="MPE, radiant exposure" value={`${fmtNum(mpe.H)} J/m²`} tone="blue" subtext={`${fmtNum(mpe.H / 10)} mJ/cm²`} />
+            <ResultCard label="MPE, irradiance H/t" value={`${fmtNum(mpe.H / exposure)} W/m²`} tone="yellow" subtext={`${fmtNum(mpe.H / exposure / 10)} mW/cm², for a constant exposure`} />
+            <ResultCard label="Lowest limit" value={LIMIT_LABELS[mpe.limit.kind]} tone="red" subtext={`Averaged over ${(mpe.D * 1e3).toFixed(2)} mm`} />
+            <ResultCard label="Max power, narrow beam" value={fmtPower(narrow.pMax)} tone="green" subtext={`All of it inside the aperture; ${LIMIT_LABELS[narrow.limit.kind].toLowerCase()}`} />
           </div>
 
-          <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
-            <p><span className="font-semibold text-white">Hₘₚₑ</span> is the allowable radiant exposure (energy per area).</p>
-            <p><span className="font-semibold text-white">Eₘₚₑ</span> is the equivalent irradiance (power per area), computed here as Hₘₚₑ / t.</p>
-            <p>This page intentionally does not pretend those are interchangeable.</p>
+          <div className="overflow-x-auto mb-6">
+            <table className="w-full text-sm text-left text-gray-300">
+              <thead className="text-gray-400 border-b border-gray-800">
+                <tr>
+                  <th className="py-2 pr-4 font-normal">Limit at t</th>
+                  <th className="py-2 pr-4 font-normal">Aperture (mm)</th>
+                  <th className="py-2 pr-4 font-normal">H (J/m²)</th>
+                  <th className="py-2 pr-4 font-normal">H/t (W/m²)</th>
+                  <th className="py-2 font-normal">Max power, narrow beam</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.limit.kind} className="border-b border-gray-900">
+                    <td className="py-2 pr-4">{LIMIT_LABELS[r.limit.kind]}</td>
+                    <td className="py-2 pr-4">{(r.D * 1e3).toFixed(2)}</td>
+                    <td className="py-2 pr-4">{fmtNum(r.H)}</td>
+                    <td className="py-2 pr-4">{fmtNum(r.H / exposure)}</td>
+                    <td className="py-2">{fmtPower(r.pMax)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="text-xs text-gray-500 mt-2">
+              Every limit listed applies; the photochemical limit starts at 10 s. The max power is for a beam narrower than the aperture and holds for every
+              exposure up to t (a limit can step down at a joint, e.g. at 10 s). For a given beam size see{" "}
+              <Link href="/laser-safety/exposure-duration" className={linkClass}>exposure duration</Link>.
+            </p>
           </div>
 
-          <div className="rounded-xl border border-red-900/60 bg-red-950/30 p-4 mb-6 text-sm text-red-100 leading-6">
-            <ul className="list-disc space-y-1 pl-5">
-              {result.notes.map((note) => (
-                <li key={note}>{note}</li>
-              ))}
-            </ul>
+          <div className="bg-gray-900 rounded-lg p-4 mb-6">
+            <ChartPanel
+              data={chartData}
+              layout={{
+                paper_bgcolor: "transparent",
+                plot_bgcolor: "transparent",
+                font: { color: "#9ca3af" },
+                xaxis: { title: "Exposure time (s)", gridcolor: "#374151", type: "log" },
+                yaxis: { title: "Radiant exposure H (J/m²)", gridcolor: "#374151", type: "log" },
+                margin: { t: 30, r: 30, b: 50, l: 70 },
+                legend: { orientation: "h", y: -0.2 },
+              }}
+            />
+            <p className="text-xs text-gray-500 mt-2">Each limit as a radiant exposure against the exposure time, 1 ns to 30 000 s.</p>
           </div>
-
-          <ChartPanel
-            data={chartData}
-            layout={{
-              paper_bgcolor: "transparent",
-              plot_bgcolor: "transparent",
-              font: { color: "#9ca3af" },
-              xaxis: { title: "Exposure time (s)", gridcolor: "#374151", type: "log" },
-              yaxis: { title: "Hₘₚₑ (mJ/cm²)", gridcolor: "#374151", type: "log" },
-              yaxis2: {
-                title: "Eₘₚₑ (mW/cm²)",
-                overlaying: "y",
-                side: "right",
-                type: "log",
-                gridcolor: "#374151",
-              },
-              margin: { t: 30, r: 80, b: 50, l: 70 },
-              legend: { orientation: "h", y: -0.2 },
-            }}
-          />
         </>
       ) : (
-        <div className="rounded-xl border border-red-800 bg-red-950/40 p-6 text-red-100">
-          <p className="text-lg font-semibold">Unsupported regime intentionally disabled</p>
-          <p className="mt-2 text-sm leading-6">{result.reason}</p>
-          <ul className="mt-4 list-disc space-y-1 pl-5 text-sm leading-6 text-red-100/90">
-            {result.notes.map((note) => (
-              <li key={note}>{note}</li>
-            ))}
-          </ul>
-        </div>
+        <p className="text-amber-300 mb-6">The eye limits cover 180 nm to 1 mm.</p>
       )}
+
+      <p className="text-sm text-gray-400 mb-8">
+        Maximum permissible exposure of the eye from the ICNIRP 2013 limits (Health Phys. 105:271, Tables 3, 5 and 8)
+        for a point source (intrabeam viewing of a collimated beam, C_E = 1) and one exposure of duration t: a CW beam
+        on for t, or a single pulse. Each limit is a radiant exposure at the cornea, averaged over its aperture: 7 mm for
+        the retina, 3.5 mm for the anterior eye, 1 mm growing to 3.5 mm at 10 s in the UV and from 1.4 µm to 100 µm, and
+        11 mm beyond. From 400 to 600 nm the thermal and photochemical limits both apply. From 1150 nm C_C raises the
+        retinal limit, and towards 1400 nm the anterior-eye limit (twice the skin limit) is the lower one. IEC 60825-1:2014 builds its
+        emission limits on the same values, except in the UV (see{" "}
+        <Link href="/laser-safety/ansi-iec-comparison" className={linkClass}>MPE vs AEL</Link>). Not covered here: pulse
+        trains (<Link href="/laser-safety/pulsed-mpe" className={linkClass}>pulsed MPE</Link>), extended sources (
+        <Link href="/laser-safety/extended-source" className={linkClass}>extended source</Link>), the skin (
+        <Link href="/laser-safety/skin-mpe" className={linkClass}>skin MPE</Link>), and ICNIRP&apos;s advice to use the
+        actual irradiance of beams under 1 mm.
+      </p>
 
       <LaserSafetySuiteLinks currentHref="/laser-safety/mpe" />
     </>

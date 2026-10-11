@@ -109,8 +109,8 @@ export default function CornealVsRetinalPage() {
         the cornea-to-retina irradiance gain for a point source at about 100 000. Here the eye is a 17 mm lens that
         focuses a TEM₀₀ beam to 4λf/(πd), but never below 25.5 µm (α_min = 1.5 mrad), so the gain is (7 mm / image)²,
         at most 7.5×10⁴. In the UV and from 1400 nm the cornea and lens absorb the beam and only the corneal limits apply.
-        From 1150 to 1400 nm both apply: the retinal limit (C_C rises as water absorbs more) and twice the skin limit
-        for the cornea and lens. Each limit is a corneal exposure averaged over its aperture (7 mm retinal, 3.5 mm
+        The skin limit (twice it from 700 nm) also protects the cornea and lens; for a beam it matters from 1150 to
+        1400 nm, where C_C raises the retinal limit as water absorbs more. Each limit is a corneal exposure averaged over its aperture (7 mm retinal, 3.5 mm
         anterior, 1 → 3.5 mm corneal); the max power is for this beam, staying within the limit at every duration up to
         t. Absorption in the ocular media is not modelled.
       </p>

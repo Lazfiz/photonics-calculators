@@ -40,9 +40,9 @@ test("correction factors, ICNIRP 2013 Table 3", () => {
 test("which limits apply, and their apertures (Tables 5, 7, 8)", () => {
   const kinds = (l: number) => eyeLimits(nm(l)).map((x) => x.kind).sort().join(",");
   assert.equal(kinds(399.9), "cornealUv");
-  assert.equal(kinds(400), "retinalPhotochemical,retinalThermal");
-  assert.equal(kinds(600), "retinalThermal");
-  assert.equal(kinds(1149), "retinalThermal");
+  assert.equal(kinds(400), "anteriorSegment,retinalPhotochemical,retinalThermal");
+  assert.equal(kinds(600), "anteriorSegment,retinalThermal");
+  assert.equal(kinds(1149), "anteriorSegment,retinalThermal");
   assert.equal(kinds(1150), "anteriorSegment,retinalThermal");
   assert.equal(kinds(1400), "cornealIr");
   assert.equal(eyeLimits(nm(179)).length, 0);
@@ -155,6 +155,31 @@ test("near IR: C_A, C_C and the anterior-segment limit", () => {
   assertRel(r.tMax, Math.pow(1.1e5 / (0.2 / area(3.5e-3)), 4 / 3), 1e-9, "1350 nm");
   assertRel(r.tMax, 9.22, 1e-3, "1350 nm, 9.22 s");
   assert.equal(r.limits.find((l) => l.kind === "retinalThermal")?.tMax, Infinity);
+});
+
+test("anterior eye: the skin limit in the visible, twice it in the IR (Table 5 note d)", () => {
+  // Table 7, 400–1400 nm: 200 C_A J/m² to 100 ns, 1.1×10⁴ C_A t^0.25 J/m² to 10 s, then 2×10³ C_A W/m².
+  const skin = (t: number) => (t < 1e-7 ? 200 : t < 10 ? 1.1e4 * Math.pow(t, 0.25) : 2e3 * t);
+  for (const t of [1e-8, 0.25, 100]) {
+    assertRel(exposureLimit(limitOf(nm(532), "anteriorSegment"), t), skin(t), 1e-12, `532 nm, ${t} s`);
+    assertRel(exposureLimit(limitOf(nm(905), "anteriorSegment"), t), 2 * correctionCA(nm(905)) * skin(t), 1e-12, `905 nm, ${t} s`);
+  }
+  assertRel(exposureLimit(limitOf(nm(532), "anteriorSegment"), 0.25), 7778.2, 1e-4, "7.78 kJ/m² at 0.25 s");
+  // A point source never reaches it below 1150 nm: the retinal limit allows less power, even through 7 mm vs 3.5 mm.
+  for (const l of [400, 532, 699, 700, 905, 1064, 1149]) {
+    for (const t of [1e-9, 1e-6, 1e-3, 0.25, 10, 100, 3e4]) {
+      const pAnterior = limitMaxPower(limitOf(nm(l), "anteriorSegment"), 0, t);
+      assert.ok(pAnterior > limitMaxPower(limitOf(nm(l), "retinalThermal"), 0, t), `${l} nm, ${t} s`);
+    }
+  }
+  // A 10 cm diffuse spot seen from 10 cm (α = 0.707 rad) with an open field of view at 0.25 s: C_E = α²/(α_min α_max)
+  // = 3333, so the retinal limit 18 C_E t^0.75 = 21.2 kJ/m² is above the skin's 7.78 kJ/m², which then binds.
+  const alpha = 0.1 / Math.SQRT2 / 0.1;
+  const big = eyeLimits(nm(532), alpha, "open");
+  const H = (kind: EyeLimitKind) => exposureLimit(big.find((x) => x.kind === kind)!, 0.25);
+  assertRel(H("retinalThermal"), 18 * ((alpha * alpha) / (ALPHA_MIN * 0.1)) * Math.pow(0.25, 0.75), 1e-9, "21.2 kJ/m²");
+  assertRel(H("anteriorSegment"), skin(0.25), 1e-12, "the anterior limit doesn't depend on α");
+  assert.ok(H("anteriorSegment") < H("retinalThermal"));
 });
 
 test("mid and far IR: limits with the time-dependent aperture", () => {
@@ -283,7 +308,7 @@ test("extended-source retinal thermal limit (Table 5 with C_E and T₂)", () => 
   }
   // The duration solver handles the falling t^1.25 piece.
   const r = exposureDuration(nm(532), 0.01, 1e-3, 0.05);
-  assert.equal(r.limits.length, 2);
+  assert.equal(r.limits.length, 3);
   const tThermal = r.limits[0].tMax;
   assertRel(apertureIrradiance(0.01, 1e-3, 7e-3) * tThermal, exposureLimit(thermal(532, 0.05), tThermal), 1e-9, "E·t = H at t_max");
 });

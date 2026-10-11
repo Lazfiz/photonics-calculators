@@ -6,7 +6,7 @@ export const LIMIT_LABELS: Record<EyeLimitKind, string> = {
   cornealUv: "Cornea (UV)",
   retinalThermal: "Retina, thermal",
   retinalPhotochemical: "Retina, photochemical (blue light)",
-  anteriorSegment: "Anterior eye (2 × skin limit)",
+  anteriorSegment: "Anterior eye (skin limit, 2 × in the IR)",
   cornealIr: "Cornea (IR)",
 };
 
