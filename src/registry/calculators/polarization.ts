@@ -75,6 +75,46 @@ const yehGu: Reference = {
   citation: "Yeh P., Gu C. (1999). Optics of Liquid Crystal Displays: Jones matrix of a twisted nematic layer. Wiley.",
 };
 
+const goldsteinFresnel = goldstein("ch. Fresnel Equations, pp. 117–147");
+const goldsteinPlates = goldstein("ch. Mueller Matrices for Dielectric Plates, pp. 177–199");
+const bornWolfFresnel: Reference = {
+  citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed., §1.5 Reflection and refraction of a plane wave (Fresnel formulae, total reflection). Cambridge University Press.",
+  url: "https://doi.org/10.1017/CBO9781139644181.010",
+};
+// Shurcliff's chapters, titles and pages from Crossref (doi:10.4159/harvard.9780674424135.cN).
+const shurcliff = (chapter: string, n: number): Reference => ({
+  citation: `Shurcliff W. A. (1962). Polarized Light: Production and Use, ch. ${chapter}. Harvard University Press.`,
+  url: `https://doi.org/10.4159/harvard.9780674424135.c${n}`,
+});
+const shurcliffParameters = shurcliff("3 Polarizers: classes and performance parameters, pp. 32–42 (principal transmittances k₁, k₂)", 4);
+const shurcliffDichroic = shurcliff("4 Dichroic polarizers, pp. 43–64", 5);
+const shurcliffBirefringence = shurcliff("5 Birefringence polarizers, pp. 65–77", 6);
+const shurcliffReflection = shurcliff("6 Reflection polarizers, pp. 78–86", 7);
+const archardTaylor1948: Reference = {
+  citation: "Archard J. F., Taylor A. M. (1948). Improved Glan-Foucault prism. J. Sci. Instrum. 25, 407–409: the Glan-Taylor design, optic axis in the plane of incidence.",
+  url: "https://doi.org/10.1088/0950-7671/25/12/304",
+};
+const macNeille1946: Reference = {
+  citation: "MacNeille S. M. (1946). Beam splitter. US patent 2,403,731 (Eastman Kodak): quarter-wave layers at Brewster's angle between glass prisms.",
+  url: "https://patents.google.com/patent/US2403731A/en",
+};
+const macleodBasic: Reference = {
+  citation: "Macleod H. A. (2010). Thin-Film Optical Filters, 4th ed., ch. 2 Basic Theory, pp. 13–71. CRC Press.",
+  url: "https://doi.org/10.1201/9781420073034-c2",
+};
+const macleodTilted: Reference = {
+  citation: "Macleod H. A. (2010). Thin-Film Optical Filters, 4th ed., ch. 9 Tilted Coatings (MacNeille polarizer), pp. 403–469. CRC Press.",
+  url: "https://doi.org/10.1201/9781420073034-c9",
+};
+const marcuvitz: Reference = {
+  citation: "Marcuvitz N. (1951; IET reprint 1986). Waveguide Handbook, ch. 5 Four-terminal structures, pp. 217–335: inductive and capacitive strip gratings.",
+  url: "https://doi.org/10.1049/PBEW021E_ch5",
+};
+const ulrich1967: Reference = {
+  citation: "Ulrich R. (1967). Far-infrared properties of metallic mesh and its complementary structure. Infrared Phys. 7, 37–55.",
+  url: "https://doi.org/10.1016/0020-0891(67)90028-0",
+};
+
 export const polarization: CalculatorEntry[] = [
   {
     slug: "birefringence",
@@ -93,15 +133,19 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "birefringent-polarizer",
     title: "Birefringent Polarizer Design",
-    description: "Compare Glan, Wollaston, Rochon, and Senarmont polarizer designs using birefringent crystal prisms.",
-    knownIssue: "The Glan field of view ignores total reflection of the e-ray (14.6° shown, about 5° real), the walk-off formula shown is not the one computed, and the rutile, YVO₄ and BBO presets have wrong indices.",
+    description: "Compare Glan-Taylor, Wollaston, Rochon and Sénarmont prism polarizers: exact beam deviations and the Glan field of view from crystal dispersion data.",
+    tier: "exact",
+    modelNote: "Normal incidence on two-wedge splitters: tangential wave vector kept at each face, e waves on the index ellipsoid; Glan field from total reflection at the gap. Not modelled: off-axis rays in splitters, losses.",
+    references: [bornWolfCrystals, shurcliffBirefringence, archardTaylor1948, ...crystalData],
   },
   {
     slug: "brewster-polarizer",
     title: "Brewster-Angle Polarizer",
-    description: "Design Brewster-angle polarizers using tilted glass plates. At Brewster's angle, p-polarized light has zero reflection.",
+    description: "Design pile-of-plates polarizers at Brewster's angle: transmittance and degree of polarization of m glass plates, with the multiple reflections between surfaces.",
     heading: "Brewster Polarizer Design",
-    knownIssue: "The reflectance chart uses the refraction angle where it needs its cosine (4.3 % at normal incidence shows as 16.8 %), and the plate stack ignores multiple reflections, which overstates the extinction.",
+    tier: "exact",
+    modelNote: "Lossless plane-parallel plates in air, Fresnel reflectance per surface, multiple reflections added in power: T = (1 − r)/(1 + (2m − 1)r). Not modelled: absorption, interference, beam offset.",
+    references: [goldsteinPlates, shurcliffReflection, bornWolfFresnel],
   },
   {
     slug: "circular-dichroism",
@@ -133,8 +177,10 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "dichroic-polarizer",
     title: "Dichroic Polarizer",
-    description: "Model absorption-based dichroic polarizers using complex refractive indices. One polarization state is strongly absorbed while the other transmits.",
-    knownIssue: "The default absorption index (k = 2) is metal-like, so both transmissions underflow to 0 % and the extinction ratio prints Infinity dB; the surface reflectance ignores k.",
+    description: "Model absorbing dichroic polarizers from the complex index of each principal axis: principal transmittances, extinction ratio and crossed-pair leakage.",
+    tier: "exact",
+    modelNote: "Slab at normal incidence, N = n − iκ per principal axis, face reflectance including κ, multiple reflections added in power; ratios from logs. Not modelled: dispersion, scattering, oblique light.",
+    references: [shurcliffParameters, shurcliffDichroic, macleodBasic, bornWolfFresnel],
   },
   {
     slug: "double-refraction",
@@ -147,15 +193,20 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "fresnel-polarization",
     title: "Fresnel Polarization Calculator",
-    description: "Compute Fresnel reflection/transmission coefficients and analyze polarization-dependent effects at dielectric interfaces.",
-    lede: "Compute Fresnel reflection/transmission coefficients and analyze polarization-dependent effects at dielectric interfaces. Uses Born & Wolf sign convention (r_p sign differs from thin-film Macleod convention).",
+    description: "Compute Fresnel reflection and transmission coefficients, their phases, and the Brewster and critical angles at an interface, including absorbing media and total internal reflection.",
+    lede: "Fresnel reflection and transmission coefficients, their phases, and the Brewster and critical angles at an interface, including absorbing media and total internal reflection. r_p = −r_s at normal incidence (Born & Wolf; the thin-film pages use Macleod's opposite sign).",
     keywords: ["Fresnel Equations"],
+    tier: "exact",
+    modelNote: "Plane wave at a flat interface from a lossless medium onto N₂ = n₂ − iκ₂; complex coefficients in total reflection; time factor e^i(ωt − kz), r_p = −r_s at normal incidence. Not modelled: films, roughness.",
+    references: [bornWolfFresnel, goldsteinFresnel],
   },
   {
     slug: "glans-prism",
     title: "Glan Prism Polarizer Design",
-    description: "Compare Glan-Taylor (air gap) and Glan-Thompson (cemented) polarizer designs based on calcite or other birefringent crystals.",
-    knownIssue: "The Glan-Thompson mode returns NaN critical angles, the field of view shows a window where none exists (it takes an absolute value), and the wavelength input is not used.",
+    description: "Design Glan-Taylor, Glan-Foucault and Glan-Thompson prism polarizers: the field of view from total internal reflection of the o and e rays, with crystal dispersion.",
+    tier: "exact",
+    modelNote: "Plane waves in the hypotenuse's plane of incidence; tangential wave vector kept, total reflection when k_t ≥ n_gap; Sellmeier indices. Not modelled: out-of-plane rays, gap interference, losses.",
+    references: [bornWolfCrystals, bornWolfTir, archardTaylor1948, shurcliffBirefringence, ...crystalData],
   },
   {
     slug: "jones-calculus",
@@ -239,6 +290,9 @@ export const polarization: CalculatorEntry[] = [
     slug: "polarizer-extinction",
     title: "Polarizer Extinction Ratio",
     description: "Analyze extinction ratio, Malus's law with imperfect polarizers, and cascaded extinction performance.",
+    tier: "exact",
+    modelNote: "Ideal diattenuators: linearly polarized light at θ to the pass axis gives T∥cos²θ + T⊥sin²θ; aligned polarizers in series multiply both. Not modelled: depolarization, misalignment, reflections.",
+    references: [goldsteinMueller, shurcliffParameters],
   },
   {
     slug: "polarizer-types",
@@ -248,14 +302,18 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "polarizing-beamsplitter",
     title: "Polarizing Beamsplitter (PBS) Design",
-    description: "Design polarizing beamsplitter cubes and prisms based on birefringent crystals with air-gap TIR separation.",
-    knownIssue: "This is not a cube-beamsplitter model: it checks total internal reflection in a calcite air-gap prism, mixes two angle conventions, fails at its own default cut and uses a Wollaston formula for the separation.",
+    description: "Design a MacNeille polarizing beamsplitter cube: a quarter-wave high/low-index stack at Brewster's angle between glass prisms, with its extinction against wavelength and angle.",
+    tier: "exact",
+    modelNote: "(HL)ᴺH quarter-wave stack between glass by the characteristic-matrix method: coherent, lossless, constant indices. Not modelled: the cube's outer faces, dispersion, absorption.",
+    references: [macNeille1946, macleodTilted, macleodBasic],
   },
   {
     slug: "polymer-polarizer",
     title: "Polymer (Sheet) Polarizer",
-    description: "Model iodine-doped PVA film polarizers (e.g., H-sheet). Absorption-based dichroic polarizers with selectable dichroic ratio and film thickness.",
-    knownIssue: "The polarization efficiency has the wrong sign (−75 % at the defaults), the extinction ratio is defined three different ways on the page, and the presets give extinction ratios far below real sheet polarizers.",
+    description: "Model iodine-PVA sheet polarizers (H-sheet type): principal transmittances k₁ and k₂, extinction ratio and efficiency from the film's absorption, dichroic ratio and thickness.",
+    tier: "exact",
+    modelNote: "Homogeneous film at one wavelength: Beer–Lambert absorption per axis (α∥ = R_d α⊥), face reflections, multiple reflections added in power. Not modelled: spectra, scattering, protective layers.",
+    references: [shurcliffParameters, shurcliffDichroic, macleodBasic],
   },
   {
     slug: "retarder",
@@ -309,7 +367,9 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "wire-grid",
     title: "Wire Grid Polarizer Calculator",
-    description: "Model wire grid polarizers — metallic wires on a substrate that reflect E∥ and transmit E⊥.",
-    knownIssue: "The sheet-transmission formula gives more than 100 % transmission at the defaults (322 % for E parallel to the wires), the cards and charts use different models, and the period is not checked against λ.",
+    description: "Model wire-grid polarizers as a grating of metal strips much finer than the wavelength: transmission for E across and along the strips, reflection, ohmic loss and extinction ratio.",
+    tier: "textbook",
+    modelNote: "Quasi-static shunt sheet for p ≪ λ: Marcuvitz strip reactances (capacitive by Babinet), normal incidence, free-standing; loss from DC conductivity. Not modelled: strip height, substrate.",
+    references: [marcuvitz, ulrich1967],
   },
 ];
