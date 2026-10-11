@@ -343,7 +343,7 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
 
 ## Phase 4 — physics quality (ongoing)
 - [ ] Golden-value tests for the top 50 calculators by traffic, then by category.
-- [x] Model-tier badge (Exact / Textbook approximation / Illustrative) with references on each page: stage 2c (session 24). 34 of 472 pages had a tier, 55 after session 25, 61 of 470 after session 26, 66 after session 27, 72 after session 28, 82 after session 29, 89 of 466 after session 30, 93 of 464 after session 31, 107 of 461 at session 37; the rest say "Not yet reviewed".
+- [x] Model-tier badge (Exact / Textbook approximation / Illustrative) with references on each page: stage 2c (session 24). 34 of 472 pages had a tier, 55 after session 25, 61 of 470 after session 26, 66 after session 27, 72 after session 28, 82 after session 29, 89 of 466 after session 30, 93 of 464 after session 31, 107 of 461 at session 37, 116 of 461 at session 38; the rest say "Not yet reviewed".
 - [ ] Audit the unreviewed pages and fill in their `tier`, `modelNote` and `references` (`physics-audit`, then the registry entry). Quick first batch: the thin-film pages on `transfer-matrix.ts`.
   - [x] **Thin-film audit, part 1** (session 25, branch `phase-4/thin-film-audit`). Four `physics-reviewer` batches audited the 39 thin-film pages on the modules plus `wave-optics/gires-tournois`: 9 OK, 14 questionable, 17 bugs. 21 pages are fixed (where needed) and have trust data: 14 exact, 6 textbook, 1 illustrative.
     - New tested modules: `physics/thin-film/quarter-wave-stack.ts` (Macleod's zone half-width Δg = (2/π) asin((n_H − n_L)/(n_H + n_L)), edges λ₀/(1 ± Δg), the non-overlap ratio (1 + Δg)/(1 − Δg), first-order centre at angle λ₀(cos θ_H + cos θ_L)/2) and `graded-index.ts` (midpoint staircase, ≥ 10 sublayers per λ/n). `interference.ts` gained `airyPeakNear` (nearest order, exact FWHM in wavelength).
@@ -542,16 +542,21 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
       are hard-coded at all wavelengths; `sellmeier-data.ts` has only MgF₂ ordinary. Glan-type angle conventions differ in
       three pages. Wavelength inputs are dead in several pages. Out of scope but flagged: `materials/birefringent-crystals`
       lists the fused-silica Malitson set as quartz; `materials/crystal-birefringence` rutile 2.454/2.493.
-  - [ ] **Polarization part 1: Jones, Mueller, Stokes.** New `physics/polarization/{jones,mueller,stokes}.ts` (element
-    builders, rotation, chains in order, `stokesFromJones`, handedness from S3, `isPhysicalStokes`, Mueller realisability
-    d ∈ [−1/3, 1]). Pages: `retarder` (back-rotation R(θ) not R(−θ): HWP 22.5° on H must give S2 = 1), `jones-chain`
-    (reverse loop: H → [P45, PV] must be 0.25; handedness = sign Im Ey; |E_in|² not normalised, 134 %), `jones-calculus`
-    (RCP/LCP presets vs diag(1, −i); `angle || 45`), `mueller-polarimetry` (rotator turns −θ; depolarizer % unbounded;
-    retarder axis fixed), `mueller-matrix` (rotator sense), `degree-polarization` ("33 %" preset is 99.9 %; NaN χ for
-    unpolarized; undersampled spectral mode), `stokes`, `polarimetry`, `poincare-sphere` (no |S| ≤ S0 check; upper
-    hemisphere only; "Right Circular" for ellipses; dead analyzer/retarder code in `polarimetry`).
-    Golden values: (1, .8, .3, .2) → DOP 0.8775, ψ 10.278°, χ 6.587°; (1, .5, .3, .2) → DOP 0.6164, ψ 15.48°, χ 9.47°;
-    QWP fast-H · (1, 0, 1, 0) = (1, 0, 0, −1); polarizer 30° on H → 0.75.
+  - [x] **Polarization part 1: Jones, Mueller, Stokes** (session 38, branch `phase-4/polarization-jones`).
+    `src/physics/polarization/{jones,mueller,stokes}.ts` carry the CONVENTION header (Goldstein/Collett): element
+    builders, R(−θ)·M·R(θ), chains with element 1 first, `stokesFromJones`, `muellerFromJones` (½ tr(J† σi J σj)),
+    ellipse angles NaN when undefined, `isPhysicalStokes`, depolarizer d ∈ [−1/3, 1] (Cloude 1986), and a band-averaged
+    retarder (Simpson, ≥ 32 intervals per cycle, cumulative sweep over bandwidths). 3 test files, every closed-form Mueller
+    matrix checked against `muellerFromJones`, the band average against the Si/Ci closed form; a 13-mutation check passed.
+    The nine pages use them (shared `components/polarization-format.ts` and `poincare-wireframe.ts`, both hemispheres);
+    all nine tiered exact with Goldstein 3rd ed. chapters (titles and pages from Crossref), Jones 1941, Collett 2005 and
+    Cloude 1986; five `knownIssue`s dropped (16 left in polarization).
+    - Page changes beyond the audit list: `mueller-polarimetry` has a fast-axis input per retarder; `degree-polarization`'s
+      spectral mode is a 45° retarder with Γ = 2πmλ₀/λ (the old one subtracted 2πm), with inputs for the retardance and
+      the full bandwidth, and charts DOP against bandwidth; `polarimetry` lost its dead retarder input and gained an
+      analyzer-angle input.
+    - Golden values: (1, .8, .3, .2) → DOP 0.8775, ψ 10.278°, χ 6.587°; (1, .5, .3, .2) → DOP 0.6164, ψ 15.48°, χ 9.47°;
+      QWP fast-H · (1, 0, 1, 0) = (1, 0, 0, −1); polarizer 30° on H → 0.75; HWP 22.5° on H → S2 = 1; H → [P45, PV] = 0.25.
   - [ ] **Polarization part 2: birefringent crystals.** A uniaxial Sellmeier table (quartz and calcite Ghosh 1999, MgF₂
     Dodge 1984, sapphire, LiNbO₃ Zelmon 1997, YVO₄, rutile Devore 1951) and `physics/polarization/uniaxial.ts` (n(θ),
     walk-off, retardance, waveplate orders, compound zero-order d₁ − d₂, Gooch-Tarry). Pages: `double-refraction` (AOI
