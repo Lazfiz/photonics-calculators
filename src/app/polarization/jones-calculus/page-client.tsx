@@ -1,7 +1,25 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import type { Complex } from "../../../physics/complex";
+import {
+  IDENTITY,
+  LCP,
+  RCP,
+  intensity,
+  linearPolarizer,
+  linearRetarder,
+  linearState,
+  propagate,
+  rotator,
+  stokesFromJones,
+  type JonesMatrix,
+  type JonesVector,
+} from "../../../physics/polarization/jones";
+import { CONVENTION_NOTE, degOrDash, fix, stateLabel } from "../../../components/polarization-format";
+import { ellipseAngles } from "../../../physics/polarization/stokes";
 
+const DEG = Math.PI / 180;
 
 type ElementType = "polarizer-h" | "polarizer-v" | "polarizer-45" | "polarizer-135" | "qwp-fast-h" | "qwp-fast-v" | "hwp-fast-h" | "hwp-fast-v" | "rotator";
 
@@ -17,21 +35,12 @@ const ELEMENT_OPTIONS: { type: ElementType; label: string; hasAngle: boolean; de
   { type: "rotator", label: "Rotator", hasAngle: true, defaultAngle: 45 },
 ];
 
-// Complex number arithmetic
-type C = { re: number; im: number };
-const czero = { re: 0, im: 0 };
-const cone = { re: 1, im: 0 };
-const ci = { re: 0, im: 1 };
-function cmul(a: C, b: C): C {
-  return { re: a.re * b.re - a.im * b.im, im: a.re * b.im + a.im * b.re };
-}
-function cadd(a: C, b: C): C {
-  return { re: a.re + b.re, im: a.im + b.im };
-}
-function cfmt(c: C): string {
-  if (Math.abs(c.im) < 1e-10) return c.re.toFixed(3);
-  if (Math.abs(c.re) < 1e-10) return `${c.im.toFixed(3)}i`;
-  return `${c.re.toFixed(3)}${c.im >= 0 ? "+" : ""}${c.im.toFixed(3)}i`;
+function cfmt(c: Complex): string {
+  const r = fix(c.re, 3);
+  const i = fix(c.im, 3);
+  if (Number(i) === 0) return r;
+  if (Number(r) === 0) return `${i}i`;
+  return `${r}${c.im >= 0 ? "+" : ""}${i}i`;
 }
 
 interface JonesEl {
@@ -39,44 +48,30 @@ interface JonesEl {
   angle?: number;
 }
 
-function getJonesMatrixC(el: JonesEl): C[][] {
+function getJonesMatrix(el: JonesEl): JonesMatrix {
   switch (el.type) {
-    case "polarizer-h": return [[cone, czero], [czero, czero]];
-    case "polarizer-v": return [[czero, czero], [czero, cone]];
-    case "polarizer-45": return [[{ re: 0.5, im: 0 }, { re: 0.5, im: 0 }], [{ re: 0.5, im: 0 }, { re: 0.5, im: 0 }]];
-    case "polarizer-135": return [[{ re: 0.5, im: 0 }, { re: -0.5, im: 0 }], [{ re: -0.5, im: 0 }, { re: 0.5, im: 0 }]];
-    case "qwp-fast-h": return [[cone, czero], [czero, { re: Math.cos(-Math.PI / 2), im: Math.sin(-Math.PI / 2) }]];
-    case "qwp-fast-v": return [[{ re: Math.cos(-Math.PI / 2), im: Math.sin(-Math.PI / 2) }, czero], [czero, cone]];
-    case "hwp-fast-h": return [[cone, czero], [czero, { re: Math.cos(-Math.PI), im: Math.sin(-Math.PI) }]];
-    case "hwp-fast-v": return [[{ re: Math.cos(-Math.PI), im: Math.sin(-Math.PI) }, czero], [czero, cone]];
-    case "rotator": {
-      const a = ((el.angle || 45) * Math.PI) / 180;
-      return [[{ re: Math.cos(a), im: 0 }, { re: -Math.sin(a), im: 0 }], [{ re: Math.sin(a), im: 0 }, { re: Math.cos(a), im: 0 }]];
-    }
-    default: return [[cone, czero], [czero, cone]];
+    case "polarizer-h": return linearPolarizer(0);
+    case "polarizer-v": return linearPolarizer(90 * DEG);
+    case "polarizer-45": return linearPolarizer(45 * DEG);
+    case "polarizer-135": return linearPolarizer(135 * DEG);
+    case "qwp-fast-h": return linearRetarder(90 * DEG, 0);
+    case "qwp-fast-v": return linearRetarder(90 * DEG, 90 * DEG);
+    case "hwp-fast-h": return linearRetarder(180 * DEG, 0);
+    case "hwp-fast-v": return linearRetarder(180 * DEG, 90 * DEG);
+    case "rotator": return rotator((el.angle ?? 45) * DEG);
+    default: return IDENTITY;
   }
-}
-
-function matVec(m: C[][], v: C[]): C[] {
-  return [
-    cadd(cmul(m[0][0], v[0]), cmul(m[0][1], v[1])),
-    cadd(cmul(m[1][0], v[0]), cmul(m[1][1], v[1])),
-  ];
-}
-
-function intensity(v: C[]): number {
-  return v[0].re * v[0].re + v[0].im * v[0].im + v[1].re * v[1].re + v[1].im * v[1].im;
 }
 
 type InputPreset = "linear-h" | "linear-v" | "linear-45" | "linear-135" | "rcp" | "lcp";
 
-const INPUT_PRESETS: Record<InputPreset, { jones: C[]; label: string }> = {
-  "linear-h": { jones: [cone, czero], label: "Linear H" },
-  "linear-v": { jones: [czero, cone], label: "Linear V" },
-  "linear-45": { jones: [{ re: 1 / Math.sqrt(2), im: 0 }, { re: 1 / Math.sqrt(2), im: 0 }], label: "Linear 45°" },
-  "linear-135": { jones: [{ re: 1 / Math.sqrt(2), im: 0 }, { re: -1 / Math.sqrt(2), im: 0 }], label: "Linear 135°" },
-  rcp: { jones: [{ re: 1 / Math.sqrt(2), im: 0 }, { re: 0, im: -1 / Math.sqrt(2) }], label: "RCP" }, // [1, -i]/√2 (e^{-iωt} convention, Hecht)
-  lcp: { jones: [{ re: 1 / Math.sqrt(2), im: 0 }, { re: 0, im: 1 / Math.sqrt(2) }], label: "LCP" },   // [1, +i]/√2
+const INPUT_PRESETS: Record<InputPreset, { jones: JonesVector; label: string }> = {
+  "linear-h": { jones: linearState(0), label: "Linear H" },
+  "linear-v": { jones: linearState(90 * DEG), label: "Linear V" },
+  "linear-45": { jones: linearState(45 * DEG), label: "Linear 45°" },
+  "linear-135": { jones: linearState(-45 * DEG), label: "Linear 135°" }, // 135° = −45°
+  rcp: { jones: RCP, label: "RCP" },
+  lcp: { jones: LCP, label: "LCP" },
 };
 
 export default function JonesCalculusPage() {
@@ -101,32 +96,33 @@ export default function JonesCalculusPage() {
   const inputState = INPUT_PRESETS[inputKey].jones;
 
   const chain = useMemo(() => {
-    const states: { label: string; ex: C; ey: C; intensity: number; matrix: C[][] }[] = [];
-    let state = [...inputState] as C[];
-    states.push({ label: "Input", ex: state[0], ey: state[1], intensity: intensity(state), matrix: [[cone, czero], [czero, cone]] });
-
-    for (const el of elements) {
-      const opt = ELEMENT_OPTIONS.find((o) => o.type === el.type);
-      const mat = getJonesMatrixC(el);
-      state = matVec(mat, state);
-      states.push({
-        label: opt?.label || el.type,
-        ex: state[0],
-        ey: state[1],
-        intensity: intensity(state),
-        matrix: mat,
-      });
-    }
-    return states;
+    const matrices = elements.map(getJonesMatrix);
+    const fields = propagate(matrices, INPUT_PRESETS[inputKey].jones);
+    return fields.map((E, i) => {
+      const opt = i === 0 ? undefined : ELEMENT_OPTIONS.find((o) => o.type === elements[i - 1].type);
+      return {
+        label: i === 0 ? "Input" : opt?.label || elements[i - 1].type,
+        E,
+        intensity: intensity(E),
+        matrix: i === 0 ? IDENTITY : matrices[i - 1],
+      };
+    });
   }, [elements, inputKey]);
 
   const inputIntensity = intensity(inputState);
-  const outputIntensity = chain.length > 0 ? chain[chain.length - 1].intensity : 0;
+  const final = chain[chain.length - 1];
+  const outputIntensity = final.intensity;
   const transmission = inputIntensity > 0 ? outputIntensity / inputIntensity : 0;
+
+  // Final stage: the state of the light after the last element (the input when the chain is empty).
+  const dark = outputIntensity < 1e-12;
+  const finalStokes = stokesFromJones(final.E);
+  const finalAngles = dark ? { psi: NaN, chi: NaN } : ellipseAngles(finalStokes);
+  const finalLabel = dark ? "No light transmitted" : stateLabel(finalStokes);
 
   return (
     <>
-            
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Input */}
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
@@ -167,8 +163,11 @@ export default function JonesCalculusPage() {
                     <span className="text-gray-500 text-sm">{idx + 1}.</span>
                     <span className="text-sm flex-1">{opt?.label}</span>
                     {opt?.hasAngle && (
-                      <input type="number" value={el.angle || 0} step="1"
-                        onChange={(e) => updateAngle(idx, parseFloat(e.target.value) || 0)}
+                      <input type="number" value={el.angle ?? 0} step="1" aria-label={`Rotation angle of element ${idx + 1} (°)`}
+                        onChange={(e) => {
+                          const v = parseFloat(e.target.value);
+                          if (Number.isFinite(v)) updateAngle(idx, v);
+                        }}
                         className="w-20 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-white" />
                     )}
                     <button onClick={() => removeElement(idx)} className="text-red-400 hover:text-red-300 text-sm">✕</button>
@@ -197,6 +196,12 @@ export default function JonesCalculusPage() {
             </div>
           </div>
 
+          <p className="mb-1 text-sm text-gray-300">
+            Output state: <span className="text-white font-semibold">{finalLabel}</span>
+            {!dark && <span className="font-mono">, ψ = {degOrDash(finalAngles.psi)}, χ = {degOrDash(finalAngles.chi)}</span>}
+          </p>
+          <p className="mb-4 text-xs text-gray-500">{CONVENTION_NOTE}</p>
+
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -212,8 +217,8 @@ export default function JonesCalculusPage() {
                 {chain.map((s, i) => (
                   <tr key={i} className="border-b border-gray-800">
                     <td className="py-2 font-semibold text-blue-400">{s.label}</td>
-                    <td className="py-2 font-mono">{cfmt(s.ex)}</td>
-                    <td className="py-2 font-mono">{cfmt(s.ey)}</td>
+                    <td className="py-2 font-mono">{cfmt(s.E[0])}</td>
+                    <td className="py-2 font-mono">{cfmt(s.E[1])}</td>
                     <td className="py-2 font-mono">{s.intensity.toFixed(4)}</td>
                     <td className="py-2 font-mono text-xs text-gray-500">
                       [{cfmt(s.matrix[0][0])}, {cfmt(s.matrix[0][1])}]<br/>

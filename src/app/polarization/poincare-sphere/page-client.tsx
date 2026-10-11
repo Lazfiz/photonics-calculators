@@ -1,32 +1,50 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { poincareWireframeTraces } from "../../../components/poincare-wireframe";
+import { CONVENTION_NOTE, fix, stateLabel } from "../../../components/polarization-format";
+import { useURLState } from "../../../hooks/use-url-state";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { scale, type Complex } from "../../../physics/complex";
+import { ellipticalState, type JonesVector } from "../../../physics/polarization/jones";
+import { degreeOfPolarization, stokesFromEllipse } from "../../../physics/polarization/stokes";
+
+const DEG = Math.PI / 180;
+
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+function cfmt(c: Complex): string {
+  const im = fix(c.im, 3);
+  return `${fix(c.re, 3)}${im.startsWith("-") ? "" : "+"}${im}i`;
+}
 
 export default function PoincareSpherePage() {
   const [thetaDeg, setThetaDeg] = useURLState("thetaDeg", 45);
   const [chiDeg, setChiDeg] = useURLState("chiDeg", 15);
   const [amplitude, setAmplitude] = useURLState("amplitude", 1);
 
+  // Clamp before use: the URL isn't clamped.
+  const chiShown = clamp(chiDeg, -45, 45);
+  const amplitudeShown = clamp(amplitude, 0.01, 5);
+
+  const psi = thetaDeg * DEG;
+  const chi = chiShown * DEG;
+
   const stokes = useMemo(() => {
-    const psi = (thetaDeg * Math.PI) / 180;
-    const chi = (chiDeg * Math.PI) / 180;
-    const I = amplitude * amplitude;
-    const Q = I * Math.cos(2 * chi) * Math.cos(2 * psi);
-    const U = I * Math.cos(2 * chi) * Math.sin(2 * psi);
-    const V = I * Math.sin(2 * chi);
-    const s1 = Q / I, s2 = U / I, s3 = V / I;
-    return { I, Q, U, V, s1, s2, s3 };
-  }, [thetaDeg, chiDeg, amplitude]);
+    const S = stokesFromEllipse(amplitudeShown * amplitudeShown, psi, chi);
+    const [I, Q, U, V] = S;
+    return { S, I, Q, U, V, s1: Q / I, s2: U / I, s3: V / I };
+  }, [psi, chi, amplitudeShown]);
 
   const tracePath = useMemo(() => {
     // Great circle path from H-polarized to current state
     const n = 50;
     const s1 = stokes.s1, s2 = stokes.s2, s3 = stokes.s3;
+    const sweep = Math.acos(clamp(s1, -1, 1)); // angle from (1,0,0)
     const x: number[] = [], y: number[] = [], z: number[] = [];
     for (let i = 0; i <= n; i++) {
-      const t = (i / n) * Math.acos(Math.min(1, s1)); // angle from (1,0,0)
+      const t = (i / n) * sweep;
       x.push(Math.cos(t));
       y.push(s2 / Math.sqrt(s2 * s2 + s3 * s3 + 1e-12) * Math.sin(t));
       z.push(s3 / Math.sqrt(s2 * s2 + s3 * s3 + 1e-12) * Math.sin(t));
@@ -34,57 +52,41 @@ export default function PoincareSpherePage() {
     return { x, y, z };
   }, [stokes]);
 
-  const wireframe = useMemo(() => {
-    const phi = Array.from({ length: 37 }, (_, i) => (i * 10 * Math.PI) / 180);
-    const theta = Array.from({ length: 19 }, (_, i) => (i * 10 * Math.PI) / 180);
-    return {
-      lon: theta.map((t) => ({ x: phi.map((p) => Math.cos(t) * Math.cos(p)), y: phi.map((p) => Math.cos(t) * Math.sin(p)), z: phi.map((p) => Math.sin(t)) })),
-      lat: phi.filter((_, i) => i % 3 === 0).map((p) => ({ x: theta.map((t) => Math.cos(t) * Math.cos(p)), y: theta.map((t) => Math.cos(t) * Math.sin(p)), z: theta.map((t) => Math.sin(t)) })),
-    };
-  }, []);
+  const wireframe = useMemo(() => poincareWireframeTraces(), []);
 
-  // Jones vector
-  const jones = useMemo(() => {
-    const psi = (thetaDeg * Math.PI) / 180;
-    const chi = (chiDeg * Math.PI) / 180;
-    return {
-      ex_re: amplitude * Math.cos(psi) * Math.cos(chi),
-      ex_im: -amplitude * Math.sin(psi) * Math.sin(chi),
-      ey_re: amplitude * Math.sin(psi) * Math.cos(chi),
-      ey_im: amplitude * Math.cos(psi) * Math.sin(chi),
-    };
-  }, [thetaDeg, chiDeg, amplitude]);
+  // Jones vector of amplitude A
+  const jones = useMemo<JonesVector>(() => {
+    const E = ellipticalState(psi, chi);
+    return [scale(E[0], amplitudeShown), scale(E[1], amplitudeShown)];
+  }, [psi, chi, amplitudeShown]);
 
-  // Ellipse trace for polarization ellipse
+  // Polarization ellipse Re{E e^{iωt}} over one period
   const ellipseTrace = useMemo(() => {
     const t = Array.from({ length: 101 }, (_, i) => (2 * Math.PI * i) / 100);
-    const psi = (thetaDeg * Math.PI) / 180;
-    const chi = (chiDeg * Math.PI) / 180;
-    const a = amplitude * Math.cos(chi);
-    const b = amplitude * Math.sin(chi);
-    const x = t.map((ti) => a * Math.cos(ti) * Math.cos(psi) - b * Math.sin(ti) * Math.sin(psi));
-    const y = t.map((ti) => a * Math.cos(ti) * Math.sin(psi) + b * Math.sin(ti) * Math.cos(psi));
-    return { x, y };
-  }, [thetaDeg, chiDeg, amplitude]);
+    return {
+      x: t.map((ti) => jones[0].re * Math.cos(ti) - jones[0].im * Math.sin(ti)),
+      y: t.map((ti) => jones[1].re * Math.cos(ti) - jones[1].im * Math.sin(ti)),
+    };
+  }, [jones]);
 
-  const dop = Math.sqrt(stokes.s1 ** 2 + stokes.s2 ** 2 + stokes.s3 ** 2);
-  const handedness = stokes.V > 0 ? "Right Circular" : stokes.V < 0 ? "Left Circular" : "Linear";
+  const dop = degreeOfPolarization(stokes.S);
+  const handednessLabel = stateLabel(stokes.S);
 
   return (
     <>
-            
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Polarization Parameters</h2>
           {[
-            { label: "Orientation angle θ (°)", val: thetaDeg, set: setThetaDeg, min: 0, max: 180 },
-            { label: "Ellipticity angle χ (°)", val: chiDeg, set: setChiDeg, min: -45, max: 45 },
-            { label: "Amplitude", val: amplitude, set: setAmplitude, min: 0.01, max: 5 },
-          ].map(({ label, val, set, min, max }) => (
+            { label: "Orientation angle θ (°)", val: thetaDeg, set: setThetaDeg, min: 0, max: 180, step: "1" },
+            { label: "Ellipticity angle χ (°)", val: chiShown, set: setChiDeg, min: -45, max: 45, step: "1" },
+            { label: "Amplitude", val: amplitudeShown, set: setAmplitude, min: 0.01, max: 5, step: "0.01" },
+          ].map(({ label, val, set, min, max, step }) => (
             <div key={label} className="mb-3">
-              <ValidatedNumberInput label={label} value={val} onChange={set} min={min} max={max} step="1" />
-              <input type="range" min={min} max={max} step="1" value={val} onChange={(e) => set(parseFloat(e.target.value))}
-                className="w-full mt-1" />
+              <ValidatedNumberInput label={label} value={val} onChange={set} min={min} max={max} step={step} />
+              <input type="range" min={min} max={max} step={step} value={val} onChange={(e) => set(parseFloat(e.target.value))}
+                aria-label={label} className="w-full mt-1" />
             </div>
           ))}
         </div>
@@ -92,22 +94,22 @@ export default function PoincareSpherePage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Stokes Vector</h2>
           <div className="space-y-3">
-            <ResultRow label="I" value={stokes.I.toFixed(4)} />
-            <ResultRow label="Q (S₁)" value={stokes.Q.toFixed(4)} />
-            <ResultRow label="U (S₂)" value={stokes.U.toFixed(4)} />
-            <ResultRow label="V (S₃)" value={stokes.V.toFixed(4)} />
-            <ResultRow label="DOP" value={dop.toFixed(4)} />
-            <ResultRow label="Handedness" value={handedness} />
-            <ResultRow label="Jones Ex" value={`${jones.ex_re.toFixed(3)}${jones.ex_im >= 0 ? '+' : ''}${jones.ex_im.toFixed(3)}i`} />
-            <ResultRow label="Jones Ey" value={`${jones.ey_re.toFixed(3)}${jones.ey_im >= 0 ? '+' : ''}${jones.ey_im.toFixed(3)}i`} />
+            <ResultRow label="I" value={fix(stokes.I, 4)} />
+            <ResultRow label="Q (S₁)" value={fix(stokes.Q, 4)} />
+            <ResultRow label="U (S₂)" value={fix(stokes.U, 4)} />
+            <ResultRow label="V (S₃)" value={fix(stokes.V, 4)} />
+            <ResultRow label="DOP" value={fix(dop, 4)} />
+            <ResultRow label="Handedness" value={handednessLabel} />
+            <ResultRow label="Jones Ex" value={cfmt(jones[0])} />
+            <ResultRow label="Jones Ey" value={cfmt(jones[1])} />
           </div>
+          <p className="mt-4 text-xs text-gray-500">{CONVENTION_NOTE}</p>
         </div>
 
         <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Poincaré Sphere</h2>
           <ChartPanel data={[
-              ...wireframe.lon.map((l) => ({ type: "scatter3d" as const, mode: "lines" as const, x: l.x, y: l.y, z: l.z, line: { color: "#374151", width: 1 }, showlegend: false, hoverinfo: "skip" })),
-              ...wireframe.lat.map((l) => ({ type: "scatter3d" as const, mode: "lines" as const, x: l.x, y: l.y, z: l.z, line: { color: "#374151", width: 1 }, showlegend: false, hoverinfo: "skip" })),
+              ...wireframe,
               { type: "scatter3d" as const, mode: "markers+text" as const, x: [1], y: [0], z: [0], text: ["H"], textposition: "top center", marker: { size: 4, color: "#f59e0b" }, showlegend: false, hoverinfo: "skip" },
               { type: "scatter3d" as const, mode: "markers+text" as const, x: [-1], y: [0], z: [0], text: ["V"], textposition: "top center", marker: { size: 4, color: "#f59e0b" }, showlegend: false, hoverinfo: "skip" },
               { type: "scatter3d" as const, mode: "markers+text" as const, x: [0], y: [1], z: [0], text: ["45°"], textposition: "top center", marker: { size: 4, color: "#f59e0b" }, showlegend: false, hoverinfo: "skip" },
@@ -122,8 +124,8 @@ export default function PoincareSpherePage() {
               margin: { l: 0, r: 0, t: 0, b: 0 }, paper_bgcolor: "#111827", font: { color: "#d1d5db" },
               showlegend: true, legend: { x: 0, y: 1, bgcolor: "rgba(0,0,0,0)" },
             }}
-           
-           
+
+
           />
         </div>
 
@@ -131,12 +133,12 @@ export default function PoincareSpherePage() {
           <h2 className="text-lg font-semibold mb-4">Polarization Ellipse</h2>
           <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: ellipseTrace.x, y: ellipseTrace.y, line: { color: "#3b82f6", width: 2 } }]}
             layout={{
-              xaxis: { title: "Ex", range: [-amplitude * 1.2, amplitude * 1.2], color: "#9ca3af", gridcolor: "#374151", zerolinecolor: "#4b5563" },
-              yaxis: { title: "Ey", range: [-amplitude * 1.2, amplitude * 1.2], color: "#9ca3af", gridcolor: "#374151", zerolinecolor: "#4b5563", scaleanchor: "x" },
+              xaxis: { title: "Ex", range: [-amplitudeShown * 1.2, amplitudeShown * 1.2], color: "#9ca3af", gridcolor: "#374151", zerolinecolor: "#4b5563" },
+              yaxis: { title: "Ey", range: [-amplitudeShown * 1.2, amplitudeShown * 1.2], color: "#9ca3af", gridcolor: "#374151", zerolinecolor: "#4b5563", scaleanchor: "x" },
               margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
             }}
-           
-           
+
+
           />
         </div>
       </div>
