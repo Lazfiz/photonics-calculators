@@ -1,9 +1,22 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import InputSlider from "../../../components/input-slider";
+import { poincareWireframeTraces } from "../../../components/poincare-wireframe";
+import { CONVENTION_NOTE, fix, stateLabel, stokesProblem } from "../../../components/polarization-format";
 import { useURLState } from "../../../hooks/use-url-state";
+import {
+  axisRatio,
+  degreeOfCircularPolarization,
+  degreeOfLinearPolarization,
+  degreeOfPolarization,
+  ellipseAngles,
+  type Stokes,
+} from "../../../physics/polarization/stokes";
+
+const DEG = Math.PI / 180;
+
 type Preset = "linear-h" | "linear-v" | "linear-45" | "linear-135" | "rcp" | "lcp" | "elliptical";
 
 const presets: Record<Preset, { I: number; Q: number; U: number; V: number; label: string }> = {
@@ -13,9 +26,8 @@ const presets: Record<Preset, { I: number; Q: number; U: number; V: number; labe
   "linear-135": { I: 1, Q: 0, U: -1, V: 0, label: "Linear 135°" },
   rcp: { I: 1, Q: 0, U: 0, V: 1, label: "Right Circular" },
   lcp: { I: 1, Q: 0, U: 0, V: -1, label: "Left Circular" },
-  elliptical: { I: 1, Q: 0.5, U: 0.5, V: 0.5, label: "Elliptical" },
+  elliptical: { I: 1, Q: 0.5, U: 0.5, V: 0.7071, label: "Elliptical" },
 };
-
 
 export default function StokesPage() {
   const [I, setI] = useURLState("I", 1);
@@ -23,17 +35,24 @@ export default function StokesPage() {
   const [U, setU] = useURLState("U", 0.3);
   const [V, setV] = useURLState("V", 0.2);
 
-  const results = useMemo(() => {
-    if (I <= 0) return null;
-    const dop = Math.sqrt(Q * Q + U * U + V * V) / I;
-    const dolp = Math.sqrt(Q * Q + U * U) / I;
-    const docp = Math.abs(V) / I;
-    const psi = 0.5 * Math.atan2(U, Q);
-    const ratioArg = dop === 0 ? 0 : V / (I * dop);
-    const chi = 0.5 * Math.asin(Math.min(1, Math.max(-1, ratioArg)));
-    const ar = Math.tan(Math.abs(chi));
-    return { dop, dolp, docp, psi: (psi * 180) / Math.PI, chi: (chi * 180) / Math.PI, ar, handedness: V > 0 ? "Right-handed" : V < 0 ? "Left-handed" : "Linear" };
-  }, [I, Q, U, V]);
+  const wireframe = useMemo(() => poincareWireframeTraces(), []);
+
+  const S: Stokes = [I, Q, U, V];
+  const problem = stokesProblem(S);
+  const physical = problem === null;
+
+  const { psi, chi } = ellipseAngles(S);
+  const results = physical
+    ? {
+        dop: degreeOfPolarization(S),
+        dolp: degreeOfLinearPolarization(S),
+        docp: degreeOfCircularPolarization(S),
+        psi: psi / DEG, // NaN for circular and unpolarized light
+        chi: chi / DEG, // NaN for unpolarized light
+        ar: axisRatio(S),
+        handedness: stateLabel(S),
+      }
+    : null;
 
   const applyPreset = (p: Preset) => {
     const v = presets[p];
@@ -42,17 +61,6 @@ export default function StokesPage() {
     setU(v.U);
     setV(v.V);
   };
-
-  const poincareTrace = useMemo(() => {
-    const phi = Array.from({ length: 37 }, (_, i) => (i * 10 * Math.PI) / 180);
-    const theta = Array.from({ length: 19 }, (_, i) => (i * 10 * Math.PI) / 180);
-    return {
-      lonLines: theta.map((t) => ({ x: phi.map((p) => Math.cos(t) * Math.cos(p)), y: phi.map((p) => Math.cos(t) * Math.sin(p)), z: phi.map((p) => Math.sin(t)) })),
-      latLines: phi.filter((_, i) => i % 3 === 0).map((p) => ({ x: theta.map((t) => Math.cos(t) * Math.cos(p)), y: theta.map((t) => Math.cos(t) * Math.sin(p)), z: theta.map((t) => Math.sin(t)) })),
-    };
-  }, []);
-
-  const statePoint = I > 0 ? { x: [Q / I], y: [U / I], z: [V / I] } : { x: [0], y: [0], z: [0] };
 
   return (
     <>
@@ -82,28 +90,27 @@ export default function StokesPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Polarization Analysis</h2>
-          {!results ? (
-            <p className="text-red-400">I must be positive</p>
-          ) : (
-            <div className="space-y-3">
-              <ResultRow label="Degree of Polarization (DOP)" value={results.dop.toFixed(4)} />
-              <ResultRow label="Degree of Linear Polarization (DOLP)" value={results.dolp.toFixed(4)} />
-              <ResultRow label="Degree of Circular Polarization (DOCP)" value={results.docp.toFixed(4)} />
-              <ResultRow label="Orientation angle ψ" value={`${results.psi.toFixed(2)}°`} />
-              <ResultRow label="Ellipticity angle χ" value={`${results.chi.toFixed(2)}°`} />
-              <ResultRow label="Axis ratio b/a" value={results.ar.toFixed(4)} />
-              <ResultRow label="Handedness" value={results.handedness} />
-            </div>
-          )}
+          {problem && <p className="mb-3 text-red-400">{problem}</p>}
+          <div className="space-y-3">
+            <ResultRow label="Degree of Polarization (DOP)" value={results ? fix(results.dop, 4) : "—"} />
+            <ResultRow label="Degree of Linear Polarization (DOLP)" value={results ? fix(results.dolp, 4) : "—"} />
+            <ResultRow label="DOCP (S₃/S₀, + = right)" value={results ? fix(results.docp, 4) : "—"} />
+            <ResultRow label="Orientation angle ψ" value={results && !Number.isNaN(results.psi) ? `${fix(results.psi, 2)}°` : "—"} />
+            <ResultRow label="Ellipticity angle χ" value={results && !Number.isNaN(results.chi) ? `${fix(results.chi, 2)}°` : "—"} />
+            <ResultRow label="Axis ratio b/a" value={results ? fix(results.ar, 4) : "—"} />
+            <ResultRow label="Handedness" value={results ? results.handedness : "—"} />
+          </div>
+          <p className="mt-4 text-xs text-gray-500">{CONVENTION_NOTE}</p>
         </div>
 
         <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Poincaré Sphere</h2>
           <ChartPanel
             data={[
-              ...poincareTrace.lonLines.map((l) => ({ type: "scatter3d" as const, mode: "lines" as const, x: l.x, y: l.y, z: l.z, line: { color: "#374151", width: 1 }, showlegend: false, hoverinfo: "skip" })),
-              ...poincareTrace.latLines.map((l) => ({ type: "scatter3d" as const, mode: "lines" as const, x: l.x, y: l.y, z: l.z, line: { color: "#374151", width: 1 }, showlegend: false, hoverinfo: "skip" })),
-              { type: "scatter3d" as const, mode: "markers" as const, x: statePoint.x, y: statePoint.y, z: statePoint.z, marker: { size: 10, color: "#3b82f6", symbol: "circle" }, name: "Polarization state" },
+              ...wireframe,
+              ...(physical
+                ? [{ type: "scatter3d" as const, mode: "markers" as const, x: [Q / I], y: [U / I], z: [V / I], marker: { size: 10, color: "#3b82f6", symbol: "circle" }, name: "Polarization state" }]
+                : []),
             ]}
             layout={{
               scene: { xaxis: { title: "S₁/Q", range: [-1.2, 1.2], color: "#9ca3af" }, yaxis: { title: "S₂/U", range: [-1.2, 1.2], color: "#9ca3af" }, zaxis: { title: "S₃/V", range: [-1.2, 1.2], color: "#9ca3af" }, bgcolor: "#111827" },

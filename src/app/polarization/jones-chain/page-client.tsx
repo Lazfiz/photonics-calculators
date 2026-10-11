@@ -2,47 +2,63 @@
 
 import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
+import type { Complex } from "../../../physics/complex";
+import {
+  LCP,
+  RCP,
+  circularPolarizer,
+  ellipticalState,
+  intensity,
+  linearPolarizer,
+  linearRetarder,
+  linearState,
+  propagate,
+  stokesFromJones,
+  type JonesMatrix,
+  type JonesVector,
+} from "../../../physics/polarization/jones";
+import { CONVENTION_NOTE, degOrDash, fix, stateLabel } from "../../../components/polarization-format";
+import { axisRatio, ellipseAngles } from "../../../physics/polarization/stokes";
 
+const DEG = Math.PI / 180;
 
-type C = { re: number; im: number };
-type M2 = C[][];
+const ELEMENTS: Record<string, JonesMatrix> = {
+  "Horizontal Polarizer": linearPolarizer(0),
+  "Vertical Polarizer": linearPolarizer(90 * DEG),
+  "45° Polarizer": linearPolarizer(45 * DEG),
+  "Quarter-Wave (Fast-H)": linearRetarder(90 * DEG, 0),
+  "Quarter-Wave (Fast-V)": linearRetarder(90 * DEG, 90 * DEG),
+  "Half-Wave (Fast-H)": linearRetarder(180 * DEG, 0),
+  "Half-Wave (Fast-45°)": linearRetarder(180 * DEG, 45 * DEG),
+  "Right Circular Polarizer": circularPolarizer("right"),
+  "Left Circular Polarizer": circularPolarizer("left"),
+};
 
-function cm(a: C, b: C): C { return { re: a.re * b.re - a.im * b.im, im: a.re * b.im + a.im * b.re }; }
-function ca(a: C, b: C): C { return { re: a.re + b.re, im: a.im + b.im }; }
-function cmul2(A: M2, B: M2): M2 {
-  return [
-    [ca(cm(A[0][0], B[0][0]), cm(A[0][1], B[1][0])), ca(cm(A[0][0], B[0][1]), cm(A[0][1], B[1][1]))],
-    [ca(cm(A[1][0], B[0][0]), cm(A[1][1], B[1][0])), ca(cm(A[1][0], B[0][1]), cm(A[1][1], B[1][1]))],
-  ];
+// Unit intensity
+const INPUT_STATES: Record<string, JonesVector> = {
+  "Horizontal": linearState(0),
+  "Vertical": linearState(90 * DEG),
+  "45° Linear": linearState(45 * DEG),
+  "RCP": RCP,
+  "LCP": LCP,
+  "Elliptical (ψ 20°, χ 15°)": ellipticalState(20 * DEG, 15 * DEG),
+};
+
+function fmt(c: Complex): string {
+  const r = fix(c.re, 3);
+  const i = fix(c.im, 3);
+  if (Number(i) === 0) return r;
+  if (Number(r) === 0) return `${i}i`;
+  return `${r}${c.im >= 0 ? "+" : ""}${i}i`;
 }
 
-const ELEMENTS: Record<string, M2> = {
-  "Horizontal Polarizer": [[{ re: 1, im: 0 }, { re: 0, im: 0 }], [{ re: 0, im: 0 }, { re: 0, im: 0 }]],
-  "Vertical Polarizer": [[{ re: 0, im: 0 }, { re: 0, im: 0 }], [{ re: 0, im: 0 }, { re: 1, im: 0 }]],
-  "45° Polarizer": [[{ re: 0.5, im: 0 }, { re: 0.5, im: 0 }], [{ re: 0.5, im: 0 }, { re: 0.5, im: 0 }]],
-  "Quarter-Wave (Fast-H)": [[{ re: 1, im: 0 }, { re: 0, im: 0 }], [{ re: 0, im: 0 }, { re: 0, im: -1 }]],
-  "Quarter-Wave (Fast-V)": [[{ re: 1, im: 0 }, { re: 0, im: 0 }], [{ re: 0, im: 0 }, { re: 0, im: 1 }]],
-  "Half-Wave (Fast-H)": [[{ re: 1, im: 0 }, { re: 0, im: 0 }], [{ re: 0, im: 0 }, { re: -1, im: 0 }]],
-  "Half-Wave (Fast-45°)": [[{ re: 0, im: 0 }, { re: 1, im: 0 }], [{ re: 1, im: 0 }, { re: 0, im: 0 }]],
-  "RCP (Right Circular)": [[{ re: 0.5, im: 0 }, { re: 0, im: 0.5 }], [{ re: 0, im: -0.5 }, { re: 0.5, im: 0 }]],
-  "LCP (Left Circular)": [[{ re: 0.5, im: 0 }, { re: 0, im: -0.5 }], [{ re: 0, im: 0.5 }, { re: 0.5, im: 0 }]],
-};
-
-const INPUT_STATES: Record<string, C[]> = {
-  "Horizontal": [{ re: 1, im: 0 }, { re: 0, im: 0 }],
-  "Vertical": [{ re: 0, im: 0 }, { re: 1, im: 0 }],
-  "45° Linear": [{ re: 1 / Math.SQRT2, im: 0 }, { re: 1 / Math.SQRT2, im: 0 }],
-  "RCP": [{ re: 1 / Math.SQRT2, im: 0 }, { re: 0, im: -1 / Math.SQRT2 }],
-  "LCP": [{ re: 1 / Math.SQRT2, im: 0 }, { re: 0, im: 1 / Math.SQRT2 }],
-  "Elliptical": [{ re: 1, im: 0 }, { re: 0.5, im: -0.3 }],
-};
-
-function fmt(c: C): string {
-  const r = c.re.toFixed(3);
-  const i = c.im.toFixed(3);
-  if (c.im === 0) return r;
-  if (c.re === 0) return i + "i";
-  return `${r}${c.im >= 0 ? "+" : ""}${i}i`;
+/** The ellipse Re{E e^{iωt}} traced over one period, closed. */
+function ellipsePoints(E: JonesVector, n = 200): { x: number[]; y: number[] } {
+  const t = Array.from({ length: n + 1 }, (_, i) => (i / n) * 2 * Math.PI);
+  return {
+    x: t.map((tt) => E[0].re * Math.cos(tt) - E[0].im * Math.sin(tt)),
+    y: t.map((tt) => E[1].re * Math.cos(tt) - E[1].im * Math.sin(tt)),
+  };
 }
 
 export default function JonesChainPage() {
@@ -52,50 +68,38 @@ export default function JonesChainPage() {
   const addElement = () => setElements([...elements, "Quarter-Wave (Fast-H)"]);
   const removeElement = (i: number) => setElements(elements.filter((_, idx) => idx !== i));
 
+  const inputField = INPUT_STATES[inputState];
+
+  // Element 1 acts first.
   const outputField = useMemo(() => {
-    if (elements.length === 0) return INPUT_STATES[inputState];
-    let result = [...INPUT_STATES[inputState]] as C[];
-    for (let i = elements.length - 1; i >= 0; i--) {
-      const M = ELEMENTS[elements[i]];
-      if (!M) continue;
-      result = [
-        ca(cm(M[0][0], result[0]), cm(M[0][1], result[1])),
-        ca(cm(M[1][0], result[0]), cm(M[1][1], result[1])),
-      ];
-    }
-    return result;
+    const matrices = elements.map((name) => ELEMENTS[name]).filter((M): M is JonesMatrix => M !== undefined);
+    const states = propagate(matrices, INPUT_STATES[inputState]);
+    return states[states.length - 1];
   }, [elements, inputState]);
 
-  const intensity = Math.abs(outputField[0].re) ** 2 + Math.abs(outputField[0].im) ** 2 + Math.abs(outputField[1].re) ** 2 + Math.abs(outputField[1].im) ** 2;
+  const outIntensity = intensity(outputField);
+  const transmission = outIntensity / intensity(inputField);
+  const dark = outIntensity < 1e-12;
 
-  // Ellipse params
-  const ex = Math.abs(outputField[0].re) ** 2 + Math.abs(outputField[0].im) ** 2;
-  const ey = Math.abs(outputField[1].re) ** 2 + Math.abs(outputField[1].im) ** 2;
-  const exy = 2 * (outputField[0].re * outputField[1].re + outputField[0].im * outputField[1].im);
-  const s3 = 2 * (outputField[0].re * outputField[1].im - outputField[0].im * outputField[1].re);
-  const s1 = ex - ey;
-  const chi = 0.5 * Math.atan2(s3, Math.sqrt(s1 * s1 + exy * exy));
-  const ellipticity = Math.abs(Math.tan(chi));
-  const psi = 0.5 * Math.atan2(exy, s1) * 180 / Math.PI;
+  const S = stokesFromJones(outputField);
+  const { psi, chi } = dark ? { psi: NaN, chi: NaN } : ellipseAngles(S);
+  const ratio = dark ? NaN : axisRatio(S);
+  const label = dark ? "No light transmitted" : stateLabel(S);
 
   const chartData = useMemo(() => {
-    const t = Array.from({ length: 200 }, (_, i) => (i / 200) * 2 * Math.PI);
-    const inp = INPUT_STATES[inputState];
-    const outX = t.map(tt => inp[0].re * Math.cos(tt) - inp[0].im * Math.sin(tt));
-    const outY = t.map(tt => inp[1].re * Math.cos(tt) - inp[1].im * Math.sin(tt));
-    const resX = t.map(tt => outputField[0].re * Math.cos(tt) - outputField[0].im * Math.sin(tt));
-    const resY = t.map(tt => outputField[1].re * Math.cos(tt) - outputField[1].im * Math.sin(tt));
+    const inEllipse = ellipsePoints(inputField);
+    const outEllipse = ellipsePoints(outputField);
     return [
-      { x: outX, y: outY, type: "scatter" as const, mode: "lines" as const, name: "Input", line: { color: "#60a5fa", dash: "dash" } },
-      { x: resX, y: resY, type: "scatter" as const, mode: "lines" as const, name: "Output", line: { color: "#f87171", width: 2 } },
+      { x: inEllipse.x, y: inEllipse.y, type: "scatter" as const, mode: "lines" as const, name: "Input", line: { color: "#60a5fa", dash: "dash" } },
+      { x: outEllipse.x, y: outEllipse.y, type: "scatter" as const, mode: "lines" as const, name: "Output", line: { color: "#f87171", width: 2 } },
     ];
-  }, [inputState, outputField]);
+  }, [inputField, outputField]);
 
   return (
     <>
-            
+
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm font-mono">E_out = M_n · M_(n-1) · … · M₁ · E_in</p>
+        <p className="text-gray-300 text-sm font-mono">E_out = M_n ⋯ M₂ · M₁ · E_in (element 1 acts first)</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
@@ -134,15 +138,16 @@ export default function JonesChainPage() {
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Intensity</p>
-          <p className="text-2xl font-bold text-yellow-400">{intensity.toFixed(4)}</p>
+          <p className="text-2xl font-bold text-yellow-400">{fix(outIntensity, 4)}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Orientation ψ</p>
-          <p className="text-2xl font-bold text-purple-400">{psi.toFixed(1)}°</p>
+          <p className="text-2xl font-bold text-purple-400">{degOrDash(psi)}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Ellipticity</p>
-          <p className="text-2xl font-bold text-pink-400">{ellipticity.toFixed(3)}</p>
+          <p className="text-sm text-gray-400">Ellipticity angle χ</p>
+          <p className="text-2xl font-bold text-pink-400">{degOrDash(chi)}</p>
+          <p className="text-xs text-gray-500">axis ratio b/a = {Number.isNaN(ratio) ? "—" : ratio.toFixed(3)}</p>
         </div>
       </div>
 
@@ -161,10 +166,10 @@ export default function JonesChainPage() {
         <div className="bg-gray-900 rounded-lg p-4">
           <h3 className="text-sm text-gray-400 mb-2">Polarization Description</h3>
           <div className="text-gray-300 text-sm space-y-1">
-            <p>Type: <span className="text-white font-semibold">{ellipticity < 0.01 ? "Linear" : ellipticity > 0.99 ? "Circular" : "Elliptical"}</span></p>
-            <p>Handedness: <span className="text-white font-semibold">{outputField[1].im > 0 ? "Left" : "Right"} (using physics convention)</span></p>
-            <p>Transmission: <span className="text-white font-semibold">{(intensity * 100).toFixed(1)}%</span></p>
+            <p>State: <span className="text-white font-semibold">{label}</span></p>
+            <p>Transmission: <span className="text-white font-semibold">{(transmission * 100).toFixed(1)}%</span></p>
           </div>
+          <p className="mt-3 text-xs text-gray-500">{CONVENTION_NOTE}</p>
         </div>
       </div>
     </>

@@ -1,4 +1,26 @@
-import type { CalculatorEntry } from "../types";
+import type { CalculatorEntry, Reference } from "../types";
+
+// Chapters of the 3rd edition, titles and pages checked on Crossref (doi:10.1201/b10436-n): The Polarization
+// Ellipse pp. 49–58, Stokes Polarization Parameters pp. 59–91, Mueller Matrices for Polarizing Components
+// pp. 93–115, The Jones Matrix Formalism pp. 201–231.
+const goldstein = (where: string): Reference => ({
+  citation: `Goldstein D. H. (2011). Polarized Light, 3rd ed., ${where}. CRC Press.`,
+  url: "https://doi.org/10.1201/b10436",
+});
+const jones1941: Reference = {
+  citation: "Jones R. C. (1941). A new calculus for the treatment of optical systems, I. Description and discussion of the calculus. J. Opt. Soc. Am. 31(7), 488–493.",
+  url: "https://doi.org/10.1364/JOSA.31.000488",
+};
+const collett: Reference = {
+  citation: "Collett E. (2005). Field Guide to Polarization, SPIE Field Guides FG05: the Stokes parameters and the Poincaré sphere. SPIE Press.",
+  url: "https://doi.org/10.1117/3.626141",
+};
+const cloude: Reference = {
+  citation: "Cloude S. R. (1986). Group theory and polarisation algebra. Optik 75(1), 26–36: a Mueller matrix is physical when its coherency matrix has no negative eigenvalue.",
+};
+const goldsteinJones = goldstein("ch. The Jones Matrix Formalism, pp. 201–231");
+const goldsteinStokes = goldstein("chs. The Polarization Ellipse, pp. 49–58, and Stokes Polarization Parameters, pp. 59–91");
+const goldsteinMueller = goldstein("ch. Mueller Matrices for Polarizing Components, pp. 93–115");
 
 export const polarization: CalculatorEntry[] = [
   {
@@ -42,7 +64,9 @@ export const polarization: CalculatorEntry[] = [
     slug: "degree-polarization",
     title: "Degree of Polarization",
     description: "Calculate DoP from Stokes parameters, decompose into polarized and unpolarized components.",
-    knownIssue: "The 33 % preset is 99.9 % polarized, the Unpolarized preset shows NaN, Stokes vectors with a degree of polarization above 100 % are accepted, and the spectral averaging is undersampled.",
+    tier: "exact",
+    modelNote: "DOP = √(S₁² + S₂² + S₃²)/S₀, ψ = ½ atan2(S₂, S₁), χ = ½ asin(S₃/I_p) for physical vectors. Spectral mode: a fixed-Δn retarder at 45°, light flat in wavelength, Stokes vectors averaged over the band.",
+    references: [goldsteinStokes],
   },
   {
     slug: "depolarization",
@@ -79,13 +103,17 @@ export const polarization: CalculatorEntry[] = [
     slug: "jones-calculus",
     title: "Jones Calculus",
     description: "Chain Jones matrices for polarizers, waveplates, and rotators. Up to 5 elements.",
-    knownIssue: "The waveplate matrices and the circular presets use opposite sign conventions, so right and left circular are swapped, and a rotator set to 0° acts as a 45° rotator.",
+    tier: "exact",
+    modelNote: "Ideal Jones matrices applied in turn, Goldstein convention: RCP = [1, i]/√2 with S₃ > 0, a retarder is diag(1, e^(−iΓ)) with its fast axis at 0°, a rotator by +θ turns counter-clockwise. Not modelled: losses.",
+    references: [jones1941, goldsteinJones],
   },
   {
     slug: "jones-chain",
     title: "Jones Matrix Chain",
     description: "Chain Jones matrices to transform input polarization states and visualize the output ellipse.",
-    knownIssue: "The elements are applied in reverse order (element 1 acts last), the circular states clash with the waveplate convention, and the handedness and transmission are wrong for some inputs.",
+    tier: "exact",
+    modelNote: "Ideal polarizers and waveplates as Jones matrices, element 1 first, on unit-intensity inputs. Goldstein convention: RCP = [1, i]/√2 and S₃ > 0 is right-handed. Not modelled: losses, partial polarization.",
+    references: [jones1941, goldsteinJones],
   },
   {
     slug: "liquid-crystal-polarizer",
@@ -103,12 +131,17 @@ export const polarization: CalculatorEntry[] = [
     slug: "mueller-matrix",
     title: "Mueller Matrix Calculator",
     description: "Chain optical elements using Mueller matrices and compute output Stokes vector.",
+    tier: "exact",
+    modelNote: "Ideal Mueller matrices chained in the order the light meets them; the rotator turns +45° counter-clockwise. Inputs need √(S₁² + S₂² + S₃²) ≤ S₀. Not modelled: real extinction ratios or retardance errors.",
+    references: [goldsteinMueller],
   },
   {
     slug: "mueller-polarimetry",
     title: "Mueller Polarimetry",
     description: "Build optical systems using Mueller matrices and analyze polarization transformations.",
-    knownIssue: "The rotator turns the opposite way to the page's own angle convention, and the depolarizer percentage is unbounded, so it can build unphysical matrices with a degree of polarization above 100 %.",
+    tier: "exact",
+    modelNote: "Ideal polarizer, retarder, rotator and depolarizer diag(1, d, d, d) with d = 1 − p/100, element 1 first, Goldstein signs; then an ideal analyzer, I = ½(S₀ + S₁ cos 2θ + S₂ sin 2θ).",
+    references: [goldsteinMueller, cloude],
   },
   {
     slug: "optical-activity",
@@ -124,11 +157,17 @@ export const polarization: CalculatorEntry[] = [
     slug: "poincare-sphere",
     title: "Poincaré Sphere",
     description: "Interactive visualization of polarization states on the Poincaré sphere.",
+    tier: "exact",
+    modelNote: "A fully polarized state from azimuth ψ and ellipticity χ: S = I(1, cos 2χ cos 2ψ, cos 2χ sin 2ψ, sin 2χ), with Goldstein's Jones vector. χ > 0 is right-handed, clockwise as seen by the receiver.",
+    references: [goldsteinStokes, collett],
   },
   {
     slug: "polarimetry",
     title: "Polarimetry Basics",
     description: "Explore Stokes parameters, Poincaré sphere representation, and analyzer measurements for polarization state characterization.",
+    tier: "exact",
+    modelNote: "Stokes analysis of a physical vector (DOP, DOLP, DOCP, ψ, χ) and an ideal linear analyzer, I(θ) = ½(S₀ + S₁ cos 2θ + S₂ sin 2θ). Not modelled: analyzer extinction, measurement noise.",
+    references: [goldsteinStokes, collett],
   },
   {
     slug: "polarization-scrambling",
@@ -162,7 +201,9 @@ export const polarization: CalculatorEntry[] = [
     slug: "retarder",
     title: "Waveplate / Retarder",
     description: "Polarization state transformation by a birefringent waveplate with variable retardance and fast-axis orientation.",
-    knownIssue: "The waveplate rotation is undone in the wrong direction, so the output is wrong for any fast-axis angle other than 0° or 90°: a half-wave plate at 22.5° leaves horizontal light horizontal.",
+    tier: "exact",
+    modelNote: "Ideal lossless linear retarder R(−θ)·diag(1, e^(−iΓ))·R(θ) on linearly polarized light, Goldstein convention (S₃ > 0 is right-handed). Not modelled: dispersion of Γ, reflections, tilt.",
+    references: [goldsteinJones, jones1941],
   },
   {
     slug: "retarder-types",
@@ -177,6 +218,9 @@ export const polarization: CalculatorEntry[] = [
     lede: "Analyze polarization state from Stokes vector components with sliders, presets, and Poincaré sphere visualization.",
     keywords: ["poincare sphere", "polarization state", "stokes vector"],
     priority: 94,
+    tier: "exact",
+    modelNote: "DOP, DOLP, signed DOCP and the ellipse angles ψ = ½ atan2(U, Q), χ = ½ asin(V/I_p) of a physical Stokes vector, √(Q² + U² + V²) ≤ I. V > 0 is right-handed (Goldstein).",
+    references: [goldsteinStokes, collett],
     related: [
       { href: "/polarization/retarder-types" },
       { href: "/polarization/retarder" },

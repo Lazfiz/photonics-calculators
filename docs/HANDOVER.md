@@ -1,36 +1,28 @@
-# Handover — 2026-10-11 (session 37 → session 38)
+# Handover — 2026-10-11 (session 38 → session 39)
 
-**Start here:** read this file, then the polarization items in `docs/ROADMAP.md` Phase 4 ("Polarization audit, part 0"
-and parts 1–4). Laser safety is finished: PR #33 is merged and was checked on production (ui-check passed on 8 pages,
-and every spot value matched). Session 37 audited the 33 polarization pages on branch `phase-4/polarization-audit`
-(PR: see `gh pr list`). **Next: polarization part 1 (Jones, Mueller, Stokes).**
+**Start here:** read this file, then "Polarization part 2" in `docs/ROADMAP.md` Phase 4. Part 1 (Jones, Mueller,
+Stokes) is done on branch `phase-4/polarization-jones` (PR: see `gh pr list`). **Next: polarization part 2
+(birefringent crystals).**
 
 ## State
-- Audit: 1 OK (`polarizer-extinction`), 11 questionable, 21 bugs. The 21 bug pages carry a registry `knownIssue`
-  (red "Known error, under repair" box). Nothing is tiered yet: 107 of 461 pages have a tier.
-- The ROADMAP parts list each page's findings and golden values. The four full reviewer reports aren't kept; each
-  part re-runs `physics-audit` on its pages only if it needs more detail than the ROADMAP gives.
-- No `src/physics/polarization/` yet. `src/physics/complex.ts` exists; `jones-calculus` and `jones-chain` carry local
-  copies of the complex helpers, so delete those.
-
-## Decisions
-- **Sign convention: Goldstein/Collett on every page.** e^{i(ωt−kz)}; RCP = [1, i]/√2, clockwise seen by the receiver;
-  S3 = 2 Im(Ex* Ey), positive for RCP; fast axis at 0°: diag(1, e^{−iΓ}); +θ is counter-clockwise looking into the
-  beam, for polarizers, retarders and rotators. Mueller rotator(+θ) = [[c, −s], [s, c]] in the (S1, S2) block, c = cos 2θ.
-  The Mueller QWP block [[0, 1], [−1, 0]] in (S2, S3) already matches. Put one `CONVENTION` note in the module header.
-- Flag only the bug pages: the notice tells readers "Don't use this page's numbers", which is too strong for the
-  questionable ones.
-- The reviewers had no web access. Verify each citation (Goldstein 3rd ed., Chipman/Lam/Young 2018, Born & Wolf, Hecht,
-  Collett's Field Guide, Jones 1941 doi:10.1364/JOSA.31.000488) before it goes in `references`.
+- `src/physics/polarization/{jones,mueller,stokes}.ts` exist, with the CONVENTION header in `jones.ts` (Goldstein/
+  Collett). Part 2–4 modules import from them; don't redefine rotations or Stokes formulas.
+- Shared UI: `components/polarization-format.ts` (`fix`, `degOrDash`, `stokesProblem`, `stateLabel`,
+  `CONVENTION_NOTE`) and `components/poincare-wireframe.ts` (both hemispheres). Use them on the remaining pages.
+- 116 of 461 pages tiered; 16 polarization `knownIssue`s left (parts 2–4).
+- Goldstein 3rd ed. chapter titles and pages (Crossref, doi:10.1201/b10436-n) are in the comment above the
+  `goldstein()` helper in `src/registry/calculators/polarization.ts`. Fresnel Equations is pp. 117–147 and Mueller
+  Matrices for Dielectric Plates pp. 177–199 (useful for part 3).
 
 ## Next actions
-1. PR for `phase-4/polarization-audit` (knownIssue × 21, ROADMAP, this file): CI, then ask the user to merge.
-2. Part 1 on a new branch `phase-4/polarization-jones`. Write `physics/polarization/{jones,mueller,stokes}.ts` with golden
-   tests (the ROADMAP values plus Malus and HWP 22.5° → S2 = 1). Then move the nine pages onto them, drop each
-   `knownIssue`, and set tier, `modelNote` and references. Hand the page wiring to `implementer` once the modules pass.
-3. Parts 2–4 follow in later sessions, one part per session.
+1. PR for `phase-4/polarization-jones`: CI, then ask the user to merge; after the merge, ui-check the nine pages
+   on production and spot-check: `retarder` default S₃ −1.000 "Left circular"; `degree-polarization` DOP 87.75 %;
+   `stokes` DOP 0.6164; `poincare-sphere` S₂ 0.8660.
+2. Part 2 on a new branch `phase-4/polarization-crystals`: the uniaxial Sellmeier table and
+   `physics/polarization/uniaxial.ts` as the ROADMAP lists. Verify every Sellmeier source (DOI, table) on Crossref first.
+3. Parts 3 and 4 follow, one per session.
 
-## Ship flow (worked twenty-eight times)
+## Ship flow (worked twenty-nine times)
 - **Push:** `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`.
 - **CI:** `gh pr create --body-file f`, then `gh pr checks <n> --watch`.
 - **Preview:** behind Vercel SSO. Use a local `npm run build` + `npx next start -p 3100`.
@@ -52,6 +44,8 @@ and every spot value matched). Session 37 audited the 33 polarization pages on b
 - **Registry scripts:** an entry sliced up to `\n  },` has no newline after its last property; match `(?=\n|$)`.
 - **Oracle from the shell:** a scratch `.ts` with absolute imports (`C:/dev/photonics-calculators/src/...`); `npx tsx`.
 - **Mutation check:** scratchpad script: string-replace one mutation, run the one test file, restore.
+- **Book chapters on Crossref:** `curl -s https://api.crossref.org/works/10.1201/<book-id>-<n>` gives each chapter title and pages
+  (n = 2, 3, …); cite a chapter by title and pages when its number is uncertain.
 - **Trust data:** tier, `modelNote` (≤ 220 chars), references in `src/registry/calculators/<category>.ts`.
 - **ui-check:** `scripts/ui-check.mjs <base> load /a /b`; in Git Bash prefix `MSYS_NO_PATHCONV=1`. Never
   `taskkill /IM chrome.exe`. Headless screenshot: `--headless=new --virtual-time-budget=8000 --screenshot=… <url>`.
