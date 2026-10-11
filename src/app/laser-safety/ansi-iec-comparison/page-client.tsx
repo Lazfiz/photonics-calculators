@@ -107,9 +107,8 @@ export default function AnsiIecComparisonPage() {
           (IEC 60825-1). For Classes 1, 1M, 2, 2M and 3R the AEL is the MPE times the stop&apos;s area, so from 400 nm the
           two curves are mostly one. They part where IEC chose otherwise. In the UV it keeps its own values (a
           continuous C₂ = 10^(0.2(λ − 295)) J/m² at 302.5–315 nm, 10 W/m² after 10³ s at 315–400 nm) over a 1 mm stop
-          at every duration, against ICNIRP&apos;s 1 nm steps and 1 → 3.5 mm aperture. From 1150 to 1400 nm ICNIRP limits
-          an eye-only exposure to twice the skin limit as well, which is lower than the retinal limit from about
-          1300 nm; IEC leaves that out of the classes and caps Classes 1 and 3R at the Class 3B AEL, 0.5 W through 7 mm,
+          at every duration, against ICNIRP&apos;s 1 nm steps and 1 → 3.5 mm aperture. ICNIRP also limits an eye-only
+          exposure to the skin limit (twice it in the IR), which is lower than the retinal limit from about 1300 nm; IEC leaves that out of the classes and caps Classes 1 and 3R at the Class 3B AEL, 0.5 W through 7 mm,
           from 1250 nm.
         </p>
         <p>

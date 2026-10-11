@@ -110,10 +110,13 @@ test("diffuse reflection: Lambertian irradiance, open field of view", () => {
   assertRel(ext.distance, 120 / (Math.PI * k), 1e-9, "extended source");
   const at = diffuseExposure(1064e-9, 120, 5e-3, ext.distance, 10);
   assertRel(at.limits[0].ratio, 1, 1e-9, "ratio 1 at the diffuse NOHD");
-  // 0.5 W: above α_max the limit grows as α² like the irradiance; the ratio stays at 0.038, so no hazard at any range.
+  // 0.5 W: above α_max the retinal limit grows as α² like the irradiance; the ratio stays at 0.038, so no retinal
+  // hazard at any range. Only the anterior eye's 2 × skin limit (Table 5 note d) is exceeded, within millimetres:
+  // √(ρP/(πE)) with E = 2 · 1.1×10⁴ C_A 10^0.25 J/m² / 10 s (just below the 2 × 2×10³ C_A W/m² from 10 s).
   const weak = diffuseHazardDistance(1064e-9, 0.5, 5e-3, 10);
-  assert.equal(weak.distance, 0);
-  assert.equal(weak.limiting, null);
+  assert.equal(weak.limits.find((l) => l.kind === "retinalThermal")?.distance, 0);
+  assert.equal(weak.limiting, "anteriorSegment");
+  assertRel(weak.distance, Math.sqrt(0.5 / (Math.PI * ((2 * 1.1e4 * 5 * Math.pow(10, 0.25)) / 10))), 1e-12, "2.85 mm");
   assertRel(diffuseExposure(1064e-9, 0.5, 5e-3, 5e-3, 10).limits[0].ratio, 0.0377, 2e-3, "plateau");
 });
 

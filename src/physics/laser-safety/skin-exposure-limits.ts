@@ -11,7 +11,8 @@
  * - Averaged over a 3.5 mm aperture at every duration (the eye's 1 mm → 3.5 mm ramp doesn't apply), 11 mm from
  *   100 µm (Table 8).
  * Not modelled: Table 7 note b, comparing the actual (unaveraged) exposure for beams narrower than 1 mm.
- * The anterior-eye limit in `eye-exposure-limits.ts` is twice this one from 1150 to 1400 nm (Table 5 note d).
+ * The anterior-eye limit in `eye-exposure-limits.ts` is this one at 400–700 nm and twice it at 700–1400 nm (Table 5
+ * note d).
  */
 import { correctionCA, eyeLimits, fixedAperture, T_MAX, T_MIN, type Piece, type TabulatedLimit } from "./eye-exposure-limits";
 

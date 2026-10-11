@@ -108,7 +108,8 @@ export default function InfraredHazardPage() {
         one exposure of 1 ns to 30 000 s, at every wavelength from 180 nm to 1 mm. In the UV and from 1400 nm the cornea
         absorbs the beam: 1 mm aperture below 0.35 s, growing to 3.5 mm at 10 s (11 mm from 100 µm). From 400 to 1400 nm
         the eye focuses it on the retina, averaged over 7 mm (the pupil), with C_A raising the limit up to 5× in the
-        near IR and C_C from 1150 nm, where twice the skin limit also protects the cornea and lens (3.5 mm). The beam is
+        near IR and C_C from 1150 nm; twice the skin limit protects the cornea and lens (3.5 mm) and takes over as C_C
+        rises towards 1400 nm. The beam is
         a round Gaussian centred on each aperture; the max power is the largest that stays within the limit at every
         duration up to t. A smaller pupil does not raise the limits. Not covered: pulse trains, extended sources, and
         ICNIRP&apos;s advice to use the actual irradiance of beams under 1 mm.
