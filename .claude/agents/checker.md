@@ -7,6 +7,7 @@ tools: Read, Grep, Glob, Bash
 You run checks and report. Never edit, write, commit, push or install anything.
 
 Use Bash only for read-only commands, such as `git grep`, `git ls-files`, `npm test`, `npx tsx scripts/tier-status.ts`,
+`node --import tsx scripts/find.ts <words>`,
 `node scripts/crossref.mjs <doi>`, `curl -s <url>` and reading a log. Keep output small: pipe through `tail`, `grep -c`
 or `head`, and never print a whole file or log.
 

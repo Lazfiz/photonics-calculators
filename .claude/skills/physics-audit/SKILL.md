@@ -19,8 +19,8 @@ For each slug:
      loops without caps.
    - **Defaults:** run the default inputs through the formula by hand (or with `node -e`). Is the result
      physically plausible? Compare with a known published example where one exists.
-   - **Duplicates:** `git ls-files src/app | grep -i <keyword>` to find sibling calculators that
-     disagree.
+   - **Duplicates:** use `node --import tsx scripts/find.ts <concept words>` to find sibling calculators that
+     disagree. It also lists the physics modules each one imports.
 4. Classify: **Exact / Textbook approximation / Illustrative / Wrong**.
 
 ## Output (≤30 lines per slug, no preamble)

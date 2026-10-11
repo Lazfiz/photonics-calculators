@@ -25,8 +25,14 @@ and heed deprecation notices.
 | Build (pre-push) | `npm run build` | ≈ 6–10 min → background |
 | CI | `.github/workflows/ci.yml` | Node 24: `npm ci` → `check` → `build` on PRs and `main` |
 
-Searching: use `git grep` / `git ls-files`. Recursive `grep -r` / `Get-ChildItem -Recurse` over
-the repo times out (Defender + `node_modules`). Keep tool output small: tail and failures only.
+**Search and read in small pieces.** Reading files costs more tokens than searching them.
+- **By concept** ("which page does X?"): `node --import tsx scripts/find.ts <words>`. It prints one line per page: slug,
+  tier, title and physics modules.
+- **Exact text:** `git grep -l` or `-c` first, then `git grep -n … | cut -c1-160 | head`. Never run `grep -r` or
+  `Get-ChildItem -Recurse` over the repo; it times out on Defender and `node_modules`.
+- **Reading:** read a range with offset/limit, or `sed -n a,bp`, around the line grep found. Never `cat` a whole file.
+- **Broad inventories:** send them to the `checker` agent.
+- **Command output:** keep only the tail and the failures. Crop screenshots before reading them.
 
 ## Architecture
 **Current**
@@ -84,7 +90,8 @@ the repo times out (Defender + `node_modules`). Keep tool output small: tail and
 ## Skills, scripts & rules
 - Skills: `/verify` (gates + live check), `/ship` (push → PR → CI → merge on the user's yes → production check),
   `/handover`, `/physics-audit <slug>`, `/new-calculator`, `/codemod`.
-- Scripts: `npx tsx scripts/tier-status.ts [category]` (tier counts, untiered slugs), `node scripts/crossref.mjs <doi>
+- Scripts: `node --import tsx scripts/find.ts <words>` (pages by concept), `npx tsx scripts/tier-status.ts [category]`
+  (tier counts, untiered slugs), `node scripts/crossref.mjs <doi>
   | -q "<citation>"` (check references), `node scripts/post-merge-check.mjs <sha> <cat>/<slug>=<value> …`
   (production values + headless load), `node scripts/ui-check.mjs` (hydration and console errors).
 - Path-scoped rules in `.claude/rules/`: `physics.md`, `ui.md`, `nextjs.md`.
