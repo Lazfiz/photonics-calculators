@@ -32,6 +32,7 @@ export default function PulseTrainTable({
 }) {
   const w = WORDS[unit];
   const cell = (on: boolean) => `py-2 pr-4 ${on ? "font-semibold text-white" : ""}`;
+  // A limit that doesn't apply within the exposure (the photochemical one before 10 s) has no binding rule.
   return (
     <div className="overflow-x-auto mb-4">
       <table className="w-full text-sm text-left text-gray-300">
@@ -47,13 +48,14 @@ export default function PulseTrainTable({
         </thead>
         <tbody>
           {result.limits.map((l) => {
+            const applies = Number.isFinite(l.qMax);
             const ratio = value / l.qMax;
             const total = l.passes ?? result.pulses;
             return (
               <tr key={l.kind} className="border-b border-gray-900 align-top">
                 <td className="py-2 pr-4">{LIMIT_LABELS[l.kind]}</td>
-                <td className={cell(l.rule === 1)}>{Number.isFinite(l.singlePulse) ? w.fmt(l.singlePulse) : "n/a before 10 s"}</td>
-                <td className={cell(l.rule === 2)}>
+                <td className={cell(applies && l.rule === 1)}>{Number.isFinite(l.singlePulse) ? w.fmt(l.singlePulse) : "n/a before 10 s"}</td>
+                <td className={cell(applies && l.rule === 2)}>
                   {Number.isFinite(l.group) ? (
                     <>
                       {w.fmt(l.group)}
@@ -65,7 +67,7 @@ export default function PulseTrainTable({
                     "—"
                   )}
                 </td>
-                <td className={cell(l.rule === 3)}>
+                <td className={cell(applies && l.rule === 3)}>
                   {Number.isFinite(l.reduced) ? (
                     <>
                       {w.fmt(l.reduced)}
@@ -79,16 +81,20 @@ export default function PulseTrainTable({
                   )}
                 </td>
                 <td className="py-2 pr-4">{w.fmt(l.qMax)}</td>
-                <td className={`py-2 ${ratio > 1 ? "text-red-400" : "text-green-400"}`}>
-                  {fmtNum(ratio)}× {ratio > 1 ? "(exceeds)" : "(within)"}
-                </td>
+                {applies ? (
+                  <td className={`py-2 ${ratio > 1 ? "text-red-400" : "text-green-400"}`}>
+                    {fmtNum(ratio)}× {ratio > 1 ? "(exceeds)" : "(within)"}
+                  </td>
+                ) : (
+                  <td className="py-2 text-gray-500">doesn&apos;t apply</td>
+                )}
               </tr>
             );
           })}
         </tbody>
       </table>
       <p className="text-xs text-gray-500 mt-2">
-        {w.note} Rule 3 applies to the retinal thermal limit only; &quot;—&quot; means the rule doesn&apos;t apply (rule 2
+        {w.note}{" "}Rule 3 applies to the retinal thermal limit only; &quot;—&quot; means the rule doesn&apos;t apply (rule 2
         needs two {w.plural}).
       </p>
     </div>

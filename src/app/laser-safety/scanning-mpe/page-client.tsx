@@ -58,8 +58,8 @@ export default function ScanningMPEPage() {
     const still = rs.map((x) => stationaryMaxPower(lambda, dAt(x), T, alpha));
     const cm = rs.map((x) => x * 100);
     const traces: Record<string, unknown>[] = [
-      ...segmentedLine(cm, scanned, "Max power, scanned", { color: "#60a5fa", width: 3 }),
-      ...segmentedLine(cm, still, "Max power, held still", { color: "#fbbf24", dash: "dot" }),
+      ...segmentedLine(cm, scanned, "Scanned", { color: "#60a5fa", width: 3 }),
+      ...segmentedLine(cm, still, "Held still", { color: "#fbbf24", dash: "dot" }),
     ];
     if (P > 0) traces.push({ x: [cm[0], cm[cm.length - 1]], y: [P, P], type: "scatter", mode: "lines", name: "Your power", line: { color: "#f87171", dash: "dash" } });
     const here = result.pMax;
@@ -81,10 +81,10 @@ export default function ScanningMPEPage() {
         <ValidatedNumberInput label="Scan angle, full (°)" value={scanAngleRaw} onChange={setScanAngle} min={0.01} max={360} step="any" />
         <ValidatedNumberInput label="Scan rate (sweeps or periods per s)" value={scanRateRaw} onChange={setScanRate} min={0.001} step="any" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Scan pattern</span>
+          <span className="text-sm text-gray-300">Scan pattern (triangle: both; sawtooth, polygon: one)</span>
           <select value={both ? "both" : "one"} onChange={(e) => setDirection(e.target.value)} className={selectClass}>
-            <option value="both">Both directions (triangle): 2 passes per period</option>
-            <option value="one">One direction (sawtooth, polygon): 1 pass per sweep</option>
+            <option value="both">Both directions</option>
+            <option value="one">One direction</option>
           </select>
         </label>
         <ValidatedNumberInput label="Exposure time (s)" value={exposureRaw} onChange={setExposure} min={1e-9} max={30000} step="any" />
@@ -174,8 +174,8 @@ export default function ScanningMPEPage() {
           scans, pulsed lasers (each pass a group of pulses), and a moving retinal image, which is less restrictive.
         </p>
         <p>
-          If the scanner stops, the beam is stationary: the first card below gives the time a stopped beam takes to
-          exceed the limits, which bounds the reaction time of the scan-failure safeguard that IEC 60825-1 requires when
+          If the scanner stops, the beam is stationary: &quot;If the scan stops&quot; above gives the time a stopped beam takes
+          to exceed the limits, which bounds the reaction time of the scan-failure safeguard that IEC 60825-1 requires when
           the classification relies on the scan.
         </p>
       </div>
@@ -190,7 +190,7 @@ export default function ScanningMPEPage() {
           }}
         />
         <p className="text-xs text-gray-500 mt-2">
-          Largest beam power against the distance of the eye from the scanner, scanned and held still, for this beam,
+          Largest beam power against the distance of the eye from the scanner, scanned (blue) and held still (dotted), for this beam,
           scan and exposure. Closer in, the beam is slower and each pass longer, so the scanned limit falls; where the
           sweep no longer clears the pupil the scanned line stops.
         </p>
