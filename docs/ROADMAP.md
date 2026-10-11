@@ -575,12 +575,28 @@ Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence i
       polarizer and analyzer, presets, VA as a uniformly tilted layer; tier textbook). Three `knownIssue`s dropped (13 left).
     - The quartz + MgF₂ achromat designed at 450/700 nm is 7 % high at 550 nm: a two-point design, sensitive to Δn at 1e-5.
       The page defaults to 510/600 nm (±1 % from 495 to 625 nm; zero order: 545–555 nm).
-  - [ ] **Polarization part 3: polarizers.** A shared Glan TIR window (signed, external half-field, cemented case) and
-    Fresnel with complex r in TIR. Pages: `glans-prism`, `birefringent-polarizer` (Wollaston 2Δn tan α is fine to < 1 %),
-    `polarizing-beamsplitter` (rebuild as a MacNeille cube on `transfer-matrix.ts`, or rename), `brewster-polarizer`
-    (cos θt; pile of plates P(m = 1, 2, 4, 10) = .1567, .2709, .4264, .6501), `fresnel-polarization`, `dichroic-polarizer`
-    and `polymer-polarizer` (k₁, k₂ sheet algebra; log-domain extinction), `polarizer-extinction` (label only),
-    `polarizer-types` (sourced specs), `wire-grid` (shunt-sheet t = 2Z/(2Z + Z₀); T + R ≤ 1; p ≪ λ check).
+  - [x] **Polarization part 3: polarizers** (session 40, branch `phase-4/polarization-polarizers`). Five modules in
+    `physics/polarization/`, 33 tests in 5 files, a 26-mutation check (2 survivors until a t_p test with n₁ ≠ 1 and a
+    lossy wire-grid golden value were added):
+    - `fresnel.ts`: N₂ = n₂ − iκ₂, e^{i(ωt − kz)}, r_p = −r_s at normal incidence (the ellipsometry module's convention;
+      `transfer-matrix.ts` differs in phase only). Tests: ellipsometry inverts r_p/r_s back to n, k; transfer-matrix R;
+      TIR phases equal `tirPhaseDifference`, δ continuous at θ_c.
+    - `reflection-polarizers.ts`: pile of plates T = (1 − r)/(1 + (2m − 1)r), P(m = 1, 2, 4, 10) = .1567, .2709, .4264,
+      .6501 at n = 1.52 (0.936 at m = 10 ignoring the multiple reflections); MacNeille cube on `transfer-matrix.ts`
+      (ZnS/MgF₂ at 45°: n_g = 1.68290, R_p 1.81 % from the glass/H faces, T_s 3.3e-5 with 5 pairs).
+    - `prism-polarizers.ts`: Glan window from k_t at the hypotenuse on `plateWaves` (Taylor axis in plane; Foucault and
+      Thompson perpendicular; the higher-index wave is reflected, so positive crystals pass o; cemented Thompson ends at
+      grazing). Calcite 589 nm, 38.5°: −2.35° … +5.61° (Taylor), balanced cut 39.54°. Two-wedge splitters by wave-vector
+      matching: Wollaston 20° 7.191° (2|Δn| tan α 0.1 % low), Rochon |Δn| tan α 0.9 % low, Sénarmont via n(θ).
+    - `sheet-polarizer.ts` (log-domain slab, Shurcliff k₁/k₂ algebra) and `wire-grid.ts` (Marcuvitz strip reactances,
+      capacitive by Babinet, shunt sheet t = 2Z/(2Z + Z₀), skin-effect loss from DC σ, NaN for p ≥ λ).
+    - Pages: `fresnel-polarization` (κ input, phases), `brewster-polarizer` (plates m), `polarizing-beamsplitter` (now a
+      MacNeille cube; new keys), `glans-prism` (crystal data, three types, balanced cut), `birefringent-polarizer`
+      (exact splits, sourced |Δn| chart), `dichroic-polarizer` (29.7 dB default, was Infinity), `polymer-polarizer`
+      (31.8 dB, efficiency sign fixed), `wire-grid` (10.6 µm, 23.9 dB, T + R + A = 1; angle input dropped),
+      `polarizer-extinction` (label only). 9 pages tiered (131 of 461); seven `knownIssue`s dropped (6 left).
+    - **Open:** `polarizer-types` (sourced specs). Thorlabs, Edmund and Newport spec pages are JS-rendered or 403 for
+      WebFetch and curl; needs a browser session or data sheets from the user.
   - [ ] **Polarization part 4: optical activity, microscopy, scrambling.** `optical-activity` (one temperature coefficient;
     Drude for sucrose; M_W input), `circular-dichroism` (drop the fixed structure panel; residue count), `conoscopic`
     (crystal angle sin θc = NA/n̄; 2V), `orthoconoscopic` and `birefringence-imaging` (specimen angle; Michel-Lévy colour

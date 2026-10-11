@@ -1,26 +1,27 @@
-# Handover — 2026-10-11 (session 39 → session 40)
+# Handover — 2026-10-11 (session 40 → session 41)
 
-**Start here:** read this file, then "Polarization part 3" in `docs/ROADMAP.md` Phase 4. Part 2 (birefringent crystals)
-is done on branch `phase-4/polarization-crystals` (PR: see `gh pr list`). **Next: polarization part 3 (polarizers).**
+**Start here:** read this file, then "Polarization part 4" in `docs/ROADMAP.md` Phase 4. Part 3 (polarizers) is done on
+branch `phase-4/polarization-polarizers` (PR: see `gh pr list`). **Next: polarization part 4 (optical activity,
+microscopy, scrambling).** Part 2 (PR #36) is merged and checked on production.
 
 ## State
-- Physics: `src/physics/polarization/{jones,mueller,stokes,uniaxial,retarders,twisted-nematic}.ts`; crystal data in
-  `src/physics/materials/uniaxial-data.ts` (7 crystals, o and e). Part 3 reuses `uniaxial.ts` (`plateWaves` handles any
-  optic-axis direction and returns NaN for evanescent waves) and `retarders.ts` (`tirPhaseDifference`, `tirMaxPhase`).
-- Shared UI: `components/crystal-select.tsx` (`CrystalSelect`, `CrystalNote`, `resolveIndices` with NaN outside a fit's
-  range, `birefringenceOf`, `materialRange`), `components/polarization-format.ts` (+ `plateTypeLabel`).
-- 122 of 461 pages tiered; 13 polarization `knownIssue`s left (parts 3–4).
-- The "Rutile" preset 1.973/2.165 is still in the part-3 pages; replace it with `crystalIndices("rutile", λ)` (2.613/2.909
-  at 589 nm). `materials/birefringent-crystals` and `materials/crystal-birefringence` can switch to `uniaxial-data.ts` too.
+- Physics: `src/physics/polarization/{jones,mueller,stokes,uniaxial,retarders,twisted-nematic,fresnel,
+  reflection-polarizers,prism-polarizers,sheet-polarizer,wire-grid}.ts`; crystal data in `materials/uniaxial-data.ts`.
+- `fresnel.ts`: N = n − iκ, e^{i(ωt − kz)}, r_p = −r_s at normal incidence (same as `thin-film/ellipsometry.ts`;
+  `transfer-matrix.ts` uses e^{−iωt} and r_p = r_s). `phaseOf` reads a rounding-level imaginary part as 0.
+- `prism-polarizers.ts`: `glanWindow` finds each edge by bisection on k_t (monotonic below the grazing limit), ~1 ms;
+  `glanBalancedHypotenuse` scans θ_h in 0.5° steps then bisects, ~25 ms. The higher-index wave is the reflected one.
+- Shared UI: `components/crystal-select.tsx`, `components/polarization-format.ts` (+ `fromLog10` for transmittances
+  below 1e-300).
+- 131 of 461 pages tiered; 6 polarization `knownIssue`s left (all part 4).
 
 ## Next actions
-1. PR for `phase-4/polarization-crystals`: CI, then ask the user to merge; after the merge, ui-check the six pages on
-   production and spot-check defaults: `double-refraction` separation 1.0921 mm, walk-off −6.23°; `birefringence`
-   16.6541 waves; `waveplate-thickness` 15.011 µm and 615.46 µm; `waveplate-order` 1.6654 waves;
-   `liquid-crystal-polarizer` 0.87 %.
-2. Part 3 on a new branch `phase-4/polarization-polarizers` (ROADMAP list). Glan windows need the e-ray TIR at a
-   cut angle: use `plateWaves` with `nIncident` = crystal side. Verify every source on Crossref first.
-3. Part 4 follows.
+1. PR for `phase-4/polarization-polarizers`: CI, then ask the user to merge; after the merge, ui-check the nine pages on
+   production and spot-check defaults: `brewster-polarizer` P 0.4264 (4 plates); `polarizing-beamsplitter` R_p 1.81 %;
+   `glans-prism` −2.35° … 5.61°; `birefringent-polarizer` 7.191°; `wire-grid` 23.9 dB; `polymer-polarizer` 31.8 dB.
+2. `polarizer-types` (sourced specs) is still open: vendor spec pages (Thorlabs, Edmund, Newport) are JS-rendered or
+   403 for WebFetch and curl. Try Claude in Chrome (needs the user's browser), or ask the user for data sheets.
+3. Part 4 on a new branch `phase-4/polarization-activity` (ROADMAP list). Verify every source on Crossref first.
 
 ## Ship flow (worked thirty times)
 - **Push:** `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`.
@@ -31,20 +32,17 @@ is done on branch `phase-4/polarization-crystals` (PR: see `gh pr list`). **Next
 - **Spot values on production:** `curl -s <url> | sed 's/<[^>]*>/ /g'` and grep: the prerendered HTML has the defaults.
 
 ## Non-obvious facts
-- **refractiveindex.info data:** `gh api "repos/polyanskiy/refractiveindex.info-database/git/trees/main?recursive=1"`
-  lists files; raw YAML at `raw.githubusercontent.com/polyanskiy/refractiveindex.info-database/main/database/data/main/
-  <MAT>/nk/<Set>.yml`. Formula 1: n² − 1 = C₀ + ΣBλ²/(λ² − Cᵢ²) → `fromResonanceWavelengths(1 + C₀, …)`; formula 2:
-  same with Cᵢ in µm² → `fromSquaredForm`; formula 4 with exponents 0/1 → `fromPoleForm`. A −Dλ² term (Shi, Jundt,
-  Smith) doesn't fit `SellmeierModel`.
+- **Sources:** Crossref has chapter DOIs with titles and pages for Goldstein 3rd ed. (`10.1201/b10436-n`: Fresnel
+  Equations -9, Dielectric Plates -11, Polarization Optical Elements -27), Shurcliff 1962
+  (`10.4159/harvard.9780674424135.cN`: c4 parameters, c5 dichroic, c6 birefringence, c7 reflection polarizers),
+  Macleod 4th ed. (`10.1201/9781420073034-cN`), Marcuvitz (`10.1049/pbew021e_chN`). Bennett's Handbook of Optics
+  "Polarizers" chapter is not on Crossref. arXiv PDFs come back binary from WebFetch: `pdftotext -layout` the saved file.
 - **Mutation checks need a transcription test:** independent sets agree only to ~1e-4, so coefficient typos survive them.
-  Evaluate the published coefficient strings in the test with its own formula code (1e-9).
 - **React Compiler lint:** `useMemo` deps that are results of plain function calls can trip
-  `preserve-manual-memoization`; drop the manual memo (the compiler memoizes) or depend on primitive inputs.
+  `preserve-manual-memoization`; build objects inside the memo from primitive deps instead.
 - **Deleted pages or modules break `tsc`** through stale `.next/types/validator.ts`: `rm -rf .next/types`, then `npm run check`.
-- **Shell:** a heredoc with apostrophes in its body fails in this Bash tool, and so does `node -e '…'` with one inside:
-  use the Edit tool, or a quoted heredoc (`<<'EOF'`) into a scratchpad file. Backticks inside `node -e "…"` run as commands.
-- **Book chapters on Crossref:** `curl -s https://api.crossref.org/works/10.1201/<book-id>-<n>` (CRC) or
-  `10.1017/CBO9781139644181.0nn` (Born & Wolf 7th: .010 = ch. 1, .024 = ch. 15) give titles and pages.
+- **Shell:** a heredoc whose body has an apostrophe fails in this Bash tool even when quoted (`<<'EOF'`): write the file
+  with the Write tool. `python -` with no stdin hangs. Backticks inside `node -e "…"` run as commands.
 - **Trust data:** tier, `modelNote` (≤ 220 chars), references in `src/registry/calculators/<category>.ts`.
 - **ui-check:** `scripts/ui-check.mjs <base> load /a /b`; in Git Bash prefix `MSYS_NO_PATHCONV=1`. Never
   `taskkill /IM chrome.exe`.
@@ -53,6 +51,7 @@ is done on branch `phase-4/polarization-crystals` (PR: see `gh pr list`). **Next
 - **Timings:** `tsc` ≈ 1.5–4 min, `check` ≈ 6 min, `build` ≈ 6–10 min. Background them; don't edit `.ts` during `check`.
 - **Committing:** `git commit -F msg -- <paths>`; untracked files need `git add` first.
 - **`useURLState` doesn't clamp:** clamp in the page. It also takes string defaults.
-- **`SimpleChart`**: no `shapes` (use a `mode: "markers"` trace); skips NaN and values ≤ 0 on log axes.
-- **Older facts** (ICNIRP/IEC/ISO sources, Seibersdorf PDFs, registry slicing): see the session-38 handover in git
-  (`git show 428a05ee:docs/HANDOVER.md`).
+- **`SimpleChart`**: no `shapes` (use a `mode: "markers"` trace); skips NaN and values ≤ 0 on log axes; legend text is
+  literal (use ₛ, ₚ, ₜ rather than `_s`).
+- **Older facts** (refractiveindex.info YAML, Sellmeier formula types, ICNIRP/IEC sources): see the session-39 and
+  session-38 handovers in git (`git log -- docs/HANDOVER.md`).
