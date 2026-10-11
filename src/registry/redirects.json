@@ -35,6 +35,7 @@
   "/laser-safety/maximum-exposure": "/laser-safety/exposure-duration",
   "/laser-safety/multiple-pulse": "/laser-safety/pulsed-mpe",
   "/laser-safety/prf-correction": "/laser-safety/pulsed-mpe",
+  "/laser-safety/scan-failure": "/laser-safety/scanning-mpe",
   "/laser-safety/scanned-mpe": "/laser-safety/scanning-mpe",
   "/laser-safety/skin-hazard": "/laser-safety/skin-mpe",
   "/laser-safety/uv-blue-hazard": "/laser-safety/blue-light-hazard",

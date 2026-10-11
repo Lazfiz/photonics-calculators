@@ -360,10 +360,21 @@ export const laserSafety: CalculatorEntry[] = [
   },
   {
     slug: "interlock-design",
-    title: "Interlock Time Calculation",
-    description: "Calculates required interlock/shutter response time based on laser hazard level. IEC 60825-1 and ANSI Z136.1 require interlocks to terminate emission before exposure exceeds MPE.",
-    hidden: true,
-    knownIssue: "Above 1050 nm the maximum safe time has no basis (0.39 ms shown, about 80 ns by ICNIRP), visible times are floored at 1 µs, and the approach speed is 1 m/s instead of 1.6–2 m/s.",
+    title: "Laser Interlock Timing",
+    description: "Whether a laser guard's interlock stops the emission before an eye can be in the beam longer than the ICNIRP 2013 limits allow: time to reach the beam, the beam's limit time, the longest stopping time and the shortest guard distance.",
+    lede: "Interlock stopping time against the time to reach the beam (ISO 13855 approach speeds) and the time the beam takes to exceed the eye limits.",
+    keywords: ["Interlock Time Calculation", "laser interlock response time", "safety distance ISO 13855"],
+    tier: "textbook",
+    modelNote: "Eye in the beam for T − S/K (ISO 13855 approach model, no intrusion allowance), held against the time the stationary beam takes to exceed the ICNIRP 2013 eye limits. Not modelled: reflections, skin, reliability.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "ISO 13855:2010. Safety of machinery – Positioning of safeguards with respect to the approach speeds of parts of the human body. Minimum distance S = K·T + C.",
+      },
+    ],
   },
   {
     slug: "lidar-safety",
@@ -592,16 +603,23 @@ export const laserSafety: CalculatorEntry[] = [
     ],
   },
   {
-    slug: "scan-failure",
-    title: "Scan Failure Analysis",
-    description: "Analyzes hazard when a scanning laser fails to scan, causing the beam to dwell on a single point. IEC 60825-1 scan failure assessment.",
-  },
-  {
     slug: "scanning-mpe",
     title: "Scanned Beam MPE",
-    description: "Calculates the effective MPE for scanning laser beams where dwell time per retinal point is reduced compared to stationary exposure.",
-    hidden: true,
-    knownIssue: "The scanning benefit compares a single-pass limit with a 10 s limit, the dwell time ignores the time the beam takes to cross the pupil, and C_A is wrong.",
+    description: "Eye safety of a CW beam scanned across the eye on the ICNIRP 2013 limits: each pass over the pupil as a pulse, the repetitive-pulse rule that binds, the gain over a stationary beam, and how fast a scan-failure safeguard must act.",
+    lede: "Largest power of a scanned laser beam within the eye limits, 180 nm to 1 mm, and how soon a stopped beam exceeds them.",
+    keywords: ["Scan Failure Analysis", "scanning laser MPE", "scanned laser eye safety", "scan failure safeguard"],
+    tier: "textbook",
+    modelNote: "Each pass over the 7 mm (retina) or 1–3.5 mm (cornea) aperture is a pulse of half-power duration under ICNIRP rules 1–3; still retinal image, eye on the scan centre. Not modelled: turning points, raster, pulsed lasers.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Repetitive pulse exposures (p. 287), Tables 4, 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "Schulmeister, K. (2025). Extended source AEL analysis of scanned laser emission for IEC 60825-1. White paper, Ed. 2, Seibersdorf Laboratories. Pulse per pass, pass duration and energy (4.2.5, 6.2.3).",
+        url: "https://www.seibersdorf-laboratories.at/fileadmin/user_upload/docs/le/las/publ/whitepaper_scanned-laser-emission.pdf",
+      },
+    ],
   },
   {
     slug: "skin-mpe",

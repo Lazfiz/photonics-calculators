@@ -1,167 +1,200 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
+import { fmtDistance, fmtNum, fmtPower, fmtTime, LIMIT_LABELS, segmentedLine } from "../../../components/eye-limit-labels";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import PulseTrainTable from "../../../components/pulse-train-table";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { exposureDuration, T_MAX } from "../../../physics/laser-safety/eye-exposure-limits";
+import { axisDiameterAt } from "../../../physics/laser-safety/hazard-distance";
+import { angularScan, scannedBeamLimits, stationaryMaxPower } from "../../../physics/laser-safety/scanned-beam";
+
+const RULE_NAMES = { 1: "single pass", 2: "groups of passes (average)", 3: "C_P × single pass" } as const;
+const selectClass = "mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white";
 
 export default function ScanningMPEPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 532);
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 0.5); // mm at retina image
-  const [scanRate, setScanRate] = useURLState("scanRate", 100); // Hz
-  const [scanAngle, setScanAngle] = useURLState("scanAngle", 30); // degrees
-  const [workingDistance, setWorkingDistance] = useURLState("workingDistance", 100); // cm
+  const [wavelength, setWavelength] = useURLState("wavelength", 532); // nm
+  const [powerRaw, setPower] = useURLState("power", 5); // mW
+  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 1); // mm, 1/e² at the scanner
+  const [divergenceRaw, setDivergence] = useURLState("divergence", 1); // mrad, 1/e² full angle
+  const [distanceRaw, setDistance] = useURLState("workingDistance", 100); // cm from the scan's pivot
+  const [scanAngleRaw, setScanAngle] = useURLState("scanAngle", 30); // °, full angle
+  const [scanRateRaw, setScanRate] = useURLState("scanRate", 100); // Hz
+  const [direction, setDirection] = useURLState("scanDirection", "both");
+  const [exposureRaw, setExposure] = useURLState("exposureTime", 0.25); // s
+  const [alphaRaw, setAlpha] = useURLState("alpha", 1.5); // mrad
 
-  // Scanning MPE: when a beam scans across the pupil, dwell time per point is reduced
-  // t_dwell = beam_diam / (scan_speed) at the cornea
-  // scan_speed = 2π × f × D × sin(θ) (tangential speed)
-  // The MPE is evaluated at t_dwell instead of the full exposure time
-  // MPE_scan = MPE(t_dwell) for each pass, with correction for multiple passes
+  // URL values aren't range-checked: clamp them here. SI inside; physics in src/physics/laser-safety/scanned-beam.ts.
+  const lambda = wavelength * 1e-9;
+  const P = Math.max(powerRaw, 0) * 1e-3;
+  const d0 = Math.max(beamDiamRaw, 0) * 1e-3;
+  const phi = Math.max(divergenceRaw, 0) * 1e-3;
+  const r = Math.max(distanceRaw, 0.1) * 1e-2;
+  const theta = (Math.min(Math.max(scanAngleRaw, 0.01), 360) * Math.PI) / 180;
+  const f = Math.max(scanRateRaw, 1e-3);
+  const both = direction !== "one";
+  const T = Math.min(Math.max(exposureRaw, 1e-9), T_MAX);
+  const alpha = Math.max(alphaRaw, 0) * 1e-3;
+  const d = axisDiameterAt(d0, phi, r, "linear");
 
-  const results = useMemo(() => {
-    const lam = wavelength / 1000; // µm
-    const D = workingDistance / 100; // m
-    const theta = scanAngle * Math.PI / 180;
-
-    // Scan linear speed at the pupil plane
-    const scanSpeed = 2 * Math.PI * scanRate * D * Math.sin(theta); // m/s
-    const beamDiam_m = beamDiam / 1000; // m
-
-    // Dwell time: time for beam to cross its own diameter
-    const tDwell = beamDiam_m / scanSpeed; // seconds
-
-    // For very fast scanning, the reduced MPE at t_dwell can be higher
-    // MPE(t) = 1.8e-3 × t^0.75 J/cm² for 400-700nm, t<0.7s
-    let mpeDwell: number;
-    if (lam >= 0.4 && lam < 0.7) {
-      mpeDwell = 1.8e-3 * Math.pow(Math.min(tDwell, 0.7), 0.75);
-    } else if (lam >= 0.7 && lam < 1.05) {
-      const CA = Math.pow(10, 0.02 * (lam - 0.7));
-      mpeDwell = 1.8e-3 * CA * Math.pow(Math.min(tDwell, 0.7), 0.75);
-    } else {
-      mpeDwell = 1e-3 * Math.pow(Math.min(tDwell, 10), 0.75);
-    }
-
-    // MPE for stationary beam (t=10s for comparison)
-    const tStationary = 10;
-    let mpeStationary: number;
-    if (lam >= 0.4 && lam < 0.7) {
-      mpeStationary = 1e-3 * Math.pow(tStationary, 0.75);
-    } else if (lam >= 0.7 && lam < 1.05) {
-      const CA = Math.pow(10, 0.02 * (lam - 0.7));
-      mpeStationary = 1e-3 * CA * Math.pow(tStationary, 0.75);
-    } else {
-      mpeStationary = 1e-3 * Math.pow(tStationary, 0.75);
-    }
-
-    // Number of passes per second
-    const passesPerSec = scanRate * 2; // back and forth
-    // Correction for multiple passes (if total exposure > 0.25s)
-    const totalPulses = passesPerSec * 0.25; // aversion response window
-    const Cp = totalPulses > 1 ? Math.pow(totalPulses, -0.25) : 1;
-    const mpeScanFinal = mpeDwell * Cp;
-
-    return {
-      scanSpeed: scanSpeed * 100, // cm/s
-      tDwell: tDwell * 1e6, // µs
-      mpeDwell: mpeDwell * 1e6, // µJ/cm²
-      mpeStationary: mpeStationary * 1e6, // µJ/cm²
-      mpeScanFinal: mpeScanFinal * 1e6,
-      Cp,
-      benefit: mpeScanFinal / mpeStationary,
-    };
-  }, [wavelength, beamDiam, scanRate, scanAngle, workingDistance]);
+  const scan = useMemo(() => angularScan(theta, f, r, both, T), [theta, f, r, both, T]);
+  const result = useMemo(() => scannedBeamLimits(lambda, d, scan, alpha), [lambda, d, scan, alpha]);
+  const stationary = useMemo(() => stationaryMaxPower(lambda, d, T, alpha), [lambda, d, T, alpha]);
+  const stopped = useMemo(() => exposureDuration(lambda, P, d, alpha), [lambda, P, d, alpha]);
+  const covered = Number.isFinite(stationary);
+  const ok = result.status === "ok" && Number.isFinite(result.pMax);
+  const ratio = P / result.pMax;
+  const binding = result.limits.find((l) => l.kind === result.limiting) ?? result.limits[0];
 
   const chartData = useMemo(() => {
-    const rates = Array.from({ length: 150 }, (_, i) => 1 + i * 20);
-    const D = workingDistance / 100;
-    const theta = scanAngle * Math.PI / 180;
-
-    const dwellTimes = rates.map(f => {
-      const speed = 2 * Math.PI * f * D * Math.sin(theta);
-      return (beamDiam / 1000) / speed * 1e6; // µs
-    });
-
-    const lam = wavelength / 1000;
-    const mpeScanVals = rates.map(f => {
-      const speed = 2 * Math.PI * f * D * Math.sin(theta);
-      const td = (beamDiam / 1000) / speed;
-      const tClamp = Math.min(td, 0.7);
-      return (1.8e-3 * Math.pow(tClamp, 0.75)) * 1e6;
-    });
-
-    return [
-      { x: rates, y: dwellTimes, type: "scatter" as const, mode: "lines" as const, name: "Dwell Time (µs)", line: { color: "#fbbf24" }, yaxis: "y" },
-      { x: rates, y: mpeScanVals, type: "scatter" as const, mode: "lines" as const, name: "MPE (µJ/cm²)", line: { color: "#60a5fa" }, yaxis: "y2" },
+    const lo = Math.min(0.01, r / 2);
+    const hi = Math.max(100, 2 * r);
+    const rs = Array.from({ length: 61 }, (_, i) => lo * Math.pow(hi / lo, i / 60));
+    const dAt = (x: number) => axisDiameterAt(d0, phi, x, "linear");
+    const scanned = rs.map((x) => scannedBeamLimits(lambda, dAt(x), angularScan(theta, f, x, both, T), alpha).pMax);
+    const still = rs.map((x) => stationaryMaxPower(lambda, dAt(x), T, alpha));
+    const cm = rs.map((x) => x * 100);
+    const traces: Record<string, unknown>[] = [
+      ...segmentedLine(cm, scanned, "Max power, scanned", { color: "#60a5fa", width: 3 }),
+      ...segmentedLine(cm, still, "Max power, held still", { color: "#fbbf24", dash: "dot" }),
     ];
-  }, [wavelength, beamDiam, scanAngle, workingDistance]);
-
-  const layout = {
-    paper_bgcolor: "#030712",
-    plot_bgcolor: "#030712",
-    font: { color: "#9ca3af" },
-    xaxis: { title: "Scan Rate (Hz)", gridcolor: "#1f2937", color: "#9ca3af", type: "log" as const },
-    yaxis: { title: "Dwell Time (µs)", gridcolor: "#1f2937", color: "#fbbf24", type: "log" as const },
-    yaxis2: { title: "MPE (µJ/cm²)", gridcolor: "#1f2937", color: "#60a5fa", overlaying: "y" as const, side: "right" as const },
-    margin: { t: 30, b: 50, l: 70, r: 70 },
-    legend: { font: { color: "#d1d5db" } },
-  };
+    if (P > 0) traces.push({ x: [cm[0], cm[cm.length - 1]], y: [P, P], type: "scatter", mode: "lines", name: "Your power", line: { color: "#f87171", dash: "dash" } });
+    const here = result.pMax;
+    if (Number.isFinite(here) && here > 0) {
+      traces.push({ x: [r * 100], y: [here], type: "scatter", mode: "markers", name: "Your distance", marker: { color: "#f87171", size: 9 } });
+    }
+    return traces;
+  }, [lambda, d0, phi, theta, f, both, T, alpha, P, r, result]);
 
   return (
     <>
-            
       <LaserSafetyDisclaimer />
-      <LaserSafetyQuarantineBanner />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <div>
-          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDiam} onChange={setBeamDiam} step="0.1" />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Scan Rate (Hz)" value={scanRate} onChange={setScanRate} />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Scan Angle (°)" value={scanAngle} onChange={setScanAngle} />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Working Distance (cm)" value={workingDistance} onChange={setWorkingDistance} />
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={1000000} step="any" />
+        <ValidatedNumberInput label="Beam power (mW)" value={powerRaw} onChange={setPower} min={0} step="any" />
+        <ValidatedNumberInput label="Beam diameter at the scanner, 1/e² (mm)" value={beamDiamRaw} onChange={setBeamDiam} min={0} step="any" />
+        <ValidatedNumberInput label="Divergence, 1/e² full angle (mrad)" value={divergenceRaw} onChange={setDivergence} min={0} step="any" />
+        <ValidatedNumberInput label="Eye distance from the scanner (cm)" value={distanceRaw} onChange={setDistance} min={0.1} step="any" />
+        <ValidatedNumberInput label="Scan angle, full (°)" value={scanAngleRaw} onChange={setScanAngle} min={0.01} max={360} step="any" />
+        <ValidatedNumberInput label="Scan rate (sweeps or periods per s)" value={scanRateRaw} onChange={setScanRate} min={0.001} step="any" />
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Scan pattern</span>
+          <select value={both ? "both" : "one"} onChange={(e) => setDirection(e.target.value)} className={selectClass}>
+            <option value="both">Both directions (triangle): 2 passes per period</option>
+            <option value="one">One direction (sawtooth, polygon): 1 pass per sweep</option>
+          </select>
+        </label>
+        <ValidatedNumberInput label="Exposure time (s)" value={exposureRaw} onChange={setExposure} min={1e-9} max={30000} step="any" />
+        <ValidatedNumberInput label="Apparent source α (mrad)" value={alphaRaw} onChange={setAlpha} min={0} step="any" />
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">Dwell Time</div>
-          <div className="text-2xl font-bold text-yellow-400">{results.tDwell.toExponential(2)}</div>
-          <div className="text-xs text-gray-500">µs</div>
+      {result.status === "noClearance" ? (
+        <p className="text-amber-300 mb-4">
+          At {fmtDistance(r)} the sweep is {fmtDistance(scan.sweep)} long, less than the 7 mm pupil plus the{" "}
+          {fmtNum(d * 1e3)} mm beam: the beam never leaves the eye. Treat it as a stationary beam (below).
+        </p>
+      ) : !ok ? (
+        <p className="text-amber-300 mb-4">
+          {covered
+            ? "The passes overlap or the exposure is shorter than one pass: treat the beam as stationary (below)."
+            : "The eye limits cover 180 nm to 1 mm."}
+        </p>
+      ) : (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
+            <ResultCard
+              label="Max beam power, scanned"
+              value={fmtPower(result.pMax)}
+              tone="yellow"
+              subtext={`${result.limiting ? LIMIT_LABELS[result.limiting] : ""}, rule ${result.rule}: ${result.rule ? RULE_NAMES[result.rule] : ""}`}
+            />
+            <ResultCard
+              label="Your power / max"
+              value={`${fmtNum(ratio)}×`}
+              tone={ratio > 1 ? "red" : "green"}
+              subtext={ratio > 1 ? `Exceeds: eyewear OD ${fmtNum(Math.log10(ratio))} needed` : "Within every eye limit"}
+            />
+            <ResultCard
+              label="Pass over the eye"
+              value={fmtTime(binding.passDuration)}
+              tone="blue"
+              subtext={`${fmtNum(scan.speed)} m/s across ${fmtNum(binding.aperture * 1e3)} mm, ${binding.passes.toLocaleString("en-US")} passes in ${fmtNum(T)} s; beam ${fmtNum(d * 1e3)} mm`}
+            />
+            <ResultCard
+              label="Scanning allows"
+              value={`${fmtNum(result.pMax / stationary)}×`}
+              tone="cyan"
+              subtext={`the power of the beam held still on the eye for ${fmtNum(T)} s (${fmtPower(stationary)})`}
+            />
+          </div>
+          <PulseTrainTable result={result} value={P} unit="pass" />
+        </>
+      )}
+
+      {covered ? (
+        <div className="grid gap-4 sm:grid-cols-2 mb-8">
+          <ResultCard
+            label="If the scan stops: limit reached after"
+            value={fmtTime(stopped.tMax)}
+            tone={stopped.tMax >= T ? "green" : "red"}
+            subtext={
+              stopped.tMax >= T
+                ? `A stopped beam stays within the limits for ${fmtNum(T)} s.`
+                : `${stopped.limiting ? LIMIT_LABELS[stopped.limiting] : "Exceeded"}: a scan-failure safeguard has to stop the emission within this time.`
+            }
+          />
+          <ResultCard
+            label="Max beam power, held still"
+            value={fmtPower(stationary)}
+            tone={P > stationary ? "red" : "green"}
+            subtext={`For ${fmtNum(T)} s; yours is ${fmtNum(P / stationary)}× that.`}
+          />
         </div>
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">Scan MPE</div>
-          <div className="text-2xl font-bold text-blue-400">{results.mpeScanFinal.toExponential(2)}</div>
-          <div className="text-xs text-gray-500">µJ/cm²</div>
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">Stationary MPE</div>
-          <div className="text-2xl font-bold text-red-400">{results.mpeStationary.toExponential(2)}</div>
-          <div className="text-xs text-gray-500">µJ/cm²</div>
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">Scanning Benefit</div>
-          <div className="text-2xl font-bold text-green-400">{results.benefit.toFixed(1)}×</div>
-        </div>
+      ) : null}
+
+      <div className="text-sm text-gray-400 mb-8 space-y-2">
+        <p>
+          A beam that sweeps across the eye delivers one pulse each time it crosses the pupil, and ICNIRP 2013
+          (Health Phys. 105:271, p. 287) applies its repetitive-pulse rules to it: (1) each pass within the limit for one
+          pulse of its duration, (2) every group of passes within the limit for the time it spans, up to the whole
+          exposure (the average power), (3) for the retinal thermal limit, each pass within C_P times the single-pass
+          limit. The pass lasts from half power to half power through the aperture (W/v, about 7 mm/v for a beam narrower
+          than the pupil); its energy is all the light that gets through. The cornea&apos;s 1 mm aperture sees a shorter
+          pass than the retina&apos;s 7 mm one.
+        </p>
+        <p>
+          The beam is taken to sweep through the centre of the pupil, with the eye on the centre of the scan line and
+          focused on the scanner, so the retinal image stays put and every pass lands on the same spot (IEC 60825-1:2014&apos;s
+          default evaluation of scanned emission; Schulmeister 2025). Speed ω·r at distance r from the pivot: ω = Θ·f for
+          one direction, 2Θ·f for both. Use 0.25 s for an accidental glance at a visible beam and 10 s or more for
+          invisible ones. Not modelled: the turning points of a scan (slower, with passes in pairs), sinusoidal and raster
+          scans, pulsed lasers (each pass a group of pulses), and a moving retinal image, which is less restrictive.
+        </p>
+        <p>
+          If the scanner stops, the beam is stationary: the first card below gives the time a stopped beam takes to
+          exceed the limits, which bounds the reaction time of the scan-failure safeguard that IEC 60825-1 requires when
+          the classification relies on the scan.
+        </p>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 font-mono text-sm text-gray-300">
-        <p className="text-gray-500 mb-1">Key Formulas:</p>
-        <p>v<sub>scan</sub> = 2π × f × D × sin(θ)</p>
-        <p>t<sub>dwell</sub> = d<sub>beam</sub> / v<sub>scan</sub></p>
-        <p>MPE(t<sub>dwell</sub>) = 1.8×10⁻³ × t<sub>dwell</sub><sup>0.75</sup> J/cm²</p>
-        <p className="text-yellow-400 mt-2">⚠ Scanning benefit is limited by minimum angular subtense α<sub>min</sub> = 1.5 mrad</p>
+      <div className="bg-gray-900 rounded-lg p-4">
+        <ChartPanel
+          data={chartData}
+          layout={{
+            xaxis: { title: "Distance from the scanner (cm)", type: "log", gridcolor: "#374151" },
+            yaxis: { title: "Max beam power (W)", type: "log", gridcolor: "#374151" },
+            margin: { t: 30, r: 30, b: 50, l: 70 },
+          }}
+        />
+        <p className="text-xs text-gray-500 mt-2">
+          Largest beam power against the distance of the eye from the scanner, scanned and held still, for this beam,
+          scan and exposure. Closer in, the beam is slower and each pass longer, so the scanned limit falls; where the
+          sweep no longer clears the pupil the scanned line stops.
+        </p>
       </div>
-
-      <ChartPanel data={chartData} layout={layout} className="w-full h-[400px]" />
     </>
   );
 }
