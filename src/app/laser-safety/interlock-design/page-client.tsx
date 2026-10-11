@@ -1,206 +1,119 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
+import { useMemo } from "react";
+import ExposureTimeChart from "../../../components/exposure-time-chart";
+import { fmtDistance, fmtTime, LIMIT_LABELS } from "../../../components/eye-limit-labels";
 import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
-import LaserSafetyQuarantineBanner from "../../../components/laser-safety-quarantine-banner";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { interlockTiming } from "../../../physics/laser-safety/interlock";
+
 export default function InterlockDesignPage() {
   const [laserPower, setLaserPower] = useURLState("laserPower", 5000); // mW
   const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [beamDiam, setBeamDiam] = useURLState("beamDiam", 5); // mm
-  const [shutterTime, setShutterTime] = useURLState("shutterTime", 50); // ms (shutter response)
-  const [humanResponse, setHumanResponse] = useURLState("humanResponse", 200); // ms (reaction time)
-  const [accessDistance, setAccessDistance] = useURLState("accessDistance", 50); // cm (distance to hazard)
+  const [beamDiamRaw, setBeamDiam] = useURLState("beamDiam", 5); // mm, 1/e² where the beam can be reached
+  const [stopTimeRaw, setStopTime] = useURLState("shutterTime", 50); // ms, guard opening → emission off
+  const [distanceRaw, setDistance] = useURLState("accessDistance", 50); // cm, opening → beam
+  const [speedRaw, setSpeed] = useURLState("approachSpeed", 2); // m/s
 
-  const results = useMemo(() => {
-    const P = laserPower / 1000; // W
-    const lam = wavelength / 1000; // µm
-    const a = beamDiam / 10; // cm
-    const area = Math.PI * (a / 2) ** 2; // cm²
-    const t_shutter = shutterTime / 1000; // s
-    const t_human = humanResponse / 1000; // s
-    const d = accessDistance; // cm
-
-    // Total interlock response time
-    const totalResponseTime = t_shutter + t_human;
-
-    // Irradiance from beam
-    const irradiance = P / area; // W/cm²
-
-    // MPE at response time
-    let mpe: number; // J/cm²
-    if (lam >= 0.4 && lam < 0.7) {
-      mpe = 1.8e-3 * Math.pow(Math.min(totalResponseTime, 10), 0.75);
-    } else if (lam >= 0.7 && lam < 1.05) {
-      const CA = Math.pow(10, 0.02 * (lam - 0.7));
-      mpe = 1.8e-3 * CA * Math.pow(Math.min(totalResponseTime, 10), 0.75);
-    } else if (lam >= 1.05 && lam < 1.4) {
-      mpe = totalResponseTime > 10 ? 0.1 : 0.01 * totalResponseTime;
-    } else if (lam >= 1.4 && lam <= 1.8) {
-      mpe = 0.1;
-    } else {
-      mpe = 1e-3;
-    }
-
-    // Fluence during response time
-    const fluence = irradiance * totalResponseTime * 1000; // mJ/cm²
-
-    // Hazard ratio
-    const hazardRatio = fluence / (mpe * 1000);
-
-    // Maximum safe response time (where fluence = MPE)
-    // E * t = MPE(t) -> solve for t
-    // For visible: E * t = 1.8e-3 * t^0.75
-    // t^0.25 = 1.8e-3 / E
-    // t = (1.8e-3 / E)^4
-    let maxSafeTime: number;
-    if (lam >= 0.4 && lam < 0.7) {
-      maxSafeTime = Math.pow(1.8e-3 / irradiance, 4);
-    } else if (lam >= 0.7 && lam < 1.05) {
-      const CA = Math.pow(10, 0.02 * (lam - 0.7));
-      maxSafeTime = Math.pow((1.8e-3 * CA) / irradiance, 4);
-    } else {
-      maxSafeTime = 0.01 / irradiance;
-    }
-    maxSafeTime = Math.max(1e-6, maxSafeTime);
-
-    // Required shutter time (assuming human response fixed)
-    const requiredShutterTime = Math.max(0, maxSafeTime - t_human);
-
-    // Interlock class recommendation
-    let interlockClass: string;
-    let safetyLevel: string;
-    if (hazardRatio < 0.1) {
-      interlockClass = "Standard Interlock";
-      safetyLevel = "Adequate - standard interlock sufficient";
-    } else if (hazardRatio < 1) {
-      interlockClass = "Fast Interlock";
-      safetyLevel = "Marginal - fast shutter recommended";
-    } else if (hazardRatio < 10) {
-      interlockClass = "Safety-Critical Interlock";
-      safetyLevel = "Inadequate - high-speed shutter required";
-    } else {
-      interlockClass = "Fail-Safe System Required";
-      safetyLevel = "DANGEROUS - interlock cannot respond fast enough";
-    }
-
-    // IEC 60825-1 time of flight considerations
-    // If person can reach hazard zone faster than interlock responds
-    const personSpeed = 100; // cm/s (fast arm movement)
-    const accessTime = d / personSpeed;
-    const accessHazard = accessTime < totalResponseTime;
-
-    return {
-      totalResponseTime, irradiance, mpe: mpe * 1000, fluence, hazardRatio,
-      maxSafeTime, requiredShutterTime, interlockClass, safetyLevel,
-      accessTime, accessHazard,
-      shutterSafety: shutterTime <= requiredShutterTime * 1000,
-    };
-  }, [laserPower, wavelength, beamDiam, shutterTime, humanResponse, accessDistance]);
-
-  const chartData = useMemo(() => {
-    const times = Array.from({ length: 200 }, (_, i) => 1e-4 + i * 0.01);
-    const fluence = times.map(t => results.irradiance * t * 1000);
-    const mpeLine = times.map(t => {
-      if (t < 0.25) return 1.8 * Math.pow(t, 0.75);
-      if (t < 10) return 1.8 * Math.pow(t, 0.75);
-      return 1.8 * Math.pow(10, 0.75);
-    });
-
-    return [
-      { x: times, y: fluence, type: "scatter" as const, mode: "lines" as const, name: "Actual Fluence", line: { color: "#f87171", width: 2 } },
-      { x: times, y: mpeLine, type: "scatter" as const, mode: "lines" as const, name: "MPE (visible)", line: { color: "#60a5fa", dash: "dash" } },
-      {
-        x: [results.totalResponseTime], y: [results.fluence],
-        type: "scatter" as const, mode: "markers" as const, name: "At Interlock Time",
-        marker: { color: results.hazardRatio > 1 ? "#ef4444" : "#22c55e", size: 14, symbol: "x" },
-      },
-    ];
-  }, [results]);
+  // URL values aren't range-checked: clamp them here. SI inside; physics in src/physics/laser-safety/interlock.ts.
+  const lambda = wavelength * 1e-9;
+  const P = Math.max(laserPower, 0) * 1e-3;
+  const d = Math.max(beamDiamRaw, 0) * 1e-3;
+  const T = Math.max(stopTimeRaw, 0) * 1e-3;
+  const S = Math.max(distanceRaw, 0) * 1e-2;
+  const K = Math.max(speedRaw, 0.01);
+  const r = useMemo(() => interlockTiming(lambda, P, d, T, S, K), [lambda, P, d, T, S, K]);
+  const covered = !Number.isNaN(r.accessTime);
+  const marks = useMemo(
+    () => (r.exposure > 0 ? [{ t: r.exposure, name: "Time in the beam before the stop", color: "#e5e7eb" }] : []),
+    [r.exposure],
+  );
+  const limitName = r.limiting ? LIMIT_LABELS[r.limiting] : "";
 
   return (
     <>
-            
       <LaserSafetyDisclaimer />
-      <LaserSafetyQuarantineBanner />
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Laser Power (mW)" value={laserPower} onChange={setLaserPower} min={0.001} step="any" />
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={20000} />
-        <ValidatedNumberInput label="Beam Diameter (mm)" value={beamDiam} onChange={setBeamDiam} min={0.1} step="0.1" />
-        <ValidatedNumberInput label="Shutter Response (ms)" value={shutterTime} onChange={setShutterTime} min={0.1} step="0.1" />
-        <ValidatedNumberInput label="Human Reaction Time (ms)" value={humanResponse} onChange={setHumanResponse} min={50} />
-        <ValidatedNumberInput label="Access Distance (cm)" value={accessDistance} onChange={setAccessDistance} min={10} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Laser power (mW)" value={laserPower} onChange={setLaserPower} min={0} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={180} max={1000000} step="any" />
+        <ValidatedNumberInput label="Beam diameter where it can be reached, 1/e² (mm)" value={beamDiamRaw} onChange={setBeamDiam} min={0} step="any" />
+        <ValidatedNumberInput label="Stopping time: guard opens → emission off (ms)" value={stopTimeRaw} onChange={setStopTime} min={0} step="any" />
+        <ValidatedNumberInput label="Distance from the opening to the beam (cm)" value={distanceRaw} onChange={setDistance} min={0} step="any" />
+        <ValidatedNumberInput label="Approach speed (m/s)" value={speedRaw} onChange={setSpeed} min={0.01} step="any" />
       </div>
 
-      <div className={`bg-gray-900 border rounded-lg p-6 mb-6 ${results.hazardRatio < 1 ? "border-green-700" : "border-red-700"}`}>
-        <p className="text-sm text-gray-400">Interlock Assessment</p>
-        <p className={`text-2xl font-bold ${results.hazardRatio < 1 ? "text-green-400" : "text-red-400"}`}>{results.interlockClass}</p>
-        <p className="text-sm text-gray-400 mt-2">{results.safetyLevel}</p>
+      {!covered ? (
+        <p className="text-amber-300 mb-4">The eye limits cover 180 nm to 1 mm.</p>
+      ) : (
+        <>
+          <div className={`bg-gray-900 border rounded-lg p-6 mb-6 ${r.within ? "border-green-700" : "border-red-700"}`}>
+            <p className="text-sm text-gray-400">Interlock timing</p>
+            <p className={`text-2xl font-bold ${r.within ? "text-green-400" : "text-red-400"}`}>
+              {r.within ? (r.exposure > 0 ? "Fast enough, with an exposure within the limit" : "Fast enough: the emission stops before anyone reaches the beam") : "Too slow"}
+            </p>
+            <p className="text-sm text-gray-400 mt-2">
+              {r.tMax === Infinity
+                ? "This beam stays within the eye limits for 30 000 s: the eye needs no interlock (skin and reflections aside)."
+                : r.exposure > 0
+                  ? `An eye can be in the beam for ${fmtTime(r.exposure)} before the emission stops; the limit is reached after ${fmtTime(r.tMax)}.`
+                  : `A hand or eye reaches the beam after ${fmtTime(r.accessTime)}; the emission stops after ${fmtTime(T)}.`}
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+            <ResultCard
+              label="Limit reached after (beam held on the eye)"
+              value={fmtTime(r.tMax)}
+              tone={r.tMax === Infinity ? "green" : "red"}
+              subtext={limitName}
+            />
+            <ResultCard label="Time to reach the beam (S/K)" value={fmtTime(r.accessTime)} tone="blue" subtext={`${fmtDistance(S)} at ${K} m/s`} />
+            <ResultCard
+              label="Longest stopping time"
+              value={r.latestStop === Infinity ? "any" : fmtTime(r.latestStop)}
+              tone={r.within ? "green" : "red"}
+              subtext={`S/K + t_max; yours is ${fmtTime(T)}`}
+            />
+            <ResultCard
+              label="Shortest distance for your stopping time"
+              value={fmtDistance(r.minDistance)}
+              tone="cyan"
+              subtext="K × (T − t_max), ISO 13855 without an intrusion allowance"
+            />
+          </div>
+        </>
+      )}
+
+      <div className="text-sm text-gray-400 mb-8 space-y-2">
+        <p>
+          An interlocked guard has to stop the emission before anyone who opens it can put an eye in the beam for longer
+          than the eye limits allow. From the moment the guard starts to open, a person moving at the approach speed K
+          reaches a beam S behind the opening after S/K; the emission stops after the stopping time T (sensor, logic and
+          shutter or laser shut-down). The eye is then in the beam for T − S/K at most, which must not exceed t_max, the
+          time the beam takes to exceed the first ICNIRP 2013 eye limit when held on the eye (retina over 7 mm, cornea
+          over 1–3.5 mm; a round Gaussian beam centred on the pupil, the worst case).
+        </p>
+        <p>
+          ISO 13855 uses K = 2.0 m/s for hands and arms and 1.6 m/s for the body, and adds an intrusion allowance C for
+          sensing devices such as light curtains (S = K·T + C). For a Class 4 beam t_max is nanoseconds to microseconds,
+          so in practice the emission has to stop before the beam can be reached: T ≤ S/K. Not modelled: reflections inside
+          the enclosure, the skin, the interlock&apos;s reliability (ISO 13849 performance level) and IEC 60825-1&apos;s
+          rule that a Class 3B or 4 product&apos;s interlocks prevent access to radiation above the Class 1 limits.
+        </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Total Response Time</p>
-          <p className="text-3xl font-bold text-blue-400">{(results.totalResponseTime * 1000).toFixed(0)} ms</p>
-          <p className="text-sm text-gray-500 mt-1">Shutter + Human reaction</p>
+      {covered ? (
+        <div className="bg-gray-900 rounded-lg p-4">
+          <ExposureTimeChart lambda={lambda} P={P} d={d} marks={marks} />
+          <p className="text-xs text-gray-500 mt-2">
+            Each eye limit as an irradiance, H(t)/t, and the beam irradiance over that limit&apos;s aperture: the beam is
+            within the limits up to the first crossing (t_max). The diamond marks the time an eye spends in the beam before
+            the emission stops.
+          </p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Fluence During Response</p>
-          <p className={`text-3xl font-bold ${results.hazardRatio > 1 ? "text-red-400" : "text-green-400"}`}>{results.fluence.toFixed(2)} mJ/cm²</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">MPE at Response Time</p>
-          <p className="text-3xl font-bold text-green-400">{results.mpe.toFixed(3)} mJ/cm²</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Hazard Ratio</p>
-          <p className={`text-3xl font-bold ${results.hazardRatio > 1 ? "text-red-400" : "text-green-400"}`}>{results.hazardRatio.toFixed(2)}</p>
-          <p className="text-sm text-gray-500 mt-1">{results.hazardRatio < 1 ? "✓ Within MPE" : "✗ EXCEEDS MPE"}</p>
-        </div>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Max Safe Response Time</p>
-          <p className="text-3xl font-bold text-cyan-400">{(results.maxSafeTime * 1000).toFixed(2)} ms</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Required Shutter Time</p>
-          <p className="text-3xl font-bold text-purple-400">{Math.max(0, results.requiredShutterTime * 1000).toFixed(2)} ms</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p className="text-sm text-gray-400">Access Time</p>
-          <p className="text-3xl font-bold text-amber-400">{(results.accessTime * 1000).toFixed(0)} ms</p>
-          <p className="text-sm text-gray-500 mt-1">{results.accessHazard ? "⚠ Faster than interlock" : "✓ Slower than interlock"}</p>
-        </div>
-      </div>
-
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <ChartPanel data={chartData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" },
-          xaxis: { title: "Time (s)", gridcolor: "#374151", type: "log" },
-          yaxis: { title: "Fluence (mJ/cm²)", gridcolor: "#374151", type: "log" },
-          margin: { t: 30, r: 30, b: 50, l: 70 },
-          legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
-        }} />
-      </div>
-
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-3">Formulas</h3>
-        <div className="text-gray-300 text-sm space-y-2 font-mono">
-          <p>t<sub>total</sub> = t<sub>shutter</sub> + t<sub>human</sub></p>
-          <p>H = E × t<sub>total</sub> (fluence during interlock response)</p>
-          <p>MPE = 1.8 × t<sup>0.75</sup> mJ/cm² (visible, t &lt; 10s)</p>
-          <p>Hazard ratio = H / MPE(t<sub>total</sub>)</p>
-          <p>Max safe time: solve E × t = MPE(t) → t = (1.8/E)<sup>4</sup></p>
-          <p>Access time = distance / arm_speed (≈100 cm/s)</p>
-          <p>Requirement: t<sub>total</sub> &lt; t<sub>max_safe</sub></p>
-        </div>
-      </div>
+      ) : null}
     </>
   );
 }

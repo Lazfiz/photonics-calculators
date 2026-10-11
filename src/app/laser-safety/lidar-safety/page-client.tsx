@@ -114,7 +114,7 @@ export default function LidarSafetyPage() {
             />
           </div>
           <p className="text-sm text-gray-300 mb-2">Each rule for an eye at the viewing distance:</p>
-          <PulseTrainTable result={atEye} energy={Q} />
+          <PulseTrainTable result={atEye} value={Q} />
         </>
       )}
 

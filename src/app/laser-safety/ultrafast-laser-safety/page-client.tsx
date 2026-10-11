@@ -86,7 +86,7 @@ export default function UltrafastLaserSafetyPage() {
               subtext="Direct beam, diameter a + rφ"
             />
           </div>
-          <PulseTrainTable result={result} energy={Q} />
+          <PulseTrainTable result={result} value={Q} />
         </>
       )}
 
