@@ -1,180 +1,111 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { createRng } from "../../../physics/random";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { fix } from "../../../components/polarization-format";
+import {
+  CD_OPTIMUM_ABSORBANCE, DELTA_EPS_CONV_PER_SI, MOLAR_ELLIPTICITY_CONV_PER_SI,
+  deltaEpsilon, dissymmetryFactor, ellipticity, ellipticityLinear, meanResidueEllipticity, molarEllipticity, relativeCdSnr,
+} from "../../../physics/polarization/circular-dichroism";
 
-function ResultRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between items-center py-1 border-b border-gray-800">
-      <span className="text-gray-400 text-sm">{label}</span>
-      <span className="font-mono text-sm">{value}</span>
-    </div>
-  );
-}
+const MDEG_PER_RAD = (180 / Math.PI) * 1000;
+const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
+/** A value with its unit, or "—" when it is undefined. */
+const val = (v: number, digits: number, unit = "") => (Number.isFinite(v) ? `${fix(v, digits)}${unit}` : "—");
+/** Scientific notation for values that span many decades. */
+const sci = (v: number, unit = "") => (Number.isFinite(v) ? `${v.toExponential(3)}${unit}` : "—");
 
 export default function CircularDichroismPage() {
-  const [absL, setAbsL] = useURLState("absL", 0.5);
-  const [absR, setAbsR] = useURLState("absR", 0.4);
-  const [pathLength, setPathLength] = useURLState("pathLength", 1.0); // cm
-  const [concentration, setConcentration] = useURLState("concentration", 1.0); // mM
-  const [wavelength, setWavelength] = useURLState("wavelength", 220); // nm
-  const [temperature, setTemperature] = useURLState("temperature", 25); // °C
+  const [aLIn, setAL] = useURLState("AL", 0.8);
+  const [aRIn, setAR] = useURLState("AR", 0.79);
+  const [cIn, setC] = useURLState("concentration", 0.1);
+  const [lIn, setL] = useURLState("pathLength", 1);
+  const [nIn, setN] = useURLState("residues", 0);
 
-  // CD calculations
-  const results = useMemo(() => {
-    const deltaA = absL - absR;
-    const deltaE = deltaA / (concentration * 1e-3 * pathLength); // mM→M: c(M) = c(mM)×1e-3
-    // Convert to molar ellipticity [θ] = 3298 * Δε
-    const molarEllipticity = 3298 * deltaE;
-    // Mean residue ellipticity (for proteins)
-    const meanResidueEllipticity = molarEllipticity / 1; // assuming 1 residue
-    // g-factor (anisotropy factor)
-    const gFactor = deltaA / ((absL + absR) / 2);
-    // Ellipticity in millidegrees
-    const ellipticityMdeg = deltaA * 32980; // ψ(mdeg) ≈ 32980 × ΔA (Greenfield 2006, Nat. Protocols)
-    // Dissymmetry factor
-    const dissymmetry = gFactor;
+  // useURLState doesn't clamp: keep URL values inside the input ranges.
+  const AL = clamp(aLIn, 0, 4);
+  const AR = clamp(aRIn, 0, 4);
+  const c_mM = clamp(cIn, 0, 1000);
+  const l_mm = clamp(lIn, 0, 100);
+  const residues = clamp(nIn, 0, 100000);
 
-    return { deltaA, deltaE, molarEllipticity, meanResidueEllipticity, gFactor, ellipticityMdeg, dissymmetry };
-  }, [absL, absR, concentration, pathLength]);
+  // SI at the physics boundary: 1 mM = 1 mol/m³; mm -> m.
+  const c = c_mM, l = l_mm * 1e-3;
+  const dA = AL - AR;
+  const meanA = (AL + AR) / 2;
+  const theta_mdeg = ellipticity(AL, AR) * MDEG_PER_RAD;
+  const thetaLin_mdeg = ellipticityLinear(AL, AR) * MDEG_PER_RAD;
+  const dEps = deltaEpsilon(AL, AR, c, l);
+  const molar = molarEllipticity(dEps);
+  const mre = meanResidueEllipticity(molar, residues);
+  const g = dissymmetryFactor(AL, AR);
+  const snr = relativeCdSnr(meanA);
 
-  // Simulated CD spectrum
-  const cdSpectrum = useMemo(() => {
-    const rng = createRng(1); // fixed seed: same noise on server and client
-    const wls = Array.from({ length: 150 }, (_, i) => 190 + i * 1.5);
-    // Typical protein CD spectrum with alpha-helix signature
-    const cdVals = wls.map((wl) => {
-      // Negative bands at 208 and 222 nm (alpha-helix), positive at 190 nm
-      const h208 = -30000 * Math.exp(-((wl - 208) ** 2) / 50);
-      const h222 = -25000 * Math.exp(-((wl - 222) ** 2) / 50);
-      const h190 = 60000 * Math.exp(-((wl - 190) ** 2) / 30);
-      // Add some noise
-      const noise = (rng() - 0.5) * 1000;
-      return h208 + h222 + h190 + noise;
-    });
-    return { wls, cdVals };
-  }, []);
+  const chart = useMemo(() => {
+    const aMax = Math.max(3, Math.ceil(meanA));
+    const x = Array.from({ length: 200 }, (_, i) => (aMax * i) / 199);
+    const data: Record<string, unknown>[] = [
+      { x, y: x.map(relativeCdSnr), type: "scatter", mode: "lines", name: "Relative S/N", line: { color: "#60a5fa", width: 2 } },
+      { x: [CD_OPTIMUM_ABSORBANCE], y: [1], type: "scatter", mode: "markers", name: "Optimum", line: { color: "#4ade80" }, marker: { color: "#4ade80", size: 8 } },
+    ];
+    const here = relativeCdSnr(meanA);
+    if (Number.isFinite(here)) data.push({ x: [meanA], y: [here], type: "scatter", mode: "markers", name: "Your sample", line: { color: "#facc15" }, marker: { color: "#facc15", size: 8 } });
+    return data;
+  }, [meanA]);
 
-  // Secondary structure estimation
-  const structureEstimate = useMemo(() => {
-    // Simple empirical correlation from 222 nm signal
-    const signal222 = -25000; // baseline from spectrum
-    const alphaHelix = Math.min(100, Math.max(0, -signal222 / 400));
-    const betaSheet = 20; // simplified
-    const randomCoil = 100 - alphaHelix - betaSheet;
-    return { alphaHelix: alphaHelix.toFixed(1), betaSheet: betaSheet.toFixed(1), randomCoil: randomCoil.toFixed(1) };
-  }, []);
-
-  const plotLayout: Partial<Plotly.Layout> = {
-    paper_bgcolor: "transparent",
-    plot_bgcolor: "#111827",
-    font: { color: "#e5e7eb" },
-    margin: { t: 30, b: 40, l: 60, r: 10 },
-    xaxis: { color: "#9ca3af", gridcolor: "#374151", title: "Wavelength (nm)" },
-    yaxis: { color: "#9ca3af", gridcolor: "#374151" },
-    legend: { font: { color: "#9ca3af" } },
+  const layout = {
+    paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+    xaxis: { title: "Mean absorbance (A_L + A_R)/2", gridcolor: "#374151" },
+    yaxis: { title: "Relative CD S/N", gridcolor: "#374151" },
+    margin: { t: 20, r: 20, b: 60, l: 60 }, height: 300, legend: { orientation: "h" as const, y: -0.3 },
   };
 
   return (
     <>
-            
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <h2 className="text-lg font-semibold mb-4">Sample Parameters</h2>
-          <div className="mb-3">
-            <ValidatedNumberInput label={<>Absorbance LCP (A<sub>L</sub>)</>} value={absL} onChange={setAbsL} />
-          </div>
-          <div className="mb-3">
-            <ValidatedNumberInput label={<>Absorbance RCP (A<sub>R</sub>)</>} value={absR} onChange={setAbsR} />
-          </div>
-          <div className="mb-3">
-            <ValidatedNumberInput label="Path length (cm)" value={pathLength} onChange={setPathLength} />
-          </div>
-          <div className="mb-3">
-            <ValidatedNumberInput label="Concentration (mM)" value={concentration} onChange={setConcentration} />
-          </div>
-          <div className="mb-3">
-            <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-          </div>
-          <div className="mb-3">
-            <ValidatedNumberInput label="Temperature (°C)" value={temperature} onChange={setTemperature} />
-          </div>
-        </div>
-
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <h2 className="text-lg font-semibold mb-4">CD Results</h2>
-          <div className="space-y-1">
-            <ResultRow label="ΔA = AL − AR" value={results.deltaA.toFixed(4)} />
-            <ResultRow label="Δε (M⁻¹cm⁻¹)" value={results.deltaE.toFixed(2)} />
-            <ResultRow label="[θ] (deg·cm²·dmol⁻¹)" value={results.molarEllipticity.toFixed(0)} />
-            <ResultRow label="[θ]MR (mean residue)" value={results.meanResidueEllipticity.toFixed(0)} />
-            <ResultRow label="g-factor" value={results.gFactor.toFixed(6)} />
-            <ResultRow label="Ellipticity (mdeg)" value={results.ellipticityMdeg.toFixed(2)} />
-          </div>
-          <div className="mt-4 p-3 bg-gray-800 rounded-lg">
-            <div className="text-sm text-gray-400">Dichroic ratio</div>
-            <div className="text-xl font-bold">{(absL / (absR || 0.001)).toFixed(3)}</div>
-          </div>
-        </div>
-
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <h2 className="text-lg font-semibold mb-4">Secondary Structure (Est.)</h2>
-          <div className="space-y-3">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-400">α-Helix</span>
-                <span className="font-bold">{structureEstimate.alphaHelix}%</span>
-              </div>
-              <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${structureEstimate.alphaHelix}%` }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-400">β-Sheet</span>
-                <span className="font-bold">{structureEstimate.betaSheet}%</span>
-              </div>
-              <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
-                <div className="h-full bg-green-500 rounded-full" style={{ width: `${structureEstimate.betaSheet}%` }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-400">Random coil</span>
-                <span className="font-bold">{structureEstimate.randomCoil}%</span>
-              </div>
-              <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
-                <div className="h-full bg-yellow-500 rounded-full" style={{ width: `${structureEstimate.randomCoil}%` }} />
-              </div>
-            </div>
-          </div>
-          <p className="text-xs text-gray-500 mt-3">* Simplified estimation based on 222 nm signal</p>
-        </div>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-gray-300 text-sm font-mono space-y-1">
+        <p>ΔA = A<sub>L</sub> − A<sub>R</sub> = Δε c l, &nbsp;tan θ = tanh(ln 10 · ΔA / 4)</p>
+        <p>θ (mdeg) ≈ 32 980 ΔA &nbsp;(small ΔA), &nbsp;[θ] = 3298.2 Δε &nbsp;(deg·cm²·dmol⁻¹, Δε in M⁻¹cm⁻¹)</p>
+        <p>g = 2ΔA / (A<sub>L</sub> + A<sub>R</sub>), &nbsp;[θ]<sub>MRE</sub> = [θ] / (N − 1), &nbsp;S/N ∝ A·10<sup>−A/2</sup> (best at A = 2/ln 10)</p>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mt-6">
-        <h2 className="text-lg font-semibold mb-4">Simulated CD Spectrum (Protein)</h2>
-        <ChartPanel data={[
-          { x: cdSpectrum.wls, y: cdSpectrum.cdVals, type: "scatter", mode: "lines", line: { color: "#3b82f6", width: 2 } },
-        ]} layout={{ ...plotLayout, height: 300, yaxis: { ...plotLayout.yaxis, title: "[θ] (deg·cm²·dmol⁻¹)" } }} />
-        <div className="flex gap-4 mt-3 text-xs text-gray-400">
-          <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-blue-400 inline-block" /> α-helix: negative at 208, 222 nm</span>
-          <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-green-400 inline-block" /> β-sheet: negative at 218 nm</span>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-2">
+        <ValidatedNumberInput label="Absorbance of left-circular light A_L" value={AL} onChange={setAL} min={0} max={4} step="0.001" />
+        <ValidatedNumberInput label="Absorbance of right-circular light A_R" value={AR} onChange={setAR} min={0} max={4} step="0.001" />
+        <ValidatedNumberInput label="Concentration c of molecules (mM; for a protein, of chains)" value={c_mM} onChange={setC} min={0} max={1000} step="0.01" />
+        <ValidatedNumberInput label="Path length l (mm)" value={l_mm} onChange={setL} min={0} max={100} step="0.1" />
+        <ValidatedNumberInput label="Residues N (0 = not a protein)" value={residues} onChange={setN} min={0} max={100000} step="1" />
+      </div>
+      <p className="text-xs text-gray-500 mb-6">
+        Δε needs c &gt; 0 and l &gt; 0. The mean-residue ellipticity is shown for a whole number of residues N ≥ 2 and uses N − 1 peptide bonds.
+        {residues > 0 && !Number.isInteger(residues) ? " Enter N as a whole number." : ""}
+      </p>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ResultCard label="ΔA = A_L − A_R" value={val(dA, 5)} tone="blue" />
+        <ResultCard label="Ellipticity θ (exact)" value={val(theta_mdeg, 3, " mdeg")} tone="green"
+          subtext={`small-angle ${val(thetaLin_mdeg, 3, " mdeg")}`} />
+        <ResultCard label="Δε" value={val(dEps * DELTA_EPS_CONV_PER_SI, 3, " M⁻¹cm⁻¹")} tone="yellow"
+          subtext={Number.isFinite(dEps) ? undefined : "Needs c > 0 and l > 0."} />
+        <ResultCard label="Molar ellipticity [θ]" value={sci(molar * MOLAR_ELLIPTICITY_CONV_PER_SI, " deg·cm²·dmol⁻¹")} tone="purple" />
+        {residues >= 2 && (
+          <ResultCard label="Mean-residue ellipticity" value={sci(mre * MOLAR_ELLIPTICITY_CONV_PER_SI, " deg·cm²·dmol⁻¹")} tone="orange"
+            subtext={Number.isFinite(mre) ? `[θ] / (N − 1), N = ${residues}` : "N must be a whole number."} />
+        )}
+        <ResultCard label="Dissymmetry factor g" value={val(g, 5)} tone="cyan" subtext="2ΔA / (A_L + A_R)" />
+        <ResultCard label="Mean absorbance" value={val(meanA, 4)} tone="blue" subtext={`optimum for S/N: ${fix(CD_OPTIMUM_ABSORBANCE, 3)}`} />
+        <ResultCard label="Relative S/N" value={val(snr, 3)} tone="green" subtext="1 at the optimum (shot-noise limit)" />
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mt-6">
-        <h2 className="text-lg font-semibold mb-3">Key Formulas</h2>
-        <div className="space-y-2 text-sm text-gray-300 font-mono">
-          <p>ΔA = A<sub>L</sub> − A<sub>R</sub></p>
-          <p>Δε = ΔA / (c · l) &nbsp;— differential molar extinction</p>
-          <p>[θ] = 3298 · Δε &nbsp;— molar ellipticity (deg·cm²·dmol⁻¹)</p>
-          <p>g = ΔA / A<sub>avg</sub> = (A<sub>L</sub> − A<sub>R</sub>) / ((A<sub>L</sub> + A<sub>R</sub>)/2)</p>
-          <p>θ (mdeg) = 32980 · ΔA / 2</p>
-          <p>For proteins: α-helix signature at 208, 222 nm (negative)</p>
-        </div>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-sm text-gray-400 mb-2">Relative CD signal-to-noise against absorbance</h3>
+        <ChartPanel data={chart} layout={layout} />
+        <p className="text-xs text-gray-500 mt-2">
+          At fixed g the shot-noise-limited S/N is proportional to A·10<sup>−A/2</sup>: it peaks at A = {fix(CD_OPTIMUM_ABSORBANCE, 3)}{" "}
+          and falls on either side, so adjust c or l to bring the mean absorbance close to it.
+        </p>
       </div>
     </>
   );
