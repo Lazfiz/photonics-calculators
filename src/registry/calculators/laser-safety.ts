@@ -121,7 +121,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "blue-light-hazard",
     title: "Blue Light Hazard",
-    description: "Simplified educational estimate of B(λ)-weighted blue-light irradiance and risk group. Not for safety decisions; use IEC 62471.",
+    description: "B(λ)-weighted irradiance of a laser beam at 300–700 nm, the longest exposure within the ICNIRP blue-light limit, and the IEC 62471 risk group.",
     keywords: ["UV / Blue Light Hazard"],
     tier: "exact",
     modelNote: "Tabulated B(λ), small-source limits and IEC risk groups for a monochromatic beam; irradiance is the beam power over the 1/e² circle. Not modelled: extended sources, pulses and broadband spectra.",
@@ -684,7 +684,7 @@ export const laserSafety: CalculatorEntry[] = [
   {
     slug: "uv-exposure",
     title: "UV Exposure Limits",
-    description: "Simplified educational estimate of actinic UV exposure limits with S(λ) weighting. Not for safety decisions; use IEC 62471.",
+    description: "Exposure limit of a monochromatic UV source at 180–400 nm: the ICNIRP S(λ)-weighted limit and the UVA eye limit as irradiance, dose and the largest source power for an exposure time.",
     tier: "exact",
     modelNote: "Monochromatic source: S(λ)-weighted limit of 30 J/m² plus ICNIRP's unweighted UVA limit of 10⁴ J/m² (315–400 nm), within 8 h. ACGIH and IEC relax the UVA limit after 1000 s; ICNIRP, used here, does not.",
     references: [
