@@ -1,185 +1,172 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-
+import { useDeferredValue, useMemo } from "react";
+import InputSlider from "../../../components/input-slider";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { CrystalNote, isCrystalId } from "../../../components/crystal-select";
+import { fix } from "../../../components/polarization-format";
 import { useURLState } from "../../../hooks/use-url-state";
+import { CRYSTAL_IDS, UNIAXIAL_CRYSTALS, crystalIndices, crystalRange } from "../../../physics/materials/uniaxial-data";
+import { type PrincipalIndices, conoscopicFigure, opticAxialAngle } from "../../../physics/polarization/conoscopy";
+import RgbaCanvas from "../../../components/rgba-canvas";
+
+const DEG = Math.PI / 180;
+const SIZE = 121;
+const BIAXIAL = "biaxial";
+const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
+
+function Toggle<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: [T, string][]; onChange: (v: T) => void }) {
+  return (
+    <div role="group" aria-label={label} className="flex flex-wrap items-center gap-2">
+      <span className="text-sm text-gray-400 mr-1">{label}</span>
+      {options.map(([v, text]) => (
+        <button key={v} type="button" aria-pressed={value === v} onClick={() => onChange(v)}
+          className={`text-sm px-4 py-2 rounded ${value === v ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 border border-gray-600"}`}>
+          {text}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function ConoscopicPage() {
-  const [nO, setNO] = useURLState("nO", 1.658);
-  const [nE, setNE] = useURLState("nE", 1.486);
-  const [thickness, setThickness] = useURLState("thickness", 0.05); // mm
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [na, setNA] = useURLState("na", 0.25);
-  const [crystalType, setCrystalType] = useState<"uniaxial_pos" | "uniaxial_neg" | "biaxial">("uniaxial_pos");
+  const [crystalIn, setCrystal] = useURLState("crystal", "calcite");
+  const [nAlphaIn, setNAlpha] = useURLState("nAlpha", 1.53);
+  const [nBetaIn, setNBeta] = useURLState("nBeta", 1.68);
+  const [nGammaIn, setNGamma] = useURLState("nGamma", 1.685);
+  const [thicknessIn, setThickness] = useURLState("thickness", 100);
+  const [tiltIn, setTilt] = useURLState("tilt", 0);
+  const [rotationIn, setRotation] = useURLState("rotation", 0);
+  const [naIn, setNa] = useURLState("na", 0.85);
+  const [wavelengthIn, setWavelength] = useURLState("wavelength", 589);
+  const [lightIn, setLight] = useURLState("light", "mono");
+  const [polarsIn, setPolars] = useURLState("polars", "crossed");
 
-  const dn = Math.abs(nO - nE);
-  const d = thickness; // mm
-  const lam = wavelength * 1e-6; // mm
+  // useURLState doesn't clamp: keep URL values inside the input ranges.
+  const crystal = crystalIn === BIAXIAL || isCrystalId(crystalIn) ? crystalIn : "calcite";
+  const id = isCrystalId(crystal) ? crystal : null;
+  const light = lightIn === "white" ? "white" : "mono";
+  const crossed = polarsIn !== "parallel";
+  const lambda_nm = clamp(wavelengthIn, 380, 780);
+  const lambda = lambda_nm * 1e-9;
+  const d = clamp(thicknessIn, 1, 5000) * 1e-6;
+  const tilt = clamp(tiltIn, 0, 60) * DEG;
+  const rotation = clamp(rotationIn, 0, 360) * DEG;
+  const NAin = clamp(naIn, 0.1, 1.3);
 
-  // Maximum retardation at edge of cone (max angle)
-  const maxAngle = Math.asin(na); // half-angle of NA cone
-  const maxAngleDeg = maxAngle * 180 / Math.PI;
+  // Uniaxial data: n_o, n_e at the wavelength clamped into the fit range, ordered as n_α ≤ n_β ≤ n_γ.
+  const [lo, hi] = id ? crystalRange(id) : [0, 0];
+  const { no, ne } = id ? crystalIndices(id, clamp(lambda, lo, hi)) : { no: NaN, ne: NaN };
+  const indices: PrincipalIndices = id
+    ? (ne > no ? [no, no, ne] : [ne, no, no])
+    : [clamp(nAlphaIn, 1, 3), clamp(nBetaIn, 1, 3), clamp(nGammaIn, 1, 3)];
+  const [n1, n2, n3] = indices;
+  const valid = n1 > 0 && n1 <= n2 && n2 <= n3 && n1 < n3;
+  const NA = valid ? Math.min(NAin, 0.98 * n1) : NaN;
+  const axial = opticAxialAngle(indices);
 
-  // Retardation at angle θ from optic axis:
-  // δ(θ) = 2π d Δn sin²θ / λ (for uniaxial)
-  const retCenter = 0; // along optic axis
-  const retEdge = (2 * Math.PI * d * dn * Math.sin(maxAngle) ** 2) / lam;
-  const retEdgeWaves = retEdge / (2 * Math.PI);
-
-  // Isochromatic fringe order at edge
-  const fringeOrder = retEdge / (2 * Math.PI);
-
-  // Biaxial: 2V angle approximation
-  const nx = 1.6, ny = 1.63, nz = 1.68;
-  const biax2V = Math.atan(Math.sqrt((nz - ny) / (ny - nx))) * 2 * 180 / Math.PI;
-
-  // Generate conoscopic interference figure
-  const figureData = useMemo(() => {
-    const N = 80;
-    const xArr: number[] = [];
-    const yArr: number[] = [];
-    const cArr: number[] = [];
-    const sArr: number[] = [];
-
-    for (let i = 0; i < N; i++) {
-      for (let j = 0; j < N; j++) {
-        const px = (i / N - 0.5) * 2 * na;
-        const py = (j / N - 0.5) * 2 * na;
-        const r = Math.sqrt(px ** 2 + py ** 2);
-        if (r > na) continue;
-
-        const theta = Math.asin(r);
-        const phi = Math.atan2(py, px);
-
-        // Retardation depends on angle from optic axis
-        const sin2theta = Math.sin(theta) ** 2;
-        let ret: number;
-        if (crystalType === "uniaxial_pos" || crystalType === "uniaxial_neg") {
-          ret = (2 * Math.PI * d * dn * sin2theta) / lam;
-        } else {
-          // Biaxial approximation: varies with azimuth too
-          const cos2phi = Math.cos(2 * phi);
-          const dnLocal = dn * (1 + 0.3 * cos2phi);
-          ret = (2 * Math.PI * d * dnLocal * sin2theta) / lam;
-        }
-
-        // Interference color from retardation (Michel-Lévy simplified)
-        const phase = (ret / (2 * Math.PI)) % 1;
-        const intensity = Math.sin(ret / 2) ** 2;
-
-        // Isogyre pattern (cross for uniaxial, lemniscate for biaxial)
-        let isogyre = 0;
-        if (crystalType === "uniaxial_pos" || crystalType === "uniaxial_neg") {
-          // Maltese cross: dark when E-field || polarizer
-          isogyre = Math.abs(Math.cos(phi)) > 0.95 || Math.abs(Math.sin(phi)) > 0.95 ? 0.1 : 1;
-        } else {
-          // Biaxial: hyperbolic isogyres
-          const sep = 0.15;
-          const dx = px - sep, dy = py - sep;
-          const dx2 = px + sep, dy2 = py + sep;
-          isogyre = (Math.abs(Math.atan2(dy, dx)) < 0.3 || Math.abs(Math.atan2(dy2, dx2)) < 0.3) ? 0.3 : 1;
-        }
-
-        xArr.push(px);
-        yArr.push(py);
-        cArr.push(intensity * isogyre);
-        sArr.push(ret / (2 * Math.PI));
-      }
+  const params = useMemo(
+    () => (valid ? { n1, n2, n3, tilt, rotation, d, lambda, NA, crossed, white: light === "white", id } : null),
+    [valid, n1, n2, n3, tilt, rotation, d, lambda, NA, crossed, light, id],
+  );
+  const deferred = useDeferredValue(params);
+  const figure = useMemo(() => {
+    if (!deferred) return null;
+    const { n1: a, n2: b, n3: c, tilt: t, rotation: r, d: thick, lambda: l0, NA: na, crossed: x, white, id: cid } = deferred;
+    let dispersion: ((lambda: number) => number) | undefined;
+    if (white && cid) {
+      const [min, max] = crystalRange(cid);
+      const B = (l: number) => {
+        const n = crystalIndices(cid, clamp(l, min, max));
+        return Math.abs(n.ne - n.no);
+      };
+      const B0 = B(l0);
+      if (B0 > 0) dispersion = (l) => B(l) / B0;
     }
+    const f = conoscopicFigure({
+      indices: [a, b, c], orientation: { tilt: t, rotation: r }, d: thick, lambda: l0, NA: na,
+      P: 0, A: x ? Math.PI / 2 : 0, mode: white ? "white" : "mono", dispersion,
+    }, SIZE);
+    return { ...f, lambda: l0, NA: na };
+  }, [deferred]);
 
-    return [
-      {
-        x: xArr, y: yArr, type: "scatter" as const, mode: "markers" as const,
-        marker: { color: cArr, size: 3, colorscale: "Viridis", showscale: true, colorbar: { title: "Intensity", tickfont: { color: "#9ca3af" } } },
-        name: "Interference",
-      },
-    ];
-  }, [nO, nE, dn, d, lam, na, crystalType]);
-
-  const radialData = useMemo(() => {
-    const angles = Array.from({ length: 200 }, (_, i) => (i / 200) * maxAngleDeg);
-    const rets = angles.map(a => {
-      const theta = a * Math.PI / 180;
-      return (2 * Math.PI * d * dn * Math.sin(theta) ** 2) / lam / (2 * Math.PI);
-    });
-    return [
-      { x: angles, y: rets, type: "scatter" as const, mode: "lines" as const, name: "Fringe order", line: { color: "#60a5fa", width: 2 } },
-    ];
-  }, [dn, d, lam, maxAngleDeg]);
+  const melatope = valid && !id ? n2 * Math.sin(axial.twoV / 2) : NaN;
+  const invalidText = id ? "No index data at this wavelength." : "Enter n_α ≤ n_β ≤ n_γ with n_α < n_γ.";
+  const orders = figure ? figure.maxR / figure.lambda : NaN;
+  const whiteNote = id ? "Dispersion: retardance scales with |n_e − n_o|(λ) from the Sellmeier fit." : "No dispersion data: constant retardance.";
 
   return (
     <>
-            
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm font-mono">δ(θ) = 2π Δn d sin²θ / λ, I = sin²(δ/2)</p>
-        <p className="text-gray-300 text-sm font-mono">Isogyres: dark bands where E-field ∥ polarizer/analyzer</p>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-gray-300 text-sm font-mono space-y-1">
+        <p>cos²V<sub>z</sub> = (n<sub>β</sub><sup>−2</sup> − n<sub>γ</sub><sup>−2</sup>)/(n<sub>α</sub><sup>−2</sup> − n<sub>γ</sub><sup>−2</sup>), &nbsp;2V = acute optic axial angle</p>
+        <p>each pupil point ν = NA·r: k<sub>z</sub> = √(n(s)² − ν²) per eigenwave, &nbsp;Γ = k<sub>0</sub>d(k<sub>z,slow</sub> − k<sub>z,fast</sub>)</p>
+        <p>crossed polars: T = sin²2(ψ − P) sin²(Γ/2); &nbsp;parallel: T = 1 − sin²2(ψ − P) sin²(Γ/2)</p>
       </div>
 
-      <div role="group" aria-label="Options" className="flex gap-4 mb-6">
-        {(["uniaxial_pos", "uniaxial_neg", "biaxial"] as const).map(t => (
-          <button key={t} onClick={() => setCrystalType(t)} className={`text-sm px-4 py-2 rounded ${crystalType === t ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 border border-gray-600"}`}>
-            {t === "uniaxial_pos" ? "Uniaxial (+)" : t === "uniaxial_neg" ? "Uniaxial (−)" : "Biaxial"}
-          </button>
-        ))}
+      <div className="flex flex-wrap gap-x-8 gap-y-3 mb-4">
+        <Toggle label="Light" value={light} options={[["mono", "Monochromatic"], ["white", "White (D65)"]]} onChange={setLight} />
+        <Toggle label="Polars" value={crossed ? "crossed" : "parallel"} options={[["crossed", "Crossed"], ["parallel", "Parallel"]]} onChange={setPolars} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ValidatedNumberInput label={<>n<sub>o</sub></>} value={nO} onChange={setNO} step="0.001" />
-        <ValidatedNumberInput label={<>n<sub>e</sub></>} value={nE} onChange={setNE} step="0.001" />
-        <ValidatedNumberInput label="Thickness (mm)" value={thickness} onChange={setThickness} min={0.01} max={1} step="0.01" />
-        <ValidatedNumberInput label="Objective NA" value={na} onChange={setNA} min={0.1} max={1.4} step="0.05" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-2">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Crystal</span>
+          <select value={crystal} onChange={(e) => setCrystal(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            {CRYSTAL_IDS.map((c) => <option key={c} value={c}>Uniaxial: {UNIAXIAL_CRYSTALS[c].name}</option>)}
+            <option value={BIAXIAL}>Biaxial (custom indices)</option>
+          </select>
+        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthIn} onChange={setWavelength} min={380} max={780} step="1" />
+        <ValidatedNumberInput label="Plate thickness d (µm)" value={thicknessIn} onChange={setThickness} min={1} max={5000} step="1" />
+        {!id && (
+          <>
+            <ValidatedNumberInput label={<>n<sub>α</sub> (smallest)</>} value={nAlphaIn} onChange={setNAlpha} min={1} max={3} step="0.001" />
+            <ValidatedNumberInput label={<>n<sub>β</sub></>} value={nBetaIn} onChange={setNBeta} min={1} max={3} step="0.001" />
+            <ValidatedNumberInput label={<>n<sub>γ</sub> (largest)</>} value={nGammaIn} onChange={setNGamma} min={1} max={3} step="0.001" />
+          </>
+        )}
+        <InputSlider label="Tilt from the plate normal" value={tiltIn} onChange={setTilt} min={0} max={60} step={1} unit="°" />
+        <InputSlider label="Stage rotation" value={rotationIn} onChange={setRotation} min={0} max={360} step={1} unit="°" />
+        <InputSlider label="Conoscope NA" value={naIn} onChange={setNa} min={0.1} max={1.3} step={0.05} />
       </div>
+      <CrystalNote material={crystal} lambda={lambda} />
+      <p className="text-xs text-gray-500 -mt-4 mb-6">Tilt is that of the optic axis (uniaxial) or the acute bisectrix (biaxial); the stage rotation turns the tilt direction from x.</p>
+      {valid && NA < NAin && <p className="text-sm text-yellow-400 mb-4">The NA is limited to 0.98 n<sub>α</sub> = {fix(NA, 3)}, the largest cone the plate accepts.</p>}
+      {valid && NA > 1 && <p className="text-sm text-gray-400 mb-4">An NA above 1 needs immersion of index ≥ NA (oil, n ≈ 1.52) between the lenses and the plate.</p>}
+      {!valid && <p className="text-sm text-red-400 mb-4" role="alert">{invalidText}</p>}
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        <button onClick={() => { setNO(1.658); setNE(1.486); setThickness(0.03); }} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">Calcite thin</button>
-        <button onClick={() => { setNO(1.544); setNE(1.553); setThickness(0.05); }} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">Quartz</button>
-        <button onClick={() => { setNA(0.95); }} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">High NA (0.95)</button>
-        <button onClick={() => { setNA(0.25); }} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">Low NA (0.25)</button>
-      </div>
+      {valid && (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+            <ResultCard label="Optic sign" value={axial.sign === "+" ? "Positive (+)" : axial.sign === "−" ? "Negative (−)" : "—"}
+              subtext={`n_α / n_β / n_γ = ${fix(n1, 4)} / ${fix(n2, 4)} / ${fix(n3, 4)}`} />
+            <ResultCard label="Acute optic axial angle 2V" tone="green" value={id ? "0° (uniaxial)" : `${fix(axial.twoV / DEG, 1)}°`}
+              subtext={id ? "the two optic axes coincide" : `V = ${fix(axial.twoV / 2 / DEG, 1)}°`} />
+            <ResultCard label="Birefringence n_γ − n_α" tone="yellow" value={fix(n3 - n1, 4)} />
+            <ResultCard label="Largest retardance in the field" tone="purple" value={figure ? `${fix(figure.maxR * 1e6, 2)} µm` : "—"}
+              subtext={`${fix(orders, 1)} orders at ${fix(lambda_nm, 0)} nm; NA ${fix(NA, 2)}`} />
+            {!id && (
+              <ResultCard label="Melatope position ν = n_β sin V" tone="cyan" value={fix(melatope, 3)}
+                subtext={`${melatope < NA ? "inside" : "outside"} the NA of ${fix(NA, 2)}${tilt > 0 ? "; value for no tilt, tilting moves it" : ""}`} />
+            )}
+          </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Δn</p>
-          <p className="text-2xl font-bold text-blue-400">{dn.toFixed(4)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Max Cone Angle</p>
-          <p className="text-2xl font-bold text-yellow-400">{maxAngleDeg.toFixed(1)}°</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Fringe Order (edge)</p>
-          <p className="text-2xl font-bold text-green-400">{fringeOrder.toFixed(1)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Biaxial 2V</p>
-          <p className="text-2xl font-bold text-purple-400">{crystalType === "biaxial" ? `${biax2V.toFixed(1)}°` : "N/A"}</p>
-        </div>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h3 className="text-sm text-gray-400 mb-2">Conoscopic Figure (crossed polars)</h3>
-          <ChartPanel data={figureData} layout={{
-            paper_bgcolor: "transparent", plot_bgcolor: "#111827",
-            font: { color: "#9ca3af" },
-            xaxis: { title: "kx (NA)", gridcolor: "#374151", scaleanchor: "y", scaleratio: 1, range: [-na * 1.1, na * 1.1] },
-            yaxis: { title: "ky (NA)", gridcolor: "#374151", range: [-na * 1.1, na * 1.1] },
-            margin: { t: 20, r: 60, b: 50, l: 50 }, height: 400,
-            shapes: [{ type: "circle" as const, xref: "x", yref: "y", x0: -na, y0: -na, x1: na, y1: na, line: { color: "#4b5563", width: 1 } }],
-          }} />
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h3 className="text-sm text-gray-400 mb-2">Retardation vs Aperture Angle</h3>
-          <ChartPanel data={radialData} layout={{
-            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-            font: { color: "#9ca3af" },
-            xaxis: { title: "Angle from axis (°)", gridcolor: "#374151" },
-            yaxis: { title: "Fringe Order (waves)", gridcolor: "#374151" },
-            margin: { t: 20, r: 20, b: 50, l: 50 }, height: 400,
-          }} />
-        </div>
-      </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <h3 className="text-sm text-gray-400 mb-3">Conoscopic figure, {crossed ? "crossed" : "parallel"} polars, {light === "white" ? "white light" : `${fix(lambda_nm, 0)} nm`}</h3>
+            {figure && (
+              <RgbaCanvas rgba={figure.rgba} size={SIZE} stale={deferred !== params}
+                label={`Conoscopic figure of a ${fix(d * 1e6, 0)} micrometre plate with NA ${fix(NA, 2)} between ${crossed ? "crossed" : "parallel"} polarizers: ${axial.sign === "+" ? "positive" : "negative"} crystal, 2V ${id ? "0" : fix(axial.twoV / DEG, 1)} degrees`} />
+            )}
+            <p className="text-sm text-gray-300 mt-3">
+              {crossed
+                ? "Isochromes are lines of equal retardance; the dark isogyres are where the slow axis is parallel to a polarizer."
+                : "Isochromes are lines of equal retardance, in complementary colours; with parallel polars the isogyres, where the slow axis is parallel to a polarizer, are bright."}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Polarizer P along x (E–W); the figure spans ±NA. {light === "white" ? whiteNote : ""}</p>
+          </div>
+        </>
+      )}
     </>
   );
 }
