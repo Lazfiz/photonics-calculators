@@ -41,3 +41,10 @@ export function plateTypeLabel(fraction: number, tol = 0.01): string {
 /** The sign convention, for pages that name a handedness. */
 export const CONVENTION_NOTE =
   "Convention (Goldstein): RCP = [1, i]/√2 turns clockwise as seen by the receiver; S₃ > 0 is right-handed.";
+
+/** A transmittance given by its log₁₀, readable even below the smallest double (10^−412.3). */
+export function fromLog10(l: number): string {
+  if (!Number.isFinite(l)) return "—";
+  if (l > -300) return (10 ** l).toExponential(2);
+  return `10^${fix(l, 1)}`;
+}

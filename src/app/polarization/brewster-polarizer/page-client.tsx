@@ -1,167 +1,115 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { fix } from "../../../components/polarization-format";
+import { brewsterAngle } from "../../../physics/polarization/fresnel";
+import { pileDopAtBrewster, pileOfPlates } from "../../../physics/polarization/reflection-polarizers";
+
+const DEG = Math.PI / 180;
+const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
+const pct = (v: number, digits = 2) => (Number.isFinite(v) ? `${fix(v * 100, digits)} %` : "—");
+const dB = (ratio: number) => (Number.isFinite(ratio) && ratio > 0 ? `${fix(10 * Math.log10(ratio), 2)} dB` : "—");
+
 export default function BrewsterPolarizerPage() {
-  const [n1, setN1] = useURLState("n1", 1.0);
-  const [n2, setN2] = useURLState("n2", 1.52);
-  const [numSurfaces, setNumSurfaces] = useURLState("numSurfaces", 1);
+  const [nIn, setN] = useURLState("n2", 1.52);
+  const [platesIn, setPlates] = useURLState("plates", 4);
 
-  const brewsterDeg = Math.atan(n2 / n1) * 180 / Math.PI;
-  const criticalDeg = n1 < n2 ? 90 : Math.asin(n2 / n1) * 180 / Math.PI;
+  // useURLState doesn't clamp: keep URL values inside the input ranges.
+  const n = clamp(nIn, 1.01, 5);
+  const m = Math.round(clamp(platesIn, 1, 50));
 
-  const polarizerData = useMemo(() => {
-    const angles = Array.from({ length: 500 }, (_, i) => (i / 500) * (89.9 * Math.PI / 180));
-    const degs = angles.map(a => a * 180 / Math.PI);
+  const thetaB = brewsterAngle(1, n);
+  const atB = pileOfPlates(n, thetaB, m);
+  const singlePassDop = (atB.TpSinglePass - atB.TsSinglePass) / (atB.TpSinglePass + atB.TsSinglePass);
 
-    const thetaT = (thetaI: number) => {
-      const sinT = (n1 / n2) * Math.sin(thetaI);
-      if (Math.abs(sinT) > 1) return null;
-      return Math.acos(sinT > 1 ? 1 : sinT < -1 ? -1 : sinT);
-    };
-
-    const calcRs = (thetaI: number) => {
-      const ct = thetaT(thetaI);
-      if (ct === null) return 1;
-      const cosI = Math.cos(thetaI);
-      return ((n1 * cosI - n2 * ct) / (n1 * cosI + n2 * ct)) ** 2;
-    };
-
-    const calcRp = (thetaI: number) => {
-      const ct = thetaT(thetaI);
-      if (ct === null) return 1;
-      const cosI = Math.cos(thetaI);
-      return ((n2 * cosI - n1 * ct) / (n2 * cosI + n1 * ct)) ** 2;
-    };
-
-    // Single surface
-    const RsSingle = angles.map(a => calcRs(a));
-    const RpSingle = angles.map(a => calcRp(a));
-
-    // Multi-surface stack (non-coherent addition)
-    const RsStack = angles.map(a => {
-      const r = calcRs(a);
-      return 1 - (1 - r) ** numSurfaces;
-    });
-    const RpStack = angles.map(a => {
-      const r = calcRp(a);
-      return 1 - (1 - r) ** numSurfaces;
-    });
-
-    // Extinction ratio at each angle
-    const extRatio = angles.map((a, i) => {
-      const tp = 1 - RpStack[i];
-      const ts = 1 - RsStack[i];
-      return ts > 1e-10 ? tp / ts : 9999;
-    });
-
+  const angleChart = useMemo(() => {
+    const a = Array.from({ length: 891 }, (_, i) => i * 0.1);
+    const piles = a.map((x) => pileOfPlates(n, x * DEG, m));
     return [
-      { x: degs, y: RsSingle, type: "scatter" as const, mode: "lines" as const, name: "Rs (1 surface)", line: { color: "#60a5fa", dash: "dot" } },
-      { x: degs, y: RpSingle, type: "scatter" as const, mode: "lines" as const, name: "Rp (1 surface)", line: { color: "#f87171", dash: "dot" } },
-      { x: degs, y: RsStack, type: "scatter" as const, mode: "lines" as const, name: "Rs (stack)", line: { color: "#60a5fa", width: 2 } },
-      { x: degs, y: RpStack, type: "scatter" as const, mode: "lines" as const, name: "Rp (stack)", line: { color: "#f87171", width: 2 } },
+      { x: a, y: piles.map((p) => p.Tp), type: "scatter" as const, mode: "lines" as const, name: "Tₚ (pile)", line: { color: "#f87171", width: 2 } },
+      { x: a, y: piles.map((p) => p.Ts), type: "scatter" as const, mode: "lines" as const, name: "Tₛ (pile)", line: { color: "#60a5fa", width: 2 } },
+      { x: a, y: piles.map((p) => p.dop), type: "scatter" as const, mode: "lines" as const, name: "Degree of polarization", line: { color: "#a78bfa", width: 2, dash: "dash" } },
+      { x: [thetaB / DEG], y: [atB.dop], type: "scatter" as const, mode: "markers" as const, name: "Brewster", marker: { color: "#4ade80", size: 9 } },
     ];
-  }, [n1, n2, numSurfaces]);
+  }, [n, m, thetaB, atB.dop]);
 
-  const extData = useMemo(() => {
-    const angles = Array.from({ length: 500 }, (_, i) => (i / 500) * (89.9 * Math.PI / 180));
-    const degs = angles.map(a => a * 180 / Math.PI);
-    const calcR = (thetaI: number, p: boolean) => {
-      const sinT = (n1 / n2) * Math.sin(thetaI);
-      if (Math.abs(sinT) > 1) return 1;
-      const cosT = Math.cos(Math.asin(sinT));
-      const cosI = Math.cos(thetaI);
-      if (p) return ((n2 * cosI - n1 * cosT) / (n2 * cosI + n1 * cosT)) ** 2;
-      return ((n1 * cosI - n2 * cosT) / (n1 * cosI + n2 * cosT)) ** 2;
-    };
-
-    const ratios = angles.map(a => {
-      const Rs = 1 - (1 - calcR(a, false)) ** numSurfaces;
-      const Rp = 1 - (1 - calcR(a, true)) ** numSurfaces;
-      const tp = 1 - Rp;
-      const ts = 1 - Rs;
-      return ts > 1e-10 ? 10 * Math.log10(tp / ts) : 60;
+  const platesChart = useMemo(() => {
+    const ms = Array.from({ length: 40 }, (_, i) => i + 1);
+    const single = ms.map((k) => {
+      const p = pileOfPlates(n, thetaB, k);
+      return (p.TpSinglePass - p.TsSinglePass) / (p.TpSinglePass + p.TsSinglePass);
     });
-
     return [
-      { x: degs, y: ratios, type: "scatter" as const, mode: "lines" as const, name: "Extinction (dB)", line: { color: "#a78bfa", width: 2 } },
-      { x: [brewsterDeg, brewsterDeg], y: [-10, 60], type: "scatter" as const, mode: "lines" as const, name: "Brewster", line: { color: "#4ade80", dash: "dash" } },
+      { x: ms, y: ms.map((k) => pileDopAtBrewster(n, k)), type: "scatter" as const, mode: "lines+markers" as const, name: "With multiple reflections", line: { color: "#a78bfa", width: 2 } },
+      { x: ms, y: single, type: "scatter" as const, mode: "lines" as const, name: "Ignoring them, (1 − r)²ᵐ", line: { color: "#9ca3af", dash: "dash" } },
     ];
-  }, [n1, n2, numSurfaces, brewsterDeg]);
+  }, [n, thetaB]);
 
-  // Transmittance at Brewster angle
-  const cosI = Math.cos(brewsterDeg * Math.PI / 180);
-  const sinI = Math.sin(brewsterDeg * Math.PI / 180);
-  const cosT = Math.cos(Math.asin(n1 / n2 * sinI));
-  const TpSingle = (n2 * cosT) / (n1 * cosI) * (2 * n1 * cosI / (n2 * cosI + n1 * cosT)) ** 2;
-  const TpStack = TpSingle ** numSurfaces;
+  const layout = (x: string, y: string) => ({
+    paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+    xaxis: { title: x, gridcolor: "#374151" },
+    yaxis: { title: y, gridcolor: "#374151", range: [0, 1] },
+    margin: { t: 20, r: 20, b: 50, l: 60 }, height: 320, legend: { orientation: "h" as const, y: -0.3 },
+  });
 
   return (
     <>
-            
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm font-mono">θ<sub>B</sub> = arctan(n₂/n₁)</p>
-        <p className="text-gray-300 text-sm font-mono">R<sub>p</sub>(θ<sub>B</sub>) = 0, T<sub>p</sub>(θ<sub>B</sub>) = 1</p>
-        <p className="text-gray-500 text-xs mt-1">Stack N surfaces: T<sub>p</sub> = T<sub>p,1</sub><sup>N</sup>, R<sub>s</sub> = 1 − (1 − R<sub>s,1</sub>)<sup>N</sup></p>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-gray-300 text-sm font-mono space-y-1">
+        <p>θ<sub>B</sub> = arctan n, &nbsp;r<sub>p</sub>(θ<sub>B</sub>) = 0, &nbsp;r<sub>s</sub>(θ<sub>B</sub>) = ((n² − 1)/(n² + 1))²</p>
+        <p>m plates (2m surfaces, incoherent): T = (1 − r)/(1 + (2m − 1) r) for each polarization</p>
+        <p>P = (T<sub>p</sub> − T<sub>s</sub>)/(T<sub>p</sub> + T<sub>s</sub>) = m/(m + (2n/(n² − 1))²) at θ<sub>B</sub></p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="n₁ (incident)" value={n1} onChange={setN1} min={1} max={5} step="0.01" />
-        <ValidatedNumberInput label="n₂ (plate)" value={n2} onChange={setN2} min={1} max={5} step="0.01" />
-        <ValidatedNumberInput label="Number of Surfaces" value={numSurfaces} onChange={setNumSurfaces} min={1} max={20} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-2">
+        <ValidatedNumberInput label="Plate index n" value={nIn} onChange={setN} min={1.01} max={5} step="0.01" />
+        <ValidatedNumberInput label="Number of plates m" value={platesIn} onChange={setPlates} min={1} max={50} step="1" />
       </div>
+      <p className="text-xs text-gray-500 mb-4">
+        Lossless, plane-parallel plates in air, spaced so the reflections add in power (no interference). r is the
+        reflectance of one surface; glass to air reflects the same at the refracted angle.
+      </p>
 
       <div className="flex flex-wrap gap-2 mb-6">
-        <button onClick={() => { setN1(1); setN2(1.52); }} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">BK7</button>
-        <button onClick={() => { setN1(1); setN2(1.76); }} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">SF11</button>
-        <button onClick={() => { setN1(1); setN2(2.42); }} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">Diamond</button>
-        <button onClick={() => setNumSurfaces(1)} className="text-xs bg-blue-900 hover:bg-blue-800 border border-blue-700 rounded px-2 py-1 text-blue-300">1 surface</button>
-        <button onClick={() => setNumSurfaces(4)} className="text-xs bg-blue-900 hover:bg-blue-800 border border-blue-700 rounded px-2 py-1 text-blue-300">4 surfaces</button>
-        <button onClick={() => setNumSurfaces(10)} className="text-xs bg-blue-900 hover:bg-blue-800 border border-blue-700 rounded px-2 py-1 text-blue-300">10 surfaces</button>
+        <button onClick={() => setN(1.52)} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">Crown glass 1.52</button>
+        <button onClick={() => setN(1.76)} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">Flint 1.76</button>
+        <button onClick={() => setN(2.42)} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">Diamond 2.42</button>
+        <button onClick={() => setN(4.0)} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">Germanium 4.0 (IR)</button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Brewster Angle</p>
-          <p className="text-2xl font-bold text-blue-400">{brewsterDeg.toFixed(2)}°</p>
+          <p className="text-sm text-gray-400">Brewster angle</p>
+          <p className="text-2xl font-bold text-blue-400">{fix(thetaB / DEG, 2)}°</p>
+          <p className="text-xs text-gray-500">one surface reflects r<sub>s</sub> = {pct(atB.rs)}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">T<sub>p</sub> at θ<sub>B</sub> (stack)</p>
-          <p className="text-2xl font-bold text-green-400">{(TpStack * 100).toFixed(1)}%</p>
+          <p className="text-sm text-gray-400">Pile transmittance at θ<sub>B</sub></p>
+          <p className="text-xl font-bold text-green-400">T<sub>p</sub> {pct(atB.Tp, 1)}</p>
+          <p className="text-xl font-bold text-blue-400">T<sub>s</sub> {pct(atB.Ts, 2)}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Acceptance Angle</p>
-          <p className="text-2xl font-bold text-yellow-400">~±{Math.max(0.5, 3 / numSurfaces).toFixed(1)}°</p>
+          <p className="text-sm text-gray-400">Degree of polarization (unpolarized in)</p>
+          <p className="text-2xl font-bold text-purple-400">{fix(atB.dop, 4)}</p>
+          <p className="text-xs text-gray-500">ignoring multiple reflections: {fix(singlePassDop, 4)}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">F-number (min)</p>
-          <p className="text-2xl font-bold text-purple-400">{(1 / (2 * Math.tan(brewsterDeg * Math.PI / 180 + 0.05))).toFixed(1)}</p>
+          <p className="text-sm text-gray-400">Extinction T<sub>p</sub>/T<sub>s</sub></p>
+          <p className="text-2xl font-bold text-yellow-400">{dB(atB.extinction)}</p>
+          <p className="text-xs text-gray-500">ratio {fix(atB.extinction, 2)} : 1</p>
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="bg-gray-900 rounded-lg p-4">
-          <h3 className="text-sm text-gray-400 mb-2">Reflectance vs Angle</h3>
-          <ChartPanel data={polarizerData} layout={{
-            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-            font: { color: "#9ca3af" },
-            xaxis: { title: "Angle (°)", gridcolor: "#374151", range: [0, 90] },
-            yaxis: { title: "Reflectance", gridcolor: "#374151", range: [0, 1] },
-            margin: { t: 20, r: 20, b: 50, l: 50 },
-          }} />
+          <h3 className="text-sm text-gray-400 mb-2">Transmittance and polarization against the angle of incidence ({m} plates)</h3>
+          <ChartPanel data={angleChart} layout={layout("Angle of incidence (°)", "Fraction")} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
-          <h3 className="text-sm text-gray-400 mb-2">Extinction Ratio (dB)</h3>
-          <ChartPanel data={extData} layout={{
-            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-            font: { color: "#9ca3af" },
-            xaxis: { title: "Angle (°)", gridcolor: "#374151", range: [0, 90] },
-            yaxis: { title: "T<sub>p</sub>/T<sub>s</sub> (dB)", gridcolor: "#374151" },
-            margin: { t: 20, r: 20, b: 50, l: 50 },
-          }} />
+          <h3 className="text-sm text-gray-400 mb-2">Degree of polarization at θ<sub>B</sub> against the number of plates</h3>
+          <ChartPanel data={platesChart} layout={layout("Plates m", "Degree of polarization")} />
         </div>
       </div>
     </>

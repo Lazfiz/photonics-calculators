@@ -1,138 +1,120 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { fix, fromLog10 } from "../../../components/polarization-format";
+import { faceReflectance, sheetMetrics, slabLogTransmittance } from "../../../physics/polarization/sheet-polarizer";
+
+const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
+const pct = (v: number, digits = 2) => (Number.isFinite(v) ? `${fix(v * 100, digits)} %` : "—");
+
+/** log₁₀ of the principal transmittances and the extinction ratio against thickness, up to 1 mm or twice d. */
+function thicknessCharts(nPass: number, kPass: number, nBlock: number, kBlock: number, lambda: number, d: number) {
+  const t = Array.from({ length: 200 }, (_, i) => (i + 1) * 0.005 * Math.max(1, (d * 1e3) / 0.5));
+  const l1 = t.map((x) => slabLogTransmittance(nPass, kPass, x * 1e-3, lambda) / Math.LN10);
+  const l2 = t.map((x) => slabLogTransmittance(nBlock, kBlock, x * 1e-3, lambda) / Math.LN10);
+  return {
+    logT: [
+      { x: t, y: l1, type: "scatter" as const, mode: "lines" as const, name: "log₁₀ k₁ (pass)", line: { color: "#60a5fa", width: 2 } },
+      { x: t, y: l2, type: "scatter" as const, mode: "lines" as const, name: "log₁₀ k₂ (block)", line: { color: "#f87171", width: 2 } },
+    ],
+    er: [
+      { x: t, y: t.map((_, i) => 10 * (l1[i] - l2[i])), type: "scatter" as const, mode: "lines" as const, name: "Extinction ratio (dB)", line: { color: "#a78bfa", width: 2 } },
+      { x: t, y: t.map((_, i) => 10 ** l1[i] * 100), type: "scatter" as const, mode: "lines" as const, name: "k₁ (%)", line: { color: "#60a5fa", dash: "dash" }, yaxis: "y2" },
+    ],
+  };
+}
+
 export default function DichroicPolarizerPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [nE, setNE] = useURLState("nE", 2.4);
-  const [kE, setKE] = useURLState("kE", 0.01); // extinction coeff extraordinary
-  const [nO, setNO] = useURLState("nO", 1.6);
-  const [kO, setKO] = useURLState("kO", 2.0); // extinction coeff ordinary (absorbing)
-  const [thickness, setThickness] = useURLState("thickness", 0.1); // mm
+  const [wavelengthIn, setWavelength] = useURLState("wavelength", 550);
+  const [nPassIn, setNPass] = useURLState("nE", 1.62);
+  const [kPassIn, setKPass] = useURLState("kE", 1e-5);
+  const [nBlockIn, setNBlock] = useURLState("nO", 1.64);
+  const [kBlockIn, setKBlock] = useURLState("kO", 3e-3);
+  const [thicknessIn, setThickness] = useURLState("thickness", 0.1);
 
-  // Dichroic polarizer: one polarization strongly absorbed (high k), other passes
-  // T = exp(-4π k d / λ)
-  const d = thickness * 1e-3; // m
-  const lam = wavelength * 1e-9; // m
+  // useURLState doesn't clamp: keep URL values inside the input ranges.
+  const lambda = clamp(wavelengthIn, 200, 20000) * 1e-9;
+  const nPass = clamp(nPassIn, 1, 5);
+  const kPass = clamp(kPassIn, 0, 10);
+  const nBlock = clamp(nBlockIn, 1, 5);
+  const kBlock = clamp(kBlockIn, 0, 10);
+  const d = clamp(thicknessIn, 0.001, 10) * 1e-3;
 
-  const alphaO = (4 * Math.PI * kO * d) / lam;
-  const alphaE = (4 * Math.PI * kE * d) / lam;
+  const lnK1 = slabLogTransmittance(nPass, kPass, d, lambda);
+  const lnK2 = slabLogTransmittance(nBlock, kBlock, d, lambda);
+  const m = sheetMetrics(lnK1, lnK2);
+  const alpha = (k: number) => (4 * Math.PI * k) / lambda;
+  const swapped = lnK2 > lnK1;
 
-  const TO = Math.exp(-alphaO);
-  const TE = Math.exp(-alphaE);
+  const thicknessChart = thicknessCharts(nPass, kPass, nBlock, kBlock, lambda, d);
 
-  const extinction = TE / TO;
-  const extinctionDB = 10 * Math.log10(extinction);
-  const dichroicRatio = kO / kE;
 
-  // Fresnel reflection losses at normal incidence (each surface)
-  const RO = ((nO - 1) / (nO + 1)) ** 2;
-  const RE = ((nE - 1) / (nE + 1)) ** 2;
-  const TOwithReflection = TE * (1 - RE) ** 2;
-  const TOblocked = TO * (1 - RO) ** 2;
-
-  const spectralData = useMemo(() => {
-    const wls = Array.from({ length: 300 }, (_, i) => 300 + (i / 300) * 1500);
-    // k varies with wavelength (approximate Drude-like or Lorentzian absorption edge)
-    const kOarr = wls.map(w => {
-      const edge = 500;
-      return kO * (w < edge ? 3.0 : 1.0 * Math.exp(-((w - edge) ** 2) / (2 * 200 ** 2)) + 0.1);
-    });
-    const kEarr = wls.map(w => kE * 0.8);
-    const TEarr = wls.map((w, i) => Math.exp(-(4 * Math.PI * kEarr[i] * d) / (w * 1e-9)));
-    const TOarr = wls.map((w, i) => Math.exp(-(4 * Math.PI * kOarr[i] * d) / (w * 1e-9)));
-    return [
-      { x: wls, y: TEarr, type: "scatter" as const, mode: "lines" as const, name: "T extraordinary (pass)", line: { color: "#60a5fa", width: 2 } },
-      { x: wls, y: TOarr, type: "scatter" as const, mode: "lines" as const, name: "T ordinary (absorb)", line: { color: "#f87171", width: 2 } },
-    ];
-  }, [kO, kE, d]);
-
-  const thicknessData = useMemo(() => {
-    const ths = Array.from({ length: 200 }, (_, i) => 0.01 + (i / 200) * 0.5);
-    const TEarr = ths.map(t => Math.exp(-(4 * Math.PI * kE * t * 1e-3) / lam));
-    const TOarr = ths.map(t => Math.exp(-(4 * Math.PI * kO * t * 1e-3) / lam));
-    const extArr = ths.map(t => {
-      const te = Math.exp(-(4 * Math.PI * kE * t * 1e-3) / lam);
-      const to = Math.exp(-(4 * Math.PI * kO * t * 1e-3) / lam);
-      return 10 * Math.log10(te / to);
-    });
-    return [
-      { x: ths, y: TEarr, type: "scatter" as const, mode: "lines" as const, name: "T pass", line: { color: "#60a5fa", width: 2 } },
-      { x: ths, y: TOarr, type: "scatter" as const, mode: "lines" as const, name: "T block", line: { color: "#f87171", width: 2 } },
-      { x: ths, y: extArr, type: "scatter" as const, mode: "lines" as const, name: "Extinction (dB)", line: { color: "#a78bfa", width: 2 }, yaxis: "y2" },
-    ];
-  }, [kE, kO, lam]);
+  const layout = (y: string, y2?: string) => ({
+    paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+    xaxis: { title: "Thickness (mm)", gridcolor: "#374151" },
+    yaxis: { title: y, gridcolor: "#374151" },
+    ...(y2 ? { yaxis2: { title: y2, overlaying: "y" as const, side: "right" as const, gridcolor: "transparent", range: [0, 100] } } : {}),
+    margin: { t: 20, r: y2 ? 60 : 20, b: 50, l: 60 }, height: 300, legend: { orientation: "h" as const, y: -0.3 },
+  });
 
   return (
     <>
-            
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm font-mono">T = exp(-4π k d / λ), where k = extinction coefficient</p>
-        <p className="text-gray-300 text-sm font-mono">Dichroic ratio R = k<sub>absorb</sub>/k<sub>pass</sub>, Extinction = T<sub>pass</sub>/T<sub>absorb</sub></p>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-gray-300 text-sm font-mono space-y-1">
+        <p>each principal axis: N = n − iκ, &nbsp;α = 4πκ/λ, &nbsp;R = ((n − 1)² + κ²)/((n + 1)² + κ²)</p>
+        <p>k = (1 − R)² e<sup>−αd</sup>/(1 − R² e<sup>−2αd</sup>) &nbsp;(normal incidence, incoherent reflections)</p>
+        <p>extinction k₁/k₂, &nbsp;efficiency (k₁ − k₂)/(k₁ + k₂), &nbsp;crossed pair H₉₀ = k₁k₂</p>
       </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-2">
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthIn} onChange={setWavelength} min={200} max={20000} step="10" />
+        <ValidatedNumberInput label="Thickness (mm)" value={thicknessIn} onChange={setThickness} min={0.001} max={10} step="0.01" />
+        <div />
+        <ValidatedNumberInput label="n, pass axis" value={nPassIn} onChange={setNPass} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label="κ, pass axis" value={kPassIn} onChange={setKPass} min={0} max={10} step="0.00001" />
+        <div />
+        <ValidatedNumberInput label="n, block axis" value={nBlockIn} onChange={setNBlock} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label="κ, block axis" value={kBlockIn} onChange={setKBlock} min={0} max={10} step="0.0001" />
+      </div>
+      <p className="text-xs text-gray-500 mb-6">
+        κ is the imaginary part of the index (absorption index), not an absorption coefficient: κ = 3 × 10⁻³ at 550 nm is
+        α = 68.5 mm⁻¹. A metal has κ of order 1 to 10 and blocks both axes. The defaults are illustrative, not a measured material.
+      </p>
+
+      {swapped && <p className="text-sm text-yellow-400 mb-4">The &quot;block&quot; axis transmits more than the &quot;pass&quot; axis: the ratios below are below 1 (negative dB).</p>}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={300} max={1800} step="10" />
-        <ValidatedNumberInput label="n (pass axis)" value={nE} onChange={setNE} step="0.1" />
-        <ValidatedNumberInput label="k (pass axis)" value={kE} onChange={setKE} step="0.01" />
-        <ValidatedNumberInput label="n (absorb axis)" value={nO} onChange={setNO} step="0.1" />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ValidatedNumberInput label="k (absorb axis)" value={kO} onChange={setKO} step="0.1" />
-        <ValidatedNumberInput label="Thickness (mm)" value={thickness} onChange={setThickness} min={0.01} max={1} step="0.01" />
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-6">
-        <button onClick={() => { setNE(2.4); setKE(0.01); setNO(1.6); setKO(2.0); }} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">Tourmaline-like</button>
-        <button onClick={() => { setNE(1.7); setKE(0.005); setNO(1.7); setKO(0.5); }} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">Wire-grid equiv.</button>
-        <button onClick={() => { setNE(1.8); setKE(0.02); setNO(1.5); setKO(3.0); }} className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-300">High-dichroic crystal</button>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">T pass axis</p>
-          <p className="text-2xl font-bold text-green-400">{(TE * 100).toFixed(1)}%</p>
-          <p className="text-xs text-gray-500">w/ reflection: {(TOwithReflection * 100).toFixed(1)}%</p>
+          <p className="text-sm text-gray-400">k₁ (pass axis)</p>
+          <p className="text-2xl font-bold text-green-400">{pct(m.k1, 2)}</p>
+          <p className="text-xs text-gray-500">α = {fix(alpha(kPass) * 1e-3, 4)} mm⁻¹, R = {pct(faceReflectance(nPass, kPass), 2)} per face</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">T absorb axis</p>
-          <p className="text-2xl font-bold text-red-400">{(TO * 100).toFixed(4)}%</p>
+          <p className="text-sm text-gray-400">k₂ (block axis)</p>
+          <p className="text-2xl font-bold text-red-400">{fromLog10(m.log10K2)}</p>
+          <p className="text-xs text-gray-500">α = {fix(alpha(kBlock) * 1e-3, 2)} mm⁻¹, R = {pct(faceReflectance(nBlock, kBlock), 2)} per face</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Extinction Ratio</p>
-          <p className="text-2xl font-bold text-yellow-400">{extinctionDB.toFixed(1)} dB</p>
+          <p className="text-sm text-gray-400">Extinction ratio k₁/k₂</p>
+          <p className="text-2xl font-bold text-yellow-400">{fix(m.extinctionDb, 1)} dB</p>
+          <p className="text-xs text-gray-500">efficiency {fix(m.efficiency * 100, 4)} %; κ ratio {kPass > 0 ? fix(kBlock / kPass, 0) : "∞"}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Dichroic Ratio</p>
-          <p className="text-2xl font-bold text-purple-400">{dichroicRatio.toFixed(0)}:1</p>
+          <p className="text-sm text-gray-400">Unpolarized light</p>
+          <p className="text-lg font-bold text-purple-400">one sheet {pct(m.single, 2)}</p>
+          <p className="text-xs text-gray-500">two crossed: {fromLog10(m.log10Crossed)}; parallel: {pct(m.parallel, 2)}</p>
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h3 className="text-sm text-gray-400 mb-2">Spectral Transmission</h3>
-          <ChartPanel data={spectralData} layout={{
-            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-            font: { color: "#9ca3af" },
-            xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
-            yaxis: { title: "Transmission", gridcolor: "#374151" },
-            margin: { t: 20, r: 20, b: 50, l: 50 }, height: 300,
-          }} />
+          <h3 className="text-sm text-gray-400 mb-2">Principal transmittances against thickness (log₁₀)</h3>
+          <ChartPanel data={thicknessChart.logT} layout={layout("log₁₀ k")} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h3 className="text-sm text-gray-400 mb-2">Transmission & Extinction vs Thickness</h3>
-          <ChartPanel data={thicknessData} layout={{
-            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-            font: { color: "#9ca3af" },
-            xaxis: { title: "Thickness (mm)", gridcolor: "#374151" },
-            yaxis: { title: "Transmission", gridcolor: "#374151", range: [-0.05, 1.05] },
-            yaxis2: { title: "Extinction (dB)", overlaying: "y", side: "right", gridcolor: "transparent" },
-            margin: { t: 20, r: 60, b: 50, l: 50 }, height: 300,
-          }} />
+          <h3 className="text-sm text-gray-400 mb-2">Extinction ratio and pass transmittance against thickness</h3>
+          <ChartPanel data={thicknessChart.er} layout={layout("Extinction (dB)", "k₁ (%)")} />
         </div>
       </div>
     </>
