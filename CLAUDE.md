@@ -5,8 +5,9 @@ spectroscopy, detectors, materials, wave optics, polarization, free-space comms)
 Next.js 16 App Router + React 19 + TypeScript (strict) + Tailwind 4, statically prerendered on
 Vercel: https://photonics-calculators.vercel.app. Developed with Claude Code only.
 
-**Plan & status:** `docs/ROADMAP.md` (phases, known issues with evidence). Session handover:
-`docs/HANDOVER.md`. Continue from the first unchecked ROADMAP box; don't re-review the codebase.
+**Plan & status:** `docs/ROADMAP.md` holds the open work, the status table, open findings and decisions. Session
+handover: `docs/HANDOVER.md`. Continue from the first unchecked ROADMAP box; don't re-review the codebase. History
+(sessions 1–40, ≈ 50k tokens) is in `docs/archive/roadmap-history.md`: `grep` it for old evidence and never read it whole.
 
 ## Next.js 16 warning
 This is NOT the Next.js in your training data — APIs, conventions and file structure changed.

@@ -33,7 +33,8 @@ test("LP01 eigenvalue solves the characteristic equation and matches Rudolph–N
 
 test("Marcuse bend loss of an SMF-28-like fibre at 1550 nm", () => {
   // Golden values from the session-17 physics review (an independent implementation of Marcuse,
-  // J. Opt. Soc. Am. 66, 216 (1976)), docs/ROADMAP.md Phase 2 findings: 16, 3.1 and 0.11 dB/turn.
+  // J. Opt. Soc. Am. 66, 216 (1976)), "Phase 2 findings" in docs/archive/roadmap-history.md:
+  // 16, 3.1 and 0.11 dB/turn.
   const V = vNumber(smf, lambda);
   assertRel(V, 2.0715, 1e-4, "V");
   const mode = lp01Mode(V);

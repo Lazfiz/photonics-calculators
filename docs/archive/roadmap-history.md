@@ -1,0 +1,651 @@
+# Roadmap history — photonics-calculators (sessions 1–40)
+
+**Archive, frozen on 2026-10-11 (session 41).** This file holds the review evidence and every session's log, up to
+polarization part 3. The open work is in `docs/ROADMAP.md`. Don't read this file at the start of a session (it is about
+50k tokens). Search it with `grep -n "<slug or topic>"` when a task needs old evidence. Later sessions record their
+detail in the PR description, not here.
+
+Source: full review on 2026-10-07 (Claude). Tick boxes as work lands. Evidence is recorded so nothing has to be re-derived.
+
+## Known issues (evidence)
+
+**Blockers**
+- Build is broken at HEAD (`0749eb58`); production is a build from before 2026-04-18 20:40, so about 190 later commits are not live. Check: live `/detectors/channel-photomultiplier` still says "Uses TTS as pulse width — rough estimate".
+  `tsc` parse errors:
+  - `wave-optics/cavity-stability/page-client.tsx:47`: `const` inside an array literal
+  - `wave-optics/mode-matching/page-client.tsx:101`: `1i` complex literal
+  - `spectroscopy/absorption-depth/page-client.tsx:31-35`: `-(x) ** 2` needs parentheses
+  - `spectroscopy/fluorescence-quantum-yield/page-client.tsx:75`: unclosed `<p>`
+  - `detectors/channel-photomultiplier/page-client.tsx:55`: raw `>` in JSX
+
+  Parse errors can hide type errors, so re-run the full `tsc` after fixing.
+- A GitHub PAT is embedded in the `origin` URL in `.git/config`.
+
+**Correctness**
+- BER: `free-space-comms/ber/page-client.tsx:13-20`. `erfc()` returns `0.5*(1+sign*y)` (=Φ), not `1-erf`, so BER rises to 0.5 as signal grows and the "required photons" bisection is broken. The model is also questionable: for photon counting, OOK should be Poisson (≈½e^-n), not Gaussian Q.
+- JSON-LD: 427/521 `page.tsx` files are corrupted (source code inside template literals) since `6929ab07` (2026-04-09). Live JSON-LD names read `"Airy Disk Size Calculator',\n description: ..."`. Detect with: `git grep -c "const jsonLd" -- 'src/app/**/page.tsx' | awk -F: '$2>1'`.
+- `src/hooks/use-url-state.ts`: resetting to the default never removes the URL param, because the flush loop checks keys that were already deleted. The shared link keeps the stale value (confirmed by simulation). Defaults render first and URL values arrive in an effect, which causes a flash.
+- `src/components/validated-number-input.tsx` (488 pages) clamps on every keystroke: with min=10, typing "50" becomes 10.
+- `src/components/input-slider.tsx`: the number field passes unclamped values (e.g. NA=0 causes ÷0) until blur.
+- `src/components/calculator-shell.tsx`: `ShareButton` reads `window` during render, causing a hydration mismatch. The breadcrumb check `i < breadcrumbs.length` is always true.
+- ~~`src/components/simple-chart.tsx`: the log axis clamps at 1e-10, and `Infinity` is not filtered (only `isNaN`).~~ Fixed in session 34: log axes skip values ≤ 0 (no floor), non-finite values are dropped.
+- ~~Duplicates that disagree (~40 pairs)~~: merged in session 17 (52 pages into 44 with redirects; see Phase 2):
+  - `fiber-optics/dispersion-comp` (0.25/Δτ) vs `dispersion-compensation` (1/Δτ)
+  - `macro-bend` (made-up power law) vs `macro-bending-loss` (Marcuse-type, uses plane-wave β)
+  - imaging second-harmonic ×3, two-photon ×3, light-sheet ×3, wavefront-sens* ×3
+  - ccd-cmos/ccd-vs-cmos, em-gain/emccd-gain/electron-multiplying, full-well/well-capacity
+  - scanned-mpe/scanning-mpe, dual-comb (spectroscopy + wave-optics)
+- Fudge-factor models presented as calculators, e.g. `imaging/second-harmonic` (prefactor `4e-24`, `dn = 0.01·n/1.33`).
+- ~~Constants are redefined inline in 46 files~~: it was 273 literals in 91 files (`3e8` ×121, `1.6e-19`/`1.602e-19` ×49, `6.626e-34` ×35, …). They're imported since the 2026-10-08 codemod, and `tests/no-inline-constants.test.ts` guards against new ones. A second codemod did the unit-scaled forms (`1240 / λ`, `3e10`, …; 38 sites). `erf` is implemented 3 different ways.
+- Minor: `fiber-optics/v-number` uses `floor(V²/2)` modes for V<2.405.
+- Verified correct: gaussian-beam, v-number, single-ar, sellmeier, nep, airy-disk, blackbody (rounded constants).
+
+**Architecture / content**
+- Physics lives inline in ~524 `page-client.tsx` files, so it can't be tested. There are 2 test files, and the first Geiger test asserts only `> 0`.
+- Five sources of truth drift apart: hand-written `sitemap.ts`, `generated/search-index.json`, `lib/flagship-related.ts` (268 KB), `lib/home-categories.ts`, and per-page metadata. The site says "541 calculators"; there are 524 pages. 55 pages have the placeholder description "Interactive X calculator for photonics and optical engineering."
+
+**Performance / graphics** (live, 2026-10-07)
+- Pages are statically prerendered and edge-cached (`X-Vercel-Cache: HIT`), with 19–35 KB of HTML. Fine.
+- Initial JS is 190–240 KB gz per calculator. `lib/related-calculators.ts` pulls the search index plus `flagship-related.ts` into the client (a ~400 KB raw / 46 KB gz chunk).
+- 18 pages use Plotly; `react-plotly.js` imports the full `plotly.js/dist/plotly` (4.8 MB min). `plotly.js` and `plotly.js-dist-min` are both dependencies.
+- SVG charts use a fixed viewBox (700 px in `simple-chart`, 900 px in `simple-line-chart`), so labels render at 4–5 px on phones. There is no hover readout and no export.
+
+**Found during Phase 0** (2026-10-07)
+- The parse errors hid **54 type errors** in 18 pages and 2 tests, all leftovers from the April bulk "fixes" (deleted definitions, duplicate `const`, use before declaration). All are fixed in `phase-0`. Two of them changed physics:
+  - `four-wave-mixing`: restored the β₂ and γ definitions that `44eaaeb4` deleted.
+  - `ion-assisted-deposition`: added film molar masses, which `8f862598` had referenced but never defined.
+- `mode-matching` η: the conjugate sign was wrong (`qpp_i − zR2`), so η → ∞ at a perfect match. Fixed in `phase-0` and checked against closed-form overlaps (0.64 for a 2× waist mismatch). It needs a golden test once the code is extracted (Phase 2).
+- `ion-assisted-deposition` **is broken and NOT fixed** (Phase 4 rewrite):
+  - The atom flux `r·ρ·N_A/(ρ·A·M_ion·m_p)` is dimensionally wrong, so Jr ≈ 1e-30 and the packing and stress outputs do nothing.
+  - The correct flux `r·ρ·N_A/M` gives Jr ≈ 28 at the defaults, because the 10 cm² beam area means 5 mA/cm² (typical IAD is ~0.05–0.1 mA/cm²). The uncalibrated coefficients then give ~4.9 GPa of stress.
+  - It needs a real model with references.
+- ESLint had **290 errors**. Four rules are temporarily set to `warn` in `eslint.config.mjs`:
+  - `preserve-manual-memoization` (153 sites)
+  - `no-explicit-any` (116)
+  - `react-hooks/purity` (9: `Math.random` in render, a hydration mismatch, in otdr-analysis, circular-dichroism, polarization-scrambling, retarder-types, fourier-transform and spectral-calibration): fixed in Phase 1, back to `error`
+  - `set-state-in-effect` (`input-slider`, `use-url-state`): fixed in Phase 1, back to `error`
+- Questionable models noticed while fixing (for Phase 4):
+  - `filamentation`: Marburger z_sf gives a finite collapse distance for P < P_cr.
+  - `coherent-raman`: signal prefactors are arbitrary (`1e-60`, `1e-30`). **Fixed in session 22** (removed; the charts are relative).
+  - `dye-laser-resonator`: k_ISC = (1−Φ_f)/τ counts all non-radiative decay as ISC.
+  - `four-wave-mixing`: β₂ is fixed at 20 ps²/km and n₀ at 1.45 in χ³.
+  - `ion-assisted-deposition`: the packing and stress coefficients are uncalibrated.
+- `scripts/generate-search-index.mjs` (run as `prebuild`) produces a different file from the committed `src/generated/search-index.json`: 5,134 changed lines, different ordering, newer titles, and "3×10^4" mangled into "310^4". Production always ships the regenerated copy. Phase 2 registry: make it deterministic, and either gitignore the file or check it in CI.
+- `next build` prerender exposes runtime TDZ errors that tsc misses (a `const` used inside a closure before its declaration, e.g. `pixel-crosstalk`). Swept with `@typescript-eslint/no-use-before-define`.
+- npm 12 skips install scripts (esbuild, sharp, unrs-resolver). Their prebuilt `win32-x64` binaries are installed, so this is harmless.
+
+**Found during Phase 1** (2026-10-07)
+- The A&S 7.1.26 `erfc` copies (bpsk-qpsk, ber, scintillation, diversity-reception, fade-probability) have absolute error 1.5e-7 and are about 38 % off asymptotically, so every BER below ~1e-7 was wrong. All are replaced by `src/physics/math.ts`.
+- `SimpleChart` floors log axes at 1e-10 (fixed in session 34). The ber and bpsk-qpsk pages therefore plot log₁₀(BER) on a linear axis; they can switch back to log axes now.
+- 64 `page-client.tsx` files import `CalculatorShell` but never render it, so they have no title, breadcrumb or share button (e.g. `free-space-comms/ber`). Fix alongside the Phase 1 shell item. Count: `comm -23` of `git grep -l 'import CalculatorShell'` vs `git grep -l '<CalculatorShell'`.
+- 138 `<label>` cards in 53 files wrap a `ValidatedNumberInput` (nested `<label>`, invalid HTML), mostly in thin-film and polarization: `<label><span>n<sub>substrate</sub></span><ValidatedNumberInput label="nsubstrate" … /></label>`. The caption shows twice and the input's copy has lost its markup. Fix with a codemod like `input-captions`: pass the span's content as `label={<>…</>}` and drop the wrapper. **Done 2026-10-07 on `fix/nested-labels`:** `scripts/codemods/2026-10-07-nested-labels.ts` unwrapped all 138 sites in 53 files, with 0 skipped. Every caption matched its input's old label. `ui-check` now checks `/thin-film/angle-tuning`: no `label label`, and `n<sub>substrate</sub>` holds 1.52. Both checks fail on the old pages.
+- Found during the nested-label fix:
+  - ~~`/thin-film/dielectric-high-reflector` logs React #418 (hydration text mismatch) on every load, in production too. It has no randomness or dates and uses `ChartPanel`. The cause is probably a Node-vs-Chrome float format, like `quantum-efficiency`. Diagnose it with a dev build.~~ Not seen after the session-27 rewrite (local production build, `ui-check` load, fresh profile); confirm on production.
+  - The committed `src/generated/search-index.json` is stale: `build` regenerates about 5k lines, with the Phase 1 titles. **Wrong:** production search fetched `public/search-index.json`, last written 2026-04-06, so it showed "Ber" / "Open Ber.". The regenerated copy was worse: its double-quote regex skipped the single-quoted metadata and took chart axis titles ("S₁/Q" for Stokes, "Exposure time (s)" for MPE) for 479 of 528 titles. Fixed by the registry (stage 2a).
+  - `laser-safety/mpe` metadata said "1 ms to 310^4 s" (a lost `×`). Fixed to "3×10⁴ s"; no other `<digit>10^` remains in `src/`.
+- Shell titles drift from `metadata.title` in the ~456 pages that already rendered the shell (e.g. attenuation: "Wavelength-Dependent Attenuation" vs "Fiber Attenuation Calculator"). The pages fixed in item 5 use `metadata`. Generate both from the registry (Phase 2).
+- For Phase 4:
+  - `bpsk-qpsk` "Required RX power" uses the RF floor kT = −174 dBm/Hz + 3 dB NF. Coherent optical detection is shot-noise limited at hν ≈ −159 dBm/Hz (1550 nm).
+  - `diversity-reception` uses a fixed "3σ" outage and gives identical gain for SC, EGC and MRC.
+- `SimpleLineChart` prints SVG coordinates at full precision. Node (SSR) and Chrome can differ by 1 ulp (`200.2834021708276` vs `…763` on `detectors/quantum-efficiency`, seen with a warm Chrome profile), which logs a hydration-mismatch error. Round coordinates to 0.01 px in the Phase 3 chart rewrite.
+- Found while writing descriptions (JSON-LD item):
+  - `point-ahead` uses θ = v/c. The standard point-ahead angle is 2v⊥/c, so this is a factor-2 error (Phase 4).
+  - ~~The FAQ in `lib/json-ld.tsx` lower-cases the title ("What is photon-counting ber (ook and dpsk)?", "… (fog)?").~~ Stage 2b dropped the generated FAQ (it was not on the page).
+  - The old slug-derived titles survive in `flagship-related.ts` ("Ber", "Wdm Coupler", with "Related … calculator." as the description) and in the category index pages. Both get regenerated from the registry (Phase 2).
+  - More duplicate pairs: `scanned-mpe` / `scanning-mpe` (both titled "Scanned Beam MPE"), `scintillation` / `scintillation-index`, and `free-space-comms/atmospheric-loss` / `laser-safety/atmospheric-attenuation`.
+- `useURLState` only rejects non-finite URL values. A crafted link (e.g. `?na=0`) still reaches the physics unclamped, because the inputs clamp only what the user types. Guard domains in the Phase 2 physics modules, or give `useURLState` an optional range.
+
+**Found during Phase 2** (2026-10-07)
+- The 6 thin-film copies of `computeRT` were compared with `src/physics/thin-film/transfer-matrix.ts` on an 11-layer stack, 300–900 nm:
+  - `angle-tuning` (s and p, 0–45°), `beamsplitter` and `heat-mirror` agree to 3e-15.
+  - `cold-mirror`'s matrix product dropped the M₁₁·L₁₂ terms, so R was off by up to 0.9.
+  - `wavelength-separation` and `environmental-stability` (inline) multiplied by a *real* matrix `[[cos δ, −sin δ/n], [−n sin δ, cos δ]]` (the `i` was lost), so R reached 2,370.
+  - `partial-reflector`'s copy was dead code. Its "R_design (QWL)" and the R-vs-n_film chart used cos 2δ = +1 (a half-wave layer), so they always showed the bare substrate, whatever n_film was.
+  - `cold-mirror` and `heat-mirror` showed R_max = [(r−1)/(r+1)]² with r = (n_H/n_L)^2N, which ignores n_inc and n_sub. They now use the exact quarter-wave admittance Y = (n_H/n_L)^2N·n_sub.
+  - `environmental-stability` added the humidity Δn to every curve, "Nominal (0 % RH)" included. Its Δn and CTE coefficients are still uncalibrated (Phase 4).
+  - All of these are fixed on `phase-2/constants-thin-film`.
+- Stage 1b (session 11, branch `phase-2/thin-film-1b`): 25 more thin-film pages now use the module. Each was compared with its old code at the defaults, copied verbatim into a scratch script:
+  - **Real matrix** (the `i` was lost), so R was right at the quarter-wave points by coincidence and reached 1e4–8e5 elsewhere: `bandpass-filter`, `edge-filter`, `dual-band-ar`, `gradient-index`, `ir-blocking`, `narrow-bandpass`, `notch-filter`, `solar-protection`, `uv-blocking`, `wide-bandpass`, `dielectric-high-reflector`, `emissivity-control`, `hard-coating`, `double-layer-ar` (which also swapped n₁/n₂ in M₁₂).
+    - These pages listed layers from the substrate. With the `i` restored, the old geometry agrees with the new code to 8e-15.
+  - **ABCD update** had D′ = +C sin δ/n (it should be −): `dielectric-stack` (Y also used iD·n_sub) and `anti-fog`'s water-film curve (the water was also put next to the substrate). `anti-fog`'s bare-coating R was right.
+  - **Wrong r formula** (M₁₀ sign): `bragg-reflector`, where R reached 11.
+  - **Absorbing-layer matrix** used cos δ·cosh α and sin δ·sinh α: `enhanced-aluminum` (R(550) was 6.6 %, now 99.3 %) and `protected-silver` (average R 6 % → 95 %). Both also plotted T = 1 − R. They now plot the module's T and A.
+  - **Heuristics replaced:**
+    - `metal-dielectric`: a two-beam formula, off by up to 0.43 in R. Its "Metal Absorption" was exp(−4πkd/λ); it now shows the absorptance.
+    - `gradient-index-coating`: an amplitude sum that started from r = 1, so R_min was 0.80; it is 0.009.
+    - `spectrophotometry`: an Airy formula with a real denominator, and T from Beer's law at 550 nm. The error is small at the defaults (1e-4).
+  - **Already correct:** `long-pass`, `short-pass` and `dichroic` (3e-15). The R_max shown on long-pass and short-pass ignored n_inc and n_sub. They now show the exact R(λ₀): 97.92 % and 95.25 %, where both showed 96.85 %.
+  - **Design errors:**
+    - `bandpass-filter`, `narrow-bandpass` and `notch-filter` repeated (HL)^p after the spacer instead of mirroring it. So the bandpasses had no passband at λ₀, and the notch had a dip at λ₀. New: `src/physics/thin-film/cavity-filter.ts` (4 golden tests, absentee-layer hand values).
+    - `notch-filter`'s FWHM used the level 1 − T_min/2 and the first dip.
+    - `dielectric-stack`'s peak R used the (HL)^N H formula for an (HL)^N plot. It showed 99.46 %; the value is 98.72 %.
+- Stage 1c (session 12, branch `phase-2/thin-film-closed-form`): the 12 closed-form thin-film pages were compared with the module at their defaults, with the old code copied verbatim:
+  - **Exact already** (≤ 7e-16):
+    - `fresnel-equations` is left as it is. Its R at exactly 90° is 1; the module rejects that angle.
+    - `quarter-wave` and `single-ar` (0–75°, s and p) now use the module.
+    - The Airy formulas of `wedge-film` and `fabry-perot-filter` are exact (checked against a free-standing slab).
+    - `angle-shift`: λ₀ cos θ_film is where the module's R minimum moves (to 4e-6 nm, s and p). Its "TE" and "TM" curves were the same formula. Now there is one curve, and the unused n_substrate input is gone.
+  - **Wrong:**
+    - `multilayer-ar`:
+      - The chart used a real "admittance" formula, so R reached 63.
+      - "Optimal n₂" showed (n₀n_s³)^¼ = 1.369. The quarter-quarter condition is n₁√(n_s/n₀) = 1.701.
+      - "Min R" was R at that wrong n₂, not R of the user's design (4.30 %).
+      - Now it uses the module and `quarterQuarterArInnerIndex`.
+    - `amplitude-splitting`:
+      - R (the 20-term beam sum) was exact. T lacked the n₂/n₁ admittance factor, so R + T ≈ 0.67.
+      - F = 4r₀₁r₁₂/(1 − r₀₁r₁₂)² went negative when r₀₁r₁₂ < 0 (a high-index film). The text had F = 4R₁R₂/(1 − R₁R₂)².
+      - It is now F = 4√(R₁R₂)/(1 − √(R₁R₂))².
+    - `interference-conditions`:
+      - The 0/π select defaulted to π, but the default indices (1 < 1.38 < 1.52) give a net phase of 0. So the chart's "constructive" peak sat on the true R minimum (552 nm).
+      - The cards ignored the select. A soap film showed constructive at 266 nm, but the R maximum is at 532 nm.
+      - The phase now comes from the index order, and the chart is the exact R.
+    - `phase-shift-coating`:
+      - Two-beam R = |r₀₁ + r₁₂e^(−iδ)|² was off by 1.5 % at the defaults and 18 % for n = 2.35. It now uses the exact R.
+      - Its y range `[0, "auto"]` drew R on a 0–1 axis with no ticks.
+    - `ellipsometry-measurement`:
+      - The pseudo-ε inversion was exact. But in the Nebraska convention (Δ < 180° for absorbers) it printed ⟨k⟩ and ε₂ negative: gold showed k = −3.5.
+      - "Rp" was the normal-incidence R at any angle. "Rs" was wrong (0.400 vs 0.308 for glass at 70°).
+      - "Approx. thickness" = |Δ − π|λ/(4πn cos θ) was invented. It is removed.
+      - The Ψ-Δ map plotted |ρ| = tan Ψ, which doesn't depend on Δ, and the "marked" point wasn't drawn. It now plots ⟨n⟩ and marks the point.
+    - `fabry-perot-filter`:
+      - FWHM = FSR/ℱ is the high-finesse limit. It was 8 % low at R = 0.3.
+      - It gave a width at R < 0.17, where T never falls to ½. It now uses 4 asin(1/√F).
+    - `wedge-film`:
+      - The position chart sampled 0.5 mm steps for 0.105 mm fringes (aliased), and drew R = 0 where d < 0 (half the chart).
+      - The spectra at x = −2 and −1 mm were silently dropped.
+      - Positions are now in units of the fringe spacing, starting at the film edge (−Δx/2).
+  - New modules: `src/physics/thin-film/interference.ts` (F, finesse, Airy width, net reflection phase, first extrema) and `ellipsometry.ts` (two-phase inversion).
+    - They have 8 golden tests: hand values from Born & Wolf §7.6.1 and Hecht §9.4.1, and round trips through the transfer matrix (glass, Si, Al and Au at 55–80°).
+  - `thermal-evaporation` isn't optics, so there was nothing to compare. Its issues are listed under Phase 4.
+- Constants codemod (session 13, branch `phase-2/inline-constants`): 273 literals in 91 files now import from `constants.ts`.
+  - Results move by the rounding only: `3e8` −0.07 %, `1.6e-19` +0.14 %, `1.38e-23` +0.05 %, `6.626e-34` +0.001 %. The deposition pages' amu moves −0.75 % (m_p → m_u).
+  - 122 `const c = 3e8`-style declarations were removed, and 49 references to local names (`kB`, `eps0`, `amu`, `h_planck`, …) were renamed to the exported ones.
+  - `shot-noise`, `reset-noise` and `thermal-noise` held q or k_B as state that was never set (`useURLState("q", …)`), so a `?q=` URL could change the elementary charge. Those are plain imports now.
+  - `quantum-key-distribution` named its binary-entropy function `h`, which shadowed Planck's h. It is `binaryEntropy` now.
+  - `wire-grid` used μ₀ = 4π·1e-7 (pre-2019 SI). It now uses CODATA 2022's `mu_0`, 1.3e-10 lower.
+- Unit-scaled constants (session 14, branch `phase-2/unit-scaled-constants`): `scripts/codemods/2026-10-08-unit-scaled-constants.ts` lists 38 sites in 33 files, each checked by hand against the page's input units.
+  - `constants.ts` gained `hc_eV_nm` (1239.84) and `k_B_eV`. Other scales are converted where they're used: `c * 100` (cm/s), `c * 1e-3` (km/s and nm·THz), `c * 1e9` (nm/s), `c * 1e3` (mm/s), `c * 1e-10` (THz per cm⁻¹), `b_Wien * 1e9` (nm·K), `epsilon_0 * 1e-2` (F/cm) and `h * c`.
+  - Every site used its unit correctly, so values move by the rounding only: `1240` −0.013 %; `3e10`, `3e5`, `3e17`, `3e11` and `377` −0.07 %; `8.85e-14` +0.05 %.
+  - The list was longer than the ROADMAP's. The new guard also found `1.986446e-25` (hc in J·m, `optical-parametric-oscillator`), `1.24e-6` (hc/e in V·m, `diode-laser-resonator`), `1.24 / λ` with λ in µm or E in keV (×3), `0.029979` (`raman-shift`), `3e11` (`cavity-mode-spacing`) and `8.85e-14` (`silicon-photodiode`).
+  - `tests/no-inline-constants.test.ts` now covers the scaled forms:
+    - 1 % for the unambiguous ones (c in cm/s, km/s, mm/s and nm/s; k_B in eV/K; ε₀ in F/cm; b in nm·K).
+    - 0.1 % for R, Z₀ and hc in J·m. A 2e-25 m² rare-earth cross-section sits 0.7 % from hc.
+    - hc in eV·nm, eV·µm and V·m count only as the dividend of a division (`1240 / λ`), since 1240 nm is also a wavelength. c in nm/fs (300) and in THz per cm⁻¹ (0.03) aren't guarded.
+  - `gires-tournois` is fixed, with `src/physics/wave-optics/gires-tournois.ts` and 3 golden tests (hand values, plus a numerical derivative of arg r):
+    - c was 299792.458 "nm/fs" (it is 299.79), so τ was 10³ times too small and the GDD 10⁶ times too small. At the defaults the GDD was −0.0024 fs²; it is +2,404 fs², and τ = 65.3 fs.
+    - The GDD was −dτ/dω: d²φ/dω² of a phase written in the e^(+iωt) convention.
+    - The page claimed a power reflectivity of R₁. A lossless GTI reflects 100 %. The unused `reflectData` is gone.
+  - `raman-shift`'s comment said 1 cm⁻¹ = 29.979 THz. It's GHz, and the code was right.
+  - **Fixed in session 20** (was open, not a constants bug): `chromatic-dispersion` was wrong in sign and size.
+    - `dnDlambda` drops the minus sign of dn/dλ = −(λ/n) Σ BᵢCᵢ/(λ² − Cᵢ)², so fused silica at 1.55 µm gives +0.01198/µm.
+    - "GVD (β₂)" is (λ/c)·d(dn/dλ)/dλ × 1e6, labelled ps²/km. It shows +0.0219, where β₂ = −27.95 ps²/km and D = +21.91 ps/(nm·km) (numerical derivatives of the page's own Malitson Sellmeier).
+    - Fix: a Sellmeier module with golden values (Malitson 1965), showing β₂ = λ³/(2πc²)·n″ and D = −(λ/c)·n″.
+- Thin-film models and labels for Phase 4 (left as they are):
+  - ~~Plain quarter-wave stacks labelled "long-pass" or "short-pass" (`edge-filter`, `long-pass`, `short-pass`, `ir-blocking`, `uv-blocking`, `wide-bandpass`, `solar-protection`).~~ Fixed in session 26 (thin-film part 2).
+  - ~~`notch-filter` is a high-contrast quarter-wave stack, so its "notch" is 538 nm wide at the defaults. Real notch filters use low index contrast or a rugate profile.~~ Fixed in session 27 (thin-film part 3).
+  - ~~`narrow-bandpass`: the 0.78 nm FWHM is 2 grid steps (0.39 nm sampling). Its "Finesse" is λ/FWHM, which is a resolving power, not a finesse.~~ Fixed in session 27.
+  - `emissivity-control` shows ε = 1 − R for a transparent lossless stack, which is T. Kirchhoff needs ε = A.
+  - `enhanced-aluminum` and `protected-silver` use Drude n, k. The Al model has no 800 nm interband term and clamps n and k, and the "Cr" layer is lossless (n = 3.0). Use tabulated data (Rakić 1998).
+  - ~~`dielectric-high-reflector` promises dispersion: compute GDD from arg r (the module returns r).~~ Fixed in session 27.
+  - ~~`gradient-index` and `gradient-index-coating` are duplicates.~~ Merged (session 17).
+  - `thermal-evaporation`:
+    - The deposition rate is mass flux × r²/d² × 1e9 with no ÷ρ, so it is ×2,200 (SiO₂) to ×19,300 (Au) too high.
+    - Its log₁₀P = A − B/T coefficients look about 10⁴ low. Al at 1,080 °C gives 3e-8 Torr, where about 1e-4 Torr is expected (Honig curves, or Alcock et al. 1984 for metals).
+    - The two errors partly cancel, so fix them together, with tabulated data. The oxide coefficients look invented.
+    - It used m_p (1.673e-27) as the atomic mass unit. The constants codemod mapped it to `m_u` (0.75 % lower), here and in `ion-assisted-deposition`, `sputtering-deposition` and `plasma-deposition`.
+    - Its mean free path is 0.005/P_Pa m, about 25 % below the air rule (6.6e-3/P_Pa m). The packing density and uniformity are heuristics.
+  - ~~`phase-shift-coating` promises the phase of the reflected and transmitted light but plots only R. Plot arg r from the module. Its `numLayers` state is unused.~~ Fixed in session 27.
+  - `ellipsometry-measurement`: a film thickness needs a film model, e.g. a known film index and Azzam & Bashara's exact inversion for a transparent film.
+  - ~~`multilayer-ar`~~ (merged into `double-layer-ar`, session 17): the default n₂ = 2.1 isn't an AR at λ₀. It gives 4.30 %, above bare glass's 4.26 %. The page now shows the optimum, 1.701. Consider n₂ ≈ 1.70 as the default, or a V-coat design.
+- Found while building the registry (stage 2a):
+  - Production search showed wrong titles and descriptions (see the `search-index.json` note above).
+  - The category index pages listed 254 of 524 calculators (fiber-optics: 3 of 54). They now list all visible ones.
+  - `/about` had no metadata, so it inherited the layout's canonical `/` and said "536" calculators. It now has its own canonical and reads the count.
+  - The sitemap gave the home page priority 0.8: its `route === ''` check never matched `'/'`.
+  - Hidden (quarantined) laser-safety pages are still in the sitemap, as before. Decide whether they should be.
+- Stage 2b regression, fixed in session 17 (`d28be16e`): the page text moved from JSX attributes, which decode HTML entities, into registry strings, which React prints as they are. 17 strings showed `&apos;`, `&lt;`, `&quot;` or `&amp;`, and `edge-filter`'s description was a JSX expression. `tests/registry.test.ts` now fails on entities, line breaks and braces.
+- Found while merging duplicates (session 17). Four `physics-reviewer` batches compared 47 groups. These are issues in the **kept** pages, most severe first; each "port later" names a feature the dropped page had.
+  - **Safety, understates the hazard:** `laser-safety/blue-light-hazard` uses a Gaussian B(λ): 0.034× IEC 62471's 10^((450−λ)/50) at 532 nm and ≈0 from 560 nm (1 mW over 2 mm at 560 nm shows "Exempt"). `laser-safety/uv-hazard`'s S(λ) is 0.1–0.6× the ICNIRP/ACGIH table at 280–305 nm, so t_max is up to 10× too long. `exposure-duration` falls back to 1 ms for UV, and its chart uses 0.01 W/cm² as the UV MPE (the limit is 3 mJ/cm²). Use the standard tables. **Fixed in session 18** (`src/physics/laser-safety/hazard-weighting.ts`, see Phase 4).
+  - `fiber-optics/macro-bending-loss` prints 0 everywhere: exp(−R·Δβ) with a plane-wave Δβ = k(n₁−n₂) gives 1e-133 dB/turn at 15 mm. Use Marcuse's exp(−2γ³R/(3β²)) with the LP01 eigenvalue γ. Golden: a = 4.1 µm, NA 0.1246, 1550 nm gives 0.11 dB/turn at 15 mm, 3.1 at 10 mm, 16 at 7.5 mm (Marcuse 1976, JOSA 66, 216). Port later: n₁/n₂ inputs and dB/m. **Fixed in session 19** (n₁ input and dB/m ported; see Phase 4).
+  - `imaging/optical-sectioning-thickness`: the diffraction term is in nm and the pinhole term in µm (L24–26), so the pinhole has almost no effect (2.44 µm shown, 3.54 µm corrected). **Fixed in session 19.**
+  - `wave-optics/optical-parametric-oscillator` (kept separate): P_th lacks c² (1e-15 W, "above threshold" for any pump), the signal is fixed at 1.2 × pump, and dn/dT is invented. **Fixed in session 19.**
+  - `spectroscopy/apodization-comparison`: 5 of 9 windows use cos(2πx/halfN) where cos(πx/halfN) is needed, so the first sidelobes are −3…−6 dB instead of −31…−92 dB. **Fixed in session 19.**
+  - `spectroscopy/dual-comb-spectroscopy`: the RF spectrum is folded twice (max 25 MHz, not f_rep/2 = 50 MHz), and there is no alias-free limit B ≤ f_rep²/(2Δf_rep). **Fixed in session 20.**
+  - `thin-film/stress-measurement` (kept separate): "Center deflection (µm)" is used as metres, κ = h/R² should be 2h/a², and the film modulus is n × 200 GPa. `coating-stress` (kept, `stress` merged in) uses 1 − ν² where Stoney's biaxial form has 1 − ν (1.24× at ν = 0.17). **Fixed in session 20.**
+  - `materials/infrared-glass` evaluates n at a fixed 4 µm with wrong Sellmeier sets (Ge 2.89, not 4.02; MgF₂ < 1). The dropped `infrared-materials` fits were also wrong. `materials/optical-glass-catalog`: 7 of 10 Sellmeier sets don't reproduce their own n_d. `materials/chromatic-dispersion` (retitled "Material Dispersion (Sellmeier)"): see the open item above. **Fixed in session 20.**
+  - `fiber-optics/dispersion-comp`: the DCF length cancels exactly, so the residual, penalty and "compensated" curve are always 0. The default D_DCF = −17 isn't a DCF. Port later: slope, TOD and the dispersion map. **Fixed in session 20.**
+  - `fiber-optics/polarization-mode-dispersion` calls PMD·√L the "rms" DGD. G.650.2 defines it as the mean, so the mean and σ are 8 % low. **Fixed in session 20.**
+  - `free-space-comms/pointing-loss` has a fixed 1 km range and adds jitter as an offset. `free-space-comms/adaptive-optics`' servo-lag term has an extra (D/r₀)^(5/3). `free-space-comms/scintillation` jumps at σ_R² = 1, and its aperture averaging uses (D/r₀)^(5/3) instead of Andrews & Phillips. **Fixed in session 21.**
+  - Imaging: `two-photon-microscopy`, `third-harmonic-microscopy` and `coherent-raman` use the Airy radius as the Gaussian waist (the 2P focal volume is ≈7× too large). `second-harmonic-generation` has no sinc²(ΔkL/2) and uses the plane-wave L² at L ≫ z_R. `super-resolution` feeds the Rayleigh 0.61λ/NA into the FWHM-based STED law. `shack-hartmann` calls the Airy radius the "spot size" and never computes the dynamic range. **Fixed in session 22** (with `three-photon-microscopy`, which had the same waist error).
+  - Spectroscopy: `spectral-resolution` returns NaN for unreachable orders and has no diffraction floor (port the R = mN floor from the dropped `resolution`). `lambert-beer-law` defaults to A = 500. `fluorescence-lifetime` shows the amplitude-weighted ⟨τ⟩ where the text promises intensity-weighted (port Σaτ²/Σaτ). **Fixed in session 21.**
+  - Not merged (different calculations): `stray-light` (retitled "Grating Ghosts & Stray Light") / `stray-light-rejection`; `fiber-optics/chromatic-dispersion` / `materials/chromatic-dispersion`; `free-space-comms/atmospheric-loss` / `laser-safety/atmospheric-attenuation` (loss labels Np/km as dB/km; attenuation's Rayleigh term is 125× low; **fixed in session 21**); `optical-parametric-amplifier` / `-oscillator`; `uv-hazard` / `blue-light-hazard`; `well-capacity` / `dynamic-range`; `stress-measurement` / `coating-stress`.
+
+## Phase 0 — safe, building, Claude-native (1 session)
+- [x] 0.1 **User, manual:** (the Defender exclusion is optional and wasn't done)
+  - [x] Revoke the GitHub PAT, then `git remote set-url origin https://github.com/Lazfiz/photonics-calculators.git` (use Git Credential Manager). **Done 2026-10-07** (session 8). Pushes use `gh`'s keyring login: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push …`.
+  - [x] Delete `~/.claude/settings-glm-backup.json` (plaintext z.ai key); revoke that key if it's unused. **Done 2026-10-07:** the file is deleted, and the key no longer works because the z.ai plan expired.
+  - [x] Re-authenticate the Vercel connector for scope `mariusrut-8463s-projects` (or `vercel login`). **Done 2026-10-07** (session 8, with the team scope granted). `get_access_to_vercel_url` gives a share link that opens protected previews.
+  - [ ] Optional: add a Defender exclusion for `C:\dev`.
+- [x] 0.2 **Environment:**
+  - [x] Delete `node_modules`, `.next` and `.vercel/output`. All three are Linux artifacts: Linux-only native binaries and ~4,800 empty placeholders left where symlinks were.
+  - [x] `npm ci` on Windows.
+  - [x] Confirm `npx tsc -v` and `npm test` work.
+- [x] 0.3 **Claude Code setup** (Claude-only from now on). First confirm the current file formats with the `claude-code-guide` agent: `.claude/rules` path frontmatter, skills, agents, settings hooks.
+  - [x] `CLAUDE.md` (≤100 lines, replaces `@AGENTS.md`):
+    - what the project is and the Windows commands
+    - architecture map, current and target
+    - the Next 16 warning from `AGENTS.md` (read `node_modules/next/dist/docs/` before using Next APIs)
+    - a pointer to this roadmap
+    - hard rules:
+      1. No credentials in remotes, files or commits.
+      2. `npm run check` must be green before every commit; `npm run build` before every push.
+      3. Edits touching more than 10 files only via AST codemod (ts-morph): dry run, review a 5-file sample diff, `tsc` gate. Never regex or Python rewrites — the root cause of the JSON-LD corruption and the 5 broken files.
+      4. Physics in SI, constants only from `src/physics/constants.ts` (CODATA), and every formula change ships a golden-value test that cites a reference.
+      5. One topic per commit, conventional messages, work on branches with PRs.
+  - [x] `.claude/rules/` (short, path-scoped):
+    - `physics.md` (`src/physics/**`, `src/app/**/page-client.tsx`): units, constants, domain guards, numerics, model tier plus reference, tests
+    - `ui.md` (`src/components/**`): clamp on blur, no `window` in render, charts handle NaN/Infinity, rendered text ≥11 px, a11y
+    - `nextjs.md` (`src/app/**`): server `page.tsx` builds metadata and JSON-LD from the registry; client code only for interactivity; related links computed server-side
+  - [x] `.claude/skills/`:
+    - `verify` (Windows gates and how to read failures, plus a live-site check)
+    - `physics-audit` (per-calculator procedure; output ≤30 lines)
+    - `new-calculator` (registry entry, physics module, test, page)
+    - `codemod` (safe bulk-edit procedure)
+  - [x] `.claude/agents/`:
+    - `implementer` (Sonnet; routine edits under gates; report ≤40 lines)
+    - `physics-reviewer` (Sonnet, read-only; runs `physics-audit` on a batch of slugs)
+  - [x] `.claude/settings.json` (committed):
+    - allow: `npm run *`, `node node_modules/typescript/bin/tsc *`, read-only git
+    - deny: reading `.env*` / `.secrets/**`, `git push --force*`
+    - PreToolUse hook on `git commit` that blocks staged real-token shapes: `(github_pat|ghp)_[A-Za-z0-9_]{30,}` or `sk-[A-Za-z0-9-]{30,}`. Match the length so this doc line doesn't trigger it.
+    - no per-edit `tsc` hook (a full `tsc` takes about 4 min here)
+  - [x] Clean up leftovers from the other AI tools:
+    - delete `AGENTS.md` (merged into `CLAUDE.md`)
+    - move `GEMINI-REVIEW-*.md` and `REVIEW-*.md` to `docs/archive/reviews/` and mark them stale
+    - delete `scripts/migrate-*.py` and `scripts/revert-url-state.py`
+    - check whether `scripts/generate-embeddings.py` is used; archive it if not
+  - [x] `.gitignore`: add `tsconfig.tsbuildinfo`, `.claude/settings.local.json` and `CLAUDE.local.md`; run `git rm --cached tsconfig.tsbuildinfo`.
+- [x] 0.4 **Fix the build:**
+  - [x] Fix the 5 parse errors above.
+  - [x] Run the full `tsc` again and fix any errors it uncovers.
+  - [x] `npm test`, then `npm run build`.
+- [x] 0.5 **CI:**
+  - [x] Add `"check": "tsc --noEmit && eslint && npm test"` to `package.json`.
+  - [x] Add `.github/workflows/ci.yml` (Node 24, `npm ci`, `check`, `build`) on push and PR.
+  - [x] User: protect `main` so CI must pass. **Done 2026-10-07:** ruleset "Protect main" (id 24673948) requires a PR (0 approvals) and `check-and-build` (GitHub Actions), and blocks force-push and deletion. Admins can bypass only through a PR.
+- [x] 0.6 **Ship:** branch `phase-0`, then PR, then a green Vercel preview, then merge. Verify live: channel-photomultiplier should show "order-of-magnitude upper bound". **Status 2026-10-07:** `phase-0` is committed locally with green gates. The push is blocked on 0.1 (the PAT is still in the remote).
+  - **Done 2026-10-07 (session 8):** PR #2 merged (`11922a71`), CI green, and the live site shows the text.
+
+## Phase 1 — correctness (1–2 days)
+**Shipped 2026-10-07:** PR #3 merged (`3983934d`). CI is green and `ui-check` passes 35/35 on the live site with 0 console errors.
+- [x] Shared `src/physics/math.ts`: accurate `erfc`/`Q`, used by ber, bpsk-qpsk and scintillation. Fix and retest BER, and decide on the Poisson model. **Done 2026-10-07 on branch `phase-1`** (stacked on `phase-0`, not pushed):
+  - `math.ts`: `erf`/`erfc` (series + continued fraction; ≤2e-13 relative vs CPython), `qFunction`, `normalCdf`, `lnFactorial`, Poisson pmf/cdf/sf (each tail summed directly).
+  - BER: chose the **exact Poisson photon-counting model** (`src/physics/free-space-comms/ber.ts`). OOK uses the ML threshold, DPSK uses two port counters with random tie-breaks. It matches brute-force sums to 1e-13 and gives the quantum limits of 10 and 20 photons/bit.
+  - bpsk-qpsk: Gray QPSK BER = BPSK BER (the old formula, 2Q(1−Q), was neither BER nor SER). SER is now shown separately.
+  - scintillation, diversity-reception and fade-probability use the shared `erfc`, where they used to compute ½(1 ± erf) with cancellation.
+  - Tests: `tests/math.test.ts`, `ber.test.ts`, `bpsk-qpsk.test.ts`.
+- [x] Fix `use-url-state` reset. `ValidatedNumberInput` and `InputSlider` clamp on blur and never pass out-of-range values to the physics. **Done 2026-10-07 on `phase-1`:**
+  - `useURLState` reads `src/lib/url-state-store.ts` through `useSyncExternalStore`: the query string plus an overlay of unflushed writes (`null` deletes the param). Batched 100 ms writes keep other params and the hash. A pathname guard stops one page's params reaching the next during client navigation. Non-finite URL numbers fall back to the default.
+  - Both inputs keep the typed text locally. In-range values reach `onChange` live; out-of-range values are held back and clamped on blur/Enter; invalid text reverts (`src/lib/number-input.ts`).
+  - `set-state-in-effect` is back to `error` (0 sites). Tests: `tests/url-state-store.test.ts`, `number-input.test.ts`. Headless-Chrome check: `scripts/ui-check.mjs` (all checks pass on boxcar-integrator, ber and quantum-efficiency).
+- [x] Rebuild JSON-LD from each page's `metadata` (codemod) and write the 55 placeholder descriptions. **Done 2026-10-07 on `phase-1`:**
+  - `scripts/codemods/2026-10-07-rebuild-json-ld.ts` (ts-morph) rebuilt the call in 429 pages: 427 corrupted, plus 2 whose `\uXXXX` escapes became literal characters. It skipped none, and a second run changes nothing. It also checks that each canonical URL matches the page's path.
+  - `scripts/codemods/2026-10-07-placeholder-descriptions.ts` wrote the 55 descriptions from `…-placeholder-descriptions.json`, each written from the page's inputs and results and ≤155 characters. It also replaced 33 slug-derived titles (e.g. "Ber" → "Photon-Counting BER (OOK and DPSK)").
+    - Quarantined laser-safety pages, and `eye-safety-fso`, say "Simplified educational estimate … Not for safety decisions".
+  - Added JSON-LD by hand to the 3 pages that had none: `nohd`, `blackbody`, `single-ar`.
+  - `tests/page-json-ld.test.ts` checks every calculator page: the JSON-LD arguments equal `metadata` as plain strings, the canonical URL matches the path, and there's no placeholder description.
+- [x] Fix the `ShareButton` hydration mismatch and the breadcrumb bug. Make the "541" count a computed value. **Done 2026-10-07 on `phase-1`:**
+  - `ShareButton` reads `currentQuery(pathname)` from `url-state-store` through `useSyncExternalStore` (server snapshot ""), so a shared link hydrates cleanly and the button appears on the first input change. The copied link includes unflushed writes; a blocked clipboard no longer shows "Copied".
+  - Breadcrumb: all ancestors are links, the title is the last `<li>` with `aria-current="page"`, no bare `<span>` in the `<ol>`, and the category crumb uses `backLabel`.
+  - Counts: `scripts/generate-search-index.mjs` also writes `src/generated/calculator-counts.json` (524 = pages under `src/app/<category>/<slug>/`, hidden ones included). `home-categories`, `layout.tsx` (title, OG, Twitter, JSON-LD) and the search placeholder read it. `tests/calculator-counts.test.ts` checks it against the file system.
+  - `scripts/ui-check.mjs` gained share/breadcrumb checks. The old shell fails 3 of them (including "Hydration failed"); the new one passes all 30.
+- [x] Codemod (ts-morph): `label="{label}"` → `label={label}` in 40 `page-client.tsx` files (44 sites), and render `CalculatorShell` where it is missing. **Done 2026-10-07 on `phase-1`:**
+  - The 44 `{label}` sites were part of a larger bug: 532 caption `<label>`s in 150 files sat beside a `ValidatedNumberInput` that renders its own label, so each label showed twice. In 18 sites the two disagreed; in 5 resonator pages and `aging-effects` the input labels were shifted by one row. `scripts/codemods/2026-10-07-input-captions.ts` moved each caption (it matches the bound value) into `label` and removed the caption. By hand: `label` is now `ReactNode` (sub/sup labels), and `materials/photorefractive` had its "Applied Field" input bound to `wavelength`; the field and wavelength inputs are separate again.
+  - `scripts/codemods/2026-10-07-render-calculator-shell.ts` wrapped 66 pages in `CalculatorShell` (title/description from `metadata`, back link from the category, the page's max width); it added the import to the 4 detector pages that lacked it. OPA and OPO were done by hand (full-width root with their own description `<p>`).
+  - `scripts/ui-check.mjs` checks the ber title, gas-laser-resonator labels against bound values, and no "{label}" on sbs-threshold. All 35 checks pass; the 4 new ones fail on the old pages.
+- [x] Use a seeded PRNG (`src/physics/random.ts`) for the 6 pages that call `Math.random` in render. Then set `react-hooks/purity` back to `error` (`set-state-in-effect` already is). **Done 2026-10-07 on `phase-1`:**
+  - `random.ts`: mulberry32 (`createRng(seed)`), `uniform`, and Box–Muller `gaussian` (u ∈ (0, 1], so log u is finite). `tests/random.test.ts` matches an independent port of the C reference for 4 seeds and checks the moments.
+  - Each page creates a fixed-seed generator inside its memo, so changing e.g. the noise amplitude rescales one noise realization instead of redrawing it. `react-hooks/purity` is `error` again.
+  - Headless Chrome (`ui-check … load`) on the 6 pages: 0 console errors. The old versions logged "Hydration failed" on polarization-scrambling and spectral-calibration (the two that print noise-dependent values).
+
+## Phase 2 — architecture (~1 week)
+- [ ] `src/physics/constants.ts` (CODATA) and `src/physics/<category>/<slug>.ts` pure functions, migrated by codemod and category by category, with tests.
+  - [x] `src/physics/constants.ts` holds the exact SI constants plus CODATA 2022 measured values, with consistency tests. `src/lib/complex.ts` (unused) moved to `src/physics/complex.ts` and gained a stable `sqrt`.
+  - [x] Thin-film pilot: `src/physics/thin-film/transfer-matrix.ts`. It handles complex N, oblique incidence (s and p), and R, T and A. It doesn't overflow on thick metal or evanescent layers. It has 11 golden tests (Fresnel, Brewster, TIR, AR, (HL)^N, Airy with an absorbing film, bulk metal, critical angle). 7 pages use it.
+  - [x] Migrate the other thin-film pages with an inline matrix (25, see Phase 2 findings), in batches of ≤10 files, each compared before and after. `cavity-filter.ts` builds the Fabry-Perot designs. 32 pages use the module.
+  - [x] Compare the 12 closed-form thin-film pages (listed in the Phase 2 findings) with the module. 10 pages changed. `fresnel-equations` was exact, and `thermal-evaporation` is deferred to Phase 4.
+  - [x] Replace the inline constants with imports from `constants.ts`, using a codemod (`scripts/codemods/2026-10-08-inline-constants.ts`): 273 literals in 91 files, see the Phase 2 findings. `tests/no-inline-constants.test.ts` fails on any literal within 1 % of an SI constant.
+  - [x] Unit-scaled constants, which the first codemod skipped. `constants.ts` gained `hc_eV_nm` and `k_B_eV`, and the other scales are converted at the call. `scripts/codemods/2026-10-08-unit-scaled-constants.ts` changed 38 hand-checked sites in 33 files. The guard test covers the scaled forms. This also found and fixed `gires-tournois` (c off by 10³). See the Phase 2 findings.
+- [x] Calculator registry as the single source of truth: slug, title, description, category, model tier, references, aliases. It generates the sitemap, search index, metadata, JSON-LD and related links at build time.
+  - [x] **2a — registry and listings** (branch `phase-2/registry`). `src/registry/`: `types.ts`, `categories.ts` (10, home-page order: labels, index-page title/description/heading/intro, search keywords and priority, home-card fields), `calculators/<category>.ts` (524 entries sorted by slug: title and description = page `metadata`; `heading`/`lede` only where the `CalculatorShell` text differs, 36 and 115; `keywords`, `priority`, `hidden` (7) and `related` (17 pages) from the old generator and `flagship-related`; `tier` and `references` empty until Phase 4). Extracted once with a TypeScript-AST script (not committed; `tests/registry.test.ts` checks the result against every page).
+    - Generated from it: `sitemap.ts`, `/search-index.json` (a `force-static` route handler), the counts, `home-categories`, the 9 category index pages (`components/category-index.tsx`: all visible calculators, featured first, then by name; they listed 254 of 524) and `related-calculators` (same hrefs on the 17 pages; labels and descriptions now from the registry).
+    - Deleted: `scripts/generate-search-index.mjs` and `predev`/`prebuild`, `src/generated/`, `public/search-index.json` (stale since April) and `public/search-embeddings.json` (1.7 MB, unused), `flagship-related.ts` (268 KB; 2,016 of its 2,036 descriptions were "Related … calculator."), the unused `useSearchIndex`.
+    - `laser-safety` keeps its hand-curated, trust-tiered index; the test checks it lists exactly the 45 visible pages.
+    - The registry is server-only. The hero map and site search get their data as props; the test walks client import chains. The one exception was `related-calculators` (17 pages), removed in 2b.
+  - [x] **2b — pages from the registry** (branch `phase-2/pages-from-registry`). `CalculatorShell` is now a server component that page.tsx renders around `<PageClient />` with only `href`: from the entry it renders the JSON-LD, breadcrumbs (category label), `<h1>` (`heading ?? title`), lede (`lede ?? description`), `ShareButton` (split into a client file) and the related links. `src/registry/metadata.ts`: `calculatorMetadata(href)` (same canonical/title/description as before) and `calculatorJsonLd` (WebPage + a BreadcrumbList matching the visible one).
+    - `scripts/codemods/2026-10-08-pages-from-registry.ts` (ts-morph) rewrote all 524 pairs (1,048 files). It first checked every page.tsx string and shell attribute against the registry, so no visible text changed. page.tsx went to 15 lines with no text. page-client.tsx lost the shell wrapper (now a fragment). 45 `maxWidthClassName` moved to page.tsx; the 17 related-link pages lost `RelatedCalculatorLinks`, `getRelatedCalculators` and `currentHref`. 0 skipped; a second run changes nothing.
+    - By hand: 8 laser-safety pages had their own `<h1>` and an older lede ("… per IEC 62471"). They now show the registry text ("Simplified educational estimate… Not for safety decisions").
+    - JSON-LD: the generated FAQPage is gone (its questions weren't on the page, which Google's structured-data rules don't allow, and FAQ rich results are limited to government/health sites). `about` and the breadcrumb say "Free-Space Comms" (the old pages said "Free Space Comms"). `jsonLdHtml` escapes `<`. `lib/related-calculators.ts` is deleted (its word-overlap fallback was unused), and so is the client-import exception.
+    - Tests: `tests/calculator-pages.test.ts` replaces `page-json-ld.test.ts`. It checks that each page.tsx has only its own href and that no page-client renders an `<h1>`, plus golden metadata/JSON-LD and the `<` escape.
+  - [x] **2c — trust data** (session 24, branch `phase-2/trust-data`). An entry can carry `tier` (exact / textbook / illustrative), `modelNote` (assumptions, what isn't modelled) and `references` (citation plus a `https://doi.org/…` URL). `src/registry/tiers.ts` has the labels and definitions.
+    - `CalculatorShell` shows a "Model: …" badge under the lede (it links to `#model`) and a "Model and references" section after the calculator (`components/model-references.tsx`). Pages without a tier say "Not yet reviewed" (the user's choice over showing nothing). The JSON-LD WebPage lists the references as `citation`. The about page has a "Model tiers" section (`/about#model-tiers`) with the definitions and page counts.
+    - Data: the 34 pages audited in Phase 1 and sessions 18–23 (12 exact, 22 textbook), taken from their modules' headers and tests only. 33 journal references were matched on Crossref (volume, first page and year) for the DOI, title and pages; all 36 URLs resolve. `infrared-glass` is textbook: its index is verified, but its dn/dT, κ and Knoop values are unchecked data-sheet values (the note says so).
+    - Still "not yet reviewed" although they use a module: the ~40 thin-film pages on `transfer-matrix.ts` and its siblings, and `gires-tournois`. The matrix is exact, but the rest of each page wasn't audited.
+    - Tests: `registry.test.ts` (exact and textbook tiers cite a reference; no references or note without a tier; https URLs, DOIs as `https://doi.org/10.…`; no URL inside a citation; no duplicates) and `calculator-pages.test.ts` (JSON-LD citations; badge and section rendered with `renderToStaticMarkup`). 3/3 mutations caught. The `physics-audit` and `new-calculator` skills and `physics.md` now say to fill the entry after an audit.
+- [x] Merge the ~40 duplicates and add 301 redirects in `next.config.js`. Session 17, branch `phase-2/duplicates`: 52 pages merged into 44 (524 → 472 calculators).
+  - 47 candidate groups (title/slug similarity, then their inputs and outputs) went to four `physics-reviewer` batches. The keeper has the correct physics and covers what the other pages' users came for. Groups that compute different things stay; see the Phase 2 findings.
+  - `src/registry/redirects.json` (removed href → keeper) is the only list. `next.config.mjs` (was `next.config.js`; ESLint forbids `require`) serves it as permanent redirects (308). `scripts/codemods/2026-10-08-merge-duplicates.ts` removed the entries and page dirs, added the old titles to the keepers' `keywords` (33) and retargeted related links.
+  - `tests/redirects.test.ts`: one hop to a registered page, served by `next.config.mjs`, and no href in `src/` pointing at a removed page. `tests/registry.test.ts`: titles are unique.
+  - To merge another page later: add it to `redirects.json` and run the codemod with `--write`.
+- [ ] As pages move to pure physics modules, fix the `useMemo` deps and `any`. Then set `preserve-manual-memoization` and `no-explicit-any` back to `error`.
+
+## Phase 3 — graphics & performance (~1 week)
+- [ ] Chart rewrite: real pixel width (not a scaled viewBox), hover crosshair and readout, NaN/Infinity filtering, log axes down to 1e-18, PNG/CSV export.
+  - Seen in session 25 (production too): `SimpleChart` crowds the x tick labels ("1.5k5k5k…" on `gires-tournois`, unreadable on `fabry-perot-filter`), piles the y2 tick labels into one smudge (GTI's GDD axis), shows a single y tick on `fabry-perot-filter`, and reads `null` as 0 (so a break in a line needs separate traces). **Ticks fixed in session 26:** `niceTicks` used the bare multiplier (2) as the step instead of 2 × 10^k, so only axes whose step was 1–10 rendered; labels now carry the digits the step needs (`formatTick`, `tests/simple-chart.test.ts`). `null` → 0 is still open.
+- [ ] Plotly via `react-plotly.js/factory` with a partial bundle; drop the extra dependency.
+- [ ] Related links as server props (removes the ~46 KB gz chunk). Read URL state before first paint.
+- [ ] Turn on Vercel Speed Insights and set a JS budget in CI.
+
+## Phase 4 — physics quality (ongoing)
+- [ ] Golden-value tests for the top 50 calculators by traffic, then by category.
+- [x] Model-tier badge (Exact / Textbook approximation / Illustrative) with references on each page: stage 2c (session 24). 34 of 472 pages had a tier, 55 after session 25, 61 of 470 after session 26, 66 after session 27, 72 after session 28, 82 after session 29, 89 of 466 after session 30, 93 of 464 after session 31, 107 of 461 at session 37, 116 of 461 at session 38; the rest say "Not yet reviewed".
+- [ ] Audit the unreviewed pages and fill in their `tier`, `modelNote` and `references` (`physics-audit`, then the registry entry). Quick first batch: the thin-film pages on `transfer-matrix.ts`.
+  - [x] **Thin-film audit, part 1** (session 25, branch `phase-4/thin-film-audit`). Four `physics-reviewer` batches audited the 39 thin-film pages on the modules plus `wave-optics/gires-tournois`: 9 OK, 14 questionable, 17 bugs. 21 pages are fixed (where needed) and have trust data: 14 exact, 6 textbook, 1 illustrative.
+    - New tested modules: `physics/thin-film/quarter-wave-stack.ts` (Macleod's zone half-width Δg = (2/π) asin((n_H − n_L)/(n_H + n_L)), edges λ₀/(1 ± Δg), the non-overlap ratio (1 + Δg)/(1 − Δg), first-order centre at angle λ₀(cos θ_H + cos θ_L)/2) and `graded-index.ts` (midpoint staircase, ≥ 10 sublayers per λ/n). `interference.ts` gained `airyPeakNear` (nearest order, exact FWHM in wavelength).
+    - Fixed: `angle-tuning` (n_eff = (n_H + n_L)/2 was 7.4 nm high at 45°), `gradient-index` (edge sampling, fixed 50 steps; default n_surface 1.38 → 1.1), `fabry-perot-filter` (the centre input didn't tune the cavity, so FSR/FWHM belonged to no plotted peak), `amplitude-splitting` (finesse 0.28 shown for F < 1), `metal-dielectric` ("skin depth" λ/(4πk) is the intensity depth), `double-layer-ar` (shows the zero-reflection n₂ and R(λ₀); the old 2.1 default was `multilayer-ar`'s), `dielectric-stack` / `partial-reflector` / `wavelength-separation` (fixed 300–900 nm windows, dead state, overlapping stop bands at the fixed 1.25 ratio; minimum is 1.359), `bragg-reflector` (fractional pairs), `spectrophotometry` (labels), `ellipsometry-measurement` (degenerate default → bulk Si at 70°), and labels or notes on `single-ar`, `quarter-wave`, `interference-conditions`, `wedge-film`, `dichroic`, `bandpass-filter`, `protected-silver`, `environmental-stability`, `gires-tournois`.
+    - References: Macleod 4th ed. chapters checked on Crossref (2 Basic Theory, 4 AR, 5 Neutral Mirrors and Beam Splitters, 6 High-Reflectance, 7 Edge Filters, 8 Band-Pass, 9 Tilted Coatings, 12 Layer Properties); DOI 10.1201/9781420073034. Journal DOIs matched on Crossref and resolving: Southwell 1983, Johnson & Christy 1972, Aspnes 1985 (in Palik), Macleod & Richmond 1976, Kuhl & Heppner 1986.
+  - [x] **Thin-film part 2: edge filters** (session 26, branch `phase-4/thin-film-edge-filters`). The pages were plain quarter-wave stacks (notches, stop band λ₀/(1 ± Δg)) labelled as edge filters; `edge-filter` read the short crossing for both types, `wide-bandpass` took its peak in the UV and showed an input difference as the width, `uv-blocking`/`ir-blocking` had long/short swapped, `solar-protection` summed 21 points with equal weights, `cold-mirror` (λ₀ = 700 nm) reflected red only.
+    - New tested modules: `physics/thin-film/edge-filter.ts` ((H/2 L H/2)^N long-pass, (L/2 H L/2)^N short-pass, λ₀ = λ_edge(1 ∓ Δg), 50 % point of the actual stack, stacks in series staggered in λ₀ to cover a band, two faces added incoherently) and `physics/astm-g173.ts` (ASTM G173 global tilt, 2002 points, integrates to 1000.37 W m⁻²). `math.ts` gained `firstCrossing` (scan + bisection) and `intervalStats`. Golden: 7 periods at λ₀ = 1000 nm give 1201.4 / 845.7 nm, matching the reviewer and an independent Herpin equivalent-layer closed form.
+    - `long-pass` and `short-pass` merged into `edge-filter` (redirects; 472 → 470 pages). `cold-mirror`, `ir-blocking` and `uv-blocking` share `components/blocking-filter-calculator.tsx` (2 stacks × 10 periods: mean R 99.5 % over 400–700 nm, against 93 % for a 20-period linear chirp). `wide-bandpass` and `solar-protection` put one coating on each face. 6 pages got trust data (all exact). The merge codemod now skips the citation helpers in a registry file.
+    - `heat-mirror` moved to part 4: a real heat mirror (low-e) needs Ag or ITO optical constants, as do the metal pages there.
+  - [x] **Thin-film part 3: readouts and phase** (session 27, branch `phase-4/thin-film-readouts`). `narrow-bandpass` (FWHM is 2 grid steps, 0.775 vs 1.134 nm; ≥ 8 pairs gives FWHM 0; "finesse" is λ/FWHM), `dielectric-high-reflector` (stop band counts side lobes, 502 vs 383 nm; promised dispersion absent: GD(1064) = 6.718 fs from arg r), `bandpass-filter` FWHM (19.14 nm at defaults), `phase-shift-coating` (plots R, not arg r and arg t; add `t` to `StackResponse`), `notch-filter` (high-contrast mirror, 538 nm wide; low-contrast design with R = tanh²(N ln(n_H/n_L))), `beamsplitter` (dead `targetR`; 50 % single QW needs n = 2.976).
+    - `transfer-matrix.ts`: `StackResponse.t` (tangential-field ratio 2η₀/(η₀B + C); matches Born & Wolf §1.6.4's Airy t to 1e-14, and T = Re(η_sub)/η₀|t|² for s and p with absorption) and `reflectionGroupDelay` (central differences of arg r, h = 2·10⁻⁴ω). `math.ts`: `unwrapPhase`.
+    - `quarter-wave-stack.ts`: `reflectionBandEdges` (first crossing of a level going out from λ₀, using R(g) = R(2 − g) for whole quarter waves), `quarterWaveMirrorDelay` (semi-infinite stack: λ₀n₀/(2cΔn) with H outermost, λ₀n_Hn_L/(2cn₀Δn) with L outermost; derived here by a first-order admittance recursion, matched by arg r of 25 pairs to 1e-6), `quarterWavePairsForReflectance` (tanh² closed form). `cavity-filter.ts`: `cavityPassband` (log-spaced scan from λ₀, running maximum, bisection at half of it; checked against 200 001-point sampling). New `beamsplitter.ts`: single-layer index n² = n₀n_s(1 + √R)/(1 − √R); the H M H middle index n_H²/n (all quarter waves, flat top at λ₀); and the smallest H(LH)^m with one layer thinned to hit the target (R monotonic in the thickness: admittance circle; checked against a closed-form circle solution). The thinned design meets the target at λ₀ only (its R peak moves to shorter λ), which the page says.
+    - Pages: `bandpass-filter` and `narrow-bandpass` share `components/cavity-bandpass-calculator.tsx` (peak T and where, T(λ₀), FWHM, λ₀/FWHM labelled as a resolving power; pass-band zoom chart). `dielectric-high-reflector`: (HL)ᴺH (new default) or (LH)ᴺ, 50 % band, GD at λ₀ and its limit, GD/GDD chart inside the band. `phase-shift-coating`: arg r and arg t (unwrapped), R and T at λ₀; dead `numLayers` gone. `notch-filter`: low-contrast (HL)ᴺ (1.63/1.46, 40 pairs, 532 nm), OD from T (3.41), FWHM at half R(λ₀) (42.83 nm), pairs for OD 3/4/6 (36/47/68), OD chart. `beamsplitter`: `targetR` drives both designs (50 %: H 58.51 / L 48.12 / H 58.51 nm, or n_M = 1.855). 5 pages got trust data (66 of 470 tiered).
+  - [x] **Thin-film part 4: metals and one-offs** (session 28, branch `phase-4/thin-film-metals`). Findings: `heat-mirror` (a dielectric stack at λ₀ = 10 µm with visible-range indices; its 29.5 nm grid aliases 6 nm fringes; real low-e coatings are TiO₂/Ag/TiO₂ or ITO: Fan & Bachner 1976, Drude Ag in the IR), `enhanced-aluminum` (Drude Al flat at 99.4 %, real 91.5 % at 550 nm; Rakić 1998 Lorentz–Drude or tabulated data, an H/L enhancing pair, lossy Cr), `protected-silver` (tabulated Ag would fix R below 400 nm), `dual-band-ar` (fixed QW thicknesses give R(1064) = 12.9 %; needs a bounded fit), `hard-coating` (dead hardness/stress inputs, "AR thickness" card for n > n_s is an anti-AR, inverted stress sign), `anti-fog` ("surface energy" γ cos θ is the wetting tension; contact angle doesn't enter the optics), `emissivity-control` (ε = 1 − R is T for a lossless stack; needs an absorbing substrate; band holds 83 % of 300 K exitance).
+    - New tested modules: `materials/lorentz-drude.ts` (Rakić 1998 LD for Ag, Al, Cr; parameters from refractiveindex.info's scripts, matching all 2200 tabulated rows to ≤ 2e-4), `materials/silver.ts` (Yang et al. 2015 template-stripped Ag, 0.27–24.92 µm, 525 rows verbatim, linear interpolation; a Drude tail matched to the last row: ħω_p = 8.84 eV, ħγ = 36.7 meV). Rakić's LD Ag is 95.4 % reflective at 550 nm against ≈ 98 % measured, so the pages use Yang for Ag. `blackbody.ts` (band fractions by series, checked against direct integration to 1e-8; Planck-weighted mean), `cie-photometry.ts` (CIE V(λ) and D65 at 5 nm from the CIE dataset files; D65 × V weighting). `thin-film/low-emissivity.ts` (dispersive coatings, pane with its back face added incoherently, normal emittance 1 − R of an opaque substrate), `thin-film/metal-mirror.ts` (enhancing pairs; R(λ₀) = |(1 − Y)/(1 + Y)|², Y = (n_H/n_L)^(2N) N, matches the transfer matrix to 1e-12), `thin-film/dual-band-ar.ts` (bounded grid + Nelder–Mead; with λ₁ = λ₂ it lands on the closed-form two-layer V-coat), `thin-film/anti-fog.ts` (incoherent water film, droplet TIR share 1 − (1/(n_w sin θ))² for θ ≤ 90°, IAPWS 2014 surface tension), and `stoney.ts` gained `delaminationThickness` (stored energy U = Γ).
+    - Pages: `enhanced-aluminum` (QW pairs, L next to the Al; one SiO₂/TiO₂ pair: 96.58 % at 550 nm against 91.52 % bare), `protected-silver` (96.2 % over 400–700 nm, dip ≈ 4 % near 310 nm), `heat-mirror` (TiO₂/Ag/TiO₂ 30/12/30 nm on glass: τ_v 91.9 %, τ_e 71.2 %, ε_n 0.033), `emissivity-control` (opaque substrate Ag/Al/Cr or n + iκ, metal film + overcoat, ε_n and in-band exitance at any T; default 10 nm Ag on glass: 0.040 against 0.957), `dual-band-ar` (450 + 1064 nm: 251.5 / 16.3 / 71.4 nm, R = 0.037 % and 0.234 %; no double zero with those indices), `hard-coating` (R(λ₀), absentee thickness, Stoney bow, U against Γ; new `stressMPa` key, tensile > 0), `anti-fog` (τ_v dry and wet, TIR share against θ, adhesion tension). 6 pages got a tier and `protected-silver` moved to exact (72 of 470 tiered).
+  - [x] **Laser-safety audit, part 1** (session 29, branch `phase-4/laser-safety-audit`). Four `physics-reviewer` batches audited the 44 untiered laser-safety pages, numbers checked against `physics/laser-safety/eye-exposure-limits.ts` (ICNIRP 2013): **2 OK, 6 questionable, 36 bugs**. 28 of the bugs understate a hazard; 14 bug pages had no quarantine banner ("Educational references" on the landing page).
+    - Containment (the user's choice): registry `knownIssue` (one or two sentences; a page with one has no tier; `tests/registry.test.ts`), shown by the shell as a red "Known error, under repair" box above the calculator and as a tag on the laser-safety landing page. On the 29 bug pages not fixed this session; each fix removes it.
+    - Fixed this session (10 pages tiered, 82 of 470): the shared CW suite now averages over the 7 mm aperture, starts the NOHD at the beam's own diameter, takes 1/e² or 1/e values (new `beamDefinition` URL key, default 1/e², which errs safe; `components/laser-safety-beam-definition.tsx`), returns ∞ for a beam that doesn't spread, rejects a safety factor < 1 and takes the lower piece at exactly 10 s. Defaults: `nohd` 98.02 m (was 63.72; 68.72 with 1/e), `viewing-distance` 443.3 m (302.3), `optical-density` OD 3.708 (4.444), `od-requirements` OD 2.716 (3.804, chart now irradiance behind the filter). New modules with golden tests: `beam-expander.ts` (31.83 W/cm², was 0.32), `peak-power.ts` (10 kW, was 100 W; Gaussian 0.9394, sech² 0.8814 E/τ), `beam-diameter.ts` (FWHM 0.5887 d(1/e²), was 0.8326; power inside each diameter), `aversion-response.ts` (on the ICNIRP module: 0.980 mW into 7 mm at 0.25 s, was 3.92; 400–700 nm only). Tiers: `mpe`, `power-density` and the four helpers exact; the four suite pages textbook.
+    - Shared CW suite (`src/lib/laser-safety-cw-suite.ts`, used by `nohd`, `viewing-distance`, `optical-density`, `od-requirements`): MPE matches ICNIRP to 0.24 % (400–1050 nm, 1 ms–30 ks; +1.2 % at exactly 10 s from `<= 10`). NOHD started the beam at max(a, 7 mm) instead of a (7 % short at the `nohd` defaults, 40 % at 5 mW / 1 mm / 1 mrad); φ ≤ 0 gave 0 m; `cornealIrradianceWcm2` divided by min(d, 7 mm)² (OD 0.74 high at 3 mm); 1/e vs 1/e² unstated; `tests/laser-safety-cw.test.ts` pinned the bug. `od-requirements` chart plotted W against W/cm².
+    - Quick-fix findings: `beam-expander` 4P/(πd²) with d in mm labelled W/cm² (100× low); `peak-power` "%" input used as a fraction (100× low); `beam-diameter-conversion` FWHM = √ln2·d(1/e²) (√2 high; correct √(ln2/2)); `aversion-response` 7 mm diameter used as a radius (3.92 vs 0.98 mW), wrong C_A exponent, NIR offered.
+  - [x] **Laser-safety part 2: eye and skin limits on the oracle** (session 30, branch `phase-4/laser-safety-limits`).
+    The user approved every merge candidate (session 30): `skin-hazard` → `skin-mpe`; `corneal-limits`,
+    `infrared-corneal`, `infrared-thermal` → `infrared-hazard` (466 pages); and, for later parts, `viewing-distance` and
+    `beam-divergence-hazards` → `nohd` (part 3) and `pulsed-mpe`, `multiple-pulse`, `prf-correction` → one page (part 5).
+    - Oracle (`eye-exposure-limits.ts`): extended sources (ICNIRP Table 2 C_E with γ = α_max, time-dependent α_max, Table 4
+      T₂; optional α on `eyeLimits`/`exposureDuration`; a point source keeps Table 5's 10 W/m²), `limitMaxPower` (least
+      H/(t·E₁) over every duration up to t, the inverse of `limitMaxDuration`; the tables' rounded joints make it ≤ 2.5 %
+      below the limit at t alone), `photochemicalCrossover` (= Table 4's T₁ to 500 nm; a point source above 500 nm never
+      crosses, though Table 4 lists 100 s). New `skin-exposure-limits.ts` (Table 7, 3.5 mm at every duration per Table 8,
+      the > 0.01 m² area rule above 1400 nm; anterior eye = 2 × skin, tested) and `retinal-image.ts` (17 mm eye, Gaussian
+      focus 4λf/(πd), 25.5 µm floor, gain (7 mm/s)² = 7.5×10⁴ vs ICNIRP's "about 100,000"). 40 tests; 21/22 mutations
+      caught (the survivor is equivalent). Shared UI labels/formatters: `components/eye-limit-labels.ts`.
+    - Pages fixed and tiered (89 of 466 tiered): `skin-mpe` (merged), `infrared-hazard` (merged: every eye limit at λ and t,
+      max power vs time), `thermal-vs-photochemical` (α input replaces the unused spot size), `extended-source` (C_E, α_max,
+      T₂ and the limit; was C₆ only), `eye-safe-wavelength` (single pulse; the unused rep-rate input is gone, see part 5)
+      exact; `corneal-vs-retinal` and `retinal-hazard` (λ, t and pupil inputs, the 25.5 µm floor, the limits) textbook.
+      Landing page: new "ICNIRP 2013 limits" group for the nine pages on the module.
+    - Moved to part 3: `retinal-image-size` (questionable; it needs an apparent-source / accommodation model of the beam,
+      not the divergence as α).
+    - Findings (session 29): Add `skinLimits(λ)` (ICNIRP 2013 Table 7: 200 C_A J/m² to 100 ns, 1.1×10⁴ C_A t^0.25 to 10 s, 2×10³ C_A W/m²; UV and far IR as the cornea; 3.5 mm). Pages: `skin-hazard` (UV limit rises with t: 10⁵× high at 1000 s; 400–1400 nm uses the retinal law, 1000× low), `skin-mpe` (180–302 nm 0.003 t^0.75 J/cm², 2300× high at 30 ks; 302–315 nm steps missing, 249×; no C_A), `corneal-limits` (invented 1/λ² UV law, 3000× high at 250 nm), `infrared-corneal` (UV given the visible law; invented t^0.5 IR laws), `infrared-thermal` (1.4–2.6 µm as t^−0.25, not t^−0.75: 3.15× high at 1550 nm / 10 s), `infrared-hazard` (W/mm² labelled W/cm²; 780–1400 nm limit rises as t^0.75, 285× high at 1064 nm / 1000 s), `thermal-vs-photochemical` (photochemical ∝ √t from 0 s with an invented B(λ); wrong governing limit beyond 10 s), `corneal-vs-retinal` (f_eye = 1.7 mm; gain (D/f)²; spot without /D), `eye-safe-wavelength` (fudged t^0.75 MPEs, 2.5–280× high; retinal gain (17/a)², 5000× low). Questionable, same part: `extended-source` (λ unused, so C_E is offered above 1400 nm; no T₂), `retinal-image-size` (divergence treated as the source subtense α), `retinal-hazard` (550 nm fixed, no 25 µm image floor, no limit). Merge candidates for the user: the two skin pages; the four corneal/IR pages.
+  - [x] **Laser-safety part 3a: hazard distances on the oracle** (session 31, branch `phase-4/laser-safety-beams`).
+    - New `src/physics/laser-safety/hazard-distance.ts` (7 tests, plus 1 oracle test; 10/10 mutations caught): `limitSafeDiameter` (closed-form
+      inverse of `limitMaxPower` in d: 1 − exp(−2D²/d²) ≤ H·πD²/(4Px) at every piece end x ≤ t), NOHD for round or
+      elliptical beams (√(d_x d_y), axes a + rφ or √(a² + (rφ)²); quadratic root −2c/(b + √(b² − 4ac))),
+      `requiredOpticalDensity` (log10 P/P_max), `limitMaxIrradiance`, and diffuse viewing (Lambertian ρP/(πr²), α = d₆₃/r,
+      bisection for the retinal thermal range). Agrees with the standards' (√(4P/(πE)) − a)/φ to q/4 (aperture average).
+    - Oracle: optional open field of view (`eyeLimits(λ, α, "open")`, `correctionCE(α, t, "open")`): C_E = α²/(α_min α_max)
+      above α_max (ICNIRP 2013 eqn 5, checked in the PDF); the 625 µs – t_α piece goes as t^0.25. Default unchanged.
+    - Merged `viewing-distance` and `beam-divergence-hazards` into `nohd` (464 pages). `nohd` left the CW suite: 180 nm – 1 mm,
+      every eye limit, linear or Gaussian spread (new `beamGrowth` key); default 97.77 m (98.02 with the peak irradiance).
+    - Fixed and tiered (93 of 464): `nohd` exact; `diffuse-reflection` (0.5 W reflected never exceeds at 1064 nm / 10 s; 120 W:
+      0.320 m), `diode-laser-safety` (elliptical, FWHM or 1/e² angles, default t = 10 s: 16.0 m, OD 2.90),
+      `fiber-laser-safety` (single-mode λ/(πw₀) or multimode NA, Gaussian from the end face: 1.66 m), `industrial-laser-safety`
+      (7.13 km, OD 6.31; diffuse 2.76 m from a 0.3 mm spot) textbook. Landing page: these five moved to "ICNIRP 2013 limits".
+    - Shared UI: `components/hazard-ratio-chart.tsx` (exposure/limit vs distance), `fmtDistance` in `eye-limit-labels.ts`.
+  - [x] **Laser-safety part 3b: application pages** (session 32, branch `phase-4/laser-safety-apps`). Four pages fixed and tiered
+    (97 of 464 tiered); the last two quarantine banners in the group are gone. New tested modules (12/12 mutations caught):
+    - `multiple-wavelength.ts`: each line's share P/P_max per ICNIRP limit (`limitMaxPower`, exposures up to t); a line's
+      share of a tissue is its largest there (dual limits met separately), shares add per tissue: retina; anterior eye
+      (cornea UV, anterior segment, cornea IR). ICNIRP 2013 p. 279: same tissue additive (same mechanism strictly, different
+      mechanisms "for practical purposes"), different tissues independent. Adding UV to IR at the cornea errs safe.
+    - `retinal-image.ts` `gaussianApparentSource`: embedded-Gaussian beam (M² = θπd₀/(4λ), z_R = d₀/θ) seen from r beyond its
+      waist; the eye adds min(1/R, 10 D) (IEC 60825-1:2014 apparent source, 100 mm to ∞); retinal radius √(blur² + spot²) with
+      blur = min(w, D/2)·f·δ and spot = (λf/π)·max(M²/w, 2/D); α = √2·radius/f (63 % diameter). Far away: d₀/(√2 r). A TEM₀₀
+      beam at r ≥ 100 mm has α ≤ √(λ/(πr)) (1.84 mrad at 1064 nm / 100 mm), so not always a point source in the NIR.
+    - `filter-heating.ts`: Gaussian beam on a laterally infinite plate with insulated faces. Even in depth:
+      P/(4πKL)·ln(1 + 8κt/w²); at the face: √2P/(π^1.5 K w)·arctan(√(8κt)/w) (→ Lax 1977) plus back-face images, integrated in
+      ln τ with a Jacobi-theta switch, checked against direct quadrature to 1e-6. PC, PMMA, N-BK7 (T_g as the limit).
+    - `surgical-laser.ts`: TRT = (2^(2/n) − 1)d²/(16κ) (centre temperature of a Gaussian of 1/e width d halves; d²/(16κ)
+      cylinder, d²/(27.2κ) sphere), κ = 1.3e-7 m²/s; handpiece divergence b₀/f, diffraction-limited spot 4λf/(πb₀).
+    - Pages: `medical-laser-safety` (textbook; focusing handpiece: NOHD beyond the focus on `hazard-distance.ts`, 2.00 m for
+      CO₂ 10 W, 8 mm / 100 mm, 10 s; OD 3.02 at the focus, 2.52 on the lens; spot 31.8 kW/cm²; TRT of a 100 µm vessel 4.81 ms;
+      new keys `focalLength`, `targetSize`, `targetShape`, `eyeExposure`; `treatmentArea` dropped), `multiple-wavelength`
+      (exact; lists in the URL; default 450/520/638 nm at 0.4 mW each + 1550 nm 10 mW: retina 1.22, cornea 0.275),
+      `retinal-image-size` (textbook; waist, divergence, distance; default fibre-coupled 808 nm diode 0.4 mm / 200 mrad at 10 cm:
+      α 2.83 mrad; `eyeLength` dropped), `thermal-lens-hazard` (textbook; material, absorbed fraction, surface or volume; default
+      2 W on PC: +730 K at 5 s, T_g reached in 88 ms; the unused λ input is gone). Landing page: the first three moved to
+      "ICNIRP 2013 limits", `thermal-lens-hazard` to "Educational references".
+    - Findings fixed: `medical-laser-safety` (TRT 10⁴× small, m² vs cm²/s; corneal IR as t^−0.25; flat UV; OD from the treatment spot, not the delivery beam), `multiple-wavelength` (1050–1400 nm flat 0.01 J/cm²: 198× high at 1 ms; fixed 2 mm area; sums across tissue classes; ICNIRP 2013 p. 279: additive only for the same site and mechanism, e.g. retina thermal, retina photochemical, cornea), questionable `thermal-lens-hazard` (material ignored in ΔT; stress unused) and `retinal-image-size` (divergence treated as α; needs the apparent source of a Gaussian beam and the eye's accommodation range).
+    - Still open after part 5a: none of the NOHD-by-a pages (lidar fixed in 5a; green-pointer and research-lab in part 4). `optical-density`/`od-requirements` still use the 400–1050 nm CW suite (`requiredOpticalDensity` covers 180 nm – 1 mm). Fixed in session 36.
+    - Session-29 findings for part 3 (3a and 3b): Six pages compute NOHD = (1/φ)(√(1.27P/(MPE·a²)) − 1), the standard value divided by a (diode, fiber, green-pointer, industrial, research-lab, lidar: 4 507 km, 59 km, 16.7 km). `beam-divergence-hazards` (MPE fixed 0.1 or 0.01 W/cm²; NOHD 54 vs 331 m at 1064 nm; divergence input unused; 10 km cap; duplicates `nohd`), `diffuse-reflection` (E uses the pupil area, not the spot area: 51× low at 50 mm; C_E inverted; UV 33× high), `diode-laser-safety` (t^−0.75: 2–32× high below 1 s; 0.25 s at 808 nm; flat UV), `fiber-laser-safety` (MPE values swapped, 8–60× high; asin(NA) half-angle used as the full angle), `industrial-laser-safety` (fixed MPE; exposure time unused), `medical-laser-safety` (TRT 10⁴× small, m² vs cm²/s; corneal IR as t^−0.25; flat UV), `multiple-wavelength` (1050–1400 nm flat 0.01 J/cm²: 198× high at 1 ms; fixed 2 mm area; sums across tissue classes). Questionable: `thermal-lens-hazard` (material ignored in ΔT; stress unused), `retinal-image-size` (from part 2: divergence treated as α; needs the apparent source of a Gaussian beam and the eye's accommodation range). Merges approved in session 30: `viewing-distance` and `beam-divergence-hazards` → `nohd`. `diffuse-reflection` can use the oracle's C_E (α from spot size / distance) and `limitMaxPower`.
+  - [x] **Laser-safety part 4: classes and AEL** (session 33, branch `phase-4/laser-safety-classes`). New tested modules
+    `laser-classes.ts` (Class 1/1M/2/2M/3R/3B/4 AELs and CW classification, 18/18 mutations caught) and
+    `visual-interference.ts` (ICAO dazzle ranges). Six pages fixed and tiered textbook (102 of 464 now carry a tier):
+    `classification` (unhidden; CW only; default 10 mW 1550 nm 1 mm / 1 mrad → 3R, Class 1 9.62 mW), `ael-limits` (one
+    emission vs CW at the time base; default 633 nm, 10 ns: Class 1 7.70×10⁻⁸ J), `ansi-iec-comparison` (re-scoped with the
+    user: "Exposure Limit (MPE) vs Emission Limit (AEL)"; default 355 nm, 100 s: ICNIRP 96.2 mJ over 3.5 mm vs IEC 7.85 mJ over
+    1 mm),
+    `green-laser-pointer` (5 mW → 3R; NOHD 16.4 m on `hazard-distance.ts`, the 11.9 m above put 1/e² values in the 1/e
+    formula; ICAO 100 µW/cm², 5 µW/cm², 50 nW/cm² ranges: 92.8 m, 419 m, 4.20 km),
+    `research-lab-safety` (class, NOHD, OD, white-wall diffuse NOHD vs the room diagonal; `numBeams` dropped, `exposureTime`
+    added), `enclosure-class` (opening clips the Gaussian, window OD, OD needed for Class 1/3R; `exposureTime`,
+    `workingDistance` dropped). Landing page: the six form a new "Laser classes (IEC 60825-1:2014)" group.
+    - Sources: IEC 60825-1 Ed. 3 isn't public. Checked: Schulmeister's white papers (Ed. 3, 2017; EN A11, 2022, Seibersdorf
+      site) and the full IEC 60825-1 Ed. 1.2 (2001) text (Tables 1–4, 10, 4.3 e; a licensed copy found online, not linked
+      anywhere). 1250–1400 nm answer: IEC 2014 does **not** use ICNIRP's anterior-segment limit for classes; it caps Classes
+      1, 1M, 3R at the 3B AEL (0.5 W through 7 mm) from 1250 nm, binding from 1310 nm; EN A11:2021 (EU) adds the skin AEL
+      through the corneal stop, 0.1 W (option). UV: IEC keeps its own MPEs (continuous C₂, 10 W/m² after 10³ s) over a 1 mm
+      stop, not ICNIRP's steps/3.5 mm. Class 3R doesn't exist below 302.5 nm. 3B: 1.5 mW (<302.5 nm), 5×10⁻⁵ C₂ W, 0.5 W.
+    - Not verified (Ed. 3 text needed): the Condition 3 stop in the UV/IR (here each AEL's own stop; Ed. 1.2 measured power
+      AELs through 7 mm), Condition 1 outside 400–1400 nm (Ed. 1.2: 25 mm at 2 m; not modelled). IEC 60825-1 Ed. 4 is not
+      published (session 36): the July 2026 BSI item is a draft for comment (DC 26/30510571, 154 pp.), and IEC's
+      60825:2026 series package still holds IEC 60825-1:2014. Re-check the classes when Ed. 4 appears. ANSI Z136.1 tables aren't public: no ANSI numbers.
+    - Found, fixed in session 36: the oracle applied ICNIRP's eye-only dual limit (2 × skin) only at 1150–1400 nm, but Table 5 note d
+      also caps the retinal limit at the skin limit in the visible (2 × skin in the IR) for large sources. It matters only
+      for huge α with an open field of view, e.g. `diffuse-reflection` of a 10 cm spot at 10 cm (C_E ≈ 3300: retinal
+      21 kJ/m² vs skin 7.8 kJ/m² at 0.25 s).
+    - Was: `classification` (Class 1 = 100 mW above 1400 nm, real ≈ 9.6 mW; UV 0.39 mW, real µW–nW; C_B wrong; hidden, no banner), `ael-limits` (mW·s × 1000 labelled mJ; flat 1 µW outside the visible; Class 2 at every λ), `ansi-iec-comparison` (7.9×10⁻⁴ is not the AEL factor; C_A exponent 100× off; flat UV/IR; artefact differences), `green-laser-pointer` (5 mW "Class 2", it is 3R; NOHD 16.7 km vs 11.9 m), `research-lab-safety` (4 mW Class 1, 1 W visible Class 2, 3B to 500 W), `enclosure-class` (50 mW invisible leak "Class 2, aversion protects"; invented 1 % leak; aperture unused).
+  - [x] **Laser-safety part 5a: pulse trains** (session 34, branch `phase-4/laser-safety-pulses`). Part 5 split in two:
+    5a the pulse-train module and the four stationary-beam pulse pages, 5b scanning and interlocks.
+    - New `src/physics/laser-safety/pulse-train.ts` (7 tests; 23/23 mutations caught): ICNIRP 2013 "Repetitive pulse
+      exposures" (p. 287) on the oracle. Rule 1: G(τ) = H(τ)/E₁ at τ alone (the limit for one pulse, not limitMaxPower's
+      CW reading). Rule 2: least G(T_n)/n over groups n = 2…N, T_n = τ + (n − 1)/f (full train = average power; groups in
+      T_i add); piece ends suffice for fixed apertures (d ln g/d ln t falls), the growing corneal aperture (0.35–10 s) is
+      scanned + golden search; checked against enumeration. Rule 3 (retinal thermal): C_P with n within min(T, T₂):
+      a/b for pulses > T_i (α ≤ 5 mrad: 1; floors 0.4 / 0.2 at n > 40 / 625 by α vs α_max(τ); ≥ 100 mrad: 1), c for
+      ≤ T_i (1 to 0.25 s, then min(1, 5 n^−0.25); IEC 2014's 0.4 floor not used, ICNIRP has none). Pulses within T_i also form
+      one pulse of T_i for C_P (IEC 4.3 f); the lower of that and ICNIRP's single-pulse count is used (below 10 ps the T_i
+      limit has C_A and the fs one doesn't, so grouping alone could be less strict). Grouping binds only for large sources. T_i 5 µs / 13 µs = Table 4. Sub-ns (Table 5):
+      retinal 1 C_E mJ/m² (× C_C ≥ 1050 nm, no C_A) 100 fs – 10 ps, the 1 ns value from 10 ps; irradiance held below
+      100 fs and on the cornea below 1 ns. `pulseTrainSafeDiameter` (bisection in d) + `rangeToDiameter` give the NOHD.
+    - Merged `multiple-pulse` and `prf-correction` into `pulsed-mpe` (462 pages; redirects + merge codemod).
+      Shared UI: `components/pulse-train-table.tsx` (rules per limit), `components/pulse-train-chart.tsx` (energy per pulse
+      vs PRF per rule); `fmtEnergy` gained pJ and fJ. Own commit: `SimpleChart` log axes no longer floor at 1e-10 (the
+      sub-0.1 nJ limits were drawn flat) and drop values ≤ 0 and non-finite ones; bars on a log axis start at the plot bottom.
+    - Fixed and tiered (105 of 462): `pulsed-mpe` exact (default 1064 nm, 10 ns, 1 kHz, 10 s: rule 3, C_P = 0.5, 0.385 µJ;
+      1 µJ is 2.60×, OD 0.41), `eye-safe-wavelength` exact (new `prf`, `exposureTime` keys; default 10 Hz / 10 s: 1550 nm
+      falls from 102 mJ single to 1.56 mJ per pulse, rule 2), `ultrafast-laser-safety` textbook (default 800 nm, 100 fs,
+      80 MHz, 12.5 nJ = 1 W: rule 2, OD 3.21 where the single pulse alone says within; NOHD 396 m), `lidar-safety` textbook
+      (stationary beam; default 905 nm, 10 µJ, 5 ns, 200 kHz, 3 mm / 3 mrad, 10 s: NOHD 146.5 m, 172× at 10 m, OD 3.30 at
+      the window; 1550 nm: NOHD 22.8 m). Landing page: new group "Pulsed lasers (ICNIRP 2013)".
+    - Was: `pulsed-mpe` (t^0.75 below 5 µs: 1100× low at 1064 nm / 10 ns; N over 0.25 s for NIR), `multiple-pulse` (µJ read as µJ/cm²: shows 1.12× over, really 7.3×), `prf-correction` (no N ≥ 1 floor: C_P > 1), `ultrafast-laser-safety` (OD from the single pulse only: OD 2 vs ≈ 7; fs limit 21× high), `lidar-safety` (visible average limit 2.5 W/cm², 1000× high; 10⁻³ slip above 100 ns; 1550 nm uses the retinal law; NOHD divided by a).
+  - [x] **Laser-safety part 5b: scanning and interlocks** (session 35, branch `phase-4/laser-safety-scanning`). With it every
+    laser-safety page (40) is tiered and none carries a `knownIssue` (site-wide: 107 of 461 tiered, no `knownIssue` left).
+    - New `src/physics/laser-safety/scanned-beam.ts` (11 tests; 20/22 mutations caught, the 2 others equivalent): each pass
+      of a CW beam over an averaging aperture is one pulse (ICNIRP 2013 p. 287; K. Schulmeister, "Extended source AEL
+      analysis of scanned laser emission for IEC 60825-1", white paper Ed. 2, Seibersdorf 2025, 4.2.5 and 6.2.3). Its
+      duration is the half-power width W/v of η(x), the Gaussian beam's fraction through an offset circular aperture
+      (IEC 60825-1 3.69), and its energy P·L/v with L = ∫η dx (all of the pass). Both from a 1-D integral across the
+      aperture (y = R sin θ, Simpson 64; checked against 1 − exp(−2D²/d²), the Rice-distribution radial form and both
+      asymptotes). Per limit: 7 mm for the retina; the cornea's 1 → 3.5 mm, where a pass longer than 0.35 s sets its
+      own aperture (fixed point) and each group uses the aperture at T_n. The rules run on G(t) = H(t)·A(t)·v/L(D(t)),
+      in watts of beam power, through `trainLimit` (pulse-train.ts refactor; its tests unchanged). Stationary retinal
+      image (eye focused on the pivot point: IEC's default evaluation, the most restrictive), eye on the scan centre,
+      triangle (2 passes per period) or sawtooth / polygon (1 per sweep); "noClearance" when the sweep is shorter
+      than aperture + beam. The pass is D/v, not the (d + 7 mm)/v planned here (that is the full width, not the FWHM).
+    - New `src/physics/laser-safety/interlock.ts` (3 tests; 9/10 mutations caught, the survivor was a redundant
+      condition, removed): eye in the beam for max(0, T − S/K), against `exposureDuration`'s t_max; ISO 13855 approach
+      speeds K = 2.0 m/s (hand, arm) and 1.6 m/s (body), no intrusion allowance; longest stopping time S/K + t_max,
+      shortest distance K(T − t_max).
+    - `scan-failure` merged into `scanning-mpe` (461 pages; redirect + merge codemod): the time a stopped beam takes to
+      exceed the limits is the scan-failure safeguard's budget. `scanning-mpe` textbook (default 532 nm, 5 mW, 1 mm /
+      1 mrad at 1 m, 30° at 100 Hz both ways, 0.25 s: 66.2 µs passes at 104.7 m/s, 50 in 0.25 s, rule 1 binds at
+      7.68 mW, 0.651×, 7.84× the still beam's 0.980 mW; a stopped beam exceeds the limit after 368 µs; chart of max
+      power against distance). `interlock-design` textbook (default 5 W, 1064 nm, 5 mm, 50 ms, 50 cm, 2 m/s: t_max
+      157 ns, reach 250 ms, fast enough, shortest distance 10.0 cm). ICNIRP Table 5 at 1050–1400 nm, 10 ps – 13 µs, is
+      20 C_C mJ/m²: t_max is 157 ns, not the 78.5 ns noted above (that was 10 mJ/m²).
+    - Shared: `PulseTrainTable` takes `value` and `unit="pass"` (beam powers); `components/exposure-time-chart.tsx`
+      (limits as H(t)/t against the beam over each aperture, with marks) extracted from `exposure-duration`.
+    - Landing page regrouped: eye and skin limits; hazard distances, eyewear and interlocks; pulsed and scanned beams;
+      classes; UV and blue light; beam helpers. The quarantine summary boxes and the hidden-pages note are gone.
+    - Was: `scanning-mpe` ("benefit" = one pass's limit over a 10 s limit; dwell d/v ignored the pupil crossing; C_A
+      wrong; no power input), `interlock-design` (0.01 J/cm² / E above 1050 nm: 0.39 ms vs 157 ns; human reaction time
+      added to the shutter time; 1 m/s; visible floored at 1 µs), `scan-failure` (scan inputs fed nothing; no λ;
+      visible limit at every wavelength).
+    - Not modelled: scan turning points (slower, passes in pairs), sinusoidal and raster scans, pulsed scanned lasers
+      (each pass a group of pulses), a moving retinal image; a scanned-lidar mode on `lidar-safety` (optional).
+    - Found, fixed in session 36: the registry descriptions of `blue-light-hazard` and `uv-exposure` still said "Simplified
+      educational estimate … Not for safety decisions" (stale since session 18, when both were rebuilt on ICNIRP).
+  - [x] **Laser-safety loose ends** (session 36, branch `phase-4/laser-safety-loose-ends`).
+    - Table 5 note d in the oracle: the anterior-eye limit now covers 400–1400 nm, the skin limit below 700 nm and
+      twice it above (was 1150–1400 nm only). A point source never reaches it below 1150 nm (tested over 400–1149 nm,
+      1 ns – 30 ks); a large source with an open field of view does: a 10 cm spot at 10 cm, 532 nm, 0.25 s is held to
+      7.78 kJ/m² instead of 21.2 kJ/m². `diffuse-reflection` at its defaults (0.5 W reflected at 1064 nm, 10 s) now
+      shows a 2.85 mm hazard distance (anterior eye) instead of none. `multiple-wavelength` adds the visible lines'
+      anterior shares to the cornea's (same tissue; conservative, p. 279): default cornea 0.275 → 0.279. 4/4 mutations.
+    - `mpe` and `optical-density` moved from the 400–1050 nm "bounded CW suite" to the tested modules: every limit at
+      180 nm – 1 mm and 1 ns – 30 ks (`mpe`: per-limit H, H/t, aperture, narrow-beam max power; `optical-density`:
+      `requiredOpticalDensity`, OD against exposure time). `od-requirements` averages a Gaussian over an aperture
+      input (new key `aperture`, default 7 mm; same defaults: OD 2.716). Defaults unchanged: 6.36 J/m² at 532 nm /
+      0.25 s; OD 3.708 (2.708 without the factor 10). Deleted `lib/laser-safety-mpe.ts`, `lib/laser-safety-cw-suite.ts`,
+      their test and the bounds/references/scope boxes; all three pages tiered exact.
+    - Stale text: the quarantine banner (blue-light-hazard, uv-exposure, uv-hazard) is deleted; the shared disclaimer,
+      the category description and the two "Simplified educational estimate" registry descriptions are rewritten.
+    - Still optional: a scanned-lidar mode on `lidar-safety`.
+  - [x] **Polarization audit, part 0** (session 37, branch `phase-4/polarization-audit`). Four `physics-reviewer` batches
+    audited the 33 polarization pages (none tiered, no `src/physics/polarization/`): **1 OK, 11 questionable, 21 bugs**.
+    The 21 bug pages have a registry `knownIssue`; each fix removes it and sets the tier. Reviewers had no web access:
+    verify every citation, section and DOI before it goes in a registry entry.
+    - **Convention (decided):** Goldstein/Collett site-wide. Time factor e^{i(ωt−kz)}; RCP = [1, i]/√2 (clockwise seen by
+      the receiver); S3 = 2 Im(Ex* Ey) > 0 for RCP; retarder with the fast axis at 0°: diag(1, e^{−iΓ}); +θ is
+      counter-clockwise looking into the beam, for polarizers, retarders and rotators alike. The Mueller pages,
+      `poincare-sphere` and `retarder`'s phase already match. Each page states it in its `modelNote`.
+    - Cross-page: the "Rutile" preset 1.973/2.165 (YVO₄-like) is in five pages; rutile is ≈ 2.613/2.909 at 589 nm. Indices
+      are hard-coded at all wavelengths; `sellmeier-data.ts` has only MgF₂ ordinary. Glan-type angle conventions differ in
+      three pages. Wavelength inputs are dead in several pages. Out of scope but flagged: `materials/birefringent-crystals`
+      lists the fused-silica Malitson set as quartz; `materials/crystal-birefringence` rutile 2.454/2.493.
+  - [x] **Polarization part 1: Jones, Mueller, Stokes** (session 38, branch `phase-4/polarization-jones`).
+    `src/physics/polarization/{jones,mueller,stokes}.ts` carry the CONVENTION header (Goldstein/Collett): element
+    builders, R(−θ)·M·R(θ), chains with element 1 first, `stokesFromJones`, `muellerFromJones` (½ tr(J† σi J σj)),
+    ellipse angles NaN when undefined, `isPhysicalStokes`, depolarizer d ∈ [−1/3, 1] (Cloude 1986), and a band-averaged
+    retarder (Simpson, ≥ 32 intervals per cycle, cumulative sweep over bandwidths). 3 test files, every closed-form Mueller
+    matrix checked against `muellerFromJones`, the band average against the Si/Ci closed form; a 13-mutation check passed.
+    The nine pages use them (shared `components/polarization-format.ts` and `poincare-wireframe.ts`, both hemispheres);
+    all nine tiered exact with Goldstein 3rd ed. chapters (titles and pages from Crossref), Jones 1941, Collett 2005 and
+    Cloude 1986; five `knownIssue`s dropped (16 left in polarization).
+    - Page changes beyond the audit list: `mueller-polarimetry` has a fast-axis input per retarder; `degree-polarization`'s
+      spectral mode is a 45° retarder with Γ = 2πmλ₀/λ (the old one subtracted 2πm), with inputs for the retardance and
+      the full bandwidth, and charts DOP against bandwidth; `polarimetry` lost its dead retarder input and gained an
+      analyzer-angle input.
+    - Golden values: (1, .8, .3, .2) → DOP 0.8775, ψ 10.278°, χ 6.587°; (1, .5, .3, .2) → DOP 0.6164, ψ 15.48°, χ 9.47°;
+      QWP fast-H · (1, 0, 1, 0) = (1, 0, 0, −1); polarizer 30° on H → 0.75; HWP 22.5° on H → S2 = 1; H → [P45, PV] = 0.25.
+  - [x] **Polarization part 2: birefringent crystals** (session 39, branch `phase-4/polarization-crystals`).
+    `physics/materials/uniaxial-data.ts`: o and e Sellmeier sets for quartz and calcite (Ghosh 1999), MgF₂ (Dodge 1984),
+    sapphire (Malitson & Dodge 1972, formula from Dodge 1986), YVO₄ (Lomheim & DeShazer 1978; Shi 2001 needs a λ² term
+    `sellmeier.ts` lacks), LiNbO₃ (Zelmon 1997), rutile (DeVore 1951); DOIs on Crossref. Each set is tested against the
+    published coefficient strings (1e-9) and an independent set: Hecht Table 8.1 at 589.3 nm, Radhakrishnan 1951, Li 1980
+    (MgF₂ only to 1 µm: 7.6e-4 apart at 2 µm), Malitson 1962, Smith 1976 and Jundt 1997 (LiNbO₃), Shi 2001, Bond 1965.
+    Physics split three ways: `polarization/uniaxial.ts` (n(θ), signed walk-off and its peak, o/e refraction into a plate
+    for any axis direction, separation, Γ = k₀d(k_z,e − k_z,o), Veiras 2010), `retarders.ts` ((m + f)λ/|Δn|, order, compound,
+    full-wave wavelengths, two-material achromat with a sign flag, TIR phase and rhomb angles, Born & Wolf 48°37′/54°37′)
+    and `twisted-nematic.ts` (closed-form Jones R(−Φ)·exp(K), tested against a 4000-slab product; Gooch-Tarry). 21-mutation
+    check passed (5 coefficient typos survived until the published-strings test). Shared `components/crystal-select.tsx`.
+    - Pages: `double-refraction` (separate optic-axis and incidence inputs; calcite 10 mm at 45° → 1.0921 mm), `birefringence`
+      (|Δn| crossings with dispersion), `waveplate-thickness` ((m + f)λ/|Δn|, compound pair, folded drift chart),
+      `waveplate-order` (|Δn|, fast axis, 0.75 = swapped QWP), `retarder-types` (five modelled types; temperature chart and
+      unsourced spec table replaced by computed ±1 % band and 5° tilt change), `liquid-crystal-polarizer` (Jones TN with any
+      polarizer and analyzer, presets, VA as a uniformly tilted layer; tier textbook). Three `knownIssue`s dropped (13 left).
+    - The quartz + MgF₂ achromat designed at 450/700 nm is 7 % high at 550 nm: a two-point design, sensitive to Δn at 1e-5.
+      The page defaults to 510/600 nm (±1 % from 495 to 625 nm; zero order: 545–555 nm).
+  - [x] **Polarization part 3: polarizers** (session 40, branch `phase-4/polarization-polarizers`). Five modules in
+    `physics/polarization/`, 33 tests in 5 files, a 26-mutation check (2 survivors until a t_p test with n₁ ≠ 1 and a
+    lossy wire-grid golden value were added):
+    - `fresnel.ts`: N₂ = n₂ − iκ₂, e^{i(ωt − kz)}, r_p = −r_s at normal incidence (the ellipsometry module's convention;
+      `transfer-matrix.ts` differs in phase only). Tests: ellipsometry inverts r_p/r_s back to n, k; transfer-matrix R;
+      TIR phases equal `tirPhaseDifference`, δ continuous at θ_c.
+    - `reflection-polarizers.ts`: pile of plates T = (1 − r)/(1 + (2m − 1)r), P(m = 1, 2, 4, 10) = .1567, .2709, .4264,
+      .6501 at n = 1.52 (0.936 at m = 10 ignoring the multiple reflections); MacNeille cube on `transfer-matrix.ts`
+      (ZnS/MgF₂ at 45°: n_g = 1.68290, R_p 1.81 % from the glass/H faces, T_s 3.3e-5 with 5 pairs).
+    - `prism-polarizers.ts`: Glan window from k_t at the hypotenuse on `plateWaves` (Taylor axis in plane; Foucault and
+      Thompson perpendicular; the higher-index wave is reflected, so positive crystals pass o; cemented Thompson ends at
+      grazing). Calcite 589 nm, 38.5°: −2.35° … +5.61° (Taylor), balanced cut 39.54°. Two-wedge splitters by wave-vector
+      matching: Wollaston 20° 7.191° (2|Δn| tan α 0.1 % low), Rochon |Δn| tan α 0.9 % low, Sénarmont via n(θ).
+    - `sheet-polarizer.ts` (log-domain slab, Shurcliff k₁/k₂ algebra) and `wire-grid.ts` (Marcuvitz strip reactances,
+      capacitive by Babinet, shunt sheet t = 2Z/(2Z + Z₀), skin-effect loss from DC σ, NaN for p ≥ λ).
+    - Pages: `fresnel-polarization` (κ input, phases), `brewster-polarizer` (plates m), `polarizing-beamsplitter` (now a
+      MacNeille cube; new keys), `glans-prism` (crystal data, three types, balanced cut), `birefringent-polarizer`
+      (exact splits, sourced |Δn| chart), `dichroic-polarizer` (29.7 dB default, was Infinity), `polymer-polarizer`
+      (31.8 dB, efficiency sign fixed), `wire-grid` (10.6 µm, 23.9 dB, T + R + A = 1; angle input dropped),
+      `polarizer-extinction` (label only). 9 pages tiered (131 of 461); seven `knownIssue`s dropped (6 left).
+    - **Open:** `polarizer-types` (sourced specs). Thorlabs, Edmund and Newport spec pages are JS-rendered or 403 for
+      WebFetch and curl; needs a browser session or data sheets from the user.
+  - [ ] **Polarization part 4: optical activity, microscopy, scrambling.** `optical-activity` (one temperature coefficient;
+    Drude for sucrose; M_W input), `circular-dichroism` (drop the fixed structure panel; residue count), `conoscopic`
+    (crystal angle sin θc = NA/n̄; 2V), `orthoconoscopic` and `birefringence-imaging` (specimen angle; Michel-Lévy colour
+    needs the CIE 1931 colour-matching functions), `microscope-polarizer`, `depolarization` (closed-form sinc average),
+    `polarization-scrambling` (retarder-based scrambler).
+- [ ] Rewrite or label the heuristic models (macro-bend, second-harmonic, …). Macro-bend (session 19) and second-harmonic (session 22) are rewritten.
+- [x] Fix the kept-page bugs found while merging duplicates (Phase 2 findings, "Found while merging duplicates"): the two hazard-weighting pages first, then `macro-bending-loss` (prints 0), `optical-sectioning-thickness` (nm/µm), the OPO threshold and `apodization-comparison`.
+  - [x] **Hazard weighting** (session 18, branch `phase-4/hazard-weighting`). `src/physics/laser-safety/hazard-weighting.ts`, SI in and out:
+    - S(λ) from ICNIRP 2004 Table 1 (180–400 nm, the same values as ACGIH and IEC 62471 Table 4.1), interpolated log-linearly. Limits within 8 h: 30 J/m² effective, plus ICNIRP's UVA eye limit of 10⁴ J/m² unweighted (315–400 nm). ACGIH and IEC 62471 allow 10 W/m² after 1000 s; ICNIRP is stricter, so the module uses it.
+    - B(λ) from ICNIRP 2013 Table 2, with 10^((450−λ)/50) for 500–600 nm. Small-source limits from eqns 15–17 (100 J/m² up to 100 s, then 1 W/m²). Risk groups from IEC 62471 Table 6.1: Exempt ≤ 1 W/m², RG2 ≤ 400 W/m². RG1's limit is also 1 W/m², so its band is empty. The values were checked against the ICNIRP PDFs and ams-OSRAM AN002 (2025) Table 1.
+    - UV laser MPE at the cornea from IEC 60825-1:2014 Table A.1 (30 J/m²; min(C₁, C₂); C₁ → 10⁴ J/m² → 10 W/m²), and the time at which a CW irradiance first exceeds it. Replaced by ICNIRP 2013 in session 23 (see the `exposure-duration` item).
+    - `tests/laser-safety-hazard-weighting.test.ts` has 6 tests: the tables, the TLV column, interpolation against ICNIRP eqns 2a–c within 3 %, the 560 nm "Exempt" case (now RG2, 49.8 s), and the MPE branches and edges (that test moved to `laser-safety-eye-exposure-limits.test.ts` in session 23). Three mutations each failed the tests.
+    - Pages: `blue-light-hazard` (E_B in W/m², not "per nm"; max exposure; real risk groups; log chart), `uv-hazard` (table S(λ); UVA limit; "Irradiance (W/cm²)" input; 180 nm minimum; registry text "S()" → "S(λ)"), `uv-exposure` (it had the same Gaussian S(λ), 100× low at 180 nm; the "✅ Within TLV" line only compared the time with 8 h) and `exposure-duration` (UV branch and chart).
+    - Left in `exposure-duration`, all conservative or cosmetic: the "Pupil Diameter" input is unused; t is capped at 10 s (visible) and 100 s (NIR); C_A uses 10^(0.02(λ−0.7)) where 10^(2(λ−0.7)) (λ in µm) is meant; 1.5–1.8 µm uses 0.1 J/cm² where IEC has 1 J/cm²; irradiance is taken over the beam area, not the limiting aperture; the visible branch extrapolates 18 t^0.75 J/m² below its 18 µs lower bound (the default 100 mW / 3 mm shows "0.0 µs"; with the 5×10⁻³ J/m² floor it would be ≈ 0.35 µs). **Fixed in session 23** (the last Phase 4 item below); the UV laser MPE moved to `eye-exposure-limits.ts`.
+  - [x] **The four named pages** (session 19, branch `phase-4/kept-page-bugs`, one commit each). Each has a module in `src/physics/<category>/<slug>.ts` and a test:
+    - `macro-bending-loss`: Marcuse 1976 with the exact LP01 eigenvalues (new `besselJ`, `besselK` in `math.ts`, integral representations, checked against A&S). 15.9 / 3.12 / 0.111 dB/turn at 7.5 / 10 / 15 mm, as the review predicted. Core index n₁ input and dB/m ported from the merged `bend-loss`; the invented 0.02 dB/bend transition loss is gone. Not modelled (stated on the page): the elasto-optic factor (R_eff ≈ 1.28 R), coating reflections, transition loss.
+    - `optical-sectioning-thickness`: units fixed (3.54 µm at the defaults). Two-photon now Zipfel et al. 2003's FWHM 2√ln2 · 0.532λ/(√2(n − √(n² − NA²))) (the page's 0.532λ/(…) was neither the 1/e radius nor the FWHM, 15 % low). Shows the point-pinhole limit 0.64λ/(…); results in µm, log chart.
+    - `optical-parametric-oscillator`: Boyd's g² = 2ω_sω_i d²I/(n³ε₀c³) (checked against the Myers 1995 wavelength form); SRO threshold from cosh²(gL)(1 − α) = 1 with the same L_eff as the gain (96 W at the defaults, was 1e-15 W). Signal λ is an input (`signalWavelength`, default 800 nm). The invented dn/dT chart is replaced by Δk and the first-order QPM period from the entered indices; threshold lines on both charts.
+    - `apodization-comparison`: cos(πk x/M) for the cosine-sum windows. Gaussian α = 3 (its label promised −55 dB; α was 2.5, −42 dB). The sidelobe/ENBW table is measured from the windows and tested; Harris 1978's Gaussian ENBW (1.64 at α = 3) doesn't fit his definition (1.70 by direct integration). View range now −120 dB, so −92 dB sidelobes are visible.
+    - The rest of the findings list was fixed in sessions 20–22 (below), the `exposure-duration` leftovers in session 23.
+  - [x] **Findings batch 2** (session 20, branch `phase-4/findings-batch-2`, one commit per topic, each with a module and tests):
+    - `dispersion-comp` (`physics/fiber-optics/dispersion-comp.ts`): span and DCF slopes; the residual is S_res(λ − λ₀), so the DCF works only near λ₀. RMS broadening √((D_acc σ)² + ½(S_acc σ²)²) for a broad source, 4Bσ ≤ 1, penalty −5 log₁₀(1 − (4Bσ)²) (Agrawal §2.4.3, §5.4.4; NPTEL table), usable band at 1 dB. D_DCF default −100. Defaults: L_c = 13.6 km, band 1534.2–1565.8 nm.
+    - `polarization-mode-dispersion` (`…/polarization-mode-dispersion.ts`): PMD·√L is the mean DGD (rms = mean/0.921); Maxwellian exceedance with erfc and its inverse; P(> 3 × mean) = 4.2e-5 (Duelk, IEEE 802.3 HSSG 2006). The span and probability inputs did nothing; replaced by a "max DGD (× mean)" input.
+    - `stress-measurement` / `coating-stress` (`physics/thin-film/stoney.ts`): Stoney with E_s/(1 − ν_s) (Janssen et al. 2009); κ = 2h/(a² + h²) from deflections before and after deposition, in µm (new keys `deflectionUm`, `deflectionBeforeUm`); film E, ν and both α as inputs. The defaults show 119.7 MPa (was 59.8).
+    - `infrared-glass`, `optical-glass-catalog`, `materials/chromatic-dispersion` (`physics/materials/sellmeier.ts` + `sellmeier-data.ts`): 10 crystal and fused-silica sets and 10 SCHOTT glasses from refractiveindex.info with their original references, each checked against independent data. Analytic n′, n″, n_g, β₂, D, λ_ZD; SCHOTT TIE-19 dn/dT. KRS-5 and AMTIR-1 have no verified formula: they show only the data-sheet n at 10 µm. The IR property values (κ, Knoop, dn/dT) were not re-checked.
+    - `dual-comb-spectroscopy` (`physics/spectroscopy/dual-comb-spectroscopy.ts`): b(n) = wrap(nΔf_r + Δf_0) into [−f_r/2, f_r/2), checked against exact BigInt comb arithmetic; alias-free only if the band's image stays in one half-band (needs Δν ≤ f_r²/(2Δf_r), Coddington 2016, and the right offsets; the page suggests the f_CEO shift). Defaults Δf_r = 200 Hz, N = 100 000.
+  - [x] **Findings batch 3** (session 21, branch `phase-4/findings-batch-3`, one commit per topic, each with a module and tests):
+    - `spectral-resolution` (`physics/spectroscopy/spectral-resolution.ts`): unreachable orders show a message and the highest order; diffraction floor λ/(mN) from an illuminated-width input (ported from the merged `resolution`), prism floor λ/(D dθ/dλ); resolution = the larger limit; prism default 1e-4 rad/nm (was 0.02); Fabry-Pérot chart is the Airy function. Palmer & Loewen ch. 2.
+    - `lambert-beer-law` (`…/lambert-beer-law.ts`): default c = 10 µM (A = 0.5, was 500); µM presets; concentration as a number input.
+    - `fluorescence-lifetime` (`…/fluorescence-lifetime.ts`): ⟨τ⟩_int = Σατ²/Σατ, ⟨τ⟩_amp, fᵢ, Φ = ⟨τ⟩_amp/τ_rad (new `tauRad`); mean photon arrival time checked by quadrature.
+    - `pointing-loss` (`physics/free-space-comms/pointing-loss.ts`): exact mean capture 1 − Q₁(b/σ_t, a/σ_t), σ_t² = w²/4 + s² (checked against the Bessel-I₀ polar integral and Q₁(1,2) = 0.26901); range input (was fixed 1 km); jitter per axis.
+    - `scintillation`, `adaptive-optics` (`…/turbulence.ts`): Andrews & Phillips unified plane-wave σ_I²(D) with d² = kD²/4L (coefficients confirmed in a 2026 arXiv paper quoting them); log-normal fades shown; the ad-hoc BER chart removed. AO servo lag (f_G/f₃dB)^(5/3); Strehl with the Parenti-Sasiela halo, so D ≫ r₀ gives (r₀/D)² instead of 0; wind speed input.
+    - `atmospheric-loss`, `laser-safety/atmospheric-attenuation` (`…/atmospheric-attenuation.ts`): Rayleigh from the Peck & Reeder index (Bucholtz 1995; −0.46 % vs Hansen & Travis 1974), Koschmieder 3.912/V at 550 nm, Kim q(V) for the aerosol rest, dB = 4.343 × Np. The invented H₂O/CO₂ peaks and altitude factor are gone (molecular absorption stated as not modelled); registry text updated.
+  - [x] **Imaging findings** (session 22, branch `phase-4/imaging-findings`, one commit per topic, each with a module and tests; 17/17 formula mutations caught):
+    - `two-photon-microscopy`, `three-photon-microscopy`, `multiphoton-depth` (`physics/imaging/multiphoton-focus.ts`): Zipfel et al. 2003's Gaussian fit to I² (ω_xy = 0.320λ/(√2NA) for NA ≤ 0.7, 0.325λ/(√2NA^0.91) above; ω_z as in `twoPhotonAxialFwhm`), checked against a 2026 arXiv paper that quotes 404 nm / 1.22 µm / 0.166 µm³ and against the exact paraxial Airy I² and I³ (2.0 % and 1.5 % wide). k-photon FWHM 2√(2 ln 2/k)ω, volume (π/2k)^(3/2) w² w_z, peak intensity P/(2πω_xy²) (1.1 % below the Airy peak), Gaussian pulses 0.94 E/τ. The 2P volume at the defaults is 0.318 fL (was 2.27, 7.1×). 3P lost its invented 0.235λ/NA and 0.36λ/NA². `multiphoton-depth`: default µ_s 6 mm⁻¹ (was 0.1, i.e. a 19 mm "1 % depth"; Kobat et al. 2011: 5–6 attenuation lengths ≈ 0.8–1 mm at 800 nm in vivo).
+    - `third-harmonic-microscopy`: same focus model (I³ source FWHM, fundamental w = 2ω_xy); the arbitrary I³ × 1e-12 "signal" is gone; it states the Gouy-phase cancellation (Boyd §2.10). New `scatteringCoeff` input (was a fixed 40 cm⁻¹).
+    - `coherent-raman` (`…/coherent-raman.ts`): anti-Stokes wavelength added; focal intensity per beam from the Zipfel radius (in GW/cm², was "TW/m²"); 1e-60 / 1e-30 removed; CARS line |χ_NR + χ_R|² with χ_R = −Γ/(Δ + iΓ), maximum at Γ(1 − √(1 + 4a²))/(2a); new inputs `linewidth`, `chiNR`; `mode` in the URL. Golden: 816.8 nm + 2845 cm⁻¹ → 1064.07 nm Stokes (Freudiger 2008).
+    - `second-harmonic-generation` (`…/second-harmonic-generation.ts`): Boyd–Kleinman 1968 focused-beam P_2ω = 16π²d²L P² h(σ, ξ)/(ε₀c n_ω n_2ω λ³), h by Simpson's rule; tests: h_m = 1.068 at ξ = 2.84, σ = 0.57; h(0, ξ) = arctan²ξ/ξ; ξ ≪ 1 → plane-wave L² sinc²; prefactor against the coupled-amplitude intensity integrated over the beam. At the defaults (L = 10 µm = 4.7 b) the old plane-wave L² was 30× high. `dn` is now signed n(2ω) − n(ω); `chi2` relabelled d_eff; Gaussian pulse factor 0.664; backward coherence length λ/(4(n_ω + n_2ω)) replaces "Fwd/Bwd ratio ~1".
+    - `super-resolution` (`…/super-resolution.ts`): STED d = λ/(2NA√(1 + ζ)) (Westphal & Hell 2005; was 0.61λ/NA, 1.22× high); axial limit = one-photon FWHM; PALM σ = 0.21λ/(NA√N) (Zhang 2007; a least-squares Airy fit in the test gives 0.206) with FWHM 2.35σ; the invented "PALM axial" result is removed; two charts instead of one with an unsupported second x axis.
+    - `shack-hartmann` (`…/shack-hartmann.ts`): spot diameter 2ρ₀ and FWHM for square (sinc²) or circular (Airy) lenslets (new `lensletShape`); lenslet-bound dynamic range θ_max = (d − 2ρ₀)/(2f) (Akondi & Dubra 2021) as tilt, defocus waves and dioptres; Fresnel-number check; photon-limited centroid σ_spot/√N (was pixel/√N; new `photons`); lenslets fully/partly inside the circular pupil (drawn; was a made-up sin/cos tilt map). Dropped inputs `dynamicRangeWaves`, `numSubapertures`.
+- [x] `exposure-duration` leftovers (listed under hazard weighting above). Session 23, branch `phase-4/exposure-duration`:
+  - `src/physics/laser-safety/eye-exposure-limits.ts`: point-source eye limits for 180 nm – 1 mm and 1 ns – 30 ks from ICNIRP 2013 (Health Phys. 105:271, doi:10.1097/HP.0b013e3182983fd4; open PDF on icnirp.org), Tables 3 (C_A, C_B, C_C), 5, 7, 8. Each limit is a list of pieces H = a·t^p and an averaging aperture: retinal thermal (2×10⁻³ J/m² to 5 µs, then 18 C_A t^0.75 or 90 C_C t^0.75 from 13 µs above 1050 nm, then 10 C_A C_C W/m²), photochemical 400–600 nm from 10 s (100 C_B J/m², C_B W/m²), anterior eye 1150–1400 nm (2 × skin, Table 5 note d, 3.5 mm), corneal IR (10³ / 10⁴ / 100 J/m², 5.6×10³ t^0.25, 10³ W/m²; 1 → 1.5 t^0.375 → 3.5 mm, 11 mm above 100 µm). UV moved here from `hazard-weighting.ts` (the page was its only user).
+  - Solver: the first t with E(t)·t > H(t), checking each piece's start (limits drop at joints) and bisecting in log t; E·t/H doesn't decrease within a piece (the aperture only grows where p ≤ 0.25). The beam is a centred Gaussian, 1/e² diameter, averaged over the aperture.
+  - Page: pupil input removed (URL key `aperture` dropped; ICNIRP: no allowance for a pupil under 7 mm); "Beam Diameter, 1/e² (mm)"; no 10 s / 100 s caps; wavelength range 180 nm – 1 mm (was 180–1800 nm); per-limit table and a chart of each limit H(t)/t against the beam irradiance over its aperture. Default 100 mW / 3 mm / 532 nm: 0.77 µs (was "0.0 µs").
+  - `tests/laser-safety-eye-exposure-limits.test.ts` (12 tests after the UV change below): Table 3 factors, apertures, Table 5 values, continuity at joints to 6 %, Class 2 ≈ 1 mW at 0.25 s, photochemical cases, the 10 s joint, C_A at 1064 nm, anterior limit at 1350 nm (9.22 s), the growing aperture at 1550 nm (9.75 s) and 10.6 µm, the old UV goldens, edges, and a brute-force time scan of 20 beams. 18/18 formula mutations caught.
+  - PR #19 merged (`df9e0869`) and checked on production. It kept the session-18 UV values ("IEC 60825-1:2014": continuous C₂ = 10^(0.2(λ − 295)) from 302.5 nm, 10 W/m² after 10³ s at 315–400 nm). The IEC text is paywalled (the free IEC preview stops before Annex A), so the user chose ICNIRP.
+  - UV on ICNIRP 2013 (branch `phase-4/uv-laser-icnirp`, PR #20 merged as `04e825f9`), read with `pdftotext -raw` (the `-layout` text shifts the rows): 30 J/m² below 302 nm; 1 nm steps 40, 60, 100, 160, 250, 400, 630 J/m², 1.0, 1.6, 2.5, 4.0 kJ/m² (302–313 nm) and 6.3 kJ/m² (313–315 nm), to 30 ks, "also not to exceed" 5.6×10³ t^0.25 J/m² below 10 s; 315–400 nm 5.6×10³ t^0.25 J/m² to 10 s, then 10⁴ J/m² to 30 ks. EU Directive 2006/25/EC Annex II Table 2.3 (≥ 10 s; an image on legislation.gov.uk `/eudr/2006/25/annex/II`) has the same values. Effect: 350 nm at 5 W/m² was "no limit", now 2000 s; 310 nm uses 1.6 kJ/m² (was 1.0). Tests: a table test against both sources; 6/6 UV mutations caught.
