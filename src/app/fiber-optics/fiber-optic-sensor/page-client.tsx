@@ -1,222 +1,185 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import {
+  SMF28_THERMAL_COEFFICIENT, braggShift, phaseStrainSensitivity, phaseTemperatureSensitivity, strainGaugeFactor,
+} from "../../../physics/fiber-optics/fiber-bragg-grating";
+import {
+  WATER_DN_DT, WATER_INDEX_1550, cavityReflectance, freeSpectralRange, penetrationDepth, penetrationDepthSensitivity,
+} from "../../../physics/fiber-optics/fiber-sensors";
+import { coefficientOfFinesse } from "../../../physics/thin-film/interference";
+
 type SensorType = "fbg" | "mach_zehnder" | "fabry_perot" | "evanescent";
+const SENSOR_TYPES: SensorType[] = ["fbg", "mach_zehnder", "fabry_perot", "evanescent"];
+const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
+
+function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: string }) {
+  return (
+    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+      <p className="text-sm text-gray-400">{label}</p>
+      <p className={`text-xl font-bold ${tone}`}>{value}</p>
+      {sub && <p className="text-xs text-gray-400">{sub}</p>}
+    </div>
+  );
+}
 
 export default function FiberOpticSensorPage() {
-  const [sensorType, setSensorType] = useState<SensorType>("fbg");
+  const [sensorRaw, setSensorType] = useURLState("sensor", "fbg");
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [temperature, setTemperature] = useURLState("temperature", 25); // °C
-  const [strain, setStrain] = useURLState("strain", 0); // με
-  const [pressure, setPressure] = useURLState("pressure", 101.325); // kPa
-  const [gaugeLength, setGaugeLength] = useURLState("gaugeLength", 10); // mm (for MZI)
-  const [cavityLength, setCavityLength] = useURLState("cavityLength", 20); // μm (for FP)
-  const [n_eff, setN_eff] = useURLState("n_eff", 1.468);
+  const [tempChange, setTempChange] = useURLState("tempChange", 10); // K
+  const [strain, setStrain] = useURLState("strain", 100); // µε
+  const [gaugeLength, setGaugeLength] = useURLState("gaugeLength", 10); // mm (MZI)
+  const [cavityLength, setCavityLength] = useURLState("cavityLength", 20); // µm (EFPI air gap)
+  const [mirrorR, setMirrorR] = useURLState("mirrorR", 0.033); // EFPI end-face reflectance
+  const [nEffRaw, setNEff] = useURLState("n_eff", 1.447);
+  const [nExtRaw, setNExt] = useURLState("n_ext", WATER_INDEX_1550);
+  const sensorType: SensorType = SENSOR_TYPES.includes(sensorRaw as SensorType) ? (sensorRaw as SensorType) : "fbg";
+
+  const lambda = clamp(wavelength, 400, 2000) * 1e-9;
+  // Water dn/dT is only roughly constant within ±30 K of room temperature; the fibre K_T within ±100 K.
+  const dTMax = sensorType === "evanescent" ? 30 : 100;
+  const dT = clamp(tempChange, -dTMax, dTMax);
+  const eps = clamp(strain, -1e4, 1e4) * 1e-6;
+  const nEff = clamp(nEffRaw, 1, 3);
+  const gauge = strainGaugeFactor(nEff);
+  const KT = SMF28_THERMAL_COEFFICIENT;
 
   const calc = useMemo(() => {
-    const lambda = wavelength * 1e-9;
-
     switch (sensorType) {
       case "fbg": {
-        // FBG: Δλ/λ = (1-pe)ε + (α+ξ)ΔT
-        const pe = 0.22; // photoelastic coefficient
-        const alpha = 0.55e-6; // thermal expansion (1/K)
-        const xi = 6.67e-6; // thermo-optic (1/K)
-        const dlambda_strain = wavelength * (1 - pe) * strain * 1e-6;
-        const dlambda_temp = wavelength * (alpha + xi) * (temperature - 25);
-        const dlambda_total = dlambda_strain + dlambda_temp;
-        const strainSensitivity = wavelength * (1 - pe) * 1e-6; // nm/με
-        const tempSensitivity = wavelength * (alpha + xi); // nm/°C
-        return { dlambda_total, strainSensitivity, tempSensitivity, dlambda_strain, dlambda_temp, type: "FBG" };
+        const strainShift = braggShift(lambda, eps, 0, gauge, KT);
+        const tempShift = braggShift(lambda, 0, dT, gauge, KT);
+        return {
+          kind: "fbg" as const, strainShift, tempShift, total: strainShift + tempShift,
+          strainPm: braggShift(lambda, 1e-6, 0, gauge, KT) * 1e12, tempPm: braggShift(lambda, 0, 1, gauge, KT) * 1e12,
+        };
       }
       case "mach_zehnder": {
-        // MZI: Δφ = (2π/λ) × n_eff × L × (ε × (1-pe) + ΔT × (α+ξ))
-        const pe = 0.22;
-        const alpha = 0.55e-6;
-        const xi = 6.67e-6;
-        const L = gaugeLength * 1e-3;
-        const delta_n = n_eff * ((1 - pe) * strain * 1e-6 + (alpha + xi) * (temperature - 25));
-        const delta_phi = (2 * Math.PI / lambda) * delta_n * L;
-        const phaseStrain = (2 * Math.PI / lambda) * n_eff * (1 - pe) * 1e-6 * L;
-        const phaseTemp = (2 * Math.PI / lambda) * n_eff * (alpha + xi) * L;
-        // Pressure sensitivity
-        const delta_phi_p = (2 * Math.PI / lambda) * n_eff * L * 3e-12 * (pressure - 101.325) * 1e3;
-        return { delta_phi, phaseStrain, phaseTemp, delta_phi_p, type: "MZI" };
+        const L = clamp(gaugeLength, 0.1, 1e5) * 1e-3;
+        const perStrain = phaseStrainSensitivity(lambda, nEff, L, gauge); // rad per unit strain
+        const perK = phaseTemperatureSensitivity(lambda, nEff, L, KT);
+        return { kind: "mzi" as const, perMicrostrain: perStrain * 1e-6, perK, phase: perStrain * eps + perK * dT, perStrain };
       }
       case "fabry_perot": {
-        // FP: FSR = λ²/(2nL), fringe shift with cavity change
-        const L = cavityLength * 1e-6;
-        const FSR = (wavelength * 1e-9) ** 2 / (2 * n_eff * L);
-        const finesse = 30; // typical for low-finesse FP
-        // Temperature: cavity changes by thermal expansion
-        const alpha = 0.55e-6;
-        const dlambda = wavelength * alpha * (temperature - 25); // dλ = λ·dL/L
-        // Strain: direct cavity length change
-        const dlambda_strain = wavelength * strain * 1e-6; // dλ = λ·ε
-        return { FSR: FSR * 1e9, finesse, dlambda, dlambda_strain, type: "Fabry-Pérot" };
+        // Plane-wave Airy model: beyond ≈ 50 µm the second reflection diffracts and recouples poorly into SMF.
+        const d = clamp(cavityLength, 1, 50) * 1e-6;
+        const R = clamp(mirrorR, 0, 0.9);
+        const F = coefficientOfFinesse(R);
+        return { kind: "efpi" as const, d, R, F, fsr: freeSpectralRange(lambda, 1, d), peak: F / (1 + F), fringeShift: lambda * eps };
       }
       case "evanescent": {
-        // Evanescent sensor: intensity modulation
-        const n_ext = 1.33 + 0.001 * (temperature - 25); // water RI temp dep
-        const NA = 0.22;
-        const V = (2 * Math.PI / (wavelength * 1e-3)) * 4.5 * NA;
-        const w = 4.5 * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
-        const gamma = Math.sqrt(2 * Math.PI * NA / (wavelength * 1e-3 * w));
-        const cladRemaining = 1; // μm
-        const sensitivity = gamma * Math.exp(-2 * gamma * cladRemaining);
-        const intensityChange = sensitivity * (n_ext - 1.33) * 100;
-        return { sensitivity, intensityChange, n_ext, type: "Evanescent" };
+        const nExt0 = clamp(nExtRaw, 1, 3);
+        const nExt = nExt0 + WATER_DN_DT * dT;
+        return {
+          kind: "evanescent" as const, nExt0, nExt,
+          dp: penetrationDepth(lambda, nEff, nExt), dp0: penetrationDepth(lambda, nEff, nExt0),
+          sens: penetrationDepthSensitivity(lambda, nEff, nExt),
+        };
       }
     }
-  }, [sensorType, wavelength, temperature, strain, pressure, gaugeLength, cavityLength, n_eff]);
+  }, [sensorType, lambda, eps, dT, gauge, KT, nEff, gaugeLength, cavityLength, mirrorR, nExtRaw]);
 
-  const chartData = useMemo(() => {
-    if (sensorType === "fbg") {
-      const strains = Array.from({ length: 100 }, (_, i) => i * 10);
-      const shifts = strains.map(s => {
-        const pe = 0.22;
-        return wavelength * (1 - pe) * s * 1e-6;
-      });
-      const temps = Array.from({ length: 100 }, (_, i) => -50 + i * 1.5);
-      const tshifts = temps.map(t => {
-        return wavelength * (0.55e-6 + 6.67e-6) * (t - 25);
-      });
-      return [
-        { x: strains, y: shifts, type: "scatter" as const, mode: "lines" as const, name: "Strain shift", line: { color: "#f87171" } },
-        { x: temps, y: tshifts, type: "scatter" as const, mode: "lines" as const, name: "Temp shift", line: { color: "#60a5fa" } },
-      ];
+  const chart = useMemo(() => {
+    const line = (x: number[], y: number[], name: string, color: string) =>
+      [{ x, y: y.map((v) => (Number.isFinite(v) ? v : null)), type: "scatter" as const, mode: "lines" as const, name, line: { color } }];
+    const strains = Array.from({ length: 101 }, (_, i) => i * 20); // 0–2000 µε
+    switch (calc.kind) {
+      case "fbg":
+        return { x: "Strain (µε)", y: "Bragg shift (pm)", data: line(strains, strains.map((s) => s * calc.strainPm), "Strain shift", "#f87171") };
+      case "mzi":
+        return { x: "Strain (µε)", y: "Phase (rad)", data: line(strains, strains.map((s) => s * calc.perMicrostrain), "Phase", "#34d399") };
+      case "efpi": {
+        const span = Math.min(2.5 * calc.fsr, 1.6 * lambda);
+        const wls = Array.from({ length: 2001 }, (_, i) => lambda - span / 2 + (span * i) / 2000);
+        return {
+          x: "Wavelength (nm)", y: "Cavity reflectance (%)",
+          data: line(wls.map((w) => w * 1e9), wls.map((w) => 100 * cavityReflectance(w, 1, calc.d, calc.R)), "Reflectance", "#a78bfa"),
+        };
+      }
+      case "evanescent": {
+        const ns = Array.from({ length: 101 }, (_, i) => 1.3 + (i * (nEff - 1.3 - 1e-3)) / 100);
+        return {
+          x: "External index n_ext", y: "Penetration depth (nm)",
+          data: line(ns, ns.map((n) => penetrationDepth(lambda, nEff, n) * 1e9), "d_p", "#fbbf24"),
+        };
+      }
     }
-    if (sensorType === "mach_zehnder") {
-      const strains = Array.from({ length: 100 }, (_, i) => i * 10);
-      const phases = strains.map(s => {
-        const pe = 0.22;
-        return (2 * Math.PI / (wavelength * 1e-9)) * n_eff * (1 - pe) * s * 1e-6 * gaugeLength * 1e-3;
-      });
-      return [{ x: strains, y: phases, type: "scatter" as const, mode: "lines" as const, name: "Phase shift (rad)", line: { color: "#34d399" } }];
-    }
-    if (sensorType === "fabry_perot") {
-      const wls = Array.from({ length: 500 }, (_, i) => 1520 + i * 0.1);
-      const L = cavityLength * 1e-6;
-      const spectrum = wls.map(wl => {
-        const FSR = (wl * 1e-9) ** 2 / (2 * n_eff * L);
-        const F = 30;
-        return (1 / (1 + (2 * F / Math.PI) ** 2 * Math.pow(Math.sin(Math.PI * (wl - wavelength) / (FSR * 1e9)), 2)));
-      });
-      return [{ x: wls, y: spectrum.map(s => s * 100), type: "scatter" as const, mode: "lines" as const, name: "Transmission (%)", line: { color: "#a78bfa" } }];
-    }
-    // evanescent
-    const n_exts = Array.from({ length: 100 }, (_, i) => 1.33 + i * 0.002);
-    const V = (2 * Math.PI / (wavelength * 1e-3)) * 4.5 * 0.22;
-    const w = 4.5 * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
-    const gamma = Math.sqrt(2 * Math.PI * 0.22 / (wavelength * 1e-3 * w));
-    const intensities = n_exts.map(n => gamma * Math.exp(-2 * gamma * 1) * (n - 1.33) * 100);
-    return [{ x: n_exts, y: intensities, type: "scatter" as const, mode: "lines" as const, name: "Δ Intensity (%)", line: { color: "#fbbf24" } }];
-  }, [sensorType, wavelength, gaugeLength, cavityLength, n_eff, temperature]);
+  }, [calc, lambda, nEff]);
+
+  const pm = (v: number) => `${(v * 1e12).toFixed(1)} pm`;
+  const nmOrDash = (v: number, digits = 1) => (Number.isFinite(v) ? `${(v * 1e9).toFixed(digits)} nm` : "not guided");
 
   return (
     <>
-            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Sensor Type</span>
-          <select value={sensorType} onChange={e => setSensorType(e.target.value as SensorType)}
+          <select value={sensorType} onChange={(e) => setSensorType(e.target.value)}
             className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value="fbg">Fiber Bragg Grating (FBG)</option>
-            <option value="mach_zehnder">Mach-Zehnder Interferometer</option>
-            <option value="fabry_perot">Fabry-Pérot Cavity</option>
-            <option value="evanescent">Evanescent Field</option>
+            <option value="mach_zehnder">Mach-Zehnder Interferometer (sensing arm)</option>
+            <option value="fabry_perot">Extrinsic Fabry-Pérot (air gap)</option>
+            <option value="evanescent">Evanescent Field (unclad region)</option>
           </select>
         </label>
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} />
-        <ValidatedNumberInput label="Temperature (°C)" value={temperature} onChange={setTemperature} step="any" />
-        <ValidatedNumberInput label="Strain (με)" value={strain} onChange={setStrain} step="any" />
+        <ValidatedNumberInput label={sensorType === "fbg" ? "Bragg Wavelength (nm)" : "Wavelength (nm)"} value={wavelength} onChange={setWavelength} min={400} max={2000} />
+        {sensorType !== "fabry_perot" && (
+          <ValidatedNumberInput label="Temperature Change ΔT (K)" value={tempChange} onChange={setTempChange} min={-dTMax} max={dTMax} step="any" />
+        )}
+        {sensorType !== "evanescent" && (
+          <ValidatedNumberInput label="Strain (µε)" value={strain} onChange={setStrain} min={-1e4} max={1e4} step="any" />
+        )}
+        {sensorType !== "fabry_perot" && (
+          <ValidatedNumberInput label="Mode Effective Index n_eff (phase)" value={nEffRaw} onChange={setNEff} min={1} max={3} step="0.001" />
+        )}
         {sensorType === "mach_zehnder" && (
-          <ValidatedNumberInput label="Gauge Length (mm)" value={gaugeLength} onChange={setGaugeLength} min={0.1} step="any" />
+          <ValidatedNumberInput label="Gauge Length (mm)" value={gaugeLength} onChange={setGaugeLength} min={0.1} max={1e5} step="any" />
         )}
         {sensorType === "fabry_perot" && (
-          <ValidatedNumberInput label="Cavity Length (μm)" value={cavityLength} onChange={setCavityLength} min={0.1} step="any" />
+          <>
+            <ValidatedNumberInput label="Air Gap d (µm, ≤ 50)" value={cavityLength} onChange={setCavityLength} min={1} max={50} step="any" />
+            <ValidatedNumberInput label="End-Face Reflectance R (bare silica ≈ 0.033)" value={mirrorR} onChange={setMirrorR} min={0} max={0.9} step="any" />
+          </>
+        )}
+        {sensorType === "evanescent" && (
+          <ValidatedNumberInput label="External Index at ΔT = 0 (water at 1550 nm ≈ 1.318)" value={nExtRaw} onChange={setNExt} min={1} max={3} step="0.001" />
         )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
-        {sensorType === "fbg" && (
+        {calc.kind === "fbg" && (
           <>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">Total Shift</p>
-              <p className="text-xl font-bold text-red-400">{(calc as any).dlambda_total.toFixed(4)} nm</p>
-            </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">Strain Sens.</p>
-              <p className="text-xl font-bold text-blue-400">{(calc as any).strainSensitivity.toFixed(4)} nm/με</p>
-            </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">Temp Sens.</p>
-              <p className="text-xl font-bold text-green-400">{(calc as any).tempSensitivity.toFixed(4)} nm/°C</p>
-            </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">Center λ</p>
-              <p className="text-xl font-bold text-yellow-400">{(wavelength + (calc as any).dlambda_total).toFixed(3)} nm</p>
-            </div>
+            <Card label="Total Shift" value={pm(calc.total)} tone="text-red-400" />
+            <Card label="Strain Sensitivity" value={`${calc.strainPm.toFixed(3)} pm/µε`} sub={`1 − p_e = ${gauge.toFixed(4)}`} tone="text-blue-400" />
+            <Card label="Temperature Sensitivity" value={`${calc.tempPm.toFixed(2)} pm/K`} sub="K_T = 6.165×10⁻⁶/K (SMF-28)" tone="text-green-400" />
+            <Card label="Shifted λ_B" value={`${((lambda + calc.total) * 1e9).toFixed(3)} nm`} tone="text-yellow-400" />
           </>
         )}
-        {sensorType === "mach_zehnder" && (
+        {calc.kind === "mzi" && (
           <>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">Phase Shift</p>
-              <p className="text-xl font-bold text-green-400">{(calc as any).delta_phi.toFixed(3)} rad</p>
-            </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">Strain</p>
-              <p className="text-xl font-bold text-blue-400">{((calc as any).phaseStrain * 1e-6).toFixed(3)} rad/με</p>
-            </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">Temperature</p>
-              <p className="text-xl font-bold text-red-400">{((calc as any).phaseTemp).toFixed(4)} rad/°C</p>
-            </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">Pressure</p>
-              <p className="text-xl font-bold text-yellow-400">{((calc as any).delta_phi_p).toFixed(6)} rad</p>
-            </div>
+            <Card label="Phase Shift" value={`${calc.phase.toFixed(3)} rad`} sub={`${(calc.phase / (2 * Math.PI)).toFixed(2)} fringes`} tone="text-green-400" />
+            <Card label="Strain Sensitivity" value={`${calc.perMicrostrain.toFixed(5)} rad/µε`} tone="text-blue-400" />
+            <Card label="Temperature Sensitivity" value={`${calc.perK.toFixed(4)} rad/K`} tone="text-red-400" />
+            <Card label="Strain for One Fringe" value={`${((2 * Math.PI) / calc.perMicrostrain).toFixed(1)} µε`} tone="text-yellow-400" />
           </>
         )}
-        {sensorType === "fabry_perot" && (
+        {calc.kind === "efpi" && (
           <>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">FSR</p>
-              <p className="text-xl font-bold text-purple-400">{(calc as any).FSR.toFixed(2)} nm</p>
-            </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">Finesse</p>
-              <p className="text-xl font-bold text-blue-400">{(calc as any).finesse}</p>
-            </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">Temp Shift</p>
-              <p className="text-xl font-bold text-green-400">{(calc as any).dlambda.toFixed(6)} nm</p>
-            </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">Strain Shift</p>
-              <p className="text-xl font-bold text-yellow-400">{(calc as any).dlambda_strain.toFixed(6)} nm</p>
-            </div>
+            <Card label="Free Spectral Range" value={`${(calc.fsr * 1e9).toFixed(2)} nm`} tone="text-purple-400" />
+            <Card label="Coefficient of Finesse F" value={calc.F.toFixed(4)} tone="text-blue-400" />
+            <Card label="Peak Reflectance F/(1 + F)" value={`${(calc.peak * 100).toFixed(2)} %`} tone="text-green-400" />
+            <Card label="Fringe Shift (gap strain)" value={pm(calc.fringeShift)} sub="Δλ = λ·ε" tone="text-yellow-400" />
           </>
         )}
-        {sensorType === "evanescent" && (
+        {calc.kind === "evanescent" && (
           <>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">Sensitivity</p>
-              <p className="text-xl font-bold text-yellow-400">{(calc as any).sensitivity.toFixed(4)} /RIU</p>
-            </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">Δ Intensity</p>
-              <p className="text-xl font-bold text-green-400">{(calc as any).intensityChange.toFixed(4)}%</p>
-            </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-sm text-gray-400">External n</p>
-              <p className="text-xl font-bold text-blue-400">{(calc as any).n_ext.toFixed(5)}</p>
-            </div>
+            <Card label="External Index n_ext" value={calc.nExt.toFixed(5)} sub={`dn/dT = ${WATER_DN_DT.toExponential(1)} /K (water)`} tone="text-blue-400" />
+            <Card label="Penetration Depth d_p" value={nmOrDash(calc.dp)} sub="field 1/e; intensity 1/e at d_p/2" tone="text-yellow-400" />
+            <Card label="Change from ΔT" value={nmOrDash(calc.dp - calc.dp0, 3)} tone="text-green-400" />
+            <Card label="d(d_p)/dn_ext" value={Number.isFinite(calc.sens) ? `${(calc.sens * 1e9).toFixed(0)} nm/RIU` : "—"} tone="text-red-400" />
           </>
         )}
       </div>
@@ -224,45 +187,44 @@ export default function FiberOpticSensorPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Formulas</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
-          {sensorType === "fbg" && (
+          {calc.kind === "fbg" && (
             <>
-              <p>FBG: Δλ/λ = (1-pₑ)ε + (α+ξ)ΔT</p>
-              <p>pₑ ≈ 0.22 (effective photoelastic)</p>
-              <p>α = 0.55×10⁻⁶ /K, ξ = 6.67×10⁻⁶ /K</p>
-              <p>Strain sens: ~1.2 pm/με @ 1550nm</p>
-              <p>Temp sens: ~10 pm/°C @ 1550nm</p>
+              <p>Δλ_B/λ_B = (1 − p_e)·ε + K_T·ΔT (Kersey 1997)</p>
+              <p>p_e = (n²/2)[p₁₂ − ν(p₁₁ + p₁₂)], p₁₁ 0.113, p₁₂ 0.252, ν 0.16</p>
+              <p>K_T = (1/n)dn/dT + α = 6.165×10⁻⁶/K (SMF-28, 20 °C)</p>
             </>
           )}
-          {sensorType === "mach_zehnder" && (
+          {calc.kind === "mzi" && (
             <>
-              <p>Δφ = (2π/λ) × Δ(nL)</p>
-              <p>Δ(nL) = nL[(1-pₑ)ε + (α+ξ)ΔT]</p>
-              <p>Longer gauge → higher sensitivity</p>
+              <p>Δφ = (2π/λ)·Δ(n_eff·L) = (2π·n_eff·L/λ)·[(1 − p_e)·ε + K_T·ΔT]</p>
+              <p>The reference arm is assumed isolated; a longer gauge raises both sensitivities.</p>
             </>
           )}
-          {sensorType === "fabry_perot" && (
+          {calc.kind === "efpi" && (
             <>
-              <p>FSR = λ² / (2nL)</p>
-              <p>Airy function: T = 1/(1 + (2F/π)² sin²(δ/2))</p>
-              <p>δ = 4πnL/λ</p>
+              <p>FSR = λ²/(2d), R = F·sin²(δ/2)/(1 + F·sin²(δ/2)), δ = 4πd/λ</p>
+              <p>F = 4R/(1 − R)² (Born &amp; Wolf §7.6.1); a fringe moves by Δλ/λ = Δd/d</p>
+              <p>The gap is assumed to carry the strain ε. In a capillary-mounted EFPI the gap changes by ε·L_gauge, so Δλ = λ·ε·L_gauge/d.</p>
+              <p>An air-gap cavity has almost no thermo-optic response; its thermal drift depends on the capillary mount.</p>
+              <p>Plane-wave model: gap diffraction loss is ignored, so fringe contrast is overstated beyond ≈ 20 µm.</p>
             </>
           )}
-          {sensorType === "evanescent" && (
+          {calc.kind === "evanescent" && (
             <>
-              <p>ΔI/I ∝ γ exp(-2γd) Δn_ext</p>
-              <p>γ = √(2π NA / (λ w₀))</p>
-              <p>Best for bio/chemical sensing</p>
+              <p>d_p = λ / (2π·√(n_eff² − n_ext²)) (Harrick 1967)</p>
+              <p>n_ext(T) = n_ext + (dn/dT)·ΔT, dn/dT ≈ −1×10⁻⁴/K for water</p>
+              <p>n_eff is the local mode index where the cladding is removed; it must exceed n_ext.</p>
             </>
           )}
         </div>
       </div>
 
-      <ChartPanel data={chartData} layout={{
+      <ChartPanel data={chart.data} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" },
-        xaxis: { title: sensorType === "evanescent" ? "External RI" : sensorType === "fabry_perot" ? "Wavelength (nm)" : sensorType === "mach_zehnder" ? "Strain (με)" : "Parameter", gridcolor: "#374151" },
-        yaxis: { title: "Response", gridcolor: "#374151" },
-        legend: { x: 0.01, y: 0.99 },
+        xaxis: { title: chart.x, gridcolor: "#374151" },
+        yaxis: { title: chart.y, gridcolor: "#374151" },
+        showlegend: false,
         margin: { t: 30 },
       }} />
     </>
