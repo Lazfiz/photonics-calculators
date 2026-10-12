@@ -1,132 +1,143 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c } from "../../../physics/constants";
+import {
+  FWHM_TO_RMS, beta2FromD, beta3FromDS, dispersionLength, gaussianPulseRmsWidth, sellmeierDispersion, sellmeierSlope,
+  optimumOutputRmsWidth, sigmaOmegaFromLambda, transformLimitedBitRate,
+} from "../../../physics/fiber-optics/chromatic-dispersion";
+import { dispersionPenaltyDb, rmsBroadening } from "../../../physics/fiber-optics/dispersion-comp";
+
+const nm = 1e-9, km = 1e3, ps = 1e-12;
+const PS_NM_KM = 1e-6, PS_NM2_KM = 1e3, PS2_KM = 1e-27, PS3_KM = 1e-39;
+
+const fmt = (v: number, digits: number, unit: string) =>
+  v === Infinity ? "∞" : Number.isFinite(v) ? `${v.toFixed(digits)} ${unit}` : "—";
+
 export default function ChromaticDispersionPage() {
-  const [dispersionCoeff, setDispersionCoeff] = useURLState("dispersionCoeff", 0); // ps/(nm·km) at λ₀ (zero by definition)
-  const [dispersionSlope, setDispersionSlope] = useURLState("dispersionSlope", 0.056); // ps/(nm²·km)
-  const [zeroDispWavelength, setZeroDispWavelength] = useURLState("zeroDispWavelength", 1310); // nm
+  const [S0, setS0] = useURLState("dispersionSlope", 0.092); // ps/(nm²·km), G.652 maximum
+  const [lambda0, setLambda0] = useURLState("zeroDispWavelength", 1310); // nm
   const [length, setLength] = useURLState("length", 80); // km
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [sourceLineWidth, setSourceLineWidth] = useURLState("sourceLineWidth", 0.1); // nm (laser)
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 50); // ps (initial pulse)
-  const [modulationBW, setModulationBW] = useURLState("modulationBW", 10); // GHz (signal bandwidth)
+  const [sigmaLambda, setSigmaLambda] = useURLState("sourceLineWidth", 0.1); // nm, rms
+  const [pulseFwhm, setPulseFwhm] = useURLState("pulseWidth", 50); // ps
+  const [bitRate, setBitRate] = useURLState("bitRate", 1); // Gb/s
+
+  const valid = S0 > 0 && lambda0 > 0 && length > 0 && wavelength >= 1260 && wavelength <= 1625 && sigmaLambda >= 0 && pulseFwhm > 0 && bitRate > 0;
 
   const calc = useMemo(() => {
-    // Dispersion at operating wavelength
-    const deltaLambda = wavelength - zeroDispWavelength;
-    const D = dispersionCoeff + dispersionSlope * deltaLambda; // ps/(nm·km)
-
-    // Total accumulated dispersion
-    const totalDispersion = D * length; // ps/nm
-
-    // Pulse broadening (Gaussian pulse)
-    const deltaT = Math.abs(D) * length * sourceLineWidth; // ps
-    const broadenedPulse = Math.sqrt(pulseWidth ** 2 + deltaT ** 2); // ps
-
-    // Dispersion-induced power penalty (for NRZ)
-    // Penalty ≈ 5·log10(1 + (π·D·L·Δλ·B)² / 4)
-    const B_THz = modulationBW * 1e-3; // GHz → THz (ps × THz = dimensionless)
-    const penaltyArg = (Math.PI * Math.abs(D) * length * sourceLineWidth * B_THz) / 4;
-    const penalty = 5 * Math.log10(1 + penaltyArg ** 2); // dB
-
-    // Dispersion length
-    const T0 = pulseWidth / (2 * Math.sqrt(Math.LN2)); // ps, 1/e half-width
-    // LD = T0²/|β₂| where β₂ = -λ²·D/(2πc) in ps²/km
-    const lambda_m = wavelength * 1e-9; // nm → m
-    const beta2 = -(lambda_m ** 2 * D) / (2 * Math.PI * c) * 1e21; // ps²/km
-    const LD = beta2 !== 0 ? T0 ** 2 / Math.abs(beta2) : Infinity; // km
-
-    // Maximum data rate (3dB bandwidth limited by dispersion)
-    // B_max ≈ 0.44 / (|D| · L · Δλ) [THz] for Gaussian
-    const maxBR = 0.44 / (Math.abs(D) * length * sourceLineWidth) * 1000; // GHz
-
-    // Dispersion parameter over wavelength range (for plot)
-    return { D, totalDispersion, deltaT, broadenedPulse, penalty, LD, maxBR };
-  }, [dispersionCoeff, dispersionSlope, zeroDispWavelength, length, wavelength, sourceLineWidth, pulseWidth, modulationBW]);
+    if (!valid) return null;
+    const lam = wavelength * nm, L = length * km, sl = sigmaLambda * nm;
+    const D = sellmeierDispersion(lam, lambda0 * nm, S0 * PS_NM2_KM);
+    const S = sellmeierSlope(lam, lambda0 * nm, S0 * PS_NM2_KM);
+    const beta2 = beta2FromD(D, lam);
+    const beta3 = beta3FromDS(D, S, lam);
+    const sigma0 = pulseFwhm * ps * FWHM_TO_RMS;
+    const sigmaOmega = sigmaOmegaFromLambda(sl, lam);
+    const sigmaOut = gaussianPulseRmsWidth({ sigma0, beta2, beta3, L, sigmaOmega });
+    const sigmaD = rmsBroadening(D * L, S * L, sl);
+    return {
+      D, S, beta2, beta3, sigma0, sigmaOut, sigmaD,
+      V: 2 * sigmaOmega * sigma0,
+      LD: dispersionLength(Math.SQRT2 * sigma0, beta2),
+      bOptimum: 1 / (4 * optimumOutputRmsWidth(beta2, beta3, L, sigmaOmega)),
+      bCoherent: transformLimitedBitRate(beta2, L),
+      penalty: dispersionPenaltyDb(bitRate * 1e9, sigmaD),
+    };
+  }, [valid, S0, lambda0, length, wavelength, sigmaLambda, pulseFwhm, bitRate]);
 
   const spectralData = useMemo(() => {
-    const wavelengths = Array.from({ length: 300 }, (_, i) => 1200 + i * 0.6);
-    const D_vals = wavelengths.map(w => dispersionCoeff + dispersionSlope * (w - zeroDispWavelength));
-    return [{
-      x: wavelengths, y: D_vals, type: "scatter" as const, mode: "lines" as const,
-      name: "D(λ)", line: { color: "#3b82f6", width: 2 },
-    }, {
-      x: [wavelength], y: [calc.D], type: "scatter" as const, mode: "markers" as const,
-      name: "Operating λ", marker: { color: "#f87171", size: 10 },
-    }, {
-      x: [zeroDispWavelength, zeroDispWavelength], y: [-5, 30], type: "scatter" as const, mode: "lines" as const,
-      name: "λ₀", line: { color: "#fbbf24", dash: "dash" },
-    }];
-  }, [calc.D, zeroDispWavelength, wavelength]);
+    const wls = Array.from({ length: 183 }, (_, i) => 1260 + i * 2);
+    const D = wls.map(w => (valid ? sellmeierDispersion(w * nm, lambda0 * nm, S0 * PS_NM2_KM) / PS_NM_KM : null));
+    return [
+      { x: wls, y: D, type: "scatter" as const, mode: "lines" as const, name: "D(λ)", line: { color: "#3b82f6", width: 2 } },
+      { x: [wavelength], y: [calc ? calc.D / PS_NM_KM : null], type: "scatter" as const, mode: "markers" as const, name: "Operating λ", marker: { color: "#f87171", size: 10 } },
+      { x: [lambda0], y: [0], type: "scatter" as const, mode: "markers" as const, name: "λ₀", marker: { color: "#fbbf24", size: 10, symbol: "diamond" } },
+    ];
+  }, [valid, S0, lambda0, wavelength, calc]);
 
   const lengthData = useMemo(() => {
-    const lengths = Array.from({ length: 100 }, (_, i) => (i + 1) * 2);
-    const broadening = lengths.map(l => {
-      const dt = Math.abs(calc.D) * l * sourceLineWidth;
-      return Math.sqrt(pulseWidth ** 2 + dt ** 2);
-    });
+    if (!valid) return [];
+    const lam = wavelength * nm, sl = sigmaLambda * nm;
+    const D = sellmeierDispersion(lam, lambda0 * nm, S0 * PS_NM2_KM);
+    const S = sellmeierSlope(lam, lambda0 * nm, S0 * PS_NM2_KM);
+    const beta2 = beta2FromD(D, lam), beta3 = beta3FromDS(D, S, lam);
+    const sigma0 = pulseFwhm * ps * FWHM_TO_RMS;
+    const sigmaOmega = sigmaOmegaFromLambda(sl, lam);
+    const lengths = Array.from({ length: 100 }, (_, i) => ((i + 1) * 2 * length) / 100);
+    const width = lengths.map(l => gaussianPulseRmsWidth({ sigma0, beta2, beta3, L: l * km, sigmaOmega }) / ps);
+    // Plotly can't draw Infinity: a closed eye shows as a gap.
     const penalty = lengths.map(l => {
-      const B_THz = modulationBW * 1e-3;
-      const arg = (Math.PI * Math.abs(calc.D) * l * sourceLineWidth * B_THz) / 4;
-      return 5 * Math.log10(1 + arg ** 2);
+      const p = dispersionPenaltyDb(bitRate * 1e9, rmsBroadening(D * l * km, S * l * km, sl));
+      return Number.isFinite(p) ? p : null;
     });
     return [
-      { x: lengths, y: broadening, type: "scatter" as const, mode: "lines" as const, name: "Pulse Width (ps)", line: { color: "#22c55e" }, yaxis: "y" },
+      { x: lengths, y: width, type: "scatter" as const, mode: "lines" as const, name: "Output rms width (ps)", line: { color: "#22c55e" }, yaxis: "y" },
       { x: lengths, y: penalty, type: "scatter" as const, mode: "lines" as const, name: "Penalty (dB)", line: { color: "#f97316" }, yaxis: "y2" },
     ];
-  }, [calc.D, sourceLineWidth, pulseWidth, modulationBW]);
+  }, [valid, S0, lambda0, length, wavelength, sigmaLambda, pulseFwhm, bitRate]);
+
+  const card = "bg-gray-900 border border-gray-800 rounded-lg p-4";
 
   return (
     <>
-            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="D at λ₀ (ps/nm/km)" value={dispersionCoeff} onChange={setDispersionCoeff} step="0.5" />
-        <ValidatedNumberInput label="Dispersion Slope S₀ (ps/nm²/km)" value={dispersionSlope} onChange={setDispersionSlope} step="0.001" />
-        <ValidatedNumberInput label="Zero Dispersion Wavelength λ₀ (nm)" value={zeroDispWavelength} onChange={setZeroDispWavelength} step="1" />
-        <ValidatedNumberInput label="Operating Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
-        <ValidatedNumberInput label="Fiber Length (km)" value={length} onChange={setLength} min={0.1} step="1" />
-        <ValidatedNumberInput label="Source Linewidth (nm)" value={sourceLineWidth} onChange={setSourceLineWidth} min={0.001} step="0.01" />
-        <ValidatedNumberInput label="Initial Pulse Width (ps)" value={pulseWidth} onChange={setPulseWidth} step="1" />
-        <ValidatedNumberInput label="Modulation BW (GHz)" value={modulationBW} onChange={setModulationBW} step="1" />
+        <ValidatedNumberInput label="Zero-Dispersion Wavelength λ₀ (nm)" value={lambda0} onChange={setLambda0} min={1200} max={1700} step="1" />
+        <ValidatedNumberInput label="Zero-Dispersion Slope S₀ (ps/nm²/km)" value={S0} onChange={setS0} min={0.01} max={0.2} step="0.001" />
+        <ValidatedNumberInput label="Operating Wavelength (nm)" value={wavelength} onChange={setWavelength} min={1260} max={1625} step="1" />
+        <ValidatedNumberInput label="Fiber Length (km)" value={length} onChange={setLength} min={0.001} step="1" />
+        <ValidatedNumberInput label="Source rms Spectral Width σ_λ (nm)" value={sigmaLambda} onChange={setSigmaLambda} min={0} step="0.01" />
+        <ValidatedNumberInput label="Input Pulse FWHM (ps)" value={pulseFwhm} onChange={setPulseFwhm} min={0.01} step="1" />
+        <ValidatedNumberInput label="Bit Rate (Gb/s)" value={bitRate} onChange={setBitRate} min={0.001} step="1" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
+        <div className={card}>
           <p className="text-sm text-gray-400">D(λ)</p>
-          <p className="text-xl font-bold text-blue-400">{calc.D.toFixed(2)} <span className="text-sm">ps/nm/km</span></p>
+          <p className="text-xl font-bold text-blue-400">{calc ? fmt(calc.D / PS_NM_KM, 2, "ps/(nm·km)") : "—"}</p>
+          <p className="text-xs text-gray-500">S(λ) = {calc ? (calc.S / PS_NM2_KM).toFixed(4) : "—"} ps/(nm²·km)</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Accumulated Dispersion</p>
-          <p className="text-xl font-bold text-green-400">{calc.totalDispersion.toFixed(0)} <span className="text-sm">ps/nm</span></p>
+        <div className={card}>
+          <p className="text-sm text-gray-400">Accumulated Dispersion D·L</p>
+          <p className="text-xl font-bold text-green-400">{calc ? fmt((calc.D * length * km) / (PS_NM_KM * km), 0, "ps/nm") : "—"}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Broadened Pulse</p>
-          <p className="text-xl font-bold text-yellow-400">{calc.broadenedPulse.toFixed(2)} <span className="text-sm">ps</span></p>
-          <p className="text-xs text-gray-500">from {pulseWidth} ps</p>
+        <div className={card}>
+          <p className="text-sm text-gray-400">β₂ / β₃</p>
+          <p className="text-xl font-bold text-purple-400">{calc ? fmt(calc.beta2 / PS2_KM, 2, "ps²/km") : "—"}</p>
+          <p className="text-xs text-gray-500">β₃ = {calc ? (calc.beta3 / PS3_KM).toFixed(4) : "—"} ps³/km</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Dispersion Penalty</p>
-          <p className={`text-xl font-bold ${calc.penalty > 1 ? "text-red-400" : calc.penalty > 0.5 ? "text-yellow-400" : "text-green-400"}`}>{calc.penalty.toFixed(2)} dB</p>
+        <div className={card}>
+          <p className="text-sm text-gray-400">Dispersion Length L_D</p>
+          <p className="text-xl font-bold text-purple-400">{calc ? fmt(calc.LD / km, 2, "km") : "—"}</p>
+          <p className="text-xs text-gray-500">T₀ = √2·σ₀ (1/e half-width)</p>
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Dispersion Length</p>
-          <p className="text-xl font-bold text-purple-400">{calc.LD.toFixed(1)} km</p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className={card}>
+          <p className="text-sm text-gray-400">Output rms Width σ</p>
+          <p className="text-xl font-bold text-yellow-400">{calc ? fmt(calc.sigmaOut / ps, 2, "ps") : "—"}</p>
+          <p className="text-xs text-gray-500">from σ₀ = {calc ? (calc.sigma0 / ps).toFixed(2) : "—"} ps; V_ω = {calc ? calc.V.toFixed(2) : "—"}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Max Data Rate</p>
-          <p className="text-xl font-bold text-cyan-400">{calc.maxBR.toFixed(1)} GHz</p>
+        <div className={card}>
+          <p className="text-sm text-gray-400">Bit-Rate Limit, Optimum Pulse</p>
+          <p className="text-xl font-bold text-cyan-400">{calc ? fmt(calc.bOptimum / 1e9, 2, "Gb/s") : "—"}</p>
+          <p className="text-xs text-gray-500">4Bσ ≤ 1 with σ₀ chosen to minimise σ (this source)</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Pulse Broadening</p>
-          <p className="text-xl font-bold text-orange-400">{calc.deltaT.toFixed(2)} ps</p>
+        <div className={card}>
+          <p className="text-sm text-gray-400">Limit for σ_λ → 0, β₃ = 0</p>
+          <p className="text-xl font-bold text-cyan-400">{calc ? fmt(calc.bCoherent / 1e9, 2, "Gb/s") : "—"}</p>
+          <p className="text-xs text-gray-500">B√(|β₂|L) ≤ ¼</p>
+        </div>
+        <div className={card}>
+          <p className="text-sm text-gray-400">Dispersion Penalty at {bitRate} Gb/s</p>
+          <p className={`text-xl font-bold ${!calc || !(calc.penalty <= 1) ? "text-red-400" : calc.penalty > 0.5 ? "text-yellow-400" : "text-green-400"}`}>
+            {calc ? (calc.penalty === Infinity ? "eye closed" : fmt(calc.penalty, 2, "dB")) : "—"}
+          </p>
+          <p className="text-xs text-gray-500">{calc && calc.V < 1 ? "V_ω < 1: narrow source, use the transform-limited limit" : "broad source, −5 log₁₀(1 − (4Bσ_D)²)"}</p>
         </div>
       </div>
 
@@ -135,18 +146,18 @@ export default function ChromaticDispersionPage() {
         <ChartPanel data={spectralData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Wavelength (nm)", gridcolor: "#374151", color: "#9ca3af" },
-          yaxis: { title: "D (ps/nm/km)", gridcolor: "#374151", color: "#9ca3af" },
+          yaxis: { title: "D (ps/(nm·km))", gridcolor: "#374151", color: "#9ca3af" },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 350,
           legend: { bgcolor: "transparent", font: { color: "#9ca3af" } },
         }} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-8">
-        <h3 className="text-lg font-semibold mb-3">Pulse Broadening & Penalty vs Length</h3>
+        <h3 className="text-lg font-semibold mb-3">Pulse Width & Penalty vs Length</h3>
         <ChartPanel data={lengthData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Length (km)", gridcolor: "#374151", color: "#9ca3af" },
-          yaxis: { title: "Pulse Width (ps)", gridcolor: "#374151", color: "#22c55e" },
+          yaxis: { title: "Output rms width (ps)", gridcolor: "#374151", color: "#22c55e" },
           yaxis2: { title: "Penalty (dB)", gridcolor: "#374151", color: "#f97316", overlaying: "y", side: "right" },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 60, b: 40, l: 60 }, height: 350,
           legend: { bgcolor: "transparent", font: { color: "#9ca3af" } },
@@ -156,13 +167,11 @@ export default function ChromaticDispersionPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-2">Key Formulas</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
-          <p>D(λ) = D₀ + S₀ · (λ - λ₀)  [D₀=0 at zero-dispersion λ₀]</p>
-          <p>ΔT = |D| · L · Δλ [pulse broadening]</p>
-          <p>T_out = √(T_in² + ΔT²) [Gaussian]</p>
-          <p>Penalty = 5·log₁₀(1 + (π·D·L·Δλ·B/4)²) [dB]</p>
-          <p>L_D = T₀² / |β₂| [dispersion length]</p>
-          <p>B_max ≈ 0.44 / (|D|·L·Δλ) [Gaussian, THz]</p>
-          <p>SMF-28: D=17 ps/nm/km @1550nm, S=0.056 ps/nm²/km, λ₀=1310nm</p>
+          <p>D(λ) = (S₀/4)(λ − λ₀⁴/λ³)  [ITU-T G.652; S₀ ≤ 0.092, 1300 ≤ λ₀ ≤ 1324 nm]</p>
+          <p>β₂ = −λ²D/(2πc),  β₃ = (λ²/2πc)²(S + 2D/λ)</p>
+          <p>σ²/σ₀² = 1 + (1 + V²)(β₂L/2σ₀²)² + ½(1 + V²)²(β₃L/4σ₀³)²,  V = 2σ_ωσ₀  [Agrawal §2.4.2, unchirped]</p>
+          <p>σ_D = √((DLσ_λ)² + ½(SLσ_λ²)²)  [broad source]; optimum σ₀, β₃ = 0: σ² = σ_D² + |β₂|L</p>
+          <p>Penalty = −5 log₁₀(1 − (4Bσ_D)²) dB</p>
         </div>
       </div>
     </>

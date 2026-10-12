@@ -81,7 +81,8 @@ test("calculatorMetadata: canonical, title and description from the entry", () =
 });
 
 test("calculatorJsonLd: WebPage and a breadcrumb that matches the page, no FAQ", () => {
-  const calculator = getCalculator("/fiber-optics/chromatic-dispersion");
+  // References are tested below; strip them so this stays a fixture of the base graph.
+  const calculator = { ...getCalculator("/fiber-optics/chromatic-dispersion"), references: undefined };
   const url = `${SITE_URL}/fiber-optics/chromatic-dispersion`;
   assert.deepEqual(calculatorJsonLd(calculator), {
     "@context": "https://schema.org",
@@ -134,7 +135,7 @@ test("calculatorJsonLd lists the references as citations, with a url only where 
     { "@type": "CreativeWork", name: audited.references[0].citation },
     { "@type": "CreativeWork", name: audited.references[1].citation, url: audited.references[1].url },
   ]);
-  assert.equal("citation" in (calculatorJsonLd(getCalculator("/fiber-optics/chromatic-dispersion")) as { "@graph": object[] })["@graph"][0], false);
+  assert.equal("citation" in (calculatorJsonLd({ ...audited, references: undefined }) as { "@graph": object[] })["@graph"][0], false);
 });
 
 test("the model badge and section: tier, definition, note and numbered references; unreviewed without a tier", () => {

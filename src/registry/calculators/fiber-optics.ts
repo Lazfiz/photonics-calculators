@@ -27,7 +27,22 @@ export const fiberOptics: CalculatorEntry[] = [
     title: "Chromatic Dispersion Calculator",
     description: "Calculate chromatic dispersion, pulse broadening, and system penalties for single-mode fiber.",
     heading: "Chromatic Dispersion (CD)",
-    knownIssue: "A linear D(λ) with slope 0.056 gives 13.4 ps/(nm·km) for standard fibre at 1550 nm instead of about 17.5 (G.652 form), and the system penalty formula has no source.",
+    tier: "textbook",
+    modelNote: "G.652 Sellmeier D(λ) and Gaussian-pulse broadening with source width, β₂ and β₃ (no chirp). Bit-rate limit 4Bσ ≤ 1 with the optimum input pulse (broad and narrow sources). The penalty assumes a broad source.",
+    references: [
+      {
+        citation: "ITU-T G.652 (11/2016). Characteristics of a single-mode optical fibre and cable. D(λ) = (S₀/4)(λ − λ₀⁴/λ³) with 1300 ≤ λ₀ ≤ 1324 nm and S₀ ≤ 0.092 ps/(nm²·km).",
+        url: "https://www.itu.int/rec/T-REC-G.652",
+      },
+      {
+        citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed., §2.3–2.4 (β₂, β₃, pulse broadening, bit-rate limits) and §5.4.4 (penalty). Wiley.",
+        url: "https://doi.org/10.1002/9780470918524",
+      },
+      {
+        citation: "Marcuse D. (1980). Pulse distortion in single-mode fibers. Appl. Opt. 19, 1653. Gaussian-pulse broadening with source spectral width.",
+        url: "https://doi.org/10.1364/AO.19.001653",
+      },
+    ],
   },
   {
     slug: "connector-insertion-loss",
@@ -150,7 +165,26 @@ export const fiberOptics: CalculatorEntry[] = [
     slug: "dispersion-shifted",
     title: "Dispersion-Shifted Fiber Calculator",
     description: "Compare DSF, NZ-DSF, and DCF dispersion characteristics.",
-    knownIssue: "Dispersion is computed from the zero-dispersion wavelength only, so the DCF preset shows 0 ps/(nm·km) at 1550 nm instead of −80 and the NZ-DSF presets disagree with their table values.",
+    tier: "textbook",
+    modelNote: "Typical presets, linear about 1550 nm (G.652 uses its Sellmeier form), valid over 1460–1625 nm. Length limit 4Bσ ≤ 1 with the optimum input pulse. Attenuations are typical values; use your fibre's datasheet.",
+    references: [
+      {
+        citation: "ITU-T G.652 (11/2016). Characteristics of a single-mode optical fibre and cable. D(λ) = (S₀/4)(λ − λ₀⁴/λ³) with 1300 ≤ λ₀ ≤ 1324 nm and S₀ ≤ 0.092 ps/(nm²·km).",
+        url: "https://www.itu.int/rec/T-REC-G.652",
+      },
+      {
+        citation: "ITU-T G.653. Characteristics of a dispersion-shifted single-mode optical fibre and cable (λ₀ near 1550 nm, S₀ ≤ 0.085 ps/(nm²·km)).",
+        url: "https://www.itu.int/rec/T-REC-G.653",
+      },
+      {
+        citation: "ITU-T G.655. Characteristics of a non-zero dispersion-shifted single-mode optical fibre and cable (G.655.C: 1 ≤ |D| ≤ 10 ps/(nm·km) over 1530–1565 nm).",
+        url: "https://www.itu.int/rec/T-REC-G.655",
+      },
+      {
+        citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed., §2.3–2.4. Wiley.",
+        url: "https://doi.org/10.1002/9780470918524",
+      },
+    ],
   },
   {
     slug: "fiber-amplifier",
@@ -164,7 +198,29 @@ export const fiberOptics: CalculatorEntry[] = [
     description: "Calculate bandwidth limitations from chromatic dispersion, modal dispersion, and PMD.",
     heading: "Fiber Bandwidth Calculation",
     lede: "Calculate bandwidth limitations from chromatic dispersion, modal dispersion (MMF), and PMD for various fiber types and link configurations.",
-    knownIssue: "The modal-dispersion reach mixes MHz·km with Gb/s, so it is 1000× too long (50 km instead of 50 m for 500 MHz·km at 10 Gb/s), and the PMD limit uses T/3 instead of 0.1 T.",
+    tier: "textbook",
+    modelNote: "Gaussian rms budget, 4Bσ ≤ 1: chromatic (spec-limit λ₀, S₀, optimum input pulse) and modal (rated 850 nm bandwidth) add in quadrature; PMD by ⟨Δτ⟩ ≤ 0.1 T. Ignores DMD, launch and transceiver limits.",
+    references: [
+      {
+        citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed., §2.4.3 (4Bσ ≤ 1). Wiley.",
+        url: "https://doi.org/10.1002/9780470918524",
+      },
+      {
+        citation: "ITU-T G.652 (11/2016). Characteristics of a single-mode optical fibre and cable. D(λ) = (S₀/4)(λ − λ₀⁴/λ³) with 1300 ≤ λ₀ ≤ 1324 nm and S₀ ≤ 0.092 ps/(nm²·km).",
+        url: "https://www.itu.int/rec/T-REC-G.652",
+      },
+      {
+        citation: "Prysmian BendBright OM3 datasheet (IEC 60793-2-10 A1a.2): 1295 ≤ λ₀ ≤ 1340 nm, S₀ ≤ 0.105 ps/(nm²·km).",
+        url: "https://www.prysmian.com/sites/www.prysmian.com/files/media/documents/Prysmian_BendBright_OM3_Datasheet.pdf",
+      },
+      {
+        citation: "ISO/IEC 11801-1:2017. Information technology — Generic cabling for customer premises. Minimum modal bandwidth at 850 nm: OM1 200, OM2 500, OM3 2000 (EMB), OM4 4700 (EMB) MHz·km.",
+      },
+      {
+        citation: "Poole C. D. (1988). Statistical treatment of polarization dispersion in single-mode fiber. Opt. Lett. 13, 687. Maxwellian statistics of the DGD.",
+        url: "https://doi.org/10.1364/ol.13.000687",
+      },
+    ],
   },
   {
     slug: "fiber-bragg-grating",
@@ -200,8 +256,23 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "fiber-delay-line",
     title: "Fiber Delay Line Calculator",
-    description: "Calculate propagation delay, pulse broadening, phase shift, and FSR for fiber optic delay lines.",
-    knownIssue: "The thermal delay coefficient is about 5× too low (6.7 instead of about 36 ps/(km·K)), and the default dispersion is 0.05 instead of about 17 ps/(nm·km).",
+    description: "Calculate group delay, dispersive pulse spread, thermal delay drift and loop FSR for fiber optic delay lines.",
+    tier: "textbook",
+    modelNote: "Group delay n_g·L/c, loop FSR and G.652 dispersion. Thermal coefficient 37.4 ps/(km·K) measured on SMF-28 (special coatings differ). The dispersive spread assumes a broad Gaussian source.",
+    references: [
+      {
+        citation: "Slavík R. et al. (2015). Ultralow thermal sensitivity of phase and propagation delay in hollow core optical fibres. Sci. Rep. 5, 15447. SMF-28: 37.4 ps/(km·K) measured, 39 calculated.",
+        url: "https://doi.org/10.1038/srep15447",
+      },
+      {
+        citation: "ITU-T G.652 (11/2016). Characteristics of a single-mode optical fibre and cable. D(λ) = (S₀/4)(λ − λ₀⁴/λ³) with 1300 ≤ λ₀ ≤ 1324 nm and S₀ ≤ 0.092 ps/(nm²·km).",
+        url: "https://www.itu.int/rec/T-REC-G.652",
+      },
+      {
+        citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed., §2.4. Wiley.",
+        url: "https://doi.org/10.1002/9780470918524",
+      },
+    ],
   },
   {
     slug: "fiber-gyroscope",
@@ -312,6 +383,22 @@ export const fiberOptics: CalculatorEntry[] = [
     slug: "nonzero-dispersion",
     title: "Non-Zero Dispersion Shifted Fiber (NZ-DSF)",
     description: "Design NZ-DSF fibers (G.655) with optimized dispersion for DWDM systems — balancing dispersion and nonlinearity.",
+    tier: "textbook",
+    modelNote: "Linear D(λ) about 1550 nm from your D and slope, compared with G.652 (Sellmeier) and G.653 presets; valid over 1460–1625 nm. FWM phase mismatch Δβ = |β₂|(2πΔν)² ignores β₃.",
+    references: [
+      {
+        citation: "ITU-T G.655. Characteristics of a non-zero dispersion-shifted single-mode optical fibre and cable (G.655.C: 1 ≤ |D| ≤ 10 ps/(nm·km) over 1530–1565 nm).",
+        url: "https://www.itu.int/rec/T-REC-G.655",
+      },
+      {
+        citation: "ITU-T G.652 (11/2016). Characteristics of a single-mode optical fibre and cable. D(λ) = (S₀/4)(λ − λ₀⁴/λ³) with 1300 ≤ λ₀ ≤ 1324 nm and S₀ ≤ 0.092 ps/(nm²·km).",
+        url: "https://www.itu.int/rec/T-REC-G.652",
+      },
+      {
+        citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed., §2.3 (β₂). Wiley.",
+        url: "https://doi.org/10.1002/9780470918524",
+      },
+    ],
   },
   {
     slug: "otdr-analysis",

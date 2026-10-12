@@ -1,100 +1,100 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
+import {
+  beta2FromD, linearDispersion, linearZeroDispersionWavelength, presetDispersion,
+} from "../../../physics/fiber-optics/chromatic-dispersion";
+
+const nm = 1e-9, km = 1e3;
+const PS_NM_KM = 1e-6, PS_NM2_KM = 1e3;
+// The linear model about 1550 nm holds across the S, C and L bands only.
+const BAND_MIN = 1460, BAND_MAX = 1625;
+
 export default function NonzeroDispersionPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [length, setLength] = useURLState("length", 80); // km
   const [dispSlope, setDispSlope] = useURLState("dispSlope", 0.05); // ps/(nm²·km)
-  const [dispAt1550, setDispAt1550] = useURLState("dispAt1550", 4.5); // ps/(nm·km) - typical NZ-DSF
-  const [zeroDispWl, setZeroDispWl] = useURLState("zeroDispWl", 1450); // nm
+  const [dispAt1550, setDispAt1550] = useURLState("dispAt1550", 4.5); // ps/(nm·km), typical NZ-DSF+
   const [channelSpacing, setChannelSpacing] = useURLState("channelSpacing", 100); // GHz
 
+  const valid = wavelength >= BAND_MIN && wavelength <= BAND_MAX && length > 0 && channelSpacing > 0;
+
   const calc = useMemo(() => {
-    const lam = wavelength; // nm
-    // D(λ) = D(1550) + S₀ · (λ - 1550) [linear model]
-    const D = dispAt1550 + dispSlope * (lam - 1550);
-    // Zero-dispersion wavelength model: D(λ) = (S₀/4) · (λ - λ₀⁴/λ³)
-    const D2 = (dispSlope / 4) * (lam - Math.pow(zeroDispWl, 4) / Math.pow(lam, 3));
-
-    // Accumulated dispersion
-    const totalDisp = D * length;
-
-    // Channel spacing in wavelength: Δλ = λ² · Δν / c
-    // Δν in GHz, λ in nm, c in nm·THz = 3e5 nm·(1e12 Hz) = 3e17 nm·Hz
-    const deltaLambda = (lam * lam * channelSpacing * 1e9) / (c * 1e9); // nm
-
-    // FWM phase mismatch: Δβ = (2πc/λ²) · D · Δλ²
-    // D in ps/(nm·km) → SI: D_SI = D × 1e-6 s/m²
-    const lambda_m = lam * 1e-9; // m
-    const D_SI = D * 1e-6; // s/m²
-    const deltaLambda_m = deltaLambda * 1e-9; // m
-    const deltaBeta = (2 * Math.PI * c / (lambda_m * lambda_m)) * D_SI * deltaLambda_m * deltaLambda_m; // rad/m
-
-    // Compare to standard SMF and DSF
-    const dSMF = 17 + 0.056 * (lam - 1550); // ps/(nm·km)
-    const dDSF = -1 + 0.05 * (lam - 1550); // ps/(nm·km)
-
-    return { D, D2, totalDisp, deltaLambda, deltaBeta, dSMF, dDSF };
-  }, [wavelength, length, dispSlope, dispAt1550, zeroDispWl, channelSpacing]);
+    const lam = wavelength * nm;
+    const fiber = { D: dispAt1550 * PS_NM_KM, S: dispSlope * PS_NM2_KM };
+    const D = linearDispersion(fiber, lam);
+    const lambda0 = linearZeroDispersionWavelength(fiber);
+    // Channel spacing in wavelength Δλ = λ²Δν/c; FWM phase mismatch between adjacent channels Δβ = β₂(2πΔν)².
+    const dnu = channelSpacing * 1e9;
+    const deltaLambda = (lam ** 2 * dnu) / c;
+    const deltaBeta = Math.abs(beta2FromD(D, lam)) * (2 * Math.PI * dnu) ** 2;
+    const dSMF = presetDispersion("G652", lam);
+    const dDSF = presetDispersion("DSF", lam);
+    return { D, lambda0, totalDisp: D * length * km, deltaLambda, deltaBeta, dSMF, dDSF };
+  }, [wavelength, length, dispSlope, dispAt1550, channelSpacing]);
 
   const dispCurveData = useMemo(() => {
-    const wls = Array.from({ length: 200 }, (_, i) => 1300 + i * 3);
-    const nzdsf = wls.map(wl => dispAt1550 + dispSlope * (wl - 1550));
-    const smf = wls.map(wl => 17 + 0.056 * (wl - 1550));
-    const dsf = wls.map(wl => -1 + 0.05 * (wl - 1550));
-
+    const wls = Array.from({ length: (BAND_MAX - BAND_MIN) / 5 + 1 }, (_, i) => BAND_MIN + i * 5);
+    const fiber = { D: dispAt1550 * PS_NM_KM, S: dispSlope * PS_NM2_KM };
     return [
-      { x: wls, y: smf, type: "scatter" as const, mode: "lines" as const, name: "SMF (G.652)", line: { color: "#f87171", dash: "dash" } },
-      { x: wls, y: dsf, type: "scatter" as const, mode: "lines" as const, name: "DSF (G.653)", line: { color: "#a78bfa", dash: "dot" } },
-      { x: wls, y: nzdsf, type: "scatter" as const, mode: "lines" as const, name: "NZ-DSF (G.655)", line: { color: "#34d399", width: 2.5 } },
-      { x: [wavelength], y: [calc.D], type: "scatter" as const, mode: "markers" as const, name: "Selected λ", marker: { color: "#fbbf24", size: 12 } },
+      { x: wls, y: wls.map(w => presetDispersion("G652", w * nm) / PS_NM_KM), type: "scatter" as const, mode: "lines" as const, name: "SMF (G.652)", line: { color: "#f87171", dash: "dash" } },
+      { x: wls, y: wls.map(w => presetDispersion("DSF", w * nm) / PS_NM_KM), type: "scatter" as const, mode: "lines" as const, name: "DSF (G.653)", line: { color: "#a78bfa", dash: "dot" } },
+      { x: wls, y: wls.map(w => linearDispersion(fiber, w * nm) / PS_NM_KM), type: "scatter" as const, mode: "lines" as const, name: "NZ-DSF (G.655)", line: { color: "#34d399", width: 2.5 } },
+      { x: [wavelength], y: [valid ? calc.D / PS_NM_KM : null], type: "scatter" as const, mode: "markers" as const, name: "Selected λ", marker: { color: "#fbbf24", size: 12 } },
     ];
-  }, [wavelength, dispSlope, dispAt1550]);
+  }, [wavelength, dispSlope, dispAt1550, valid, calc.D]);
 
   const accumulatedData = useMemo(() => {
-    const lengths = Array.from({ length: 100 }, (_, i) => i + 1);
+    const lengths = Array.from({ length: 101 }, (_, i) => (i * 1.5 * length) / 100);
+    const toPsNm = (D: number) => (D * km) / (PS_NM_KM * km); // per km of length
     return [
-      { x: lengths, y: lengths.map(l => l * calc.dSMF), type: "scatter" as const, mode: "lines" as const, name: "SMF", line: { color: "#f87171" } },
-      { x: lengths, y: lengths.map(l => l * calc.dDSF), type: "scatter" as const, mode: "lines" as const, name: "DSF", line: { color: "#a78bfa" } },
-      { x: lengths, y: lengths.map(l => l * calc.D), type: "scatter" as const, mode: "lines" as const, name: "NZ-DSF", line: { color: "#34d399", width: 2 } },
-      { x: [length, length], y: [0, 3000], type: "scatter" as const, mode: "lines" as const, name: "Link length", line: { color: "#fbbf24", dash: "dash" } },
+      { x: lengths, y: lengths.map(l => l * toPsNm(calc.dSMF)), type: "scatter" as const, mode: "lines" as const, name: "SMF", line: { color: "#f87171" } },
+      { x: lengths, y: lengths.map(l => l * toPsNm(calc.dDSF)), type: "scatter" as const, mode: "lines" as const, name: "DSF", line: { color: "#a78bfa" } },
+      { x: lengths, y: lengths.map(l => l * toPsNm(calc.D)), type: "scatter" as const, mode: "lines" as const, name: "NZ-DSF", line: { color: "#34d399", width: 2 } },
+      { x: [length], y: [valid ? length * toPsNm(calc.D) : null], type: "scatter" as const, mode: "markers" as const, name: "Link length", marker: { color: "#fbbf24", size: 10 } },
     ];
-  }, [length, calc]);
+  }, [length, valid, calc]);
+
+  const show = (v: number, digits: number, unit = "") =>
+    !valid ? "—" : Number.isFinite(v) ? `${v.toFixed(digits)}${unit}` : "—";
+  // |D| below 1e-3 ps/(nm·km) counts as zero: λ − 1550 nm in floating point leaves ~1e-22 s/m² at λ₀.
+  const nzZero = Math.abs(calc.D) < 1e-3 * PS_NM_KM;
+  const ratio = Math.abs(calc.dSMF) / Math.abs(calc.D);
 
   return (
     <>
-            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={1300} max={1650} />
-        <ValidatedNumberInput label="Link Length (km)" value={length} onChange={setLength} min={1} />
-        <ValidatedNumberInput label="D @ 1550 nm (ps/nm/km)" value={dispAt1550} onChange={setDispAt1550} step="0.1" />
-        <ValidatedNumberInput label="Dispersion Slope S₀ (ps/nm²/km)" value={dispSlope} onChange={setDispSlope} step="0.001" />
-        <ValidatedNumberInput label="Channel Spacing (GHz)" value={channelSpacing} onChange={setChannelSpacing} min={25} />
-        <ValidatedNumberInput label="Zero Dispersion λ₀ (nm)" value={zeroDispWl} onChange={setZeroDispWl} min={1300} max={1550} />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={BAND_MIN} max={BAND_MAX} />
+        <ValidatedNumberInput label="Link Length (km)" value={length} onChange={setLength} min={0.001} />
+        <ValidatedNumberInput label="D @ 1550 nm (ps/nm/km)" value={dispAt1550} onChange={setDispAt1550} min={-20} max={20} step="0.1" />
+        <ValidatedNumberInput label="Dispersion Slope S (ps/nm²/km)" value={dispSlope} onChange={setDispSlope} min={-0.2} max={0.2} step="0.001" />
+        <ValidatedNumberInput label="Channel Spacing (GHz)" value={channelSpacing} onChange={setChannelSpacing} min={1} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-4 mb-8">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">D(λ) NZ-DSF</p>
-          <p className="text-xl font-bold text-green-400">{calc.D.toFixed(2)} ps/nm/km</p>
+          <p className="text-xl font-bold text-green-400">{show(calc.D / PS_NM_KM, 2, " ps/nm/km")}</p>
+          <p className="text-xs text-gray-500">λ₀ = {show(calc.lambda0 / nm, 0, " nm")}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Total Dispersion</p>
-          <p className="text-xl font-bold text-yellow-400">{calc.totalDisp.toFixed(0)} ps/nm</p>
+          <p className="text-sm text-gray-400">Accumulated D·L</p>
+          <p className="text-xl font-bold text-yellow-400">{show(calc.totalDisp / (PS_NM_KM * km), 0, " ps/nm")}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <p className="text-sm text-gray-400">Channel Spacing Δλ</p>
-          <p className="text-xl font-bold text-blue-400">{calc.deltaLambda.toFixed(3)} nm</p>
+          <p className="text-xl font-bold text-blue-400">{show(calc.deltaLambda / nm, 3, " nm")}</p>
+          <p className="text-xs text-gray-500">FWM Δβ = {show(calc.deltaBeta * km, 3, " rad/km")}</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">SMF Comparison</p>
-          <p className="text-xl font-bold text-red-400">{calc.dSMF.toFixed(1)} ps/nm/km</p>
-          <p className="text-xs text-gray-500">{(calc.dSMF / Math.max(calc.D, 0.01)).toFixed(1)}× NZ-DSF</p>
+          <p className="text-sm text-gray-400">SMF (G.652) at this λ</p>
+          <p className="text-xl font-bold text-red-400">{show(calc.dSMF / PS_NM_KM, 1, " ps/nm/km")}</p>
+          <p className="text-xs text-gray-500">{!valid ? "—" : nzZero ? "NZ-DSF D ≈ 0 here" : `|D| ${ratio.toFixed(1)}× the NZ-DSF value`}</p>
         </div>
       </div>
 
@@ -103,10 +103,9 @@ export default function NonzeroDispersionPage() {
         <ChartPanel data={dispCurveData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
           xaxis: { title: "Wavelength (nm)", color: "#9ca3af", gridcolor: "#374151" },
-          yaxis: { title: "D (ps/nm·km)", color: "#9ca3af", gridcolor: "#374151" },
+          yaxis: { title: "D (ps/nm·km)", color: "#9ca3af", gridcolor: "#374151", zeroline: true, zerolinecolor: "#6b7280" },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 380,
           legend: { x: 0.02, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af" } },
-          shapes: [{ type: "line" as const, x0: 0, x1: 1700, y0: 0, y1: 0, line: { color: "#6b7280", width: 1, dash: "dot" } }],
         }} />
       </div>
 
@@ -124,13 +123,12 @@ export default function NonzeroDispersionPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-2">Key Formulas</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
-          <p>D(λ) = D(1550) + S₀ · (λ - 1550)</p>
-          <p>D(λ) = S₀/4 · (λ - λ₀⁴/λ³) [zero-dispersion model]</p>
-          <p>σ_total = D · L · Δλ [dispersion-induced pulse broadening]</p>
-          <p>Δβ_FWM = (2πc/λ²) · D · Δλ² [FWM phase mismatch]</p>
-          <p>Δλ = λ² · Δν / c [frequency → wavelength spacing]</p>
-          <p>G.655: 1 ≤ |D| ≤ 10 ps/(nm·km) @ 1530-1565nm</p>
-          <p>Trade-off: Low D → more FWM; High D → more compensation needed</p>
+          <p>D(λ) = D(1550) + S · (λ − 1550 nm),  λ₀ = 1550 nm − D(1550)/S</p>
+          <p>G.652 reference: D(λ) = (S₀/4)(λ − λ₀⁴/λ³), S₀ = 0.092, λ₀ = 1310 nm</p>
+          <p>Δλ = λ² · Δν / c</p>
+          <p>Δβ_FWM = |β₂|(2πΔν)²,  β₂ = −λ²D/(2πc)</p>
+          <p>G.655.C: 1 ≤ |D| ≤ 10 ps/(nm·km) over 1530–1565 nm</p>
+          <p>Trade-off: low |D| → stronger FWM; high |D| → more compensation needed</p>
         </div>
       </div>
     </>
