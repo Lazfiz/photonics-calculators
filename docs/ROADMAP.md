@@ -30,14 +30,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
   extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
   curl. Also clear the eslint warning there (unused `wavelength` state).
-- [x] **Fiber-optics audit, part 0** (session 43, branch `phase-4/fiber-optics-audit`): four `physics-reviewer` batches
-  audited the 46 untiered pages: **3 OK** (tiered: `mode-coupling`, `dispersion-map`, `wdm-coupler`), **9
-  questionable, 34 bugs** (registry `knownIssue`). Reviewer evidence is in the PR description; every number below was
-  checked with `node -e` by the reviewer. Reviewers had no web access: verify citations before they go in the registry.
-  Cross-page: the SMF core is redefined on six pages (a 4.1/4.5 µm, NA 0.12/0.1246/0.14; use a = 4.1 µm, NA 0.1246,
-  MFD 10.08 µm), and D(1550) for SMF is 13.4/17/17.46/22.1 on different pages (use G.652 S₀/4(λ−λ₀⁴/λ³), S₀ 0.092,
-  λ₀ 1310 → 17.46). `macro-bending-loss.ts` `MIN_V = 0.5` lets the Marcuse fit run far below its 1.2–2.4 range.
-  Out of scope, flagged: `materials/brillouin-scattering` P_th has no A_eff or L_eff.
 - [ ] **Fiber-optics fix parts** (≈ 4 pages each; questionable pages in brackets get their tier in the same part):
   - [ ] 1 `gaussian-coupling.ts` (Marcuse w₁≠w₂, offset, tilt, gap in medium n): `splice-loss` (gap 10 µm, w 4.5 →
     0.0640 dB; d 0.5 µm → 0.0536 dB), `connector-insertion-loss`, [`coupling-efficiency`, `connector-return-loss`
@@ -102,8 +94,14 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `ber` and `bpsk-qpsk` plot log₁₀(BER) on a linear axis. Switch them back to log axes; the floor is gone.
 - `diversity-reception`: a fixed "3σ" outage, and identical gain for SC, EGC and MRC.
 
-**Fiber optics**
-- `v-number` (minor): it shows floor(V²/2) modes for V < 2.405.
+**Fiber optics** (part 0, session 43; per-page evidence in PR #43)
+- The SMF core is redefined on six pages (a 4.1/4.5 µm, NA 0.12/0.1246/0.14). Use a = 4.1 µm, NA 0.1246 → MFD 10.08 µm.
+- D(1550) for SMF is 13.4/17/17.46/22.1 on different pages. Use G.652 S₀/4(λ−λ₀⁴/λ³), S₀ 0.092, λ₀ 1310 → 17.46.
+- `macro-bending-loss.ts` `MIN_V = 0.5` lets the Marcuse fit run far below its 1.2–2.4 range.
+- Silica n₂, g_B and g_R are inline on several pages; put them in one constants module.
+- `v-number` (minor): it shows floor(V²/2) modes for V < 2.405; literal "&lt;" in the text.
+- Out of scope: `materials/brillouin-scattering` P_th has no A_eff or L_eff; `wave-optics/fiber-laser-resonator` may
+  overlap `fiber-laser`; `fiber-coupler` vs `wave-optics/coupled-mode` unchecked.
 
 **Materials**
 - `birefringent-crystals` lists the fused-silica Malitson set as quartz.
@@ -178,5 +176,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   - Polarization part 4 (session 42, PR #40): 8 pages on 9 tested modules (optical activity, CD, spectral
     depolarization, scrambler, CIE colour, interference colours, conoscopy, photoelasticity, microscope extinction);
     456 tests; 0 `knownIssue`s left.
+  - Fiber-optics part 0 (session 43, PR #43): 46 pages audited; 3 OK tiered, 9 questionable, 34 `knownIssue`s.
 - Session 41: roadmap archived; `/ship` and `/handover` skills; `physics-reviewer` on Opus; `checker` agent on Haiku.
 - [ ] Optional (user): a Defender exclusion for `C:\dev`.
