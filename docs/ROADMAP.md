@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 42, 2026-10-12)
+## Status (session 43, 2026-10-12)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -20,23 +20,51 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | imaging | 9 / 65 | findings fixed (sessions 19, 22); no full audit |
 | free-space-comms | 6 / 27 | findings fixed (Phase 1, session 21); no full audit |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
-| fiber-optics | 3 / 49 | findings fixed (sessions 19–20); no full audit |
+| fiber-optics | 6 / 49 | part 0 done (session 43): 34 `knownIssue`s; fix parts 1–11 below |
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 0 / 54 | |
-| **total** | **139 / 461** | 0 `knownIssue`s |
+| **total** | **142 / 461** | 34 `knownIssue`s (fiber-optics) |
 
 ## Next (Phase 4, in order)
-- [ ] `polarizer-types`: sourced specs. The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to
-  WebFetch and curl. Use Claude in Chrome, or ask the user for data sheets. Also clear the eslint warnings there
-  (unused `wavelength` state) and in `polarizer-extinction` (unused `useState`).
-- [ ] **Next category audit** (the user picks; detectors 0/54 or fiber-optics 3/49 suggested). Use the procedure from
-  thin film, laser safety and polarization:
-  - Part 0 audits every untiered page with `physics-reviewer` batches (Opus, high effort).
-  - Bug pages get a registry `knownIssue`; OK pages get their tier at once.
-  - Then fix in parts of about 4 pages a session (one context window), with tested modules in
-    `src/physics/<category>/`.
-  - Consider saving part 0 as a dynamic workflow (`category-audit`) on its first run.
+- [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
+  extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
+  curl. Also clear the eslint warning there (unused `wavelength` state).
+- [x] **Fiber-optics audit, part 0** (session 43, branch `phase-4/fiber-optics-audit`): four `physics-reviewer` batches
+  audited the 46 untiered pages: **3 OK** (tiered: `mode-coupling`, `dispersion-map`, `wdm-coupler`), **9
+  questionable, 34 bugs** (registry `knownIssue`). Reviewer evidence is in the PR description; every number below was
+  checked with `node -e` by the reviewer. Reviewers had no web access: verify citations before they go in the registry.
+  Cross-page: the SMF core is redefined on six pages (a 4.1/4.5 µm, NA 0.12/0.1246/0.14; use a = 4.1 µm, NA 0.1246,
+  MFD 10.08 µm), and D(1550) for SMF is 13.4/17/17.46/22.1 on different pages (use G.652 S₀/4(λ−λ₀⁴/λ³), S₀ 0.092,
+  λ₀ 1310 → 17.46). `macro-bending-loss.ts` `MIN_V = 0.5` lets the Marcuse fit run far below its 1.2–2.4 range.
+  Out of scope, flagged: `materials/brillouin-scattering` P_th has no A_eff or L_eff.
+- [ ] **Fiber-optics fix parts** (≈ 4 pages each; questionable pages in brackets get their tier in the same part):
+  - [ ] 1 `gaussian-coupling.ts` (Marcuse w₁≠w₂, offset, tilt, gap in medium n): `splice-loss` (gap 10 µm, w 4.5 →
+    0.0640 dB; d 0.5 µm → 0.0536 dB), `connector-insertion-loss`, [`coupling-efficiency`, `connector-return-loss`
+    via `polarization/fresnel.ts`].
+  - [ ] 2 `chromatic-dispersion.ts` (G.652 form, linear-about-1550 presets G.652/653/655/DCF, D↔β₂): `chromatic-dispersion`,
+    `dispersion-shifted`, `fiber-delay-line` (≈ 7.4 ppm/K), `fiber-bandwidth` (modal ÷1000; `pmdLimitedLength`),
+    [`nonzero-dispersion`].
+  - [ ] 3 `fiber-nonlinear.ts` (L_eff finite at α = 0, γ, Smith SBS ×K pol. and linear linewidth factor, SRS, Inoue
+    FWM): `sbs-threshold` (A 80 µm², g_B 5e-11, 10 km, 0.2 dB/km → 4.193 mW co-pol.), `nonlinear-effects`,
+    [`srs-threshold` → 1.5973 W].
+  - [ ] 4 `fiber-bragg-grating.ts` (Erdogan uniform R(λ), first-zero width, FWHM, strain/temperature): `fiber-bragg-grating`
+    (Δn 1e-4, 10 mm, n 1.468: R₀ 0.93291, R(σ̂=κ) 0.8043, first zero 0.19476 nm), `fiber-bragg-grating-sensor`,
+    `fiber-optic-sensor` (MZI 0.04642 rad/µε at 10 mm; water dn/dT ≈ −1e-4/K).
+  - [ ] 5 `sagnac.ts`: `fiber-gyroscope` (S 0.67608 s, ARW 3.636e-5 °/√h), `fiber-loop-mirror` (R 4k(1−k),
+    T (1−2k)²); plus `fiber-bundle` (37 × 125 µm → Ø 0.875 mm, core fill 0.1888) and `pump-combiner` (étendue).
+  - [ ] 6 `doped-fiber-gain.ts` (two-level gain, P_sat hνA/((σa+σe)τ) = 0.2711 mW, implicit saturation → 11.58 dB, one
+    cross-section table): `fiber-amplifier`, `rare-earth-doped` + `rare-earth-fiber` (duplicates: merge, L₉₀ =
+    10/α_dB = 12.28 m), `fiber-laser` (η_q = η_s/η_Stokes = 0.8721).
+  - [ ] 7 `fiber-birefringence.ts` (Δ² geometric B, Lefèvre loop 0.882 rad at D 30 mm, PM crosstalk ε + tanh hL →
+    26.99 dB): `birefringence-fiber`, `polarization-maintaining`, `polarization-controller` (chain `muellerRetarder`).
+  - [ ] 8 reuse `macro-bending-loss.ts`: `mode-field-diameter` (MFD 10.08 µm), `bend-insensitive` (15.9 dB/turn at 7.5 mm),
+    `micro-bend` (beat-length resonance ≈ 0.76 mm), [`v-number`, `fiber-characterization`].
+  - [ ] 9 `coupled-mode.ts` + evanescent K₀ tail: `multi-core` (κ 4.45e-3 /m; XT tanh hL → −38.3 dB/10 km at R_b 0.1 m),
+    `side-polished` (26.2 % at 2 µm), `d-shaped-fiber`, [`fiber-coupler`; κ(λ) trend].
+  - [ ] 10 tapers + attenuation: `fiber-taper` + `tapered-fiber` (merge; Birks–Li 35.8 µm), `attenuation` (Keiser IR
+    7.81e11 e^(−48.48/λ)), `otdr-analysis`, [`low-water-peak`, `link-budget`].
+  - [ ] 11 data pages, label illustrative: `photonic-crystal` (Saitoh–Koshiba V), `specialty-fiber`.
 - [ ] Thin-film leftovers (6 untiered, see open findings).
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
 - [ ] Rewrite each heuristic model, or label it illustrative, during its category's audit. Macro-bend and
