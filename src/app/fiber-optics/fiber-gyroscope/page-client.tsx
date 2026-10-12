@@ -1,135 +1,119 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c, h } from "../../../physics/constants";
+import {
+  EARTH_ROTATION_RATE, RAD_PER_S_TO_DEG_PER_H, angleRandomWalkDegPerRootHour, noiseEquivalentRate, properFrequency,
+  sagnacScaleFactor, shotNoisePhase, transitTime,
+} from "../../../physics/fiber-optics/sagnac";
+
+const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
+
+function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: string }) {
+  return (
+    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+      <p className="text-sm text-gray-400">{label}</p>
+      <p className={`text-xl font-bold ${tone}`}>{value}</p>
+      {sub && <p className="text-xs text-gray-400">{sub}</p>}
+    </div>
+  );
+}
+
 export default function FiberGyroscopePage() {
-  const [coilDiameter, setCoilDiameter] = useURLState("coilDiameter", 100); // mm
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 500); // m
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [n_core, setN_core] = useURLState("n_core", 1.468);
-  const [sourcePower, setSourcePower] = useURLState("sourcePower", 10); // mW
-  const [detectorNoise, setDetectorNoise] = useState(-150); // dBm/√Hz
-  const [sourceRIN, setSourceRIN] = useState(-160); // dB/Hz
-  const [losses, setLosses] = useURLState("losses", 3); // dB total round-trip
+  const [coilDiameterRaw, setCoilDiameter] = useURLState("coilDiameter", 100); // mm
+  const [fiberLengthRaw, setFiberLength] = useURLState("fiberLength", 500); // m
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [groupIndexRaw, setGroupIndex] = useURLState("n_g", 1.4682);
+  const [sourcePowerRaw, setSourcePower] = useURLState("sourcePower", 10); // mW
+  const [lossesRaw, setLosses] = useURLState("losses", 10); // dB, source to detector at the bias point
+  const [qeRaw, setQe] = useURLState("qe", 1); // detector quantum efficiency
+
+  const D_mm = clamp(coilDiameterRaw, 1, 1000);
+  const L = clamp(fiberLengthRaw, 1, 10000);
+  const lambda_nm = clamp(wavelengthRaw, 400, 2000);
+  const nG = clamp(groupIndexRaw, 1, 2);
+  const P_mW = clamp(sourcePowerRaw, 0.001, 1000);
+  const loss_dB = clamp(lossesRaw, 0, 60);
+  const qe = clamp(qeRaw, 0.01, 1);
 
   const calc = useMemo(() => {
-    const lambda = wavelength * 1e-9;
-    const R = coilDiameter * 1e-3 / 2; // radius in m
-    const A = Math.PI * R * R; // coil area
-    const N = 1; // number of turns (effective for Sagnac)
-    const L = fiberLength;
-
-    // Sagnac effect: Δφ = 4πLRΩ / (λc) where L = total fiber length, R = coil radius
-    // Scale factor: S = 4πLR / (λc) (rad/s per rad/s)
-    const scaleFactor = 4 * Math.PI * L * R / (lambda * c); // rad/(rad/s)
-    const sagnacConst = 4 * Math.PI * L * R / (lambda * c); // Δφ = sagnacConst × Ω
-
-    // For Earth rotation: Ω = 15°/h = 7.27e-5 rad/s
-    const earthRotation = 7.27e-5;
-    const phaseEarth = sagnacConst * earthRotation;
-
-    // Noise
-    const P_det = sourcePower * 1e-3 * Math.pow(10, -losses / 10);
-    const hc_over_lambda = h * c / lambda; // photon energy (J), lambda already in meters
-    const shotNoise = Math.sqrt(2 * hc_over_lambda / P_det); // rad/√Hz
-    const thermalNoise = 1e-7; // rad/√Hz (typical)
-    const RIN_noise = Math.pow(10, sourceRIN / 20) * P_det / (2 * hc_over_lambda); // simplified
-
-    // Angle random walk
-    const ARW_shot = shotNoise / scaleFactor; // (rad/s)/√Hz
-    const ARW_deg = ARW_shot * (180 / Math.PI) * 3600; // deg/√hr
-
-    // Bias stability
-    const biasStability = thermalNoise / scaleFactor * (180 / Math.PI) * 3600; // deg/hr
-
-    // Minimum detectable rotation rate
-    const minOmega = shotNoise / sagnacConst; // rad/s
-
-    // Number of turns in coil
-    const turns = L / (2 * Math.PI * R);
-    const coilVolume = A * 2 * Math.PI * R * turns * 1e9; // mm³ (simplified)
-
-    return { scaleFactor, sagnacConst, phaseEarth, shotNoise, ARW_deg, biasStability, minOmega, turns, coilVolume, P_det };
-  }, [coilDiameter, fiberLength, wavelength, n_core, sourcePower, detectorNoise, sourceRIN, losses]);
+    const lambda = lambda_nm * 1e-9;
+    const S = sagnacScaleFactor(L, D_mm * 1e-3, lambda);
+    const Pd = P_mW * 1e-3 * 10 ** (-loss_dB / 10);
+    const sigma = shotNoisePhase(Pd, lambda, qe);
+    const rate = noiseEquivalentRate(sigma, S);
+    return {
+      S, Pd, sigma,
+      phaseEarth: S * EARTH_ROTATION_RATE,
+      rateDegH: rate * RAD_PER_S_TO_DEG_PER_H,
+      arw: angleRandomWalkDegPerRootHour(rate),
+      tau: transitTime(L, nG),
+      fp: properFrequency(L, nG),
+      turns: L / (Math.PI * D_mm * 1e-3),
+    };
+  }, [D_mm, L, lambda_nm, nG, P_mW, loss_dB, qe]);
 
   const chartData = useMemo(() => {
-    // ARW vs fiber length
-    const lengths = Array.from({ length: 100 }, (_, i) => 50 + i * 20);
-    const ARWs = lengths.map(L => {
-      const R = coilDiameter * 1e-3 / 2;
-      const A = Math.PI * R * R;
-      const lambda = wavelength * 1e-9;
-      const sf = 4 * Math.PI * L * R / (lambda * c);
-      const P = sourcePower * 1e-3 * Math.pow(10, -losses / 10);
-      const sn = Math.sqrt(2 * h * c / (wavelength * 1e-9 * P));
-      return sn / sf * (180 / Math.PI) * 3600;
-    });
-
-    // Phase shift vs rotation rate
-    const omegas = Array.from({ length: 100 }, (_, i) => i * 0.01);
-    const phases = omegas.map(o => calc.sagnacConst * o);
-
+    // ARW against coil length at the same detected power (fibre loss lumped into the loss input).
+    const lengths = Array.from({ length: 100 }, (_, i) => 50 + i * 50);
+    const sigma = calc.sigma;
+    const arw = lengths.map(len =>
+      angleRandomWalkDegPerRootHour(noiseEquivalentRate(sigma, sagnacScaleFactor(len, D_mm * 1e-3, lambda_nm * 1e-9))));
+    const rates = Array.from({ length: 101 }, (_, i) => i * 0.2); // °/s
+    const phases = rates.map(r => (calc.S * r * Math.PI) / 180);
     return [
-      { x: lengths, y: ARWs, type: "scatter" as const, mode: "lines" as const, name: "ARW (°/√hr)", line: { color: "#f87171" }, xaxis: "x", yaxis: "y" },
-      { x: omegas, y: phases, type: "scatter" as const, mode: "lines" as const, name: "Δφ (rad)", line: { color: "#60a5fa" }, xaxis: "x2", yaxis: "y2" },
+      { x: lengths, y: arw, type: "scatter" as const, mode: "lines" as const, name: "ARW (°/√h)", line: { color: "#f87171" }, xaxis: "x", yaxis: "y" },
+      { x: rates, y: phases, type: "scatter" as const, mode: "lines" as const, name: "Δφ (rad)", line: { color: "#60a5fa" }, xaxis: "x2", yaxis: "y2" },
     ];
-  }, [coilDiameter, fiberLength, wavelength, sourcePower, losses]);
+  }, [calc.sigma, calc.S, D_mm, lambda_nm]);
 
   return (
     <>
-            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Coil Diameter (mm)" value={coilDiameter} onChange={setCoilDiameter} min={1} />
-        <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} min={1} />
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} />
-        <ValidatedNumberInput label="Source Power (mW)" value={sourcePower} onChange={setSourcePower} min={0.01} step="any" />
-        <ValidatedNumberInput label="Round-trip Losses (dB)" value={losses} onChange={setLosses} min={0} step="any" />
+        <ValidatedNumberInput label="Coil Diameter (mm)" value={coilDiameterRaw} onChange={setCoilDiameter} min={1} max={1000} />
+        <ValidatedNumberInput label="Fiber Length (m)" value={fiberLengthRaw} onChange={setFiberLength} min={1} max={10000} />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={400} max={2000} />
+        <ValidatedNumberInput label="Group Index n_g (transit time only)" value={groupIndexRaw} onChange={setGroupIndex} min={1} max={2} step="any" />
+        <ValidatedNumberInput label="Source Power (mW)" value={sourcePowerRaw} onChange={setSourcePower} min={0.001} max={1000} step="any" />
+        <ValidatedNumberInput label="Loss, Source to Detector at Bias (dB)" value={lossesRaw} onChange={setLosses} min={0} max={60} step="any" />
+        <ValidatedNumberInput label="Detector Quantum Efficiency" value={qeRaw} onChange={setQe} min={0.01} max={1} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Scale Factor</p>
-          <p className="text-xl font-bold text-red-400">{calc.scaleFactor.toExponential(3)}</p>
-          <p className="text-xs text-gray-500">rad/(rad/s)</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">ARW (shot)</p>
-          <p className="text-xl font-bold text-blue-400">{calc.ARW_deg.toFixed(4)} °/√hr</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Earth Δφ</p>
-          <p className="text-xl font-bold text-green-400">{calc.phaseEarth.toExponential(3)} rad</p>
-          <p className="text-xs text-gray-500">@ 15°/hr rotation</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Min Ω</p>
-          <p className="text-xl font-bold text-yellow-400">{(calc.minOmega * 180 / Math.PI * 3600).toFixed(4)} °/hr</p>
-        </div>
+        <Card label="Scale Factor S" value={`${calc.S.toPrecision(5)} s`} sub="Δφ per rad/s" tone="text-red-400" />
+        <Card label="ARW (shot noise)" value={`${calc.arw.toExponential(3)} °/√h`} sub={`Allan N; one-sided rate ASD ${calc.rateDegH.toExponential(3)} (°/h)/√Hz`} tone="text-blue-400" />
+        <Card label="Earth-Rate Phase" value={`${calc.phaseEarth.toExponential(3)} rad`} sub="Ω_E = 15.04 °/h, axis at the pole" tone="text-green-400" />
+        <Card label="Phase Noise σ_φ" value={`${(calc.sigma * 1e9).toPrecision(4)} nrad/√Hz`} sub={`P_d = ${(calc.Pd * 1e3).toPrecision(4)} mW at ±π/2 bias`} tone="text-yellow-400" />
+        <Card label="Transit Time" value={`${(calc.tau * 1e6).toPrecision(4)} µs`} sub="n_g·L/c" tone="text-purple-400" />
+        <Card label="Proper Frequency" value={`${(calc.fp / 1e3).toPrecision(4)} kHz`} sub="1/(2τ): bias modulation" tone="text-purple-400" />
+        <Card label="Turns" value={calc.turns.toFixed(0)} sub="L/(πD)" tone="text-gray-200" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Formulas</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
-          <p>Sagnac: Δφ = 4πLRΩ / (λc)</p>
-          <p>Scale factor: S = 4πLR / (λc)</p>
-          <p>Shot noise: σ_φ = √(2hc / (λP_det))</p>
-          <p>ARW = σ_φ / S [rad/s/√Hz]</p>
-          <p>Min detectable: Ω_min = σ_φ / S</p>
-          <p>c = 3×10⁸ m/s, h = 6.626×10⁻³⁴ J·s</p>
+          <p>Sagnac phase: Δφ = S·Ω, S = 2πLD/(λc) (no dependence on the fibre index)</p>
+          <p>Shot noise at ±π/2 bias: σ_φ = √(2hν/(η·P_d)) rad/√Hz, P_d = P_source·10^(−loss/10)</p>
+          <p>Rate noise (one-sided ASD): σ_Ω = σ_φ/S</p>
+          <p>ARW (Allan, σ²(τ) = N²/τ): N [°/√h] = σ_Ω [(°/h)/√Hz] / (60·√2) (IEEE Std 952)</p>
+          <p>Transit time τ = n_g·L/c; proper frequency f_p = 1/(2τ)</p>
         </div>
+        <p className="text-xs text-gray-400 mt-3">
+          The loss includes the 3 dB of the ±π/2 bias point, the coupler passes, the polarizer and splices.
+          Datasheets that divide the one-sided ASD by 60 alone quote an ARW √2 higher. Ideal shot-noise limit. Broadband sources add excess intensity noise, often the larger term, and the
+          length trade-off with fibre attenuation is left to the loss input.
+        </p>
       </div>
 
       <ChartPanel data={chartData} layout={{
         paper_bgcolor: "transparent", plot_bgcolor: "transparent",
         font: { color: "#9ca3af" },
-        xaxis: { title: "Fiber Length (m)", gridcolor: "#374151", domain: [0, 0.48] },
-        yaxis: { title: "ARW (°/√hr)", gridcolor: "#374151" },
-        xaxis2: { title: "Rotation Rate (rad/s)", gridcolor: "#374151", anchor: "y2", domain: [0.55, 1] },
-        yaxis2: { title: "Phase Shift (rad)", gridcolor: "#374151", anchor: "x2" },
+        xaxis: { title: "Fiber Length (m)", gridcolor: "#374151", domain: [0, 0.45] },
+        yaxis: { title: "ARW (°/√h)", gridcolor: "#374151", type: "log" },
+        xaxis2: { title: "Rotation Rate (°/s)", gridcolor: "#374151", anchor: "y2", domain: [0.55, 1] },
+        yaxis2: { title: "Sagnac Phase (rad)", gridcolor: "#374151", anchor: "x2" },
         legend: { x: 0.01, y: 0.99 },
         margin: { t: 30 },
       }} />

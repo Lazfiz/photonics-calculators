@@ -1,146 +1,135 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  combinerEtendueRatio, fiberEtendue, hexBundleDiameter, taperedPumpNA,
+} from "../../../physics/fiber-optics/fiber-bundle";
+
+const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 
 export default function PumpCombinerCalculator() {
-  const [numPumpPorts, setNumPumpPorts] = useURLState("numPumpPorts", 6);
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 976); // nm
-  const [pumpPowerPerPort, setPumpPowerPerPort] = useURLState("pumpPowerPerPort", 300); // W
-  const [combinerEfficiency, setCombinerEfficiency] = useURLState("combinerEfficiency", 98); // %
-  const [signalInsertionLoss, setSignalInsertionLoss] = useURLState("signalInsertionLoss", 0.1); // dB
-  const [pumpNA, setPumpNA] = useURLState("pumpNA", 0.46);
-  const [signalNA, setSignalNA] = useURLState("signalNA", 0.06);
+  const [portsRaw, setNumPumpPorts] = useURLState("numPumpPorts", 6);
+  const [signalPortRaw, setSignalPort] = useURLState("signalPort", "yes");
+  const [powerRaw, setPumpPowerPerPort] = useURLState("pumpPowerPerPort", 30); // W
+  const [effRaw, setCombinerEfficiency] = useURLState("combinerEfficiency", 98); // %
+  const [signalILRaw, setSignalInsertionLoss] = useURLState("signalInsertionLoss", 0.1); // dB
+  const [pumpCoreRaw, setPumpCore] = useURLState("pumpCore", 105); // µm
+  const [pumpCladRaw, setPumpClad] = useURLState("pumpClad", 125); // µm
+  const [pumpNARaw, setPumpNA] = useURLState("pumpNA", 0.22);
+  const [outDiaRaw, setOutDia] = useURLState("outputDiameter", 400); // µm, pump guide (inner cladding)
+  const [outNARaw, setOutNA] = useURLState("outputNA", 0.46);
 
-  // Total pump power
-  const totalPumpPower = numPumpPorts * pumpPowerPerPort;
+  const N = Math.round(clamp(portsRaw, 1, 100));
+  const signalPort = signalPortRaw !== "no";
+  const P = clamp(powerRaw, 0, 10000);
+  const eta = clamp(effRaw, 0, 100) / 100;
+  const signalIL = clamp(signalILRaw, 0, 20);
+  const pumpClad_um = clamp(pumpCladRaw, 1, 2000);
+  const pumpCore_um = clamp(pumpCoreRaw, 1, pumpClad_um);
+  const pumpNA = clamp(pumpNARaw, 0.01, 1);
+  const outDia_um = clamp(outDiaRaw, 1, 5000);
+  const outNA = clamp(outNARaw, 0.01, 1);
 
-  // Combined pump power (after combiner)
-  const combinedPumpPower = totalPumpPower * combinerEfficiency / 100;
+  const calc = useMemo(() => {
+    const totalFibres = N + (signalPort ? 1 : 0);
+    const bundle = hexBundleDiameter(totalFibres, pumpClad_um * 1e-6);
+    const taperRatio = Math.max(1, bundle / (outDia_um * 1e-6));
+    const naTaper = taperedPumpNA(pumpNA, bundle, outDia_um * 1e-6);
+    const U = combinerEtendueRatio(N, pumpCore_um * 1e-6, pumpNA, outDia_um * 1e-6, outNA);
+    const gPump = fiberEtendue(pumpCore_um * 1e-6, pumpNA) * 1e6; // mm²·sr
+    const gOut = fiberEtendue(outDia_um * 1e-6, outNA) * 1e6;
+    const pIn = N * P, pOut = pIn * eta;
+    return {
+      bundle, taperRatio, naTaper, U, pIn, pOut,
+      maxPorts: Math.floor(1 / combinerEtendueRatio(1, pumpCore_um * 1e-6, pumpNA, outDia_um * 1e-6, outNA) + 1e-9),
+      bIn: P / gPump, bOut: pOut / gOut,
+      signalT: 10 ** (-signalIL / 10),
+      taperOK: naTaper <= outNA, etendueOK: U <= 1,
+    };
+  }, [N, signalPort, P, eta, signalIL, pumpCore_um, pumpClad_um, pumpNA, outDia_um, outNA]);
 
-  // Pump brightness
-  const pumpBrightness = useMemo(() => {
-    // B = P / (π·NA²)  (W/sr)
-    const NA = pumpNA;
-    return pumpPowerPerPort / (Math.PI * NA ** 2);
-  }, [pumpPowerPerPort, pumpNA]);
-
-  // Brightness conservation check: (NA_sig/NA_pump)² ≥ N/η for feasible combining
-  const brightnessRatio = useMemo(() => {
-    const naRatio = (signalNA / pumpNA) ** 2;
-    const requiredRatio = numPumpPorts / (combinerEfficiency / 100);
-    return { naRatio, requiredRatio, feasible: naRatio >= requiredRatio };
-  }, [signalNA, pumpNA, numPumpPorts, combinerEfficiency]);
-
-  // Power budget
-  const powerBudget = useMemo(() => {
+  const chartData = useMemo(() => {
+    const ports = Array.from({ length: 36 }, (_, i) => i + 1);
+    const out = outDia_um * 1e-6;
+    const taper = ports.map(n => Math.min(1, taperedPumpNA(pumpNA, hexBundleDiameter(n + (signalPort ? 1 : 0), pumpClad_um * 1e-6), out)));
+    // NA the output guide needs if only the pump étendue counts: NA_out·√U.
+    const ideal = ports.map(n => outNA * Math.sqrt(combinerEtendueRatio(n, pumpCore_um * 1e-6, pumpNA, out, outNA)));
     return [
-      { label: "Pump per port", value: pumpPowerPerPort },
-      { label: "Total pump input", value: totalPumpPower },
-      { label: "Combiner output", value: combinedPumpPower },
-      { label: "Combiner loss", value: totalPumpPower - combinedPumpPower },
+      { x: ports, y: taper, type: "scatter" as const, mode: "lines+markers" as const, name: "Pump NA after taper (capped at 1)", line: { color: "#f59e0b", width: 2, shape: "hv" as const } },
+      { x: ports, y: ideal, type: "scatter" as const, mode: "lines" as const, name: "Étendue limit (cores only)", line: { color: "#60a5fa", width: 2 } },
+      { x: ports, y: ports.map(() => outNA), type: "scatter" as const, mode: "lines" as const, name: "Output NA", line: { color: "#9ca3af", width: 1, dash: "dash" } },
     ];
-  }, [pumpPowerPerPort, totalPumpPower, combinedPumpPower]);
+  }, [pumpNA, pumpCore_um, pumpClad_um, outDia_um, outNA, signalPort]);
 
-  // Efficiency vs number of pump ports
-  const efficiencyCurve = useMemo(() => {
-    const ports: number[] = [];
-    const powers: number[] = [];
-    for (let n = 1; n <= 12; n++) {
-      ports.push(n);
-      // Efficiency typically drops slightly with more ports
-      const eff = combinerEfficiency - (n - 1) * 0.3;
-      powers.push(n * pumpPowerPerPort * Math.max(eff, 80) / 100);
-    }
-    return [
-      { x: ports, y: powers, type: "scatter" as const, mode: "lines+markers" as const, name: "Combined Power (W)", line: { color: "#f59e0b", width: 2 }, yaxis: "y" },
-      { x: ports, y: ports.map(n => n * pumpPowerPerPort), type: "scatter" as const, mode: "lines" as const, name: "Input Power (W)", line: { color: "#6b7280", width: 1, dash: "dash" }, yaxis: "y" },
-    ];
-  }, [pumpPowerPerPort, combinerEfficiency]);
-
-  // Power bar chart
-  const powerBar = useMemo(() => {
-    return [
-      { x: powerBudget.map(b => b.label), y: powerBudget.map(b => b.value), type: "bar" as const, marker: { color: ["#3b82f6", "#f59e0b", "#10b981", "#ef4444"] } },
-    ];
-  }, [powerBudget]);
-
-  const layout1 = {
-    title: "Combined Power vs Number of Pump Ports",
-    xaxis: { title: "Number of Pump Ports", gridcolor: "#374151", dtick: 1 },
-    yaxis: { title: "Power (W)", gridcolor: "#374151" },
-    paper_bgcolor: "#111827", plot_bgcolor: "#1f2937",
-    font: { color: "#f3f4f6" }, showlegend: true, legend: { x: 0.02, y: 0.98 }, height: 380,
-  };
-
-  const layout2 = {
-    title: "Power Budget",
-    yaxis: { title: "Power (W)", gridcolor: "#374151" },
-    paper_bgcolor: "#111827", plot_bgcolor: "#1f2937",
-    font: { color: "#f3f4f6" }, showlegend: false, height: 380,
-  };
+  const ok = (b: boolean) => (b ? "text-green-400" : "text-red-400");
 
   return (
     <>
-                
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <div>
-              <ValidatedNumberInput label="Number of Pump Ports" value={numPumpPorts} onChange={setNumPumpPorts} />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Pump Power per Port (W)" value={pumpPowerPerPort} onChange={setPumpPowerPerPort} />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Combiner Efficiency (%)" value={combinerEfficiency} onChange={setCombinerEfficiency} step="0.5" />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Signal Insertion Loss (dB)" value={signalInsertionLoss} onChange={setSignalInsertionLoss} step="0.01" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <ValidatedNumberInput label="Pump NA" value={pumpNA} onChange={setPumpNA} step="0.01" />
-              </div>
-              <div>
-                <ValidatedNumberInput label="Signal NA" value={signalNA} onChange={setSignalNA} step="0.01" />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4">Results</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between"><span className="text-gray-400">Total input pump power:</span><span className="font-mono">{totalPumpPower.toFixed(0)} W</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Combined pump power:</span><span className="font-mono text-green-400 text-lg">{combinedPumpPower.toFixed(1)} W</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Power lost in combiner:</span><span className="font-mono text-red-400">{(totalPumpPower - combinedPumpPower).toFixed(1)} W</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Pump brightness:</span><span className="font-mono">{pumpBrightness.toFixed(0)} W/sr</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">NA² ratio (sig/pump):</span><span className="font-mono">{brightnessRatio.naRatio.toFixed(4)} <span className="text-xs">/ need ≥{brightnessRatio.requiredRatio.toFixed(4)}</span></span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Brightness feasible:</span><span className={`font-mono ${brightnessRatio.feasible ? "text-green-400" : "text-red-400"}`}>{brightnessRatio.feasible ? "✓ Yes" : "✗ No"}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Signal insertion loss:</span><span className="font-mono">{signalInsertionLoss.toFixed(2)} dB</span></div>
-              </div>
-            </div>
-            <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
-              <h3 className="text-sm font-medium text-gray-400 mb-2">Formulas</h3>
-              <p className="font-mono text-sm">P_comb = N · P_pump · η_comb</p>
-              <p className="font-mono text-sm mt-1">B = P / (π · NA²) [W/sr]</p>
-              <p className="font-mono text-sm mt-1">NA_match: (NA_sig/NA_pump)² ≥ N/η</p>
-            </div>
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <ValidatedNumberInput label="Pump Ports N" value={portsRaw} onChange={setNumPumpPorts} min={1} max={100} />
+            <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+              <span className="text-sm text-gray-300">Centre Signal Fibre</span>
+              <select value={signalPort ? "yes" : "no"} onChange={e => setSignalPort(e.target.value)}
+                className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+                <option value="yes">Yes, (N+1)×1</option>
+                <option value="no">No, N×1</option>
+              </select>
+            </label>
+            <ValidatedNumberInput label="Pump Power per Port (W)" value={powerRaw} onChange={setPumpPowerPerPort} min={0} max={10000} step="any" />
+            <ValidatedNumberInput label="Pump Transmission (%)" value={effRaw} onChange={setCombinerEfficiency} min={0} max={100} step="any" />
+            <ValidatedNumberInput label="Pump Fibre Core Ø (µm)" value={pumpCoreRaw} onChange={setPumpCore} min={1} max={2000} step="any" />
+            <ValidatedNumberInput label="Pump Fibre Cladding Ø (µm)" value={pumpCladRaw} onChange={setPumpClad} min={1} max={2000} step="any" />
+            <ValidatedNumberInput label="Pump Fibre NA" value={pumpNARaw} onChange={setPumpNA} min={0.01} max={1} step="any" />
+            <ValidatedNumberInput label="Signal Insertion Loss (dB)" value={signalILRaw} onChange={setSignalInsertionLoss} min={0} max={20} step="any" />
+            <ValidatedNumberInput label="Output Pump-Guide Ø (µm)" value={outDiaRaw} onChange={setOutDia} min={1} max={5000} step="any" />
+            <ValidatedNumberInput label="Output Pump-Guide NA" value={outNARaw} onChange={setOutNA} min={0.01} max={1} step="any" />
           </div>
         </div>
 
-        <div className="mt-8 grid md:grid-cols-2 gap-8">
+        <div className="space-y-4">
           <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-            <ChartPanel data={efficiencyCurve} layout={layout1} />
+            <h2 className="text-lg font-semibold mb-4">Results</h2>
+            <div className="space-y-3">
+              <div className="flex justify-between"><span className="text-gray-400">Total pump input:</span><span className="font-mono">{calc.pIn.toFixed(1)} W</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Combined pump output:</span><span className="font-mono text-green-400 text-lg">{calc.pOut.toFixed(1)} W</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Lost in combiner:</span><span className="font-mono text-red-400">{(calc.pIn - calc.pOut).toFixed(1)} W</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Étendue used N·(d·NA)²/(D·NA)²:</span><span className={`font-mono ${ok(calc.etendueOK)}`}>{(calc.U * 100).toFixed(1)} %</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Ideal port limit (étendue):</span><span className="font-mono">{calc.maxPorts}</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Bundle Ø before taper:</span><span className="font-mono">{(calc.bundle * 1e6).toFixed(0)} µm</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Taper ratio:</span><span className="font-mono">{calc.taperRatio.toFixed(3)}</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Pump NA after taper:</span><span className={`font-mono ${ok(calc.taperOK)}`}>{calc.naTaper > 1 ? "> 1 (unguided)" : `${calc.naTaper.toFixed(3)} ${calc.taperOK ? "≤" : ">"} ${outNA}`}</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Pump brightness in / out:</span><span className="font-mono">{calc.bIn.toExponential(2)} / {calc.bOut.toExponential(2)} W/(mm²·sr)</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Signal transmission:</span><span className="font-mono">{(calc.signalT * 100).toFixed(2)} %</span></div>
+            </div>
           </div>
-          <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-            <ChartPanel data={powerBar} layout={layout2} />
+          <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
+            <h3 className="text-sm font-medium text-gray-400 mb-2">Formulas</h3>
+            <p className="font-mono text-sm">P_out = N·P_port·η</p>
+            <p className="font-mono text-sm mt-1">Étendue: N·(d_p·NA_p)² ≤ (D_out·NA_out)²</p>
+            <p className="font-mono text-sm mt-1">Hex bundle Ø = (2n + 1)·d_clad; taper ratio TR = max(1, Ø/D_out)</p>
+            <p className="font-mono text-sm mt-1">NA after taper = NA_p·TR ≤ NA_out</p>
+            <p className="text-xs text-gray-400 mt-2">
+              The taper test includes the cladding and packing gaps, so it is stricter than the étendue bound.
+              The signal fibre is taken with the pump cladding Ø.
+            </p>
           </div>
         </div>
+      </div>
+
+      <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
+        <ChartPanel data={chartData} layout={{
+          title: "Pump NA vs Number of Ports",
+          xaxis: { title: "Pump Ports N", gridcolor: "#374151" },
+          yaxis: { title: "NA", gridcolor: "#374151", rangemode: "tozero" },
+          paper_bgcolor: "#111827", plot_bgcolor: "#1f2937",
+          font: { color: "#f3f4f6" }, showlegend: true, legend: { x: 0.02, y: 0.98 }, height: 380,
+        }} />
+      </div>
     </>
   );
 }
