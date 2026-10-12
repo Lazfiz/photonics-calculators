@@ -1,8 +1,20 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import {
+  SBS_POLARIZATION_FACTOR, alphaFromDbPerKm, brillouinShift, effectiveLength, sbsLinewidthFactor, sbsThreshold,
+} from "../../../physics/fiber-optics/fiber-nonlinear";
+
+const POL_CASES = [
+  { key: "copolarized", label: "co-polarized / PM fibre (K = 1)", color: "#22c55e" },
+  { key: "randomBirefringence", label: "standard SMF (K = 1.5)", color: "#3b82f6" },
+  { key: "scrambled", label: "scrambled pump (K = 2)", color: "#f59e0b" },
+] as const;
+
+const toDbm = (P: number) => 10 * Math.log10(P * 1e3);
 
 export default function SBSThresholdPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
@@ -14,63 +26,46 @@ export default function SBSThresholdPage() {
   const [laserLinewidth, setLaserLinewidth] = useURLState("laserLinewidth", 1); // MHz
 
   const results = useMemo(() => {
-    const wl = wavelength * 1e-9;
-    const L = fiberLength * 1e3;
-    const Aeff = effectiveArea * 1e-12; // m²
-    const alpha = loss / (10 * Math.log10(Math.E)) / 1e3; // Np/m
-    const gB = brillouinGain;
+    const lambda = Math.max(wavelength, 1) * 1e-9;
+    const L = Math.max(fiberLength, 1e-3) * 1e3;
+    const Aeff = Math.max(effectiveArea, 1) * 1e-12;
+    const alpha = alphaFromDbPerKm(Math.max(loss, 0));
+    const gB = Math.max(brillouinGain, 1e-15);
+    const dnuB = Math.max(brillouinBandwidth, 0.1) * 1e6;
+    const dnuS = Math.max(laserLinewidth, 0) * 1e6;
 
-    // Effective length
-    const Leff = (1 - Math.exp(-alpha * L)) / alpha;
+    const Leff = effectiveLength(alpha, L);
+    const threshold = (K: number, leff = Leff, dnu = dnuS) =>
+      sbsThreshold({ Aeff, gB, Leff: leff, K, sourceLinewidth: dnu, brillouinLinewidth: dnuB });
+    const thresholds = POL_CASES.map(({ key }) => threshold(SBS_POLARIZATION_FACTOR[key]));
 
-    // Threshold (Smith formula — for unpolarized light)
-    const pthUnpolarized = 21 * Aeff / (gB * Leff); // W
-    // Polarized light has 2× higher SBS gain → threshold is halved
-    const pth = pthUnpolarized / 2;
+    const linewidths = Array.from({ length: 81 }, (_, i) => (i * 5 * dnuB) / 80 / 1e6); // 0 … 5Δν_B, MHz
+    const lengths = Array.from({ length: 80 }, (_, i) => ((i + 1) / 80) * 2 * (L / 1e3)); // 0 … 2L, km
+    const curves = (xs: number[], f: (K: number, x: number) => number) =>
+      POL_CASES.map(({ key, label, color }) => ({
+        type: "scatter" as const, mode: "lines" as const, name: label, line: { color, width: 2 },
+        x: xs, y: xs.map((x) => f(SBS_POLARIZATION_FACTOR[key], x) * 1e3),
+      }));
 
-    // Spectral broadening factor
-    const deltaNuB = brillouinBandwidth * 1e6;
-    const deltaNuL = laserLinewidth * 1e6;
-    const spectralFactor = (deltaNuB + deltaNuL) / deltaNuB;
-    const pthCorrected = pth * spectralFactor;
-
-    // SBS gain coefficient vs linewidth
-    const linewidths = Array.from({ length: 50 }, (_, i) => 0.1 + i * 2);
-    const gainVsLinewidth = linewidths.map((lw) => gB / ((1 + lw / brillouinBandwidth)));
-
-    // Threshold vs fiber length
-    const lengths = Array.from({ length: 50 }, (_, i) => (i + 1) * 2);
-    const thresholdVsLength = lengths.map((l) => {
-      const Le = (1 - Math.exp(-alpha * l * 1e3)) / alpha;
-      return (21 * Aeff / (gB * Le) / 2 * spectralFactor) * 1e3; // mW
-    });
-
-    // Threshold vs effective area
-    const areas = Array.from({ length: 50 }, (_, i) => 20 + i * 4);
-    const thresholdVsArea = areas.map((a) => {
-      const A = a * 1e-12;
-      return (21 * A / (gB * Leff) / 2 * spectralFactor) * 1e3; // mW
-    });
-
-    // Backscatter power vs input power
-    const inputPowers = Array.from({ length: 50 }, (_, i) => (i + 1) * 2);
-    const backscatter = inputPowers.map((pin) => {
-      const pinW = pin / 1000;
-      if (pinW < pthCorrected * 0.5) {
-        return pin * 0.001; // Rayleigh ~0.1%
-      } else {
-        // Exponential growth above threshold
-        const factor = Math.exp(gB * Leff * pinW / Aeff);
-        return Math.min(pin * 0.5, pin * 0.001 * factor);
-      }
-    });
-
-    return { pthUnpolarized, pth, pthCorrected, Leff, lengths, thresholdVsLength, areas, thresholdVsArea, inputPowers, backscatter, spectralFactor };
+    return {
+      Leff,
+      nuB: brillouinShift(lambda),
+      linewidthFactor: sbsLinewidthFactor(dnuS, dnuB),
+      thresholds,
+      vsLinewidth: curves(linewidths, (K, lw) => threshold(K, Leff, lw * 1e6)),
+      vsLength: curves(lengths, (K, l) => threshold(K, effectiveLength(alpha, l * 1e3))),
+    };
   }, [wavelength, fiberLength, effectiveArea, loss, brillouinGain, brillouinBandwidth, laserLinewidth]);
+
+  const chartLayout = (xTitle: string) => ({
+    xaxis: { title: xTitle, color: "#9ca3af", gridcolor: "#374151" },
+    yaxis: { title: "SBS Threshold (mW)", color: "#9ca3af", gridcolor: "#374151", rangemode: "tozero" as const },
+    margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
+    legend: { x: 0.02, y: 0.98, bgcolor: "rgba(0,0,0,0)" },
+  });
 
   return (
     <>
-            
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Fiber Parameters</h2>
@@ -81,7 +76,7 @@ export default function SBSThresholdPage() {
             { label: "Loss (dB/km)", val: loss, set: setLoss },
           ].map(({ label, val, set }) => (
             <div key={label} className="mb-3">
-              <ValidatedNumberInput label={label} value={val} onChange={set} step="any" />
+              <ValidatedNumberInput label={label} value={val} onChange={set} min={0} step="any" />
             </div>
           ))}
         </div>
@@ -90,11 +85,11 @@ export default function SBSThresholdPage() {
           <h2 className="text-lg font-semibold mb-4">Brillouin Parameters</h2>
           {[
             { label: "Brillouin Gain gB (m/W)", val: brillouinGain, set: setBrillouinGain },
-            { label: "Brillouin Bandwidth (MHz)", val: brillouinBandwidth, set: setBrillouinBandwidth },
-            { label: "Laser Linewidth (MHz)", val: laserLinewidth, set: setLaserLinewidth },
+            { label: "Brillouin Gain Bandwidth ΔνB (MHz)", val: brillouinBandwidth, set: setBrillouinBandwidth },
+            { label: "Source Linewidth Δνs (MHz)", val: laserLinewidth, set: setLaserLinewidth },
           ].map(({ label, val, set }) => (
             <div key={label} className="mb-3">
-              <ValidatedNumberInput label={label} value={val} onChange={set} step="any" />
+              <ValidatedNumberInput label={label} value={val} onChange={set} min={0} step="any" />
             </div>
           ))}
         </div>
@@ -102,56 +97,31 @@ export default function SBSThresholdPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Results</h2>
           <div className="space-y-3">
-            <ResultRow label="Effective Length" value={`${(results.Leff / 1000).toFixed(2)} km`} />
-            <ResultRow label="Spectral Broadening Factor" value={results.spectralFactor.toFixed(3)} />
-            <ResultRow label="Threshold (unpolarized)" value={`${(results.pthUnpolarized * 1000).toFixed(1)} mW`} />
-            <ResultRow label="Threshold (polarized)" value={`${(results.pth * 1000).toFixed(1)} mW`} />
-            <ResultRow label="Threshold (corrected)" value={`${(results.pthCorrected * 1000).toFixed(1)} mW`} />
-            <ResultRow label="Threshold" value={`${(10 * Math.log10(results.pthCorrected * 1000)).toFixed(1)} dBm`} />
+            <ResultRow label="Effective Length" value={`${(results.Leff / 1000).toFixed(3)} km`} />
+            <ResultRow label="Brillouin Shift νB" value={`${(results.nuB / 1e9).toFixed(2)} GHz`} />
+            <ResultRow label="Linewidth Factor 1 + Δνs/ΔνB" value={results.linewidthFactor.toFixed(4)} />
+            {POL_CASES.map(({ key, label }, i) => (
+              <ResultRow
+                key={key}
+                label={`Threshold, ${label}`}
+                value={`${(results.thresholds[i] * 1e3).toPrecision(4)} mW (${toDbm(results.thresholds[i]).toFixed(2)} dBm)`}
+              />
+            ))}
           </div>
+          <p className="text-xs text-gray-500 mt-3">
+            P_th = 21·K·A_eff·(1 + Δνs/ΔνB) / (gB·L_eff). The linewidth factor assumes a Lorentzian source; phase or
+            data modulation that spreads the spectrum over GHz raises the threshold much further.
+          </p>
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <h2 className="text-lg font-semibold mb-4">Backscatter vs Input Power</h2>
-          <ChartPanel data={[
-              { type: "scatter" as const, mode: "lines" as const, x: results.inputPowers, y: results.backscatter, name: "Backscatter", line: { color: "#ef4444", width: 2 } },
-              { type: "scatter" as const, mode: "lines" as const, x: results.inputPowers, y: results.inputPowers.map((p) => p * 0.001), name: "Rayleigh", line: { color: "#3b82f6", dash: "dash" } },
-            ]}
-            layout={{
-              xaxis: { title: "Input Power (mW)", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "Backscatter Power (mW)", color: "#9ca3af", gridcolor: "#374151" },
-              margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
-              legend: { x: 0.02, y: 0.98, bgcolor: "rgba(0,0,0,0)" },
-            }}
-           
-           
-          />
+          <h2 className="text-lg font-semibold mb-4">Threshold vs Source Linewidth</h2>
+          <ChartPanel data={results.vsLinewidth} layout={chartLayout("Source Linewidth (MHz)")} />
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Threshold vs Fiber Length</h2>
-          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.lengths, y: results.thresholdVsLength, line: { color: "#22c55e", width: 2 } }]}
-            layout={{
-              xaxis: { title: "Fiber Length (km)", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "SBS Threshold (mW)", color: "#9ca3af", gridcolor: "#374151" },
-              margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
-            }}
-           
-           
-          />
-        </div>
-
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <h2 className="text-lg font-semibold mb-4">Threshold vs Effective Area</h2>
-          <ChartPanel data={[{ type: "scatter" as const, mode: "lines" as const, x: results.areas, y: results.thresholdVsArea, line: { color: "#f59e0b", width: 2 } }]}
-            layout={{
-              xaxis: { title: "Effective Area (μm²)", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "SBS Threshold (mW)", color: "#9ca3af", gridcolor: "#374151" },
-              margin: { l: 50, r: 20, t: 20, b: 50 }, paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
-            }}
-           
-           
-          />
+          <ChartPanel data={results.vsLength} layout={chartLayout("Fiber Length (km)")} />
         </div>
       </div>
     </>
@@ -160,9 +130,9 @@ export default function SBSThresholdPage() {
 
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between items-center py-1 border-b border-gray-800">
+    <div className="flex justify-between items-center gap-3 py-1 border-b border-gray-800">
       <span className="text-gray-400 text-sm">{label}</span>
-      <span className="font-mono text-sm">{value}</span>
+      <span className="font-mono text-sm text-right">{value}</span>
     </div>
   );
 }

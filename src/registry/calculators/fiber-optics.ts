@@ -376,8 +376,23 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "nonlinear-effects",
     title: "Nonlinear Effects in Fiber",
-    description: "Calculate SPM, XPM, FWM penalties, SBS/SRS thresholds, and nonlinear phase shift.",
-    knownIssue: "The SBS linewidth factor is a square root instead of linear, and the four-wave-mixing efficiency has wrong units, so FWM always shows 0 dB.",
+    description: "Calculate the nonlinear coefficient γ, SPM and XPM phase, four-wave-mixing efficiency and SBS/SRS thresholds of a fiber span.",
+    tier: "textbook",
+    modelNote: "γ = 2πn₂/(λA_eff), SPM phase and Gaussian rms broadening, XPM upper bound (no walk-off), Inoue FWM efficiency (β₂, β₃) for the nearest product, worst-case CW SBS/SRS thresholds. Not a Q penalty.",
+    references: [
+      {
+        citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed., §2.3 (γ), §4.1 (SPM), §7.1 (XPM). Academic Press.",
+        url: "https://doi.org/10.1016/C2018-0-01168-8",
+      },
+      {
+        citation: "Inoue K. (1992). Four-wave mixing in an optical fiber in the zero-dispersion wavelength region. J. Lightwave Technol. 10, 1553. FWM efficiency η.",
+        url: "https://doi.org/10.1109/50.184893",
+      },
+      {
+        citation: "Smith R. G. (1972). Optical power handling capacity of low loss optical fibers as determined by stimulated Raman and Brillouin scattering. Appl. Opt. 11, 2489. Critical powers 16 (SRS) and 21 (SBS).",
+        url: "https://doi.org/10.1364/AO.11.002489",
+      },
+    ],
   },
   {
     slug: "nonzero-dispersion",
@@ -466,7 +481,26 @@ export const fiberOptics: CalculatorEntry[] = [
     slug: "sbs-threshold",
     title: "SBS Threshold Power",
     description: "Calculate Stimulated Brillouin Scattering threshold for optical fibers.",
-    knownIssue: "Smith's factor 21 already assumes co-polarized light, but the page halves it for polarized light, so the threshold is 2× too low; zero loss gives NaN.",
+    tier: "textbook",
+    modelNote: "Smith critical power 21·K·A_eff·(1 + Δν_s/Δν_B)/(g_B·L_eff) for a CW pump: K = 1 co-polarized, 1.5 standard fibre, 2 scrambled; Lorentzian source linewidth. Undepleted pump. ν_B = 2n·v_A/λ.",
+    references: [
+      {
+        citation: "Smith R. G. (1972). Optical power handling capacity of low loss optical fibers as determined by stimulated Raman and Brillouin scattering. Appl. Opt. 11, 2489. Critical powers 16 (SRS) and 21 (SBS).",
+        url: "https://doi.org/10.1364/AO.11.002489",
+      },
+      {
+        citation: "van Deventer M. O., Boot A. J. (1994). Polarization properties of stimulated Brillouin scattering in single-mode fibers. J. Lightwave Technol. 12, 585. Polarization factor K = 1.5.",
+        url: "https://doi.org/10.1109/50.285349",
+      },
+      {
+        citation: "Kobyakov A., Sauer M., Chowdhury D. (2010). Stimulated Brillouin scattering in optical fibers. Adv. Opt. Photon. 2, 1. Review; depolarized pump K = 2.",
+        url: "https://doi.org/10.1364/AOP.2.000001",
+      },
+      {
+        citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed., §9.1 (Brillouin shift, gain g_B, linewidth). Academic Press.",
+        url: "https://doi.org/10.1016/C2018-0-01168-8",
+      },
+    ],
   },
   {
     slug: "side-polished",
@@ -505,6 +539,22 @@ export const fiberOptics: CalculatorEntry[] = [
     slug: "srs-threshold",
     title: "SRS Threshold Power",
     description: "Calculate Stimulated Raman Scattering threshold for optical fibers.",
+    tier: "textbook",
+    modelNote: "Smith critical power 16·K·A_eff/(g_R·L_eff) for forward SRS of a CW pump at the gain peak: K = 1 co-polarized, 2 standard fibre. Undepleted pump; on-off gain exp(g_R·P·L_eff/(K·A_eff)).",
+    references: [
+      {
+        citation: "Smith R. G. (1972). Optical power handling capacity of low loss optical fibers as determined by stimulated Raman and Brillouin scattering. Appl. Opt. 11, 2489. Critical powers 16 (SRS) and 21 (SBS).",
+        url: "https://doi.org/10.1364/AO.11.002489",
+      },
+      {
+        citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed., §8.1 (Raman gain g_R ∝ 1/λ_p, 13.2 THz shift, polarization). Academic Press.",
+        url: "https://doi.org/10.1016/C2018-0-01168-8",
+      },
+      {
+        citation: "Stolen R. H., Ippen E. P. (1973). Raman gain in glass optical waveguides. Appl. Phys. Lett. 22, 276.",
+        url: "https://doi.org/10.1063/1.1654637",
+      },
+    ],
   },
   {
     slug: "tapered-fiber",
