@@ -77,8 +77,9 @@ and heed deprecation notices.
    merge via PR. No force-push.
 
 ## Working style (quota)
-- One ROADMAP phase/stage per session. End with `/handover` (one-line ROADMAP tick, HANDOVER ≤80 lines),
-  then `/clear`.
+- One ROADMAP phase/stage per session, sized to fit one context window: about 4 pages, or one shared module and its
+  pages. Auto-compaction fires at ≈ 218k tokens and start-up context takes ≈ 60k. Split a bigger stage into a/b boxes
+  before starting. End with `/handover` (one-line ROADMAP tick, HANDOVER ≤80 lines), then `/clear`.
 - Main session (Opus) designs, does the physics, and reviews. Small fixes stay inline. Delegate when the output would
   be large next to the brief:
   - routine multi-file edits → `implementer` (Sonnet): goal, allowed files, gates, ≤40-line report;
@@ -86,6 +87,17 @@ and heed deprecation notices.
   - physics review of a batch → `physics-reviewer` (Opus, high effort, read-only).
   Review the diffs that agents produce before committing them.
 - Long commands (`tsc`, `build`, `npm ci`) run in the background; don't poll.
+
+## Compact instructions
+When compacting, keep:
+- the ROADMAP stage, its branch, and the steps done and left, as a checklist;
+- each changed, uncommitted file with the functions and signatures added or changed;
+- golden values and test expectations with their sources; gate, PR and CI status; whether the user approved a merge;
+- the user's messages and decisions word for word, and errors hit with their fixes.
+
+Drop tool output, file contents that can be re-read, probe logs, and drafts already saved to files. After a compaction
+the `SessionStart` hook (`.claude/hooks/after-compact.mjs`) prints the branch, `git status`, the last commits and the
+first unchecked ROADMAP box.
 
 ## Skills, scripts & rules
 - Skills: `/verify` (gates + live check), `/ship` (push → PR → CI → merge on the user's yes → production check),

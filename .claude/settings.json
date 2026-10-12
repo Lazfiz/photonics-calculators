@@ -38,6 +38,18 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/after-compact.mjs\"",
+            "timeout": 30
+          }
+        ]
+      }
     ]
   }
 }
