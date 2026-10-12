@@ -20,20 +20,17 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | imaging | 9 / 65 | findings fixed (sessions 19, 22); no full audit |
 | free-space-comms | 6 / 27 | findings fixed (Phase 1, session 21); no full audit |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
-| fiber-optics | 18 / 49 | part 0 (session 43), fix parts 1–3 (sessions 44–46); 26 `knownIssue`s; parts 4–11 below |
+| fiber-optics | 21 / 49 | part 0 (session 43), fix parts 1–4 (sessions 44–47); 23 `knownIssue`s; parts 5–11 below |
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 0 / 54 | |
-| **total** | **154 / 461** | 26 `knownIssue`s (fiber-optics) |
+| **total** | **157 / 461** | 23 `knownIssue`s (fiber-optics) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
   extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
   curl. Also clear the eslint warning there (unused `wavelength` state).
 - [ ] **Fiber-optics fix parts** (≈ 4 pages each; questionable pages in brackets get their tier in the same part):
-  - [ ] 4 `fiber-bragg-grating.ts` (Erdogan uniform R(λ), first-zero width, FWHM, strain/temperature): `fiber-bragg-grating`
-    (Δn 1e-4, 10 mm, n 1.468: R₀ 0.93291, R(σ̂=κ) 0.8043, first zero 0.19476 nm), `fiber-bragg-grating-sensor`,
-    `fiber-optic-sensor` (MZI 0.04642 rad/µε at 10 mm; water dn/dT ≈ −1e-4/K).
   - [ ] 5 `sagnac.ts`: `fiber-gyroscope` (S 0.67608 s, ARW 3.636e-5 °/√h), `fiber-loop-mirror` (R 4k(1−k),
     T (1−2k)²); plus `fiber-bundle` (37 × 125 µm → Ø 0.875 mm, core fill 0.1888) and `pump-combiner` (étendue).
   - [ ] 6 `doped-fiber-gain.ts` (two-level gain, P_sat hνA/((σa+σe)τ) = 0.2711 mW, implicit saturation → 11.58 dB, one
@@ -173,5 +170,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   - Fiber-optics part 1 (session 44, PR #45): `gaussian-coupling.ts`; splice, connector IL/RL, coupling-efficiency tiered; 466 tests.
   - Fiber-optics part 2 (session 45, PR #47): `chromatic-dispersion.ts` (optimum-pulse limits, β₃, modal in quadrature); 5 dispersion pages tiered; 480 tests.
   - Fiber-optics part 3 (session 46, PR #49): `fiber-nonlinear.ts` (Smith ×K, linear linewidth, Inoue FWM); sbs/srs-threshold, nonlinear-effects tiered; 488 tests.
+  - Fiber-optics part 4 (session 47, PR #51): `fiber-bragg-grating.ts` (Erdogan uniform, TMM apodized/chirped, strain/thermal) + `fiber-sensors.ts`; 3 FBG/sensor pages tiered; 499 tests.
 - Session 41: roadmap archived; `/ship` and `/handover` skills; `physics-reviewer` on Opus; `checker` agent on Haiku.
 - [ ] Optional (user): a Defender exclusion for `C:\dev`.
