@@ -32,20 +32,55 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "connector-insertion-loss",
     title: "Connector Insertion Loss Calculator",
-    description: "Calculate connector insertion loss from misalignment parameters and build link budgets for different connector types.",
+    description: "Calculate single-mode connector insertion loss from offset, tilt and gap, and build link budgets from IEC 61753-1 grades.",
     heading: "Connector Insertion Loss",
-    knownIssue: "The gap-loss term is 4× too large in its argument (as on the splice-loss page), and the contact and APC losses are uncited fixed values.",
+    tier: "textbook",
+    modelNote: "Gaussian mode overlap for offset, tilt (in glass at contact) and a gap of up to 5 µm, times the gap's Airy transmission. Budgets use IEC 61753-1 single-mode grades (random mate). No MFD mismatch.",
+    references: [
+      {
+        citation: "Marcuse D. (1977). Loss analysis of single-mode fiber splices. Bell Syst. Tech. J. 56, 703. Gaussian offset, tilt and spot-size mismatch formulas.",
+        url: "https://doi.org/10.1002/j.1538-7305.1977.tb00534.x",
+      },
+      {
+        citation: "Nemoto S., Makimoto T. (1979). Analysis of splice loss in single-mode fibres using a Gaussian field approximation. Opt. Quantum Electron. 11, 447. Gap and combined misalignments.",
+        url: "https://doi.org/10.1007/BF00619826",
+      },
+      {
+        citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed., §7.6.1. Cambridge University Press. Airy transmission of the gap.",
+        url: "https://doi.org/10.1017/CBO9781139644181",
+      },
+      {
+        citation: "Kolesar P. (2013). IEC single-mode connection performance grades (IEC 61753-1), slide 6. IEEE 802.3bm SMF ad hoc, 30 April 2013.",
+        url: "https://grouper.ieee.org/groups/802/3/bm/public/smfadhoc/meetings/apr30_13/kolesar_01a_0413_smf.pdf",
+      },
+    ],
   },
   {
     slug: "connector-return-loss",
     title: "Connector Return Loss Calculator",
-    description: "Calculate return loss (ORL) from fiber connectors based on polish type and index mismatch.",
+    description: "Calculate the return loss of a flat or angle-polished fiber end face from the index step, and compare with IEC 61753-1 grades.",
     heading: "Connector Return Loss",
+    tier: "textbook",
+    modelNote: "Fresnel reflection of an open end face (phase index); an angled face adds Gaussian back-coupling at 2α, an optimistic bound (APC is specified at ≥ 55 dB unmated). Mated values: IEC 61753-1 grades.",
+    references: [
+      {
+        citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed., §1.5.2. Cambridge University Press. Fresnel reflection coefficients.",
+        url: "https://doi.org/10.1017/CBO9781139644181",
+      },
+      {
+        citation: "Marcuse D. (1989). Reflection loss of laser mode from tilted end mirror. J. Lightwave Technol. 7, 336. Back-coupling of a beam reflected at an angled face.",
+        url: "https://doi.org/10.1109/50.17776",
+      },
+      {
+        citation: "Kolesar P. (2013). IEC single-mode connection performance grades (IEC 61753-1), slide 6. IEEE 802.3bm SMF ad hoc, 30 April 2013.",
+        url: "https://grouper.ieee.org/groups/802/3/bm/public/smfadhoc/meetings/apr30_13/kolesar_01a_0413_smf.pdf",
+      },
+    ],
   },
   {
     slug: "coupling-efficiency",
     title: "Fiber Coupling Efficiency Calculator",
-    description: "Estimate Gaussian-to-fiber coupling loss from NA mismatch, lateral offset, and angular misalignment.",
+    description: "Estimate Gaussian-beam-to-single-mode-fiber coupling efficiency from beam NA, mode field diameter, lateral offset and tilt.",
     heading: "Fiber Coupling Efficiency",
     keywords: ["fiber coupling", "alignment", "insertion loss"],
     priority: 98,
@@ -62,6 +97,18 @@ export const fiberOptics: CalculatorEntry[] = [
       {
         href: "/fiber-optics/splice-loss",
         note: "Another alignment-sensitive fiber insertion problem.",
+      },
+    ],
+    tier: "textbook",
+    modelNote: "Single-mode Gaussian overlap of a beam waist w₀ = λ/(π·NA) on the fibre face with the fibre mode (MFD/2), with offset and tilt. Paraxial (NA ≲ 0.3); not for multimode fibre or extended sources.",
+    references: [
+      {
+        citation: "Joyce W. B., DeLoach B. C. (1984). Alignment of Gaussian beams. Appl. Opt. 23, 4187. Combined offset, tilt, gap and waist mismatch.",
+        url: "https://doi.org/10.1364/AO.23.004187",
+      },
+      {
+        citation: "Kogelnik H., Li T. (1966). Laser beams and resonators. Appl. Opt. 5, 1550. Waist from far-field divergence, w₀ = λ/(π·NA).",
+        url: "https://doi.org/10.1364/AO.5.001550",
       },
     ],
   },
@@ -349,8 +396,23 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "splice-loss",
     title: "Fiber Splice Loss",
-    description: "Estimate splice/connector loss from lateral offset, angular misalignment, and end-face gap for single-mode fiber.",
-    knownIssue: "The gap-loss term lacks a factor 2 and the index, so a 10 µm gap reads 0.25 dB instead of 0.064 dB. The tilt term has no index and the wavelength is fixed at 1550 nm.",
+    description: "Estimate single-mode splice loss from lateral offset, tilt, end-face gap and mode-field-diameter mismatch with the Gaussian mode model.",
+    tier: "textbook",
+    modelNote: "Paraxial Gaussian mode overlap for offset, tilt (unfavourable sense), a gap in a medium of index n and unequal mode-field diameters, combined. Not included: Fresnel reflection at an air gap, mode ellipticity.",
+    references: [
+      {
+        citation: "Marcuse D. (1977). Loss analysis of single-mode fiber splices. Bell Syst. Tech. J. 56, 703. Gaussian offset, tilt and spot-size mismatch formulas.",
+        url: "https://doi.org/10.1002/j.1538-7305.1977.tb00534.x",
+      },
+      {
+        citation: "Nemoto S., Makimoto T. (1979). Analysis of splice loss in single-mode fibres using a Gaussian field approximation. Opt. Quantum Electron. 11, 447. Gap and combined misalignments.",
+        url: "https://doi.org/10.1007/BF00619826",
+      },
+      {
+        citation: "Joyce W. B., DeLoach B. C. (1984). Alignment of Gaussian beams. Appl. Opt. 23, 4187. Combined offset, tilt, gap and waist mismatch.",
+        url: "https://doi.org/10.1364/AO.23.004187",
+      },
+    ],
   },
   {
     slug: "srs-threshold",
