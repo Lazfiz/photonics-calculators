@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 41, 2026-10-11)
+## Status (session 42, 2026-10-12)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -16,7 +16,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 |---|---|---|
 | laser-safety | 40 / 40 | done (sessions 18, 23, 29–36) |
 | thin-film | 39 / 45 | leftovers below |
-| polarization | 24 / 33 | parts 1–3 done (sessions 37–40); part 4 next |
+| polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
 | imaging | 9 / 65 | findings fixed (sessions 19, 22); no full audit |
 | free-space-comms | 6 / 27 | findings fixed (Phase 1, session 21); no full audit |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
@@ -24,23 +24,12 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 0 / 54 | |
-| **total** | **131 / 461** | 6 `knownIssue`s, all polarization part 4 |
+| **total** | **139 / 461** | 0 `knownIssue`s |
 
 ## Next (Phase 4, in order)
-- [ ] **Polarization part 4: optical activity, microscopy, scrambling** (branch `phase-4/polarization-activity`).
-  - `optical-activity`: one temperature coefficient; Drude for sucrose; an M_W input.
-  - `circular-dichroism`: drop the fixed structure panel; residue count.
-  - `conoscopic`: crystal angle sin θc = NA/n̄; 2V.
-  - `orthoconoscopic` and `birefringence-imaging`: specimen angle. The Michel-Lévy colour needs the CIE 1931
-    colour-matching functions.
-  - `microscope-polarizer`.
-  - `depolarization`: closed-form sinc average.
-  - `polarization-scrambling`: a retarder-based scrambler.
-
-  Each page's current error is its registry `knownIssue`. Also replace any "Rutile" preset of 1.973/2.165, which is
-  YVO₄-like. Rutile is ≈ 2.613/2.909 at 589 nm (`materials/uniaxial-data.ts`).
 - [ ] `polarizer-types`: sourced specs. The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to
-  WebFetch and curl. Use Claude in Chrome, or ask the user for data sheets.
+  WebFetch and curl. Use Claude in Chrome, or ask the user for data sheets. Also clear the eslint warnings there
+  (unused `wavelength` state) and in `polarizer-extinction` (unused `useState`).
 - [ ] **Next category audit** (the user picks; detectors 0/54 or fiber-optics 3/49 suggested). Use the procedure from
   thin film, laser safety and polarization:
   - Part 0 audits every untiered page with `physics-reviewer` batches (Opus, high effort).
@@ -90,6 +79,11 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 **Materials**
 - `birefringent-crystals` lists the fused-silica Malitson set as quartz.
 - `crystal-birefringence` has rutile at 2.454/2.493. Use `materials/uniaxial-data.ts`.
+
+**Polarization**
+- `polarization-scrambling` multiplies the stage means, which holds only for incommensurate frequencies. Near-resonant
+  stages (q·f_i ≈ p·f_j, p, q ≤ 4) only get a warning: locked 1 kHz stages give 0.5118 in the product but 0.8848 averaged
+  in time (`tests/polarization-scrambler.test.ts`). An exact average over the beat period would fix it.
 
 **Laser safety** (optional)
 - A scanned-lidar mode on `lidar-safety`.
@@ -152,5 +146,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   - Thin film parts 1–4 (sessions 25–28, PRs #22–25).
   - Laser safety audit, parts 2–5b and loose ends (sessions 29–36, PRs #26–33).
   - Polarization audit and parts 1–3 (sessions 37–40, PRs #34–37).
+  - Polarization part 4 (session 42, PR #40): 8 pages on 9 tested modules (optical activity, CD, spectral
+    depolarization, scrambler, CIE colour, interference colours, conoscopy, photoelasticity, microscope extinction);
+    456 tests; 0 `knownIssue`s left.
 - Session 41: roadmap archived; `/ship` and `/handover` skills; `physics-reviewer` on Opus; `checker` agent on Haiku.
 - [ ] Optional (user): a Defender exclusion for `C:\dev`.
