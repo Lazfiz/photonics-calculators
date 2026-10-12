@@ -225,15 +225,49 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "fiber-bragg-grating",
     title: "Fiber Bragg Grating Calculator",
-    description: "Calculate FBG reflectivity, bandwidth, and spectrum for uniform, apodized, and chirped gratings.",
-    knownIssue: "The off-centre reflectance formula is wrong near the band edge (0.008 instead of 0.80), and the first-zero bandwidth is labelled FWHM.",
+    description: "Calculate the reflection spectrum, peak reflectance, FWHM and first-zero bandwidth of uniform, Gaussian-apodized and linearly chirped fiber Bragg gratings.",
+    tier: "textbook",
+    modelNote: "Lossless coupled-mode theory, closed form for uniform gratings. Gaussian (FWHM L/2, ac only) and linear chirp (|chirp|·L ≤ 0.1λ_B) by transfer matrices. Phase n_eff for detuning and delay: no waveguide dispersion.",
+    references: [
+      {
+        citation: "Erdogan T. (1997). Fiber grating spectra. J. Lightwave Technol. 15, 1277. Coupled-mode reflectance (eq. 20), bandwidth, transfer matrices.",
+        url: "https://doi.org/10.1109/50.618322",
+      },
+      {
+        citation: "Yamada M., Sakuda K. (1987). Analysis of almost-periodic distributed feedback slab waveguides via a fundamental matrix approach. Appl. Opt. 26, 3474. Transfer-matrix method.",
+        url: "https://doi.org/10.1364/AO.26.003474",
+      },
+      {
+        citation: "Ouellette F. (1987). Dispersion cancellation using linearly chirped Bragg grating filters in optical waveguides. Opt. Lett. 12, 847. Chirped-grating dispersion.",
+        url: "https://doi.org/10.1364/OL.12.000847",
+      },
+    ],
   },
   {
     slug: "fiber-bragg-grating-sensor",
     title: "Fiber Bragg Grating Sensor Calculator",
     description: "Calculate FBG wavelength shift for strain and temperature sensing applications.",
     heading: "Fiber Bragg Grating Sensor",
-    knownIssue: "The bandwidth formula has no source and diverges as Δn → 0, and the reflection spectrum uses the same wrong off-centre formula as the Bragg-grating page.",
+    tier: "textbook",
+    modelNote: "Uniform-grating spectrum (Erdogan). Linear shift Δλ/λ = (1 − p_e)ε + K_T·ΔT: p_e from strain-optic coefficients, K_T measured on SMF-28 at 20 °C, linear within ~±50 K. Strain and ΔT not separable.",
+    references: [
+      {
+        citation: "Kersey A. D. et al. (1997). Fiber grating sensors. J. Lightwave Technol. 15, 1442. Strain and temperature response.",
+        url: "https://doi.org/10.1109/50.618377",
+      },
+      {
+        citation: "Erdogan T. (1997). Fiber grating spectra. J. Lightwave Technol. 15, 1277. Coupled-mode reflectance (eq. 20), bandwidth, transfer matrices.",
+        url: "https://doi.org/10.1109/50.618322",
+      },
+      {
+        citation: "Bertholds A., Dändliker R. (1988). Determination of the individual strain-optic coefficients in single-mode optical fibres. J. Lightwave Technol. 6, 17. p₁₁ = 0.113, p₁₂ = 0.252.",
+        url: "https://doi.org/10.1109/50.3956",
+      },
+      {
+        citation: "Cosme M. et al. (2026). Accurate determination of the temperature sensitivity of UV-induced fiber Bragg gratings. Sensors 26, 435. SMF-28: K_T = 6.165e-6 /K at 20 °C.",
+        url: "https://doi.org/10.3390/s26020435",
+      },
+    ],
   },
   {
     slug: "fiber-bundle",
@@ -295,8 +329,38 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "fiber-optic-sensor",
     title: "Fiber Optic Sensors",
-    description: "Calculate sensitivity, resolution, and response for FBG, MZI, Fabry-Pérot, and evanescent fiber sensors.",
-    knownIssue: "The interferometer's phase sensitivity is scaled by 10⁻⁶ twice and shows 0 rad/µε, and the water index changes with temperature with the wrong sign and 10× too fast.",
+    description: "Calculate the strain and temperature response of FBG and Mach-Zehnder fiber sensors, the fringes of an air-gap Fabry-Pérot cavity, and the evanescent penetration depth.",
+    tier: "textbook",
+    modelNote: "FBG, MZI: linear (1 − p_e)ε + K_T·ΔT, free fibre. EFPI: lossless plane-wave Airy cavity, no gap diffraction loss (d ≤ 50 µm), gap carries ε. Evanescent: planar decay; water dn/dT −1e-4/K near 25 °C.",
+    references: [
+      {
+        citation: "Kersey A. D. et al. (1997). Fiber grating sensors. J. Lightwave Technol. 15, 1442. Strain and temperature response.",
+        url: "https://doi.org/10.1109/50.618377",
+      },
+      {
+        citation: "Bertholds A., Dändliker R. (1988). Determination of the individual strain-optic coefficients in single-mode optical fibres. J. Lightwave Technol. 6, 17. p₁₁ = 0.113, p₁₂ = 0.252.",
+        url: "https://doi.org/10.1109/50.3956",
+      },
+      {
+        citation: "Cosme M. et al. (2026). Accurate determination of the temperature sensitivity of UV-induced fiber Bragg gratings. Sensors 26, 435. SMF-28: K_T = 6.165e-6 /K at 20 °C.",
+        url: "https://doi.org/10.3390/s26020435",
+      },
+      {
+        citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed., §7.6.1 (Airy formulae, coefficient of finesse). Cambridge University Press.",
+        url: "https://doi.org/10.1017/CBO9781139644181",
+      },
+      {
+        citation: "Harrick N. J. (1967). Internal Reflection Spectroscopy, ch. 2 (evanescent penetration depth). Wiley.",
+      },
+      {
+        citation: "Hale G. M., Querry M. R. (1973). Optical constants of water in the 200-nm to 200-μm wavelength region. Appl. Opt. 12, 555. n ≈ 1.318 at 1550 nm.",
+        url: "https://doi.org/10.1364/AO.12.000555",
+      },
+      {
+        citation: "Thormählen I., Straub J., Grigull U. (1985). Refractive index of water and its dependence on wavelength, temperature, and density. J. Phys. Chem. Ref. Data 14, 933.",
+        url: "https://doi.org/10.1063/1.555743",
+      },
+    ],
   },
   {
     slug: "fiber-taper",
