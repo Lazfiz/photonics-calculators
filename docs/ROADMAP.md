@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 44, 2026-10-12)
+## Status (session 45, 2026-10-12)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -20,20 +20,17 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | imaging | 9 / 65 | findings fixed (sessions 19, 22); no full audit |
 | free-space-comms | 6 / 27 | findings fixed (Phase 1, session 21); no full audit |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
-| fiber-optics | 10 / 49 | part 0 (session 43), fix part 1 (session 44); 32 `knownIssue`s; parts 2–11 below |
+| fiber-optics | 15 / 49 | part 0 (session 43), fix parts 1–2 (sessions 44–45); 28 `knownIssue`s; parts 3–11 below |
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 0 / 54 | |
-| **total** | **146 / 461** | 32 `knownIssue`s (fiber-optics) |
+| **total** | **151 / 461** | 28 `knownIssue`s (fiber-optics) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
   extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
   curl. Also clear the eslint warning there (unused `wavelength` state).
 - [ ] **Fiber-optics fix parts** (≈ 4 pages each; questionable pages in brackets get their tier in the same part):
-  - [ ] 2 `chromatic-dispersion.ts` (G.652 form, linear-about-1550 presets G.652/653/655/DCF, D↔β₂): `chromatic-dispersion`,
-    `dispersion-shifted`, `fiber-delay-line` (≈ 7.4 ppm/K), `fiber-bandwidth` (modal ÷1000; `pmdLimitedLength`),
-    [`nonzero-dispersion`].
   - [ ] 3 `fiber-nonlinear.ts` (L_eff finite at α = 0, γ, Smith SBS ×K pol. and linear linewidth factor, SRS, Inoue
     FWM): `sbs-threshold` (A 80 µm², g_B 5e-11, 10 km, 0.2 dB/km → 4.193 mW co-pol.), `nonlinear-effects`,
     [`srs-threshold` → 1.5973 W].
@@ -176,5 +173,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
     456 tests; 0 `knownIssue`s left.
   - Fiber-optics part 0 (session 43, PR #43): 46 pages audited; 3 OK tiered, 9 questionable, 34 `knownIssue`s.
   - Fiber-optics part 1 (session 44, PR #45): `gaussian-coupling.ts`; splice, connector IL/RL, coupling-efficiency tiered; 466 tests.
+  - Fiber-optics part 2 (session 45, PR #47): `chromatic-dispersion.ts` (optimum-pulse limits, β₃, modal in quadrature); 5 dispersion pages tiered; 480 tests.
 - Session 41: roadmap archived; `/ship` and `/handover` skills; `physics-reviewer` on Opus; `checker` agent on Haiku.
 - [ ] Optional (user): a Defender exclusion for `C:\dev`.
