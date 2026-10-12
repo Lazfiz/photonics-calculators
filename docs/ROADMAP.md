@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 45, 2026-10-12)
+## Status (session 46, 2026-10-12)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -20,20 +20,17 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | imaging | 9 / 65 | findings fixed (sessions 19, 22); no full audit |
 | free-space-comms | 6 / 27 | findings fixed (Phase 1, session 21); no full audit |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
-| fiber-optics | 15 / 49 | part 0 (session 43), fix parts 1–2 (sessions 44–45); 28 `knownIssue`s; parts 3–11 below |
+| fiber-optics | 18 / 49 | part 0 (session 43), fix parts 1–3 (sessions 44–46); 26 `knownIssue`s; parts 4–11 below |
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 0 / 54 | |
-| **total** | **151 / 461** | 28 `knownIssue`s (fiber-optics) |
+| **total** | **154 / 461** | 26 `knownIssue`s (fiber-optics) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
   extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
   curl. Also clear the eslint warning there (unused `wavelength` state).
 - [ ] **Fiber-optics fix parts** (≈ 4 pages each; questionable pages in brackets get their tier in the same part):
-  - [ ] 3 `fiber-nonlinear.ts` (L_eff finite at α = 0, γ, Smith SBS ×K pol. and linear linewidth factor, SRS, Inoue
-    FWM): `sbs-threshold` (A 80 µm², g_B 5e-11, 10 km, 0.2 dB/km → 4.193 mW co-pol.), `nonlinear-effects`,
-    [`srs-threshold` → 1.5973 W].
   - [ ] 4 `fiber-bragg-grating.ts` (Erdogan uniform R(λ), first-zero width, FWHM, strain/temperature): `fiber-bragg-grating`
     (Δn 1e-4, 10 mm, n 1.468: R₀ 0.93291, R(σ̂=κ) 0.8043, first zero 0.19476 nm), `fiber-bragg-grating-sensor`,
     `fiber-optic-sensor` (MZI 0.04642 rad/µε at 10 mm; water dn/dT ≈ −1e-4/K).
@@ -76,7 +73,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 
 **Wave optics**
 - `filamentation`: Marburger's z_sf gives a finite collapse distance for P < P_cr.
-- `four-wave-mixing`: β₂ is fixed at 20 ps²/km and n₀ at 1.45 in χ³.
+- `four-wave-mixing`: β₂ is fixed at 20 ps²/km and n₀ at 1.45 in χ³. Reuse `fiber-nonlinear.ts` (Inoue η, Δβ with β₃).
+- `self-phase-modulation`: rms broadening uses √(1 + (4 ln2/π)φ²); for an unchirped Gaussian it is √(1 + 4φ²/(3√3)) (`spmRmsBroadening`).
 - `dye-laser-resonator`: k_ISC = (1 − Φ_f)/τ counts all non-radiative decay as ISC.
 - `mode-matching`: the η conjugate sign was fixed in Phase 0 (0.64 for a 2× waist mismatch). It still needs a module
   and a golden test.
@@ -92,10 +90,10 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - The SMF core is redefined on six pages (a 4.1/4.5 µm, NA 0.12/0.1246/0.14). Use a = 4.1 µm, NA 0.1246 → MFD 10.08 µm.
 - D(1550) for SMF is 13.4/17/17.46/22.1 on different pages. Use G.652 S₀/4(λ−λ₀⁴/λ³), S₀ 0.092, λ₀ 1310 → 17.46.
 - `macro-bending-loss.ts` `MIN_V = 0.5` lets the Marcuse fit run far below its 1.2–2.4 range.
-- Silica n₂, g_B and g_R are inline on several pages; put them in one constants module.
+- Silica n₂, g_B, g_R are now `SILICA_*` in `fiber-nonlinear.ts`; other pages still inline them.
 - `v-number` (minor): it shows floor(V²/2) modes for V < 2.405; literal "&lt;" in the text.
 - 1.4682 is SMF-28's group index (fine for delay, OTDR, gyro); ≈ 20 pages also use it as the phase index (Fresnel, V, n_eff). Use ≈ 1.447.
-- Out of scope: `materials/brillouin-scattering` P_th has no A_eff or L_eff; `wave-optics/fiber-laser-resonator` may
+- Out of scope: `materials/brillouin-scattering` P_th = 21·1e-3/(g_B·L): 1e-3 in place of A_eff, L in place of L_eff (use `sbsThreshold`); `wave-optics/fiber-laser-resonator` may
   overlap `fiber-laser`; `fiber-coupler` vs `wave-optics/coupled-mode` unchecked.
 
 **Materials**
@@ -174,5 +172,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   - Fiber-optics part 0 (session 43, PR #43): 46 pages audited; 3 OK tiered, 9 questionable, 34 `knownIssue`s.
   - Fiber-optics part 1 (session 44, PR #45): `gaussian-coupling.ts`; splice, connector IL/RL, coupling-efficiency tiered; 466 tests.
   - Fiber-optics part 2 (session 45, PR #47): `chromatic-dispersion.ts` (optimum-pulse limits, β₃, modal in quadrature); 5 dispersion pages tiered; 480 tests.
+  - Fiber-optics part 3 (session 46, PR #49): `fiber-nonlinear.ts` (Smith ×K, linear linewidth, Inoue FWM); sbs/srs-threshold, nonlinear-effects tiered; 488 tests.
 - Session 41: roadmap archived; `/ship` and `/handover` skills; `physics-reviewer` on Opus; `checker` agent on Haiku.
 - [ ] Optional (user): a Defender exclusion for `C:\dev`.

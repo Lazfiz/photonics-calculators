@@ -1,44 +1,47 @@
-# Handover — 2026-10-12 (session 45 → session 46)
+# Handover — 2026-10-12 (session 46 → session 47)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 45 shipped **fiber-optics fix part 2** (PR #47, merged as `18536858`; production check passed). **Next: fix part
-3**: new `fiber-nonlinear.ts` for `sbs-threshold`, `nonlinear-effects` and [`srs-threshold`].
+Session 46 shipped **fiber-optics fix part 3** (PR #49, merged as `21357ac3`). **Production deploy of 21357ac3 failed
+on Vercel with `git_info_fail`** (no build ran; the branch preview of the same tree was READY). Check that the merge of
+this handover PR deployed it (step 1). **Next: fix part 4**, `fiber-bragg-grating.ts`.
 
 ## State
-- 151 of 461 pages are tiered, 28 `knownIssue`s (all fiber-optics), 480 tests pass.
-- New `src/physics/fiber-optics/chromatic-dispersion.ts`:
-  - D(λ): `sellmeierDispersion`/`sellmeierSlope`/`sellmeierAt` (G.652 form), `linearDispersion`, `presetDispersion`;
-    conversions `beta2FromD`, `dFromBeta2`, `beta3FromDS`, `sigmaOmegaFromLambda`, `dispersionLength`.
-  - Pulses: `gaussianPulseRmsWidth` (σ₀, β₂, β₃, σ_ω, chirp), `optimumOutputRmsWidth`, `transformLimitedBitRate`.
-  - Channels: `channelAt({D,S}, λ, σλ, extraRmsPerM)`, `channelRmsWidth`, `dispersionLimitedLength(ch, B)`.
-  - Also `gaussianBandwidth`/`gaussianRmsFromBandwidth`, `groupDelay`, `loopFsr`.
-  - Presets: `FIBER_PRESETS` (G652, DSF, NZDSF±, DCF) and `SELLMEIER_FIBERS` (SMF, OM1–OM4 with modal BW).
-  - Reuse it wherever β₂ or D(λ) appears (nonlinear pages: FWM phase matching, L_D vs L_NL; soliton pages).
-- Other fiber modules: `gaussian-coupling.ts`, `dispersion-comp.ts` (`rmsBroadening`), `macro-bending-loss.ts`,
-  `polarization-mode-dispersion.ts` (`meanDgd`, `pmdLimitedLength`, `MEAN_DGD_BIT_FRACTION`).
-- Per-page reviewer evidence for parts 3–11 is in the PR #43 description: `gh pr view 43 --json body -q .body`.
+- 154 of 461 pages are tiered, 26 `knownIssue`s (all fiber-optics), 488 tests pass.
+- New `src/physics/fiber-optics/fiber-nonlinear.ts`:
+  - `alphaFromDbPerKm`, `effectiveLength` (expm1, = L at α = 0), `nonlinearCoefficient` γ, `nonlinearPhase`,
+    `xpmPhaseMax`, `spmRmsBroadening` √(1 + 4φ²/(3√3)).
+  - `sbsThreshold({Aeff, gB, Leff, K, sourceLinewidth, brillouinLinewidth})`, `sbsLinewidthFactor`, `srsThreshold`,
+    `SBS_POLARIZATION_FACTOR` (1 / 1.5 / 2), `SRS_POLARIZATION_FACTOR` (1 / 2), `ramanGainAt` (1e-13·1 µm/λ),
+    `ramanOnOffGain`, `brillouinShift`, `stokesWavelength`.
+  - FWM: `fwmPhaseMismatch(β₂, Δf_ik, Δf_jk, β₃)`, `fwmEfficiency` (Inoue), `fwmProductRatio(η, φ, degenerate)`.
+  - `SILICA_N2`, `SILICA_BRILLOUIN_GAIN`, `SILICA_RAMAN_GAIN_1UM`, `SILICA_RAMAN_SHIFT`: reuse instead of inline values.
+- Other fiber modules: `chromatic-dispersion.ts` (D(λ), β₂/β₃, pulses, channels, presets), `gaussian-coupling.ts`,
+  `dispersion-comp.ts`, `macro-bending-loss.ts` (`DB_PER_NEPER`), `polarization-mode-dispersion.ts`.
+- Per-page reviewer evidence for parts 4–11 is in the PR #43 description: `gh pr view 43 --json body -q .body`.
 - `polarizer-types` is blocked until the user is at the laptop with Chrome and the Claude extension connected.
 
 ## Next actions
-1. Fix part 3, `fiber-nonlinear.ts`:
-   - L_eff = (1 − e^(−αL))/α, finite (→ L) at α = 0; γ = 2πn₂/(λA_eff).
-   - Smith SBS threshold P = 21·K·A_eff/(g_B·L_eff) with the polarization factor K and a linear linewidth factor.
-     Golden: A 80 µm², g_B 5e-11 m/W, 10 km, 0.2 dB/km → 4.193 mW co-polarized.
-   - SRS → 1.5973 W; Inoue FWM efficiency (use `beta2FromD` for Δβ).
-2. Each fixed page: remove its `knownIssue`, set tier, `modelNote` (≤ 220 chars), references (check DOIs with
-   `scripts/crossref.mjs`). Citations must not end in a space (the trust-data test checks it).
-3. Run one `physics-reviewer` pass **before** the PR. In session 45 it caught broad-source-only limits, a 1e16× ratio at
-   λ₀, a weak β₃ test, out-of-band ranges and an over-broad citation.
-4. After merge: `node scripts/post-merge-check.mjs <sha> "fiber-optics/<slug>=<default>" …`, with the defaults read from
-   `.next/server/app/fiber-optics/<slug>.html` (strip tags, grep the card label).
+1. Production: `node scripts/post-merge-check.mjs <sha> "fiber-optics/sbs-threshold=6.469 mW"
+   "fiber-optics/srs-threshold=2.457 W" "fiber-optics/nonlinear-effects=1.317"` on the latest `main` sha. If Vercel
+   again posts no status, list deployments with the Vercel MCP; a production redeploy needs the user (auto mode blocks it).
+2. Fix part 4, `fiber-bragg-grating.ts` (Erdogan JLT 15 1277, doi:10.1109/50.618322):
+   - R = κ² sinh²(γL)/(κ² cosh²(γL) − σ̂²), γ² = κ² − σ̂² (imaginary outside the band). Golden: Δn 1e-4, L 10 mm,
+     n 1.468, 1550 nm → R₀ 0.93291, R(σ̂ = κ) 0.8043, first-zero width 0.19476 nm, FWHM 0.1478 nm.
+   - `fiber-bragg-grating-sensor`: invented bandwidth; Λ 535 nm → λ_B 1570.76 nm, first zero 0.19924 nm (Kersey JLT 15
+     1442, doi:10.1109/50.618377).
+   - `fiber-optic-sensor`: MZI rad/µε ×1e-6 twice (0.04642 rad/µε at 10 mm); water dn/dT ≈ −1e-4/K (Thormählen JPCRD
+     14 933, doi:10.1063/1.555743); FBG 1.209 pm/µε, 11.19 pm/K.
+3. Each fixed page: remove its `knownIssue`, set tier, `modelNote` (≤ 220 chars), references (`scripts/crossref.mjs`).
+4. One `physics-reviewer` pass before the PR. In session 46 it caught β₃ missing from FWM (η = 1 at D = 0) and an
+   unsourced K = 2; it also flagged sibling bugs, now in ROADMAP open findings.
 
 ## Non-obvious facts
+- **Smith thresholds** (16 SRS, 21 SBS) are co-polarized. g_R ≈ 1e-13 m/W is for a 1 µm pump; at 1550 nm ≈ 6.5e-14.
+- **Vercel `git_info_fail`:** a production deploy can fail before building with no logs and no GitHub status;
+  `post-merge-check` then exits after "pending". `get_deployment` shows the `errorCode`.
 - **Bit-rate limits:** never use only the broad-source 4Bσ_D ≤ 1. For narrow sources the output width is set by the
   input pulse, so minimise over σ₀ (`optimumOutputRmsWidth`): σ² = σ_D² + |β₂|L; at λ₀, B(|β₃|L)^⅓ ≤ 0.324.
-- **Spectral width:** the pages now take **rms** σ_λ. A 10G VCSEL is ≈ 0.45 nm rms; MMF modal bandwidth is rated at
-  850 nm (ISO/IEC 11801-1). The 10G reach comes out at OM3 237 m, OM4 402 m (IEEE 300 / 400 m from its own link model).
-- **Thermal delay:** SMF-28 is 37.4 ps/(km·K) measured (Slavík 2015, doi:10.1038/srep15447), ≈ 7.6 ppm/K.
 - **calculator-pages test:** the JSON-LD base-graph fixture is `chromatic-dispersion` with `references: undefined`. If you
   change that fixture, keep the override.
 - **SMF-28 index:** 1.4682 is its *group* index (delay, OTDR, gyro). Fresnel, V and n_eff need the phase index ≈ 1.447.
@@ -47,7 +50,7 @@ Session 45 shipped **fiber-optics fix part 2** (PR #47, merged as `18536858`; pr
   tables (`curl` + `pdftotext`). Fibre datasheets (Prysmian, Corning) give λ₀/S₀ bounds.
 - **Registry edits** on one file go through a scratchpad `.cjs` script with a dry run and anchor checks
   (`slug: "<x>",` → entry ends at the next `\n  },`). Make it re-runnable: strip an existing `tier:` block first.
-  Session 45's `registry-fix2.cjs` is a template.
+  Session 46's `registry-fix3.cjs` (scratchpad) also rewrote `description`.
 - **eslint** reports ≈ 900 pre-existing warnings. `check` passes; lint only the changed files.
 - **Connectors:** claude.ai connectors are switched per project in `~/.claude.json`
   (`projects["C:/dev/photonics-calculators"].disabledMcpServers`). Vercel is on; the other 10 are off.
