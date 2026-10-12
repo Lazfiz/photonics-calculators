@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { refractiveIndex } from "../src/physics/materials/sellmeier";
 import { CRYSTAL_IDS, UNIAXIAL_CRYSTALS as X, crystalIndices, crystalRange } from "../src/physics/materials/uniaxial-data";
 import {
-  beamSeparation, extraordinaryIndex, maxWalkoff, plateRetardance, plateWaves, walkoffAngle,
+  beamSeparation, extraordinaryIndex, maxWalkoff, plateRetardance, plateWaves, sectionRetardance, sectionSlowAxis, walkoffAngle,
 } from "../src/physics/polarization/uniaxial";
 
 const deg = Math.PI / 180;
@@ -199,4 +199,17 @@ test("plate retardance: 2πΔn d/λ at normal incidence; Veiras et al. 2010 for 
 test("plate: evanescent waves give NaN (index-2 prism at 80° onto calcite)", () => {
   const w = plateWaves(1.6584, 1.4864, { nIncident: 2, incidence: 80 * deg, axisPolar: 45 * deg, axisAzimuth: 0 });
   assert.ok(Number.isNaN(w.o.kz) && Number.isNaN(w.e.kz));
+});
+
+test("section: R = |n(θc) − n_o|·d; a 30 µm quartz section with the axis in its plane gives first-order white", () => {
+  // Ghosh 1999 quartz at 550 nm: n_o = 1.545948, n_e = 1.555108, Δn = 0.0091598 → R = 274.79 nm for 30 µm (the
+  // standard section thickness, first-order white to pale yellow on the Michel-Lévy chart).
+  const { no, ne } = crystalIndices("quartz", 550e-9);
+  assertAbs(sectionRetardance(no, ne, 90 * deg, 30 * um) * 1e9, 274.79, 0.01, "θc = 90°");
+  assert.ok(sectionRetardance(no, ne, 0, 30 * um) < 1e-18, "θc = 0: along the axis");
+  // Hand, θc = 45°: n = (½/n_o² + ½/n_e²)^(−1/2) = 1.550508 → R = 0.0045596 × 30 µm = 136.79 nm.
+  assertAbs(sectionRetardance(no, ne, 45 * deg, 30 * um) * 1e9, 136.79, 0.05, "θc = 45°");
+  // Slow axis: the e-wave (ρ) in positive quartz, the o-wave (ρ + 90°) in negative calcite.
+  assert.equal(sectionSlowAxis(no, ne, 10 * deg), 10 * deg);
+  assert.equal(sectionSlowAxis(1.6584, 1.4864, 10 * deg), 100 * deg);
 });

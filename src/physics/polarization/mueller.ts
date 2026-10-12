@@ -60,8 +60,11 @@ export function muellerPolarizer(theta: number): MuellerMatrix {
   ];
 }
 
-/** Linear retarder with cos Γ and sin Γ given (so a band average of them gives the averaged matrix). */
-function retarderFromCosSin(cd: number, sd: number, fastAxis: number): MuellerMatrix {
+/**
+ * Linear retarder with cos Γ and sin Γ given, so an average of them over a spectrum or over time gives the averaged
+ * (depolarizing) matrix: the entries are affine in cos Γ and sin Γ.
+ */
+export function retarderFromCosSin(cd: number, sd: number, fastAxis: number): MuellerMatrix {
   const c = Math.cos(2 * fastAxis), s = Math.sin(2 * fastAxis);
   return [
     [1, 0, 0, 0],

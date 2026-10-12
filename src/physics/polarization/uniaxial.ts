@@ -35,6 +35,22 @@ export function maxWalkoff(no: number, ne: number): { theta: number; rho: number
   return { theta: Math.atan(ne / no), rho: Math.atan((no * no - ne * ne) / (2 * no * ne)) };
 }
 
+/**
+ * Thin section at normal incidence with the optic axis at θc from the section normal: both waves travel along the
+ * normal, so the retardance is R = |n(θc) − n_o|·d (m); 0 looking along the axis, |Δn|·d with the axis in the plane.
+ */
+export function sectionRetardance(no: number, ne: number, thetaC: number, d: number): number {
+  return Math.abs(extraordinaryIndex(no, ne, thetaC) - no) * d;
+}
+
+/**
+ * Slow-axis azimuth of a section whose e-wave vibrates at azimuth ρ (the trace of the optic axis): the e-wave is slow
+ * in a positive crystal (n_e > n_o), the o-wave, at ρ + 90°, in a negative one.
+ */
+export function sectionSlowAxis(no: number, ne: number, rho: number): number {
+  return ne > no ? rho : rho + Math.PI / 2;
+}
+
 export interface PlateGeometry {
   /** Index of the isotropic medium around the plate. */
   nIncident: number;

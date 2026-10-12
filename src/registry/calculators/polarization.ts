@@ -115,6 +115,73 @@ const ulrich1967: Reference = {
   url: "https://doi.org/10.1016/0020-0891(67)90028-0",
 };
 
+// Optical activity and circular dichroism.
+const nistSrm17e: Reference = {
+  citation: "NIST (2003). Certificate of Analysis, SRM 17e Sucrose (optical rotation): [α] at 589.44 nm and 20 °C, ICUMSA rotatory dispersion equation 546–883 nm.",
+  url: "https://tsapps.nist.gov/srmext/certificates/archives/17e_COA_2003-09-16.pdf",
+};
+const batesBlake1907: Reference = {
+  citation: "Bates F. J., Blake J. C. (1907). The influence of basic lead acetate on the optical rotation of sucrose in water solution. Bull. Bur. Stand. 3(1), 105: Schönrock's temperature coefficient −0.000461 /°C.",
+  url: "https://doi.org/10.6028/bulletin.057",
+};
+const condon1937: Reference = {
+  citation: "Condon E. U. (1937). Theories of optical rotatory power. Rev. Mod. Phys. 9(4), 432–457: the Drude dispersion formula.",
+  url: "https://doi.org/10.1103/RevModPhys.9.432",
+};
+const greenfield2006: Reference = {
+  citation: "Greenfield N. J. (2006). Using circular dichroism spectra to estimate protein secondary structure. Nat. Protoc. 1(6), 2876–2890: θ(mdeg) = 32 980 ΔA, [θ] = 3298.2 Δε.",
+  url: "https://doi.org/10.1038/nprot.2006.202",
+};
+const kelly2005: Reference = {
+  citation: "Kelly S. M., Jess T. J., Price N. C. (2005). How to study proteins by circular dichroism. Biochim. Biophys. Acta 1751(2), 119–139: mean residue weight and ellipticity.",
+  url: "https://doi.org/10.1016/j.bbapap.2005.06.005",
+};
+
+// Coherence, scrambling and interference colours.
+const bornWolfInterference: Reference = {
+  citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed., ch. 7 Elements of the theory of interference and interferometers, pp. 286–411, and ch. 10 Interference and diffraction with partially coherent light, pp. 554–632. Cambridge University Press.",
+  url: "https://doi.org/10.1017/CBO9781139644181.016",
+};
+const abramowitzStegun: Reference = {
+  citation: "Abramowitz M., Stegun I. A. (1964). Handbook of Mathematical Functions, NBS AMS 55: Table 9.1 (values of J₀) and Table 9.5 (zeros of J₀).",
+};
+const dlmfJacobiAnger: Reference = {
+  citation: "NIST Digital Library of Mathematical Functions, §10.12, eq. 10.12.2 (Jacobi–Anger expansions).",
+  url: "https://dlmf.nist.gov/10.12",
+};
+const heismannTokuda1995: Reference = {
+  citation: "Heismann F., Tokuda K. L. (1995). Polarization-independent electro-optic depolarizer. Opt. Lett. 20(9), 1008–1010.",
+  url: "https://doi.org/10.1364/ol.20.001008",
+};
+const smith1961: Reference = {
+  citation: "Smith O. K. (1961). Eigenvalues of a symmetric 3 × 3 matrix. Commun. ACM 4(4), 168.",
+  url: "https://doi.org/10.1145/355578.366316",
+};
+const cie1931: Reference = {
+  citation: "CIE (2019). CIE 1931 colour-matching functions, 2 degree observer (CIE dataset); sRGB display colours per IEC 61966-2-1:1999.",
+  url: "https://doi.org/10.25039/CIE.DS.xvudnb9b",
+};
+const sorensen2013: Reference = {
+  citation: "Sørensen B. E. (2013). A revised Michel-Lévy interference colour chart based on first-principles calculations. Eur. J. Mineral. 25(1), 5–10.",
+  url: "https://doi.org/10.1127/0935-1221/2013/0025-2252",
+};
+
+// Photoelasticity and microscope extinction.
+const timoshenkoGoodier: Reference = {
+  citation: "Timoshenko S. P., Goodier J. N. (1970). Theory of Elasticity, 3rd ed., art. 35 Effect of circular holes on stress distributions in plates (Kirsch solution). McGraw-Hill.",
+};
+const dallyRiley: Reference = {
+  citation: "Dally J. W., Riley W. F. (2005). Experimental Stress Analysis, 4th ed., chapter Theory of photoelasticity: the stress-optic law. College House Enterprises.",
+};
+const schottStressOptic: Reference = {
+  citation: "SCHOTT N-BK7 data sheet: stress optical coefficient K = 2.77 × 10⁻⁶ mm²/N.",
+  url: "https://media.schott.com/api/public/content/38cbbe876d324e03b1881d33f3d26635",
+};
+const inoueHyde1957: Reference = {
+  citation: "Inoué S., Hyde W. L. (1957). Studies on depolarization of light at microscope lens surfaces. J. Biophys. Biochem. Cytol. 3(6), 831–838: rotation of polarization by oblique rays at uncoated surfaces.",
+  url: "https://doi.org/10.1083/jcb.3.6.831",
+};
+
 export const polarization: CalculatorEntry[] = [
   {
     slug: "birefringence",
@@ -128,7 +195,9 @@ export const polarization: CalculatorEntry[] = [
     slug: "birefringence-imaging",
     title: "Birefringence Imaging",
     description: "Simulate quantitative birefringence imaging with polarizer/analyzer rotation and compensators. Visualize stress-induced birefringence patterns.",
-    knownIssue: "The crossed-polarizer default puts the sample axis along the polarizer, so the output is always dark; the axis labelled in waves plots half-waves, and the sensitivity is not dI/dδ.",
+    tier: "textbook",
+    modelNote: "Ideal polarizers and linear retarders chained in Stokes space; white-light colours from D65 and CIE 1931 at constant retardance. Sénarmont R = λΔθ/180°. Kirsch hole in an infinite plate, R = C·d·(σ₁ − σ₂).",
+    references: [goldsteinMueller, sorensen2013, cie1931, timoshenkoGoodier, dallyRiley, schottStressOptic],
   },
   {
     slug: "birefringent-polarizer",
@@ -150,15 +219,18 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "circular-dichroism",
     title: "Circular Dichroism",
-    description: "Calculate CD parameters: A, , molar ellipticity, and g-factor from absorbance of left and right circularly polarized light.",
-    lede: "Calculate CD parameters: ΔA, Δε, molar ellipticity, and g-factor from absorbance of left and right circularly polarized light.",
-    knownIssue: "The secondary-structure percentages are fixed numbers that ignore the inputs, the mean-residue ellipticity repeats the molar ellipticity, and the formula shown for θ has a stray division by 2.",
+    description: "Calculate CD parameters: ΔA, Δε, ellipticity, molar and mean-residue ellipticity and g-factor from the absorbances of left and right circularly polarized light.",
+    tier: "exact",
+    modelNote: "θ = atan(tanh(ln10·ΔA/4)) (≈ 32 980 ΔA mdeg); Δε = ΔA/(cl), c of molecules; [θ] = 3298.2 Δε, MRE = [θ]/(N − 1). The S/N optimum A = 2/ln10 assumes shot noise only.",
+    references: [greenfield2006, kelly2005],
   },
   {
     slug: "conoscopic",
     title: "Conoscopic Observation",
     description: "Simulate conoscopic interference figures (isochromates and isogyres) for uniaxial and biaxial crystals between crossed polarizers.",
-    knownIssue: "The retardation uses the angle in air instead of the angle inside the crystal, so it is about 2.4 times too large; an NA above 1 gives NaN, and the biaxial 2V is the obtuse angle.",
+    tier: "textbook",
+    modelNote: "Plane-wave eigenmodes of a uniaxial or biaxial plate per pupil point (Born & Wolf ch. 15), ideal polars, fringes averaged per pixel; white light scales R by Δn(λ). Not modelled: Fresnel and lens rotation, 2V dispersion.",
+    references: [bornWolfCrystals, veiras2010, sorensen2013, cie1931, ...crystalData],
   },
   {
     slug: "degree-polarization",
@@ -172,7 +244,9 @@ export const polarization: CalculatorEntry[] = [
     slug: "depolarization",
     title: "Depolarization",
     description: "Calculate depolarization effects via Mueller matrix model or spectral averaging.",
-    knownIssue: "The spectral mode samples an 83-wave plate with 50 points, so its degree of polarization can be 20 times too high; the Unpolarized preset is 99.9 % polarized and the spectral controls are hidden.",
+    tier: "textbook",
+    modelNote: "Depolarizer diag(1, d, d, d), or a retarder in a band flat in wavenumber or Gaussian: V = Fourier transform of the spectrum at the group retardance (retardance linear in σ). |V| error < 0.03 for Δλ ≤ 0.5λ₀ in quartz.",
+    references: [goldsteinMueller, cloude, bornWolfInterference, ...crystalData],
   },
   {
     slug: "dichroic-polarizer",
@@ -235,8 +309,10 @@ export const polarization: CalculatorEntry[] = [
   {
     slug: "microscope-polarizer",
     title: "Microscope Polarizer Calculator",
-    description: "Analyze polarization effects in microscopy: extinction, retardance sensitivity, NA degradation, and Michel-Lévy colors.",
-    knownIssue: "The transmission against analyzer angle stays at 0.5 instead of falling to the extinction minimum; the loss of extinction with NA is an unsourced curve, and the analyzer and condenser inputs do nothing.",
+    description: "Extinction of a polarizing microscope: polarizer extinction ratio, the loss of extinction with NA at uncoated surfaces, and the smallest retardance you can see.",
+    tier: "textbook",
+    modelNote: "Sheet pair H(θ) = H₀cos²θ + H₉₀sin²θ plus the polarization rotation at uncoated flat air–glass surfaces, averaged over a filled pupil. Absolute values are illustrative: real lens surfaces and coatings dominate.",
+    references: [shurcliffParameters, inoueHyde1957, bornWolfFresnel],
   },
   {
     slug: "mueller-matrix",
@@ -258,11 +334,17 @@ export const polarization: CalculatorEntry[] = [
     slug: "optical-activity",
     title: "Optical Activity",
     description: "Calculate optical rotation from specific rotation, concentration, and path length with wavelength/temperature corrections.",
+    tier: "textbook",
+    modelNote: "Biot α = [α]cl, [α] independent of c. Sucrose: NIST SRM 17e, ICUMSA dispersion 546–883 nm (vacuum λ); custom: one-term Drude. Linear T term, k = −4.61 × 10⁻⁴ /°C (26 g/100 mL), a few K around 20 °C.",
+    references: [nistSrm17e, batesBlake1907, condon1937],
   },
   {
     slug: "orthoconoscopic",
     title: "Orthoscopic Observation",
     description: "Model orthoscopic observation of birefringent samples with rotating stage. Calculate intensity vs rotation angle and interference colors.",
+    tier: "textbook",
+    modelNote: "Normal incidence on a uniaxial section: Δn(θc) from the index ellipsoid, Sellmeier dispersion, Jones chain with ideal polars and a 550 nm red plate; D65, CIE 1931 2°, clipped sRGB. No reflections.",
+    references: [bornWolfCrystals, sorensen2013, cie1931, ...crystalData],
   },
   {
     slug: "poincare-sphere",
@@ -284,7 +366,9 @@ export const polarization: CalculatorEntry[] = [
     slug: "polarization-scrambling",
     title: "Polarization Scrambling",
     description: "Simulate polarization scrambling: how randomizing polarization state reduces residual polarization.",
-    knownIssue: "The scrambler only rotates about S3, so circular light is never scrambled; the elliptical input is partly unpolarized, and the residual-against-segments curve uses the wrong segment counts.",
+    tier: "exact",
+    modelNote: "Ideal driven retarders; stage means in closed form (sine J₀(Γm), ramp sinc-type), multiplied, so stage frequencies must be incommensurate. Worst case = top singular value of the 3×3 block. No drive nonlinearity or loss.",
+    references: [goldsteinMueller, heismannTokuda1995, dlmfJacobiAnger, abramowitzStegun, smith1961],
   },
   {
     slug: "polarizer-extinction",
