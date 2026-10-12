@@ -34,7 +34,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   thin film, laser safety and polarization:
   - Part 0 audits every untiered page with `physics-reviewer` batches (Opus, high effort).
   - Bug pages get a registry `knownIssue`; OK pages get their tier at once.
-  - Then fix in parts of about 8–10 pages a session, with tested modules in `src/physics/<category>/`.
+  - Then fix in parts of about 4 pages a session (one context window), with tested modules in
+    `src/physics/<category>/`.
   - Consider saving part 0 as a dynamic workflow (`category-audit`) on its first run.
 - [ ] Thin-film leftovers (6 untiered, see open findings).
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
