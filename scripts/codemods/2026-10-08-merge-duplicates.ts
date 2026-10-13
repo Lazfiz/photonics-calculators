@@ -48,9 +48,10 @@ function stringProp(obj: ObjectLiteralExpression, name: string): string | undefi
 const entries = new Map<string, ObjectLiteralExpression>();
 for (const file of files) {
   const category = file.getBaseNameWithoutExtension();
-  // The exported entry array; citation helpers (arrow functions) may come first.
+  // The exported entry array; citation helpers and data arrays may come first.
   const array = file
     .getVariableStatements()
+    .filter((s) => s.isExported())
     .flatMap((s) => s.getDeclarations())
     .map((d) => d.getInitializerIfKind(SyntaxKind.ArrayLiteralExpression))
     .find((a) => a !== undefined);

@@ -1,207 +1,203 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  DOPANT_PRESETS, absorptionDbPerM, amplifier, fullInversionGainDb, intrinsicSaturationPower, twoLevelAt,
+  type Beam, type DopedFiber,
+} from "../../../physics/fiber-optics/doped-fiber-gain";
+
+const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
+const SIGMA_UNIT = 1e-25; // m², the unit of the cross-section inputs
+const dB = (x: number) => 10 * Math.log10(x);
+// Text for a result, or a dash when the model has no finite value.
+const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "—");
+
+// Preset = ion, pump line and the old page's fibre (N, core radius).
+const PRESETS = [
+  { id: "er980", label: "EDFA, 980 nm pump", ion: 0, pump: 0, N: 1e24, r: 2.2 },
+  { id: "er1480", label: "EDFA, 1480 nm pump", ion: 0, pump: 1, N: 1e24, r: 2.2 },
+  { id: "yb976", label: "YDFA, 976 nm pump", ion: 1, pump: 0, N: 3e25, r: 3.5 },
+] as const;
+
+function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: string }) {
+  return (
+    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+      <p className="text-sm text-gray-400">{label}</p>
+      <p className={`text-xl font-bold ${tone}`}>{value}</p>
+      {sub && <p className="text-xs text-gray-400">{sub}</p>}
+    </div>
+  );
+}
 
 export default function FiberAmplifierCalculator() {
-  const [amplifierType, setAmplifierType] = useState<"EDFA" | "YDFA">("EDFA");
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // m
-  const [pumpPower, setPumpPower] = useURLState("pumpPower", 200); // mW
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 980); // nm
-  const [signalWavelength, setSignalWavelength] = useURLState("signalWavelength", 1550); // nm
-  const [inputPower, setInputPower] = useState<number>(-10); // dBm
-  const [erbiumConc, setErbiumConc] = useURLState("erbiumConc", 1e24); // ions/m³
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 2.2); // µm
-  const [overlap, setOverlap] = useURLState("overlap", 0.8); // Γ factor
+  const [lengthRaw, setLength] = useURLState("fiberLength", 10); // m
+  const [pumpRaw, setPump] = useURLState("pumpPower", 200); // mW
+  const [signalRaw, setSignal] = useURLState("inputPower", -10); // dBm
+  const [nRaw, setN] = useURLState("dopantConc", 1e24); // ions/m³
+  const [radiusRaw, setRadius] = useURLState("coreRadius", 2.2); // µm, doped radius
+  const [gpRaw, setGp] = useURLState("overlapPump", 0.8);
+  const [gsRaw, setGs] = useURLState("overlapSignal", 0.8);
+  const [lpRaw, setLp] = useURLState("pumpWavelength", 980); // nm
+  const [lsRaw, setLs] = useURLState("signalWavelength", 1550); // nm
+  const [sapRaw, setSap] = useURLState("sigmaAPump", 2.5); // 1e-25 m²
+  const [sepRaw, setSep] = useURLState("sigmaEPump", 0);
+  const [sasRaw, setSas] = useURLState("sigmaASignal", 2.5);
+  const [sesRaw, setSes] = useURLState("sigmaESignal", 3.5);
+  const [tauRaw, setTau] = useURLState("tau", 10); // ms
 
-  // Emission and absorption cross-sections (approximate)
-  const crossSections = useMemo(() => {
-    if (amplifierType === "EDFA") {
-      return { emission: 3.5e-25, absorption: 2.5e-25 }; // m² at 1550nm
-    }
-    return { emission: 2.8e-25, absorption: 0.8e-25 }; // m² at 1064nm for YDFA
-  }, [amplifierType]);
+  const L = clamp(lengthRaw, 0.01, 200);
+  const pump_mW = clamp(pumpRaw, 0, 5000);
+  const signal_dBm = clamp(signalRaw, -60, 20);
+  const N = clamp(nRaw, 1e22, 1e27);
+  const r_um = clamp(radiusRaw, 0.5, 20);
+  const gp = clamp(gpRaw, 0.01, 1);
+  const gs = clamp(gsRaw, 0.01, 1);
+  const lp_nm = clamp(lpRaw, 400, 2200);
+  const ls_nm = clamp(lsRaw, 400, 2200);
+  const sap = clamp(sapRaw, 0, 1000) * SIGMA_UNIT;
+  const sep = clamp(sepRaw, 0, 1000) * SIGMA_UNIT;
+  const sas = clamp(sasRaw, 0, 1000) * SIGMA_UNIT;
+  const ses = clamp(sesRaw, 0, 1000) * SIGMA_UNIT;
+  const tau_ms = clamp(tauRaw, 0.01, 100);
 
-  // Gain in dB
-  const smallSignalGain = useMemo(() => {
-    const A = Math.PI * (coreRadius * 1e-6) ** 2; // core area m²
-    const Nt = erbiumConc;
-    const se = crossSections.emission;
-    const sa = crossSections.absorption;
-    // Simplified gain: G ≈ Γ · (se·N2 - sa·N1) · L
-    // For fully inverted: N2 ≈ Nt, N1 ≈ 0
-    const g = overlap * se * Nt * fiberLength;
-    const gainLinear = Math.exp(g);
-    return 10 * Math.log10(gainLinear);
-  }, [amplifierType, fiberLength, erbiumConc, coreRadius, overlap, crossSections]);
-
-  // Pump absorption
-  const pumpAbsorption = useMemo(() => {
-    const alpha = 0.5; // dB/m typical
-    return Math.min(alpha * fiberLength, 30);
-  }, [fiberLength]);
-
-  // Saturated gain (input-referenced standard formula)
-  const saturatedGain = useMemo(() => {
-    const PinLinear = Math.pow(10, inputPower / 10) * 1e-3; // W
-    const Psat = 10e-3; // 10 mW saturation power
-    const Gss = Math.pow(10, smallSignalGain / 10);
-    // G_sat = G_ss / (1 + P_in * G_ss / P_sat)
-    const Gsat = Gss / (1 + PinLinear * Gss / Psat);
-    return 10 * Math.log10(Gsat);
-  }, [smallSignalGain, inputPower]);
-
-  // Output power
-  const outputPower = inputPower + saturatedGain;
-
-  // NF (noise figure) estimate
-  const noiseFigure = useMemo(() => {
-    const nf = 3 * Math.exp(-pumpPower / 100); // rough model
-    return 3 + nf * 2; // 3-5 dB typical
-  }, [pumpPower]);
-
-  // Gain vs wavelength
-  const gainSpectrum = useMemo(() => {
-    const wavelengths: number[] = [];
-    const gains: number[] = [];
-
-    const range = amplifierType === "EDFA" ? [1500, 1620] : [1030, 1100];
-
-    for (let w = range[0]; w <= range[1]; w += 0.5) {
-      wavelengths.push(w);
-
-      let se, sa;
-      if (amplifierType === "EDFA") {
-        // Approximate EDFA gain spectrum (peaks at ~1530 and ~1550)
-        const g1530 = 7e-25 * Math.exp(-0.5 * ((w - 1530) / 8) ** 2);
-        const g1550 = 3.5e-25 * Math.exp(-0.5 * ((w - 1550) / 20) ** 2);
-        se = g1530 + g1550;
-        sa = 2.5e-25 * Math.exp(-0.5 * ((w - 1530) / 12) ** 2);
-      } else {
-        se = 2.8e-25 * Math.exp(-0.5 * ((w - 1064) / 15) ** 2);
-        sa = 0.8e-25 * Math.exp(-0.5 * ((w - 1040) / 10) ** 2);
-      }
-
-      const A = Math.PI * (coreRadius * 1e-6) ** 2;
-      // Full inversion: N2=Nt, N1=0 → gain coefficient = σ_e·Nt
-      const g = overlap * se * erbiumConc * fiberLength;
-      const gainLin = Math.exp(g);
-      gains.push(10 * Math.log10(gainLin));
-    }
-
-    return [{ x: wavelengths, y: gains, type: "scatter" as const, mode: "lines" as const, name: "Small-Signal Gain (dB)", line: { color: "#10b981", width: 2 } }];
-  }, [amplifierType, fiberLength, erbiumConc, coreRadius, overlap]);
-
-  // Gain vs pump power
-  const gainVsPump = useMemo(() => {
-    const pumps: number[] = [];
-    const gains: number[] = [];
-
-    for (let p = 0; p <= 500; p += 2) {
-      pumps.push(p);
-      // Gain increases with pump power, saturates
-      const inversion = p / (p + 50); // simplified inversion
-      const A = Math.PI * (coreRadius * 1e-6) ** 2;
-      const g = overlap * (crossSections.emission * inversion - crossSections.absorption * (1 - inversion)) * erbiumConc * fiberLength;
-      const gainLin = Math.exp(g);
-      gains.push(10 * Math.log10(gainLin));
-    }
-
-    return [{ x: pumps, y: gains, type: "scatter" as const, mode: "lines" as const, name: "Gain (dB)", line: { color: "#3b82f6", width: 2 } }];
-  }, [fiberLength, erbiumConc, coreRadius, overlap, crossSections]);
-
-  const layout1 = {
-    title: `${amplifierType} Gain Spectrum`,
-    xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
-    yaxis: { title: "Gain (dB)", gridcolor: "#374151" },
-    paper_bgcolor: "#111827", plot_bgcolor: "#1f2937",
-    font: { color: "#f3f4f6" }, showlegend: true, legend: { x: 0.02, y: 0.98 }, height: 380,
+  const loadPreset = (id: string) => {
+    const p = PRESETS.find((q) => q.id === id);
+    if (!p) return;
+    const ion = DOPANT_PRESETS[p.ion];
+    const pumpLine = ion.pumps[p.pump];
+    const sig = ion.signals[0];
+    setLp(Math.round(pumpLine.lambda * 1e9));
+    setSap(pumpLine.sigmaA / SIGMA_UNIT);
+    setSep(pumpLine.sigmaE / SIGMA_UNIT);
+    setLs(Math.round(sig.lambda * 1e9));
+    setSas(sig.sigmaA / SIGMA_UNIT);
+    setSes(sig.sigmaE / SIGMA_UNIT);
+    setTau(ion.tau * 1e3);
+    setN(p.N);
+    setRadius(p.r);
   };
 
-  const layout2 = {
-    title: "Gain vs Pump Power",
-    xaxis: { title: "Pump Power (mW)", gridcolor: "#374151" },
-    yaxis: { title: "Gain (dB)", gridcolor: "#374151" },
-    paper_bgcolor: "#111827", plot_bgcolor: "#1f2937",
-    font: { color: "#f3f4f6" }, showlegend: true, legend: { x: 0.02, y: 0.98 }, height: 380,
-  };
+  const fiber: DopedFiber = useMemo(() => ({ N, area: Math.PI * (r_um * 1e-6) ** 2, tau: tau_ms * 1e-3 }), [N, r_um, tau_ms]);
+  const beamsAt = useMemo(() => (pumpW: number): Beam[] => [
+    { lambda: lp_nm * 1e-9, sigmaA: sap, sigmaE: sep, overlap: gp, power: pumpW },
+    { lambda: ls_nm * 1e-9, sigmaA: sas, sigmaE: ses, overlap: gs, power: 1e-3 * 10 ** (signal_dBm / 10) },
+  ], [lp_nm, ls_nm, sap, sep, sas, ses, gp, gs, signal_dBm]);
+
+  const calc = useMemo(() => {
+    const beams = beamsAt(pump_mW * 1e-3);
+    const amp = amplifier(fiber, beams, L, 1);
+    return {
+      gain: dB(amp.gain),
+      outDbm: dB(amp.powers[1] * 1e3),
+      pumpOut: amp.powers[0] * 1e3,
+      nf: dB(amp.noiseFigure),
+      fullInv: fullInversionGainDb(gs, ses, N, L),
+      alphaP: absorptionDbPerM(gp, sap, N),
+      alphaS: absorptionDbPerM(gs, sas, N),
+      pSat: intrinsicSaturationPower(ls_nm * 1e-9, fiber.area, gs, sas, ses, fiber.tau) * 1e3,
+      n2In: twoLevelAt(fiber, beams, 0).inversion,
+      n2Out: twoLevelAt(fiber, beams, L).inversion,
+    };
+  }, [beamsAt, fiber, pump_mW, L, gs, ses, N, gp, sap, sas, ls_nm]);
+
+  const charts = useMemo(() => {
+    const gainOf = (pumpW: number, z: number) => {
+      const beams = beamsAt(pumpW);
+      return dB(twoLevelAt(fiber, beams, z).powers[1] / beams[1].power);
+    };
+    const pMax = Math.max(2 * pump_mW, 50);
+    const pumps = Array.from({ length: 61 }, (_, i) => (i * pMax) / 60);
+    const lengths = Array.from({ length: 61 }, (_, i) => (i * 3 * L) / 60);
+    const gP = pumps.map((p) => gainOf(p * 1e-3, L));
+    const gL = lengths.map((z) => gainOf(pump_mW * 1e-3, z));
+    let best = 0;
+    gL.forEach((g, i) => { if (g > gL[best]) best = i; });
+    const keep = (xs: number[], ys: number[]) => {
+      const ok = ys.map((y) => Number.isFinite(y));
+      return { x: xs.filter((_, i) => ok[i]), y: ys.filter((_, i) => ok[i]) };
+    };
+    return {
+      bestLength: lengths[best], bestGain: gL[best], atEdge: best === lengths.length - 1,
+      data: [
+        { ...keep(pumps, gP), type: "scatter" as const, mode: "lines" as const, name: `Gain at L = ${L} m`, line: { color: "#3b82f6" }, xaxis: "x", yaxis: "y" },
+        { ...keep(lengths, gL), type: "scatter" as const, mode: "lines" as const, name: `Gain at ${pump_mW} mW`, line: { color: "#10b981" }, xaxis: "x2", yaxis: "y2" },
+      ],
+    };
+  }, [beamsAt, fiber, pump_mW, L]);
 
   return (
     <>
-                
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Amplifier Type</label>
-              <select value={amplifierType} onChange={(e) => {
-                setAmplifierType(e.target.value as "EDFA" | "YDFA");
-                if (e.target.value === "EDFA") {
-                  setSignalWavelength(1550); setPumpWavelength(980);
-                  setErbiumConc(1e24); setCoreRadius(2.2);
-                } else {
-                  setSignalWavelength(1064); setPumpWavelength(976);
-                  setErbiumConc(3e25); setCoreRadius(3.5);
-                }
-              }}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none">
-                <option value="EDFA">EDFA (Erbium-Doped)</option>
-                <option value="YDFA">YDFA (Ytterbium-Doped)</option>
-              </select>
-            </div>
-            <div>
-              <ValidatedNumberInput label="Fiber Length (m)" value={fiberLength} onChange={setFiberLength} />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Pump Power (mW)" value={pumpPower} onChange={setPumpPower} />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Pump Wavelength (nm)" value={pumpWavelength} onChange={setPumpWavelength} />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Signal Wavelength (nm)" value={signalWavelength} onChange={setSignalWavelength} />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Input Signal Power (dBm)" value={inputPower} onChange={setInputPower} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <ValidatedNumberInput label="Dopant Conc. (ions/m³)" value={erbiumConc} onChange={setErbiumConc} step="1e23" />
-              </div>
-              <div>
-                <ValidatedNumberInput label="Overlap Factor Γ" value={overlap} onChange={setOverlap} step="0.05" />
-              </div>
-            </div>
-          </div>
+      <div className="mb-6">
+        <label htmlFor="preset" className="block text-sm font-medium mb-2">Load typical values</label>
+        <select id="preset" value="" onChange={(e) => loadPreset(e.target.value)}
+          className="w-full sm:w-80 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none">
+          <option value="" disabled>Choose a preset…</option>
+          {PRESETS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+        </select>
+        <p className="text-xs text-gray-400 mt-2">
+          Presets fill typical cross-sections (Er in alumino-germanosilicate, Yb in germanosilicate). They vary with the
+          host glass by tens of percent: enter your fibre&apos;s own data where you have it.
+        </p>
+      </div>
 
-          <div className="space-y-4">
-            <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4">Results</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between"><span className="text-gray-400">Small-signal gain:</span><span className="font-mono text-green-400 text-lg">{smallSignalGain.toFixed(1)} dB</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Saturated gain:</span><span className="font-mono">{saturatedGain.toFixed(1)} dB</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Output power:</span><span className="font-mono text-blue-400">{outputPower.toFixed(1)} dBm</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Noise figure (est.):</span><span className="font-mono text-yellow-400">{noiseFigure.toFixed(1)} dB</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Pump absorption:</span><span className="font-mono">{pumpAbsorption.toFixed(1)} dB</span></div>
-              </div>
-            </div>
-            <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
-              <h3 className="text-sm font-medium text-gray-400 mb-2">Formulas</h3>
-              <p className="font-mono text-sm">G = exp(Γ · (σ_e·N₂ - σ_a·N₁) · L)</p>
-              <p className="font-mono text-sm mt-1">NF ≥ 2·n_sp·(G-1)/G ≈ 3 dB (quantum limit)</p>
-              <p className="font-mono text-sm mt-1">G_sat = G_ss / (1 + P_in·G_ss/P_sat)</p>
-            </div>
-          </div>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Fiber Length (m)" value={lengthRaw} onChange={setLength} min={0.01} max={200} step="any" />
+        <ValidatedNumberInput label="Pump Power (mW)" value={pumpRaw} onChange={setPump} min={0} max={5000} step="any" />
+        <ValidatedNumberInput label="Input Signal Power (dBm)" value={signalRaw} onChange={setSignal} min={-60} max={20} step="any" />
+        <ValidatedNumberInput label="Dopant Density N (ions/m³)" value={nRaw} onChange={setN} min={1e22} max={1e27} step="any" />
+        <ValidatedNumberInput label="Doped Core Radius (µm)" value={radiusRaw} onChange={setRadius} min={0.5} max={20} step="any" />
+        <ValidatedNumberInput label="Upper-State Lifetime τ (ms)" value={tauRaw} onChange={setTau} min={0.01} max={100} step="any" />
+        <ValidatedNumberInput label="Pump Wavelength (nm)" value={lpRaw} onChange={setLp} min={400} max={2200} step="any" />
+        <ValidatedNumberInput label="Pump σ_a (10⁻²⁵ m²)" value={sapRaw} onChange={setSap} min={0} max={1000} step="any" />
+        <ValidatedNumberInput label="Pump σ_e (10⁻²⁵ m²)" value={sepRaw} onChange={setSep} min={0} max={1000} step="any" />
+        <ValidatedNumberInput label="Signal Wavelength (nm)" value={lsRaw} onChange={setLs} min={400} max={2200} step="any" />
+        <ValidatedNumberInput label="Signal σ_a (10⁻²⁵ m²)" value={sasRaw} onChange={setSas} min={0} max={1000} step="any" />
+        <ValidatedNumberInput label="Signal σ_e (10⁻²⁵ m²)" value={sesRaw} onChange={setSes} min={0} max={1000} step="any" />
+        <ValidatedNumberInput label="Pump Overlap Γ_p" value={gpRaw} onChange={setGp} min={0.01} max={1} step="any" />
+        <ValidatedNumberInput label="Signal Overlap Γ_s" value={gsRaw} onChange={setGs} min={0.01} max={1} step="any" />
+      </div>
 
-        <div className="mt-8 grid md:grid-cols-2 gap-8">
-          <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-            <ChartPanel data={gainSpectrum} layout={layout1} />
-          </div>
-          <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-            <ChartPanel data={gainVsPump} layout={layout2} />
-          </div>
+      <div className="grid gap-4 sm:grid-cols-4 mb-8">
+        <Card label="Signal Gain" value={show(calc.gain, () => `${calc.gain.toFixed(2)} dB`)} sub={Number.isFinite(calc.gain) ? `full-inversion bound ${calc.fullInv.toFixed(1)} dB` : "signal fully absorbed"} tone="text-green-400" />
+        <Card label="Output Signal" value={show(calc.outDbm, () => `${calc.outDbm.toFixed(2)} dBm`)} sub={show(calc.outDbm, () => `${(10 ** (calc.outDbm / 10)).toPrecision(4)} mW`)} tone="text-blue-400" />
+        <Card label="Noise Figure" value={show(calc.nf, () => `${calc.nf.toFixed(2)} dB`)} sub="signal–spontaneous limit, ≥ 3 dB at high gain" tone="text-yellow-400" />
+        <Card label="Residual Pump" value={`${calc.pumpOut.toPrecision(4)} mW`} sub={`${((100 * calc.pumpOut) / Math.max(pump_mW, 1e-30)).toFixed(1)} % of launched`} tone="text-purple-400" />
+        <Card label="Small-Signal Absorption" value={`${calc.alphaP.toPrecision(4)} dB/m`} sub={`at the pump; ${calc.alphaS.toPrecision(4)} dB/m at the signal`} tone="text-gray-200" />
+        <Card label="Signal Saturation Power" value={show(calc.pSat, () => `${calc.pSat.toPrecision(4)} mW`)} sub="hνA/(Γ(σ_a + σ_e)τ)" tone="text-gray-200" />
+        <Card label="Upper-State Fraction n₂" value={`${calc.n2In.toFixed(3)} → ${calc.n2Out.toFixed(3)}`} sub="input → output end" tone="text-gray-200" />
+        <Card label="Best Length (0–3L)" value={charts.atEdge ? `≥ ${charts.bestLength.toPrecision(3)} m` : show(charts.bestGain, () => `${charts.bestLength.toPrecision(3)} m`)}
+          sub={charts.atEdge ? "gain still rising at 3L: the pump is not used up" : show(charts.bestGain, () => `${charts.bestGain.toFixed(2)} dB at this pump`)} tone="text-gray-200" />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
+        <h3 className="text-lg font-semibold mb-3">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2 font-mono">
+          <p>n₂/N = Σ Γ_kσ_akφ_k / (1/τ + Σ Γ_k(σ_ak + σ_ek)φ_k), φ_k = P_k/(hν_kA)</p>
+          <p>dP_k/dz = Γ_k N (σ_ek n₂ − σ_ak n₁) P_k (n₁ = 1 − n₂), solved exactly (Saleh et al. 1990)</p>
+          <p>NF = (1 + 2n_ASE)/G, n_ASE = G ∫ Γσ_e N n₂(z)/G(z) dz</p>
+          <p>Full-inversion bound: G = 4.343·Γσ_e N L dB</p>
         </div>
+        <p className="text-xs text-gray-400 mt-3">
+          Two-level, co-propagating pump and signal at one wavelength each, uniform intensity over the doped area. ASE is
+          not fed back into the inversion, so above about 20–25 dB of gain the model overestimates it, as it does with
+          ion clustering, excited-state absorption or a backward pump. Er pumped at 980 nm is a two-level system here
+          because the pump level empties in microseconds.
+        </p>
+      </div>
+
+      <ChartPanel data={charts.data} layout={{
+        paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+        font: { color: "#9ca3af" },
+        xaxis: { title: "Pump Power (mW)", gridcolor: "#374151", domain: [0, 0.45] },
+        yaxis: { title: "Signal Gain (dB)", gridcolor: "#374151" },
+        xaxis2: { title: "Fiber Length (m)", gridcolor: "#374151", anchor: "y2", domain: [0.55, 1] },
+        yaxis2: { title: "Signal Gain (dB)", gridcolor: "#374151", anchor: "x2" },
+        legend: { x: 0.01, y: 0.99 },
+        margin: { t: 30 },
+      }} />
     </>
   );
 }

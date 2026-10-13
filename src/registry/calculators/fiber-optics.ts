@@ -189,8 +189,22 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "fiber-amplifier",
     title: "Fiber Amplifier Calculator",
-    description: "EDFA and YDFA gain, saturation, and noise figure analysis.",
-    knownIssue: "Gain assumes full inversion and ignores pump power and absorption, so the YDFA preset gives 292 dB; several inputs have no effect.",
+    description: "EDFA and YDFA signal gain, output power, residual pump and noise figure from pump power, fiber length, doping and cross-sections, with gain against pump and length.",
+    tier: "textbook",
+    modelNote: "Two-level rate equations solved exactly: co-propagating pump, no ASE self-saturation (it matters above about 20–25 dB), ESA or clustering. Preset cross-sections are typical values; edit them for a fibre.",
+    references: [
+      {
+        citation: "Giles C. R., Desurvire E. (1991). Modeling erbium-doped fiber amplifiers. J. Lightwave Technol. 9, 271. Two-level rate equations, eqs. (6)–(9), and the saturation power hνA/(Γ(σa + σe)τ).",
+        url: "https://doi.org/10.1109/50.65886",
+      },
+      {
+        citation: "Saleh A. A. M., Jopson R. M., Evankow J. D., Aspell J. (1990). Modeling of gain in erbium-doped fiber amplifiers. IEEE Photon. Technol. Lett. 2, 714. Closed-form solution for co-propagating beams.",
+        url: "https://doi.org/10.1109/68.60769",
+      },
+      {
+        citation: "Desurvire E. (1994). Erbium-Doped Fiber Amplifiers: Principles and Applications, ch. 2. Wiley. Noise figure (1 + 2n_ASE)/G from the inversion profile.",
+      },
+    ],
   },
   {
     slug: "fiber-bandwidth",
@@ -342,8 +356,19 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "fiber-laser",
     title: "Fiber Laser Output Power",
-    description: "Fiber laser output power, optical, Stokes and quantum efficiency, and output-coupler and cavity losses from pump power, wavelengths and slope efficiency.",
-    knownIssue: "Quantum efficiency is the product of slope and Stokes efficiency instead of their ratio (73 % instead of 87 %), and the optimum coupling uses pump absorption as the gain.",
+    description: "Fiber laser output power, optical and Stokes efficiency, efficiency beyond the quantum defect, and the Rigrod optimum output coupling from gain and cavity loss.",
+    tier: "textbook",
+    modelNote: "Output from your slope and threshold. Optimum coupler from Rigrod's standing-wave model (four-level saturation, g₀ fixed), internal loss lumped into the rear mirror; output relative to the optimum.",
+    references: [
+      {
+        citation: "Rigrod W. W. (1965). Saturation effects in high-gain lasers. J. Appl. Phys. 36, 2487. Output power of a homogeneously broadened standing-wave laser against mirror reflectances.",
+        url: "https://doi.org/10.1063/1.1714517",
+      },
+      {
+        citation: "Zervas M. N., Codemard C. A. (2014). High Power Fiber Lasers: A Review. IEEE J. Sel. Top. Quantum Electron. 20(5), 219–241. Quantum defect and slope efficiency of Yb fibre lasers.",
+        url: "https://doi.org/10.1109/JSTQE.2014.2321279",
+      },
+    ],
   },
   {
     slug: "fiber-loop-mirror",
@@ -575,14 +600,24 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "rare-earth-doped",
     title: "Rare-Earth-Doped Fiber Amplifier",
-    description: "Ion density, pump absorption, small-signal gain, saturation power and noise figure of an Er, Yb, Tm or Nd-doped fiber from doping and pump power.",
-    knownIssue: "Gain assumes full inversion regardless of pump (172 dB at the defaults), the saturation power leaves out the absorption cross-section, and the noise figure rises with pump.",
-  },
-  {
-    slug: "rare-earth-fiber",
-    title: "Rare-Earth Fiber Dopants",
-    description: "Pump bands, cross-sections, lifetime, absorption, small-signal gain and optimal length of Er, Yb, Tm and Ho-doped fibers from concentration and core size.",
-    knownIssue: "Absorption in dB/m is used as if it were in nepers: the 90 %-absorption length is 2.8 m instead of 12.3 m and the plotted absorption is too high.",
+    description: "Ion density from wt-ppm, LP01 overlap, pump and signal absorption, 90 % absorption length, saturation power, gain and noise figure of an Er- or Yb-doped fiber.",
+    keywords: ["Rare-Earth Fiber Dopants"],
+    tier: "textbook",
+    modelNote: "Two-level Er or Yb; Γ from the exact LP01 field for a core doped to its edge (an upper bound). Preset cross-sections are typical values. Tm, Ho, Nd and Er/Yb co-doping are not covered.",
+    references: [
+      {
+        citation: "Gloge D. (1971). Weakly Guiding Fibers. Appl. Opt. 10, 2252. LP01 power fraction in the core, Γ = 1 − (U²/V²)(1 − K₀²(W)/K₁²(W)).",
+        url: "https://doi.org/10.1364/AO.10.002252",
+      },
+      {
+        citation: "Giles C. R., Desurvire E. (1991). Modeling erbium-doped fiber amplifiers. J. Lightwave Technol. 9, 271. Two-level rate equations, eqs. (6)–(9), and the saturation power hνA/(Γ(σa + σe)τ).",
+        url: "https://doi.org/10.1109/50.65886",
+      },
+      {
+        citation: "Saleh A. A. M., Jopson R. M., Evankow J. D., Aspell J. (1990). Modeling of gain in erbium-doped fiber amplifiers. IEEE Photon. Technol. Lett. 2, 714. Closed-form solution for co-propagating beams.",
+        url: "https://doi.org/10.1109/68.60769",
+      },
+    ],
   },
   {
     slug: "sbs-threshold",
