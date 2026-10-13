@@ -72,7 +72,11 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `self-phase-modulation`: rms broadening uses √(1 + (4 ln2/π)φ²); for an unchirped Gaussian it is √(1 + 4φ²/(3√3)) (`spmRmsBroadening`).
 - `dye-laser-resonator`: k_ISC = (1 − Φ_f)/τ counts all non-radiative decay as ISC.
 - `mode-matching`: the η conjugate sign was fixed in Phase 0 (0.64 for a 2× waist mismatch). It still needs a module
-  and a golden test.
+  and a golden test. The single-lens search misses the exact solution: 1550 nm, w 50 → 200 µm over 1000 mm has
+  s ≈ 200.769 mm, f ≈ 160.872 mm, but the page reports 0.033 % and 0.053 % overlaps (Codex review, 2026-10-13). The
+  brute-force search also runs during render; solve it in closed form (Kogelnik & Li) in the module.
+- `abcd-matrix`: shared links drop the element list (it is in `useState`; only the input ray is in the URL), and the
+  per-element controls have no `<label>` or `aria-label` (Codex review, 2026-10-13).
 
 **Free-space comms**
 - `point-ahead`: θ = v/c, but the point-ahead angle is 2v⊥/c (a factor of 2).
@@ -109,6 +113,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `erf` had three implementations. `src/physics/math.ts` replaced five pages' copies; others may remain.
 - `useURLState` only rejects non-finite values, so a crafted `?na=0` reaches the physics unclamped. Clamp in the page,
   or give `useURLState` an optional range.
+- Search returns unrelated pages for nonsense queries; it needs a relevance floor (Codex review, 2026-10-13).
 - `ui-check` can't hydrate a page that has no `<input>` (`optical-glass-catalog`; `jones-calculus` until an element is
   added).
 
