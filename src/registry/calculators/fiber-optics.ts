@@ -20,7 +20,18 @@ export const fiberOptics: CalculatorEntry[] = [
     slug: "birefringence-fiber",
     title: "Birefringence Fiber Calculator",
     description: "Geometric (elliptical-core) and stress-induced birefringence and beat length of a single-mode fiber from core and cladding indices and core shape.",
-    knownIssue: "Geometric birefringence scales with Δ instead of Δ², so the beat length is about 45 mm instead of tens of metres, and the stress term treats OPD/λ as an index difference.",
+    tier: "textbook",
+    modelNote: "Sakai–Kimura first-order geometric birefringence B = εn₁Δ²G(V) of a slightly elliptical step-index core and its group value, plus a stress term you enter. Not modelled: large ellipticity, material dispersion.",
+    references: [
+      {
+        citation: "Sakai J., Kimura T. (1981). Birefringence and polarization characteristics of single-mode optical fibers under elastic deformations. IEEE J. Quantum Electron. 17, 1041. G(V) for an elliptical core.",
+        url: "https://doi.org/10.1109/jqe.1981.1071213",
+      },
+      {
+        citation: "Rashleigh S. C. (1983). Origins and control of polarization effects in single-mode fibers. J. Lightwave Technol. 1, 312.",
+        url: "https://doi.org/10.1109/jlt.1983.1072121",
+      },
+    ],
   },
   {
     slug: "chromatic-dispersion",
@@ -555,14 +566,33 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "polarization-controller",
     title: "Fiber Polarization Controller",
-    description: "Retardation per paddle, bend-induced birefringence, quarter- and half-wave coil lengths and output polarization state of a fiber polarization controller.",
-    knownIssue: "Retardance comes from a PM-fibre Δn instead of the coil's bend birefringence, the paddles have no angles, and the S₃ sign is opposite to the site's convention.",
+    description: "Retardance per paddle from bend-induced birefringence, quarter- and half-wave loop diameters and the output polarization state of a three-paddle fiber polarization controller.",
+    tier: "textbook",
+    modelNote: "Lefèvre loop paddles: bend birefringence 0.133(d/D)², retardance 2π²·0.133·Nd²/(λD) per paddle, chained as rotated linear retarders (Mueller). Not modelled: twist between paddles, tension, bend loss.",
+    references: [
+      {
+        citation: "Lefèvre H. C. (1980). Single-mode fibre fractional wave devices and polarisation controllers. Electron. Lett. 16, 778.",
+        url: "https://doi.org/10.1049/el:19800552",
+      },
+      {
+        citation: "Ulrich R., Rashleigh S. C., Eickhoff W. (1980). Bending-induced birefringence in single-mode fibers. Opt. Lett. 5, 273. B = 0.133 (r/R)².",
+        url: "https://doi.org/10.1364/ol.5.000273",
+      },
+      { citation: "Goldstein D. H. (2011). Polarized Light, 3rd ed. CRC Press. Mueller matrices of rotated retarders." },
+    ],
   },
   {
     slug: "polarization-maintaining",
     title: "Polarization-Maintaining Fiber",
     description: "Birefringence, beat length, h-parameter and output extinction ratio of PANDA, bow-tie and elliptical-core PM fibers versus length and input PER.",
-    knownIssue: "Crosstalk is added to the input extinction ratio linearly instead of as 10^(−ER/10) + tanh(hL): 30 dB in, h = 1e-6 /m, 1 km gives 29.99 dB instead of 26.99 dB.",
+    tier: "textbook",
+    modelNote: "Exact solution of the PM-fibre coupled power equations with h-parameter h: Py/Px = (1−r)/(1+r), r = e^(−2hL)(1−ε₀)/(1+ε₀). Beat length λ/B, DGD B/c. B and h are inputs (typical presets).",
+    references: [
+      {
+        citation: "Noda J., Okamoto K., Sasaki Y. (1986). Polarization-maintaining fibers and their applications. J. Lightwave Technol. 4, 1071. h-parameter and crosstalk.",
+        url: "https://doi.org/10.1109/jlt.1986.1074847",
+      },
+    ],
   },
   {
     slug: "polarization-mode-dispersion",
