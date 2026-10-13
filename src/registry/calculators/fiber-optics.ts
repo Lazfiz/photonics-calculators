@@ -272,9 +272,20 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "fiber-bundle",
     title: "Fiber Bundle Design Calculator",
-    description: "Calculate bundle geometry, fill factor, étendue, and coupling efficiency for fiber optic bundles.",
+    description: "Calculate bundle diameter, cladding and core fill, packing-fraction loss and étendue for hexagonal or square fiber bundles.",
     heading: "Fiber Bundle Design",
-    knownIssue: "Fibre areas in µm² are divided by a bundle area in mm², so the fill factor reads 388 272× and the loss is negative; the hexagonal ring count is also off by one.",
+    tier: "textbook",
+    modelNote: "Equal touching round fibres in full-diameter hexagonal rings or a square grid, no adhesive or buffer; packing loss for a uniform spot filling the bundle circle.",
+    references: [
+      {
+        citation: "OEIS A003215. Hex (centered hexagonal) numbers 3n(n + 1) + 1: fibres in n full hexagonal rings.",
+        url: "https://oeis.org/A003215",
+      },
+      {
+        citation: "Kosterin A., Temyanko V., Fallahi M., Mansuripur M. (2004). Tapered fiber bundles for combining high-power diode lasers. Appl. Opt. 43, 3893. Étendue conservation, taper NA.",
+        url: "https://doi.org/10.1364/AO.43.003893",
+      },
+    ],
   },
   {
     slug: "fiber-characterization",
@@ -311,8 +322,22 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "fiber-gyroscope",
     title: "Fiber Optic Gyroscope (FOG)",
-    description: "Sagnac effect, scale factor, angle random walk, and bias stability for fiber optic gyroscopes.",
-    knownIssue: "Angle random walk is converted with ×3600 instead of ×60, so it is 60× too high (2.2e-3 instead of 3.6e-5 °/√h at the defaults).",
+    description: "Sagnac scale factor, shot-noise angle random walk, Earth-rate phase, transit time and proper frequency of an interferometric fiber optic gyroscope.",
+    tier: "textbook",
+    modelNote: "Ideal reciprocal I-FOG at the ±π/2 bias point, shot-noise limit only (no source excess noise, backscatter or Kerr bias). ARW is the Allan N: one-sided rate ASD/√2.",
+    references: [
+      {
+        citation: "Arditty H. J., Lefèvre H. C. (1981). Sagnac effect in fiber gyroscopes. Opt. Lett. 6, 401. Δφ = 2πLDΩ/(λc), independent of the index.",
+        url: "https://doi.org/10.1364/OL.6.000401",
+      },
+      {
+        citation: "Lefèvre H. C. (2014). The Fiber-Optic Gyroscope, 2nd ed., §2.1, §3.1–3.2 (Sagnac phase, photon-noise limit, proper frequency). Artech House.",
+      },
+      {
+        citation: "IEEE Std 952-1997. Specification format guide and test procedure for single-axis interferometric fiber optic gyros. Annex C: angle random walk from the Allan variance.",
+        url: "https://doi.org/10.1109/IEEESTD.1998.86153",
+      },
+    ],
   },
   {
     slug: "fiber-laser",
@@ -323,8 +348,19 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "fiber-loop-mirror",
     title: "Fiber Loop Mirror (Sagnac)",
-    description: "Sagnac fiber loop mirror reflectance, spectral response, and birefringent filter design.",
-    knownIssue: "Reflectance includes a sin²(βL) factor that cancels in a reciprocal loop: a 50 % coupler shows 50 % reflection instead of 100 %, and the spectrum is zero.",
+    description: "Sagnac fiber loop mirror reflectance and transmission versus coupling ratio and loss, and the comb filter made by a polarization-maintaining section.",
+    tier: "textbook",
+    modelNote: "Coupler with wavelength-flat coupling k; losses lumped into τ. PM comb at the full-contrast setting (counter-propagating waves on opposite axes); phase birefringence, no dispersion.",
+    references: [
+      {
+        citation: "Mortimore D. B. (1988). Fiber loop reflectors. J. Lightwave Technol. 6, 1217. R = 4k(1 − k), T = (1 − 2k)².",
+        url: "https://doi.org/10.1109/50.4119",
+      },
+      {
+        citation: "Fang X., Claus R. O. (1995). Polarization-independent all-fiber wavelength-division multiplexer based on a Sagnac interferometer. Opt. Lett. 20, 2146. T = sin²(πBL/λ).",
+        url: "https://doi.org/10.1364/OL.20.002146",
+      },
+    ],
   },
   {
     slug: "fiber-optic-sensor",
@@ -526,8 +562,15 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "pump-combiner",
     title: "Fiber Pump Combiner",
-    description: "Combined pump power, loss, pump brightness and the NA² brightness-conservation check for an N×1 fiber pump combiner, plus signal insertion loss.",
-    knownIssue: "The brightness test compares pump NA with the signal-core NA and has no fibre diameters, so a standard (6+1)×1 combiner is shown as infeasible.",
+    description: "Combined pump power, étendue budget, tapered-bundle diameter and pump NA after the taper for an N×1 or (N+1)×1 fiber pump combiner.",
+    tier: "textbook",
+    modelNote: "Lossless adiabatic taper (NA × taper ratio) of a hexagonal bundle of equal fibres; étendue π·A·NA² of the cores. Transmission and signal loss are inputs, not modelled.",
+    references: [
+      {
+        citation: "Kosterin A., Temyanko V., Fallahi M., Mansuripur M. (2004). Tapered fiber bundles for combining high-power diode lasers. Appl. Opt. 43, 3893. Étendue conservation, taper NA.",
+        url: "https://doi.org/10.1364/AO.43.003893",
+      },
+    ],
   },
   {
     slug: "rare-earth-doped",
