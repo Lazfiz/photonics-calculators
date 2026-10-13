@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 51, 2026-10-13)
+## Status (session 52, 2026-10-13)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -20,19 +20,17 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | imaging | 9 / 65 | findings fixed (sessions 19, 22); no full audit |
 | free-space-comms | 7 / 27 | findings fixed (Phase 1, session 21); `eye-safety-fso` on the laser-safety modules (48); no full audit |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
-| fiber-optics | 40 / 48 | part 0 (session 43), fix parts 1–9 (sessions 44–51); 6 `knownIssue`s; parts 10–11 below |
+| fiber-optics | 45 / 47 | part 0 (session 43), fix parts 1–10 (sessions 44–52); 2 `knownIssue`s; part 11 below |
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 0 / 54 | |
-| **total** | **177 / 460** | 6 `knownIssue`s (fiber-optics) |
+| **total** | **182 / 459** | 2 `knownIssue`s (fiber-optics part 11) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
   extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
   curl. Also clear the eslint warning there (unused `wavelength` state).
 - [ ] **Fiber-optics fix parts** (≈ 4 pages each; questionable pages in brackets get their tier in the same part):
-  - [ ] 10 tapers + attenuation: `fiber-taper` + `tapered-fiber` (merge; Birks–Li 35.8 µm), `attenuation` (Keiser IR
-    7.81e11 e^(−48.48/λ)), `otdr-analysis`, [`low-water-peak`, `link-budget`].
   - [ ] 11 data pages, label illustrative: `photonic-crystal` (Saitoh–Koshiba V), `specialty-fiber`.
 - [ ] Thin-film leftovers (6 untiered, see open findings).
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
@@ -83,7 +81,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 
 **Fiber optics** (part 0, session 43; per-page evidence in PR #43)
 - `birefringence-fiber` cites Sakai & Kimura 1981 for G(V) (Optiwave attributes it there); the reviewer couldn't confirm the equation in that paper. The formula itself is checked by perturbation (session 49). Confirm the page/equation when a copy is at hand.
-- `tapered-fiber` defines the taper ratio as d_waist/d_input; `pump-combiner` uses D_bundle/d_out (> 1). Align the wording in part 10.
 - The SMF core is redefined on six pages (a 4.1/4.5 µm, NA 0.12/0.1246/0.14). Use a = 4.1 µm, NA 0.1246 → MFD 10.08 µm.
 - D(1550) for SMF is 13.4/17/17.46/22.1 on different pages. Use G.652 S₀/4(λ−λ₀⁴/λ³), S₀ 0.092, λ₀ 1310 → 17.46.
 - `macro-bending-loss.ts` `MIN_V = 0.5` lets the Marcuse fit run far below its 1.2–2.4 range.
@@ -125,7 +122,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   - Hover crosshair and readout; PNG/CSV export.
   - Open bugs: `SimpleChart` reads `null` as 0, so a break in a line needs separate traces. `SimpleLineChart` prints
     coordinates at full precision, so Node and Chrome can differ by 1 ulp (a hydration error on
-    `detectors/quantum-efficiency`). Round to 0.01 px.
+    `detectors/quantum-efficiency`). Round to 0.01 px. `SimpleChart` ignores `layout.legend`: it pins the legend to the
+    plot's right edge, so names over ≈ 9 characters are clipped and overlap `yaxis2` ticks; `marker.color` of a markers
+    trace is replaced by the palette. `otdr-analysis` and `link-budget` use `showlegend: false` plus a caption.
   - Done: ticks (session 26); log axes with no floor, non-finite values dropped (session 34).
 - [ ] Plotly:
   - 18 pages use it. `react-plotly.js` imports the full `plotly.js/dist/plotly` (4.8 MB min), and both `plotly.js` and
@@ -176,6 +175,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   - Fiber-optics part 6 (session 48, PR #56): `doped-fiber-gain.ts` (Saleh closed form, NF, Gloge Γ, Rigrod T_opt 51.5 %); amplifier, rare-earth-doped (+ rare-earth-fiber merged), fiber-laser tiered; 519 tests.
   - Fiber-optics part 8 (session 50, PR #60): `step-index-modes.ts` (PII MFD 9.886 µm, Γ, exact mode count), `microbend.ts` (exact-LP01 Hankel overlap 1.17 dB/m, Gaussian 1.85× low), `g657.ts`, scaled besselK; MFD, bend-insensitive, micro-bend, v-number, fiber-characterization tiered; 538 tests.
   - Fiber-optics part 9 (session 51, PR #62): `coupled-mode.ts` (Snyder κ 4.447e-3 /m, Koshiba h̄ → Hayashi, XT −38.3 dB/10 km; K₀ tail 18.3 % not 26.2 %; half-plane η; Digonnet–Shaw coupler); multi-core, side-polished, d-shaped, fiber-coupler tiered; 542 tests.
+  - Fiber-optics part 10 (session 52, PRs #64–65): `fiber-taper.ts` (+ `tapered-fiber` merged; Birks–Li, three-layer LP0m, Love Ω_d; waist 27.9 µm), `silica-attenuation.ts` (0.187 dB/km at 1550, min 1550.8 nm) for attenuation + low-water-peak, `otdr.ts` (Barnoski–Jensen × Brinkmeyer η −82.5 dB at 1 ns, DR 20.5 dB), `link-budget.ts` (margin held, −12 dBm); 565 tests.
   - Fiber-optics part 7 (session 49, PR #58): `fiber-birefringence.ts` (Sakai–Kimura εn₁Δ²G(V), L_B 10.01 m; Lefèvre 0.882 rad/loop; PM crosstalk 26.99 dB); birefringence-fiber, polarization-maintaining, polarization-controller tiered; 525 tests.
 - Codex review fixes (session 48, PR #55): `eye-safety-fso` on the ICNIRP modules (MPE was ×1000; NOHD 11.125 m, 3R); SimpleChart category axes and grouped bars (Mueller, IR glass, crystals were blank); 512 tests.
 - Session 41: roadmap archived; `/ship` and `/handover` skills; `physics-reviewer` on Opus; `checker` agent on Haiku.
