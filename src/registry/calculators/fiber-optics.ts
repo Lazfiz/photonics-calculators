@@ -156,9 +156,20 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "d-shaped-fiber",
     title: "D-Shaped Fiber Calculator",
-    description: "Birefringence, evanescent field, and polarization properties of D-shaped (flat) fibers.",
+    description: "Evanescent power at the flat, external-index shift of the effective index and refractometric sensitivity of a D-shaped single-mode fiber.",
     heading: "D-Shaped Fiber",
-    knownIssue: "The default flat depth lies outside the cladding yet birefringence is shown, the birefringence formula has an uncited ×0.1 factor, and the evanescent tail is Gaussian instead of K₀.",
+    tier: "textbook",
+    modelNote: "Exact LP01 K₀ tail, power beyond the flat by quadrature. First-order index shift: too large for n_ext < n₂, too small as n_ext → n_eff (warned). Scalar; no D-shape birefringence.",
+    references: [
+      {
+        citation: "Gloge D. (1971). Weakly guiding fibers. Appl. Opt. 10, 2252. LP01 field, eigenvalue equation and power normalization.",
+        url: "https://doi.org/10.1364/ao.10.002252",
+      },
+      {
+        citation: "Snyder A. W., Love J. D. (1983). Optical Waveguide Theory. Chapman & Hall (Springer reprint). Step-profile modes, perturbation theory and weakly coupled fibres.",
+        url: "https://doi.org/10.1007/978-1-4613-2813-1",
+      },
+    ],
   },
   {
     slug: "dispersion-comp",
@@ -357,6 +368,19 @@ export const fiberOptics: CalculatorEntry[] = [
     slug: "fiber-coupler",
     title: "Fiber Coupler Calculator",
     description: "Calculate power splitting, transfer curves, and spectral response for directional fiber couplers.",
+    lede: "Power splitting, transfer curve and spectral response of a directional coupler of two identical single-mode cores, with the coupling coefficient computed from the core spacing and fibre parameters.",
+    tier: "textbook",
+    modelNote: "Two identical parallel step-index cores: Snyder κ(λ) from the exact LP01 mode, transfer sin²(κL). Fused biconical tapers (cladding-mode coupling), unequal cores and dispersion are not modelled.",
+    references: [
+      {
+        citation: "Snyder A. W. (1972). Coupled-mode theory for optical fibers. J. Opt. Soc. Am. 62, 1267. Coupling coefficient of two identical step-index cores.",
+        url: "https://doi.org/10.1364/josa.62.001267",
+      },
+      {
+        citation: "Snyder A. W., Love J. D. (1983). Optical Waveguide Theory. Chapman & Hall (Springer reprint). Step-profile modes, perturbation theory and weakly coupled fibres.",
+        url: "https://doi.org/10.1007/978-1-4613-2813-1",
+      },
+    ],
   },
   {
     slug: "fiber-delay-line",
@@ -575,8 +599,23 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "multi-core",
     title: "Multi-Core Fiber Crosstalk",
-    description: "Simplified coupled-mode estimate of inter-core coupling, crosstalk and packing density in a homogeneous multi-core fiber versus core pitch and length.",
-    knownIssue: "The core-to-core coupling coefficient is about 10 orders of magnitude too small and the crosstalk formula is dimensionally wrong, so crosstalk shows −300 dB instead of about −40 dB.",
+    description: "Inter-core coupling coefficient, bend-averaged power coupling and crosstalk of a multi-core fiber versus core pitch, bend radius, core mismatch and length.",
+    tier: "textbook",
+    modelNote: "Snyder κ (identical cores, exact LP01); Koshiba bend/twist-averaged h̄ → Hayashi 2κ²R/(βΛ) for Δβ = 0, d ≫ R/(βΛ); XT = tanh(h̄L). LP01 only; no trenches; worst core sums neighbours.",
+    references: [
+      {
+        citation: "Snyder A. W. (1972). Coupled-mode theory for optical fibers. J. Opt. Soc. Am. 62, 1267. Coupling coefficient of two identical step-index cores.",
+        url: "https://doi.org/10.1364/josa.62.001267",
+      },
+      {
+        citation: "Hayashi T. et al. (2011). Design and fabrication of ultra-low crosstalk and low-loss multi-core fiber. Opt. Express 19, 16576. h = 2κ²R/(βΛ), XT = tanh(hL).",
+        url: "https://doi.org/10.1364/oe.19.016576",
+      },
+      {
+        citation: "Koshiba M., Saitoh K., Takenaga K., Matsuo S. (2012). Analytical expression of average power-coupling coefficients for estimating intercore crosstalk in multicore fibers. IEEE Photonics J. 4, 1987.",
+        url: "https://doi.org/10.1109/jphot.2012.2221085",
+      },
+    ],
   },
   {
     slug: "nonlinear-effects",
@@ -746,8 +785,27 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "side-polished",
     title: "Side-Polished Fiber",
-    description: "Evanescent field interaction, phase matching, and spectral response of side-polished fiber devices.",
-    knownIssue: "The effective index sits at the cutoff value, so the evanescent decay is 16× too slow (92 % instead of 26 % of the power at 2 µm), and the coupling length has no second guide.",
+    description: "Evanescent power beyond the polished face, overlay index shift and polished-coupler transfer of a side-polished single-mode fiber.",
+    tier: "textbook",
+    modelNote: "Exact LP01 K₀ tail: power beyond the face by quadrature, first-order overlay shift of n_eff; twin-fibre coupler, Snyder κ over D(z) = D₀ + z²/R. Scalar; mode change near the face not modelled.",
+    references: [
+      {
+        citation: "Gloge D. (1971). Weakly guiding fibers. Appl. Opt. 10, 2252. LP01 field, eigenvalue equation and power normalization.",
+        url: "https://doi.org/10.1364/ao.10.002252",
+      },
+      {
+        citation: "Snyder A. W. (1972). Coupled-mode theory for optical fibers. J. Opt. Soc. Am. 62, 1267. Coupling coefficient of two identical step-index cores.",
+        url: "https://doi.org/10.1364/josa.62.001267",
+      },
+      {
+        citation: "Digonnet M. J. F., Shaw H. J. (1982). Analysis of a tunable single mode optical fiber coupler. IEEE J. Quantum Electron. 18, 746. Polished-coupler geometry and effective interaction length.",
+        url: "https://doi.org/10.1109/jqe.1982.1071574",
+      },
+      {
+        citation: "Snyder A. W., Love J. D. (1983). Optical Waveguide Theory. Chapman & Hall (Springer reprint). Step-profile modes, perturbation theory and weakly coupled fibres.",
+        url: "https://doi.org/10.1007/978-1-4613-2813-1",
+      },
+    ],
   },
   {
     slug: "specialty-fiber",

@@ -1,122 +1,170 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { evanescentIntensityRatio, lp01PowerBeyondPlane } from "../../../physics/fiber-optics/coupled-mode";
+import { LP11_CUTOFF_V, MIN_V, lp01Mode, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
+import { effectiveIndex, petermannIIRadius } from "../../../physics/fiber-optics/step-index-modes";
+
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
+const fmtPct = (x: number) =>
+  !Number.isFinite(x) ? "—" : x >= 1e-3 ? `${(100 * x).toPrecision(3)} %` : `${(100 * x).toExponential(2)} %`;
+/**
+ * First-order perturbation needs the shift to be small against the guidance margin n_eff − n₂, and the outer index
+ * to stay well below n_eff (as it approaches n_eff the real tail spreads out and first order underestimates).
+ */
+const PERTURBATION_FRACTION = 0.1;
+const NEAR_LEAK_FRACTION = 0.5;
+
 export default function DShapedFiberPage() {
-  const [cladDia, setCladDia] = useURLState("cladDia", 125); // μm
-  const [coreDia, setCoreDia] = useURLState("coreDia", 9); // μm
-  const [flatDepth, setFlatDepth] = useURLState("flatDepth", 65); // μm from center to flat
+  const [cladDia, setCladDia] = useURLState("cladDia", 125); // µm
+  const [coreDia, setCoreDia] = useURLState("coreDia", 9); // µm
+  const [flatDepth, setFlatDepth] = useURLState("flatDepth", 8); // µm, core centre to flat
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [n_core, setN_core] = useURLState("n_core", 1.4682);
-  const [n_clad, setN_clad] = useURLState("n_clad", 1.4629);
+  const [n_core, setN_core] = useURLState("n_core", 1.4494);
+  const [n_clad, setN_clad] = useURLState("n_clad", 1.444);
+  const [n_ext, setN_ext] = useURLState("n_ext", 1.333); // medium on the flat (water)
+
+  const a_um = coreDia / 2;
+  const fiber = useMemo(
+    () => ({ a: a_um * 1e-6, n1: n_core, NA: Math.sqrt(n_core ** 2 - n_clad ** 2) }),
+    [a_um, n_core, n_clad],
+  );
 
   const calc = useMemo(() => {
-    const lambda = wavelength * 1e-3; // μm
-    const NA = Math.sqrt(n_core * n_core - n_clad * n_clad);
-    const V = (2 * Math.PI / lambda) * (coreDia / 2) * NA;
-
-    // Mode field radius (Marcuse approximation)
-    const w = (coreDia / 2) * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
-
-    // Distance from core center to flat surface (input convention)
-    const d_above = Math.max(flatDepth, 0.1); // distance from core center to flat
-    const d_below = cladDia / 2; // distance from core center to bottom of fiber (always radius)
-    const asymmetry = d_below / d_above;
-
-    // Birefringence induced by asymmetric cladding
-    // Δn ≈ (NA²/n) × (1 - R²)/(1 + R²) × correction
-    const R = Math.min(asymmetry, 5);
-    const birefringence = 0.5 * Math.pow(NA, 2) / n_core * Math.abs(1 - R * R) / (1 + R * R) * 0.1;
-
-    // Evanescent field at flat surface (Gaussian mode decay)
-    const evanescentFraction = Math.exp(-2 * Math.pow(d_above / w, 2));
-
-    // Polarization extinction ratio (dB) = 10·log₁₀(1 + (2π·Δn·L/λ)²)
-    // For unit length L=1: PER ≈ 10·log₁₀(1 + (2π·Δn/λ)²)
-    const PER = birefringence > 0 ? 10 * Math.log10(1 + Math.pow(2 * Math.PI * birefringence / lambda, 2)) : 0;
-
-    // Effective area
-    const A_eff = Math.PI * w * w;
-
-    // Sensitivity to external refractive index
-    const RI_sensitivity = evanescentFraction * 50; // nm/RIU simplified
-
-    return { NA, V, w, asymmetry, birefringence, evanescentFraction, PER, A_eff, RI_sensitivity, d_above, d_below };
-  }, [cladDia, coreDia, flatDepth, wavelength, n_core, n_clad]);
+    const lambda = wavelength * 1e-9;
+    const V = vNumber(fiber, lambda);
+    const mode = lp01Mode(V);
+    const nEff = effectiveIndex(fiber, lambda, mode);
+    const rho0 = flatDepth / a_um;
+    const eta = lp01PowerBeyondPlane(mode, rho0);
+    return {
+      V, mode, nEff, eta,
+      surface: evanescentIntensityRatio(mode, rho0),
+      mfd_um: 2 * petermannIIRadius(fiber, lambda, mode) * 1e6,
+      // First-order perturbation (Snyder & Love 1983): Δ(n_eff²) = η(n_ext² − n₂²); its slope gives the sensitivity.
+      dNeff: (eta * (n_ext ** 2 - n_clad ** 2)) / (2 * nEff),
+      sensitivity: (eta * n_ext) / nEff,
+    };
+  }, [fiber, wavelength, flatDepth, a_um, n_ext, n_clad]);
 
   const chartData = useMemo(() => {
-    const depths = Array.from({ length: 100 }, (_, i) => cladDia * 0.4 + i * (cladDia * 0.3 / 100));
-    const birefs = depths.map(d => {
-      const above = Math.max(d, 0.1);
-      const below = cladDia / 2;
-      const R = Math.min(below / above, 5);
-      return 0.5 * Math.pow(calc.NA, 2) / n_core * Math.abs(1 - R * R) / (1 + R * R) * 0.1;
-    });
-    const efs = depths.map(d => {
-      const above = Math.max(d, 0.1);
-      const V = (2 * Math.PI / (wavelength * 1e-3)) * (coreDia / 2) * calc.NA;
-      const w = (coreDia / 2) * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
-      return Math.exp(-2 * Math.pow(above / w, 2));
-    });
-
+    const depths: number[] = [];
+    const etas: (number | null)[] = [];
+    for (let i = 0; i <= 60; i++) {
+      const d = a_um + (i * 10) / 60; // µm from the core centre: core edge to 10 µm beyond it
+      const eta = lp01PowerBeyondPlane(calc.mode, d / a_um);
+      depths.push(d);
+      etas.push(eta > 0 ? 100 * eta : null);
+    }
     return [
-      { x: depths, y: birefs.map(b => b * 1e6), type: "scatter" as const, mode: "lines" as const, name: "Birefringence (×10⁻⁶)", line: { color: "#f87171" }, yaxis: "y" },
-      { x: depths, y: efs.map(e => e * 100), type: "scatter" as const, mode: "lines" as const, name: "Evanescent (%)", line: { color: "#60a5fa" }, yaxis: "y2" },
+      { x: depths, y: etas, type: "scatter" as const, mode: "lines" as const, name: "Power beyond the flat (%)", line: { color: "#60a5fa" } },
     ];
-  }, [cladDia, coreDia, flatDepth, wavelength, n_core, n_clad]);
+  }, [calc.mode, a_um]);
+
+  const noFlat = flatDepth >= cladDia / 2;
+  const cutsCore = flatDepth < a_um;
+  const valid = Number.isFinite(calc.eta) && !noFlat;
+  const leaky = valid && n_ext >= calc.nEff;
+  const margin = calc.nEff - n_clad;
+  const strong = valid && !leaky && Math.abs(calc.dNeff) > PERTURBATION_FRACTION * margin;
+  const nearLeak = valid && !leaky && calc.nEff - n_ext < NEAR_LEAK_FRACTION * margin;
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Cladding Ø (μm)" value={cladDia} onChange={setCladDia} min={10} />
-        <ValidatedNumberInput label="Core Ø (μm)" value={coreDia} onChange={setCoreDia} min={0.1} step="any" />
-        <ValidatedNumberInput label="Flat Depth from Center (μm)" value={flatDepth} onChange={setFlatDepth} min={1} step="any" />
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} />
+      <div className="grid gap-4 sm:grid-cols-4 mb-8">
+        <ValidatedNumberInput label="Cladding Ø (µm)" value={cladDia} onChange={setCladDia} min={10} max={1000} step="1" />
+        <ValidatedNumberInput label="Core Ø (µm)" value={coreDia} onChange={setCoreDia} min={1} max={60} step="0.1" />
+        <ValidatedNumberInput label="Flat Distance from Core Centre (µm)" value={flatDepth} onChange={setFlatDepth} min={0} max={500} step="0.1" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={2500} step="1" />
+        <ValidatedNumberInput label="Core Index n₁" value={n_core} onChange={setN_core} min={1} max={4} step="0.0001" />
+        <ValidatedNumberInput label="Cladding Index n₂" value={n_clad} onChange={setN_clad} min={1} max={4} step="0.0001" />
+        <ValidatedNumberInput label="External Index on the Flat" value={n_ext} onChange={setN_ext} min={1} max={2} step="0.001" />
       </div>
 
+      {noFlat && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          The flat lies at or beyond the cladding radius ({cladDia / 2} µm): the fibre is round and nothing is computed.
+        </p>
+      )}
+      {!noFlat && cutsCore && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          The flat cuts into the core (distance &lt; a = {a_um} µm): the round-fibre mode no longer applies and nothing is computed.
+        </p>
+      )}
+      {!noFlat && !cutsCore && !Number.isFinite(calc.eta) && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          No result: the model needs n₁ &gt; n₂ and V ≥ {MIN_V} (here V = {fmt(calc.V, 3)}).
+        </p>
+      )}
+      {valid && calc.V > LP11_CUTOFF_V && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          V = {calc.V.toFixed(2)} &gt; {LP11_CUTOFF_V.toFixed(3)}: the fibre is not single-mode; only LP01 is computed.
+        </p>
+      )}
+      {leaky && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          The external index is at or above n_eff = {calc.nEff.toFixed(5)}: the mode leaks out through the flat, and the guided-mode
+          shift and sensitivity do not apply.
+        </p>
+      )}
+      {strong && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          The external medium shifts n_eff by more than {100 * PERTURBATION_FRACTION} % of the guidance margin n_eff − n₂ ={" "}
+          {margin.toExponential(2)}: first-order perturbation theory is only a rough estimate here
+          {n_ext < n_clad ? " (it overestimates the shift)" : ""}.
+        </p>
+      )}
+      {nearLeak && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          The external index is close to n_eff: the real field spreads further past the flat than the unperturbed mode, so the
+          first-order shift and sensitivity underestimate the true values. This is where D-fibre refractometers are most sensitive.
+        </p>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Birefringence</p>
-          <p className="text-xl font-bold text-red-400">{(calc.birefringence * 1e6).toFixed(2)}×10⁻⁶</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Evanescent @ Flat</p>
-          <p className="text-xl font-bold text-blue-400">{(calc.evanescentFraction * 100).toFixed(3)}%</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Asymmetry Ratio</p>
-          <p className="text-xl font-bold text-green-400">{calc.asymmetry.toFixed(2)}</p>
-          <p className="text-xs text-gray-500">{calc.d_above.toFixed(0)} / {calc.d_below.toFixed(0)} μm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">RI Sensitivity</p>
-          <p className="text-xl font-bold text-yellow-400">{calc.RI_sensitivity.toFixed(1)} nm/RIU</p>
-        </div>
+        <ResultCard label="Power beyond the flat" value={valid ? fmtPct(calc.eta) : "—"} tone="blue" subtext={`V = ${fmt(calc.V, 3)}, n_eff = ${fmt(calc.nEff, 5)}`} />
+        <ResultCard label="Intensity at the flat" value={valid ? fmtPct(calc.surface) : "—"} tone="cyan" subtext={`of the core-boundary value; ${fmt(flatDepth - a_um, 1, " µm")} of cladding left`} />
+        <ResultCard label="Index shift Δn_eff" value={valid && !leaky ? calc.dNeff.toExponential(2) : "—"} tone="purple" subtext={`external index ${n_ext} vs cladding, first order`} />
+        <ResultCard label="Sensitivity ∂n_eff/∂n_ext" value={valid && !leaky ? calc.sensitivity.toExponential(2) : "—"} tone="yellow" subtext={`MFD ${fmt(calc.mfd_um, 2, " µm")} (Petermann II)`} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <h3 className="text-lg font-semibold mb-3">Formulas</h3>
-        <div className="text-sm text-gray-300 space-y-2 font-mono">
-          <p>Asymmetry: R = d_below / d_above</p>
-          <p>Birefringence: Δn ≈ (NA²/2n) × |1-R²|/(1+R²)</p>
-          <p>Evanescent: η = exp(-2(d/w₀)²)</p>
-          <p>RI sensitivity: S ∝ η × λ × ∂n_eff/∂n_ext</p>
-        </div>
+        <h3 className="text-lg font-semibold mb-3">Evanescent Power vs Flat Position</h3>
+        <ChartPanel data={chartData} layout={{
+          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+          font: { color: "#9ca3af" },
+          xaxis: { title: "Flat distance from core centre (µm), from the core edge", gridcolor: "#374151" },
+          yaxis: { title: "Power beyond the flat (%)", gridcolor: "#374151", type: "log" },
+          legend: { x: 0.6, y: 0.98 },
+          margin: { t: 20, r: 30, b: 50, l: 70 }, height: 340,
+        }} />
       </div>
 
-      <ChartPanel data={chartData} layout={{
-        paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-        font: { color: "#9ca3af" },
-        xaxis: { title: "Flat Depth (μm)", gridcolor: "#374151" },
-        yaxis: { title: "Birefringence (×10⁻⁶)", gridcolor: "#374151" },
-        yaxis2: { title: "Evanescent (%)", overlaying: "y", side: "right", gridcolor: "#374151" },
-        legend: { x: 0.01, y: 0.99 },
-        margin: { t: 30, r: 60 },
-      }} />
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2">
+          <p className="font-mono">ψ(r) = J₀(U) K₀(Wr/a)/K₀(W) for r &gt; a;  η = ∫_(x &gt; h) ψ² dA / ∫ψ² dA</p>
+          <p className="font-mono">Δn_eff ≈ η (n_ext² − n₂²) / (2 n_eff),  ∂n_eff/∂n_ext ≈ η n_ext / n_eff</p>
+          <p>
+            The flat is a plane at distance h from the core centre. The exact LP01 mode of the round step-index fibre (eigenvalues U and W)
+            gives η, the fraction of the mode power beyond that plane; its tail decays as K₀(Wr/a). Replacing the cladding beyond the flat by
+            a medium of index n_ext perturbs n_eff to first order by η(n_ext² − n₂²)/(2n_eff), which sets the refractometric sensitivity of a
+            D-fibre sensor.
+          </p>
+          <p>
+            First order uses the unperturbed mode. By the variational principle it overestimates the shift for n_ext &lt; n₂ (water, air)
+            and underestimates the shift and the sensitivity as n_ext approaches n_eff.
+          </p>
+          <p className="text-gray-400">
+            Not included: the change of the mode itself (see above), polarization (scalar LP model), the form birefringence of the D shape (it needs a vector mode solver; commercial polarization-maintaining
+            D-fibres use an elliptical core), and roughness of the flat.
+          </p>
+        </div>
+      </div>
     </>
   );
 }

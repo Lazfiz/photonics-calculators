@@ -1,185 +1,194 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  averagePowerCoupling, couplingCoefficient, criticalBendRadius, pairCrosstalk,
+} from "../../../physics/fiber-optics/coupled-mode";
+import { LP11_CUTOFF_V, MIN_V, lp01Mode, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
+import { effectiveIndex } from "../../../physics/fiber-optics/step-index-modes";
+
+/** Core layouts: nearest neighbours of the worst core, and the outer-core centre radius in pitches. */
+const LAYOUTS: Record<number, { neighbours: number; outerRadius: number; name: string }> = {
+  1: { neighbours: 0, outerRadius: 0, name: "single core" },
+  3: { neighbours: 2, outerRadius: 1 / Math.sqrt(3), name: "triangle" },
+  7: { neighbours: 6, outerRadius: 1, name: "hexagonal, centre core" },
+  12: { neighbours: 2, outerRadius: 1 / (2 * Math.sin(Math.PI / 12)), name: "ring of 12" },
+  19: { neighbours: 6, outerRadius: 2, name: "hexagonal, two rings" },
+};
+
+const toDb = (x: number) => 10 * Math.log10(x);
+/** Crosstalk in dB; 0 (no length, or h̄ underflowed) is shown as "−∞ dB". */
+const fmtXt = (x: number) => (!Number.isFinite(x) ? "—" : x === 0 ? "−∞ dB" : `${toDb(x).toFixed(1)} dB`);
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
+const fmtExp = (x: number, unit = "") => (Number.isFinite(x) ? `${x.toExponential(2)}${unit}` : "—");
 
 export default function MultiCoreFiberCalculator() {
   const [numCores, setNumCores] = useURLState("numCores", 7);
-  const [corePitch, setCorePitch] = useURLState("corePitch", 45); // μm
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.5); // μm
+  const [corePitch, setCorePitch] = useURLState("corePitch", 45); // µm
+  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.5); // µm
   const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.468);
   const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.463);
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
   const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // km
-  const [deltaBeta, setDeltaBeta] = useURLState("deltaBeta", 5000); // rad/m propagation constant mismatch
+  const [deltaBeta, setDeltaBeta] = useURLState("deltaBeta", 0); // rad/m, core-to-core mismatch
+  const [bendRadius, setBendRadius] = useURLState("bendRadius", 100); // mm
+  const [correlationLength, setCorrelationLength] = useURLState("correlationLength", 0.05); // m
+  const [outerCladding, setOuterCladding] = useURLState("outerCladding", 30); // µm, outer core centre to cladding edge
 
-  const lambda_um = wavelength * 1e-3; // nm → μm
-  const na = Math.sqrt(coreIndex ** 2 - claddingIndex ** 2);
-  const vNumber = (2 * Math.PI * coreRadius * na) / lambda_um;
+  const layout = LAYOUTS[numCores] ?? LAYOUTS[7];
 
-  // Coupling coefficient (simplified coupled-mode theory)
-  // For homogeneous MCF, κ decays exponentially with pitch
-  // κ ≈ κ₀ · exp(-γ · Λ) where γ = cladding decay constant, Λ = pitch
+  const fiber = useMemo(
+    () => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: Math.sqrt(coreIndex ** 2 - claddingIndex ** 2) }),
+    [coreRadius, coreIndex, claddingIndex],
+  );
+
   const calc = useMemo(() => {
-    const k0 = 2 * Math.PI / lambda_um; // 1/μm
-    const gamma = k0 * Math.sqrt(coreIndex ** 2 - claddingIndex ** 2); // cladding decay constant (1/μm)
+    const lambda = wavelength * 1e-9;
+    const V = vNumber(fiber, lambda);
+    const mode = lp01Mode(V);
+    const beta = (2 * Math.PI * effectiveIndex(fiber, lambda, mode)) / lambda;
+    const L = fiberLength * 1e3;
+    const xtAt = (pitch_um: number) => {
+      const kappa = couplingCoefficient(fiber, lambda, pitch_um * 1e-6, mode);
+      const h = averagePowerCoupling({
+        kappa, beta, pitch: pitch_um * 1e-6, bendRadius: bendRadius * 1e-3, correlationLength, deltaBeta,
+      });
+      return { kappa, h, pair: pairCrosstalk(h, L) };
+    };
+    const { kappa, h, pair } = xtAt(corePitch);
+    return {
+      V, beta, kappa, h, pair, xtAt,
+      // First-order sum over the nearest neighbours: valid while it is ≪ 1.
+      worst: layout.neighbours * pair,
+      rpk: deltaBeta !== 0 ? criticalBendRadius(beta, corePitch * 1e-6, deltaBeta) : Infinity,
+      claddingDiameter: 2 * (layout.outerRadius * corePitch + outerCladding),
+    };
+  }, [fiber, wavelength, fiberLength, corePitch, bendRadius, correlationLength, deltaBeta, layout, outerCladding]);
 
-    // Mode field radius (Marcuse)
-    const w = coreRadius * (0.65 + 1.619 / Math.pow(vNumber, 1.5) + 2.879 / Math.pow(vNumber, 6));
-
-    // Coupling coefficient: κ ∝ K₀(γ·Λ) · K₁(γ·Λ) / K₁(w/a)²
-    // Using asymptotic approximation valid for γ·Λ >> 1
-    const gammaPitch = gamma * corePitch;
-    // Modified Bessel K₀, K₁ asymptotic approximation (valid for x > 2)
-    const K0_asympt = (x: number) => Math.sqrt(Math.PI / (2 * x)) * Math.exp(-x);
-    const K1_asympt = (x: number) => Math.sqrt(Math.PI / (2 * x)) * Math.exp(-x) * (1 + 0.5 / x);
-    const u_param = coreRadius * Math.sqrt(coreIndex ** 2 * k0 ** 2 - (vNumber / (2 * coreRadius)) ** 2);
-    const w_param = coreRadius * Math.sqrt((vNumber / (2 * coreRadius)) ** 2 - claddingIndex ** 2 * k0 ** 2);
-
-    const K0_val = gammaPitch > 1 ? K0_asympt(gammaPitch) : 0.5; // fallback for small x
-    const K1_val = gammaPitch > 1 ? K1_asympt(gammaPitch) : 0.6;
-    const K1_w = w_param > 1 ? K1_asympt(w_param) : 0.8;
-
-    // κ in 1/μm, convert to 1/m
-    const kappa_per_um = Math.abs(w * K0_val * K1_val * u_param / (coreRadius * K1_w ** 2));
-    const kappa = kappa_per_um * 1e6; // 1/m
-
-    // Heterogeneous MCF: crosstalk with propagation constant mismatch
-    // XT = 10·log₁₀(sinh²(h·L)) where h = κ²/(κ² + δβ²) (power coupling coefficient)
-    const h = kappa ** 2 / (kappa ** 2 + deltaBeta ** 2);
-    const L = fiberLength * 1000; // km → m
-    const xt = 10 * Math.log10(Math.max(1e-30, Math.sinh(h * L) ** 2));
-
-    // Cladding radius (hexagonal packing)
-    const claddingRadius = corePitch + coreRadius + 10; // pitch + core + buffer
-
-    // Packing density
-    const packingDensity = (numCores * Math.PI * coreRadius ** 2) / (Math.PI * claddingRadius ** 2);
-
-    return { kappa, h, xt, vNumber, claddingRadius, packingDensity, w };
-  }, [coreRadius, coreIndex, claddingIndex, wavelength, vNumber, corePitch, deltaBeta, fiberLength, lambda_um]);
-
-  // Plot: crosstalk vs core pitch
   const plotData = useMemo(() => {
     const pitches: number[] = [];
-    const crosstalks: number[] = [];
-
-    const k0 = 2 * Math.PI / lambda_um;
-    const gamma = k0 * Math.sqrt(coreIndex ** 2 - claddingIndex ** 2);
-
+    const pair: (number | null)[] = [];
+    const worst: (number | null)[] = [];
     for (let p = 20; p <= 100; p += 1) {
+      const xt = calc.xtAt(p).pair;
       pitches.push(p);
-      const gammaPitch = gamma * p;
-      const K0_asympt = (x: number) => Math.sqrt(Math.PI / (2 * x)) * Math.exp(-x);
-      const K1_asympt = (x: number) => Math.sqrt(Math.PI / (2 * x)) * Math.exp(-x) * (1 + 0.5 / x);
-      const u_param = coreRadius * Math.sqrt(coreIndex ** 2 * k0 ** 2 - (vNumber / (2 * coreRadius)) ** 2);
-      const w_param = coreRadius * Math.sqrt((vNumber / (2 * coreRadius)) ** 2 - claddingIndex ** 2 * k0 ** 2);
-
-      const K0_val = gammaPitch > 1 ? K0_asympt(gammaPitch) : 0.5;
-      const K1_val = gammaPitch > 1 ? K1_asympt(gammaPitch) : 0.6;
-      const K1_w = w_param > 1 ? K1_asympt(w_param) : 0.8;
-
-      const kappa_p = Math.abs(calc.w * K0_val * K1_val * u_param / (coreRadius * K1_w ** 2)) * 1e6;
-      const h_p = kappa_p ** 2 / (kappa_p ** 2 + deltaBeta ** 2);
-      const L = fiberLength * 1000;
-      const xt_p = 10 * Math.log10(Math.max(1e-30, Math.sinh(h_p * L) ** 2));
-      crosstalks.push(xt_p);
+      pair.push(xt > 0 ? toDb(xt) : null);
+      worst.push(xt > 0 && layout.neighbours > 0 ? toDb(layout.neighbours * xt) : null);
     }
-
-    return [
+    const traces = [
       {
-        x: pitches, y: crosstalks, type: "scatter" as const, mode: "lines" as const,
-        name: "Crosstalk", line: { color: "#3b82f6", width: 2 },
-      },
-      {
-        x: [corePitch], y: [calc.xt], type: "scatter" as const, mode: "markers" as const,
-        name: "Current", marker: { color: "#22c55e", size: 12 },
-      },
-      {
-        x: [20, 100], y: [-50, -50], type: "scatter" as const, mode: "lines" as const,
-        name: "Target (< -50 dB)", line: { color: "#ef4444", width: 1, dash: "dash" as const },
+        x: pitches, y: pair, type: "scatter" as const, mode: "lines" as const,
+        name: "One neighbour, tanh(h̄L)", line: { color: "#3b82f6", width: 2 },
       },
     ];
-  }, [corePitch, coreIndex, claddingIndex, wavelength, vNumber, coreRadius, deltaBeta, fiberLength, lambda_um, calc.w, calc.xt]);
+    if (layout.neighbours > 1) {
+      traces.push({
+        x: pitches, y: worst, type: "scatter" as const, mode: "lines" as const,
+        name: `Worst core, ${layout.neighbours} neighbours`, line: { color: "#f59e0b", width: 2 },
+      });
+    }
+    const current = calc.pair > 0 ? toDb(calc.pair) : NaN;
+    return Number.isFinite(current)
+      ? [...traces, {
+        x: [corePitch], y: [current], type: "scatter" as const, mode: "markers" as const,
+        name: "Current pitch", marker: { color: "#22c55e", size: 11 },
+      }]
+      : traces;
+  }, [calc, corePitch, layout]);
 
-  const layout = {
-    title: "Inter-Core Crosstalk vs Core Pitch",
-    xaxis: { title: "Core Pitch (μm)", gridcolor: "#374151" },
-    yaxis: { title: "Crosstalk (dB)", gridcolor: "#374151" },
-    paper_bgcolor: "#111827", plot_bgcolor: "#1f2937",
-    font: { color: "#f3f4f6" }, showlegend: true,
-    legend: { x: 0.02, y: 0.98 }, height: 400,
-  };
+  const valid = Number.isFinite(calc.kappa) && Number.isFinite(calc.h);
+  const weakCoupling = valid && calc.pair < 0.1;
 
   return (
     <>
-
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Number of Cores</label>
-              <select value={numCores} onChange={(e) => setNumCores(Number(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none">
-                <option value={1}>1</option>
-                <option value={3}>3</option>
-                <option value={7}>7</option>
-                <option value={12}>12</option>
-                <option value={19}>19</option>
-              </select>
-            </div>
-            <div>
-              <ValidatedNumberInput label="Core Pitch (μm)" value={corePitch} onChange={setCorePitch} min={10} step="1" />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Core Radius (μm)" value={coreRadius} onChange={setCoreRadius} step="0.1" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Core / Cladding Index</label>
-              <div className="grid grid-cols-2 gap-2">
-                <ValidatedNumberInput label="n_core" value={coreIndex} onChange={setCoreIndex} step="0.0001" />
-                <ValidatedNumberInput label="n_clad" value={claddingIndex} onChange={setCladdingIndex} step="0.0001" />
-              </div>
-            </div>
-            <div>
-              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} step="1" />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Fiber Length (km)" value={fiberLength} onChange={setFiberLength} step="1" />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Core Mismatch Δβ (rad/m)" value={deltaBeta} onChange={setDeltaBeta} min={0} step="100" />
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4">Results</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between"><span className="text-gray-400">NA:</span><span className="font-mono">{na.toFixed(4)}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">V-number:</span><span className="font-mono">{calc.vNumber.toFixed(3)}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Coupling coeff κ:</span><span className="font-mono">{calc.kappa.toExponential(2)} m⁻¹</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Power coupling h:</span><span className="font-mono">{calc.h.toExponential(2)}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Inter-core XT:</span><span className={`font-mono text-lg ${calc.xt < -50 ? "text-green-400" : calc.xt < -30 ? "text-yellow-400" : "text-red-400"}`}>{calc.xt.toFixed(1)} dB</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Capacity:</span><span className="font-mono text-blue-400">{numCores}× SDM</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Packing density:</span><span className="font-mono">{(calc.packingDensity * 100).toFixed(1)}%</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Cladding radius:</span><span className="font-mono">{calc.claddingRadius.toFixed(0)} μm</span></div>
-              </div>
-            </div>
-            <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
-              <h3 className="text-sm font-medium text-gray-400 mb-2">Formulas</h3>
-              <p className="font-mono text-sm">κ ∝ K₀(γΛ)·K₁(γΛ) / K₁(w/a)²</p>
-              <p className="font-mono text-sm mt-1">h = κ² / (κ² + Δβ²)</p>
-              <p className="font-mono text-sm mt-1">XT = 10·log₁₀(sinh²(h·L))</p>
-              <p className="font-mono text-sm mt-1">γ = k₀·√(n₁² - n₂²)</p>
-            </div>
-          </div>
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <div>
+          <label className="block text-sm font-medium mb-2" htmlFor="numCores">Number of cores</label>
+          <select id="numCores" value={numCores} onChange={(e) => setNumCores(Number(e.target.value))}
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none">
+            {Object.entries(LAYOUTS).map(([n, l]) => (
+              <option key={n} value={n}>{n} ({l.name})</option>
+            ))}
+          </select>
         </div>
+        <ValidatedNumberInput label="Core Pitch Λ (µm)" value={corePitch} onChange={setCorePitch} min={5} max={200} step="1" />
+        <ValidatedNumberInput label="Core Radius a (µm)" value={coreRadius} onChange={setCoreRadius} min={0.5} max={30} step="0.1" />
+        <ValidatedNumberInput label="Core Index n₁" value={coreIndex} onChange={setCoreIndex} min={1} max={4} step="0.0001" />
+        <ValidatedNumberInput label="Cladding Index n₂" value={claddingIndex} onChange={setCladdingIndex} min={1} max={4} step="0.0001" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={2500} step="1" />
+        <ValidatedNumberInput label="Fiber Length (km)" value={fiberLength} onChange={setFiberLength} min={0} max={10000} step="1" />
+        <ValidatedNumberInput label="Bend Radius R_b (mm)" value={bendRadius} onChange={setBendRadius} min={1} max={10000} step="1" />
+        <ValidatedNumberInput label="Core Mismatch Δβ (rad/m)" value={deltaBeta} onChange={setDeltaBeta} min={0} max={100000} step="100" />
+        <ValidatedNumberInput label="Correlation Length d (m)" value={correlationLength} onChange={setCorrelationLength} min={0.001} max={10} step="0.01" />
+        <ValidatedNumberInput label="Outer Cladding Thickness (µm)" value={outerCladding} onChange={setOuterCladding} min={0} max={200} step="1" />
+      </div>
 
-        <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
-          <ChartPanel data={plotData} layout={layout} />
+      {!valid && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          No result: the model needs n₁ &gt; n₂, V ≥ {MIN_V} (here V = {fmt(calc.V, 3)}) and a pitch of at least two core radii.
+        </p>
+      )}
+      {valid && calc.V > LP11_CUTOFF_V && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          V = {calc.V.toFixed(2)} &gt; {LP11_CUTOFF_V.toFixed(3)}: the cores carry LP11 as well; only LP01 coupling is computed, and LP11 couples far more strongly.
+        </p>
+      )}
+      {valid && !weakCoupling && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          The pair crosstalk is above −10 dB: the cores are strongly coupled over this length and the neighbour sum overestimates the worst core.
+        </p>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-4 mb-8">
+        <ResultCard label="Coupling coefficient κ" value={fmtExp(calc.kappa, " m⁻¹")} tone="blue" subtext={`V = ${fmt(calc.V, 3)}, κ/β = ${fmtExp(calc.kappa / calc.beta)}`} />
+        <ResultCard label="Power coupling h̄" value={fmtExp(calc.h, " m⁻¹")} tone="purple" subtext="bend- and twist-averaged" />
+        <ResultCard label="Crosstalk, one neighbour" value={layout.neighbours === 0 ? "—" : fmtXt(calc.pair)} tone="green" subtext={layout.neighbours === 0 ? "single core: no crosstalk" : `tanh(h̄L) after ${fiberLength} km`} />
+        <ResultCard
+          label="Worst core"
+          value={layout.neighbours === 0 ? "no neighbours" : fmtXt(calc.worst)}
+          tone="yellow"
+          subtext={layout.neighbours === 0 ? "single core" : `${layout.neighbours} nearest neighbours, first-order sum`}
+        />
+        <ResultCard label="Critical bend radius R_pk" value={Number.isFinite(calc.rpk) ? `${(calc.rpk * 1e3).toPrecision(3)} mm` : "∞ (Δβ = 0)"} tone="orange" subtext="βΛ/Δβ: bends tighter than this phase-match the cores" />
+        <ResultCard label="Cladding diameter" value={fmt(calc.claddingDiameter, 0, " µm")} tone="cyan" subtext={`${numCores} cores, ${layout.name}`} />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
+        <h3 className="text-lg font-semibold mb-3">Crosstalk vs Core Pitch ({fiberLength} km, R_b = {bendRadius} mm)</h3>
+        <ChartPanel data={plotData} layout={{
+          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+          font: { color: "#9ca3af" },
+          xaxis: { title: "Core pitch Λ (µm)", gridcolor: "#374151" },
+          yaxis: { title: "Crosstalk (dB)", gridcolor: "#374151" },
+          legend: { x: 0.55, y: 0.98 },
+          margin: { t: 20, r: 30, b: 50, l: 70 }, height: 380,
+        }} />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2">
+          <p className="font-mono">κ = (NA/(n₁a)) · (U²/V³) · K₀(WΛ/a) / K₁²(W)</p>
+          <p className="font-mono">h̄ = 2κ²d · Re[1/√((1 + i dΔβ)² + (dβΛ/R_b)²)]  →  2κ²R_b/(βΛ) for Δβ = 0, d ≫ R_b/(βΛ)</p>
+          <p className="font-mono">XT = tanh(h̄L)</p>
+          <p>
+            κ is Snyder&apos;s coupled-mode coefficient for two identical step-index cores, using the exact LP01 eigenvalues U and W.
+            Random bends and twists sweep the phase mismatch between cores through Δβ + (βΛ/R_b) cos θ. Averaging over the twist angle θ,
+            with an exponential autocorrelation of correlation length d, gives Koshiba&apos;s h̄. For identical cores (Δβ = 0) and d ≫ R_b/(βΛ) it is
+            Hayashi&apos;s 2κ²R_b/(βΛ), independent of d. For cores that differ by Δβ, bends gentler than R_pk never phase-match them, and
+            the crosstalk drops by orders of magnitude.
+          </p>
+          <p className="text-gray-400">
+            κ is computed for identical cores; Δβ enters only through phase matching, which is fine while the cores differ slightly.
+            Not included: LP11 and other higher-order modes, trench-assisted profiles, and coupling to cores beyond the nearest
+            neighbours. The worst-core value adds the neighbour pairs, which holds while each pair is well below −10 dB.
+          </p>
         </div>
+      </div>
     </>
   );
 }
