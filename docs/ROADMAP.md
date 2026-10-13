@@ -18,13 +18,13 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | thin-film | 39 / 45 | leftovers below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
 | imaging | 9 / 65 | findings fixed (sessions 19, 22); no full audit |
-| free-space-comms | 6 / 27 | findings fixed (Phase 1, session 21); no full audit |
+| free-space-comms | 7 / 27 | findings fixed (Phase 1, session 21); `eye-safety-fso` on the laser-safety modules (48); no full audit |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 25 / 49 | part 0 (session 43), fix parts 1–5 (sessions 44–48); 19 `knownIssue`s; parts 6–11 below |
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 0 / 54 | |
-| **total** | **161 / 461** | 19 `knownIssue`s (fiber-optics) |
+| **total** | **162 / 461** | 19 `knownIssue`s (fiber-optics) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -176,5 +176,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   - Fiber-optics part 3 (session 46, PR #49): `fiber-nonlinear.ts` (Smith ×K, linear linewidth, Inoue FWM); sbs/srs-threshold, nonlinear-effects tiered; 488 tests.
   - Fiber-optics part 4 (session 47, PR #51): `fiber-bragg-grating.ts` (Erdogan uniform, TMM apodized/chirped, strain/thermal) + `fiber-sensors.ts`; 3 FBG/sensor pages tiered; 499 tests.
   - Fiber-optics part 5 (session 48, PR #53): `sagnac.ts` (S 0.67608 s; ARW as Allan N 2.571e-5 °/√h, not 3.636e-5) + `fiber-bundle.ts`; gyroscope, loop mirror, bundle, pump combiner tiered; 507 tests.
+- Codex review fixes (session 48, PR #55): `eye-safety-fso` on the ICNIRP modules (MPE was ×1000; NOHD 11.125 m, 3R); SimpleChart category axes and grouped bars (Mueller, IR glass, crystals were blank); 512 tests.
 - Session 41: roadmap archived; `/ship` and `/handover` skills; `physics-reviewer` on Opus; `checker` agent on Haiku.
 - [ ] Optional (user): a Defender exclusion for `C:\dev`.
