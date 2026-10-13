@@ -10,6 +10,7 @@
   "/fiber-optics/dispersion-compensation": "/fiber-optics/dispersion-comp",
   "/fiber-optics/macro-bend": "/fiber-optics/macro-bending-loss",
   "/fiber-optics/micro-bending-loss": "/fiber-optics/micro-bend",
+  "/fiber-optics/rare-earth-fiber": "/fiber-optics/rare-earth-doped",
   "/free-space-comms/adaptive-optics-gain": "/free-space-comms/adaptive-optics",
   "/free-space-comms/pointing-error": "/free-space-comms/pointing-loss",
   "/free-space-comms/scintillation-index": "/free-space-comms/scintillation",
