@@ -12,9 +12,24 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "bend-insensitive",
     title: "Bend-Insensitive Fiber Calculator",
-    description: "Design and analyze bend-insensitive fibers with depressed cladding trenches (ITU-T G.657).",
+    description: "Compare the macrobend loss of standard single-mode fibre with a reduced-MFD step-index design and check the design against the ITU-T G.657 limits.",
     heading: "Bend-Insensitive Fiber Design",
-    knownIssue: "The bend-loss formula underflows to 0 dB, so standard single-mode fibre at 7.5 mm radius (about 16 dB/turn) is classed as G.657.B3. The trench factor has no source.",
+    tier: "textbook",
+    modelNote: "Marcuse curvature loss of LP01 for two step-index fibres, checked against the G.657 (2016) macrobend limits. Not modelled: trench profiles, the elasto-optic correction (R_eff ≈ 1.28R), coating, transitions.",
+    references: [
+      {
+        citation: "Marcuse D. (1976). Curvature loss formula for optical fibers. J. Opt. Soc. Am. 66, 216. Bend loss of LP01.",
+        url: "https://doi.org/10.1364/josa.66.000216",
+      },
+      {
+        citation: "ITU-T G.657 (11/2016). Characteristics of a bending-loss insensitive single-mode optical fibre and cable. Macrobend loss limits of categories A1, A2, B2 and B3.",
+        url: "https://www.itu.int/rec/T-REC-G.657",
+      },
+      {
+        citation: "Gloge D. (1971). Weakly Guiding Fibers. Appl. Opt. 10, 2252. LP modes, eigenvalue equation and core power fraction.",
+        url: "https://doi.org/10.1364/ao.10.002252",
+      },
+    ],
   },
   {
     slug: "birefringence-fiber",
@@ -315,8 +330,28 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "fiber-characterization",
     title: "Fiber Characterization Calculator",
-    description: "Comprehensive fiber parameter calculation: V-number, MFD, effective area, nonlinear coefficient, dispersion, and confinement.",
+    description: "Step-index fiber parameters from the core and cladding indices and core radius: V, cutoff, MFD, effective area and index, nonlinear γ, core confinement and datasheet dispersion.",
     heading: "Fiber Characterization",
+    tier: "textbook",
+    modelNote: "Step-index LP01 (Gloge): V, cutoff, b, n_eff, core power, Petermann II and Marcuse-fit MFD, A_eff and γ. D uses the G.652 λ₀/S₀ form you enter, not the geometry.",
+    references: [
+      {
+        citation: "Gloge D. (1971). Weakly Guiding Fibers. Appl. Opt. 10, 2252. LP modes, eigenvalue equation and core power fraction.",
+        url: "https://doi.org/10.1364/ao.10.002252",
+      },
+      {
+        citation: "Marcuse D. (1977). Loss Analysis of Single-Mode Fiber Splices. Bell Syst. Tech. J. 56, 703–718. Gaussian fit of the mode-field radius.",
+        url: "https://doi.org/10.1002/j.1538-7305.1977.tb00534.x",
+      },
+      {
+        citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed., §2.3. Academic Press. Nonlinear coefficient γ = 2πn₂/(λA_eff).",
+        url: "https://doi.org/10.1016/C2018-0-01168-8",
+      },
+      {
+        citation: "ITU-T G.652 (11/2016). Characteristics of a single-mode optical fibre and cable. D(λ) = (S₀/4)(λ − λ₀⁴/λ³).",
+        url: "https://www.itu.int/rec/T-REC-G.652",
+      },
+    ],
   },
   {
     slug: "fiber-coupler",
@@ -482,10 +517,25 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "micro-bend",
     title: "Micro Bend Loss",
-    description: "Calculate microbending loss from periodic perturbations in fiber geometry.",
-    lede: "Calculate microbending loss from periodic perturbations using Marcuse mode coupling theory.",
+    description: "Microbending loss of a single-mode fiber with a sinusoidal axis deformation, and the critical period beyond which it vanishes.",
+    lede: "Microbending loss of a single-mode fiber with a sinusoidal axis deformation, from first-order coupled-mode theory, and the critical period beyond which it vanishes.",
     keywords: ["Microbending Loss"],
-    knownIssue: "The resonant deformation period is λ/NA (13 µm) instead of the LP01–cladding beat length (about 0.8 mm), and the loss uses uncited fudge factors.",
+    tier: "textbook",
+    modelNote: "First-order coupling of the exact step-index LP01 (closed-form Hankel transform) to plane-wave radiation modes for one weak sinusoid; Gaussian mode shown too. Not modelled: random spectra, cladding modes, elasto-optics.",
+    references: [
+      {
+        citation: "Petermann K. (1976). Microbending loss in monomode fibres. Electron. Lett. 12, 107–109. Plane-wave radiation-mode microbending theory (Gaussian mode).",
+        url: "https://doi.org/10.1049/el:19760084",
+      },
+      {
+        citation: "Marcuse D. (1991). Theory of Dielectric Optical Waveguides, 2nd ed., ch. 3 (coupled mode theory). Academic Press.",
+        url: "https://doi.org/10.1016/b978-0-12-470951-5.50009-3",
+      },
+      {
+        citation: "Marcuse D. (1977). Loss Analysis of Single-Mode Fiber Splices. Bell Syst. Tech. J. 56, 703–718. Mode-field fit and the tilt loss used to check the coupling strength.",
+        url: "https://doi.org/10.1002/j.1538-7305.1977.tb00534.x",
+      },
+    ],
   },
   {
     slug: "mode-coupling",
@@ -500,8 +550,27 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "mode-field-diameter",
     title: "Mode Field Diameter",
-    description: "Calculate MFD, effective area, and spot size for single-mode fibers.",
-    knownIssue: "The SMF-28 preset (NA 0.14, a = 4.5 µm) is multimode at 1550 nm, the bend-loss chart is ad hoc, and the row labelled Petermann II is the Marcuse fit.",
+    description: "Mode-field diameter (Petermann II and Gaussian fit), effective area, V, b and core confinement of a step-index single-mode fiber, with its bend loss.",
+    tier: "textbook",
+    modelNote: "Exact LP01 of a weakly guiding step-index fibre: Petermann II MFD in closed form, Marcuse's Gaussian-fit MFD and πw² area, Marcuse bend loss. Graded and trench profiles need a mode solver.",
+    references: [
+      {
+        citation: "Gloge D. (1971). Weakly Guiding Fibers. Appl. Opt. 10, 2252. LP modes, eigenvalue equation and core power fraction.",
+        url: "https://doi.org/10.1364/ao.10.002252",
+      },
+      {
+        citation: "Petermann K. (1983). Constraints for fundamental-mode spot size for broadband dispersion-compensated single-mode fibres. Electron. Lett. 19, 712–714. Petermann II spot size.",
+        url: "https://doi.org/10.1049/el:19830485",
+      },
+      {
+        citation: "Marcuse D. (1977). Loss Analysis of Single-Mode Fiber Splices. Bell Syst. Tech. J. 56, 703–718. Gaussian fit of the mode-field radius.",
+        url: "https://doi.org/10.1002/j.1538-7305.1977.tb00534.x",
+      },
+      {
+        citation: "Marcuse D. (1976). Curvature loss formula for optical fibers. J. Opt. Soc. Am. 66, 216. Bend loss of LP01.",
+        url: "https://doi.org/10.1364/josa.66.000216",
+      },
+    ],
   },
   {
     slug: "multi-core",
@@ -737,7 +806,19 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "v-number",
     title: "Fiber V-Number",
-    description: "Normalized frequency V = 2πa·NA/λ of a step-index fiber, NA from core and cladding indices, the single-mode check (V < 2.405) and the mode count.",
+    description: "Normalized frequency V = 2πa·NA/λ of a step-index fiber, NA from core and cladding indices, the single-mode check (V < 2.405) and the exact guided-mode count.",
+    tier: "exact",
+    modelNote: "V = 2πa·NA/λ and the LP mode count from Bessel-function zeros (weak guidance; V²/2 estimate above V = 40). Step-index profile only.",
+    references: [
+      {
+        citation: "Gloge D. (1971). Weakly Guiding Fibers. Appl. Opt. 10, 2252. LP modes, eigenvalue equation and core power fraction.",
+        url: "https://doi.org/10.1364/ao.10.002252",
+      },
+      {
+        citation: "NIST DLMF §10.21. Zeros of Bessel functions (LP mode cutoffs).",
+        url: "https://dlmf.nist.gov/10.21",
+      },
+    ],
   },
   {
     slug: "wdm-coupler",

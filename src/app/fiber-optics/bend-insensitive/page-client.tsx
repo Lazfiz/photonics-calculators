@@ -1,177 +1,177 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import {
+  LP11_CUTOFF_V, MIN_V, bendLossPerTurnDb, lp01Mode, lp11CutoffWavelength, modeFieldRadius, vNumber, type StepIndexFiber,
+} from "../../../physics/fiber-optics/macro-bending-loss";
+import { G657A_MIN_MFD_UM, G657_CATEGORIES, G657_LIMITS, g657Category, type G657Category } from "../../../physics/fiber-optics/g657";
+
+// SMF-28-like G.652 step equivalent (same as the macrobending-loss and mode-field-diameter pages).
+const SMF = { a: 4.1e-6, NA: 0.1246 };
+const MIN_PLOTTED_DB = 1e-6;
+
+const fmtDb = (x: number) =>
+  !Number.isFinite(x) ? "—" : x === 0 ? "< 1e-300" : x >= 0.01 && x < 1e4 ? x.toPrecision(3) : x.toExponential(2);
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
+
+function finitePairs(xs: number[], ys: number[]) {
+  const keep = ys.map((y) => Number.isFinite(y) && y >= MIN_PLOTTED_DB);
+  return { x: xs.filter((_, i) => keep[i]), y: ys.filter((_, i) => keep[i]) };
+}
+
+const classText = (c: G657Category | null) => (c ? `Meets the G.657.${c} macrobend limits` : "Meets no G.657 macrobend limits");
+
+const perTurn = (f: StepIndexFiber) => (R: number, lambda: number) => bendLossPerTurnDb(f, lambda, R);
+
 export default function BendInsensitivePage() {
   const [radius, setRadius] = useURLState("radius", 7.5); // mm
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [trenchDepth, setTrenchDepth] = useURLState("trenchDepth", 0.018); // Δ (trench relative index)
-  const [trenchWidth, setTrenchWidth] = useURLState("trenchWidth", 5); // μm
-  const [hasTrench, setHasTrench] = useState(true);
+  const [designRadius, setDesignRadius] = useURLState("designRadius", 3.4); // µm
+  const [designNA, setDesignNA] = useURLState("designNA", 0.15);
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494);
 
-  // Standard SMF parameters
-  const n1 = 1.4682; const n2 = 1.4629;
-  const a = 4.1; // core radius μm
-  const delta = (n1 - n2) / n1;
-  const NA = Math.sqrt(n1 * n1 - n2 * n2);
-  const lambdaC = 2 * Math.PI * a * 1e-6 * NA / 2.405 * 1e9; // cutoff wavelength (nm)
+  const smf = useMemo(() => ({ ...SMF, n1: coreIndex }), [coreIndex]);
+  const design = useMemo(() => ({ a: designRadius * 1e-6, NA: designNA, n1: coreIndex }), [designRadius, designNA, coreIndex]);
 
   const calc = useMemo(() => {
+    const lambda = wavelength * 1e-9;
     const R = radius * 1e-3;
-    const lam = wavelength * 1e-9;
-    const k0 = 2 * Math.PI / lam;
+    const props = (f: StepIndexFiber) => ({
+      V: vNumber(f, lambda),
+      loss: bendLossPerTurnDb(f, lambda, R),
+      cutoff_nm: lp11CutoffWavelength(f) * 1e9,
+      mfd1550_um: 2e6 * modeFieldRadius(f, 1550e-9),
+      mfd1310_um: 2e6 * modeFieldRadius(f, 1310e-9),
+      category: g657Category(perTurn(f)),
+    });
+    return { smf: props(smf), design: props(design) };
+  }, [smf, design, wavelength, radius]);
 
-    // Marcuse bend loss: α = (C₁/(2a)) · exp(-2Rγ)
-    // γ = (2Δ·n₁·k₀) · (2.748 - 0.996·λ/λc)
-    const gamma = (2 * delta * n1 * k0) * (2.748 - 0.996 * wavelength / lambdaC);
-    const V = k0 * a * 1e-6 * NA;
-    // Simplified Marcuse coefficient C₁ ≈ √(π)/(2a) for fundamental mode
-    const C1 = Math.sqrt(Math.PI) / (2 * a * 1e-6);
-    const loss_std = C1 * Math.exp(-2 * R * gamma);
-    const loss_std_dB = 10 * Math.log10(Math.exp(1)) * loss_std;
-
-    // Bend-insensitive fiber with trench
-    let loss_bi_dB = loss_std_dB;
-    if (hasTrench) {
-      // Trench reduces bend loss exponentially based on trench parameters
-      // Effective improvement factor: exp(2 * Δ_trench * k * w_trench)
-      const k = 2 * Math.PI * n2 / lam;
-      const improvement = Math.exp(2 * trenchDepth * k * trenchWidth * 1e-6);
-      loss_bi_dB = loss_std_dB / improvement;
-    }
-
-    // ITU-T G.657 categories (spec limits are for 20 turns around mandrel)
-    const loss20 = loss_bi_dB * 20;
-    let category = "Standard (G.652)";
-    if (loss20 <= 0.2 && radius <= 7.5) category = "G.657.B3";
-    else if (loss20 <= 0.5 && radius <= 7.5) category = "G.657.B2";
-    else if (loss20 <= 1.5 && radius <= 5) category = "G.657.A2";
-    else if (loss20 <= 1.5 && radius <= 7.5) category = "G.657.A1";
-
-    return { loss_std_dB, loss_bi_dB, NA, category };
-  }, [radius, wavelength, hasTrench, trenchDepth, trenchWidth]);
+  const specRows = useMemo(
+    () =>
+      G657_CATEGORIES.flatMap((cat) =>
+        G657_LIMITS[cat].map((l) => {
+          const d1550 = bendLossPerTurnDb(design, 1550e-9, l.R) * l.turns;
+          const d1625 = bendLossPerTurnDb(design, 1625e-9, l.R) * l.turns;
+          return { cat, ...l, d1550, d1625, pass: d1550 <= l.max1550 && d1625 <= l.max1625 };
+        }),
+      ),
+    [design],
+  );
 
   const chartData = useMemo(() => {
-    const radii = Array.from({ length: 100 }, (_, i) => 3 + i * 0.3);
-    const lam = wavelength * 1e-9;
-    const k0 = 2 * Math.PI / lam;
-    const gamma = (2 * delta * n1 * k0) * (2.748 - 0.996 * wavelength / lambdaC);
-    const C1 = Math.sqrt(Math.PI) / (2 * a * 1e-6);
-
-    const stdLosses = radii.map(R => {
-      const loss = C1 * Math.exp(-2 * (R * 1e-3) * gamma);
-      return 10 * Math.log10(Math.exp(1)) * loss;
-    });
-
-    const biLosses = radii.map((R, i) => {
-      if (!hasTrench) return stdLosses[i];
-      const k = 2 * Math.PI * n2 / lam;
-      const improvement = Math.exp(2 * trenchDepth * k * trenchWidth * 1e-6);
-      return stdLosses[i] / improvement;
-    });
-
+    const lambda = wavelength * 1e-9;
+    const radii_mm = Array.from({ length: 136 }, (_, i) => 3 + i * 0.2);
+    const curve = (f: StepIndexFiber) => {
+      const mode = lp01Mode(vNumber(f, lambda));
+      return finitePairs(radii_mm, radii_mm.map((r) => bendLossPerTurnDb(f, lambda, r * 1e-3, mode)));
+    };
     return [
-      { x: radii, y: stdLosses, type: "scatter" as const, mode: "lines" as const, name: "Standard SMF", line: { color: "#f87171", width: 2 } },
-      { x: radii, y: biLosses, type: "scatter" as const, mode: "lines" as const, name: "Bend-Insensitive", line: { color: "#34d399", width: 2 } },
-      { x: [radius, radius], y: [1e-4, 10], type: "scatter" as const, mode: "lines" as const, name: "Current R", line: { color: "#fbbf24", dash: "dash" } },
+      { ...curve(smf), type: "scatter" as const, mode: "lines" as const, name: "Standard SMF (G.652)", line: { color: "#f87171", width: 2 } },
+      { ...curve(design), type: "scatter" as const, mode: "lines" as const, name: "Reduced-MFD design", line: { color: "#34d399", width: 2 } },
     ];
-  }, [radius, wavelength, hasTrench, trenchDepth, trenchWidth]);
+  }, [smf, design, wavelength]);
 
-  const improvementData = useMemo(() => {
-    const radii = Array.from({ length: 50 }, (_, i) => 5 + i * 0.5);
-    const lam = wavelength * 1e-9;
-    const k0 = 2 * Math.PI / lam;
-    const gamma = (2 * delta * n1 * k0) * (2.748 - 0.996 * wavelength / lambdaC);
-    const C1 = Math.sqrt(Math.PI) / (2 * a * 1e-6);
-
-    const depths = [0.01, 0.015, 0.018, 0.025];
-    return depths.map(td => ({
-      x: radii,
-      y: radii.map(R => {
-        const loss = C1 * Math.exp(-2 * (R * 1e-3) * gamma);
-        const loss_dB = 10 * Math.log10(Math.exp(1)) * loss;
-        const k = 2 * Math.PI * n2 / lam;
-        const imp = Math.exp(2 * td * k * trenchWidth * 1e-6);
-        return loss_dB / imp;
-      }),
-      type: "scatter" as const, mode: "lines" as const,
-      name: `Δ=${td}`, line: { width: 1.5 },
-    }));
-  }, [wavelength, trenchWidth]);
+  const valid = Number.isFinite(calc.design.loss) && Number.isFinite(calc.smf.loss);
 
   return (
     <>
-            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Bend Radius (mm)" value={radius} onChange={setRadius} min={1} step="any" />
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={800} max={1700} />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-gray-300 text-sm flex items-center gap-2">
-            Depressed Trench
-            <input type="checkbox" checked={hasTrench} onChange={e => setHasTrench(e.target.checked)} className="rounded" />
-          </span>
-        </label>
-        {hasTrench && (
-          <>
-            <ValidatedNumberInput label="Trench Depth Δ" value={trenchDepth} onChange={setTrenchDepth} min={0.001} max={0.05} step="0.001" />
-            <ValidatedNumberInput label="Trench Width (μm)" value={trenchWidth} onChange={setTrenchWidth} min={1} max={20} />
-          </>
-        )}
+        <ValidatedNumberInput label="Bend Radius (mm)" value={radius} onChange={setRadius} min={1} max={100} step="0.5" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={800} max={1700} step="1" />
+        <ValidatedNumberInput label="Core Index n₁" value={coreIndex} onChange={setCoreIndex} min={1} max={4} step="0.0001" />
+        <ValidatedNumberInput label="Design Core Radius (µm)" value={designRadius} onChange={setDesignRadius} min={1} max={10} step="0.1" />
+        <ValidatedNumberInput label="Design NA" value={designNA} onChange={setDesignNA} min={0.05} max={0.35} step="0.005" />
       </div>
 
+      {!valid && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          No result: the model needs V ≥ {MIN_V} for both fibres and NA &lt; n₁.
+        </p>
+      )}
+
+      {valid && calc.design.V > LP11_CUTOFF_V && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          Design V = {calc.design.V.toFixed(2)} &gt; 2.405 at {wavelength} nm: LP11 is guided too, so the design is not
+          single-mode here (its LP11 cutoff is {fmt(calc.design.cutoff_nm, 0, " nm")}).
+        </p>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Std SMF Loss</p>
-          <p className="text-xl font-bold text-red-400">{calc.loss_std_dB < 0.001 ? "<0.001" : calc.loss_std_dB.toFixed(3)} dB/turn</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">BI Fiber Loss</p>
-          <p className="text-xl font-bold text-green-400">{calc.loss_bi_dB < 0.001 ? "<0.001" : calc.loss_bi_dB.toFixed(4)} dB/turn</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Loss @ 20 turns</p>
-          <p className="text-xl font-bold text-green-400">{calc.loss_bi_dB * 20 < 0.001 ? "<0.001" : (calc.loss_bi_dB * 20).toFixed(3)} dB</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">ITU-T Category</p>
-          <p className="text-xl font-bold text-blue-400">{calc.category}</p>
-        </div>
+        <ResultCard label={`Standard SMF at ${radius} mm`} value={`${fmtDb(calc.smf.loss)} dB/turn`} tone="red" subtext={classText(calc.smf.category)} />
+        <ResultCard label={`Design at ${radius} mm`} value={`${fmtDb(calc.design.loss)} dB/turn`} tone="green" subtext={classText(calc.design.category)} />
+        <ResultCard
+          label="Design MFD"
+          value={fmt(calc.design.mfd1310_um, 2, " µm at 1310 nm")}
+          tone="blue"
+          subtext={`${fmt(calc.design.mfd1550_um, 2, " µm at 1550 nm")} (SMF ${fmt(calc.smf.mfd1550_um, 2, " µm")})${
+            calc.design.mfd1310_um < G657A_MIN_MFD_UM ? `; below the ${G657A_MIN_MFD_UM} µm that G.657.A allows` : ""
+          }`}
+        />
+        <ResultCard label="Design LP11 cutoff" value={fmt(calc.design.cutoff_nm, 0, " nm")} tone="purple" subtext={`V = ${fmt(calc.design.V, 3)} at ${wavelength} nm (SMF λc ${fmt(calc.smf.cutoff_nm, 0, " nm")})`} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <h3 className="text-lg font-semibold mb-3">Bend Loss vs Radius</h3>
+        <h3 className="text-lg font-semibold mb-3">Bend Loss vs Radius ({wavelength} nm)</h3>
         <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          xaxis: { title: "Bend Radius (mm)", color: "#9ca3af", gridcolor: "#374151" },
-          yaxis: { title: "Loss (dB/turn)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
+          xaxis: { title: "Bend radius (mm)", color: "#9ca3af", gridcolor: "#374151" },
+          yaxis: { title: "Loss per turn (dB)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
           font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 350,
-          legend: { x: 0.02, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af" } },
+          legend: { bgcolor: "transparent", font: { color: "#9ca3af" } },
         }} />
       </div>
 
-      {hasTrench && (
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-          <h3 className="text-lg font-semibold mb-3">Trench Depth Effect on Bend Loss</h3>
-          <ChartPanel data={improvementData} layout={{
-            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-            xaxis: { title: "Bend Radius (mm)", color: "#9ca3af", gridcolor: "#374151" },
-            yaxis: { title: "BI Fiber Loss (dB/turn)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
-            font: { color: "#e5e7eb" }, margin: { t: 20, r: 20, b: 40, l: 60 }, height: 300,
-            legend: { x: 0.02, y: 0.98, bgcolor: "transparent", font: { color: "#9ca3af" } },
-          }} />
-        </div>
-      )}
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8 overflow-x-auto">
+        <h3 className="text-lg font-semibold mb-3">Design vs ITU-T G.657 Macrobend Limits</h3>
+        <table className="w-full text-sm">
+          <thead className="text-gray-400">
+            <tr className="text-left">
+              <th className="py-1 pr-3">Category</th>
+              <th className="py-1 pr-3">Radius</th>
+              <th className="py-1 pr-3">Turns</th>
+              <th className="py-1 pr-3">Limit 1550 / 1625 nm</th>
+              <th className="py-1 pr-3">Design 1550 / 1625 nm</th>
+              <th className="py-1">Meets</th>
+            </tr>
+          </thead>
+          <tbody className="font-mono text-gray-300">
+            {specRows.map((r) => (
+              <tr key={`${r.cat}-${r.R}`} className="border-t border-gray-800">
+                <td className="py-1 pr-3">{r.cat}</td>
+                <td className="py-1 pr-3">{r.R * 1e3} mm</td>
+                <td className="py-1 pr-3">{r.turns}</td>
+                <td className="py-1 pr-3">{r.max1550} / {r.max1625} dB</td>
+                <td className="py-1 pr-3">{fmtDb(r.d1550)} / {fmtDb(r.d1625)} dB</td>
+                <td className={`py-1 ${r.pass ? "text-green-400" : "text-red-400"}`}>{r.pass ? "yes" : "no"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="mt-2 text-xs text-gray-500">
+          Macrobend limits only. G.657 also limits the cable cutoff (≤ 1260 nm) and the MFD at 1310 nm. Commercial A2 and B3
+          fibres keep an MFD of about 8.5–9 µm at 1310 nm, which a plain step profile cannot combine with B3 bend loss.
+        </p>
+      </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-        <h3 className="text-lg font-semibold mb-2">Key Formulas</h3>
-        <div className="text-sm text-gray-300 space-y-2 font-mono">
-          <p>α_bend ≈ √π/(2a) · exp(-2Rγ) [Marcuse]</p>
-          <p>γ = (2Δn₁k₀)(2.748 - 0.996λ/λ<sub>c</sub>)</p>
-          <p>Improvement = exp(2Δ_trench · k · w_trench)</p>
-          <p>G.657.A: ≤0.75 dB @ R=10mm, G.657.B: ≤0.25 dB @ R=7.5mm</p>
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2">
+          <p className="font-mono">α = √π κ² exp(−2γ³R / 3β²) / (2 γ^(3/2) V² √R K₁²(W)),  loss/turn = 4.343 α · 2πR</p>
+          <p>
+            Marcuse&apos;s curvature loss of the LP01 mode (J. Opt. Soc. Am. 66, 216, 1976) for two step-index fibres: an SMF-28-like
+            G.652 equivalent (a = 4.1 µm, NA 0.1246) and your design. Raising NA and shrinking the core at the same cutoff
+            confines the mode (smaller MFD), which is how G.657.A1 fibres cut bend loss. A2 and B3 fibres use a depressed trench
+            around the core instead, which keeps the MFD near 9 µm; trench profiles need a numerical mode solver and are not modelled.
+          </p>
+          <p>
+            The formula leaves out the elasto-optic correction (silica acts as if R were about 1.28× larger, so real fibre loses
+            less), coating reflections and transition loss, so treat the category as indicative.
+          </p>
         </div>
       </div>
     </>

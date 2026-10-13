@@ -153,24 +153,31 @@ export function besselJ(n: number, x: number): number {
 }
 
 /**
- * Modified Bessel function K_ν(x) for real ν and x > 0: K_ν(x) = ∫₀^∞ e^(−x cosh t) cosh(νt) dt
- * (DLMF 10.32.9). Step 0.05; the sum stops once the terms (decreasing past cosh t = (1 + |ν|)/x)
- * fall below 1e-17 of it. K_ν(0) = ∞; negative x gives NaN.
+ * Exponentially scaled modified Bessel function e^x K_ν(x) for real ν and x > 0:
+ * ∫₀^∞ e^(−x (cosh t − 1)) cosh(νt) dt (DLMF 10.32.9). Trapezoidal rule with step min(0.05, 0.5/√x), so the
+ * peak of width ~1/√x keeps ≥ 20 points at large x; the sum stops once the terms (decreasing past
+ * cosh t = (1 + |ν|)/x) fall below 1e-17 of it. Finite for large x, where K_ν itself underflows (x ≳ 700).
+ * K_ν(0) = ∞; negative x gives NaN.
  */
-export function besselK(nu: number, x: number): number {
+export function besselKScaled(nu: number, x: number): number {
   if (!Number.isFinite(nu) || Number.isNaN(x) || x < 0) return NaN;
   if (x === 0) return Infinity;
   if (x === Infinity) return 0;
-  const h = 0.05;
-  let sum = 0.5 * Math.exp(-x);
+  const h = Math.min(0.05, 0.5 / Math.sqrt(x));
+  let sum = 0.5;
   for (let k = 1; k < 20000; k++) {
     const t = k * h;
     const ch = Math.cosh(t);
-    const term = Math.exp(-x * ch) * Math.cosh(nu * t);
+    const term = Math.exp(-x * (ch - 1)) * Math.cosh(nu * t);
     sum += term;
     if (term <= 1e-17 * sum && x * ch > 1 + Math.abs(nu)) break;
   }
   return h * sum;
+}
+
+/** Modified Bessel function K_ν(x) = e^(−x) · besselKScaled(ν, x). */
+export function besselK(nu: number, x: number): number {
+  return Math.exp(-x) * besselKScaled(nu, x);
 }
 
 /** I₀(x) = (1/2π) ∫₀^{2π} e^(x cos τ) dτ (DLMF 10.32.1), trapezoidal rule as for besselJ. */

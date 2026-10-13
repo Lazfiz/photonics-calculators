@@ -1,137 +1,151 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { DB_PER_NEPER, MIN_V, lp01Mode, modeFieldRadius, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
+import {
+  criticalPeriod, gaussianMicrobendLoss, peakTiltLoss, sinusoidalMicrobendLoss,
+} from "../../../physics/fiber-optics/microbend";
+
+const MIN_PLOTTED_DB = 1e-6;
+/** First-order coupled-mode theory needs both the peak tilt loss and the loss per period well below 1. */
+const FIRST_ORDER_LIMIT = 0.1;
+
+const fmtDb = (x: number) =>
+  !Number.isFinite(x) ? "—" : x === 0 ? "0" : x >= 0.01 && x < 1e4 ? x.toPrecision(3) : x.toExponential(2);
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 
 export default function MicroBendPage() {
   const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [period, setPeriod] = useURLState("period", 1); // mm
-  const [amplitude, setAmplitude] = useURLState("amplitude", 1); // µm
-  const [length, setLength] = useURLState("length", 100); // m
+  const [period, setPeriod] = useURLState("period", 0.5); // mm
+  const [amplitudeNm, setAmplitudeNm] = useURLState("amplitudeNm", 20); // nm
+  const [length, setLength] = useURLState("length", 1); // m
   const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.1); // µm
-  const [na, setNa] = useURLState("na", 0.12);
+  const [na, setNa] = useURLState("na", 0.1246);
+  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.4494);
+
+  const fiber = useMemo(() => ({ a: coreRadius * 1e-6, n1: coreIndex, NA: na }), [coreRadius, coreIndex, na]);
 
   const calc = useMemo(() => {
-    const lambda = wavelength * 1e-3; // µm
-    const Lambda = period * 1e3; // µm
-    const amp = amplitude; // µm
-    const L = length * 1e6; // µm
-    const a = coreRadius; // µm
-
-    const n1 = 1.468;
-    const n2 = Math.sqrt(n1 * n1 - na * na);
-    const delta = (n1 * n1 - n2 * n2) / (2 * n1 * n2);
-    const k = 2 * Math.PI / lambda;
-
-    // Cladding decay constant: γ = k × √(n1² - n2²)
-    const gamma = k * na;
-
-    // Critical coupling period (Marcuse): Λ_c = 2π / γ
-    const Lambda_c = 2 * Math.PI / gamma; // µm
-
-    // V-number and mode field radius (Marcuse)
-    const V = k * a * na;
-    const w = a * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
-
-    // Number of perturbation cycles
-    const N_cycles = L / Lambda;
-
-    // Microbend loss per unit length (Marcuse simplified model)
-    // α ∝ (amp/w)² × (1/Λ)² × resonance_factor × NA⁴
-    // Resonance peaks when Λ ≈ Λ_c, modeled as Lorentzian
-    const resonanceFactor = Math.pow(Lambda_c, 2) / (Math.pow(Lambda - Lambda_c, 2) + Math.pow(Lambda_c, 2));
-
-    // Calibrated to give ~0.05 dB for SMF-28 at typical conditions
-    const C = 0.8;
-    const alpha_per_um = C * Math.pow(amp / w, 2) * Math.pow(na, 4) / Math.pow(Lambda, 2) * 1e4 * resonanceFactor;
-
-    const loss = alpha_per_um * L; // total loss in nepers
-    const lossDb = loss * 4.343; // convert to dB
-
-    return { lossDb, Lambda_c, V, w, resonanceFactor, N_cycles, n1, n2 };
-  }, [wavelength, period, amplitude, length, coreRadius, na]);
+    const lambda = wavelength * 1e-9;
+    const V = vNumber(fiber, lambda);
+    const mode = lp01Mode(V);
+    const A = amplitudeNm * 1e-9;
+    const P = period * 1e-3;
+    const alpha = sinusoidalMicrobendLoss(fiber, lambda, A, P, mode);
+    const curvature = A * ((2 * Math.PI) / P) ** 2;
+    return {
+      V,
+      gaussian: DB_PER_NEPER * gaussianMicrobendLoss(fiber, lambda, A, P, mode),
+      firstOrder: Math.max(peakTiltLoss(fiber, lambda, A, P), alpha * P),
+      dBPerMetre: DB_PER_NEPER * alpha,
+      total: DB_PER_NEPER * alpha * length,
+      Lc_mm: criticalPeriod(fiber, lambda, mode) * 1e3,
+      minBendRadius_mm: curvature > 0 ? 1e3 / curvature : Infinity,
+      mfd_um: 2e6 * modeFieldRadius(fiber, lambda),
+    };
+  }, [fiber, wavelength, amplitudeNm, period, length]);
 
   const chartData = useMemo(() => {
-    const periods = Array.from({ length: 200 }, (_, i) => 0.1 + i * 0.05);
-    const lambda = wavelength * 1e-3;
-    const a = coreRadius;
-    const n1 = 1.468;
-    const n2 = Math.sqrt(n1 * n1 - na * na);
-    const k = 2 * Math.PI / lambda;
-    const gamma = k * na;
-    const Lambda_c = 2 * Math.PI / gamma;
-    const V = k * a * na;
-    const w = a * (0.65 + 1.619 / Math.pow(V, 1.5) + 2.879 / Math.pow(V, 6));
-    const L = length * 1e6;
-    const C = 0.8;
-
-    const lossCurve = periods.map(p => {
-      const Lambda = p * 1e3;
-      const N_cycles = L / Lambda;
-      const resonanceFactor = Math.pow(Lambda_c, 2) / (Math.pow(Lambda - Lambda_c, 2) + Math.pow(Lambda_c, 2));
-      const alpha = C * Math.pow(amplitude / w, 2) * Math.pow(na, 4) / Math.pow(Lambda, 2) * 1e4 * resonanceFactor;
-      return alpha * L * 4.343;
-    });
-
-    return [
-      { x: periods, y: lossCurve, type: "scatter" as const, mode: "lines" as const, name: "Microbend Loss", line: { color: "#a78bfa" } },
-      { x: [period], y: [calc.lossDb], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
-      { x: [periods[0], periods[periods.length - 1]], y: [calc.Lambda_c * 1e-3, calc.Lambda_c * 1e-3], type: "scatter" as const, mode: "lines" as const, name: `Λ_c = ${(calc.Lambda_c * 1e-3).toFixed(2)} mm`, line: { color: "#fbbf24", dash: "dash", width: 1 } },
+    const lambda = wavelength * 1e-9;
+    const mode = lp01Mode(vNumber(fiber, lambda));
+    const periods_mm = Array.from({ length: 241 }, (_, i) => 0.05 + i * 0.005);
+    const curve = (loss: typeof sinusoidalMicrobendLoss) => {
+      const ys = periods_mm.map((p) => DB_PER_NEPER * loss(fiber, lambda, amplitudeNm * 1e-9, p * 1e-3, mode));
+      const keep = ys.map((y) => Number.isFinite(y) && y >= MIN_PLOTTED_DB);
+      return { x: periods_mm.filter((_, i) => keep[i]), y: ys.filter((_, i) => keep[i]) };
+    };
+    const exact = curve(sinusoidalMicrobendLoss);
+    const y = exact.y;
+    const Lc_mm = criticalPeriod(fiber, lambda, mode) * 1e3;
+    const traces: Record<string, unknown>[] = [
+      { ...exact, type: "scatter" as const, mode: "lines" as const, name: "Exact LP01 field", line: { color: "#a78bfa", width: 2 } },
+      { ...curve(gaussianMicrobendLoss), type: "scatter" as const, mode: "lines" as const, name: "Gaussian mode (Petermann)", line: { color: "#34d399", width: 1.5, dash: "dash" as const } },
     ];
-  }, [wavelength, amplitude, length, period, coreRadius, na, calc]);
+    if (y.length > 0 && Number.isFinite(Lc_mm)) {
+      traces.push({ x: [Lc_mm, Lc_mm], y: [Math.min(...y), Math.max(...y)], type: "scatter" as const, mode: "lines" as const, name: "Λc", line: { color: "#fbbf24", width: 1 } });
+    }
+    return traces;
+  }, [fiber, wavelength, amplitudeNm]);
+
+  const valid = Number.isFinite(calc.dBPerMetre);
+  const beyondCritical = valid && period >= calc.Lc_mm;
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={800} max={2000} />
-        <ValidatedNumberInput label="Perturbation Period (mm)" value={period} onChange={setPeriod} min={0.1} max={10} step="0.1" />
-        <ValidatedNumberInput label="Amplitude (µm)" value={amplitude} onChange={setAmplitude} min={0.1} max={10} step="0.1" />
-        <ValidatedNumberInput label="Affected Length (m)" value={length} onChange={setLength} min={1} max={1000} />
-        <ValidatedNumberInput label="Core Radius (µm)" value={coreRadius} onChange={setCoreRadius} step="0.1" />
-        <ValidatedNumberInput label="Numerical Aperture" value={na} onChange={setNa} step="0.01" />
+      <div className="grid gap-4 sm:grid-cols-4 mb-8">
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={600} max={2000} step="1" />
+        <ValidatedNumberInput label="Deformation Period Λ (mm)" value={period} onChange={setPeriod} min={0.01} max={100} step="0.01" />
+        <ValidatedNumberInput label="Axis Amplitude A (nm)" value={amplitudeNm} onChange={setAmplitudeNm} min={0} max={10000} step="1" />
+        <ValidatedNumberInput label="Affected Length (m)" value={length} onChange={setLength} min={0} max={100000} step="0.1" />
+        <ValidatedNumberInput label="Core Radius (µm)" value={coreRadius} onChange={setCoreRadius} min={0.5} max={20} step="0.1" />
+        <ValidatedNumberInput label="Numerical Aperture" value={na} onChange={setNa} min={0.01} max={0.5} step="0.001" />
+        <ValidatedNumberInput label="Core Index n₁" value={coreIndex} onChange={setCoreIndex} min={1} max={4} step="0.0001" />
       </div>
+
+      {!valid && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          No result: the model needs V ≥ {MIN_V} (here V = {fmt(calc.V, 3)}), 0 &lt; NA &lt; n₁ and a positive period.
+        </p>
+      )}
+      {valid && calc.V > 2.405 && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          V = {calc.V.toFixed(2)} &gt; 2.405: the fibre is not single-mode here; LP01 couples to guided LP11 as well, which this model ignores.
+        </p>
+      )}
+      {valid && calc.firstOrder > FIRST_ORDER_LIMIT && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          The deformation is too strong for first-order theory (peak tilt loss or loss per period above {FIRST_ORDER_LIMIT}):
+          the result overestimates the loss. Reduce the amplitude or treat each bend as a macrobend.
+        </p>
+      )}
+      {beyondCritical && (
+        <p className="mb-6 text-sm text-gray-400" role="status">
+          Λ ≥ Λc: no radiation mode is phase-matched, so the first-order loss of an infinitely long sinusoid is zero. Slow bends like this act as macrobends instead.
+        </p>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Microbend Loss</p>
-          <p className="text-2xl font-bold text-purple-400">{calc.lossDb.toFixed(3)} dB</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Loss/km</p>
-          <p className="text-2xl font-bold text-blue-400">{(calc.lossDb * 1000 / length).toFixed(3)} dB/km</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Critical Period Λ_c</p>
-          <p className="text-2xl font-bold text-yellow-400">{(calc.Lambda_c * 1e-3).toFixed(2)} mm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Severity</p>
-          <p className={`text-2xl font-bold ${calc.lossDb < 0.01 ? "text-green-400" : calc.lossDb < 0.1 ? "text-yellow-400" : "text-red-400"}`}>{calc.lossDb < 0.01 ? "Low" : calc.lossDb < 0.1 ? "Medium" : "High"}</p>
-        </div>
+        <ResultCard label="Microbend loss" value={`${fmtDb(calc.dBPerMetre)} dB/m`} tone="purple" subtext={`${fmtDb(calc.total)} dB over ${length} m; Gaussian mode ${fmtDb(calc.gaussian)} dB/m`} />
+        <ResultCard label="Critical period Λc" value={fmt(calc.Lc_mm, 3, " mm")} tone="yellow" subtext="2π/(β − k n₂): loss only for Λ < Λc" />
+        <ResultCard label="Tightest bend radius" value={Number.isFinite(calc.minBendRadius_mm) ? `${calc.minBendRadius_mm.toPrecision(3)} mm` : "∞"} tone="blue" subtext="1/(A (2π/Λ)²) at the crests" />
+        <ResultCard label="Mode-field diameter" value={fmt(calc.mfd_um, 2, " µm")} tone="green" subtext={`V = ${fmt(calc.V, 3)} (Marcuse fit)`} />
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-8">
-        <h3 className="text-lg font-semibold mb-3">Formulas</h3>
-        <div className="text-sm text-gray-300 space-y-2 font-mono">
-          <p>γ = k · NA (cladding decay constant)</p>
-          <p>Λ_c = 2π / γ (critical coupling period)</p>
-          <p>α ∝ (amp/w)² · NA⁴ / Λ² · resonance(Λ, Λ_c)</p>
-          <p>Resonance: Lorentzian peak at Λ = Λ_c</p>
-          <p>MFR w: Marcuse V-parameterized approximation</p>
-        </div>
-      </div>
-
-      <div className="bg-gray-900 rounded-lg p-4">
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
+        <h3 className="text-lg font-semibold mb-3">Loss vs Deformation Period (A = {amplitudeNm} nm)</h3>
         <ChartPanel data={chartData} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" }, xaxis: { title: "Perturbation Period (mm)", gridcolor: "#374151" },
-          yaxis: { title: "Loss (dB)", gridcolor: "#374151" },
-          margin: { t: 30, r: 30, b: 50, l: 70 },
+          font: { color: "#9ca3af" },
+          xaxis: { title: "Deformation period Λ (mm)", gridcolor: "#374151" },
+          yaxis: { title: "Loss (dB/m)", gridcolor: "#374151", type: "log" },
+          margin: { t: 20, r: 30, b: 50, l: 70 }, height: 340,
         }} />
+        <p className="mt-2 text-xs text-gray-500">Yellow line: critical period Λc, where the loss falls to zero. The dashed curve uses a Gaussian mode instead of the exact field.</p>
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2">
+          <p className="font-mono">f(z) = A sin(2πz/Λ),  curvature C = A(2π/Λ)²,  δ = β − k n₂,  Λc = 2π/δ</p>
+          <p className="font-mono">α = (π²/2) (k n₂)³ C² H′(k*)²,  k* = √(2 k n₂ s),  s = 2π/Λ − δ &gt; 0</p>
+          <p className="font-mono">Gaussian mode: α = (π/8) (k n₂)⁴ w⁶ C² s e^(−k n₂ w² s)</p>
+          <p>
+            First-order coupled-mode theory: the local curvature tilts the index profile (n²(1 + 2xC)), coupling LP01 to
+            radiation modes whose propagation constant differs by 2π/Λ. Following Petermann (1976), the radiation modes are plane
+            waves in the cladding, so the loss depends on the slope H′ of the mode&apos;s Hankel transform at k*. H′ is computed in
+            closed form for the exact step-index LP01 field (Lommel integrals); δ uses the exact LP01 β. Petermann&apos;s Gaussian
+            mode is about 2× low near the default period and far too low at short periods, where the field&apos;s edge at the
+            core boundary dominates. The Gaussian coupling reproduces Marcuse&apos;s tilt loss (π n w θ/λ)² for a sharp kink.
+          </p>
+          <p>
+            Textbook approximation for one weak, infinitely long sinusoidal deformation; real profiles are rounded, so the step-index field overstates the loss at very short periods. Real cables have random deformation spectra, and the discrete
+            cladding modes give resonances near Λc that this continuum model smooths out. No elasto-optic correction.
+          </p>
+        </div>
       </div>
     </>
   );
