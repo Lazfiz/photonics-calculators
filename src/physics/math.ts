@@ -189,6 +189,100 @@ export function besselI0(x: number): number {
   return sum / N;
 }
 
+/**
+ * Exponentially scaled e^(−x) I_n(x) for integer n ≥ 0 and x ≥ 0: (1/2π) ∫₀^{2π} e^(x (cos τ − 1)) cos(nτ) dτ
+ * (DLMF 10.32.3), trapezoidal rule as for besselJ. Finite for large x, where I_n overflows (x ≳ 700).
+ */
+export function besselIScaled(n: number, x: number): number {
+  if (!Number.isInteger(n) || n < 0 || Number.isNaN(x) || x < 0) return NaN;
+  if (x === Infinity) return 0;
+  if (x === 0) return n === 0 ? 1 : 0;
+  const N = 2 * Math.ceil(x + n) + 64;
+  let sum = 0;
+  for (let k = 0; k < N; k++) {
+    const t = (2 * Math.PI * k) / N;
+    sum += Math.exp(x * (Math.cos(t) - 1)) * Math.cos(n * t);
+  }
+  return sum / N;
+}
+
+/** [e^(−x) I₀(x), e^(−x) I₁(x)] in one pass of the besselIScaled rule (mode solvers need both). */
+export function besselIScaled01(x: number): [number, number] {
+  if (Number.isNaN(x) || x < 0) return [NaN, NaN];
+  if (x === Infinity) return [0, 0];
+  if (x === 0) return [1, 0];
+  const N = 2 * Math.ceil(x + 1) + 64;
+  let s0 = 0;
+  let s1 = 0;
+  for (let k = 0; k < N; k++) {
+    const ct = Math.cos((2 * Math.PI * k) / N);
+    const e = Math.exp(x * (ct - 1));
+    s0 += e;
+    s1 += e * ct;
+  }
+  return [s0 / N, s1 / N];
+}
+
+/** [e^x K₀(x), e^x K₁(x)] in one pass of the besselKScaled rule (step and stopping test for ν = 1). */
+export function besselKScaled01(x: number): [number, number] {
+  if (Number.isNaN(x) || x < 0) return [NaN, NaN];
+  if (x === 0) return [Infinity, Infinity];
+  if (x === Infinity) return [0, 0];
+  const h = Math.min(0.05, 0.5 / Math.sqrt(x));
+  let s0 = 0.5;
+  let s1 = 0.5;
+  for (let k = 1; k < 20000; k++) {
+    const ch = Math.cosh(k * h);
+    const e = Math.exp(-x * (ch - 1));
+    s0 += e;
+    s1 += e * ch;
+    if (e * ch <= 1e-17 * s1 && x * ch > 2) break;
+  }
+  return [h * s0, h * s1];
+}
+
+const EULER_GAMMA = 0.5772156649015329;
+/** Largest argument of besselY: the series cancels from terms of size ≈ I₀(x), so ~1e-8 absolute error at 20. */
+export const BESSEL_Y_MAX_X = 20;
+
+/**
+ * Y_n(x) for n = 0, 1 and 0 < x ≤ BESSEL_Y_MAX_X, from the ascending series (DLMF 10.8.1, A&S 9.1.13):
+ *   Y₀ = (2/π)(ln(x/2) + γ) J₀ + (2/π) Σ_{k≥1} (−1)^(k+1) H_k (x²/4)^k/(k!)²,
+ *   Y₁ = (2/π) ln(x/2) J₁ − 2/(πx) − (x/2π) Σ_{k≥0} (ψ(k+1) + ψ(k+2)) (−x²/4)^k/(k!(k+1)!),
+ * with H_k the harmonic numbers and ψ(m) = H_{m−1} − γ. NaN outside the domain.
+ */
+export function besselY(n: 0 | 1, x: number): number {
+  if ((n !== 0 && n !== 1) || !(x > 0) || x > BESSEL_Y_MAX_X) return NaN;
+  const q = (x * x) / 4;
+  const lnHalf = Math.log(x / 2);
+  if (n === 0) {
+    let term = 1; // (x²/4)^k/(k!)²
+    let H = 0;
+    let sum = 0;
+    for (let k = 1; k < 200; k++) {
+      term *= q / (k * k);
+      H += 1 / k;
+      const t = (k % 2 === 1 ? 1 : -1) * H * term;
+      sum += t;
+      if (Math.abs(t) < 1e-17 * Math.max(1, Math.abs(sum)) && k > q) break;
+    }
+    return (2 / Math.PI) * ((lnHalf + EULER_GAMMA) * besselJ(0, x) + sum);
+  }
+  let term = 1; // (−x²/4)^k/(k!(k+1)!)
+  let H = 0; // H_k
+  let sum = 0;
+  for (let k = 0; k < 200; k++) {
+    if (k > 0) {
+      term *= -q / (k * (k + 1));
+      H += 1 / k;
+    }
+    const t = (2 * H + 1 / (k + 1) - 2 * EULER_GAMMA) * term; // ψ(k+1) + ψ(k+2)
+    sum += t;
+    if (Math.abs(t) < 1e-17 * Math.max(1, Math.abs(sum)) && k > q) break;
+  }
+  return (2 / Math.PI) * lnHalf * besselJ(1, x) - 2 / (Math.PI * x) - (x / (2 * Math.PI)) * sum;
+}
+
 /*
  * Sampled search and averages for smooth functions of one variable (spectra, transfer curves).
  */
