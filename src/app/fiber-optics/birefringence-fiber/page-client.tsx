@@ -1,148 +1,143 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { c } from "../../../physics/constants";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { beatLength, dgdPerLength, geometricBirefringence } from "../../../physics/fiber-optics/fiber-birefringence";
+
+const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
+// Text for a result, or a dash when the model has no finite value.
+const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "—");
+const lengthText = (L: number) => (L === Infinity ? "∞ (no birefringence)" : L >= 1 ? `${L.toPrecision(4)} m` : `${(L * 1e3).toPrecision(4)} mm`);
+
+function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: string }) {
+  return (
+    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+      <p className="text-sm text-gray-400">{label}</p>
+      <p className={`text-xl font-bold ${tone}`}>{value}</p>
+      {sub && <p className="text-xs text-gray-400">{sub}</p>}
+    </div>
+  );
+}
 
 export default function BirefringenceCalculator() {
-  const [coreIndex, setCoreIndex] = useURLState("coreIndex", 1.468);
-  const [claddingIndex, setCladdingIndex] = useURLState("claddingIndex", 1.463);
-  const [coreRadius, setCoreRadius] = useURLState("coreRadius", 4.5); // μm
-  const [ellipticity, setEllipticity] = useURLState("ellipticity", 0.98); // b/a ratio
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [stressAnisotropy, setStressAnisotropy] = useURLState("stressAnisotropy", 0); // nm
+  const [n1Raw, setN1] = useURLState("coreIndex", 1.468);
+  const [n2Raw, setN2] = useURLState("claddingIndex", 1.463);
+  const [radiusRaw, setRadius] = useURLState("coreRadius", 4.5); // µm, mean semi-axis
+  const [ratioRaw, setRatio] = useURLState("ellipticity", 0.98); // axis ratio b/a
+  const [lambdaRaw, setLambda] = useURLState("wavelength", 1550); // nm
+  const [stressRaw, setStress] = useURLState("stressB", 0); // ×10⁻⁴
 
-  // V-number (convert wavelength nm→μm to match core radius units)
-  const na = Math.sqrt(coreIndex ** 2 - claddingIndex ** 2);
-  const a = coreRadius; // μm
-  const lambda = wavelength; // nm
-  const vNumber = (2 * Math.PI * a * na) / (wavelength / 1000);
+  const n1 = clamp(n1Raw, 1.3, 2);
+  const n2 = clamp(n2Raw, 1.3, 2);
+  const a_um = clamp(radiusRaw, 0.5, 50);
+  const ratio = clamp(ratioRaw, 0.5, 1);
+  const lambda_nm = clamp(lambdaRaw, 400, 2000);
+  const Bs = clamp(stressRaw, -20, 20) * 1e-4;
 
-  // Geometric birefringence (elliptical core)
-  const geometricBirefringence = useMemo(() => {
-    if (ellipticity >= 1) return 0;
-    const delta = (coreIndex - claddingIndex) / coreIndex;
-    const e = Math.sqrt(1 - ellipticity ** 2);
-    const B = delta * (e ** 2) * (0.25 + 0.1 * e ** 2);
-    return B;
-  }, [coreIndex, claddingIndex, ellipticity]);
+  const calc = useMemo(() => {
+    const fiber = { a: a_um * 1e-6, n1, n2, ellipticity: 1 - ratio };
+    const geo = geometricBirefringence(fiber, lambda_nm * 1e-9);
+    const B = geo.B + Bs;
+    // Stress birefringence is nearly independent of λ, so its group value equals the phase value.
+    const groupB = geo.groupB + Bs;
+    const NA = n1 > n2 ? Math.sqrt(n1 * n1 - n2 * n2) : NaN;
 
-  // Stress-induced birefringence
-  const stressBirefringence = useMemo(() => {
-    if (stressAnisotropy === 0) return 0;
-    return stressAnisotropy / wavelength;
-  }, [stressAnisotropy, wavelength]);
-
-  const totalBirefringence = geometricBirefringence + stressBirefringence;
-
-  // Beat length
-  const beatLength = useMemo(() => {
-    if (totalBirefringence === 0) return Infinity;
-    return wavelength / totalBirefringence;
-  }, [wavelength, totalBirefringence]);
-
-  // Polarization mode dispersion (ps/km) — DGD per unit length = B / c
-  // c = 3e8 m/s = 3e5 km/s; convert s/km → ps/km: × 1e12
-  const pmd = useMemo(() => {
-    if (totalBirefringence === 0) return 0;
-    return (totalBirefringence * 1e12) / (c * 1e-3); // ps/km
-  }, [totalBirefringence]);
-
-  // Plot: birefringence vs ellipticity
-  const plotData = useMemo(() => {
-    const ellipticities: number[] = [];
-    const bGeo: number[] = [];
-    const bTotal: number[] = [];
-    const beatLengths: (number | null)[] = [];
-    const delta = (coreIndex - claddingIndex) / coreIndex;
-
-    for (let e = 0.7; e <= 1.0; e += 0.005) {
-      ellipticities.push(e);
-      const ecc = Math.sqrt(1 - e ** 2);
-      const bg = delta * (ecc ** 2) * (0.25 + 0.1 * ecc ** 2);
-      bGeo.push(bg * 1e4);
-      const bt = bg + stressBirefringence;
-      bTotal.push(bt * 1e4);
-      if (bt > 0) beatLengths.push(wavelength / bt / 1000);
-      else beatLengths.push(null);
+    // Sweep V from 0.8 to 3 by wavelength at fixed geometry.
+    const lambdas: number[] = [], phase: (number | null)[] = [], group: (number | null)[] = [];
+    if (Number.isFinite(NA)) {
+      const lMin = (2 * Math.PI * a_um * 1e3 * NA) / 3, lMax = (2 * Math.PI * a_um * 1e3 * NA) / 0.8;
+      for (let i = 0; i <= 120; i++) {
+        const l = lMin * (lMax / lMin) ** (i / 120);
+        const g = geometricBirefringence(fiber, l * 1e-9);
+        lambdas.push(l);
+        phase.push(Number.isFinite(g.B) ? g.B : null);
+        group.push(Number.isFinite(g.groupB) ? g.groupB : null);
+      }
     }
+    return { geo, B, groupB, NA, L_B: beatLength(B, lambda_nm * 1e-9), dgd: dgdPerLength(groupB), lambdas, phase, group };
+  }, [a_um, n1, n2, ratio, lambda_nm, Bs]);
 
-    return [
-      {
-        x: ellipticities, y: bGeo, type: "scatter" as const, mode: "lines" as const,
-        name: "Geometric B", line: { color: "#3b82f6", width: 2 },
-      },
-      {
-        x: ellipticities, y: bTotal, type: "scatter" as const, mode: "lines" as const,
-        name: "Total B", line: { color: "#f59e0b", width: 2 },
-      },
-      {
-        x: [ellipticity], y: [totalBirefringence * 1e4], type: "scatter" as const, mode: "markers" as const,
-        name: "Current", marker: { color: "#22c55e", size: 12 },
-      },
-    ];
-  }, [coreIndex, claddingIndex, ellipticity, stressBirefringence, wavelength, totalBirefringence]);
-
-  const layout = {
-    title: "Birefringence vs Core Ellipticity",
-    xaxis: { title: "Ellipticity (b/a)", gridcolor: "#374151" },
-    yaxis: { title: "Birefringence (×10⁻⁴)", gridcolor: "#374151" },
-    paper_bgcolor: "#111827", plot_bgcolor: "#1f2937",
-    font: { color: "#f3f4f6" }, showlegend: true,
-    legend: { x: 0.02, y: 0.98 }, height: 400,
-  };
+  const { geo } = calc;
+  const valid = Number.isFinite(geo.B);
 
   return (
     <>
-                
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <div>
-              <ValidatedNumberInput label="Core Index n₁" value={coreIndex} onChange={setCoreIndex} step="0.0001" />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Cladding Index n₂" value={claddingIndex} onChange={setCladdingIndex} step="0.0001" />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Core Radius (μm)" value={coreRadius} onChange={setCoreRadius} min={0.1} step="0.1" />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Core Ellipticity (b/a)" value={ellipticity} onChange={setEllipticity} min={0.5} max={1} step="0.01" />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Stress OPD (nm)" value={stressAnisotropy} onChange={setStressAnisotropy} step="1" />
-            </div>
-            <div>
-              <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} step="1" />
-            </div>
-          </div>
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Core Index n₁" value={n1Raw} onChange={setN1} min={1.3} max={2} step="any" />
+        <ValidatedNumberInput label="Cladding Index n₂" value={n2Raw} onChange={setN2} min={1.3} max={2} step="any" />
+        <ValidatedNumberInput label="Mean Core Radius (µm)" value={radiusRaw} onChange={setRadius} min={0.5} max={50} step="any" />
+        <ValidatedNumberInput label="Core Axis Ratio b/a" value={ratioRaw} onChange={setRatio} min={0.5} max={1} step="any" />
+        <ValidatedNumberInput label="Stress Birefringence (×10⁻⁴, same axes)" value={stressRaw} onChange={setStress} min={-20} max={20} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={lambdaRaw} onChange={setLambda} min={400} max={2000} step="any" />
+      </div>
 
-          <div className="space-y-4">
-            <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4">Results</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between"><span className="text-gray-400">NA:</span><span className="font-mono">{na.toFixed(4)}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">V-number:</span><span className="font-mono">{vNumber.toFixed(3)}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Geometric B:</span><span className="font-mono text-blue-400">{(geometricBirefringence * 1e4).toFixed(4)} ×10⁻⁴</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Stress B:</span><span className="font-mono text-yellow-400">{(stressBirefringence * 1e4).toFixed(4)} ×10⁻⁴</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Total B:</span><span className="font-mono text-lg text-green-400">{(totalBirefringence * 1e4).toFixed(4)} ×10⁻⁴</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Beat length:</span><span className="font-mono">{beatLength === Infinity ? "∞" : (beatLength / 1e6).toFixed(3) + " mm"}</span></div>
-              </div>
-            </div>
-            <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
-              <h3 className="text-sm font-medium text-gray-400 mb-2">Formulas</h3>
-              <p className="font-mono text-sm">B_geo ≈ Δ · e² · (0.25 + 0.1·e²)</p>
-              <p className="font-mono text-sm mt-1">B_stress = Δn_stress / λ</p>
-              <p className="font-mono text-sm mt-1">L_beat = λ / B</p>
-              <p className="font-mono text-sm mt-1">e = √(1 - (b/a)²)</p>
-            </div>
-          </div>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <Card label="NA and V" value={show(geo.V, () => `${calc.NA.toFixed(4)}, V = ${geo.V.toFixed(3)}`)}
+          sub={show(geo.delta, () => `Δ = ${(geo.delta * 100).toFixed(3)} %, ellipticity ε = 1 − b/a = ${(1 - ratio).toFixed(3)}`)} tone="text-gray-200" />
+        <Card label="Geometric B" value={show(geo.B, () => geo.B.toExponential(3))}
+          sub="ε n₁ Δ² G(V); slow axis along the major axis" tone="text-blue-400" />
+        <Card label="Total B" value={show(calc.B, () => calc.B.toExponential(3))}
+          sub={`geometric + stress (${Bs.toExponential(2)})`} tone="text-green-400" />
+        <Card label="Beat Length" value={show(calc.L_B, () => lengthText(calc.L_B))} sub="L_B = λ/|B|" tone="text-yellow-400" />
+        <Card label="Group Birefringence" value={show(calc.groupB, () => calc.groupB.toExponential(3))}
+          sub={show(geo.groupB, () => `geometric part ε n₁ Δ² d(VG)/dV = ${geo.groupB.toExponential(2)}`)} tone="text-gray-200" />
+        <Card label="DGD per Length" value={show(calc.dgd, () => `${(calc.dgd * 1e15).toPrecision(4)} fs/m`)}
+          sub={show(calc.dgd, () => `${(calc.dgd * 1e15).toPrecision(4)} ps/km, uncoupled (short) fibre`)} tone="text-gray-200" />
+      </div>
 
-        <div className="mt-8 bg-gray-900 rounded-lg p-6 border border-gray-800">
-          <ChartPanel data={plotData} layout={layout} />
+      {!valid && (
+        <p role="alert" className="mb-8 rounded-lg border border-yellow-700 bg-yellow-950 p-3 text-sm text-yellow-200">
+          Needs n₁ &gt; n₂ and V ≥ 0.5: below that the mode is barely guided and the perturbation result does not apply.
+        </p>
+      )}
+      {geo.multimode && (
+        <p role="alert" className="mb-8 rounded-lg border border-yellow-700 bg-yellow-950 p-3 text-sm text-yellow-200">
+          V &gt; 2.405: the fibre also guides LP11. The values are for the fundamental mode only.
+        </p>
+      )}
+      {ratio < 0.8 && (
+        <p role="alert" className="mb-8 rounded-lg border border-yellow-700 bg-yellow-950 p-3 text-sm text-yellow-200">
+          ε = {(1 - ratio).toFixed(2)}: the formula is first order in ε, so it loses accuracy for strongly elliptical
+          cores (the real B grows more slowly than linearly).
+        </p>
+      )}
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
+        <h3 className="text-lg font-semibold mb-3">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2 font-mono">
+          <p>B_geo = ε n₁ Δ² G(V), ε = 1 − b/a, Δ = (n₁ − n₂)/n₁</p>
+          <p>G(V) = (W²/V⁴)[U² + (U² − W²)(J₀/J₁)² + UW²(J₀/J₁)³] at U, W of LP01</p>
+          <p>B_group = ε n₁ Δ² d(VG)/dV (+ stress B); DGD = B_group/c</p>
+          <p>L_B = λ/|B|</p>
         </div>
+        <p className="text-xs text-gray-400 mt-3">
+          Sakai and Kimura&apos;s first-order result for a slightly elliptical step-index core in a weakly guiding
+          fibre. G peaks at ≈ 0.49 near V = 1.8, so B is a few 10⁻⁷ for a telecom core and tens of 10⁻⁵ only with a
+          large Δ and ε. The geometric group birefringence changes sign near V = 2.5. The stress input adds an
+          anisotropic-stress term (from the core or stress rods) with the same axes; enter it negative if its slow axis
+          is the minor axis. Ignored: material dispersion of n₁ and Δ, and random coupling in long fibres (PMD grows
+          as √L there).
+        </p>
+      </div>
+
+      <ChartPanel data={[
+        { x: calc.lambdas, y: calc.phase, type: "scatter", mode: "lines", name: "Geometric B (phase)", line: { color: "#3b82f6", width: 2 } },
+        { x: calc.lambdas, y: calc.group, type: "scatter", mode: "lines", name: "Geometric group B", line: { color: "#f59e0b", width: 2, dash: "dash" } },
+        ...(Number.isFinite(geo.B) ? [{ x: [lambda_nm], y: [geo.B], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#22c55e", size: 10 } }] : []),
+      ]} layout={{
+        paper_bgcolor: "transparent", plot_bgcolor: "transparent",
+        font: { color: "#9ca3af" },
+        xaxis: { title: "Wavelength (nm), V from 3 down to 0.8", gridcolor: "#374151" },
+        yaxis: { title: "Geometric Birefringence", gridcolor: "#374151", exponentformat: "e" },
+        legend: { x: 0.01, y: 0.99 },
+        margin: { t: 30 },
+      }} />
+      <p className="text-xs text-gray-400 mt-2">
+        Chart: geometric phase and group birefringence against wavelength at the current core shape; the phase
+        value peaks where V ≈ 1.8.
+      </p>
     </>
   );
 }
