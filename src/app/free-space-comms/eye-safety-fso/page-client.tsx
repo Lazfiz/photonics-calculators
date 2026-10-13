@@ -1,179 +1,120 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useCallback, useMemo } from "react";
+import { CLASS_TONES, fmtDistance, fmtNum, fmtPower, LIMIT_LABELS } from "../../../components/eye-limit-labels";
+import HazardRatioChart from "../../../components/hazard-ratio-chart";
+import LaserSafetyDisclaimer from "../../../components/laser-safety-disclaimer";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { eyeLimits, limitMaxPower, T_MAX, T_MIN } from "../../../physics/laser-safety/eye-exposure-limits";
+import { effectiveDiameterAt, nominalOcularHazardDistance, roundBeam } from "../../../physics/laser-safety/hazard-distance";
+import { classifyCw } from "../../../physics/laser-safety/laser-classes";
+
+const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
+const PRESETS: readonly [string, number, number][] = [["1550 nm, 100 mW", 1550, 100], ["850 nm, 10 mW", 850, 10], ["1064 nm, 50 mW", 1064, 50]];
 
 export default function EyeSafetyFsoPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [txPower, setTxPower] = useURLState("txPower", 100); // mW
-  const [beamDivergence, setBeamDivergence] = useURLState("beamDivergence", 0.5); // mrad
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 10); // seconds
-  const [distance, setDistance] = useURLState("distance", 2); // meters (NOHD calc)
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [powerRaw, setTxPower] = useURLState("txPower", 100); // mW
+  const [apertureRaw, setAperture] = useURLState("beamDia", 10); // mm, 1/e² at the transmitter
+  const [divergenceRaw, setBeamDivergence] = useURLState("beamDivergence", 0.5); // mrad, 1/e² full angle
+  const [exposureRaw, setExposureTime] = useURLState("exposureTime", 10); // s
+  const [distanceRaw, setDistance] = useURLState("distance", 2); // m
 
-  // MPE and corneal irradiance calculations
-  const calc = useMemo(() => {
-    const lambda = wavelength * 1e-9;
-    const lambdaUm = wavelength / 1000;
-    const P = txPower / 1000; // W
-    const theta = beamDivergence * 1e-3; // rad
-    const t = exposureTime; // s
+  // URL values aren't range-checked: clamp them before the physics.
+  const wavelength = clamp(wavelengthRaw, 180, 1e6);
+  const power = clamp(powerRaw, 0, 1e7);
+  const aperture = clamp(apertureRaw, 0, 1000);
+  const divergence = clamp(divergenceRaw, 0, 1000);
+  const exposure = clamp(exposureRaw, T_MIN, T_MAX);
+  const distance = clamp(distanceRaw, 0, 1e6);
 
-    // Beam radius at distance
-    const beamRadius = distance * theta / 2; // m
-    const beamArea = Math.PI * beamRadius ** 2; // m²
-    const irradiance = P / Math.max(beamArea, 1e-10); // W/m²
+  // ICNIRP 2013 eye limits, aperture-averaged Gaussian beam: src/physics/laser-safety/*. SI inside.
+  const lambda = wavelength * 1e-9;
+  const P = power * 1e-3;
+  const d = aperture * 1e-3;
+  const phi = divergence * 1e-3;
 
-    // MPE per IEC 60825-1 / ANSI Z136
-    // For 400-1400 nm: retinal hazard region
-    // For >1400 nm: corneal/lens hazard
-    let mpeWm2: number;
-    let mpeJm2: number;
-    let classification = "";
-    const cA = (wavelength > 700 && wavelength <= 1400) ? Math.max(1, 10 ** ((lambdaUm - 0.7) / 0.5)) : 1;
+  const beam = useMemo(() => roundBeam(d, phi), [d, phi]);
+  const limits = useMemo(() => eyeLimits(lambda), [lambda]);
+  const nohd = useMemo(() => nominalOcularHazardDistance(lambda, P, beam, exposure), [lambda, P, beam, exposure]);
+  const laserClass = useMemo(() => classifyCw(lambda, P, { d, phi }).laserClass, [lambda, P, d, phi]);
 
-    if (wavelength >= 400 && wavelength <= 1400) {
-      // Retinal hazard: MPE = 1.8 × C_A × t^(-0.25) J/cm² (for t > 0.7s simplified)
-      // C_A = 10^((λ-700)/500) per ANSI Z136, λ in μm
-      mpeJm2 = 1.8 * cA * Math.pow(t, -0.25) * 1e4; // J/m²
-      mpeWm2 = mpeJm2 / t;
-      classification = "Retinal Hazard Zone";
-    } else if (wavelength > 1400 && wavelength <= 2600) {
-      // Corneal hazard: MPE ≈ 100 × t^(-0.25) W/cm² (simplified for IR)
-      mpeWm2 = 100 * Math.pow(t, -0.25) * 1e4; // W/m²
-      mpeJm2 = mpeWm2 * t;
-      classification = "Corneal Hazard Zone";
-    } else {
-      mpeWm2 = 1000; // UV simplified
-      mpeJm2 = mpeWm2 * t;
-      classification = "UV Hazard Zone";
-    }
+  const atRange = useMemo(() => {
+    const dr = effectiveDiameterAt(beam, distance);
+    const perLimit = limits.map((limit) => ({ kind: limit.kind, pMax: limitMaxPower(limit, dr, exposure) }));
+    const worst = perLimit.reduce<(typeof perLimit)[number] | null>((w, l) => (w === null || l.pMax < w.pMax ? l : w), null);
+    return { dr, worst, margin: worst && P > 0 ? worst.pMax / P : Infinity };
+  }, [beam, distance, limits, exposure, P]);
 
-    // NOHD (Nominal Ocular Hazard Distance) for diverging beam
-    // Beam radius at NOHD: P/(π·r²) = MPE → r = √(P/(π·MPE))
-    // Distance: NOHD = r / (θ/2) = 2·√(P/(π·MPE)) / θ
-    const nohd = theta > 0 ? 2 * Math.sqrt(P / (Math.PI * mpeWm2)) / theta : Infinity;
+  const ratios = useCallback(
+    (r: number) => {
+      const dr = effectiveDiameterAt(beam, r);
+      return limits.map((limit) => ({ kind: limit.kind, ratio: P / limitMaxPower(limit, dr, exposure) }));
+    },
+    [beam, limits, P, exposure],
+  );
+  const nohdFinite = Number.isFinite(nohd.distance) && nohd.distance > 0;
+  const rMin = nohdFinite ? Math.max(nohd.distance * 1e-3, 0.01) : 0.01;
+  const rMax = nohdFinite ? Math.max(nohd.distance * 10, rMin * 10) : 1000;
+  const markers = useMemo(() => {
+    const m: { r: number; y?: number; label: string }[] = nohdFinite ? [{ r: nohd.distance, label: "NOHD" }] : [];
+    const ratio = atRange.margin > 0 ? 1 / atRange.margin : NaN;
+    if (distance > 0 && Number.isFinite(ratio) && ratio > 0) m.push({ r: distance, y: ratio, label: "Check distance" });
+    return m;
+  }, [nohdFinite, nohd.distance, atRange.margin, distance]);
 
-    // Safety factor
-    const safetyFactor = mpeWm2 / irradiance;
-
-    // AEL for Class 1 (accessible emission limit) per IEC 60825-1
-    let ael: number; // watts
-    if (wavelength >= 400 && wavelength <= 700) {
-      ael = 0.39e-6; // 0.39 μW CW
-    } else if (wavelength > 700 && wavelength <= 1400) {
-      ael = 0.39e-6 * cA;
-    } else {
-      ael = 10e-3; // 10 mW for >1400nm (corneal absorption protects retina)
-    }
-
-    // Laser classification (simplified per IEC 60825-1)
-    let laserClass = "Class 1";
-    if (P > 0.5) {
-      laserClass = "Class 4"; // > 500 mW
-    } else if (P > 5e-3) {
-      laserClass = "Class 3B"; // 5–500 mW
-    } else if (wavelength >= 400 && wavelength <= 700) {
-      if (P > 1e-3) {
-        laserClass = "Class 3R"; // 1–5 mW visible
-      } else if (P > ael) {
-        laserClass = "Class 2"; // AEL–1 mW (blink reflex)
-      }
-    } else {
-      if (P > 5 * ael) {
-        laserClass = "Class 3R"; // 5× Class 1 AEL for IR
-      }
-    }
-
-    // Ocular irradiance at distance
-    const ocularIrrWm2 = irradiance;
-    const ocularIrrDBm = 10 * Math.log10(ocularIrrWm2 * 1e3);
-
-    return { mpeWm2, mpeJm2, nohd, safetyFactor, irradiance, classification, ael, laserClass, ocularIrrDBm };
-  }, [wavelength, txPower, beamDivergence, exposureTime, distance]);
-
-  const plotData = useMemo(() => {
-    const P = txPower / 1000;
-    const distances = Array.from({ length: 200 }, (_, i) => 0.1 + i * 0.5);
-    const theta = beamDivergence * 1e-3;
-    const t = exposureTime;
-    const lambdaUm = wavelength / 1000;
-
-    let mpeWm2: number;
-    if (wavelength >= 400 && wavelength <= 1400) {
-      const cA = Math.max(1, 10 ** ((lambdaUm - 0.7) / 0.5));
-      mpeWm2 = 1.8 * cA * Math.pow(t, -0.25) * 1e4 / t;
-    } else if (wavelength > 1400 && wavelength <= 2600) {
-      mpeWm2 = 100 * Math.pow(t, -0.25) * 1e4;
-    } else {
-      mpeWm2 = 1000;
-    }
-
-    const irradiances = distances.map((d) => {
-      const r = d * theta / 2;
-      return P / Math.max(Math.PI * r ** 2, 1e-10);
-    });
-
-    return [
-      { x: distances, y: irradiances, type: "scatter", mode: "lines", name: "Irradiance (W/m²)", line: { color: "#06b6d4" } },
-      { x: [distances[0], distances[distances.length - 1]], y: [mpeWm2, mpeWm2], type: "scatter", mode: "lines", name: "MPE", line: { color: "#ef4444", dash: "dash" } },
-    ];
-  }, [txPower, beamDivergence, wavelength, exposureTime]);
+  const valid = !Number.isNaN(nohd.distance);
+  const safe = atRange.margin >= 1;
 
   return (
     <>
-            
+      <LaserSafetyDisclaimer />
+
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-          <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
-          {[
-            ["Wavelength (nm)", wavelength, setWavelength],
-            ["TX Power (mW)", txPower, setTxPower],
-            ["Beam Divergence (mrad)", beamDivergence, setBeamDivergence],
-            ["Exposure Time (s)", exposureTime, setExposureTime],
-            ["Distance for Check (m)", distance, setDistance],
-          ].map(([label, val, set]: any) => (
-            <div key={label as string}>
-              <ValidatedNumberInput label={label} value={val} onChange={set} />
-            </div>
-          ))}
-          <div className="text-xs text-gray-500 pt-2 border-t border-gray-800">
-            <div className="flex gap-2 flex-wrap">
-              {([["1550nm, 100mW", 1550, 100], ["850nm, 10mW", 850, 10], ["1064nm, 50mW", 1064, 50]]).map(([name, w, p]: any) => (
-                <button key={name} onClick={() => { setWavelength(w); setTxPower(p); }}
-                  className="bg-gray-800 hover:bg-gray-700 text-xs px-2 py-1 rounded text-gray-300">{name}</button>
-              ))}
-            </div>
+          <h2 className="text-lg font-semibold text-cyan-400">Transmitter</h2>
+          <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={180} max={1e6} step="any" />
+          <ValidatedNumberInput label="TX Power (mW)" value={powerRaw} onChange={setTxPower} min={0} max={1e7} step="any" />
+          <ValidatedNumberInput label="Beam Diameter at Aperture (mm, 1/e²)" value={apertureRaw} onChange={setAperture} min={0} max={1000} step="any" />
+          <ValidatedNumberInput label="Beam Divergence (mrad, 1/e² full angle)" value={divergenceRaw} onChange={setBeamDivergence} min={0} max={1000} step="any" />
+          <ValidatedNumberInput label="Exposure Time (s)" value={exposureRaw} onChange={setExposureTime} min={T_MIN} max={T_MAX} step="any" />
+          <ValidatedNumberInput label="Check Distance (m)" value={distanceRaw} onChange={setDistance} min={0} max={1e6} step="any" />
+          <div className="flex gap-2 flex-wrap pt-2 border-t border-gray-800">
+            {PRESETS.map(([name, w, p]) => (
+              <button key={name} type="button" onClick={() => { setWavelength(w); setTxPower(p); }}
+                className="bg-gray-800 hover:bg-gray-700 text-xs px-2 py-1 rounded text-gray-300">{name}</button>
+            ))}
           </div>
         </div>
 
         <div className="space-y-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <h2 className="text-lg font-semibold text-cyan-400 mb-3">Results</h2>
-            <div className="space-y-2 text-sm font-mono">
-              <div className="flex justify-between"><span className="text-gray-400">Hazard Zone</span><span className="text-yellow-400">{calc.classification}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Laser Class</span><span className={calc.laserClass === "Class 1" ? "text-green-400" : "text-red-400"}>{calc.laserClass}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">MPE (irradiance)</span><span>{calc.mpeWm2.toFixed(1)} W/m²</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">MPE (radiant exposure)</span><span>{calc.mpeJm2.toFixed(1)} J/m²</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">NOHD</span><span className="text-cyan-300">{calc.nohd.toFixed(2)} m</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Irradiance @ {distance}m</span><span>{calc.irradiance.toFixed(1)} W/m²</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Safety Factor</span><span className={calc.safetyFactor > 1 ? "text-green-400" : "text-red-400"}>{calc.safetyFactor.toFixed(1)}×</span></div>
+          {valid ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <ResultCard label="NOHD" value={fmtDistance(nohd.distance)} tone="cyan"
+                subtext={nohd.limiting ? `set by the ${LIMIT_LABELS[nohd.limiting]} limit` : "within every limit at the aperture"} />
+              <ResultCard label="Laser class (IEC 60825-1)" value={laserClass ? `Class ${laserClass}` : "—"}
+                tone={laserClass ? CLASS_TONES[laserClass] : "gray"} subtext="CW, Conditions 1 and 3" />
+              <ResultCard label={`Margin at ${fmtNum(distance)} m`} value={Number.isFinite(atRange.margin) ? `${fmtNum(atRange.margin)}×` : "∞"}
+                tone={safe ? "green" : "red"}
+                subtext={atRange.worst ? `${safe ? "within" : "exceeds"} the ${LIMIT_LABELS[atRange.worst.kind]} limit; P_max ${fmtPower(atRange.worst.pMax)}` : undefined} />
+              <ResultCard label={`Beam Ø at ${fmtNum(distance)} m`} value={`${fmtNum(atRange.dr * 1e3)} mm`} tone="gray" subtext="1/e², a + rφ" />
             </div>
+          ) : (
+            <p className="text-sm text-red-400">The eye limits are defined from 180 nm to 1 mm.</p>
+          )}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-xs text-gray-400 space-y-1">
+            <p>Limits: ICNIRP 2013 eye exposure limits, the irradiance averaged over each limit&apos;s aperture (7 mm retinal, 3.5 mm or larger corneal).</p>
+            <p>Margin = largest power within every limit at that distance ÷ TX power; below 1 the exposure exceeds a limit.</p>
+            <p>NOHD: the distance where the Gaussian beam, growing as a + rφ, falls within every limit for exposures up to t.</p>
+            <p>Not modelled: atmospheric attenuation (which only shortens the NOHD), binoculars or telescopes, scintillation hot spots, pulsed modulation.</p>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-xs text-gray-500 space-y-1">
-            <p><strong className="text-gray-400">Irradiance:</strong> E = P / (π r²)</p>
-            <p><strong className="text-gray-400">NOHD:</strong> r = √(P / (π × MPE))</p>
-            <p><strong className="text-gray-400">400-1400 nm:</strong> Retinal hazard — extended source rules may apply</p>
-            <p><strong className="text-gray-400">&gt;1400 nm:</strong> Corneal/lens hazard — generally eye-safe at moderate power</p>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <ChartPanel data={plotData} layout={{
-              xaxis: { title: "Distance (m)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
-              yaxis: { title: "Irradiance (W/m²)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
-              paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-              margin: { t: 20, r: 20, b: 40, l: 70 }, font: { color: "#9ca3af" }, legend: { font: { size: 10 } },
-            }} />
-          </div>
+          {valid && (
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+              <HazardRatioChart ratios={ratios} rMin={rMin} rMax={rMax} markers={markers} />
+            </div>
+          )}
         </div>
       </div>
     </>
