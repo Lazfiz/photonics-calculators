@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 48, 2026-10-13)
+## Status (session 49, 2026-10-13)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -20,19 +20,17 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | imaging | 9 / 65 | findings fixed (sessions 19, 22); no full audit |
 | free-space-comms | 7 / 27 | findings fixed (Phase 1, session 21); `eye-safety-fso` on the laser-safety modules (48); no full audit |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
-| fiber-optics | 28 / 48 | part 0 (session 43), fix parts 1–6 (sessions 44–48); 15 `knownIssue`s; parts 7–11 below |
+| fiber-optics | 31 / 48 | part 0 (session 43), fix parts 1–7 (sessions 44–49); 12 `knownIssue`s; parts 8–11 below |
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 0 / 54 | |
-| **total** | **165 / 460** | 15 `knownIssue`s (fiber-optics) |
+| **total** | **168 / 460** | 12 `knownIssue`s (fiber-optics) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
   extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
   curl. Also clear the eslint warning there (unused `wavelength` state).
 - [ ] **Fiber-optics fix parts** (≈ 4 pages each; questionable pages in brackets get their tier in the same part):
-  - [ ] 7 `fiber-birefringence.ts` (Δ² geometric B, Lefèvre loop 0.882 rad at D 30 mm, PM crosstalk ε + tanh hL →
-    26.99 dB): `birefringence-fiber`, `polarization-maintaining`, `polarization-controller` (chain `muellerRetarder`).
   - [ ] 8 reuse `macro-bending-loss.ts`: `mode-field-diameter` (MFD 10.08 µm), `bend-insensitive` (15.9 dB/turn at 7.5 mm),
     `micro-bend` (beat-length resonance ≈ 0.76 mm), [`v-number`, `fiber-characterization`].
   - [ ] 9 `coupled-mode.ts` + evanescent K₀ tail: `multi-core` (κ 4.45e-3 /m; XT tanh hL → −38.3 dB/10 km at R_b 0.1 m),
@@ -83,6 +81,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `diversity-reception`: a fixed "3σ" outage, and identical gain for SC, EGC and MRC.
 
 **Fiber optics** (part 0, session 43; per-page evidence in PR #43)
+- `birefringence-fiber` cites Sakai & Kimura 1981 for G(V) (Optiwave attributes it there); the reviewer couldn't confirm the equation in that paper. The formula itself is checked by perturbation (session 49). Confirm the page/equation when a copy is at hand.
 - `tapered-fiber` defines the taper ratio as d_waist/d_input; `pump-combiner` uses D_bundle/d_out (> 1). Align the wording in part 10.
 - The SMF core is redefined on six pages (a 4.1/4.5 µm, NA 0.12/0.1246/0.14). Use a = 4.1 µm, NA 0.1246 → MFD 10.08 µm.
 - D(1550) for SMF is 13.4/17/17.46/22.1 on different pages. Use G.652 S₀/4(λ−λ₀⁴/λ³), S₀ 0.092, λ₀ 1310 → 17.46.
@@ -174,6 +173,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   - Fiber-optics part 4 (session 47, PR #51): `fiber-bragg-grating.ts` (Erdogan uniform, TMM apodized/chirped, strain/thermal) + `fiber-sensors.ts`; 3 FBG/sensor pages tiered; 499 tests.
   - Fiber-optics part 5 (session 48, PR #53): `sagnac.ts` (S 0.67608 s; ARW as Allan N 2.571e-5 °/√h, not 3.636e-5) + `fiber-bundle.ts`; gyroscope, loop mirror, bundle, pump combiner tiered; 507 tests.
   - Fiber-optics part 6 (session 48, PR #56): `doped-fiber-gain.ts` (Saleh closed form, NF, Gloge Γ, Rigrod T_opt 51.5 %); amplifier, rare-earth-doped (+ rare-earth-fiber merged), fiber-laser tiered; 519 tests.
+  - Fiber-optics part 7 (session 49, PR #58): `fiber-birefringence.ts` (Sakai–Kimura εn₁Δ²G(V), L_B 10.01 m; Lefèvre 0.882 rad/loop; PM crosstalk 26.99 dB); birefringence-fiber, polarization-maintaining, polarization-controller tiered; 525 tests.
 - Codex review fixes (session 48, PR #55): `eye-safety-fso` on the ICNIRP modules (MPE was ×1000; NOHD 11.125 m, 3R); SimpleChart category axes and grouped bars (Mueller, IR glass, crystals were blank); 512 tests.
 - Session 41: roadmap archived; `/ship` and `/handover` skills; `physics-reviewer` on Opus; `checker` agent on Haiku.
 - [ ] Optional (user): a Defender exclusion for `C:\dev`.
