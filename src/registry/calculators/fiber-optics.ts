@@ -541,6 +541,14 @@ export const fiberOptics: CalculatorEntry[] = [
     description: "Calculate total optical link loss, received power, and link margin for fiber optic systems.",
     heading: "Fiber Link Budget",
     lede: "Total optical link loss budget calculator. Power budget vs. accumulated losses.",
+    tier: "exact",
+    modelNote: "Decibel power budget P_tx = P_rx + C_L + M_s, with the margin held above the receiver sensitivity rather than subtracted from the received power. Dispersion and other penalties belong in the margin; overload not checked.",
+    references: [
+      {
+        citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed. Wiley. Ch. 5, lightwave system design: power budget P_tr = P_rec + C_L + M_s.",
+        url: "https://doi.org/10.1002/9780470918524",
+      },
+    ],
   },
   {
     slug: "low-water-peak",
@@ -715,8 +723,23 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "otdr-analysis",
     title: "OTDR Analysis",
-    description: "Simulate OTDR traces, calculate spatial resolution, dynamic range, dead zones, and event analysis for fiber characterization.",
-    knownIssue: "Splice losses recover after the event instead of stepping the trace down, and the dynamic range ignores pulse width (about 11 dB instead of about 31 dB at 100 ns).",
+    description: "Model an OTDR on single-mode fiber: two-point resolution, Rayleigh backscatter coefficient, one-way dynamic range versus pulse width and averaging, cumulative splice steps and Fresnel peaks.",
+    tier: "textbook",
+    modelNote: "Barnoski–Jensen backscatter with Brinkmeyer's Gaussian-mode capture fraction; ideal matched receiver, SNR = 1 noise. Receiver recovery, fading noise and the 98 % DR convention not included.",
+    references: [
+      {
+        citation: "Barnoski M. K., Jensen S. M. (1976). Fiber waveguides: a novel technique for investigating attenuation characteristics. Appl. Opt. 15, 2112. Backscattered power P₀ S α_s (v_g τ/2) e^(−2αz).",
+        url: "https://doi.org/10.1364/AO.15.002112",
+      },
+      {
+        citation: "Brinkmeyer E. (1980). Analysis of the backscattering method for single-mode optical fibers. J. Opt. Soc. Am. 70, 1010. Capture fraction S = (3/2)(λ/(2πnw))² for a Gaussian mode.",
+        url: "https://doi.org/10.1364/JOSA.70.001010",
+      },
+      {
+        citation: "Corning (2024). SMF-28 Ultra Optical Fiber, product information PI 1424. Rayleigh backscatter coefficient −82 dB (1 ns) at 1550 nm, MFD 10.4 µm, used as the check value.",
+        url: "https://csmedia.corning.com/media/worldwide/coc/documents/Fiber/product-information-sheets/PI-1424-AEN.pdf",
+      },
+    ],
   },
   {
     slug: "photonic-crystal",
