@@ -21,7 +21,7 @@
  * Mode-field radius: Marcuse's Gaussian fit w/a = 0.65 + 1.619 V^(−3/2) + 2.879 V^(−6)
  * (D. Marcuse, Bell Syst. Tech. J. 56, 703 (1977); within ~1 % for 1.2 < V < 2.4).
  */
-import { besselJ, besselK } from "../math";
+import { besselJ, besselKScaled } from "../math";
 
 export interface StepIndexFiber {
   /** Core radius a, m, > 0. */
@@ -75,7 +75,7 @@ export function lp01Mode(V: number): Lp01Mode {
   if (!(V >= MIN_V) || !Number.isFinite(V)) return { V, U: NaN, W: NaN };
   const residual = (u: number) => {
     const w = Math.sqrt(Math.max(V * V - u * u, 0));
-    const ratio = w === 0 ? 0 : (w * besselK(1, w)) / besselK(0, w);
+    const ratio = w === 0 ? 0 : (w * besselKScaled(1, w)) / besselKScaled(0, w);
     return u * besselJ(1, u) - besselJ(0, u) * ratio;
   };
   let a = 0;
@@ -130,9 +130,10 @@ export function bendLossCoefficient(
   const kappa = U / f.a;
   const gamma = W / f.a;
   const beta2 = (f.n1 * k) ** 2 - kappa ** 2;
-  const K1 = besselK(1, W);
-  const decay = Math.exp(-(2 * gamma ** 3 * R) / (3 * beta2));
-  return (SQRT_PI * kappa ** 2 * decay) / (2 * gamma ** 1.5 * V ** 2 * Math.sqrt(R) * K1 * K1);
+  // K₁² = e^(−2W) K̃₁² (scaled), so the e^(−2W) joins the decay exponent and nothing underflows at large W.
+  const K1s = besselKScaled(1, W);
+  const decay = Math.exp(2 * W - (2 * gamma ** 3 * R) / (3 * beta2));
+  return (SQRT_PI * kappa ** 2 * decay) / (2 * gamma ** 1.5 * V ** 2 * Math.sqrt(R) * K1s * K1s);
 }
 
 /** dB per neper of power: 10 log₁₀(e). */
