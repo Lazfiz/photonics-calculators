@@ -744,8 +744,35 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "photonic-crystal",
     title: "Photonic Crystal Fiber",
-    description: "Approximate NA, V-number, mode area, dispersion and confinement loss of an index-guiding photonic crystal fiber from hole pitch Λ and diameter d.",
-    knownIssue: "The NA and V-number formulas are ad hoc: the defaults give NA = 1 and V = 18, the effective area is about 4× too small and the dispersion sign is reversed.",
+    description: "Effective V-number, single-mode cutoff, effective index, mode-field diameter and chromatic dispersion of a solid-core photonic crystal fiber from hole pitch Λ and diameter d (Saitoh–Koshiba relations).",
+    tier: "textbook",
+    modelNote: "Saitoh–Koshiba empirical V and W (FEM fits, 0.2 ≤ d/Λ ≤ 0.8, λ/Λ ≤ 2), a_eff = Λ/√3, silica Sellmeier core; V < 2.405 single-mode; Marcuse spot size (V ≥ 1.2). Blank where the fit gives W ≤ 0. No confinement loss.",
+    references: [
+      {
+        citation: "Saitoh K., Koshiba M. (2005). Empirical relations for simple design of photonic crystal fibers. Opt. Express 13, 267. Eqs. (1)–(4), Tables 1–2.",
+        url: "https://doi.org/10.1364/opex.13.000267",
+      },
+      {
+        citation: "Koshiba M., Saitoh K. (2004). Applicability of classical optical fiber theories to holey fibers. Opt. Lett. 29, 1739. a_eff = Λ/√3.",
+        url: "https://doi.org/10.1364/ol.29.001739",
+      },
+      {
+        citation: "Saitoh K., Tsuchida Y., Koshiba M., Mortensen N. A. (2005). Endlessly single-mode holey fibers: the influence of core design. Opt. Express 13, 10833. ESM limit d/Λ = 0.424.",
+        url: "https://doi.org/10.1364/opex.13.010833",
+      },
+      {
+        citation: "Birks T. A., Knight J. C., Russell P. St. J. (1997). Endlessly single-mode photonic crystal fiber. Opt. Lett. 22, 961.",
+        url: "https://doi.org/10.1364/ol.22.000961",
+      },
+      {
+        citation: "Marcuse D. (1977). Loss analysis of single-mode fiber splices. Bell Syst. Tech. J. 56, 703. w/a = 0.65 + 1.619V^−1.5 + 2.879V^−6.",
+        url: "https://doi.org/10.1002/j.1538-7305.1977.tb00534.x",
+      },
+      {
+        citation: "Malitson I. H. (1965). Interspecimen comparison of the refractive index of fused silica. J. Opt. Soc. Am. 55, 1205.",
+        url: "https://doi.org/10.1364/josa.55.001205",
+      },
+    ],
   },
   {
     slug: "polarization-controller",
@@ -886,8 +913,24 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "specialty-fiber",
     title: "Specialty Fiber Types",
-    description: "Compare properties of specialty optical fibers: PM, PCF, rare-earth doped, chalcogenide, and fluoride.",
-    knownIssue: "The V-number treats a core radius as a diameter for some rows, and the chalcogenide and ZBLAN losses at 1550 nm are listed below silica's.",
+    description: "Compare data-sheet properties of specialty optical fibers (PM, erbium-, ytterbium- and thulium-doped, ZBLAN, chalcogenide): V-number, cutoff, mode-field diameter and loss.",
+    tier: "illustrative",
+    modelNote: "Typical data-sheet values for one commercial fibre per class (linked). V = 2πa·NA/λ, step-index cutoff and Marcuse MFD from the sheet's core and NA. Losses are single-wavelength figures, not spectra.",
+    references: [
+      { citation: "Thorlabs PM1550-XP spec sheet TTN019885-S01 (PANDA PM fibre).", url: "https://www.thorlabs.com/item/pm1550-xp" },
+      { citation: "nLIGHT LIEKKI Er16-8/125 and Yb1200-4/125 data sheets (via Thorlabs).", url: "https://www.thorlabs.com/item/er16-8_125" },
+      { citation: "Coherent SM-TSF-9/125 thulium-doped fibre data.", url: "https://www.coherent.com/components-accessories/specialty-optical-fibers/single-mode/SM-TSF-9-125" },
+      { citation: "Thorlabs IRZS23 ZBLAN single-mode fibre spec sheet TTN028984-S01.", url: "https://www.thorlabs.com/item/irzs23" },
+      { citation: "IRflex IRF-S series As₂S₃ fibre data sheet (V202408) and product page.", url: "https://irflex.com/products/irf-s-series/" },
+      {
+        citation: "Gloge D. (1971). Weakly guiding fibers. Appl. Opt. 10, 2252. V and the LP11 cutoff.",
+        url: "https://doi.org/10.1364/ao.10.002252",
+      },
+      {
+        citation: "Marcuse D. (1977). Loss analysis of single-mode fiber splices. Bell Syst. Tech. J. 56, 703.",
+        url: "https://doi.org/10.1002/j.1538-7305.1977.tb00534.x",
+      },
+    ],
   },
   {
     slug: "splice-loss",
