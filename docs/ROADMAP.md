@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 46, 2026-10-12)
+## Status (session 48, 2026-10-13)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -20,19 +20,17 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | imaging | 9 / 65 | findings fixed (sessions 19, 22); no full audit |
 | free-space-comms | 6 / 27 | findings fixed (Phase 1, session 21); no full audit |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
-| fiber-optics | 21 / 49 | part 0 (session 43), fix parts 1–4 (sessions 44–47); 23 `knownIssue`s; parts 5–11 below |
+| fiber-optics | 25 / 49 | part 0 (session 43), fix parts 1–5 (sessions 44–48); 19 `knownIssue`s; parts 6–11 below |
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 0 / 54 | |
-| **total** | **157 / 461** | 23 `knownIssue`s (fiber-optics) |
+| **total** | **161 / 461** | 19 `knownIssue`s (fiber-optics) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
   extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
   curl. Also clear the eslint warning there (unused `wavelength` state).
 - [ ] **Fiber-optics fix parts** (≈ 4 pages each; questionable pages in brackets get their tier in the same part):
-  - [ ] 5 `sagnac.ts`: `fiber-gyroscope` (S 0.67608 s, ARW 3.636e-5 °/√h), `fiber-loop-mirror` (R 4k(1−k),
-    T (1−2k)²); plus `fiber-bundle` (37 × 125 µm → Ø 0.875 mm, core fill 0.1888) and `pump-combiner` (étendue).
   - [ ] 6 `doped-fiber-gain.ts` (two-level gain, P_sat hνA/((σa+σe)τ) = 0.2711 mW, implicit saturation → 11.58 dB, one
     cross-section table): `fiber-amplifier`, `rare-earth-doped` + `rare-earth-fiber` (duplicates: merge, L₉₀ =
     10/α_dB = 12.28 m), `fiber-laser` (η_q = η_s/η_Stokes = 0.8721).
@@ -84,6 +82,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `diversity-reception`: a fixed "3σ" outage, and identical gain for SC, EGC and MRC.
 
 **Fiber optics** (part 0, session 43; per-page evidence in PR #43)
+- `tapered-fiber` defines the taper ratio as d_waist/d_input; `pump-combiner` uses D_bundle/d_out (> 1). Align the wording in part 10.
 - The SMF core is redefined on six pages (a 4.1/4.5 µm, NA 0.12/0.1246/0.14). Use a = 4.1 µm, NA 0.1246 → MFD 10.08 µm.
 - D(1550) for SMF is 13.4/17/17.46/22.1 on different pages. Use G.652 S₀/4(λ−λ₀⁴/λ³), S₀ 0.092, λ₀ 1310 → 17.46.
 - `macro-bending-loss.ts` `MIN_V = 0.5` lets the Marcuse fit run far below its 1.2–2.4 range.
@@ -171,5 +170,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   - Fiber-optics part 2 (session 45, PR #47): `chromatic-dispersion.ts` (optimum-pulse limits, β₃, modal in quadrature); 5 dispersion pages tiered; 480 tests.
   - Fiber-optics part 3 (session 46, PR #49): `fiber-nonlinear.ts` (Smith ×K, linear linewidth, Inoue FWM); sbs/srs-threshold, nonlinear-effects tiered; 488 tests.
   - Fiber-optics part 4 (session 47, PR #51): `fiber-bragg-grating.ts` (Erdogan uniform, TMM apodized/chirped, strain/thermal) + `fiber-sensors.ts`; 3 FBG/sensor pages tiered; 499 tests.
+  - Fiber-optics part 5 (session 48, PR #53): `sagnac.ts` (S 0.67608 s; ARW as Allan N 2.571e-5 °/√h, not 3.636e-5) + `fiber-bundle.ts`; gyroscope, loop mirror, bundle, pump combiner tiered; 507 tests.
 - Session 41: roadmap archived; `/ship` and `/handover` skills; `physics-reviewer` on Opus; `checker` agent on Haiku.
 - [ ] Optional (user): a Defender exclusion for `C:\dev`.
