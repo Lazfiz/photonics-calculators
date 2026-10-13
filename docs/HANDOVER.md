@@ -2,36 +2,45 @@
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 48 shipped **fiber-optics fix part 5** (PR #53) and the **Codex review fixes** (PR #55: `eye-safety-fso`, SimpleChart
-category axes; Codex findings for mode-matching, abcd-matrix and search are in ROADMAP Open findings). **Next: fix part 6**, `doped-fiber-gain.ts` (`polarizer-types` stays blocked until the user is at the laptop with Chrome connected).
+Session 48 shipped fiber-optics fix parts 5 and 6 (PRs #53, #56) and the Codex review fixes (PR #55). **Next: fix part 7**,
+`fiber-birefringence.ts` (`polarizer-types` stays blocked until the user is at the laptop with Chrome connected).
 
 ## State
-- 162 of 461 pages are tiered, 19 `knownIssue`s (all fiber-optics), 512 tests pass.
-- New `src/physics/fiber-optics/sagnac.ts`: `EARTH_ROTATION_RATE` 7.292115e-5, `RAD_PER_S_TO_DEG_PER_H`,
-  `sagnacScaleFactor` (2πLD/(λc)), `transitTime`, `properFrequency`, `shotNoisePhase` (one-sided ASD, ±π/2 bias),
-  `noiseEquivalentRate`, `angleRandomWalkDegPerRootHour` (Allan N = ASD/√2 ÷ 60), `loopMirrorReflectance`,
-  `loopMirrorTransmittance(k, Δφ, τ)`, `birefringentPhase`, `loopCombPeriod`.
-- New `fiber-bundle.ts`: `HEX_PACKING_LIMIT`, `hexRingCount`, `hexFiberCount`, `hexBundleDiameter`,
-  `squareBundleDiameter`, `bundleFill`, `fiberEtendue`, `combinerEtendueRatio`, `taperedPumpNA`.
-- Other fiber modules: `fiber-bragg-grating.ts`, `fiber-sensors.ts`, `fiber-nonlinear.ts`, `chromatic-dispersion.ts`,
-  `gaussian-coupling.ts`, `dispersion-comp.ts`, `macro-bending-loss.ts` (`DB_PER_NEPER`), `polarization-mode-dispersion.ts`.
-- Per-page reviewer evidence for parts 6–11 is in the PR #43 description: `gh pr view 43 --json body -q .body`.
+- 165 of 460 pages are tiered, 15 `knownIssue`s (all fiber-optics), 519 tests pass.
+- New `src/physics/fiber-optics/doped-fiber-gain.ts`: `DOPANT_PRESETS` (Er, Yb; typical σ, labelled editable),
+  `photonEnergy`, `ionDensityFromWtPpm`, `coreOverlap` (Gloge LP01 Γ), `absorptionDbPerM`, `fullInversionGainDb`,
+  `intrinsicSaturationPower`, `twoLevelAt` (Saleh closed form), `amplifier` (gain, NF), `stokesEfficiency`,
+  `efficiencyBeyondStokes`, `rigrodOutput`, `optimumOutputCoupler`.
+- `rare-earth-fiber` is merged into `rare-earth-doped` (redirect). Other fiber modules: `sagnac.ts`, `fiber-bundle.ts`,
+  `fiber-bragg-grating.ts`, `fiber-sensors.ts`, `fiber-nonlinear.ts`, `chromatic-dispersion.ts`, `gaussian-coupling.ts`,
+  `dispersion-comp.ts`, `macro-bending-loss.ts` (`DB_PER_NEPER`, `lp01Mode`, `vNumber`), `polarization-mode-dispersion.ts`.
+- Per-page reviewer evidence for parts 7–11 is in the PR #43 description: `gh pr view 43 --json body -q .body`.
 
 ## Next actions
-1. Fix part 6, `doped-fiber-gain.ts` (ROADMAP box has the golden values; PR #43 lines for each page):
-   - `fiber-amplifier`: gain ignores the pump (YDFA 292 dB). Implicit saturation G = 1 + (P_sat/P_in)·ln(G₀/G):
-     G₀ 16.44 dB, P_in 0.1, P_sat 10 → 11.58 dB.
-   - `rare-earth-doped` + `rare-earth-fiber`: duplicates with disagreeing cross-sections → merge (redirect, codemod
-     `2026-10-08-merge-duplicates.ts`). P_sat = hνA/((σa+σe)τ) = 0.2711 mW; L₉₀ = 10/α_dB = 12.28 m (dB used as
-     nepers); 172 dB full-inversion headline; NF trend wrong. Source: Giles & Desurvire JLT 9, 271, 10.1109/50.65886.
-   - `fiber-laser`: η_q = η_s/η_Stokes = 0.8721 (page multiplies); optimum coupling uses absorption as gain (Rigrod
-     10.1063/1.1714517).
-   - One cross-section table shared by the pages.
+1. Fix part 7 (ROADMAP box has the golden values): `fiber-birefringence.ts` for `birefringence-fiber`,
+   `polarization-maintaining`, `polarization-controller` (chain `mueller.ts` `muellerRetarder`).
 2. Each fixed page: remove its `knownIssue`, set tier, `modelNote` (≤ 220 chars), references (`scripts/crossref.mjs`).
-3. One `physics-reviewer` pass before the PR. Session 48's pass caught a √2 convention error; ask it about conventions.
+3. One `physics-reviewer` pass before the PR; ask it about conventions and in-range inputs that give NaN/∞ or 0·∞.
 4. `/ship`: `post-merge-check <sha> fiber-optics/<slug>=<default value as rendered>` per page.
 
 ## Non-obvious facts
+- **Part 6 review lessons:** `q·exp(big)` with q = 0 gives 0·∞ = NaN, and bisection on `NaN > 0` silently converges
+  to a wrong finite answer (3e50 W). Skip zero terms. Show NaN/∞ as "—" with a reason, never "NaN dB".
+- **Unreproduced golden:** the PR #43 fiber-amplifier "G₀ 16.44 dB → 11.58 dB" (implicit saturation) doesn't
+  reproduce (≈ 15.1 dB); it was not used. Check reviewer goldens independently before relying on them.
+- **Hung checks:** `chrome --dump-dom` against `next dev` never exits (the HMR socket). Wrap every chrome, ui-check
+  and server command in `timeout <s>`, and check pages on `next start` after `build`. Plotly charts (ChartPanel)
+  are not in a `--dump-dom` even on good pages; only SimpleChart SVGs are.
+- **Stale `.next`:** a removed page breaks `tsc` via `.next/types` and `.next/dev/types` (`rm -rf` both); a killed
+  dev server can leave a truncated `routes.d.ts`; a stale `.next/dev` cache made every route 404 (`rm -rf .next/dev`).
+- **Merge codemod** reads only the exported entry array (fixed in PR #56 for `polarization.ts`).
+- **Independent checks that worked:** RK4 of rate or coupled-mode equations, numerical integrals of mode fields,
+  brute-force scans for optimisers, Landau–Zener, coupler-matrix sums. Mutate the code once to prove the test bites.
+- **eslint** reports ≈ 840 pre-existing warnings. `check` passes; lint only the changed files.
+- **ui-check:** `MSYS_NO_PATHCONV=1 node scripts/ui-check.mjs http://localhost:3100 load /a /b`. Never run
+  `taskkill /IM chrome.exe`. `TaskStop` leaves `node` on port 3100: `netstat -ano | grep :3100`, `taskkill //PID <pid> //T //F`.
+- **Timings:** `check` ≈ 6 min, `build` ≈ 6–10 min, CI ≈ 3 min, physics-reviewer ≈ 6–13 min. Background them; don't
+  edit `.ts` while `check` runs.
 - **ARW convention:** IEEE 952 defines N by σ²(τ) = N²/τ (two-sided PSD). From a one-sided ASD, N = ASD/√2 ÷ 60 in
   °/√h. Many datasheets just ÷ 60 (√2 higher). The PR #43 review value 3.636e-5 was that form; the page shows 2.571e-5.
 - **SMF-28 index:** 1.4682 is its *group* index (delay, OTDR, gyro transit). Bragg λ, Fresnel, V and n_eff need the
@@ -45,9 +54,6 @@ category axes; Codex findings for mode-matching, abcd-matrix and search are in R
 - **Registry edits** on one file go through a scratchpad `.cjs` script with a dry run and anchor checks
   (`slug: "<x>",` → entry ends at the next `\n  },`). Strip an existing `tier:` block first so it re-runs. Build
   reference objects without empty keys (a book has no `url`).
-- **Independent checks that worked:** RK4 of coupled-mode equations, Landau–Zener, coherent multi-pass sums,
-  coupler-matrix field sums (loop mirror), photon counting (shot noise vs Allan). Mutate the code once to prove the test bites.
-- **eslint** reports ≈ 870 pre-existing warnings. `check` passes; lint only the changed files.
 - **Connectors:** per project in `~/.claude.json` (`disabledMcpServers`). Vercel is on; the other 10 are off.
 - **SimpleChart:** non-numeric string x (or `xaxis.type: "category"`) is a category axis, one slot per label; bar traces
   group unless `barmode` is overlay/stack and start at 0; long labels rotate −45°. `tests/simple-chart.test.ts` renders it
@@ -59,7 +65,6 @@ category axes; Codex findings for mode-matching, abcd-matrix and search are in R
 - **Sources:** Agrawal FOCS 4th ed. `10.1002/9780470918524`; Erdogan `10.1109/50.618322`; Kersey `10.1109/50.618377`;
   Born & Wolf 7th ed. `10.1017/CBO9781139644181`. WebFetch returns PDFs as binary: `curl` + `pdftotext -layout`.
 - **React Compiler lint:** build memo objects from primitive deps (`preserve-manual-memoization`).
-- **Deleted pages or modules break `tsc`** through a stale `.next/types/validator.ts`: `rm -rf .next/types`.
 - **Line endings:** some files are CRLF. Node edit scripts must `.replace(/\r\n/g, "\n")` before matching anchors.
 - **Shell:**
   - Edit scripts go in scratchpad `.cjs` files; run them with `< /dev/null`. Write `.tsx` pages with the Write tool.
@@ -67,9 +72,5 @@ category axes; Codex findings for mode-matching, abcd-matrix and search are in R
   - `python -` hangs even with `< /dev/null`; use `node`. In Git Bash a `/a/b` argument becomes
     `C:/Program Files/Git/a/b` (`MSYS_NO_PATHCONV=1`).
   - `git grep` skips untracked files: a new module isn't found until it's added.
-- **ui-check:** `MSYS_NO_PATHCONV=1 node scripts/ui-check.mjs http://localhost:3100 load /a /b`. Never run
-  `taskkill /IM chrome.exe`. `TaskStop` leaves `node` on port 3100: `netstat -ano | grep :3100`, `taskkill //PID <pid> //T //F`.
-- **Timings:** `check` ≈ 6 min, `build` ≈ 6–10 min, CI ≈ 3 min, physics-reviewer ≈ 13 min. Background them; don't
-  edit `.ts` while `check` runs.
 - **`useURLState` doesn't clamp:** clamp in the page. Non-finite URL params fall back to the default.
   **Plotly can't draw Infinity:** map to `null`.
