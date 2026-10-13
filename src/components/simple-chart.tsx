@@ -98,6 +98,17 @@ export function formatTick(v: number, ticks: readonly number[]): string {
   return v.toFixed(Math.max(0, -decade(step)));
 }
 
+/**
+ * The x categories in order of first appearance, or null for a numeric axis. As in Plotly's axis autotype, the axis is
+ * categorical when `xaxis.type` is "category" or an x value is a string that isn't a number ("S₁", "Germanium");
+ * numeric strings such as "10" stay numeric.
+ */
+export function xCategories(data: readonly { x?: readonly (number | string)[] }[], xaxisType?: unknown): string[] | null {
+  const xs = data.flatMap((t) => (t.x ?? []).slice(0, 10000));
+  if (xaxisType !== "category" && !xs.some((v) => typeof v === "string" && !Number.isFinite(Number(v)))) return null;
+  return [...new Set(xs.map(String))];
+}
+
 /** Wraps children and reports container width via ResizeObserver */
 function ResponsiveContainer({ children, className }: { children: (width: number) => React.ReactNode; className: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -127,16 +138,25 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
   const baseH = typeof layout.height === "number" ? layout.height : 400;
   const w = typeof layout.width === "number" ? layout.width : baseW;
   const aspectRatio = baseH / baseW;
-  const dynamicH = Math.max(280, Math.round(w * aspectRatio));
   const ml = (layout.margin as Record<string, number>)?.l ?? 60;
   const mr = (layout.margin as Record<string, number>)?.r ?? 20;
   const mt = (layout.margin as Record<string, number>)?.t ?? 30;
-  const mb = (layout.margin as Record<string, number>)?.b ?? 50;
+  const xaxis = layout.xaxis as Record<string, unknown> | undefined;
+  const categories = xCategories(data, xaxis?.type);
+  // Category labels wider than their slot are rotated (xaxis.tickangle, or −45° as Plotly's auto-rotation) and hang
+  // below the axis: make room for the longest one (≈ 6.5 px per character at 11 px).
+  const longestLabel = categories ? Math.max(0, ...categories.map((c) => c.length)) * 6.5 : 0;
+  const tickAngle = !categories ? 0
+    : typeof xaxis?.tickangle === "number" ? xaxis.tickangle
+    : longestLabel > 0.9 * ((w - ml - mr) / Math.max(categories.length, 1)) ? -45 : 0;
+  const labelDrop = Math.min(100, longestLabel * Math.abs(Math.sin((tickAngle * Math.PI) / 180)));
+  const mbLayout = (layout.margin as Record<string, number>)?.b ?? 50;
+  const mb = Math.max(mbLayout, 50 + labelDrop);
+  const dynamicH = Math.max(280, Math.round(w * aspectRatio)) + (mb - mbLayout); // the labels add height, not take it
 
   const plotW = w - ml - mr;
   const plotH = dynamicH - mt - mb;
 
-  const xaxis = layout.xaxis as Record<string, unknown> | undefined;
   const yaxis = layout.yaxis as Record<string, unknown> | undefined;
   const yaxis2 = layout.yaxis2 as Record<string, unknown> | undefined;
   const hasDualY = !!yaxis2;
@@ -161,10 +181,13 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
     }
   }
 
-  const xLog = xaxis?.type === "log";
+  const xLog = !categories && xaxis?.type === "log";
   const yLog = yaxis?.type === "log";
   const y2Log = (yaxis2?.type as string) === "log";
-  const allX = data.flatMap(t => ((t.x ?? []) as (number | string)[]).slice(0, 10000).map(Number)).filter(n => Number.isFinite(n) && (!xLog || n > 0));
+  // A category's x is its index, as in Plotly.
+  const categoryIndex = new Map(categories?.map((c, i) => [c, i]));
+  const xValue = (v: number | string) => (categories ? categoryIndex.get(String(v)) ?? NaN : Number(v));
+  const allX = data.flatMap(t => ((t.x ?? []) as (number | string)[]).slice(0, 10000).map(xValue)).filter(n => Number.isFinite(n) && (!xLog || n > 0));
   const allY1 = data.flatMap((t, i) => y2TraceIndices.has(i) ? [] : ((t.y ?? []) as (number | string)[]).slice(0, 10000).map(Number)).filter(n => Number.isFinite(n) && (!yLog || n > 0));
   const allY2 = data.flatMap((t, i) => y2TraceIndices.has(i) ? ((t.y ?? []) as (number | string)[]).slice(0, 10000).map(Number) : []).filter(n => Number.isFinite(n) && (!y2Log || n > 0));
   const allY = hasDualY ? [...allY1, ...allY2] : allY1;
@@ -177,6 +200,10 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
   let yMax = allY1.length > 0 ? Math.max(...allY1) : 1;
   let y2Min = allY2.length > 0 ? Math.min(...allY2) : 0;
   let y2Max = allY2.length > 0 ? Math.max(...allY2) : 1;
+  // Bars start at zero, so a linear axis that holds bars includes it (as Plotly's autorange does).
+  const barIndices = data.flatMap((t, i) => (t.type === "bar" ? [i] : []));
+  if (!yLog && allY1.length > 0 && barIndices.some((i) => !y2TraceIndices.has(i))) { yMin = Math.min(yMin, 0); yMax = Math.max(yMax, 0); }
+  if (!y2Log && allY2.length > 0 && barIndices.some((i) => y2TraceIndices.has(i))) { y2Min = Math.min(y2Min, 0); y2Max = Math.max(y2Max, 0); }
 
   const xRange = xaxis?.range as number[] | undefined;
   const yRange = yaxis?.range as number[] | undefined;
@@ -198,6 +225,7 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
   xMin -= xSpan * pad; xMax += xSpan * pad;
   yMin -= ySpan * pad; yMax += ySpan * pad;
   y2Min -= y2Span * pad; y2Max += y2Span * pad;
+  if (categories && !xRange) { xMin = -0.5; xMax = categories.length - 0.5; } // one slot per category
 
   // Extra right margin for dual Y axis
   const effectiveMr = hasDualY ? Math.max(mr, 70) : mr;
@@ -219,7 +247,7 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
     return mt + plotH - ((n - y2Min) / (y2Max - y2Min)) * plotH;
   };
 
-  const xTicks = niceTicks(rawXMin, rawXMax, 6, xLog);
+  const xTicks = categories ? categories.map((_, i) => i) : niceTicks(rawXMin, rawXMax, 6, xLog);
   const yTicks = niceTicks(rawYMin, rawYMax, 6, yLog);
   const y2Ticks = hasDualY ? niceTicks(rawY2Min, rawY2Max, 6, y2Log) : [];
 
@@ -231,7 +259,7 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
     const points: string[] = [];
     const yMap = y2TraceIndices.has(ti) ? toSvgY2 : toSvgY;
     for (let i = 0; i < Math.min(tx.length, ty.length); i++) {
-      const xv = Number(tx[i]);
+      const xv = xValue(tx[i]);
       const yv = Number(ty[i]);
       if (!Number.isFinite(xv) || !Number.isFinite(yv)) continue;
       if ((xLog && !(xv > 0)) || ((y2TraceIndices.has(ti) ? y2Log : yLog) && !(yv > 0))) continue;
@@ -240,8 +268,10 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
     return points;
   });
 
-  const barTraces = data.filter(t => t.type === "bar");
-  const lineTraces = data.filter(t => t.type !== "bar");
+  const lineIndices = data.flatMap((t, i) => (t.type === "bar" ? [] : [i]));
+  // Plotly's default barmode "group" puts the bar traces side by side in each slot; "overlay" and "stack" draw them
+  // over each other (stacking isn't drawn).
+  const groupBars = layout.barmode !== "overlay" && layout.barmode !== "stack" && barIndices.length > 1;
 
   const legendItems = data.filter(t => t.name).map(t => ({
     name: t.name!,
@@ -277,8 +307,9 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
 
         {/* X tick labels */}
         {xTicks.map((v, _, all) => (
-          <text key={`xl${v}`} x={toSvgX(v)} y={mt + plotH + 18} textAnchor="middle"
-            fill={textColor} fontSize={11}>{formatTick(v, all)}</text>
+          <text key={`xl${v}`} x={toSvgX(v)} y={mt + plotH + 18} textAnchor={tickAngle ? "end" : "middle"}
+            transform={tickAngle ? `rotate(${tickAngle}, ${toSvgX(v)}, ${mt + plotH + 18})` : undefined}
+            fill={textColor} fontSize={11}>{categories ? categories[v] : formatTick(v, all)}</text>
         ))}
 
         {/* Y tick labels */}
@@ -315,29 +346,36 @@ function SimpleChartInner({ data, layout = {}, title, className = "" }: { data: 
         )}
 
         {/* Bar traces */}
-        {barTraces.map((trace, ti) => {
+        {barIndices.map((di, ti) => {
+          const trace = data[di];
           const tx = trace.x ?? [];
           const ty = trace.y ?? [];
           if (tx.length === 0 || ty.length === 0) return null;
           const color = trace.marker?.color || ["#60a5fa", "#f97316", "#10b981", "#8b5cf6", "#ef4444", "#06b6d4"][ti % 6];
-          const barW = Math.max(2, (plotWRef / Math.max(tx.length, 1)) * 0.6);
+          const onY2 = y2TraceIndices.has(di);
+          const yMap = onY2 ? toSvgY2 : toSvgY;
+          const [lo, hi, log] = onY2 ? [y2Min, y2Max, y2Log] : [yMin, yMax, yLog];
+          // Bars grow from 0, or from the plot's edge when 0 is off the axis (log: the bottom).
+          const base = log ? Math.pow(10, lo) : Math.min(Math.max(0, lo), hi);
+          const slot = categories ? plotWRef / categories.length : plotWRef / Math.max(tx.length, 1);
+          const barW = Math.max(2, groupBars ? (slot * 0.8) / barIndices.length : slot * 0.6);
+          const offset = groupBars ? (ti - (barIndices.length - 1) / 2) * barW : 0;
           return tx.map((xv, i) => {
-            const x = Number(xv), y = Number(ty[i]);
-            if (isNaN(x) || isNaN(y)) return null;
-            const base = yLog ? Math.pow(10, yMin) : Math.min(0, yMin); // log: the bottom of the plot
-            const bx = toSvgX(x) - barW / 2;
-            const by = toSvgY(y);
-            const bh = toSvgY(base) - by;
+            const x = xValue(xv), y = Number(ty[i]);
+            if (!Number.isFinite(x) || !Number.isFinite(y) || (log && !(y > 0))) return null;
+            const y0 = yMap(base), y1 = yMap(y);
             return (
-              <rect key={`bar${ti}-${i}`} x={bx} y={by} width={barW} height={Math.max(bh, 0)}
-                fill={typeof color === "string" ? color : "#60a5fa"} opacity={trace.opacity ?? 0.8} rx={1} />
+              <rect key={`bar${ti}-${i}`} x={toSvgX(x) + offset - barW / 2} y={Math.min(y0, y1)} width={barW}
+                height={Math.abs(y0 - y1)} fill={typeof color === "string" ? color : "#60a5fa"}
+                opacity={trace.opacity ?? 0.8} rx={1} />
             );
           });
         })}
 
         {/* Line traces with fill */}
-        {lineTraces.map((trace, ti) => {
-          const pts = paths[ti];
+        {lineIndices.map((di, ti) => {
+          const trace = data[di];
+          const pts = paths[di];
           if (!pts || pts.length === 0) return null;
           const color = trace.line?.color || ["#60a5fa", "#f97316", "#10b981", "#8b5cf6", "#ef4444", "#06b6d4", "#eab308", "#ec4899"][ti % 8];
           const width = trace.line?.width ?? 2;

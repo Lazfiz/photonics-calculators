@@ -2,11 +2,11 @@
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 48 shipped **fiber-optics fix part 5** (PR #53, merged as `30cf0e86`; production checked, all pass). **Next: fix
-part 6**, `doped-fiber-gain.ts` (`polarizer-types` stays blocked until the user is at the laptop with Chrome connected).
+Session 48 shipped **fiber-optics fix part 5** (PR #53) and the **Codex review fixes** (PR #55: `eye-safety-fso`, SimpleChart
+category axes; Codex findings for mode-matching, abcd-matrix and search are in ROADMAP Open findings). **Next: fix part 6**, `doped-fiber-gain.ts` (`polarizer-types` stays blocked until the user is at the laptop with Chrome connected).
 
 ## State
-- 161 of 461 pages are tiered, 19 `knownIssue`s (all fiber-optics), 507 tests pass.
+- 162 of 461 pages are tiered, 19 `knownIssue`s (all fiber-optics), 512 tests pass.
 - New `src/physics/fiber-optics/sagnac.ts`: `EARTH_ROTATION_RATE` 7.292115e-5, `RAD_PER_S_TO_DEG_PER_H`,
   `sagnacScaleFactor` (2πLD/(λc)), `transitTime`, `properFrequency`, `shotNoisePhase` (one-sided ASD, ±π/2 bias),
   `noiseEquivalentRate`, `angleRandomWalkDegPerRootHour` (Allan N = ASD/√2 ÷ 60), `loopMirrorReflectance`,
@@ -49,6 +49,11 @@ part 6**, `doped-fiber-gain.ts` (`polarizer-types` stays blocked until the user 
   coupler-matrix field sums (loop mirror), photon counting (shot noise vs Allan). Mutate the code once to prove the test bites.
 - **eslint** reports ≈ 870 pre-existing warnings. `check` passes; lint only the changed files.
 - **Connectors:** per project in `~/.claude.json` (`disabledMcpServers`). Vercel is on; the other 10 are off.
+- **SimpleChart:** non-numeric string x (or `xaxis.type: "category"`) is a category axis, one slot per label; bar traces
+  group unless `barmode` is overlay/stack and start at 0; long labels rotate −45°. `tests/simple-chart.test.ts` renders it
+  with `renderToStaticMarkup`.
+- **Screenshots without the extension:** `chrome.exe --headless=new --virtual-time-budget=8000 --window-size=1280,2600
+  --screenshot=<png> <url>`, then crop with `sharp` (in node_modules) before reading.
 - **Polarization conventions:** Goldstein/Collett signs. Fibre pages that rotate Stokes vectors must chain
   `mueller.ts` `muellerRetarder`.
 - **Sources:** Agrawal FOCS 4th ed. `10.1002/9780470918524`; Erdogan `10.1109/50.618322`; Kersey `10.1109/50.618377`;

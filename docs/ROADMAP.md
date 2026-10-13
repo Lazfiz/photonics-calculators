@@ -18,13 +18,13 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | thin-film | 39 / 45 | leftovers below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
 | imaging | 9 / 65 | findings fixed (sessions 19, 22); no full audit |
-| free-space-comms | 6 / 27 | findings fixed (Phase 1, session 21); no full audit |
+| free-space-comms | 7 / 27 | findings fixed (Phase 1, session 21); `eye-safety-fso` on the laser-safety modules (48); no full audit |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 25 / 49 | part 0 (session 43), fix parts 1–5 (sessions 44–48); 19 `knownIssue`s; parts 6–11 below |
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 0 / 54 | |
-| **total** | **161 / 461** | 19 `knownIssue`s (fiber-optics) |
+| **total** | **162 / 461** | 19 `knownIssue`s (fiber-optics) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -72,7 +72,11 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `self-phase-modulation`: rms broadening uses √(1 + (4 ln2/π)φ²); for an unchirped Gaussian it is √(1 + 4φ²/(3√3)) (`spmRmsBroadening`).
 - `dye-laser-resonator`: k_ISC = (1 − Φ_f)/τ counts all non-radiative decay as ISC.
 - `mode-matching`: the η conjugate sign was fixed in Phase 0 (0.64 for a 2× waist mismatch). It still needs a module
-  and a golden test.
+  and a golden test. The single-lens search misses the exact solution: 1550 nm, w 50 → 200 µm over 1000 mm has
+  s ≈ 200.769 mm, f ≈ 160.872 mm, but the page reports 0.033 % and 0.053 % overlaps (Codex review, 2026-10-13). The
+  brute-force search also runs during render; solve it in closed form (Kogelnik & Li) in the module.
+- `abcd-matrix`: shared links drop the element list (it is in `useState`; only the input ray is in the URL), and the
+  per-element controls have no `<label>` or `aria-label` (Codex review, 2026-10-13).
 
 **Free-space comms**
 - `point-ahead`: θ = v/c, but the point-ahead angle is 2v⊥/c (a factor of 2).
@@ -109,6 +113,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `erf` had three implementations. `src/physics/math.ts` replaced five pages' copies; others may remain.
 - `useURLState` only rejects non-finite values, so a crafted `?na=0` reaches the physics unclamped. Clamp in the page,
   or give `useURLState` an optional range.
+- Search returns unrelated pages for nonsense queries; it needs a relevance floor (Codex review, 2026-10-13).
 - `ui-check` can't hydrate a page that has no `<input>` (`optical-glass-catalog`; `jones-calculus` until an element is
   added).
 
@@ -171,5 +176,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   - Fiber-optics part 3 (session 46, PR #49): `fiber-nonlinear.ts` (Smith ×K, linear linewidth, Inoue FWM); sbs/srs-threshold, nonlinear-effects tiered; 488 tests.
   - Fiber-optics part 4 (session 47, PR #51): `fiber-bragg-grating.ts` (Erdogan uniform, TMM apodized/chirped, strain/thermal) + `fiber-sensors.ts`; 3 FBG/sensor pages tiered; 499 tests.
   - Fiber-optics part 5 (session 48, PR #53): `sagnac.ts` (S 0.67608 s; ARW as Allan N 2.571e-5 °/√h, not 3.636e-5) + `fiber-bundle.ts`; gyroscope, loop mirror, bundle, pump combiner tiered; 507 tests.
+- Codex review fixes (session 48, PR #55): `eye-safety-fso` on the ICNIRP modules (MPE was ×1000; NOHD 11.125 m, 3R); SimpleChart category axes and grouped bars (Mueller, IR glass, crystals were blank); 512 tests.
 - Session 41: roadmap archived; `/ship` and `/handover` skills; `physics-reviewer` on Opus; `checker` agent on Haiku.
 - [ ] Optional (user): a Defender exclusion for `C:\dev`.

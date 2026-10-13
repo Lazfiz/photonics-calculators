@@ -114,7 +114,22 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "eye-safety-fso",
     title: "FSO Eye Safety",
-    description: "Simplified educational estimate of MPE, NOHD, laser class and safety factor for an FSO transmitter. Not for safety decisions; use IEC 60825-1.",
+    description: "NOHD, IEC 60825-1 laser class and exposure margin at a chosen distance for a free-space optical transmitter, on the ICNIRP 2013 eye limits with a diverging Gaussian beam.",
+    lede: "How far from a free-space optical transmitter the beam is within every eye exposure limit, its laser class, and the margin at a distance you choose.",
+    tier: "exact",
+    modelNote: "ICNIRP 2013 eye limits for one CW exposure up to t; Gaussian beam averaged over each limit's aperture, growing as a + rφ; IEC 60825-1 class. Not modelled: atmosphere, optical aids, scintillation, pulsed modulation.",
+    references: [
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105(3), 271–295. Tables 2, 5 and 8.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+      {
+        citation: "ANSI Z136.1-2014, American National Standard for Safe Use of Lasers. Appendix B: nominal hazard zone and NOHD.",
+      },
+      {
+        citation: "IEC 60825-1:2014, Safety of laser products – Part 1: Equipment classification and requirements. Accessible emission limits and measurement conditions 1 and 3.",
+      },
+    ],
   },
   {
     slug: "fade-probability",
