@@ -4,10 +4,28 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "attenuation",
     title: "Fiber Attenuation Calculator",
-    description: "Wavelength-dependent fiber attenuation: Rayleigh scattering, IR absorption, and OH peak.",
+    description: "Spectral attenuation of silica single-mode fiber: Rayleigh scattering, infrared and ultraviolet absorption tails and the 1383 nm water peak, with the minimum-loss wavelength and span loss.",
     heading: "Wavelength-Dependent Attenuation",
-    lede: "Fiber attenuation spectrum showing Rayleigh scattering, IR absorption, and OH peak for standard fiber types.",
-    knownIssue: "The infrared-absorption term is about 10× too small, so the loss minimum falls at 1654 nm instead of about 1550 nm, and the 1550 nm loss is below standard fibre's.",
+    lede: "Fiber loss versus wavelength from Rayleigh scattering, the infrared and ultraviolet absorption tails and the OH water peak, and the loss of a span at your wavelength.",
+    tier: "textbook",
+    modelNote: "Rayleigh A/λ⁴ plus Keiser's empirical IR and UV tails for GeO₂-doped silica; the 1383 nm OH band is an illustrative Gaussian of input height. Bends, splices and other impurities not included.",
+    references: [
+      {
+        citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed. Wiley. Fiber losses: Rayleigh scattering A/λ⁴ with A ≈ 0.7–0.9 dB·km⁻¹·µm⁴.",
+        url: "https://doi.org/10.1002/9780470918524",
+      },
+      {
+        citation: "Keiser G. (2010). Optical Fiber Communications, 4th ed. McGraw-Hill. Attenuation chapter: empirical infrared and ultraviolet absorption of GeO₂-doped silica.",
+      },
+      {
+        citation: "Osanai H., Shioda T., Moriyama T., Araki S., Horiguchi M., Izawa T., Takata H. (1976). Effect of dopants on transmission loss of low-OH-content optical fibres. Electron. Lett. 12, 549. Source of the absorption fits.",
+        url: "https://doi.org/10.1049/el:19760418",
+      },
+      {
+        citation: "Humbach O., Fabian H., Grzesik U., Haken U., Heitmann W. (1996). Analysis of OH absorption bands in synthetic silica. J. Non-Cryst. Solids 203, 19. OH band strength (≈ 63 dB/km per ppm at the 1383 nm peak).",
+        url: "https://doi.org/10.1016/0022-3093(96)00329-8",
+      },
+    ],
   },
   {
     slug: "bend-insensitive",
@@ -496,10 +514,26 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "fiber-taper",
     title: "Fiber Taper Calculator",
-    description: "Calculate fiber taper waist diameter, evanescent field penetration, and coupling parameters from pull length.",
+    description: "Heat-and-pull fiber taper: Birks–Li waist diameter and profile, core–cladding transition, waist mode and evanescent field, and Love's adiabaticity criterion.",
     heading: "Fiber Taper Calculation",
-    lede: "Calculate fiber taper waist diameter, evanescent field, and coupling parameters from pull length.",
-    knownIssue: "The waist uses a hot zone that grows with the pull instead of Birks–Li's constant hot zone: the defaults give 66.8 µm instead of 35.8 µm.",
+    lede: "Waist and profile of a heat-and-pull fiber taper from the hot-zone length and elongation, where the light leaves the core, and whether the taper is adiabatic.",
+    keywords: ["Tapered Fiber Design", "adiabatic taper", "delineation curve", "microfiber", "taper waist"],
+    tier: "textbook",
+    modelNote: "Birks–Li volume-conservation shape (exact for its hot-zone model); scalar three-layer LP0m modes along the taper; Love's length-scale adiabaticity criterion, approximate to a factor of order one.",
+    references: [
+      {
+        citation: "Birks T. A., Li Y. W. (1992). The shape of fiber tapers. J. Lightwave Technol. 10, 432. Waist radius, transition profile and lengths for a hot zone L₀ + αx.",
+        url: "https://doi.org/10.1109/50.134196",
+      },
+      {
+        citation: "Love J. D., Henry W. M., Stewart W. J., Black R. J., Lacroix S., Gonthier F. (1991). Tapered single-mode fibres and devices. Part 1: Adiabaticity criteria. IEE Proc. J 138, 343. Delineation curve Ω = ρ(β₁ − β₂)/2π.",
+        url: "https://doi.org/10.1049/ip-j.1991.0060",
+      },
+      {
+        citation: "Snyder A. W., Love J. D. (1983). Optical Waveguide Theory. Chapman & Hall (Springer reprint). Scalar modes of step profiles; TE01/TM01 cutoff at V = 2.405.",
+        url: "https://doi.org/10.1007/978-1-4613-2813-1",
+      },
+    ],
   },
   {
     slug: "link-budget",
@@ -511,7 +545,26 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "low-water-peak",
     title: "Low Water Peak Fiber",
-    description: "Analyze low water peak (LWP) fibers that reduce the OH⁻ absorption peak at 1383 nm, enabling E-band and full CWDM operation.",
+    description: "Compare low-water-peak (G.652.D) and older single-mode fiber: loss at the 1383 nm OH peak, E-band average and the span loss of each CWDM channel.",
+    tier: "illustrative",
+    modelNote: "Shared silica loss model (Rayleigh, Keiser IR/UV tails) plus a Gaussian OH band at 1383 nm with an assumed 30 nm FWHM; the OH peak heights are inputs, not data for a particular fibre.",
+    references: [
+      {
+        citation: "Humbach O., Fabian H., Grzesik U., Haken U., Heitmann W. (1996). Analysis of OH absorption bands in synthetic silica. J. Non-Cryst. Solids 203, 19. OH band strength (≈ 63 dB/km per ppm at the 1383 nm peak).",
+        url: "https://doi.org/10.1016/0022-3093(96)00329-8",
+      },
+      {
+        citation: "Keiser G. (2010). Optical Fiber Communications, 4th ed. McGraw-Hill. Attenuation chapter: empirical infrared and ultraviolet absorption of GeO₂-doped silica.",
+      },
+      {
+        citation: "ITU-T G.694.2 (2003). Spectral grids for WDM applications: CWDM wavelength grid, 1271–1611 nm in 20 nm steps.",
+        url: "https://www.itu.int/rec/T-REC-G.694.2",
+      },
+      {
+        citation: "ITU-T G.652 (2016). Characteristics of a single-mode optical fibre and cable. G.652.C/D: 1383 nm loss after hydrogen ageing at or below the 1310–1625 nm maximum (0.40 dB/km for cable).",
+        url: "https://www.itu.int/rec/T-REC-G.652",
+      },
+    ],
   },
   {
     slug: "macro-bending-loss",
@@ -854,12 +907,6 @@ export const fiberOptics: CalculatorEntry[] = [
         url: "https://doi.org/10.1063/1.1654637",
       },
     ],
-  },
-  {
-    slug: "tapered-fiber",
-    title: "Tapered Fiber Design",
-    description: "Design adiabatic fiber tapers for mode conversion, evanescent field enhancement, and coupler fabrication.",
-    knownIssue: "The Marcuse mode-size fit is used far outside its range (a 1.8 mm waist mode), and the waist is labelled single-mode although the cladding guide there is multimode.",
   },
   {
     slug: "v-number",

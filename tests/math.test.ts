@@ -2,7 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  BESSEL_Y_MAX_X,
   besselI0,
+  besselIScaled,
+  besselIScaled01,
+  besselKScaled01,
+  besselY,
   besselJ,
   besselK,
   erf,
@@ -110,6 +115,38 @@ test("Bessel edge cases", () => {
   assert.equal(besselK(0, 0), Infinity);
   assert.ok(Number.isNaN(besselK(0, -1)));
   assert.ok(Number.isNaN(besselJ(0.5, 1))); // integer orders only
+});
+
+test("Bessel Y_0, Y_1 and scaled I_n, K_0/K_1 match A&S Tables 9.1 and 9.8", () => {
+  // A&S Table 9.1: Y₀(1) = 0.0882569642, Y₁(1) = −0.7812128213, Y₀(10) = 0.0556711673, Y₁(10) = 0.2490154242,
+  // Y₀(0.1) = −1.5342386514, Y₁(0.1) = −6.4589510947; A&S Table 9.2 (x = 20): Y₀ = 0.0626405968, Y₁ = −0.1655116144.
+  const Y: [0 | 1, number, number, number][] = [
+    [0, 1, 0.0882569642, 1e-10], [1, 1, -0.7812128213, 1e-10], [0, 10, 0.0556711673, 1e-10], [1, 10, 0.2490154242, 1e-10],
+    [0, 0.1, -1.5342386514, 1e-10], [1, 0.1, -6.4589510947, 1e-10], [0, 20, 0.0626405968, 1e-8], [1, 20, -0.1655116144, 1e-8],
+  ];
+  for (const [n, x, v, tol] of Y) assert.ok(Math.abs(besselY(n, x) - v) < tol, `Y${n}(${x}) = ${besselY(n, x)}`);
+  // Wronskian J₁Y₀ − J₀Y₁ = 2/(πx) (DLMF 10.5.2), an independent check of both series.
+  for (const x of [0.01, 0.7, 3, 12]) {
+    const w = besselJ(1, x) * besselY(0, x) - besselJ(0, x) * besselY(1, x);
+    assertRel(w, 2 / (Math.PI * x), 1e-10, `Wronskian(${x})`);
+  }
+  // A&S Table 9.8: e^(−1) I₁(1) = 0.2079104154, e^(−8)·I₁(8) = 0.1343383 (I₁(8) = 399.8731).
+  assertRel(besselIScaled(1, 1), 0.2079104154, 1e-9, "e^-1 I1(1)");
+  assertRel(besselIScaled(1, 8) * Math.exp(8), 399.8731367825, 1e-9, "I1(8)");
+  assertRel(besselIScaled(0, 8) * Math.exp(8), besselI0(8), 1e-13, "I0 scaled");
+  const [i0, i1] = besselIScaled01(5);
+  assertRel(i0, besselIScaled(0, 5), 1e-14, "I pair 0");
+  assertRel(i1, besselIScaled(1, 5), 1e-14, "I pair 1");
+  for (const x of [1e-6, 0.1, 2, 300]) {
+    const [k0, k1] = besselKScaled01(x);
+    assertRel(k0, besselK(0, x) * Math.exp(x), 1e-12, `K pair 0 (${x})`);
+    assertRel(k1, besselK(1, x) * Math.exp(x), 1e-12, `K pair 1 (${x})`);
+  }
+  // Domain edges.
+  assert.ok(Number.isNaN(besselY(0, 0)));
+  assert.ok(Number.isNaN(besselY(1, BESSEL_Y_MAX_X + 1)));
+  assert.equal(besselIScaled(0, 0), 1);
+  assert.equal(besselIScaled(1, 0), 0);
 });
 
 // cos x crosses 0 at π/2 and 0.5 at π/3 (exact). Scanning from 3 down to 0 meets π/2 first for level 0.
