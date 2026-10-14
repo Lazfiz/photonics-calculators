@@ -14,7 +14,18 @@
  * 3.912/V. The aerosol part, β(550 nm) − β_R(550 nm), scales as (λ/550 nm)^(−q) with Kim's exponent
  * q = 1.6 (V > 50 km), 1.3 (6–50 km), 0.16V + 0.34 (1–6 km), V − 0.5 (0.5–1 km), 0 (V < 0.5 km, fog), V in km
  * (I. I. Kim, B. McArthur, E. Korevaar, Proc. SPIE 4214, 26 (2001)). The law was fitted in the visible and near IR
- * (to 1.55 µm); it is a rough guide beyond.
+ * (to 1.55 µm); it is a rough guide beyond. Kruse's older law keeps a wavelength dependence in fog:
+ * q = 1.6 (V > 50 km), 1.3 (6–50 km), 0.585 V^(1/3) (V < 6 km) (P. W. Kruse, L. D. McGlauchlin, R. B. McQuistan,
+ * Elements of Infrared Technology, Wiley 1962; as reproduced by Kim et al. and by Nadeem & Leitgeb, below). It jumps
+ * from 1.06 to 1.3 at 6 km.
+ *
+ * Fog (Al Naboulsi, Sizun, de Fornel, Opt. Eng. 43, 319 (2004), fitted to FASCOD for 690–1550 nm and V = 50–1000 m),
+ * λ in µm, V in km, extinction in km⁻¹:
+ *   advection fog  σ = (0.11478 λ + 3.8367)/V
+ *   radiation fog  σ = (0.18126 λ² + 0.13709 λ + 3.7502)/V
+ * Coefficients as reproduced by F. Nadeem, E. Leitgeb, Radioengineering 19, 223 (2010), eqs. (4)–(6). (Al Naboulsi's
+ * URSI GA 2005 paper prints 3.8367 in the radiation law too, a copy of the advection line.) Both give ≈ 3.9/V at
+ * 550 nm, the Koschmieder value, which fixes the units.
  *
  * Attenuation in dB is 10 log₁₀(e) ≈ 4.343 times the extinction in nepers.
  */
@@ -45,6 +56,13 @@ export function rayleighExtinction(lambda: number): number {
   return (24 * Math.PI ** 3 * ((n2 - 1) / (n2 + 2)) ** 2 * KING_FACTOR_AIR) / (lambda ** 4 * Ns);
 }
 
+export type AerosolLaw = "kim" | "kruse";
+export type FogType = "advection" | "radiation";
+
+/** Range Al Naboulsi's fog laws were fitted over: wavelengths and visibilities, m. */
+export const AL_NABOULSI_LAMBDA = [690e-9, 1550e-9] as const;
+export const AL_NABOULSI_VISIBILITY = [50, 1000] as const;
+
 /** Kim's size-distribution exponent q for a visibility V (m). */
 export function kimExponent(visibility: number): number {
   const V = visibility / 1000; // km
@@ -55,13 +73,38 @@ export function kimExponent(visibility: number): number {
   return 0;
 }
 
-/** Aerosol extinction (3.912/V − β_R(550 nm)) (λ/550 nm)^(−q), 1/m; zero above the Rayleigh visibility limit. */
-export function aerosolExtinction(lambda: number, visibility: number): number {
+/** Kruse's exponent q for a visibility V (m). */
+export function kruseExponent(visibility: number): number {
+  const V = visibility / 1000; // km
+  if (V > 50) return 1.6;
+  if (V > 6) return 1.3;
+  return 0.585 * Math.cbrt(V);
+}
+
+/** The exponent q of a visibility law. */
+export function aerosolExponent(visibility: number, law: AerosolLaw = "kim"): number {
+  return law === "kruse" ? kruseExponent(visibility) : kimExponent(visibility);
+}
+
+/**
+ * Aerosol extinction (3.912/V − β_R(550 nm)) (λ/550 nm)^(−q), 1/m; zero above the Rayleigh visibility limit, NaN for
+ * V ≤ 0.
+ */
+export function aerosolExtinction(lambda: number, visibility: number, law: AerosolLaw = "kim"): number {
+  if (!(visibility > 0)) return NaN;
   const at550 = Math.max(0, KOSCHMIEDER / visibility - rayleighExtinction(VISIBILITY_WAVELENGTH));
-  return at550 * (lambda / VISIBILITY_WAVELENGTH) ** -kimExponent(visibility);
+  return at550 * (lambda / VISIBILITY_WAVELENGTH) ** -aerosolExponent(visibility, law);
 }
 
 /** Total extinction (Rayleigh + aerosol), 1/m. */
-export function totalExtinction(lambda: number, visibility: number): number {
-  return rayleighExtinction(lambda) + aerosolExtinction(lambda, visibility);
+export function totalExtinction(lambda: number, visibility: number, law: AerosolLaw = "kim"): number {
+  return rayleighExtinction(lambda) + aerosolExtinction(lambda, visibility, law);
+}
+
+/** Al Naboulsi's fog extinction, 1/m (it includes the molecular part); NaN for V ≤ 0. */
+export function alNaboulsiFogExtinction(lambda: number, visibility: number, fog: FogType): number {
+  if (!(visibility > 0)) return NaN;
+  const um = lambda * 1e6;
+  const numerator = fog === "advection" ? 0.11478 * um + 3.8367 : 0.18126 * um * um + 0.13709 * um + 3.7502;
+  return numerator / visibility; // (km⁻¹·km) / m = 1/m
 }

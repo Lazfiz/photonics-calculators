@@ -13,6 +13,7 @@
   "/fiber-optics/rare-earth-fiber": "/fiber-optics/rare-earth-doped",
   "/fiber-optics/tapered-fiber": "/fiber-optics/fiber-taper",
   "/free-space-comms/adaptive-optics-gain": "/free-space-comms/adaptive-optics",
+  "/free-space-comms/atmosphere": "/free-space-comms/atmospheric-loss",
   "/free-space-comms/pointing-error": "/free-space-comms/pointing-loss",
   "/free-space-comms/scintillation-index": "/free-space-comms/scintillation",
   "/imaging/adaptive-optics-microscopy": "/imaging/adaptive-optics",
