@@ -1,39 +1,38 @@
-# Handover — 2026-10-14 (session 61 → session 62)
+# Handover — 2026-10-14 (session 62 → session 63)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 61 did FSO part 5, receiver: PR #83, merged as `773ee46d`; the production check passed. This handover is on
-`docs/fso-part5-handover`. Next: **FSO part 6, pointing and QKD** (4 pages + `qkd.ts`, see the ROADMAP box).
-`polarizer-types` stays blocked until the user is at the laptop with Chrome.
+Session 62 finished FSO part 6, pointing and QKD: PR #85, merged as `3abb995c`. Free-space comms is now 26/26 tiered, with
+0 `knownIssue`s site-wide. This handover is on `docs/fso-part6-handover`. Next: **ask the user which category to audit
+next** (ROADMAP box). `polarizer-types` stays blocked until the user is at the laptop with Chrome.
 
 ## State
-- 205 of 458 pages are tiered (free-space-comms 22/26), 4 `knownIssue`s (all FSO part 6), 645 tests pass.
-- New `background-radiance.ts`: Giggenbach 2022 Table 1 sky/cloud radiance (850–1550 nm, log-log), `solarDiscRadiance`
-  (5772 K, `SUN_SOLID_ANGLE` 6.794e-5 sr), `backgroundPower` (L·A·π sin²θ·Δλ·T·η), `responsivity`, `excessNoiseFactor`,
-  `receiverNoise` (PIN/APD SNR), `equalNoiseHalfAngle`, `BACKGROUND_SCENES` + `parseScene` for page selects.
-- New `channel-capacity.ts`: `shannonCapacity`, `phaseTail` (Craig), `mpskGrayBer`, `bitErrorRate` (OOK/BPSK/QPSK/8PSK/
-  16QAM), `requiredSnrDb`, `netRate`, `binaryEntropy`, `minimumHardDecisionOverhead`, `shannonEbN0`.
+- 209 of 458 pages are tiered (free-space-comms 26/26), 0 `knownIssue`s, 651 tests pass.
+- New FSO modules (session 62):
+  - `point-ahead.ts`: `pointAheadAngle` 2v⊥/c, `GEO_SUBSATELLITE_VPERP` ω_E(r_GEO − R_E), IERS GM/ω.
+  - `acquisition.ts`: `stareProbability`, `squareCoverage`, `rasterScan`, `quadCellNea`.
+  - `qkd.ts`: `decoyBb84` (Ma 2005 GLLP), `maxChannelLossDb`, `optimalMu`, `plobBound`.
+  - `physical-layer-security.ts`: `capturedPower`, `nepLimitedSnr`, `linkSecurity`; plus `secrecyCapacity` in `channel-capacity.ts`.
 - Other FSO modules: `atmospheric-attenuation`, `precipitation`, `wavelength-selection`, `link-budget`, `pointing-loss`,
-  `turbulence`, `ber`, `bpsk-qpsk`. Planned: `qkd.ts` (part 6).
+  `turbulence`, `ber`, `bpsk-qpsk`, `background-radiance`, `channel-capacity`.
 
 ## Next actions
 1. Ship this docs PR (`/ship`, merge on the user's yes).
-2. FSO part 6 (ROADMAP box). Verify each coefficient and DOI before code; one `physics-reviewer` pass before the PR.
-   Post-merge check: `free-space-comms/point-ahead="46.7"` (7 km/s → 46.70 µrad; confirm the page's default first) plus
-   the acquisition-tracking, quantum-key-distribution and security defaults you derive.
-3. For each fixed page: drop the `knownIssue`; add the tier, a `modelNote` (≤ 220 chars, `[...s].length`) and references
-   (`crossref.mjs`). That empties the FSO `knownIssue` list.
-4. Later: fiber and FSO open findings, G.657.A3, MCF R_eq, snow law, Kim & Korevaar text (need Chrome), thin-film findings.
+2. Ask the user which category to audit next: detectors 0/54, wave-optics 2/49, materials 3/45, spectroscopy 5/54 or
+   imaging 9/65. Part 0 follows FSO session 56: `physics-reviewer` batches → `knownIssue`s → fix parts of about 4 pages.
+3. Later: fiber and FSO open findings (ROADMAP), G.657.A3, MCF R_eq, snow law, Kim & Korevaar text and the Tyler & Fried full
+   text (these need Chrome), thin-film findings.
 
 ## Non-obvious facts
-- **Session 61 lessons:**
-  - mdpi.com returns 403 to curl and WebFetch. Europe PMC has the full text: search
-    `ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:<doi>&format=json` for the pmcid, then fetch
-    `/rest/<PMCID>/fullTextXML`; tables come out of `<table-wrap>` with sed.
-  - Recompute one example row of a published table from its own equation: Giggenbach's Table 2 uses Ω = 4π sin²ω (16×
-    too big). Sanity-check "typical" radiances with physics: his Moon row is ≈ 10× E_sun·albedo/π, so it was dropped.
-  - A general routine (Gray M-PSK by sectors) should reproduce the closed forms it generalises (BPSK, QPSK) in a test.
-  - Bisection on a fixed bracket must reject the lower edge too, or it silently returns the edge.
+- **Session 62 lessons:**
+  - arXiv PDFs download with `curl -A "Mozilla/5.0"` + `pdftotext -layout`; arXiv abs pages carry `citation_doi` meta tags.
+  - A "maximum distance" output needs a separate case for zero attenuation (it becomes a loss budget, not a distance).
+  - Format integer outputs as integers: `fmt()` gives "10.0 lines", which breaks a post-merge string match.
+  - JSX text cannot hold `{…}` (formulas with braces): wrap them in `{"…"}`.
+  - Point-ahead needs the inertial velocity: in the Earth-fixed frame GEO looks stationary (2v/c ≈ 0).
+- **Session 61:** mdpi.com gives 403 to curl/WebFetch; Europe PMC full text: `ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:<doi>&format=json`
+  → pmcid → `/rest/<PMCID>/fullTextXML`. Recompute one row of a published table from its own equation (Giggenbach Table 2
+  used Ω = 4π sin²ω). A general routine must reproduce the closed forms it generalises. Bisection must reject the lower edge.
 - **Session 60:** Andrews' aperture fits are interpolations (25–33 % high at d² = 1–10); the exact weak integral is cheap.
   `erfc` ≈ 0.5 µs: give per-chart-point solvers a call budget and time each chart (< 0.3 s). Fixed iteration caps fail
   at large parameters (P(1e6, 1e6)); test the extreme corner of every input range. Check approximations against an exact
