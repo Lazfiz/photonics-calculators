@@ -1,44 +1,45 @@
-# Handover — 2026-10-14 (session 57 → session 58)
+# Handover — 2026-10-14 (session 58 → session 59)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 57 did FSO part 1, the visibility laws (PR #75; handover PR #74 merged first). Both are in production; the
-post-merge check passed. Next: **FSO part 2, precipitation** (ROADMAP box). `polarizer-types` stays blocked until the
-user is at the laptop with Chrome.
+Session 58 did FSO part 2, precipitation (PR #77, CI green). **PR #77 may still await the user's merge**: check
+`gh pr view 77`; if open, ask, merge, then run the post-merge check below. This handover PR is branched from it.
+Next: **FSO part 3, link budget** (ROADMAP box). `polarizer-types` stays blocked until the user is at the laptop with Chrome.
 
 ## State
-- 192 of 458 pages are tiered (free-space-comms 9/26), 17 `knownIssue`s (all FSO), 604 tests pass.
-- `atmospheric-attenuation.ts` now has `kruseExponent`, `aerosolExponent(V, law)`, a `law` parameter ("kim" | "kruse")
-  on `aerosolExtinction`/`totalExtinction`, `alNaboulsiFogExtinction(λ, V, "advection" | "radiation")` with
-  `AL_NABOULSI_LAMBDA`/`_VISIBILITY` ranges, and NaN for V ≤ 0.
-- New `wavelength-selection.ts`: `scoreWavelengths(range, V, weights)`, an eye score from `cwClassLimit("1", λ, 0)`.
-- `/free-space-comms/atmosphere` → `atmospheric-loss` (308, live).
-- Other FSO modules: `turbulence.ts`, `pointing-loss.ts`, `ber.ts`, `bpsk-qpsk.ts`. Planned: `precipitation.ts` (part 2),
-  `link-budget.ts` (3), `background-radiance.ts` (5), `qkd.ts` (6).
+- 194 of 458 pages are tiered (free-space-comms 11/26), 15 `knownIssue`s (all FSO), 613 tests pass.
+- New `precipitation.ts`: `rainPowerLaw(µ)`, `rainSpecificAttenuation(R, µ)` (dB/m, R in m/s), `rainPathReduction`,
+  `rainMultipleScatteringGain`, `rainPathAttenuation(R, L, µ)` → {specific, reduction, reduced, gainFit, gain,
+  attenuation}; `snowPowerLaw(λ, type)`, `snowSpecificAttenuation(S, λ, type)`; `MM_PER_HOUR`, `RAIN_PATH_MAX` 5 km.
+- Other FSO modules: `atmospheric-attenuation.ts` (Kim/Kruse, Al Naboulsi), `wavelength-selection.ts`, `turbulence.ts`,
+  `pointing-loss.ts`, `ber.ts`, `bpsk-qpsk.ts`. Planned: `link-budget.ts` (3), `background-radiance.ts` (5), `qkd.ts` (6).
 
 ## Next actions
-1. FSO part 2: `rain-attenuation`, `snow-attenuation` on a new `precipitation.ts` (ROADMAP box has the candidate
-   coefficients; verify each against two reproductions first: is the snow rate water-equivalent?).
-2. Each fixed page: drop the `knownIssue`, set the tier, a `modelNote` (≤ 220 characters, `[...s].length`) and
-   references (`scripts/crossref.mjs`); one `physics-reviewer` pass before the PR.
-3. `/ship`: `post-merge-check <sha> free-space-comms/rain-attenuation=<default dB/km as rendered>
-   free-space-comms/snow-attenuation=<…>`.
-4. Later: the fiber open findings (SMF D(1550) unification, 1.4682 used as a phase index on ≈ 20 pages), G.657.A3 and
-   the MCF R_eq (need Chrome); the small thin-film findings (sputtering gas scattering, plasma high-pressure h).
+1. If PR #77 is unmerged: merge on the user's yes, then `node scripts/post-merge-check.mjs <sha>
+   free-space-comms/rain-attenuation="10.1 dB" free-space-comms/snow-attenuation="5.58 dB/km"`. Then ship this docs PR.
+2. FSO part 3: link budget (ROADMAP box). Verify each coefficient and DOI before code; one `physics-reviewer` pass
+   before the PR. Rain/snow dB can feed the budget from `precipitation.ts`.
+3. Each fixed page: drop the `knownIssue`; tier, `modelNote` (≤ 220 chars, `[...s].length`), references (`crossref.mjs`).
+4. Later: the fiber open findings (SMF D(1550) unification, 1.4682 as a phase index on ≈ 20 pages), G.657.A3, MCF R_eq,
+   the snow-law origin (need Chrome); the small thin-film findings.
 
 ## Non-obvious facts
-- **Session 57 lessons:**
-  - FSO coefficient sources that download with `curl -A "Mozilla/5.0"` + `pdftotext`: radioeng.cz full texts (Nadeem,
-    Leitgeb et al. reproduce the Kruse, Kim, Al Naboulsi and snow laws) and URSI GA proceedings. Two reproductions can
-    disagree (URSI radiation fog 3.8367 vs 3.7502); settle it with a physical check (both laws must give ≈ 3.912/V at
-    550 nm) rather than a vote.
-  - A merge is: add the redirect, then `npx tsx scripts/codemods/2026-10-08-merge-duplicates.ts` (dry run, then
-    `--write`); it removes the entry and the page dir and adds the old title as a keyword. Then `rm -rf .next/types
-    .next/dev/types` (stale types break `tsc`; a stale `.next/dev` makes every route 404).
-  - A category part 0 runs as 5 parallel `physics-reviewer` batches of 4 pages grouped by shared module; write
-    `knownIssue`s with a scratchpad `.cjs` dry run (40–240 characters, ends with ".", refuses tiered entries).
-  - When the previous handover PR is still open, branch from it; merge it first.
-  - A `post-merge-check` value can be any phrase in the prerendered HTML (a `knownIssue` text, "0.499 W").
+- **Session 58 lessons:**
+  - **Check for a newer ITU revision first.** The ROADMAP's P.1814 rain law (1.076·R^0.67) was superseded in 09/2025 by
+    P.1814-1 (µ table, path reduction, multiple-scattering gain). `itu.int/rec/R-REC-<rec>/en` lists versions.
+  - ITU PDFs: `https://www.itu.int/dms_pubrec/itu-r/rec/p/R-REC-P.1814-1-202509-I!!PDF-E.pdf` downloads with curl; the
+    old -0 version 404s. Equations come out garbled in pdftotext; fetch `…!!MSW-E.docx`, unzip, and read the OMML
+    in `word/document.xml` (watch `<m:d>` delimiters: default parentheses have no characters in the XML).
+  - Theses on `theses.eurasip.org` download as full PDFs (Awan 2010 reproduces the Graz FSO fog/snow laws).
+  - Empirical fits with ln R terms can misbehave below their data (P.1814-1 G_ms < 0 or rising as R → 0): scan the
+    whole input range of every fitted term, not just the main law.
+  - The `auto mode` classifier refuses `gh pr merge` on a bare "Continue": ask for an explicit merge yes.
+- **Earlier lessons (57):**
+  - radioeng.cz and URSI GA full texts download with `curl -A "Mozilla/5.0"` + `pdftotext`. When reproductions
+    disagree, settle it with a physical check (e.g. ≈ 3.912/V at 550 nm), not a vote.
+  - A page merge: add the redirect, run `scripts/codemods/2026-10-08-merge-duplicates.ts` (dry run, `--write`), then
+    `rm -rf .next/types .next/dev/types`.
+  - A `post-merge-check` value can be any phrase in the prerendered HTML.
 - **Sources:**
   - Optics Express full text and PDFs don't download (JS shell). arXiv papers that reproduce a table work. Cross-check
     a coefficient table against a second independent reproduction (e.g. Au(s) A = 9.152, not 9.52).
