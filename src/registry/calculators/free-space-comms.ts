@@ -229,8 +229,15 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "rain-attenuation",
     title: "Rain Attenuation",
-    description: "Specific and total attenuation of a free-space optical link in rain from the rain rate with the power law α = k·Rᵃ, for a given range.",
-    knownIssue: "The coefficient 0.032 has no source and is about 34× below the ITU-R P.1814 optical law (0.28 instead of 9.3 dB/km at 25 mm/h), and the λ^(−0.2) dependence is unphysical for raindrops.",
+    description: "Specific and path attenuation of a free-space optical link in rain with the ITU-R P.1814-1 model: γ = k·R^α for a gamma drop-size distribution, path reduction factor and multiple-scattering gain.",
+    tier: "textbook",
+    modelNote: "ITU-R P.1814-1: γ = k·R^α (Mie, gamma DSD, µ = −2…2), path reduction and multiple-scattering gain for L ≤ 5 km; flat over 780–850 and 1520–1600 nm. Gain fit tapered below 1 mm/h. No rain-rate statistics.",
+    references: [
+      {
+        citation: "Recommendation ITU-R P.1814-1 (09/2025), Prediction methods required for the design of terrestrial free-space optical links. §4.1.2.2, Table 4 (k, α); §4.2.3, eqs. (14)–(19), Table 5.",
+        url: "https://www.itu.int/rec/R-REC-P.1814-1-202509-I/en",
+      },
+    ],
   },
   {
     slug: "receiver-fov",
@@ -260,8 +267,19 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "snow-attenuation",
     title: "Snow Attenuation",
-    description: "Specific and total attenuation of a free-space optical link in dry or wet snow from the snowfall rate (water equivalent), with equivalent visibility.",
-    knownIssue: "The snow coefficients have no source and are 100–460× below the published FSO snow laws, and the page ranks wet snow above dry snow, the reverse of those laws.",
+    description: "Specific and total attenuation of a free-space optical link in dry or wet snow from the water-equivalent snowfall rate and wavelength, with the Koschmieder-equivalent visibility.",
+    tier: "textbook",
+    modelNote: "Empirical γ = a·S^b (dry/wet snow) from TU Graz FSO work; S read as liquid-water-equivalent rate (the source is not explicit). Flake type and density scatter real attenuation by a factor of several.",
+    references: [
+      {
+        citation: "Awan M. S., Leitgeb E., Nebuloni R., Nadeem F., Khan M. S. (2009). Optical wireless ground-link attenuation statistics of fog and snow conditions. Proc. IFIP WOCN 2009, 1–5.",
+        url: "https://doi.org/10.1109/WOCN.2009.5010571",
+      },
+      {
+        citation: "Awan M. S. (2010). Statistical-dynamical channel modeling of outdoor optical wireless links. PhD thesis, Graz University of Technology, eq. (3.29): a and b with λ in nm.",
+        url: "https://theses.eurasip.org/theses/496/statistical-dynamical-channel-modeling-of-outdoor/",
+      },
+    ],
   },
   {
     slug: "wavelength-selection",
