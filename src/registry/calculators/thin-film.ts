@@ -25,6 +25,24 @@ const astmG173: Reference = {
   url: "https://doi.org/10.1520/G0173-03R20",
 };
 
+// Thermal evaporation and IAD (DOIs matched on Crossref).
+const ohring = (chapter: string, doi: string): Reference => ({
+  citation: `Ohring M. (2002). Materials Science of Thin Films, 2nd ed., ${chapter}. Academic Press.`,
+  url: `https://doi.org/${doi}`,
+});
+const alcock: Reference = {
+  citation: "Alcock C. B., Itkin V. P., Horrigan M. K. (1984). Vapour pressure equations for the metallic elements: 298–2500 K. Can. Metall. Q. 23, 309.",
+  url: "https://doi.org/10.1179/cmq.1984.23.3.309",
+};
+const thornton: Reference = {
+  citation: "Thornton J. A. (1977). High rate thick film growth (Movchan–Demchishin zones). Annu. Rev. Mater. Sci. 7, 239.",
+  url: "https://doi.org/10.1146/annurev.ms.07.080177.001323",
+};
+const martinIad: Reference = {
+  citation: "Martin P. J., Macleod H. A., Netterfield R. P., Pacey C. G., Sainty W. G. (1983). Ion-beam-assisted deposition of thin films. Appl. Opt. 22, 178.",
+  url: "https://doi.org/10.1364/AO.22.000178",
+};
+
 const rakic: Reference = {
   citation: "Rakić A. D., Djurišić A. B., Elazar J. M., Majewski M. L. (1998). Optical properties of metallic films for vertical-cavity optoelectronic devices. Appl. Opt. 37, 5271–5283.",
   url: "https://doi.org/10.1364/AO.37.005271",
@@ -84,6 +102,9 @@ export const thinFilm: CalculatorEntry[] = [
     slug: "angle-shift",
     title: "Angle-Dependent Blue Shift",
     description: "How the effective design wavelength shifts with angle of incidence (blue shift).",
+    tier: "textbook",
+    modelNote: "Quarter-wave point of one lossless, non-dispersive film lit from air: λ₀ cos θ_film, the same for s and p. For a multilayer, an effective index (slightly different for s and p) gives a first-order estimate.",
+    references: [macleod("ch. 2 (phase thickness 2πNd cos θ/λ) and ch. 9 (tilted coatings)")],
   },
   {
     slug: "angle-tuning",
@@ -309,7 +330,10 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "ion-assisted-deposition",
     title: "Ion-Assisted Deposition (IAD)",
-    description: "Design ion beam parameters for improved packing density and stress control. Models ion-to-atom ratio, packing density, and compressive stress.",
+    description: "Ion-assisted deposition: ion and molecule arrival rates, ions per deposited molecule, and ion energy and momentum per molecule from the ion current density, ion energy and deposition rate.",
+    tier: "exact",
+    modelNote: "Arrival-rate bookkeeping: singly charged ions, current density measured at the substrate, sticking 1, mass rate = rate × monitor density. Packing density, index and stress depend on the process and are not predicted.",
+    references: [martinIad, ohring("ch. 5 (ion-beam-assisted deposition)", "10.1016/b978-012524975-1/50008-2")],
   },
   {
     slug: "ir-blocking",
@@ -447,7 +471,15 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "thermal-evaporation",
     title: "Thermal Evaporation",
-    description: "Model thermal evaporation: vapor pressure, deposition rate, mean free path, and film uniformity using Hertz-Knudsen and Clausius-Clapeyron equations.",
+    description: "Thermal evaporation of metals: vapour pressure from the Alcock et al. fits, Hertz–Knudsen flux, growth rate and thickness profile from a small cosine source, mean free path and structure zone.",
+    tier: "textbook",
+    modelNote: "Alcock fits (±5 %). Free-evaporation flux (α ≤ 1) from a small cosine source onto a flat, parallel substrate; sticking 1, bulk density. No vapour cloud, gas scattering or source depletion. Metal zones.",
+    references: [
+      alcock,
+      ohring("ch. 3 (Hertz–Knudsen flux, surface-source distribution, thickness uniformity)", "10.1016/b978-012524975-1/50006-9"),
+      ohring("ch. 2 (mean free path of air)", "10.1016/b978-012524975-1/50005-7"),
+      thornton,
+    ],
   },
   {
     slug: "uv-blocking",

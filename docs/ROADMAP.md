@@ -30,7 +30,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
   extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
   curl. Also clear the eslint warning there (unused `wavelength` state).
-- [ ] Thin-film leftovers (6 untiered, see open findings).
+- [ ] Thin-film leftovers a: `thermal-evaporation`, `ion-assisted-deposition`, `angle-shift`.
+- [ ] Thin-film leftovers b: `sputtering-deposition`, `plasma-deposition`, `adhesion-testing`.
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
 - [ ] Rewrite each heuristic model, or label it illustrative, during its category's audit. Macro-bend and
   second-harmonic are done.
@@ -43,21 +44,13 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `bend-insensitive` (`g657.ts`): the physics review recalls a G.657.A3 category (2016) that shares the B3 limits. Unverified
   because the ITU PDF is blocked to scripts; check the ITU text in Chrome, then add A3 or drop the note.
 **Thin film**
-- `thermal-evaporation`:
-  - The deposition rate is mass flux × r²/d² × 1e9 with no ÷ρ, so it is ×2,200 (SiO₂) to ×19,300 (Au) too high.
-  - The log₁₀P = A − B/T coefficients are ≈ 10⁴ low: Al at 1,080 °C gives 3e-8 Torr where ≈ 1e-4 is expected.
-  - The two errors partly cancel, so fix them together with tabulated data (Honig; Alcock et al. 1984). The oxide
-    coefficients look invented.
-  - The mean free path is 0.005/P_Pa m, against the air rule of 6.6e-3/P_Pa m. Packing and uniformity are heuristics.
-- `ion-assisted-deposition`:
-  - The atom flux r·ρ·N_A/(ρ·A·M_ion·m_p) is dimensionally wrong (Jr ≈ 1e-30).
-  - The correct r·ρ·N_A/M gives Jr ≈ 28, because 10 cm² is 5 mA/cm²; typical IAD is 0.05–0.1 mA/cm².
-  - The packing and stress coefficients are uncalibrated (4.9 GPa). It needs a real model with references.
 - `sputtering-deposition`, `plasma-deposition`, `adhesion-testing`: not audited. The constants codemod changed their
   amu from m_p to m_u.
-- `angle-shift`: matched the module in session 12 (λ₀ cos θ_film to 4e-6 nm) but was never tiered. Audit and label it.
 - `ellipsometry-measurement` (optional): a film thickness needs a film model, e.g. a known film index and Azzam &
   Bashara's transparent-film inversion.
+- `thermal-evaporation` (low): T_m for Ni, Ti and Pd is 1726, 1930 and 1825 K against CRC's 1728, 1941 and 1828 K
+  (unchecked against Alcock's table). `ATM`/`TORR` live in the module; 101325 is also inline in
+  `atmospheric-attenuation.ts`, so move both to `constants.ts`.
 
 **Wave optics**
 - `filamentation`: Marburger's z_sf gives a finite collapse distance for P < P_cr.

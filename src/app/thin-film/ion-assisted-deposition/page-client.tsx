@@ -1,140 +1,120 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { q, N_A, m_u } from "../../../physics/constants";
+import { IAD_MATERIALS, iadParameters, type IadMaterialId } from "../../../physics/thin-film/ion-assisted-deposition";
+
+const IDS = Object.keys(IAD_MATERIALS) as IadMaterialId[];
+const isId = (s: string): s is IadMaterialId => Object.hasOwn(IAD_MATERIALS, s);
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
+const fmtExp = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toExponential(digits)}${unit}` : "—");
+
 export default function IonAssistedDepositionPage() {
-  const [ionEnergy, setIonEnergy] = useURLState("ionEnergy", 300);
-  const [ionCurrent, setIonCurrent] = useURLState("ionCurrent", 50);
-  const [depositionRate, setDepositionRate] = useURLState("depositionRate", 0.5);
-  const [ionMass, setIonMass] = useURLState("ionMass", 40);
-  const [filmMaterial, setFilmMaterial] = useState("SiO2");
-  const [chamberPressure, setChamberPressure] = useURLState("chamberPressure", 2e-4);
+  const [materialParam, setMaterial] = useURLState("material", "SiO2");
+  const [ionEnergy, setIonEnergy] = useURLState("ionEnergy", 300); // eV
+  const [currentDensity, setCurrentDensity] = useURLState("ionCurrentDensity", 50); // µA/cm²
+  const [depositionRate, setDepositionRate] = useURLState("depositionRate", 0.5); // nm/s
+  const [ionMass, setIonMass] = useURLState("ionMass", 40); // u
+  const [densityParam, setDensity] = useURLState("density", 0); // g/cm³, 0 = bulk value of the material
 
-  // density in g/cm³, molarMass in g/mol (per formula unit)
-  const materials: Record<string, { density: number; molarMass: number; packingDensity: number; n: number; name: string }> = {
-    SiO2: { density: 2.2, molarMass: 60.08, packingDensity: 0.95, n: 1.46, name: "Silicon Dioxide" },
-    TiO2: { density: 4.23, molarMass: 79.87, packingDensity: 0.92, n: 2.35, name: "Titanium Dioxide" },
-    Ta2O5: { density: 8.2, molarMass: 441.89, packingDensity: 0.94, n: 2.1, name: "Tantalum Pentoxide" },
-    MgF2: { density: 3.15, molarMass: 62.30, packingDensity: 0.90, n: 1.38, name: "Magnesium Fluoride" },
-    ZrO2: { density: 5.68, molarMass: 123.22, packingDensity: 0.93, n: 2.1, name: "Zirconium Dioxide" },
-    Al2O3: { density: 3.95, molarMass: 101.96, packingDensity: 0.96, n: 1.63, name: "Aluminum Oxide" },
-    HfO2: { density: 9.68, molarMass: 210.49, packingDensity: 0.93, n: 2.05, name: "Hafnium Dioxide" },
-  };
+  const id: IadMaterialId = isId(materialParam) ? materialParam : "SiO2";
+  const bulk = IAD_MATERIALS[id];
+  // A quartz-crystal monitor reports r = mass rate / ρ_set, so ρ_set fixes the molecule arrival rate.
+  const useBulk = densityParam === 0;
+  const mat = useMemo(() => ({ ...bulk, rho: useBulk ? bulk.rho : densityParam * 1e3 }), [bulk, useBulk, densityParam]);
+  const errors = [
+    !(ionEnergy >= 0) && "the ion energy can't be negative",
+    !(currentDensity >= 0) && "the ion current density can't be negative",
+    !(depositionRate > 0) && "the deposition rate must be positive",
+    !(ionMass > 0) && "the ion mass must be positive",
+    !(densityParam >= 0) && "the density can't be negative",
+  ].filter((e): e is string => typeof e === "string");
+  const valid = errors.length === 0;
 
-  const mat = materials[filmMaterial];
-
-  const results = useMemo(() => {
-    const E = ionEnergy;
-    const J = ionCurrent * 1e-3; // mA to A
-    const r = depositionRate; // nm/s
-    const M = ionMass;
-    const P = chamberPressure;
-
-    // Ion-to-atom arrival ratio (flux ratio)
-    // J/A = ion current density (A/m²), assume 10 cm² beam area
-    const beamArea = 1e-3; // m² (10 cm²)
-    const ionFlux = J / beamArea; // A/m²
-    const ionArrivalRate = ionFlux / q; // ions/m²/s
-
-    // Atom arrival rate from deposition rate
-    const atomArrivalRate = (r * 1e-9 * mat.density * 1e3 * N_A) / (mat.density * 1e-3 * beamArea * M * m_u);
-    const J_ratio = ionArrivalRate / Math.max(atomArrivalRate, 1);
-
-    // Estimated packing density improvement (empirical model)
-    const basePacking = mat.packingDensity - 0.15;
-    const packingImprovement = 0.15 * (1 - Math.exp(-0.005 * E * J_ratio / Math.max(r, 0.01)));
-    const packingDensity = Math.min(1.0, basePacking + packingImprovement);
-
-    // Stress model (MPa) - compressive stress from ion bombardment
-    // σ ≈ k * E * (J/ion flux) / deposition rate
-    const stress = 50 * Math.sqrt(E) * (J_ratio / 10) * (1 / Math.max(r, 0.01));
-
-    // Refractive index shift with packing density (Lorentz-Lorenz)
-    const nBase = mat.n - 0.05;
-    const nEff = nBase * (1 + 0.3 * (packingDensity - basePacking));
-
-    // Energy per deposited atom
-    const energyPerAtom = (E * J_ratio);
-
-    // Sputter yield estimation
-    const sputterYield = 0.042 * E * Math.sqrt(M) / (1000);
-
-    // Mean free path of ions
-    const mfp = 0.005 / P; // rough estimate in m
-
-    return { J_ratio, packingDensity, stress, nEff, energyPerAtom, sputterYield, mfp, ionArrivalRate };
-  }, [ionEnergy, ionCurrent, depositionRate, ionMass, chamberPressure, filmMaterial]);
+  // µA/cm² → A/m²: × 1e-6 × 1e4 = × 1e-2; nm/s → m/s: × 1e-9.
+  const r = useMemo(
+    () => (valid ? iadParameters(ionEnergy, ionMass, currentDensity * 1e-2, depositionRate * 1e-9, mat) : null),
+    [valid, ionEnergy, ionMass, currentDensity, depositionRate, mat],
+  );
 
   const sweepData = useMemo(() => {
-    const energies = Array.from({ length: 100 }, (_, i) => 50 + i * 950 / 100);
-    const densities = energies.map(E => {
-      const J = ionCurrent * 1e-3;
-      const beamArea = 1e-3;
-      const ionFlux = J / beamArea;
-      const ionArrivalRate = ionFlux / q;
-      const atomArrivalRate = (depositionRate * 1e-9 * mat.density * 1e3 * N_A) / (mat.molarMass * 1e-3 * beamArea * ionMass * m_u);
-      const Jr = ionArrivalRate / Math.max(atomArrivalRate, 1);
-      const basePacking = mat.packingDensity - 0.15;
-      return Math.min(1.0, basePacking + 0.15 * (1 - Math.exp(-0.005 * E * Jr / Math.max(depositionRate, 0.01))));
-    });
-    const stresses = energies.map(E => {
-      const J = ionCurrent * 1e-3;
-      const beamArea = 1e-3;
-      const ionFlux = J / beamArea;
-      const ionArrivalRate = ionFlux / q;
-      const atomArrivalRate = (depositionRate * 1e-9 * mat.density * 1e3 * N_A) / (mat.molarMass * 1e-3 * beamArea * ionMass * m_u);
-      const Jr = ionArrivalRate / Math.max(atomArrivalRate, 1);
-      return 50 * Math.sqrt(E) * (Jr / 10) * (1 / Math.max(depositionRate, 0.01));
-    });
+    // Log axes: nothing to draw when the ion flux or energy is zero.
+    if (!valid || currentDensity * ionEnergy === 0) return [];
+    const hi = Math.max(2, 2 * depositionRate);
+    const rates: number[] = [];
+    const energies: number[] = [];
+    for (let i = 0; i <= 120; i++) {
+      const rate = 0.025 * hi + (0.975 * hi * i) / 120; // nm/s
+      const p = iadParameters(ionEnergy, ionMass, currentDensity * 1e-2, rate * 1e-9, mat);
+      rates.push(rate);
+      energies.push(p.energyPerMolecule);
+    }
     return [
-      { x: energies, y: densities, type: "scatter" as const, mode: "lines" as const, name: "Packing Density", line: { color: "#60a5fa" }, yaxis: "y" },
-      { x: energies, y: stresses, type: "scatter" as const, mode: "lines" as const, name: "Stress (MPa)", line: { color: "#f87171" }, yaxis: "y2" },
+      // Ions per molecule is this curve divided by E, so it isn't drawn too.
+      { x: rates, y: energies, type: "scatter" as const, mode: "lines" as const, name: "Energy per molecule", line: { color: "#60a5fa" } },
     ];
-  }, [ionEnergy, ionCurrent, depositionRate, ionMass, filmMaterial]);
+  }, [valid, ionEnergy, ionMass, currentDensity, depositionRate, mat]);
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Film Material</span>
-          <select value={filmMaterial} onChange={e => setFilmMaterial(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            {Object.entries(materials).map(([k, v]) => <option key={k} value={k}>{v.name} ({k})</option>)}
-          </select></label>
-        <ValidatedNumberInput label="Ion Energy (eV)" value={ionEnergy} onChange={setIonEnergy} min={0} step="10" />
-        <ValidatedNumberInput label="Ion Current (mA)" value={ionCurrent} onChange={setIonCurrent} step="1" />
-        <ValidatedNumberInput label="Deposition Rate (nm/s)" value={depositionRate} onChange={setDepositionRate} min={0.01} step="0.1" />
-        <ValidatedNumberInput label="Ion Mass (amu)" value={ionMass} onChange={setIonMass} step="1" />
-        <ValidatedNumberInput label="Chamber Pressure (Torr)" value={chamberPressure} onChange={setChamberPressure} step="1e-5" />
+      <div className="grid gap-4 sm:grid-cols-2 mb-6">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Film material</span>
+          <select value={id} onChange={(e) => setMaterial(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            {IDS.map((k) => <option key={k} value={k}>{IAD_MATERIALS[k].name}</option>)}
+          </select>
+        </label>
+        <ValidatedNumberInput label="Mean ion energy (eV; not the anode voltage)" value={ionEnergy} onChange={setIonEnergy} min={0} step="10" />
+        <ValidatedNumberInput label="Ion current density at the substrate (µA/cm²)" value={currentDensity} onChange={setCurrentDensity} min={0} step="5" />
+        <ValidatedNumberInput label="Deposition rate (nm/s)" value={depositionRate} onChange={setDepositionRate} min={0.001} step="0.1" />
+        <ValidatedNumberInput label="Ion mass (u; Ar⁺ 40, O₂⁺ 32)" value={ionMass} onChange={setIonMass} min={1} step="1" />
+        <ValidatedNumberInput label="Density set in the rate monitor (g/cm³; 0 = bulk)" value={densityParam} onChange={setDensity} min={0} step="0.1" />
       </div>
 
-      <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
-        <p className="text-gray-300">Ion-to-Atom Ratio (J): <span className="text-blue-400 font-mono">{results.J_ratio.toFixed(2)}</span></p>
-        <p className="text-gray-300">Packing Density: <span className="text-blue-400 font-mono">{results.packingDensity.toFixed(4)}</span></p>
-        <p className="text-gray-300">Compressive Stress: <span className="text-blue-400 font-mono">{results.stress.toFixed(1)} MPa</span></p>
-        <p className="text-gray-300">Effective n: <span className="text-blue-400 font-mono">{results.nEff.toFixed(4)}</span></p>
-        <p className="text-gray-300">Energy/Atom: <span className="text-blue-400 font-mono">{results.energyPerAtom.toFixed(1)} eV</span></p>
-        <p className="text-gray-300">Sputter Yield (est.): <span className="text-blue-400 font-mono">{results.sputterYield.toFixed(3)} atoms/ion</span></p>
-        <p className="text-gray-300">Ion Mean Free Path: <span className="text-blue-400 font-mono">{(results.mfp * 100).toFixed(1)} cm</span></p>
-      </div>
+      <p className="text-gray-500 mb-6 text-xs">
+        {bulk.name}: M = {fmt(bulk.M * 1e3, 2)} g/mol, bulk ρ = {fmt(bulk.rho / 1e3, 2)} g/cm³ (crystalline for TiO₂, Al₂O₃), {bulk.atoms} atoms
+        per formula unit. Singly charged ions; the current density is the one measured at the substrate (Faraday cup), not the
+        source current. A Faraday cup misses the fast neutrals made by charge exchange, and a doubly charged ion counts twice.
+      </p>
+
+      {errors.length > 0 && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">No result: {errors.join("; ")}.</p>
+      )}
+
+      {r && (
+        <div className="grid gap-4 sm:grid-cols-3 mb-6">
+          <ResultCard label="Ions per arriving molecule" value={fmt(r.ratio, 3)} tone="yellow" subtext="ion-to-molecule arrival ratio" />
+          <ResultCard label="Ion energy per molecule" value={fmt(r.energyPerMolecule, 1, " eV")} tone="green" subtext={`${fmt(r.energyPerAtom, 1, " eV")} per atom`} />
+          <ResultCard label="Ion momentum per molecule" value={fmt(r.momentumPerMolecule, 1, " √(u·eV)")} tone="cyan" subtext="ratio × √(2 m_i E)" />
+          <ResultCard label="Ion flux" value={fmtExp(r.ionFlux, 2, " m⁻² s⁻¹")} subtext="J / e" />
+          <ResultCard label="Molecule arrival rate" value={fmtExp(r.moleculeFlux, 2, " m⁻² s⁻¹")} subtext={`r ρ N_A / M, ρ = ${fmt(mat.rho / 1e3, 2)} g/cm³${useBulk ? " (bulk)" : ""}`} />
+        </div>
+      )}
 
       <div className="bg-gray-900 rounded p-4 mb-6 text-sm text-gray-400">
-        <p className="font-semibold text-gray-200 mb-2">Key Formulas</p>
-        <p>J<sub>ratio</sub> = Φ<sub>ion</sub> / Φ<sub>atom</sub> (ion-to-atom arrival rate ratio)</p>
-        <p>ρ<sub>eff</sub> = ρ<sub>base</sub> + Δρ·(1 − e<sup>−k·E·J<sub>ratio</sub>/r</sup>)</p>
-        <p>σ ≈ k·√E·(J<sub>ratio</sub>/10) / r (compressive stress model)</p>
-        <p>λ<sub>mfp</sub> ≈ k<sub>t</sub> / P (ion mean free path)</p>
+        <p className="font-semibold text-gray-200 mb-2">Model</p>
+        <p>Φ<sub>i</sub> = J/e; Φ<sub>m</sub> = r ρ N<sub>A</sub>/M; ratio = Φ<sub>i</sub>/Φ<sub>m</sub></p>
+        <p>E per molecule = ratio × E<sub>ion</sub>; momentum per molecule = ratio × √(2 m<sub>i</sub> E<sub>ion</sub>)</p>
+        <p className="mt-2">
+          IAD results (packing density, index, stress) are reported against these numbers, but how a film responds depends on the
+          material, the ion species and the chamber, so the page doesn&apos;t predict them. Φ<sub>m</sub> needs the mass rate: with a
+          quartz-crystal monitor that is the displayed rate times the density set in it, whatever the film&apos;s porosity. For a
+          rate from measured thickness and time, enter the film&apos;s own density, which is below bulk for a porous film.
+        </p>
       </div>
+
+      {valid && currentDensity * ionEnergy === 0 && (
+        <p className="mb-4 text-sm text-gray-400">No chart: with no ion current or zero ion energy every value is zero.</p>
+      )}
 
       <ChartPanel data={sweepData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
-        xaxis: { title: "Ion Energy (eV)", gridcolor: "#374151" },
-        yaxis: { title: "Packing Density", gridcolor: "#374151", range: [0.7, 1.02], side: "left" },
-        yaxis2: { title: "Stress (MPa)", gridcolor: "#374151", overlaying: "y", side: "right" },
-        margin: { t: 20, b: 40, l: 50, r: 50 }, autosize: true, legend: { x: 0.01, y: 0.99 }
+        xaxis: { title: "Deposition rate (nm/s)", gridcolor: "#374151" },
+        yaxis: { title: "Energy per molecule (eV)", gridcolor: "#374151", type: "log" },
+        margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true,
       }} />
     </>
   );
