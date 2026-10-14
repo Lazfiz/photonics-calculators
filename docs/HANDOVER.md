@@ -1,38 +1,39 @@
-# Handover — 2026-10-14 (session 55 → session 56)
+# Handover — 2026-10-14 (session 56 → session 57)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 55 finished thin-film leftovers b (PR #71: `sputtering-deposition`, `plasma-deposition`, `adhesion-testing`);
-thin film is 45/45. Next: part 0 of the next category audit (ask the user which). `polarizer-types` stays blocked
-until the user is at the laptop with Chrome.
+Session 56 did the free-space-comms audit part 0 (PR #73, merged with handover PR #72): 20 pages audited, 19 bugs and
+1 questionable, 20 `knownIssue`s live in production. Next: **FSO part 1, visibility laws** (ROADMAP box).
+`polarizer-types` stays blocked until the user is at the laptop with Chrome.
 
 ## State
-- 190 of 459 pages are tiered (thin-film 45/45, fiber 47/47, laser-safety 40/40), 0 `knownIssue`s, 598 tests pass.
-- New in session 55:
-  - `sputtering.ts`: `SPUTTER_TARGETS` (10 metals: Y500, U_s, M, ρ, T_m), `targetIonCurrent`, `sputteredAtomRate`,
-    `diskOnAxisFlux` (Φ/(π(a²+d²))), `growthRate`, `thompsonPeakEnergy`, `argonMeanFreePath`, `D_AR`.
-  - `plasma-global-model.ts`: L&L argon `kIz/kEx/kEl`, `collisionalLoss`, `geometry` (h_l, h_R, d_eff, A_eff),
-    `electronTemperature` (bisection), `argonDischarge(P, R, l, p, T_g)`, `lowPressureRegime`.
-  - `adhesion.ts`: `benjaminWeaver`, `kendallPeelEnergy`, `tapeClass` (D3359 B), `bendTest(hs, R, E, ν, h, σ_res)`.
-  - `ATM`, `TORR` now in `constants.ts`.
+- 190 of 459 pages are tiered (free-space-comms 7/27), 20 `knownIssue`s (all FSO), 598 tests pass.
+- The FSO modules already exist: `atmospheric-attenuation.ts` (Bucholtz Rayleigh, `kimExponent`, `totalExtinction`,
+  `KOSCHMIEDER`, `DB_PER_NEPER`), `turbulence.ts` (Rytov, r₀, θ₀, all-regime `scintillationIndex` with aperture D,
+  `lognormalFadeProbability`, AO terms), `pointing-loss.ts` (`beamRadius`, `gaussianDiscFraction`, `pointingCapture`),
+  `ber.ts`, `bpsk-qpsk.ts`. None of the 20 untiered pages imports them.
+- New modules planned: `precipitation.ts` (part 2), `link-budget.ts` (3), `background-radiance.ts` (5), `qkd.ts` (6).
 
 ## Next actions
-1. Next category audit, part 0 (ROADMAP box): ask the user which category, inventory its pages with `checker`
-   (`npx tsx scripts/tier-status.ts <category>`, `scripts/find.ts`), split into ≈ 4-page parts, add them as boxes.
-2. Each fixed page: tier, `modelNote` (≤ 220 characters, count with `[...s].length`) and references
-   (`scripts/crossref.mjs`). Run one `physics-reviewer` pass before the PR.
-3. `/ship`: `post-merge-check <sha> <category>/<slug>=<default value as rendered>` per page.
+1. FSO part 1: `fog-attenuation` and `wavelength-selection` on `atmospheric-attenuation.ts` (add Kruse and Al Naboulsi;
+   check the Al Naboulsi coefficients against Opt. Eng. 43, 319 (2004) first). Merge `atmosphere` into
+   `atmospheric-loss`: delete the page, add `"/free-space-comms/atmosphere": "/free-space-comms/atmospheric-loss"` to
+   `src/registry/redirects.json`, and remove the registry entry and the related links that point to it.
+2. Each fixed page: drop the `knownIssue`, set the tier, a `modelNote` (≤ 220 characters, count with `[...s].length`)
+   and references (`scripts/crossref.mjs`). Run one `physics-reviewer` pass before the PR.
+3. `/ship`: `post-merge-check <sha> free-space-comms/fog-attenuation=<default dB/km as rendered>` and so on per page,
+   plus `free-space-comms/atmospheric-loss` (load check only).
 4. Later: the fiber open findings (SMF D(1550) unification, 1.4682 used as a phase index on ≈ 20 pages), G.657.A3 and
    the MCF R_eq (need Chrome); the small thin-film findings (sputtering gas scattering, plasma high-pressure h).
 
 ## Non-obvious facts
-- **Session 55 lessons:**
-  - Worked examples in course notes often read T_e, E_c etc. off figures: check the model against them loosely (10 %)
-    and pin the golden values to an independent script (a grid scan instead of the bisection).
-  - archive.org holds readable scans of Ohring (1992), Maissel & Glang and Kittel 8th ed. (read the pages as images).
-  - Run a long source lookup as a background agent and write the modules that don't depend on it meanwhile.
-  - The physics-reviewer's best catches are page-level and validity-level: a regime limit far below the page's
-    warning threshold, text claims about limits (compliant substrate), defaults that trigger the page's own warning.
+- **Session 56 lessons:**
+  - A category part 0 runs as 5 parallel `physics-reviewer` batches of 4 pages, grouped by the shared module the fixes
+    will need (≈ 4 min each). Save each report to a scratchpad file as it arrives; split parts along those modules.
+  - Write `knownIssue`s with a scratchpad `.cjs` script: a dry run that prints each length (40–240, ends with ".")
+    and refuses entries that already have a tier.
+  - When the previous handover PR is still open, branch from it, so the ROADMAP doesn't conflict; merge it first.
+  - A `post-merge-check` value can be a phrase from the `knownIssue` text: it is in the prerendered HTML.
 - **Sources:**
   - Optics Express full text and PDFs don't download (JS shell). arXiv papers that reproduce a table work. Cross-check
     a coefficient table against a second independent reproduction (e.g. Au(s) A = 9.152, not 9.52).
