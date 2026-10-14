@@ -1,144 +1,180 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { k_B, m_u } from "../../../physics/constants";
+import {
+  EVAPORANTS, FIT_T_MAX, TORR, airMeanFreePath, evaporationMassFlux, inFitRange, meanSpeed, structureZone,
+  surfaceSourceProfile, surfaceSourceRate, vapourPressure, type EvaporantId,
+} from "../../../physics/thin-film/thermal-evaporation";
+
+const IDS = Object.keys(EVAPORANTS) as EvaporantId[];
+const isId = (s: string): s is EvaporantId => Object.hasOwn(EVAPORANTS, s);
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
+const fmtExp = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toExponential(digits)}${unit}` : "—");
+/** Plain digits from 0.01 to 10⁴, exponent outside. */
+const fmtSci = (x: number, unit: string) => (Number.isFinite(x) && x >= 0.01 && x < 1e4 ? `${x.toPrecision(3)}${unit}` : fmtExp(x, 2, unit));
+/** Rate with sensible digits from 10⁻⁶ to 10³ nm/s. */
+const fmtRate = (x: number) => (!Number.isFinite(x) ? "—" : x >= 0.1 ? `${x.toFixed(2)} nm/s` : `${x.toPrecision(2)} nm/s`);
+const ZONE_TEXT = ["", "zone 1: tapered columns with voids", "zone 2: dense columnar grains", "zone 3: recrystallised, equiaxed grains"];
+/** Highest source temperature the fits allow (2500 K) in °C. */
+const T_MAX_C = FIT_T_MAX - 273.15;
+/** End of the rate sweep (Pa), ten times the vapour-cloud onset. */
+const SWEEP_P_MAX = 10;
+
 export default function ThermalEvaporationPage() {
-  const [material, setMaterial] = useState("SiO2");
-  const [sourceTemp, setSourceTemp] = useURLState("sourceTemp", 1400);
-  const [sourceSubstrateDist, setSourceSubstrateDist] = useURLState("sourceSubstrateDist", 30);
-  const [sourceDiameter, setSourceDiameter] = useURLState("sourceDiameter", 2);
-  const [chamberPressure, setChamberPressure] = useURLState("chamberPressure", 1e-6);
-  const [substrateTemp, setSubstrateTemp] = useURLState("substrateTemp", 100);
+  const [materialParam, setMaterial] = useURLState("material", "Al");
+  const [sourceTemp, setSourceTemp] = useURLState("sourceTemp", 1200); // °C
+  const [sourceSubstrateDist, setSourceSubstrateDist] = useURLState("sourceSubstrateDist", 30); // cm
+  const [sourceDiameter, setSourceDiameter] = useURLState("sourceDiameter", 2); // cm
+  const [substrateRadius, setSubstrateRadius] = useURLState("substrateRadius", 5); // cm
+  const [alpha, setAlpha] = useURLState("alpha", 1);
+  const [chamberPressure, setChamberPressure] = useURLState("chamberPressure", 1e-6); // Torr
+  const [substrateTemp, setSubstrateTemp] = useURLState("substrateTemp", 100); // °C
 
-  const materials: Record<string, { M: number; density: number; dHvap: number; A: number; B: number; n: number; name: string }> = {
-    SiO2: { M: 60.08, density: 2.2, dHvap: 450, A: 5.5, B: 26000, n: 1.46, name: "SiO₂" },
-    TiO2: { M: 79.87, density: 4.23, dHvap: 550, A: 5.8, B: 28000, n: 2.35, name: "TiO₂" },
-    Ta2O5: { M: 441.89, density: 8.2, dHvap: 600, A: 6.0, B: 32000, n: 2.10, name: "Ta₂O₅" },
-    Al2O3: { M: 101.96, density: 3.95, dHvap: 520, A: 5.6, B: 27500, n: 1.63, name: "Al₂O₃" },
-    MgF2: { M: 62.3, density: 3.15, dHvap: 350, A: 5.3, B: 22000, n: 1.38, name: "MgF₂" },
-    ZrO2: { M: 123.22, density: 5.68, dHvap: 580, A: 5.9, B: 30000, n: 2.10, name: "ZrO₂" },
-    HfO2: { M: 210.49, density: 9.68, dHvap: 620, A: 6.1, B: 33000, n: 2.05, name: "HfO₂" },
-    Al: { M: 26.98, density: 2.7, dHvap: 294, A: 5.0, B: 17000, n: 1.37, name: "Aluminum" },
-    Ag: { M: 107.87, density: 10.49, dHvap: 250, A: 5.2, B: 15000, n: 0.05, name: "Silver" },
-    Au: { M: 196.97, density: 19.3, dHvap: 340, A: 5.3, B: 18000, n: 0.17, name: "Gold" },
-    SiO: { M: 44.09, density: 2.13, dHvap: 380, A: 5.4, B: 21000, n: 1.55, name: "SiO" },
-    ZnS: { M: 97.47, density: 4.09, dHvap: 400, A: 5.5, B: 23000, n: 2.35, name: "ZnS" },
-  };
+  const id: EvaporantId = isId(materialParam) ? materialParam : "Al";
+  const ev = EVAPORANTS[id];
+  const T = sourceTemp + 273.15;
+  const errors = [
+    !(T > 0 && T <= FIT_T_MAX) && `the source temperature must lie between −273.15 and ${T_MAX_C} °C`,
+    !(sourceSubstrateDist > 0) && "the source–substrate distance must be positive",
+    !(sourceDiameter > 0) && "the source diameter must be positive",
+    !(substrateRadius >= 0) && "the substrate radius can't be negative",
+    !(alpha > 0 && alpha <= 1) && "the evaporation coefficient must lie in (0, 1]",
+    !(chamberPressure > 0) && "the chamber pressure must be positive",
+    !(substrateTemp >= -273.15) && "the substrate temperature must be above absolute zero",
+  ].filter((e): e is string => typeof e === "string");
+  const valid = errors.length === 0;
 
-  const mat = materials[material];
-
-  const results = useMemo(() => {
-    const T = sourceTemp;
-    const T_K = T + 273.15;
-    const d = sourceSubstrateDist * 1e-2; // m
-    const r_source = (sourceDiameter / 2) * 1e-2; // m
-    const P = chamberPressure;
-    const T_sub = substrateTemp + 273.15;
-
-    // Vapor pressure (Clausius-Clapeyron)
-    const logP_vapor = mat.A - mat.B / T_K;
-    const P_vapor = Math.pow(10, logP_vapor); // Torr
-
-    // Evaporation rate (Hertz-Knudsen)
-    const alpha = 1.0; // evaporation coefficient
-    const m = mat.M * m_u; // mass per molecule (using amu)
-    const flux = alpha * P_vapor * 133.322 / Math.sqrt(2 * Math.PI * m * k_B * T_K); // molecules/m²/s
-
-    // Deposition rate at substrate (point source cos model)
-    const cosTheta = 1; // normal incidence at center
-    const geometricFactor = r_source * r_source / (d * d) * cosTheta;
-    const depRate = flux * m * geometricFactor * 1e9; // nm/s
-
-    // Mean free path
-    const mfp = 0.005 / (P * 133.322); // m (λ ≈ 0.005/P for P in Pa; convert Torr→Pa)
-    const mfpCm = mfp * 100;
-
-    // Knudsen number
-    const Kn = mfp / d;
-
-    // Film uniformity (cos^n model for point source)
-    const uniformity85 = Math.pow(Math.cos(Math.atan(0.15 * sourceDiameter / sourceSubstrateDist)), 3);
-
-    // Stoichiometry deviation (from pressure and temperature)
-    const stoichFactor = Math.min(1.0, P_vapor / 1e-3) > 1 ? 1.0 : Math.sqrt(P_vapor * 1000);
-
-    // Packing density estimate
-    const energyEvap = 1.5 * k_B * T_K; // thermal energy ~ kT
-    const surfaceDiffusion = Math.exp(-0.5 / (k_B * T_sub / mat.dHvap * 1000));
-    const packingDensity = 0.6 + 0.2 * Math.min(surfaceDiffusion, 1) + 0.05 * Math.min(Kn, 1);
-
-    // Molecular speed
-    const v_mol = Math.sqrt(8 * k_B * T_K / (Math.PI * m));
-
-    return { P_vapor, depRate, mfpCm, Kn, uniformity85, v_mol, packingDensity, stoichFactor, flux };
-  }, [material, sourceTemp, sourceSubstrateDist, sourceDiameter, chamberPressure, substrateTemp]);
+  const r = useMemo(() => {
+    if (!valid) return null;
+    const h = sourceSubstrateDist * 1e-2;
+    const rs = (sourceDiameter / 2) * 1e-2;
+    const p = vapourPressure(ev, T);
+    const flux = evaporationMassFlux(p, ev.M, T, alpha);
+    const mfp = airMeanFreePath(chamberPressure * TORR);
+    return {
+      p,
+      fitOk: inFitRange(T, p),
+      flux,
+      rate: surfaceSourceRate(flux, Math.PI * rs * rs, ev.rho, h) * 1e9, // nm/s
+      edge: surfaceSourceProfile(substrateRadius * 1e-2, h),
+      mfp,
+      Kn: mfp / h,
+      speed: meanSpeed(ev.M, T),
+      homologous: (substrateTemp + 273.15) / ev.Tm,
+      zone: structureZone(substrateTemp + 273.15, ev.Tm),
+      bigSource: rs / h > 0.1,
+    };
+  }, [valid, ev, T, sourceSubstrateDist, sourceDiameter, substrateRadius, alpha, chamberPressure, substrateTemp]);
 
   const sweepData = useMemo(() => {
-    const temps = Array.from({ length: 100 }, (_, i) => 500 + i * 2500 / 100);
-    const rates = temps.map(T => {
-      const T_K = T + 273.15;
-      const logP = mat.A - mat.B / T_K;
-      const Pv = Math.pow(10, logP);
-      const m = mat.M * m_u;
-      const fl = Pv * 133.322 / Math.sqrt(2 * Math.PI * m * k_B * T_K);
-      const d = sourceSubstrateDist * 1e-2;
-      const r = (sourceDiameter / 2) * 1e-2;
-      return fl * m * r * r / (d * d) * 1e9;
-    });
-    const pressures = temps.map(T => {
-      const T_K = T + 273.15;
-      return Math.pow(10, mat.A - mat.B / T_K);
-    });
+    const h = sourceSubstrateDist * 1e-2;
+    const rs = (sourceDiameter / 2) * 1e-2;
+    if (!(h > 0 && rs > 0 && alpha > 0 && alpha <= 1)) return [];
+    // From 10⁻⁶ Pa to 10 Pa (or 2500 K): above ≈ 1 Pa a vapour cloud forms and the free-evaporation rate is only a bound.
+    const temps: number[] = [];
+    const rates: (number | null)[] = [];
+    for (let i = 0; i <= 160; i++) {
+      const Tk = 0.5 * ev.Tm + ((FIT_T_MAX - 0.5 * ev.Tm) * i) / 160;
+      const p = vapourPressure(ev, Tk);
+      if (p < 1e-6) continue;
+      if (p > SWEEP_P_MAX) break;
+      temps.push(Tk - 273.15);
+      rates.push(surfaceSourceRate(evaporationMassFlux(p, ev.M, Tk, alpha), Math.PI * rs * rs, ev.rho, h) * 1e9);
+    }
     return [
-      { x: temps, y: rates, type: "scatter" as const, mode: "lines" as const, name: "Dep Rate (nm/s)", line: { color: "#60a5fa" }, yaxis: "y" },
-      { x: temps, y: pressures, type: "scatter" as const, mode: "lines" as const, name: "Vapor P (Torr)", line: { color: "#fbbf24" }, yaxis: "y2" },
+      // The vapour pressure has the same shape on a log axis (rate ∝ p/√T), so it isn't drawn too.
+      { x: temps, y: rates, type: "scatter" as const, mode: "lines" as const, name: "Growth rate", line: { color: "#60a5fa" } },
     ];
-  }, [material, sourceSubstrateDist, sourceDiameter]);
+  }, [ev, sourceSubstrateDist, sourceDiameter, alpha]);
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Material</span>
-          <select value={material} onChange={e => setMaterial(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            {Object.entries(materials).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
-          </select></label>
-        <ValidatedNumberInput label="Source Temp (°C)" value={sourceTemp} onChange={setSourceTemp} step="10" />
-        <ValidatedNumberInput label="Source-Substrate Dist (cm)" value={sourceSubstrateDist} onChange={setSourceSubstrateDist} step="1" />
-        <ValidatedNumberInput label="Source Diameter (cm)" value={sourceDiameter} onChange={setSourceDiameter} step="0.5" />
-        <ValidatedNumberInput label="Chamber Pressure (Torr)" value={chamberPressure} onChange={setChamberPressure} step="1e-7" />
-        <ValidatedNumberInput label="Substrate Temp (°C)" value={substrateTemp} onChange={setSubstrateTemp} step="10" />
+      <div className="grid gap-4 sm:grid-cols-2 mb-6">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Evaporant</span>
+          <select value={id} onChange={(e) => setMaterial(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            {IDS.map((k) => <option key={k} value={k}>{EVAPORANTS[k].name} ({k})</option>)}
+          </select>
+        </label>
+        <ValidatedNumberInput label="Source temperature (°C)" value={sourceTemp} onChange={setSourceTemp} max={T_MAX_C} step="10" />
+        <ValidatedNumberInput label="Source–substrate distance h (cm)" value={sourceSubstrateDist} onChange={setSourceSubstrateDist} min={0.1} step="1" />
+        <ValidatedNumberInput label="Source (melt surface) diameter (cm)" value={sourceDiameter} onChange={setSourceDiameter} min={0.01} step="0.5" />
+        <ValidatedNumberInput label="Substrate radius (cm)" value={substrateRadius} onChange={setSubstrateRadius} min={0} step="1" />
+        <ValidatedNumberInput label="Evaporation coefficient α" value={alpha} onChange={setAlpha} min={0.001} max={1} step="0.1" />
+        <ValidatedNumberInput label="Chamber pressure (Torr)" value={chamberPressure} onChange={setChamberPressure} min={0} step="any" />
+        <ValidatedNumberInput label="Substrate temperature (°C)" value={substrateTemp} onChange={setSubstrateTemp} step="10" />
       </div>
 
-      <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
-        <p className="text-gray-300">Vapor Pressure: <span className="text-blue-400 font-mono">{results.P_vapor.toExponential(3)} Torr</span></p>
-        <p className="text-gray-300">Deposition Rate: <span className="text-blue-400 font-mono">{results.depRate.toFixed(3)} nm/s ({(results.depRate * 10).toFixed(2)} Å/s)</span></p>
-        <p className="text-gray-300">Mean Free Path: <span className="text-blue-400 font-mono">{results.mfpCm.toFixed(1)} cm</span></p>
-        <p className="text-gray-300">Knudsen Number: <span className="text-blue-400 font-mono">{results.Kn.toFixed(2)}</span></p>
-        <p className="text-gray-300">Molecular Speed: <span className="text-blue-400 font-mono">{results.v_mol.toFixed(0)} m/s</span></p>
-        <p className="text-gray-300">Film Uniformity (85% dia): <span className="text-blue-400 font-mono">{(results.uniformity85 * 100).toFixed(1)}%</span></p>
-        <p className="text-gray-300">Packing Density (est.): <span className="text-blue-400 font-mono">{results.packingDensity.toFixed(3)}</span></p>
-      </div>
+      <p className="text-gray-500 mb-6 text-xs">
+        {ev.name}: M = {fmt(ev.M * 1e3, 3)} g/mol, ρ = {fmt(ev.rho / 1e3, 2)} g/cm³, T<sub>m</sub> = {ev.Tm} K. Metals only:
+        oxides and fluorides evaporate by dissociation or sublimation, which these fits don&apos;t cover.
+      </p>
+
+      {errors.length > 0 && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">No result: {errors.join("; ")}.</p>
+      )}
+
+      {r && (
+        <>
+          <div className="grid gap-4 sm:grid-cols-3 mb-4">
+            <ResultCard
+              label="Vapour pressure"
+              value={fmtSci(r.p, " Pa")}
+              tone="yellow"
+              subtext={`${fmtSci(r.p / TORR, " Torr")}${r.fitOk ? "" : "; outside the fit range (10⁻¹⁵–10⁻³ atm)"}`}
+            />
+            <ResultCard
+              label="Growth rate at the centre"
+              value={fmtRate(r.rate)}
+              tone="green"
+              subtext={`${fmtRate(r.rate * 10).replace("nm/s", "Å/s")}; film at bulk density, sticking 1`}
+            />
+            <ResultCard
+              label="Thickness at the substrate edge"
+              value={fmt(r.edge * 100, 1, " %")}
+              tone="cyan"
+              subtext={`of the centre, at ${fmt(substrateRadius, 1)} cm (flat substrate)`}
+            />
+            <ResultCard label="Evaporation flux (α p √(M/2πRT))" value={fmtExp(r.flux, 2, " kg m⁻² s⁻¹")} />
+            <ResultCard
+              label="Mean free path (residual air)"
+              value={r.mfp >= 1 ? fmt(r.mfp, 1, " m") : fmt(r.mfp * 100, 2, " cm")}
+              subtext={`Kn = λ/h = ${r.Kn >= 100 ? r.Kn.toExponential(1) : r.Kn.toFixed(2)}${r.Kn < 1 ? ": gas scattering cuts the rate" : ": straight-line flight"}`}
+            />
+            <ResultCard label="Mean speed of the vapour" value={fmt(r.speed, 0, " m/s")} subtext="√(8RT/πM) at the source temperature" />
+            <ResultCard
+              label="Homologous temperature T_s/T_m"
+              value={fmt(r.homologous, 2)}
+              tone="red"
+              subtext={Number.isFinite(r.zone) ? `Movchan–Demchishin ${ZONE_TEXT[r.zone]}` : r.homologous >= 1 ? "Substrate at or above the melting point: no solid film" : undefined}
+            />
+          </div>
+          {(r.bigSource || r.p > 1) && (
+            <p className="mb-6 text-sm text-yellow-300" role="status">
+              {r.bigSource && "The source is not small next to h (r_s/h > 0.1); the point-like cosine formula loses accuracy. "}
+              {r.p > 1 && "Above ≈ 1 Pa the vapour's own mean free path falls to centimetres, comparable to the source, and a vapour cloud forms over the melt, so the free-evaporation rate is an upper bound."}
+            </p>
+          )}
+        </>
+      )}
 
       <div className="bg-gray-900 rounded p-4 mb-6 text-sm text-gray-400">
-        <p className="font-semibold text-gray-200 mb-2">Key Formulas</p>
-        <p>log₁₀(P) = A − B/T (Clausius-Clapeyron vapor pressure)</p>
-        <p>Φ = α·P·√(M/2πkT) (Hertz-Knudsen evaporation flux)</p>
-        <p>R = Φ·m·(r²/d²)·cos θ (deposition rate at substrate)</p>
-        <p>λ<sub>mfp</sub> ≈ 0.005/P [m] (mean free path)</p>
-        <p>Kn = λ<sub>mfp</sub>/d (Knudsen number, Kn &gt;&gt; 1 → molecular flow)</p>
+        <p className="font-semibold text-gray-200 mb-2">Model</p>
+        <p>log₁₀(p/atm) = A + B/T + C log₁₀T (Alcock, Itkin &amp; Horrigan 1984; solid below T<sub>m</sub>, liquid above)</p>
+        <p>Γ = α p √(M/(2πRT)) (Hertz–Knudsen–Langmuir mass flux)</p>
+        <p>R = Γ π r<sub>s</sub>² / (π ρ h²) at the centre; d/d₀ = 1/(1 + (l/h)²)² across a flat substrate (cosine source)</p>
+        <p>λ = 5×10⁻³ cm·Torr / P (air at room temperature); zones at T<sub>s</sub>/T<sub>m</sub> = 0.3 and 0.45 (metals)</p>
       </div>
 
       <ChartPanel data={sweepData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
-        xaxis: { title: "Source Temperature (°C)", gridcolor: "#374151" },
-        yaxis: { title: "Dep Rate (nm/s)", gridcolor: "#374151", side: "left" },
-        yaxis2: { title: "Vapor Pressure (Torr)", gridcolor: "#374151", overlaying: "y", side: "right", type: "log" },
-        margin: { t: 20, b: 40, l: 50, r: 50 }, autosize: true, legend: { x: 0.01, y: 0.99 }
+        xaxis: { title: "Source temperature (°C)", gridcolor: "#374151" },
+        yaxis: { title: "Growth rate at the centre (nm/s)", gridcolor: "#374151", type: "log" },
+        margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true,
       }} />
     </>
   );

@@ -85,6 +85,14 @@ test("quarter-wave stack: zone centre at oblique incidence", () => {
   assert.ok(Number.isNaN(stopBandCentreAtAngle(550 * NM, 2.35, 1.45, Math.PI / 2)), "90°");
 });
 
+// angle-shift page: one film (n_H = n_L = n) gives λ₀ cos θ_film. MgF₂ n = 1.38 at 45° from air:
+// 550 × √(1 − 0.5/1.9044) = 472.3120 nm.
+test("single film: quarter-wave point at oblique incidence", () => {
+  close(stopBandCentreAtAngle(550 * NM, 1.38, 1.38, Math.PI / 4) / NM, 472.3120, 1e-3, "MgF₂ 45°");
+  // An index below sin θ₀ leaves no propagating wave in the film.
+  assert.ok(Number.isNaN(stopBandCentreAtAngle(550 * NM, 0.6, 0.6, Math.PI / 4)), "n < sin θ");
+});
+
 /** (LH)^N quarter-wave stack (low index outermost, H on the substrate). */
 function lhStack(lambda0: number, pairs: number, incident = 1, nH = 2.35, nL = 1.45): Stack {
   const indices: number[] = [];
