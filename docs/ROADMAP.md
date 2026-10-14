@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 59, 2026-10-14)
+## Status (session 60, 2026-10-14)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -18,13 +18,13 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | thin-film | 45 / 45 | done (sessions 25–28, 54–55); small findings below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
 | imaging | 9 / 65 | findings fixed (sessions 19, 22); no full audit |
-| free-space-comms | 15 / 26 | parts 0–3 (sessions 56–59) done: 11 `knownIssue`s; fix parts 4–6 below |
+| free-space-comms | 19 / 26 | parts 0–4 (sessions 56–60) done: 7 `knownIssue`s; fix parts 5–6 below |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 0 / 54 | |
-| **total** | **198 / 458** | 11 `knownIssue`s (free-space-comms) |
+| **total** | **202 / 458** | 7 `knownIssue`s (free-space-comms) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -32,11 +32,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   curl. Also clear the eslint warning there (unused `wavelength` state).
 - FSO fix parts (session 56 audit: 19 bugs, 1 questionable, 20 `knownIssue`s; reviewers had no web access, so verify every
   coefficient and DOI below before it goes in code or the registry; none of the 20 pages uses `src/physics/free-space-comms/`):
-- [ ] **FSO part 4: turbulence** (`turbulence.ts` + weak aperture averaging, Al-Habash α/β, beam wander, plane-wave ρ₀,
-  irradiance covariance width): `aperture-averaging` (Andrews 1992 [1 + 1.062·kD²/4L]^(−7/6), spherical 0.333;
-  defaults 0.0564/0.179), `beam-wander` (2.42 Cn² L³ W₀^(−1/3) → 8.915e-6 m²; loss 10 log(1 + 2⟨r²⟩/W(L)²) =
-  0.076 dB), `fade-probability` (α/β 103.2/98.5 at σ_R² = 0.0199; log-normal vs γ-γ title; ad hoc fade time),
-  `diversity-reception` (irradiance correlation; Lee & Chan 2004, Navidpour 2007 combiners; log-normal outage).
 - [ ] **FSO part 5: receiver** (new `background-radiance.ts`: solar disc planckExitance/π at 5772 K with Ω ≤ 6.79e-5 sr,
   sourced λ-dependent sky radiance, L·A·Ω·Δλ·T, separate η_opt and QE): `background-noise` (in-band rejection 1000×),
   `receiver-fov` (η², SNR never shown; keep it, on the shared module: user, session 56), `channel-capacity` (exact AWGN;
@@ -57,6 +52,10 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   reviewer was unsure and the page uses R_b as given. Check Koshiba 2012 / Hayashi 2011 text, then add it or drop this note.
 - `bend-insensitive` (`g657.ts`): the physics review recalls a G.657.A3 category (2016) that shares the B3 limits. Unverified
   because the ITU PDF is blocked to scripts; check the ITU text in Chrome, then add A3 or drop the note.
+**Free-space comms**
+- `diversity-reception`: for N ≥ 3 the Fenton–Wilkinson margin is 0.07–0.41 dB high at σ_I² ≤ 0.5 and ≈ 1–1.2 dB at σ_I² = 1, and MRC is capped at
+  EGC (exact MRC 0.1–0.2 dB lower); the exact N = 3 nested integral (in the tests) is too slow for the chart (~40 ms per threshold).
+- `aperture-averaging`: only the Gaussian aperture is modelled; a hard circular aperture gives a 5–11 % lower A at d² = 1–30 (reviewer quadrature, unchecked).
 **Thin film**
 - `sputtering-deposition` (low): no gas scattering (defaults sit at d ≈ 5.7 λ_Ar, rate is an upper bound); Westwood
   thermalisation could add it. Cr and Nb dropped: no sourced 500 eV Ar⁺ yield (M&G 600 eV: 1.3, 0.65).
@@ -189,6 +188,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   - Fiber-optics part 9 (session 51, PR #62): `coupled-mode.ts` (Snyder κ 4.447e-3 /m, Koshiba h̄ → Hayashi, XT −38.3 dB/10 km; K₀ tail 18.3 % not 26.2 %; half-plane η; Digonnet–Shaw coupler); multi-core, side-polished, d-shaped, fiber-coupler tiered; 542 tests.
   - Fiber-optics part 10 (session 52, PRs #64–65): `fiber-taper.ts` (+ `tapered-fiber` merged; Birks–Li, three-layer LP0m, Love Ω_d; waist 27.9 µm), `silica-attenuation.ts` (0.187 dB/km at 1550, min 1550.8 nm) for attenuation + low-water-peak, `otdr.ts` (Barnoski–Jensen × Brinkmeyer η −82.5 dB at 1 ns, DR 20.5 dB), `link-budget.ts` (margin held, −12 dBm); 565 tests.
   - Fiber-optics part 11 (session 53, PR #67): `photonic-crystal.ts` (Saitoh–Koshiba V/W, ESM d/Λ 0.4275 vs FEM 0.424, D 74.4/22.0 vs MPM 71.3/23.1), `specialty-fiber.ts` (6 data-sheet fibres, illustrative). Fiber-optics fully tiered.
+  - Free-space-comms part 4 (session 60, PR #81): `turbulence.ts` (exact weak aperture integral A 0.0544/0.1436, γ-γ α/β 103.2/98.5, wander rms 0.299 cm/0.076 dB, b_I table + SC/EGC/MRC outage), Temme `regularizedGammaP`; 4 pages tiered; 634 tests.
   - Free-space-comms part 3 (session 59, PR #79): `link-budget.ts` (Friis capped, Klein–Degnan g, Fraunhofer width of a clipped Gaussian: 1.44× at α = 1); lasercom −33.42 dBm, link-budget exact capture, top-hat 20.04 vs Gaussian 17.03 dB, optical-antenna W₀ = a/α; 623 tests.
   - Free-space-comms part 2 (session 58, PR #77): `precipitation.ts` (ITU-R P.1814-1 2025 rain: µ table, F, G_ms; 25 mm/h, 1 km → 10.09 dB; Graz snow law, S read as water-equivalent); rain/snow tiered; 613 tests.
   - Free-space-comms part 1 (session 57, PR #75): Kruse + Al Naboulsi in `atmospheric-attenuation.ts` (Kim fog 33.93 dB/km), `wavelength-selection.ts` (IEC Class 1 eye score); `atmosphere` → `atmospheric-loss`.
