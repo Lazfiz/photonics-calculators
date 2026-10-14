@@ -19,7 +19,7 @@
  * Attenuation in dB is 10 log₁₀(e) ≈ 4.343 times the extinction in nepers.
  */
 
-import { k_B } from "../constants";
+import { ATM, k_B } from "../constants";
 
 /** −ln(0.02): Koschmieder's constant for a 2 % contrast threshold. */
 export const KOSCHMIEDER = -Math.log(0.02);
@@ -28,7 +28,7 @@ export const VISIBILITY_WAVELENGTH = 550e-9;
 /** dB per neper of power: 10 log₁₀(e). */
 export const DB_PER_NEPER = 10 / Math.LN10;
 
-const STANDARD_PRESSURE = 101325; // Pa
+const STANDARD_PRESSURE = ATM; // Pa
 const STANDARD_TEMPERATURE = 288.15; // K
 const KING_FACTOR_AIR = 1.048;
 

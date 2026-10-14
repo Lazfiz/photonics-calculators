@@ -70,3 +70,8 @@ export const m_u = 1.66053906892e-27;
 export const a_0 = 5.29177210544e-11;
 /** Newtonian constant of gravitation, m³/(kg·s²), (15)e-15. */
 export const G = 6.6743e-11;
+
+/** Standard atmosphere, Pa (exact by definition). */
+export const ATM = 101325;
+/** Torr, Pa (exact, 1 atm / 760). */
+export const TORR = ATM / 760;

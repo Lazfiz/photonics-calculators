@@ -5,8 +5,9 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { TORR } from "../../../physics/constants";
 import {
-  EVAPORANTS, FIT_T_MAX, TORR, airMeanFreePath, evaporationMassFlux, inFitRange, meanSpeed, structureZone,
+  EVAPORANTS, FIT_T_MAX, airMeanFreePath, evaporationMassFlux, inFitRange, meanSpeed, structureZone,
   surfaceSourceProfile, surfaceSourceRate, vapourPressure, type EvaporantId,
 } from "../../../physics/thin-film/thermal-evaporation";
 

@@ -14,12 +14,7 @@
  * temperature), ch. 3 (Hertz–Knudsen flux, surface-source distribution, thickness uniformity) and ch. 9
  * (structure zones). J. A. Thornton, Annu. Rev. Mater. Sci. 7, 239 (1977), Movchan–Demchishin zones.
  */
-import { R_gas } from "../constants";
-
-/** 1 atm in Pa (exact). */
-export const ATM = 101325;
-/** 1 torr in Pa (exact, 1 atm / 760). */
-export const TORR = ATM / 760;
+import { ATM, R_gas, TORR } from "../constants";
 
 /** log₁₀(p/atm) = A + B/T + C log₁₀ T, T in K. */
 type VapourFit = readonly [A: number, B: number, C: number];

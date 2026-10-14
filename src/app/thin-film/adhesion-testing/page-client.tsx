@@ -1,232 +1,282 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import {
+  TAPE_CLASSES,
+  TAPE_CLASS_RANGE,
+  benjaminWeaver,
+  benjaminWeaverMaxLoad,
+  bendTest,
+  kendallPeelEnergy,
+  tapeClass,
+} from "../../../physics/thin-film/adhesion";
+
+const METHODS = { scratch: "Scratch test", peel: "Peel test", tape: "Tape test (ASTM D3359 B)", bend: "Bend test" } as const;
+type Method = keyof typeof METHODS;
+const isMethod = (s: string): s is Method => Object.hasOwn(METHODS, s);
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
+
+const layoutBase = {
+  paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
+  margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true,
+};
+
 export default function AdhesionTestingPage() {
-  const [testMethod, setTestMethod] = useState("scratch");
-  const [filmMaterial, setFilmMaterial] = useState("SiO2");
-  const [substrateMaterial, setSubstrateMaterial] = useState("glass");
-  const [filmThickness, setFilmThickness] = useURLState("filmThickness", 100);
-  const [criticalLoad, setCriticalLoad] = useURLState("criticalLoad", 10);
-  const [scratchLength, setScratchLength] = useURLState("scratchLength", 3);
-  const [tipRadius, setTipRadius] = useURLState("tipRadius", 200);
-  const [peelForce, setPeelForce] = useURLState("peelForce", 5);
-  const [tapeAdhesion, setTapeAdhesion] = useState("5B");
-  const [bendRadius, setBendRadius] = useURLState("bendRadius", 5);
+  const [methodParam, setMethod] = useURLState("method", "scratch");
+  // Scratch test
+  const [criticalLoad, setCriticalLoad] = useURLState("criticalLoad", 10); // N
+  const [tipRadius, setTipRadius] = useURLState("tipRadius", 200); // µm
+  const [hardness, setHardness] = useURLState("hardness", 6); // GPa
+  // Peel test
+  const [peelForce, setPeelForce] = useURLState("peelForce", 100); // N/m
+  const [peelAngle, setPeelAngle] = useURLState("peelAngle", 90); // degrees
+  const [armModulus, setArmModulus] = useURLState("armModulus", 3); // GPa
+  const [armThickness, setArmThickness] = useURLState("armThickness", 50); // µm
+  // Tape test
+  const [removed, setRemoved] = useURLState("removed", 0); // % of the lattice
+  // Bend test
+  const [substrateThickness, setSubstrateThickness] = useURLState("substrateThickness", 0.2); // mm
+  const [bendRadius, setBendRadius] = useURLState("bendRadius", 20); // mm
+  const [filmModulus, setFilmModulus] = useURLState("filmModulus", 70); // GPa
+  const [filmPoisson, setFilmPoisson] = useURLState("filmPoisson", 0.2);
+  const [filmThickness, setFilmThickness] = useURLState("filmThickness", 100); // nm
+  const [residualStress, setResidualStress] = useURLState("residualStress", 0); // MPa, tensile > 0
 
-  const materials: Record<string, { n: number; hardness: number; modulus: number; name: string }> = {
-    SiO2: { n: 1.46, hardness: 8, modulus: 70, name: "SiO₂" },
-    TiO2: { n: 2.35, hardness: 8.5, modulus: 230, name: "TiO₂" },
-    Ta2O5: { n: 2.1, hardness: 9, modulus: 150, name: "Ta₂O₅" },
-    Al2O3: { n: 1.63, hardness: 9, modulus: 380, name: "Al₂O₃" },
-    MgF2: { n: 1.38, hardness: 5, modulus: 80, name: "MgF₂" },
-    ZrO2: { n: 2.1, hardness: 8.5, modulus: 200, name: "ZrO₂" },
-    HfO2: { n: 2.05, hardness: 9, modulus: 200, name: "HfO₂" },
-    Metal: { n: 2.0, hardness: 2, modulus: 70, name: "Metal (Al/Ag/Au)" },
-  };
+  const method: Method = isMethod(methodParam) ? methodParam : "scratch";
 
-  const substrates: Record<string, { modulus: number; hardness: number; name: string }> = {
-    glass: { modulus: 70, hardness: 6, name: "Glass (BK7)" },
-    fusedSilica: { modulus: 72, hardness: 7, name: "Fused Silica" },
-    silicon: { modulus: 170, hardness: 9, name: "Silicon" },
-    sapphire: { modulus: 400, hardness: 20, name: "Sapphire" },
-    polymer: { modulus: 2, hardness: 0.2, name: "Polymer" },
-    metal: { modulus: 200, hardness: 2, name: "Metal Substrate" },
-  };
+  const errors = (
+    method === "scratch"
+      ? [
+          !(criticalLoad >= 0) && "the critical load can't be negative",
+          !(tipRadius > 0) && "the tip radius must be positive",
+          !(hardness > 0) && "the substrate hardness must be positive",
+        ]
+      : method === "peel"
+        ? [
+            !(peelForce >= 0) && "the peel force can't be negative",
+            !(peelAngle >= 0 && peelAngle <= 180) && "the peel angle must be 0–180°",
+            !(armModulus > 0) && "the modulus of the peel arm must be positive",
+            !(armThickness > 0) && "the thickness of the peel arm must be positive",
+          ]
+        : method === "tape"
+          ? [!(removed >= 0 && removed <= 100) && "the area removed must be 0–100 %"]
+          : [
+              !(substrateThickness > 0) && "the substrate thickness must be positive",
+              !(bendRadius > 0) && "the bend radius must be positive",
+              substrateThickness > 0 && bendRadius > 0 && !(substrateThickness < 2 * bendRadius) && "the bend radius must exceed half the substrate thickness",
+              !(filmModulus > 0) && "the film modulus must be positive",
+              !(filmPoisson >= 0 && filmPoisson < 0.5) && "Poisson's ratio must be 0 to < 0.5",
+              !(filmThickness > 0) && "the film thickness must be positive",
+              !Number.isFinite(residualStress) && "the residual stress must be a number",
+            ]
+  ).filter((e): e is string => typeof e === "string");
+  const valid = errors.length === 0;
 
-  const tapeRatings: Record<string, { percentage: number; description: string }> = {
-    "5B": { percentage: 100, description: "0% removed - Best" },
-    "4B": { percentage: 95, description: "<5% removed" },
-    "3B": { percentage: 90, description: "5-15% removed" },
-    "2B": { percentage: 75, description: "15-35% removed" },
-    "1B": { percentage: 50, description: "35-65% removed" },
-    "0B": { percentage: 25, description: ">65% removed - Worst" },
-  };
+  const R_tip = tipRadius * 1e-6;
+  const H = hardness * 1e9;
+  const scratch = useMemo(() => benjaminWeaver(criticalLoad, R_tip, H), [criticalLoad, R_tip, H]);
+  const maxLoad = benjaminWeaverMaxLoad(R_tip, H);
+  const peelG = kendallPeelEnergy(peelForce, (peelAngle * Math.PI) / 180, armModulus * 1e9, armThickness * 1e-6);
+  const peelStretch = (peelForce * peelForce) / (2 * armModulus * 1e9 * armThickness * 1e-6);
+  const cls = tapeClass(removed);
+  const bend = useMemo(
+    () => bendTest(substrateThickness * 1e-3, bendRadius * 1e-3, filmModulus * 1e9, filmPoisson, filmThickness * 1e-9, residualStress * 1e6),
+    [substrateThickness, bendRadius, filmModulus, filmPoisson, filmThickness, residualStress],
+  );
 
-  const film = materials[filmMaterial];
-  const sub = substrates[substrateMaterial];
-  const tape = tapeRatings[tapeAdhesion];
-
-  const results = useMemo(() => {
-    const Lc = criticalLoad; // N
-    const R = tipRadius * 1e-6; // m
-    const t = filmThickness * 1e-9; // m
-    const Ls = scratchLength * 1e-3; // m
-    const Pf = peelForce; // N/m
-    const rb = bendRadius * 1e-3; // m
-
-    // Scratch test adhesion strength
-    // Critical load relates to adhesion via: W_ad ≈ L_c / (π·R)
-    const adhesionEnergy = Lc / (Math.PI * R); // J/m²
-    const adhesionMPa = adhesionEnergy / t / 1e6; // MPa = W_ad / thickness
-
-    // Interfacial shear strength
-    const shearStrength = Lc / (Math.PI * R * R) * 1e-6; // MPa
-
-    // Scratch hardness (from load and tip radius)
-    const scratchArg = Math.max(2 * R * t - t * t, 0);
-    const scratchHardness = scratchArg > 0 ? Lc / (2 * Math.PI * R * Math.sqrt(scratchArg)) * 1e-9 : 0; // GPa
-
-    // Peel energy (for flexible films)
-    const peelEnergy = Pf; // J/m² = N/m
-
-    // Bending strain at failure
-    const filmModulus = film.modulus * 1e9; // Pa
-    const bendStrain = t / (2 * rb);
-
-    // Buckling critical stress (Hutchinson & Suo): σ_cr = [2E_f·W²/((1-ν²)t³)]^(1/3)
-    const buckleStress = (2 * filmModulus * adhesionEnergy ** 2 / ((1 - 0.25 ** 2) * t ** 3)) ** (1 / 3) / 1e6; // MPa
-
-    // Pull-off force estimate (JKR model simplified)
-    const W = adhesionEnergy; // J/m²
-    const pullOffForce = 1.5 * Math.PI * R * W; // N
-
-    // Von Mises stress under indenter
-    const vmStress = 0.31 * Lc / (R * R) * 1e-6; // MPa
-
-    return { adhesionEnergy, adhesionMPa, shearStrength, scratchHardness, peelEnergy, bendStrain, buckleStress, pullOffForce, vmStress };
-  }, [testMethod, filmMaterial, substrateMaterial, filmThickness, criticalLoad, scratchLength, tipRadius, peelForce, tapeAdhesion, bendRadius]);
-
-  const sweepData = useMemo(() => {
-    const loads = Array.from({ length: 80 }, (_, i) => 0.5 + i * 29.5 / 80);
-    const adhesion = loads.map(Lc => {
-      const R = tipRadius * 1e-6;
-      return Lc / (Math.PI * R) * 10;
-    });
-    const shear = loads.map(Lc => {
-      const R = tipRadius * 1e-6;
-      return Lc / (Math.PI * R * R) * 1e-6;
-    });
-    return [
-      { x: loads, y: adhesion, type: "scatter" as const, mode: "lines" as const, name: "Adhesion (MPa)", line: { color: "#60a5fa" }, yaxis: "y" },
-      { x: loads, y: shear, type: "scatter" as const, mode: "lines" as const, name: "Shear (MPa)", line: { color: "#f87171" }, yaxis: "y2" },
-    ];
-  }, [tipRadius]);
-
-  const thicknessEffect = useMemo(() => {
-    const thicknesses = Array.from({ length: 60 }, (_, i) => 10 + i * 490 / 60);
-    const adhesionEst = thicknesses.map(t => {
-      const t_m = t * 1e-9;
-      const R = tipRadius * 1e-6;
-      const Lc = criticalLoad;
-      return Lc / (Math.PI * R) * 10 * Math.sqrt(100 / t);
-    });
-    return [
-      { x: thicknesses, y: adhesionEst, type: "scatter" as const, mode: "lines" as const, name: "Adhesion vs Thickness", line: { color: "#34d399" } },
-    ];
-  }, [criticalLoad, tipRadius]);
+  const chart = useMemo(() => {
+    if (!valid) return null;
+    const n = 120;
+    if (method === "scratch") {
+      const top = Math.min(Math.max(3 * criticalLoad, 1), 0.9 * maxLoad);
+      const L: number[] = [];
+      const tau: number[] = [];
+      for (let i = 0; i <= n; i++) {
+        const l = (top * i) / n;
+        L.push(l);
+        tau.push(benjaminWeaver(l, R_tip, H).shearStress / 1e6);
+      }
+      return {
+        data: [{ x: L, y: tau, type: "scatter" as const, mode: "lines" as const, name: "τ", line: { color: "#60a5fa" } }],
+        layout: { ...layoutBase, xaxis: { title: "Critical load (N)", gridcolor: "#374151" }, yaxis: { title: "Shear stress τ (MPa)", gridcolor: "#374151" } },
+      };
+    }
+    if (method === "peel") {
+      const th: number[] = [];
+      const G: number[] = [];
+      for (let i = 0; i <= n; i++) {
+        const deg = (180 * i) / n;
+        th.push(deg);
+        G.push(kendallPeelEnergy(peelForce, (deg * Math.PI) / 180, armModulus * 1e9, armThickness * 1e-6));
+      }
+      return {
+        data: [{ x: th, y: G, type: "scatter" as const, mode: "lines" as const, name: "G", line: { color: "#60a5fa" } }],
+        layout: { ...layoutBase, xaxis: { title: "Peel angle (°)", gridcolor: "#374151" }, yaxis: { title: "G at this peel force (J/m²)", gridcolor: "#374151" } },
+      };
+    }
+    if (method === "bend") {
+      const rMin = Math.max(0.6 * substrateThickness, 0.2 * bendRadius);
+      const radii: number[] = [];
+      const ch: number[] = [];
+      const de: number[] = [];
+      for (let i = 0; i <= n; i++) {
+        const r = rMin * Math.pow((5 * bendRadius) / rMin, i / n); // mm, log spaced
+        const b = bendTest(substrateThickness * 1e-3, r * 1e-3, filmModulus * 1e9, filmPoisson, filmThickness * 1e-9, residualStress * 1e6);
+        if (!Number.isFinite(b.channelG)) continue;
+        radii.push(r);
+        ch.push(b.channelG);
+        de.push(b.delaminationG);
+      }
+      return {
+        data: [
+          { x: radii, y: ch, type: "scatter" as const, mode: "lines" as const, name: "Channel crack", line: { color: "#f87171" } },
+          { x: radii, y: de, type: "scatter" as const, mode: "lines" as const, name: "Delamination", line: { color: "#60a5fa" } },
+        ],
+        layout: { ...layoutBase, xaxis: { title: "Bend radius (mm)", gridcolor: "#374151", type: "log" }, yaxis: { title: "G (J/m²)", gridcolor: "#374151", type: "log" } },
+      };
+    }
+    return null;
+  }, [valid, method, criticalLoad, maxLoad, R_tip, H, peelForce, armModulus, armThickness, substrateThickness, bendRadius, filmModulus, filmPoisson, filmThickness, residualStress]);
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Test Method</span>
-          <select value={testMethod} onChange={e => setTestMethod(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            <option value="scratch">Scratch Test</option>
-            <option value="peel">Peel Test</option>
-            <option value="tape">Tape Test (ASTM D3359)</option>
-            <option value="bend">Bend Test</option>
-          </select></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Film Material</span>
-          <select value={filmMaterial} onChange={e => setFilmMaterial(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            {Object.entries(materials).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
-          </select></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Substrate Material</span>
-          <select value={substrateMaterial} onChange={e => setSubstrateMaterial(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            {Object.entries(substrates).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
-          </select></label>
-        <ValidatedNumberInput label="Film Thickness (nm)" value={filmThickness} onChange={setFilmThickness} step="5" />
+      <div className="grid gap-4 sm:grid-cols-2 mb-6">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Test method</span>
+          <select value={method} onChange={(e) => setMethod(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            {(Object.keys(METHODS) as Method[]).map((k) => <option key={k} value={k}>{METHODS[k]}</option>)}
+          </select>
+        </label>
 
-        {(testMethod === "scratch" || testMethod === "all") && (
+        {method === "scratch" && (
           <>
-            <ValidatedNumberInput label={<>Critical Load L<sub>c</sub> (N)</>} value={criticalLoad} onChange={setCriticalLoad} step="0.5" />
-            <ValidatedNumberInput label="Stylus Tip Radius (μm)" value={tipRadius} onChange={setTipRadius} step="10" />
-            <ValidatedNumberInput label="Scratch Length (mm)" value={scratchLength} onChange={setScratchLength} step="0.5" />
+            <ValidatedNumberInput label={<>Critical load L<sub>c</sub> (N)</>} value={criticalLoad} onChange={setCriticalLoad} min={0} step="0.5" />
+            <ValidatedNumberInput label="Stylus tip radius (µm)" value={tipRadius} onChange={setTipRadius} min={1} step="10" />
+            <ValidatedNumberInput label="Substrate hardness H (GPa)" value={hardness} onChange={setHardness} min={0.01} step="0.5" />
           </>
         )}
-
-        {testMethod === "peel" && (
-          <ValidatedNumberInput label="Peel Force (N/m)" value={peelForce} onChange={setPeelForce} step="0.1" />
-        )}
-
-        {testMethod === "tape" && (
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Tape Adhesion Rating</span>
-            <select value={tapeAdhesion} onChange={e => setTapeAdhesion(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-              {Object.entries(tapeRatings).map(([k, v]) => <option key={k} value={k}>{k} - {v.description}</option>)}
-            </select></label>
-        )}
-
-        {testMethod === "bend" && (
-          <ValidatedNumberInput label="Bend Radius (mm)" value={bendRadius} onChange={setBendRadius} step="0.5" />
-        )}
-      </div>
-
-      <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
-        {testMethod === "scratch" && (
+        {method === "peel" && (
           <>
-            <p className="text-gray-300">Adhesion Energy W<sub>ad</sub>: <span className="text-blue-400 font-mono">{results.adhesionEnergy.toFixed(3)} J/m²</span></p>
-            <p className="text-gray-300">Adhesion Strength: <span className="text-blue-400 font-mono">{results.adhesionMPa.toFixed(1)} MPa</span></p>
-            <p className="text-gray-300">Interfacial Shear Strength: <span className="text-blue-400 font-mono">{results.shearStrength.toFixed(2)} MPa</span></p>
-            <p className="text-gray-300">Scratch Hardness: <span className="text-blue-400 font-mono">{results.scratchHardness.toFixed(2)} GPa</span></p>
-            <p className="text-gray-300">Pull-off Force (JKR): <span className="text-blue-400 font-mono">{results.pullOffForce.toFixed(4)} N</span></p>
-            <p className="text-gray-300">Von Mises Stress: <span className="text-blue-400 font-mono">{results.vmStress.toFixed(1)} MPa</span></p>
+            <ValidatedNumberInput label="Peel force per unit width F/b (N/m)" value={peelForce} onChange={setPeelForce} min={0} step="10" />
+            <ValidatedNumberInput label="Peel angle θ (°)" value={peelAngle} onChange={setPeelAngle} min={0} max={180} step="5" />
+            <ValidatedNumberInput label="Young's modulus of the peel arm (GPa)" value={armModulus} onChange={setArmModulus} min={0.001} step="0.5" />
+            <ValidatedNumberInput label="Thickness of the peel arm (µm)" value={armThickness} onChange={setArmThickness} min={0.01} step="5" />
           </>
         )}
-        {testMethod === "peel" && (
-          <>
-            <p className="text-gray-300">Peel Energy: <span className="text-blue-400 font-mono">{results.peelEnergy.toFixed(3)} J/m²</span></p>
-            <p className="text-gray-300">Adhesion Strength: <span className="text-blue-400 font-mono">{(results.peelEnergy * 10).toFixed(1)} MPa (equiv.)</span></p>
-            <p className="text-gray-300">Film/Adhesive Interface: <span className="text-blue-400 font-mono">{results.peelEnergy > 1 ? "Strong" : "Weak"}</span></p>
-          </>
+        {method === "tape" && (
+          <ValidatedNumberInput label="Lattice area removed by the tape (%)" value={removed} onChange={setRemoved} min={0} max={100} step="1" />
         )}
-        {testMethod === "tape" && (
+        {method === "bend" && (
           <>
-            <p className="text-gray-300">Tape Rating: <span className="text-blue-400 font-mono">{tapeAdhesion}</span></p>
-            <p className="text-gray-300">Film Retained: <span className="text-blue-400 font-mono">{tape.percentage}%</span></p>
-            <p className="text-gray-300">Qualitative Adhesion: <span className="text-blue-400 font-mono">{tape.description}</span></p>
-          </>
-        )}
-        {testMethod === "bend" && (
-          <>
-            <p className="text-gray-300">Bending Strain: <span className="text-blue-400 font-mono">{(results.bendStrain * 100).toFixed(3)}%</span></p>
-            <p className="text-gray-300">Buckling Critical Stress: <span className="text-blue-400 font-mono">{results.buckleStress.toFixed(1)} MPa</span></p>
-            <p className="text-gray-300">Film Stress at Bend: <span className="text-blue-400 font-mono">{(film.modulus * results.bendStrain).toFixed(1)} MPa</span></p>
+            <ValidatedNumberInput label="Substrate thickness (mm)" value={substrateThickness} onChange={setSubstrateThickness} min={0.001} step="0.05" />
+            <ValidatedNumberInput label="Bend radius at the substrate mid-plane (mm)" value={bendRadius} onChange={setBendRadius} min={0.01} step="1" />
+            <ValidatedNumberInput label="Film Young's modulus (GPa)" value={filmModulus} onChange={setFilmModulus} min={0.1} step="5" />
+            <ValidatedNumberInput label="Film Poisson's ratio" value={filmPoisson} onChange={setFilmPoisson} min={0} max={0.49} step="0.01" />
+            <ValidatedNumberInput label="Film thickness (nm)" value={filmThickness} onChange={setFilmThickness} min={1} step="10" />
+            <ValidatedNumberInput label="Residual film stress (MPa; tensile > 0)" value={residualStress} onChange={setResidualStress} step="50" />
           </>
         )}
       </div>
 
-      <div className="bg-gray-900 rounded p-4 mb-6 text-sm text-gray-400">
-        <p className="font-semibold text-gray-200 mb-2">Key Formulas</p>
-        <p>W<sub>ad</sub> = L<sub>c</sub> / (π·R) (adhesion energy from scratch test)</p>
-        <p>τ = L<sub>c</sub> / (π·R²) (interfacial shear strength)</p>
-        <p>H<sub>s</sub> = L / (2πR√(2Rt − t²)) (scratch hardness)</p>
-        <p>ϵ<sub>bend</sub> = t / (2R) (bending strain)</p>
-        <p>F<sub>pull</sub> = 1.5πRW (JKR pull-off force)</p>
-      </div>
+      {errors.length > 0 && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">No result: {errors.join("; ")}.</p>
+      )}
 
-      {testMethod === "scratch" && (
+      {valid && method === "scratch" && (
         <>
-          <h2 className="text-xl font-semibold mb-3 text-gray-200">Adhesion vs Critical Load</h2>
-          <ChartPanel data={sweepData} layout={{
-            paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
-            xaxis: { title: "Critical Load (N)", gridcolor: "#374151" },
-            yaxis: { title: "Adhesion (MPa)", gridcolor: "#374151", side: "left" },
-            yaxis2: { title: "Shear (MPa)", gridcolor: "#374151", overlaying: "y", side: "right" },
-            margin: { t: 20, b: 40, l: 50, r: 50 }, autosize: true, legend: { x: 0.01, y: 0.99 }
-          }} />
-
-          <h2 className="text-xl font-semibold mb-3 mt-6 text-gray-200">Adhesion vs Film Thickness</h2>
-          <ChartPanel data={thicknessEffect} layout={{
-            paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
-            xaxis: { title: "Film Thickness (nm)", gridcolor: "#374151" },
-            yaxis: { title: "Adhesion (MPa)", gridcolor: "#374151" },
-            margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true
-          }} />
+          {!Number.isFinite(scratch.shearStress) && (
+            <p className="mb-6 text-sm text-yellow-300" role="status">
+              No result: the contact radius would reach the tip radius (L<sub>c</sub> ≥ πR²H = {fmt(maxLoad, 1, " N")}); the stylus is buried.
+            </p>
+          )}
+          <div className="grid gap-4 sm:grid-cols-2 mb-6">
+            <ResultCard label="Interfacial shear stress τ" value={fmt(scratch.shearStress / 1e6, 0, " MPa")} tone="yellow" subtext="H a / √(R² − a²)" />
+            <ResultCard label="Contact radius a" value={fmt(scratch.contactRadius * 1e6, 1, " µm")} tone="cyan" subtext="√(L_c / (π H))" />
+          </div>
         </>
       )}
+
+      {valid && method === "peel" && (
+        <div className="grid gap-4 sm:grid-cols-2 mb-6">
+          <ResultCard label="Interfacial fracture energy G" value={fmt(peelG, 2, " J/m²")} tone="yellow" subtext="Kendall: F/b (1 − cos θ) + (F/b)² / (2Eh)" />
+          <ResultCard label="Peel-arm stretching share" value={fmt(peelG > 0 ? (100 * peelStretch) / peelG : NaN, 2, " %")} tone="cyan" subtext="(F/b)² / (2Eh) as a share of G" />
+        </div>
+      )}
+
+      {valid && method === "tape" && (
+        <div className="grid gap-4 sm:grid-cols-2 mb-6">
+          <ResultCard label="ASTM D3359 class" value={cls ?? "—"} tone="yellow" subtext={cls ? `area removed ${TAPE_CLASS_RANGE[cls]}` : undefined} />
+        </div>
+      )}
+
+      {valid && method === "bend" && bend.stress < 0 && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          No crack or delamination G: the film is in net compression ({fmt(bend.stress / 1e6, 0, " MPa")}), so it fails by buckling, which isn&apos;t modelled.
+        </p>
+      )}
+      {valid && method === "bend" && (
+        <div className="grid gap-4 sm:grid-cols-2 mb-6">
+          <ResultCard label="Film strain (convex side)" value={fmt(bend.strain * 100, 3, " %")} tone="cyan" subtext="h_s / (2R), tensile" />
+          <ResultCard label="Film stress along the bend" value={fmt(bend.stress / 1e6, 0, " MPa")} tone="green" subtext="σ_res + E_f ε / (1 − ν_f²)" />
+          <ResultCard label="G, channel crack" value={fmt(bend.channelG, 3, " J/m²")} tone="red" subtext="1.976 σ² h / Ē_f; cracks when ≥ film toughness" />
+          <ResultCard label="G, interface delamination" value={fmt(bend.delaminationG, 3, " J/m²")} tone="yellow" subtext="σ² h / (2 Ē_f); debonds when ≥ interface toughness" />
+        </div>
+      )}
+
+      {method === "tape" && (
+        <table className="mb-6 text-sm text-gray-300">
+          <tbody>
+            {TAPE_CLASSES.map((k) => (
+              <tr key={k} className={k === cls ? "text-yellow-300" : undefined}>
+                <td className="pr-6 font-mono">{k}</td>
+                <td>{TAPE_CLASS_RANGE[k]} of the cross-cut area removed</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      <div className="bg-gray-900 rounded p-4 mb-6 text-sm text-gray-400">
+        <p className="font-semibold text-gray-200 mb-2">Model</p>
+        {method === "scratch" && (
+          <p>
+            Benjamin–Weaver: a spherical stylus sinks into a fully plastic substrate until the mean contact pressure equals the
+            hardness H, and τ is the shear stress at the leading edge of the contact. It ranks coatings tested with one stylus;
+            the critical load also depends on friction, film thickness, the stylus wear and the failure mode, so τ is not a work
+            of adhesion. Use the substrate hardness from indentation at a similar depth (optical glasses ≈ 5–7 GPa).
+          </p>
+        )}
+        {method === "peel" && (
+          <p>
+            Kendall&apos;s energy balance for steady peeling of a linear-elastic strip; G is the energy per unit area to separate
+            the interface. Plastic bending of the arm near the peel front adds to the measured force and is not removed here, so
+            G is an upper bound for a ductile arm. At small angles the stretching term dominates.
+          </p>
+        )}
+        {method === "tape" && (
+          <p>
+            ASTM D3359 Method B: a cross-cut lattice is taped and pulled; the class follows from the area removed. The test is a
+            pass/fail ranking and gives no adhesion energy.
+          </p>
+        )}
+        {method === "bend" && (
+          <p>
+            A film on the convex side of a wide substrate bent to radius R carries ε = h<sub>s</sub>/(2R) with no strain across
+            the bend (plane strain). G = Z σ²h/Ē<sub>f</sub> from Hutchinson &amp; Suo for a film much thinner than the substrate:
+            Z = 1.976 for a channel crack with matched film and substrate moduli, ½ for steady-state delamination. A substrate
+            more compliant than the film (a polymer) raises the channel-crack Z, and a stiffer one lowers it; the delamination G
+            doesn&apos;t depend on the substrate. Residual stress from deposition and thermal mismatch, often hundreds of MPa in
+            optical coatings, adds to the bending stress. A film in net compression (or on the concave side) buckles instead,
+            which isn&apos;t modelled.
+          </p>
+        )}
+      </div>
+
+      {chart && <ChartPanel data={chart.data} layout={chart.layout} />}
     </>
   );
 }
