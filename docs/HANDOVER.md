@@ -1,39 +1,38 @@
-# Handover — 2026-10-14 (session 54 → session 55)
+# Handover — 2026-10-14 (session 55 → session 56)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 54 finished thin-film leftovers a (PR #69: `thermal-evaporation`, `ion-assisted-deposition`, `angle-shift`),
-which passed the production check. Next: thin-film leftovers b (`sputtering-deposition`, `plasma-deposition`,
-`adhesion-testing`). `polarizer-types` stays blocked until the user is at the laptop with Chrome.
+Session 55 finished thin-film leftovers b (PR #71: `sputtering-deposition`, `plasma-deposition`, `adhesion-testing`);
+thin film is 45/45. Next: part 0 of the next category audit (ask the user which). `polarizer-types` stays blocked
+until the user is at the laptop with Chrome.
 
 ## State
-- 187 of 459 pages are tiered (thin-film 42/45), 0 `knownIssue`s, 588 tests pass.
-- New in session 54:
-  - `thermal-evaporation.ts`: `EVAPORANTS` (8 metals, Alcock 1984 solid/liquid fits), `vapourPressure`, `inFitRange`,
-    `evaporationMassFlux` (Hertz–Knudsen), `surfaceSourceRate` (Ṁ/(πρh²)), `surfaceSourceProfile`, `airMeanFreePath`,
-    `meanSpeed`, `structureZone` (NaN at T_s ≥ T_m). `ATM`, `TORR` defined there (open finding: move to constants).
-  - `ion-assisted-deposition.ts`: `IAD_MATERIALS` (7 oxides/fluorides), `ionFlux`, `moleculeFlux`, `iadParameters`.
-    The page passes `{ ...bulk, rho: ρ_set }` for the QCM density input (0 = bulk).
-  - `angle-shift` reuses `stopBandCentreAtAngle(λ₀, n, n, θ)` from `quarter-wave-stack.ts`.
+- 190 of 459 pages are tiered (thin-film 45/45, fiber 47/47, laser-safety 40/40), 0 `knownIssue`s, 598 tests pass.
+- New in session 55:
+  - `sputtering.ts`: `SPUTTER_TARGETS` (10 metals: Y500, U_s, M, ρ, T_m), `targetIonCurrent`, `sputteredAtomRate`,
+    `diskOnAxisFlux` (Φ/(π(a²+d²))), `growthRate`, `thompsonPeakEnergy`, `argonMeanFreePath`, `D_AR`.
+  - `plasma-global-model.ts`: L&L argon `kIz/kEx/kEl`, `collisionalLoss`, `geometry` (h_l, h_R, d_eff, A_eff),
+    `electronTemperature` (bisection), `argonDischarge(P, R, l, p, T_g)`, `lowPressureRegime`.
+  - `adhesion.ts`: `benjaminWeaver`, `kendallPeelEnergy`, `tapeClass` (D3359 B), `bendTest(hs, R, E, ν, h, σ_res)`.
+  - `ATM`, `TORR` now in `constants.ts`.
 
 ## Next actions
-1. Thin-film leftovers b (ROADMAP box; findings under "Thin film"): `sputtering-deposition`, `plasma-deposition`,
-   `adhesion-testing`. Not audited yet; the constants codemod changed their amu from m_p to m_u. Audit first
-   (`/physics-audit`), then fix with modules + golden tests. `grep -n "<slug>" docs/archive/roadmap-history.md`.
+1. Next category audit, part 0 (ROADMAP box): ask the user which category, inventory its pages with `checker`
+   (`npx tsx scripts/tier-status.ts <category>`, `scripts/find.ts`), split into ≈ 4-page parts, add them as boxes.
 2. Each fixed page: tier, `modelNote` (≤ 220 characters, count with `[...s].length`) and references
    (`scripts/crossref.mjs`). Run one `physics-reviewer` pass before the PR.
-3. `/ship`: `post-merge-check <sha> thin-film/<slug>=<default value as rendered>` per page.
+3. `/ship`: `post-merge-check <sha> <category>/<slug>=<default value as rendered>` per page.
 4. Later: the fiber open findings (SMF D(1550) unification, 1.4682 used as a phase index on ≈ 20 pages), G.657.A3 and
-   the MCF R_eq (need Chrome); the small thermal-evaporation finding (T_m, ATM/TORR).
+   the MCF R_eq (need Chrome); the small thin-film findings (sputtering gas scattering, plasma high-pressure h).
 
 ## Non-obvious facts
-- **Session 54 lessons:**
-  - A windows-update restart mid-stage loses nothing on disk; check `git status`/`git diff --stat`, run the tests, then
-    the gates and the reviewer.
-  - The physics-reviewer's best catches are page-level: an input `max` that its own validity check rejects
-    (°C → K rounding at 273 vs 273.15), defaults that trigger the page's own warning, a readout pinned to a constant.
-  - QCM rates: rate × density set in the monitor is the true mass rate whatever the film's porosity; only a rate
-    from measured thickness needs the film density.
+- **Session 55 lessons:**
+  - Worked examples in course notes often read T_e, E_c etc. off figures: check the model against them loosely (10 %)
+    and pin the golden values to an independent script (a grid scan instead of the bisection).
+  - archive.org holds readable scans of Ohring (1992), Maissel & Glang and Kittel 8th ed. (read the pages as images).
+  - Run a long source lookup as a background agent and write the modules that don't depend on it meanwhile.
+  - The physics-reviewer's best catches are page-level and validity-level: a regime limit far below the page's
+    warning threshold, text claims about limits (compliant substrate), defaults that trigger the page's own warning.
 - **Sources:**
   - Optics Express full text and PDFs don't download (JS shell). arXiv papers that reproduce a table work. Cross-check
     a coefficient table against a second independent reproduction (e.g. Au(s) A = 9.152, not 9.52).
