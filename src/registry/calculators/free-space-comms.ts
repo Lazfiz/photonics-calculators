@@ -35,8 +35,18 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "aperture-averaging",
     title: "Aperture Averaging",
-    description: "Aperture-averaging factor for plane and spherical waves, Rytov variance and the reduced scintillation index versus receiver diameter over √(λL).",
-    knownIssue: "The averaging factor uses (D/√(λL))^(7/6) instead of Andrews' [1 + 1.062·kD²/4L]^(−7/6): 0.24 instead of 0.056 at the defaults. The spherical-wave factor is also wrong.",
+    description: "Weak-fluctuation aperture-averaging factor for plane and spherical waves (exact integral and Andrews' fits), Rytov variance and the all-regime scintillation index versus receiver diameter.",
+    tier: "textbook",
+    modelNote: "Weak fluctuations: exact Gaussian-aperture integral of the Kolmogorov spectrum, with Andrews' 1992 fits for comparison; the all-regime σ_I²(D) interpolation under-averages for d² ≫ 1. Constant Cn².",
+    references: [
+      {
+        citation: "Andrews L. C. (1992). Aperture-averaging factor for optical scintillations of plane and spherical waves in the atmosphere. J. Opt. Soc. Am. A 9(4), 597.",
+        url: "https://doi.org/10.1364/josaa.9.000597",
+      },
+      {
+        citation: "Andrews L. C., Phillips R. L. (2005). Laser Beam Propagation through Random Media, 2nd ed. SPIE. Gaussian-aperture weak-fluctuation integrals and the all-regime aperture-averaged scintillation index.",
+      },
+    ],
   },
   {
     slug: "atmospheric-loss",
@@ -73,8 +83,18 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "beam-wander",
     title: "Beam Wander",
-    description: "RMS turbulence-induced beam wander and the resulting pointing loss of a Gaussian beam versus Cn², path length, beam radius and wavelength.",
-    knownIssue: "The wander formula uses λ^(−1/3) instead of the beam radius W₀^(−1/3) (rms 1.26 cm instead of 0.30 cm at the defaults), and the loss uses the transmitter radius, not the beam at the receiver.",
+    description: "RMS turbulence-induced wander of a collimated Gaussian beam, its angular jitter and the mean on-axis loss versus Cn², path length and beam radius.",
+    tier: "textbook",
+    modelNote: "Collimated Gaussian beam, constant Cn², infinite outer scale: ⟨r_c²⟩ = 2.42 Cn²L³W₀^(−1/3), independent of λ. Mean on-axis loss 10 log(1 + 2⟨r_c²⟩/W²), W the diffracted beam radius.",
+    references: [
+      {
+        citation: "Churnside J. H., Lataitis R. J. (1990). Wander of an optical beam in the turbulent atmosphere. Appl. Opt. 29(7), 926.",
+        url: "https://doi.org/10.1364/ao.29.000926",
+      },
+      {
+        citation: "Andrews L. C., Phillips R. L. (2005). Laser Beam Propagation through Random Media, 2nd ed. SPIE. Beam wander of a Gaussian beam, ⟨r_c²⟩ = 2.42 C_n² L³ W₀^(−1/3) for a collimated beam.",
+      },
+    ],
   },
   {
     slug: "ber",
@@ -110,8 +130,26 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "diversity-reception",
     title: "Diversity Reception",
-    description: "Diversity gain, combined scintillation and outage probability for selection, equal-gain and maximal-ratio combining with N receivers in turbulence.",
-    knownIssue: "Branch correlation uses field coherence at r₀ instead of irradiance correlation, all three combiners give the same gain, and the outage Q(3/σ) has no physical basis.",
+    description: "Required fade margin and diversity gain of selection, equal-gain and maximal-ratio combining with N receivers, from the irradiance correlation at their separation in weak turbulence.",
+    tier: "textbook",
+    modelNote: "Weak fluctuations: log-normal receivers correlated by the plane-wave irradiance covariance at one separation d. SC and N = 2 are exact; EGC and MRC for N ≥ 3 use a Fenton–Wilkinson fit, conservative by up to ≈ 1 dB.",
+    references: [
+      {
+        citation: "Lee E. J., Chan V. W. S. (2004). Part 1: Optical communication over the clear turbulent atmospheric channel using diversity. IEEE J. Sel. Areas Commun. 22(9), 1896–1906.",
+        url: "https://doi.org/10.1109/jsac.2004.835751",
+      },
+      {
+        citation: "Navidpour S. M., Uysal M., Kavehrad M. (2007). BER performance of free-space optical transmission with spatial diversity. IEEE Trans. Wireless Commun. 6(8), 2813–2819.",
+        url: "https://doi.org/10.1109/twc.2007.06109",
+      },
+      {
+        citation: "Fenton L. F. (1960). The sum of log-normal probability distributions in scatter transmission systems. IRE Trans. Commun. Syst. 8(1), 57–67.",
+        url: "https://doi.org/10.1109/tcom.1960.1097606",
+      },
+      {
+        citation: "Andrews L. C., Phillips R. L. (2005). Laser Beam Propagation through Random Media, 2nd ed. SPIE. Weak-fluctuation plane-wave irradiance covariance function.",
+      },
+    ],
   },
   {
     slug: "eye-safety-fso",
@@ -136,8 +174,18 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "fade-probability",
     title: "FSO Fade Probability",
-    description: "Gamma-gamma fade probability, mean fade time and diversity gain versus fade threshold, with aperture averaging, for an FSO link in turbulence.",
-    knownIssue: "The aperture-averaging factor and the gamma-gamma α, β are wrong (208 instead of 103 and 98.5 at the defaults), and the page computes a log-normal fade, not gamma-gamma.",
+    description: "Gamma-gamma and log-normal fade probability versus fade threshold for an FSO link in turbulence, with aperture averaging and N uncorrelated receivers.",
+    tier: "textbook",
+    modelNote: "Gamma-gamma irradiance with α, β from the aperture-averaged plane-wave log variances (weak to strong turbulence); log-normal for comparison. P^N assumes N uncorrelated receivers with selection combining.",
+    references: [
+      {
+        citation: "Al-Habash M. A., Andrews L. C., Phillips R. L. (2001). Mathematical model for the irradiance probability density function of a laser beam propagating through turbulent media. Opt. Eng. 40(8), 1554–1562.",
+        url: "https://doi.org/10.1117/1.1386641",
+      },
+      {
+        citation: "Andrews L. C., Phillips R. L. (2005). Laser Beam Propagation through Random Media, 2nd ed. SPIE. Gamma-gamma model with aperture averaging.",
+      },
+    ],
   },
   {
     slug: "fog-attenuation",

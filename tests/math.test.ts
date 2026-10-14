@@ -13,13 +13,16 @@ import {
   erf,
   erfc,
   firstCrossing,
+  integrateTanhSinh,
   intervalStats,
   lnFactorial,
+  lnGamma,
   normalCdf,
   poissonCdf,
   poissonPmf,
   poissonSf,
   qFunction,
+  regularizedGammaP,
   unwrapPhase,
 } from "../src/physics/math";
 
@@ -186,4 +189,48 @@ test("unwrapPhase: recovers a phase ramp wrapped by atan2, NaN passes through", 
   assert.ok(Number.isNaN(down[3]));
   assert.ok(Math.abs(down[4] - 2) < 1e-12, `${down[4]}`);
   assert.deepEqual(unwrapPhase([]), []);
+});
+
+test("lnGamma matches factorials, Γ(1/2) = √π and Γ(1/6) (A&S 6.1.8, DLMF 5.4.6 table value)", () => {
+  assert.ok(Math.abs(lnGamma(1)) < 1e-14 && Math.abs(lnGamma(2)) < 1e-14, "Γ(1) = Γ(2) = 1");
+  for (const k of [2, 5, 10, 30, 170]) assertRel(lnGamma(k + 1), lnFactorial(k), 1e-14, `lnΓ(${k + 1})`);
+  assertRel(Math.exp(lnGamma(0.5)), Math.sqrt(Math.PI), 1e-14, "Γ(1/2)");
+  assertRel(Math.exp(lnGamma(1 / 6)), 5.566316001780235, 1e-13, "Γ(1/6)");
+  assert.ok(Number.isNaN(lnGamma(0)) && Number.isNaN(lnGamma(-1)));
+});
+
+test("regularized incomplete gamma: Poisson identity, exponential and erf cases, both branches", () => {
+  // Integer a: P(a, x) = 1 − Σ_{k<a} e^(−x) x^k/k! = poissonSf(a − 1, x) (series and continued-fraction branches).
+  for (const [a, x] of [[3, 2.5], [3, 9], [20, 12], [20, 40], [1, 1e-3]]) assertRel(regularizedGammaP(a, x), poissonSf(a - 1, x), 1e-12, `P(${a}, ${x})`);
+  assertRel(regularizedGammaP(1, 0.7), -Math.expm1(-0.7), 1e-14, "P(1, x)");
+  assertRel(regularizedGammaP(0.5, 2), erf(Math.SQRT2), 1e-13, "P(1/2, x) = erf √x");
+  // Deep lower tail keeps relative accuracy: P(a, x) → x^a/Γ(a + 1).
+  assertRel(regularizedGammaP(50, 1), Math.exp(-1 - lnGamma(51)) * (1 + 1 / 51 + 1 / (51 * 52) + 1 / (51 * 52 * 53)), 1e-6, "P(50, 1)");
+  assert.equal(regularizedGammaP(2, 0), 0);
+  assert.ok(Number.isNaN(regularizedGammaP(0, 1)) && Number.isNaN(regularizedGammaP(1, -1)));
+});
+
+test("tanh-sinh quadrature handles algebraic end singularities", () => {
+  assertRel(integrateTanhSinh((x) => x ** -0.5, 0, 1), 2, 1e-10, "∫x^(−1/2)");
+  // B(11/6, 11/6) = Γ(11/6)²/Γ(11/3).
+  assertRel(integrateTanhSinh((x) => (x * (1 - x)) ** (5 / 6), 0, 1), Math.exp(2 * lnGamma(11 / 6) - lnGamma(11 / 3)), 1e-12, "Beta");
+  assertRel(integrateTanhSinh(Math.exp, -1, 2), Math.E ** 2 - 1 / Math.E, 1e-13, "∫eˣ");
+});
+
+test("regularizedGammaP for large a: Temme's expansion (a ≥ 1e5) matches the power series summed to convergence", () => {
+  // Independent check: P(a, x) = x^a e^(−x)/Γ(a+1) Σ x^k/((a+1)…(a+k)), lnΓ by Stirling's series (DLMF 5.11.1).
+  const a = 1e5;
+  const lnGammaA = (a - 0.5) * Math.log(a) - a + 0.5 * Math.log(2 * Math.PI) + 1 / (12 * a) - 1 / (360 * a ** 3);
+  for (const r of [0.99, 1, 1.003]) {
+    const x = r * a;
+    let term = 1 / a;
+    let sum = term;
+    for (let k = 1; k < 200000 && term > 1e-17 * sum; k++) {
+      term *= x / (a + k);
+      sum += term;
+    }
+    assertRel(regularizedGammaP(a, x), sum * Math.exp(a * Math.log(x) - x - lnGammaA), 1e-8, `x/a = ${r}`);
+  }
+  // DLMF 8.12: P(a, a) → ½ + 1/(3√(2πa)); the old 1000-term cap gave 0.34 at a = 1e6.
+  assertRel(regularizedGammaP(1e6, 1e6), 0.5 + 1 / (3 * Math.sqrt(2 * Math.PI * 1e6)), 1e-8, "P(1e6, 1e6)");
 });

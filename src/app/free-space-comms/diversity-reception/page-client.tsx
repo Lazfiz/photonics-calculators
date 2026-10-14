@@ -1,123 +1,154 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { erfc } from "../../../physics/math";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  diversityThreshold, fresnelZone, irradianceCorrelation, logIrradianceCorrelation, rytovVariance, scintillationIndex,
+  type Combiner,
+} from "../../../physics/free-space-comms/turbulence";
+
+const fmt = (x: number, digits = 3) =>
+  !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
+const chartLayout = (xTitle: string, yTitle: string) => ({
+  xaxis: { title: xTitle, color: "#9ca3af", gridcolor: "#374151" },
+  yaxis: { title: yTitle, color: "#9ca3af", gridcolor: "#374151" },
+  margin: { l: 60, r: 20, t: 20, b: 50 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#d1d5db" },
+  legend: { x: 0.02, y: 0.98, bgcolor: "rgba(0,0,0,0)" },
+});
+
+const combiners: { id: Combiner; label: string; color: string }[] = [
+  { id: "sc", label: "Selection", color: "#06b6d4" },
+  { id: "egc", label: "Equal-gain", color: "#a78bfa" },
+  { id: "mrc", label: "Maximal-ratio", color: "#22c55e" },
+];
+const marginDb = (t: number) => -10 * Math.log10(t);
 
 export default function DiversityReceptionPage() {
   const [numRx, setNumRx] = useURLState("numRx", 2);
-  const [separation, setSeparation] = useURLState("separation", 10);
-  const [c2n, setC2n] = useURLState("c2n", 1e-14);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [range, setRange] = useURLState("range", 1);
-  const [combineMethod, setCombineMethod] = useState<"sc" | "egc" | "mrc">("mrc");
+  const [separation, setSeparation] = useURLState("separation", 5); // cm
+  const [c2n, setC2n] = useURLState("c2n", 1e-14); // m^(−2/3)
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [range, setRange] = useURLState("range", 1); // km
+  const [combiner, setCombiner] = useURLState("combiner", "egc");
+  const [pOut, setPOut] = useURLState("pOut", 1e-6);
 
-  const calc = useMemo(() => {
-    const lambda = wavelength * 1e-9;
-    const Cn2 = c2n;
-    // Fried parameter
-    const r0 = Math.pow(0.423 * Math.pow(2 * Math.PI / lambda, 2) * Cn2 * range * 1e3, -3 / 5);
-    // Spatial coherence radius at receiver
-    const rho0 = r0;
-    const sepM = separation * 0.01; // cm → m
-    // Correlation between receivers
-    const rhoCorr = Math.exp(-Math.pow(sepM / rho0, 5 / 3));
-    // Scintillation index (Rytov variance)
-    const sigmaR2 = 1.23 * Math.pow(2 * Math.PI / lambda, 7 / 6) * Math.pow(Cn2, 1) * Math.pow(range * 1e3, 11 / 6);
-    // Effective number of independent branches
-    const neff = numRx * (1 - rhoCorr) + rhoCorr;
-    // Diversity gain (SNR improvement from combining correlated branches)
-    let diversityGain: number;
-    let combinedSigma2: number;
-    if (combineMethod === "sc") {
-      diversityGain = 10 * Math.log10(neff);
-      combinedSigma2 = sigmaR2 * (1 + (numRx - 1) * rhoCorr) / numRx;
-    } else if (combineMethod === "egc") {
-      diversityGain = 10 * Math.log10(neff);
-      combinedSigma2 = sigmaR2 / neff;
-    } else {
-      // Maximal ratio combining (optimal)
-      diversityGain = 10 * Math.log10(neff);
-      combinedSigma2 = sigmaR2 / neff;
-    }
-    // Outage probability (simplified log-normal model)
-    const threshold = 3; // fade margin in sigma
-    const outage = 0.5 * erfc(threshold / Math.sqrt(2 * combinedSigma2));
-    return { r0, rhoCorr, sigmaR2, diversityGain, combinedSigma2, outage };
-  }, [numRx, separation, c2n, wavelength, range, combineMethod]);
+  const n = Math.min(8, Math.max(1, Math.round(numRx)));
+  const selected: Combiner = combiner === "sc" || combiner === "mrc" ? combiner : "egc";
 
-  const plotData = useMemo(() => {
-    const seps = Array.from({ length: 200 }, (_, i) => 0.5 + i * 0.25);
+  const base = useMemo(() => {
     const lambda = wavelength * 1e-9;
-    const r0 = Math.pow(0.423 * Math.pow(2 * Math.PI / lambda, 2) * c2n * range * 1e3, -3 / 5);
-    const methods = ["sc", "egc", "mrc"] as const;
-    const colors = ["#06b6d4", "#a78bfa", "#22c55e"];
-    return methods.map((m, idx) => ({
-      x: seps, y: seps.map((s) => {
-        const sepM = s * 0.01; // cm → m
-        const rho = Math.exp(-Math.pow(sepM / r0, 5 / 3));
-        const neff = numRx * (1 - rho) + rho;
-        return 10 * Math.log10(neff);
-      }),
-      type: "scatter" as const, mode: "lines", name: m.toUpperCase(), line: { color: colors[idx] },
+    const L = range * 1e3;
+    const sigmaR2 = rytovVariance(c2n, lambda, L);
+    const sigmaI2 = scintillationIndex(sigmaR2, lambda, L);
+    return { lambda, L, sigmaR2, sigmaI2 };
+  }, [wavelength, range, c2n]);
+
+  const results = useMemo(() => {
+    const { lambda, L, sigmaI2 } = base;
+    const bI = irradianceCorrelation(separation * 1e-2, lambda, L);
+    const rho = logIrradianceCorrelation(bI, sigmaI2);
+    const single = marginDb(diversityThreshold(pOut, 1, sigmaI2, rho, "sc"));
+    const margins = combiners.map((c) => ({ ...c, margin: marginDb(diversityThreshold(pOut, n, sigmaI2, rho, c.id)) }));
+    const sel = margins.find((m) => m.id === selected)!.margin;
+    return { bI, rho, single, margins, gain: single - sel, selMargin: sel };
+  }, [base, separation, pOut, n, selected]);
+
+  const sepData = useMemo(() => {
+    const { lambda, L, sigmaI2 } = base;
+    const sMax = 3 * Math.sqrt(lambda * L);
+    const seps = Array.from({ length: 40 }, (_, i) => (sMax * i) / 39);
+    const x = seps.map((s) => s * 100);
+    const rhos = seps.map((s) => logIrradianceCorrelation(irradianceCorrelation(s, lambda, L), sigmaI2));
+    const single = marginDb(diversityThreshold(pOut, 1, sigmaI2, 0, "sc"));
+    const gain = combiners.map((c) => ({
+      type: "scatter", mode: "lines", x, name: c.label, line: { color: c.color, width: 2 },
+      y: rhos.map((r) => single - marginDb(diversityThreshold(pOut, n, sigmaI2, r, c.id))),
     }));
-  }, [numRx, c2n, wavelength, range]);
+    const corr = [{
+      type: "scatter", mode: "lines", x, name: "b_I", line: { color: "#3b82f6", width: 2 },
+      y: seps.map((s) => irradianceCorrelation(s, lambda, L)),
+    }];
+    return { gain, corr };
+  }, [base, pOut, n]);
 
   return (
     <>
-      
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
-                <p className="text-cyan-300 mt-1 font-mono">ρ = exp(−(d/r₀)^(5/3)) &nbsp; (inter-receiver correlation)</p>
-        <p className="text-gray-500 mt-1">Optimal separation ≈ r₀ for decorrelated channels. Combine via SC/EGC/MRC.</p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-4">
+        <ValidatedNumberInput label="Number of Receivers N" value={numRx} onChange={setNumRx} min={1} max={8} step="1" />
+        <ValidatedNumberInput label="Receiver Separation (cm)" value={separation} onChange={setSeparation} min={0} max={1000} step="any" />
+        <ValidatedNumberInput label="Cn² (m⁻²ᐟ³)" value={c2n} onChange={setC2n} min={1e-18} max={1e-11} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={20000} />
+        <ValidatedNumberInput label="Link Distance (km)" value={range} onChange={setRange} min={0.001} max={1000} step="any" />
+        <ValidatedNumberInput label="Target Outage P_out" value={pOut} onChange={setPOut} min={1e-12} max={0.1} step="any" />
+      </div>
+      <div className="mb-8 max-w-xs">
+        <label className="block text-sm text-gray-400 mb-1" htmlFor="combiner">Combiner</label>
+        <select id="combiner" value={selected} onChange={(e) => setCombiner(e.target.value)}
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+          {combiners.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+        </select>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-          <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
-          {[
-            ["Number of Receivers", numRx, setNumRx],
-            ["RX Separation (cm)", separation, setSeparation],
-            ["Cn² (m^(-2/3))", c2n, setC2n],
-            ["Wavelength (nm)", wavelength, setWavelength],
-            ["Range (km)", range, setRange],
-          ].map(([label, val, set]: any) => (
-            <div key={label as string}>
-              <ValidatedNumberInput label={label} value={val} onChange={set} />
-            </div>
-          ))}
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Combining Method</label>
-            <select value={combineMethod} onChange={(e) => setCombineMethod(e.target.value as "sc" | "egc" | "mrc")}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
-              <option value="sc">Selection Combining (SC)</option>
-              <option value="egc">Equal Gain Combining (EGC)</option>
-              <option value="mrc">Maximal Ratio Combining (MRC)</option>
-            </select>
-          </div>
+      {base.sigmaR2 > 1 && (
+        <div role="alert" className="mb-6 rounded-lg border border-yellow-600 bg-yellow-900/30 p-4 text-sm text-yellow-200">
+          σ_R² &gt; 1: the irradiance correlation and the log-normal model hold for weak fluctuations only. Treat the margins as indicative.
         </div>
+      )}
 
-        <div className="space-y-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <h2 className="text-lg font-semibold text-cyan-400 mb-3">Results</h2>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-gray-400">Fried Parameter r₀</span><span>{(calc.r0 * 100).toFixed(1)} cm</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Inter-RX Correlation ρ</span><span>{calc.rhoCorr.toFixed(4)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Rytov Variance σ²_R</span><span>{calc.sigmaR2.toFixed(3)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Diversity Gain</span><span className="text-green-400">{calc.diversityGain.toFixed(1)} dB</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Combined Scintillation</span><span>{calc.combinedSigma2.toFixed(4)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Outage Probability</span><span className="text-yellow-400">{(calc.outage * 100).toFixed(2)}%</span></div>
-            </div>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <ChartPanel data={plotData} layout={{
-              xaxis: { title: "Separation (cm)", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "Diversity Gain (dB)", color: "#9ca3af", gridcolor: "#374151" },
-              paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-              margin: { t: 20, r: 20, b: 40, l: 50 }, font: { color: "#9ca3af" }, legend: { x: 0.02, y: 0.98 },
-            }} />
-          </div>
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <ResultCard label="Rytov variance σ_R²" value={fmt(base.sigmaR2)} tone="blue" />
+        <ResultCard label="Scintillation index σ_I² (point)" value={fmt(base.sigmaI2)} tone="purple" />
+        <ResultCard label={`Irradiance correlation b_I(${fmt(separation)} cm)`} value={fmt(results.bI)} tone="cyan"
+          subtext={`Fresnel zone ${fmt(fresnelZone(base.lambda, base.L) * 100)} cm`} />
+        <ResultCard label="Log-irradiance correlation ρ_ln" value={fmt(results.rho)} tone="gray" />
+        <ResultCard label="Fade margin, single receiver" value={`${fmt(results.single)} dB`} tone="orange" subtext={`for P_out = ${fmt(pOut)}`} />
+        <ResultCard label={`Fade margin, ${combiners.find((c) => c.id === selected)!.label}, N = ${n}`} value={`${fmt(results.selMargin)} dB`} tone="green" />
+        <ResultCard label="Diversity gain" value={`${fmt(results.gain)} dB`} tone="green" subtext="single margin − combiner margin" />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mb-6 overflow-x-auto">
+        <h2 className="text-lg font-semibold mb-4">Required margin by combiner (N = {n})</h2>
+        <table className="w-full text-sm text-left">
+          <thead className="text-gray-400"><tr><th className="py-1">Combiner</th><th>Margin (dB)</th><th>Gain (dB)</th></tr></thead>
+          <tbody>
+            {results.margins.map((m) => (
+              <tr key={m.id} className="border-t border-gray-800">
+                <td className="py-1">{m.label}</td><td>{fmt(m.margin)}</td><td>{fmt(results.single - m.margin)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+          <h2 className="text-lg font-semibold mb-4">Diversity gain vs separation</h2>
+          <ChartPanel data={sepData.gain} layout={chartLayout("Receiver separation (cm)", "Diversity gain (dB)")} />
         </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+          <h2 className="text-lg font-semibold mb-4">Irradiance correlation vs separation</h2>
+          <ChartPanel data={sepData.corr} layout={chartLayout("Receiver separation (cm)", "b_I")} />
+        </div>
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-sm text-gray-300 space-y-2">
+        <h3 className="text-lg font-semibold">Model</h3>
+        <p className="font-mono">M = −10·log10(t),   P(combined irradiance &lt; t⟨I⟩) = P_out</p>
+        <p>
+          Point receivers with log-normal irradiance, σ_I² from the all-regime plane-wave expression and the
+          spatial correlation b_I(d) of the Kolmogorov spectrum; ρ_ln is the correlation of ln I. Equicorrelation
+          assumes every pair of receivers is separated by d, which is conservative for a line or grid array. Each receiver
+          has the single receiver&apos;s aperture, so EGC and MRC include the √N array gain. SC and N = 2 are exact; for N ≥ 3 EGC and
+          MRC use a Fenton–Wilkinson log-normal fit, which is conservative: it overstates the margin by about 0.1–0.5 dB
+          at σ_I² ≤ 0.5 and by about 1 dB near σ_I² = 1. For N ≥ 3 the MRC margin is capped at the EGC value, so the two
+          often coincide (the exact MRC margin is 0.1–0.2 dB lower).
+        </p>
+        <p>
+          Valid for weak fluctuations (σ_R² &lt; 1). Margins are relative to one receiver&apos;s mean irradiance.
+        </p>
       </div>
     </>
   );
