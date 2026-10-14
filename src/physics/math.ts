@@ -388,3 +388,102 @@ export function largestSymmetricEigenvalue(A: readonly number[]): number {
   const r = Math.min(1, Math.max(-1, det / 2));
   return q + 2 * p * Math.cos(Math.acos(r) / 3);
 }
+
+/*
+ * Gamma function and incomplete gamma, for probability distributions with real shape parameters.
+ */
+
+// Lanczos approximation, g = 7, n = 9 (relative error < 2e-15 for x > 0.5); Numerical Recipes 3rd ed. §6.1 form.
+const LANCZOS = [
+  0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059,
+  12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7,
+];
+
+/** ln Γ(x) for x > 0 (reflection Γ(x)Γ(1 − x) = π/sin πx below 0.5); NaN for x ≤ 0. */
+export function lnGamma(x: number): number {
+  if (!(x > 0)) return NaN;
+  if (x < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * x)) - lnGamma(1 - x);
+  const z = x - 1;
+  let s = LANCZOS[0];
+  for (let i = 1; i < LANCZOS.length; i++) s += LANCZOS[i] / (z + i);
+  const t = z + 7.5;
+  return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(s);
+}
+
+/**
+ * Regularized lower incomplete gamma P(a, x) = γ(a, x)/Γ(a) for a > 0, x ≥ 0: the series (DLMF 8.11.4 form,
+ * A&S 6.5.29) for x < a + 1, else 1 − Q with Q from the Legendre continued fraction (DLMF 8.9.2, modified Lentz).
+ * The series keeps full relative accuracy for small P, so deep lower tails stay accurate. Tolerance 1e-16.
+ */
+export function regularizedGammaP(a: number, x: number): number {
+  if (!(a > 0) || Number.isNaN(x) || x < 0) return NaN;
+  if (x === 0) return 0;
+  if (x === Infinity) return 1;
+  if (a >= 1e5) return temmeGammaP(a, x);
+  const lnPrefactor = a * Math.log(x) - x - lnGamma(a);
+  const maxIter = 1000 + 20 * Math.ceil(Math.sqrt(a)); // both expansions need O(√a) terms
+  if (x < a + 1) {
+    let term = 1 / a;
+    let sum = term;
+    for (let n = 1; n < maxIter; n++) {
+      term *= x / (a + n);
+      sum += term;
+      if (term < 1e-16 * sum) break;
+    }
+    return sum * Math.exp(lnPrefactor);
+  }
+  const tiny = 1e-300;
+  let b = x + 1 - a;
+  let c = 1 / tiny;
+  let d = 1 / b;
+  let h = d;
+  for (let i = 1; i < maxIter; i++) {
+    const an = -i * (i - a);
+    b += 2;
+    d = an * d + b;
+    if (Math.abs(d) < tiny) d = tiny;
+    c = b + an / c;
+    if (Math.abs(c) < tiny) c = tiny;
+    d = 1 / d;
+    const delta = d * c;
+    h *= delta;
+    if (Math.abs(delta - 1) < 1e-16) break;
+  }
+  return 1 - Math.exp(lnPrefactor) * h;
+}
+
+/**
+ * Temme's uniform asymptotic expansion for large a (DLMF 8.12.3–8.12.8), first term: with λ = x/a and
+ * η = sign(λ − 1)√(2(λ − 1 − ln λ)), P(a, x) = ½ erfc(−η√(a/2)) − e^(−aη²/2)/√(2πa) · c₀(η), c₀ = 1/(λ − 1) − 1/η.
+ * The neglected c₁/a term leaves a relative error ≲ 1e-7 for a ≥ 1e5.
+ */
+function temmeGammaP(a: number, x: number): number {
+  const d = x / a - 1;
+  // λ − 1 − ln λ and c₀ by their series near λ = 1, where the closed forms cancel.
+  const small = Math.abs(d) < 1e-3;
+  const f = small ? d * d * (1 / 2 - d * (1 / 3 - d * (1 / 4 - d * (1 / 5 - d / 6)))) : d - Math.log1p(d);
+  const eta = Math.sign(d) * Math.sqrt(2 * f);
+  const c0 = small ? -1 / 3 + eta * (1 / 12 - eta * (2 / 135 - eta / 864)) : 1 / d - 1 / eta;
+  return 0.5 * erfc(-eta * Math.sqrt(a / 2)) - (Math.exp(-a * f) / Math.sqrt(2 * Math.PI * a)) * c0;
+}
+
+/**
+ * ∫ₐᵇ f(x) dx by tanh-sinh (double-exponential) quadrature: x = (a + b)/2 + (b − a)/2 · tanh(π/2 · sinh t), step h
+ * over |t| ≤ 3.5. It converges exponentially for integrands analytic inside (a, b), including integrable algebraic
+ * singularities at the ends (Takahasi & Mori 1974; Trefethen & Weideman 2014). f is never evaluated at a or b.
+ */
+export function integrateTanhSinh(f: (x: number) => number, a: number, b: number, h = 1 / 32): number {
+  const half = (b - a) / 2;
+  let sum = 0;
+  const n = Math.ceil(3.5 / h);
+  for (let k = -n; k <= n; k++) {
+    const t = k * h;
+    const u = (Math.PI / 2) * Math.sinh(Math.abs(t));
+    const dist = (b - a) / (1 + Math.exp(2 * u)); // distance to the nearer end, without cancellation
+    const x = t < 0 ? a + dist : b - dist;
+    if (x === a || x === b) continue;
+    const cu = Math.cosh(u);
+    sum += f(x) * (Math.cosh(t) / (cu * cu));
+  }
+  return half * (Math.PI / 2) * h * sum;
+}

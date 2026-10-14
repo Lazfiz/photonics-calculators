@@ -1,149 +1,107 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { erfc } from "../../../physics/math";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  apertureParameter, gammaGammaCdf, gammaGammaParameters, lognormalFadeProbability, rytovVariance, scintillationIndex,
+} from "../../../physics/free-space-comms/turbulence";
+
+const fmt = (x: number, digits = 3) =>
+  !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
+const chartLayout = (xTitle: string, yTitle: string, logY = false) => ({
+  xaxis: { title: xTitle, color: "#9ca3af", gridcolor: "#374151" },
+  yaxis: { title: yTitle, color: "#9ca3af", gridcolor: "#374151", ...(logY ? { type: "log" } : {}) },
+  margin: { l: 60, r: 20, t: 20, b: 50 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#d1d5db" },
+  legend: { x: 0.02, y: 0.02, bgcolor: "rgba(0,0,0,0)" },
+});
 
 export default function FadeProbabilityPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [cn2, setCn2] = useURLState("cn2", 1e-15);
-  const [range, setRange] = useURLState("range", 1000); // m
-  const [fadeThreshold, setFadeThreshold] = useURLState("fadeThreshold", 10); // dB below mean
-  const [rxDiameter, setRxDiameter] = useURLState("rxDiameter", 10); // cm
+  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [cn2, setCn2] = useURLState("cn2", 1e-15); // m^(−2/3)
+  const [distance, setDistance] = useURLState("distance", 1); // km
+  const [fadeThreshold, setFadeThreshold] = useURLState("fadeThreshold", 10); // dB below the mean
+  const [rxDiameter, setRxDiameter] = useURLState("rxDiameter", 0); // cm
   const [numChannels, setNumChannels] = useURLState("numChannels", 1);
 
-  // Fade probability based on log-normal model for weak turbulence
-  // P(I < I_T) = 0.5 * erfc(σ_I² / (2√2)) for weak turbulence
-  // Gamma-gamma model for moderate-strong turbulence (Andrews & Phillips)
-  const calc = useMemo(() => {
+  const n = Math.min(8, Math.max(1, Math.round(numChannels)));
+
+  const model = useMemo(() => {
     const lambda = wavelength * 1e-9;
-    const k = 2 * Math.PI / lambda;
-    const L = range;
-    const D = rxDiameter * 1e-2;
+    const L = distance * 1e3;
+    const D = Math.max(0, rxDiameter) * 1e-2;
+    const sigmaR2 = rytovVariance(cn2, lambda, L);
+    const d2 = apertureParameter(lambda, L, D);
+    const sigmaI2 = scintillationIndex(sigmaR2, lambda, L, D);
+    const { alpha, beta } = gammaGammaParameters(sigmaR2, d2);
+    return { sigmaR2, sigmaI2, alpha, beta };
+  }, [wavelength, cn2, distance, rxDiameter]);
 
-    // Rytov variance
-    const sigmaR2 = 1.23 * cn2 * Math.pow(k, 7 / 6) * Math.pow(L, 11 / 6);
+  const results = useMemo(() => {
+    const t = 10 ** (-fadeThreshold / 10);
+    const pGg = gammaGammaCdf(t, model.alpha, model.beta);
+    return { pGg, pLn: lognormalFadeProbability(t, model.sigmaI2), pN: pGg ** n };
+  }, [model, fadeThreshold, n]);
 
-    // Aperture averaging
-    const fresnel = Math.sqrt(lambda * L);
-    const ratio = D / fresnel;
-    const FA = 1 / (1 + 1.062 * Math.pow(ratio, 7 / 6));
-    const sigmaI2_eff = sigmaR2 * FA;
-
-    // Gamma-gamma distribution parameters
-    // α and β from Andrews & Phillips
-    let alpha_gg: number, beta_gg: number;
-    if (sigmaI2_eff < 0.3) {
-      alpha_gg = 1 / (sigmaI2_eff);
-      beta_gg = 1 / (sigmaI2_eff);
-    } else {
-      alpha_gg = 1 / (Math.exp(0.49 * sigmaI2_eff) - 1);
-      beta_gg = 1 / (Math.exp(0.18 * sigmaI2_eff) - 1);
-    }
-
-    // Fade probability: P(I/I₀ < F_T) where F_T = 10^(-threshold/10)
-    const FT = Math.pow(10, -fadeThreshold / 10);
-
-    // Gamma-gamma CDF approximation
-    // P(I < I_T) ≈ (αβ)/(α+β) * FT^β / Γ(β) * ₂F₁(...) (simplified)
-    // Use log-normal approximation for comparison
-    const sigma_ln = Math.sqrt(Math.log(1 + sigmaI2_eff));
-    const mu_ln = -sigma_ln * sigma_ln / 2;
-    const lnThreshold = Math.log(FT);
-    // P = 0.5 * erfc(-(lnThreshold - mu_ln) / (sigma_ln * sqrt(2)))
-    const arg = -(lnThreshold - mu_ln) / (sigma_ln * Math.SQRT2);
-    const Pfade_ln = 0.5 * erfc(arg);
-
-    // Mean fade time (Burgemeister et al.)
-    const V_wind = 5; // m/s
-    const rho0 = Math.pow(1.46 * cn2 * k * k * L, -3 / 5);
-    const tau_fade = rho0 / V_wind; // seconds
-
-    // Diversity improvement (for multi-channel)
-    const Pfade_diversity = numChannels > 1 ? Math.pow(Pfade_ln, numChannels) : Pfade_ln;
-
-    // Mean time between fades
-    const MTBF = tau_fade / (numChannels > 1 ? Pfade_diversity : Pfade_ln);
-
-    return {
-      sigmaR2, sigmaI2_eff, FA, alpha_gg, beta_gg,
-      Pfade_ln, Pfade_diversity, tau_fade_ms: tau_fade * 1000,
-      diversityGain: numChannels > 1 ? -10 * Math.log10(Math.max(Pfade_diversity / Pfade_ln, 1e-15)) : 0,
+  const fadeData = useMemo(() => {
+    const thresholds = Array.from({ length: 61 }, (_, i) => i * 0.5); // dB below the mean
+    const curve = (f: (t: number) => number) => {
+      const pts = thresholds.map((dB) => ({ x: dB, y: f(10 ** (-dB / 10)) })).filter((p) => Number.isFinite(p.y) && p.y > 1e-15);
+      return { x: pts.map((p) => p.x), y: pts.map((p) => p.y) };
     };
-  }, [wavelength, cn2, range, fadeThreshold, rxDiameter, numChannels]);
-
-  const plotData = useMemo(() => {
-    const thresholds = Array.from({ length: 100 }, (_, i) => i * 0.5); // 0-50 dB
-    const lambda = wavelength * 1e-9;
-    const k = 2 * Math.PI / lambda;
-    const D = rxDiameter * 1e-2;
-    const sigmaR2 = 1.23 * cn2 * Math.pow(k, 7 / 6) * Math.pow(range, 11 / 6);
-    const fresnel = Math.sqrt(lambda * range);
-    const FA = 1 / (1 + 1.062 * Math.pow(D / fresnel, 7 / 6));
-    const sigmaI2 = sigmaR2 * FA;
-    const sigma_ln = Math.sqrt(Math.log(1 + sigmaI2));
-    const mu_ln = -sigma_ln * sigma_ln / 2;
-
-    const single = thresholds.map((th) => {
-      const FT = Math.pow(10, -th / 10);
-      const arg = -(Math.log(FT) - mu_ln) / (sigma_ln * Math.SQRT2);
-      return 0.5 * erfc(arg);
-    });
-
-    const diversity = thresholds.map((th) => Math.pow(Math.max(single[thresholds.indexOf(th)], 1e-30), numChannels));
-
-    return [
-      { x: thresholds, y: single, type: "scatter", mode: "lines", name: "Single Channel", line: { color: "#06b6d4" } },
-      { x: thresholds, y: diversity, type: "scatter", mode: "lines", name: `${numChannels}-Channel Diversity`, line: { color: "#f97316" } },
+    const gg = (t: number) => gammaGammaCdf(t, model.alpha, model.beta);
+    const traces: Record<string, unknown>[] = [
+      { type: "scatter", mode: "lines", ...curve(gg), name: "gamma-gamma", line: { color: "#3b82f6", width: 2 } },
+      { type: "scatter", mode: "lines", ...curve((t) => lognormalFadeProbability(t, model.sigmaI2)), name: "log-normal", line: { color: "#ef4444", dash: "dash" } },
     ];
-  }, [wavelength, cn2, range, rxDiameter, numChannels]);
+    if (n > 1) {
+      traces.push({ type: "scatter", mode: "lines", ...curve((t) => gg(t) ** n), name: `gamma-gamma, ${n} receivers`, line: { color: "#22c55e", width: 2 } });
+    }
+    return traces;
+  }, [model, n]);
 
   return (
     <>
-      
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-          <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
-          {[
-            ["Wavelength (nm)", wavelength, setWavelength],
-            ["C_n² (m⁻²ᐟ³)", cn2, setCn2, 1e-15],
-            ["Range (m)", range, setRange],
-            ["Fade Threshold (dB)", fadeThreshold, setFadeThreshold],
-            ["RX Diameter (cm)", rxDiameter, setRxDiameter],
-            ["Num Channels", numChannels, setNumChannels],
-          ].map(([label, val, set, step]: any) => (
-            <div key={label as string}>
-              <ValidatedNumberInput label={label} value={val} onChange={set} />
-            </div>
-          ))}
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={20000} />
+        <ValidatedNumberInput label="Cn² (m⁻²ᐟ³)" value={cn2} onChange={setCn2} min={1e-18} max={1e-11} step="any" />
+        <ValidatedNumberInput label="Link Distance (km)" value={distance} onChange={setDistance} min={0.001} max={1000} step="any" />
+        <ValidatedNumberInput label="Fade Threshold (dB below mean)" value={fadeThreshold} onChange={setFadeThreshold} min={0} max={40} step="any" />
+        <ValidatedNumberInput label="Receiver Diameter (cm, 0 = point)" value={rxDiameter} onChange={setRxDiameter} min={0} max={50} step="any" />
+        <ValidatedNumberInput label="Independent Receivers N" value={numChannels} onChange={setNumChannels} min={1} max={8} step="1" />
+      </div>
 
-        <div className="space-y-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <h2 className="text-lg font-semibold text-cyan-400 mb-3">Results</h2>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-gray-400">Effective σ_I²</span><span>{calc.sigmaI2_eff.toFixed(4)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Aperture Avg Factor</span><span>{calc.FA.toFixed(4)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">γ-Gamma α, β</span><span>{calc.alpha_gg.toFixed(2)}, {calc.beta_gg.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Fade Prob (single)</span><span className="font-bold">{calc.Pfade_ln < 1e-6 ? calc.Pfade_ln.toExponential(2) : (calc.Pfade_ln * 100).toFixed(4) + "%"}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Fade Prob (diversity)</span><span className="text-orange-400 font-bold">{calc.Pfade_diversity < 1e-6 ? calc.Pfade_diversity.toExponential(2) : (calc.Pfade_diversity * 100).toFixed(4) + "%"}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Mean Fade Time</span><span>{calc.tau_fade_ms.toFixed(2)} ms</span></div>
-              {numChannels > 1 && (
-                <div className="flex justify-between"><span className="text-gray-400">Diversity Gain</span><span className="text-green-400">{calc.diversityGain.toFixed(2)} dB</span></div>
-              )}
-            </div>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-gray-400 mb-2">Fade Probability vs Threshold</h3>
-            <ChartPanel data={plotData} layout={{
-              xaxis: { title: "Fade Threshold (dB)", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "P(fade)", color: "#9ca3af", gridcolor: "#374151", type: "log" },
-              paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-              margin: { t: 20, r: 20, b: 40, l: 60 }, font: { color: "#9ca3af" },
-            }} />
-          </div>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <ResultCard label="Rytov variance σ_R²" value={fmt(model.sigmaR2)} tone="blue" />
+        <ResultCard label="Scintillation index σ_I²(D)" value={fmt(model.sigmaI2)} tone="purple" />
+        <ResultCard label="Gamma-gamma α, β" value={`${fmt(model.alpha)}, ${fmt(model.beta)}`} tone="gray" />
+        <ResultCard label={`P(fade > ${fmt(fadeThreshold)} dB), gamma-gamma`} value={fmt(results.pGg)} tone="green" subtext="primary result, weak to strong" />
+        <ResultCard label="P(fade), log-normal" value={fmt(results.pLn)} tone="orange" subtext="log-normal (weak-turbulence comparison)" />
+        {n > 1 && (
+          <ResultCard label={`P^N, N = ${n}`} value={fmt(results.pN)} tone="cyan"
+            subtext="N uncorrelated receivers, selection combining: P^N (separation ≫ √(λL))" />
+        )}
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mb-6">
+        <h2 className="text-lg font-semibold mb-4">Fade probability vs threshold</h2>
+        <ChartPanel data={fadeData} layout={chartLayout("Fade threshold below the mean (dB)", "P(I < threshold)", true)} />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-sm text-gray-300 space-y-2">
+        <h3 className="text-lg font-semibold">Model</h3>
+        <p className="font-mono">I = XY,   α = 1/(e^σ²lnX − 1),   β = 1/(e^σ²lnY − 1)</p>
+        <p>
+          Gamma-gamma irradiance with α and β set by the aperture-averaged large- and small-scale log variances (Al-Habash,
+          Andrews &amp; Phillips, Opt. Eng. 40, 1554, 2001). It is valid from weak to strong turbulence. The log-normal
+          curve is the weak-turbulence comparison and underestimates deep fades in moderate to strong turbulence.
+        </p>
+        <p>
+          P(I &lt; t⟨I⟩) with t = 10^(−F/10) for a fade of F dB below the mean. For N receivers whose separation is far
+          larger than √(λL), the fades are independent and selection combining fails only when all fail: P^N.
+        </p>
       </div>
     </>
   );
