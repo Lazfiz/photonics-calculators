@@ -166,33 +166,89 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "geometric-loss",
     title: "FSO Geometric Loss",
-    description: "Beam diameter at the receiver, geometric spreading loss and coupling efficiency from transmitter divergence, apertures, range and wavelength.",
-    knownIssue: "Coupling exceeds 100 % and the loss goes negative when the beam is smaller than the aperture, and the transmitter aperture input is never used.",
+    description: "Geometric spreading loss of a divergent FSO beam: top-hat footprint from exit aperture and divergence versus the exact Gaussian-beam capture by the receiver aperture.",
+    tier: "textbook",
+    modelNote: "Top-hat d_t + θR footprint (≥ 0 dB) beside the exact capture 1 − exp(−2a²/w²) of a Gaussian beam with half-angle θ/2, which is 3.01 dB better for a small receiver. Perfect pointing, no turbulence.",
+    references: [
+      {
+        citation: "Kim I. I., Korevaar E. (2001). Availability of free-space optics (FSO) and hybrid FSO/RF systems. Proc. SPIE 4530, 84.",
+        url: "https://doi.org/10.1117/12.449800",
+      },
+      {
+        citation: "Degnan J. J., Klein B. J. (1974). Optical antenna gain. 2: Receiving antennas. Appl. Opt. 13(10), 2397.",
+        url: "https://doi.org/10.1364/ao.13.002397",
+      },
+    ],
   },
   {
     slug: "lasercom-link",
     title: "Lasercom Link Budget",
     description: "Lasercom link budget with Gaussian-beam transmit and receive gains, free-space path loss, spot size at the receiver, and pointing and atmospheric losses.",
-    knownIssue: "A cm/m mix-up adds 40 dB and the beam spreading is counted twice (Friis gains plus a capture loss): −119 dBm instead of about −33 dBm at the defaults. The chart disagrees with the card.",
+    tier: "textbook",
+    modelNote: "Friis P_r = P_t G_t G_r (λ/4πR)² with G = (πD/λ)² η at each end; FSPL and gains count the spreading once. Capped at P_t η_t η_r; flags R < 2D_t²/λ. Pointing and atmosphere as fixed dB.",
+    references: [
+      {
+        citation: "Friis H. T. (1946). A note on a simple transmission formula. Proc. IRE 34(5), 254–256.",
+        url: "https://doi.org/10.1109/jrproc.1946.234568",
+      },
+      {
+        citation: "Klein B. J., Degnan J. J. (1974). Optical antenna gain. 1: Transmitting antennas. Appl. Opt. 13(9), 2134.",
+        url: "https://doi.org/10.1364/ao.13.002134",
+      },
+      {
+        citation: "Kaushal H., Kaddoum G. (2017). Optical communication in space: challenges and mitigation techniques. IEEE Commun. Surv. Tutor. 19(1), 57–96.",
+        url: "https://doi.org/10.1109/comst.2016.2603518",
+      },
+    ],
   },
   {
     slug: "link-budget",
     title: "FSO Link Budget",
-    description: "Interactive free-space optical link budget with sliders, presets, and received-power versus range view.",
-    lede: "Interactive free-space optical link budget with presets, sliders, and received-power versus range view.",
+    description: "Free-space optical link budget from transmitter divergence, receiver aperture, path loss and atmospheric attenuation per km, with the margin against receiver sensitivity versus range.",
+    lede: "Free-space optical link budget from transmitter divergence, receiver aperture, path loss and atmospheric attenuation, with presets and the margin versus range.",
     related: [
       { href: "/free-space-comms/geometric-loss" },
       { href: "/free-space-comms/lasercom-link" },
       { href: "/free-space-comms/optical-antenna" },
       { href: "/free-space-comms/point-ahead" },
     ],
-    knownIssue: "The default and maximum antenna gains are radio-scale (30 dBi is a 16 µm aperture at 1550 nm), so the default link is about 100 dB too pessimistic, and the receiver sensitivity is fixed.",
+    tier: "textbook",
+    modelNote: "Budget table from Friis (G_t = 8/θ², θ half-angle; G_r = (πD/λ)²); the received power is the exact Gaussian capture 1 − exp(−2a²/w²), which Friis matches far out. Atmosphere in dB/km; no turbulence.",
+    references: [
+      {
+        citation: "Friis H. T. (1946). A note on a simple transmission formula. Proc. IRE 34(5), 254–256.",
+        url: "https://doi.org/10.1109/jrproc.1946.234568",
+      },
+      {
+        citation: "Degnan J. J., Klein B. J. (1974). Optical antenna gain. 2: Receiving antennas. Appl. Opt. 13(10), 2397.",
+        url: "https://doi.org/10.1364/ao.13.002397",
+      },
+      {
+        citation: "Kim I. I., Korevaar E. (2001). Availability of free-space optics (FSO) and hybrid FSO/RF systems. Proc. SPIE 4530, 84.",
+        url: "https://doi.org/10.1117/12.449800",
+      },
+    ],
   },
   {
     slug: "optical-antenna",
     title: "Optical Antenna Gain",
-    description: "Telescope gain, directivity, divergence, beam waist and Rayleigh range with central obscuration, aperture efficiency and beam quality M².",
-    knownIssue: "With M² > 1 the waist and Rayleigh range are wrong (44.9 mm and 4.09 km instead of 49.4 mm and 4.50 km at the defaults), and the obscuration loss is a uniform-illumination area factor.",
+    description: "Telescope transmit gain (Klein–Degnan, clipped and obscured Gaussian beam), receive gain, far-field divergence, beam waist and Rayleigh range with beam quality M².",
+    tier: "textbook",
+    modelNote: "Klein–Degnan gain of a clipped, obscured Gaussian; W₀ = a/α; 1/e² far-field half-angle from the Fraunhofer pattern; receive gain (πD/λ)²(1 − γ²)η. M² ≤ 2, approximate: θ × M², gain / M⁴.",
+    references: [
+      {
+        citation: "Klein B. J., Degnan J. J. (1974). Optical antenna gain. 1: Transmitting antennas. Appl. Opt. 13(9), 2134.",
+        url: "https://doi.org/10.1364/ao.13.002134",
+      },
+      {
+        citation: "Degnan J. J., Klein B. J. (1974). Optical antenna gain. 2: Receiving antennas. Appl. Opt. 13(10), 2397.",
+        url: "https://doi.org/10.1364/ao.13.002397",
+      },
+      {
+        citation: "Siegman A. E. (1990). New developments in laser resonators. Proc. SPIE 1224, 2. Beam quality M².",
+        url: "https://doi.org/10.1117/12.18425",
+      },
+    ],
   },
   {
     slug: "point-ahead",
