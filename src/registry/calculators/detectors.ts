@@ -11,6 +11,14 @@ export const detectors: CalculatorEntry[] = [
     slug: "amplifier-noise",
     title: "Amplifier Noise",
     description: "Input-referred noise sets the detection floor. σ_amp = e_n.",
+    tier: "textbook",
+    modelNote: "Poisson shot noise √S added in quadrature to a signal-independent input noise; minimum detectable signal at SNR = 3. Dark charge, fixed-pattern noise and excess noise are left out.",
+    references: [
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer. SPIE Press. Read-noise, shot-noise and dark-noise regimes; total noise as the quadrature sum.",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+    ],
   },
   {
     slug: "antiblooming",
@@ -106,8 +114,19 @@ export const detectors: CalculatorEntry[] = [
     slug: "flicker-noise",
     title: "1/f Flicker Noise",
     description: "Flicker noise: S_I(f) = K_f · I^α / f. Noise spectral density falls as 1/f.",
-    knownIssue: "The corner frequency is measured against a hidden thermal floor (a fixed 50 Ω at 300 K) instead of the shot noise of the entered current: 3.0e-9 Hz at the defaults versus 3.1e-6 Hz against 2qI.",
     lede: "Flicker noise: S_i(f) = K_f · I^α / f. Noise spectral density falls as 1/f.",
+    tier: "textbook",
+    modelNote: "Empirical K_f·I^α/f density (the SPICE KF/AF form) between sharp band edges, with the corner against the shot noise 2q·I. K_f and α are device fits, not predictions.",
+    references: [
+      {
+        citation: "Hooge F. N. (1969). 1/f noise is no surface effect. Phys. Lett. A 29, 139. Empirical 1/f current noise S_I/I² = α_H/(N·f).",
+        url: "https://doi.org/10.1016/0375-9601(69)90076-0",
+      },
+      {
+        citation: "Schottky W. (1918). Über spontane Stromschwankungen in verschiedenen Elektrizitätsleitern. Ann. Phys. 362, 541. Shot noise of a current carried by discrete charges.",
+        url: "https://doi.org/10.1002/andp.19183622304",
+      },
+    ],
   },
   {
     slug: "gain-bandwidth",
@@ -218,11 +237,27 @@ export const detectors: CalculatorEntry[] = [
     slug: "readout-noise",
     title: "Readout Noise",
     description: "Readout noise, dark current, shot noise, and SNR analysis for image sensors.",
+    tier: "textbook",
+    modelNote: "Quadrature sum of Poisson signal and dark shot noise and a constant read noise. Fixed-pattern noise and gain are left out.",
+    references: [
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer. SPIE Press. Read-noise, shot-noise and dark-noise regimes; total noise as the quadrature sum.",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+    ],
   },
   {
     slug: "reset-noise",
     title: "KTC Reset Noise",
     description: "KTC reset noise voltage, noise charge, and conversion gain for image sensors.",
+    tier: "textbook",
+    modelNote: "Thermal-equilibrium charge on a capacitor after a reset, √(k_B·T·C), for a hard reset of a linear capacitor. Soft reset and correlated double sampling lower it.",
+    references: [
+      {
+        citation: "Janesick J. R. (2001). Scientific Charge-Coupled Devices. SPIE Press. Reset (kTC) noise √(k_B·T·C)/q and its removal by correlated double sampling.",
+        url: "https://doi.org/10.1117/3.374903",
+      },
+    ],
   },
   {
     slug: "responsivity",
@@ -246,6 +281,18 @@ export const detectors: CalculatorEntry[] = [
     slug: "shot-noise",
     title: "Shot Noise",
     description: "Shot noise current, SNR, and noise vs signal analysis for photodetectors.",
+    tier: "textbook",
+    modelNote: "Poisson arrivals with a flat spectrum, √(2q·I·B), valid below the inverse transit time. Thermal and amplifier noise are left out.",
+    references: [
+      {
+        citation: "Schottky W. (1918). Über spontane Stromschwankungen in verschiedenen Elektrizitätsleitern. Ann. Phys. 362, 541. Shot noise of a current carried by discrete charges.",
+        url: "https://doi.org/10.1002/andp.19183622304",
+      },
+      {
+        citation: "Saleh B. E. A., Teich M. C. (1991). Fundamentals of Photonics. Wiley. §17.5 Noise in photodetectors: shot noise 2qīB and circuit noise.",
+        url: "https://doi.org/10.1002/0471213748",
+      },
+    ],
   },
   {
     slug: "si-vs-inge",
@@ -268,8 +315,19 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "sndr",
     title: "SNDR Calculator",
-    description: "Signal-to-Noise-and-Distortion Ratio, SFDR, THD, and ENOB for ADC analysis.",
+    description: "SINAD (SNDR), SNR, THD, signal-to-distortion ratio and ENOB, with the ideal quantisation SNR of an N-bit ADC.",
     lede: "Signal-to-Noise-and-Distortion Ratio. SNDR = Psignal/(Pnoise + Pdistortion).",
+    tier: "textbook",
+    modelNote: "Power ratios as defined by IEEE 1241; the ideal SQNR assumes a full-scale sine and quantisation error uniform over one LSB. THD is the entered distortion power, not a sum of measured harmonics.",
+    references: [
+      {
+        citation: "IEEE Std 1241-2010. IEEE Standard for Terminology and Test Methods for Analog-to-Digital Converters. SINAD, ENOB and THD definitions.",
+        url: "https://doi.org/10.1109/IEEESTD.2011.5692956",
+      },
+      {
+        citation: "Kester W. (2009). MT-001: Taking the mystery out of the infamous formula SNR = 6.02N + 1.76 dB, and MT-003: Understand SINAD, ENOB, SNR, THD, THD + N, and SFDR. Analog Devices tutorials.",
+      },
+    ],
   },
   {
     slug: "spad",
@@ -304,9 +362,19 @@ export const detectors: CalculatorEntry[] = [
     slug: "temporal-noise",
     title: "Temporal Noise Calculator",
     description: "1/f noise, white noise, and read noise as functions of frequency and integration time.",
-    knownIssue: "The 1/f noise comes from a free coefficient that ignores the 1 kHz corner input: 7.87 e⁻ at the defaults, where a 1 kHz corner on 5 e⁻ of white read noise over 1 MHz gives about 0.50 e⁻. The conversion-gain input is unused.",
     heading: "Temporal Noise",
-    lede: "1/f noise, white (shot) noise, and read noise as functions of frequency and integration time.",
+    lede: "1/f noise from a corner frequency, white read noise and dark shot noise, versus frequency and integration time.",
+    tier: "illustrative",
+    modelNote: "A white read noise with a 1/f corner, integrated between sharp band edges f_L and B, plus Poisson dark noise. The real correlated-double-sampling filter and the choice of f_L change the 1/f term.",
+    references: [
+      {
+        citation: "Motchenbacher C. D., Connelly J. A. (1993). Low-Noise Electronic System Design. Wiley. Noise of a white floor with a 1/f corner: f_c·ln(f_H/f_L) + (f_H − f_L).",
+      },
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer. SPIE Press. Read-noise, shot-noise and dark-noise regimes; total noise as the quadrature sum.",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+    ],
   },
   {
     slug: "thermal-noise",
@@ -314,6 +382,18 @@ export const detectors: CalculatorEntry[] = [
     description: "Thermal noise voltage, current, and power across a resistor.",
     heading: "Johnson (Thermal) Noise",
     lede: "vn = √(4kBTRΔf). Thermal noise voltage across a resistor.",
+    tier: "textbook",
+    modelNote: "Classical Johnson–Nyquist noise of a resistor in thermal equilibrium, valid for h·f ≪ k_B·T (6.25 THz at 300 K). Excess (1/f) noise of real resistors is left out.",
+    references: [
+      {
+        citation: "Johnson J. B. (1928). Thermal agitation of electricity in conductors. Phys. Rev. 32, 97. Measured noise power ∝ R·T.",
+        url: "https://doi.org/10.1103/PhysRev.32.97",
+      },
+      {
+        citation: "Nyquist H. (1928). Thermal agitation of electric charge in conductors. Phys. Rev. 32, 110. Derivation of 4k_B·T·R per unit bandwidth.",
+        url: "https://doi.org/10.1103/PhysRev.32.110",
+      },
+    ],
   },
   {
     slug: "uniformity",
