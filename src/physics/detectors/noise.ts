@@ -10,9 +10,11 @@
  * - 1/f noise S_I(f) = K_f·I^α/f, the SPICE KF/AF form of F. N. Hooge, Phys. Lett. A 29, 139 (1969).
  * - Ideal ADC quantisation SNR 20·log₁₀(2^N·√1.5) = 6.02·N + 1.76 dB and ENOB: IEEE Std 1241-2010; W. Kester,
  *   Analog Devices tutorials MT-001 and MT-003 (2009).
+ * - Responsivity η·q·λ/(h·c), NEP = i_n/(ℛ·M) and D* = √(A·B)/NEP: E. L. Dereniak, G. D. Boreman, Infrared Detectors
+ *   and Systems (Wiley 1996), ch. 5.
  */
 
-import { k_B, q } from "../constants";
+import { c, h, k_B, q } from "../constants";
 
 /** RMS shot-noise current √(2q·I·B) of a mean current I (A) in a bandwidth B (Hz), A. */
 export function shotNoiseCurrent(current: number, bandwidth: number): number {
@@ -114,4 +116,26 @@ export function idealSqnrDb(bits: number): number {
 /** Effective number of bits (SINAD − 1.76 dB)/6.02 dB, with the exact constants of idealSqnrDb. */
 export function enobFromSinad(sinadDb: number): number {
   return (sinadDb - 10 * Math.log10(1.5)) / (20 * Math.log10(2));
+}
+
+/** Responsivity η·q·λ/(h·c) of a detector with quantum efficiency η at wavelength λ (m), A/W. */
+export function responsivity(qe: number, wavelength: number): number {
+  if (!(qe >= 0) || !(wavelength > 0)) return NaN;
+  return (qe * q * wavelength) / (h * c);
+}
+
+/**
+ * Noise-equivalent power i_n/(ℛ·M): the optical power whose (gain-multiplied) signal current equals the rms noise
+ * current i_n. In a bandwidth B it is in W; divided by √B it is the spectral NEP in W/√Hz. E. L. Dereniak,
+ * G. D. Boreman, Infrared Detectors and Systems (Wiley 1996), ch. 5.
+ */
+export function noiseEquivalentPower(noiseCurrent: number, responsivityAW: number, gain = 1): number {
+  if (!(noiseCurrent >= 0) || !(responsivityAW > 0) || !(gain > 0)) return NaN;
+  return noiseCurrent / (responsivityAW * gain);
+}
+
+/** Specific detectivity D* = √(A·B)/NEP with A in cm², B in Hz and NEP in W: Jones (cm·√Hz/W). Dereniak & Boreman ch. 5. */
+export function specificDetectivity(area_cm2: number, bandwidth: number, nep: number): number {
+  if (!(area_cm2 > 0) || !(bandwidth > 0) || !(nep > 0)) return NaN;
+  return Math.sqrt(area_cm2 * bandwidth) / nep;
 }

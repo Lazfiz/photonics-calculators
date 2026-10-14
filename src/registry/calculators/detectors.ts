@@ -39,8 +39,23 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "bandwidth",
     title: "Bandwidth vs Noise Trade-off",
-    description: "Noise increases with √Δf. Wider bandwidth = faster response but more noise.",
-    knownIssue: "The page is labelled a TIA but uses a load-resistor bandwidth 1/(2πR·C_j): 15.9 MHz at the defaults, where a TIA on a 100 MHz-GBW amplifier gives about 40 MHz. Its noise chart also keeps growing past that bandwidth (20× high at 10 GHz).",
+    description: "Photodiode on a load resistor: noise grows as √Δf until the R_L·C_j roll-off, then levels off at √(kT/C).",
+    tier: "textbook",
+    modelNote: "A photodiode on a load resistor R_L: Johnson noise of R_L and photocurrent shot noise pass the single pole 1/(2π·R_L·C_j) and are integrated to the measurement bandwidth. Amplifier noise, dark current and transit time are left out.",
+    references: [
+      {
+        citation: "Nyquist H. (1928). Thermal agitation of electric charge in conductors. Phys. Rev. 32, 110. Derivation of 4k_B·T·R per unit bandwidth.",
+        url: "https://doi.org/10.1103/PhysRev.32.110",
+      },
+      {
+        citation: "Saleh B. E. A., Teich M. C. (1991). Fundamentals of Photonics. Wiley. §17.5 Noise in photodetectors: shot noise 2qīB and circuit noise.",
+        url: "https://doi.org/10.1002/0471213748",
+      },
+      {
+        citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley. p–n junction depletion capacitance (abrupt m = 1/2, linearly graded m = 1/3), n_i(T), generation and diffusion currents.",
+        url: "https://doi.org/10.1002/0470068329",
+      },
+    ],
   },
   {
     slug: "boxcar-integrator",
@@ -52,6 +67,14 @@ export const detectors: CalculatorEntry[] = [
     slug: "capacitance",
     title: "Junction Capacitance",
     description: "Photodiode junction capacitance vs reverse bias, doping profile, and RC bandwidth impact.",
+    tier: "textbook",
+    modelNote: "Depletion approximation C_j0/(1 + V_R/V_bi)^m with a single RC pole through load plus series resistance. Package and stray capacitance, the transit-time limit and forward bias are left out.",
+    references: [
+      {
+        citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley. p–n junction depletion capacitance (abrupt m = 1/2, linearly graded m = 1/3), n_i(T), generation and diffusion currents.",
+        url: "https://doi.org/10.1002/0470068329",
+      },
+    ],
   },
   {
     slug: "ccd-vs-cmos",
@@ -92,7 +115,21 @@ export const detectors: CalculatorEntry[] = [
     slug: "detectivity",
     title: "Detectivity (D*)",
     description: "Specific detectivity from NEP, area, and bandwidth. D* = √(A·Δf) / NEP",
-    knownIssue: "The D* vs wavelength chart rises linearly to 3000 nm with no bandgap cutoff, the D* vs temperature chart assumes an unsourced 7 K dark-current doubling, and the excess-noise factor has no gain. The cards are correct.",
+    tier: "textbook",
+    modelNote: "Constant quantum efficiency up to the cutoff λ_c = hc/E_g; multiplied dark-current shot noise 2q·I_d·M²·F and load Johnson noise. The temperature chart scales dark current as n_i or n_i² with a fixed band gap and constant responsivity.",
+    references: [
+      {
+        citation: "Dereniak E. L., Boreman G. D. (1996). Infrared Detectors and Systems. Wiley. Ch. 5: responsivity, noise-equivalent power and specific detectivity D* = √(A·Δf)/NEP.",
+      },
+      {
+        citation: "Saleh B. E. A., Teich M. C. (1991). Fundamentals of Photonics. Wiley. §17.5 Noise in photodetectors: shot noise 2qīB and circuit noise.",
+        url: "https://doi.org/10.1002/0471213748",
+      },
+      {
+        citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley. p–n junction depletion capacitance (abrupt m = 1/2, linearly graded m = 1/3), n_i(T), generation and diffusion currents.",
+        url: "https://doi.org/10.1002/0470068329",
+      },
+    ],
   },
   {
     slug: "electron-multiplying",
@@ -132,6 +169,13 @@ export const detectors: CalculatorEntry[] = [
     slug: "gain-bandwidth",
     title: "Gain-Bandwidth Product",
     description: "GBW = A₀ · f₋₃dB. The product of DC gain and bandwidth is constant for a single-pole system.",
+    tier: "textbook",
+    modelNote: "Single-pole op amp with frequency-independent feedback fraction β. Higher-order poles, phase margin, slew rate and output limits are left out.",
+    references: [
+      {
+        citation: "Franco S. (2015). Design with Operational Amplifiers and Analog Integrated Circuits, 4th ed. McGraw-Hill. Ch. 6: single-pole open-loop response, constant gain-bandwidth product.",
+      },
+    ],
   },
   {
     slug: "gain-temperature",
@@ -144,12 +188,6 @@ export const detectors: CalculatorEntry[] = [
     title: "Geiger-Mode APD",
     description: "SPAD: breakdown voltage, overbias, temperature effects, PDE, and dark count rate.",
     knownIssue: "PDE = 0.15 per volt of overbias (30 % at 2 V, capped at 75 %) and an afterpulse rate of 2 % of the DCR are unsourced. Real PDE saturates with overbias and afterpulsing falls with dead time, which the page ignores.",
-  },
-  {
-    slug: "hybrid-detector",
-    title: "Hybrid Detector Design",
-    description: "Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.",
-    knownIssue: "The noise leaves out the e_n·2πf·C_d term and the TIA bandwidth limit: a 1 MΩ feedback resistor cannot reach the 100 MHz default (about 4 MHz with 10 pF and a 1 GHz GBW), so the 3.35 nW noise floor is optimistic.",
   },
   {
     slug: "ingaas-parameters",
@@ -191,12 +229,59 @@ export const detectors: CalculatorEntry[] = [
     slug: "nep",
     title: "Noise Equivalent Power (NEP) & Detectivity (D*)",
     description: "Calculate NEP and specific detectivity D* from detector noise sources: shot noise, thermal (Johnson) noise, and dark current.",
+    tier: "textbook",
+    modelNote: "Dark-current shot noise and load-resistor Johnson noise in quadrature, divided by the responsivity. Signal shot noise, amplifier noise and 1/f noise are left out.",
+    references: [
+      {
+        citation: "Dereniak E. L., Boreman G. D. (1996). Infrared Detectors and Systems. Wiley. Ch. 5: responsivity, noise-equivalent power and specific detectivity D* = √(A·Δf)/NEP.",
+      },
+      {
+        citation: "Saleh B. E. A., Teich M. C. (1991). Fundamentals of Photonics. Wiley. §17.5 Noise in photodetectors: shot noise 2qīB and circuit noise.",
+        url: "https://doi.org/10.1002/0471213748",
+      },
+      {
+        citation: "Nyquist H. (1928). Thermal agitation of electric charge in conductors. Phys. Rev. 32, 110. Derivation of 4k_B·T·R per unit bandwidth.",
+        url: "https://doi.org/10.1103/PhysRev.32.110",
+      },
+    ],
   },
   {
     slug: "photodiode-speed",
     title: "Photodiode Speed & Bandwidth",
-    description: "RC-limited bandwidth, junction capacitance, and NEP vs area for photodiodes.",
-    knownIssue: "The bandwidth is RC-only with no transit-time limit: 318 GHz at the default 0.001 mm², where the ~10 µm depletion layer implied by 10 pF/mm² limits it to about 4.5 GHz. The NEP chart also ignores area and capacitance edits.",
+    description: "RC and transit-time bandwidth, junction capacitance and thermal NEP vs photodiode area.",
+    tier: "textbook",
+    modelNote: "RC limit with C ∝ area and the transit limit 0.443·v/W of one carrier crossing the full depletion width, combined as 1/f² = 1/f_RC² + 1/f_tr² (within 4 % of the exact response). Uniform generation with equal carrier speeds gives 0.553·v/W.",
+    references: [
+      {
+        citation: "Bowers J. E., Burrus C. A. (1987). Ultrawide-band long-wavelength p-i-n photodetectors. J. Lightwave Technol. 5, 1339. Transit-time and RC limits of p-i-n bandwidth.",
+        url: "https://doi.org/10.1109/JLT.1987.1075419",
+      },
+      {
+        citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley. p–n junction depletion capacitance (abrupt m = 1/2, linearly graded m = 1/3), n_i(T), generation and diffusion currents.",
+        url: "https://doi.org/10.1002/0470068329",
+      },
+    ],
+  },
+  {
+    slug: "photodiode-tia-noise",
+    title: "Photodiode TIA Noise",
+    description: "Photodiode + transimpedance amplifier: Butterworth bandwidth, input-referred noise including the e_n·C term, and NEP.",
+    keywords: ["Hybrid Detector Design"],
+    tier: "textbook",
+    modelNote: "Single-pole op amp with a Butterworth-compensated feedback R_f ∥ C_f; noise is integrated over a brick-wall band min(B, f_TIA). Photocurrent and dark-current shot noise, 1/f noise and the noise-gain peaking near f_TIA are left out.",
+    references: [
+      {
+        citation: "Ramus X. (2009). Transimpedance Considerations for High-Speed Amplifiers. Texas Instruments application report SBOA122. Butterworth TIA bandwidth √(GBP/2πR_F·C_S) (eq. 12) and input-referred noise (eq. 13).",
+        url: "https://www.ti.com/lit/an/sboa122/sboa122.pdf",
+      },
+      {
+        citation: "Graeme J. G. (1996). Photodiode Amplifiers: Op Amp Solutions. McGraw-Hill. Transimpedance stability, feedback-capacitor compensation and the e_n·C noise gain.",
+      },
+      {
+        citation: "Nyquist H. (1928). Thermal agitation of electric charge in conductors. Phys. Rev. 32, 110. Derivation of 4k_B·T·R per unit bandwidth.",
+        url: "https://doi.org/10.1103/PhysRev.32.110",
+      },
+    ],
   },
   {
     slug: "photon-counting",

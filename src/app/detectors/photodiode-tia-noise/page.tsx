@@ -2,7 +2,7 @@ import CalculatorShell from "@/components/calculator-shell";
 import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-const href = "/detectors/hybrid-detector";
+const href = "/detectors/photodiode-tia-noise";
 
 export const metadata = calculatorMetadata(href);
 

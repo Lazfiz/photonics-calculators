@@ -1,64 +1,70 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { q, k_B } from "../../../physics/constants";
+import { k_B, q } from "../../../physics/constants";
+import { rcBandwidth, rcFilteredNoise } from "../../../physics/detectors/photodiode-rc";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+
 export default function BandwidthPage() {
-  const [bandwidth, setBandwidth] = useURLState("bandwidth", 1e6);
-  const [capacitancePF, setCapacitancePF] = useURLState("capacitance", 10);
-  const capacitance = capacitancePF * 1e-12;
-  const [feedbackR, setFeedbackR] = useURLState("feedbackR", 1e3);
-  const [photoCurrent, setPhotoCurrent] = useURLState("photoCurrent", 1e-6);
-  const [temperature, setTemperature] = useURLState("temperature", 300);
+  const [bandwidthRaw, setBandwidth] = useURLState("bandwidth", 1e6);
+  const [capacitanceRaw, setCapacitancePF] = useURLState("capacitance", 10);
+  const [loadRRaw, setLoadR] = useURLState("feedbackR", 1e3); // key kept for old links: the load resistor R_L
+  const [photoCurrentRaw, setPhotoCurrent] = useURLState("photoCurrent", 1e-6);
+  const [temperatureRaw, setTemperature] = useURLState("temperature", 300);
+  const bandwidth = clamp(bandwidthRaw, 1, 1e12, 1e6);
+  const capacitance = clamp(capacitanceRaw, 0.01, 1e6, 10) * 1e-12; // pF → F
+  const loadR = clamp(loadRRaw, 1, 1e12, 1e3);
+  const photoCurrent = clamp(photoCurrentRaw, 0, 1, 1e-6);
+  const temperature = clamp(temperatureRaw, 0, 1000, 300);
 
+  // Photodiode on a load R_L: both noise currents see the impedance R_L ∥ C_j, a first-order low-pass at f_c.
+  const fc = rcBandwidth(loadR, capacitance);
+  const johnsonDensity = 4 * k_B * temperature * loadR; // V²/Hz at f ≪ f_c
+  const shotDensity = 2 * q * photoCurrent * loadR ** 2; // V²/Hz at f ≪ f_c
+  const noiseAt = (B: number) => {
+    const vJ = Math.sqrt(rcFilteredNoise(johnsonDensity, fc, B));
+    const vS = Math.sqrt(rcFilteredNoise(shotDensity, fc, B));
+    return { vJ, vS, vT: Math.hypot(vJ, vS) };
+  };
+  const { vJ: vJohnson, vS: vShot, vT: vTotal } = noiseAt(bandwidth);
+  const kTC = Math.sqrt((k_B * temperature) / capacitance);
 
-  const chartData = useMemo(() => {
-    const bws = Array.from({ length: 200 }, (_, i) => 1e3 * Math.pow(1e7, i / 200));
-    // TIA model: Johnson noise from feedback resistor Rf appears at output
-    // v_Johnson = sqrt(4*kB*T*Rf*BW)
-    const johnsonNoise = bws.map(BW => Math.sqrt(4 * k_B * temperature * feedbackR * BW));
-    // Shot noise current through TIA: i_shot = sqrt(2*q*I*BW), v_out = i_shot * Rf
-    const shotNoise = bws.map(BW => Math.sqrt(2 * q * photoCurrent * BW) * feedbackR);
-    const totalNoise = bws.map((BW, i) => Math.sqrt(johnsonNoise[i] ** 2 + shotNoise[i] ** 2));
-    return [
-      { x: bws, y: johnsonNoise, type: "scatter" as const, mode: "lines" as const, name: "Johnson (Rf)", line: { color: "#f87171" } },
-      { x: bws, y: shotNoise, type: "scatter" as const, mode: "lines" as const, name: "Shot", line: { color: "#34d399" } },
-      { x: bws, y: totalNoise, type: "scatter" as const, mode: "lines" as const, name: "Total", line: { color: "#60a5fa" } },
-    ];
-  }, [bandwidth, capacitance, feedbackR, photoCurrent, temperature]);
-
-  // TIA output noise voltages
-  const vJohnson = Math.sqrt(4 * k_B * temperature * feedbackR * bandwidth);
-  const vShot = Math.sqrt(2 * q * photoCurrent * bandwidth) * feedbackR;
-  const vTotal = Math.sqrt(vJohnson ** 2 + vShot ** 2);
-  // RC bandwidth of detector junction
-  const bw3dB = 1 / (2 * Math.PI * feedbackR * capacitance);
+  const bws = Array.from({ length: 200 }, (_, i) => 1e3 * Math.pow(1e8, i / 199)); // 1 kHz to 100 GHz
+  const curves = bws.map(noiseAt);
+  const chartData = [
+    { x: bws, y: curves.map(n => n.vJ), type: "scatter" as const, mode: "lines" as const, name: "Johnson (R_L)", line: { color: "#f87171" } },
+    { x: bws, y: curves.map(n => (n.vS > 0 ? n.vS : null)), type: "scatter" as const, mode: "lines" as const, name: "Shot", line: { color: "#34d399" } },
+    { x: bws, y: curves.map(n => n.vT), type: "scatter" as const, mode: "lines" as const, name: "Total", line: { color: "#60a5fa" } },
+    { x: bws, y: bws.map(B => Math.sqrt(johnsonDensity * B)), type: "scatter" as const, mode: "lines" as const, name: "√(4kTR·Δf), no RC roll-off", line: { color: "#9ca3af", dash: "dot" } },
+  ];
 
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Measurement Bandwidth (Hz)" value={bandwidth} onChange={setBandwidth} min={1} />
-        <ValidatedNumberInput label="Junction Capacitance (pF)" value={capacitancePF} onChange={setCapacitancePF} min={0.1} />
-        <ValidatedNumberInput label="Feedback Resistance Rf (Ω)" value={feedbackR} onChange={setFeedbackR} min={1} />
-        <ValidatedNumberInput label="Photocurrent (A)" value={photoCurrent} onChange={setPhotoCurrent} min={1e-12} step="1e-7" />
-        <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} min={4} max={500} />
+        <ValidatedNumberInput label="Measurement Bandwidth Δf (Hz)" value={bandwidthRaw} onChange={setBandwidth} min={1} max={1e12} />
+        <ValidatedNumberInput label="Junction Capacitance (pF)" value={capacitanceRaw} onChange={setCapacitancePF} min={0.01} max={1e6} />
+        <ValidatedNumberInput label="Load Resistance R_L (Ω)" value={loadRRaw} onChange={setLoadR} min={1} max={1e12} />
+        <ValidatedNumberInput label="Photocurrent (A)" value={photoCurrentRaw} onChange={setPhotoCurrent} min={0} max={1} step="1e-7" />
+        <ValidatedNumberInput label="Temperature (K)" value={temperatureRaw} onChange={setTemperature} min={0} max={1000} />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="RC 3dB Bandwidth" value={bw3dB.toExponential(3) + " Hz"} tone="blue" />
-        <ResultCard label="Johnson Noise (V)" value={vJohnson.toExponential(3)} tone="red" />
-        <ResultCard label="Shot Noise (V)" value={vShot.toExponential(3)} tone="green" />
-        <ResultCard label="Total Noise (V)" value={vTotal.toExponential(3)} tone="yellow" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ResultCard label="RC 3dB Bandwidth" value={fc.toExponential(3) + " Hz"} tone="blue" subtext="1/(2π·R_L·C_j)" />
+        <ResultCard label="Johnson Noise (V rms)" value={vJohnson.toExponential(3)} tone="red" />
+        <ResultCard label="Shot Noise (V rms)" value={vShot.toExponential(3)} tone="green" />
+        <ResultCard label="Total Noise (V rms)" value={vTotal.toExponential(3)} tone="yellow" />
+        <ResultCard label="Johnson Limit √(kT/C)" value={kTC.toExponential(3) + " V"} tone="purple" subtext="Δf → ∞, independent of R_L" />
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
-        <p>TIA model: Johnson noise from feedback resistor Rf at output</p>
-        <p>v_Johnson = √(4·kB·T·Rf·Δf)</p>
-        <p>v_Shot = √(2·q·I·Δf) · Rf</p>
-        <p>RC bandwidth: f_3dB = 1/(2π·Rf·C) — set by feedback R and detector capacitance</p>
+        <p>Photodiode on a load resistor R_L; the output voltage across R_L ∥ C_j is low-passed at f_c = 1/(2π·R_L·C_j)</p>
+        <p>v²_Johnson = 4·k·T·R_L · f_c·atan(Δf/f_c) → k·T/C_j for Δf ≫ f_c</p>
+        <p>v²_Shot = 2·q·I·R_L² · f_c·atan(Δf/f_c)</p>
+        <p>Below f_c the noise grows as √Δf; above it, widening the measurement band adds no more noise (or signal).</p>
       </div>
-      <ChartPanel data={chartData} layout={{ xaxis: { title: "Bandwidth (Hz)", type: "log", gridcolor: "#374151" }, yaxis: { title: "Output Noise Voltage (V)", type: "log", gridcolor: "#374151" } }} />
+      <ChartPanel data={chartData} layout={{ xaxis: { title: "Measurement Bandwidth Δf (Hz)", type: "log", gridcolor: "#374151" }, yaxis: { title: "Output Noise Voltage (V rms)", type: "log", gridcolor: "#374151" } }} />
     </>
   );
 }
