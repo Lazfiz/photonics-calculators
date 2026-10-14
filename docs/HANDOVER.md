@@ -1,29 +1,35 @@
-# Handover — 2026-10-14 (session 62 → session 63)
+# Handover — 2026-10-14 (session 63 → session 64)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 62 finished FSO part 6, pointing and QKD: PR #85, merged as `3abb995c`. Free-space comms is now 26/26 tiered, with
-0 `knownIssue`s site-wide. This handover is on `docs/fso-part6-handover`. Next: **ask the user which category to audit
-next** (ROADMAP box). `polarizer-types` stays blocked until the user is at the laptop with Chrome.
+Session 63 ran the detectors audit, part 0: PR #87, merged as `684c52fe`. All 54 pages are audited: 32 `knownIssue`s, 22 OK.
+This handover is on `docs/detectors-audit-handover`. Next: **Detectors part 1: noise** (ROADMAP box: new
+`src/physics/detectors/noise.ts`, 8 pages). `polarizer-types` stays blocked until the user is at the laptop with Chrome.
 
 ## State
-- 209 of 458 pages are tiered (free-space-comms 26/26), 0 `knownIssue`s, 651 tests pass.
-- New FSO modules (session 62):
-  - `point-ahead.ts`: `pointAheadAngle` 2v⊥/c, `GEO_SUBSATELLITE_VPERP` ω_E(r_GEO − R_E), IERS GM/ω.
-  - `acquisition.ts`: `stareProbability`, `squareCoverage`, `rasterScan`, `quadCellNea`.
-  - `qkd.ts`: `decoyBb84` (Ma 2005 GLLP), `maxChannelLossDb`, `optimalMu`, `plobBound`.
-  - `physical-layer-security.ts`: `capturedPower`, `nepLimitedSnr`, `linkSecurity`; plus `secrecyCapacity` in `channel-capacity.ts`.
-- Other FSO modules: `atmospheric-attenuation`, `precipitation`, `wavelength-selection`, `link-budget`, `pointing-loss`,
-  `turbulence`, `ber`, `bpsk-qpsk`, `background-radiance`, `channel-capacity`.
+- 209 of 458 pages are tiered; 32 `knownIssue`s, all in detectors (11 bugs, 21 questionable); 651 tests pass.
+- `src/physics/detectors/` doesn't exist yet. Each ROADMAP fix part names its module, golden values and sources.
+- Reuse, don't copy: `excessNoiseFactor` (McIntyre, guarded, tested) and `photonEnergy` live in
+  `src/physics/free-space-comms/background-radiance.ts`; part 5 moves McIntyre to `detectors/apd.ts`.
+- Old module: `src/lib/geiger-mode-avalanche.ts` (its test only asserts > 0; part 6 replaces it).
+- User decisions (session 63): rename `si-vs-inge` → `si-vs-ingaas` and `hybrid-detector` → `photodiode-tia-noise`
+  (with redirects); keep `spad` and SPCM as separate pages on one module; rewrite `channel-photomultiplier` as a true CPM.
 
 ## Next actions
 1. Ship this docs PR (`/ship`, merge on the user's yes).
-2. Ask the user which category to audit next: detectors 0/54, wave-optics 2/49, materials 3/45, spectroscopy 5/54 or
-   imaging 9/65. Part 0 follows FSO session 56: `physics-reviewer` batches → `knownIssue`s → fix parts of about 4 pages.
-3. Later: fiber and FSO open findings (ROADMAP), G.657.A3, MCF R_eq, snow law, Kim & Korevaar text and the Tyler & Fried full
-   text (these need Chrome), thin-film findings.
-
+2. Detectors part 1 (noise), then parts 2–9 in ROADMAP order. Each part: module + golden tests, rewire the pages, guards
+   (`min` on every input that can reach ÷0/log/sqrt), move `useState` inputs to the URL, then set tier, modelNote and
+   references and delete the `knownIssue`. Tier the part's OK pages in the same PR.
+3. `post-merge-check` for part 1, e.g. `detectors/shot-noise=5.66` `detectors/reset-noise=40.2` (check the page's own
+   formatting first: `fmt()` and `toFixed` differ).
+4. Later: fiber and FSO open findings (ROADMAP), the two imaging/spectroscopy findings from part 0, Chrome-only checks.
 ## Non-obvious facts
+- **Session 63 lessons:**
+  - Detector pages are small (40–170 lines): 9 parallel `physics-reviewer` batches of 4–8 pages finished in 4–6.5 min each,
+    so all 54 pages fit one session. Ask reviewers for a ready `knownIssue:` line and ≤ 20 lines per OK page.
+  - `knownIssue` text: 40–240 characters, no `{}` or HTML entities, ends with a full stop (`tests/registry.test.ts`).
+  - Reviewer numbers flagged "from memory" (InGaAs α, Si APD drift, P46 phosphor, iXon 800 ke⁻ register well, InGaAs
+    photocathode QE) need a source before they go into code.
 - **Session 62 lessons:**
   - arXiv PDFs download with `curl -A "Mozilla/5.0"` + `pdftotext -layout`; arXiv abs pages carry `citation_doi` meta tags.
   - A "maximum distance" output needs a separate case for zero attenuation (it becomes a loss budget, not a distance).
@@ -37,12 +43,8 @@ next** (ROADMAP box). `polarizer-types` stays blocked until the user is at the l
   `erfc` ≈ 0.5 µs: give per-chart-point solvers a call budget and time each chart (< 0.3 s). Fixed iteration caps fail
   at large parameters (P(1e6, 1e6)); test the extreme corner of every input range. Check approximations against an exact
   nested integral, not only Monte Carlo. Read the page code, not an implementer's sanity script.
-- **Session 59:** a clipped Gaussian (α = 1) has a 1.44× wider far-field lobe than λ/(πW₀). ROADMAP golden numbers can
-  contradict their formula: check the physics and note the deviation in the PR. `useURLState` inside `.map` breaks
-  `rules-of-hooks`. Crossref gives only the first page. After `next start`, wait ≈ 10 s before the first curl.
-- **Session 58:** check for a newer ITU revision first (`itu.int/rec/R-REC-<rec>/en`); read ITU equations from the OMML in
-  `…!!MSW-E.docx` → `word/document.xml`. Fits with ln R terms misbehave below their data: scan every term over the input
-  range. Auto mode refuses `gh pr merge` without an explicit merge yes.
+- **Earlier:** ROADMAP golden numbers can contradict their formula: check the physics and note it in the PR.
+  `useURLState` inside `.map` breaks `rules-of-hooks`. After `next start`, wait ≈ 10 s before the first curl.
 - **Sources:**
   - radioeng.cz and URSI GA full texts download with `curl -A "Mozilla/5.0"` + `pdftotext`; `theses.eurasip.org`
     gives full PDFs. Optics Express doesn't download (JS shell); arXiv reproductions of a table work.
