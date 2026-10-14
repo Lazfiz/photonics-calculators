@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  DB_PER_NEPER, KOSCHMIEDER, aerosolExtinction, kimExponent, rayleighExtinction, standardAirIndex, totalExtinction,
+  DB_PER_NEPER, KOSCHMIEDER, aerosolExponent, aerosolExtinction, alNaboulsiFogExtinction, kimExponent, kruseExponent,
+  rayleighExtinction, standardAirIndex, totalExtinction,
 } from "../src/physics/free-space-comms/atmospheric-attenuation";
 
 const close = (actual: number, expected: number, rel: number, msg = "") =>
@@ -46,4 +47,34 @@ test("Kim's exponent q(V) and the 1550 nm clear-air loss in dB/km, not Np/km", (
   close(totalExtinction(1550e-9, 23e3) * 1e3, 0.04146, 3e-3);
   close(totalExtinction(1550e-9, 23e3) * 1e3 * DB_PER_NEPER, 0.1801, 3e-3);
   close(KOSCHMIEDER, 3.912, 1e-4);
+});
+
+test("fog, Kim, V = 0.5 km at 1550 nm: 33.93 dB/km, 4.34× the 7.82 the old page showed as dB/km", () => {
+  // q = 0: (3.91202/0.5 − 0.01150) + σ_R(1550 nm) 1.8e-4 = 7.81273 km⁻¹ × 4.34294 = 33.930 dB/km.
+  const alpha = totalExtinction(1550e-9, 500) * 1e3 * DB_PER_NEPER;
+  close(alpha, 33.93, 3e-4);
+  close(alpha / (3.91 / 0.5), DB_PER_NEPER, 2e-3);
+});
+
+test("Kruse's exponent 0.585 V^(1/3) below 6 km (Nadeem & Leitgeb 2010, eq. 2) and its jump at 6 km", () => {
+  close(kruseExponent(500), 0.46432, 1e-4); // 0.585 · 0.79370
+  close(kruseExponent(6000), 1.06302, 1e-4); // just below the 1.3 of 6–50 km
+  assert.equal(kruseExponent(10e3), 1.3);
+  assert.equal(kruseExponent(60e3), 1.6);
+  assert.equal(aerosolExponent(3e3, "kim"), kimExponent(3e3));
+  // V = 1 km, 1550 nm: (3.91202 − 0.01150) · 2.81818^−0.585 = 3.90052 · 0.54546 = 2.12759, + 1.8e-4 → 9.241 dB/km.
+  close(totalExtinction(1550e-9, 1000, "kruse") * 1e3 * DB_PER_NEPER, 9.241, 1e-3);
+  assert.ok(Number.isNaN(aerosolExtinction(1550e-9, 0, "kruse")));
+});
+
+test("Al Naboulsi fog laws (Opt. Eng. 43, 319 (2004), as in Nadeem & Leitgeb 2010, eqs. 4–6)", () => {
+  // Advection, 1.55 µm, 0.5 km: (0.11478·1.55 + 3.8367)/0.5 = 8.02922 km⁻¹ = 34.871 dB/km.
+  close(alNaboulsiFogExtinction(1550e-9, 500, "advection") * 1e3, 8.02922, 1e-5);
+  close(alNaboulsiFogExtinction(1550e-9, 500, "advection") * 1e3 * DB_PER_NEPER, 34.871, 1e-4);
+  // Radiation: (0.18126·2.4025 + 0.13709·1.55 + 3.7502)/0.5 = 4.398166/0.5 = 8.79633 km⁻¹.
+  close(alNaboulsiFogExtinction(1550e-9, 500, "radiation") * 1e3, 8.79633, 1e-5);
+  // λ in µm and V in km: at 550 nm both laws come back to Koschmieder's 3.912/V (−0.3 %, −0.8 %).
+  close(alNaboulsiFogExtinction(550e-9, 1000, "advection") * 1e3, KOSCHMIEDER, 0.004);
+  close(alNaboulsiFogExtinction(550e-9, 1000, "radiation") * 1e3, KOSCHMIEDER, 0.01);
+  assert.ok(Number.isNaN(alNaboulsiFogExtinction(850e-9, 0, "advection")));
 });

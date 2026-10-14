@@ -39,15 +39,10 @@ export const freeSpaceComms: CalculatorEntry[] = [
     knownIssue: "The averaging factor uses (D/√(λL))^(7/6) instead of Andrews' [1 + 1.062·kD²/4L]^(−7/6): 0.24 instead of 0.056 at the defaults. The spherical-wave factor is also wrong.",
   },
   {
-    slug: "atmosphere",
-    title: "Atmospheric Transmission",
-    description: "Molecular and aerosol extinction for free-space optical links.",
-    knownIssue: "The Rayleigh term uses a whole-column optical depth as a per-km coefficient, the Kim exponents are wrong and the water bands are invented: 12 dB instead of 0.18 dB at the defaults.",
-  },
-  {
     slug: "atmospheric-loss",
     title: "FSO Atmospheric Loss",
     description: "Visibility-based aerosol (Kim) and Rayleigh scattering: attenuation in dB/km, total path loss and transmittance of a free-space optical link.",
+    keywords: ["Atmospheric Transmission"],
     tier: "textbook",
     modelNote: "Rayleigh scattering of standard sea-level air plus an empirical aerosol law scaled from the visibility, fitted up to 1.55 µm. Not modelled: molecular absorption bands, rain and snow, turbulence, geometric loss.",
     references: [
@@ -147,8 +142,26 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "fog-attenuation",
     title: "Fog Attenuation",
-    description: "Optical attenuation in fog from visibility with the Kim or Kruse model: exponent q, attenuation coefficient, total path loss and transmitted fraction.",
-    knownIssue: "The extinction 3.91/V is in km⁻¹ but shown as dB/km (4.34× too low), and the Kim and Kruse exponents are wrong: 1.5 dB instead of about 34 dB at the defaults.",
+    description: "Optical attenuation in fog from visibility with the Kim, Kruse or Al Naboulsi (advection, radiation fog) model: specific attenuation in dB/km, path loss and transmittance.",
+    tier: "textbook",
+    modelNote: "Empirical visibility laws: Kim or Kruse aerosol exponents, or Al Naboulsi's advection and radiation fog fits (690–1550 nm, V = 50–1000 m). They give a mean loss; measured fog loss scatters widely around it.",
+    references: [
+      {
+        citation: "Kim I. I., McArthur B., Korevaar E. (2001). Comparison of laser beam propagation at 785 nm and 1550 nm in fog and haze for optical wireless communications. Proc. SPIE 4214, 26–37. Visibility-based aerosol exponent q.",
+        url: "https://doi.org/10.1117/12.417512",
+      },
+      {
+        citation: "Al Naboulsi M., Sizun H., de Fornel F. (2004). Fog attenuation prediction for optical and infrared waves. Opt. Eng. 43(2), 319–329. Advection and radiation fog laws.",
+        url: "https://doi.org/10.1117/1.1637611",
+      },
+      {
+        citation: "Nadeem F., Leitgeb E. (2010). Dense maritime fog attenuation prediction from measured visibility data. Radioengineering 19(2), 223–227. Kruse, Kim and Al Naboulsi laws, eqs. (1)–(6).",
+        url: "https://www.radioeng.cz/fulltexts/2010/10_02_223_227.pdf",
+      },
+      {
+        citation: "Kruse P. W., McGlauchlin L. D., McQuistan R. B. (1962). Elements of Infrared Technology: Generation, Transmission and Detection. Wiley. Kruse visibility law.",
+      },
+    ],
   },
   {
     slug: "geometric-loss",
@@ -253,7 +266,17 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "wavelength-selection",
     title: "FSO Wavelength Selection",
-    description: "Compare 850, 1064, 1310 and 1550 nm for an FSO link by eye safety, atmospheric loss, range and data rate, and get a recommended wavelength.",
-    knownIssue: "The aerosol exponent mixes the Kim and Kruse laws (wrong between 0.5 and 6 km visibility), and the eye-safety score treats 1310 nm like 1064 nm. The scores are qualitative.",
+    description: "Compare 850, 1064, 1310 and 1550 nm for an FSO link by Class 1 eye-safety limit, atmospheric loss over the range, component maturity and cost, and get a weighted recommendation.",
+    tier: "illustrative",
+    modelNote: "Qualitative ranking. Eye safety from the IEC Class 1 point-source limit and atmosphere from Kim's law are computed; component and cost ratings are editorial. Ignores link margin, background light, turbulence.",
+    references: [
+      {
+        citation: "IEC 60825-1:2014, Safety of laser products – Part 1: Equipment classification and requirements. Class 1 accessible emission limits, correction factor C7.",
+      },
+      {
+        citation: "Kim I. I., McArthur B., Korevaar E. (2001). Comparison of laser beam propagation at 785 nm and 1550 nm in fog and haze for optical wireless communications. Proc. SPIE 4214, 26–37. Visibility-based aerosol exponent q.",
+        url: "https://doi.org/10.1117/12.417512",
+      },
+    ],
   },
 ];
