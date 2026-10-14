@@ -1,134 +1,141 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { c, h } from "../../../physics/constants";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  BACKGROUND_SCENES, type BackgroundScene, backgroundPower, parseScene, photonEnergy, sceneRadiance, sceneSolidAngle,
+} from "../../../physics/free-space-comms/background-radiance";
+
+const COLORS = ["#06b6d4", "#3b82f6", "#a78bfa", "#22c55e", "#9ca3af", "#f59e0b"];
+const fmt = (x: number, digits = 3) =>
+  !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const dBm = (w: number) => (w > 0 ? 10 * Math.log10(w * 1e3) : NaN);
+const chartLayout = (xTitle: string, yTitle: string, logX: boolean, logY: boolean) => ({
+  xaxis: { title: xTitle, color: "#9ca3af", gridcolor: "#374151", ...(logX ? { type: "log" } : {}) },
+  yaxis: { title: yTitle, color: "#9ca3af", gridcolor: "#374151", ...(logY ? { type: "log" } : {}) },
+  margin: { l: 60, r: 20, t: 20, b: 50 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#d1d5db" },
+  legend: { x: 0.02, y: 0.98, bgcolor: "rgba(0,0,0,0)" },
+});
+
+interface Receiver { area: number; passband: number; filterT: number; optics: number }
+
+/** Background power for a full FOV in mrad, wavelength in m, area in cm² and passband in nm. */
+const collected = (s: BackgroundScene, fovMrad: number, lambda: number, rx: Receiver) =>
+  backgroundPower({
+    radiance: sceneRadiance(s, lambda), area: rx.area * 1e-4, fovHalfAngle: (fovMrad * 1e-3) / 2,
+    sourceSolidAngle: sceneSolidAngle(s), bandwidth: rx.passband * 1e-9, filterTransmission: rx.filterT, opticalEfficiency: rx.optics,
+  });
 
 export default function BackgroundNoisePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [rxFOV, setRxFOV] = useURLState("rxFOV", 1); // mrad
-  const [rxBandwidth, setRxBandwidth] = useURLState("rxBandwidth", 1); // nm optical
-  const [rxArea, setRxArea] = useURLState("rxArea", 78.5); // cm² (10cm diameter)
-  const [backgroundType, setBackgroundType] = useState<"day-sky" | "night-sky" | "solar-direct" | "urban-glow">("day-sky");
-  const [filterRejection, setFilterRejection] = useURLState("filterRejection", 30); // dB
+  const [sceneRaw, setScene] = useURLState("scene", "horizon");
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [fovRaw, setFov] = useURLState("rxFOV", 1); // full FOV, mrad
+  const [passbandRaw, setPassband] = useURLState("rxBandwidth", 1); // filter passband, nm
+  const [areaRaw, setArea] = useURLState("rxArea", 78.5); // cm²
+  const [filterTRaw, setFilterT] = useURLState("filterT", 0.9);
+  const [opticsRaw, setOptics] = useURLState("opticsEff", 0.8);
+  const [qeRaw, setQe] = useURLState("qe", 0.8);
+  const [bitRateRaw, setBitRate] = useURLState("bitRate", 1); // Gb/s
 
-  const backgroundRadiance: Record<string, number> = {
-    "day-sky": 50, // W/m²/sr/μm
-    "night-sky": 0.001,
-    "solar-direct": 1.5e7, // W/m²/sr/μm (spectral radiance, conserved from sun surface)
-    "urban-glow": 0.5,
-  };
+  const scene = parseScene(sceneRaw);
+  const wavelength = clamp(wavelengthRaw, 850, 1550, 1550);
+  const fov = clamp(fovRaw, 1e-3, 1000, 1);
+  const passband = clamp(passbandRaw, 1e-3, 100, 1);
+  const area = clamp(areaRaw, 1e-3, 1e5, 78.5);
+  const filterT = clamp(filterTRaw, 0, 1, 0.9);
+  const optics = clamp(opticsRaw, 0, 1, 0.8);
+  const qe = clamp(qeRaw, 0, 1, 0.8);
+  const bitRate = clamp(bitRateRaw, 1e-6, 1e3, 1);
 
   const calc = useMemo(() => {
-    const lambda = wavelength * 1e-9; // m
-    const lambdaUm = wavelength / 1000; // μm
-    const fovRad = rxFOV * 1e-3;
-    const omega = Math.PI * (fovRad / 2) ** 2; // solid angle (sr)
-    const deltaLambda = rxBandwidth / 1000; // μm
-    const A = rxArea * 1e-4; // m²
-    const L = backgroundRadiance[backgroundType]; // W/m²/sr/μm
+    const lambda = wavelength * 1e-9;
+    const { power: P, solidAngle } = collected(scene, fov, lambda, { area, passband, filterT, optics });
+    const photonRate = P / photonEnergy(lambda);
+    const electronRate = qe * photonRate;
+    return {
+      radiance: sceneRadiance(scene, lambda) * 1e-9, // W m⁻² sr⁻¹ nm⁻¹
+      solidAngle, capped: solidAngle < Infinity && solidAngle === sceneSolidAngle(scene), P, photonRate, electronRate,
+      perBit: electronRate / (bitRate * 1e9),
+    };
+  }, [scene, wavelength, fov, passband, area, filterT, optics, qe, bitRate]);
 
-    // Background power: P_b = L × A × Ω × Δλ
-    const Pbg = L * A * omega * deltaLambda; // W
-    const PbgDBm = 10 * Math.log10(Pbg * 1e3);
+  const fovData = useMemo(() => {
+    const lambda = wavelength * 1e-9;
+    const rx = { area, passband, filterT, optics };
+    const fovs = Array.from({ length: 121 }, (_, i) => 10 ** (-2 + (5 * i) / 120)); // 0.01–1000 mrad
+    return BACKGROUND_SCENES.map((s, i) => ({
+      type: "scatter", mode: "lines", x: fovs, y: fovs.map((f) => dBm(collected(s.id, f, lambda, rx).power)), name: s.label,
+      line: { color: COLORS[i], width: s.id === scene ? 3 : 1.5 },
+    }));
+  }, [scene, wavelength, passband, area, filterT, optics]);
 
-    // After optical filter rejection
-    const filterLinear = 10 ** (-filterRejection / 10);
-    const PbgFiltered = Pbg * filterLinear;
-    const PbgFilteredDBm = 10 * Math.log10(Math.max(PbgFiltered * 1e3, 1e-30));
-
-    // Background photon rate
-    const photonEnergy = h * c / lambda;
-    const photonRate = PbgFiltered / photonEnergy;
-
-    // Background electrons per bit (at 1 Gbps)
-    const electronsPerBit = photonRate * 0.5 / 1e9; // 0.5 quantum efficiency
-
-    return { Pbg, PbgDBm, PbgFilteredDBm, photonRate, electronsPerBit, omega };
-  }, [wavelength, rxFOV, rxBandwidth, rxArea, backgroundType, filterRejection]);
-
-  const plotData = useMemo(() => {
-    const fovs = Array.from({ length: 200 }, (_, i) => 0.01 + i * 0.02);
-    const A = rxArea * 1e-4;
-    const L = backgroundRadiance[backgroundType];
-    const deltaLambda = rxBandwidth / 1000;
-    const filterLinear = 10 ** (-filterRejection / 10);
-
-    const powers = fovs.map((f) => {
-      const omega = Math.PI * (f * 1e-3 / 2) ** 2;
-      const P = L * A * omega * deltaLambda * filterLinear;
-      return 10 * Math.log10(Math.max(P * 1e3, 1e-30));
-    });
-
-    const bandwidths = Array.from({ length: 200 }, (_, i) => 0.1 + i * 0.05);
-    const omega = Math.PI * (rxFOV * 1e-3 / 2) ** 2;
-    const bwPowers = bandwidths.map((b) => {
-      const dl = b / 1000;
-      const P = L * A * omega * dl * filterLinear;
-      return 10 * Math.log10(Math.max(P * 1e3, 1e-30));
-    });
-
-    return [
-      { x: fovs, y: powers, type: "scatter", mode: "lines", name: "vs FOV", line: { color: "#06b6d4" } },
-      { x: bandwidths, y: bwPowers, type: "scatter", mode: "lines", name: "vs BW (nm)", line: { color: "#f59e0b" } },
-    ];
-  }, [rxArea, backgroundType, rxBandwidth, rxFOV, filterRejection]);
+  const spectrumData = useMemo(() => {
+    const nms = Array.from({ length: 71 }, (_, i) => 850 + 10 * i);
+    return BACKGROUND_SCENES.map((s, i) => ({
+      type: "scatter", mode: "lines", x: nms, y: nms.map((nm) => sceneRadiance(s.id, nm * 1e-9) * 1e-9), name: s.label,
+      line: { color: COLORS[i], width: s.id === scene ? 3 : 1.5 },
+    }));
+  }, [scene]);
 
   return (
     <>
-            
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-          <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Background Source</label>
-            <select value={backgroundType} onChange={(e) => setBackgroundType(e.target.value as "day-sky" | "night-sky" | "solar-direct" | "urban-glow")}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
-              <option value="day-sky">Day Sky</option>
-              <option value="night-sky">Night Sky</option>
-              <option value="solar-direct">Solar Direct</option>
-              <option value="urban-glow">Urban Glow</option>
-            </select>
-          </div>
-          {[
-            ["Wavelength (nm)", wavelength, setWavelength],
-            ["RX FOV (mrad)", rxFOV, setRxFOV],
-            ["Optical BW (nm)", rxBandwidth, setRxBandwidth],
-            ["RX Area (cm²)", rxArea, setRxArea],
-            ["Filter Rejection (dB)", filterRejection, setFilterRejection],
-          ].map(([label, val, set]: any) => (
-            <div key={label as string}>
-              <ValidatedNumberInput label={label} value={val} onChange={set} />
-            </div>
-          ))}
-        </div>
+      <div className="mb-6 max-w-sm">
+        <label className="block text-sm text-gray-400 mb-1" htmlFor="scene">Background in the field of view</label>
+        <select id="scene" value={scene} onChange={(e) => setScene(e.target.value)}
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+          {BACKGROUND_SCENES.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+        </select>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ValidatedNumberInput label="Wavelength (nm, 850–1550)" value={wavelength} onChange={setWavelength} min={850} max={1550} step="any" />
+        <ValidatedNumberInput label="Full FOV (mrad)" value={fov} onChange={setFov} min={0.001} max={1000} step="any" />
+        <ValidatedNumberInput label="Filter Passband Δλ (nm)" value={passband} onChange={setPassband} min={0.001} max={100} step="any" />
+        <ValidatedNumberInput label="Aperture Area (cm²)" value={area} onChange={setArea} min={0.001} max={100000} step="any" />
+        <ValidatedNumberInput label="Filter In-Band Transmission" value={filterT} onChange={setFilterT} min={0} max={1} step="any" />
+        <ValidatedNumberInput label="Other Optics Efficiency η_opt" value={optics} onChange={setOptics} min={0} max={1} step="any" />
+        <ValidatedNumberInput label="Detector Quantum Efficiency" value={qe} onChange={setQe} min={0} max={1} step="any" />
+        <ValidatedNumberInput label="Bit Rate (Gb/s)" value={bitRate} onChange={setBitRate} min={1e-6} max={1000} step="any" />
+      </div>
 
-        <div className="space-y-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <h2 className="text-lg font-semibold text-cyan-400 mb-3">Results</h2>
-            <div className="space-y-2 text-sm font-mono">
-              <div className="flex justify-between"><span className="text-gray-400">Background Power</span><span>{calc.PbgDBm.toFixed(1)} dBm</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">After Filter</span><span className="text-cyan-300">{calc.PbgFilteredDBm.toFixed(1)} dBm</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Photon Rate</span><span>{calc.photonRate.toExponential(2)} /s</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">e⁻/bit (1 Gbps, QE=0.5)</span><span>{calc.electronsPerBit.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Solid Angle</span><span>{calc.omega.toExponential(2)} sr</span></div>
-            </div>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-xs text-gray-500 space-y-1">
-            <p><strong className="text-gray-400">P<sub>bg</sub> = L × A × Ω × Δλ</strong></p>
-            <p><strong className="text-gray-400">Ω = π(FOV/2)²</strong></p>
-            <p><strong className="text-gray-400">Radiance:</strong> {backgroundType} = {backgroundRadiance[backgroundType]} W/m²/sr/μm</p>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <ChartPanel data={plotData} layout={{
-              xaxis: { title: "FOV (mrad) / BW (nm)", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "Filtered BG Power (dBm)", color: "#9ca3af", gridcolor: "#374151" },
-              paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-              margin: { t: 20, r: 20, b: 40, l: 60 }, font: { color: "#9ca3af" }, legend: { font: { size: 10 } },
-            }} />
-          </div>
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <ResultCard label="Spectral radiance L_λ" value={`${fmt(calc.radiance)} W m⁻² sr⁻¹ nm⁻¹`} tone="gray"
+          subtext={scene === "sun" ? "5772 K blackbody, above the atmosphere" : "Giggenbach (2022), Table 1"} />
+        <ResultCard label="Solid angle used Ω" value={`${fmt(calc.solidAngle)} sr`} tone="gray"
+          subtext={calc.capped ? "the Sun's disc, smaller than the FOV" : "π sin²(FOV/2)"} />
+        <ResultCard label="Background power at the detector" value={`${fmt(dBm(calc.P))} dBm`} tone="orange" subtext={`${fmt(calc.P)} W`} />
+        <ResultCard label="Photon rate at the detector" value={`${fmt(calc.photonRate)} s⁻¹`} tone="blue" />
+        <ResultCard label="Photoelectron rate" value={`${fmt(calc.electronRate)} s⁻¹`} tone="cyan" />
+        <ResultCard label="Background photoelectrons per bit" value={fmt(calc.perBit)} tone="purple" subtext="photoelectron rate / bit rate" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+          <h2 className="text-lg font-semibold mb-4">Background power vs full FOV</h2>
+          <ChartPanel data={fovData} layout={chartLayout("Full FOV (mrad)", "Background power (dBm)", true, false)} />
         </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+          <h2 className="text-lg font-semibold mb-4">Spectral radiance vs wavelength</h2>
+          <ChartPanel data={spectrumData} layout={chartLayout("Wavelength (nm)", "L_λ (W m⁻² sr⁻¹ nm⁻¹)", false, true)} />
+        </div>
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-sm text-gray-300 space-y-2">
+        <h3 className="text-lg font-semibold">Model</h3>
+        <p className="font-mono">P_bg = L_λ · A · Ω · Δλ · T_f · η_opt,   Ω = π sin²(FOV/2)</p>
+        <p>
+          The filter passband Δλ sets the collected band and T_f is its in-band transmission; out-of-band light is
+          assumed fully blocked. Sky and cloud radiances are typical values with the Sun high in the sky (Giggenbach,
+          <em> Sensors</em> 22, 6773, 2022, Table 1, at 850, 1064 and 1550 nm, interpolated log-log). Real skies vary
+          by about ×10 with haze, sun angle and pointing, and between the table wavelengths the interpolation ignores the
+          1.13 and 1.38 µm water-vapour bands, where the sky is much darker. The Sun is a 5772 K blackbody disc of
+          6.79×10⁻⁵ sr above the atmosphere (the real disc is within about ±20 %; the atmosphere lowers it at the
+          ground); it fills only its own disc once the FOV is wider. A clear night sky is several orders of magnitude
+          darker.
+        </p>
       </div>
     </>
   );
