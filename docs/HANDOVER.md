@@ -1,43 +1,46 @@
-# Handover — 2026-10-14 (session 59 → session 60)
+# Handover — 2026-10-14 (session 60 → session 61)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 59 did FSO part 3, the link budget: PR #79, merged as `05f36543`. This handover is on `docs/fso-part3-handover`.
-Next: **FSO part 4, turbulence** (4 pages, see the ROADMAP box). `polarizer-types` stays blocked until the user is at the
-laptop with Chrome.
+Session 60 did FSO part 4, turbulence: PR #81, merged as `ed067ea5`; the production check passed. This handover is on
+`docs/fso-part4-handover`. Next: **FSO part 5, receiver** (3 pages + `background-radiance.ts`, see the ROADMAP box).
+`polarizer-types` stays blocked until the user is at the laptop with Chrome.
 
 ## State
-- 198 of 458 pages are tiered (free-space-comms 15/26), 11 `knownIssue`s (all FSO), 623 tests pass.
-- New `link-budget.ts`: `toDb`, `freeSpacePathLoss`, `apertureGain(D, λ, ε, η)`, `gaussianTxGain(θ_half)` = 8/θ²,
-  `kleinDegnanEfficiency(α, γ)`, `optimumTruncation(γ)` (α 1.1209, g 0.81453 at γ = 0), `fraunhoferDistance`,
-  `friisReceivedPower(Pt, Gt, Gr, R, λ, maxFraction)` → {power, fraction, capped}, `topHatGeometricLoss`,
-  `truncatedGaussianFarField(u, α, γ)`, `truncatedGaussianWidth(α, γ)` (u at 1/e²; 2.8733 at α = 1).
-- Other FSO modules: `atmospheric-attenuation.ts`, `precipitation.ts`, `wavelength-selection.ts`, `turbulence.ts`,
-  `pointing-loss.ts` (`pointingCapture`, the exact Gaussian capture), `ber.ts`, `bpsk-qpsk.ts`. Planned:
-  `background-radiance.ts` (5), `qkd.ts` (6).
+- 202 of 458 pages are tiered (free-space-comms 19/26), 7 `knownIssue`s (all FSO), 634 tests pass.
+- `turbulence.ts` gained `apertureParameter`, `logIrradianceVariances`, `weakApertureFactor` (exact Gaussian-aperture
+  integral), `andrewsApertureFactor`, `gammaGammaParameters`/`gammaGammaCdf`, `irradianceCorrelation` (table from
+  `scripts/gen-irradiance-covariance.ts`), `diversityOutage`/`diversityThreshold` (SC/EGC/MRC), `beamWanderVariance`/`LossDb`.
+- `math.ts` gained `lnGamma`, `regularizedGammaP` (Temme for a ≥ 1e5), `integrateTanhSinh`.
+- Other FSO modules: `atmospheric-attenuation`, `precipitation`, `wavelength-selection`, `link-budget`, `pointing-loss`,
+  `ber`, `bpsk-qpsk`. Planned: `background-radiance.ts` (5), `qkd.ts` (6).
 
 ## Next actions
-1. Post-merge check of PR #79, if the session didn't log it: `node scripts/post-merge-check.mjs 05f36543
-   free-space-comms/lasercom-link="-33.42" free-space-comms/link-budget="-18.02 dBm"
-   free-space-comms/geometric-loss="17.03 dB" free-space-comms/optical-antenna="101.95 dBi"`. Then ship this docs PR.
-2. FSO part 4: turbulence (ROADMAP box). Verify each coefficient and DOI before code. Run one `physics-reviewer` pass
-   before the PR.
+1. Ship this docs PR (`/ship`, merge on the user's yes).
+2. FSO part 5: receiver (ROADMAP box). Verify each coefficient and DOI before code; one `physics-reviewer` pass before the
+   PR. Post-merge check to include `free-space-comms/channel-capacity="6.658"` plus the background-noise and receiver-fov
+   defaults you derive.
 3. For each fixed page: drop the `knownIssue`; add the tier, a `modelNote` (≤ 220 chars, `[...s].length`) and references
    (`crossref.mjs`).
-4. Later: the fiber open findings, G.657.A3, MCF R_eq, the snow-law origin and the Kim & Korevaar top-hat text (all need
-   Chrome), and the small thin-film findings.
+4. Later: fiber and FSO open findings, G.657.A3, MCF R_eq, snow law, Kim & Korevaar text (need Chrome), thin-film findings.
 
 ## Non-obvious facts
-- **Session 59 lessons:**
-  - **Clipped Gaussians:** λ/(πW₀) is the divergence of an untruncated beam. A beam clipped at its 1/e² radius
-    (α = a/W₀ = 1) has a 1/e² far-field lobe 1.44× wider; the two agree from α ≈ 2. Use `truncatedGaussianWidth`.
-  - **Friis inside z_R:** 8/θ² with FSPL is the far-field, small-aperture limit of 1 − exp(−2a²/w²). Inside the Rayleigh
-    range it overestimates by up to 9 dB at slider limits, so link-budget shows the exact `pointingCapture`.
-  - The ROADMAP's own golden numbers can be inconsistent with its formula (optical-antenna: 49.43 mm used D√(1−ε²),
-    the formula said D/2). Check the physics, then note the deviation in the PR.
-  - `useURLState` inside `.map` breaks `rules-of-hooks`; write explicit calls and clamp after.
-  - Crossref gives only the first page; don't add end pages from memory.
-  - After `next start`, wait ≈ 10 s before the first curl; an early one returns an empty page.
+- **Session 60 lessons:**
+  - **Interpolations vs integrals:** Andrews' aperture fits are interpolations (spherical 0.333 is 25–33 % high at
+    d² = 1–10). The exact weak integral is cheap: closed κ-integral (Γ(−5/6) kernel) + tanh-sinh over ξ.
+  - **Speed:** `erfc` costs ≈ 0.5 µs (series/CF). A page that solves thresholds per chart point needs a call budget:
+    a tight analytic bracket + Illinois on ln P, not 70-step bisection. Time each chart in a probe (target < 0.3 s);
+    the reviewer found a 5–40 s freeze.
+  - **Large parameters:** fixed iteration caps fail at a ≳ 2e5 (P(1e6, 1e6) gave 0.34); a ln a − lnΓ(a) cancels, so use
+    Stirling; scan grids must shrink with the 1/√a peak width. Test the extreme corner of every input range.
+  - **Fenton–Wilkinson** on ΣI² is much worse than on ΣI; bound MRC by EGC and SC (Cauchy–Schwarz, max ≤ √ΣI²).
+  - Check approximations against an exact nested integral, not only Monte Carlo: MC said ≤ 0.4 dB, exact said ≈ 1 dB.
+  - An implementer's sanity script printed wrong defaults while the page was right: read the page code.
+  - Bash: a bare `cat > file` with no heredoc hangs on stdin; write scripts with the Write tool or a quoted heredoc.
+- **Session 59:** a clipped Gaussian (α = 1) has a 1.44× wider far-field lobe than λ/(πW₀) (`truncatedGaussianWidth`);
+  Friis 8/θ² overestimates inside z_R, so show the exact capture. ROADMAP golden numbers can contradict their formula:
+  check the physics and note the deviation in the PR. `useURLState` inside `.map` breaks `rules-of-hooks`. Crossref
+  gives only the first page. After `next start`, wait ≈ 10 s before the first curl.
 - **Session 58:** check for a newer ITU revision first (`itu.int/rec/R-REC-<rec>/en`). ITU PDFs download with curl, but
   equations come out garbled; read the OMML in `…!!MSW-E.docx` → `word/document.xml`. Fits with ln R terms misbehave
   below their data: scan every fitted term over the whole input range. Auto mode refuses `gh pr merge` without an
@@ -51,14 +54,13 @@ laptop with Chrome.
   - WebFetch returns PDFs as binary: use `curl` + `pdftotext -layout` (or `-raw` for tables).
 - **Merges:** to merge a page, add the redirect, run `scripts/codemods/2026-10-08-merge-duplicates.ts` (dry run, then
   `--write`), then `rm -rf .next/types .next/dev/types`. A `post-merge-check` value can be any phrase in the prerendered HTML.
-- **Fits:** empirical fits can go unphysical inside their stated range. Check signs, orderings and piecewise joins.
+- **Fits:** empirical fits can go unphysical inside their stated range. Check signs, orderings and joins. Timings: CI ≈ 2–3 min, physics-reviewer ≈ 5–15 min.
 - **URL strings:** `s in OBJ` is true for prototype keys; use `Object.hasOwn`.
 - **SimpleChart:** ChartPanel sends scatter and bar traces to SVG `SimpleChart`, not Plotly.
   - It ignores `layout.legend` and per-point marker colours.
   - It has no `layout.shapes` or per-trace `showlegend`; draw marker lines as traces. It does support `yaxis: "y2"`.
 - **NaN traps:** `q·exp(big)` with q = 0 gives 0·∞ = NaN, and bisection on NaN converges to a wrong finite answer. Show
   NaN/∞ as "—" with a reason. Plotly can't draw Infinity: map it to `null`.
-- **tsx doesn't type-check:** run `npm run check` before trusting a test.
 - **Hung checks:** wrap every chrome, ui-check and server command in `timeout <s>`. Check pages on `next start` after
   `build`. A `next start` can hold port 3100: find it with `netstat -ano | grep :3100`, kill it with
   `taskkill //PID <pid> //T //F`. Use `run_in_background`, not `( … ) &`.
@@ -70,8 +72,6 @@ laptop with Chrome.
   needs `&apos;`.
 - **ui-check:** `MSYS_NO_PATHCONV=1 node scripts/ui-check.mjs http://localhost:3100 load /a /b`. Never
   `taskkill /IM chrome.exe`.
-- **Timings:** `check` ≈ 6 min, `build` ≈ 6–10 min, CI ≈ 2–3 min, physics-reviewer ≈ 5–13 min. Don't edit `.ts` while
-  `check` runs.
 - **Vercel status:** GitHub often gets no commit status for production deploys, so `post-merge-check` can wait on
   "pending". Check with Vercel MCP `list_deployments` (project `prj_wTWqQ2nFEuhYGHa06aUYA6Cb4XIH`, team
   `team_LaEJuanZGFVc5UHhLD6LRaiq`, filter `sha`).
