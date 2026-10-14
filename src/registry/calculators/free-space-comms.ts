@@ -77,8 +77,19 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "background-noise",
     title: "FSO Background Noise",
-    description: "Background power, photon rate and electrons per bit from day sky, night sky, direct sun or urban glow for a given receiver FOV, aperture and filter.",
-    knownIssue: "The filter rejection is applied to light inside the passband (1000× too low), and the sky and solar radiances don't depend on wavelength (the solar value is the 850 nm one).",
+    description: "Background power, photon rate and photoelectrons per bit from clear sky, clouds or the Sun for a given field of view, aperture, filter passband and wavelength (850–1550 nm).",
+    tier: "textbook",
+    modelNote: "P = L·A·Ω·Δλ·T·η with Ω = π sin²(FOV/2). Sky and cloud radiances are typical values (real skies vary ≈ ×10); the Sun is a 5772 K disc above the atmosphere (±20 %). Out-of-band light is fully blocked.",
+    references: [
+      {
+        citation: "Giggenbach D. (2022). Free-space optical data receivers with avalanche detectors for satellite downlinks regarding background light. Sensors 22(18), 6773. Table 1: sky, cloud and sun radiances at 850, 1064 and 1550 nm; eq. (22).",
+        url: "https://doi.org/10.3390/s22186773",
+      },
+      {
+        citation: "Prša A. et al. (2016). Nominal values for selected solar and planetary quantities: IAU 2015 Resolution B3. Astron. J. 152(2), 41. T_eff = 5772 K, R = 6.957×10⁸ m.",
+        url: "https://doi.org/10.3847/0004-6256/152/2/41",
+      },
+    ],
   },
   {
     slug: "beam-wander",
@@ -124,8 +135,23 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "channel-capacity",
     title: "FSO Channel Capacity",
-    description: "Shannon capacity, achievable rate of OOK, PSK and 16-QAM after FEC overhead, gap to Shannon and required SNR for a given bandwidth and SNR.",
-    knownIssue: "The achievable rate ignores the SNR: at 0 dB QPSK shows 1.87 Gbps, above the 1.00 Gbps Shannon capacity. \"Required SNR\" is the Shannon minimum, not a BER requirement.",
+    description: "Shannon capacity and the net rate of OOK, BPSK, QPSK, 8-PSK and 16-QAM after hard-decision FEC, gated on their exact AWGN bit error rates, with the required SNR and the gap to Shannon.",
+    tier: "exact",
+    modelNote: "Exact for coherent detection in complex AWGN: Gray mapping, Nyquist signalling (SNR = Es/N0). FEC is reduced to an input-BER limit. Direct-detection and photon-counting channels have other capacities.",
+    references: [
+      {
+        citation: "Shannon C. E. (1948). A mathematical theory of communication. Bell Syst. Tech. J. 27(3), 379–423.",
+        url: "https://doi.org/10.1002/j.1538-7305.1948.tb01338.x",
+      },
+      {
+        citation: "Craig J. W. (1991). A new, simple and exact result for calculating the probability of error for two-dimensional signal constellations. MILCOM '91, 571–575. Exact M-PSK phase-error integral.",
+        url: "https://doi.org/10.1109/MILCOM.1991.258319",
+      },
+      {
+        citation: "Cho K., Yoon D. (2002). On the general BER expression of one- and two-dimensional amplitude modulations. IEEE Trans. Commun. 50(7), 1074–1080. Gray 16-QAM bit error rate.",
+        url: "https://doi.org/10.1109/TCOMM.2002.800818",
+      },
+    ],
   },
   {
     slug: "diversity-reception",
@@ -346,8 +372,22 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "receiver-fov",
     title: "Receiver FOV vs Background Noise",
-    description: "Analyze receiver field of view trade-offs against background radiation noise.",
-    knownIssue: "The efficiency is applied twice to the background, and the shot- and thermal-noise SNR is computed but never shown, so the wavelength input changes nothing.",
+    description: "Electrical SNR of a PIN or APD receiver versus field of view, with background light from clear sky, clouds or the Sun, and the FOV at which background noise overtakes amplifier noise.",
+    tier: "textbook",
+    modelNote: "Shot noise 2qM²F(I_s + I_bg + I_d)B with McIntyre's F, plus amplifier noise i_n²B. Background L·A·Ω·Δλ·η with typical sky radiances. The signal is assumed to pass the field stop whole.",
+    references: [
+      {
+        citation: "Giggenbach D. (2022). Free-space optical data receivers with avalanche detectors for satellite downlinks regarding background light. Sensors 22(18), 6773. Table 1: sky, cloud and sun radiances at 850, 1064 and 1550 nm; eq. (22).",
+        url: "https://doi.org/10.3390/s22186773",
+      },
+      {
+        citation: "McIntyre R. J. (1966). Multiplication noise in uniform avalanche diodes. IEEE Trans. Electron Devices 13(1), 164–168. Excess noise factor F = kM + (1 − k)(2 − 1/M).",
+        url: "https://doi.org/10.1109/T-ED.1966.15651",
+      },
+      {
+        citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed. Wiley. §4.4, receiver noise and SNR of PIN and APD receivers.",
+      },
+    ],
   },
   {
     slug: "scintillation",
