@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 55, 2026-10-14)
+## Status (session 56, 2026-10-14)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -18,21 +18,50 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | thin-film | 45 / 45 | done (sessions 25–28, 54–55); small findings below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
 | imaging | 9 / 65 | findings fixed (sessions 19, 22); no full audit |
-| free-space-comms | 7 / 27 | findings fixed (Phase 1, session 21); `eye-safety-fso` on the laser-safety modules (48); no full audit |
+| free-space-comms | 7 / 27 | part 0 done (session 56): 20 `knownIssue`s; fix parts 1–6 below |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 0 / 54 | |
-| **total** | **190 / 459** | 0 `knownIssue`s |
+| **total** | **190 / 459** | 20 `knownIssue`s (free-space-comms) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
   extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
   curl. Also clear the eslint warning there (unused `wavelength` state).
-- [ ] Next category audit, part 0: inventory its pages (`checker`), group them into ≈ 4-page parts and add those as
-  boxes here. Ask the user which category: free-space-comms 7/27, imaging 9/65, materials 3/45, spectroscopy 5/54,
-  wave-optics 2/49 or detectors 0/54 (fiber part 0, session 43, is the pattern).
+- [x] **Free-space-comms audit, part 0** (session 56, branch `phase-4/fso-audit`). Five `physics-reviewer` batches
+  audited the 20 untiered pages: **19 bugs, 1 questionable** (`optical-antenna`, wrong w₀/z_R at its default M²). All 20
+  have a registry `knownIssue`. None imports `src/physics/free-space-comms/`; most defaults are off by 4× to 460×.
+  Reviewers had no web access: verify every coefficient and DOI below before it goes in code or the registry.
+- [ ] **FSO part 1: visibility laws** (`atmospheric-attenuation.ts`): `fog-attenuation`, `atmosphere`,
+  `wavelength-selection`. Add `kruseExponent` and Al Naboulsi advection/radiation fog to the module. Fog: km⁻¹ shown
+  as dB/km; Kim V = 0.5 km, 1550 nm → 33.93 dB/km. `atmosphere` duplicates the tiered `atmospheric-loss` (column τ
+  as km⁻¹, invented H₂O bands): **merge it into `atmospheric-loss` with a redirect** (user, session 56). `wavelength-selection` (illustrative): `totalExtinction`, 1550 nm, V = 2 km, 1 km →
+  4.263 dB; eye score from the laser-safety AEL ratio (1310 nm C7), weights must sum to 1, `[...scores].sort`.
+- [ ] **FSO part 2: precipitation** (new `precipitation.ts`): `rain-attenuation`, `snow-attenuation`. Source the
+  coefficients first: ITU-R P.1814 rain 1.076·R^0.67 dB/km (25 mm/h → 9.30), λ-independent; Nadeem et al. 2009 snow
+  (dry a = 5.42e-5λ + 5.4958776, b = 1.38; wet a = 1.023e-4λ + 3.7855466, b = 0.72; λ in nm; 5 mm/h, 1550 nm → 51.4
+  and 12.6 dB/km). Is S water-equivalent? Drop the snow V_eq fudge and the rain λ^−0.2 term; add a λ input to snow.
+- [ ] **FSO part 3: link budget** (new `link-budget.ts`: `fspl`, `apertureGain(D, λ, ε, η)`, `gaussianTxGain` 8/θ²,
+  `friisReceivedPower` capped at Pt·η, `topHatGeometricLoss` ≥ 0 dB; Gaussian capture from `pointing-loss.ts`):
+  `lasercom-link` (cm/m mix-up +40 dB, spreading counted twice; Friis default −33.42 dBm), `link-budget` (RF-scale
+  gains; FSPL(1550 nm, 1 km) = 198.18 dB, G(10 cm) = 106.14 dBi), `geometric-loss` (η > 100 %, D_tx unused; top-hat
+  20.04 dB vs Gaussian 17.03 dB), `optical-antenna` (W₀ = D/2, z_R = πW₀²/(M²λ): 49.43 mm, 4502.8 m).
+- [ ] **FSO part 4: turbulence** (`turbulence.ts` + weak aperture averaging, Al-Habash α/β, beam wander, plane-wave ρ₀,
+  irradiance covariance width): `aperture-averaging` (Andrews 1992 [1 + 1.062·kD²/4L]^(−7/6), spherical 0.333;
+  defaults 0.0564/0.179), `beam-wander` (2.42 Cn² L³ W₀^(−1/3) → 8.915e-6 m²; loss 10 log(1 + 2⟨r²⟩/W(L)²) =
+  0.076 dB), `fade-probability` (α/β 103.2/98.5 at σ_R² = 0.0199; log-normal vs γ-γ title; ad hoc fade time),
+  `diversity-reception` (irradiance correlation; Lee & Chan 2004, Navidpour 2007 combiners; log-normal outage).
+- [ ] **FSO part 5: receiver** (new `background-radiance.ts`: solar disc planckExitance/π at 5772 K with Ω ≤ 6.79e-5 sr,
+  sourced λ-dependent sky radiance, L·A·Ω·Δλ·T, separate η_opt and QE): `background-noise` (in-band rejection 1000×),
+  `receiver-fov` (η², SNR never shown; keep it, on the shared module: user, session 56), `channel-capacity` (exact AWGN;
+  gate the rate on SNR; C(1 GHz, 20 dB) = 6.658 Gbps; IM/DD and Poisson scope note).
+- [ ] **FSO part 6: pointing and QKD** (new `qkd.ts`, GLLP): `point-ahead` (2v⊥/c: 7 km/s → 46.70 µrad; inertial GEO
+  preset; TOF ms label), `acquisition-tracking` (illustrative; mrad conversion, half-angle, aperture input instead of
+  30 dBi; 5/1 mrad → 10 lines, 0.573 s at 10°/s), `quantum-key-distribution` (−f_EC·Q_μ·H₂(E_μ); μ input; Ma et al.
+  2005 GYS ≈ 142 km, check), `security` (illustrative rewrite: Gaussian capture via `pointing-loss.ts`, bandwidth
+  for C_s, drop the BB84 line).
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
 - [ ] Rewrite each heuristic model, or label it illustrative, during its category's audit. Macro-bend and
   second-harmonic are done.
