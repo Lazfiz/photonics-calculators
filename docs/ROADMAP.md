@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 63, 2026-10-14)
+## Status (session 64, 2026-10-14)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -23,19 +23,13 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
-| detectors | 0 / 54 | part 0 done (session 63): 32 `knownIssue`s (11 bugs, 21 questionable), 22 OK; fix parts 1–10 below |
-| **total** | **209 / 458** | 32 `knownIssue`s (detectors) |
+| detectors | 8 / 54 | part 0 audit (session 63), part 1 noise (session 64); 30 `knownIssue`s left; fix parts 2–9 below |
+| **total** | **217 / 458** | 30 `knownIssue`s (detectors) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
   extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
   curl. Also clear the eslint warning there (unused `wavelength` state).
-- [ ] **Detectors part 1: noise** (new `detectors/noise.ts`: `shotNoiseCurrent`, `johnsonNoise` {v,i,p}, `ktcNoise`,
-  `flickerRms`, `sensorNoiseElectrons`): OK `shot-noise` (1 µA, 1 MHz → 5.6607e-10 A), `thermal-noise` (1 kΩ, 300 K,
-  1 MHz → 4.0704 µV), `reset-noise` (10 fF → 40.169 e⁻), `amplifier-noise` (S_min(5) = 20.1605 e⁻), `readout-noise`,
-  `sndr` (SINAD 19.586 dB, ENOB 2.9611; show SQNR(N), 74.0 dB at 12 bit); fix `flicker-noise` (corner vs 2qI: 3.12e-6 Hz;
-  flickerRms(1e-24, 1 µA, 1, 1 Hz–1 MHz) = 3.7169e-15 A, Hooge 1969) and `temporal-noise` (σ_1/f from the corner:
-  σ_r√((f_c/B)·ln(B/f_L)) = 0.50 e⁻; f_L = 1/(2t) unsourced; drop or use the conversion gain).
 - [ ] **Detectors part 2: photodiode front end** (`noise.ts` + new `tia.ts`, `photodiode-rc.ts`): `nep` (2.275e-11 W,
   D* 4.395e9), `detectivity` (cards OK 2.668e9; λ cutoff, sourced dark-current law, M with F), `bandwidth` (load-R
   label or GBW/C_f; band-limited Johnson 4kTR·f_c·atan(Δf/f_c) → √(kT/C) = 20.35 µV), `photodiode-speed` (transit
@@ -211,6 +205,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Detectors part 1 noise (session 64, PR #89): `detectors/noise.ts` + 7 tests, 8 pages tiered, flicker/temporal fixed; ENOB 2.9607 (exact constants).
   - Detectors part 0 (session 63, PR #87): 54 pages audited, 11 bugs + 21 questionable = 32 `knownIssue`s, 22 OK; fix parts 1–9 (4a/4b); renames and the CPM rewrite agreed.
 - Phase 0 (session 8, PR #2): build fixed, CI, `main` protected, PAT revoked, Claude Code set up.
 - Phase 1 (PR #3): erfc and BER, URL state and inputs, JSON-LD rebuild, shell, input labels, seeded PRNG.
