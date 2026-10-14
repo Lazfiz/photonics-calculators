@@ -27,6 +27,15 @@ export function shannonCapacity(bandwidth: number, snr: number): number {
   return (bandwidth * Math.log1p(snr)) / Math.LN2;
 }
 
+/**
+ * Secrecy capacity of the Gaussian wiretap channel, B[log₂(1 + SNR_B) − log₂(1 + SNR_E)]⁺, b/s (Leung-Yan-Cheong S. K.,
+ * Hellman M. E. (1978), IEEE Trans. Inf. Theory 24(4), 451, https://doi.org/10.1109/TIT.1978.1055917).
+ */
+export function secrecyCapacity(bandwidth: number, snrBob: number, snrEve: number): number {
+  if (!(bandwidth > 0 && snrBob >= 0 && snrEve >= 0)) return NaN;
+  return Math.max(0, (bandwidth * (Math.log1p(snrBob) - Math.log1p(snrEve))) / Math.LN2);
+}
+
 /** P(ψ < θ ≤ π) for the phase error θ of a PSK symbol at E_s/N₀ = γ, ψ ∈ [0, π] (Craig 1991). */
 export function phaseTail(psi: number, esN0: number): number {
   if (!(psi >= 0 && psi <= Math.PI && esN0 >= 0)) return NaN;

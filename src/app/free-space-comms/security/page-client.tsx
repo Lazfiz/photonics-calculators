@@ -1,140 +1,112 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { secrecyCapacity } from "../../../physics/free-space-comms/channel-capacity";
+import {
+  capturedPower, linkSecurity, nepLimitedSnr, type SecurityInputs,
+} from "../../../physics/free-space-comms/physical-layer-security";
+
+const fmt = (x: number, digits = 3) =>
+  !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const dBm = (w: number) => (w > 0 ? 10 * Math.log10(w * 1e3) : NaN);
+const dB = (x: number) => (x > 0 ? 10 * Math.log10(x) : NaN);
 
 export default function SecurityPage() {
-  const [dataRate, setDataRate] = useURLState("dataRate", 10);
-  const [linkRange, setLinkRange] = useURLState("linkRange", 1);
-  const [txPower, setTxPower] = useURLState("txPower", 10);
-  const [rxAperture, setRxAperture] = useURLState("rxAperture", 10);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [eveDistance, setEveDistance] = useURLState("eveDistance", 10);
-  const [eveAperture, setEveAperture] = useURLState("eveAperture", 20);
+  const [txPowerRaw, setTxPower] = useURLState("txPower", 10); // dBm
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [txBeamRaw, setTxBeam] = useURLState("txBeam", 5); // mm, 1/e² diameter at the waist
+  const [rangeRaw, setRange] = useURLState("linkRange", 1); // km
+  const [rxApertureRaw, setRxAperture] = useURLState("rxAperture", 10); // cm
+  const [eveDistanceRaw, setEveDistance] = useURLState("eveDistance", 1000); // m
+  const [eveOffsetRaw, setEveOffset] = useURLState("eveOffset", 0.3); // m
+  const [eveApertureRaw, setEveAperture] = useURLState("eveAperture", 10); // cm
+  const [nepRaw, setNep] = useURLState("nep", 20); // pW/√Hz
+  const [bandwidthRaw, setBandwidth] = useURLState("bandwidth", 1); // GHz
 
-  const calc = useMemo(() => {
-    const lambda = wavelength * 1e-9;
-    // Beam divergence (diffraction-limited)
-    const txDia = 5e-3; // assume 5mm TX aperture
-    const theta = lambda / (Math.PI * txDia / 2); // half-angle rad
-    const fullDiv = 2 * theta * 1e3; // mrad
+  const inputs: SecurityInputs = useMemo(() => ({
+    power: 1e-3 * 10 ** (clamp(txPowerRaw, -60, 60, 10) / 10),
+    lambda: clamp(wavelengthRaw, 100, 20000, 1550) * 1e-9,
+    waist: (clamp(txBeamRaw, 0.01, 10000, 5) * 1e-3) / 2,
+    range: clamp(rangeRaw, 1e-6, 1e5, 1) * 1e3,
+    bobAperture: clamp(rxApertureRaw, 0.01, 1000, 10) * 1e-2,
+    // Eve between the transmitter and Bob; beyond Bob his aperture would shadow the axis.
+    eveDistance: Math.min(clamp(eveDistanceRaw, 0, 1e8, 1000), clamp(rangeRaw, 1e-6, 1e5, 1) * 1e3),
+    eveOffset: clamp(eveOffsetRaw, 0, 1e6, 0.3),
+    eveAperture: clamp(eveApertureRaw, 0.01, 1000, 10) * 1e-2,
+    nep: clamp(nepRaw, 1e-6, 1e9, 20) * 1e-12,
+    bandwidth: clamp(bandwidthRaw, 1e-9, 1e4, 1) * 1e9,
+  }), [txPowerRaw, wavelengthRaw, txBeamRaw, rangeRaw, rxApertureRaw, eveDistanceRaw, eveOffsetRaw, eveApertureRaw, nepRaw, bandwidthRaw]);
 
-    // Beam diameter at legitimate receiver
-    const beamAtRx = 2 * linkRange * 1e3 * theta;
-    // Power density at legitimate receiver
-    const beamArea = Math.PI * (beamAtRx / 2) ** 2;
-    const powerDensityRx = Math.pow(10, txPower / 10) * 1e-3 / beamArea; // W/m²
-
-    // Power at legitimate receiver
-    const rxAntArea = Math.PI * (rxAperture * 1e-2 / 2) ** 2;
-    const rxPower = powerDensityRx * rxAntArea;
-
-    // Eve's intercept (on-axis at different distance)
-    const beamAtEve = 2 * eveDistance * 1e3 * theta;
-    const beamAreaEve = Math.PI * (beamAtEve / 2) ** 2;
-    const evePowerDensity = Math.pow(10, txPower / 10) * 1e-3 / beamAreaEve;
-    const eveAntArea = Math.PI * (eveAperture * 1e-2 / 2) ** 2;
-    const evePower = evePowerDensity * eveAntArea;
-
-    // Security metrics
-    const powerRatio = 10 * Math.log10(rxPower / Math.max(evePower, 1e-30));
-    const eveAdvantage = 10 * Math.log10(evePower / rxPower);
-
-    // Quantum key rate (simplified BB84)
-    const qber = 0.02; // assumed quantum bit error rate
-    const siftedRate = dataRate * 1e9 * 0.5 * (1 - qber);
-    const privacyAmplification = 1 - 2 * qber;
-    const secureKeyRate = siftedRate * privacyAmplification;
-
-    // Physical layer security: secrecy capacity
-    const snrBob = rxPower / 1e-6; // noise floor -60 dBm
-    const snrEve = evePower / 1e-6;
-    const secrecyCapacity = Math.max(0, Math.log2(1 + snrBob) - Math.log2(1 + snrEve)) * 1e-9; // Gbps
-
-    return {
-      fullDiv, beamAtRx, powerDensityRx, rxPower, evePower, powerRatio, eveAdvantage,
-      secureKeyRate, secrecyCapacity, snrBob, snrEve,
-    };
-  }, [dataRate, linkRange, txPower, rxAperture, wavelength, eveDistance, eveAperture]);
+  const r = useMemo(() => linkSecurity(inputs), [inputs]);
+  const divergence = (2 * inputs.lambda) / (Math.PI * inputs.waist); // full angle, rad
 
   const plotData = useMemo(() => {
-    const distances = Array.from({ length: 200 }, (_, i) => 1 + i * 0.5);
-    const lambda = wavelength * 1e-9;
-    const txDia = 5e-3;
-    const theta = lambda / (Math.PI * txDia / 2);
-    const txPowerW = Math.pow(10, txPower / 10) * 1e-3;
-
-    const evePowers = distances.map((d) => {
-      const beamD = 2 * d * 1e3 * theta;
-      return txPowerW / (Math.PI * (beamD / 2) ** 2) * Math.PI * (eveAperture * 1e-2 / 2) ** 2;
+    const span = Math.max(4 * r.eveBeamRadius, 2 * inputs.eveOffset, 1e-3);
+    const offsets = Array.from({ length: 81 }, (_, i) => (span * i) / 80);
+    // Only Eve changes along the chart; Bob is computed once.
+    const runs = offsets.map((o) => {
+      const evePower = capturedPower(inputs.power, inputs.lambda, inputs.waist, inputs.eveDistance, o, inputs.eveAperture);
+      return { evePower, secrecy: secrecyCapacity(inputs.bandwidth, r.snrBob, nepLimitedSnr(evePower, inputs.nep, inputs.bandwidth)) };
     });
-    const bobPowers = distances.map(() => {
-      const beamD = 2 * linkRange * 1e3 * theta;
-      return txPowerW / (Math.PI * (beamD / 2) ** 2) * Math.PI * (rxAperture * 1e-2 / 2) ** 2;
-    });
-
     return [
-      { x: distances, y: evePowers.map(p => 10 * Math.log10(p * 1e3)), type: "scatter", mode: "lines", name: "Eve Power (dBm)", line: { color: "#f43f5e" } },
-      { x: distances, y: bobPowers.map(() => 10 * Math.log10(bobPowers[0] * 1e3)), type: "scatter", mode: "lines", name: "Bob Power (dBm)", line: { color: "#22c55e", dash: "dash" } },
+      { x: offsets, y: runs.map((s) => { const v = dBm(s.evePower); return Number.isFinite(v) ? v : null; }), type: "scatter", mode: "lines", name: "Eve power (dBm)", line: { color: "#f43f5e" } },
+      { x: [0, span], y: [dBm(r.bobPower), dBm(r.bobPower)], type: "scatter", mode: "lines", name: "Bob power (dBm)", line: { color: "#22c55e", dash: "dash" } },
+      { x: offsets, y: runs.map((s) => s.secrecy / 1e9), type: "scatter", mode: "lines", name: "Secrecy capacity (Gb/s)", line: { color: "#f59e0b" }, yaxis: "y2" },
     ];
-  }, [txPower, rxAperture, wavelength, linkRange, eveAperture]);
+  }, [inputs, r]);
 
   return (
     <>
-      
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 text-sm">
-                <p className="text-cyan-300 mt-1 font-mono">C_s = max(0, log₂(1+SNR_Bob) − log₂(1+SNR_Eve))</p>
-        <p className="text-gray-500 mt-1">BB84 secure key rate: R = R_sifted × (1 − 2·QBER)</p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ValidatedNumberInput label="TX Power (dBm)" value={txPowerRaw} onChange={setTxPower} min={-60} max={60} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={100} max={20000} step="any" />
+        <ValidatedNumberInput label="TX Beam Diameter, 1/e² (mm)" value={txBeamRaw} onChange={setTxBeam} min={0.01} max={10000} step="any" />
+        <ValidatedNumberInput label="Bob's Range (km)" value={rangeRaw} onChange={setRange} min={0.000001} max={1e5} step="any" />
+        <ValidatedNumberInput label="Bob's Aperture (cm)" value={rxApertureRaw} onChange={setRxAperture} min={0.01} max={1000} step="any" />
+        <ValidatedNumberInput label="Eve's Distance from TX (m, at most Bob's range)" value={eveDistanceRaw} onChange={setEveDistance} min={0} max={1e8} step="any" />
+        <ValidatedNumberInput label="Eve's Offset from the Beam Axis (m)" value={eveOffsetRaw} onChange={setEveOffset} min={0} max={1e6} step="any" />
+        <ValidatedNumberInput label="Eve's Aperture (cm)" value={eveApertureRaw} onChange={setEveAperture} min={0.01} max={1000} step="any" />
+        <ValidatedNumberInput label="Receiver NEP (pW/√Hz, both)" value={nepRaw} onChange={setNep} min={0.000001} max={1e9} step="any" />
+        <ValidatedNumberInput label="Electrical Bandwidth (GHz)" value={bandwidthRaw} onChange={setBandwidth} min={1e-9} max={1e4} step="any" />
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-          <h2 className="text-lg font-semibold text-cyan-400">Link Parameters</h2>
-          {[
-            ["TX Power (dBm)", txPower, setTxPower],
-            ["RX Aperture (cm)", rxAperture, setRxAperture],
-            ["Wavelength (nm)", wavelength, setWavelength],
-            ["Link Range (km)", linkRange, setLinkRange],
-            ["Data Rate (Gbps)", dataRate, setDataRate],
-          ].map(([label, val, set]: any) => (
-            <div key={label as string}>
-              <ValidatedNumberInput label={label} value={val} onChange={set} />
-            </div>
-          ))}
-          <h3 className="text-md font-semibold text-red-400 mt-4">Eavesdropper</h3>
-          {[
-            ["Eve Distance from TX (m)", eveDistance, setEveDistance],
-            ["Eve Aperture (cm)", eveAperture, setEveAperture],
-          ].map(([label, val, set]: any) => (
-            <div key={label as string}>
-              <ValidatedNumberInput label={label} value={val} onChange={set} />
-            </div>
-          ))}
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ResultCard label="Bob's received power" value={`${fmt(dBm(r.bobPower))} dBm`} tone="green" subtext={`beam radius ${fmt(r.bobBeamRadius)} m at Bob`} />
+        <ResultCard label="Eve's received power" value={r.evePower > 0 ? `${fmt(dBm(r.evePower))} dBm` : "0 (outside the beam)"} tone="red" subtext={`beam radius ${fmt(r.eveBeamRadius)} m at Eve`} />
+        <ResultCard label="Bob / Eve power ratio" value={r.evePower > 0 ? `${fmt(dB(r.bobPower / r.evePower))} dB` : "∞"} tone="purple" subtext="optical power" />
+        <ResultCard label="SNR Bob / Eve" value={`${fmt(dB(r.snrBob))} / ${r.snrEve > 0 ? fmt(dB(r.snrEve)) : "−∞"} dB`} tone="blue" subtext="(P / (NEP·√B))²" />
+        <ResultCard label="Secrecy capacity" value={`${fmt(r.secrecy / 1e9)} Gb/s`} tone="yellow" subtext={`${fmt(r.secrecy / inputs.bandwidth)} bit/s/Hz × B`} />
+        <ResultCard label="Beam divergence" value={`${fmt(divergence * 1e3)} mrad`} tone="gray" subtext="full angle 2λ/(πw₀)" />
+      </div>
 
-        <div className="space-y-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <h2 className="text-lg font-semibold text-cyan-400 mb-3">Security Metrics</h2>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-gray-400">Bob Power</span><span>{(10 * Math.log10(calc.rxPower * 1e3)).toFixed(1)} dBm</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Eve Power</span><span className="text-red-400">{(10 * Math.log10(Math.max(calc.evePower, 1e-30) * 1e3)).toFixed(1)} dBm</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Bob/Eve Power Ratio</span><span className="text-green-400">{calc.powerRatio.toFixed(1)} dB</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Secrecy Capacity</span><span className="text-yellow-400">{calc.secrecyCapacity.toFixed(3)} Gbps</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">BB84 Secure Key Rate</span><span>{(calc.secureKeyRate / 1e9).toFixed(2)} Gbps</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Beam Divergence</span><span>{calc.fullDiv.toFixed(2)} mrad</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Beam Dia at RX</span><span>{calc.beamAtRx.toFixed(1)} m</span></div>
-            </div>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <ChartPanel data={plotData} layout={{
-              xaxis: { title: "Eve Distance (m)", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "Intercepted Power (dBm)", color: "#9ca3af", gridcolor: "#374151" },
-              paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-              margin: { t: 20, r: 20, b: 40, l: 60 }, font: { color: "#9ca3af" }, legend: { x: 0.02, y: 0.98 },
-            }} />
-          </div>
-        </div>
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
+        <h2 className="text-sm font-semibold text-gray-300 mb-2">Eve&apos;s power and the secrecy capacity vs her offset from the beam axis</h2>
+        <ChartPanel data={plotData} layout={{
+          xaxis: { title: "Eve's offset (m)", color: "#9ca3af", gridcolor: "#374151" },
+          yaxis: { title: "Received power (dBm)", color: "#9ca3af", gridcolor: "#374151" },
+          yaxis2: { title: "Secrecy capacity (Gb/s)", color: "#f59e0b", gridcolor: "#374151", overlaying: "y", side: "right" },
+          margin: { l: 60, r: 60, t: 20, b: 50 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#d1d5db" },
+          legend: { x: 0.4, y: 0.98, bgcolor: "rgba(0,0,0,0)" },
+        }} />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-sm text-gray-400 space-y-2">
+        <p>
+          Each receiver collects the part of the Gaussian beam (radius w(z) = w₀√(1 + (z/z_R)²)) that falls on its aperture,
+          computed exactly, so no receiver gets more than the transmitted power even in the near field. Eve is assumed not
+          to block Bob&apos;s beam.
+        </p>
+        <p>
+          Secrecy capacity of the Gaussian wiretap channel: C_s = B[log₂(1 + SNR_B) − log₂(1 + SNR_E)]⁺ (Leung-Yan-Cheong
+          and Hellman, 1978), with SNR = (P/(NEP·√B))² for receivers limited by the same amplifier noise. This is an
+          illustration of why a narrow beam is hard to tap; an intensity-modulated link is not a Gaussian channel, and the
+          figure is not a security guarantee.
+        </p>
       </div>
     </>
   );

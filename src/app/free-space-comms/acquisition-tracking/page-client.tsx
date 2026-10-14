@@ -1,122 +1,106 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { quadCellNea, rasterScan, squareCoverage, stareProbability } from "../../../physics/free-space-comms/acquisition";
+
+const fmt = (x: number, digits = 3) =>
+  !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const DEG = Math.PI / 180;
 
 export default function AcquisitionTrackingPage() {
-  const [fov, setFov] = useURLState("fov", 1); // mrad
-  const [uncertainty, setUncertainty] = useURLState("uncertainty", 5); // mrad 3σ
-  const [scanRate, setScanRate] = useURLState("scanRate", 10); // deg/s
-  const [beaconPower, setBeaconPower] = useURLState("beaconPower", 0); // dBm
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [rxSensitivity, setRxSensitivity] = useState(-40); // dBm
-  const [detectorNoise, setDetectorNoise] = useURLState("detectorNoise", 100); // nW
-  const [bandwidth, setBandwidth] = useURLState("bandwidth", 1); // kHz
+  const [fovRaw, setFov] = useURLState("fov", 1); // mrad, full angle
+  const [uncertaintyRaw, setUncertainty] = useURLState("uncertainty", 5); // mrad, 3σ radius
+  const [scanRateRaw, setScanRate] = useURLState("scanRate", 10); // °/s
+  const [beaconRaw, setBeacon] = useURLState("beaconPower", -30); // dBm at the receiver
+  const [sensitivityRaw, setSensitivity] = useURLState("rxSensitivity", -40); // dBm
+  const [noiseRaw, setNoise] = useURLState("detectorNoise", 100); // nW, NEP·√B
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [apertureRaw, setAperture] = useURLState("aperture", 10); // cm
 
-  const calc = useMemo(() => {
-    // Acquisition probability (Gaussian uncertainty in circular FOV)
-    const sigma = uncertainty / 3;
-    const fovRad = fov * 1e-3;
-    // P_acquire = 1 - exp(-FOV² / (2σ²))
-    const pAcq = 1 - Math.exp(-(fovRad ** 2) / (2 * (sigma * 1e-3) ** 2));
+  const fov = clamp(fovRaw, 1e-3, 100, 1) * 1e-3;
+  const U = clamp(uncertaintyRaw, 1e-3, 100, 5) * 1e-3;
+  const scanRate = clamp(scanRateRaw, 1e-3, 1000, 10) * DEG;
+  const beacon_dBm = clamp(beaconRaw, -150, 50, -30);
+  const sensitivity_dBm = clamp(sensitivityRaw, -150, 50, -40);
+  const noise = clamp(noiseRaw, 1e-6, 1e9, 100) * 1e-9;
+  const lambda = clamp(wavelengthRaw, 100, 20000, 1550) * 1e-9;
+  const D = clamp(apertureRaw, 0.01, 1000, 10) * 1e-2;
 
-    // Scan time (raster scan covering 3σ uncertainty cone)
-    const coneAngle = (2 * uncertainty * 1e-3 * 180 / Math.PI); // deg
-    const scanLines = Math.ceil(coneAngle / (fov * 180 / Math.PI));
-    const scanTime = scanLines * (coneAngle / scanRate); // seconds
-
-    // Beamwidth for jitter estimate
-    const lambda = wavelength * 1e-9;
-    const beamwidth = 1.22 * lambda / (apertureForGain(30, lambda)); // approx
-
-    // SNR at detector
-    const beaconW = 10 ** ((beaconPower - 30) / 10); // dBm → W
-    const noiseW = detectorNoise * 1e-9; // nW → W
-    const snr = beaconW / noiseW;
-
-    // Tracking jitter estimate (fraction of beamwidth, SNR-limited)
-    // jitter ≈ beamwidth / (2√SNR) — Cramér-Rao bound approximation
-    const jitter_mrad = snr > 0 ? (beamwidth * 1e3) / (2 * Math.sqrt(snr)) : 0;
-
-    // Link margin for acquisition beacon
-    const margin = beaconPower - rxSensitivity;
-
-    return { pAcq, scanTime, scanLines, snr, margin, jitter_mrad };
-  }, [fov, uncertainty, scanRate, beaconPower, wavelength, rxSensitivity, detectorNoise]);
-
-  // Helper - rough aperture for a given gain
-  function apertureForGain(gain_dBi: number, lambda: number) {
-    const g = 10 ** (gain_dBi / 10);
-    return Math.sqrt(g) * lambda / Math.PI;
-  }
+  const r = useMemo(() => {
+    const sigma = U / 3;
+    const scan = rasterScan(U, fov, scanRate);
+    const snr = (1e-3 * 10 ** (beacon_dBm / 10)) / noise;
+    return {
+      stare: stareProbability(fov, sigma),
+      coverage: squareCoverage(U, sigma),
+      scan,
+      snr,
+      margin: beacon_dBm - sensitivity_dBm,
+      nea: quadCellNea(lambda, D, snr),
+      diffraction: lambda / D,
+    };
+  }, [U, fov, scanRate, beacon_dBm, sensitivity_dBm, noise, lambda, D]);
 
   const plotData = useMemo(() => {
-    const fovs = Array.from({ length: 200 }, (_, i) => 0.1 + i * 0.05);
-    const probs = fovs.map((f) => {
-      const sigma = uncertainty / 3;
-      const fRad = f * 1e-3;
-      return (1 - Math.exp(-(fRad ** 2) / (2 * (sigma * 1e-3) ** 2))) * 100;
-    });
-    const scanTimes = fovs.map((f) => {
-      const coneAngle = (2 * uncertainty * 1e-3 * 180 / Math.PI);
-      const lines = Math.ceil(coneAngle / (f * 180 / Math.PI));
-      return lines * (coneAngle / scanRate);
-    });
+    const sigma = U / 3;
+    const fovs = Array.from({ length: 200 }, (_, i) => (2 * U * 1e3 * (i + 1)) / 200); // mrad, up to the full 2U
     return [
-      { x: fovs, y: probs, type: "scatter", mode: "lines", name: "Acq. Probability (%)", line: { color: "#06b6d4" }, yaxis: "y" },
-      { x: fovs, y: scanTimes, type: "scatter", mode: "lines", name: "Scan Time (s)", line: { color: "#f59e0b" }, yaxis: "y2" },
+      { x: fovs, y: fovs.map((f) => stareProbability(f * 1e-3, sigma) * 100), type: "scatter", mode: "lines", name: "Stare probability (%)", line: { color: "#06b6d4" } },
+      { x: fovs, y: fovs.map((f) => rasterScan(U, f * 1e-3, scanRate).time), type: "scatter", mode: "lines", name: "Raster scan time (s)", line: { color: "#f59e0b" }, yaxis: "y2" },
     ];
-  }, [uncertainty, scanRate]);
+  }, [U, scanRate]);
 
   return (
     <>
-            
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-          <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
-          {[
-            ["Receiver FOV (mrad)", fov, setFov],
-            ["Position Uncertainty 3σ (mrad)", uncertainty, setUncertainty],
-            ["Scan Rate (°/s)", scanRate, setScanRate],
-            ["Beacon Power (dBm)", beaconPower, setBeaconPower],
-            ["Wavelength (nm)", wavelength, setWavelength],
-            ["RX Sensitivity (dBm)", rxSensitivity, setRxSensitivity],
-            ["Detector Noise Floor (nW)", detectorNoise, setDetectorNoise],
-          ].map(([label, val, set]: any) => (
-            <div key={label as string}>
-              <ValidatedNumberInput label={label} value={val} onChange={set} />
-            </div>
-          ))}
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ValidatedNumberInput label="Receiver FOV, full angle (mrad)" value={fovRaw} onChange={setFov} min={0.001} max={100} step="any" />
+        <ValidatedNumberInput label="Pointing Uncertainty, 3σ radius (mrad)" value={uncertaintyRaw} onChange={setUncertainty} min={0.001} max={100} step="any" />
+        <ValidatedNumberInput label="Scan Rate (°/s)" value={scanRateRaw} onChange={setScanRate} min={0.001} max={1000} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={100} max={20000} step="any" />
+        <ValidatedNumberInput label="Tracking Aperture Diameter (cm)" value={apertureRaw} onChange={setAperture} min={0.01} max={1000} step="any" />
+        <ValidatedNumberInput label="Beacon Power at Receiver (dBm)" value={beaconRaw} onChange={setBeacon} min={-150} max={50} step="any" />
+        <ValidatedNumberInput label="Receiver Sensitivity (dBm)" value={sensitivityRaw} onChange={setSensitivity} min={-150} max={50} step="any" />
+        <ValidatedNumberInput label="Tracking Noise NEP·√B (nW)" value={noiseRaw} onChange={setNoise} min={0.000001} max={1e9} step="any" />
+      </div>
 
-        <div className="space-y-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <h2 className="text-lg font-semibold text-cyan-400 mb-3">Results</h2>
-            <div className="space-y-2 text-sm font-mono">
-              <div className="flex justify-between"><span className="text-gray-400">Acq. Probability</span><span className={calc.pAcq > 0.9 ? "text-green-400" : "text-yellow-400"}>{(calc.pAcq * 100).toFixed(1)}%</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Scan Lines</span><span>{calc.scanLines}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Scan Time</span><span>{calc.scanTime.toFixed(1)} s</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Beacon SNR</span><span>{calc.snr.toFixed(1)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Beacon Margin</span><span className={calc.margin > 0 ? "text-green-400" : "text-red-400"}>{calc.margin.toFixed(1)} dB</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Track Jitter</span><span>{calc.jitter_mrad.toFixed(2)} mrad</span></div>
-            </div>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-xs text-gray-500 space-y-1">
-            <p><strong className="text-gray-400">P<sub>acq</sub>:</strong> 1 − exp(−FOV² / 2σ²)</p>
-            <p><strong className="text-gray-400">Scan Time:</strong> N<sub>lines</sub> × (cone / scan rate)</p>
-            <p><strong className="text-gray-400">SNR:</strong> P<sub>beacon</sub> / P<sub>noise</sub></p>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <ChartPanel data={plotData} layout={{
-              xaxis: { title: "FOV (mrad)", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "Acq. Probability (%)", color: "#06b6d4", gridcolor: "#374151", range: [0, 105] },
-              yaxis2: { title: "Scan Time (s)", color: "#f59e0b", gridcolor: "#374151", overlaying: "y", side: "right" },
-              paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-              margin: { t: 30, r: 60, b: 40, l: 60 }, font: { color: "#9ca3af" }, legend: { font: { size: 10 } },
-            }} />
-          </div>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ResultCard label="Stare acquisition probability" value={`${fmt(r.stare * 100)} %`} tone={r.stare > 0.9 ? "green" : "yellow"}
+          subtext="target inside the FOV without scanning" />
+        <ResultCard label="Raster scan" value={`${Number.isFinite(r.scan.lines) ? r.scan.lines : "—"} lines, ${fmt(r.scan.time)} s`} tone="orange"
+          subtext={`the 2U square holds ${fmt(r.coverage * 100, 4)} % of targets`} />
+        <ResultCard label="Beacon margin" value={`${fmt(r.margin)} dB`} tone={r.margin > 0 ? "green" : "red"} subtext={r.margin > 0 ? "above sensitivity" : "below sensitivity"} />
+        <ResultCard label="Tracking SNR (voltage)" value={`${fmt(r.snr)} (${fmt(20 * Math.log10(r.snr))} dB)`} tone="blue" subtext="P_beacon / (NEP·√B)" />
+        <ResultCard label="Quadrant-detector NEA (rms per axis)" value={`${fmt(r.nea * 1e6)} µrad`} tone="cyan" subtext="(3π/16)(λ/D)/SNR, point source" />
+        <ResultCard label="Diffraction angle λ/D" value={`${fmt(r.diffraction * 1e6)} µrad`} tone="gray" subtext="spot size on the quadrant cell" />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
+        <h2 className="text-sm font-semibold text-gray-300 mb-2">Stare probability and raster scan time vs FOV</h2>
+        <ChartPanel data={plotData} layout={{
+          xaxis: { title: "FOV, full angle (mrad)", color: "#9ca3af", gridcolor: "#374151" },
+          yaxis: { title: "Stare probability (%)", color: "#06b6d4", gridcolor: "#374151", range: [0, 105] },
+          yaxis2: { title: "Scan time (s)", color: "#f59e0b", gridcolor: "#374151", overlaying: "y", side: "right" },
+          margin: { l: 60, r: 60, t: 20, b: 50 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#d1d5db" },
+          legend: { x: 0.02, y: 0.98, bgcolor: "rgba(0,0,0,0)" },
+        }} />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-sm text-gray-400 space-y-2">
+        <p>
+          Stare: with a circular Gaussian pointing error (σ = U/3 per axis), the target falls inside a FOV of full angle Θ
+          with probability 1 − exp(−(Θ/2)²/2σ²). Raster: lines spaced by Θ sweep a square of side 2U, so
+          N = ⌈2U/Θ⌉ lines take N·2U/ω, with no turnaround, overlap or dwell time.
+        </p>
+        <p>
+          Tracking: a quadrant detector locates a diffraction-limited spot to (3π/16)(λ/D)/SNR rms, SNR being the voltage
+          SNR of the four quadrants summed (Tyler and Fried, 1982). These are first estimates for sizing a terminal, not a
+          simulation of an acquisition sequence.
+        </p>
       </div>
     </>
   );
