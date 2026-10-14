@@ -30,12 +30,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
   extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
   curl. Also clear the eslint warning there (unused `wavelength` state).
-- [x] **Detectors audit, part 0** (session 63, branch `phase-4/detectors-audit`). Nine `physics-reviewer` batches audited
-  all 54 pages: **11 bugs, 21 questionable, 22 OK**; the 32 get a registry `knownIssue`. No page imports a detectors
-  module (only `src/lib/geiger-mode-avalanche.ts`); constants already come from `constants.ts` except
-  `vacuum-photodiode` (11600, 1.2e6). Common to most pages: inputs without `min` (0 → ∞/NaN; URL values skip the
-  range), state in `useState` instead of the URL, unused imports. Tier the OK pages in their part (with guards and a golden
-  test). Reviewer numbers marked "from memory" (InGaAs α, Si APD drift, P46, iXon 800 ke⁻ register well) need a source first.
 - [ ] **Detectors part 1: noise** (new `detectors/noise.ts`: `shotNoiseCurrent`, `johnsonNoise` {v,i,p}, `ktcNoise`,
   `flickerRms`, `sensorNoiseElectrons`): OK `shot-noise` (1 µA, 1 MHz → 5.6607e-10 A), `thermal-noise` (1 kΩ, 300 K,
   1 MHz → 4.0704 µV), `reset-noise` (10 fF → 40.169 e⁻), `amplifier-noise` (S_min(5) = 20.1605 e⁻), `readout-noise`,
@@ -217,6 +211,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Detectors part 0 (session 63, PR #87): 54 pages audited, 11 bugs + 21 questionable = 32 `knownIssue`s, 22 OK; fix parts 1–9 (4a/4b); renames and the CPM rewrite agreed.
 - Phase 0 (session 8, PR #2): build fixed, CI, `main` protected, PAT revoked, Claude Code set up.
 - Phase 1 (PR #3): erfc and BER, URL state and inputs, JSON-LD rebuild, shell, input labels, seeded PRNG.
 - Phase 2:
