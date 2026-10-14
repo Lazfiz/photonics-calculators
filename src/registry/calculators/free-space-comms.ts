@@ -4,8 +4,15 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "acquisition-tracking",
     title: "FSO Acquisition and Tracking",
-    description: "Acquisition probability, scan lines and scan time over the uncertainty cone, beacon SNR and margin, and tracking jitter for a free-space optical terminal.",
-    knownIssue: "The scan-line count misses the mrad conversion (one line instead of ten at the defaults), the beamwidth ignores wavelength (fixed 30 dBi gain) and the jitter law has no source.",
+    description: "Stare acquisition probability, raster scan lines and time over the 3σ uncertainty cone, beacon margin and the quadrant-detector tracking error for a free-space optical terminal.",
+    tier: "illustrative",
+    modelNote: "Circular Gaussian pointing error; raster without turnaround, overlap or dwell; quadrant-cell NEA (3π/16)(λ/D)/SNR for a point source. A sizing estimate, not an acquisition-sequence simulation.",
+    references: [
+      {
+        citation: "Tyler G. A., Fried D. L. (1982). Image-position error associated with a quadrant detector. J. Opt. Soc. Am. 72(6), 804–808. RMS error π√((3/16)² + (n/8)²)(λ/D)/SNR, n = 0 for a point source.",
+        url: "https://doi.org/10.1364/JOSA.72.000804",
+      },
+    ],
   },
   {
     slug: "adaptive-optics",
@@ -327,8 +334,19 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "point-ahead",
     title: "Point-Ahead Angle",
-    description: "Point-ahead angle from relative velocity, transmit beamwidth, time of flight and required pointing accuracy for LEO, GEO and deep-space laser links.",
-    knownIssue: "The point-ahead angle is v/c instead of 2v⊥/c (half the correct value), the GEO preset uses an Earth-fixed velocity, and the time of flight is plotted in seconds but labelled ms.",
+    description: "Point-ahead angle 2v⊥/c from the transverse relative velocity, compared with the diffraction half-angle, with the miss distance and light time for LEO and GEO laser links.",
+    tier: "textbook",
+    modelNote: "θ = 2v⊥/c to first order in v/c, with v⊥ the inertial transverse velocity (GEO preset: ω_E(r_GEO − R_E) = 2.61 km/s). Straight-line light path, no refraction; uniform-aperture 1.22λ/D for comparison.",
+    references: [
+      {
+        citation: "Carrasco-Casado A., Mata-Calvo R. (2020). Space optical links for communication networks. In Springer Handbook of Optical Networks, 1057–1103. Eq. (8.4), point-ahead angle 2v/c; ≈ 51 µrad for LEO 500 km, 18 µrad for GEO.",
+        url: "https://doi.org/10.1007/978-3-030-16250-4_34",
+      },
+      {
+        citation: "Petit G., Luzum B. (eds.) (2010). IERS Conventions (2010). IERS Technical Note 36, Table 1.1: GM_E and ω_E.",
+        url: "https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html",
+      },
+    ],
   },
   {
     slug: "pointing-loss",
@@ -353,8 +371,19 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "quantum-key-distribution",
     title: "QKD Secure Key Rate",
-    description: "Decoy-state BB84 secure key rate, QBER, single-photon yield and maximum range versus channel loss, detector efficiency, dark counts and pulse rate.",
-    knownIssue: "The key rate leaves out the error-correction term, so the maximum range always hits the 500 km cap, and the default power gives 7.8×10⁵ photons per pulse (no key, yet \"Secure\").",
+    description: "Decoy-state BB84 secure key rate (GLLP), QBER, single-photon gain, maximum distance and optimal mean photon number versus channel loss, with the PLOB repeaterless bound.",
+    tier: "textbook",
+    modelNote: "Asymptotic decoy-state BB84 (infinite decoys and key), GLLP rate with error-correction cost f·Q_μ·H₂(E_μ), Poisson source, threshold detectors. Reproduces the 142 km GYS limit of Ma et al. 2005.",
+    references: [
+      {
+        citation: "Ma X., Qi B., Zhao Y., Lo H.-K. (2005). Practical decoy state for quantum key distribution. Phys. Rev. A 72, 012326. Eqs. (1), (5)–(11); Table 1 (GYS); Fig. 2, 142.05 km.",
+        url: "https://doi.org/10.1103/PhysRevA.72.012326",
+      },
+      {
+        citation: "Pirandola S., Laurenza R., Ottaviani C., Banchi L. (2017). Fundamental limits of repeaterless quantum communications. Nat. Commun. 8, 15043. Bound −log₂(1 − η).",
+        url: "https://doi.org/10.1038/ncomms15043",
+      },
+    ],
   },
   {
     slug: "rain-attenuation",
@@ -405,8 +434,15 @@ export const freeSpaceComms: CalculatorEntry[] = [
   {
     slug: "security",
     title: "FSO Physical-Layer Security",
-    description: "Power at the receiver and an off-axis eavesdropper, Bob/Eve ratio, secrecy capacity and a BB84 key-rate estimate for a free-space optical link.",
-    knownIssue: "Inside the Rayleigh range the far-field formula gives the eavesdropper more power than the transmitter emits, the secrecy capacity is shown in Gbps without a bandwidth, and the BB84 line has no basis.",
+    description: "Power that the receiver and an off-axis eavesdropper collect from a Gaussian beam, their SNRs and the wiretap secrecy capacity for a free-space optical link.",
+    tier: "illustrative",
+    modelNote: "Exact Gaussian-beam capture (vacuum, no turbulence; Eve sits before Bob, off his path); SNR (P/(NEP·√B))² with Bob's NEP for Eve too; Gaussian wiretap capacity applied to an IM/DD link. Not a security guarantee.",
+    references: [
+      {
+        citation: "Leung-Yan-Cheong S. K., Hellman M. E. (1978). The Gaussian wire-tap channel. IEEE Trans. Inf. Theory 24(4), 451–456. Secrecy capacity C_B − C_E.",
+        url: "https://doi.org/10.1109/TIT.1978.1055917",
+      },
+    ],
   },
   {
     slug: "snow-attenuation",

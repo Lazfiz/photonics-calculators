@@ -1,207 +1,151 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
 import { c, h } from "../../../physics/constants";
+import { decoyBb84, maxChannelLossDb, optimalMu, plobBound } from "../../../physics/free-space-comms/qkd";
+
+const fmt = (x: number, digits = 3) =>
+  !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const positiveOrNull = (x: number) => (Number.isFinite(x) && x > 0 ? x : null);
+const SI_RATE = (bps: number) =>
+  !(bps > 0) ? "0 b/s" : bps >= 1e6 ? `${fmt(bps / 1e6)} Mb/s` : bps >= 1e3 ? `${fmt(bps / 1e3)} kb/s` : `${fmt(bps)} b/s`;
+
+/** Text for the maximum-distance card; with α = 0 the limit is a loss budget, not a distance. */
+function maxDistanceCard(maxLoss: number, maxRange: number, alpha: number, fixedLoss: number) {
+  if (maxLoss === 0) return { value: "No key", subtext: "no key even at zero channel loss" };
+  if (!Number.isFinite(maxLoss)) return { value: "Unlimited", subtext: "key still positive at 300 dB loss" };
+  if (maxLoss < fixedLoss) return { value: "No key", subtext: `fixed loss exceeds the ${fmt(maxLoss, 4)} dB limit` };
+  if (alpha === 0) return { value: `${fmt(maxLoss, 4)} dB loss`, subtext: "no attenuation: limit independent of distance" };
+  return { value: `${fmt(maxRange, 4)} km`, subtext: `at ${fmt(maxLoss, 4)} dB channel loss, μ fixed` };
+}
 
 export default function QuantumKeyDistributionPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [txPower, setTxPower] = useState(-10); // dBm (weak coherent source)
-  const [range, setRange] = useURLState("range", 50); // km
-  const [fiberLoss, setFiberLoss] = useURLState("fiberLoss", 0.2); // dB/km
-  const [detectorEfficiency, setDetectorEfficiency] = useURLState("detectorEfficiency", 0.15);
-  const [darkCountRate, setDarkCountRate] = useURLState("darkCountRate", 100); // Hz
-  const [repRate, setRepRate] = useURLState("repRate", 1e9); // Hz (pulse repetition)
-  const [errorTolerance, setErrorTolerance] = useURLState("errorTolerance", 0.11); // QBER threshold ~11%
+  const [muRaw, setMu] = useURLState("mu", 0.48);
+  const [rangeRaw, setRange] = useURLState("range", 50); // km
+  const [attenuationRaw, setAttenuation] = useURLState("fiberLoss", 0.21); // dB/km
+  const [fixedLossRaw, setFixedLoss] = useURLState("fixedLoss", 0); // dB
+  const [etaBobRaw, setEtaBob] = useURLState("detectorEfficiency", 0.045);
+  const [y0Raw, setY0] = useURLState("y0", 1.7e-6);
+  const [eDetRaw, setEDet] = useURLState("eDetector", 0.033);
+  const [fEcRaw, setFEc] = useURLState("fEc", 1.22);
+  const [repRateRaw, setRepRate] = useURLState("repRate", 1e9); // Hz
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
 
-  // QKD Key Rate: R = 0.5 * f_clock * Y * (1 - h(e)) * η
-  // where Y = yield, e = QBER, h = binary entropy, η = efficiency
-  // Using Decoy-state BB84 protocol model (Lo-Ma-Chen)
-  const calc = useMemo(() => {
-    const lambda = wavelength * 1e-9;
-    const P_tx = Math.pow(10, (txPower - 30) / 10); // dBm → W
-    const E_photon = h * c / lambda;
+  const mu = clamp(muRaw, 1e-6, 1e9, 0.48);
+  const range = clamp(rangeRaw, 0, 1e6, 50);
+  const alpha = clamp(attenuationRaw, 0, 100, 0.21);
+  const fixedLoss = clamp(fixedLossRaw, 0, 300, 0);
+  const etaBob = clamp(etaBobRaw, 1e-9, 1, 0.045);
+  const y0 = clamp(y0Raw, 0, 0.01, 1.7e-6); // the model assumes Y₀ ≪ 1 (Ma et al. eq. (10) drops −Y₀(1 − e^(−ημ)))
+  const eDetector = clamp(eDetRaw, 0, 0.5, 0.033);
+  const fEc = clamp(fEcRaw, 1, 10, 1.22);
+  const repRate = clamp(repRateRaw, 1, 1e12, 1e9);
+  const lambda = clamp(wavelengthRaw, 100, 20000, 1550) * 1e-9;
 
-    // Channel transmission
-    const totalLoss = fiberLoss * range;
-    const channelTransmission = Math.pow(10, -totalLoss / 10);
-
-    // Mean photon number from TX power: μ = P·T_pulse/(h·c/λ)
-    // T_pulse = 1/f_rep, so μ = P/(f_rep · E_photon)
-    const mu = P_tx / (repRate * E_photon);
-
-    // Single photon gain Q_1 = Y_1 * μ * exp(-μ)
-    // Y_1 ≈ η for low dark counts
-    const eta_total = channelTransmission * detectorEfficiency;
-    const Y0 = darkCountRate / repRate; // yield from dark count per pulse
-    const Y1 = Y0 + eta_total * (1 - Y0);
-    const Q1 = Y1 * mu * Math.exp(-mu);
-
-    // Error rate e_1 = e_det + (e_0 * Y_0 / Y_1)
-    const e_det = 0.01; // detector error ~1%
-    const e_0 = 0.5; // random error for dark counts
-    const e1 = (e_det * eta_total + 0.5 * Y0) / (eta_total + Y0);
-
-    // Quantum bit error rate (overall)
-    const Q_mu = 1 - Math.exp(-mu * eta_total) + Y0; // total gain
-    const E_mu = (e_det * (1 - Math.exp(-mu * eta_total)) + 0.5 * Y0) / Q_mu;
-    const QBER = E_mu;
-
-    // Secure key rate (Lo-Ma-Chen decoy-state BB84, single-photon contribution)
-    // R = 0.5 * f_rep * Q_1 * [1 - h(e_1)]
-    const binaryEntropy = (x: number) => {
-      if (x <= 0 || x >= 1) return 0;
-      return -x * Math.log2(x) - (1 - x) * Math.log2(1 - x);
-    };
-    const keyRate = 0.5 * repRate * Q1 * Math.max(0, 1 - binaryEntropy(e1));
-
-    // Secret key fraction
-    const skf = keyRate / (0.5 * repRate);
-
-    // Max range: binary search for when key rate → 0
-    let maxRange = 0;
-    {
-      let lo = 0, hi = 500;
-      for (let i = 0; i < 60; i++) {
-        const r = (lo + hi) / 2;
-        const loss = fiberLoss * r;
-        const eta = Math.pow(10, -loss / 10) * detectorEfficiency;
-        const y0 = darkCountRate / repRate;
-        const y1 = y0 + eta * (1 - y0);
-        const q1 = y1 * mu * Math.exp(-mu);
-        const e1r = (0.01 * eta + 0.5 * y0) / (eta + y0);
-        const kr = 0.5 * repRate * q1 * Math.max(0, 1 - binaryEntropy(e1r));
-        if (kr > 0) lo = r; else hi = r;
-      }
-      maxRange = lo;
-    }
-
-    // Protocol comparison: CV-QKD vs DV-QKD
-    const cvQkdRate = range < 80 ? repRate * 0.01 * Math.pow(10, -fiberLoss * range / 10) : 0;
-
+  const r = useMemo(() => {
+    const lossDb = alpha * range + fixedLoss;
+    const etaCh = 10 ** (-lossDb / 10);
+    const eta = etaCh * etaBob;
+    const sys = { y0, eDetector, fEc };
+    const res = decoyBb84({ ...sys, mu, eta });
+    const maxLoss = maxChannelLossDb({ ...sys, mu }, etaBob, 300);
+    const maxRange = !Number.isFinite(maxLoss) ? Infinity : alpha > 0 ? Math.max(0, (maxLoss - fixedLoss) / alpha) : maxLoss >= fixedLoss ? Infinity : 0;
+    const muOpt = optimalMu({ ...sys, eta });
+    const optKey = decoyBb84({ ...sys, mu: muOpt, eta }).keyPerPulse;
     return {
-      totalLoss, channelTransmission, eta_total, Y0, Y1, Q1, e1, Q_mu, QBER,
-      keyRate, keyRateKbps: keyRate / 1000, skf, maxRange, cvQkdRate,
-      isSecure: QBER < errorTolerance,
+      lossDb, etaCh, eta, res, maxLoss, maxRange, muOpt: optKey > 0 ? muOpt : NaN, optKey,
+      plob: plobBound(etaCh), power: (mu * repRate * h * c) / lambda,
     };
-  }, [wavelength, txPower, range, fiberLoss, detectorEfficiency, darkCountRate, repRate]);
+  }, [alpha, range, fixedLoss, etaBob, y0, eDetector, fEc, mu, repRate, lambda]);
 
-  const plotData = useMemo(() => {
-    const ranges = Array.from({ length: 100 }, (_, i) => 1 + i * 1); // 1-100 km
-    const P_tx = Math.pow(10, (txPower - 30) / 10);
-    const lambda = wavelength * 1e-9;
-    const mu = P_tx / (repRate * h * c / lambda);
-    const binaryEntropy = (x: number) => {
-      if (x <= 0 || x >= 1) return 0;
-      return -x * Math.log2(x) - (1 - x) * Math.log2(1 - x);
-    };
+  const xMax = Number.isFinite(r.maxRange) && r.maxRange > 0 ? Math.min(1.15 * r.maxRange, 1e5) : Math.max(2 * range, 100);
+  const distances = useMemo(() => Array.from({ length: 201 }, (_, i) => (xMax * i) / 200), [xMax]);
 
-    const bb84 = ranges.map((r) => {
-      const totalLoss = fiberLoss * r;
-      const trans = Math.pow(10, -totalLoss / 10);
-      const eta = trans * detectorEfficiency;
-      const Y0 = darkCountRate / repRate;
-      const Y1 = Y0 + eta * (1 - Y0);
-      const Q1 = Y1 * mu * Math.exp(-mu);
-      const e1 = (0.01 * eta + 0.5 * Y0) / (eta + Y0);
-      return 0.5 * repRate * Q1 * Math.max(0, 1 - binaryEntropy(e1)) / 1000; // kbps
-    });
-
-    const cvQkd = ranges.map((r) => {
-      if (r > 80) return 0;
-      return repRate * 0.01 * Math.pow(10, -fiberLoss * r / 10) / 1000; // kbps
-    });
-
+  const keyPlot = useMemo(() => {
+    const sys = { y0, eDetector, fEc };
+    const etaChAt = (d: number) => 10 ** (-(alpha * d + fixedLoss) / 10);
     return [
-      { x: ranges, y: bb84, type: "scatter", mode: "lines", name: "BB84 (decoy)", line: { color: "#06b6d4" } },
-      { x: ranges, y: cvQkd, type: "scatter", mode: "lines", name: "CV-QKD", line: { color: "#a855f7" } },
+      { x: distances, y: distances.map((d) => positiveOrNull(decoyBb84({ ...sys, mu, eta: etaChAt(d) * etaBob }).keyPerPulse)), type: "scatter", mode: "lines", name: `Decoy BB84, μ = ${fmt(mu)}`, line: { color: "#06b6d4" } },
+      { x: distances, y: distances.map((d) => { const eta = etaChAt(d) * etaBob; return positiveOrNull(decoyBb84({ ...sys, mu: optimalMu({ ...sys, eta }), eta }).keyPerPulse); }), type: "scatter", mode: "lines", name: "Decoy BB84, optimal μ", line: { color: "#22c55e", dash: "dash" } },
+      { x: distances, y: distances.map((d) => positiveOrNull(plobBound(etaChAt(d)))), type: "scatter", mode: "lines", name: "PLOB bound −log₂(1 − η_ch)", line: { color: "#9ca3af", dash: "dot" } },
     ];
-  }, [fiberLoss, detectorEfficiency, darkCountRate, repRate, wavelength, txPower]);
+  }, [distances, y0, eDetector, fEc, alpha, fixedLoss, mu, etaBob]);
 
-  const plotData2 = useMemo(() => {
-    const ranges = Array.from({ length: 100 }, (_, i) => 1 + i * 1);
-    const P_tx = Math.pow(10, (txPower - 30) / 10);
-    const lambda = wavelength * 1e-9;
-    const mu = P_tx / (repRate * h * c / lambda);
-
-    const qber = ranges.map((r) => {
-      const totalLoss = fiberLoss * r;
-      const trans = Math.pow(10, -totalLoss / 10);
-      const eta = trans * detectorEfficiency;
-      const Y0 = darkCountRate / repRate;
-      const Q_mu = 1 - Math.exp(-mu * eta) + Y0;
-      return (0.01 * (1 - Math.exp(-mu * eta)) + 0.5 * Y0) / Q_mu;
-    });
-
+  const qberPlot = useMemo(() => {
+    const sys = { y0, eDetector, fEc, mu };
     return [
-      { x: ranges, y: qber.map((q) => q * 100), type: "scatter", mode: "lines", name: "QBER", line: { color: "#f97316" } },
+      { x: distances, y: distances.map((d) => 100 * decoyBb84({ ...sys, eta: 10 ** (-(alpha * d + fixedLoss) / 10) * etaBob }).qber), type: "scatter", mode: "lines", name: "QBER E_μ", line: { color: "#f97316" } },
     ];
-  }, [fiberLoss, detectorEfficiency, darkCountRate, repRate, wavelength, txPower]);
+  }, [distances, y0, eDetector, fEc, mu, alpha, fixedLoss, etaBob]);
+
+  const hasKey = r.res.keyPerPulse > 0;
 
   return (
     <>
-      
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-          <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
-          {[
-            ["Wavelength (nm)", wavelength, setWavelength],
-            ["TX Power (dBm)", txPower, setTxPower],
-            ["Range (km)", range, setRange],
-            ["Fiber Loss (dB/km)", fiberLoss, setFiberLoss, 0.01],
-            ["Detector Efficiency", detectorEfficiency, setDetectorEfficiency, 0.01],
-            ["Dark Count Rate (Hz)", darkCountRate, setDarkCountRate],
-            ["Pulse Rate (Hz)", repRate, setRepRate],
-            ["QBER Threshold", errorTolerance, setErrorTolerance, 0.01],
-          ].map(([label, val, set, step]: any) => (
-            <div key={label as string}>
-              <ValidatedNumberInput label={label} value={val} onChange={set} />
-            </div>
-          ))}
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ValidatedNumberInput label="Mean Photon Number μ" value={muRaw} onChange={setMu} min={0.000001} max={1e9} step="any" />
+        <ValidatedNumberInput label="Distance (km)" value={rangeRaw} onChange={setRange} min={0} max={1e6} step="any" />
+        <ValidatedNumberInput label="Channel Attenuation (dB/km)" value={attenuationRaw} onChange={setAttenuation} min={0} max={100} step="any" />
+        <ValidatedNumberInput label="Fixed Link Loss (dB)" value={fixedLossRaw} onChange={setFixedLoss} min={0} max={300} step="any" />
+        <ValidatedNumberInput label="Bob's Efficiency η_Bob (optics × detector)" value={etaBobRaw} onChange={setEtaBob} min={1e-9} max={1} step="any" />
+        <ValidatedNumberInput label="Background Probability per Pulse Y₀" value={y0Raw} onChange={setY0} min={0} max={0.01} step="any" />
+        <ValidatedNumberInput label="Optical Error e_d" value={eDetRaw} onChange={setEDet} min={0} max={0.5} step="any" />
+        <ValidatedNumberInput label="Error-Correction Inefficiency f" value={fEcRaw} onChange={setFEc} min={1} max={10} step="any" />
+        <ValidatedNumberInput label="Pulse Rate (Hz)" value={repRateRaw} onChange={setRepRate} min={1} max={1e12} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={100} max={20000} step="any" />
+      </div>
 
-        <div className="space-y-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <h2 className="text-lg font-semibold text-cyan-400 mb-3">Results</h2>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-gray-400">Channel Loss</span><span>{calc.totalLoss.toFixed(1)} dB</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Transmission η_ch</span><span>{(calc.channelTransmission * 100).toFixed(4)}%</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Total η (det)</span><span>{(calc.eta_total * 100).toFixed(4)}%</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Yield Y_1</span><span>{calc.Y1.toExponential(3)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Single-photon Gain Q_1</span><span>{calc.Q1.toExponential(3)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">QBER</span>
-                <span className={`${calc.QBER < errorTolerance ? "text-green-400" : "text-red-400"} font-bold`}>{(calc.QBER * 100).toFixed(2)}%</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Secure Key Rate</span>
-                <span className={`font-bold ${calc.keyRateKbps > 0 ? "text-green-400" : "text-red-400"}`}>
-                  {calc.keyRateKbps > 0 ? `${calc.keyRateKbps.toFixed(2)} kbps` : "No secure key"}
-                </span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Secret Key Fraction</span><span>{(calc.skf * 100).toFixed(4)}%</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Max Range</span><span>{calc.maxRange.toFixed(1)} km</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Security</span>
-                <span className={calc.isSecure ? "text-green-400" : "text-red-400"}>{calc.isSecure ? "✓ Secure" : "✗ Insecure"}</span></div>
-            </div>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-gray-400 mb-2">Key Rate vs Range</h3>
-            <ChartPanel data={plotData} layout={{
-              xaxis: { title: "Range (km)", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "Key Rate (kbps)", color: "#9ca3af", gridcolor: "#374151" },
-              paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-              margin: { t: 20, r: 20, b: 40, l: 50 }, font: { color: "#9ca3af" },
-            }} />
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-gray-400 mb-2">QBER vs Range</h3>
-            <ChartPanel data={plotData2} layout={{
-              xaxis: { title: "Range (km)", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "QBER (%)", color: "#9ca3af", gridcolor: "#374151", range: [0, 20] },
-              shapes: [{ type: "line", x0: 0, x1: 100, y0: errorTolerance * 100, y1: errorTolerance * 100, line: { color: "red", dash: "dash" } }],
-              paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-              margin: { t: 20, r: 20, b: 40, l: 50 }, font: { color: "#9ca3af" },
-            }} />
-          </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ResultCard label="Secure key rate" value={hasKey ? SI_RATE(r.res.keyPerPulse * repRate) : "No secure key"} tone={hasKey ? "green" : "red"}
+          subtext={`${fmt(r.res.keyPerPulse)} bit per pulse`} />
+        <ResultCard label="QBER E_μ" value={`${fmt(r.res.qber * 100)} %`} tone="orange" subtext={`single-photon error e₁ = ${fmt(r.res.e1 * 100)} %`} />
+        <ResultCard label="Channel loss / overall η" value={`${fmt(r.lossDb)} dB`} tone="gray" subtext={`η = η_ch·η_Bob = ${fmt(r.eta)}`} />
+        <ResultCard label="Gain Q_μ / single-photon gain Q₁" value={`${fmt(r.res.gain)} / ${fmt(r.res.q1)}`} tone="blue" subtext="detections per pulse" />
+        <ResultCard label="Maximum distance (key > 0)" tone="cyan" {...maxDistanceCard(r.maxLoss, r.maxRange, alpha, fixedLoss)} />
+        <ResultCard label="Optimal μ here" value={fmt(r.muOpt)} tone="purple" subtext={r.optKey > 0 ? `key ${fmt(r.optKey)} bit per pulse` : "no key at any μ ≤ 1"} />
+        <ResultCard label="PLOB bound (channel)" value={Number.isFinite(r.plob) ? SI_RATE(r.plob * repRate) : "unbounded"} tone="gray"
+          subtext={Number.isFinite(r.plob) ? `${fmt(r.plob)} bit per pulse, any protocol` : "lossless channel, η_ch = 1"} />
+        <ResultCard label="Mean optical power" value={`${fmt(10 * Math.log10(r.power * 1e3))} dBm`} tone="gray" subtext={`${fmt(r.power)} W = μ·f_rep·hc/λ`} />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2 mb-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h2 className="text-sm font-semibold text-gray-300 mb-2">Secure key per pulse vs distance</h2>
+          <ChartPanel data={keyPlot} layout={{
+            xaxis: { title: "Distance (km)", color: "#9ca3af", gridcolor: "#374151" },
+            yaxis: { title: "bit per pulse", type: "log", color: "#9ca3af", gridcolor: "#374151" },
+            margin: { l: 60, r: 20, t: 20, b: 50 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#d1d5db" },
+            legend: { x: 0.4, y: 0.98, bgcolor: "rgba(0,0,0,0)" },
+          }} />
         </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h2 className="text-sm font-semibold text-gray-300 mb-2">QBER vs distance</h2>
+          <ChartPanel data={qberPlot} layout={{
+            xaxis: { title: "Distance (km)", color: "#9ca3af", gridcolor: "#374151" },
+            yaxis: { title: "QBER (%)", color: "#9ca3af", gridcolor: "#374151", range: [0, 50] },
+            margin: { l: 60, r: 20, t: 20, b: 50 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#d1d5db" },
+          }} />
+        </div>
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-sm text-gray-400 space-y-2">
+        <p>
+          Key rate (GLLP with infinitely many decoy states, Ma et al. 2005):
+          {"R = ½·{−f·Q_μ·H₂(E_μ) + Q₁[1 − H₂(e₁)]}"} per pulse, where Q_μ = Y₀ + 1 − e^(−ημ),
+          E_μQ_μ = ½Y₀ + e_d(1 − e^(−ημ)), Q₁ = Y₁μe^(−μ) and e₁ = (½Y₀ + e_dη)/Y₁ with Y₁ = Y₀ + η − Y₀η.
+          The first term pays for error correction; without it the key never ends.
+        </p>
+        <p>
+          Defaults are the GYS experiment of Ma et al.&apos;s Table 1 (0.21 dB/km, η_Bob = 4.5 %, Y₀ = 1.7×10⁻⁶,
+          e_d = 3.3 %, f = 1.22, μ = 0.48), whose key ends at 142 km. For a free-space link, set the attenuation to zero and
+          put the geometric and atmospheric loss in the fixed loss. The PLOB bound caps any repeaterless protocol over a
+          channel of transmittance η_ch. Finite-key effects are not included.
+        </p>
       </div>
     </>
   );

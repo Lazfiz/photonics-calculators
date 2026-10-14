@@ -1,111 +1,101 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { c } from "../../../physics/constants";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  GEO_SUBSATELLITE_VPERP, GM_EARTH, R_EARTH_EQ, R_GEO, airyHalfAngle, lightTime, pointAheadAngle,
+} from "../../../physics/free-space-comms/point-ahead";
+
+const fmt = (x: number, digits = 3) =>
+  !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(2);
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+
+const LEO_ALTITUDE = 500e3;
+const PRESETS: { name: string; range: number; v: number }[] = [
+  // Satellite at zenith: range = altitude, transverse velocity = circular orbital velocity √(GM/r).
+  { name: "LEO 500 km at zenith", range: LEO_ALTITUDE, v: Math.sqrt(GM_EARTH / (R_EARTH_EQ + LEO_ALTITUDE)) },
+  // GEO over the station: zero in the Earth-fixed frame, ω_E(r_GEO − R_E) in the inertial frame.
+  { name: "GEO to station beneath", range: R_GEO - R_EARTH_EQ, v: GEO_SUBSATELLITE_VPERP },
+];
 
 export default function PointAheadPage() {
-  const [range, setRange] = useURLState("range", 40000); // km (LEO)
-  const [relVelocity, setRelVelocity] = useURLState("relVelocity", 7); // km/s
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [txAperture, setTxAperture] = useURLState("txAperture", 10); // cm
+  const [rangeRaw, setRange] = useURLState("range", 1000); // km
+  const [velocityRaw, setVelocity] = useURLState("relVelocity", 7); // km/s
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [apertureRaw, setAperture] = useURLState("txAperture", 10); // cm
 
-  const calc = useMemo(() => {
-    const R = range * 1e3; // m
-    const v = relVelocity * 1e3; // m/s
-    const lambda = wavelength * 1e-9;
+  const range_km = clamp(rangeRaw, 0.001, 1e9, 1000);
+  const v_kms = clamp(velocityRaw, 0, 100, 7);
+  const lambda = clamp(wavelengthRaw, 100, 20000, 1550) * 1e-9;
+  const D = clamp(apertureRaw, 0.01, 1000, 10) * 1e-2;
 
-    // Point-ahead angle (rad) = v / c (range cancels: angular displacement = v·R/c / R)
-    const thetaPA = v / c;
-    const thetaPA_urad = thetaPA * 1e6;
-
-    // First-null beamwidth (Airy disk)
-    const D = txAperture * 1e-2;
-    const thetaBW = 1.22 * lambda / D;
-    const thetaBW_urad = thetaBW * 1e6;
-
-    // Ratio of PA angle to beamwidth
-    const ratio = thetaPA / thetaBW;
-
-    // Time of flight
-    const tof = R / c; // seconds
-
-    // Required pointing accuracy (fraction of beamwidth)
-    const pointingAccuracy_urad = thetaBW_urad / 10; // 1/10 beamwidth rule
-
-    return { thetaPA_urad, thetaBW_urad, ratio, tof, pointingAccuracy_urad };
-  }, [range, relVelocity, wavelength, txAperture]);
+  const r = useMemo(() => {
+    const theta = pointAheadAngle(v_kms * 1e3);
+    const airy = airyHalfAngle(lambda, D);
+    const R = range_km * 1e3;
+    return { theta, airy, ratio: theta / airy, miss: theta * R, tof: lightTime(R) };
+  }, [v_kms, lambda, D, range_km]);
 
   const plotData = useMemo(() => {
-    const ranges = Array.from({ length: 200 }, (_, i) => 100 + i * 250); // km
-    const paAngles = ranges.map((r) => relVelocity * 1e3 / c * 1e6);
-    const tofs = ranges.map((r) => r * 1e3 / c);
-
+    const vs = Array.from({ length: 101 }, (_, i) => (i * Math.max(20, 1.5 * v_kms)) / 100);
+    const airy_urad = r.airy * 1e6;
     return [
-      { x: ranges, y: paAngles, type: "scatter", mode: "lines", name: "PA Angle (μrad)", line: { color: "#06b6d4" }, yaxis: "y" },
-      { x: ranges, y: tofs, type: "scatter", mode: "lines", name: "Time of Flight (ms)", line: { color: "#f59e0b" }, yaxis: "y2" },
+      { x: vs, y: vs.map((v) => pointAheadAngle(v * 1e3) * 1e6), type: "scatter", mode: "lines", name: "Point-ahead 2v⊥/c", line: { color: "#06b6d4" } },
+      { x: [vs[0], vs[vs.length - 1]], y: [airy_urad, airy_urad], type: "scatter", mode: "lines", name: "Diffraction half-angle 1.22λ/D", line: { color: "#f59e0b", dash: "dash" } },
+      { x: [v_kms], y: [r.theta * 1e6], type: "scatter", mode: "markers", name: "This link", marker: { color: "#22c55e", size: 9 } },
     ];
-  }, [relVelocity]);
+  }, [v_kms, r]);
 
   return (
     <>
-            
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-          <h2 className="text-lg font-semibold text-cyan-400">Inputs</h2>
-          {[
-            ["Link Range (km)", range, setRange],
-            ["Relative Velocity (km/s)", relVelocity, setRelVelocity],
-            ["Wavelength (nm)", wavelength, setWavelength],
-            ["TX Aperture (cm)", txAperture, setTxAperture],
-          ].map(([label, val, set]: any) => (
-            <div key={label as string}>
-              <ValidatedNumberInput label={label} value={val} onChange={set} />
-            </div>
-          ))}
-          <div className="text-xs text-gray-500 pt-2 border-t border-gray-800">
-            <p><strong className="text-gray-400">Presets:</strong></p>
-            <div className="flex gap-2 mt-1">
-              {[
-                ["LEO-LEO", 2000, 14],
-                ["LEO-Ground", 500, 7],
-                ["GEO-Ground", 36000, 0.05],
-                ["Deep Space", 2000000, 30],
-              ].map(([name, r, v]: any) => (
-                <button key={name} onClick={() => { setRange(r); setRelVelocity(v); }}
-                  className="bg-gray-800 hover:bg-gray-700 text-xs px-2 py-1 rounded text-gray-300">{name}</button>
-              ))}
-            </div>
-          </div>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
+        <ValidatedNumberInput label="Link Range (km)" value={rangeRaw} onChange={setRange} min={0.001} max={1e9} step="any" />
+        <ValidatedNumberInput label="Transverse Relative Velocity v⊥ (km/s, inertial)" value={velocityRaw} onChange={setVelocity} min={0} max={100} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={100} max={20000} step="any" />
+        <ValidatedNumberInput label="TX Aperture Diameter (cm)" value={apertureRaw} onChange={setAperture} min={0.01} max={1000} step="any" />
+      </div>
+      <div className="flex flex-wrap items-center gap-2 mb-8 text-xs text-gray-400">
+        <span>Presets:</span>
+        {PRESETS.map((p) => (
+          <button key={p.name} type="button" onClick={() => { setRange(Math.round(p.range / 1e3)); setVelocity(Number((p.v / 1e3).toFixed(3))); }}
+            className="bg-gray-800 hover:bg-gray-700 px-2 py-1 rounded text-gray-300">
+            {p.name} ({(p.v / 1e3).toFixed(2)} km/s)
+          </button>
+        ))}
+      </div>
 
-        <div className="space-y-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <h2 className="text-lg font-semibold text-cyan-400 mb-3">Results</h2>
-            <div className="space-y-2 text-sm font-mono">
-              <div className="flex justify-between"><span className="text-gray-400">Point-Ahead Angle</span><span className="text-cyan-300">{calc.thetaPA_urad.toFixed(1)} μrad</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">TX Beamwidth (1st null)</span><span>{calc.thetaBW_urad.toFixed(1)} μrad</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">PA / Beamwidth</span><span className={calc.ratio < 1 ? "text-green-400" : "text-red-400"}>{calc.ratio.toFixed(3)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Time of Flight</span><span>{(calc.tof * 1e3).toFixed(2)} ms</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Req. Pointing Acc.</span><span>{calc.pointingAccuracy_urad.toFixed(1)} μrad (BW/10)</span></div>
-            </div>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-xs text-gray-500 space-y-1">
-            <p><strong className="text-gray-400">θ<sub>PA</sub> = v / c</strong> (range cancels)</p>
-            <p><strong className="text-gray-400">θ<sub>BW</sub> = 1.22 λ / D</strong> (Airy first null)</p>
-            <p>If θ<sub>PA</sub> ≫ θ<sub>BW</sub>, the TX must lead the RX by the full PA angle. The beam must be steered to compensate.</p>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <ChartPanel data={plotData} layout={{
-              xaxis: { title: "Range (km)", color: "#9ca3af", gridcolor: "#374151" },
-              yaxis: { title: "PA Angle (μrad)", color: "#06b6d4", gridcolor: "#374151" },
-              yaxis2: { title: "TOF (ms)", color: "#f59e0b", gridcolor: "#374151", overlaying: "y", side: "right" },
-              paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-              margin: { t: 30, r: 60, b: 40, l: 60 }, font: { color: "#9ca3af" }, legend: { font: { size: 10 } },
-            }} />
-          </div>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ResultCard label="Point-ahead angle 2v⊥/c" value={`${(r.theta * 1e6).toFixed(2)} µrad`} tone="cyan" subtext="independent of range" />
+        <ResultCard label="Diffraction half-angle 1.22λ/D" value={`${fmt(r.airy * 1e6)} µrad`} tone="gray" subtext="first null of a uniformly filled aperture" />
+        <ResultCard label="Point-ahead / half-angle" value={fmt(r.ratio)} tone={r.ratio < 0.1 ? "green" : r.ratio < 1 ? "yellow" : "red"}
+          subtext={r.ratio < 0.1 ? "small: the beam still covers the target" : "the beam must be steered ahead"} />
+        <ResultCard label="Miss distance without point-ahead" value={`${fmt(r.miss)} m`} tone="orange" subtext="θ_PA × R at the far terminal" />
+        <ResultCard label="One-way light time R/c" value={`${fmt(r.tof * 1e3)} ms`} tone="blue" subtext={`round trip ${fmt(2 * r.tof * 1e3)} ms`} />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
+        <h2 className="text-sm font-semibold text-gray-300 mb-2">Point-ahead angle vs transverse velocity</h2>
+        <ChartPanel data={plotData} layout={{
+          xaxis: { title: "v⊥ (km/s)", color: "#9ca3af", gridcolor: "#374151" },
+          yaxis: { title: "Angle (µrad)", color: "#9ca3af", gridcolor: "#374151" },
+          margin: { l: 60, r: 20, t: 20, b: 50 }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#d1d5db" },
+        }} />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-sm text-gray-400 space-y-2">
+        <p>
+          The beacon from the far terminal shows where it was R/c ago, and the transmitted beam arrives R/c later, so the
+          transmit direction must lead the received beacon by θ<sub>PA</sub> = 2v⊥/c. Use the transverse velocity in an
+          inertial frame: a GEO satellite is fixed in the sky, yet relative to the stars it moves 2.61 km/s faster than a
+          station beneath it, which gives 17.4 µrad. The LEO preset uses the orbital velocity alone, as the cited chapter does; the station&apos;s own 0.47 km/s rotation at the equator lowers it by a few µrad.
+        </p>
+        <p>
+          Point-ahead matters when θ<sub>PA</sub> is a sizeable fraction of the beam half-angle; a 10 cm aperture at
+          1550 nm has 1.22λ/D = 18.9 µrad, so a LEO downlink (≈ 51 µrad) needs a point-ahead mirror.
+        </p>
       </div>
     </>
   );
