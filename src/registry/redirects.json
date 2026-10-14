@@ -3,6 +3,7 @@
   "/detectors/crosstalk": "/detectors/pixel-crosstalk",
   "/detectors/emccd-gain": "/detectors/em-gain",
   "/detectors/full-well": "/imaging/dynamic-range",
+  "/detectors/hybrid-detector": "/detectors/photodiode-tia-noise",
   "/detectors/intensified-camera": "/detectors/intensified-ccd",
   "/detectors/pmt-gain": "/detectors/pmt",
   "/fiber-optics/bend-loss": "/fiber-optics/macro-bending-loss",
