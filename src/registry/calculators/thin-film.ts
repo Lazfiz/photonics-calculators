@@ -88,7 +88,22 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "adhesion-testing",
     title: "Adhesion Testing",
-    description: "Model thin film adhesion properties from scratch test, peel test, tape test, and bend test. Calculate adhesion energy, interfacial shear strength, and critical loads.",
+    description: "Thin-film adhesion tests: Benjamin–Weaver shear stress from a scratch critical load, Kendall peel energy, ASTM D3359 tape classes, and bend-test film stress with crack and delamination driving forces.",
+    tier: "textbook",
+    modelNote: "Benjamin–Weaver shear stress for a plastic substrate (ranks coatings; not a work of adhesion); Kendall elastic peel; ASTM D3359 B classes; bend-test G for a thin film, matched moduli (Hutchinson–Suo).",
+    references: [
+      {
+        citation: "Benjamin P., Weaver C. (1960). Measurement of adhesion of thin films. Proc. R. Soc. Lond. A 254, 163–176.",
+        url: "https://doi.org/10.1098/rspa.1960.0012",
+      },
+      {
+        citation: "Kendall K. (1975). Thin-film peeling — the elastic term. J. Phys. D 8, 1449–1452.",
+        url: "https://doi.org/10.1088/0022-3727/8/13/005",
+      },
+      hutchinsonSuo,
+      { citation: "ASTM D3359-23. Standard Test Methods for Rating Adhesion by Tape Test. ASTM International.", url: "https://doi.org/10.1520/D3359-23" },
+      ohring("ch. 12 (adhesion tests)", "10.1016/b978-012524975-1/50015-x"),
+    ],
   },
   {
     slug: "amplitude-splitting",
@@ -388,7 +403,15 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "plasma-deposition",
     title: "Plasma Deposition",
-    description: "Model plasma-enhanced deposition parameters: electron temperature, ion density, sheath voltage, and deposition rate.",
+    description: "Argon discharge for plasma-assisted deposition: electron temperature from particle balance, plasma density from power balance, ion flux and ion energy at the substrate, Debye length.",
+    tier: "textbook",
+    modelNote: "Argon global model in a cylinder: Maxwellian electrons, ground-state ionisation, floating walls, h-factors for λᵢ > (Tᵢ/Tₑ)·size (flagged). No deposition chemistry; P is the power absorbed by the plasma.",
+    references: [
+      {
+        citation: "Lieberman M. A., Lichtenberg A. J. (2005). Principles of Plasma Discharges and Materials Processing, 2nd ed., Table 3.3 and §10.2 (global model). Wiley.",
+        url: "https://doi.org/10.1002/0471724254",
+      },
+    ],
   },
   {
     slug: "protected-silver",
@@ -448,7 +471,29 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "sputtering-deposition",
     title: "Sputtering Deposition",
-    description: "Calculate sputter yield, deposition rate, thermalization, and film stress for magnetron sputtering processes.",
+    description: "DC magnetron sputtering of a metal target in argon: ion current, sputtered atom rate from measured yields, on-axis deposition rate, sputtered-atom energy, argon mean free path and structure zone.",
+    tier: "textbook",
+    modelNote: "Measured 500 eV Ar⁺ yields, ion current P/(V(1+γ)), cosine disk source on axis, sticking 1, bulk density. No gas scattering (an upper bound beyond about one mean free path), no reactive sputtering.",
+    references: [
+      {
+        citation: "Laegreid N., Wehner G. K. (1961). Sputtering yields of metals for Ar+ and Ne+ ions with energies from 50 to 600 eV. J. Appl. Phys. 32, 365.",
+        url: "https://doi.org/10.1063/1.1736012",
+      },
+      {
+        citation: "Ohring M. (1992). The Materials Science of Thin Films, ch. 3, Table 3-4 (sputter yields at 500 eV). Academic Press.",
+        url: "https://doi.org/10.1016/b978-0-08-051118-4.50009-8",
+      },
+      {
+        citation: "Phelps A. V., Petrović Z. Lj. (1999). Cold-cathode discharges and breakdown in argon: surface and gas phase production of secondary electrons. Plasma Sources Sci. Technol. 8, R21.",
+        url: "https://doi.org/10.1088/0963-0252/8/3/201",
+      },
+      {
+        citation: "Thompson M. W. (1968). The energy spectrum of ejected atoms during the high energy sputtering of gold. Philos. Mag. 18, 377.",
+        url: "https://doi.org/10.1080/14786436808227358",
+      },
+      { citation: "Kittel C. (2005). Introduction to Solid State Physics, 8th ed., ch. 3, Table 1 (cohesive energies). Wiley." },
+      thornton,
+    ],
   },
   {
     slug: "stress-measurement",

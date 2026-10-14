@@ -1,141 +1,157 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { q, m_u } from "../../../physics/constants";
+import { TORR } from "../../../physics/constants";
+import { structureZone } from "../../../physics/thin-film/thermal-evaporation";
+import {
+  SPUTTER_TARGETS,
+  argonMeanFreePath,
+  diskOnAxisFlux,
+  growthRate,
+  sputteredAtomRate,
+  targetIonCurrent,
+  thompsonPeakEnergy,
+  type SputterTargetId,
+} from "../../../physics/thin-film/sputtering";
+
+const IDS = Object.keys(SPUTTER_TARGETS) as SputterTargetId[];
+const isId = (s: string): s is SputterTargetId => Object.hasOwn(SPUTTER_TARGETS, s);
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
+const fmtExp = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toExponential(digits)}${unit}` : "—");
+const ZONE = ["", "zone 1: tapered columns, voided", "zone 2: dense columns", "zone 3: recrystallised grains"];
+
 export default function SputteringDepositionPage() {
-  const [targetMaterial, setTargetMaterial] = useState("SiO2");
-  const [power, setPower] = useURLState("power", 300);
-  const [pressure, setPressure] = useURLState("pressure", 3e-3);
-  const [targetSubstrateDist, setTargetSubstrateDist] = useURLState("targetSubstrateDist", 10);
-  const [substrateTemp, setSubstrateTemp] = useURLState("substrateTemp", 200);
-  const [gasType, setGasType] = useState("Ar");
+  const [targetParam, setTarget] = useURLState("target", "Al");
+  const [power, setPower] = useURLState("power", 300); // W
+  const [voltage, setVoltage] = useURLState("voltage", 500); // V
+  const [gamma, setGamma] = useURLState("gamma", 0.07);
+  const [yieldParam, setYield] = useURLState("yield", 0); // atoms/ion, 0 = table value at 500 eV
+  const [targetRadius, setTargetRadius] = useURLState("targetRadius", 2); // cm
+  const [distance, setDistance] = useURLState("distance", 10); // cm
+  const [pressure, setPressure] = useURLState("pressure", 3); // mTorr
+  const [substrateTemp, setSubstrateTemp] = useURLState("substrateTemp", 200); // °C
 
-  const targets: Record<string, { M1: number; M2: number; density: number; Us: number; name: string; n: number }> = {
-    SiO2: { M1: 28, M2: 32, density: 2.2, Us: 4.7, name: "SiO₂", n: 1.46 },
-    TiO2: { M1: 48, M2: 16, density: 4.23, Us: 4.9, name: "TiO₂", n: 2.35 },
-    Ta2O5: { M1: 181, M2: 16, density: 8.2, Us: 5.2, name: "Ta₂O₅", n: 2.10 },
-    Al2O3: { M1: 27, M2: 16, density: 3.95, Us: 4.8, name: "Al₂O₃", n: 1.63 },
-    HfO2: { M1: 178.5, M2: 16, density: 9.68, Us: 5.3, name: "HfO₂", n: 2.05 },
-    ZrO2: { M1: 91.2, M2: 16, density: 5.68, Us: 5.0, name: "ZrO₂", n: 2.10 },
-    Nb2O5: { M1: 93, M2: 16, density: 4.6, Us: 5.1, name: "Nb₂O₅", n: 2.30 },
-    MgF2: { M1: 24.3, M2: 19, density: 3.15, Us: 4.5, name: "MgF₂", n: 1.38 },
-    Si3N4: { M1: 28, M2: 14, density: 3.17, Us: 5.0, name: "Si₃N₄", n: 2.00 },
-  };
+  const id: SputterTargetId = isId(targetParam) ? targetParam : "Al";
+  const t = SPUTTER_TARGETS[id];
+  const useTable = yieldParam === 0;
+  const Y = useTable ? t.Y500 : yieldParam;
+  const gasT = 300; // K
 
-  const gasMasses: Record<string, number> = { Ar: 39.95, Kr: 83.8, Xe: 131.3, Ne: 20.18 };
+  const errors = [
+    !(power >= 0) && "the power can't be negative",
+    !(voltage > 0) && "the discharge voltage must be positive",
+    !(gamma >= 0) && "the secondary-electron yield can't be negative",
+    !(yieldParam >= 0) && "the sputter yield can't be negative",
+    !(targetRadius >= 0) && "the target radius can't be negative",
+    !(distance > 0) && "the distance must be positive",
+    !(pressure > 0) && "the pressure must be positive",
+    !(substrateTemp >= -273.15) && "the substrate temperature is below absolute zero",
+  ].filter((e): e is string => typeof e === "string");
+  const valid = errors.length === 0;
 
-  const target = targets[targetMaterial];
-  const M_gas = gasMasses[gasType] || 39.95;
-
-  const results = useMemo(() => {
-    const P = power;
-    const p_Pa = pressure * 133.322;
-    const d = targetSubstrateDist * 1e-2;
-    const T = (substrateTemp + 273.15);
-    const M_avg = (target.M1 + 2 * target.M2) / 3;
-
-    // Sputter yield (Yamamura model simplified)
-    const gamma = 0.042 * M_gas * target.Us / ((M_gas + M_avg) * 10);
-    const E_ion = 500; // typical self-bias voltage for RF sputtering
-    const Eth = target.Us * 4;
-    const Y = gamma * Math.sqrt(Math.max(E_ion - Eth, 0)) * Math.max(E_ion - Eth, 0) / 1000;
-    const sputterYield = Math.max(Y, 0.01);
-
-    // Deposition rate
-    const J_ion = P / E_ion; // A (ion current)
-    const atomFlux = J_ion * sputterYield / q;
-    const depRate = (atomFlux * M_avg * m_u) / (target.density * 1e3 * 0.01) * 1e9; // nm/s
-    const depRateAngstrom = depRate * 10;
-
-    // Kinetic energy of sputtered atoms
-    const E_sputtered = 3 * target.Us / 2;
-
-    // Mean free path
-    const mfp = 0.005 / pressure; // m
-    const mfpCm = mfp * 100;
-
-    // Thermalization probability
-    const thermalizationProb = Math.max(0, 1 - Math.exp(-d / mfp));
-
-    // Film stress estimate
-    const stress = 200 * Math.sqrt(P / 300) * (1 + 0.5 * (1 - thermalizationProb));
-
-    // Film density estimate
-    const filmDensity = target.density * (0.85 + 0.1 * Math.min(thermalizationProb + 0.5, 1));
-
-    // Energy per arriving atom
-    const energyPerAtom = E_sputtered * (1 - thermalizationProb) + 0.5 * T / 300 * thermalizationProb;
-
-    return { sputterYield, depRate, depRateAngstrom, E_sputtered, mfpCm, thermalizationProb, stress, filmDensity, energyPerAtom, E_ion };
-  }, [targetMaterial, power, pressure, targetSubstrateDist, substrateTemp, gasType]);
+  const r = useMemo(() => {
+    if (!valid) return null;
+    const a = targetRadius * 1e-2;
+    const d = distance * 1e-2;
+    const I = power / voltage;
+    const Ii = targetIonCurrent(power, voltage, gamma);
+    const Phi = sputteredAtomRate(Ii, Y);
+    const F = diskOnAxisFlux(Phi, a, d);
+    const rate = growthRate(F, t.M, t.rho); // m/s
+    const mfp = argonMeanFreePath(pressure * 1e-3 * TORR, gasT);
+    const Ts = substrateTemp + 273.15;
+    return { I, Ii, Phi, F, rate, mfp, ratio: d / mfp, Ts, zone: structureZone(Ts, t.Tm), peak: thompsonPeakEnergy(t.Us) };
+  }, [valid, targetRadius, distance, power, voltage, gamma, Y, t, pressure, substrateTemp]);
 
   const sweepData = useMemo(() => {
-    const powers = Array.from({ length: 80 }, (_, i) => 50 + i * 950 / 80);
-    const rates = powers.map(P => {
-      const E_ion = 500;
-      const gamma = 0.042 * M_gas * target.Us / ((M_gas + (target.M1 + 2 * target.M2) / 3) * 10);
-      const Eth = target.Us * 4;
-      const Y = Math.max(gamma * Math.sqrt(Math.max(E_ion - Eth, 0)) * Math.max(E_ion - Eth, 0) / 1000, 0.01);
-      const J_ion = P / E_ion;
-      const atomFlux = J_ion * Y / q;
-      return (atomFlux * (target.M1 + 2 * target.M2) / 3 * m_u) / (target.density * 1e3 * 0.01) * 1e9;
-    });
-    const stresses = powers.map(P => 200 * Math.sqrt(P / 300) * 1.5);
-    return [
-      { x: powers, y: rates, type: "scatter" as const, mode: "lines" as const, name: "Dep Rate (nm/s)", line: { color: "#60a5fa" }, yaxis: "y" },
-      { x: powers, y: stresses, type: "scatter" as const, mode: "lines" as const, name: "Stress (MPa)", line: { color: "#f87171" }, yaxis: "y2" },
-    ];
-  }, [targetMaterial, gasType]);
+    if (!r) return [];
+    const ds: number[] = [];
+    const rates: number[] = [];
+    const a = targetRadius * 1e-2;
+    for (let i = 0; i <= 120; i++) {
+      const dcm = 2 + (28 * i) / 120;
+      ds.push(dcm);
+      rates.push(growthRate(diskOnAxisFlux(r.Phi, a, dcm * 1e-2), t.M, t.rho) * 1e9);
+    }
+    return [{ x: ds, y: rates, type: "scatter" as const, mode: "lines" as const, name: "On-axis rate", line: { color: "#60a5fa" } }];
+  }, [r, targetRadius, t]);
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Target Material</span>
-          <select value={targetMaterial} onChange={e => setTargetMaterial(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            {Object.entries(targets).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
-          </select></label>
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Sputter Gas</span>
-          <select value={gasType} onChange={e => setGasType(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            {Object.entries(gasMasses).map(([k]) => <option key={k} value={k}>{k}</option>)}
-          </select></label>
-        <ValidatedNumberInput label="Power (W)" value={power} onChange={setPower} step="10" />
-        <ValidatedNumberInput label="Pressure (Torr)" value={pressure} onChange={setPressure} step="1e-4" />
-        <ValidatedNumberInput label="Target-Substrate Distance (cm)" value={targetSubstrateDist} onChange={setTargetSubstrateDist} step="0.5" />
-        <ValidatedNumberInput label="Substrate Temp (°C)" value={substrateTemp} onChange={setSubstrateTemp} step="10" />
+      <div className="grid gap-4 sm:grid-cols-2 mb-6">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Target (elemental)</span>
+          <select value={id} onChange={(e) => setTarget(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            {IDS.map((k) => <option key={k} value={k}>{SPUTTER_TARGETS[k].name}</option>)}
+          </select>
+        </label>
+        <ValidatedNumberInput label="Discharge power (W)" value={power} onChange={setPower} min={0} step="10" />
+        <ValidatedNumberInput label="Discharge voltage (V)" value={voltage} onChange={setVoltage} min={1} step="10" />
+        <ValidatedNumberInput label="Secondary-electron yield γ (≈ 0.07 clean metal)" value={gamma} onChange={setGamma} min={0} step="0.01" />
+        <ValidatedNumberInput label="Sputter yield (atoms/ion; 0 = 500 eV table)" value={yieldParam} onChange={setYield} min={0} step="0.05" />
+        <ValidatedNumberInput label="Erosion-zone radius of the target (cm)" value={targetRadius} onChange={setTargetRadius} min={0} step="0.5" />
+        <ValidatedNumberInput label="Target–substrate distance (cm)" value={distance} onChange={setDistance} min={0.1} step="0.5" />
+        <ValidatedNumberInput label="Argon pressure (mTorr)" value={pressure} onChange={setPressure} min={0.01} step="0.5" />
+        <ValidatedNumberInput label="Substrate temperature (°C)" value={substrateTemp} onChange={setSubstrateTemp} min={-273.15} step="10" />
       </div>
 
-      <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
-        <p className="text-gray-300">Sputter Yield Y: <span className="text-blue-400 font-mono">{results.sputterYield.toFixed(3)} atoms/ion</span></p>
-        <p className="text-gray-300">Deposition Rate: <span className="text-blue-400 font-mono">{results.depRate.toFixed(3)} nm/s ({results.depRateAngstrom.toFixed(1)} Å/s)</span></p>
-        <p className="text-gray-300">Sputtered Atom Energy: <span className="text-blue-400 font-mono">{results.E_sputtered.toFixed(1)} eV</span></p>
-        <p className="text-gray-300">Ion Energy (est.): <span className="text-blue-400 font-mono">{results.E_ion} eV</span></p>
-        <p className="text-gray-300">Mean Free Path: <span className="text-blue-400 font-mono">{results.mfpCm.toFixed(1)} cm</span></p>
-        <p className="text-gray-300">Thermalization Prob.: <span className="text-blue-400 font-mono">{(results.thermalizationProb * 100).toFixed(1)}%</span></p>
-        <p className="text-gray-300">Film Stress (est.): <span className="text-blue-400 font-mono">{results.stress.toFixed(1)} MPa</span></p>
-        <p className="text-gray-300">Film Density (est.): <span className="text-blue-400 font-mono">{results.filmDensity.toFixed(2)} g/cm³</span></p>
-        <p className="text-gray-300">Energy/Atom at Substrate: <span className="text-blue-400 font-mono">{results.energyPerAtom.toFixed(2)} eV</span></p>
-      </div>
+      <p className="text-gray-500 mb-6 text-xs">
+        {t.name}: Y(500 eV Ar⁺) = {fmt(t.Y500, 2)} atoms/ion, U<sub>s</sub> = {fmt(t.Us, 2)} eV, ρ = {fmt(t.rho / 1e3, 2)} g/cm³,
+        T<sub>m</sub> = {fmt(t.Tm, 0)} K. The ions reach the target with ≈ the full discharge voltage.
+      </p>
+
+      {errors.length > 0 && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">No result: {errors.join("; ")}.</p>
+      )}
+      {valid && useTable && Math.abs(voltage - 500) > 100 && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          The table yield is for 500 eV; at {fmt(voltage, 0, " V")} enter a measured yield for this voltage.
+        </p>
+      )}
+      {r && r.ratio > 1 && (
+        <p className="mb-6 text-sm text-gray-400">
+          The distance is {fmt(r.ratio, 1)} argon–argon mean free paths (a conservative proxy for a fast sputtered atom): many collide with the gas on the way, so the
+          rate below is an upper bound.
+        </p>
+      )}
+
+      {r && (
+        <div className="grid gap-4 sm:grid-cols-3 mb-6">
+          <ResultCard label="On-axis deposition rate" value={fmt(r.rate * 1e9, 3, " nm/s")} tone="yellow" subtext={`${fmt(r.rate * 1e10 * 60, 0, " Å/min")}; collisionless`} />
+          <ResultCard label="Ion current to the target" value={fmt(r.Ii, 3, " A")} tone="cyan" subtext={`I/(1+γ), I = P/V = ${fmt(r.I, 3, " A")}`} />
+          <ResultCard label="Sputtered atoms" value={fmtExp(r.Phi, 2, " s⁻¹")} tone="green" subtext={`(Iᵢ/e) Y, Y = ${fmt(Y, 2)}${useTable ? " (500 eV table)" : ""}`} />
+          <ResultCard label="Most probable energy of sputtered atoms" value={fmt(r.peak, 2, " eV")} subtext="Thompson peak U_s/2" />
+          <ResultCard label="Argon mean free path" value={fmt(r.mfp * 100, 2, " cm")} subtext={`distance = ${fmt(r.ratio, 2)} λ (gas at 300 K)`} />
+          <ResultCard
+            label="Homologous temperature"
+            value={fmt(r.Ts / t.Tm, 2)}
+            subtext={Number.isFinite(r.zone) ? ZONE[r.zone] : "at or above the melting point"}
+          />
+        </div>
+      )}
 
       <div className="bg-gray-900 rounded p-4 mb-6 text-sm text-gray-400">
-        <p className="font-semibold text-gray-200 mb-2">Key Formulas</p>
-        <p>Y = γ·√(E<sub>ion</sub> − E<sub>th</sub>)·(E<sub>ion</sub> − E<sub>th</sub>) (sputter yield, simplified Yamamura)</p>
-        <p>E<sub>th</sub> ≈ 4·U<sub>s</sub> (sputtering threshold energy)</p>
-        <p>R<sub>dep</sub> = (J<sub>ion</sub>·Y·M) / (ρ·A·N<sub>A</sub>) (deposition rate)</p>
-        <p>E<sub>sputtered</sub> ≈ 3U<sub>s</sub>/2 (Thompson energy distribution peak)</p>
-        <p>λ<sub>mfp</sub> ≈ k<sub>T</sub>/P (mean free path)</p>
+        <p className="font-semibold text-gray-200 mb-2">Model</p>
+        <p>Iᵢ = P / (V(1 + γ)); Φ = (Iᵢ/e)·Y; F = Φ / (π(a² + d²)); r = F·M / (ρ N<sub>A</sub>)</p>
+        <p>λ = k<sub>B</sub>T / (√2 π d<sub>Ar</sub>² p), d<sub>Ar</sub> = 3.64 Å (from the viscosity); Thompson peak U<sub>s</sub>/2</p>
+        <p className="mt-2">
+          A disk of radius a emitting uniformly with a cosine distribution, seen on axis from a parallel substrate; a real magnetron
+          erodes a ring (racetrack), so take a as its mean radius. Every atom sticks and the film has bulk density. Gas scattering
+          isn&apos;t modelled: beyond about one mean free path atoms start to scatter and thermalise and diffuse, and the rate falls below this. Zones are
+          Movchan–Demchishin by T<sub>s</sub>/T<sub>m</sub>; Thornton&apos;s sputtered-film zones also shift with the argon pressure.
+          Reactive sputtering (oxides, nitrides) changes the yield and the film and isn&apos;t covered.
+        </p>
       </div>
 
       <ChartPanel data={sweepData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
-        xaxis: { title: "Power (W)", gridcolor: "#374151" },
-        yaxis: { title: "Dep Rate (nm/s)", gridcolor: "#374151", side: "left" },
-        yaxis2: { title: "Stress (MPa)", gridcolor: "#374151", overlaying: "y", side: "right" },
-        margin: { t: 20, b: 40, l: 50, r: 50 }, autosize: true, legend: { x: 0.01, y: 0.99 }
+        xaxis: { title: "Target–substrate distance (cm)", gridcolor: "#374151" },
+        yaxis: { title: "On-axis rate (nm/s)", gridcolor: "#374151" },
+        margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true,
       }} />
     </>
   );

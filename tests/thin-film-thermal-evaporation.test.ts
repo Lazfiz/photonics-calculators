@@ -1,8 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import { ATM, TORR } from "../src/physics/constants";
 import {
-  ATM, EVAPORANTS, TORR, airMeanFreePath, evaporationMassFlux, inFitRange, meanSpeed, structureZone,
+  EVAPORANTS, airMeanFreePath, evaporationMassFlux, inFitRange, meanSpeed, structureZone,
   surfaceSourceProfile, surfaceSourceRate, vapourPressure,
 } from "../src/physics/thin-film/thermal-evaporation";
 

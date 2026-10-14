@@ -1,128 +1,126 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import Link from "next/link";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { q, m_u } from "../../../physics/constants";
+import { TORR, k_B_eV, q } from "../../../physics/constants";
+import { TE_MAX, TE_MIN, argonDischarge, lowPressureRegime } from "../../../physics/thin-film/plasma-global-model";
+
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
+const fmtExp = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toExponential(digits)}${unit}` : "—");
+
 export default function PlasmaDepositionPage() {
-  const [power, setPower] = useURLState("power", 500);
-  const [pressure, setPressure] = useURLState("pressure", 5e-3);
-  const [gasFlow, setGasFlow] = useURLState("gasFlow", 30);
-  const [substrateTemp, setSubstrateTemp] = useURLState("substrateTemp", 300);
-  const [frequency, setFrequency] = useURLState("frequency", 13.56);
-  const [electrodeGap, setElectrodeGap] = useURLState("electrodeGap", 5);
-  const [gasType, setGasType] = useState("Ar/O2");
+  const [power, setPower] = useURLState("power", 500); // W absorbed
+  const [pressure, setPressure] = useURLState("pressure", 5); // mTorr
+  const [radius, setRadius] = useURLState("radius", 15); // cm
+  const [length, setLength] = useURLState("length", 30); // cm
+  const [gasTemp, setGasTemp] = useURLState("gasTemp", 300); // K
 
-  const gases: Record<string, { mw: number; gamma: number; ionizationE: number; name: string }> = {
-    Ar: { mw: 39.95, gamma: 0.01, ionizationE: 15.76, name: "Argon" },
-    "Ar/O2": { mw: 34, gamma: 0.05, ionizationE: 14.5, name: "Argon/Oxygen mix" },
-    "Ar/N2": { mw: 36, gamma: 0.03, ionizationE: 15.0, name: "Argon/Nitrogen mix" },
-    O2: { mw: 32, gamma: 0.1, ionizationE: 12.07, name: "Oxygen" },
-    N2: { mw: 28, gamma: 0.02, ionizationE: 15.58, name: "Nitrogen" },
-  };
+  const errors = [
+    !(power >= 0) && "the absorbed power can't be negative",
+    !(pressure > 0) && "the pressure must be positive",
+    !(radius > 0) && "the radius must be positive",
+    !(length > 0) && "the length must be positive",
+    !(gasTemp > 0) && "the gas temperature must be positive",
+  ].filter((e): e is string => typeof e === "string");
+  const valid = errors.length === 0;
 
-  const gas = gases[gasType];
-
-  const results = useMemo(() => {
-    const P = power; // W
-    const p = pressure; // Torr
-    const Q = gasFlow; // sccm
-    const T_s = substrateTemp; // K (displayed as °C)
-    const f = frequency * 1e6; // Hz
-    const d = electrodeGap * 1e-3; // m
-    const A = 0.01; // electrode area m² (~100 cm²)
-
-    // Electron temperature estimate (Lieberman model)
-    const Te_eV = 2 + 0.5 * Math.log10(1 + p / 1e-3);
-
-    // Electron density
-    const E_field = P / (A * d * p * 133.322); // V/m (p in Torr → Pa: ×133.322)
-    const ne = (P * 0.01) / (Te_eV * q * A * d * 1e6 * Math.sqrt(8 * Te_eV * q / (Math.PI * gas.mw * m_u)));
-
-    // Ion energy at substrate (simplified sheath model)
-    const sheathVoltage = Math.min(P / (ne * e_charge(A) + 1e-10), 300);
-    const ionEnergy = sheathVoltage * 0.8;
-
-    // Debye length
-    const Debye = 69 * Math.sqrt(Te_eV / Math.max(ne, 1e10)) * 1e-2; // m
-
-    // Deposition rate estimate
-    const depositionRate = (P * 0.001) / (gas.mw * 10); // nm/s rough
-
-    // Plasma density
-    const plasmaDensity = ne;
-
-    // Ion bombardment energy at substrate
-    const ionBombEnergy = Math.min(50 + P * 0.1 / Math.max(gasFlow, 1), 500);
-
-    // Sticking coefficient
-    const stickingCoeff = Math.min(0.95, 0.5 + 0.3 * (1 - Math.exp(-ionBombEnergy / 100)));
-
-    // Film uniformity (edge-to-center ratio)
-    const uniformity = 1 - 0.1 * (d * d) / 0.01;
-
-    return { Te_eV, ne, ionEnergy, Debye, depositionRate, ionBombEnergy, stickingCoeff, uniformity, sheathVoltage };
-  }, [power, pressure, gasFlow, substrateTemp, frequency, electrodeGap, gasType]);
-
-  function e_charge(A: number) { return q * 0.1 * A; }
+  const R = radius * 1e-2;
+  const l = length * 1e-2;
+  const d = useMemo(
+    () => (valid ? argonDischarge(power, R, l, pressure * 1e-3 * TORR, gasTemp) : null),
+    [valid, power, R, l, pressure, gasTemp],
+  );
+  const noRoot = d !== null && !Number.isFinite(d.Te);
 
   const sweepData = useMemo(() => {
-    const pressures = Array.from({ length: 100 }, (_, i) => 1e-4 + i * 0.02 / 100);
-    const Te = pressures.map(p => 2 + 0.5 * Math.log10(1 + p / 1e-3));
-    const rates = pressures.map(p => {
-      const te = 2 + 0.5 * Math.log10(1 + p / 1e-3);
-      const ne_est = (power * 0.01) / (te * q * 0.01 * electrodeGap * 1e-3 * 1e6);
-      return Math.min((power * 0.001 * 0.5) / (gas.mw * 10) * Math.exp(-p / 0.05), 5);
-    });
+    if (!valid) return [];
+    const p: number[] = [];
+    const Te: number[] = [];
+    const n: number[] = [];
+    for (let i = 0; i <= 120; i++) {
+      const mT = 0.3 * Math.pow(100 / 0.3, i / 120);
+      const s = argonDischarge(power, R, l, mT * 1e-3 * TORR, gasTemp);
+      // Only points where the low-pressure h-factors hold.
+      if (!Number.isFinite(s.Te) || !Number.isFinite(s.n0) || !lowPressureRegime(s, R, l, gasTemp)) continue;
+      p.push(mT);
+      Te.push(s.Te);
+      n.push(s.n0 / 1e16);
+    }
     return [
-      { x: pressures.map(p => p * 1000), y: Te, type: "scatter" as const, mode: "lines" as const, name: "Te (eV)", line: { color: "#60a5fa" }, yaxis: "y" },
-      { x: pressures.map(p => p * 1000), y: rates, type: "scatter" as const, mode: "lines" as const, name: "Dep Rate (nm/s)", line: { color: "#34d399" }, yaxis: "y2" },
+      { x: p, y: Te, type: "scatter" as const, mode: "lines" as const, name: "Tₑ (eV)", line: { color: "#60a5fa" } },
+      { x: p, y: n, type: "scatter" as const, mode: "lines" as const, name: "n₀ (10¹⁶ m⁻³)", line: { color: "#f87171" }, yaxis: "y2" },
     ];
-  }, [power, electrodeGap, gasType]);
+  }, [valid, power, R, l, gasTemp]);
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4"><span className="text-sm text-gray-300">Gas Type</span>
-          <select value={gasType} onChange={e => setGasType(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            {Object.entries(gases).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
-          </select></label>
-        <ValidatedNumberInput label="RF Power (W)" value={power} onChange={setPower} step="10" />
-        <ValidatedNumberInput label="Pressure (Torr)" value={pressure} onChange={setPressure} step="1e-4" />
-        <ValidatedNumberInput label="Gas Flow (sccm)" value={gasFlow} onChange={setGasFlow} step="1" />
-        <ValidatedNumberInput label="Substrate Temp (°C)" value={substrateTemp} onChange={setSubstrateTemp} step="10" />
-        <ValidatedNumberInput label="RF Frequency (MHz)" value={frequency} onChange={setFrequency} step="0.01" />
-        <ValidatedNumberInput label="Electrode Gap (cm)" value={electrodeGap} onChange={setElectrodeGap} step="0.5" />
+      <div className="grid gap-4 sm:grid-cols-2 mb-6">
+        <ValidatedNumberInput label="Power absorbed by the plasma (W)" value={power} onChange={setPower} min={0} step="50" />
+        <ValidatedNumberInput label="Argon pressure (mTorr)" value={pressure} onChange={setPressure} min={0.1} step="1" />
+        <ValidatedNumberInput label="Chamber radius R (cm)" value={radius} onChange={setRadius} min={0.5} step="1" />
+        <ValidatedNumberInput label="Chamber length l (electrode gap) (cm)" value={length} onChange={setLength} min={0.5} step="1" />
+        <ValidatedNumberInput label="Gas temperature (K)" value={gasTemp} onChange={setGasTemp} min={1} step="10" />
       </div>
 
-      <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
-        <p className="text-gray-300">Electron Temperature T<sub>e</sub>: <span className="text-blue-400 font-mono">{results.Te_eV.toFixed(2)} eV</span></p>
-        <p className="text-gray-300">Electron Density n<sub>e</sub>: <span className="text-blue-400 font-mono">{results.ne.toExponential(2)} m⁻³</span></p>
-        <p className="text-gray-300">Sheath Voltage: <span className="text-blue-400 font-mono">{results.sheathVoltage.toFixed(1)} V</span></p>
-        <p className="text-gray-300">Ion Bombardment Energy: <span className="text-blue-400 font-mono">{results.ionBombEnergy.toFixed(1)} eV</span></p>
-        <p className="text-gray-300">Debye Length: <span className="text-blue-400 font-mono">{(results.Debye * 1e6).toFixed(1)} μm</span></p>
-        <p className="text-gray-300">Deposition Rate (est.): <span className="text-blue-400 font-mono">{results.depositionRate.toFixed(2)} nm/s</span></p>
-        <p className="text-gray-300">Sticking Coefficient: <span className="text-blue-400 font-mono">{results.stickingCoeff.toFixed(3)}</span></p>
-        <p className="text-gray-300">Film Uniformity (est.): <span className="text-blue-400 font-mono">{(results.uniformity * 100).toFixed(1)}%</span></p>
-      </div>
+      {errors.length > 0 && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">No result: {errors.join("; ")}.</p>
+      )}
+      {d && noRoot && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          No result: particle balance needs Tₑ outside {TE_MIN}–{TE_MAX} eV (n<sub>g</sub>d<sub>eff</sub> = {fmtExp(d.ng * d.dEff, 2, " m⁻²")}), outside this model.
+        </p>
+      )}
+      {d && !noRoot && !lowPressureRegime(d, R, l, gasTemp) && (
+        <p className="mb-6 text-sm text-yellow-300" role="status">
+          Outside the low-pressure model: λᵢ = {fmt(d.lambdaI * 1e3, 2, " mm")} is below (Tᵢ/Tₑ)·max(R, l) ={" "}
+          {fmt(((gasTemp * k_B_eV) / d.Te) * Math.max(R, l) * 1e3, 2, " mm")}. Ions diffuse at constant mobility here, the
+          edge densities fall faster, and n₀ comes out too low.
+        </p>
+      )}
+
+      {d && !noRoot && (
+        <div className="grid gap-4 sm:grid-cols-3 mb-6">
+          <ResultCard label="Electron temperature Tₑ" value={fmt(d.Te, 2, " eV")} tone="yellow" subtext="particle balance K_iz/u_B = 1/(n_g d_eff)" />
+          <ResultCard label="Centre plasma density n₀" value={fmtExp(d.n0, 2, " m⁻³")} tone="green" subtext="P_abs / (e u_B A_eff E_T)" />
+          <ResultCard
+            label="Ion current density at the electrode"
+            value={fmt(q * d.ionFluxAxial * 1e2, 1, " µA/cm²")}
+            tone="cyan"
+            subtext={`flux h_l n₀ u_B = ${fmtExp(d.ionFluxAxial, 2, " m⁻² s⁻¹")}`}
+          />
+          <ResultCard label="Ion energy at a floating substrate" value={fmt(d.Ei, 1, " eV")} subtext="V_s + Tₑ/2, V_s = Tₑ ln √(M/2πm)" />
+          <ResultCard label="Energy lost per ion lost E_T" value={fmt(d.ET, 1, " eV")} subtext={`E_c = ${fmt(d.Ec, 1, " eV")} + 2Tₑ + E_i`} />
+          <ResultCard label="Debye length" value={fmt(d.debye * 1e6, 1, " µm")} subtext="√(ε₀ Tₑ / (e n₀))" />
+          <ResultCard label="Bohm speed u_B" value={fmt(d.uB / 1e3, 2, " km/s")} subtext="√(e Tₑ / M)" />
+          <ResultCard label="Ion mean free path λᵢ" value={fmt(d.lambdaI * 1e3, 2, " mm")} subtext={`n_g = ${fmtExp(d.ng, 2, " m⁻³")}`} />
+          <ResultCard label="h_l, h_R, d_eff" value={`${fmt(d.hl, 3)}, ${fmt(d.hR, 3)}`} subtext={`d_eff = ${fmt(d.dEff * 100, 1, " cm")}`} />
+        </div>
+      )}
 
       <div className="bg-gray-900 rounded p-4 mb-6 text-sm text-gray-400">
-        <p className="font-semibold text-gray-200 mb-2">Key Formulas</p>
-        <p>T<sub>e</sub> ≈ 2 + 0.5·log₁₀(1 + p/p₀) (electron temperature, Lieberman model)</p>
-        <p>n<sub>e</sub> ≈ P<sub>abs</sub> / (e·T<sub>e</sub>·u<sub>B</sub>·A) (electron density from power balance)</p>
-        <p>V<sub>sh</sub> ~ P / (J<sub>i</sub>·A) (sheath voltage)</p>
-        <p>λ<sub>D</sub> = 69·√(T<sub>e</sub>/n<sub>e</sub>) [m] (Debye length)</p>
+        <p className="font-semibold text-gray-200 mb-2">Model</p>
+        <p>λᵢ = 1/(n<sub>g</sub>σᵢ), σᵢ = 10⁻¹⁸ m²; h<sub>l</sub> = 0.86 (3 + l/2λᵢ)<sup>−½</sup>, h<sub>R</sub> = 0.80 (4 + R/λᵢ)<sup>−½</sup></p>
+        <p>d<sub>eff</sub> = Rl / (2(Rh<sub>l</sub> + lh<sub>R</sub>)); A<sub>eff</sub> = 2πR(Rh<sub>l</sub> + lh<sub>R</sub>)</p>
+        <p>E<sub>c</sub> = E<sub>iz</sub> + E<sub>ex</sub>K<sub>ex</sub>/K<sub>iz</sub> + (3m/M)TₑK<sub>el</sub>/K<sub>iz</sub> with the argon rate constants of Lieberman &amp; Lichtenberg</p>
+        <p className="mt-2">
+          A volume-averaged argon discharge in a cylinder: Tₑ depends only on n<sub>g</sub>d<sub>eff</sub>, and the power sets the
+          density. The substrate sits on an end wall (an electrode). The wall is floating; an rf-biased or self-biased electrode
+          (capacitive discharge) draws the same ion flux but at the bias voltage, set by the matching and the electrode areas. Deposition
+          gases (SiH₄, O₂, N₂) attach electrons and change Tₑ and the loss channels, so the page models the argon carrier only.
+          The ion current density is what the <Link className="text-blue-400 underline" href="/thin-film/ion-assisted-deposition">ion-assisted deposition</Link> page takes.
+        </p>
       </div>
 
       <ChartPanel data={sweepData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Pressure (mTorr)", gridcolor: "#374151", type: "log" },
-        yaxis: { title: "Te (eV)", gridcolor: "#374151", side: "left" },
-        yaxis2: { title: "Dep Rate (nm/s)", gridcolor: "#374151", overlaying: "y", side: "right" },
-        margin: { t: 20, b: 40, l: 50, r: 50 }, autosize: true, legend: { x: 0.01, y: 0.99 }
+        yaxis: { title: "Tₑ (eV)", gridcolor: "#374151" },
+        yaxis2: { title: "n₀ (10¹⁶ m⁻³)", gridcolor: "#374151", overlaying: "y", side: "right" },
+        margin: { t: 20, b: 40, l: 50, r: 60 }, autosize: true,
       }} />
     </>
   );
