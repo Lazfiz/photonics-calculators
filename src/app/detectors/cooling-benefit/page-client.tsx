@@ -1,67 +1,92 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { k_B_eV } from "../../../physics/constants";
+import { VARSHNI, darkCurrentRatio, varshniBandGap } from "../../../physics/detectors/dark-current";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmtE = (x: number, digits = 2) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
+const fmtF = (x: number) => (Number.isFinite(x) ? x.toFixed(1) : "—");
+const KELVIN = 273.15;
+const T_REF = 25 + KELVIN;
 
 export default function CoolingBenefitPage() {
-  const [egSi, setEgSi] = useURLState("egSi", 1.12);
-  const [egInGaAs, setEgInGaAs] = useURLState("egInGaAs", 0.75);
-  const [darkCurrent25Si, setDarkCurrent25Si] = useURLState("darkCurrent25Si", 0.1);
-  const [darkCurrent25InGaAs, setDarkCurrent25InGaAs] = useURLState("darkCurrent25InGaAs", 1000);
-  const [readNoise, setReadNoise] = useURLState("readNoise", 3);
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 1);
-  const [coolTemp, setCoolTemp] = useState(-40);
+  const [egSiRaw, setEgSi] = useURLState("egSi", 1.12);
+  const [siGapRaw, setSiGap] = useURLState("siGap", "fixed");
+  const [egInGaAsRaw, setEgInGaAs] = useURLState("egInGaAs", 0.75);
+  const [darkCurrent25SiRaw, setDarkCurrent25Si] = useURLState("darkCurrent25Si", 0.1);
+  const [darkCurrent25InGaAsRaw, setDarkCurrent25InGaAs] = useURLState("darkCurrent25InGaAs", 1000);
+  const [signalRaw, setSignal] = useURLState("signal", 1000);
+  const [readNoiseRaw, setReadNoise] = useURLState("readNoise", 3);
+  const [exposureTimeRaw, setExposureTime] = useURLState("exposureTime", 1);
+  const [coolTempRaw, setCoolTemp] = useURLState("coolTemp", -40);
+  const egSi = clamp(egSiRaw, 0.1, 6, 1.12);
+  const siVarshni = siGapRaw === "varshni";
+  const egInGaAs = clamp(egInGaAsRaw, 0.1, 6, 0.75);
+  const darkCurrent25Si = clamp(darkCurrent25SiRaw, 1e-6, 1e9, 0.1); // e⁻/pixel/s
+  const darkCurrent25InGaAs = clamp(darkCurrent25InGaAsRaw, 1e-6, 1e9, 1000);
+  const signal = clamp(signalRaw, 0, 1e9, 1000); // e⁻ per exposure
+  const readNoise = clamp(readNoiseRaw, 0, 1e4, 3); // e⁻ rms
+  const exposureTime = clamp(exposureTimeRaw, 1e-6, 1e5, 1); // s
+  const coolTemp = clamp(coolTempRaw, -150, 25, -40); // °C
 
-  // Generation-recombination (depletion region): I ∝ n_i ∝ T^1.5 · exp(-Eg/2kT) — used for Si
-  const darkCurrentGen = (T_C: number, I0: number, Eg: number) => {
-    const T = T_C + 273.15; const Tref = 298.15;
-    return I0 * Math.pow(T / Tref, 1.5) * Math.exp(-Eg / (2 * k_B_eV * T)) / Math.exp(-Eg / (2 * k_B_eV * Tref));
+  const siGapAt = (T: number) => (siVarshni ? varshniBandGap(T, VARSHNI.si) : egSi);
+  // Si: depletion generation current ∝ n_i. InGaAs: diffusion current ∝ n_i².
+  const siDark = (Tc: number) => darkCurrent25Si * darkCurrentRatio(Tc + KELVIN, T_REF, siGapAt(Tc + KELVIN), "generation", siGapAt(T_REF));
+  const inGaAsDark = (Tc: number) => darkCurrent25InGaAs * darkCurrentRatio(Tc + KELVIN, T_REF, egInGaAs, "diffusion");
+  const snr = (dark: number) => {
+    const noise = Math.sqrt(signal + dark * exposureTime + readNoise * readNoise);
+    return noise > 0 ? signal / noise : NaN;
   };
-  // Diffusion-limited: I ∝ n_i² ∝ T^3 · exp(-Eg/kT) — used for InGaAs
-  const darkCurrentDiff = (T_C: number, I0: number, Eg: number) => {
-    const T = T_C + 273.15; const Tref = 298.15;
-    return I0 * Math.pow(T / Tref, 3) * Math.exp(-Eg / (k_B_eV * T)) / Math.exp(-Eg / (k_B_eV * Tref));
-  };
 
-  const chartData = useMemo(() => {
-    const temps = Array.from({ length: 300 }, (_, i) => -100 + i * 140 / 300);
-    const siDark = temps.map(T => darkCurrentGen(T, darkCurrent25Si, egSi));
-    const inGaAsDark = temps.map(T => darkCurrentDiff(T, darkCurrent25InGaAs, egInGaAs));
-    const siSNR = temps.map(T => { const d = darkCurrentGen(T, darkCurrent25Si, egSi) * exposureTime; return 1000 / Math.sqrt(1000 + d + readNoise * readNoise); });
-    const inGaAsSNR = temps.map(T => { const d = darkCurrentDiff(T, darkCurrent25InGaAs, egInGaAs) * exposureTime; return 1000 / Math.sqrt(1000 + d + readNoise * readNoise); });
-    return [
-      { x: temps, y: siDark, type: "scatter" as const, mode: "lines" as const, name: "Si Dark", line: { color: "#60a5fa" }, yaxis: "y" },
-      { x: temps, y: inGaAsDark, type: "scatter" as const, mode: "lines" as const, name: "InGaAs Dark", line: { color: "#fb923c" }, yaxis: "y" },
-      { x: temps, y: siSNR, type: "scatter" as const, mode: "lines" as const, name: "Si SNR", line: { color: "#60a5fa", dash: "dash" }, yaxis: "y2" },
-      { x: temps, y: inGaAsSNR, type: "scatter" as const, mode: "lines" as const, name: "InGaAs SNR", line: { color: "#fb923c", dash: "dash" }, yaxis: "y2" },
-    ];
-  }, [egSi, egInGaAs, darkCurrent25Si, darkCurrent25InGaAs, exposureTime, readNoise]);
+  const n = 141;
+  const temps = Array.from({ length: n }, (_, i) => -100 + i);
+  const chartData = [
+    { x: temps, y: temps.map(siDark), type: "scatter" as const, mode: "lines" as const, name: "Si dark", line: { color: "#60a5fa" }, yaxis: "y" },
+    { x: temps, y: temps.map(inGaAsDark), type: "scatter" as const, mode: "lines" as const, name: "InGaAs dark", line: { color: "#fb923c" }, yaxis: "y" },
+    { x: temps, y: temps.map(T => snr(siDark(T))), type: "scatter" as const, mode: "lines" as const, name: "Si SNR", line: { color: "#60a5fa", dash: "dash" }, yaxis: "y2" },
+    { x: temps, y: temps.map(T => snr(inGaAsDark(T))), type: "scatter" as const, mode: "lines" as const, name: "InGaAs SNR", line: { color: "#fb923c", dash: "dash" }, yaxis: "y2" },
+  ];
 
-  const siReduction = darkCurrent25Si / darkCurrentGen(coolTemp, darkCurrent25Si, egSi);
-  const inGaAsReduction = darkCurrent25InGaAs / darkCurrentDiff(coolTemp, darkCurrent25InGaAs, egInGaAs);
+  const siReduction = darkCurrent25Si / siDark(coolTemp);
+  const inGaAsReduction = darkCurrent25InGaAs / inGaAsDark(coolTemp);
 
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ValidatedNumberInput label="Si Bandgap (eV)" value={egSi} onChange={setEgSi} min={0.5} max={2} step="0.01" />
-        <ValidatedNumberInput label="InGaAs Bandgap (eV)" value={egInGaAs} onChange={setEgInGaAs} min={0.3} max={1.5} step="0.01" />
-        <ValidatedNumberInput label="Si Dark @ 25°C (e⁻/s)" value={darkCurrent25Si} onChange={setDarkCurrent25Si} min={0.001} step="0.01" />
-        <ValidatedNumberInput label="InGaAs Dark @ 25°C (e⁻/s)" value={darkCurrent25InGaAs} onChange={setDarkCurrent25InGaAs} min={1} step="10" />
-        <ValidatedNumberInput label="Read Noise (e⁻)" value={readNoise} onChange={setReadNoise} min={0.1} step="0.5" />
-        <ValidatedNumberInput label="Exposure Time (s)" value={exposureTime} onChange={setExposureTime} min={0.001} step="0.1" />
-        <ValidatedNumberInput label="Cooling Target (°C)" value={coolTemp} onChange={setCoolTemp} min={-150} step="5" />
+        <label className="block text-sm text-gray-300">
+          <span className="mb-1 block">Si band gap</span>
+          <select value={siVarshni ? "varshni" : "fixed"} onChange={e => setSiGap(e.target.value)} className="w-full rounded bg-gray-800 border border-gray-700 px-3 py-2 text-white">
+            <option value="fixed">Fixed E_g (enter)</option>
+            <option value="varshni">Varshni E_g(T)</option>
+          </select>
+        </label>
+        {siVarshni ? (
+          <p className="text-sm text-gray-400 self-end pb-2">Si E_g: {siGapAt(T_REF).toFixed(3)} eV at 25 °C, {siGapAt(coolTemp + KELVIN).toFixed(3)} eV at {coolTemp} °C</p>
+        ) : (
+          <ValidatedNumberInput label="Si Band Gap (eV)" value={egSiRaw} onChange={setEgSi} min={0.1} max={6} step="0.01" />
+        )}
+        <ValidatedNumberInput label="InGaAs Band Gap (eV)" value={egInGaAsRaw} onChange={setEgInGaAs} min={0.1} max={6} step="0.01" />
+        <ValidatedNumberInput label="Cooling Target (°C)" value={coolTempRaw} onChange={setCoolTemp} min={-150} max={25} step="5" />
+        <ValidatedNumberInput label="Si Dark @ 25 °C (e⁻/s)" value={darkCurrent25SiRaw} onChange={setDarkCurrent25Si} min={1e-6} max={1e9} step="0.01" />
+        <ValidatedNumberInput label="InGaAs Dark @ 25 °C (e⁻/s)" value={darkCurrent25InGaAsRaw} onChange={setDarkCurrent25InGaAs} min={1e-6} max={1e9} step="10" />
+        <ValidatedNumberInput label="Signal (e⁻ per exposure)" value={signalRaw} onChange={setSignal} min={0} max={1e9} step="100" />
+        <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoiseRaw} onChange={setReadNoise} min={0} max={1e4} step="0.5" />
+        <ValidatedNumberInput label="Exposure Time (s)" value={exposureTimeRaw} onChange={setExposureTime} min={1e-6} max={1e5} step="0.1" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Si Dark Reduction" value={`×${siReduction.toExponential(1)}`} tone="blue" />
-        <ResultCard label="InGaAs Dark Reduction" value={`×${inGaAsReduction.toExponential(1)}`} tone="orange" />
-        <ResultCard label={`Si Dark @ ${coolTemp}°C`} value={darkCurrentGen(coolTemp, darkCurrent25Si, egSi).toExponential(2) + " e⁻/s"} tone="green" />
-        <ResultCard label={`InGaAs Dark @ ${coolTemp}°C`} value={darkCurrentDiff(coolTemp, darkCurrent25InGaAs, egInGaAs).toExponential(2) + " e⁻/s"} tone="yellow" />
+        <ResultCard label="Si Dark Reduction" value={`×${fmtE(siReduction, 1)}`} tone="blue" subtext={`${fmtE(siDark(coolTemp))} e⁻/s at ${coolTemp} °C`} />
+        <ResultCard label="InGaAs Dark Reduction" value={`×${fmtE(inGaAsReduction, 1)}`} tone="orange" subtext={`${fmtE(inGaAsDark(coolTemp))} e⁻/s at ${coolTemp} °C`} />
+        <ResultCard label="Si SNR (25 °C → cooled)" value={`${fmtF(snr(siDark(25)))} → ${fmtF(snr(siDark(coolTemp)))}`} tone="green" />
+        <ResultCard label="InGaAs SNR (25 °C → cooled)" value={`${fmtF(snr(inGaAsDark(25)))} → ${fmtF(snr(inGaAsDark(coolTemp)))}`} tone="yellow" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>Si (generation-recombination): I ∝ T^(3/2) · exp(−E_g/2kT)</p><p>InGaAs (diffusion-limited): I ∝ T³ · exp(−E_g/kT)</p><p>SNR = S / √(S + I_dark·t + σ_read²)</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
+        <p>Si (depletion generation): I ∝ n_i ∝ T^(3/2) · exp(−E_g/2k_BT)</p>
+        <p>InGaAs (diffusion-limited): I ∝ n_i² ∝ T³ · exp(−E_g/k_BT)</p>
+        <p>SNR = S / √(S + I_dark·t + σ_read²)</p>
+      </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Temperature (°C)", gridcolor: "#374151" }, yaxis: { title: "Dark Current (e⁻/s)", gridcolor: "#374151", type: "log" }, yaxis2: { title: "SNR", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
     </>
   );

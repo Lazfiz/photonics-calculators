@@ -1,97 +1,120 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-// Lock-in amplifier: V_out = V_signal * cos(Δφ) * (2/π) * H(Δf) for square-wave demod
-// ENBW = 1/(4*RC) for 1st-order RC output filter
-// SNR improvement = (2√2/π)|cos(Δφ)|·H(Δf)·√(BW_in / ENBW)
+import {
+  REFERENCE_GAIN,
+  lockinSnrGain,
+  lowPassEnbw,
+  lowPassMagnitude,
+  type LockinFilter,
+  type LockinReference,
+} from "../../../physics/detectors/lockin";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits) : "—");
+const ORDER_COLORS = ["#60a5fa", "#34d399", "#fbbf24", "#f87171"];
+
 export default function LockinAmplifierPage() {
-  const [signalFreq, setSignalFreq] = useURLState("signalFreq", 1000); // Hz
-  const [refFreq, setRefFreq] = useURLState("refFreq", 1000); // Hz
-  const [phaseShift, setPhaseShift] = useURLState("phaseShift", 0); // degrees
-  const [signalAmp, setSignalAmp] = useURLState("signalAmp", 1); // μV
-  const [noiseDensity, setNoiseDensity] = useURLState("noiseDensity", 10); // nV/√Hz
-  const [timeConstant, setTimeConstant] = useURLState("timeConstant", 1); // seconds
-  const [filterOrder, setFilterOrder] = useURLState("filterOrder", 1); // 1 or 2
-  const [inputBandwidth, setInputBandwidth] = useURLState("inputBandwidth", 1e5); // Hz
+  const [signalFreqRaw, setSignalFreq] = useURLState("signalFreq", 1000); // Hz
+  const [refFreqRaw, setRefFreq] = useURLState("refFreq", 1000); // Hz
+  const [phaseShiftRaw, setPhaseShift] = useURLState("phaseShift", 0); // degrees
+  const [signalAmpRaw, setSignalAmp] = useURLState("signalAmp", 1); // µV peak
+  const [noiseDensityRaw, setNoiseDensity] = useURLState("noiseDensity", 10); // nV/√Hz
+  const [timeConstantRaw, setTimeConstant] = useURLState("timeConstant", 1); // s
+  const [filterOrderRaw, setFilterOrder] = useURLState("filterOrder", 1);
+  const [filterRaw, setFilter] = useURLState("filter", "rc");
+  const [referenceRaw, setReference] = useURLState("reference", "sine");
+  const [inputBandwidthRaw, setInputBandwidth] = useURLState("inputBandwidth", 1e5); // Hz
+  const signalFreq = clamp(signalFreqRaw, 0, 1e9, 1000);
+  const refFreq = clamp(refFreqRaw, 0, 1e9, 1000);
+  const phaseRad = (clamp(phaseShiftRaw, -180, 180, 0) * Math.PI) / 180;
+  const signalAmp = clamp(signalAmpRaw, 0, 1e9, 1) * 1e-6; // V peak
+  const noiseDensity = clamp(noiseDensityRaw, 1e-3, 1e9, 10) * 1e-9; // V/√Hz
+  const tau = clamp(timeConstantRaw, 1e-6, 1e5, 1);
+  const order = Math.round(clamp(filterOrderRaw, 1, 4, 1));
+  const filter: LockinFilter = filterRaw === "butterworth" ? "butterworth" : "rc";
+  const reference: LockinReference = referenceRaw === "square" ? "square" : "sine";
+  const inputBandwidth = clamp(inputBandwidthRaw, 1, 1e10, 1e5);
 
   const deltaF = Math.abs(signalFreq - refFreq);
-  const phaseRad = (phaseShift * Math.PI) / 180;
-  const enbw = 1 / (4 * timeConstant); // Hz, for 1st order RC LPF
-  // Nth-order Butterworth ENBW: ENBW_N = ENBW_1 · (π/(2N)) / sin(π/(2N))
-  const enbwActual = filterOrder === 1 ? enbw : enbw * (Math.PI / (2 * filterOrder)) / Math.sin(Math.PI / (2 * filterOrder));
+  const enbw = lowPassEnbw(tau, order, filter);
+  const h = lowPassMagnitude(deltaF, tau, order, filter);
+  const g = REFERENCE_GAIN[reference];
+  // Unit-power reference: in phase, X = g·(A/√2)·cos φ; detuned, X beats at Δf with envelope g·(A/√2)·|H(Δf)|.
+  const outputSignal = g * (signalAmp / Math.SQRT2) * (deltaF === 0 ? Math.cos(phaseRad) : 1) * h;
+  const outputNoise = noiseDensity * Math.sqrt(enbw);
+  const inputNoise = noiseDensity * Math.sqrt(inputBandwidth);
+  const snrInput = signalAmp / Math.SQRT2 / inputNoise;
+  const snrGain = lockinSnrGain({ phase_rad: deltaF === 0 ? phaseRad : 0, detuning_Hz: deltaF, tau, order, filter, reference, inputBandwidth_Hz: inputBandwidth });
 
-  // Nth-order Butterworth LPF transfer function magnitude
-  const omegaTau = 2 * Math.PI * deltaF * timeConstant;
-  const lpfAttenuation = 1 / Math.sqrt(1 + Math.pow(omegaTau, 2 * filterOrder));
+  // Filter response vs detuning, 1e-3/τ … 1e2/τ, for orders 1–4 of the chosen filter type.
+  const n = 161;
+  const f = Array.from({ length: n }, (_, i) => Math.pow(10, -3 + (5 * i) / (n - 1)) / tau);
+  const toDb = (m: number) => Math.max(-120, 20 * Math.log10(m));
+  const chartData = [1, 2, 3, 4].map(N => ({
+    x: f,
+    y: f.map(fi => toDb(lowPassMagnitude(fi, tau, N, filter))),
+    type: "scatter" as const,
+    mode: "lines" as const,
+    name: `Order ${N} (${6 * N} dB/oct)${N === order ? " ◀" : ""}`,
+    line: { color: ORDER_COLORS[N - 1], width: N === order ? 3 : 1 },
+  }));
+  if (deltaF > 0) {
+    chartData.push({ x: [deltaF, deltaF], y: [-120, 0], type: "scatter", mode: "lines", name: `Δf = ${fmt(deltaF, 3)} Hz`, line: { color: "#a78bfa", width: 1 } });
+  }
 
-  const demodFactor = (2 / Math.PI) * Math.abs(Math.cos(phaseRad));
-  // Phase only meaningful at DC (Δf=0); beat envelope amplitude is phase-independent when detuned
-  const outputSignal = signalAmp * 1e-6 * (deltaF === 0 ? Math.cos(phaseRad) : 1) * (2 / Math.PI) * lpfAttenuation;
-  const inputNoise = noiseDensity * 1e-9 * Math.sqrt(inputBandwidth);
-  const outputNoise = noiseDensity * 1e-9 * Math.sqrt(enbwActual);
-  const snrInput = (signalAmp * 1e-6 / Math.SQRT2) / inputNoise; // RMS signal / RMS noise
-  const snrOutput = Math.abs(outputSignal) / outputNoise;
-  const snrImprovement = snrOutput / snrInput;
-  const bwGain = Math.sqrt(inputBandwidth / enbwActual);
-
-  const chartData = useMemo(() => {
-    const f = Array.from({ length: 500 }, (_, i) => 0.1 + i * 5000 / 500);
-    const noiseFloor = f.map(() => noiseDensity * 1e-9);
-    // Actual LPF transfer function (bandpass equivalent centered on ref freq)
-    const transfer = f.map(fi => {
-      const dist = Math.abs(fi - refFreq);
-      const wt = 2 * Math.PI * dist * timeConstant;
-      return 1 / Math.sqrt(1 + Math.pow(wt, 2 * filterOrder));
-    });
-    const outNoise = f.map((fi, i) => noiseDensity * 1e-9 * transfer[i]);
-
-    return [
-      { x: f, y: noiseFloor.map(v => v * 1e9), type: "scatter", mode: "lines",
-        name: "Input Noise Floor", line: { color: "#f87171", width: 2 }, yaxis: "y" },
-      { x: f, y: outNoise.map(v => v * 1e9), type: "scatter", mode: "lines",
-        name: "After Lock-in", line: { color: "#60a5fa", width: 2 }, yaxis: "y" },
-      { x: f, y: transfer, type: "scatter", mode: "lines",
-        name: "Transfer Function", line: { color: "#34d399", dash: "dash" }, yaxis: "y2" },
-    ];
-  }, [noiseDensity, refFreq, timeConstant, filterOrder]);
-
+  const select = "w-full rounded bg-gray-800 border border-gray-700 px-3 py-2 text-white";
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Signal Frequency (Hz)" value={signalFreq} onChange={setSignalFreq} min={1} />
-        <ValidatedNumberInput label="Reference Frequency (Hz)" value={refFreq} onChange={setRefFreq} min={1} />
-        <ValidatedNumberInput label="Phase Shift (°)" value={phaseShift} onChange={setPhaseShift} min={-180} max={180} />
-        <ValidatedNumberInput label="Signal Amplitude (μV)" value={signalAmp} onChange={setSignalAmp} min={0.001} step="0.1" />
-        <ValidatedNumberInput label="Input Noise Density (nV/√Hz)" value={noiseDensity} onChange={setNoiseDensity} min={0.1} step="1" />
-        <ValidatedNumberInput label="Time Constant τ (s)" value={timeConstant} onChange={setTimeConstant} min={0.001} step="0.1" />
-        <ValidatedNumberInput label="Filter Order" value={filterOrder} onChange={setFilterOrder} min={1} max={4} step="1" />
-        <ValidatedNumberInput label="Input Bandwidth (Hz)" value={inputBandwidth} onChange={setInputBandwidth} min={100} step="1000" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Signal Frequency (Hz)" value={signalFreqRaw} onChange={setSignalFreq} min={0} max={1e9} />
+        <ValidatedNumberInput label="Reference Frequency (Hz)" value={refFreqRaw} onChange={setRefFreq} min={0} max={1e9} />
+        <ValidatedNumberInput label="Phase Shift (°)" value={phaseShiftRaw} onChange={setPhaseShift} min={-180} max={180} />
+        <ValidatedNumberInput label="Signal Amplitude (µV peak)" value={signalAmpRaw} onChange={setSignalAmp} min={0} max={1e9} step="0.1" />
+        <ValidatedNumberInput label="Input Noise Density (nV/√Hz)" value={noiseDensityRaw} onChange={setNoiseDensity} min={1e-3} max={1e9} step="1" />
+        <ValidatedNumberInput label="Input Noise Bandwidth (Hz)" value={inputBandwidthRaw} onChange={setInputBandwidth} min={1} max={1e10} step="1000" />
+        <ValidatedNumberInput label="Time Constant τ (s)" value={timeConstantRaw} onChange={setTimeConstant} min={1e-6} max={1e5} step="0.1" />
+        <ValidatedNumberInput label="Filter Order (1–4)" value={filterOrderRaw} onChange={setFilterOrder} min={1} max={4} step="1" />
+        <label className="block text-sm text-gray-300">
+          <span className="mb-1 block">Output filter</span>
+          <select value={filter} onChange={e => setFilter(e.target.value)} className={select}>
+            <option value="rc">Cascaded RC stages (lock-in standard)</option>
+            <option value="butterworth">Butterworth, f_c = 1/2πτ</option>
+          </select>
+        </label>
+        <label className="block text-sm text-gray-300">
+          <span className="mb-1 block">Reference waveform</span>
+          <select value={reference} onChange={e => setReference(e.target.value)} className={select}>
+            <option value="sine">Sine (DSP lock-in)</option>
+            <option value="square">Square (analog switching)</option>
+          </select>
+        </label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Δf (detuning)" value={`${deltaF} Hz`} tone="yellow" />
-        <ResultCard label="ENBW" value={`${enbwActual.toFixed(3)} Hz`} tone="blue" />
-        <ResultCard label="Output Signal" value={`${(outputSignal * 1e6).toFixed(2)} μV`} tone="green" />
-        <ResultCard label="SNR Improvement" value={`×${snrImprovement.toFixed(1)}`} tone="purple" subtext={`BW gain: ×${bwGain.toFixed(1)}`} />
+        <ResultCard label="ENBW" value={`${fmt(enbw)} Hz`} tone="blue" subtext={`Detuning Δf = ${fmt(deltaF, 4)} Hz`} />
+        <ResultCard
+          label={deltaF === 0 ? "Output X (rms)" : "Output beat amplitude"}
+          value={`${fmt(outputSignal * 1e6, 3)} µV`}
+          tone="green"
+          subtext={`Output noise ${fmt(outputNoise * 1e9, 3)} nV rms`}
+        />
+        <ResultCard label="SNR in → out" value={`${fmt(snrInput, 3)} → ${fmt(snrInput * snrGain, 3)}`} tone="yellow" />
+        <ResultCard label="SNR Improvement" value={`×${fmt(snrGain, 4)}`} tone="purple" subtext={`√(B_in/ENBW) = ×${fmt(Math.sqrt(inputBandwidth / enbw), 4)}`} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
-        <p>V<sub>out</sub> = V<sub>sig</sub> · cos(Δφ) · (2/π) · H(Δf)  [square-wave demod + LPF]</p>
-        <p>ENBW = 1/(4τ) [1st-order] | ENBW_N = ENBW₁·(1/N)/sin(π/2N) [Nth-order]</p>
-        <p>SNR improvement = (2√2/π)|cos(Δφ)| · H(Δf) · √(BW<sub>in</sub> / ENBW)</p>
+        <p>X = g · (A/√2) · cos φ · |H(Δf)|, &nbsp;noise = e_n · √ENBW &nbsp;(g = 1 sine, 2√2/π square reference)</p>
+        <p>RC cascade: ENBW = 1/4τ, 1/8τ, 3/32τ, 5/64τ (N = 1–4) &nbsp;| &nbsp;Butterworth: ENBW = (1/4Nτ)/sin(π/2N)</p>
+        <p>SNR improvement = g · |cos φ| · |H(Δf)| · √(B_in / ENBW)</p>
       </div>
 
       <ChartPanel data={chartData} layout={{
-        paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-        font: { color: "#9ca3af" },
-        xaxis: { title: "Frequency (Hz)", gridcolor: "#374151", type: "log" },
-        yaxis: { title: "Noise Density (nV/√Hz)", gridcolor: "#374151", type: "log" },
-        yaxis2: { title: "Transfer", gridcolor: "#374151", overlaying: "y", side: "right", range: [-0.1, 1.2] },
-        margin: { t: 30, r: 60, b: 50, l: 80 }, legend: { bgcolor: "transparent", font: { size: 10 } },
+        xaxis: { title: "Detuning from reference (Hz)", gridcolor: "#374151", type: "log" },
+        yaxis: { title: "Filter response |H| (dB)", gridcolor: "#374151" },
       }} />
     </>
   );
