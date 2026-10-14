@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 56, 2026-10-14)
+## Status (session 57, 2026-10-14)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -18,13 +18,13 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | thin-film | 45 / 45 | done (sessions 25–28, 54–55); small findings below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
 | imaging | 9 / 65 | findings fixed (sessions 19, 22); no full audit |
-| free-space-comms | 7 / 27 | part 0 done (session 56): 20 `knownIssue`s; fix parts 1–6 below |
+| free-space-comms | 9 / 26 | part 0 (session 56), part 1 (57) done: 17 `knownIssue`s; fix parts 2–6 below |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 0 / 54 | |
-| **total** | **190 / 459** | 20 `knownIssue`s (free-space-comms) |
+| **total** | **192 / 458** | 17 `knownIssue`s (free-space-comms) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -32,11 +32,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   curl. Also clear the eslint warning there (unused `wavelength` state).
 - FSO fix parts (session 56 audit: 19 bugs, 1 questionable, 20 `knownIssue`s; reviewers had no web access, so verify every
   coefficient and DOI below before it goes in code or the registry; none of the 20 pages uses `src/physics/free-space-comms/`):
-- [ ] **FSO part 1: visibility laws** (`atmospheric-attenuation.ts`): `fog-attenuation`, `atmosphere`,
-  `wavelength-selection`. Add `kruseExponent` and Al Naboulsi advection/radiation fog to the module. Fog: km⁻¹ shown
-  as dB/km; Kim V = 0.5 km, 1550 nm → 33.93 dB/km. `atmosphere` duplicates the tiered `atmospheric-loss` (column τ
-  as km⁻¹, invented H₂O bands): **merge it into `atmospheric-loss` with a redirect** (user, session 56). `wavelength-selection` (illustrative): `totalExtinction`, 1550 nm, V = 2 km, 1 km →
-  4.263 dB; eye score from the laser-safety AEL ratio (1310 nm C7), weights must sum to 1, `[...scores].sort`.
 - [ ] **FSO part 2: precipitation** (new `precipitation.ts`): `rain-attenuation`, `snow-attenuation`. Source the
   coefficients first: ITU-R P.1814 rain 1.076·R^0.67 dB/km (25 mm/h → 9.30), λ-independent; Nadeem et al. 2009 snow
   (dry a = 5.42e-5λ + 5.4958776, b = 1.38; wet a = 1.023e-4λ + 3.7855466, b = 0.72; λ in nm; 5 mm/h, 1550 nm → 51.4
@@ -198,6 +193,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   - Fiber-optics part 9 (session 51, PR #62): `coupled-mode.ts` (Snyder κ 4.447e-3 /m, Koshiba h̄ → Hayashi, XT −38.3 dB/10 km; K₀ tail 18.3 % not 26.2 %; half-plane η; Digonnet–Shaw coupler); multi-core, side-polished, d-shaped, fiber-coupler tiered; 542 tests.
   - Fiber-optics part 10 (session 52, PRs #64–65): `fiber-taper.ts` (+ `tapered-fiber` merged; Birks–Li, three-layer LP0m, Love Ω_d; waist 27.9 µm), `silica-attenuation.ts` (0.187 dB/km at 1550, min 1550.8 nm) for attenuation + low-water-peak, `otdr.ts` (Barnoski–Jensen × Brinkmeyer η −82.5 dB at 1 ns, DR 20.5 dB), `link-budget.ts` (margin held, −12 dBm); 565 tests.
   - Fiber-optics part 11 (session 53, PR #67): `photonic-crystal.ts` (Saitoh–Koshiba V/W, ESM d/Λ 0.4275 vs FEM 0.424, D 74.4/22.0 vs MPM 71.3/23.1), `specialty-fiber.ts` (6 data-sheet fibres, illustrative). Fiber-optics fully tiered.
+  - Free-space-comms part 1 (session 57, PR #75): Kruse + Al Naboulsi in `atmospheric-attenuation.ts` (Kim fog 33.93 dB/km), `wavelength-selection.ts` (IEC Class 1 eye score); `atmosphere` → `atmospheric-loss`.
   - Free-space-comms part 0 (session 56, PR #73): 20 pages audited, 19 bugs + 1 questionable, 20 `knownIssue`s; fix parts 1–6.
   - Thin-film leftovers b (session 55, PR #71): `sputtering.ts` (L–W yields, cosine disk; 1.866 nm/s), `plasma-global-model.ts` (L&L argon, Tₑ 3.79 eV vs example 3.5; 2.59 eV default), `adhesion.ts` (Benjamin–Weaver 696 MPa, Kendall, D3359, H–S bend); ATM/TORR → constants; thin film 45/45; 598 tests.
   - Thin-film leftovers a (session 54, PR #69): `thermal-evaporation.ts` (Alcock fits, Hertz–Knudsen; 0.20 nm/s), `ion-assisted-deposition.ts` (ratio 0.283, QCM density), `angle-shift` (472.3 nm) tiered; 588 tests.
