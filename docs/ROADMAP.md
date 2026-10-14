@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 62, 2026-10-14)
+## Status (session 63, 2026-10-14)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -23,15 +23,69 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
-| detectors | 0 / 54 | |
-| **total** | **209 / 458** | 0 `knownIssue`s |
+| detectors | 0 / 54 | part 0 done (session 63): 32 `knownIssue`s (11 bugs, 21 questionable), 22 OK; fix parts 1–10 below |
+| **total** | **209 / 458** | 32 `knownIssue`s (detectors) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
   extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
   curl. Also clear the eslint warning there (unused `wavelength` state).
-- [ ] **Next category audit (ask the user which):** detectors 0/54, wave-optics 2/49, materials 3/45, spectroscopy 5/54
-  or imaging 9/65. Part 0 = `physics-reviewer` batches → `knownIssue`s + fix parts of ≈ 4 pages, as for FSO (sessions 56–62).
+- [x] **Detectors audit, part 0** (session 63, branch `phase-4/detectors-audit`). Nine `physics-reviewer` batches audited
+  all 54 pages: **11 bugs, 21 questionable, 22 OK**; the 32 get a registry `knownIssue`. No page imports a detectors
+  module (only `src/lib/geiger-mode-avalanche.ts`); constants already come from `constants.ts` except
+  `vacuum-photodiode` (11600, 1.2e6). Common to most pages: inputs without `min` (0 → ∞/NaN; URL values skip the
+  range), state in `useState` instead of the URL, unused imports. Tier the OK pages in their part (with guards and a golden
+  test). Reviewer numbers marked "from memory" (InGaAs α, Si APD drift, P46, iXon 800 ke⁻ register well) need a source first.
+- [ ] **Detectors part 1: noise** (new `detectors/noise.ts`: `shotNoiseCurrent`, `johnsonNoise` {v,i,p}, `ktcNoise`,
+  `flickerRms`, `sensorNoiseElectrons`): OK `shot-noise` (1 µA, 1 MHz → 5.6607e-10 A), `thermal-noise` (1 kΩ, 300 K,
+  1 MHz → 4.0704 µV), `reset-noise` (10 fF → 40.169 e⁻), `amplifier-noise` (S_min(5) = 20.1605 e⁻), `readout-noise`,
+  `sndr` (SINAD 19.586 dB, ENOB 2.9611; show SQNR(N), 74.0 dB at 12 bit); fix `flicker-noise` (corner vs 2qI: 3.12e-6 Hz;
+  flickerRms(1e-24, 1 µA, 1, 1 Hz–1 MHz) = 3.7169e-15 A, Hooge 1969) and `temporal-noise` (σ_1/f from the corner:
+  σ_r√((f_c/B)·ln(B/f_L)) = 0.50 e⁻; f_L = 1/(2t) unsourced; drop or use the conversion gain).
+- [ ] **Detectors part 2: photodiode front end** (`noise.ts` + new `tia.ts`, `photodiode-rc.ts`): `nep` (2.275e-11 W,
+  D* 4.395e9), `detectivity` (cards OK 2.668e9; λ cutoff, sourced dark-current law, M with F), `bandwidth` (load-R
+  label or GBW/C_f; band-limited Johnson 4kTR·f_c·atan(Δf/f_c) → √(kT/C) = 20.35 µV), `photodiode-speed` (transit
+  f_tr = 0.45·v/W combined with RC, Bowers & Burrus 1987; stale useMemo deps; 318.31 MHz at 50 Ω/10 pF),
+  `capacitance` (3.273 pF, 810.4 MHz), `gain-bandwidth` (A_cl 90.91, f_cl 11.00 kHz), `hybrid-detector` →
+  **rename to `photodiode-tia-noise`** with redirect (user, session 63): add C_d, e_n·2πf·C_d, √(GBW/2πR_fC_d).
+- [ ] **Detectors part 3: dark current and signal recovery** (new `dark-current.ts`: doubling, generation ∝ n_i,
+  diffusion ∝ n_i², Varshni; new `lockin.ts`): `dark-current` (D(−80) = 5.39e-7 e⁻/s), `dark-noise-temperature`
+  (12.7 fA shown as 0.000 nA; I(−40 °C) = 7.94e-4 nA), `cooling-benefit` (Si ×630, InGaAs ×7.16e3; signal input),
+  `lockin-amplifier` (Butterworth ENBW (1/4Nτ)/sin(π/2N): N = 2 → 0.17678 Hz; also cascaded RC 1/4τ, 1/8τ, 3/32τ,
+  5/64τ; Scofield 1994), `boxcar-integrator` (gate-averaged signal, e_n·√NEB; noise trace 0.70×).
+- [ ] **Detectors part 4a: silicon QE** (new `materials/silicon-absorption.ts` from Green 2008 Table 1,
+  `detectors/responsivity.ts`, slab + Gärtner `photodiode-qe.ts`): `responsivity` (OK; R(0.8, 1550) = 1.0001 A/W),
+  `silicon-photodiode` (Gärtner diffusion term, n_i 9.65e9 Altermatt 2003, Eg0 1.170 Thurmond as in
+  `materials/semiconductor-bandgap`; α(800) = 850 cm⁻¹), `quantum-efficiency` and `spectral-response` (replace the
+  invented curves with slab QE; reject η > 1). `pixel-crosstalk` and `spectroscopy/absorption-depth` reuse the table later.
+- [ ] **Detectors part 4b: InGaAs and back-illumination** (`materials/bandgap.ts`: Vurgaftman 2001 Varshni + bowing):
+  `ingaas-parameters` (default −1 V; i_n² = 2qI₀(e^{V/nVt}+1)Δf; GR term ×1e13; Eg(0.53, 300 K) = 0.741 eV),
+  `si-vs-inge` → **rename to `si-vs-ingaas`** with redirect (user, session 63), sourced QE spectra, `back-illumination`
+  (20·log10: ratio 4 → 6.02 dB; guards; schematic spectra labelled).
+- [ ] **Detectors part 5: linear APD** (new `detectors/apd.ts`; move the guarded `excessNoiseFactor` from
+  `free-space-comms/background-radiance.ts`; one sourced k table): `avalanche-gain` (Miller M = 5.349 at 140/150 V, n 3),
+  `excess-noise` (F(100, 0.02) = 3.9502), `gain-temperature` (Miller with V_br(T), Crowell & Sze 1966; PMT %/°C),
+  `linear-mode-avalanche` (thermal noise and M_opt, Personick 1977: 1 kΩ → M_opt ≈ 78.5).
+- [ ] **Detectors part 6: single-photon** (new `dead-time.ts`, `spad.ts`: afterpulse η·e^{−t_d/τ}, Arrhenius DCR,
+  `countingSnr` with T): `spad-dead-time` (OK; NP 8.000/P 7.788 Mcps at 10 Mcps, 25 ns), `photon-counting` (lgamma,
+  μ cap; label), `single-photon-counting-module` (deps bug: 1.651e5 cps at 10 %), `spad` (−100 dBm default, Rτ warning),
+  `afterpulsing` (drop the invented trap ladder; 4.1042e-3), `geiger-mode-avalanche` (saturating P_t, real golden test).
+  Keep `spad` and SPCM as separate pages on the shared module (user, session 63).
+- [ ] **Detectors part 7: vacuum and intensified** (new `electron-multiplier.ts`, `photoemission.ts`): `pmt` (OK;
+  G(3.5, 10) = 2.7585e5, F = 1.3999985), `microchannel-plate` (Eberhardt 1979 gain), `intensified-ccd` (phosphor
+  η·eV/E_ph = 329.7 photons/e at 5 kV), `vacuum-photodiode` (load Johnson noise; gap input; Richardson A₀ from constants),
+  `streak-camera` (quadrature 7.874 ps; drop "spatial resolution"), `channel-photomultiplier` → **rewrite as a true
+  single-channel CPM** (user, session 63) with ENF in the resolution.
+- [ ] **Detectors part 8: EM and camera SNR** (new `camera-snr.ts`: Robbins & Hadwen F² = 2(G−1)G^{−(N+1)/N} + 1/G,
+  `cameraSnr`, `dynamicRangeDb`): `ccd-vs-cmos` (EMCCD DR from the register well; photons × QE; saturation),
+  `em-gain` (no argmax; F²(100, 604) = 1.9750), `electron-multiplying` (2.236 vs 2.857 at defaults), `well-capacity`
+  (5.341 fF, 80.00 dB), `saturation` (S(1 − nl·S/FWC); DR 72.04, SNR 43.00 dB).
+- [ ] **Detectors part 9: sensor noise and MTF** (new `sensor-noise.ts` with PRNU/DSNU, `sensor-mtf.ts`):
+  `photon-transfer` (PRNU regime; 223.83 e⁻), `uniformity` (547.84 e⁻; heatmap RMS), `antiblooming` (illustrative;
+  cap leaked charge), `modulation-transfer` (2/π at f_N; rename "diffusion length"), `pixel-crosstalk` (Seib 1974
+  field-free diffusion, 3-tap MTF 0.5730 at X = 0.05), `cosmic-rays` (thickness input, L = t/cosθ; O(μ²) loop; PDG 2024).
+- [ ] **Next category audit (ask the user which):** wave-optics 2/49, materials 3/45, spectroscopy 5/54 or imaging 9/65.
+  Part 0 = `physics-reviewer` batches → `knownIssue`s + fix parts, as for FSO (session 56) and detectors (session 63).
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
 - [ ] Rewrite each heuristic model, or label it illustrative, during its category's audit. Macro-bend and
   second-harmonic are done.
@@ -97,6 +151,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - Out of scope: `materials/brillouin-scattering` P_th = 21·1e-3/(g_B·L): 1e-3 in place of A_eff, L in place of L_eff (use `sbsThreshold`); `wave-optics/fiber-laser-resonator` may
   overlap `fiber-laser`; `fiber-coupler` vs `wave-optics/coupled-mode` unchecked.
 
+**Imaging / spectroscopy** (found in the detectors part 0, session 63)
+- `imaging/dynamic-range`: `prnu` defaults to 0.01 on an input labelled "%" (0.01 %); probably meant 1 %.
+- `spectroscopy/absorption-depth`: Si at 550 nm gives 12.8 µm; Green 2008 gives 1.56 µm. Use `silicon-absorption.ts`.
 **Materials**
 - `birefringent-crystals` lists the fused-silica Malitson set as quartz.
 - `crystal-birefringence` has rutile at 2.454/2.493. Use `materials/uniaxial-data.ts`.

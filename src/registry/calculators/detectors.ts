@@ -5,6 +5,7 @@ export const detectors: CalculatorEntry[] = [
     slug: "afterpulsing",
     title: "Afterpulsing in APDs",
     description: "Afterpulse probability, trap dynamics, and dead time trade-offs in avalanche photodiodes.",
+    knownIssue: "The multi-trap curve uses an invented trap ladder (τᵢ = 20·3ⁱ ns, ηᵢ = 0.05/2ⁱ) and gives 2.4 % afterpulsing at the defaults against 0.41 % for the single sourced trap.",
   },
   {
     slug: "amplifier-noise",
@@ -25,16 +26,19 @@ export const detectors: CalculatorEntry[] = [
     slug: "back-illumination",
     title: "Back-Illuminated vs Front-Illuminated",
     description: "Back-illuminated sensors bypass gate structures for higher QE and better blue/UV response.",
+    knownIssue: "The SNR gain in dB applies 10·log10 to an amplitude ratio: 1.4 dB instead of 2.8 dB at the defaults. A front-side QE or CFA transmission of 0 gives Infinity or NaN.",
   },
   {
     slug: "bandwidth",
     title: "Bandwidth vs Noise Trade-off",
     description: "Noise increases with √Δf. Wider bandwidth = faster response but more noise.",
+    knownIssue: "The page is labelled a TIA but uses a load-resistor bandwidth 1/(2πR·C_j): 15.9 MHz at the defaults, where a TIA on a 100 MHz-GBW amplifier gives about 40 MHz. Its noise chart also keeps growing past that bandwidth (20× high at 10 GHz).",
   },
   {
     slug: "boxcar-integrator",
     title: "Boxcar Integrator",
     description: "Gated signal averaging — recover repetitive signals from noise.",
+    knownIssue: "Gate and pulse widths do not enter the SNR, which is just peak over noise (0.2 at the defaults), and the plotted noise trace is only 0.70× the entered RMS. The gate also ends at the pulse peak instead of centring on it.",
   },
   {
     slug: "capacitance",
@@ -45,12 +49,14 @@ export const detectors: CalculatorEntry[] = [
     slug: "ccd-vs-cmos",
     title: "CCD vs CMOS Sensor Comparison",
     description: "Compare sensor architectures — SNR, dynamic range, and performance metrics.",
+    knownIssue: "The EMCCD row shows a 120 dB dynamic range because it divides the 100 ke⁻ pixel well by the gain-divided 0.1 e⁻ read noise. Under EM gain the gain-register well limits it to about 80 dB. QE is listed but never applied.",
     keywords: ["CCD vs CMOS Comparison"],
   },
   {
     slug: "channel-photomultiplier",
     title: "Channel Photomultiplier (Multi-Channel PMT)",
     description: "Multi-channel PMT: gain staging, energy resolution, and timing.",
+    knownIssue: "The energy resolution 2.355/√N_pe leaves out the multiplier excess noise: 7.9 % FWHM instead of 9.3 % (F = 1.4, as on the PMT page) at the defaults. The peak current divides the charge by the TTS, which is a jitter, not a pulse width.",
   },
   {
     slug: "cooling-benefit",
@@ -61,6 +67,7 @@ export const detectors: CalculatorEntry[] = [
     slug: "cosmic-rays",
     title: "Cosmic Ray Detection",
     description: "Cosmic ray flux and impact on imaging sensors — estimate hit rates and affected pixels.",
+    knownIssue: "The track length ignores zenith angle and sensor thickness: the default 200 µm path deposits 2.0e4 e⁻ at any angle, whereas a 20 µm layer at 30° gives a 23 µm path and about 2.5e3 e⁻.",
   },
   {
     slug: "dark-current",
@@ -71,11 +78,13 @@ export const detectors: CalculatorEntry[] = [
     slug: "dark-noise-temperature",
     title: "Dark Noise vs Temperature",
     description: "Temperature dependence of dark current and dark noise in photodiodes/CCDs.",
+    knownIssue: "The 'Noise @ 25 °C' card rounds to three decimals of nA and shows 0.000 nA rms at the defaults; the true value is 12.7 fA rms in 1 Hz.",
   },
   {
     slug: "detectivity",
     title: "Detectivity (D*)",
     description: "Specific detectivity from NEP, area, and bandwidth. D* = √(A·Δf) / NEP",
+    knownIssue: "The D* vs wavelength chart rises linearly to 3000 nm with no bandgap cutoff, the D* vs temperature chart assumes an unsourced 7 K dark-current doubling, and the excess-noise factor has no gain. The cards are correct.",
   },
   {
     slug: "electron-multiplying",
@@ -86,6 +95,7 @@ export const detectors: CalculatorEntry[] = [
     slug: "em-gain",
     title: "EMCCD Gain Calculator",
     description: "EM gain — noise analysis, optimal gain, and SNR comparison.",
+    knownIssue: "Optimal Gain shows 501× at the defaults, an artifact of the F² = 2 − 1/G approximation. With the Robbins–Hadwen finite-stage noise factor the SNR keeps rising slowly with gain (2.248 at 500×, 2.252 at 10 000×).",
   },
   {
     slug: "excess-noise",
@@ -96,6 +106,7 @@ export const detectors: CalculatorEntry[] = [
     slug: "flicker-noise",
     title: "1/f Flicker Noise",
     description: "Flicker noise: S_I(f) = K_f · I^α / f. Noise spectral density falls as 1/f.",
+    knownIssue: "The corner frequency is measured against a hidden thermal floor (a fixed 50 Ω at 300 K) instead of the shot noise of the entered current: 3.0e-9 Hz at the defaults versus 3.1e-6 Hz against 2qI.",
     lede: "Flicker noise: S_i(f) = K_f · I^α / f. Noise spectral density falls as 1/f.",
   },
   {
@@ -107,42 +118,50 @@ export const detectors: CalculatorEntry[] = [
     slug: "gain-temperature",
     title: "Gain vs Temperature",
     description: "Temperature dependence of detector gain for APDs and PMTs.",
+    knownIssue: "The APD gain drift uses an unsourced M_ref/(1 + α·ΔT) with α independent of gain, while real drift at fixed bias comes from V_br(T) and grows with M. When 1 + α·ΔT nears 0 a clamp shows 100 × M_ref as the gain.",
   },
   {
     slug: "geiger-mode-avalanche",
     title: "Geiger-Mode APD",
     description: "SPAD: breakdown voltage, overbias, temperature effects, PDE, and dark count rate.",
+    knownIssue: "PDE = 0.15 per volt of overbias (30 % at 2 V, capped at 75 %) and an afterpulse rate of 2 % of the DCR are unsourced. Real PDE saturates with overbias and afterpulsing falls with dead time, which the page ignores.",
   },
   {
     slug: "hybrid-detector",
     title: "Hybrid Detector Design",
     description: "Photodiode + TIA hybrid — noise analysis, NEP, and gain optimization.",
+    knownIssue: "The noise leaves out the e_n·2πf·C_d term and the TIA bandwidth limit: a 1 MΩ feedback resistor cannot reach the 100 MHz default (about 4 MHz with 10 pF and a 1 GHz GBW), so the 3.35 nW noise floor is optimistic.",
   },
   {
     slug: "ingaas-parameters",
     title: "InGaAs Detector Parameters",
     description: "InₓGa₁₋ₓAs bandgap, cutoff wavelength, QE, dark current, NEP for SWIR detectors.",
+    knownIssue: "At the default +0.5 V bias the dark current, NEP and D* all read 0, because forward bias is treated as zero bias with no Johnson noise. The generation-recombination dark current is about 10¹³ times too small at any bias.",
   },
   {
     slug: "intensified-ccd",
     title: "Intensified CCD (ICCD)",
     description: "Photocathode → MCP → phosphor → CCD gain chain with gating and noise analysis.",
+    knownIssue: "The phosphor's energy efficiency (0.15) is used as photons per electron. A P43 screen at about 5 kV gives about 330, so the electron gain reads 450 instead of about 10⁶ at the defaults (the SNR of 4.2 is unaffected).",
     keywords: ["Intensified Camera (ICCD)"],
   },
   {
     slug: "linear-mode-avalanche",
     title: "Linear-Mode Avalanche Photodiode",
     description: "McIntyre excess noise factor F(M), signal current and shot noise of a linear-mode APD versus gain, ionization ratio k and dark current.",
+    knownIssue: "No amplifier or thermal noise term, so the SNR only falls with gain (0.89 at M = 1, 0.45 at M = 100 at the defaults) and the optimum APD gain never appears. The default 10 nA bulk dark current is high for silicon.",
   },
   {
     slug: "lockin-amplifier",
     title: "Lock-in Amplifier",
     description: "Lock-in amplifier: demodulation gain, ENBW, noise rejection, and SNR improvement.",
+    knownIssue: "For filter orders 2–4 the noise bandwidth is π/2 too large (0.278 Hz instead of 0.177 Hz at τ = 1 s, order 2), so the SNR improvement reads ×540 instead of ×677. The default order 1 is correct.",
   },
   {
     slug: "microchannel-plate",
     title: "Microchannel Plate",
     description: "MCP gain, spatial resolution, and effective QE for photon detectors.",
+    knownIssue: "The gain law is invented: gain changes only 3× from 500 to 1500 V, and one plate at 1 kV with L/D 50 gives about 400 instead of about 10⁴. The 9 % 'collection efficiency' is a hard-coded 15 % QE times the open area.",
   },
   {
     slug: "modulation-transfer",
@@ -158,11 +177,13 @@ export const detectors: CalculatorEntry[] = [
     slug: "photodiode-speed",
     title: "Photodiode Speed & Bandwidth",
     description: "RC-limited bandwidth, junction capacitance, and NEP vs area for photodiodes.",
+    knownIssue: "The bandwidth is RC-only with no transit-time limit: 318 GHz at the default 0.001 mm², where the ~10 µm depletion layer implied by 10 pF/mm² limits it to about 4.5 GHz. The NEP chart also ignores area and capacitance edits.",
   },
   {
     slug: "photon-counting",
     title: "Photon Counting Statistics",
     description: "Poisson statistics, SNR, dead time corrections, and count distributions.",
+    knownIssue: "A large 'Mean Counts per Interval' (e.g. 10⁶) freezes the page: the Poisson chart sums log-factorials term by term (about 8 × 10⁹ operations). The 'Total SNR' label also prints the variable name instead of the time.",
   },
   {
     slug: "photon-transfer",
@@ -173,6 +194,7 @@ export const detectors: CalculatorEntry[] = [
     slug: "pixel-crosstalk",
     title: "Pixel Crosstalk & MTF",
     description: "Charge diffusion and electrical crosstalk: wavelength-dependent absorption depth, total crosstalk, and MTF degradation.",
+    knownIssue: "Diffusion crosstalk uses an unsourced 0.1·√(d_abs/d_depl) rule: 4.1 % at the defaults, where only about 0.3 % of the charge is generated below the depletion layer. The MTF term is ad hoc too (42 % at Nyquist vs 57 % for a 3-tap kernel).",
   },
   {
     slug: "pmt",
@@ -184,6 +206,7 @@ export const detectors: CalculatorEntry[] = [
     slug: "quantum-efficiency",
     title: "Quantum Efficiency",
     description: "Detector QE explorer: Si, InGaAs, CCD, CMOS presets with fill factor and microlens gain.",
+    knownIssue: "The QE curves are schematic, not measured data, and jump by about 5 percentage points at 600 nm (Si), 1100 nm (InGaAs) and 500 nm (CCD).",
     lede: "Interactive detector QE explorer with detector presets, fill factor, microlens gain, and wavelength response curves.",
     related: [
       { href: "/detectors/pmt" },
@@ -217,6 +240,7 @@ export const detectors: CalculatorEntry[] = [
     slug: "saturation",
     title: "Detector Saturation",
     description: "Full well capacity, dynamic range, SNR at saturation, and nonlinearity rolloff model.",
+    knownIssue: "The nonlinearity curve is wrong: with 0.5 % entered, the output starts at 5.3× the input and the error peaks at +50 % of full scale near 0.31·FWC instead of staying within 0.5 %. The curve also jumps at full well.",
   },
   {
     slug: "shot-noise",
@@ -227,16 +251,19 @@ export const detectors: CalculatorEntry[] = [
     slug: "si-vs-inge",
     title: "Si vs InGaAs Detectors",
     description: "Compare silicon and InGaAs photodetectors: QE spectra, SNR, dark current, and wavelength performance.",
+    knownIssue: "The QE spectra are invented: InGaAs gives 64 % at 1550 nm (typically about 80 %) and 10 % at 1000 nm (typically about 60 %), and the dark-current doubling rules have no source.",
   },
   {
     slug: "silicon-photodiode",
     title: "Silicon Photodiode",
     description: "Si photodiode parameters: bandgap, QE, responsivity, dark current, and spectral response.",
+    knownIssue: "QE counts only the depletion layer, so at the default 10 µm the responsivity at 900 nm is 0.18 A/W instead of the ≈0.6 A/W of real silicon photodiodes. The intrinsic density 1.5e10 cm⁻³ is outdated (9.65e9).",
   },
   {
     slug: "single-photon-counting-module",
     title: "Single-Photon Counting Module",
     description: "SPCM dead time correction, SNR, dark count effects, and afterpulsing analysis.",
+    knownIssue: "Changing 'Afterpulse Probability' does not update the afterpulse rate: at the defaults it stays at 3.30e4 cps when set to 10 % instead of 1.65e5 cps.",
   },
   {
     slug: "sndr",
@@ -248,6 +275,7 @@ export const detectors: CalculatorEntry[] = [
     slug: "spad",
     title: "SPAD Detector Calculator",
     description: "Single-photon avalanche diode — PDE, DCR, dead time, afterpulsing, and SNR analysis.",
+    knownIssue: "The default −60 dBm at 1550 nm gives 3.1e9 detections/s, 156× the 20 Mcps dead-time limit, and the SNR of 4414 treats those saturated counts as Poisson over an unstated 1 s. The 6 °C DCR doubling has no source.",
   },
   {
     slug: "spad-dead-time",
@@ -260,6 +288,7 @@ export const detectors: CalculatorEntry[] = [
     slug: "spectral-response",
     title: "Spectral Response Calculator",
     description: "Responsivity and quantum efficiency as a function of wavelength.",
+    knownIssue: "The response is an invented Gaussian: the default 0.55 A/W at 700 nm implies 97 % QE where real silicon gives about 80 %, and QE above 100 % is not flagged.",
     heading: "Spectral Response",
     lede: "R(λ) = η(λ) · q · λ / (h·c). Responsivity and quantum efficiency as a function of wavelength.",
   },
@@ -267,6 +296,7 @@ export const detectors: CalculatorEntry[] = [
     slug: "streak-camera",
     title: "Streak Camera Calculator",
     description: "Temporal resolution, sweep speed, time window, and spatial resolution for streak cameras.",
+    knownIssue: "'Spatial resolution' shows the slit width (50 µm), which sets the time resolution, not the spatial one. The contributions are combined by max (7.5 ps) instead of in quadrature (7.9 ps), and the dynamic-range input is unused.",
     heading: "Streak Camera",
     lede: "Streak camera basics calculator. Models temporal resolution, sweep speed, time window, and spatial resolution trade-offs.",
   },
@@ -274,6 +304,7 @@ export const detectors: CalculatorEntry[] = [
     slug: "temporal-noise",
     title: "Temporal Noise Calculator",
     description: "1/f noise, white noise, and read noise as functions of frequency and integration time.",
+    knownIssue: "The 1/f noise comes from a free coefficient that ignores the 1 kHz corner input: 7.87 e⁻ at the defaults, where a 1 kHz corner on 5 e⁻ of white read noise over 1 MHz gives about 0.50 e⁻. The conversion-gain input is unused.",
     heading: "Temporal Noise",
     lede: "1/f noise, white (shot) noise, and read noise as functions of frequency and integration time.",
   },
@@ -295,6 +326,7 @@ export const detectors: CalculatorEntry[] = [
     slug: "vacuum-photodiode",
     title: "Vacuum Photodiode Calculator",
     description: "Photoemission, responsivity, dark current, and frequency response for vacuum photodiodes.",
+    knownIssue: "The SNR ignores Johnson noise in the 50 Ω load, about 130× the shot noise: 22.6 dB shown instead of about −20 dB at the defaults. The cathode–anode gap (0.1·√area) and the QE curve are invented.",
     heading: "Vacuum Photodiode",
     lede: "Vacuum photodiode calculator. Models photoemission, responsivity, dark current (thermionic emission), and frequency response.",
   },
