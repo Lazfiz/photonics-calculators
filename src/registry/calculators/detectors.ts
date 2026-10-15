@@ -375,8 +375,23 @@ export const detectors: CalculatorEntry[] = [
     slug: "intensified-ccd",
     title: "Intensified CCD (ICCD)",
     description: "Photocathode → MCP → phosphor → CCD gain chain with gating and noise analysis.",
-    knownIssue: "The phosphor's energy efficiency (0.15) is used as photons per electron. A P43 screen at about 5 kV gives about 330, so the electron gain reads 450 instead of about 10⁶ at the defaults (the SNR of 4.2 is unaffected).",
     keywords: ["Intensified Camera (ICCD)"],
+    tier: "textbook",
+    modelNote: "Cascaded gain stages: Poisson photoelectrons, an MCP of noise factor F (2 for exponential pulse heights, more with open-area loss), a Poisson phosphor η·qV/E_ph and binomial coupling. The aluminium film's dead voltage, light spread over neighbouring pixels, ion feedback and dark counts are left out.",
+    references: [
+      {
+        citation: "Shockley W., Pierce J. R. (1938). A theory of noise for electron multipliers. Proc. IRE 26, 321–332. Noise factor of cascaded gain stages, F = F₁ + (F₂ − 1)/G₁ + ….",
+        url: "https://doi.org/10.1109/JRPROC.1938.228127",
+      },
+      {
+        citation: "Wiza J. L. (1979). Microchannel plate detectors. Nucl. Instrum. Methods 162, 587–601. Exponential single-electron pulse heights of an unsaturated MCP (F = 2).",
+        url: "https://doi.org/10.1016/0029-554X(79)90734-1",
+      },
+      {
+        citation: "Stanford Computer Optics. Image intensifier: phosphor screen. P43 about 200 and P46 about 95 photons per electron; decay to 10 % in 1.5 ms and 0.2 µs.",
+        url: "https://stanfordcomputeroptics.com/technology/image-intensifier/phosphor-screen.php",
+      },
+    ],
   },
   {
     slug: "linear-mode-avalanche",
@@ -802,10 +817,21 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "streak-camera",
     title: "Streak Camera Calculator",
-    description: "Temporal resolution, sweep speed, time window, and spatial resolution for streak cameras.",
-    knownIssue: "'Spatial resolution' shows the slit width (50 µm), which sets the time resolution, not the spatial one. The contributions are combined by max (7.5 ps) instead of in quadrature (7.9 ps), and the dynamic-range input is unused.",
+    description: "Temporal resolution and time window of a streak camera from sweep speed, slit image, pixel size, tube limit and trigger jitter.",
     heading: "Streak Camera",
-    lede: "Streak camera basics calculator. Models temporal resolution, sweep speed, time window, and spatial resolution trade-offs.",
+    lede: "Temporal resolution of a streak camera: the slit image, one pixel, the tube's own limit and trigger jitter, each converted to time by the sweep speed and added in quadrature.",
+    tier: "textbook",
+    modelNote: "The slit image and one pixel are rectangles of length/sweep speed; tube limit, screen blur and jitter are Gaussians. The FWHM of their convolution is exact for this model, where quadrature overstates the rectangles. Linear sweep, 1:1 readout.",
+    references: [
+      {
+        citation: "Hamamatsu Photonics (2008). Guide to Streak Cameras, cat. no. SHSS0006E. Temporal resolution as the FWHM of the streak image of a delta pulse; trigger jitter in summed sweeps.",
+        url: "https://www.hamamatsu.com/content/dam/hamamatsu-photonics/sites/documents/99_SALES_LIBRARY/sys/SHSS0006E_STREAK.pdf",
+      },
+      {
+        citation: "Zavoisky E. K., Fanchenko S. D. (1965). Image converter high-speed photography with 10⁻⁹–10⁻¹⁴ sec time resolution. Appl. Opt. 4, 1155–1167. Technical (slit image/sweep speed) and physical (energy spread) limits of the time resolution.",
+        url: "https://doi.org/10.1364/AO.4.001155",
+      },
+    ],
   },
   {
     slug: "temporal-noise",
@@ -855,9 +881,28 @@ export const detectors: CalculatorEntry[] = [
     slug: "vacuum-photodiode",
     title: "Vacuum Photodiode Calculator",
     description: "Photoemission, responsivity, dark current, and frequency response for vacuum photodiodes.",
-    knownIssue: "The SNR ignores Johnson noise in the 50 Ω load, about 130× the shot noise: 22.6 dB shown instead of about −20 dB at the defaults. The cathode–anode gap (0.1·√area) and the QE curve are invented.",
     heading: "Vacuum Photodiode",
-    lede: "Vacuum photodiode calculator. Models photoemission, responsivity, dark current (thermionic emission), and frequency response.",
+    lede: "Responsivity, thermionic dark current, transit-time and RC bandwidth, space-charge limit and the shot- plus Johnson-noise SNR of a planar vacuum photodiode.",
+    tier: "textbook",
+    modelNote: "Planar diode, flat QE up to hc/φ, electrons leaving at rest, a brick-wall filter at the −3 dB bandwidth and load Johnson noise at 25 °C. Richardson at φ fits metals; semiconductor cathodes have far more dark emission. Stray capacitance is left out.",
+    references: [
+      {
+        citation: "Dushman S. (1923). Electron emission from metals as a function of temperature. Phys. Rev. 21, 623–636. J = A₀·T²·exp(−φ/k_B·T).",
+        url: "https://doi.org/10.1103/PhysRev.21.623",
+      },
+      {
+        citation: "Ramo S. (1939). Currents induced by electron motion. Proc. IRE 27, 584–585. The ramp current of an accelerating electron; f_tr = 0.553/τ.",
+        url: "https://doi.org/10.1109/JRPROC.1939.228757",
+      },
+      {
+        citation: "Child C. D. (1911). Discharge from hot CaO. Phys. Rev. (Series I) 32, 492–511. Space-charge-limited current ∝ V^(3/2)/d².",
+        url: "https://doi.org/10.1103/PhysRevSeriesI.32.492",
+      },
+      {
+        citation: "Bowers J. E., Burrus C. A. (1987). Ultrawide-band long-wavelength p-i-n photodetectors. J. Lightwave Technol. 5, 1339–1350. Combined RC and transit bandwidth 1/f² = 1/f_RC² + 1/f_tr².",
+        url: "https://doi.org/10.1109/JLT.1987.1075419",
+      },
+    ],
   },
   {
     slug: "well-capacity",
