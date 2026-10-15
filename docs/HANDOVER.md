@@ -1,45 +1,46 @@
-# Handover — 2026-10-15 (session 73 → session 74)
+# Handover — 2026-10-15 (session 74 → session 75)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 73 checked PR #102 in production (ALL PASS), split part 7 into 7a and 7b, and finished **detectors part 7a
-(electron multipliers)** on branch `phase-4/detectors-vacuum-a`, PR #103 with this handover. Next: **Detectors part 7b**.
+Session 74 checked PR #103 in production (ALL PASS) and finished **detectors part 7b (photoemission)** on branch
+`phase-4/detectors-vacuum-b`, PR #105 with this handover. Next: **Detectors part 8 (EM and camera SNR)**.
 `polarizer-types` stays blocked until the user is at the laptop with Chrome.
 
 ## State
-- 250 of 458 pages are tiered (detectors 40 / 54). 8 `knownIssue`s left, all in detectors.
-- New `src/physics/detectors/electron-multiplier.ts`: `uniformDynodes`, `dynodeGain`, `dynodeExcessNoise`
-  (1 + 1/δ₁ + 1/(δ₁δ₂) + …), `analogSnr` (R_s/√(2B(R_s+R_d)F)), `photonCountingSnr`, `anodeSensitivity`,
-  `excessNoiseFromFwhm`, `pulseResolutionFwhm` (2.355√(F/N)), `channelYieldPerStrike`, `channelGain` (Schagen, Wiza eq. 1),
-  `channelStrikes`, `optimumLdRatio`, `maximumChannelGain` (exp(A²V/2e)), `stackedGain`, `saturatedChannelGain`
-  (10⁸·d/1 mm), `hexagonalPitch`.
-- Pages: `pmt` (F 1.4000, SNR 0.0286), `microchannel-plate` (A 0.2, V₀ 1 eV inputs; 1.02e3 per plate at 1 kV, L/d 50),
-  `channel-photomultiplier` rewritten as a single-channel CPM (counting SNR 49.90, analog 35.28, pulse 66.6 % FWHM;
-  linear limit 10⁷ e⁻ from the data sheet's saturation onset; gain 10⁵ default).
+- 253 of 458 pages are tiered (detectors 43 / 54). 5 `knownIssue`s left, all in detectors (parts 8–9).
+- New `src/physics/detectors/photoemission.ts`: `RICHARDSON_A0` (4π·m_e·k_B²·q/h³), `thermionicCurrentDensity`,
+  `thresholdWavelength`, `planarTransitTime`, `vacuumTransitBandwidth` (0.5533/τ, Ramo ramp), `childLangmuirCurrentDensity`,
+  `phosphorGain` (η·qV/E_ph), `intensifierNoiseFactor` (F_MCP + 1/G_e), `intensifiedSnr`, `streakTime`,
+  `quadratureFwhm`, `rectGaussFwhm` (exact FWHM of ≤ 2 rectangles ⊗ a Gaussian).
+- Pages: `intensified-ccd` (defaults 10 photons, MCP 10³, coupling 0.1 → G_e 1.65e4, SNR 1.3163 vs bare 0.9129; full-well
+  flag), `vacuum-photodiode` (gap input, load Johnson noise at 25 °C, Child limit on photo + dark; SNR −18.7 dB),
+  `streak-camera` (7.500 ps; quadrature 7.870 shown for comparison; dynamic-range input dropped, screen-blur added).
+- PR #104 (`devctl/t1`, "production deploys only from the release branch") was open and not from this session: check
+  with the user whether it changes the "Vercel builds only `main`" rule before shipping.
 - User decisions: one PR per stage, handover inside (session 68).
 
 ## Next actions
-1. `/ship` this branch. post-merge-check: `detectors/pmt="0.0286"` `detectors/microchannel-plate="1.02e+3"`
-   `detectors/channel-photomultiplier="49.90"`.
-2. Detectors part 7b: new `photoemission.ts` (Richardson A₀ from constants, phosphor gain η·eV/E_ph), and reuse
-   `channelGain`/`stackedGain` for the ICCD's MCP. Then parts 8–9 in ROADMAP order. Each part: module + golden tests,
-   rewire the pages, clamp URL inputs + `min`/`max`, "—" for NaN, then tier, modelNote, references; delete the `knownIssue`.
-   `/handover` on the feature branch before `/ship`.
-3. `post-merge-check` takes default-page values only. Grep `.next/server/app/<cat>/<slug>.html` after `build`.
-4. Later: fiber and FSO open findings (ROADMAP), the imaging/spectroscopy findings, Chrome-only checks.
+1. `/ship` this branch. post-merge-check: `detectors/intensified-ccd="1.32"` `detectors/vacuum-photodiode="-18.7"`
+   `detectors/streak-camera="7.500"` (verify the rendered strings in `.next/server/app/detectors/<slug>.html` first).
+2. Detectors part 8: new `camera-snr.ts` (Robbins & Hadwen F²), then part 9, in ROADMAP order. Each part: module + golden
+   tests, rewire the pages, clamp URL inputs + `min`/`max`, "—" for NaN, then tier, modelNote, references; delete the
+   `knownIssue`. `/handover` on the feature branch before `/ship`.
+3. Later: the part 7b leftovers, fiber and FSO open findings (ROADMAP), imaging/spectroscopy findings, Chrome-only checks.
 
 ## Non-obvious facts
-- **Session 73 lessons:**
-  - Wiza 1979 (`psec.uchicago.edu/Papers/mcpwiza.PDF`, curl + `pdftotext -raw`) gives the channel-gain law, the optimum
-    α_M = 60 / G_M = 1635 at 1 kV (rounded; exact 1568), exponential PHD unsaturated, saturation ∝ bore. It credits the
-    model to Schagen, not Eberhardt; Eberhardt 1979 (Appl. Opt.) doesn't download, so it isn't cited.
-  - With A = 0.2 the model gives ~10³ per plate where real plates give ~10⁴: say so in the modelNote, don't fudge A.
-  - Hamamatsu PMT handbook v4E downloads from `hamamatsu.com/content/dam/.../etd/PMT_handbook_v4E.pdf`. Its equations
-    are images; the numbers survive in `pdftotext` (F Eq. 4-25, δ/(δ−1) 4-26, SNR 4-29/4-30, 1.75e3√(I/B) 4-31, 2I_d 4-32).
-  - The PerkinElmer CPM data sheet DS-291 (2001) is mirrored page by page at `pdf.jiepei.com/c983p-9414641.html?page=N`;
-    its spec tables are images. It gives >10⁸ at 3000 V, 10 cps bialkali, saturation above 10⁷, 3e6 A/W at 410 nm.
-  - A saturated channel clips multi-photoelectron pulses: pulse resolution with F needs N_pe·G below the linear limit.
-  - The reviewer's hand values can be off in the 5th digit, and so can mine: run the module before writing 1e-7 asserts.
+- **Session 74 lessons:**
+  - Rectangles (slit image, pixel) don't add in quadrature: rect ⊗ rect is a trapezoid of FWHM max(a, b). Use
+    `rectGaussFwhm`; it matches a brute-force convolution to 1e-9.
+  - A uniformly accelerated electron's Ramo current is a ramp; its −3 dB point 0.5533/τ happens to equal the triangle's.
+  - Johnson noise of a 50 Ω load beats shot noise below 2k_BT/(qR) ≈ 1 mA. Keep the load at room temperature when the
+    cathode temperature is an input.
+  - Richardson at the photoemission threshold underestimates semiconductor-photocathode dark current by orders.
+  - ICCD defaults must keep N_pe·G_e under a CCD well; the old 100 photons × 10⁶ e⁻/pe gave 300× full well.
+  - Phosphor efficiencies: Stanford Computer Optics quotes P43 ≈ 200 and P46 ≈ 95 photons/e (no voltage given); the
+    Exosens phosphor PDF doesn't download. Hamamatsu streak guide SHSS0006E: `hamamatsu.com/content/dam/hamamatsu-photonics/sites/documents/99_SALES_LIBRARY/sys/SHSS0006E_STREAK.pdf`.
+- **Session 73:** Wiza 1979 at `psec.uchicago.edu/Papers/mcpwiza.PDF`; Hamamatsu PMT handbook v4E at
+  `hamamatsu.com/content/dam/.../etd/PMT_handbook_v4E.pdf` (numbers survive `pdftotext`). With A = 0.2 Schagen gives
+  ~10³ per plate, real ~10⁴: say so, don't fudge. Run the module before writing 1e-7 asserts.
 - **Session 72:** Otte 2017 arXiv `1606.05186`, Korzh 2014 arXiv `1312.2636`, Excelitas SPCM-AQRH = doc `27464`. Check a
   doubling interval centred on T. State the systematic bias of a "statistical only" SNR in the modelNote.
 - **Session 71:** Ziarkash 2018 (Europe PMC `PMC5864738` fullTextXML) tabulates P_ap for 16 SPADs. A NP dead-time
