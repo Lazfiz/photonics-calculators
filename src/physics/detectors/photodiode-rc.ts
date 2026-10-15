@@ -31,6 +31,15 @@ export function depletionWidth(capacitancePerArea: number, epsR: number): number
   return (epsilon_0 * epsR) / capacitancePerArea;
 }
 
+/** Relative permittivity of silicon, 11.9 (Sze & Ng 2007, appendix G). */
+export const EPS_R_SILICON = 11.9;
+
+/** Depletion capacitance ε₀·ε_r·A/W of a parallel-plate junction of area A (m²) and width W (m), F. */
+export function depletionCapacitance(area: number, width: number, epsR: number): number {
+  if (!(area >= 0) || !(width > 0) || !(epsR > 0)) return NaN;
+  return (epsilon_0 * epsR * area) / width;
+}
+
 /** −3 dB frequency 1/(2π·R·C) of a first-order RC low-pass, Hz. */
 export function rcBandwidth(resistance: number, capacitance: number): number {
   if (!(resistance > 0) || !(capacitance > 0)) return NaN;

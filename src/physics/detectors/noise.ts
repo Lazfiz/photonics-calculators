@@ -14,7 +14,7 @@
  *   and Systems (Wiley 1996), ch. 5.
  */
 
-import { c, h, k_B, q } from "../constants";
+import { k_B, q } from "../constants";
 
 /** RMS shot-noise current √(2q·I·B) of a mean current I (A) in a bandwidth B (Hz), A. */
 export function shotNoiseCurrent(current: number, bandwidth: number): number {
@@ -118,11 +118,7 @@ export function enobFromSinad(sinadDb: number): number {
   return (sinadDb - 10 * Math.log10(1.5)) / (20 * Math.log10(2));
 }
 
-/** Responsivity η·q·λ/(h·c) of a detector with quantum efficiency η at wavelength λ (m), A/W. */
-export function responsivity(qe: number, wavelength: number): number {
-  if (!(qe >= 0) || !(wavelength > 0)) return NaN;
-  return (qe * q * wavelength) / (h * c);
-}
+export { responsivity } from "./responsivity";
 
 /**
  * Noise-equivalent power i_n/(ℛ·M): the optical power whose (gain-multiplied) signal current equals the rms noise

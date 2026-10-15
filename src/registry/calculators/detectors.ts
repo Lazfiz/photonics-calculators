@@ -365,9 +365,21 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "quantum-efficiency",
     title: "Quantum Efficiency",
-    description: "Detector QE explorer: Si, InGaAs, CCD, CMOS presets with fill factor and microlens gain.",
-    knownIssue: "The QE curves are schematic, not measured data, and jump by about 5 percentage points at 600 nm (Si), 1100 nm (InGaAs) and 500 nm (CCD).",
-    lede: "Interactive detector QE explorer with detector presets, fill factor, microlens gain, and wavelength response curves.",
+    description: "Silicon detector quantum efficiency vs wavelength from Green's absorption data: collecting thickness, diffusion length, dead layer, surface reflection, fill factor and microlens gain.",
+    lede: "Silicon detector QE from the absorption coefficient: photodiode, back-illuminated and deep-depletion CCD and front-illuminated CMOS structures, with reflection, dead-layer and fill-factor losses.",
+    keywords: ["CCD quantum efficiency", "CMOS quantum efficiency", "fill factor"],
+    tier: "textbook",
+    modelNote: "Silicon only, at 300 K. A dead layer, a fully collecting layer W and diffusion from a semi-infinite substrate (Gärtner); L = 0 is a slab. Reflection is a fixed R or bare-silicon Fresnel; no AR-coating spectrum, etaloning, gate or colour-filter absorption. The presets are illustrative structures, not products.",
+    references: [
+      {
+        citation: "Green M. A. (2008). Self-consistent optical parameters of intrinsic silicon at 300 K including temperature coefficients. Sol. Energy Mater. Sol. Cells 92, 1305–1310. Table 1, n and k at 250–1450 nm (α = 4πk/λ).",
+        url: "https://doi.org/10.1016/j.solmat.2008.06.009",
+      },
+      {
+        citation: "Gärtner W. W. (1959). Depletion-layer photoeffects in semiconductors. Phys. Rev. 116, 84–87. Collection efficiency 1 − e^(−αW)/(1 + αL).",
+        url: "https://doi.org/10.1103/PhysRev.116.84",
+      },
+    ],
     related: [
       { href: "/detectors/pmt" },
       { href: "/detectors/readout-noise" },
@@ -405,6 +417,14 @@ export const detectors: CalculatorEntry[] = [
     title: "Detector Responsivity",
     description: "Detector responsivity from quantum efficiency and wavelength with wavelength sweep.",
     lede: "Interactive responsivity calculator from quantum efficiency and wavelength, with presets and wavelength sweeps.",
+    tier: "exact",
+    modelNote: "ℛ = η·q·λ/(h·c) with exact SI constants, for a wavelength-independent η and no internal gain.",
+    references: [
+      {
+        citation: "Saleh B. E. A., Teich M. C. (1991). Fundamentals of Photonics. Wiley. §17.1 Quantum efficiency and responsivity, ℛ = η·λ₀/1.24 (λ₀ in µm).",
+        url: "https://doi.org/10.1002/0471213748",
+      },
+    ],
     related: [
       { href: "/detectors/readout-noise" },
       { href: "/detectors/reset-noise" },
@@ -445,7 +465,26 @@ export const detectors: CalculatorEntry[] = [
     slug: "silicon-photodiode",
     title: "Silicon Photodiode",
     description: "Si photodiode parameters: bandgap, QE, responsivity, dark current, and spectral response.",
-    knownIssue: "QE counts only the depletion layer, so at the default 10 µm the responsivity at 900 nm is 0.18 A/W instead of the ≈0.6 A/W of real silicon photodiodes. The intrinsic density 1.5e10 cm⁻³ is outdated (9.65e9).",
+    tier: "textbook",
+    modelNote: "QE from Green's 300 K silicon absorption with Gärtner's depletion-plus-diffusion collection; the absorption edge does not shift with temperature. Dark current is depletion generation q·n_i·W·A/τ_g only (no diffusion or surface leakage); n_i = 9.65e9 cm⁻³ at 300 K scaled with T^(3/2) and the Varshni gap. Capacitance is a parallel plate with ε_r = 11.9.",
+    references: [
+      {
+        citation: "Green M. A. (2008). Self-consistent optical parameters of intrinsic silicon at 300 K including temperature coefficients. Sol. Energy Mater. Sol. Cells 92, 1305–1310. Table 1, n and k at 250–1450 nm (α = 4πk/λ).",
+        url: "https://doi.org/10.1016/j.solmat.2008.06.009",
+      },
+      {
+        citation: "Gärtner W. W. (1959). Depletion-layer photoeffects in semiconductors. Phys. Rev. 116, 84–87. Collection efficiency 1 − e^(−αW)/(1 + αL).",
+        url: "https://doi.org/10.1103/PhysRev.116.84",
+      },
+      {
+        citation: "Altermatt P. P., Schenk A., Geelhaar F., Heiser G. (2003). Reassessment of the intrinsic carrier density in crystalline silicon in view of band-gap narrowing. J. Appl. Phys. 93, 1598–1604. n_i = 9.65e9 cm⁻³ at 300 K.",
+        url: "https://doi.org/10.1063/1.1529297",
+      },
+      {
+        citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley. Generation current q·n_i·W/τ_g, n_i(T), Varshni E_g(T) coefficients for Si, ε_r = 11.9.",
+        url: "https://doi.org/10.1002/0470068329",
+      },
+    ],
   },
   {
     slug: "single-photon-counting-module",
@@ -486,10 +525,25 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "spectral-response",
     title: "Spectral Response Calculator",
-    description: "Responsivity and quantum efficiency as a function of wavelength.",
-    knownIssue: "The response is an invented Gaussian: the default 0.55 A/W at 700 nm implies 97 % QE where real silicon gives about 80 %, and QE above 100 % is not flagged.",
+    description: "Silicon photodiode responsivity and quantum efficiency vs wavelength, plus a check of a datasheet responsivity against the η = 1 limit.",
     heading: "Spectral Response",
-    lede: "R(λ) = η(λ) · q · λ / (h·c). Responsivity and quantum efficiency as a function of wavelength.",
+    lede: "R(λ) = η(λ) · q · λ / (h·c). Responsivity and quantum efficiency of a silicon photodiode as a function of wavelength, and the quantum efficiency a datasheet value implies.",
+    tier: "textbook",
+    modelNote: "Silicon at 300 K: Green's absorption with Gärtner's depletion-plus-diffusion collection and a fixed surface reflectance. No dead layer or AR-coating spectrum, so the blue response is an upper bound. The datasheet check is exact: η = ℛ·h·c/(q·λ), and η > 1 needs internal gain.",
+    references: [
+      {
+        citation: "Green M. A. (2008). Self-consistent optical parameters of intrinsic silicon at 300 K including temperature coefficients. Sol. Energy Mater. Sol. Cells 92, 1305–1310. Table 1, n and k at 250–1450 nm (α = 4πk/λ).",
+        url: "https://doi.org/10.1016/j.solmat.2008.06.009",
+      },
+      {
+        citation: "Gärtner W. W. (1959). Depletion-layer photoeffects in semiconductors. Phys. Rev. 116, 84–87. Collection efficiency 1 − e^(−αW)/(1 + αL).",
+        url: "https://doi.org/10.1103/PhysRev.116.84",
+      },
+      {
+        citation: "Saleh B. E. A., Teich M. C. (1991). Fundamentals of Photonics. Wiley. §17.1 Quantum efficiency and responsivity, ℛ = η·λ₀/1.24 (λ₀ in µm).",
+        url: "https://doi.org/10.1002/0471213748",
+      },
+    ],
   },
   {
     slug: "streak-camera",

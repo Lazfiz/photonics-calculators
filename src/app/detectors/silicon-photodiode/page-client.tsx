@@ -1,145 +1,105 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c, h, q, k_B, hc_eV_nm, epsilon_0 } from "../../../physics/constants";
-// Silicon Photodiode Parameters
-// Bandgap: E_g ≈ 1.12 eV at 300K → λ_c ≈ 1100 nm
-// QE: η = (1-R)·(1 - exp(-α·d)) with wavelength-dependent α
-// α(λ) for Si: empirical model, peaks around 800nm, falls off near bandgap
-// Dark current: I_d ∝ T^3 · exp(-E_g/2kT) for generation-recombination
-// Responsivity: R = η·q·λ/(h·c)
+import { hc_eV_nm } from "../../../physics/constants";
+import { siliconAbsorption } from "../../../physics/materials/silicon-absorption";
+import { photodiodeQe } from "../../../physics/detectors/photodiode-qe";
+import { responsivity } from "../../../physics/detectors/responsivity";
+import { VARSHNI, generationCurrent, siliconIntrinsicDensity, varshniBandGap } from "../../../physics/detectors/dark-current";
+import { EPS_R_SILICON, depletionCapacitance } from "../../../physics/detectors/photodiode-rc";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 3) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
+const fmtCurrent = (i: number) =>
+  !Number.isFinite(i) ? "—" : i >= 1e-6 ? `${(i * 1e6).toPrecision(3)} µA` : i >= 1e-9 ? `${(i * 1e9).toPrecision(3)} nA` : `${(i * 1e12).toPrecision(3)} pA`;
 
 export default function SiliconPhotodiodePage() {
-  const [temperature, setTemperature] = useURLState("temperature", 293); // K
-  const [depletionWidth, setDepletionWidth] = useURLState("depletionWidth", 10); // μm
-  const [area, setArea] = useURLState("area", 1); // mm²
-  const [surfaceReflectivity, setSurfaceReflectivity] = useURLState("surfaceReflectivity", 0.05);
+  const [temperatureRaw, setTemperature] = useURLState("temperature", 293); // K
+  const [depletionWidthRaw, setDepletionWidth] = useURLState("depletionWidth", 10); // µm
+  const [diffusionLengthRaw, setDiffusionLength] = useURLState("diffusionLength", 100); // µm
+  const [areaRaw, setArea] = useURLState("area", 1); // mm²
+  const [reflectivityRaw, setSurfaceReflectivity] = useURLState("surfaceReflectivity", 0.05);
+  const [lifetimeRaw, setLifetime] = useURLState("lifetime", 1); // ms
+  const temperature = clamp(temperatureRaw, 200, 400, 293);
+  const depletionWidth = clamp(depletionWidthRaw, 1, 500, 10);
+  const diffusionLength = clamp(diffusionLengthRaw, 0, 1000, 100);
+  const area = clamp(areaRaw, 0.01, 1000, 1);
+  const surfaceReflectivity = clamp(reflectivityRaw, 0, 0.5, 0.05);
+  const lifetime = clamp(lifetimeRaw, 0.001, 100, 1);
 
+  const W = depletionWidth * 1e-6;
+  const L = diffusionLength * 1e-6;
+  const A = area * 1e-6;
+  const Eg = varshniBandGap(temperature, VARSHNI.si);
+  const bandGapWavelength = hc_eV_nm / Eg;
 
-  // Si bandgap temperature dependence (Varshni)
-  // Eg0 chosen so that Eg(300K) ≈ 1.12 eV
-  const Eg0 = 1.166; // eV at 0K
-  const alphaVarshni = 4.73e-4; // eV/K
-  const betaVarshni = 636; // K
-  const Eg = Eg0 - (alphaVarshni * temperature ** 2) / (temperature + betaVarshni);
-  const EgAt300 = Eg0 - (alphaVarshni * 300 ** 2) / (300 + betaVarshni); // ~1.12 eV
-  const cutoffWavelength = hc_eV_nm / Eg;
+  const qeAt = (nm: number, width = W, diffusion = L) =>
+    photodiodeQe({ alpha: siliconAbsorption(nm * 1e-9), reflectance: surfaceReflectivity, depletionWidth: width, diffusionLength: diffusion });
+  const responsivityAt = (nm: number) => responsivity(qeAt(nm), nm * 1e-9);
 
-  // Absorption coefficient for Si (Green & Keevers 1995, cm⁻¹)
-  // Piecewise log-linear interpolation from tabulated data
-  const absorptionCoeff = (wavelengthNm: number): number => {
-    const wl = wavelengthNm;
-    if (wl < 300) return 1.73e6;
-    if (wl > cutoffWavelength) return 0;
-    // Anchor points: [wavelength_nm, alpha_cm^-1]
-    const table: [number, number][] = [
-      [300, 1.73e6], [350, 1.04e6], [400, 9.52e4], [450, 2.55e4],
-      [500, 1.11e4], [550, 6.39e3], [600, 4.14e3], [650, 2.81e3],
-      [700, 1.90e3], [750, 1.30e3], [800, 850], [850, 535],
-      [900, 306], [950, 157], [1000, 64], [1050, 16.3],
-      [1100, 3.5], [1150, 0.5],
-    ];
-    // Find bracketing segment, interpolate in log space
-    for (let i = 0; i < table.length - 1; i++) {
-      if (wl <= table[i + 1][0]) {
-        const f = (wl - table[i][0]) / (table[i + 1][0] - table[i][0]);
-        const logAlpha = Math.log10(table[i][1]) + f * (Math.log10(table[i + 1][1]) - Math.log10(table[i][1]));
-        return Math.pow(10, logAlpha);
-      }
-    }
-    return 0;
-  };
+  const wl = Array.from({ length: 226 }, (_, i) => 300 + i * 4);
+  const resp = wl.map(responsivityAt);
+  const peakIndex = resp.reduce((best, r, i) => (r > resp[best] ? i : best), 0);
 
-  // QE calculation
-  const calcQE = (wavelengthNm: number): number => {
-    const alpha = absorptionCoeff(wavelengthNm);
-    const d = depletionWidth * 1e-4; // μm to cm
-    if (alpha === 0) return 0;
-    return (1 - surfaceReflectivity) * (1 - Math.exp(-alpha * d));
-  };
+  const darkCurrent = generationCurrent(siliconIntrinsicDensity(temperature), W, A, lifetime * 1e-3);
+  const capPF = depletionCapacitance(A, W, EPS_R_SILICON) * 1e12;
 
-  // Responsivity
-  const calcResponsivity = (wavelengthNm: number): number => {
-    return calcQE(wavelengthNm) * (wavelengthNm * 1e-9) * q / (h * c);
-  };
+  const spectralChart = [
+    { x: wl, y: wl.map((w) => qeAt(w) * 100), type: "scatter", mode: "lines", name: "QE (%)", line: { color: "#60a5fa", width: 2 }, yaxis: "y" },
+    { x: wl, y: wl.map((w) => qeAt(w, W, 0) * 100), type: "scatter", mode: "lines", name: "QE, depletion only (%)", line: { color: "#60a5fa", width: 1, dash: "dot" }, yaxis: "y" },
+    { x: wl, y: resp, type: "scatter", mode: "lines", name: "ℛ (A/W)", line: { color: "#34d399", width: 2 }, yaxis: "y2" },
+  ];
 
-  // Dark current (GR-dominated for Si at moderate bias)
-  const areaCm2 = area * 1e-2;
-  const ni = 1.5e10 * Math.pow(temperature / 300, 1.5) * Math.exp(-Eg * q / (2 * k_B * temperature) + EgAt300 * q / (2 * k_B * 300));
-  const tau = 1e-3; // carrier lifetime, s
-  const darkCurrent = q * ni * areaCm2 * depletionWidth * 1e-4 / (2 * tau);
+  const widths = Array.from({ length: 100 }, (_, i) => 1 + i * 0.5);
+  const qeVsWidth = [700, 900, 1000].map((nm, j) => ({
+    x: widths,
+    y: widths.map((w) => qeAt(nm, w * 1e-6) * 100),
+    type: "scatter",
+    mode: "lines",
+    name: `${nm} nm`,
+    line: { color: ["#60a5fa", "#34d399", "#fbbf24"][j], width: 2 },
+  }));
 
-  // Capacitance (abrupt junction approximation)
-  const epsilonSi = 11.7 * epsilon_0 * 1e-2; // F/cm
-  const depletionCap = epsilonSi * areaCm2 / (depletionWidth * 1e-4); // F
-  const capPF = depletionCap * 1e12;
-
-  // Spectral response chart
-  const spectralChart = useMemo(() => {
-    const wl = Array.from({ length: 250 }, (_, i) => 300 + i * 4);
-    return [
-      { x: wl, y: wl.map(w => calcQE(w) * 100), type: "scatter", mode: "lines", name: "QE (%)", line: { color: "#60a5fa", width: 2 }, yaxis: "y" },
-      { x: wl, y: wl.map(w => calcResponsivity(w)), type: "scatter", mode: "lines", name: "R (A/W)", line: { color: "#34d399", width: 2 }, yaxis: "y2" },
-    ];
-  }, [temperature, depletionWidth, surfaceReflectivity, cutoffWavelength]);
-
-  // Dark current vs temperature
-  const darkVsTemp = useMemo(() => {
-    const temps = Array.from({ length: 150 }, (_, i) => 220 + i * 100 / 150);
-    return [{
-      x: temps, y: temps.map(T => {
-        const EgT = Eg0 - (alphaVarshni * T ** 2) / (T + betaVarshni);
-        const niT = 1.5e10 * Math.pow(T / 300, 1.5) * Math.exp(-EgT * q / (2 * k_B * T) + EgAt300 * q / (2 * k_B * 300));
-        return (q * niT * areaCm2 * depletionWidth * 1e-4 / (2 * tau)) * 1e9;
-      }), type: "scatter", mode: "lines", name: "I_dark", line: { color: "#f87171", width: 2 },
-    }];
-  }, [areaCm2, depletionWidth]);
-
-  // QE vs depletion width
-  const qeVsWidth = useMemo(() => {
-    const widths = Array.from({ length: 100 }, (_, i) => 1 + i * 50 / 100);
-    const wl700 = 700;
-    const wl900 = 900;
-    const wl1000 = 1000;
-    return [
-      { x: widths, y: widths.map(w => (1 - surfaceReflectivity) * (1 - Math.exp(-absorptionCoeff(wl700) * w * 1e-4)) * 100), type: "scatter", mode: "lines", name: "700 nm", line: { color: "#60a5fa", width: 2 } },
-      { x: widths, y: widths.map(w => (1 - surfaceReflectivity) * (1 - Math.exp(-absorptionCoeff(wl900) * w * 1e-4)) * 100), type: "scatter", mode: "lines", name: "900 nm", line: { color: "#34d399", width: 2 } },
-      { x: widths, y: widths.map(w => (1 - surfaceReflectivity) * (1 - Math.exp(-absorptionCoeff(wl1000) * w * 1e-4)) * 100), type: "scatter", mode: "lines", name: "1000 nm", line: { color: "#fbbf24", width: 2 } },
-    ];
-  }, [surfaceReflectivity, cutoffWavelength]);
+  const temps = Array.from({ length: 101 }, (_, i) => 220 + i);
+  const darkVsTemp = [{
+    x: temps,
+    y: temps.map((T) => generationCurrent(siliconIntrinsicDensity(T), W, A, lifetime * 1e-3) * 1e9),
+    type: "scatter", mode: "lines", name: "I_dark", line: { color: "#f87171", width: 2 },
+  }];
 
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} min={200} max={400} step="5" />
-        <ValidatedNumberInput label="Depletion Width (μm)" value={depletionWidth} onChange={setDepletionWidth} min={1} max={500} step="1" />
-        <ValidatedNumberInput label="Active Area (mm²)" value={area} onChange={setArea} min={0.01} step="0.1" />
-        <ValidatedNumberInput label="Surface Reflectivity" value={surfaceReflectivity} onChange={setSurfaceReflectivity} min={0} max={0.5} step="0.01" />
+        <ValidatedNumberInput label="Temperature (K)" value={temperatureRaw} onChange={setTemperature} min={200} max={400} step="5" />
+        <ValidatedNumberInput label="Depletion Width W (μm)" value={depletionWidthRaw} onChange={setDepletionWidth} min={1} max={500} step="1" />
+        <ValidatedNumberInput label="Diffusion Length L (μm, 0 = none)" value={diffusionLengthRaw} onChange={setDiffusionLength} min={0} max={1000} step="10" />
+        <ValidatedNumberInput label="Active Area (mm²)" value={areaRaw} onChange={setArea} min={0.01} max={1000} step="0.1" />
+        <ValidatedNumberInput label="Surface Reflectivity" value={reflectivityRaw} onChange={setSurfaceReflectivity} min={0} max={0.5} step="0.01" />
+        <ValidatedNumberInput label="Generation Lifetime τ_g (ms)" value={lifetimeRaw} onChange={setLifetime} min={0.001} max={100} step="0.1" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">
         <h2 className="text-lg font-semibold mb-4">Results</h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          <ResultCard label="Bandgap E_g" value={`${Eg.toFixed(4)} eV`} tone="blue" />
-          <ResultCard label="Cutoff Wavelength" value={`${cutoffWavelength.toFixed(0)} nm`} tone="blue" />
-          <ResultCard label="QE @ 700nm" value={`${(calcQE(700) * 100).toFixed(1)}%`} tone="blue" />
-          <ResultCard label="Responsivity @ 900nm" value={`${calcResponsivity(900).toFixed(3)} A/W`} tone="blue" />
-          <ResultCard label="Dark Current" value={`${(darkCurrent * 1e9).toFixed(3)} nA`} tone="blue" />
-          <ResultCard label="Junction Capacitance" value={`${capPF.toFixed(2)} pF`} tone="blue" />
+          <ResultCard label="Bandgap E_g" value={`${fmt(Eg, 4)} eV`} tone="blue" subtext={`h·c/E_g = ${fmt(bandGapWavelength, 0)} nm`} />
+          <ResultCard label="Peak Responsivity" value={`${fmt(resp[peakIndex], 3)} A/W`} tone="blue" subtext={`at ${wl[peakIndex]} nm`} />
+          <ResultCard label="QE @ 700 nm" value={`${fmt(qeAt(700) * 100, 1)}%`} tone="blue" />
+          <ResultCard label="Responsivity @ 900 nm" value={`${fmt(responsivityAt(900), 3)} A/W`} tone="blue" subtext={`QE ${fmt(qeAt(900) * 100, 1)}%`} />
+          <ResultCard label="Dark Current (generation)" value={fmtCurrent(darkCurrent)} tone="blue" />
+          <ResultCard label="Junction Capacitance" value={`${fmt(capPF, 2)} pF`} tone="blue" />
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h3 className="text-sm font-semibold mb-3">Spectral Response</h3>
+          <h3 className="text-sm font-semibold mb-3">Spectral Response (absorption at 300 K)</h3>
           <ChartPanel data={spectralChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent",
             font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
             yaxis: { title: "QE (%)", gridcolor: "#374151", side: "left" },
-            yaxis2: { title: "R (A/W)", overlaying: "y", side: "right", gridcolor: "#374151" },
+            yaxis2: { title: "ℛ (A/W)", overlaying: "y", side: "right", gridcolor: "#374151" },
             margin: { t: 20, b: 40, l: 60, r: 60 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
@@ -156,13 +116,18 @@ export default function SiliconPhotodiodePage() {
         </div>
       </div>
 
-      <div className="mt-8 bg-gray-900/50 border border-gray-800 rounded-lg p-4 text-sm text-gray-400">
+      <div className="mt-8 bg-gray-900/50 border border-gray-800 rounded-lg p-4 text-sm text-gray-400 space-y-1">
         <h3 className="text-white font-semibold mb-2">Formulas</h3>
-        <p>E_g(T) = E_g0 - αT²/(T+β) [Varshni]</p>
-        <p>λ_c = 1240 / E_g</p>
-        <p>η(λ) = (1-R)·(1 - exp(-α·d))</p>
-        <p>R(λ) = η·q·λ/(h·c)</p>
-        <p>I_dark ∝ n_i · W · A / τ</p>
+        <p>E_g(T) = 1.170 − 4.73×10⁻⁴·T²/(T + 636) eV (Varshni, Sze)</p>
+        <p>η(λ) = (1 − R)·[1 − e^(−αW)/(1 + αL)] (Gärtner: depletion region plus diffusion from the substrate)</p>
+        <p>ℛ(λ) = η·q·λ/(h·c)</p>
+        <p>I_dark = q·n_i·W·A/τ_g, n_i(300 K) = 9.65×10⁹ cm⁻³ ∝ T^(3/2)·e^(−E_g/2kT)</p>
+        <p>C_j = ε₀·11.9·A/W</p>
+        <p>
+          α(λ) is Green&apos;s 2008 table for silicon at 300 K at every temperature: the band-gap shift moves the
+          long-wavelength edge by about 0.25 nm/K, which this page does not apply. Silicon is an indirect absorber, so
+          some response remains beyond h·c/E_g.
+        </p>
       </div>
     </>
   );
