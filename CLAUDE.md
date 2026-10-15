@@ -52,7 +52,7 @@ and heed deprecation notices.
   sitemap, `/search-index.json` (`src/app/search-index.json/route.ts`), counts, home categories and the
   category index pages (`components/category-index.tsx`). **Server-only:** client components get data as
   props; `tests/registry.test.ts` fails on any client import chain that reaches it.
-- `src/lib/`: a few extracted physics modules (`geiger-mode-avalanche`, `laser-safety-*`),
+- `src/lib/`: a few extracted physics modules (`laser-safety-*`),
   `home-categories.ts` (a view of the registry).
 
 **Target** (ROADMAP Phase 2+)

@@ -310,7 +310,26 @@ export const detectors: CalculatorEntry[] = [
     slug: "geiger-mode-avalanche",
     title: "Geiger-Mode APD",
     description: "SPAD: breakdown voltage, overbias, temperature effects, PDE, and dark count rate.",
-    knownIssue: "PDE = 0.15 per volt of overbias (30 % at 2 V, capped at 75 %) and an afterpulse rate of 2 % of the DCR are unsourced. Real PDE saturates with overbias and afterpulsing falls with dead time, which the page ignores.",
+    tier: "textbook",
+    modelNote: "The trigger probability P_t = 1 − e^(−ΔV/V_c) is Otte's empirical fit. The dark rate is Arrhenius in T at a fixed excess bias, times Otte's e^(bΔV)·P_t bias dependence, with b held at its 20 °C value (Otte fits 10.1 at −40 °C down to 6.83 at 40 °C). The trapped charge scales with ΔV·P_t, and the trap lifetime is held fixed, though it lengthens on cooling. Defaults: one microcell of a Hamamatsu S13360-3050CS, 40.0 % PDE at 3 V. The trap and the 50 ns dead time are illustrative, since a SiPM microcell recharges through its quench resistor instead of a fixed dead time.",
+    references: [
+      {
+        citation: "Otte A. N., Garcia D., Nguyen T., Purushotham D. (2017). Characterization of three high efficiency and blue sensitive silicon photomultipliers. Nucl. Instrum. Methods A 846, 106–125. PDE = PDE_max·(1 − e^(−ΔV/a)), eq. 3, with a = α·U_BD and α = 0.0395 at 452 nm (Hamamatsu); dark-rate fit e^(a + b·U_rel)·P_t, eq. 13, b = 8.43 at 20 °C; dark rate doubles every 5.3 °C at fixed overvoltage, −40 to 40 °C.",
+        url: "https://doi.org/10.1016/j.nima.2016.09.053",
+      },
+      {
+        citation: "Webster E. A. G., Henderson R. K. (2013). A TCAD and spectroscopy study of dark count mechanisms in single-photon avalanche diodes. IEEE Trans. Electron Devices 60, 4014–4019. Arrhenius activation energies of CMOS SPADs, 293–343 K: 0.85 eV for low-DCR devices, 0.45 eV for field-enhanced E-centre traps.",
+        url: "https://doi.org/10.1109/TED.2013.2285163",
+      },
+      {
+        citation: "Cova S., Lacaita A., Ripamonti G. (1991). Trapping phenomena in avalanche photodiodes on nanosecond scale. IEEE Electron Device Lett. 12, 685–687. Afterpulsing from trap release, η·e^(−t/τ), growing with the avalanche charge.",
+        url: "https://doi.org/10.1109/55.116955",
+      },
+      {
+        citation: "Hamamatsu Photonics. MPPC S13360 series, datasheet KAPD1052E. S13360-3050CS: V_BR = 53 V, 3 V overvoltage, PDE 40 % at 450 nm, dark count 500 kcps over 3600 pixels, 54 mV/°C.",
+        url: "https://www.hamamatsu.com/content/dam/hamamatsu-photonics/sites/documents/99_SALES_LIBRARY/ssd/s13360_series_kapd1052e.pdf",
+      },
+    ],
   },
   {
     slug: "ingaas-parameters",
@@ -655,7 +674,21 @@ export const detectors: CalculatorEntry[] = [
     slug: "single-photon-counting-module",
     title: "Single-Photon Counting Module",
     description: "SPCM dead time correction, SNR, dark count effects, and afterpulsing analysis.",
-    knownIssue: "Changing 'Afterpulse Probability' does not update the afterpulse rate: at the defaults it stays at 3.30e4 cps when set to 10 % instead of 1.65e5 cps.",
+    tier: "textbook",
+    modelNote: "A fixed non-paralyzable dead time acts on photon and dark avalanches, and afterpulses are first order. The SNR is that of the dead-time corrected photon rate over the gate, with the dark and afterpulse rates known. That SNR is statistical only: a dead-time error δτ biases R by Rτ·δτ/τ (0.43 % for the datasheet's 24 against 22 ns), and an afterpulse error δP by δP/(1 + P). Defaults: an Excelitas SPCM-AQRH-14 at 650 nm. Above about 5 Mc/s real modules need more correction than a fixed 22 ns gives: 1.16 against 1.12 at 5 Mc/s.",
+    references: [
+      {
+        citation: "Excelitas Technologies. SPCM-AQRH single-photon counting module, datasheet Rev 2023-1. PDE 65 % at 650 nm, 22 ns dead time (-1X), dark count ≤ 100 cps (-X4), afterpulsing 0.5 %, linearity correction factor 1.02 at 1 Mc/s and 1.16 at 5 Mc/s.",
+        url: "https://www.excelitas.com/sites/default/files/assets/product/document/27464.pdf",
+      },
+      {
+        citation: "Knoll G. F. (2010). Radiation Detection and Measurement, 4th ed. Wiley. Ch. 4, section VII: non-paralyzable m = n/(1 + nτ) and paralyzable m = n·e^(−nτ) dead-time models.",
+      },
+      {
+        citation: "Müller J. W. (1973). Dead-time problems. Nucl. Instrum. Methods 112, 47–57. Dead-time models and the statistics of the recorded counts.",
+        url: "https://doi.org/10.1016/0029-554X(73)90773-8",
+      },
+    ],
   },
   {
     slug: "sndr",
@@ -678,7 +711,22 @@ export const detectors: CalculatorEntry[] = [
     slug: "spad",
     title: "SPAD Detector Calculator",
     description: "Single-photon avalanche diode — PDE, DCR, dead time, afterpulsing, and SNR analysis.",
-    knownIssue: "The default −60 dBm at 1550 nm gives 3.1e9 detections/s, 156× the 20 Mcps dead-time limit, and the SNR of 4414 treats those saturated counts as Poisson over an unstated 1 s. The 6 °C DCR doubling has no source.",
+    tier: "textbook",
+    modelNote: "A fixed non-paralyzable dead time acts on photon and dark avalanches, afterpulses are first order, and the SNR is that of the dead-time corrected photon rate over the stated gate. DCR(T) is Arrhenius at a fixed excess bias. 0.25 eV is an effective value that matches the lower bound of the drop of more than 100× that Korzh et al. saw from −50 to −110 °C; they report the step is not constant, and tunnelling flattens it at lower T. Afterpulses are counted but start no dead time of their own. Defaults: their InGaAs/InP NFAD at −110 °C with a 20 µs hold-off: the counts saturate at 1/τ = 50 kcps, and 10 % are already lost at about −112 dBm.",
+    references: [
+      {
+        citation: "Korzh B., Walenta N., Lunghi T., Gisin N., Zbinden H. (2014). Free-running InGaAs single photon detector with 1 dark count per second at 10% efficiency. Appl. Phys. Lett. 104, 081108. At −110 °C: 11.5 % efficiency, 1.19 cps, 2.2 % afterpulsing with 20 µs dead time; DCR falls over two orders of magnitude from −50 to −110 °C.",
+        url: "https://doi.org/10.1063/1.4866582",
+      },
+      {
+        citation: "Webster E. A. G., Henderson R. K. (2013). A TCAD and spectroscopy study of dark count mechanisms in single-photon avalanche diodes. IEEE Trans. Electron Devices 60, 4014–4019. Arrhenius activation energies of dark counts.",
+        url: "https://doi.org/10.1109/TED.2013.2285163",
+      },
+      {
+        citation: "Müller J. W. (1973). Dead-time problems. Nucl. Instrum. Methods 112, 47–57. Dead-time models and the statistics of the recorded counts.",
+        url: "https://doi.org/10.1016/0029-554X(73)90773-8",
+      },
+    ],
   },
   {
     slug: "spad-dead-time",
