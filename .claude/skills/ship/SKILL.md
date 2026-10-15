@@ -4,7 +4,8 @@ description: Push the current branch, open the PR, watch CI, ask the user to mer
 ---
 # Ship `$ARGUMENTS` (optional: the PR title)
 
-Before this: `npm run check` and `npm run build` are green on the final tree (`/verify`), and the tree is clean.
+Before this: `/handover` is committed on this branch (no separate docs PR: each merge to `main` costs a Vercel
+production build), `npm run check` and `npm run build` are green on the final tree (`/verify`), and the tree is clean.
 
 1. **Push** (never force-push; never put a token in a remote):
    `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`
@@ -13,8 +14,8 @@ Before this: `npm run check` and `npm run build` are green on the final tree (`/
      gates. It ends with the attribution lines. ROADMAP gets only one line.
    - `gh pr create --base main --title "<conventional title>" --body-file <file>`
 3. **CI:** run `gh pr checks <n> --watch` in the background and read only its last lines.
-   - Preview deployments are behind Vercel SSO. To check a branch, use a local `npm run build` and
-     `npx next start -p 3100`.
+   - The gate is `check-and-build`. Vercel builds only `main`, so a PR has no Vercel check and no preview. To check a
+     branch, use a local `npm run build` and `npx next start -p 3100`.
 4. **Merge:** ask the user. Only on a yes, run:
    - `gh pr merge <n> --merge`
    - `git checkout main`

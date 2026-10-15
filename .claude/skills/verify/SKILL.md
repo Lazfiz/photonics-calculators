@@ -25,6 +25,7 @@ description: Run this project's gates on Windows (tsc, eslint, tests, build), re
 - Text present: `curl -s <url> | grep -o "<expected text>" | head -1`
 - JSON-LD parses: extract `<script type="application/ld+json">` and run it through `node -e "JSON.parse(...)"`.
   Its `name` must not contain `',` or `description:`.
-- Pass a preview URL (from the PR / Vercel) instead of production when verifying before a merge.
+- Vercel builds only `main` (`vercel.json` `git.deploymentEnabled`), so branches have no preview URL. Before a merge,
+  check a branch with a local `npm run build` and `npx next start -p 3100`.
 
 Report: each gate pass/fail plus the first failing lines only.
