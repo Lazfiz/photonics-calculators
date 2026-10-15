@@ -1,61 +1,65 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { APD_K_TABLE, excessNoiseFactor, excessNoiseIndex } from "../../../physics/detectors/apd";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const COLORS = ["#60a5fa", "#f87171", "#fbbf24"];
+
 export default function ExcessNoisePage() {
-  const [gain, setGain] = useURLState("gain", 100);
-  const [kFactor, setKFactor] = useURLState("kFactor", 0.02);
-  const [quantumEff, setQuantumEff] = useURLState("quantumEff", 0.8);
+  const [gainRaw, setGain] = useURLState("gain", 100);
+  const [kRaw, setKFactor] = useURLState("kFactor", 0.02);
+  const [qeRaw, setQuantumEff] = useURLState("quantumEff", 0.8);
 
-  const excessNoise = kFactor * gain + (2 - 1 / gain) * (1 - kFactor);
-  const totalNoise = Math.sqrt(excessNoise * gain * quantumEff);
-  const noiseFigure = 10 * Math.log10(excessNoise);
-  const snrDegradation = 1 / Math.sqrt(excessNoise);
+  const gain = clamp(gainRaw, 1, 1e4, 100);
+  const k = clamp(kRaw, 0, 1, 0.02);
+  const qe = clamp(qeRaw, 0.01, 1, 0.8);
 
-  const chartData = useMemo(() => {
-    const M = Array.from({ length: 300 }, (_, i) => 1 + i * 999 / 300);
-    const materials = [
-      { name: "Si (k≈0.02)", k: 0.02, color: "#60a5fa" },
-      { name: "InGaAs (k≈0.5)", k: 0.5, color: "#f87171" },
-      { name: "Ge (k≈0.7)", k: 0.7, color: "#fbbf24" },
-      { name: "k=0 (electron-only)", k: 0, color: "#34d399", dash: "dash" },
-    ];
-    const traces: Record<string, unknown>[] = materials.map(mat => ({
-      x: M, y: M.map(m => mat.k * m + (2 - 1 / m) * (1 - mat.k)),
-      type: "scatter" as const, mode: "lines" as const,
-      name: mat.name, line: { color: mat.color, width: 2, dash: (mat as any).dash || undefined },
-    }));
-    traces.push({ x: M, y: M.map(m => kFactor * m + (2 - 1 / m) * (1 - kFactor)), type: "scatter" as const, mode: "lines" as const, name: `Custom (k=${kFactor})`, line: { color: "#a78bfa", width: 3 } });
-    return traces;
-  }, [kFactor]);
+  const F = excessNoiseFactor(gain, k);
+  const x = excessNoiseIndex(gain, k);
+  const noiseFigure = 10 * Math.log10(F);
 
-  const snrChart = useMemo(() => {
-    const signal = Array.from({ length: 200 }, (_, i) => 1 + i * 10000 / 200);
-    return [
-      { x: signal, y: signal.map(s => Math.sqrt(s * quantumEff)), type: "scatter", mode: "lines", name: "PIN (no excess)", line: { color: "#34d399", width: 2 } },
-      { x: signal, y: signal.map(s => Math.sqrt(s * quantumEff / excessNoise)), type: "scatter", mode: "lines", name: `APD (F=${excessNoise.toFixed(2)})`, line: { color: "#f87171", width: 2 } },
-    ];
-  }, [quantumEff, excessNoise]);
+  // 300 gains from 1 to 1000 on a log grid.
+  const M = Array.from({ length: 300 }, (_, i) => 10 ** ((3 * i) / 299));
+  const chartData = [
+    ...APD_K_TABLE.map((m, i) => ({
+      x: M, y: M.map((g) => excessNoiseFactor(g, m.k)), type: "scatter" as const, mode: "lines" as const,
+      name: `${m.label} (k = ${m.k})`, line: { color: COLORS[i], width: 2 },
+    })),
+    { x: M, y: M.map((g) => excessNoiseFactor(g, 0)), type: "scatter" as const, mode: "lines" as const, name: "k = 0 (one carrier ionizes)", line: { color: "#34d399", width: 2, dash: "dash" as const } },
+    { x: M, y: M.map((g) => excessNoiseFactor(g, k)), type: "scatter" as const, mode: "lines" as const, name: `Entered (k = ${k})`, line: { color: "#a78bfa", width: 3 } },
+  ];
+
+  // Shot-noise-limited SNR of N incident photons: √(ηN) for a p-i-n, √(ηN/F) for the APD.
+  const photons = Array.from({ length: 200 }, (_, i) => 10 ** ((4 * i) / 199));
+  const snrChart = [
+    { x: photons, y: photons.map((N) => Math.sqrt(N * qe)), type: "scatter" as const, mode: "lines" as const, name: "p-i-n (F = 1)", line: { color: "#34d399", width: 2 } },
+    { x: photons, y: photons.map((N) => Math.sqrt((N * qe) / F)), type: "scatter" as const, mode: "lines" as const, name: `APD (F = ${F.toFixed(2)})`, line: { color: "#f87171", width: 2 } },
+  ];
 
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Multiplication Gain (M)" value={gain} onChange={setGain} min={1} step="10" />
-        <ValidatedNumberInput label="Ionization Ratio k" value={kFactor} onChange={setKFactor} min={0.001} max={1} step="0.01" />
-        <ValidatedNumberInput label="Quantum Efficiency" value={quantumEff} onChange={setQuantumEff} min={0.01} max={1} step="0.05" />
+        <ValidatedNumberInput label="Multiplication Gain M" value={gainRaw} onChange={setGain} min={1} max={1e4} step="10" />
+        <ValidatedNumberInput label="Ionization Ratio k" value={kRaw} onChange={setKFactor} min={0} max={1} step="0.01" />
+        <ValidatedNumberInput label="Quantum Efficiency" value={qeRaw} onChange={setQuantumEff} min={0.01} max={1} step="0.05" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Excess Noise F" value={excessNoise.toFixed(3)} tone="red" />
-        <ResultCard label="Noise Figure" value={`${noiseFigure.toFixed(2)} dB`} tone="yellow" />
-        <ResultCard label="SNR Degradation" value={`×${snrDegradation.toFixed(2)}`} tone="blue" />
-        <ResultCard label="F × M" value={(excessNoise * gain).toFixed(0)} tone="purple" />
+        <ResultCard label="Excess Noise F" value={F.toFixed(4)} tone="red" />
+        <ResultCard label="Noise Figure 10·log₁₀F" value={`${noiseFigure.toFixed(2)} dB`} tone="yellow" />
+        <ResultCard label="Shot-Limited SNR vs p-i-n" value={`×${(1 / Math.sqrt(F)).toFixed(3)}`} tone="blue" subtext="amplitude ratio 1/√F" />
+        <ResultCard label="Excess Noise Index x" value={gain > 1 ? x.toFixed(3) : "—"} tone="purple" subtext="datasheet form F = M^x" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>F(M) = k·M + (2 − 1/M)·(1 − k)  [McIntyre]</p><p>Si: k≈0.02, InGaAs: k≈0.5, Ge: k≈0.7</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
+        <p>F(M) = k·M + (1 − k)·(2 − 1/M)  [McIntyre 1966]</p>
+        <p>{APD_K_TABLE.map((m) => `${m.label}: k = ${m.k} (range ${m.range[0]}–${m.range[1]})`).join(", ")}</p>
+        <p>x = ln F / ln M, so F = M^x holds exactly at the entered gain only</p>
+      </div>
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Gain M", gridcolor: "#374151", type: "log" }, yaxis: { title: "F", gridcolor: "#374151" } }} />
-      <ChartPanel data={snrChart} layout={{ xaxis: { title: "Photons", gridcolor: "#374151", type: "log" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} title="SNR: PIN vs APD" />
+      <ChartPanel data={snrChart} layout={{ xaxis: { title: "Incident photons N", gridcolor: "#374151", type: "log" }, yaxis: { title: "Shot-limited SNR", gridcolor: "#374151" } }} title="SNR: p-i-n vs APD (no amplifier noise)" />
     </>
   );
 }

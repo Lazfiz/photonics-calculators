@@ -1,78 +1,68 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-const materialParams: Record<string, { k: number; n: number; label: string }> = {
-  Si: { k: 0.02, n: 3, label: "Silicon" },
-  InGaAs: { k: 0.45, n: 2.5, label: "InGaAs" },
-  Ge: { k: 0.6, n: 2, label: "Germanium" },
-};
+import { APD_K_TABLE, excessNoiseFactor, excessNoiseIndex, millerGain } from "../../../physics/detectors/apd";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fixed = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
+const COLORS = ["#60a5fa", "#34d399", "#f87171"];
 
 export default function AvalancheGainPage() {
-  const [breakdownVoltage, setBreakdownVoltage] = useURLState("breakdownVoltage", 150);
-  const [biasVoltage, setBiasVoltage] = useURLState("biasVoltage", 140);
-  const [ionizationRatio, setIonizationRatio] = useURLState("ionizationRatio", 0.02);
-  const [material, setMaterial] = useState<"Si" | "InGaAs" | "Ge">("Si");
+  const [breakdownRaw, setBreakdownVoltage] = useURLState("breakdownVoltage", 150);
+  const [biasRaw, setBiasVoltage] = useURLState("biasVoltage", 140);
+  const [nRaw, setN] = useURLState("n", 3);
+  const [kRaw, setIonizationRatio] = useURLState("ionizationRatio", 0.02);
 
-  const handleMaterialChange = (m: "Si" | "InGaAs" | "Ge") => {
-    setMaterial(m);
-    setIonizationRatio(materialParams[m].k);
-  };
+  const breakdown = clamp(breakdownRaw, 1, 5000, 150);
+  const bias = clamp(biasRaw, 0, 5000, 140);
+  const n = clamp(nRaw, 0.1, 10, 3);
+  const k = clamp(kRaw, 0, 1, 0.02);
 
-  const n = materialParams[material].n;
-  const k = ionizationRatio;
-  const voltageRatio = biasVoltage / breakdownVoltage;
-  const gain = voltageRatio < 1 ? 1 / (1 - Math.pow(voltageRatio, n)) : Infinity;
-  // McIntyre 1966: F(M) = k·M + (1-k)·(2 - 1/M), where k = β/α for electron-initiated multiplication
-  const excessNoise = gain > 1 ? k * gain + (1 - k) * (2 - 1 / gain) : 1;
-  const noiseGain = gain > 1 ? Math.sqrt(excessNoise) * gain : 1;
+  const gain = millerGain(bias, breakdown, n);
+  const F = excessNoiseFactor(gain, k);
+  const x = excessNoiseIndex(gain, k);
+  const aboveBreakdown = gain === Infinity;
 
-  const gainVsVoltage = useMemo(() => {
-    const vratios = Array.from({ length: 200 }, (_, i) => 0.5 + i * 0.498 / 200);
-    return [{ x: vratios.map(r => r * breakdownVoltage), y: vratios.map(r => 1 / (1 - Math.pow(r, n))), type: "scatter" as const, mode: "lines" as const, name: "Gain M", line: { color: "#60a5fa", width: 2 } }];
-  }, [breakdownVoltage, n]);
+  const ratios = Array.from({ length: 200 }, (_, i) => 0.5 + (i * 0.499) / 199);
+  const gainVsVoltage = [
+    { x: ratios.map((r) => r * breakdown), y: ratios.map((r) => millerGain(r * breakdown, breakdown, n)), type: "scatter" as const, mode: "lines" as const, name: "Gain M", line: { color: "#60a5fa", width: 2 } },
+  ];
 
-  const noiseVsGain = useMemo(() => {
-    const M = Array.from({ length: 200 }, (_, i) => 1 + i * 199 / 200);
-    // Exact McIntyre
-    const mcintyreF = M.map(m => k * m + (1 - k) * (2 - 1 / m));
-    // Large-M asymptotic: F ≈ kM + 2(1-k)
-    const asymptoticF = M.map(m => k * m + 2 * (1 - k));
-    return [
-      { x: M, y: mcintyreF, type: "scatter" as const, mode: "lines" as const, name: "McIntyre F(M)", line: { color: "#f87171", width: 2 } },
-      { x: M, y: asymptoticF, type: "scatter" as const, mode: "lines" as const, name: "F ≈ kM + 2(1-k)", line: { color: "#fbbf24", width: 2, dash: "dash" as const } },
-    ];
-  }, [k]);
+  const M = Array.from({ length: 200 }, (_, i) => 1 + i);
+  const noiseVsGain = [
+    { x: M, y: M.map((m) => excessNoiseFactor(m, k)), type: "scatter" as const, mode: "lines" as const, name: "McIntyre F(M)", line: { color: "#f87171", width: 2 } },
+    { x: M, y: M.map((m) => k * m + 2 * (1 - k)), type: "scatter" as const, mode: "lines" as const, name: "F ≈ kM + 2(1 − k)", line: { color: "#fbbf24", width: 2, dash: "dash" as const } },
+  ];
 
-  const comparisonChart = useMemo(() => {
-    const M = Array.from({ length: 200 }, (_, i) => 1 + i * 99 / 200);
-    return [
-      { x: M, y: M.map(m => 0.02 * m + 0.98 * (2 - 1/m)), type: "scatter" as const, mode: "lines" as const, name: "Si (k=0.02)", line: { color: "#60a5fa", width: 2 } },
-      { x: M, y: M.map(m => 0.45 * m + 0.55 * (2 - 1/m)), type: "scatter" as const, mode: "lines" as const, name: "InGaAs (k=0.45)", line: { color: "#34d399", width: 2 } },
-      { x: M, y: M.map(m => 0.6 * m + 0.4 * (2 - 1/m)), type: "scatter" as const, mode: "lines" as const, name: "Ge (k=0.6)", line: { color: "#f87171", width: 2 } },
-    ];
-  }, []);
+  const M100 = Array.from({ length: 200 }, (_, i) => 1 + (i * 99) / 199);
+  const comparisonChart = APD_K_TABLE.map((m, i) => ({
+    x: M100, y: M100.map((g) => excessNoiseFactor(g, m.k)), type: "scatter" as const, mode: "lines" as const,
+    name: `${m.label} (k = ${m.k})`, line: { color: COLORS[i], width: 2 },
+  }));
 
   return (
     <>
-      <div role="group" aria-label="Options" className="flex gap-2 mb-6">
-        {(["Si", "InGaAs", "Ge"] as const).map(m => (
-          <button key={m} onClick={() => handleMaterialChange(m)} className={`px-4 py-2 rounded text-sm font-medium ${material === m ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}>{materialParams[m].label}</button>
+      <div role="group" aria-label="Ionization ratio preset" className="flex flex-wrap gap-2 mb-6">
+        {APD_K_TABLE.map((m) => (
+          <button key={m.id} onClick={() => setIonizationRatio(m.k)} className={`px-4 py-2 rounded text-sm font-medium ${k === m.k ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}>
+            {m.label} (k = {m.k})
+          </button>
         ))}
       </div>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Breakdown Voltage (V)" value={breakdownVoltage} onChange={setBreakdownVoltage} min={10} step="1" />
-        <ValidatedNumberInput label="Bias Voltage (V)" value={biasVoltage} onChange={setBiasVoltage} min={1} step="1" />
-        <ValidatedNumberInput label="Ionization Ratio k (β/α)" value={ionizationRatio} onChange={setIonizationRatio} min={0.001} max={1} step="0.01" />
+        <ValidatedNumberInput label="Breakdown Voltage V_br (V)" value={breakdownRaw} onChange={setBreakdownVoltage} min={1} max={5000} step="1" />
+        <ValidatedNumberInput label="Bias Voltage V (V)" value={biasRaw} onChange={setBiasVoltage} min={0} max={5000} step="1" />
+        <ValidatedNumberInput label="Miller Exponent n (device fit)" value={nRaw} onChange={setN} min={0.1} max={10} step="0.1" />
+        <ValidatedNumberInput label="Ionization Ratio k" value={kRaw} onChange={setIonizationRatio} min={0} max={1} step="0.01" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="V/V_br" value={voltageRatio.toFixed(4)} tone="blue" />
-        <ResultCard label="Gain M" value={gain > 1e6 ? "∞ (breakdown)" : gain.toFixed(1)} tone="green" />
-        <ResultCard label="Excess Noise F" value={excessNoise.toFixed(3)} tone="yellow" />
-        <ResultCard label="Noise Current (√F·M)" value={noiseGain > 1e6 ? "∞" : noiseGain.toFixed(1)} tone="red" />
+        <ResultCard label="V/V_br" value={(bias / breakdown).toFixed(4)} tone="blue" />
+        <ResultCard label="Gain M" value={aboveBreakdown ? "— (at or above breakdown)" : gain.toFixed(3)} tone="green" />
+        <ResultCard label="Excess Noise F" value={aboveBreakdown ? "—" : F.toFixed(3)} tone="yellow" subtext={gain > 1 && !aboveBreakdown ? `F = M^${x.toFixed(3)}` : undefined} />
+        <ResultCard label="Noise Current Gain √F·M" value={aboveBreakdown ? "—" : fixed(Math.sqrt(F) * gain, 2)} tone="red" />
       </div>
       <div className="grid gap-6 md:grid-cols-2">
         <ChartPanel data={gainVsVoltage} layout={{ xaxis: { title: "Bias Voltage (V)", gridcolor: "#374151" }, yaxis: { title: "Gain M", type: "log", gridcolor: "#374151" } }} title="Gain vs Bias" />
@@ -82,11 +72,11 @@ export default function AvalancheGainPage() {
         </div>
       </div>
       <div className="bg-gray-900 rounded-lg p-4 mt-6 text-sm text-gray-300 font-mono space-y-1">
-        <p>M = 1 / [1 - (V/V_br)^n]  [Miller, empirical]</p>
-        <p>F(M) = k·M + (1-k)·(2 - 1/M)  [McIntyre 1966]</p>
-        <p>k = β/α (hole/electron ionization coefficient ratio, electron-initiated multiplication)</p>
-        <p>Large-M asymptote: F ≈ kM + 2(1-k)  (linear in M, not a power law)</p>
-        <p>n = empirical gain exponent (device-specific, not a fundamental material constant)</p>
+        <p>M = 1 / [1 − (V/V_br)^n]  [Miller 1955, empirical]</p>
+        <p>F(M) = k·M + (1 − k)·(2 − 1/M)  [McIntyre 1966]</p>
+        <p>k = ratio of the smaller to the larger ionization coefficient, for injection of the more ionizing carrier</p>
+        <p>Large-M asymptote: F ≈ kM + 2(1 − k), linear in M</p>
+        <p>n is fitted per device: an InGaAs APD with M = 10 at 4 V below a 50 V breakdown has n = 1.26</p>
       </div>
     </>
   );

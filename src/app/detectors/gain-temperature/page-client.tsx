@@ -1,70 +1,103 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { driftExponent, gainAtTemperature, gainTemperatureCoefficient } from "../../../physics/detectors/apd";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+// Breakdown (Infinity) and invalid points become gaps.
+const finite = (x: number) => (Number.isFinite(x) ? x : NaN);
+const fmtGain = (x: number) => (x === Infinity ? "— (breakdown)" : Number.isFinite(x) ? x.toFixed(2) : "—");
+
 export default function GainTemperaturePage() {
-  const [gainRef, setGainRef] = useURLState("gainRef", 100);
-  const [tempRef, setTempRef] = useURLState("tempRef", 25);
-  const [tempCoeff, setTempCoeff] = useURLState("tempCoeff", 0.003);
-  const [tempMin, setTempMin] = useState(-40);
-  const [tempMax, setTempMax] = useURLState("tempMax", 80);
-  const [detectorType, setDetectorType] = useState<"apd" | "pmt">("apd");
-  const [pmtCoeff, setPmtCoeff] = useState(-0.003);
+  const [detectorRaw, setDetector] = useURLState("detector", "apd");
+  const [gainRefRaw, setGainRef] = useURLState("gainRef", 10);
+  const [tempRefRaw, setTempRef] = useURLState("tempRef", 22);
+  const [breakdownRaw, setBreakdown] = useURLState("breakdownVoltage", 50);
+  const [marginRaw, setMargin] = useURLState("margin", 4);
+  const [vbrCoeffRaw, setVbrCoeff] = useURLState("vbrCoeff", 0.14);
+  const [pmtCoeffRaw, setPmtCoeff] = useURLState("pmtCoeff", -0.3);
+  const [tempMinRaw, setTempMin] = useURLState("tempMin", 0);
+  const [tempMaxRaw, setTempMax] = useURLState("tempMax", 60);
 
-  const gainAtT = (T: number) => {
-    if (detectorType === "apd") {
-      const denom = 1 + tempCoeff * (T - tempRef);
-      return denom > 0.01 ? gainRef / denom : gainRef / 0.01; // clamp to prevent negative/infinite gain
-    }
-    return gainRef * Math.exp(pmtCoeff * (T - tempRef));
-  };
+  const detector = detectorRaw === "pmt" ? "pmt" : "apd";
+  const gainRef = clamp(gainRefRaw, 1.01, 1e8, 10);
+  const tempRef = clamp(tempRefRaw, -100, 150, 22);
+  const breakdown = clamp(breakdownRaw, 1, 5000, 50);
+  const margin = clamp(marginRaw, 1e-3, breakdown * 0.999, 4);
+  const vbrCoeff = clamp(vbrCoeffRaw, 0, 10, 0.14);
+  const pmtCoeff = clamp(pmtCoeffRaw, -2, 2, -0.3); // %/°C
+  const tempMin = clamp(tempMinRaw, -100, 150, 0);
+  const tempMax = Math.max(tempMin + 1, clamp(tempMaxRaw, -100, 150, 60));
 
-  const gainAtMin = gainAtT(tempMin);
-  const gainAtMax = gainAtT(tempMax);
-  const gainVariation = gainAtMax / gainAtMin;
+  const apd = { gainRef, breakdownRef: breakdown, marginRef: margin, breakdownCoeff: vbrCoeff };
+  const n = driftExponent(apd);
+  // PMT: constant relative coefficient β (1/°C), M = M_ref·exp(β·ΔT).
+  const gainAt = (T: number) =>
+    detector === "apd" ? gainAtTemperature(apd, T - tempRef) : gainRef * Math.exp((pmtCoeff / 100) * (T - tempRef));
+  const coeffPercent = detector === "apd" ? 100 * gainTemperatureCoefficient(apd) : pmtCoeff;
+  // V_br(T) reaches the bias V_br,ref − margin at ΔT = −margin/γ.
+  const breakdownTemp = detector === "apd" && vbrCoeff > 0 ? tempRef - margin / vbrCoeff : NaN;
 
-  const chartData = useMemo(() => {
-    const temps = Array.from({ length: 300 }, (_, i) => tempMin + i * (tempMax - tempMin) / 300);
-    return [
-      { x: temps, y: temps.map(gainAtT), type: "scatter", mode: "lines", name: "Gain", line: { color: "#60a5fa", width: 2 }, yaxis: "y" },
-      { x: temps, y: temps.map(T => 20 * Math.log10(gainAtT(T))), type: "scatter", mode: "lines", name: "Gain (dB)", line: { color: "#fbbf24", width: 2, dash: "dash" }, yaxis: "y2" },
-    ];
-  }, [detectorType, gainRef, tempCoeff, pmtCoeff, tempRef, tempMin, tempMax]);
+  const gainAtMin = gainAt(tempMin);
+  const gainAtMax = gainAt(tempMax);
+  const ratio = gainAtMin / gainAtMax;
 
-  const stabilityChart = useMemo(() => {
-    const deltaT = Array.from({ length: 100 }, (_, i) => -20 + i * 40 / 100);
-    return [{ x: deltaT, y: deltaT.map(dT => {
-      if (detectorType === "apd") {
-        const denom = 1 + tempCoeff * dT;
-        return denom > 0.01 ? ((gainRef / denom - gainRef) / gainRef) * 100 : ((gainRef / 0.01 - gainRef) / gainRef) * 100;
-      }
-      return (Math.exp(pmtCoeff * dT) - 1) * 100;
-    }), type: "scatter", mode: "lines", name: "Gain Change (%)", line: { color: "#f87171", width: 2 } }];
-  }, [detectorType, gainRef, tempCoeff, pmtCoeff]);
+  const temps = Array.from({ length: 300 }, (_, i) => tempMin + (i * (tempMax - tempMin)) / 299);
+  const chartData = [
+    { x: temps, y: temps.map((T) => finite(gainAt(T))), type: "scatter" as const, mode: "lines" as const, name: "Gain", line: { color: "#60a5fa", width: 2 } },
+  ];
+  const deltaT = Array.from({ length: 101 }, (_, i) => -10 + i * 0.2);
+  const stabilityChart = [
+    { x: deltaT, y: deltaT.map((dT) => finite(100 * (gainAt(tempRef + dT) / gainRef - 1))), type: "scatter" as const, mode: "lines" as const, name: "Gain change (%)", line: { color: "#f87171", width: 2 } },
+  ];
 
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-4"><label className="block text-sm text-gray-300">Detector Type</label><select value={detectorType} onChange={e => setDetectorType(e.target.value as any)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white"><option value="apd">APD</option><option value="pmt">PMT</option></select></div>
-        <ValidatedNumberInput label={`Gain at ${tempRef}°C`} value={gainRef} onChange={setGainRef} min={1} step="10" />
-        {detectorType === "apd" ? (
-          <ValidatedNumberInput label="APD Temp Coeff (/°C)" value={tempCoeff} onChange={setTempCoeff} min={0.0001} max={0.02} step="0.001" />
+        <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <label htmlFor="detector" className="block text-sm text-gray-300">Detector Type</label>
+          <select id="detector" value={detector} onChange={(e) => setDetector(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            <option value="apd">APD at fixed bias</option>
+            <option value="pmt">PMT at fixed high voltage</option>
+          </select>
+        </div>
+        <ValidatedNumberInput label="Gain at Reference Temperature" value={gainRefRaw} onChange={setGainRef} min={1.01} max={1e8} step="1" />
+        <ValidatedNumberInput label="Reference Temperature (°C)" value={tempRefRaw} onChange={setTempRef} min={-100} max={150} step="1" />
+        {detector === "apd" ? (
+          <>
+            <ValidatedNumberInput label="Breakdown Voltage at Reference (V)" value={breakdownRaw} onChange={setBreakdown} min={1} max={5000} step="1" />
+            <ValidatedNumberInput label="Bias Below Breakdown V_br − V (V)" value={marginRaw} onChange={setMargin} min={0.001} max={breakdown} step="0.5" />
+            <ValidatedNumberInput label="V_br Temperature Coefficient (V/°C)" value={vbrCoeffRaw} onChange={setVbrCoeff} min={0} max={10} step="0.01" />
+          </>
         ) : (
-          <ValidatedNumberInput label="PMT Temp Coeff (/°C)" value={pmtCoeff} onChange={setPmtCoeff} min={-2} max={0} step="0.1" />
+          <ValidatedNumberInput label="PMT Gain Temperature Coefficient (%/°C)" value={pmtCoeffRaw} onChange={setPmtCoeff} min={-2} max={2} step="0.1" />
         )}
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-4"><label className="block text-sm text-gray-300">Temp Range (°C)</label><div className="flex gap-2 mt-3"><ValidatedNumberInput label="Temp Range (°C)" value={tempMin} onChange={setTempMin} /><ValidatedNumberInput label="Temp Range (°C)" value={tempMax} onChange={setTempMax} /></div></div>
+        <ValidatedNumberInput label="Plot From (°C)" value={tempMinRaw} onChange={setTempMin} min={-100} max={150} step="5" />
+        <ValidatedNumberInput label="Plot To (°C)" value={tempMaxRaw} onChange={setTempMax} min={-100} max={150} step="5" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label={`Gain @ ${tempMin}°C`} value={gainAtMin.toFixed(1)} tone="blue" />
-        <ResultCard label={`Gain @ ${tempMax}°C`} value={gainAtMax.toFixed(1)} tone="red" />
-        <ResultCard label="Gain Ratio" value={`×${gainVariation.toFixed(3)}`} tone="yellow" />
-        <ResultCard label="Temp Stability" value={detectorType === "apd" ? `-${(tempCoeff * 100).toFixed(1)}%/°C` : `${(pmtCoeff * 100).toFixed(1)}%/°C`} tone="green" />
+        <ResultCard label={`Gain @ ${tempMin} °C`} value={fmtGain(gainAtMin)} tone="blue" />
+        <ResultCard label={`Gain @ ${tempMax} °C`} value={fmtGain(gainAtMax)} tone="red" />
+        <ResultCard label={`Gain Ratio ${tempMin}/${tempMax} °C`} value={Number.isFinite(ratio) ? `×${ratio.toFixed(3)}` : "—"} tone="yellow" />
+        <ResultCard label={`Gain Coefficient @ ${tempRef} °C`} value={Number.isFinite(coeffPercent) ? `${coeffPercent.toFixed(2)} %/°C` : "—"} tone="green" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>APD: M(T) = M_ref / (1 + α·ΔT)</p><p>PMT: M(T) = M₀ · exp(β·ΔT)</p></div>
-      <ChartPanel data={chartData} layout={{ xaxis: { title: "Temperature (°C)", gridcolor: "#374151" }, yaxis: { title: "Gain", gridcolor: "#374151" }, yaxis2: { title: "Gain (dB)", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
+      {detector === "apd" && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+          <ResultCard label="Fitted Miller Exponent n" value={Number.isFinite(n) ? n.toFixed(4) : "—"} tone="purple" />
+          <ResultCard label="Fixed Bias V" value={`${(breakdown - margin).toFixed(2)} V`} tone="cyan" />
+          <ResultCard label="Breakdown Reached Below" value={Number.isFinite(breakdownTemp) ? `${breakdownTemp.toFixed(1)} °C` : "—"} tone="orange" />
+        </div>
+      )}
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
+        <p>APD: V_br(T) = V_br,ref + γ·(T − T_ref), M(T) = 1 / [1 − (V/V_br(T))^n]</p>
+        <p>n fitted through the operating point: n = ln(1 − 1/M_ref) / ln(V/V_br,ref)</p>
+        <p>(1/M)·dM/dT = −n·(M − 1)·γ / V_br: the drift grows with the gain</p>
+        <p>PMT: M(T) = M_ref·exp(β·ΔT), β entered</p>
+      </div>
+      <ChartPanel data={chartData} layout={{ xaxis: { title: "Temperature (°C)", gridcolor: "#374151" }, yaxis: { title: "Gain", type: "log", gridcolor: "#374151" } }} title="Gain vs Temperature" />
       <ChartPanel data={stabilityChart} layout={{ xaxis: { title: "ΔT from Reference (°C)", gridcolor: "#374151" }, yaxis: { title: "Gain Change (%)", gridcolor: "#374151" } }} title="Gain Change vs ΔT" />
     </>
   );

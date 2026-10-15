@@ -2,9 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  SUN_SOLID_ANGLE, backgroundPower, equalNoiseHalfAngle, excessNoiseFactor, halfAngleForSolidAngle, parseScene, projectedSolidAngle,
+  SUN_SOLID_ANGLE, backgroundPower, equalNoiseHalfAngle, halfAngleForSolidAngle, parseScene, projectedSolidAngle,
   receiverNoise, responsivity, sceneRadiance, sceneSolidAngle, skyRadiance, solarDiscRadiance,
 } from "../src/physics/free-space-comms/background-radiance";
+import { excessNoiseFactor } from "../src/physics/detectors/apd";
 
 const close = (actual: number, expected: number, rel: number, msg = "") =>
   assert.ok(Math.abs(actual - expected) <= rel * Math.abs(expected), `${msg} ${actual} vs ${expected}`);
