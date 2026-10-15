@@ -6,6 +6,7 @@
   "/detectors/hybrid-detector": "/detectors/photodiode-tia-noise",
   "/detectors/intensified-camera": "/detectors/intensified-ccd",
   "/detectors/pmt-gain": "/detectors/pmt",
+  "/detectors/si-vs-inge": "/detectors/si-vs-ingaas",
   "/fiber-optics/bend-loss": "/fiber-optics/macro-bending-loss",
   "/fiber-optics/connector-return": "/fiber-optics/connector-return-loss",
   "/fiber-optics/dispersion-compensation": "/fiber-optics/dispersion-comp",

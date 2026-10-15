@@ -2,7 +2,7 @@ import CalculatorShell from "@/components/calculator-shell";
 import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-const href = "/detectors/si-vs-inge";
+const href = "/detectors/si-vs-ingaas";
 
 export const metadata = calculatorMetadata(href);
 

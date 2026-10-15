@@ -135,3 +135,23 @@ export function specificDetectivity(area_cm2: number, bandwidth: number, nep: nu
   if (!(area_cm2 > 0) || !(bandwidth > 0) || !(nep > 0)) return NaN;
   return Math.sqrt(area_cm2 * bandwidth) / nep;
 }
+
+/**
+ * Photodiode SNR I_s/√((2q·(I_s + I_d) + i_amp²)·B) of a signal photocurrent I_s (A) over its own shot noise, the shot
+ * noise of a dark current I_d (A) and a white amplifier input noise i_amp (A/√Hz) in a bandwidth B (Hz). An amplitude
+ * (current) ratio; its dB value is 20·log₁₀. Saleh & Teich §17.5. Gain-free (p-i-n) detector.
+ */
+export function photodiodeSnr(signal: number, dark: number, ampNoiseDensity: number, bandwidth: number): number {
+  if (!(signal >= 0) || !(dark >= 0) || !(ampNoiseDensity >= 0) || !(bandwidth > 0)) return NaN;
+  const noise = Math.sqrt((2 * q * (signal + dark) + ampNoiseDensity * ampNoiseDensity) * bandwidth);
+  return noise > 0 ? signal / noise : signal > 0 ? Infinity : NaN;
+}
+
+/**
+ * SNR gain from raising the QE by a factor r at fixed photon flux: √r when the signal's shot noise dominates, r when a
+ * signal-independent floor (read noise) dominates. An amplitude ratio; in dB, 20·log₁₀ (r = 4 → 2×, 6.02 dB shot-limited).
+ */
+export function qeRatioSnrGain(qeRatio: number, regime: "shot" | "read"): number {
+  if (!(qeRatio > 0) || qeRatio === Infinity) return NaN;
+  return regime === "shot" ? Math.sqrt(qeRatio) : qeRatio;
+}

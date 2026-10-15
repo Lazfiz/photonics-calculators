@@ -4,8 +4,9 @@
  */
 
 import { hc_eV_nm } from "../constants";
-import { INGAAS_LATTICE_MATCHED_X, ingaasBandGap } from "../materials/bandgap";
+import { INGAAS_LATTICE_MATCHED_X, VARSHNI, ingaasBandGap, varshniBandGap } from "../materials/bandgap";
 import { intrinsicDensityRatio } from "./dark-current";
+import { photodiodeQe } from "./photodiode-qe";
 
 /**
  * Intrinsic density of In₀.₅₃Ga₀.₄₇As at 300 K, 6.3e11 cm⁻³: S. Paul, J. B. Roy, P. K. Basu, J. Appl. Phys. 69, 827
@@ -43,4 +44,38 @@ export function ingaasAbsorption(wavelength: number, bandGap_eV: number): number
 export function cutoffWavelength(bandGap_eV: number): number {
   if (!(bandGap_eV > 0)) return NaN;
   return (hc_eV_nm / bandGap_eV) * 1e-9;
+}
+
+/**
+ * Short-wavelength edge hc/E_g,InP(T) of an InP window or substrate in m: 916.4 nm at 300 K with Vurgaftman's InP gap
+ * 1.3529 eV. A standard front-illuminated InGaAs p-i-n has an InP cap and is read through it; visible-extended
+ * devices remove it.
+ */
+export function inpWindowEdge(T: number): number {
+  return cutoffWavelength(varshniBandGap(T, VARSHNI.inp));
+}
+
+export interface IngaasPinInputs {
+  /** In fraction x of InₓGa₁₋ₓAs. */
+  x: number;
+  /** Temperature, K. */
+  T: number;
+  /** Fully depleted absorber thickness, m. */
+  thickness: number;
+  /** Front-surface power reflectance, 0–1. */
+  reflectance: number;
+  /** true: an InP window, taken as opaque above its gap (QE 0 below inpWindowEdge). */
+  inpWindow: boolean;
+}
+
+/**
+ * QE (1 − R)·(1 − e^(−α·d)) of an InGaAs slab absorber (photodiodeQe with L = 0) at wavelength λ (m), times 0 or 1 for
+ * the InP window. The window is a step: a thin cap (≈ 1 µm) passes part of the light just short of 916 nm.
+ */
+export function ingaasPinQe(wavelength: number, { x, T, thickness, reflectance, inpWindow }: IngaasPinInputs): number {
+  const alpha = ingaasAbsorption(wavelength, ingaasBandGap(x, T));
+  const qe = photodiodeQe({ alpha, reflectance, depletionWidth: thickness });
+  if (!inpWindow || !Number.isFinite(qe)) return qe;
+  const edge = inpWindowEdge(T);
+  return Number.isFinite(edge) ? (wavelength > edge ? qe : 0) : NaN;
 }

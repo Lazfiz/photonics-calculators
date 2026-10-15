@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { GAINAS_BOWING_EV, VARSHNI, ingaasBandGap, varshniBandGap } from "../src/physics/materials/bandgap";
-import { INGAAS_NI_300K, cutoffWavelength, ingaasAbsorption, ingaasIntrinsicDensity } from "../src/physics/detectors/ingaas";
+import { INGAAS_NI_300K, cutoffWavelength, ingaasAbsorption, ingaasIntrinsicDensity, ingaasPinQe, inpWindowEdge } from "../src/physics/detectors/ingaas";
 import { darkCurrentRatio, generationCurrent, generationCurrentAtBias, generationNoiseDensity } from "../src/physics/detectors/dark-current";
 import { photodiodeQe } from "../src/physics/detectors/photodiode-qe";
 import { responsivity } from "../src/physics/detectors/responsivity";
@@ -82,4 +82,17 @@ test("cooling-benefit with the Vurgaftman InGaAs gap: diffusion dark current fal
   // Hand (awk): E_g = 0.737905 eV at 298.15 K, 0.760150 eV at 233.15 K; n_i² ratio → 1/18995.8. A fixed 0.75 eV gives ×7158.
   const g = (T: number) => ingaasBandGap(0.53, T);
   close(1 / darkCurrentRatio(233.15, 298.15, g(233.15), "diffusion", g(298.15)), 18995.8, 1e-5);
+});
+
+test("InP window edge 916.44 nm at 300 K; InGaAs p-i-n QE 81.834 % at 1550 nm (3 µm, R = 2 %), 0 short of the window", () => {
+  // Hand: hc/E_g,InP = 1239.842/1.352886 = 916.443 nm (Vurgaftman 2001 InP Varshni set).
+  close(inpWindowEdge(300) * 1e9, 916.443, 1e-5);
+  // Hand at 1550 nm: E = 0.799898 eV, √(E − 0.737257) = 0.250282, α = 6.00677e5 1/m, α·d = 1.80203,
+  // QE = 0.98·(1 − e^−1.80203) = 0.98·0.835058 = 0.818357.
+  const pin = { x: 0.53, T: 300, thickness: 3e-6, reflectance: 0.02, inpWindow: true };
+  close(ingaasPinQe(1550e-9, pin), 0.818357, 1e-4);
+  assert.equal(ingaasPinQe(900e-9, pin), 0);
+  assert.ok(ingaasPinQe(900e-9, { ...pin, inpWindow: false }) > 0.97);
+  assert.equal(ingaasPinQe(1700e-9, pin), 0); // beyond the 1681.7 nm cutoff
+  assert.ok(Number.isNaN(ingaasPinQe(1550e-9, { ...pin, reflectance: 1.5 })));
 });
