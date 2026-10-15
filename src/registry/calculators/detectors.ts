@@ -60,8 +60,18 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "boxcar-integrator",
     title: "Boxcar Integrator",
-    description: "Gated signal averaging — recover repetitive signals from noise.",
-    knownIssue: "Gate and pulse widths do not enter the SNR, which is just peak over noise (0.2 at the defaults), and the plotted noise trace is only 0.70× the entered RMS. The gate also ends at the pulse peak instead of centring on it.",
+    description: "Gated signal averaging of a repetitive pulse: gate-averaged signal, gate noise e_n·√NEB, SNR after N averages and the optimum gate width.",
+    tier: "textbook",
+    modelNote: "Gaussian pulse averaged over a rectangular gate; white input noise behind a single-pole input bandwidth, so the gate noise tends to e_n/√(2T) for wide gates. Shots average independently (√N). Baseline drift, gate jitter, exponential (moving) averaging and 1/f noise are left out.",
+    references: [
+      {
+        citation: "Papoulis A., Pillai S. U. (2002). Probability, Random Variables and Stochastic Processes, 4th ed. McGraw-Hill. Variance of a time average of a stationary process, (2/T)∫(1 − u/T)R(u)du.",
+      },
+      {
+        citation: "Stanford Research Systems. SR250 Gated Integrator and Boxcar Averager, operating manual. Gated integration and shot averaging.",
+        url: "https://www.thinksrs.com/products/sr250.html",
+      },
+    ],
   },
   {
     slug: "capacitance",
@@ -93,6 +103,18 @@ export const detectors: CalculatorEntry[] = [
     slug: "cooling-benefit",
     title: "Cooling Benefit Calculator",
     description: "Dark current reduction and SNR improvement from thermoelectric (TEC) or cryogenic cooling.",
+    tier: "textbook",
+    modelNote: "Si dark current scales as depletion generation (∝ n_i), InGaAs as diffusion (∝ n_i²), with a fixed band gap or, for Si, Varshni E_g(T); the Varshni gap raises the 25 → −40 °C Si reduction from ×630 to ×950. Surface leakage, tunnelling and the InGaAs gap's temperature shift are left out.",
+    references: [
+      {
+        citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley. n_i(T), generation (∝ n_i) and diffusion (∝ n_i²) currents.",
+        url: "https://doi.org/10.1002/0470068329",
+      },
+      {
+        citation: "Varshni Y. P. (1967). Temperature dependence of the energy gap in semiconductors. Physica 34, 149–154. Si coefficients E_g(0) = 1.17 eV, α = 4.73e-4 eV/K, β = 636 K as in Sze, 2nd ed. (1981).",
+        url: "https://doi.org/10.1016/0031-8914(67)90062-6",
+      },
+    ],
   },
   {
     slug: "cosmic-rays",
@@ -104,12 +126,35 @@ export const detectors: CalculatorEntry[] = [
     slug: "dark-current",
     title: "Dark Current vs Temperature",
     description: "Silicon detector dark current — exponential doubling model. I_dark(T) = I₀ · 2^((T−T₀)/T_d).",
+    tier: "textbook",
+    modelNote: "Empirical doubling law about 25 °C with dark shot noise √(D·t) against a fixed read noise. It is the local form of the n_i scaling: for Si at 25 °C that gives T_d ≈ 8.3 K (generation) or 4.2 K (diffusion), and a single T_d drifts away from it over a wide range.",
+    references: [
+      {
+        citation: "Janesick J. R. (2001). Scientific Charge-Coupled Devices. SPIE Press. Dark current temperature dependence and dark shot noise.",
+        url: "https://doi.org/10.1117/3.374903",
+      },
+      {
+        citation: "Varshni Y. P. (1967). Temperature dependence of the energy gap in semiconductors. Physica 34, 149–154. Si E_g(T) used for the equivalent doubling temperature.",
+        url: "https://doi.org/10.1016/0031-8914(67)90062-6",
+      },
+    ],
   },
   {
     slug: "dark-noise-temperature",
     title: "Dark Noise vs Temperature",
     description: "Temperature dependence of dark current and dark noise in photodiodes/CCDs.",
-    knownIssue: "The 'Noise @ 25 °C' card rounds to three decimals of nA and shows 0.000 nA rms at the defaults; the true value is 12.7 fA rms in 1 Hz.",
+    tier: "textbook",
+    modelNote: "Dark current ∝ n_i (generation) or n_i² (diffusion) with a fixed band gap or Varshni E_g(T) for Si and Ge, and shot noise √(2q·I·Δf). Surface leakage, tunnelling and 1/f noise are left out.",
+    references: [
+      {
+        citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley. n_i(T), generation (∝ n_i) and diffusion (∝ n_i²) currents.",
+        url: "https://doi.org/10.1002/0470068329",
+      },
+      {
+        citation: "Varshni Y. P. (1967). Temperature dependence of the energy gap in semiconductors. Physica 34, 149–154. Coefficients (Si 1.17 eV, 4.73e-4 eV/K, 636 K; Ge 0.7437 eV, 4.774e-4 eV/K, 235 K) as in Sze, 2nd ed. (1981).",
+        url: "https://doi.org/10.1016/0031-8914(67)90062-6",
+      },
+    ],
   },
   {
     slug: "detectivity",
@@ -212,7 +257,18 @@ export const detectors: CalculatorEntry[] = [
     slug: "lockin-amplifier",
     title: "Lock-in Amplifier",
     description: "Lock-in amplifier: demodulation gain, ENBW, noise rejection, and SNR improvement.",
-    knownIssue: "For filter orders 2–4 the noise bandwidth is π/2 too large (0.278 Hz instead of 0.177 Hz at τ = 1 s, order 2), so the SNR improvement reads ×540 instead of ×677. The default order 1 is correct.",
+    tier: "textbook",
+    modelNote: "Ideal multiplier with a unit-power sine or square reference, white input noise and an order-N output filter (cascaded RC or Butterworth). A detuned signal is shown by its beat envelope. Reference phase noise, dynamic reserve, harmonic pickup and 1/f noise are left out.",
+    references: [
+      {
+        citation: "Scofield J. H. (1994). Frequency-domain description of a lock-in amplifier. American Journal of Physics 62(2), 129–133. Demodulation, output filter and noise bandwidth.",
+        url: "https://doi.org/10.1119/1.17629",
+      },
+      {
+        citation: "Stanford Research Systems (1993). SR830 DSP Lock-In Amplifier manual. ENBW 1/4T, 1/8T, 3/32T and 5/64T for 6–24 dB/oct output filters.",
+        url: "https://www.thinksrs.com/downloads/pdfs/manuals/SR830m.pdf",
+      },
+    ],
   },
   {
     slug: "microchannel-plate",
