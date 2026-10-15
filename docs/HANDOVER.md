@@ -1,47 +1,47 @@
-# Handover — 2026-10-15 (session 66 → session 67)
+# Handover — 2026-10-15 (session 67 → session 68)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 66 finished detectors part 3 (dark current and signal recovery): PR #93, merged as `1d46ac23`, production check
-passed. This handover is on `docs/detectors-dark-current-handover`. Next: **Detectors part 4a: silicon QE**.
+Session 67 finished detectors part 4a (silicon QE): PR #95, merged as `f631d6b8`, production check passed. This
+handover is on `docs/detectors-silicon-qe-handover`. Next: **Detectors part 4b: InGaAs and back-illumination**.
 `polarizer-types` stays blocked until the user is at the laptop with Chrome.
 
 ## State
-- 229 of 458 pages are tiered (detectors 20 / 54). 23 `knownIssue`s left, all in detectors. 675 tests pass.
-- `src/physics/detectors/noise.ts`: shot, Johnson, kTC, 1/f, sensor noise, ADC SQNR/ENOB, `responsivity`,
-  `noiseEquivalentPower(i, ℛ, M)`, `specificDetectivity(A_cm², B, NEP)`.
-- `photodiode-rc.ts` (C_j, depletion width, RC/transit bandwidth, `rcFilteredNoise`), `tia.ts` (SBOA122 bandwidth and noise).
-- `dark-current.ts`: `VARSHNI` (Si 1.17/4.73e-4/636, Ge 0.7437/4.774e-4/235; Sze 1981), `varshniBandGap`,
-  `intrinsicDensityRatio(T, T_ref, E_g, E_g_ref = E_g)`, `darkCurrentRatio(…, mechanism, E_g_ref)`, `doublingLawRatio`,
-  `localDoublingTemperature(T, E_g | VarshniParams, mechanism)`.
-- `lockin.ts`: `lowPassEnbw(τ, N, "rc" | "butterworth")`, `lowPassMagnitude`, `REFERENCE_GAIN` (sine 1, square 2√2/π),
-  `lockinSnrGain`. `boxcar.ts`: `gaussianGateAverage`, `gateNoiseBandwidth`, `gateNoiseRms` (single-pole input band),
-  `optimalGateWidthRatio` (1.18904).
+- 233 of 458 pages are tiered (detectors 24 / 54). 20 `knownIssue`s left, all in detectors. 686 tests pass.
+- `materials/silicon-absorption.ts`: Green 2008 n, k at 300 K, 250–1450 nm (`siliconIndex(λ)`, `siliconAbsorption(λ)` in
+  1/m; NaN outside). `detectors/photodiode-qe.ts`: `photodiodeQe({alpha, reflectance, depletionWidth, diffusionLength,
+  deadLayer})` (Gärtner; L = 0 is a slab), `normalReflectance(n, k)`.
+- `detectors/responsivity.ts`: `responsivity` (re-exported by `noise.ts`), `quantumEfficiencyFromResponsivity`,
+  `photonsPerJoule`. `dark-current.ts` adds `SILICON_NI_300K` (9.65e15 m⁻³), `siliconIntrinsicDensity(T)`,
+  `generationCurrent`. `photodiode-rc.ts` adds `EPS_R_SILICON` 11.9 and `depletionCapacitance(A, W, ε_r)`.
 - Still in FSO: `excessNoiseFactor` (McIntyre) and `photonEnergy` in `src/physics/free-space-comms/background-radiance.ts`.
   Part 5 moves McIntyre to `detectors/apd.ts`. Part 6 replaces `src/lib/geiger-mode-avalanche.ts`.
 - User decisions (session 63): rename `si-vs-inge` → `si-vs-ingaas` (part 4b); keep `spad` and SPCM as separate pages on
-  one module; rewrite `channel-photomultiplier` as a true CPM.
+  one module; rewrite `channel-photomultiplier` as a true CPM. Session 67: the user merged #95 with the InGaAs preset
+  dropped from `quantum-efficiency` and the temperature input dropped from `spectral-response`.
 
 ## Next actions
 1. Ship this docs PR (`/ship`, merge on the user's yes).
-2. Detectors part 4a, then 4b–9 in ROADMAP order. Each part: module + golden tests, rewire the pages, clamp URL inputs +
+2. Detectors part 4b, then 5–9 in ROADMAP order. Each part: module + golden tests, rewire the pages, clamp URL inputs +
    `min`/`max` on inputs, "—" for NaN, then tier, modelNote and references, and delete the `knownIssue`.
 3. `post-merge-check` takes default-page values only (no query strings). Grep the prerendered
-   `.next/server/app/<cat>/<slug>.html` after `build` for a distinctive default string (e.g. `detectors/responsivity=1.000`).
-4. Part 4b also folds the inline Varshni copies (`silicon-photodiode`, `materials/semiconductor-bandgap`) into
-   `materials/bandgap.ts` (see the ROADMAP box).
-5. Later: fiber and FSO open findings (ROADMAP), the two imaging/spectroscopy findings from part 0, Chrome-only checks.
+   `.next/server/app/<cat>/<slug>.html` after `build` for a distinctive default string. Part 4a used
+   `detectors/responsivity=1.0001 A/W` `detectors/silicon-photodiode=0.563 A/W` `detectors/spectral-response=82.7%`
+   `detectors/quantum-efficiency=89.8%`.
+4. Later: fiber and FSO open findings (ROADMAP), the two imaging/spectroscopy findings from part 0, Chrome-only checks.
 
 ## Non-obvious facts
+- **Session 67 lessons:**
+  - Optical tables: the refractiveindex.info database is on GitHub raw
+    (`polyanskiy/refractiveindex.info-database/master/database/data/main/<El>/nk/<Author-Year>.yml`). pveducation.org's
+    silicon table is Green & Keevers 1995, not Green 2008: a usable second source (agrees within 2.3 %).
+  - Green 2008's temperature coefficients aren't in the refractiveindex.info file; α(T) is left at 300 K, as the pages say.
 - **Session 66 lessons:**
-  - A part with 3 modules and 5 pages fit in one session inline, without a physics-reviewer pass. Each function was
-    probed against an independent numeric check (ENBW integral, trapezoid gate average, noise double integral,
-    brute-force optimum) before the tests were written.
+  - Parts of 3–4 modules and 4–5 pages fit one session inline (sessions 66, 67), without a physics-reviewer pass, when
+    each function is probed against an independent numeric or hand check before the tests are written.
   - Sources: the SR830 manual (`thinksrs.com/downloads/pdfs/manuals/SR830m.pdf`, pdftotext) has the ENBW table at
     "Slope ENBW Wait Time". Palankovski's TU Wien thesis (`iue.tuwien.ac.at/phd/palankovski/node37.html`) tabulates Varshni
     sets with sources; its GaAs set differs from Sze's, so GaAs was left out.
-  - The fixed-gap n_i scaling understates the cooling gain: Si 25 → −40 °C is ×630 with 1.12 eV and ×950 with Varshni,
-    since the activation energy is ≈ E_g(0) + αβT²/(T+β)² = 1.20 eV.
 - **Session 65 lessons:**
   - Probe the module (scratchpad `.ts`) before writing the test; then mutate the code once to see `ℹ fail N`.
   - Charts of ≤ 300 points: compute them in the render, not in `useMemo`: no stale deps, no eslint-disable.
