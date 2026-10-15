@@ -1,35 +1,37 @@
-# Handover — 2026-10-15 (session 68 → session 69)
+# Handover — 2026-10-15 (session 69 → session 70)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 68 finished detectors part 4b (InGaAs band gap): PR #97, merged as `492b8e3b`. This handover rides in PR
-`chore/vercel-main-only`, which also limits Vercel to `main`. Next: **Detectors part 4c: Si vs InGaAs and
-back-illumination**. `polarizer-types` stays blocked until the user is at the laptop with Chrome.
+Session 69 finished detectors part 4c (Si vs InGaAs, back-illumination, InGaAs in `quantum-efficiency`) on branch
+`phase-4/detectors-si-vs-ingaas`, PR #99 with this handover. Next: **Detectors part 5: linear APD**.
+`polarizer-types` stays blocked until the user is at the laptop with Chrome.
 
 ## State
-- 235 of 458 pages are tiered (detectors 25 / 54, materials 4 / 45). 19 `knownIssue`s left, all in detectors. 693 tests.
-- `materials/bandgap.ts`: `VARSHNI` (Si, Ge: Sze; GaAs, InAs, InP, GaP X gap, GaSb, InSb, GaN: Vurgaftman 2001),
-  `varshniBandGap(T, p)`, `ingaasBandGap(x, T)` (bowing 0.477 eV; 0.816 eV at 0 K, 0.7373 eV at 300 K).
-- `detectors/ingaas.ts`: `ingaasIntrinsicDensity(x, T)` (6.3e17 m⁻³ at 300 K, Paul 1991), `ingaasAbsorption(λ, E_g)`
-  (A·√(E − E_g), A = 2.4e6 1/(m·eV^½), ±12 % of Adachi 1989), `cutoffWavelength(E_g)`. `dark-current.ts` adds
-  `generationCurrentAtBias(I_gen, V ≤ 0, T)` and `generationNoiseDensity(I_gen)` = √(2qI_gen).
+- 237 of 458 pages are tiered (detectors 27 / 54, materials 4 / 45). 17 `knownIssue`s left, all in detectors. 695 tests.
+- `detectors/ingaas.ts` adds `inpWindowEdge(T)` (hc/E_g,InP: 916.44 nm at 300 K) and `ingaasPinQe(λ, ...)` (slab absorber, InP
+  cap opaque above its gap). `detectors/noise.ts` adds `photodiodeSnr(I_s, I_d, i_amp, B)` and `qeRatioSnrGain(r, "shot"|"read")`.
+- `si-vs-inge` is now `si-vs-ingaas` (redirect in `redirects.json`). `quantum-efficiency` has an absorber toggle
+  (`material=si|ingaas`) and an InGaAs p-i-n preset; bare-surface Fresnel stays silicon-only (no InGaAs n table).
+- `back-illumination` is tier illustrative: the peak QEs are inputs and the spectra are schematic (labelled).
 - Still in FSO: `excessNoiseFactor` (McIntyre) and `photonEnergy` in `src/physics/free-space-comms/background-radiance.ts`.
   Part 5 moves McIntyre to `detectors/apd.ts`. Part 6 replaces `src/lib/geiger-mode-avalanche.ts`.
-- User decisions (session 63): rename `si-vs-inge` → `si-vs-ingaas` (part 4c); keep `spad` and SPCM as separate pages on
-  one module; rewrite `channel-photomultiplier` as a true CPM. Session 68: Vercel builds only `main`; the handover
-  goes on the feature branch, one PR per stage (Hobby plan build limits).
+- User decisions (session 63): keep `spad` and SPCM as separate pages on one module; rewrite `channel-photomultiplier` as a
+  true CPM. Session 68: Vercel builds only `main`; the handover goes on the feature branch, one PR per stage.
 
 ## Next actions
-1. Ship this PR (`/ship`). After the merge, `post-merge-check` still waits on main's Vercel status.
-2. Detectors part 4c, then 5–9 in ROADMAP order. Each part: module + golden tests, rewire the pages, clamp URL inputs +
+1. `/ship` this branch. post-merge-check: `detectors/si-vs-ingaas="81.8%"` `detectors/back-illumination="2.84 dB"`.
+2. Detectors part 5, then 6–9 in ROADMAP order. Each part: module + golden tests, rewire the pages, clamp URL inputs +
    `min`/`max` on inputs, "—" for NaN, then tier, modelNote and references, and delete the `knownIssue`.
    `/handover` on the feature branch before `/ship`.
 3. `post-merge-check` takes default-page values only (no query strings). Grep the prerendered
-   `.next/server/app/<cat>/<slug>.html` after `build` for a distinctive default string. Part 4b used
-   `detectors/ingaas-parameters="0.7373 eV"` `detectors/ingaas-parameters="1.023 A/W"`.
-4. Later: fiber and FSO open findings (ROADMAP), the two imaging/spectroscopy findings from part 0, Chrome-only checks.
+   `.next/server/app/<cat>/<slug>.html` after `build` for a distinctive default string.
+4. Later: fiber and FSO open findings (ROADMAP), the imaging/spectroscopy findings, Chrome-only checks.
 
 ## Non-obvious facts
+- **Session 69 lessons** (parts of 2 modules and 3 pages fit one session inline, probing each function first):
+  - `SimpleChart` maps `null` y to 0 (`Number(null)`); use `NaN` for gaps. On log axes, y ≤ 0 is skipped.
+  - The ideal InGaAs model gives 97 % QE at 1.0 µm; real standard devices give about 60–75 % (contact-layer loss). It is
+    stated in the modelNote, not fixed.
 - **Session 68 lessons:**
   - Vurgaftman 2001 PDF: `ursemiconductors.web.illinois.edu/ECE536/Vurgaftman(2001).pdf` (pdftotext). The Ioffe NSM
     archive needs `curl -k` over http. refractiveindex.info alloys are under `data/other/semiconductor alloys/`.
@@ -40,9 +42,6 @@ back-illumination**. `polarizer-types` stays blocked until the user is at the la
   - Optical tables: the refractiveindex.info database is on GitHub raw
     (`polyanskiy/refractiveindex.info-database/master/database/data/main/<El>/nk/<Author-Year>.yml`). pveducation.org's
     silicon table is Green & Keevers 1995, not Green 2008: a usable second source (agrees within 2.3 %).
-- **Session 66 lessons:**
-  - Parts of 3–4 modules and 4–5 pages fit one session inline (sessions 66, 67), without a physics-reviewer pass, when
-    each function is probed against an independent numeric or hand check before the tests are written.
 - **Session 65 lessons:**
   - Probe the module (scratchpad `.ts`) before writing the test; then mutate the code once to see `ℹ fail N`.
   - Charts of ≤ 300 points: compute them in the render, not in `useMemo`: no stale deps, no eslint-disable.
