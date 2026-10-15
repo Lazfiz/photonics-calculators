@@ -132,9 +132,24 @@ export const detectors: CalculatorEntry[] = [
   },
   {
     slug: "channel-photomultiplier",
-    title: "Channel Photomultiplier (Multi-Channel PMT)",
-    description: "Multi-channel PMT: gain staging, energy resolution, and timing.",
-    knownIssue: "The energy resolution 2.355/√N_pe leaves out the multiplier excess noise: 7.9 % FWHM instead of 9.3 % (F = 1.4, as on the PMT page) at the defaults. The peak current divides the charge by the TTS, which is a jitter, not a pulse width.",
+    title: "Channel Photomultiplier (CPM)",
+    description: "Single-channel CPM: anode sensitivity, photon-counting and analog SNR, and pulse resolution with the channel's excess noise.",
+    keywords: ["Channel Photomultiplier (Multi-Channel PMT)", "CPM"],
+    tier: "textbook",
+    modelNote: "One channel behind a photocathode. Counting takes every photoelectron as counted, with no dead time and a known dark rate; the analog SNR in B = 1/(2T) differs from it by √F. The pulse resolution holds only below the linear limit; saturated output is not modelled.",
+    references: [
+      {
+        citation: "PerkinElmer Optoelectronics (2001). Channel Photomultipliers C900, C1300 and C1900 series, data sheet DS-291 Rev A. Gain above 10⁸ at 3000 V, bialkali dark count rate about 10 cps, saturated single-photoelectron peak above a gain of 10⁷.",
+      },
+      {
+        citation: "Wiza J. L. (1979). Microchannel plate detectors. Nucl. Instrum. Methods 162, 587–601, eq. (1)–(4) and §2.2. Schagen's channel-gain model (eq. 1) with A ≈ 0.2 and V₀ ≈ 1 eV, exponential pulse heights below saturation, saturated gain proportional to the channel diameter (10⁸ for 1 mm).",
+        url: "https://doi.org/10.1016/0029-554X(79)90734-1",
+      },
+      {
+        citation: "Hamamatsu Photonics (2017). Photomultiplier Tubes: Basics and Applications, 4th ed., §4.3.7, Eq. 4-25 to 4-32. Noise figure of a dynode chain, F = 1 + 1/δ₁ + 1/(δ₁δ₂) + … → δ/(δ − 1), and the shot-noise SNR.",
+        url: "https://www.hamamatsu.com/content/dam/hamamatsu-photonics/sites/documents/99_SALES_LIBRARY/etd/PMT_handbook_v4E.pdf",
+      },
+    ],
   },
   {
     slug: "cooling-benefit",
@@ -408,7 +423,14 @@ export const detectors: CalculatorEntry[] = [
     slug: "microchannel-plate",
     title: "Microchannel Plate",
     description: "MCP gain, spatial resolution, and effective QE for photon detectors.",
-    knownIssue: "The gain law is invented: gain changes only 3× from 500 to 1500 V, and one plate at 1 kV with L/D 50 gives about 400 instead of about 10⁴. The 9 % 'collection efficiency' is a hard-coded 15 % QE times the open area.",
+    tier: "textbook",
+    modelNote: "Schagen's model: secondaries leave the wall normally at V₀ and yield A·√V_c per strike. With A = 0.2 a 1 kV plate of L/d 50 gives 10³ where real plates give about 10⁴, so fit A to a measured curve. Stacks multiply unsaturated against the one-channel space-charge limit; chevrons saturate near 10⁷. No ion feedback.",
+    references: [
+      {
+        citation: "Wiza J. L. (1979). Microchannel plate detectors. Nucl. Instrum. Methods 162, 587–601, eq. (1)–(4) and §2.2. Schagen's channel-gain model (eq. 1) with A ≈ 0.2 and V₀ ≈ 1 eV, exponential pulse heights below saturation, saturated gain proportional to the channel diameter (10⁸ for 1 mm).",
+        url: "https://doi.org/10.1016/0029-554X(79)90734-1",
+      },
+    ],
   },
   {
     slug: "modulation-transfer",
@@ -505,6 +527,14 @@ export const detectors: CalculatorEntry[] = [
     title: "Photomultiplier Tube (PMT)",
     description: "PMT gain, signal current, excess noise factor, and SNR from dynode parameters.",
     keywords: ["PMT Gain & SNR"],
+    tier: "textbook",
+    modelNote: "Equal dynodes, Poisson secondary emission, full interstage collection and shot noise only. All anode dark current is taken as cathode emission (no leakage) and the dark level as known, with no subtraction term.",
+    references: [
+      {
+        citation: "Hamamatsu Photonics (2017). Photomultiplier Tubes: Basics and Applications, 4th ed., §4.3.7, Eq. 4-25 to 4-32. Noise figure of a dynode chain, F = 1 + 1/δ₁ + 1/(δ₁δ₂) + … → δ/(δ − 1), and the shot-noise SNR.",
+        url: "https://www.hamamatsu.com/content/dam/hamamatsu-photonics/sites/documents/99_SALES_LIBRARY/etd/PMT_handbook_v4E.pdf",
+      },
+    ],
   },
   {
     slug: "quantum-efficiency",

@@ -1,59 +1,100 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { q } from "../../../physics/constants";
+import {
+  analogSnr, anodeSensitivity, photonCountingSnr, pulseResolutionFwhm,
+} from "../../../physics/detectors/electron-multiplier";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 2) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
+
+// Defaults: PerkinElmer CPM C900/C1300/C1900 data sheet: bialkali dark count rate 10 cps, anode sensitivity quoted at
+// 410 nm, and the channel saturates above a gain of 10⁷, which sets the 10⁷ e⁻ linear limit. A gain of 10⁵ keeps a
+// 100-photon pulse linear. QE 25 % as in the Hamamatsu PMT handbook's worked example. F = 2 for the near-exponential
+// pulse heights of an unsaturated channel, J. L. Wiza, Nucl. Instrum. Methods 162, 587 (1979).
 export default function ChannelPMTPage() {
-  const [numChannels, setNumChannels] = useURLState("numChannels", 16);
-  const [channelGain, setChannelGain] = useURLState("channelGain", 1e4);
-  const [quantumEff, setQuantumEff] = useURLState("quantumEff", 0.25);
-  const [darkCountRate, setDarkCountRate] = useURLState("darkCountRate", 500);
-  const [collectionEff, setCollectionEff] = useURLState("collectionEff", 0.9);
-  const [transitTimeSpread, setTransitTimeSpread] = useURLState("transitTimeSpread", 200);
-  const [photonsPerEvent, setPhotonsPerEvent] = useURLState("photonsPerEvent", 4000);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 410); // nm
+  const [qeRaw, setQe] = useURLState("quantumEff", 0.25);
+  const [gainRaw, setGain] = useURLState("channelGain", 1e5);
+  const [enfRaw, setEnf] = useURLState("excessNoise", 2);
+  const [darkRaw, setDarkCountRate] = useURLState("darkCountRate", 10); // counts/s
+  const [photonRateRaw, setPhotonRate] = useURLState("photonRate", 1e4); // photons/s
+  const [gateRaw, setGate] = useURLState("gateTime", 1); // s
+  const [photonsRaw, setPhotonsPerPulse] = useURLState("photonsPerPulse", 100);
+  const [limitRaw, setLimit] = useURLState("linearLimit", 1e7); // electrons per pulse
 
-  const numPE = photonsPerEvent * quantumEff * collectionEff;
-  const results = useMemo(() => {
-    const chargePerPhoton = q * channelGain * quantumEff * collectionEff;
-    const anodeSensitivity = chargePerPhoton / q;
-    const peakCurrent = (numPE * q * channelGain) / (transitTimeSpread * 1e-12);
-    const energyRes = numPE > 0 ? 2.355 / Math.sqrt(numPE) : 1;
-    const totalDarkRate = darkCountRate * numChannels;
-    return { channelGain, chargePerPhoton, anodeSensitivity, peakCurrent, energyRes, totalDarkRate };
-  }, [numChannels, channelGain, quantumEff, darkCountRate, collectionEff, transitTimeSpread, numPE]);
+  const wavelength_nm = clamp(wavelengthRaw, 115, 900, 410);
+  const qe = clamp(qeRaw, 0, 1, 0.25);
+  const gain = clamp(gainRaw, 1e2, 1e9, 1e5);
+  const enf = clamp(enfRaw, 1, 3, 2);
+  const dark = clamp(darkRaw, 0, 1e6, 10);
+  const photonRate = clamp(photonRateRaw, 0, 1e10, 1e4);
+  const gate = clamp(gateRaw, 1e-6, 1e4, 1);
+  const photons = clamp(photonsRaw, 1, 1e7, 100);
+  const limit = clamp(limitRaw, 1e5, 1e10, 1e7);
 
-  const chartData = useMemo(() => {
-    const gains = Array.from({ length: 200 }, (_, i) => 1e2 + i * 1e6 / 200);
-    return [
-      { x: gains, y: gains.map(g => g * quantumEff * collectionEff), type: "scatter", mode: "lines", name: "e⁻ per photon", line: { color: "#60a5fa" } },
-      { x: gains, y: gains.map(() => numPE > 0 ? (2.355 / Math.sqrt(numPE)) * 100 : 100), type: "scatter", mode: "lines", name: "Energy Res. (%FWHM)", line: { color: "#f87171", dash: "dash" }, yaxis: "y2" },
-    ];
-  }, [channelGain, quantumEff, collectionEff, numPE]);
+  const sensitivity = anodeSensitivity(qe, wavelength_nm * 1e-9, gain);
+  const signalRate = photonRate * qe;
+  const signalCurrent = signalRate * q * gain;
+  const darkCurrent = dark * q * gain; // dark counts come from the photocathode only
+  const countSnr = photonCountingSnr(signalRate, dark, gate);
+  const analog = analogSnr(signalRate, dark, 1 / (2 * gate), enf);
+  const nPe = photons * qe;
+  const pulseElectrons = nPe * gain;
+  const linear = pulseElectrons <= limit;
+  const resolution = linear ? pulseResolutionFwhm(nPe, enf) : NaN;
+
+  const axis = Array.from({ length: 121 }, (_, i) => 10 ** (i / 20)); // 1 to 10⁶ photons per pulse
+  const cut = (p: number, f: number) => (p * qe * gain <= limit ? 100 * pulseResolutionFwhm(p * qe, f) : NaN);
+  const chartData = [
+    { x: axis, y: axis.map((p) => cut(p, 1)), type: "scatter" as const, mode: "lines" as const, name: "F = 1 (photoelectron statistics)", line: { color: "#60a5fa", dash: "dash" } },
+    { x: axis, y: axis.map((p) => cut(p, enf)), type: "scatter" as const, mode: "lines" as const, name: `F = ${enf}`, line: { color: "#f87171" } },
+  ];
 
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Number of Channels" value={numChannels} onChange={setNumChannels} min={1} max={64} />
-        <ValidatedNumberInput label="Channel Gain" value={channelGain} onChange={setChannelGain} />
-        <ValidatedNumberInput label="Quantum Efficiency" value={quantumEff} onChange={setQuantumEff} min={0} max={1} step="0.01" />
-        <ValidatedNumberInput label="Collection Efficiency" value={collectionEff} onChange={setCollectionEff} min={0} max={1} step="0.01" />
-        <ValidatedNumberInput label="Dark Count Rate (cps/ch)" value={darkCountRate} onChange={setDarkCountRate} />
-        <ValidatedNumberInput label="Transit Time Spread (ps)" value={transitTimeSpread} onChange={setTransitTimeSpread} />
-        <ValidatedNumberInput label="Photons/event" value={photonsPerEvent} onChange={setPhotonsPerEvent} min={1} />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={115} max={900} step="10" />
+        <ValidatedNumberInput label="Photocathode QE" value={qeRaw} onChange={setQe} min={0} max={1} step="0.01" />
+        <ValidatedNumberInput label="Channel Gain" value={gainRaw} onChange={setGain} min={1e2} max={1e9} step="1e5" />
+        <ValidatedNumberInput label="Excess Noise Factor F" value={enfRaw} onChange={setEnf} min={1} max={3} step="0.05" />
+        <ValidatedNumberInput label="Dark Count Rate (counts/s)" value={darkRaw} onChange={setDarkCountRate} min={0} max={1e6} step="1" />
+        <ValidatedNumberInput label="Photon Rate (photons/s)" value={photonRateRaw} onChange={setPhotonRate} min={0} max={1e10} step="1000" />
+        <ValidatedNumberInput label="Gate Time (s)" value={gateRaw} onChange={setGate} min={1e-6} max={1e4} step="0.1" />
+        <ValidatedNumberInput label="Photons per Pulse" value={photonsRaw} onChange={setPhotonsPerPulse} min={1} max={1e7} step="10" />
+        <ValidatedNumberInput label="Linear Limit (e⁻ per pulse)" value={limitRaw} onChange={setLimit} min={1e5} max={1e10} step="1e6" />
       </div>
+      <p className="text-sm text-gray-400 mb-6">
+        F ≈ 2 for an unsaturated channel, whose pulse heights are near-exponential. Above a gain of about 10⁷ the
+        channel saturates and the single-electron peak narrows to about 50 % FWHM, so F = 1 + (0.5/2.355)² ≈ 1.05 for
+        single photons. A saturated pulse no longer grows with the number of photoelectrons.
+      </p>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ResultCard label="Channel Gain" value={results.channelGain.toExponential(2)} tone="blue" />
-        <ResultCard label="Charge/Photon" value={results.chargePerPhoton.toExponential(3) + " C"} tone="green" />
-        <ResultCard label="Anode Sensitivity" value={results.anodeSensitivity.toExponential(2) + " e⁻/photon"} tone="yellow" />
-        <ResultCard label="Peak Current (approx)" value={results.peakCurrent.toExponential(2) + " A"} tone="red" subtext="Q_event / TTS — order-of-magnitude upper bound" />
-        <ResultCard label="Energy Resolution" value={`${(results.energyRes * 100).toFixed(1)}% FWHM`} tone="purple" />
-        <ResultCard label="Total Dark Rate" value={`${results.totalDarkRate.toExponential(2)} cps`} tone="orange" />
+        <ResultCard label="Anode Sensitivity" value={`${fmt(sensitivity)} A/W`} tone="blue" subtext={`QE·eλ/(hc)·G at ${wavelength_nm} nm`} />
+        <ResultCard label="Photoelectron Rate" value={`${fmt(signalRate)} /s`} tone="green" subtext={`Signal anode current ${fmt(signalCurrent)} A`} />
+        <ResultCard label="Dark Anode Current" value={`${fmt(darkCurrent)} A`} tone="orange" subtext="Dark counts × e × G (photocathode emission)" />
+        <ResultCard label="Photon-Counting SNR" value={Number.isFinite(countSnr) ? countSnr.toFixed(2) : "—"} tone="cyan"
+          subtext={gain >= 1e7 ? `${gate} s gate; saturated single-electron peak` : `${gate} s gate; below a gain of 10⁷ single pulses sit close to the electronic noise`} />
+        <ResultCard label="Analog SNR" value={Number.isFinite(analog) ? analog.toFixed(2) : "—"} tone="purple" subtext={`Bandwidth 1/(2T); the gain spread costs √F = ${Math.sqrt(enf).toFixed(3)}`} />
+        <ResultCard label="Pulse Resolution" value={Number.isFinite(resolution) ? `${(resolution * 100).toFixed(1)} % FWHM` : "—"} tone="red"
+          subtext={linear ? `${nPe.toFixed(1)} photoelectrons, ${(pulseElectrons * q * 1e12).toPrecision(3)} pC` : `${fmt(pulseElectrons)} e⁻ exceeds the linear limit: the pulse is clipped`} />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>G_per_channel = G_channel</p><p>I_peak ≈ N_pe · e · G / TTS (upper bound; real pulse width &gt; TTS)</p><p>ΔE/E (FWHM) = 2.355 / √(N_pe) [Poisson limit]</p><p>N_pe = N_photons · η · ε_coll</p></div>
-      <ChartPanel data={chartData} layout={{ xaxis: { title: "Channel Gain", type: "log", gridcolor: "#374151" }, yaxis: { title: "e⁻ per photon", type: "log", gridcolor: "#374151" }, yaxis2: { title: "Energy Res. (%FWHM)", gridcolor: "#374151", overlaying: "y", side: "right" } }} />
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
+        <p>S<sub>anode</sub> = QE · eλ/(hc) · G</p>
+        <p>SNR<sub>count</sub> = R<sub>s</sub>T / √((R<sub>s</sub> + R<sub>d</sub>)T), R<sub>s</sub> = Φ · QE</p>
+        <p>SNR<sub>analog</sub> = R<sub>s</sub> / √(2B(R<sub>s</sub> + R<sub>d</sub>)F), B = 1/(2T)</p>
+        <p>ΔQ/Q (FWHM) = 2.355 · √(F / N<sub>pe</sub>), valid while N<sub>pe</sub> · G ≤ linear limit</p>
+      </div>
+      <ChartPanel data={chartData} layout={{
+        title: { text: "Pulse Resolution vs Photons per Pulse", font: { size: 12 } },
+        xaxis: { title: "Photons per pulse", type: "log", gridcolor: "#374151" },
+        yaxis: { title: "Resolution (% FWHM)", type: "log", gridcolor: "#374151" },
+      }} />
     </>
   );
 }
