@@ -8,7 +8,8 @@ import { hc_eV_nm } from "../../../physics/constants";
 import { siliconAbsorption } from "../../../physics/materials/silicon-absorption";
 import { photodiodeQe } from "../../../physics/detectors/photodiode-qe";
 import { responsivity } from "../../../physics/detectors/responsivity";
-import { VARSHNI, generationCurrent, siliconIntrinsicDensity, varshniBandGap } from "../../../physics/detectors/dark-current";
+import { generationCurrent, siliconIntrinsicDensity } from "../../../physics/detectors/dark-current";
+import { VARSHNI, varshniBandGap } from "../../../physics/materials/bandgap";
 import { EPS_R_SILICON, depletionCapacitance } from "../../../physics/detectors/photodiode-rc";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);

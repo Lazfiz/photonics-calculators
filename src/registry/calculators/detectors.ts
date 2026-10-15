@@ -104,7 +104,7 @@ export const detectors: CalculatorEntry[] = [
     title: "Cooling Benefit Calculator",
     description: "Dark current reduction and SNR improvement from thermoelectric (TEC) or cryogenic cooling.",
     tier: "textbook",
-    modelNote: "Si dark current scales as depletion generation (∝ n_i), InGaAs as diffusion (∝ n_i²), with a fixed band gap or, for Si, Varshni E_g(T); the Varshni gap raises the 25 → −40 °C Si reduction from ×630 to ×950. Surface leakage, tunnelling and the InGaAs gap's temperature shift are left out.",
+    modelNote: "Si dark current scales as depletion generation (∝ n_i), InGaAs as diffusion (∝ n_i²), with a fixed band gap or E_g(T): Varshni for Si, Vurgaftman's In₀.₅₃Ga₀.₄₇As gap for InGaAs. The temperature-dependent gap raises the 25 → −40 °C reduction from ×630 to ×950 for Si and from ×7158 (fixed 0.75 eV) to ×1.90e4 for InGaAs. Surface leakage and tunnelling are left out.",
     references: [
       {
         citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley. n_i(T), generation (∝ n_i) and diffusion (∝ n_i²) currents.",
@@ -113,6 +113,10 @@ export const detectors: CalculatorEntry[] = [
       {
         citation: "Varshni Y. P. (1967). Temperature dependence of the energy gap in semiconductors. Physica 34, 149–154. Si coefficients E_g(0) = 1.17 eV, α = 4.73e-4 eV/K, β = 636 K as in Sze, 2nd ed. (1981).",
         url: "https://doi.org/10.1016/0031-8914(67)90062-6",
+      },
+      {
+        citation: "Vurgaftman I., Meyer J. R., Ram-Mohan L. R. (2001). Band parameters for III–V compound semiconductors and their alloys. J. Appl. Phys. 89, 5815–5875. Varshni sets (Tables I–X) and the Ga₁₋ₓInₓAs bowing C = 0.477 eV (Table XIII).",
+        url: "https://doi.org/10.1063/1.1368156",
       },
     ],
   },
@@ -237,8 +241,27 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "ingaas-parameters",
     title: "InGaAs Detector Parameters",
-    description: "InₓGa₁₋ₓAs bandgap, cutoff wavelength, QE, dark current, NEP for SWIR detectors.",
-    knownIssue: "At the default +0.5 V bias the dark current, NEP and D* all read 0, because forward bias is treated as zero bias with no Johnson noise. The generation-recombination dark current is about 10¹³ times too small at any bias.",
+    description: "InₓGa₁₋ₓAs band gap, cutoff wavelength, QE, responsivity, generation dark current, NEP and D* for SWIR p-i-n photodiodes.",
+    tier: "textbook",
+    modelNote: "Band gap from Vurgaftman's Varshni sets with bowing 0.477 eV (0.7373 eV, cutoff 1682 nm at x = 0.53, 300 K). Absorption α = A·√(E − E_g), A fitted to Adachi's model within ±12 % from 0.95 to 1.62 µm. The absorber is a fully depleted slab; dark current is space-charge generation q·n_i·d·A/τ_g with n_i scaled from 6.3e11 cm⁻³ through the gap only. Diffusion current from the neutral layers, which dominates many devices above room temperature, surface leakage and tunnelling are left out. The noise √(2q·I_gen) is the shot noise in reverse bias and the Johnson noise at zero bias.",
+    references: [
+      {
+        citation: "Vurgaftman I., Meyer J. R., Ram-Mohan L. R. (2001). Band parameters for III–V compound semiconductors and their alloys. J. Appl. Phys. 89, 5815–5875. Varshni sets (Tables I–X) and the Ga₁₋ₓInₓAs bowing C = 0.477 eV (Table XIII).",
+        url: "https://doi.org/10.1063/1.1368156",
+      },
+      {
+        citation: "Paul S., Roy J. B., Basu P. K. (1991). Empirical expressions for the alloy composition and temperature dependence of the band gap and intrinsic carrier density in GaₓIn₁₋ₓAs. J. Appl. Phys. 69, 827–829. n_i = 6.3e11 cm⁻³ for Ga₀.₄₇In₀.₅₃As at 300 K (as tabulated in the Ioffe NSM archive).",
+        url: "https://doi.org/10.1063/1.348919",
+      },
+      {
+        citation: "Adachi S. (1989). Optical dispersion relations for GaP, GaAs, GaSb, InP, InAs, InSb, AlₓGa₁₋ₓAs, and In₁₋ₓGaₓAsᵧP₁₋ᵧ. J. Appl. Phys. 66, 6030–6040. In₀.₅₂Ga₀.₄₈As n, k as tabulated at refractiveindex.info; basis of the absorption fit.",
+        url: "https://doi.org/10.1063/1.343580",
+      },
+      {
+        citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley, ch. 2. Space-charge generation current q·n_i·W/τ_g and its e^(qV/2k_BT) bias dependence.",
+        url: "https://doi.org/10.1002/0470068329",
+      },
+    ],
   },
   {
     slug: "intensified-ccd",

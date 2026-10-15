@@ -4,28 +4,30 @@ import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import { hc_eV_nm } from "../../../physics/constants";
+import { INGAAS_LATTICE_MATCHED_X, VARSHNI, ingaasBandGap, varshniBandGap } from "../../../physics/materials/bandgap";
+
 interface Semiconductor {
-  name: string; Eg0: number; alpha: number; beta: number;
-  direct: boolean; color: string;
+  name: string;
+  direct: boolean;
+  color: string;
+  /** Band gap in eV at T in K. */
+  bandGap: (T: number) => number;
 }
 
-// Varshni parameters: Eg(T) = Eg0 - αT²/(T+β)
+// Varshni sets from materials/bandgap.ts: Si, Ge (Sze 1981); III–V (Vurgaftman et al. 2001); GaP is its X (indirect) gap.
+const varshni = (p: (typeof VARSHNI)[keyof typeof VARSHNI]) => (T: number) => varshniBandGap(T, p);
 const SEMICONDUCTORS: Record<string, Semiconductor> = {
-  GaAs: { name: "GaAs", Eg0: 1.519, alpha: 5.405e-4, beta: 204, direct: true, color: "#f87171" },
-  InP: { name: "InP", Eg0: 1.424, alpha: 4.5e-4, beta: 327, direct: true, color: "#60a5fa" },
-  GaP: { name: "GaP", Eg0: 2.338, alpha: 5.771e-4, beta: 372, direct: false, color: "#34d399" },
-  Si: { name: "Si", Eg0: 1.170, alpha: 4.73e-4, beta: 636, direct: false, color: "#f59e0b" },
-  Ge: { name: "Ge", Eg0: 0.744, alpha: 4.774e-4, beta: 235, direct: false, color: "#a78bfa" },
-  InAs: { name: "InAs", Eg0: 0.417, alpha: 3.76e-4, beta: 93, direct: true, color: "#ec4899" },
-  GaN: { name: "GaN", Eg0: 3.39, alpha: 9.09e-4, beta: 830, direct: true, color: "#06b6d4" },
-  CdTe: { name: "CdTe", Eg0: 1.606, alpha: 5.5e-4, beta: 180, direct: true, color: "#84cc16" },
-  ZnO: { name: "ZnO", Eg0: 3.44, alpha: 7.5e-4, beta: 600, direct: true, color: "#fb923c" },
-  InGaAs: { name: "In₀.₅₃Ga₀.₄₇As", Eg0: 0.75, alpha: 4.5e-4, beta: 300, direct: true, color: "#e879f9" },
+  GaAs: { name: "GaAs", direct: true, color: "#f87171", bandGap: varshni(VARSHNI.gaas) },
+  InP: { name: "InP", direct: true, color: "#60a5fa", bandGap: varshni(VARSHNI.inp) },
+  GaP: { name: "GaP", direct: false, color: "#34d399", bandGap: varshni(VARSHNI.gap) },
+  Si: { name: "Si", direct: false, color: "#f59e0b", bandGap: varshni(VARSHNI.si) },
+  Ge: { name: "Ge", direct: false, color: "#a78bfa", bandGap: varshni(VARSHNI.ge) },
+  InAs: { name: "InAs", direct: true, color: "#ec4899", bandGap: varshni(VARSHNI.inas) },
+  GaSb: { name: "GaSb", direct: true, color: "#84cc16", bandGap: varshni(VARSHNI.gasb) },
+  InSb: { name: "InSb", direct: true, color: "#fb923c", bandGap: varshni(VARSHNI.insb) },
+  GaN: { name: "GaN (wurtzite)", direct: true, color: "#06b6d4", bandGap: varshni(VARSHNI.gan) },
+  InGaAs: { name: "In₀.₅₃Ga₀.₄₇As", direct: true, color: "#e879f9", bandGap: T => ingaasBandGap(INGAAS_LATTICE_MATCHED_X, T) },
 };
-
-function varshni(eg0: number, alpha: number, beta: number, T: number) {
-  return eg0 - (alpha * T * T) / (T + beta);
-}
 
 function egToWavelength(eg: number) {
   return hc_eV_nm / eg; // nm
@@ -33,14 +35,15 @@ function egToWavelength(eg: number) {
 
 export default function SemiconductorBandgapPage() {
   const [selected, setSelected] = useState<string[]>(["GaAs", "InP", "Si", "GaN", "InGaAs"]);
-  const [temperature, setTemperature] = useURLState("temperature", 300);
+  const [temperatureRaw, setTemperature] = useURLState("temperature", 300);
+  const temperature = Number.isFinite(temperatureRaw) ? Math.min(700, Math.max(10, temperatureRaw)) : 300;
 
   const toggle = (key: string) => setSelected(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
 
   const bandgaps = useMemo(() => {
     return selected.map(key => {
       const s = SEMICONDUCTORS[key];
-      return { key, ...s, Eg: varshni(s.Eg0, s.alpha, s.beta, temperature) };
+      return { key, ...s, Eg: s.bandGap(temperature) };
     });
   }, [selected, temperature]);
 
@@ -48,7 +51,7 @@ export default function SemiconductorBandgapPage() {
     const temps = Array.from({ length: 200 }, (_, i) => 10 + i * 3);
     return selected.map(key => {
       const s = SEMICONDUCTORS[key];
-      return { x: temps, y: temps.map(T => varshni(s.Eg0, s.alpha, s.beta, T)), type: "scatter" as const, mode: "lines" as const, name: s.name, line: { color: s.color, width: 2 } };
+      return { x: temps, y: temps.map(s.bandGap), type: "scatter" as const, mode: "lines" as const, name: s.name, line: { color: s.color, width: 2 } };
     });
   }, [selected]);
 
@@ -56,7 +59,7 @@ export default function SemiconductorBandgapPage() {
     return selected.map(key => {
       const s = SEMICONDUCTORS[key];
       const temps = Array.from({ length: 200 }, (_, i) => 10 + i * 3);
-      return { x: temps, y: temps.map(T => egToWavelength(varshni(s.Eg0, s.alpha, s.beta, T))), type: "scatter" as const, mode: "lines" as const, name: s.name, line: { color: s.color, width: 2, dash: "dash" } };
+      return { x: temps, y: temps.map(T => egToWavelength(s.bandGap(T))), type: "scatter" as const, mode: "lines" as const, name: s.name, line: { color: s.color, width: 2, dash: "dash" } };
     });
   }, [selected]);
 
@@ -64,7 +67,6 @@ export default function SemiconductorBandgapPage() {
 
   return (
     <>
-            
       <div className="mb-6 flex flex-wrap gap-2">
         {Object.entries(SEMICONDUCTORS).map(([key, s]) => (
           <button key={key} onClick={() => toggle(key)} className={`px-3 py-1.5 rounded text-sm border ${selected.includes(key) ? "border-blue-500 bg-blue-500/20 text-blue-300" : "border-gray-700 text-gray-500"}`}>{s.name}{s.direct ? "" : " (ind)"}</button>
@@ -73,7 +75,7 @@ export default function SemiconductorBandgapPage() {
 
       <div className="mb-8">
         <label className="block text-sm text-gray-400 mb-1">Temperature: {temperature} K ({(temperature - 273.15).toFixed(0)} °C)</label>
-        <input type="range" aria-label="Temperature: {temperature} K ({(temperature - 273.15).toFixed(0)} °C)" min={10} max={700} step={5} value={temperature} onChange={e => setTemperature(+e.target.value)} />
+        <input type="range" aria-label="Temperature (K)" min={10} max={700} step={5} value={temperature} onChange={e => setTemperature(+e.target.value)} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -98,7 +100,8 @@ export default function SemiconductorBandgapPage() {
 
       <div className="mt-8 bg-gray-900 rounded-lg p-4 text-sm text-gray-400">
         <p className="font-mono bg-gray-800 p-2 rounded mb-2">E<sub>g</sub>(T) = E<sub>g0</sub> − αT² / (T + β)</p>
-        <p className="font-mono bg-gray-800 p-2 rounded">λ<sub>edge</sub> = hc / E<sub>g</sub> = 1239.84 / E<sub>g</sub>(eV) nm</p>
+        <p className="font-mono bg-gray-800 p-2 rounded mb-2">λ<sub>edge</sub> = hc / E<sub>g</sub> = 1239.84 / E<sub>g</sub>(eV) nm</p>
+        <p className="font-mono bg-gray-800 p-2 rounded">E<sub>g</sub>(In<sub>x</sub>Ga<sub>1−x</sub>As) = (1−x)·E<sub>g,GaAs</sub> + x·E<sub>g,InAs</sub> − 0.477·x(1−x) eV</p>
       </div>
     </>
   );

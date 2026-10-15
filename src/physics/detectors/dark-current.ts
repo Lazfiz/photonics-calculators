@@ -4,32 +4,14 @@
  * The intrinsic density n_i = √(N_c·N_v)·exp(−E_g/(2k_B·T)) with N_c, N_v ∝ T^(3/2), so n_i ∝ T^(3/2)·exp(−E_g/(2k_B·T)).
  * Depletion-region generation current ∝ n_i; diffusion current ∝ n_i². S. M. Sze, K. K. Ng, Physics of Semiconductor
  * Devices, 3rd ed. (Wiley 2007), ch. 1 (n_i) and ch. 2 (ideal-diode J_s ∝ n_i², generation current ∝ n_i).
- * E_g is either fixed or follows Varshni's law E_g(T) = E_g(0) − α·T²/(T + β) (Y. P. Varshni, Physica 34, 149 (1967),
- * doi:10.1016/0031-8914(67)90062-6). The empirical doubling law I ∝ 2^(ΔT/T_d) is the local form of the same scaling.
+ * E_g is either fixed or follows Varshni's law (`materials/bandgap.ts`). The empirical doubling law I ∝ 2^(ΔT/T_d)
+ * is the local form of the same scaling.
  */
 
 import { k_B, q } from "../constants";
+import { VARSHNI, varshniBandGap, type VarshniParams } from "../materials/bandgap";
 
 export type DarkCurrentMechanism = "generation" | "diffusion";
-
-/** Varshni coefficients: E_g(0) in eV, α in eV/K, β in K. */
-export interface VarshniParams {
-  Eg0_eV: number;
-  alpha_eV_per_K: number;
-  beta_K: number;
-}
-
-/** S. M. Sze, Physics of Semiconductor Devices, 2nd ed. (Wiley 1981), ch. 1; as tabulated in V. Palankovski, PhD thesis, TU Wien (2000), §3.3.1.1. */
-export const VARSHNI: Record<"si" | "ge", VarshniParams> = {
-  si: { Eg0_eV: 1.17, alpha_eV_per_K: 4.73e-4, beta_K: 636 },
-  ge: { Eg0_eV: 0.7437, alpha_eV_per_K: 4.774e-4, beta_K: 235 },
-};
-
-/** Varshni band gap E_g(T) in eV. */
-export function varshniBandGap(T: number, p: VarshniParams): number {
-  if (!(T >= 0)) return NaN;
-  return p.Eg0_eV - (p.alpha_eV_per_K * T * T) / (T + p.beta_K);
-}
 
 /**
  * Intrinsic-density ratio n_i(T)/n_i(T_ref) for band gaps in eV at T and at T_ref. With a fixed gap pass one value;
@@ -93,4 +75,23 @@ export function siliconIntrinsicDensity(T: number): number {
 export function generationCurrent(ni: number, width: number, area: number, generationLifetime: number): number {
   if (!(ni >= 0) || !(width >= 0) || !(area >= 0) || !(generationLifetime > 0)) return NaN;
   return (q * ni * width * area) / generationLifetime;
+}
+
+/**
+ * Magnitude of the space-charge generation–recombination current at bias V ≤ 0 (V in V, T in K):
+ * I = I_gen·(1 − e^{qV/(2k_B·T)}), the n = 2 diode term of Sze & Ng (2007), ch. 2. I_gen is the reverse-bias
+ * generation current (`generationCurrent`). Forward bias returns NaN.
+ */
+export function generationCurrentAtBias(generation: number, bias: number, T: number): number {
+  if (!(generation >= 0) || !(bias <= 0) || !(T > 0)) return NaN;
+  return 0 - generation * Math.expm1((q * bias) / (2 * k_B * T)); // 0 − …, not −…: no −0 at zero bias
+}
+
+/**
+ * Current-noise density √(2q·I_gen) in A/√Hz of a generation-limited photodiode at V ≤ 0. It equals the Johnson noise
+ * 4k_B·T/R₀ at zero bias (R₀ = 2k_B·T/(q·I_gen) for the n = 2 term) and the shot noise 2q·I at |V| ≫ 2k_B·T/q.
+ */
+export function generationNoiseDensity(generation: number): number {
+  if (!(generation >= 0)) return NaN;
+  return Math.sqrt(2 * q * generation);
 }
