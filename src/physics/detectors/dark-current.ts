@@ -74,3 +74,23 @@ export function localDoublingTemperature(T: number, bandGap: number | VarshniPar
   const dLnNi = 1.5 / T + (activation_eV * q) / (2 * k_B * T * T);
   return Math.LN2 / ((mechanism === "diffusion" ? 2 : 1) * dLnNi);
 }
+
+/**
+ * Intrinsic density of silicon at 300 K, 9.65e9 cm⁻³: P. P. Altermatt, A. Schenk, F. Geelhaar, G. Heiser, J. Appl.
+ * Phys. 93, 1598 (2003), doi:10.1063/1.1529297. In m⁻³.
+ */
+export const SILICON_NI_300K = 9.65e15;
+
+/** Intrinsic density of silicon n_i(T), m⁻³: 9.65e15 m⁻³ at 300 K scaled with T^(3/2) and the Varshni gap. */
+export function siliconIntrinsicDensity(T: number): number {
+  return SILICON_NI_300K * intrinsicDensityRatio(T, 300, varshniBandGap(T, VARSHNI.si), varshniBandGap(300, VARSHNI.si));
+}
+
+/**
+ * Depletion-region generation current q·n_i·W·A/τ_g in A (n_i in m⁻³, W in m, A in m², τ_g in s). τ_g is the
+ * generation lifetime; a midgap trap with τ_n = τ_p = τ gives τ_g = 2τ. Sze & Ng (2007), ch. 2.
+ */
+export function generationCurrent(ni: number, width: number, area: number, generationLifetime: number): number {
+  if (!(ni >= 0) || !(width >= 0) || !(area >= 0) || !(generationLifetime > 0)) return NaN;
+  return (q * ni * width * area) / generationLifetime;
+}
