@@ -79,7 +79,8 @@ and heed deprecation notices.
 ## Working style (quota)
 - One ROADMAP phase/stage per session, sized to fit one context window: about 4 pages, or one shared module and its
   pages. Auto-compaction fires at ≈ 218k tokens and start-up context takes ≈ 60k. Split a bigger stage into a/b boxes
-  before starting. End with `/handover` (one-line ROADMAP tick, HANDOVER ≤80 lines), then `/clear`.
+  before starting. End with `/handover` (one-line ROADMAP tick, HANDOVER ≤80 lines) committed on the feature
+  branch, then `/ship` and `/clear`. One PR per stage: Vercel builds only `main`, and every merge is a production build.
 - Main session (Opus) designs, does the physics, and reviews. Small fixes stay inline. Delegate when the output would
   be large next to the brief:
   - routine multi-file edits → `implementer` (Sonnet): goal, allowed files, gates, ≤40-line report;
