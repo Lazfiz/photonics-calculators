@@ -1,83 +1,78 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-// Photon counting statistics: Poisson distribution P(n) = (μ^n / n!) * e^(-μ)
-// SNR = sqrt(N) for shot-noise limited detection
-// Dead time corrections for high count rates
+import { countLoss, measuredRate, nonParalyzableFano } from "../../../physics/detectors/dead-time";
+import { poissonPmf } from "../../../physics/math";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const MAX_BARS = 201;
+
+// Photon counting statistics: Poisson P(n) = μ^n·e^{−μ}/n!, shot-noise SNR √μ, and a non-paralyzable dead time.
 export default function PhotonCountingPage() {
-  const [meanCounts, setMeanCounts] = useURLState("meanCounts", 100); // expected counts per interval
-  const [deadTime, setDeadTime] = useURLState("deadTime", 50); // ns
-  const [countRate, setCountRate] = useURLState("countRate", 1e6); // counts/s
-  const [integrationTime, setIntegrationTime] = useURLState("integrationTime", 1); // s
+  const [meanCountsRaw, setMeanCounts] = useURLState("meanCounts", 100); // expected counts per interval
+  const [deadTimeRaw, setDeadTime] = useURLState("deadTime", 50); // ns
+  const [countRateRaw, setCountRate] = useURLState("countRate", 1e6); // counts/s
+  const [integrationTimeRaw, setIntegrationTime] = useURLState("integrationTime", 1); // s
 
-  const actualMean = meanCounts;
-  const snr = Math.sqrt(actualMean);
-  const snrDb = 10 * Math.log10(actualMean);
-  const relativeError = 1 / snr;
-  // Dead time correction: N_measured = N_true / (1 + N_true * tau)
-  // N_true = N_measured / (1 - N_measured * tau)
-  const trueRate = countRate; // actual incident rate
-  const measuredRate = trueRate / (1 + trueRate * deadTime * 1e-9);
-  const deadTimeLoss = (1 - measuredRate / trueRate) * 100;
-  const totalCounts = measuredRate * integrationTime;
-  const totalSNR = Math.sqrt(totalCounts);
+  const mu = clamp(meanCountsRaw, 0.1, 1e12, 100);
+  const deadTime = clamp(deadTimeRaw, 0, 1e6, 50);
+  const countRate = clamp(countRateRaw, 1, 1e10, 1e6);
+  const integrationTime = clamp(integrationTimeRaw, 1e-6, 1e5, 1);
 
-  const chartData = useMemo(() => {
-    const sigma = Math.sqrt(actualMean);
-    const start = Math.max(0, Math.floor(actualMean - 4 * sigma));
-    const end = Math.ceil(actualMean + 4 * sigma);
-    const n = Array.from({ length: end - start + 1 }, (_, i) => start + i);
-    // Poisson PMF
-    const poisson = n.map(k => {
-      let logP = k * Math.log(actualMean) - actualMean;
-      for (let i = 2; i <= k; i++) logP -= Math.log(i);
-      return Math.exp(logP);
-    });
-    // Gaussian approximation
-    const gaussian = n.map(k => (1 / (sigma * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((k - actualMean) / sigma, 2)));
+  const snr = Math.sqrt(mu);
+  const snrDb = 10 * Math.log10(mu); // 20·log₁₀ of the amplitude ratio √μ
+  const tau = deadTime * 1e-9;
+  const measured = measuredRate(countRate, tau, "nonparalyzable");
+  const loss = countLoss(countRate, tau, "nonparalyzable");
+  const recordedCounts = measured * integrationTime;
+  const fano = nonParalyzableFano(countRate, tau);
+  // The dead-time-corrected rate R̂ = m/(1 − mτ) has relative error 1/√N_recorded (see dead-time.ts tests).
+  const correctedSnr = Math.sqrt(recordedCounts);
 
-    return [
-      { x: n, y: poisson, type: "bar", name: "Poisson", marker: { color: "#60a5fa", opacity: 0.7 } },
-      { x: n, y: gaussian, type: "scatter", mode: "lines",
-        name: "Gaussian Approx", line: { color: "#f87171", width: 2 } },
-    ];
-  }, [actualMean]);
+  // Counts within ±5σ (+2 for small μ); at most MAX_BARS bars, spaced by `stride` counts when the range is wider.
+  const sigma = Math.sqrt(mu);
+  const start = Math.max(0, Math.floor(mu - 5 * sigma));
+  const end = Math.ceil(mu + 5 * sigma) + 2;
+  const stride = Math.max(1, Math.ceil((end - start) / (MAX_BARS - 1)));
+  const n = Array.from({ length: Math.floor((end - start) / stride) + 1 }, (_, i) => start + i * stride);
+  const chartData = [
+    { x: n, y: n.map((k) => poissonPmf(k, mu)), type: "bar" as const, name: "Poisson", marker: { color: "#60a5fa", opacity: 0.7 } },
+    { x: n, y: n.map((k) => Math.exp(-0.5 * ((k - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI))), type: "scatter" as const, mode: "lines" as const,
+      name: "Gaussian approx.", line: { color: "#f87171", width: 2 } },
+  ];
 
-  const snrVsCounts = useMemo(() => {
-    const N = Array.from({ length: 200 }, (_, i) => 0.1 + i * 1000 / 200);
-    return [
-      { x: N, y: N.map(n => Math.sqrt(n)), type: "scatter", mode: "lines",
-        name: "SNR = √N", line: { color: "#34d399", width: 2 } },
-      { x: N, y: N.map(n => 1 / Math.sqrt(n) * 100), type: "scatter", mode: "lines",
-        name: "Relative Error (%)", line: { color: "#fbbf24", width: 2, dash: "dash" }, yaxis: "y2" },
-    ];
-  }, []);
+  // Counts from 0.1 to 10⁴ on a log grid.
+  const N = Array.from({ length: 200 }, (_, i) => 10 ** (-1 + (5 * i) / 199));
+  const snrVsCounts = [
+    { x: N, y: N.map((v) => Math.sqrt(v)), type: "scatter" as const, mode: "lines" as const, name: "SNR = √N", line: { color: "#34d399", width: 2 } },
+    { x: N, y: N.map((v) => 100 / Math.sqrt(v)), type: "scatter" as const, mode: "lines" as const, name: "Relative Error (%)", line: { color: "#fbbf24", width: 2, dash: "dash" as const }, yaxis: "y2" },
+  ];
 
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Mean Counts per Interval" value={meanCounts} onChange={setMeanCounts} min={0.1} step="1" />
-        <ValidatedNumberInput label="Dead Time (ns)" value={deadTime} onChange={setDeadTime} min={0} step="1" />
-        <ValidatedNumberInput label="Incident Count Rate (counts/s)" value={countRate} onChange={setCountRate} min={1} />
-        <ValidatedNumberInput label="Integration Time (s)" value={integrationTime} onChange={setIntegrationTime} min={0.001} step="0.1" />
+        <ValidatedNumberInput label="Mean Counts per Interval μ" value={meanCountsRaw} onChange={setMeanCounts} min={0.1} max={1e12} step="1" />
+        <ValidatedNumberInput label="Dead Time (ns)" value={deadTimeRaw} onChange={setDeadTime} min={0} max={1e6} step="1" />
+        <ValidatedNumberInput label="Incident Count Rate (counts/s)" value={countRateRaw} onChange={setCountRate} min={1} max={1e10} />
+        <ValidatedNumberInput label="Integration Time (s)" value={integrationTimeRaw} onChange={setIntegrationTime} min={1e-6} max={1e5} step="0.1" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="SNR (per interval)" value={`${snr.toFixed(1)} (${snrDb.toFixed(1)} dB)`} tone="green" />
-        <ResultCard label="Relative Error" value={`${(relativeError * 100).toFixed(2)}%`} tone="yellow" />
-        <ResultCard label="Dead Time Loss" value={`${deadTimeLoss.toFixed(1)}%`} tone="red" />
-        <ResultCard label="Total SNR ({integrationTime}s)" value={`${totalSNR.toFixed(0)}`} tone="purple" />
+        <ResultCard label="SNR per Interval √μ" value={`${snr.toFixed(1)} (${snrDb.toFixed(1)} dB)`} tone="green" />
+        <ResultCard label="Relative Error 1/√μ" value={`${(100 / snr).toFixed(2)}%`} tone="yellow" />
+        <ResultCard label="Dead Time Loss" value={`${(loss * 100).toFixed(1)}%`} tone="red" subtext={`recorded ${(measured / 1e6).toFixed(3)} of ${(countRate / 1e6).toFixed(3)} Mcps`} />
+        <ResultCard label={`Corrected-Rate SNR in ${integrationTime} s`} value={correctedSnr >= 1e4 ? correctedSnr.toExponential(3) : correctedSnr.toFixed(1)} tone="purple" subtext={`√N, N = ${recordedCounts.toExponential(3)} recorded`} />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
-        <p>P(n) = (μ<sup>n</sup> / n!) · e<sup>−μ</sup>  [Poisson distribution]</p>
-        <p>SNR = √N  (shot-noise limit)</p>
-        <p>N<sub>measured</sub> = N<sub>true</sub> / (1 + N<sub>true</sub> · τ)  [non-paralyzable dead time]</p>
-        <p>Measured rate: {(measuredRate / 1e6).toFixed(3)} Mcps vs true: {(trueRate / 1e6).toFixed(3)} Mcps</p>
+        <p>P(n) = μ<sup>n</sup>·e<sup>−μ</sup> / n!  [Poisson]; SNR = √μ (shot-noise limit)</p>
+        <p>m = R / (1 + R·τ)  [non-paralyzable dead time]; corrected R̂ = m / (1 − m·τ)</p>
+        <p>Recorded counts are sub-Poissonian: Var N / N = 1/(1 + R·τ)² = {fano.toFixed(4)}. The correction amplifies that
+          smaller spread back, so the corrected rate has relative error 1/√N of the recorded counts.</p>
+        {stride > 1 && <p className="text-gray-400">The chart shows every {stride}th count value (P(n) per single count).</p>}
       </div>
 
       <h2 className="text-xl font-bold mb-4">Count Distribution</h2>

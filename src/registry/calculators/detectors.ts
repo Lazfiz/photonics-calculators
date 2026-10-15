@@ -5,7 +5,18 @@ export const detectors: CalculatorEntry[] = [
     slug: "afterpulsing",
     title: "Afterpulsing in APDs",
     description: "Afterpulse probability, trap dynamics, and dead time trade-offs in avalanche photodiodes.",
-    knownIssue: "The multi-trap curve uses an invented trap ladder (τᵢ = 20·3ⁱ ns, ηᵢ = 0.05/2ⁱ) and gives 2.4 % afterpulsing at the defaults against 0.41 % for the single sourced trap.",
+    tier: "textbook",
+    modelNote: "Each trap level empties exponentially, so the afterpulse probability is Σ η·e^(−t_d/τ) over up to two levels, with the recorded rate from a non-paralyzable dead time. η and τ are device fits (the defaults give 0.41 %, the order of a Si SPCM at 50 ns), and the afterpulse rate is first order: afterpulses of afterpulses are left out.",
+    references: [
+      {
+        citation: "Cova S., Lacaita A., Ripamonti G. (1991). Trapping phenomena in avalanche photodiodes on nanosecond scale. IEEE Electron Device Lett. 12, 685–687. Afterpulsing from trap release, η·e^(−t/τ).",
+        url: "https://doi.org/10.1109/55.116955",
+      },
+      {
+        citation: "Ziarkash A. W., Joshi S. K., Stipčević M., Ursin R. (2018). Comparative study of afterpulsing behavior and models in single photon counting avalanche photo diode detectors. Sci. Rep. 8, 5076. Multiple-exponential model; measured P_ap 0.01–8.5 % at 22–53 ns dead time (SPCM-AQ4C 0.16–0.29 % at 50 ns).",
+        url: "https://doi.org/10.1038/s41598-018-23398-z",
+      },
+    ],
   },
   {
     slug: "amplifier-noise",
@@ -447,7 +458,17 @@ export const detectors: CalculatorEntry[] = [
     slug: "photon-counting",
     title: "Photon Counting Statistics",
     description: "Poisson statistics, SNR, dead time corrections, and count distributions.",
-    knownIssue: "A large 'Mean Counts per Interval' (e.g. 10⁶) freezes the page: the Poisson chart sums log-factorials term by term (about 8 × 10⁹ operations). The 'Total SNR' label also prints the variable name instead of the time.",
+    tier: "exact",
+    modelNote: "Exact Poisson counting statistics for an ideal detector, with a non-paralyzable dead time. The corrected-rate SNR √N of the recorded counts holds for long gates, where the recorded counts have the renewal-process variance N/(1 + Rτ)².",
+    references: [
+      {
+        citation: "Knoll G. F. (2010). Radiation Detection and Measurement, 4th ed. Wiley. Ch. 4, section VII: non-paralyzable m = n/(1 + nτ) and paralyzable m = n·e^(−nτ) dead-time models.",
+      },
+      {
+        citation: "Müller J. W. (1973). Dead-time problems. Nucl. Instrum. Methods 112, 47–57. Dead-time models and the statistics of the recorded counts.",
+        url: "https://doi.org/10.1016/0029-554X(73)90773-8",
+      },
+    ],
   },
   {
     slug: "photon-transfer",
@@ -665,6 +686,17 @@ export const detectors: CalculatorEntry[] = [
     description: "Non-paralyzable and paralyzable dead time models for SPAD detectors.",
     heading: "SPAD Dead Time",
     lede: "Dead time effects on measured count rates, pile-up loss, and correction for SPAD detectors.",
+    tier: "textbook",
+    modelNote: "The two limiting dead-time models for Poisson arrivals. Real SPADs with active quenching sit near the non-paralyzable case, passively quenched ones between the two, and the dead time itself may vary.",
+    references: [
+      {
+        citation: "Knoll G. F. (2010). Radiation Detection and Measurement, 4th ed. Wiley. Ch. 4, section VII: non-paralyzable m = n/(1 + nτ) and paralyzable m = n·e^(−nτ) dead-time models.",
+      },
+      {
+        citation: "Müller J. W. (1973). Dead-time problems. Nucl. Instrum. Methods 112, 47–57. Dead-time models and the statistics of the recorded counts.",
+        url: "https://doi.org/10.1016/0029-554X(73)90773-8",
+      },
+    ],
   },
   {
     slug: "spectral-response",

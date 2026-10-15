@@ -1,28 +1,28 @@
-# Handover — 2026-10-15 (session 70 → session 71)
+# Handover — 2026-10-15 (session 71 → session 72)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 70 finished detectors part 5 (linear APD) on branch `phase-4/detectors-apd`, PR #100 with this handover.
-Next: **Detectors part 6: single-photon**. `polarizer-types` stays blocked until the user is at the laptop with Chrome.
+Session 71 split part 6 into 6a/6b and finished **6a (dead time and afterpulsing)** on branch
+`phase-4/detectors-single-photon-a`, PR #101 with this handover. Next: **Detectors part 6b: SPAD**.
+`polarizer-types` stays blocked until the user is at the laptop with Chrome.
 
 ## State
-- 241 of 458 pages are tiered (detectors 31 / 54). 15 `knownIssue`s left, all in detectors.
-- New `src/physics/detectors/apd.ts`: `millerGain`, `millerExponent` (one-point fit), `excessNoiseFactor` (moved from
-  FSO `background-radiance.ts`, which now imports it), `excessNoiseIndex` (F = M^x), `APD_K_TABLE` + `parseApdMaterial`,
-  `driftExponent` / `gainAtTemperature` / `gainTemperatureCoefficient` (V_br(T) at fixed bias), `apdReceiver`
-  (shot + 4k_B·T·B/R) and `optimumGain` (root of kM³ + (1 − k)M = 4k_B·T/[qR(I_p + I_d)], Newton from an upper bound).
-- k table: Si 0.02 (Excelitas C30902EH k_eff), InGaAs/InP 0.5, Ge 0.85 inside Agrawal 4th ed. Table 4.2 ranges.
-  No open peer-reviewed source for the InP and Ge numbers was found; US 7,233,051 B2 quotes the same ranges.
-- `gain-temperature` defaults are the Excelitas C30662 (M = 10 at 4 V below 50 V, 0.14 V/°C → n = 1.264, −3.18 %/°C).
-  `linear-mode-avalanche` lost its "override F" toggle (enter k instead) and gained R_L, T, M_opt.
-- Still in FSO: `photonEnergy`. Part 6 replaces `src/lib/geiger-mode-avalanche.ts`.
+- 244 of 458 pages are tiered (detectors 34 / 54). 13 `knownIssue`s left, all in detectors.
+- New `src/physics/detectors/dead-time.ts`: `DeadTimeModel` + `parseDeadTimeModel`, `measuredRate`, `countLoss`
+  (expm1, equals the dead fraction), `trueRateAtLoss`, `paralyzablePeakRate` 1/(eτ), `nonParalyzableFano`
+  1/(1 + Rτ)², `afterpulseProbability(traps[], t_d)` = Σ η·e^{−t_d/τ} (η = 0 levels skipped).
+- Pages: `spad-dead-time` (mode in the URL, axes scale with τ and R, past-peak warning), `photon-counting` (math.ts
+  `poissonPmf`, ≤ 201 bars with a stride, μ ≤ 1e12, corrected-rate SNR √N_recorded), `afterpulsing` (optional user
+  trap 2, `trapLifetime2`/`trapEfficiency2`, default off; first-order R_ap with a warning above 10 %).
+- 6b reuses `dead-time.ts` for SPCM/`spad` and replaces `src/lib/geiger-mode-avalanche.ts` (+ its old test).
+  `photonEnergy` still lives in FSO `background-radiance.ts`.
 - User decisions (session 63): keep `spad` and SPCM as separate pages on one module; rewrite `channel-photomultiplier` as a
   true CPM. Session 68: Vercel builds only `main`; the handover goes on the feature branch, one PR per stage.
 
 ## Next actions
-1. `/ship` this branch. post-merge-check: `detectors/excess-noise="3.9502"` `detectors/linear-mode-avalanche="208.9"`
-   `detectors/avalanche-gain="5.349"` `detectors/gain-temperature="-3.18 %/°C"`.
-2. Detectors part 6, then 7–9 in ROADMAP order. Each part: module + golden tests, rewire the pages, clamp URL inputs +
+1. `/ship` this branch. post-merge-check: `detectors/spad-dead-time="7.788"` `detectors/afterpulsing="0.410%"`
+   `detectors/photon-counting="975.9"`.
+2. Detectors part 6b, then 7–9 in ROADMAP order. Each part: module + golden tests, rewire the pages, clamp URL inputs +
    `min`/`max` on inputs, "—" for NaN, then tier, modelNote and references, and delete the `knownIssue`.
    `/handover` on the feature branch before `/ship`.
 3. `post-merge-check` takes default-page values only (no query strings). Grep the prerendered
@@ -30,6 +30,12 @@ Next: **Detectors part 6: single-photon**. `polarizer-types` stays blocked until
 4. Later: fiber and FSO open findings (ROADMAP), the imaging/spectroscopy findings, Chrome-only checks.
 
 ## Non-obvious facts
+- **Session 71 lessons:**
+  - Ziarkash et al. 2018 (Sci. Rep., Europe PMC `PMC5864738` fullTextXML) tabulates measured P_ap for 16 SPADs
+    (0.01–8.5 % at 22–53 ns) and the multi-exponential density Σ A_k·e^{−t/τ_k}; integrated from t_d, η_k = A_k·τ_k.
+  - A NP dead-time corrected rate has relative error exactly 1/√N_recorded (the Fano factor cancels the correction gain).
+    A Monte Carlo with an LCG RNG and short gates gave Fano 0.80 vs 0.64; use `Math.random` and ≥ 1000 counts/gate.
+  - Mutation backups: `cp` to `/tmp` works in Git Bash; restore from the same path you saved to.
 - **Session 70 lessons:**
   - Excelitas datasheets (`excelitas.com/sites/default/files/assets/product/document/<id>.pdf`): `pdftotext -layout`
     scrambles their tables; `-raw` keeps rows intact. C30902EH = 24781, C30902SH = 24828, C30645/C30662 = 27873.
