@@ -33,8 +33,15 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "back-illumination",
     title: "Back-Illuminated vs Front-Illuminated",
-    description: "Back-illuminated sensors bypass gate structures for higher QE and better blue/UV response.",
-    knownIssue: "The SNR gain in dB applies 10·log10 to an amplitude ratio: 1.4 dB instead of 2.8 dB at the defaults. A front-side QE or CFA transmission of 0 gives Infinity or NaN.",
+    description: "Back-illuminated sensors bypass gate structures for higher QE and better blue/UV response: QE ratio and SNR gain in the shot- and read-noise limits.",
+    tier: "illustrative",
+    modelNote: "The peak QEs are inputs; effective QE is min(1, QE·microlens gain)·CFA transmission. The SNR gain is √(QE ratio) when photon shot noise dominates and the QE ratio when read noise dominates, an amplitude ratio quoted as 20·log₁₀. The spectra are a schematic Gaussian about 550 nm with a 70 % front-side loss below 400 nm, not a modelled or measured response.",
+    references: [
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer. SPIE Press. Read-noise, shot-noise and dark-noise regimes; total noise as the quadrature sum.",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+    ],
   },
   {
     slug: "bandwidth",
@@ -388,11 +395,11 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "quantum-efficiency",
     title: "Quantum Efficiency",
-    description: "Silicon detector quantum efficiency vs wavelength from Green's absorption data: collecting thickness, diffusion length, dead layer, surface reflection, fill factor and microlens gain.",
-    lede: "Silicon detector QE from the absorption coefficient: photodiode, back-illuminated and deep-depletion CCD and front-illuminated CMOS structures, with reflection, dead-layer and fill-factor losses.",
+    description: "Silicon and InGaAs detector quantum efficiency vs wavelength from absorption data: collecting thickness, diffusion length, dead layer, surface reflection, fill factor and microlens gain.",
+    lede: "Detector QE from the absorption coefficient: silicon photodiode, back-illuminated and deep-depletion CCD and front-illuminated CMOS structures, and an InGaAs p-i-n, with reflection, dead-layer and fill-factor losses.",
     keywords: ["CCD quantum efficiency", "CMOS quantum efficiency", "fill factor"],
     tier: "textbook",
-    modelNote: "Silicon only, at 300 K. A dead layer, a fully collecting layer W and diffusion from a semi-infinite substrate (Gärtner); L = 0 is a slab. Reflection is a fixed R or bare-silicon Fresnel; no AR-coating spectrum, etaloning, gate or colour-filter absorption. The presets are illustrative structures, not products.",
+    modelNote: "Silicon or In₀.₅₃Ga₀.₄₇As at 300 K. A dead layer, a fully collecting layer W and diffusion from a semi-infinite substrate (Gärtner); L = 0 is a slab. Silicon α is Green's table; InGaAs α = A·√(E − E_g) with the Vurgaftman gap, fitted to Adachi within ±12 %, behind an InP cap taken as opaque short of 916 nm. Reflection is a fixed R, or bare-silicon Fresnel for silicon; no AR-coating spectrum, etaloning, gate or colour-filter absorption. The presets are illustrative structures, not products.",
     references: [
       {
         citation: "Green M. A. (2008). Self-consistent optical parameters of intrinsic silicon at 300 K including temperature coefficients. Sol. Energy Mater. Sol. Cells 92, 1305–1310. Table 1, n and k at 250–1450 nm (α = 4πk/λ).",
@@ -401,6 +408,14 @@ export const detectors: CalculatorEntry[] = [
       {
         citation: "Gärtner W. W. (1959). Depletion-layer photoeffects in semiconductors. Phys. Rev. 116, 84–87. Collection efficiency 1 − e^(−αW)/(1 + αL).",
         url: "https://doi.org/10.1103/PhysRev.116.84",
+      },
+      {
+        citation: "Vurgaftman I., Meyer J. R., Ram-Mohan L. R. (2001). Band parameters for III–V compound semiconductors and their alloys. J. Appl. Phys. 89, 5815–5875. Ga₁₋ₓInₓAs gap with bowing 0.477 eV (Table XIII) and the InP Varshni set (Table VI).",
+        url: "https://doi.org/10.1063/1.1368156",
+      },
+      {
+        citation: "Adachi S. (1989). Optical dispersion relations for GaP, GaAs, GaSb, InP, InAs, InSb, AlₓGa₁₋ₓAs, and In₁₋ₓGaₓAsᵧP₁₋ᵧ. J. Appl. Phys. 66, 6030–6040. In₀.₅₂Ga₀.₄₈As n, k as tabulated at refractiveindex.info; basis of the absorption fit.",
+        url: "https://doi.org/10.1063/1.343580",
       },
     ],
     related: [
@@ -479,10 +494,42 @@ export const detectors: CalculatorEntry[] = [
     ],
   },
   {
-    slug: "si-vs-inge",
+    slug: "si-vs-ingaas",
     title: "Si vs InGaAs Detectors",
-    description: "Compare silicon and InGaAs photodetectors: QE spectra, SNR, dark current, and wavelength performance.",
-    knownIssue: "The QE spectra are invented: InGaAs gives 64 % at 1550 nm (typically about 80 %) and 10 % at 1000 nm (typically about 60 %), and the dark-current doubling rules have no source.",
+    description: "Compare silicon and InGaAs p-i-n photodiodes: QE spectra from absorption data, responsivity, generation dark current and SNR vs wavelength.",
+    keywords: ["silicon vs InGaAs photodiode", "InGaAs InP window"],
+    tier: "textbook",
+    modelNote: "Two reference p-i-n devices, not products. Si: Green's 300 K absorption with Gärtner collection (W = 20 µm, L = 100 µm, R = 5 %); its edge does not move with temperature. InGaAs: x = 0.53, Vurgaftman gap, α = A·√(E − E_g) fitted to Adachi within ±12 %, a 3 µm fully depleted absorber, R = 2 %, behind an InP cap taken as opaque above its 1.353 eV gap (916 nm at 300 K). Collection is ideal. Dark current is depletion generation q·n_i·W·A/τ_g only (τ_g 1 ms Si, 100 µs InGaAs); diffusion and surface leakage are left out. SNR adds signal and dark shot noise to a white amplifier noise.",
+    references: [
+      {
+        citation: "Green M. A. (2008). Self-consistent optical parameters of intrinsic silicon at 300 K including temperature coefficients. Sol. Energy Mater. Sol. Cells 92, 1305–1310. Table 1, n and k at 250–1450 nm (α = 4πk/λ).",
+        url: "https://doi.org/10.1016/j.solmat.2008.06.009",
+      },
+      {
+        citation: "Gärtner W. W. (1959). Depletion-layer photoeffects in semiconductors. Phys. Rev. 116, 84–87. Collection efficiency 1 − e^(−αW)/(1 + αL).",
+        url: "https://doi.org/10.1103/PhysRev.116.84",
+      },
+      {
+        citation: "Vurgaftman I., Meyer J. R., Ram-Mohan L. R. (2001). Band parameters for III–V compound semiconductors and their alloys. J. Appl. Phys. 89, 5815–5875. Ga₁₋ₓInₓAs gap with bowing 0.477 eV (Table XIII) and the InP Varshni set (Table VI).",
+        url: "https://doi.org/10.1063/1.1368156",
+      },
+      {
+        citation: "Adachi S. (1989). Optical dispersion relations for GaP, GaAs, GaSb, InP, InAs, InSb, AlₓGa₁₋ₓAs, and In₁₋ₓGaₓAsᵧP₁₋ᵧ. J. Appl. Phys. 66, 6030–6040. In₀.₅₂Ga₀.₄₈As n, k as tabulated at refractiveindex.info; basis of the absorption fit.",
+        url: "https://doi.org/10.1063/1.343580",
+      },
+      {
+        citation: "Paul S., Roy J. B., Basu P. K. (1991). Empirical expressions for the alloy composition and temperature dependence of the band gap and intrinsic carrier density in GaₓIn₁₋ₓAs. J. Appl. Phys. 69, 827–829. n_i = 6.3e11 cm⁻³ for Ga₀.₄₇In₀.₅₃As at 300 K (as tabulated in the Ioffe NSM archive).",
+        url: "https://doi.org/10.1063/1.348919",
+      },
+      {
+        citation: "Sze S. M., Ng K. K. (2007). Physics of Semiconductor Devices, 3rd ed. Wiley, ch. 2. Space-charge generation current q·n_i·W/τ_g.",
+        url: "https://doi.org/10.1002/0470068329",
+      },
+      {
+        citation: "Saleh B. E. A., Teich M. C. (1991). Fundamentals of Photonics. Wiley. §17.5 Noise in photodetectors: shot noise 2qīB and circuit noise.",
+        url: "https://doi.org/10.1002/0471213748",
+      },
+    ],
   },
   {
     slug: "silicon-photodiode",

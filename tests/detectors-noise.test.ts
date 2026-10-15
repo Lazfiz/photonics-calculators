@@ -10,6 +10,8 @@ import {
   idealSqnrDb,
   johnsonNoise,
   ktcNoise,
+  photodiodeSnr,
+  qeRatioSnrGain,
   minDetectableSignal,
   sensorNoiseElectrons,
   shotNoiseCurrent,
@@ -104,4 +106,18 @@ test("ADC: ideal SQNR 6.02N + 1.76 dB and ENOB from SINAD (IEEE 1241, Kester MT-
   close(sinad, 19.586073, 1e-7);
   close(enobFromSinad(sinad), 2.9606951, 1e-7);
   assert.ok(Number.isNaN(idealSqnrDb(0)));
+});
+
+test("photodiode SNR: 870.14 for 1 µA signal, 1 nA dark, 1 pA/√Hz, 1 MHz; QE ratio 4 gives 6.02 dB shot-limited", () => {
+  // Hand: (2q·1.001e-6 + 1e-24)·1e6 = (3.20756e-25 + 1e-24)·1e6 = 1.320756e-18 A², √ = 1.149241e-9 A → 870.139.
+  close(photodiodeSnr(1e-6, 1e-9, 1e-12, 1e6), 870.139, 1e-5);
+  // Shot-limited S/√(2qSB) = √(S/(2qB)): 1 µA in 1 MHz → √(3.12069e6) = 1766.55.
+  close(photodiodeSnr(1e-6, 0, 0, 1e6), 1766.55, 1e-5);
+  assert.ok(Number.isNaN(photodiodeSnr(0, 0, 0, 1e6))); // no signal and no noise
+  assert.ok(Number.isNaN(photodiodeSnr(1e-6, 0, 0, 0)));
+  // QE ratio 4: SNR ×2 (20·log10 2 = 6.0206 dB) shot-limited, ×4 (12.04 dB) read-limited.
+  close(20 * Math.log10(qeRatioSnrGain(4, "shot")), 6.0206, 1e-4);
+  assert.equal(qeRatioSnrGain(4, "read"), 4);
+  assert.ok(Number.isNaN(qeRatioSnrGain(0, "shot")));
+  assert.ok(Number.isNaN(qeRatioSnrGain(Infinity, "read")));
 });
