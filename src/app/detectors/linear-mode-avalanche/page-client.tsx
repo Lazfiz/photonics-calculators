@@ -1,140 +1,127 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c, h, q } from "../../../physics/constants";
-// McIntyre excess noise factor: F(M) = k·M + (1-k)·(2 - 1/M)
-// k = ionization ratio (β/α for electron-initiated APDs)
-// References: McIntyre 1966, Nature Communications Materials 2024
+import { APD_K_TABLE, apdReceiver, excessNoiseFactor, optimumGain } from "../../../physics/detectors/apd";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 3) => (Number.isFinite(x) && x > 0 ? x.toExponential(digits) : "—");
+const MATERIALS = ["si", "ingaas", "ge", "custom"] as const;
+const M_MAX = 1e4;
+
 export default function LinearModeAPDPage() {
-  const [gain, setGain] = useURLState("gain", 100);
-  const [material, setMaterial] = useState<"si" | "ingaas" | "ge" | "custom">("si");
-  const [ionizationRatio, setIonizationRatio] = useURLState("ionizationRatio", 0.02);
-  const [useCustomF, setUseCustomF] = useState(false);
-  const [customF, setCustomF] = useURLState("customF", 2.5);
-  const [quantumEff, setQuantumEff] = useURLState("quantumEff", 0.8);
-  const [bandwidth, setBandwidth] = useURLState("bandwidth", 100e6); // Hz
-  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 10e-9); // A (unmultiplied)
-  const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm
-  const [incidentPower, setIncidentPower] = useURLState("incidentPower", 1e-9); // W
+  const [gainRaw, setGain] = useURLState("gain", 100);
+  const [materialRaw, setMaterial] = useURLState("material", "si");
+  const [kRaw, setIonizationRatio] = useURLState("ionizationRatio", 0.02);
+  const [qeRaw, setQuantumEff] = useURLState("quantumEff", 0.8);
+  const [bandwidthRaw, setBandwidth] = useURLState("bandwidth", 100e6);
+  const [darkRaw, setDarkCurrent] = useURLState("darkCurrent", 5e-11);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 800);
+  const [powerRaw, setIncidentPower] = useURLState("incidentPower", 1e-9);
+  const [loadRaw, setLoadResistance] = useURLState("loadResistance", 1000);
+  const [temperatureRaw, setTemperature] = useURLState("temperature", 300);
 
-  const materialK = { si: 0.02, ingaas: 0.5, ge: 0.7 } as const;
-  const effectiveK = material === "custom" ? ionizationRatio : materialK[material];
-  const materialLabel = material === "custom" ? `k = ${effectiveK.toFixed(3)}` : `${material.toUpperCase()} (k ≈ ${effectiveK})`;
+  const material = MATERIALS.find((m) => m === materialRaw) ?? "si";
+  const gain = clamp(gainRaw, 1, M_MAX, 100);
+  const k = material === "custom" ? clamp(kRaw, 0, 1, 0.02) : APD_K_TABLE.find((m) => m.id === material)!.k;
+  const qe = clamp(qeRaw, 0, 1, 0.8);
+  const bandwidth = clamp(bandwidthRaw, 1, 1e11, 100e6);
+  const darkCurrent = clamp(darkRaw, 0, 1e-3, 5e-11);
+  const wavelength_nm = clamp(wavelengthRaw, 200, 2000, 800);
+  const power = clamp(powerRaw, 0, 1, 1e-9);
+  const loadResistance = clamp(loadRaw, 1, 1e9, 1000);
+  const temperature = clamp(temperatureRaw, 1, 500, 300);
 
-  // McIntyre excess noise factor: F(M) = kM + (1-k)(2 - 1/M)
-  const mcIntyre = (M: number) => effectiveK * M + (1 - effectiveK) * (2 - 1 / M);
-  const effectiveF = useCustomF ? customF : mcIntyre(gain);
+  // Unity-gain responsivity ℛ₀ = η·q·λ/(h·c), A/W.
+  const resp = (qe * q * wavelength_nm * 1e-9) / (h * c);
+  const receiver = { photocurrent: power * resp, darkCurrent, k, bandwidth, loadResistance, temperature };
+  const F = excessNoiseFactor(gain, k);
+  const r = apdReceiver(receiver, gain);
+  const darkShot = 2 * q * darkCurrent * gain * gain * F * bandwidth;
+  const totalNoise = Math.sqrt(r.shot + r.thermal);
+  // NEP at the operating gain, from the noise with no light: √(dark shot + thermal)/(M·ℛ₀).
+  const nep = Math.sqrt(darkShot + r.thermal) / (gain * resp);
+  const mOpt = optimumGain(receiver);
+  const mOptShown = Math.min(mOpt, M_MAX);
+  const snrOpt = apdReceiver(receiver, mOptShown).snr;
+  const dB = (x: number) => (x > 0 ? `${(10 * Math.log10(x)).toFixed(2)} dB` : "—");
 
-  const results = useMemo(() => {
-    const resp = (quantumEff * q * wavelength * 1e-9) / (h * c); // A/W
-    const iPhoto = incidentPower * resp;
-    const iPhotoOut = iPhoto * gain;
-    const iDarkOut = darkCurrent * gain;
-    const F = useCustomF ? customF : mcIntyre(gain);
-    const shotNoise = Math.sqrt(2 * q * iPhoto * gain * gain * F * bandwidth);
-    const darkNoise = Math.sqrt(2 * q * darkCurrent * gain * gain * F * bandwidth);
-    const totalNoise = Math.sqrt(shotNoise ** 2 + darkNoise ** 2);
-    const snr = iPhotoOut / totalNoise;
-    const nep = totalNoise / (resp * gain); // W (signal+dark, bandwidth-dependent)
-    const nepDark = darkNoise / (resp * gain); // W (dark-limited, standard datasheet NEP)
-    const nepSpectral = nep / Math.sqrt(bandwidth); // W/√Hz
-    const nepDarkSpectral = nepDark / Math.sqrt(bandwidth); // W/√Hz
-    return { resp, iPhoto, iPhotoOut, iDarkOut, shotNoise, darkNoise, totalNoise, snr, nep, nepDark, nepSpectral, nepDarkSpectral, F };
-  }, [gain, useCustomF, customF, quantumEff, bandwidth, darkCurrent, wavelength, incidentPower, effectiveK]);
-
-  const { chartData, fMax } = useMemo(() => {
-    const gains =Array.from({ length: 200 }, (_, i) => 1 + i * 500 / 200);
-    const resp = (quantumEff * q * wavelength * 1e-9) / (h * c);
-    const iPhoto = incidentPower * resp;
-    const signal = gains.map(g => iPhoto * g);
-    // When using custom F, back-calculate effective k from the operating point
-    // F(M) = 1 for any k at M=1, so inversion is only valid for M > 1
-    const kChart = useCustomF && gain > 1
-      ? Math.max(0, (customF - 2 + 1 / gain) / (gain - 2 + 1 / gain))
-      : effectiveK;
-    // Use consistent F(M) in both noise and F-curve traces
-    const fOfM = (g: number) => useCustomF ? kChart * g + (1 - kChart) * (2 - 1 / g) : mcIntyre(g);
-    const noise = gains.map(g => {
-      const F = fOfM(g);
-      return Math.sqrt(2 * q * iPhoto * g * g * F * bandwidth + 2 * q * darkCurrent * g * g * F * bandwidth);
-    });
-    const snr = signal.map((s, i) => s / noise[i]);
-    const fCurve = gains.map(g => fOfM(g));
-    const fMax = Math.max(...fCurve);
-    const chartData = [
-      { x: gains, y: signal, type: "scatter", mode: "lines", name: "Signal (A)", line: { color: "#60a5fa" } },
-      { x: gains, y: noise, type: "scatter", mode: "lines", name: "Noise (A)", line: { color: "#f87171" } },
-      { x: gains, y: snr, type: "scatter", mode: "lines", name: "SNR", line: { color: "#34d399" }, yaxis: "y2" },
-      { x: gains, y: fCurve, type: "scatter", mode: "lines", name: "F(M)", line: { color: "#a78bfa", dash: "dash" }, yaxis: "y3" },
-    ];
-    return { chartData, fMax };
-  }, [useCustomF, customF, quantumEff, bandwidth, darkCurrent, wavelength, incidentPower, effectiveK, gain]);
+  // 300 gains from 1 to 10⁴ on a log grid.
+  const gains = Array.from({ length: 300 }, (_, i) => 10 ** ((4 * i) / 299));
+  const curves = gains.map((g) => apdReceiver(receiver, g));
+  const currentChart = [
+    { x: gains, y: curves.map((p) => p.signal), type: "scatter" as const, mode: "lines" as const, name: "Signal M·I_p (A)", line: { color: "#60a5fa", width: 2 } },
+    { x: gains, y: curves.map((p) => Math.sqrt(p.shot)), type: "scatter" as const, mode: "lines" as const, name: "Shot noise (A rms)", line: { color: "#f87171", width: 2 } },
+    { x: gains, y: curves.map((p) => Math.sqrt(p.thermal)), type: "scatter" as const, mode: "lines" as const, name: "Thermal noise (A rms)", line: { color: "#fbbf24", width: 2, dash: "dash" as const } },
+  ];
+  const snrMax = Math.max(...curves.map((p) => p.snr).filter(Number.isFinite));
+  const snrChart = [
+    { x: gains, y: curves.map((p) => p.snr), type: "scatter" as const, mode: "lines" as const, name: "SNR", line: { color: "#34d399", width: 2 } },
+    { x: [mOptShown, mOptShown], y: [0, snrMax], type: "scatter" as const, mode: "lines" as const, name: `M_opt = ${mOptShown.toFixed(1)}`, line: { color: "#9ca3af", width: 1, dash: "dot" as const } },
+    { x: gains, y: gains.map((g) => excessNoiseFactor(g, k)), type: "scatter" as const, mode: "lines" as const, name: "F(M)", line: { color: "#a78bfa", width: 2, dash: "dash" as const }, yaxis: "y2" },
+  ];
 
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Gain (M)" value={gain} onChange={setGain} min={1} />
+        <ValidatedNumberInput label="Gain M" value={gainRaw} onChange={setGain} min={1} max={M_MAX} step="10" />
         <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <label className="block text-sm text-gray-300 mb-2">Material / Ionization Ratio (k)</label>
-          <select value={material} onChange={e => setMaterial(e.target.value as any)} className="w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            <option value="si">Si (k ≈ 0.02)</option>
-            <option value="ingaas">InGaAs (k ≈ 0.5)</option>
-            <option value="ge">Ge (k ≈ 0.7)</option>
-            <option value="custom">Custom</option>
+          <label htmlFor="material" className="block text-sm text-gray-300 mb-2">Multiplication Material (k)</label>
+          <select id="material" value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            {APD_K_TABLE.map((m) => (
+              <option key={m.id} value={m.id}>{m.label} (k = {m.k})</option>
+            ))}
+            <option value="custom">Custom k</option>
           </select>
           {material === "custom" && (
-            <ValidatedNumberInput label="k (β/α)" value={ionizationRatio} onChange={setIonizationRatio} min={0.001} max={1} step="0.01" />
+            <ValidatedNumberInput label="k" value={kRaw} onChange={setIonizationRatio} min={0} max={1} step="0.01" />
           )}
         </div>
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <label className="block text-sm text-gray-300 mb-2">
-            <input type="checkbox" checked={useCustomF} onChange={e => setUseCustomF(e.target.checked)} className="mr-2" />
-            Override F (measured)
-          </label>
-          {useCustomF && (
-            <ValidatedNumberInput label="F (measured)" value={customF} onChange={setCustomF} min={1} step="0.1" />
-          )}
-        </div>
-        <ValidatedNumberInput label="Quantum Efficiency" value={quantumEff} onChange={setQuantumEff} min={0} max={1} step="0.01" />
-        <ValidatedNumberInput label="Bandwidth (Hz)" value={bandwidth} onChange={setBandwidth} step="1e6" />
-        <ValidatedNumberInput label="Dark Current - primary/bulk (A)" value={darkCurrent} onChange={setDarkCurrent} step="1e-9" />
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-        <ValidatedNumberInput label="Incident Power (W)" value={incidentPower} onChange={setIncidentPower} step="1e-12" />
+        <ValidatedNumberInput label="Quantum Efficiency" value={qeRaw} onChange={setQuantumEff} min={0} max={1} step="0.01" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={200} max={2000} step="10" />
+        <ValidatedNumberInput label="Incident Power (W)" value={powerRaw} onChange={setIncidentPower} min={0} max={1} step="1e-12" />
+        <ValidatedNumberInput label="Bulk Dark Current, unmultiplied (A)" value={darkRaw} onChange={setDarkCurrent} min={0} max={1e-3} step="1e-11" />
+        <ValidatedNumberInput label="Bandwidth (Hz)" value={bandwidthRaw} onChange={setBandwidth} min={1} max={1e11} step="1e6" />
+        <ValidatedNumberInput label="Load Resistance (Ω)" value={loadRaw} onChange={setLoadResistance} min={1} max={1e9} step="100" />
+        <ValidatedNumberInput label="Load Temperature (K)" value={temperatureRaw} onChange={setTemperature} min={1} max={500} step="10" />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ResultCard label={`Excess Noise F(M = ${gain})`} value={F.toFixed(3)} tone="purple" />
+        <ResultCard label="SNR (electrical)" value={r.snr.toPrecision(4)} tone="green" subtext={dB(r.snr)} />
+        <ResultCard label="Optimum Gain M_opt" value={mOpt > M_MAX ? `> ${M_MAX}` : Number.isFinite(mOpt) ? mOpt.toFixed(1) : "—"} tone="yellow" />
+        <ResultCard label="SNR at M_opt" value={Number.isFinite(snrOpt) ? snrOpt.toPrecision(4) : "—"} tone="blue" subtext={dB(snrOpt)} />
       </div>
 
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1">
-        <p className="text-gray-300">Material: <span className="text-purple-400 font-mono">{materialLabel}</span></p>
-        <p className="text-gray-300">Excess Noise Factor F(M={gain}) = <span className="text-purple-400 font-mono">{results.F.toFixed(3)}</span> {useCustomF ? "(measured)" : "(McIntyre)"}</p>
-        <p className="text-gray-300">Responsivity = <span className="text-blue-400 font-mono">{(results.resp * 1e3).toFixed(2)} mA/W (unmultiplied)</span></p>
-        <p className="text-gray-300">Output photocurrent = <span className="text-blue-400 font-mono">{results.iPhotoOut.toExponential(3)} A</span></p>
-        <p className="text-gray-300">Output dark current = <span className="text-blue-400 font-mono">{results.iDarkOut.toExponential(3)} A</span></p>
-        <p className="text-gray-300">Shot noise = <span className="text-blue-400 font-mono">{results.shotNoise.toExponential(3)} A</span></p>
-        <p className="text-gray-300">Total noise = <span className="text-blue-400 font-mono">{results.totalNoise.toExponential(3)} A</span></p>
-        <p className="text-gray-300">SNR = <span className="text-blue-400 font-mono">{results.snr.toFixed(1)}</span></p>
-        <p className="text-gray-300">NEP = <span className="text-blue-400 font-mono">{results.nep.toExponential(3)} W</span> (total) | <span className="text-yellow-400 font-mono">{results.nepDark.toExponential(3)} W</span> (dark-limited)</p>
-        <p className="text-gray-300">NEP = <span className="text-blue-400 font-mono">{results.nepSpectral.toExponential(3)} W/√Hz</span> (total) | <span className="text-yellow-400 font-mono">{results.nepDarkSpectral.toExponential(3)} W/√Hz</span> (dark-limited)</p>
+        <p className="text-gray-300">Responsivity ℛ₀ = <span className="text-blue-400 font-mono">{(resp * 1e3).toFixed(2)} mA/W</span> (M = 1)</p>
+        <p className="text-gray-300">Primary photocurrent = <span className="text-blue-400 font-mono">{fmt(receiver.photocurrent)} A</span>, multiplied = <span className="text-blue-400 font-mono">{fmt(r.signal)} A</span></p>
+        <p className="text-gray-300">Multiplied dark current = <span className="text-blue-400 font-mono">{fmt(darkCurrent * gain)} A</span></p>
+        <p className="text-gray-300">Shot noise = <span className="text-blue-400 font-mono">{fmt(Math.sqrt(r.shot))} A</span>, thermal noise = <span className="text-blue-400 font-mono">{fmt(Math.sqrt(r.thermal))} A</span>, total = <span className="text-blue-400 font-mono">{fmt(totalNoise)} A</span> rms</p>
+        <p className="text-gray-300">NEP (no light) = <span className="text-yellow-400 font-mono">{fmt(nep)} W</span> = <span className="text-yellow-400 font-mono">{fmt(nep / Math.sqrt(bandwidth))} W/√Hz</span></p>
       </div>
 
       <h2 className="text-xl font-semibold mb-2">Key Formulas</h2>
       <div className="bg-gray-900 rounded p-4 mb-6 space-y-1 text-sm font-mono text-gray-400">
-        <p>R = η·q·λ / (h·c)</p>
-        <p>I<sub>out</sub> = M · I<sub>photo</sub></p>
-        <p>F(M) = k·M + (1−k)·(2 − 1/M)  [McIntyre 1966]</p>
-        <p>i<sub>shot</sub> = √(2·q·M²·I·F(M)·Δf)</p>
-        <p>NEP = i<sub>total</sub> / (M·R)</p>
+        <p>ℛ₀ = η·q·λ / (h·c),  I_p = ℛ₀·P</p>
+        <p>F(M) = k·M + (1 − k)·(2 − 1/M)  [McIntyre 1966]</p>
+        <p>σ² = 2q·(I_p + I_d)·M²·F(M)·B + 4k_B·T·B / R</p>
+        <p>SNR = (M·I_p)² / σ²  [Personick 1977]</p>
+        <p>M_opt: k·M³ + (1 − k)·M = 4k_B·T / [q·R·(I_p + I_d)]</p>
       </div>
 
-      <ChartPanel data={chartData} layout={{
-        paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
-        xaxis: { title: "Gain (M)", gridcolor: "#374151" },
+      <ChartPanel data={snrChart} layout={{
+        xaxis: { title: "Gain M", type: "log", gridcolor: "#374151" },
+        yaxis: { title: "SNR (electrical)", gridcolor: "#374151" },
+        yaxis2: { title: "F(M)", gridcolor: "#374151", overlaying: "y", side: "right" },
+      }} title="SNR and Excess Noise vs Gain" />
+      <ChartPanel data={currentChart} layout={{
+        xaxis: { title: "Gain M", type: "log", gridcolor: "#374151" },
         yaxis: { title: "Current (A)", type: "log", gridcolor: "#374151" },
-        yaxis2: { title: "SNR", gridcolor: "#374151", overlaying: "y", side: "right" },
-        yaxis3: { title: "F(M)", gridcolor: "#374151", overlaying: "y", side: "left", anchor: "free", position: 0.02, range: [0, fMax * 1.1] },
-        margin: { t: 20, b: 40, l: 70, r: 60 }, autosize: true, showlegend: true
-      }} />
+      }} title="Signal and Noise Currents vs Gain" />
     </>
   );
 }

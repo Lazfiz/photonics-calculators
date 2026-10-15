@@ -27,6 +27,7 @@
  */
 import { planckExitance } from "../blackbody";
 import { c, h, q } from "../constants";
+import { excessNoiseFactor } from "../detectors/apd";
 
 /** IAU 2015 nominal solar effective temperature, K. */
 export const SUN_TEMPERATURE = 5772;
@@ -155,12 +156,6 @@ export function photonEnergy(lambda: number): number {
 export function responsivity(quantumEfficiency: number, lambda: number): number {
   if (!(quantumEfficiency >= 0 && quantumEfficiency <= 1)) return NaN;
   return (quantumEfficiency * q) / photonEnergy(lambda);
-}
-
-/** McIntyre excess noise factor F = kM + (1 − k)(2 − 1/M) for gain M ≥ 1 and ionisation ratio k ∈ [0, 1]. */
-export function excessNoiseFactor(gain: number, k: number): number {
-  if (!(gain >= 1 && k >= 0 && k <= 1)) return NaN;
-  return k * gain + (1 - k) * (2 - 1 / gain);
 }
 
 export interface ReceiverNoiseInput {

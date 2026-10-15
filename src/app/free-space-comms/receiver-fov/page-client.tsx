@@ -6,9 +6,10 @@ import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  BACKGROUND_SCENES, type BackgroundScene, backgroundPower, equalNoiseHalfAngle, excessNoiseFactor, parseScene,
+  BACKGROUND_SCENES, type BackgroundScene, backgroundPower, equalNoiseHalfAngle, parseScene,
   receiverNoise, responsivity, sceneRadiance, sceneSolidAngle,
 } from "../../../physics/free-space-comms/background-radiance";
+import { excessNoiseFactor } from "../../../physics/detectors/apd";
 
 const COLORS = ["#06b6d4", "#3b82f6", "#a78bfa", "#22c55e", "#9ca3af", "#f59e0b"];
 const fmt = (x: number, digits = 3) =>

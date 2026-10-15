@@ -29,6 +29,25 @@ export const detectors: CalculatorEntry[] = [
     slug: "avalanche-gain",
     title: "Avalanche Photodiode Gain",
     description: "APD multiplication gain, excess noise factor (McIntyre), and material comparison.",
+    tier: "textbook",
+    modelNote: "Miller's empirical law with an entered exponent n (a device fit, not a material constant) and McIntyre's excess noise for a uniform field and injection of the more ionising carrier. The k presets are Si 0.02 (Excelitas C30902EH), InGaAs/InP 0.5 and Ge 0.85 from Agrawal's ranges; dead-space effects in thin layers and mixed injection are not modelled.",
+    references: [
+      {
+        citation: "Miller S. L. (1955). Avalanche breakdown in germanium. Phys. Rev. 99, 1234–1241. Empirical gain M = 1/[1 − (V/V_br)^n].",
+        url: "https://doi.org/10.1103/PhysRev.99.1234",
+      },
+      {
+        citation: "McIntyre R. J. (1966). Multiplication noise in uniform avalanche diodes. IEEE Trans. Electron Devices ED-13, 164–168. F = kM + (1 − k)(2 − 1/M).",
+        url: "https://doi.org/10.1109/T-ED.1966.15651",
+      },
+      {
+        citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed. Wiley. §4.4 (APD receiver noise, optimum gain) and Table 4.2 (k: Si 0.02–0.05, InGaAs 0.5–0.7, Ge 0.7–1.0).",
+      },
+      {
+        citation: "Excelitas Technologies. C30902EH and C30921EH avalanche photodiodes, datasheet Rev. 2022.02. k_eff = 0.02; V_br = 225 V at 22 °C, 0.7 V/°C; M = 150; dark current 7 nA.",
+        url: "https://www.excelitas.com/sites/default/files/assets/product/document/24781.pdf",
+      },
+    ],
   },
   {
     slug: "back-illumination",
@@ -202,6 +221,21 @@ export const detectors: CalculatorEntry[] = [
     slug: "excess-noise",
     title: "Excess Noise Factor",
     description: "APD excess noise vs gain — McIntyre model for different semiconductor materials.",
+    tier: "textbook",
+    modelNote: "McIntyre's F for a uniform field and pure injection of the more ionising carrier, with the k presets of the avalanche-gain page. The SNR chart is shot-noise limited (no amplifier noise), and x = ln F/ln M matches the datasheet form F = M^x only at the entered gain.",
+    references: [
+      {
+        citation: "McIntyre R. J. (1966). Multiplication noise in uniform avalanche diodes. IEEE Trans. Electron Devices ED-13, 164–168. F = kM + (1 − k)(2 − 1/M).",
+        url: "https://doi.org/10.1109/T-ED.1966.15651",
+      },
+      {
+        citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed. Wiley. §4.4 (APD receiver noise, optimum gain) and Table 4.2 (k: Si 0.02–0.05, InGaAs 0.5–0.7, Ge 0.7–1.0).",
+      },
+      {
+        citation: "Excelitas Technologies. C30902EH and C30921EH avalanche photodiodes, datasheet Rev. 2022.02. k_eff = 0.02; V_br = 225 V at 22 °C, 0.7 V/°C; M = 150; dark current 7 nA.",
+        url: "https://www.excelitas.com/sites/default/files/assets/product/document/24781.pdf",
+      },
+    ],
   },
   {
     slug: "flicker-noise",
@@ -236,8 +270,30 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "gain-temperature",
     title: "Gain vs Temperature",
-    description: "Temperature dependence of detector gain for APDs and PMTs.",
-    knownIssue: "The APD gain drift uses an unsourced M_ref/(1 + α·ΔT) with α independent of gain, while real drift at fixed bias comes from V_br(T) and grows with M. When 1 + α·ΔT nears 0 a clamp shows 100 × M_ref as the gain.",
+    description: "APD gain drift at fixed bias from the breakdown-voltage temperature coefficient, and PMT gain drift.",
+    tier: "textbook",
+    modelNote: "APD at fixed bias: Miller's law with n fitted through the entered operating point and a breakdown voltage linear in temperature. The defaults are the Excelitas C30662 InGaAs APD (M = 10 at 4 V below a 50 V breakdown, 0.14 V/°C), which reaches breakdown below −6.6 °C; the PMT branch applies an entered constant coefficient.",
+    references: [
+      {
+        citation: "Miller S. L. (1955). Avalanche breakdown in germanium. Phys. Rev. 99, 1234–1241. Empirical gain M = 1/[1 − (V/V_br)^n].",
+        url: "https://doi.org/10.1103/PhysRev.99.1234",
+      },
+      {
+        citation: "Crowell C. R., Sze S. M. (1966). Temperature dependence of avalanche multiplication in semiconductors. Appl. Phys. Lett. 9, 242–244. The breakdown voltage rises with temperature.",
+        url: "https://doi.org/10.1063/1.1754731",
+      },
+      {
+        citation: "Excelitas Technologies. C30645 and C30662 InGaAs avalanche photodiodes, datasheet Rev. 2025.11. V_br = 50 V (45–70 V), 0.14 V/°C; M = 10 at 4 V below breakdown.",
+        url: "https://www.excelitas.com/sites/default/files/assets/product/document/27873.pdf",
+      },
+      {
+        citation: "Excelitas Technologies. C30902EH and C30921EH avalanche photodiodes, datasheet Rev. 2022.02. k_eff = 0.02; V_br = 225 V at 22 °C, 0.7 V/°C; M = 150; dark current 7 nA.",
+        url: "https://www.excelitas.com/sites/default/files/assets/product/document/24781.pdf",
+      },
+      {
+        citation: "Hamamatsu Photonics (2006). Photomultiplier Tubes: Basics and Applications, 3rd ed., §13.1.1. The gain's temperature characteristic hardly depends on wavelength or supply voltage; Fig. 13-1 plots photocathode anode-sensitivity coefficients on a −1 to +1.5 %/°C scale.",
+      },
+    ],
   },
   {
     slug: "geiger-mode-avalanche",
@@ -280,8 +336,26 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "linear-mode-avalanche",
     title: "Linear-Mode Avalanche Photodiode",
-    description: "McIntyre excess noise factor F(M), signal current and shot noise of a linear-mode APD versus gain, ionization ratio k and dark current.",
-    knownIssue: "No amplifier or thermal noise term, so the SNR only falls with gain (0.89 at M = 1, 0.45 at M = 100 at the defaults) and the optimum APD gain never appears. The default 10 nA bulk dark current is high for silicon.",
+    description: "SNR of a linear-mode APD receiver versus gain: McIntyre excess noise, shot and thermal noise, and the optimum gain for a given load resistance.",
+    tier: "textbook",
+    modelNote: "Shot noise of the multiplied photocurrent and bulk dark current with McIntyre's F, plus Johnson noise of the load; surface dark current, amplifier voltage noise and background light are left out. The default 50 pA bulk dark current is about the Excelitas C30902EH's 7 nA at M = 150 divided by the gain.",
+    references: [
+      {
+        citation: "McIntyre R. J. (1966). Multiplication noise in uniform avalanche diodes. IEEE Trans. Electron Devices ED-13, 164–168. F = kM + (1 − k)(2 − 1/M).",
+        url: "https://doi.org/10.1109/T-ED.1966.15651",
+      },
+      {
+        citation: "Personick S. D. (1977). Receiver design for optical fiber systems. Proc. IEEE 65, 1670–1678. Shot and thermal noise of a p-i-n or APD receiver and the optimum gain.",
+        url: "https://doi.org/10.1109/PROC.1977.10808",
+      },
+      {
+        citation: "Agrawal G. P. (2010). Fiber-Optic Communication Systems, 4th ed. Wiley. §4.4 (APD receiver noise, optimum gain) and Table 4.2 (k: Si 0.02–0.05, InGaAs 0.5–0.7, Ge 0.7–1.0).",
+      },
+      {
+        citation: "Excelitas Technologies. C30902EH and C30921EH avalanche photodiodes, datasheet Rev. 2022.02. k_eff = 0.02; V_br = 225 V at 22 °C, 0.7 V/°C; M = 150; dark current 7 nA.",
+        url: "https://www.excelitas.com/sites/default/files/assets/product/document/24781.pdf",
+      },
+    ],
   },
   {
     slug: "lockin-amplifier",
