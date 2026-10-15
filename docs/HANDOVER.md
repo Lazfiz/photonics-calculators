@@ -43,7 +43,7 @@ passed. This handover is on `docs/detectors-dark-current-handover`. Next: **Dete
   - The fixed-gap n_i scaling understates the cooling gain: Si 25 → −40 °C is ×630 with 1.12 eV and ×950 with Varshni,
     since the activation energy is ≈ E_g(0) + αβT²/(T+β)² = 1.20 eV.
 - **Session 65 lessons:**
-  - Probe the module (scratchpad `.ts`) before writing the test: hand values can be off in the 5th digit.
+  - Probe the module (scratchpad `.ts`) before writing the test; then mutate the code once to see `ℹ fail N`.
   - Charts of ≤ 300 points: compute them in the render, not in `useMemo`: no stale deps, no eslint-disable.
   - A slug rename touching < 10 files: `git mv` the folder, change `href` in `page.tsx`, move the registry entry to its
     sorted place (old title into `keywords`), add the redirect, `rm -rf .next/types .next/dev/types`.
@@ -52,9 +52,7 @@ passed. This handover is on `docs/detectors-dark-current-handover`. Next: **Dete
   - Pattern per page: `xRaw` from `useURLState`, `x = clamp(xRaw, lo, hi, default)`, and pass `xRaw` to the input with the
     same `min`/`max`. Selects: map the raw string onto an id list with a default.
   - `src/registry/calculators/detectors.ts` is **LF**. Registry scripts must keep the file's line endings.
-  - Use exact constants for goldens; rounded ones (6.02/1.76) differ in the 4th digit.
-- **Session 63:** reviewer numbers flagged "from memory" need a source before they go into code.
-- **Earlier:** format integer outputs as integers. JSX text cannot hold `{…}`: wrap it in `{"…"}`. A "maximum distance"
+- **Earlier:** "from memory" reviewer numbers need a source. Format integer outputs as integers. JSX text cannot hold `{…}`: wrap it in `{"…"}`. A "maximum distance"
   output needs a zero-attenuation case. Test the extreme corner of every input range. A general routine must reproduce
   the closed forms it generalises. `useURLState` inside `.map` breaks `rules-of-hooks`.
 - **Sources:** `curl -A "Mozilla/5.0"` + `pdftotext -layout` works for arXiv, radioeng.cz, URSI GA, `theses.eurasip.org`,
@@ -62,8 +60,6 @@ passed. This handover is on `docs/detectors-dark-current-handover`. Next: **Dete
   `/rest/<PMCID>/fullTextXML` works); Optics Express doesn't download. Thorlabs spec sheets come from the public `/graphql`
   endpoint (storeId "Thorlabs-Website"). Cross-check a coefficient table against a second independent source; settle
   disagreements with a physical check, not a vote.
-- **Merges:** add the redirect, run `scripts/codemods/2026-10-08-merge-duplicates.ts` (dry run, then `--write`), then
-  `rm -rf .next/types .next/dev/types`.
 - **Fits:** empirical fits can go unphysical inside their stated range. Check signs, orderings and joins. Timings: CI ≈ 2–3
   min, physics-reviewer ≈ 8–15 min, `npm run check` ≈ 4 min, build ≈ 6 min.
 - **URL strings:** `s in OBJ` is true for prototype keys; use `Object.hasOwn` or `find` over an id list.
@@ -74,7 +70,6 @@ passed. This handover is on `docs/detectors-dark-current-handover`. Next: **Dete
 - **Hung checks:** wrap every chrome, ui-check and server command in `timeout <s>`. Check pages on `next start` after
   `build`. A `next start` can hold port 3100: find it with `netstat -ano | grep :3100`, kill it with
   `taskkill //PID <pid> //T //F`. Use `run_in_background`, not `( … ) &`.
-- **Tests bite:** mutate the code once; the reporter prints `✖` and `ℹ fail N`.
 - **eslint:** about 665 pre-existing warnings (the summary line starts with `✖`). Lint only the changed files. JSX text
   needs `&apos;`.
 - **ui-check:** `MSYS_NO_PATHCONV=1 node scripts/ui-check.mjs http://localhost:3100 load /a "/b?x=1"`. Never
