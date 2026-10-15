@@ -1,90 +1,85 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { afterpulseProbability, measuredRate } from "../../../physics/detectors/dead-time";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+
 export default function AfterpulsingPage() {
-  const [trapLifetime, setTrapLifetime] = useURLState("trapLifetime", 20);
-  const [trapEfficiency, setTrapEfficiency] = useURLState("trapEfficiency", 0.05);
-  const [deadTime, setDeadTime] = useURLState("deadTime", 50);
-  const [countRate, setCountRate] = useURLState("countRate", 1e6);
-  const [numTraps, setNumTraps] = useURLState("numTraps", 3);
+  const [tau1Raw, setTau1] = useURLState("trapLifetime", 20); // ns
+  const [eta1Raw, setEta1] = useURLState("trapEfficiency", 0.05);
+  const [tau2Raw, setTau2] = useURLState("trapLifetime2", 200); // ns
+  const [eta2Raw, setEta2] = useURLState("trapEfficiency2", 0);
+  const [deadTimeRaw, setDeadTime] = useURLState("deadTime", 50); // ns
+  const [countRateRaw, setCountRate] = useURLState("countRate", 1e6); // cps
 
-  // Measured (avalanche) rate: only actual detections fill traps.
-  // Photons arriving during dead time cannot trigger avalanches.
-  // measuredRate = countRate / (1 + countRate × deadTime × 1e-9)
-  const measuredRate = countRate / (1 + countRate * deadTime * 1e-9);
+  const tau1 = clamp(tau1Raw, 0.1, 1e5, 20);
+  const eta1 = clamp(eta1Raw, 0, 1, 0.05);
+  const tau2 = clamp(tau2Raw, 0.1, 1e5, 200);
+  const eta2 = clamp(eta2Raw, 0, 1, 0);
+  const deadTime = clamp(deadTimeRaw, 0, 1e5, 50);
+  const countRate = clamp(countRateRaw, 0, 1e10, 1e6);
 
-  // Afterpulse probability: fraction of trapped carriers that survive the dead time
-  // and can trigger a secondary avalanche. Decreases with longer dead time.
-  // P_ap = η · exp(-t_dead / τ)   [Cova et al.]
-  const trapReleaseFrac = 1 - Math.exp(-deadTime / trapLifetime);
-  const afterpulseProb = trapEfficiency * Math.exp(-deadTime / trapLifetime);
-  const afterpulseRate = measuredRate * afterpulseProb;
-  // afterpulseFraction uses measuredRate as denominator: fraction of detected
-  // (avalanche) events that are afterpulses, not fraction of incident photons.
-  const afterpulseFraction = measuredRate > 0 ? (afterpulseRate / measuredRate) * 100 : 0;
+  const trap1 = { eta: eta1, tau: tau1 * 1e-9 };
+  const trap2 = { eta: eta2, tau: tau2 * 1e-9 };
+  const traps = [trap1, trap2];
+  const td = deadTime * 1e-9;
 
-  const multiTrap = useMemo(() => {
-    const traps = Array.from({ length: numTraps }, (_, i) => ({
-      tau: trapLifetime * Math.pow(3, i),
-      eta: trapEfficiency / Math.pow(2, i),
-    }));
-    return traps.map(t => ({
-      ...t,
-      release: 1 - Math.exp(-deadTime / t.tau),
-      apProb: t.eta * Math.exp(-deadTime / t.tau),
-      apRate: measuredRate * t.eta * Math.exp(-deadTime / t.tau),
-    }));
-  }, [trapLifetime, trapEfficiency, deadTime, measuredRate, numTraps]);
+  // Only recorded avalanches fill traps: photons arriving while the diode is dead never trigger one.
+  const measured = measuredRate(countRate, td, "nonparalyzable");
+  const pAp = afterpulseProbability(traps, td);
+  const apRate = measured * pAp; // first order in P_ap: afterpulses of afterpulses are left out
+  const release1 = -Math.expm1(-td / trap1.tau);
 
-  const chartData = useMemo(() => {
-    const dt = Array.from({ length: 200 }, (_, i) => 1 + i * 200 / 200);
-    const apProb = dt.map(d => trapEfficiency * Math.exp(-d / trapLifetime));
-    const apProb2 = dt.map(d => {
-      let survive = 1;
-      multiTrap.forEach(t => { survive *= (1 - t.eta * Math.exp(-d / t.tau)); });
-      return 1 - survive;
-    });
-    return [
-      { x: dt, y: apProb.map(v => v * 100), type: "scatter" as const, mode: "lines" as const, name: "Single Trap", line: { color: "#60a5fa", width: 2 } },
-      { x: dt, y: apProb2.map(v => v * 100), type: "scatter" as const, mode: "lines" as const, name: `${numTraps} Traps`, line: { color: "#f87171", width: 2, dash: "dash" as const } },
-    ];
-  }, [trapLifetime, trapEfficiency, numTraps, multiTrap]);
-
-  const rateVsDeadTime = useMemo(() => {
-    const dt = Array.from({ length: 200 }, (_, i) => 1 + i * 200 / 200);
-    return [
-      { x: dt, y: dt.map(d => { const ap = trapEfficiency * Math.exp(-d / trapLifetime); const mr = countRate / (1 + countRate * d * 1e-9); return mr * ap; }), type: "scatter" as const, mode: "lines" as const, name: "Afterpulse Rate", line: { color: "#fbbf24", width: 2 }, yaxis: "y" },
-      { x: dt, y: dt.map(d => { const measured = countRate / (1 + countRate * d * 1e-9); return measured / 1e6; }), type: "scatter" as const, mode: "lines" as const, name: "Measured Rate (Mcps)", line: { color: "#34d399", width: 2 }, yaxis: "y2" },
-    ];
-  }, [trapLifetime, trapEfficiency, countRate]);
+  // Dead times from 0 to max(200 ns, 5 τ of the slower active trap).
+  const tauMax = eta2 > 0 ? Math.max(tau1, tau2) : tau1;
+  const dtMax = Math.max(200, 5 * tauMax);
+  const dts = Array.from({ length: 201 }, (_, i) => (i * dtMax) / 200);
+  const probChart = [
+    { x: dts, y: dts.map((d) => afterpulseProbability([trap1], d * 1e-9) * 100), type: "scatter" as const, mode: "lines" as const, name: `Trap 1 (τ = ${tau1} ns)`, line: { color: "#60a5fa", width: 2 } },
+    ...(eta2 > 0 ? [
+      { x: dts, y: dts.map((d) => afterpulseProbability([trap2], d * 1e-9) * 100), type: "scatter" as const, mode: "lines" as const, name: `Trap 2 (τ = ${tau2} ns)`, line: { color: "#fbbf24", width: 2 } },
+      { x: dts, y: dts.map((d) => afterpulseProbability(traps, d * 1e-9) * 100), type: "scatter" as const, mode: "lines" as const, name: "Total", line: { color: "#f87171", width: 2, dash: "dash" as const } },
+    ] : []),
+  ];
+  const rateChart = [
+    { x: dts, y: dts.map((d) => measuredRate(countRate, d * 1e-9, "nonparalyzable") * afterpulseProbability(traps, d * 1e-9)), type: "scatter" as const, mode: "lines" as const, name: "Afterpulse Rate (cps)", line: { color: "#fbbf24", width: 2 } },
+    { x: dts, y: dts.map((d) => measuredRate(countRate, d * 1e-9, "nonparalyzable") / 1e6), type: "scatter" as const, mode: "lines" as const, name: "Recorded Rate (Mcps)", line: { color: "#34d399", width: 2 }, yaxis: "y2" },
+  ];
 
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Primary Trap Lifetime (ns)" value={trapLifetime} onChange={setTrapLifetime} min={0.1} step="1" />
-        <ValidatedNumberInput label="Trap Efficiency" value={trapEfficiency} onChange={setTrapEfficiency} min={0.001} max={1} step="0.01" />
-        <ValidatedNumberInput label="Dead Time (ns)" value={deadTime} onChange={setDeadTime} min={1} step="1" />
-        <ValidatedNumberInput label="True Count Rate (cps)" value={countRate} onChange={setCountRate} min={1} step="10000" />
-        <ValidatedNumberInput label="Number of Trap Species" value={numTraps} onChange={setNumTraps} min={1} max={5} />
+        <ValidatedNumberInput label="Trap 1 Lifetime τ₁ (ns)" value={tau1Raw} onChange={setTau1} min={0.1} max={1e5} step="1" />
+        <ValidatedNumberInput label="Trap 1 Amplitude η₁ (P_ap at t_d = 0)" value={eta1Raw} onChange={setEta1} min={0} max={1} step="0.01" />
+        <ValidatedNumberInput label="Trap 2 Lifetime τ₂ (ns)" value={tau2Raw} onChange={setTau2} min={0.1} max={1e5} step="10" />
+        <ValidatedNumberInput label="Trap 2 Amplitude η₂ (0 = off)" value={eta2Raw} onChange={setEta2} min={0} max={1} step="0.005" />
+        <ValidatedNumberInput label="Dead Time t_d (ns)" value={deadTimeRaw} onChange={setDeadTime} min={0} max={1e5} step="1" />
+        <ValidatedNumberInput label="True Count Rate (cps)" value={countRateRaw} onChange={setCountRate} min={0} max={1e10} step="10000" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Afterpulse Prob" value={`${(afterpulseProb * 100).toFixed(3)}%`} tone="red" />
-        <ResultCard label="Afterpulse Rate" value={`${(afterpulseRate / 1e6).toFixed(3)} Mcps`} tone="yellow" />
-        <ResultCard label="Afterpulse Fraction" value={`${afterpulseFraction.toFixed(2)}%`} tone="blue" />
-        <ResultCard label={`Trap Release (${deadTime}ns)`} value={`${(trapReleaseFrac * 100).toFixed(1)}%`} tone="green" />
+        <ResultCard label="Afterpulse Probability" value={`${(pAp * 100).toFixed(3)}%`} tone="red" subtext="per recorded avalanche" />
+        <ResultCard label="Afterpulse Rate" value={`${apRate.toExponential(3)} cps`} tone="yellow" subtext="recorded rate × P_ap" />
+        <ResultCard label="Recorded Rate" value={`${(measured / 1e6).toFixed(4)} Mcps`} tone="blue" subtext="non-paralyzable dead time" />
+        <ResultCard label={`Trap 1 Released in ${deadTime} ns`} value={`${(release1 * 100).toFixed(1)}%`} tone="green" subtext="1 − e^(−t_d/τ₁), harmless" />
       </div>
+      {pAp > 0.1 && (
+        <p className="mb-6 text-sm text-yellow-400">
+          P_ap above 10 %: afterpulses then trigger afterpulses of their own and steal dead time, which this first-order rate leaves out.
+        </p>
+      )}
       <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
-        <p>P_ap = η_trap · exp(-t_dead / τ)</p>
-        <p>Afterpulsing occurs when trapped carriers survive the dead time and trigger a secondary avalanche.</p>
-        <p>Longer dead time → more traps release harmlessly during dead time → fewer remaining carriers → lower afterpulse probability.</p>
+        <p>P_ap = Σ η_k · exp(−t_d / τ_k)  [Cova 1991; Ziarkash 2018]</p>
+        <p>R_ap = m · P_ap,  m = R / (1 + R·t_d)</p>
+        <p>A carrier trapped during an avalanche and released after the dead time retriggers the diode. A longer dead time lets
+          more traps empty harmlessly, at the cost of a lower maximum count rate.</p>
       </div>
-      <ChartPanel data={chartData as any} layout={{ xaxis: { title: { text: "Dead Time (ns)" }, gridcolor: "#374151" }, yaxis: { title: { text: "Afterpulse Probability (%)" }, gridcolor: "#374151" } }} />
+      <ChartPanel data={probChart} layout={{ xaxis: { title: { text: "Dead Time (ns)" }, gridcolor: "#374151" }, yaxis: { title: { text: "Afterpulse Probability (%)" }, gridcolor: "#374151" } }} />
       <h2 className="text-xl font-bold mt-8 mb-4">Rate vs Dead Time</h2>
-      <ChartPanel data={rateVsDeadTime as any} layout={{ xaxis: { title: { text: "Dead Time (ns)" }, gridcolor: "#374151" }, yaxis: { title: { text: "Afterpulse Rate (cps)" }, gridcolor: "#374151" }, yaxis2: { title: { text: "Measured Rate (Mcps)" }, gridcolor: "#374151", overlaying: "y", side: "right" } }} />
+      <ChartPanel data={rateChart} layout={{ xaxis: { title: { text: "Dead Time (ns)" }, gridcolor: "#374151" }, yaxis: { title: { text: "Afterpulse Rate (cps)" }, gridcolor: "#374151" }, yaxis2: { title: { text: "Recorded Rate (Mcps)" }, gridcolor: "#374151", overlaying: "y", side: "right" } }} />
     </>
   );
 }
