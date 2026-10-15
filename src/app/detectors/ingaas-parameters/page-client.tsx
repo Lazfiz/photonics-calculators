@@ -1,76 +1,88 @@
 "use client";
 
-import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c, h, q, k_B, hc_eV_nm } from "../../../physics/constants";
+import { generationCurrent, generationCurrentAtBias, generationNoiseDensity } from "../../../physics/detectors/dark-current";
+import { cutoffWavelength, ingaasAbsorption, ingaasIntrinsicDensity } from "../../../physics/detectors/ingaas";
+import { photodiodeQe } from "../../../physics/detectors/photodiode-qe";
+import { responsivity } from "../../../physics/detectors/responsivity";
+import { ingaasBandGap } from "../../../physics/materials/bandgap";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmtE = (x: number, digits = 3) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
 
 export default function IngaasParametersPage() {
-  const [temperature, setTemperature] = useURLState("temperature", 293);
-  const [indiumFraction, setIndiumFraction] = useURLState("indiumFraction", 0.53);
-  const [thickness, setThickness] = useURLState("thickness", 3);
-  const [area, setArea] = useURLState("area", 0.1);
-  const [biasVoltage, setBiasVoltage] = useURLState("biasVoltage", 0.5);
-  const [idealityFactor, setIdealityFactor] = useURLState("idealityFactor", 1.2);
+  const [temperatureRaw, setTemperature] = useURLState("temperature", 300);
+  const [indiumFractionRaw, setIndiumFraction] = useURLState("indiumFraction", 0.53);
+  const [thicknessRaw, setThickness] = useURLState("thickness", 3);
+  const [areaRaw, setArea] = useURLState("area", 0.1);
+  const [biasRaw, setBias] = useURLState("biasVoltage", -1);
+  const [lifetimeRaw, setLifetime] = useURLState("genLifetime", 100);
+  const [reflectanceRaw, setReflectance] = useURLState("reflectance", 2);
+  const T = clamp(temperatureRaw, 200, 400, 300); // K
+  const x = clamp(indiumFractionRaw, 0, 1, 0.53);
+  const thickness = clamp(thicknessRaw, 0.1, 20, 3) * 1e-6; // m, fully depleted absorber
+  const areaMm2 = clamp(areaRaw, 0.001, 100, 0.1);
+  const area = areaMm2 * 1e-6; // m²
+  const bias = clamp(biasRaw, -10, 0, -1); // V
+  const lifetime = clamp(lifetimeRaw, 0.01, 1e4, 100) * 1e-6; // s
+  const reflectance = clamp(reflectanceRaw, 0, 99, 2) / 100;
 
-  const Eg = indiumFraction * 0.36 + (1 - indiumFraction) * 1.424 - 0.477 * indiumFraction * (1 - indiumFraction);
-  const EgT = Eg - 2.7e-4 * (temperature - 300) * Math.abs(Eg - 0.5) / Eg;
-  const cutoff = hc_eV_nm / EgT;
-  const R_surface = 0.02;
-  const alpha0 = 1e4;
+  const Eg = ingaasBandGap(x, T);
+  const cutoff_nm = cutoffWavelength(Eg) * 1e9;
+  const qeAt = (lambda_nm: number) =>
+    photodiodeQe({ alpha: ingaasAbsorption(lambda_nm * 1e-9, Eg), reflectance, depletionWidth: thickness });
+  const ni = ingaasIntrinsicDensity(x, T);
+  const genCurrent = generationCurrent(ni, thickness, area, lifetime);
+  const dark = generationCurrentAtBias(genCurrent, bias, T);
+  const noise = generationNoiseDensity(genCurrent); // A/√Hz
+  const r1550 = responsivity(qeAt(1550), 1550e-9);
+  const nep1550 = r1550 > 0 ? noise / r1550 : NaN;
+  const dStar1550 = Math.sqrt(areaMm2 * 1e-2) / nep1550; // cm·Hz^½/W
 
-  const alpha = (wl: number) => { const Ep = hc_eV_nm / wl; return Ep > EgT ? alpha0 * Math.sqrt(Ep - EgT) : 0; };
-  const calcQE = (wl: number) => (1 - R_surface) * (1 - Math.exp(-alpha(wl) * thickness * 1e-4));
-  const resp = (wl: number) => calcQE(wl) * wl * 1e-9 * q / (h * c);
-
-  const areaCm2 = area * 1e-2;
-  const Vt = k_B * temperature / q;
-  const Vrev = Math.max(0, -biasVoltage);
-  const diffDark = areaCm2 * 1e-8 * Math.pow(temperature / 300, 3) * Math.exp(EgT * q / k_B * (1 / 300 - 1 / temperature)) * (1 - Math.exp(-Vrev / (idealityFactor * Vt)));
-  const grDark = areaCm2 * 1e-6 * Math.pow(temperature / 300, 1.5) * Math.exp(-EgT * q / (2 * k_B * temperature)) * (1 - Math.exp(-Vrev / (2 * Vt)));
-  const totalDark = diffDark + grDark;
-  const R1550 = resp(1550);
-  const nep1550 = Math.sqrt(2 * q * totalDark) / R1550;
-  const Dstar1550 = nep1550 > 0 ? Math.sqrt(areaCm2) / nep1550 : 0;
-
-  const spectralQE = useMemo(() => {
-    const wl = Array.from({ length: 300 }, (_, i) => 800 + i * 4);
-    return [
-      { x: wl, y: wl.map(w => calcQE(w) * 100), type: "scatter", mode: "lines", name: "QE (%)", line: { color: "#60a5fa", width: 2 } },
-      { x: [cutoff, cutoff], y: [0, 100], type: "scatter", mode: "lines", name: `λ_c=${cutoff.toFixed(0)}nm`, line: { color: "#f87171", dash: "dash" } },
-    ];
-  }, [temperature, indiumFraction, thickness, EgT, cutoff]);
-
-  const darkVsTemp = useMemo(() => {
-    const temps = Array.from({ length: 150 }, (_, i) => 200 + i * 200 / 150);
-    return [{ x: temps, y: temps.map(T => { const egt = Eg - 2.7e-4 * (T - 300) * Math.abs(Eg - 0.5) / Eg; const vt = k_B * T / q; const vr = Math.max(0, -biasVoltage); const d = areaCm2 * 1e-8 * Math.pow(T / 300, 3) * Math.exp(egt * q / k_B * (1 / 300 - 1 / T)) * (1 - Math.exp(-vr / (idealityFactor * vt))); const g = areaCm2 * 1e-6 * Math.pow(T / 300, 1.5) * Math.exp(-egt * q / (2 * k_B * T)); return (d + g) * 1e9; }), type: "scatter", mode: "lines", name: "I_dark", line: { color: "#fbbf24", width: 2 } }];
-  }, [Eg, biasVoltage, idealityFactor, areaCm2]);
+  const lambdaMax = Math.min(3500, Math.max(1800, Math.ceil((cutoff_nm + 300) / 100) * 100));
+  const wl = Array.from({ length: 241 }, (_, i) => 800 + (i * (lambdaMax - 800)) / 240);
+  const spectralQE = [
+    { x: wl, y: wl.map(w => qeAt(w) * 100), type: "scatter", mode: "lines", name: "QE (%)", line: { color: "#60a5fa", width: 2 } },
+    { x: [cutoff_nm, cutoff_nm], y: [0, 100], type: "scatter", mode: "lines", name: `λ_c = ${cutoff_nm.toFixed(0)} nm`, line: { color: "#f87171", dash: "dash" } },
+  ];
+  const temps = Array.from({ length: 201 }, (_, i) => 200 + i);
+  const genAt = (Tk: number) => generationCurrent(ingaasIntrinsicDensity(x, Tk), thickness, area, lifetime) * 1e9;
+  const genVsTemp = [
+    { x: temps, y: temps.map(genAt), type: "scatter", mode: "lines", name: "I_gen", line: { color: "#fbbf24", width: 2 } },
+  ];
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Temperature (K)" value={temperature} onChange={setTemperature} min={200} max={400} step="5" />
-        <ValidatedNumberInput label="Indium Fraction (x)" value={indiumFraction} onChange={setIndiumFraction} min={0} max={1} step="0.01" />
-        <ValidatedNumberInput label="Thickness (µm)" value={thickness} onChange={setThickness} min={0.1} step="0.5" />
-        <ValidatedNumberInput label="Area (mm²)" value={area} onChange={setArea} min={0.01} step="0.01" />
-        <ValidatedNumberInput label="Bias (V)" value={biasVoltage} onChange={setBiasVoltage} min={-5} step="0.1" />
-        <ValidatedNumberInput label="Ideality Factor" value={idealityFactor} onChange={setIdealityFactor} min={1} max={2} step="0.1" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ValidatedNumberInput label="Temperature (K)" value={temperatureRaw} onChange={setTemperature} min={200} max={400} step="5" />
+        <ValidatedNumberInput label="Indium Fraction (x)" value={indiumFractionRaw} onChange={setIndiumFraction} min={0} max={1} step="0.01" />
+        <ValidatedNumberInput label="Absorber Thickness (µm)" value={thicknessRaw} onChange={setThickness} min={0.1} max={20} step="0.5" />
+        <ValidatedNumberInput label="Area (mm²)" value={areaRaw} onChange={setArea} min={0.001} max={100} step="0.01" />
+        <ValidatedNumberInput label="Bias (V, reverse < 0)" value={biasRaw} onChange={setBias} min={-10} max={0} step="0.1" />
+        <ValidatedNumberInput label="Generation Lifetime τ_g (µs)" value={lifetimeRaw} onChange={setLifetime} min={0.01} max={1e4} step="10" />
+        <ValidatedNumberInput label="Front Reflectance (%)" value={reflectanceRaw} onChange={setReflectance} min={0} max={99} step="0.5" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ResultCard label="Bandgap E_g" value={`${EgT.toFixed(3)} eV`} tone="blue" />
-        <ResultCard label="Cutoff λ_c" value={`${cutoff.toFixed(0)} nm`} tone="green" />
-        <ResultCard label="QE @ 1300nm" value={`${(calcQE(1300) * 100).toFixed(1)}%`} tone="yellow" />
-        <ResultCard label="Dark Current" value={totalDark.toExponential(3) + " A"} tone="red" />
-        <ResultCard label="R @ 1550nm" value={`${R1550.toFixed(3)} A/W`} tone="purple" />
-        <ResultCard label="NEP @ 1550nm" value={nep1550.toExponential(3) + " W/√Hz"} tone="orange" />
-        <ResultCard label="D* @ 1550nm" value={`${Dstar1550.toExponential(3)} cm·Hz^½/W`} tone="cyan" />
+        <ResultCard label="Band Gap E_g" value={`${Eg.toFixed(4)} eV`} tone="blue" subtext={`Vurgaftman 2001, x = ${x.toFixed(2)}, ${T.toFixed(0)} K`} />
+        <ResultCard label="Cutoff λ_c" value={`${cutoff_nm.toFixed(0)} nm`} tone="green" />
+        <ResultCard label="QE @ 1300 / 1550 nm" value={`${(qeAt(1300) * 100).toFixed(1)} / ${(qeAt(1550) * 100).toFixed(1)} %`} tone="yellow" />
+        <ResultCard label="R @ 1550 nm" value={`${r1550.toFixed(3)} A/W`} tone="purple" />
+        <ResultCard label="Intrinsic Density n_i" value={`${fmtE(ni * 1e-6, 2)} cm⁻³`} tone="cyan" />
+        <ResultCard label="Dark Current" value={`${fmtE(dark)} A`} tone="red" subtext={`generation limit ${fmtE(genCurrent)} A`} />
+        <ResultCard label="NEP @ 1550 nm" value={`${fmtE(nep1550)} W/√Hz`} tone="orange" subtext={r1550 > 0 ? undefined : "1550 nm is beyond the cutoff"} />
+        <ResultCard label="D* @ 1550 nm" value={`${fmtE(dStar1550)} cm·Hz^½/W`} tone="cyan" />
       </div>
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1"><p>E_g(x) = 1.424 − 1.541x + 0.477x²</p><p>λ_c = 1240/E_g, QE = (1−R)·(1−exp(−α·d))</p></div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 font-mono space-y-1">
+        <p>E_g(x, T) = (1−x)·E_g,GaAs(T) + x·E_g,InAs(T) − 0.477·x(1−x) eV, E_g(T) = E_g(0) − αT²/(T+β)</p>
+        <p>α = 2.4×10⁴ cm⁻¹·√(E − E_g/eV), QE = (1 − R)·(1 − e^(−α·d))</p>
+        <p>I_gen = q·n_i·d·A/τ_g, I_dark = I_gen·(1 − e^(qV/2k_BT)), i_n = √(2q·I_gen)</p>
+      </div>
       <div className="grid gap-6 md:grid-cols-2">
-        <ChartPanel data={spectralQE} layout={{ xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "QE (%)", gridcolor: "#374151" } }} title="Spectral QE" />
-        <ChartPanel data={darkVsTemp} layout={{ xaxis: { title: "Temperature (K)", gridcolor: "#374151" }, yaxis: { title: "I_dark (nA)", type: "log", gridcolor: "#374151" } }} title="Dark vs Temperature" />
+        <ChartPanel data={spectralQE} layout={{ xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "QE (%)", gridcolor: "#374151", range: [0, 100] } }} title="Spectral QE" />
+        <ChartPanel data={genVsTemp} layout={{ xaxis: { title: "Temperature (K)", gridcolor: "#374151" }, yaxis: { title: "I_gen (nA)", type: "log", gridcolor: "#374151" } }} title="Reverse-Bias Generation Current vs Temperature" />
       </div>
     </>
   );

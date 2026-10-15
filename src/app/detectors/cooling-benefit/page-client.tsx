@@ -4,7 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { VARSHNI, darkCurrentRatio, varshniBandGap } from "../../../physics/detectors/dark-current";
+import { darkCurrentRatio } from "../../../physics/detectors/dark-current";
+import { INGAAS_LATTICE_MATCHED_X, VARSHNI, ingaasBandGap, varshniBandGap } from "../../../physics/materials/bandgap";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmtE = (x: number, digits = 2) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
@@ -16,6 +17,7 @@ export default function CoolingBenefitPage() {
   const [egSiRaw, setEgSi] = useURLState("egSi", 1.12);
   const [siGapRaw, setSiGap] = useURLState("siGap", "fixed");
   const [egInGaAsRaw, setEgInGaAs] = useURLState("egInGaAs", 0.75);
+  const [inGaAsGapRaw, setInGaAsGap] = useURLState("ingaasGap", "fixed");
   const [darkCurrent25SiRaw, setDarkCurrent25Si] = useURLState("darkCurrent25Si", 0.1);
   const [darkCurrent25InGaAsRaw, setDarkCurrent25InGaAs] = useURLState("darkCurrent25InGaAs", 1000);
   const [signalRaw, setSignal] = useURLState("signal", 1000);
@@ -25,6 +27,7 @@ export default function CoolingBenefitPage() {
   const egSi = clamp(egSiRaw, 0.1, 6, 1.12);
   const siVarshni = siGapRaw === "varshni";
   const egInGaAs = clamp(egInGaAsRaw, 0.1, 6, 0.75);
+  const inGaAsVurgaftman = inGaAsGapRaw === "vurgaftman";
   const darkCurrent25Si = clamp(darkCurrent25SiRaw, 1e-6, 1e9, 0.1); // e⁻/pixel/s
   const darkCurrent25InGaAs = clamp(darkCurrent25InGaAsRaw, 1e-6, 1e9, 1000);
   const signal = clamp(signalRaw, 0, 1e9, 1000); // e⁻ per exposure
@@ -35,7 +38,8 @@ export default function CoolingBenefitPage() {
   const siGapAt = (T: number) => (siVarshni ? varshniBandGap(T, VARSHNI.si) : egSi);
   // Si: depletion generation current ∝ n_i. InGaAs: diffusion current ∝ n_i².
   const siDark = (Tc: number) => darkCurrent25Si * darkCurrentRatio(Tc + KELVIN, T_REF, siGapAt(Tc + KELVIN), "generation", siGapAt(T_REF));
-  const inGaAsDark = (Tc: number) => darkCurrent25InGaAs * darkCurrentRatio(Tc + KELVIN, T_REF, egInGaAs, "diffusion");
+  const inGaAsGapAt = (T: number) => (inGaAsVurgaftman ? ingaasBandGap(INGAAS_LATTICE_MATCHED_X, T) : egInGaAs);
+  const inGaAsDark = (Tc: number) => darkCurrent25InGaAs * darkCurrentRatio(Tc + KELVIN, T_REF, inGaAsGapAt(Tc + KELVIN), "diffusion", inGaAsGapAt(T_REF));
   const snr = (dark: number) => {
     const noise = Math.sqrt(signal + dark * exposureTime + readNoise * readNoise);
     return noise > 0 ? signal / noise : NaN;
@@ -68,7 +72,18 @@ export default function CoolingBenefitPage() {
         ) : (
           <ValidatedNumberInput label="Si Band Gap (eV)" value={egSiRaw} onChange={setEgSi} min={0.1} max={6} step="0.01" />
         )}
-        <ValidatedNumberInput label="InGaAs Band Gap (eV)" value={egInGaAsRaw} onChange={setEgInGaAs} min={0.1} max={6} step="0.01" />
+        <label className="block text-sm text-gray-300">
+          <span className="mb-1 block">InGaAs band gap</span>
+          <select value={inGaAsVurgaftman ? "vurgaftman" : "fixed"} onChange={e => setInGaAsGap(e.target.value)} className="w-full rounded bg-gray-800 border border-gray-700 px-3 py-2 text-white">
+            <option value="fixed">Fixed E_g (enter)</option>
+            <option value="vurgaftman">In₀.₅₃Ga₀.₄₇As E_g(T) (Vurgaftman)</option>
+          </select>
+        </label>
+        {inGaAsVurgaftman ? (
+          <p className="text-sm text-gray-400 self-end pb-2">InGaAs E_g: {inGaAsGapAt(T_REF).toFixed(3)} eV at 25 °C, {inGaAsGapAt(coolTemp + KELVIN).toFixed(3)} eV at {coolTemp} °C</p>
+        ) : (
+          <ValidatedNumberInput label="InGaAs Band Gap (eV)" value={egInGaAsRaw} onChange={setEgInGaAs} min={0.1} max={6} step="0.01" />
+        )}
         <ValidatedNumberInput label="Cooling Target (°C)" value={coolTempRaw} onChange={setCoolTemp} min={-150} max={25} step="5" />
         <ValidatedNumberInput label="Si Dark @ 25 °C (e⁻/s)" value={darkCurrent25SiRaw} onChange={setDarkCurrent25Si} min={1e-6} max={1e9} step="0.01" />
         <ValidatedNumberInput label="InGaAs Dark @ 25 °C (e⁻/s)" value={darkCurrent25InGaAsRaw} onChange={setDarkCurrent25InGaAs} min={1e-6} max={1e9} step="10" />

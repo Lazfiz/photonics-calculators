@@ -4,7 +4,8 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { VARSHNI, darkCurrentRatio, varshniBandGap, type DarkCurrentMechanism } from "../../../physics/detectors/dark-current";
+import { darkCurrentRatio, type DarkCurrentMechanism } from "../../../physics/detectors/dark-current";
+import { VARSHNI, varshniBandGap } from "../../../physics/materials/bandgap";
 import { shotNoiseCurrent } from "../../../physics/detectors/noise";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);

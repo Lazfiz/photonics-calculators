@@ -1,13 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  VARSHNI,
-  darkCurrentRatio,
-  doublingLawRatio,
-  localDoublingTemperature,
-  varshniBandGap,
-} from "../src/physics/detectors/dark-current";
+import { darkCurrentRatio, doublingLawRatio, localDoublingTemperature } from "../src/physics/detectors/dark-current";
+import { VARSHNI, varshniBandGap } from "../src/physics/materials/bandgap";
 import { lockinSnrGain, lowPassEnbw, lowPassMagnitude } from "../src/physics/detectors/lockin";
 import { gateNoiseBandwidth, gateNoiseRms, gaussianGateAverage, optimalGateWidthRatio } from "../src/physics/detectors/boxcar";
 
