@@ -22,5 +22,6 @@ Goal: the next session starts from small files. `docs/ROADMAP.md` holds open wor
 3. **Memory `active-handover.md`:** update its description and the "next" line. Add no session log; git and the PRs
    hold the history.
 4. **Commit** the docs (`docs: … handover`) on the feature branch, before `/ship`, so they merge in the same PR. Never
-   open a separate docs PR: each merge to `main` costs a Vercel production build (Hobby plan build limits).
+   open a separate docs PR: the handover belongs to the stage's PR. (Merges to `main` no longer build on Vercel;
+   only a push to `release` does, and only when the user asks.)
 5. **Tell the user** this is a good point for `/clear`.
