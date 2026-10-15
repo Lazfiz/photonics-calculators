@@ -1,35 +1,40 @@
-# Handover — 2026-10-15 (session 71 → session 72)
+# Handover — 2026-10-15 (session 72 → session 73)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 71 split part 6 into 6a/6b and finished **6a (dead time and afterpulsing)** on branch
-`phase-4/detectors-single-photon-a`, PR #101 with this handover. Next: **Detectors part 6b: SPAD**.
+Session 72 merged PR #101 (6a; production ALL PASS) and finished **detectors part 6b (SPAD)** on branch
+`phase-4/detectors-single-photon-b`, PR #102 with this handover. Next: **Detectors part 7: vacuum and intensified**.
 `polarizer-types` stays blocked until the user is at the laptop with Chrome.
 
 ## State
-- 244 of 458 pages are tiered (detectors 34 / 54). 13 `knownIssue`s left, all in detectors.
-- New `src/physics/detectors/dead-time.ts`: `DeadTimeModel` + `parseDeadTimeModel`, `measuredRate`, `countLoss`
-  (expm1, equals the dead fraction), `trueRateAtLoss`, `paralyzablePeakRate` 1/(eτ), `nonParalyzableFano`
-  1/(1 + Rτ)², `afterpulseProbability(traps[], t_d)` = Σ η·e^{−t_d/τ} (η = 0 levels skipped).
-- Pages: `spad-dead-time` (mode in the URL, axes scale with τ and R, past-peak warning), `photon-counting` (math.ts
-  `poissonPmf`, ≤ 201 bars with a stride, μ ≤ 1e12, corrected-rate SNR √N_recorded), `afterpulsing` (optional user
-  trap 2, `trapLifetime2`/`trapEfficiency2`, default off; first-order R_ap with a warning above 10 %).
-- 6b reuses `dead-time.ts` for SPCM/`spad` and replaces `src/lib/geiger-mode-avalanche.ts` (+ its old test).
-  `photonEnergy` still lives in FSO `background-radiance.ts`.
-- User decisions (session 63): keep `spad` and SPCM as separate pages on one module; rewrite `channel-photomultiplier` as a
-  true CPM. Session 68: Vercel builds only `main`; the handover goes on the feature branch, one PR per stage.
+- 247 of 458 pages are tiered (detectors 37 / 54). 10 `knownIssue`s left, all in detectors.
+- New `src/physics/detectors/spad.ts`: `photonRate`, `dbmToWatts`, `triggerProbability` (Otte 1 − e^{−ΔV/V_c}),
+  `overbiasAtTemperature`, `arrheniusFactor`, `doublingInterval`, `darkCountRate` (Arrhenius × e^{bΔV} × P_t ratio),
+  `trapEfficiencyAtOverbias` (∝ ΔV·P_t, capped at 1), `countingSnr` (dead-time corrected rate, Bernoulli afterpulses:
+  (R_s/R)√(mT)/√(1 + (1+Rτ)²P(1−P)/(1+P)²)). Reuses `dead-time.ts` (`measuredRate`, `countLoss`, `afterpulseProbability`).
+- Pages, all on sourced defaults: `geiger-mode-avalanche` (S13360-3050CS microcell, PDE 40.0 %, P_ap 0.410 %),
+  `spad` (Korzh 2014 InGaAs NFAD at −110 °C, −120 dBm, E_a 0.25 eV effective, SNR 29.36), `single-photon-counting-module`
+  (SPCM-AQRH-14 at 650 nm, correction 1.0468, SNR 1421.6, statistical only). `src/lib/geiger-mode-avalanche.ts` is gone.
+- User decisions: rewrite `channel-photomultiplier` as a true CPM (session 63); one PR per stage, handover inside (68).
 
 ## Next actions
-1. `/ship` this branch. post-merge-check: `detectors/spad-dead-time="7.788"` `detectors/afterpulsing="0.410%"`
-   `detectors/photon-counting="975.9"`.
-2. Detectors part 6b, then 7–9 in ROADMAP order. Each part: module + golden tests, rewire the pages, clamp URL inputs +
+1. `/ship` this branch. post-merge-check: `detectors/geiger-mode-avalanche="40.0%"` `detectors/spad="29.36"`
+   `detectors/single-photon-counting-module="1421.6"`.
+2. Detectors part 7, then 8–9 in ROADMAP order. Each part: module + golden tests, rewire the pages, clamp URL inputs +
    `min`/`max` on inputs, "—" for NaN, then tier, modelNote and references, and delete the `knownIssue`.
-   `/handover` on the feature branch before `/ship`.
-3. `post-merge-check` takes default-page values only (no query strings). Grep the prerendered
-   `.next/server/app/<cat>/<slug>.html` after `build` for a distinctive default string.
+   `/handover` on the feature branch before `/ship`. Part 7 has 6 pages: split it into 7a/7b first.
+3. `post-merge-check` takes default-page values only. Grep `.next/server/app/<cat>/<slug>.html` after `build`.
 4. Later: fiber and FSO open findings (ROADMAP), the imaging/spectroscopy findings, Chrome-only checks.
 
 ## Non-obvious facts
+- **Session 72 lessons:**
+  - Sources that download (curl + `pdftotext -raw`): Otte 2017 arXiv `1606.05186` (Table 1 α, Table 2 DCR fits, Fig. 23
+    doublings FBK 7.0 / Ham. 5.3 / SensL 5.9 °C), Korzh 2014 arXiv `1312.2636`, Hamamatsu `s13360_series_kapd1052e.pdf`,
+    Excelitas SPCM-AQRH = doc `27464` (linearity factors 1.02/1.16/1.40 at 1/5/10 Mc/s). Webster & Henderson 2013: the
+    Edinburgh `pure.ed.ac.uk` PDF via WebFetch saves the binary; `pdftotext` it.
+  - Otte eq. 14 (crosstalk) is C·ΔV·P_t; eq. 15 (afterpulsing) is exponential in ΔV. Otte's a (V) = α·U_BD.
+  - Check a doubling interval centred on T (ln 2·kT²/E_a is local). Recompute hand exponentials to 6 digits before a 1e-5 test.
+  - State the systematic bias of a "statistical only" SNR in the modelNote (δτ → Rτ·δτ/τ); the reviewer flags it.
 - **Session 71 lessons:**
   - Ziarkash et al. 2018 (Sci. Rep., Europe PMC `PMC5864738` fullTextXML) tabulates measured P_ap for 16 SPADs
     (0.01–8.5 % at 22–53 ns) and the multi-exponential density Σ A_k·e^{−t/τ_k}; integrated from t_d, η_k = A_k·τ_k.
@@ -41,14 +46,10 @@ Session 71 split part 6 into 6a/6b and finished **6a (dead time and afterpulsing
     scrambles their tables; `-raw` keeps rows intact. C30902EH = 24781, C30902SH = 24828, C30645/C30662 = 27873.
   - The Hamamatsu PMT handbook (3rd ed.) is at `wp.optics.arizona.edu/milster/.../pmt_handbook_complete.pdf`; it gives
     no number for the dynode-gain temperature coefficient. rp-photonics.com is 403 to WebFetch, but curl with a UA works.
-  - Mutation checks on an **untracked** file: `git diff --quiet` sees nothing, so restore from the backup copy.
-  - A datasheet operating point (M at V_br − ΔV) fixes Miller's n; n = 3 at M = 150 would put V 0.5 V from breakdown.
 - **Session 69:** `SimpleChart` maps `null` y to 0; use `NaN` for gaps. On log axes, y ≤ 0 is skipped.
 - **Session 68:** Vurgaftman 2001 PDF: `ursemiconductors.web.illinois.edu/ECE536/Vurgaftman(2001).pdf`. The Ioffe NSM
   archive needs `curl -k` over http. Registry text can't contain `{…}` (`tests/registry.test.ts`). Write
   `0 − x·expm1(…)` to avoid `-0`. Vercel MCP `list_deployments` returns only the ~9 newest.
-- **Session 67:** refractiveindex.info data is on GitHub raw
-  (`polyanskiy/refractiveindex.info-database/master/database/data/main/<El>/nk/<Author-Year>.yml`).
 - **Session 65:**
   - Probe the module (scratchpad `.ts`) before writing the test; then mutate the code once to see `ℹ fail N`.
   - Charts of ≤ 300 points: compute them in the render, not in `useMemo`: no stale deps, no eslint-disable.
