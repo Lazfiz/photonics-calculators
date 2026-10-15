@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 65, 2026-10-14)
+## Status (session 66, 2026-10-15)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -23,18 +23,13 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 3 / 45 | Sellmeier sets fixed (session 20); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
-| detectors | 15 / 54 | part 0 audit (session 63), parts 1–2 (sessions 64–65); 26 `knownIssue`s left; fix parts 3–9 below |
-| **total** | **224 / 458** | 26 `knownIssue`s (detectors) |
+| detectors | 20 / 54 | part 0 audit (session 63), parts 1–3 (sessions 64–66); 23 `knownIssue`s left; fix parts 4–9 below |
+| **total** | **229 / 458** | 23 `knownIssue`s (detectors) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
   extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
   curl. Also clear the eslint warning there (unused `wavelength` state).
-- [ ] **Detectors part 3: dark current and signal recovery** (extend `dark-current.ts`, which has n_i / n_i² scaling with fixed E_g: add doubling
-  and Varshni; new `lockin.ts`): `dark-current` (D(−80) = 5.39e-7 e⁻/s), `dark-noise-temperature`
-  (12.7 fA shown as 0.000 nA; I(−40 °C) = 7.94e-4 nA), `cooling-benefit` (Si ×630, InGaAs ×7.16e3; signal input),
-  `lockin-amplifier` (Butterworth ENBW (1/4Nτ)/sin(π/2N): N = 2 → 0.17678 Hz; also cascaded RC 1/4τ, 1/8τ, 3/32τ,
-  5/64τ; Scofield 1994), `boxcar-integrator` (gate-averaged signal, e_n·√NEB; noise trace 0.70×).
 - [ ] **Detectors part 4a: silicon QE** (new `materials/silicon-absorption.ts` from Green 2008 Table 1,
   `detectors/responsivity.ts`, slab + Gärtner `photodiode-qe.ts`): `responsivity` (OK; R(0.8, 1550) = 1.0001 A/W),
   `silicon-photodiode` (Gärtner diffusion term, n_i 9.65e9 Altermatt 2003, Eg0 1.170 Thurmond as in
@@ -43,7 +38,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - [ ] **Detectors part 4b: InGaAs and back-illumination** (`materials/bandgap.ts`: Vurgaftman 2001 Varshni + bowing):
   `ingaas-parameters` (default −1 V; i_n² = 2qI₀(e^{V/nVt}+1)Δf; GR term ×1e13; Eg(0.53, 300 K) = 0.741 eV),
   `si-vs-inge` → **rename to `si-vs-ingaas`** with redirect (user, session 63), sourced QE spectra, `back-illumination`
-  (20·log10: ratio 4 → 6.02 dB; guards; schematic spectra labelled).
+  (20·log10: ratio 4 → 6.02 dB; guards; schematic spectra labelled). Move `VARSHNI`/`varshniBandGap` from
+  `detectors/dark-current.ts` into `materials/bandgap.ts`, replace the inline Varshni in `silicon-photodiode` and
+  `materials/semiconductor-bandgap`, and give `cooling-benefit` an InGaAs E_g(T) option.
 - [ ] **Detectors part 5: linear APD** (new `detectors/apd.ts`; move the guarded `excessNoiseFactor` from
   `free-space-comms/background-radiance.ts`; one sourced k table): `avalanche-gain` (Miller M = 5.349 at 140/150 V, n 3),
   `excess-noise` (F(100, 0.02) = 3.9502), `gain-temperature` (Miller with V_br(T), Crowell & Sze 1966; PMT %/°C),
@@ -199,6 +196,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Detectors part 3 dark current and signal recovery (session 66, PR #93): Varshni + doubling law in `dark-current.ts`, new `lockin.ts` and `boxcar.ts` + 8 tests, 5 pages tiered; ENBW 1/4τ…5/64τ, optimum gate 1.189·FWHM.
   - Detectors part 2 front end (session 65, PR #91): `photodiode-rc.ts`, `tia.ts`, `dark-current.ts` + 9 tests, 7 pages tiered, `hybrid-detector` → `photodiode-tia-noise`; TIA NEP 3.816e-9 W.
   - Detectors part 1 noise (session 64, PR #89): `detectors/noise.ts` + 7 tests, 8 pages tiered, flicker/temporal fixed; ENOB 2.9607 (exact constants).
   - Detectors part 0 (session 63, PR #87): 54 pages audited, 11 bugs + 21 questionable = 32 `knownIssue`s, 22 OK; fix parts 1–9 (4a/4b); renames and the CPM rewrite agreed.
