@@ -1,0 +1,93 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+
+import { erf } from "../src/physics/math";
+import {
+  childLangmuirCurrentDensity, intensifiedSnr, intensifierNoiseFactor, phosphorGain, planarTransitTime, quadratureFwhm,
+  RICHARDSON_A0, rectGaussFwhm, streakTime, thermionicCurrentDensity, thresholdWavelength, VACUUM_TRANSIT_FACTOR, vacuumTransitBandwidth,
+} from "../src/physics/detectors/photoemission";
+
+const close = (actual: number, expected: number, rel: number, msg = "") =>
+  assert.ok(Math.abs(actual - expected) <= rel * Math.abs(expected), `${msg} ${actual} vs ${expected}`);
+
+test("Richardson–Dushman emission (Ashcroft & Mermin ch. 18: A₀ = 120 A/(cm²·K²))", () => {
+  // 4π·m_e·k_B²·q/h³ with CODATA 2022 m_e and the exact SI k_B, q, h.
+  close(RICHARDSON_A0, 1.2017322911e6, 1e-9);
+  close(RICHARDSON_A0 / 1e4, 120.17, 1e-4);
+  // Tungsten, φ = 4.54 eV at 2500 K: φ/k_BT = 4.54/(8.617333262e-5·2500) = 21.07384, J = A₀·T²·e^(−21.07384).
+  close(thermionicCurrentDensity(2500, 4.54), 1.2017322911e6 * 2500 ** 2 * Math.exp(-4.54 / (8.617333262e-5 * 2500)), 1e-9);
+  close(thermionicCurrentDensity(2500, 4.54), 5.3e3, 0.01);
+  assert.equal(thermionicCurrentDensity(10, 6), 0); // underflows to zero, not NaN
+  assert.ok(Number.isNaN(thermionicCurrentDensity(0, 2)));
+  // hc/q = 1239.84198 eV·nm, so a 2 eV threshold cuts off at 619.92 nm.
+  close(thresholdWavelength(2) * 1e9, 619.920992, 1e-8);
+  assert.ok(Number.isNaN(thresholdWavelength(0)));
+});
+
+test("planar vacuum diode: transit time, Ramo bandwidth and Child's law", () => {
+  // τ = d·√(2m_e/qV): 2 mm at 100 V, √(2·9.1093837139e-31/1.602176634e-17) = 3.372218e-7 s/m → 674.44 ps.
+  close(planarTransitTime(2e-3, 100), 6.744259847e-10, 1e-9);
+  // Same final speed v = √(2qV/m_e) = 5.9301e6 m/s, average speed v/2.
+  close(planarTransitTime(2e-3, 100), (2 * 2e-3) / Math.sqrt((2 * 1.602176634e-19 * 100) / 9.1093837139e-31), 1e-12);
+  // Ramo ramp current: |H(x)|² = 4[(cos x + x sin x − 1)² + (x cos x − sin x)²]/x⁴ = 1/2 at x = 2π·0.5533.
+  const x = 2 * Math.PI * VACUUM_TRANSIT_FACTOR;
+  const h2 = (4 * ((Math.cos(x) + x * Math.sin(x) - 1) ** 2 + (x * Math.cos(x) - Math.sin(x)) ** 2)) / x ** 4;
+  close(h2, 0.5, 1e-7);
+  close(vacuumTransitBandwidth(1e-9), 0.55332713e9, 1e-12);
+  assert.ok(Number.isNaN(vacuumTransitBandwidth(0)));
+  // Child's constant (4ε₀/9)·√(2q/m_e) = 2.3339e-6 A·V^(−3/2) (Child 1911; Langmuir 1913).
+  close(childLangmuirCurrentDensity(1, 1), 2.33395e-6, 1e-5);
+  close(childLangmuirCurrentDensity(100, 2e-3), (2.33395e-6 * 1000) / 4e-6, 1e-5);
+  assert.equal(childLangmuirCurrentDensity(0, 1e-3), 0);
+  assert.ok(Number.isNaN(childLangmuirCurrentDensity(100, 0)));
+});
+
+test("image intensifier: phosphor gain, cascade noise factor and SNR", () => {
+  // P43 at 5 kV: E_ph = 1239.84198/545 = 2.274939 eV, g = 0.15·5000/2.274939 = 329.679 photons per electron.
+  close(phosphorGain(0.15, 5000, 545e-9), 329.6791084, 1e-9);
+  assert.equal(phosphorGain(0, 5000, 545e-9), 0);
+  assert.ok(Number.isNaN(phosphorGain(1.2, 5000, 545e-9)));
+  // Branching process: a Poisson phosphor of mean g then binomial coupling p gives Var = g·p (thinned Poisson),
+  // so F = 1 + Var/mean² = 1 + 1/(g·p); with an ideal F = 1 first stage the cascade formula must agree.
+  close(intensifierNoiseFactor(1, 329.679 * 0.3), 1 + 1 / (329.679 * 0.3), 1e-15);
+  // Page defaults: G_e = 10⁴ × 329.679 × 0.6 × 0.5 = 9.89037e5, F = 2 + 1/G_e.
+  const ge = 1e4 * 329.6791084 * 0.3;
+  close(intensifierNoiseFactor(2, ge), 2.000001011, 1e-9);
+  // 35 photoelectrons, 0.035 background, read noise 5 e⁻: SNR → √(35²/(35.035·2)) = 4.18121.
+  close(intensifiedSnr(35, 0.035, ge, intensifierNoiseFactor(2, ge), 5), 4.181209, 1e-6);
+  // Noiseless gain and no read noise: Poisson limit √N.
+  close(intensifiedSnr(35, 0, 1, 1, 0), Math.sqrt(35), 1e-15);
+  // Read-noise limit: S·G/σ_r for small S·G.
+  close(intensifiedSnr(1, 0, 1e-3, 1, 1), 1e-3 / Math.sqrt(1e-6 + 1), 1e-12);
+  assert.ok(Number.isNaN(intensifiedSnr(0, 0, 1, 2, 0)));
+  assert.ok(Number.isNaN(intensifierNoiseFactor(0.5, 1e3)));
+});
+
+test("streak camera: time per length and quadrature resolution", () => {
+  // 10 mm/ns = 10⁷ m/s: a 75 µm slit image spans 7.5 ps, a 13 µm pixel 1.3 ps.
+  close(streakTime(75e-6, 1e7), 7.5e-12, 1e-12);
+  close(streakTime(13e-6, 1e7), 1.3e-12, 1e-12);
+  // Gaussians add in quadrature: √(2² + 1.5²) = 2.5.
+  close(quadratureFwhm([2e-12, 1.5e-12, 0]), 2.5e-12, 1e-12);
+  // Page defaults: rect 7.5 ps ⊗ rect 1.3 ps ⊗ Gauss 2 ps FWHM. A brute-force sum (trapezoid sampled every 1e-4 ps,
+  // times the Gaussian, half maximum bisected) gives 7.5000973 ps; quadrature would give √61.94 = 7.8702 ps.
+  close(rectGaussFwhm([7.5, 1.3], 2), 7.5000973, 1e-7);
+  // Two equal rectangles 3 ⊗ 3 (a triangle of FWHM 3) blurred by a 1 ps Gaussian: brute force 3.3390152.
+  close(rectGaussFwhm([3, 3], 1), 3.3390152, 1e-7);
+  // Limits: rectangles alone give the wider one (trapezoid), a Gaussian alone itself, one rect a ⊗ Gauss a ≈ 1.2494·a.
+  assert.equal(rectGaussFwhm([5, 2], 0), 5);
+  assert.equal(rectGaussFwhm([0, 0], 2), 2);
+  // Rect 4 ⊗ Gauss 4 ∝ erf((t + 2)/s) − erf((t − 2)/s), s = σ√2: the profile at half the FWHM is half the peak.
+  const w = rectGaussFwhm([4], 4);
+  const sg = (4 / (2 * Math.sqrt(2 * Math.LN2))) * Math.SQRT2;
+  const prof = (t: number) => erf((t + 2) / sg) - erf((t - 2) / sg);
+  close(prof(w / 2), prof(0) / 2, 1e-10);
+  close(w, 4.997483, 1e-6);
+  // A tiny Gaussian converges on the trapezoid's FWHM.
+  close(rectGaussFwhm([5, 2], 1e-6), 5, 1e-6);
+  assert.ok(Number.isNaN(rectGaussFwhm([1, 1, 1], 1)));
+  assert.ok(Number.isNaN(rectGaussFwhm([1], -1)));
+  assert.equal(quadratureFwhm([]), 0);
+  assert.ok(Number.isNaN(quadratureFwhm([1e-12, -1e-12])));
+  assert.ok(Number.isNaN(streakTime(1e-6, 0)));
+});

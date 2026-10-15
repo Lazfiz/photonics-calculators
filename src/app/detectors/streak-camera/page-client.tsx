@@ -1,75 +1,97 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { quadratureFwhm, rectGaussFwhm, streakTime } from "../../../physics/detectors/photoemission";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+
+/** A time in s with the unit that keeps 1–999 in front of the point. */
+function fmtTime(t: number): string {
+  if (!Number.isFinite(t)) return "—";
+  if (t === 0) return "0 ps";
+  const units: [number, string][] = [[1e-3, "ms"], [1e-6, "µs"], [1e-9, "ns"], [1e-12, "ps"], [1e-15, "fs"]];
+  const [scale, unit] = units.find(([s]) => t >= s) ?? units[units.length - 1];
+  return `${(t / scale).toFixed(3)} ${unit}`;
+}
+
+// Defaults: a 10 mm/ns fast sweep, 50 µm slit imaged at 1.5× onto the screen, 13 µm pixels and a 2 ps tube limit (the
+// order of a single-shot fast-sweep unit's specified resolution). Jitter matters only when sweeps are summed.
 export default function StreakCameraPage() {
-  const [sweepSpeed, setSweepSpeed] = useURLState("sweepSpeed", 10); // mm/ns
-  const [slitWidth, setSlitWidth] = useURLState("slitWidth", 50); // µm
-  const [magnification, setMagnification] = useURLState("magnification", 1.5);
-  const [ccdPixelSize, setCcdPixelSize] = useURLState("ccdPixelSize", 13); // µm
-  const [temporalResolution, setTemporalResolution] = useURLState("temporalResolution", 2); // ps (system limited)
-  const [dynamicRange, setDynamicRange] = useURLState("dynamicRange", 1000); // counts
+  const [sweepRaw, setSweepSpeed] = useURLState("sweepSpeed", 10); // mm/ns on the screen
+  const [slitRaw, setSlitWidth] = useURLState("slitWidth", 50); // µm
+  const [magRaw, setMagnification] = useURLState("magnification", 1.5);
+  const [pixelRaw, setCcdPixelSize] = useURLState("ccdPixelSize", 13); // µm on the screen
+  const [pixelsRaw, setPixels] = useURLState("pixels", 1024);
+  const [tubeRaw, setTemporalResolution] = useURLState("temporalResolution", 2); // ps
+  const [jitterRaw, setJitter] = useURLState("jitter", 0); // ps
+  const [blurRaw, setScreenBlur] = useURLState("screenBlur", 0); // µm FWHM on the screen
 
-  const results = useMemo(() => {
-    const timePerPixel = (ccdPixelSize / (sweepSpeed * 1e3)) * 1e3; // ps per pixel: µm / (mm/ns) = ns → ps
-    const timePerSlit = (slitWidth * magnification) / (sweepSpeed * 1e3) * 1e3; // ps (slit image on CCD = slitWidth * M)
-    const effectiveTimeRes = Math.max(temporalResolution, timePerSlit, timePerPixel);
-    const totalTimeWindow = 2048 * timePerPixel; // ps (assuming 2048 pixels)
-    const spatialRes = slitWidth; // µm at photocathode (slit is at cathode)
-    return { timePerPixel, timePerSlit, effectiveTimeRes, totalTimeWindow, spatialRes };
-  }, [sweepSpeed, slitWidth, magnification, ccdPixelSize, temporalResolution, dynamicRange]);
+  const sweep_mm_ns = clamp(sweepRaw, 1e-6, 1000, 10);
+  const slit_um = clamp(slitRaw, 1, 5000, 50);
+  const mag = clamp(magRaw, 0.1, 10, 1.5);
+  const pixel_um = clamp(pixelRaw, 1, 100, 13);
+  const pixels = Math.round(clamp(pixelsRaw, 64, 8192, 1024));
+  const tube = clamp(tubeRaw, 0, 1e9, 2) * 1e-12;
+  const jitter = clamp(jitterRaw, 0, 1e9, 0) * 1e-12;
+  const blur_um = clamp(blurRaw, 0, 500, 0);
 
-  const chartData = useMemo(() => {
-    const speeds = Array.from({ length: 100 }, (_, i) => 1 + i * 0.5);
-    const tpp = speeds.map(s => (ccdPixelSize / (s * 1e3)) * 1e3);
-    const tps = speeds.map(s => (slitWidth * magnification) / (s * 1e3) * 1e3);
-    const eff = speeds.map(s => Math.max(temporalResolution, (slitWidth * magnification) / (s * 1e3) * 1e3, (ccdPixelSize / (s * 1e3)) * 1e3));
-    const window = speeds.map(s => 2048 * (ccdPixelSize / (s * 1e3)) * 1e3);
-    return [
-      { x: speeds, y: tpp, type: "scatter", mode: "lines", name: "Time/pixel (ps)", line: { color: "#60a5fa" } },
-      { x: speeds, y: eff, type: "scatter", mode: "lines", name: "Effective time res (ps)", line: { color: "#f87171" } },
-      { x: speeds, y: window, type: "scatter", mode: "lines", name: "Time window (ps)", line: { color: "#34d399" }, yaxis: "y2" },
-    ];
-  }, [sweepSpeed, slitWidth, magnification, ccdPixelSize, temporalResolution]);
+  const resolutionAt = (mmPerNs: number) => {
+    const v = mmPerNs * 1e6; // m/s
+    const slit = streakTime(slit_um * 1e-6 * mag, v);
+    const pixel = streakTime(pixel_um * 1e-6, v);
+    const gauss = quadratureFwhm([tube, jitter, streakTime(blur_um * 1e-6, v)]);
+    return { slit, pixel, gauss, total: rectGaussFwhm([slit, pixel], gauss), quad: quadratureFwhm([slit, pixel, gauss]) };
+  };
+  const { slit, pixel, gauss, total, quad } = resolutionAt(sweep_mm_ns);
+  const window = streakTime(pixels * pixel_um * 1e-6, sweep_mm_ns * 1e6);
+  const terms: [string, number][] = [["slit image", slit], ["pixel", pixel], ["tube, blur and jitter", gauss]];
+  const dominant = terms.reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+
+  const speeds = Array.from({ length: 101 }, (_, i) => 10 ** (-2 + i / 20)); // 0.01 to 1000 mm/ns
+  const rows = speeds.map(resolutionAt);
+  const ps = (t: number) => t * 1e12;
+  const chartData = [
+    { x: speeds, y: rows.map((r) => ps(r.total)), type: "scatter" as const, mode: "lines" as const, name: "Total (convolution FWHM)", line: { color: "#f87171", width: 3 } },
+    { x: speeds, y: rows.map((r) => ps(r.slit)), type: "scatter" as const, mode: "lines" as const, name: "Slit image", line: { color: "#60a5fa" } },
+    { x: speeds, y: rows.map((r) => ps(r.pixel)), type: "scatter" as const, mode: "lines" as const, name: "One pixel", line: { color: "#34d399" } },
+    { x: speeds, y: rows.map((r) => ps(r.gauss)), type: "scatter" as const, mode: "lines" as const, name: "Tube, blur and jitter", line: { color: "#fbbf24", dash: "dash" } },
+  ];
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Sweep Speed (mm/ns)" value={sweepSpeed} onChange={setSweepSpeed} step="0.5" />
-        <ValidatedNumberInput label="Slit Width (µm)" value={slitWidth} onChange={setSlitWidth} />
-        <ValidatedNumberInput label="Magnification" value={magnification} onChange={setMagnification} step="0.1" />
-        <ValidatedNumberInput label="CCD Pixel Size (µm)" value={ccdPixelSize} onChange={setCcdPixelSize} />
-        <ValidatedNumberInput label="System Temporal Limit (ps)" value={temporalResolution} onChange={setTemporalResolution} />
-        <ValidatedNumberInput label="Dynamic Range (counts)" value={dynamicRange} onChange={setDynamicRange} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Sweep Speed on Screen (mm/ns)" value={sweepRaw} onChange={setSweepSpeed} min={1e-6} max={1000} step="0.5" />
+        <ValidatedNumberInput label="Slit Width (µm, imaged 1:1 on the cathode)" value={slitRaw} onChange={setSlitWidth} min={1} max={5000} />
+        <ValidatedNumberInput label="Tube Magnification (cathode → screen)" value={magRaw} onChange={setMagnification} min={0.1} max={10} step="0.1" />
+        <ValidatedNumberInput label="Pixel Size on Screen (µm)" value={pixelRaw} onChange={setCcdPixelSize} min={1} max={100} />
+        <ValidatedNumberInput label="Pixels along the Sweep" value={pixelsRaw} onChange={setPixels} min={64} max={8192} step="1" />
+        <ValidatedNumberInput label="Tube-Limited Resolution (ps)" value={tubeRaw} onChange={setTemporalResolution} min={0} max={1e9} />
+        <ValidatedNumberInput label="Trigger Jitter, Summed Sweeps (ps)" value={jitterRaw} onChange={setJitter} min={0} max={1e9} />
+        <ValidatedNumberInput label="Screen Blur FWHM (µm on screen)" value={blurRaw} onChange={setScreenBlur} min={0} max={500} />
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 space-y-1">
-        <p className="text-gray-300">Time per pixel = <span className="text-blue-400 font-mono">{results.timePerPixel.toFixed(2)} ps</span></p>
-        <p className="text-gray-300">Time per slit width = <span className="text-blue-400 font-mono">{results.timePerSlit.toFixed(2)} ps</span></p>
-        <p className="text-gray-300">Effective temporal resolution = <span className="text-blue-400 font-mono">{results.effectiveTimeRes.toFixed(2)} ps</span></p>
-        <p className="text-gray-300">Total time window (2048px) = <span className="text-blue-400 font-mono">{(results.totalTimeWindow / 1000).toFixed(2)} ns</span></p>
-        <p className="text-gray-300">Spatial resolution at cathode = <span className="text-blue-400 font-mono">{results.spatialRes.toFixed(1)} µm</span></p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ResultCard label="Slit-Image Term" value={fmtTime(slit)} tone="blue" subtext="w·M / v" />
+        <ResultCard label="Pixel Term" value={fmtTime(pixel)} tone="green" subtext="p / v (time per pixel)" />
+        <ResultCard label="Temporal Resolution (FWHM)" value={fmtTime(total)} tone="purple" subtext={`Rectangles ⊗ Gaussian; the ${dominant} term dominates. Quadrature would give ${fmtTime(quad)}`} />
+        <ResultCard label="Time Window" value={fmtTime(window)} tone="yellow" subtext={`${pixels} pixels × p / v`} />
       </div>
 
       <h2 className="text-xl font-semibold mb-2">Key Formulas</h2>
       <div className="bg-gray-900 rounded-lg p-4 mb-6 space-y-1 text-sm font-mono text-gray-400">
-        <p>Δt<sub>pixel</sub> = p<sub>CCD</sub> / v<sub>sweep</sub></p>
-        <p>Δt<sub>slit</sub> = w<sub>slit</sub> · M / v<sub>sweep</sub></p>
-        <p>Δt<sub>eff</sub> = max(Δt<sub>slit</sub>, Δt<sub>pixel</sub>, Δt<sub>system</sub>)</p>
-        <p>T<sub>window</sub> = N<sub>pixels</sub> · Δt<sub>pixel</sub></p>
+        <p>Δt<sub>slit</sub> = w<sub>slit</sub>·M / v<sub>sweep</sub>; Δt<sub>pixel</sub> = p / v<sub>sweep</sub></p>
+        <p>Gaussian terms: Δt<sub>G</sub> = √(Δt<sub>tube</sub>² + Δt<sub>jitter</sub>² + (b/v)²) (Gaussians add in quadrature)</p>
+        <p>Δt = FWHM of rect(Δt<sub>slit</sub>) ⊗ rect(Δt<sub>pixel</sub>) ⊗ Gauss(Δt<sub>G</sub>); no Gaussian: max(Δt<sub>slit</sub>, Δt<sub>pixel</sub>)</p>
+        <p>T<sub>window</sub> = N<sub>pixels</sub>·p / v<sub>sweep</sub></p>
       </div>
 
       <ChartPanel data={chartData} layout={{
-        paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
-        xaxis: { title: "Sweep Speed (mm/ns)", gridcolor: "#374151" },
-        yaxis: { title: "Time Resolution (ps)", gridcolor: "#374151" },
-        yaxis2: { title: "Time Window (ps)", gridcolor: "#374151", overlaying: "y", side: "right" },
-        margin: { t: 20, b: 40, l: 70, r: 80 }, autosize: true, showlegend: true
-      }} />
+        xaxis: { title: "Sweep Speed (mm/ns)", type: "log", gridcolor: "#374151" },
+        yaxis: { title: "Time Resolution (ps)", type: "log", gridcolor: "#374151" },
+      }} title="Resolution vs Sweep Speed" />
     </>
   );
 }
