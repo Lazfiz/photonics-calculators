@@ -131,6 +131,20 @@ export function poissonSf(k: number, mu: number): number {
   return kk < mu ? 1 - poissonLowerTail(kk, mu) : poissonUpperTail(kk, mu);
 }
 
+/** Smallest k with P(K ≤ k) ≥ p (0 ≤ p < 1), by bisection on k; NaN for an invalid mean or p. */
+export function poissonQuantile(p: number, mu: number): number {
+  if (!validMean(mu) || !(p >= 0 && p < 1)) return NaN;
+  let lo = -1;
+  let hi = Math.ceil(mu + 10 * Math.sqrt(mu) + 10);
+  while (poissonCdf(hi, mu) < p) hi *= 2;
+  while (hi - lo > 1) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (poissonCdf(mid, mu) >= p) hi = mid;
+    else lo = mid;
+  }
+  return hi;
+}
+
 /*
  * Bessel functions from their integral representations, summed with the trapezoidal rule. For these
  * integrands (periodic, or decaying double-exponentially on the real line) the rule converges

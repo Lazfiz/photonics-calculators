@@ -198,8 +198,23 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "cosmic-rays",
     title: "Cosmic Ray Detection",
-    description: "Cosmic ray flux and impact on imaging sensors — estimate hit rates and affected pixels.",
-    knownIssue: "The track length ignores zenith angle and sensor thickness: the default 200 µm path deposits 2.0e4 e⁻ at any angle, whereas a 20 µm layer at 30° gives a 23 µm path and about 2.5e3 e⁻.",
+    description: "Cosmic-ray muon hits on a silicon image sensor: hits per frame, path through the sensitive layer, mean and most probable charge per track, and pixels hit.",
+    tier: "textbook",
+    modelNote: "Sea-level muons only (about 1 cm⁻² min⁻¹ on a horizontal sensor), Poisson arrivals and one straight track at the chosen zenith angle through a fully sensitive layer, path t/cos θ. Mean charge 106 e⁻/µm (minimum ionizing, 3.65 eV per pair); the most probable charge uses the Landau–Vavilov–Bichsel Fermi-plateau formula and is rough below about 10 µm. Pixels per track is the Buffon average 1 + 4ℓ/(πp). Charge diffusion, δ-ray branches, altitude, shielding and radioactivity are left out.",
+    references: [
+      {
+        citation: "Workman R. L. et al. (Particle Data Group) (2022). Review of Particle Physics. Prog. Theor. Exp. Phys. 2022, 083C01. Review \"Cosmic rays\" §30.3.1: vertical muons above 1 GeV/c ≈ 70 m⁻² s⁻¹ sr⁻¹, about 1 cm⁻² min⁻¹ on a horizontal detector, cos²θ zenith distribution, mean energy ≈ 4 GeV.",
+        url: "https://doi.org/10.1093/ptep/ptac097",
+      },
+      {
+        citation: "Navas S. et al. (Particle Data Group) (2024). Review of Particle Physics. Phys. Rev. D 110, 030001. §34.2.9 Eq. 34.13 (most probable energy loss) and §35.8 Table 35.10 (3.65 eV per e–h pair in Si; about 23 000 e⁻ most probable in 300 µm).",
+        url: "https://doi.org/10.1103/PhysRevD.110.030001",
+      },
+      {
+        citation: "Particle Data Group (2024). Atomic and nuclear properties of silicon: minimum ionization 1.664 MeV g⁻¹ cm² (3.876 MeV/cm), density 2.329 g/cm³, plasma energy 31.05 eV.",
+        url: "https://pdg.lbl.gov/2024/AtomicNuclearProperties/HTML/silicon_Si.html",
+      },
+    ],
   },
   {
     slug: "dark-current",
@@ -496,7 +511,15 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "modulation-transfer",
     title: "Modulation Transfer Function (MTF)",
-    description: "Image sensor MTF: pixel aperture, charge diffusion, and optical blur contributions.",
+    description: "Image sensor MTF: pixel aperture, charge spread, and optical blur contributions.",
+    tier: "textbook",
+    modelNote: "Product of three terms along one axis: a square pixel aperture of side p·√FF (|sinc|, 2/π at Nyquist for 100 % fill), an exponential charge-spread line spread of 1/e length ℓ (Lorentzian MTF) and a Gaussian optical blur. ℓ is a fitted spread, not a diffusion length. Aliasing, wavelength dependence and the 2D pixel shape are left out.",
+    references: [
+      {
+        citation: "Holst G. C., Lomheim T. S. (2011). CMOS/CCD Sensors and Camera Systems, 2nd ed. SPIE Press. Ch. 10 \"MTF\": the system MTF as a product of the detector aperture, diffusion and optics terms.",
+        url: "https://doi.org/10.1117/3.2524677.ch10",
+      },
+    ],
   },
   {
     slug: "nep",
@@ -592,8 +615,19 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "pixel-crosstalk",
     title: "Pixel Crosstalk & MTF",
-    description: "Charge diffusion and electrical crosstalk: wavelength-dependent absorption depth, total crosstalk, and MTF degradation.",
-    knownIssue: "Diffusion crosstalk uses an unsourced 0.1·√(d_abs/d_depl) rule: 4.1 % at the defaults, where only about 0.3 % of the charge is generated below the depletion layer. The MTF term is ad hoc too (42 % at Nyquist vs 57 % for a 3-tap kernel).",
+    description: "Charge diffusion and electrical crosstalk in a silicon image sensor: absorption depth, charge reaching the neighbouring pixels vs wavelength, and MTF at Nyquist.",
+    tier: "textbook",
+    modelNote: "Seib's field-free diffusion for front illumination: light absorbed in the depletion depth W is collected in place, and below it carriers diffuse with length L₀ in a semi-infinite field-free region, so it overstates near-infrared crosstalk for thin-epitaxy sensors. No reflection or surface recombination. Diffusion crosstalk is the charge reaching the two adjacent columns when one column is lit uniformly (100 % fill), integrated from the line-spread MTF. The extra crosstalk X is a nearest-neighbour kernel [X/2, 1 − X, X/2].",
+    references: [
+      {
+        citation: "Seib D. H. (1974). Carrier diffusion degradation of modulation transfer function in charge coupled imagers. IEEE Trans. Electron Devices 21, 210–217. Field-free diffusion MTF; the semi-infinite case η(f) = 1 − e^(−αW)/(1 + α L_f), 1/L_f² = 1/L₀² + (2π f)².",
+        url: "https://doi.org/10.1109/T-ED.1974.17898",
+      },
+      {
+        citation: "Green M. A. (2008). Self-consistent optical parameters of intrinsic silicon at 300 K including temperature coefficients. Sol. Energy Mater. Sol. Cells 92, 1305–1310. Absorption coefficient α(λ), Table 1.",
+        url: "https://doi.org/10.1016/j.solmat.2008.06.009",
+      },
+    ],
   },
   {
     slug: "pmt",
