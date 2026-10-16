@@ -1,43 +1,43 @@
-# Handover — 2026-10-15 (session 74 → session 75)
+# Handover — 2026-10-16 (session 75 → session 76)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 74 checked PR #103 in production (ALL PASS) and finished **detectors part 7b (photoemission)** on branch
-`phase-4/detectors-vacuum-b`, PR #105 with this handover. Next: **Detectors part 8 (EM and camera SNR)**.
+Session 75 checked PR #105 in production (ALL PASS) and finished **detectors part 8 (camera SNR)** on branch
+`phase-4/detectors-camera-snr`, PR #106 with this handover. Next: **Detectors part 9 (sensor noise and MTF)**.
 `polarizer-types` stays blocked until the user is at the laptop with Chrome.
 
 ## State
-- 253 of 458 pages are tiered (detectors 43 / 54). 5 `knownIssue`s left, all in detectors (parts 8–9).
-- New `src/physics/detectors/photoemission.ts`: `RICHARDSON_A0` (4π·m_e·k_B²·q/h³), `thermionicCurrentDensity`,
-  `thresholdWavelength`, `planarTransitTime`, `vacuumTransitBandwidth` (0.5533/τ, Ramo ramp), `childLangmuirCurrentDensity`,
-  `phosphorGain` (η·qV/E_ph), `intensifierNoiseFactor` (F_MCP + 1/G_e), `intensifiedSnr`, `streakTime`,
-  `quadratureFwhm`, `rectGaussFwhm` (exact FWHM of ≤ 2 rectangles ⊗ a Gaussian).
-- Pages: `intensified-ccd` (defaults 10 photons, MCP 10³, coupling 0.1 → G_e 1.65e4, SNR 1.3163 vs bare 0.9129; full-well
-  flag), `vacuum-photodiode` (gap input, load Johnson noise at 25 °C, Child limit on photo + dark; SNR −18.7 dB),
-  `streak-camera` (7.500 ps; quadrature 7.870 shown for comparison; dynamic-range input dropped, screen-blur added).
-- PR #104 (`devctl/t1`, "production deploys only from the release branch") was open and not from this session: check
-  with the user whether it changes the "Vercel builds only `main`" rule before shipping.
+- 258 of 458 pages are tiered (detectors 48 / 54). 2 `knownIssue`s left (`cosmic-rays`, `pixel-crosstalk`), both part 9.
+- New `src/physics/detectors/camera-snr.ts`: `EM_REGISTER_STAGES` (604, CCD201), `emStageProbability`,
+  `emExcessNoiseFactorSq` (Robbins & Hadwen), `cameraNoise`/`cameraSnr` (F²·(S + D + CIC) + (σ/G)²), `emMaxSignal`
+  (min(pixel well, register well/G)), `dynamicRangeDb`, `pixelCapacitance`, `quantizationNoise`, `compressiveResponse`.
+- Pages: `ccd-vs-cmos` (URL key `signal` → `photons`, × QE; EMCCD = iXon Ultra 897 with an `emGain` input, default 300;
+  "saturated" cells; EMCCD SNR 21.9, DR 79.1 dB), `em-gain` (`excessNoiseFactor` input → `stages`; F² 1.9750, no
+  "optimal gain"), `electron-multiplying` (+ `stages`; 2.249 vs 2.857), `well-capacity` (5.341 fF, 80.00 dB, 30 µV/e⁻,
+  S_min 20.2 e⁻), `saturation` (DR 72.04, ADC DR, SNR 43.00 dB, quantization warning).
+- PR #104 (`devctl/t1`, by the user: production deploys only from a `release` branch, `/ship` ends at merge) is still
+  open. Ask the user whether to merge it before or after #106; it changes the "Vercel builds only `main`" rule.
 - User decisions: one PR per stage, handover inside (session 68).
 
 ## Next actions
-1. `/ship` this branch. post-merge-check: `detectors/intensified-ccd="1.32"` `detectors/vacuum-photodiode="-18.7"`
-   `detectors/streak-camera="7.500"` (verify the rendered strings in `.next/server/app/detectors/<slug>.html` first).
-2. Detectors part 8: new `camera-snr.ts` (Robbins & Hadwen F²), then part 9, in ROADMAP order. Each part: module + golden
-   tests, rewire the pages, clamp URL inputs + `min`/`max`, "—" for NaN, then tier, modelNote, references; delete the
-   `knownIssue`. `/handover` on the feature branch before `/ship`.
+1. `/ship` this branch. post-merge-check: `detectors/em-gain="1.9750"` `detectors/ccd-vs-cmos="79.1"`
+   `detectors/electron-multiplying="2.249"` `detectors/saturation="72.04"` (verify the rendered strings in
+   `.next/server/app/detectors/<slug>.html` first).
+2. Detectors part 9 (ROADMAP): `sensor-noise.ts` (PRNU/DSNU), `sensor-mtf.ts`; 6 pages. Probably split 9a/9b.
 3. Later: the part 7b leftovers, fiber and FSO open findings (ROADMAP), imaging/spectroscopy findings, Chrome-only checks.
 
 ## Non-obvious facts
-- **Session 74 lessons:**
-  - Rectangles (slit image, pixel) don't add in quadrature: rect ⊗ rect is a trapezoid of FWHM max(a, b). Use
-    `rectGaussFwhm`; it matches a brute-force convolution to 1e-9.
-  - A uniformly accelerated electron's Ramo current is a ramp; its −3 dB point 0.5533/τ happens to equal the triangle's.
-  - Johnson noise of a 50 Ω load beats shot noise below 2k_BT/(qR) ≈ 1 mA. Keep the load at room temperature when the
-    cathode temperature is an input.
-  - Richardson at the photoemission threshold underestimates semiconductor-photocathode dark current by orders.
-  - ICCD defaults must keep N_pe·G_e under a CCD well; the old 100 photons × 10⁶ e⁻/pe gave 300× full well.
-  - Phosphor efficiencies: Stanford Computer Optics quotes P43 ≈ 200 and P46 ≈ 95 photons/e (no voltage given); the
-    Exosens phosphor PDF doesn't download. Hamamatsu streak guide SHSS0006E: `hamamatsu.com/content/dam/hamamatsu-photonics/sites/documents/99_SALES_LIBRARY/sys/SHSS0006E_STREAK.pdf`.
+- **Session 75 lessons:**
+  - Robbins–Hadwen F² = 2(1 − 1/G)/(1 + p) + 1/G is exactly the Galton–Watson result for a binomial stage
+    (Var = p(1 − p)); a 604-step moment recursion reproduces it to 1e-13. F² = 2 − 1/G is its N → ∞ limit.
+  - With N = 604, F² peaks (1.978) near G = 300 and then falls, so the SNR is not monotonic in G in general: it drops
+    from G = 1 when the read noise is already small. Don't claim "SNR always rises with gain".
+  - EMCCD DR = 20·log₁₀(W_reg/σ_r) for any G > W_reg/W_pix (both limits scale as 1/G). Andor iXon Ultra spec PDF:
+    `andor.oxinst.com/downloads/uploads/andor-ixon-ultra-emccd-specifications.pdf` (`pdftotext -raw` works): 897 = 180 ke⁻,
+    register 800 ke⁻, read 89/65/37/15 e⁻ at 17/10/5/1 MHz; 888 = 80 ke⁻ / 730 ke⁻.
+- **Session 74:** rect ⊗ rect is a trapezoid of FWHM max(a, b), so rectangles don't add in quadrature (`rectGaussFwhm`).
+  Johnson noise of a 50 Ω load beats shot noise below 2k_BT/(qR) ≈ 1 mA. Hamamatsu streak guide SHSS0006E:
+  `hamamatsu.com/content/dam/hamamatsu-photonics/sites/documents/99_SALES_LIBRARY/sys/SHSS0006E_STREAK.pdf`.
 - **Session 73:** Wiza 1979 at `psec.uchicago.edu/Papers/mcpwiza.PDF`; Hamamatsu PMT handbook v4E at
   `hamamatsu.com/content/dam/.../etd/PMT_handbook_v4E.pdf` (numbers survive `pdftotext`). With A = 0.2 Schagen gives
   ~10³ per plate, real ~10⁴: say so, don't fudge. Run the module before writing 1e-7 asserts.
