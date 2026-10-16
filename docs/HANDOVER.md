@@ -1,51 +1,51 @@
-# Handover — 2026-10-16 (session 76 → session 77)
+# Handover — 2026-10-16 (session 77 → session 78)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 76 checked PR #106 in production (ALL PASS) and finished **detectors part 9a (sensor noise)** on branch
-`phase-4/detectors-sensor-noise`, PR #107 with this handover. Next: **Detectors part 9b (MTF and cosmic rays)**.
+Session 77 checked PR #107 in production (ALL PASS) and finished **detectors part 9b (MTF and cosmic rays)** on branch
+`phase-4/detectors-mtf-cosmic`, with this handover in the PR. **Detectors is done: 54/54 tiered, 0 `knownIssue`s.**
+Next: **ask the user which category to audit next** (wave-optics 2/49, materials 4/45, spectroscopy 5/54, imaging 9/65).
 `polarizer-types` stays blocked until the user is at the laptop with Chrome.
 
 ## State
-- 261 of 458 pages are tiered (detectors 51 / 54). 2 `knownIssue`s left (`cosmic-rays`, `pixel-crosstalk`), both part 9b.
-- New `src/physics/detectors/sensor-noise.ts`: `sensorNoise` → {shot, darkShot, read, quantization, prnu, dsnu,
-  temporal, spatial, total} (EMVA 1288 Eq. 48), `shotReadCrossover` (σ_r²), `shotPrnuCrossover` (1/P²), `prnuPattern(n)`
-  (seeded mulberry32, zero mean, unit sample sd). New `antiblooming.ts`: `antiblooming` → {collected, drained, spilled},
-  `bloomingOnset` = T + (W − T)/(1 − η).
-- Pages: `photon-transfer` (+ `prnu` input, 5 curves, total 547.81 e⁻ / temporal 223.83 e⁻ at full well), `uniformity`
-  (DSNU now e⁻ rms, URL key `dsnuPercent` → `dsnu`; 547.84 e⁻; map rms 500.0), `antiblooming` (illustrative; onset 1.040e+6).
+- 264 of 458 pages are tiered. No `knownIssue`s left anywhere.
+- New `src/physics/detectors/sensor-mtf.ts`: `pixelApertureMtf`, `exponentialSpreadMtf`, `gaussianBlurMtf`,
+  `crosstalkKernelMtf` ([X/2, 1 − X, X/2]), `seibCollection` / `seibDiffusionMtf` / `seibDiffusionFloor` (Seib 1974,
+  semi-infinite field-free region), `columnShares(mtf, p, floor)` → [C₀, C₁, C₂] (8-point Gauss–Legendre, ≈ 1 ms),
+  `neighbourFraction`.
+- New `src/physics/detectors/cosmic-rays.ts`: `SI_MEAN_PAIRS_PER_M` (106.18 /µm), `mostProbableLoss` (PDG Eq. 34.13),
+  `pathLength`, `projectedLength`, `pixelsPerTrack` (1 + 4ℓ/(πp)), `hitPixelFraction`, `MEAN_SEC_ZENITH` = 4/3,
+  `K_BETHE`. `math.ts` gained `poissonQuantile(p, mu)`.
+- Pages: `modulation-transfer` (label "charge spread length ℓ", URL key `diffusionLength` kept), `pixel-crosstalk`
+  (new `diffusionLength` key, L₀ = 20 µm default; Green 2008 α), `cosmic-rays` (new `thickness` key; `trackLength` and
+  `energyDeposit` dropped). Tests: `tests/detectors-sensor-mtf.test.ts`.
 - PR #104 (`devctl/t1`, by the user: production deploys only from a `release` branch, `/ship` ends at merge) is still
   open. Ask the user when to merge it; it changes the "Vercel builds only `main`" rule.
 - User decisions: one PR per stage, handover inside (session 68).
 
 ## Next actions
-1. `/ship` this branch. post-merge-check: `detectors/photon-transfer="547.81"` `detectors/uniformity="547.84"`
-   `detectors/antiblooming="1.040e+6"` (verify the rendered strings in `.next/server/app/detectors/<slug>.html` first).
-2. Detectors part 9b (ROADMAP): `sensor-mtf.ts`; `modulation-transfer`, `pixel-crosstalk`, `cosmic-rays`.
-3. Later: the part 7b leftovers, fiber and FSO open findings (ROADMAP), imaging/spectroscopy findings, Chrome-only checks.
+1. `/ship` this branch. post-merge-check values: see the PR description (strings taken from `.next/server/app`).
+2. Ask the user for the next category audit; part 0 = `physics-reviewer` batches → `knownIssue`s + fix parts.
+3. Later: the detectors part 7b leftovers, fiber and FSO open findings (ROADMAP), imaging/spectroscopy findings,
+   Chrome-only checks.
 
 ## Non-obvious facts
-- **Session 76:** EMVA 1288 PDFs download with curl: `emva.org/wp-content/uploads/EMVA1288-3.1a.pdf` (Eq. 23–25, 45–48;
-  `pdftotext -raw`) and `EMVA1288General_4.0Release.pdf`. DSNU₁₂₈₈ is absolute (e⁻), PRNU₁₂₈₈ relative; σ_q² = 1/12 DN².
-  Random patterns in a client page must be seeded (module-level const) so the prerender and hydration agree.
-- **Session 75:** Robbins–Hadwen F² = 2(1 − 1/G)/(1 + p) + 1/G is the Galton–Watson result for a binomial stage. With
-  N = 604, F² peaks (1.978) near G = 300, so SNR is not monotonic in G. EMCCD DR = 20·log₁₀(W_reg/σ_r) for G > W_reg/W_pix.
-  Andor iXon Ultra spec PDF: `andor.oxinst.com/downloads/uploads/andor-ixon-ultra-emccd-specifications.pdf`.
-- **Session 74:** rect ⊗ rect is a trapezoid of FWHM max(a, b), so rectangles don't add in quadrature (`rectGaussFwhm`).
-  Johnson noise of a 50 Ω load beats shot noise below 2k_BT/(qR) ≈ 1 mA. Hamamatsu streak guide SHSS0006E:
-  `hamamatsu.com/content/dam/hamamatsu-photonics/sites/documents/99_SALES_LIBRARY/sys/SHSS0006E_STREAK.pdf`.
-- **Session 73:** Wiza 1979 at `psec.uchicago.edu/Papers/mcpwiza.PDF`; Hamamatsu PMT handbook v4E at
-  `hamamatsu.com/content/dam/.../etd/PMT_handbook_v4E.pdf` (numbers survive `pdftotext`). With A = 0.2 Schagen gives
-  ~10³ per plate, real ~10⁴: say so, don't fudge. Run the module before writing 1e-7 asserts.
-- **Session 72:** Otte 2017 arXiv `1606.05186`, Korzh 2014 arXiv `1312.2636`, Excelitas SPCM-AQRH = doc `27464`. Check a
-  doubling interval centred on T. State the systematic bias of a "statistical only" SNR in the modelNote.
-- **Session 71:** Ziarkash 2018 (Europe PMC `PMC5864738` fullTextXML) tabulates P_ap for 16 SPADs. A NP dead-time
-  corrected rate has relative error 1/√N_recorded. Monte Carlo: `Math.random` and ≥ 1000 counts/gate.
-- **Session 70:** Excelitas datasheets (`excelitas.com/sites/default/files/assets/product/document/<id>.pdf`): use
-  `pdftotext -raw`. rp-photonics.com is 403 to WebFetch, but curl with a UA works.
+- **Session 77:** Seib semi-infinite: η(f) = 1 − e^(−αW)/(1 + α L_f) comes from n'' = n/L_f² − (α/D)e^(−αz), n(W) = 0;
+  derive it rather than hunt for the IEEE paper. Its MTF has a floor (depletion charge), so subtract the floor before
+  integrating line-spread shares. The exponential line spread gives closed-form shares: C₁ = (ℓ/2p)(1 − e^(−p/ℓ))².
+  PDG 2024 dropped the sea-level muon section; cite the 2022 review §30.3.1 (1 cm⁻² min⁻¹, cos²θ). PDG PDFs download
+  with curl: `pdg.lbl.gov/<year>/reviews/rpp<year>-rev-<name>.pdf` (`cosmic-rays`, `passage-particles-matter`,
+  `particle-detectors-accel`). Use `node --import tsx --test <file>`: `npx tsx --test` stalled for > 2 min here.
+- **Session 76:** EMVA 1288 PDFs download with curl: `emva.org/wp-content/uploads/EMVA1288-3.1a.pdf`. DSNU₁₂₈₈ is
+  absolute (e⁻), PRNU₁₂₈₈ relative; σ_q² = 1/12 DN². Random patterns in a client page must be seeded (module-level const).
+- **Session 75:** Robbins–Hadwen F² = 2(1 − 1/G)/(1 + p) + 1/G; with N = 604 F² peaks near G = 300, so SNR is not
+  monotonic in G.
+- **Session 74:** rect ⊗ rect is a trapezoid of FWHM max(a, b). Johnson noise of 50 Ω beats shot noise below ≈ 1 mA.
+- **Session 73:** Hamamatsu PMT handbook v4E: numbers survive `pdftotext`. Run the module before writing 1e-7 asserts.
+- **Session 70–72:** Excelitas datasheets and rp-photonics: curl with a UA + `pdftotext -raw`. Europe PMC
+  `/rest/<PMCID>/fullTextXML` works where mdpi.com gives 403.
 - **Session 69:** `SimpleChart` maps `null` y to 0; use `NaN` for gaps. On log axes, y ≤ 0 is skipped.
-- **Session 68:** Vurgaftman 2001 PDF: `ursemiconductors.web.illinois.edu/ECE536/Vurgaftman(2001).pdf`. Registry text
-  can't contain `{…}` (`tests/registry.test.ts`). Write `0 − x·expm1(…)` to avoid `-0`.
+- **Session 68:** Registry text can't contain `{…}` (`tests/registry.test.ts`). Write `0 − x·expm1(…)` to avoid `-0`.
 - **Session 65:**
   - Probe the module (scratchpad `.ts`) before writing the test; then mutate the code once to see `ℹ fail N`.
   - Charts of ≤ 300 points: compute them in the render, not in `useMemo`.
@@ -56,8 +56,8 @@ Session 76 checked PR #106 in production (ALL PASS) and finished **detectors par
   with the same `min`/`max`. `src/registry/calculators/detectors.ts` is **LF**; scripts must keep line endings.
 - **Earlier:** "from memory" reviewer numbers need a source. JSX text cannot hold `{…}`. Test the extreme corner of every
   input range. A general routine must reproduce the closed forms it generalises. `useURLState` inside `.map` breaks hooks.
-- **Sources:** `curl -A "Mozilla/5.0"` + `pdftotext` works for arXiv, TI app notes and SRS manuals. mdpi.com gives 403
-  (Europe PMC `/rest/<PMCID>/fullTextXML` works); Optics Express, Appl. Opt. and nature.com don't download.
+- **Sources:** `curl -A "Mozilla/5.0"` + `pdftotext` works for arXiv, TI app notes, SRS manuals and PDG. Optics Express,
+  Appl. Opt., IEEE and nature.com don't download. `node scripts/crossref.mjs -q "<citation>"` finds book-chapter DOIs.
 - **Fits:** empirical fits can go unphysical inside their stated range. Timings: CI ≈ 2–3 min, physics-reviewer ≈ 9 min,
   `npm run check` ≈ 4 min, build ≈ 6 min.
 - **URL strings:** `s in OBJ` is true for prototype keys; use `Object.hasOwn` or `find` over an id list.

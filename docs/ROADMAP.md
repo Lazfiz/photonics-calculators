@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 76, 2026-10-16)
+## Status (session 77, 2026-10-16)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -23,16 +23,15 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
-| detectors | 51 / 54 | part 0 audit (session 63), parts 1–9a (sessions 64–76); 2 `knownIssue`s left; part 9b below |
-| **total** | **261 / 458** | 2 `knownIssue`s (detectors) |
+| detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
+| **total** | **264 / 458** | 0 `knownIssue`s |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
   extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
   curl. Also clear the eslint warning there (unused `wavelength` state).
-- [ ] **Detectors part 9b: MTF and cosmic rays** (new `sensor-mtf.ts`): `modulation-transfer` (2/π at f_N; rename
-  "diffusion length"), `pixel-crosstalk` (Seib 1974 field-free diffusion, 3-tap MTF 0.5730 at X = 0.05), `cosmic-rays`
-  (thickness input, L = t/cosθ; O(μ²) loop; PDG 2024).
+- [x] Detectors part 9b (session 77, `phase-4/detectors-mtf-cosmic`): `sensor-mtf.ts` (Seib diffusion, column shares),
+  `cosmic-rays.ts` (MPV 23 075 e⁻ in 300 µm vs PDG 23 000), `poissonQuantile`; detectors 54/54, 0 `knownIssue`s.
 - [ ] **Next category audit (ask the user which):** wave-optics 2/49, materials 3/45, spectroscopy 5/54 or imaging 9/65.
   Part 0 = `physics-reviewer` batches → `knownIssue`s + fix parts, as for FSO (session 56) and detectors (session 63).
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
@@ -103,7 +102,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 **Imaging / spectroscopy** (found in the detectors part 0, session 63)
 - `imaging/dynamic-range`: `prnu` defaults to 0.01 on an input labelled "%" (0.01 %); probably meant 1 %.
 - `spectroscopy/absorption-depth`: Si at 550 nm gives 12.8 µm; Green 2008 gives 1.56 µm. Use `silicon-absorption.ts`.
-- `detectors/pixel-crosstalk`: its own silicon absorption; switch to `materials/silicon-absorption.ts` (noted in part 4c).
 - Detectors part 7b leftovers (session 74 review): `streak-camera` window ignores the usable screen length and reads one pixel (not 2, Nyquist); `intensified-ccd` puts each electron's light in one pixel (no spot spread); `vacuum-photodiode` has one φ for threshold and dark emission and no stray capacitance.
 - `detectors/gain-temperature` PMT branch: the −0.3 %/°C default is an entered value; source a typical dynode-gain coefficient in part 7 (Hamamatsu handbook §13.1.1 gives no number).
 **Materials**
