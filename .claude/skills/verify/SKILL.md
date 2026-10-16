@@ -21,11 +21,13 @@ description: Run this project's gates on Windows (tsc, eslint, tests, build), re
 - build: `tail -40`. Prerender errors name the route, so open that `page.tsx` / `page-client.tsx`.
 
 ## Live / preview check
+A commit, push, completed task or merged PR does not authorise a production release. Releases happen only when the user asks, by pushing `main` to `release`.
+
 - Status and cache: `curl -sI <url> | grep -iE "^(HTTP|x-vercel-cache|age)"`
 - Text present: `curl -s <url> | grep -o "<expected text>" | head -1`
 - JSON-LD parses: extract `<script type="application/ld+json">` and run it through `node -e "JSON.parse(...)"`.
   Its `name` must not contain `',` or `description:`.
-- Vercel builds only `main` (`vercel.json` `git.deploymentEnabled`), so branches have no preview URL. Before a merge,
+- Vercel builds only `release` (`vercel.json` `git.deploymentEnabled`), so branches have no preview URL. Before a merge,
   check a branch with a local `npm run build` and `npx next start -p 3100`.
 
 Report: each gate pass/fail plus the first failing lines only.

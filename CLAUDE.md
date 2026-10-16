@@ -77,10 +77,11 @@ and heed deprecation notices.
    merge via PR. No force-push.
 
 ## Working style (quota)
+- A commit, push, completed task or merged PR does not authorise a production release. Releases happen only when the user asks, by pushing `main` to `release`.
 - One ROADMAP phase/stage per session, sized to fit one context window: about 4 pages, or one shared module and its
   pages. Auto-compaction fires at ≈ 218k tokens and start-up context takes ≈ 60k. Split a bigger stage into a/b boxes
   before starting. End with `/handover` (one-line ROADMAP tick, HANDOVER ≤80 lines) committed on the feature
-  branch, then `/ship` and `/clear`. One PR per stage: Vercel builds only `main`, and every merge is a production build.
+  branch, then `/ship` and `/clear`. One PR per stage: Vercel builds only `release`, so merges to `main` cost no build.
 - Main session (Opus) designs, does the physics, and reviews. Small fixes stay inline. Delegate when the output would
   be large next to the brief:
   - routine multi-file edits → `implementer` (Sonnet): goal, allowed files, gates, ≤40-line report;
@@ -101,7 +102,7 @@ the `SessionStart` hook (`.claude/hooks/after-compact.mjs`) prints the branch, `
 first unchecked ROADMAP box.
 
 ## Skills, scripts & rules
-- Skills: `/verify` (gates + live check), `/ship` (push → PR → CI → merge on the user's yes → production check),
+- Skills: `/verify` (gates + live check), `/ship` (push → PR → CI → merge on the user's yes),
   `/handover`, `/physics-audit <slug>`, `/new-calculator`, `/codemod`.
 - Scripts: `node --import tsx scripts/find.ts <words>` (pages by concept), `npx tsx scripts/tier-status.ts [category]`
   (tier counts, untiered slugs), `node scripts/crossref.mjs <doi>
