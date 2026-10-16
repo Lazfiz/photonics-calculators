@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 78, 2026-10-16)
+## Status (session 79, 2026-10-16)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -17,14 +17,14 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | laser-safety | 40 / 40 | done (sessions 18, 23, 29–36) |
 | thin-film | 45 / 45 | done (sessions 25–28, 54–55); small findings below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
-| imaging | 9 / 65 | part 0 done (session 78): 51 `knownIssue`s (29 bugs, 22 questionable), 5 OK; fix parts 1–15 below |
+| imaging | 13 / 65 | part 0 audit (session 78), part 1 (79); 48 `knownIssue`s left; fix parts 2–15 below |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **264 / 458** | 51 `knownIssue`s (imaging) |
+| **total** | **268 / 458** | 48 `knownIssue`s (imaging) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -43,11 +43,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] **Imaging part 1: diffraction PSF** (new `imaging/diffraction-psf.ts`: `airyIntensity` via math.besselJ,
-  `airyFirstZeroRadius`, `airyFwhm` 0.5145λ/NA, `encircledEnergyAiry` 1−J0²−J1², `paraxialAxialIntensity` sinc²(u/4),
-  `naFromFNumber`; reuse super-resolution abbe/rayleigh and optical-sectioning `axialPsfFwhm`): `airy-disk`, `resolution`,
-  `psf-calculator`, `na-fnumber`. Golden: airy r(550 nm, 0.95) = 3.530e-7 m; axialPsfFwhm(550e-9, 1.518, 1.4) =
-  5.1975e-7; EE(1 AU) 0.838, (0.5 AU) 0.588; naFromFNumber(2.8) = 0.178571 (Born & Wolf 10.1017/9781108769914).
 - [ ] **Imaging part 2: confocal** (extend `optical-sectioning-thickness.ts`: `confocalLateralFwhm`, `pinholeAiryUnits`,
   spinning-disk frame rate): `confocal-pin-hole`, `confocal-resolution`, `spinning-disk`, `3d-reconstruction`. Golden:
   confocalSectionFwhm(488e-9, 1.515, 1.4, 2) = 1.380e-6, (550e-9, 1.518, 1.4, 1) = 9.002e-7; pinholeAU(50 µm, 60×, 488,
@@ -251,6 +246,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Imaging part 1 diffraction PSF (session 79, PR #110): new `imaging/diffraction-psf.ts` (Airy via besselJ, r₀ 0.6098 λ/NA, FWHM 0.5145 λ/NA, EE 1−J0²−J1² = 0.838 at 1 AU and 0.588 at 0.5 AU, Debye on-axis sinc² → paraxial sinc²(u/4), NA = 1/(2N)); `airy-disk`, `resolution`, `psf-calculator`, `na-fnumber` tiered, 3 knownIssues removed.
   - Detectors part 9a sensor noise (session 76, PR #107): new `detectors/sensor-noise.ts` (EMVA 1288 Eq. 48 temporal + DSNU + PRNU, PTC crossovers σ_r² and 1/P², seeded unit-rms PRNU map) and `antiblooming.ts` (spill, onset N_b); `photon-transfer` 547.81 e⁻, `uniformity` 547.84 e⁻ (DSNU in e⁻, key `dsnu`), `antiblooming` onset 1.04e6 e⁻.
   - Detectors part 8 camera SNR (session 75, PR #106): new `detectors/camera-snr.ts` (Robbins–Hadwen F² checked against Galton–Watson moments, `cameraSnr`, register-well `emMaxSignal`, DR, C = Nq/V, Δ/√12, S(1 − n·S/W)) + 4 tests; 5 pages tiered; EMCCD DR 120 → 79.1 dB (iXon Ultra 897), F²(100, 604) 1.9750, EMCCD 2.249 vs sCMOS 2.857.
   - Detectors part 7b photoemission (session 74, PR #105): new `detectors/photoemission.ts` (Richardson A₀ from constants, Ramo f_tr = 0.5533/τ, Child, phosphor η·qV/E_ph = 329.7 at 5 kV, cascade F = F_MCP + 1/G_e, rect⊗rect⊗Gauss FWHM) + 4 tests; `intensified-ccd` SNR 1.3163, `vacuum-photodiode` −18.7 dB with load Johnson noise, `streak-camera` 7.500 ps (exact convolution; quadrature 7.870); 3 pages tiered.
