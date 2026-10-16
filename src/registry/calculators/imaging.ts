@@ -5,7 +5,28 @@ export const imaging: CalculatorEntry[] = [
     slug: "3d-reconstruction",
     title: "3D Reconstruction Methods",
     description: "Compare 3D reconstruction approaches: resolution, sampling, voxel budgets, and method tradeoffs.",
-    knownIssue: "The confocal axial resolution is 0.7 × the widefield first-zero distance (1024 nm) where the site's confocal module gives 777 nm, the number of views is unused, and the Rayleigh 0.61λ/NA is labelled Abbe.",
+    tier: "textbook",
+    modelNote: "Scalar FWHMs: Airy and sinc² for widefield, the numerical scalar confocal model for 0–5 AU pinholes, and a Gaussian light sheet multiplied with the detection PSF. Sampling uses two samples per FWHM.",
+    references: [
+      {
+        citation: "Wilson T., Sheppard C. J. R. (1984). Theory and Practice of Scanning Optical Microscopy. Academic Press. Confocal PSF as the product of the illumination PSF and the pinhole-integrated detection PSF.",
+      },
+      {
+        citation: "Wilson T. (2011). Resolution and optical sectioning in the confocal microscope. J. Microsc. 244, 113–121. Lateral, axial and plane responses against pinhole size.",
+        url: "https://doi.org/10.1111/j.1365-2818.2011.03549.x",
+      },
+      {
+        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Airy units, the 0.37/0.51 λ/NA and 0.64 limits, and the geometric section formula.",
+      },
+      {
+        citation: "Engelbrecht C. J., Stelzer E. H. K. (2006). Resolution enhancement in a light-sheet-based microscope (SPIM). Opt. Lett. 31, 1477–1479. Axial resolution of sheet × detection PSF.",
+        url: "https://doi.org/10.1364/OL.31.001477",
+      },
+      {
+        citation: "Born M., Wolf E. (2019). Principles of Optics, 7th ed., §8.5.2 and §8.8. Cambridge University Press. Airy pattern, encircled energy and the defocused PSF.",
+        url: "https://doi.org/10.1017/9781108769914",
+      },
+    ],
   },
   {
     slug: "adaptive-optics",
@@ -85,15 +106,49 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "confocal-pin-hole",
     title: "Confocal Pinhole Size",
-    description: "Optimal pinhole 1 Airy unit (dAU/M). Trade-off: resolution vs signal.",
-    lede: "Optimal pinhole ≈ 1 Airy unit (dAU/M). Trade-off: resolution vs signal.",
-    knownIssue: "The axial curve is invented and saturates (754 nm at 3 AU against about 2.0 µm), the throughput uses a Gaussian instead of the Airy encircled energy (0.39 against 0.59 at 0.5 AU), and the pinhole shows as 25520.00 nm.",
+    description: "Pinhole size in Airy units (1.22 λ/NA × M) and its trade-off between optical section, lateral resolution and signal.",
+    lede: "Size the pinhole in Airy units (1.22 λ/NA × M) and see the trade-off between optical section, lateral resolution and signal.",
+    tier: "textbook",
+    modelNote: "Scalar paraxial confocal theory with equal excitation and emission wavelengths and a uniformly filled pupil, computed numerically for pinholes of 0–5 AU; the axial scale n − √(n² − NA²) follows Wilhelm. Throughput is the Airy encircled energy of an in-focus point.",
+    references: [
+      {
+        citation: "Wilson T., Sheppard C. J. R. (1984). Theory and Practice of Scanning Optical Microscopy. Academic Press. Confocal PSF as the product of the illumination PSF and the pinhole-integrated detection PSF.",
+      },
+      {
+        citation: "Wilson T. (2011). Resolution and optical sectioning in the confocal microscope. J. Microsc. 244, 113–121. Lateral, axial and plane responses against pinhole size.",
+        url: "https://doi.org/10.1111/j.1365-2818.2011.03549.x",
+      },
+      {
+        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Airy units, the 0.37/0.51 λ/NA and 0.64 limits, and the geometric section formula.",
+      },
+      {
+        citation: "Born M., Wolf E. (2019). Principles of Optics, 7th ed., §8.5.2 and §8.8. Cambridge University Press. Airy pattern, encircled energy and the defocused PSF.",
+        url: "https://doi.org/10.1017/9781108769914",
+      },
+    ],
   },
   {
     slug: "confocal-resolution",
     title: "Confocal Resolution Calculator",
     description: "Compare lateral and axial resolution between widefield and confocal microscopy with adjustable pinhole size.",
-    knownIssue: "The confocal lateral resolution 0.7λ/NA (275 nm) is worse than the widefield 0.61λ/NA (240 nm) beside it; Wilhelm gives about 200 nm at 1 AU. The pinhole size changes neither the lateral nor the axial value.",
+    tier: "textbook",
+    modelNote: "Scalar paraxial confocal theory with equal excitation and emission wavelengths and a uniformly filled pupil, computed numerically for pinholes of 0–5 AU; the axial scale n − √(n² − NA²) follows Wilhelm. Widefield values are the single Airy and sinc² PSFs.",
+    references: [
+      {
+        citation: "Wilson T., Sheppard C. J. R. (1984). Theory and Practice of Scanning Optical Microscopy. Academic Press. Confocal PSF as the product of the illumination PSF and the pinhole-integrated detection PSF.",
+      },
+      {
+        citation: "Wilson T. (2011). Resolution and optical sectioning in the confocal microscope. J. Microsc. 244, 113–121. Lateral, axial and plane responses against pinhole size.",
+        url: "https://doi.org/10.1111/j.1365-2818.2011.03549.x",
+      },
+      {
+        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Airy units, the 0.37/0.51 λ/NA and 0.64 limits, and the geometric section formula.",
+      },
+      {
+        citation: "Born M., Wolf E. (2019). Principles of Optics, 7th ed., §8.5.2 and §8.8. Cambridge University Press. Airy pattern, encircled energy and the defocused PSF.",
+        url: "https://doi.org/10.1017/9781108769914",
+      },
+    ],
   },
   {
     slug: "contrast-methods",
@@ -428,7 +483,24 @@ export const imaging: CalculatorEntry[] = [
     slug: "spinning-disk",
     title: "Spinning Disk Confocal Calculator",
     description: "Pinhole size, optical sectioning, and frame rate for spinning disk confocal microscopy.",
-    knownIssue: "The dwell time (exposure over the pinhole count) is not a physical dwell, the frame rate rpm/60 ignores frames per revolution, and the uncited section fit gives 2.21 µm against 2.53 µm from the confocal model.",
+    tier: "textbook",
+    modelNote: "Scalar paraxial confocal theory with equal excitation and emission wavelengths and a uniformly filled pupil, computed numerically for pinholes of 0–5 AU; the axial scale n − √(n² − NA²) follows Wilhelm. One pinhole only: crosstalk through neighbouring pinholes is not modelled. Frame rate is RPM/60 × scans per revolution.",
+    references: [
+      {
+        citation: "Tanaami T., Otsuki S., Tomosada N. et al. (2002). High-speed 1-frame/ms scanning confocal microscope with a microlens and Nipkow disks. Appl. Opt. 41, 4704–4708. Yokogawa CSU disk, 12 scans per revolution.",
+        url: "https://doi.org/10.1364/AO.41.004704",
+      },
+      {
+        citation: "Wilson T., Sheppard C. J. R. (1984). Theory and Practice of Scanning Optical Microscopy. Academic Press. Confocal PSF as the product of the illumination PSF and the pinhole-integrated detection PSF.",
+      },
+      {
+        citation: "Wilson T. (2011). Resolution and optical sectioning in the confocal microscope. J. Microsc. 244, 113–121. Lateral, axial and plane responses against pinhole size.",
+        url: "https://doi.org/10.1111/j.1365-2818.2011.03549.x",
+      },
+      {
+        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Airy units, the 0.37/0.51 λ/NA and 0.64 limits, and the geometric section formula.",
+      },
+    ],
   },
   {
     slug: "stimulated-raman-microscopy",
