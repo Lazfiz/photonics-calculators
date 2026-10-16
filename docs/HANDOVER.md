@@ -1,40 +1,36 @@
-# Handover — 2026-10-16 (session 75 → session 76)
+# Handover — 2026-10-16 (session 76 → session 77)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 75 checked PR #105 in production (ALL PASS) and finished **detectors part 8 (camera SNR)** on branch
-`phase-4/detectors-camera-snr`, PR #106 with this handover. Next: **Detectors part 9 (sensor noise and MTF)**.
+Session 76 checked PR #106 in production (ALL PASS) and finished **detectors part 9a (sensor noise)** on branch
+`phase-4/detectors-sensor-noise`, PR #107 with this handover. Next: **Detectors part 9b (MTF and cosmic rays)**.
 `polarizer-types` stays blocked until the user is at the laptop with Chrome.
 
 ## State
-- 258 of 458 pages are tiered (detectors 48 / 54). 2 `knownIssue`s left (`cosmic-rays`, `pixel-crosstalk`), both part 9.
-- New `src/physics/detectors/camera-snr.ts`: `EM_REGISTER_STAGES` (604, CCD201), `emStageProbability`,
-  `emExcessNoiseFactorSq` (Robbins & Hadwen), `cameraNoise`/`cameraSnr` (F²·(S + D + CIC) + (σ/G)²), `emMaxSignal`
-  (min(pixel well, register well/G)), `dynamicRangeDb`, `pixelCapacitance`, `quantizationNoise`, `compressiveResponse`.
-- Pages: `ccd-vs-cmos` (URL key `signal` → `photons`, × QE; EMCCD = iXon Ultra 897 with an `emGain` input, default 300;
-  "saturated" cells; EMCCD SNR 21.9, DR 79.1 dB), `em-gain` (`excessNoiseFactor` input → `stages`; F² 1.9750, no
-  "optimal gain"), `electron-multiplying` (+ `stages`; 2.249 vs 2.857), `well-capacity` (5.341 fF, 80.00 dB, 30 µV/e⁻,
-  S_min 20.2 e⁻), `saturation` (DR 72.04, ADC DR, SNR 43.00 dB, quantization warning).
+- 261 of 458 pages are tiered (detectors 51 / 54). 2 `knownIssue`s left (`cosmic-rays`, `pixel-crosstalk`), both part 9b.
+- New `src/physics/detectors/sensor-noise.ts`: `sensorNoise` → {shot, darkShot, read, quantization, prnu, dsnu,
+  temporal, spatial, total} (EMVA 1288 Eq. 48), `shotReadCrossover` (σ_r²), `shotPrnuCrossover` (1/P²), `prnuPattern(n)`
+  (seeded mulberry32, zero mean, unit sample sd). New `antiblooming.ts`: `antiblooming` → {collected, drained, spilled},
+  `bloomingOnset` = T + (W − T)/(1 − η).
+- Pages: `photon-transfer` (+ `prnu` input, 5 curves, total 547.81 e⁻ / temporal 223.83 e⁻ at full well), `uniformity`
+  (DSNU now e⁻ rms, URL key `dsnuPercent` → `dsnu`; 547.84 e⁻; map rms 500.0), `antiblooming` (illustrative; onset 1.040e+6).
 - PR #104 (`devctl/t1`, by the user: production deploys only from a `release` branch, `/ship` ends at merge) is still
-  open. Ask the user whether to merge it before or after #106; it changes the "Vercel builds only `main`" rule.
+  open. Ask the user when to merge it; it changes the "Vercel builds only `main`" rule.
 - User decisions: one PR per stage, handover inside (session 68).
 
 ## Next actions
-1. `/ship` this branch. post-merge-check: `detectors/em-gain="1.9750"` `detectors/ccd-vs-cmos="79.1"`
-   `detectors/electron-multiplying="2.249"` `detectors/saturation="72.04"` (verify the rendered strings in
-   `.next/server/app/detectors/<slug>.html` first).
-2. Detectors part 9 (ROADMAP): `sensor-noise.ts` (PRNU/DSNU), `sensor-mtf.ts`; 6 pages. Probably split 9a/9b.
+1. `/ship` this branch. post-merge-check: `detectors/photon-transfer="547.81"` `detectors/uniformity="547.84"`
+   `detectors/antiblooming="1.040e+6"` (verify the rendered strings in `.next/server/app/detectors/<slug>.html` first).
+2. Detectors part 9b (ROADMAP): `sensor-mtf.ts`; `modulation-transfer`, `pixel-crosstalk`, `cosmic-rays`.
 3. Later: the part 7b leftovers, fiber and FSO open findings (ROADMAP), imaging/spectroscopy findings, Chrome-only checks.
 
 ## Non-obvious facts
-- **Session 75 lessons:**
-  - Robbins–Hadwen F² = 2(1 − 1/G)/(1 + p) + 1/G is exactly the Galton–Watson result for a binomial stage
-    (Var = p(1 − p)); a 604-step moment recursion reproduces it to 1e-13. F² = 2 − 1/G is its N → ∞ limit.
-  - With N = 604, F² peaks (1.978) near G = 300 and then falls, so the SNR is not monotonic in G in general: it drops
-    from G = 1 when the read noise is already small. Don't claim "SNR always rises with gain".
-  - EMCCD DR = 20·log₁₀(W_reg/σ_r) for any G > W_reg/W_pix (both limits scale as 1/G). Andor iXon Ultra spec PDF:
-    `andor.oxinst.com/downloads/uploads/andor-ixon-ultra-emccd-specifications.pdf` (`pdftotext -raw` works): 897 = 180 ke⁻,
-    register 800 ke⁻, read 89/65/37/15 e⁻ at 17/10/5/1 MHz; 888 = 80 ke⁻ / 730 ke⁻.
+- **Session 76:** EMVA 1288 PDFs download with curl: `emva.org/wp-content/uploads/EMVA1288-3.1a.pdf` (Eq. 23–25, 45–48;
+  `pdftotext -raw`) and `EMVA1288General_4.0Release.pdf`. DSNU₁₂₈₈ is absolute (e⁻), PRNU₁₂₈₈ relative; σ_q² = 1/12 DN².
+  Random patterns in a client page must be seeded (module-level const) so the prerender and hydration agree.
+- **Session 75:** Robbins–Hadwen F² = 2(1 − 1/G)/(1 + p) + 1/G is the Galton–Watson result for a binomial stage. With
+  N = 604, F² peaks (1.978) near G = 300, so SNR is not monotonic in G. EMCCD DR = 20·log₁₀(W_reg/σ_r) for G > W_reg/W_pix.
+  Andor iXon Ultra spec PDF: `andor.oxinst.com/downloads/uploads/andor-ixon-ultra-emccd-specifications.pdf`.
 - **Session 74:** rect ⊗ rect is a trapezoid of FWHM max(a, b), so rectangles don't add in quadrature (`rectGaussFwhm`).
   Johnson noise of a 50 Ω load beats shot noise below 2k_BT/(qR) ≈ 1 mA. Hamamatsu streak guide SHSS0006E:
   `hamamatsu.com/content/dam/hamamatsu-photonics/sites/documents/99_SALES_LIBRARY/sys/SHSS0006E_STREAK.pdf`.

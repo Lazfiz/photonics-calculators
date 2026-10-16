@@ -1,79 +1,78 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { prnuPattern, sensorNoise, shotPrnuCrossover } from "../../../physics/detectors/sensor-noise";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fix = (x: number, digits = 2) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
+const db = (snr: number) => (snr > 0 ? 20 * Math.log10(snr) : NaN);
+
+const MAP_SIZE = 80;
+const PATTERN = prnuPattern(MAP_SIZE);
+const INDEX = Array.from({ length: MAP_SIZE }, (_, i) => i);
+
 export default function UniformityPage() {
-  const [meanSignal, setMeanSignal] = useURLState("meanSignal", 50000); // e-
-  const [darkSignal, setDarkSignal] = useURLState("darkSignal", 100); // e- (dark offset)
-  const [prnuPercent, setPrnuPercent] = useURLState("prnuPercent", 1.0); // %
-  const [dsnuPercent, setDsnuPercent] = useURLState("dsnuPercent", 0.3); // %
-  const [readNoise, setReadNoise] = useURLState("readNoise", 5); // e-
+  const [signalRaw, setMeanSignal] = useURLState("meanSignal", 50000); // e⁻ above dark
+  const [darkRaw, setDarkSignal] = useURLState("darkSignal", 100); // e⁻
+  const [prnuRaw, setPrnuPercent] = useURLState("prnuPercent", 1.0); // %
+  const [dsnuRaw, setDsnu] = useURLState("dsnu", 2); // e⁻ rms
+  const [readRaw, setReadNoise] = useURLState("readNoise", 5); // e⁻ rms
 
-  const chartData = useMemo(() => {
-    const N = 80;
-    const x: number[] = [], y: number[] = [], z: number[][] = [];
-    for (let i = 0; i < N; i++) {
-      const row: number[] = [];
-      y.push(i);
-      for (let j = 0; j < N; j++) {
-        const xi = i / N, yj = j / N;
-        // Simulate gradual non-uniformity pattern
-        const gradient = 0.3 * (xi - 0.5) + 0.2 * (yj - 0.5);
-        const hotSpot = 0.4 * Math.exp(-((xi-0.3)**2 + (yj-0.7)**2) / 0.02);
-        const val = meanSignal * (1 + (prnuPercent/100) * (gradient + hotSpot + 0.5*Math.sin(6*xi)*Math.cos(4*yj)));
-        row.push(val);
-      }
-      z.push(row);
-      x.push(i);
-    }
-    return [{ x, y, z, type: "heatmap" as const, colorscale: "Viridis", name: "Signal (e⁻)" }];
-  }, [meanSignal, prnuPercent]);
+  const meanSignal = clamp(signalRaw, 0, 1e7, 50000);
+  const darkSignal = clamp(darkRaw, 0, 1e7, 100);
+  const prnu = clamp(prnuRaw, 0, 20, 1) / 100;
+  const dsnu = clamp(dsnuRaw, 0, 10000, 2);
+  const readNoise = clamp(readRaw, 0, 1000, 5);
 
-  // Histogram of pixel values
-  const histogramData = useMemo(() => {
-    const N = 10000;
-    const sigma = (prnuPercent / 100) * meanSignal;
-    const bins = 50;
-    const binWidth = sigma > 0 ? 4 * sigma / bins : 1;
-    const xH: number[] = [], yH: number[] = [];
-    for (let i = 0; i < bins; i++) {
-      const center = meanSignal - 2 * sigma + (i + 0.5) * binWidth;
-      const val = sigma > 0 ? Math.exp(-0.5 * Math.pow((center - meanSignal) / sigma, 2)) : (i === bins / 2 ? 1 : 0);
-      xH.push(center);
-      yH.push(val);
-    }
-    return [{ x: xH, y: yH, type: "bar" as const, name: "Pixel value distribution", marker: { color: "#60a5fa" } }];
-  }, [meanSignal, prnuPercent]);
+  const n = sensorNoise({ signal: meanSignal, dark: darkSignal, read: readNoise, prnu, dsnu });
+  const snr = n.total > 0 ? meanSignal / n.total : NaN;
+  const snrFlat = n.temporal > 0 ? meanSignal / n.temporal : NaN;
+  const crossover = shotPrnuCrossover(prnu);
 
-  const prnuNoise = (prnuPercent / 100) * meanSignal;
-  const dsnuNoise = (dsnuPercent / 100) * darkSignal; // DSNU scales with dark signal, not illumination
-  const shotNoise = Math.sqrt(meanSignal + darkSignal);
-  const totalNoise = Math.sqrt(prnuNoise**2 + dsnuNoise**2 + readNoise**2 + shotNoise**2);
-  const snr = meanSignal / totalNoise;
+  // Map of the photo response S·(1 + PRNU·pattern): its spatial rms is PRNU·S by construction.
+  const z = PATTERN.map(row => row.map(v => meanSignal * (1 + prnu * v)));
+  const values = z.flat();
+  const mapMean = values.reduce((s, v) => s + v, 0) / values.length;
+  const mapRms = Math.sqrt(values.reduce((s, v) => s + (v - mapMean) ** 2, 0) / (values.length - 1));
+  const mapData = [{ x: INDEX, y: INDEX, z, type: "heatmap" as const, colorscale: "Viridis", name: "Signal (e⁻)" }];
+
+  // One frame of a flat field spreads by σ_total; averaging many frames leaves σ_spatial.
+  const span = 4 * (n.total > 0 ? n.total : 1);
+  const xs = Array.from({ length: 201 }, (_, i) => meanSignal - span + (2 * span * i) / 200);
+  const gaussian = (sigma: number) => xs.map(x => (sigma > 0 ? Math.exp(-0.5 * ((x - meanSignal) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI)) : NaN));
+  const histogramData = [
+    { x: xs, y: gaussian(n.total), type: "scatter" as const, mode: "lines" as const, name: "One frame (temporal + spatial)", line: { color: "#60a5fa" } },
+    { x: xs, y: gaussian(n.spatial), type: "scatter" as const, mode: "lines" as const, name: "Frame average (spatial only)", line: { color: "#fbbf24" } },
+  ];
 
   return (
     <>
-            
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Mean Signal (e⁻)" value={meanSignal} onChange={setMeanSignal} />
-        <ValidatedNumberInput label="Dark Signal (e⁻)" value={darkSignal} onChange={setDarkSignal} />
-        <ValidatedNumberInput label="PRNU (%)" value={prnuPercent} onChange={setPrnuPercent} />
-        <ValidatedNumberInput label="DSNU (%)" value={dsnuPercent} onChange={setDsnuPercent} />
-        <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} />
+        <ValidatedNumberInput label="Mean photo signal (e⁻, above dark)" value={signalRaw} onChange={setMeanSignal} min={0} max={10000000} step="1000" />
+        <ValidatedNumberInput label="Dark signal (e⁻)" value={darkRaw} onChange={setDarkSignal} min={0} max={10000000} step="10" />
+        <ValidatedNumberInput label="PRNU (% of mean signal)" value={prnuRaw} onChange={setPrnuPercent} min={0} max={20} step="0.1" />
+        <ValidatedNumberInput label="DSNU (e⁻ rms)" value={dsnuRaw} onChange={setDsnu} min={0} max={10000} step="0.5" />
+        <ValidatedNumberInput label="Read noise (e⁻ rms)" value={readRaw} onChange={setReadNoise} min={0} max={1000} step="1" />
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <p className="text-gray-300">PRNU noise = <span className="text-blue-400 font-mono">{prnuNoise.toFixed(0)} e⁻</span> ({prnuPercent}%)</p>
-        <p className="text-gray-300">DSNU noise = <span className="text-blue-400 font-mono">{dsnuNoise.toFixed(0)} e⁻</span></p>
-        <p className="text-gray-300">Shot noise = <span className="text-blue-400 font-mono">{shotNoise.toFixed(1)} e⁻</span></p>
-        <p className="text-gray-300">Total noise = <span className="text-blue-400 font-mono">{totalNoise.toFixed(1)} e⁻</span> | SNR = <span className="text-blue-400 font-mono">{(20*Math.log10(snr)).toFixed(1)} dB</span></p>
-        <p className="text-gray-300 text-sm mt-1">σ<sub>total</sub> = √(σ²<sub>PRNU</sub> + σ²<sub>DSNU</sub> + σ²<sub>shot</sub> + σ²<sub>read</sub>)</p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+        <ResultCard label="Total noise (one frame)" value={`${fix(n.total)} e⁻`} subtext={`SNR ${fix(snr, 1)} (${fix(db(snr), 1)} dB)`} tone="red" />
+        <ResultCard label="Spatial noise" value={`${fix(n.spatial)} e⁻`} subtext={`PRNU·S ${fix(n.prnu, 1)} e⁻, DSNU ${fix(n.dsnu, 1)} e⁻`} tone="yellow" />
+        <ResultCard label="Temporal noise" value={`${fix(n.temporal)} e⁻`} subtext={`shot √(S + D) ${fix(Math.hypot(n.shot, n.darkShot))} e⁻, read ${fix(n.read, 1)} e⁻`} tone="blue" />
+        <ResultCard label="SNR after flat-field correction" value={`${fix(snrFlat, 1)}`} subtext={`${fix(db(snrFlat), 1)} dB: the spatial terms removed`} tone="green" />
+        <ResultCard label="Shot = PRNU at" value={Number.isFinite(crossover) ? `${fix(crossover, 0)} e⁻` : "—"} subtext={Number.isFinite(crossover) ? "S = 1/PRNU²; PRNU dominates above" : "no PRNU"} tone="purple" />
+        <ResultCard label="Map rms (below)" value={`${fix(mapRms, 1)} e⁻`} subtext="spatial standard deviation of the map = PRNU·S" tone="gray" />
       </div>
 
-      <ChartPanel data={chartData} layout={{
+      <p className="text-gray-400 text-sm mb-6">
+        σ_total² = S + D + σ_read² + DSNU² + (PRNU·S)² (EMVA 1288 Eq. 48). The map shows the photo response only: white
+        pixel-to-pixel PRNU plus a shading gradient, scaled to the PRNU you enter.
+      </p>
+
+      <ChartPanel data={mapData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "x (pixel)", gridcolor: "#374151" },
         yaxis: { title: "y (pixel)", gridcolor: "#374151" },
@@ -83,8 +82,8 @@ export default function UniformityPage() {
       <ChartPanel data={histogramData} layout={{
         paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
         xaxis: { title: "Pixel value (e⁻)", gridcolor: "#374151" },
-        yaxis: { title: "Count", gridcolor: "#374151" },
-        margin: { t: 20, b: 40, l: 60, r: 20 }, autosize: true, showlegend: true, bargap: 0.05
+        yaxis: { title: "Probability density (1/e⁻)", gridcolor: "#374151" },
+        margin: { t: 20, b: 40, l: 70, r: 20 }, autosize: true, showlegend: true
       }} />
     </>
   );

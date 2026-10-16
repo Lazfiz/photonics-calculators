@@ -35,6 +35,14 @@ export const detectors: CalculatorEntry[] = [
     slug: "antiblooming",
     title: "Anti-Blooming Design",
     description: "Anti-blooming shunts excess charge to drain when well exceeds threshold. Trade-off: charge dump efficiency vs full well capacity and linearity.",
+    tier: "illustrative",
+    modelNote: "A hard barrier at a fraction of the full well: above it a fixed fraction η of the extra charge goes to the drain, the rest fills the well and then spills (blooming onset N_b = T + (W − T)/(1 − η)). Real overflow drains turn on gradually through sub-threshold barrier current; η here is a lumped parameter, not a device spec.",
+    references: [
+      {
+        citation: "Janesick J. R. (2001). Scientific Charge-Coupled Devices. SPIE Press. Blooming, lateral and vertical overflow drains, clocked anti-blooming and their cost in full well and fill factor.",
+        url: "https://doi.org/10.1117/3.374903",
+      },
+    ],
   },
   {
     slug: "avalanche-gain",
@@ -567,7 +575,19 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "photon-transfer",
     title: "Photon Transfer Curve (PTC)",
-    description: "Photon transfer curve: noise vs signal, variance analysis, conversion gain, and dynamic range.",
+    description: "Photon transfer curve: read, shot and PRNU noise regimes vs signal, their crossovers, conversion gain and dynamic range.",
+    tier: "textbook",
+    modelNote: "σ_total² = σ_read² + σ_q² + S + (PRNU·S)² in e⁻, with σ_q = K/√12 and DN = e⁻/K. A linear sensor with a constant conversion gain, no dark charge and no DSNU. The temporal curve is what a frame-differenced or flat-fielded measurement sees.",
+    references: [
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press, ch. 5. σ_total² = σ_read² + σ_shot² + σ_FPN² with σ_FPN = P_N·S; PTC slopes 0, ½ and 1.",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+      {
+        citation: "EMVA Standard 1288, Release 3.1 (2016). Standard for Characterization of Image Sensors and Cameras, Eq. (11) and (48). Quantization noise σ_q² = 1/12 DN² and the total SNR with PRNU.",
+        url: "https://www.emva.org/wp-content/uploads/EMVA1288-3.1a.pdf",
+      },
+    ],
   },
   {
     slug: "pixel-crosstalk",
@@ -920,7 +940,19 @@ export const detectors: CalculatorEntry[] = [
     title: "Photoresponse Non-Uniformity Calculator",
     description: "PRNU, DSNU, and spatial uniformity analysis for image sensors.",
     heading: "Photoresponse Non-Uniformity",
-    lede: "PRNU measures the spatial variation in pixel sensitivity across the sensor array. σPRNU = PRNU% × mean signal.",
+    lede: "PRNU measures the spatial variation in pixel sensitivity across the sensor array. σPRNU = PRNU% × mean signal; DSNU is the spatial rms of the dark image.",
+    tier: "textbook",
+    modelNote: "EMVA 1288 definitions: PRNU as a fraction of the mean photo signal, DSNU in e⁻ rms, and independent Gaussian terms σ_total² = S + D + σ_read² + DSNU² + (PRNU·S)². Quantization noise is left out. The map is an illustrative pattern (white noise plus a shading gradient) scaled to the PRNU you enter; real PRNU also has column and row structure.",
+    references: [
+      {
+        citation: "EMVA Standard 1288, Release 3.1 (2016). Standard for Characterization of Image Sensors and Cameras, Eq. (23)–(25) and (45)–(48). DSNU₁₂₈₈, PRNU₁₂₈₈ and the total SNR including spatial non-uniformity.",
+        url: "https://www.emva.org/wp-content/uploads/EMVA1288-3.1a.pdf",
+      },
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press, ch. 5. Fixed-pattern noise σ_FPN = P_N·S, shot = FPN at S = 1/P_N², and its removal by flat-fielding.",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+    ],
   },
   {
     slug: "vacuum-photodiode",

@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 75, 2026-10-16)
+## Status (session 76, 2026-10-16)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -23,17 +23,16 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
-| detectors | 48 / 54 | part 0 audit (session 63), parts 1–8 (sessions 64–75); 2 `knownIssue`s left; fix part 9 below |
-| **total** | **258 / 458** | 2 `knownIssue`s (detectors) |
+| detectors | 51 / 54 | part 0 audit (session 63), parts 1–9a (sessions 64–76); 2 `knownIssue`s left; part 9b below |
+| **total** | **261 / 458** | 2 `knownIssue`s (detectors) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
   extension not connected). The Thorlabs, Edmund and Newport spec pages are JS-rendered or return 403 to WebFetch and
   curl. Also clear the eslint warning there (unused `wavelength` state).
-- [ ] **Detectors part 9: sensor noise and MTF** (new `sensor-noise.ts` with PRNU/DSNU, `sensor-mtf.ts`):
-  `photon-transfer` (PRNU regime; 223.83 e⁻), `uniformity` (547.84 e⁻; heatmap RMS), `antiblooming` (illustrative;
-  cap leaked charge), `modulation-transfer` (2/π at f_N; rename "diffusion length"), `pixel-crosstalk` (Seib 1974
-  field-free diffusion, 3-tap MTF 0.5730 at X = 0.05), `cosmic-rays` (thickness input, L = t/cosθ; O(μ²) loop; PDG 2024).
+- [ ] **Detectors part 9b: MTF and cosmic rays** (new `sensor-mtf.ts`): `modulation-transfer` (2/π at f_N; rename
+  "diffusion length"), `pixel-crosstalk` (Seib 1974 field-free diffusion, 3-tap MTF 0.5730 at X = 0.05), `cosmic-rays`
+  (thickness input, L = t/cosθ; O(μ²) loop; PDG 2024).
 - [ ] **Next category audit (ask the user which):** wave-optics 2/49, materials 3/45, spectroscopy 5/54 or imaging 9/65.
   Part 0 = `physics-reviewer` batches → `knownIssue`s + fix parts, as for FSO (session 56) and detectors (session 63).
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
@@ -170,6 +169,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Detectors part 9a sensor noise (session 76, PR #107): new `detectors/sensor-noise.ts` (EMVA 1288 Eq. 48 temporal + DSNU + PRNU, PTC crossovers σ_r² and 1/P², seeded unit-rms PRNU map) and `antiblooming.ts` (spill, onset N_b); `photon-transfer` 547.81 e⁻, `uniformity` 547.84 e⁻ (DSNU in e⁻, key `dsnu`), `antiblooming` onset 1.04e6 e⁻.
   - Detectors part 8 camera SNR (session 75, PR #106): new `detectors/camera-snr.ts` (Robbins–Hadwen F² checked against Galton–Watson moments, `cameraSnr`, register-well `emMaxSignal`, DR, C = Nq/V, Δ/√12, S(1 − n·S/W)) + 4 tests; 5 pages tiered; EMCCD DR 120 → 79.1 dB (iXon Ultra 897), F²(100, 604) 1.9750, EMCCD 2.249 vs sCMOS 2.857.
   - Detectors part 7b photoemission (session 74, PR #105): new `detectors/photoemission.ts` (Richardson A₀ from constants, Ramo f_tr = 0.5533/τ, Child, phosphor η·qV/E_ph = 329.7 at 5 kV, cascade F = F_MCP + 1/G_e, rect⊗rect⊗Gauss FWHM) + 4 tests; `intensified-ccd` SNR 1.3163, `vacuum-photodiode` −18.7 dB with load Johnson noise, `streak-camera` 7.500 ps (exact convolution; quadrature 7.870); 3 pages tiered.
   - Detectors part 7a electron multipliers (session 73, PR #103): new `detectors/electron-multiplier.ts` (Hamamatsu dynode F, Schagen/Wiza channel gain + optimum, 10⁸·d/mm space-charge limit, counting vs analog SNR, pulse resolution with F) + 5 tests; `pmt` F 1.3999985, `microchannel-plate` 1.02e3 per plate, `channel-photomultiplier` rewritten as a single-channel CPM; 3 pages tiered.
