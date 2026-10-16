@@ -27,6 +27,14 @@ export const imaging: CalculatorEntry[] = [
     lede: "Calculate the Airy disk radius and Abbe diffraction limit based on wavelength and numerical aperture.",
     keywords: ["diffraction limit", "abbe", "spot size"],
     priority: 94,
+    tier: "textbook",
+    modelNote: "Scalar Airy pattern of an aberration-free, uniformly filled circular pupil. Above NA ≈ 0.9 the polarized focus is up to 10–20 % wider; a Gaussian-filled pupil gives a wider, ringless spot.",
+    references: [
+      {
+        citation: "Born M., Wolf E. (2019). Principles of Optics, 7th ed., §8.5.2. Cambridge University Press. Airy pattern [2J₁(v)/v]² and encircled energy 1 − J₀² − J₁².",
+        url: "https://doi.org/10.1017/9781108769914",
+      },
+    ],
     related: [
       { href: "/imaging/adaptive-optics" },
       { href: "/imaging/afocal" },
@@ -224,7 +232,14 @@ export const imaging: CalculatorEntry[] = [
     description: "NA = 1/(2f/#) for objects at infinity. Relates numerical aperture to f-number.",
     heading: "NA ↔ f/# Conversion",
     lede: "NA = 1/(2·f/#) for objects at infinity. Relates numerical aperture to f-number.",
-    knownIssue: "The page computes NA = 1/√(1 + 4N²) (the tan form) while its text and its Airy-disk line use NA = 1/(2N), the sine condition: 1.6 % apart at f/2.8 and 12 % at f/1. The wavelength is fixed at 550 nm.",
+    tier: "exact",
+    modelNote: "NA = 1/(2N) holds exactly for a lens that obeys the sine condition, object at infinity, in air. The thin-lens tangent form is shown for comparison; finite conjugates need the working f-number.",
+    references: [
+      {
+        citation: "Born M., Wolf E. (2019). Principles of Optics, 7th ed., ch. 4. Cambridge University Press. Abbe sine condition for aplanatic imaging.",
+        url: "https://doi.org/10.1017/9781108769914",
+      },
+    ],
   },
   {
     slug: "optical-coherence",
@@ -284,7 +299,17 @@ export const imaging: CalculatorEntry[] = [
     slug: "psf-calculator",
     title: "Point Spread Function Calculator",
     description: "Visualize the 2D and 1D point spread function (PSF) for a diffraction-limited system.",
-    knownIssue: "The axial FWHM shows 0.88nλ/NA², a half-width: 375 nm at 550 nm, NA 1.4, where the high-NA FWHM is 520 nm. The axial plot uses sinc²(u) for sinc²(u/4), 4× too narrow, and the Bessel series jumps at u = 4.",
+    tier: "textbook",
+    modelNote: "Scalar PSF of an aberration-free, uniformly filled pupil: the Airy pattern laterally, the on-axis Debye sinc² axially (the paraxial sinc²(u/4) at low NA). No polarization, coverslip or index-mismatch effects.",
+    references: [
+      {
+        citation: "Born M., Wolf E. (2019). Principles of Optics, 7th ed., §8.5.2 and §8.8. Cambridge University Press. Airy pattern and the paraxial intensity near focus.",
+        url: "https://doi.org/10.1017/9781108769914",
+      },
+      {
+        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Axial FWHM 0.88 λ/(n − √(n² − NA²)).",
+      },
+    ],
   },
   {
     slug: "pupil-matching",
@@ -303,7 +328,17 @@ export const imaging: CalculatorEntry[] = [
     slug: "resolution",
     title: "Resolution Calculator",
     description: "Abbe and Rayleigh lateral resolution limits for diffraction-limited imaging.",
-    knownIssue: "The immersion-medium index is shown but never used, so NA above n gives a result with no warning, and a medium index past the list in the URL crashes the page.",
+    tier: "textbook",
+    modelNote: "Classical two-point and grating criteria for incoherent, aberration-free imaging with a uniformly filled pupil. The axial FWHM is the widefield on-axis PSF; NA must stay below the medium index.",
+    references: [
+      {
+        citation: "Born M., Wolf E. (2019). Principles of Optics, 7th ed., §8.6.2. Cambridge University Press. Rayleigh resolving power 0.61 λ/NA.",
+        url: "https://doi.org/10.1017/9781108769914",
+      },
+      {
+        citation: "Wilhelm R., Gröbler B., Gluch M., Heinz H. (2003). Confocal Laser Scanning Microscopy: Principles. Carl Zeiss. Axial FWHM 0.88 λ/(n − √(n² − NA²)).",
+      },
+    ],
   },
   {
     slug: "second-harmonic-generation",
