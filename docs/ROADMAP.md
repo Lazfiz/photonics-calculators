@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 77, 2026-10-16)
+## Status (session 78, 2026-10-16)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -17,14 +17,14 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | laser-safety | 40 / 40 | done (sessions 18, 23, 29–36) |
 | thin-film | 45 / 45 | done (sessions 25–28, 54–55); small findings below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
-| imaging | 9 / 65 | findings fixed (sessions 19, 22); no full audit |
+| imaging | 9 / 65 | part 0 done (session 78): 51 `knownIssue`s (29 bugs, 22 questionable), 5 OK; fix parts 1–15 below |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **264 / 458** | 0 `knownIssue`s |
+| **total** | **264 / 458** | 51 `knownIssue`s (imaging) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -32,8 +32,93 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   curl. Also clear the eslint warning there (unused `wavelength` state).
 - [x] Detectors part 9b (session 77, `phase-4/detectors-mtf-cosmic`): `sensor-mtf.ts` (Seib diffusion, column shares),
   `cosmic-rays.ts` (MPV 23 075 e⁻ in 300 µm vs PDG 23 000), `poissonQuantile`; detectors 54/54, 0 `knownIssue`s.
-- [ ] **Next category audit (ask the user which):** wave-optics 2/49, materials 3/45, spectroscopy 5/54 or imaging 9/65.
-  Part 0 = `physics-reviewer` batches → `knownIssue`s + fix parts, as for FSO (session 56) and detectors (session 63).
+- [x] **Imaging audit, part 0** (session 78, branch `phase-4/imaging-audit`). Eight `physics-reviewer` batches of 7
+  audited all 56 untiered pages: **29 bugs, 22 questionable, 5 OK** (airy-disk, dof, pixel-fov, fov-calculator,
+  signal-to-noise); the 51 get a registry `knownIssue` (40–240 characters, see the registry test). Common: URL values skip
+  the input ranges, so `?na=0` and similar hang or crash structured-illumination, mtf, light-field, stitching,
+  wavefront-error, resolution and fluorescence-spectra; spectral-unmixing, registration, denoising-algorithms and
+  deconvolution show fabricated outputs (hard-coded gains or curves, "results" built from the ground truth). Confirmed
+  the old open finding: `dynamic-range` prnu 0.01 on a "%" input. Reviewer DOIs were checked with crossref; section and
+  equation numbers were not. **User decisions:** merge, each with a redirect from the old URL, `selective-plane` →
+  `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
+  `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
+  detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
+- [ ] **Imaging part 1: diffraction PSF** (new `imaging/diffraction-psf.ts`: `airyIntensity` via math.besselJ,
+  `airyFirstZeroRadius`, `airyFwhm` 0.5145λ/NA, `encircledEnergyAiry` 1−J0²−J1², `paraxialAxialIntensity` sinc²(u/4),
+  `naFromFNumber`; reuse super-resolution abbe/rayleigh and optical-sectioning `axialPsfFwhm`): `airy-disk`, `resolution`,
+  `psf-calculator`, `na-fnumber`. Golden: airy r(550 nm, 0.95) = 3.530e-7 m; axialPsfFwhm(550e-9, 1.518, 1.4) =
+  5.1975e-7; EE(1 AU) 0.838, (0.5 AU) 0.588; naFromFNumber(2.8) = 0.178571 (Born & Wolf 10.1017/9781108769914).
+- [ ] **Imaging part 2: confocal** (extend `optical-sectioning-thickness.ts`: `confocalLateralFwhm`, `pinholeAiryUnits`,
+  spinning-disk frame rate): `confocal-pin-hole`, `confocal-resolution`, `spinning-disk`, `3d-reconstruction`. Golden:
+  confocalSectionFwhm(488e-9, 1.515, 1.4, 2) = 1.380e-6, (550e-9, 1.518, 1.4, 1) = 9.002e-7; pinholeAU(50 µm, 60×, 488,
+  0.8) = 1.120; 3D confocal 777 nm, WF 1463 nm (Wilson 2011 10.1111/j.1365-2818.2011.03549.x). Unverified: Wilhelm
+  0.37/0.51 coefficients, CSU 12 frames/rev.
+- [ ] **Imaging part 3: light sheet and TIRF** (new `light-sheet.ts`: gaussianSheet, axial FWHM via `axialPsfFwhm`; new
+  `tirf.ts`: reuse fiber-sensors `evanescentDecay`, d_I = 1/(2γ)): `light-sheet` (merge `selective-plane` with redirect),
+  `tirf`, `cleared-tissue` (ballistic fraction, axialPsfFwhm, abbe). Golden: d_I(488, 1.518, 1.33, 65°) = 110.34 nm
+  (Axelrod 2001 10.1034/j.1600-0854.2001.21104.x); sheet t = 3.1067 µm, z_R = 20.660 µm (488, NA 0.1, n 1.33), eff.
+  axial 1.2065 µm (NA_det 0.8); selective-plane defaults 1.0301 µm; axialFwhm(680, 1.52, 1.2) = 1.0193 µm.
+- [ ] **Imaging part 4: super-resolution** (extend `super-resolution.ts`: `mortensenPrecision`, `nyquistResolution`,
+  `smlmEffectiveResolution`, `simCutoff`, `simLateralFwhm`, `simRawImageCount`, `expansionEffectiveResolution`):
+  `palm-storm`, `structured-illumination`, `expansion-microscopy`. Golden: SIM 1/(2NA/λem + 2NA/λex)(1.4, 488, 520) =
+  89.91 nm; Legant √((2.355·20)² + 40²) = 61.79 nm; Mortensen (647, 1.49, a 100, N 1000, b² 10) = 4.286 nm
+  (10.1038/nmeth.1447); ExM pre 65.05 nm, post 63.79 nm.
+- [ ] **Imaging part 5: fluorescence dynamics and phase contrast** (new `fluorescence-dynamics.ts`: FCS V_eff, N, G(τ)
+  with Widengren triplet, Koppel SNR, FRAP Soumpasis and Axelrod; new `phase-contrast.ts`): `fcs`, `frap`,
+  `contrast-methods`. Golden: FCS w0 0.3, z0 1.5 µm, 50 nM, τD 0.05 ms → V_eff 0.7517 fL, N 22.63, G0 0.04418, D 450
+  µm²/s; triplet G(0+) 0.04909 at T 0.1; Koppel 94.9; FRAP τ½/τD 0.8946, D 0.112 µm²/s (Soumpasis 1983
+  10.1016/S0006-3495(83)84410-5); Axelrod γ_D(K 1) 1.097; Zernike PC 0.6445, φ 0.2856.
+- [ ] **Imaging part 6: fluorophores and unmixing** (new `fluorophores.ts`: sourced FPbase peaks, spectrum model,
+  top-hat filter, bleed-through; new `linear-unmixing.ts`: OLS, NNLS Lawson–Hanson, FCLS, covariance σ²(EᵀE)⁻¹, seeded
+  PRNG): `fluorescence-spectra`, `spectral-unmixing`, `simultaneous-multicolor`, `hyperspectral-microscopy` (reuse
+  detectors/camera-snr.ts). Split 6a/6b if needed. Golden: multicolor SNR 21.16; hyperspectral 40.0 MiB, 32.0 s.
+- [ ] **Imaging part 7: OCT and holography** (new `oct.ts`: Δz = 0.4413λ²/(nΔλ), shot-noise SNR, visibility, Doppler;
+  new `holography.ts`): `optical-coherence`, `low-coherence`, `digital-holography`, `computer-generated-holography`.
+  Golden: octAxial(1310, 100, 1) = 7.5727 µm, n 1.33 → 5.6937, (840, 50) → 6.2272 µm; V(0.9, 0.004) = 0.132743;
+  Doppler 50 mm/s, 1300 nm → 76 923 Hz; DH pitch(532 nm, 0.1 m, 2048, 6.5 µm) = 3.99639 µm, sensor NA 0.06656; CGH
+  multilevel(8) = 0.949641, replay(633 nm, 0.5 m, 8 µm) = 39.5625 mm (Fercher 2003 10.1088/0034-4885/66/2/204).
+- [ ] **Imaging part 8: nonlinear and photoacoustic** (`srsShotNoiseSnr` in `coherent-raman.ts`; non-degenerate SFG in
+  `second-harmonic-generation.ts`, which can also serve spectroscopy/sum-frequency-gen and wave-optics/sum-frequency;
+  new `photoacoustic.ts`): `stimulated-raman-microscopy`, `sum-frequency-microscopy`, `photoacoustic`. Golden: SRS
+  SNR(1e-5, 80 mW, 1036.27 nm, 1 µs, η 1) = 6.460; SFG(1040, 800) = 452.1739 nm; PA p0(Γ 0.2, 500 m⁻¹, 200 J/m²) =
+  2.0e4 Pa, μ_eff(5, 10 cm⁻¹) = 15 cm⁻¹, R_ax(1540, 5 MHz) = 271.04 µm (Xu & Wang 2006 10.1063/1.2195024).
+- [ ] **Imaging part 9: Gaussian optics** (new `gaussian-optics.ts`: thinLensImage real-is-positive with signed M = −i/o,
+  conjugatesFromMag, opticalPower, twoElementPower, twoLensABCD): `image-distance` (merge `working-distance` with
+  redirect), `afocal`, `optical-power` (eye: axial length or drop ametropia). Golden: afocal (100, 200, 300) M −0.5, C 0;
+  (100, 200, 250) EFL 400 mm; Galilean (100, −25, 75) M +4; f 100 mm → 10 D; Gullstrand ≈ 58.6 D; f 10, m 20 → o 10.5,
+  i 210 mm; f 50, o 200 → 66.667, −1/3; o 25 → −50 mm, +2 (Greivenkamp 10.1117/3.547461).
+- [ ] **Imaging part 10a: microscope** (new `microscope.ts`: objectiveMag, totalMag with adapter M, exitPupilDiameter
+  500·NA/M, usefulMagRange; `inoueDepthOfField` in optical-sectioning-thickness.ts; new `field-of-view.ts`):
+  `magnification`, `pupil-matching`, `dof`, `illumination`. Golden: f_obj 10, tube 200, adapter 0.5 → 10×; exitPupil(0.75,
+  400) = 0.9375 mm, (0.25, 100) = 1.25 mm; dof defaults 5.8425 µm, 100×/1.4 → 0.4954 µm (Inoué & Spring
+  10.1007/978-1-4615-5859-0_2); illumination d 297.3 nm, FN 20/40 = 500 µm.
+- [ ] **Imaging part 10b: field of view and telecentricity** (`field-of-view.ts`: objectFov, pixelFootprint, pixelIfov,
+  Nyquist, FN/M; new `telecentric.ts`): `fov-calculator`, `pixel-fov`, `telecentricity`. Golden: FOV 0.6668 × 0.5008 mm,
+  diag 0.8339, pixel 325 nm; IFOV 6.5 µm/50 mm = 26.81″, bin 2 53.63″; telecentric Δm/m = −0.05 (Δz 10, s_EP 200 mm),
+  DoF ≈ 1.68 mm.
+- [ ] **Imaging part 11: MTF and wavefront** (new `diffraction-mtf.ts`: cutoffFrequency, diffractionMtf, defocusW020,
+  Hopkins defocusedOtf, wienerTransfer; new `wavefront.ts`: move `marechalStrehl` out of shack-hartmann.ts:65,
+  pvFromRms, defocusStrehlExact): `mtf`, `deconvolution`, `strehl-ratio` + `wavefront-error` merged with redirect.
+  Golden: MTF(0.5) = 0.39100; OTF(0.5, φ 2.578) = 0.156 (Hopkins 1955 10.1098/rspa.1955.0158); cutoff 3.4545 lp/µm
+  (NA 0.95, 550 nm); Wiener H 0.1, NSR 0.01 → 0.5; Maréchal S(0.05) 0.9060 vs exact 0.9051, S(1/14) 0.8176, σ(S 0.8)
+  0.0752; 20 nm/550 nm → 0.9491.
+- [ ] **Imaging part 12: adaptive optics and speckle** (`adaptive-optics` on free-space-comms/turbulence.ts plus a
+  Hudgin fitting helper with a D/r₀ input; new `speckle.ts`): `adaptive-optics`, `speckle-imaging`. Golden: Noll
+  0.2944·15^(−√3/2) = 0.02821 (10.1364/JOSA.66.000207); Hudgin 0.28(d/r₀)^(5/3) on σ²; speckle C(σφ 1) 0.930, (0.5)
+  0.627, d_s 21.28 µm.
+- [ ] **Imaging part 13: sensors** (detectors/sensor-noise.ts, camera-snr.ts, dark-current.ts): `sensor-ccm` +
+  `sensor-cmos` merged with CCD/CMOS presets and redirect, `dynamic-range` (prnu 1 %), `signal-to-noise`. Golden:
+  DR(25000, 1.5) = 84.437 dB; sensorNoise(700, 1.5, 0.1) total 26.50, SNR 26.41; SNR(15000, 2, 0.005, prnu 0.01) =
+  77.46; doubling(−70, 25, 6) = 1.713e-5; SNR defaults 56.391 (Janesick 10.1117/3.725073).
+- [ ] **Imaging part 14: light field** (new `light-field.ts`): `light-field`, `plenoptic-camera`. Golden: NA 0.2, M 20,
+  p_ML 150 µm, p_px 6.5 µm, 550 nm → lateral 7.5 µm, N_u 5.80, depth 53.6 µm (Levoy 2006 10.1145/1141911.1141976);
+  plenoptic N 27, 37.81 arcmin, 729 views, 23.95 MB.
+- [ ] **Imaging part 15: registration and computational imaging** (new `registration.ts`: Fitzpatrick TRE,
+  Robinson–Milanfar bound, graph accumulation; new `denoising.ts`, label illustrative parts): `registration`,
+  `stitching`, `denoising-algorithms`, `computational-imaging`. Golden: t (5, 3) px, θ 2°, L 512, 100 nm/px → 934.0 nm;
+  stitching 5×5, 512², 10 % → overlap 51, 2356², η 84.70 %; box 3×3 → 1/3 (9.54 dB); CI SNR₁ 31.404, N 25 → 157.02
+  (Fitzpatrick 1998 10.1109/42.736021).
+- [ ] **Next category audit (ask the user which):** wave-optics 2/49, materials 4/45 or spectroscopy 5/54.
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
 - [ ] Rewrite each heuristic model, or label it illustrative, during its category's audit. Macro-bend and
   second-harmonic are done.
@@ -100,7 +185,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   overlap `fiber-laser`; `fiber-coupler` vs `wave-optics/coupled-mode` unchecked.
 
 **Imaging / spectroscopy** (found in the detectors part 0, session 63)
-- `imaging/dynamic-range`: `prnu` defaults to 0.01 on an input labelled "%" (0.01 %); probably meant 1 %.
 - `spectroscopy/absorption-depth`: Si at 550 nm gives 12.8 µm; Green 2008 gives 1.56 µm. Use `silicon-absorption.ts`.
 - Detectors part 7b leftovers (session 74 review): `streak-camera` window ignores the usable screen length and reads one pixel (not 2, Nyquist); `intensified-ccd` puts each electron's light in one pixel (no spot spread); `vacuum-photodiode` has one φ for threshold and dark emission and no stray capacitance.
 - `detectors/gain-temperature` PMT branch: the −0.3 %/°C default is an entered value; source a typical dynode-gain coefficient in part 7 (Hamamatsu handbook §13.1.1 gives no number).
