@@ -1,41 +1,42 @@
-# Handover — 2026-10-16 (session 77 → session 78)
+# Handover — 2026-10-16 (session 78 → session 79)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 77 checked PR #107 in production (ALL PASS) and finished **detectors part 9b (MTF and cosmic rays)** on branch
-`phase-4/detectors-mtf-cosmic`, with this handover in the PR. **Detectors is done: 54/54 tiered, 0 `knownIssue`s.**
-Next: **ask the user which category to audit next** (wave-optics 2/49, materials 4/45, spectroscopy 5/54, imaging 9/65).
-`polarizer-types` stays blocked until the user is at the laptop with Chrome.
+Session 78 merged PR #104 and finished **imaging audit part 0** on branch `phase-4/imaging-audit`, with this handover in
+the PR. Eight `physics-reviewer` batches audited the 56 untiered imaging pages: 29 bugs, 22 questionable, 5 OK. The 51
+non-OK pages now carry a registry `knownIssue`. Next: **imaging part 1 (diffraction PSF)**; the ROADMAP lists the
+pages, modules and golden values for parts 1–15. `polarizer-types` stays blocked until the user is at the laptop with Chrome.
 
 ## State
-- 264 of 458 pages are tiered. No `knownIssue`s left anywhere.
-- New `src/physics/detectors/sensor-mtf.ts`: `pixelApertureMtf`, `exponentialSpreadMtf`, `gaussianBlurMtf`,
-  `crosstalkKernelMtf` ([X/2, 1 − X, X/2]), `seibCollection` / `seibDiffusionMtf` / `seibDiffusionFloor` (Seib 1974,
-  semi-infinite field-free region), `columnShares(mtf, p, floor)` → [C₀, C₁, C₂] (8-point Gauss–Legendre, ≈ 1 ms),
-  `neighbourFraction`.
-- New `src/physics/detectors/cosmic-rays.ts`: `SI_MEAN_PAIRS_PER_M` (106.18 /µm), `mostProbableLoss` (PDG Eq. 34.13),
-  `pathLength`, `projectedLength`, `pixelsPerTrack` (1 + 4ℓ/(πp)), `hitPixelFraction`, `MEAN_SEC_ZENITH` = 4/3,
-  `K_BETHE`. `math.ts` gained `poissonQuantile(p, mu)`.
-- Pages: `modulation-transfer` (label "charge spread length ℓ", URL key `diffusionLength` kept), `pixel-crosstalk`
-  (new `diffusionLength` key, L₀ = 20 µm default; Green 2008 α), `cosmic-rays` (new `thickness` key; `trackLength` and
-  `energyDeposit` dropped). Tests: `tests/detectors-sensor-mtf.test.ts`.
-- PR #104 (`devctl/t1`, by the user: production deploys only from a `release` branch, `/ship` ends at merge) is still
-  open. Ask the user when to merge it; it changes the "Vercel builds only `main`" rule.
-- User decisions: one PR per stage, handover inside (session 68).
+- 264 of 458 pages are tiered. There are 51 `knownIssue`s, all in imaging.
+- **Release flow (PR #104):** merges to `main` deploy nothing. Production deploys only from `release`, and only when the
+  user asks: `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. `/ship` ends at
+  the merge. The user still has to set Vercel's Production Branch to `release` (not confirmed).
+- **User decisions (session 78):** merge, each with a redirect, `selective-plane` → `light-sheet`, `working-distance` →
+  `image-distance`, `strehl-ratio` + `wavefront-error` → one page, `sensor-ccm` + `sensor-cmos` → one page with
+  CCD/CMOS presets. Keep dynamic-range, stimulated-raman-microscopy and resolution separate unless the user says otherwise.
+- One PR per stage, with the handover inside (session 68).
 
 ## Next actions
-1. `/ship` this branch. post-merge-check values: see the PR description (strings taken from `.next/server/app`).
-2. Ask the user for the next category audit; part 0 = `physics-reviewer` batches → `knownIssue`s + fix parts.
-3. Later: the detectors part 7b leftovers, fiber and FSO open findings (ROADMAP), imaging/spectroscopy findings,
-   Chrome-only checks.
+1. `/ship` this branch (docs and registry only: no post-merge values; don't release unless asked).
+2. Imaging part 1: new `src/physics/imaging/diffraction-psf.ts` → airy-disk, resolution, psf-calculator, na-fnumber.
+   Remove each page's `knownIssue` when its part fixes it, and tier the page.
+3. Later: the detectors part 7b leftovers, fiber and FSO open findings (ROADMAP), Chrome-only checks.
 
 ## Non-obvious facts
-- **Session 77:** Seib semi-infinite: η(f) = 1 − e^(−αW)/(1 + α L_f) comes from n'' = n/L_f² − (α/D)e^(−αz), n(W) = 0;
-  derive it rather than hunt for the IEEE paper. Its MTF has a floor (depletion charge), so subtract the floor before
-  integrating line-spread shares. The exponential line spread gives closed-form shares: C₁ = (ℓ/2p)(1 − e^(−p/ℓ))².
-  PDG 2024 dropped the sea-level muon section; cite the 2022 review §30.3.1 (1 cm⁻² min⁻¹, cos²θ). PDG PDFs download
-  with curl: `pdg.lbl.gov/<year>/reviews/rpp<year>-rev-<name>.pdf` (`cosmic-rays`, `passage-particles-matter`,
-  `particle-detectors-accel`). Use `node --import tsx --test <file>`: `npx tsx --test` stalled for > 2 min here.
+- **Session 78:**
+  - The registry test allows a `knownIssue` of 40–240 characters ending in a full stop, with no `{}`, and only on an
+    untiered page.
+  - Reviewer stalls: when the shell hangs (dozens of leftover bash.exe or node.exe), every agent stalls with "no
+    progress for 600s". Run reviewer batches of 7 pages, 2–3 at a time, with `timeout 60` on Bash and one page per Read.
+    Each batch then takes 5–8 minutes.
+  - Crossref returns 429 when hit too often. Space out the calls.
+  - One Opus safeguard false positive stopped a reviewer (req_011Cg5yPcFoLiDXcpkpNs3P7); a relaunch passed.
+  - `npx tsx scripts/tier-status.ts imaging` takes more than 2 minutes; run it in the background.
+  - Batch findings with golden values are in the ROADMAP fix-part boxes. Reviewer section and equation numbers are unverified.
+- **Session 77:** Seib semi-infinite: η(f) = 1 − e^(−αW)/(1 + α L_f); subtract the MTF floor before integrating
+  line-spread shares. PDG PDFs: `pdg.lbl.gov/<year>/reviews/rpp<year>-rev-<name>.pdf`. Use `node --import tsx --test
+  <file>`: `npx tsx --test` stalled for > 2 min.
 - **Session 76:** EMVA 1288 PDFs download with curl: `emva.org/wp-content/uploads/EMVA1288-3.1a.pdf`. DSNU₁₂₈₈ is
   absolute (e⁻), PRNU₁₂₈₈ relative; σ_q² = 1/12 DN². Random patterns in a client page must be seeded (module-level const).
 - **Session 75:** Robbins–Hadwen F² = 2(1 − 1/G)/(1 + p) + 1/G; with N = 604 F² peaks near G = 300, so SNR is not
