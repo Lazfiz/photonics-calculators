@@ -126,9 +126,24 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "ccd-vs-cmos",
     title: "CCD vs CMOS Sensor Comparison",
-    description: "Compare sensor architectures — SNR, dynamic range, and performance metrics.",
-    knownIssue: "The EMCCD row shows a 120 dB dynamic range because it divides the 100 ke⁻ pixel well by the gain-divided 0.1 e⁻ read noise. Under EM gain the gain-register well limits it to about 80 dB. QE is listed but never applied.",
+    description: "Compare CCD, sCMOS, phone CMOS and EMCCD pixels: SNR from photons × QE, saturation and dynamic range.",
     keywords: ["CCD vs CMOS Comparison"],
+    tier: "textbook",
+    modelNote: "Poisson signal (photons × QE) and dark charge plus Gaussian read noise; the EMCCD adds the Robbins–Hadwen excess noise of a 604-stage register and divides the read noise by the gain. Its dynamic range uses the gain-register well, so it stays near 20·log₁₀(800 000/89) = 79 dB at any gain. The sensor values are representative; the EMCCD follows the iXon Ultra 897 sheet. Clock-induced charge, fixed-pattern noise, sCMOS read-noise tails and dual-gain readout are left out.",
+    references: [
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press. Shot, dark and read noise of a sensor pixel; full well and dynamic range.",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+      {
+        citation: "Robbins M. S., Hadwen B. J. (2003). The noise performance of electron multiplying charge-coupled devices. IEEE Trans. Electron Devices 50, 1227–1232. F² = 2(G − 1)·G^(−(N+1)/N) + 1/G.",
+        url: "https://doi.org/10.1109/TED.2003.813462",
+      },
+      {
+        citation: "Andor (Oxford Instruments). iXon Ultra EMCCD specifications. iXon Ultra 897: 180 000 e⁻ pixel well, 800 000 e⁻ gain-register well, 89 e⁻ read noise at 17 MHz without EM gain.",
+        url: "https://andor.oxinst.com/downloads/uploads/andor-ixon-ultra-emccd-specifications.pdf",
+      },
+    ],
   },
   {
     slug: "channel-photomultiplier",
@@ -236,12 +251,35 @@ export const detectors: CalculatorEntry[] = [
     slug: "electron-multiplying",
     title: "EMCCD vs sCMOS",
     description: "Compare electron-multiplying CCD with sCMOS for low-light imaging.",
+    tier: "textbook",
+    modelNote: "Both pixels see Poisson signal and dark charge. The EMCCD multiplies them with the Robbins–Hadwen excess noise of an N-stage register and divides its read noise by the gain; the sCMOS adds its read noise as a Gaussian. Equal QE is assumed (enter signal in electrons), and clock-induced charge, the sCMOS read-noise tail and photon-counting readout are left out. EM gain wins only while σ_sCMOS² exceeds about (F² − 1)·S.",
+    references: [
+      {
+        citation: "Robbins M. S., Hadwen B. J. (2003). The noise performance of electron multiplying charge-coupled devices. IEEE Trans. Electron Devices 50, 1227–1232. F² = 2(G − 1)·G^(−(N+1)/N) + 1/G.",
+        url: "https://doi.org/10.1109/TED.2003.813462",
+      },
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press. Shot, dark and read noise of a sensor pixel.",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+    ],
   },
   {
     slug: "em-gain",
     title: "EMCCD Gain Calculator",
-    description: "EM gain — noise analysis, optimal gain, and SNR comparison.",
-    knownIssue: "Optimal Gain shows 501× at the defaults, an artifact of the F² = 2 − 1/G approximation. With the Robbins–Hadwen finite-stage noise factor the SNR keeps rising slowly with gain (2.248 at 500×, 2.252 at 10 000×).",
+    description: "EMCCD gain: Robbins–Hadwen excess noise of an N-stage register, effective read noise and SNR with and without EM gain.",
+    tier: "textbook",
+    modelNote: "Robbins–Hadwen F² for N stages that each multiply an electron with probability p, G = (1 + p)^N; it equals the Galton–Watson result for a binomial stage. Clock-induced charge is counted at the input although charge made inside the register sees less gain. Photon-counting (threshold) readout, which removes the factor F² ≈ 2 at low flux, and register saturation are not modelled. The often-quoted F² = 2 − 1/G is the N → ∞ limit; it puts a false SNR optimum at G = 2σ²/(S + CIC), 500× at the defaults.",
+    references: [
+      {
+        citation: "Robbins M. S., Hadwen B. J. (2003). The noise performance of electron multiplying charge-coupled devices. IEEE Trans. Electron Devices 50, 1227–1232. F² = 2(G − 1)·G^(−(N+1)/N) + 1/G.",
+        url: "https://doi.org/10.1109/TED.2003.813462",
+      },
+      {
+        citation: "Basden A. G., Haniff C. A., Mackay C. D. (2003). Photon counting strategies with low-light-level CCDs. Mon. Not. R. Astron. Soc. 345, 985–991. Thresholding removes the multiplication noise at low flux.",
+        url: "https://doi.org/10.1046/j.1365-8711.2003.07020.x",
+      },
+    ],
   },
   {
     slug: "excess-noise",
@@ -632,8 +670,15 @@ export const detectors: CalculatorEntry[] = [
   {
     slug: "saturation",
     title: "Detector Saturation",
-    description: "Full well capacity, dynamic range, SNR at saturation, and nonlinearity rolloff model.",
-    knownIssue: "The nonlinearity curve is wrong: with 0.5 % entered, the output starts at 5.3× the input and the error peaks at +50 % of full scale near 0.31·FWC instead of staying within 0.5 %. The curve also jumps at full well.",
+    description: "Full well capacity, dynamic range with ADC quantization noise, SNR at saturation, and a nonlinearity roll-off.",
+    tier: "textbook",
+    modelNote: "Dynamic range and SNR at full well from shot, read and quantization noise Δ/√12, with the ADC's full scale set to the full well. The response curve is illustrative: one parameter n bends it as S·(1 − n·S/FWC), so the error grows as S² and reaches −n of full scale at full well, then the output stays flat. Real roll-off depends on the pixel and its readout chain.",
+    references: [
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press. Full well, linearity, quantization noise and dynamic range.",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+    ],
   },
   {
     slug: "shot-noise",
@@ -910,5 +955,13 @@ export const detectors: CalculatorEntry[] = [
     description: "Well capacity, dynamic range, pixel capacitance, and usable bit depth for image sensors.",
     heading: "Well Capacity & Dynamic Range",
     lede: "DR = 20·log₁₀(Nwell/σread). C = Nwell·q/Vswing. Larger wells → more DR but slower charge transfer.",
+    tier: "textbook",
+    modelNote: "Definitions: DR = 20·log₁₀(N_well/σ_read), usable bits log₂(N_well/σ_read), and a linear sense node C = N_well·q/V_swing with conversion gain q/C. Real sense-node capacitance grows with charge, so the conversion gain falls near full well. The minimum detectable signal solves S/√(S + σ²) = 3, with the signal's own shot noise.",
+    references: [
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press. Full well, sense-node conversion gain and dynamic range.",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+    ],
   },
 ];
