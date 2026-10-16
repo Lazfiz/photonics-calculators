@@ -1,17 +1,20 @@
-# Handover — 2026-10-16 (session 79 → session 80)
+# Handover — 2026-10-16 (session 80 → session 81)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 79 finished **imaging part 1 (diffraction PSF)** on branch `phase-4/imaging-diffraction-psf` (PR #110, with this
-handover). Next: **imaging part 2 (confocal)**. `polarizer-types` stays blocked until the user is at the laptop with Chrome.
+Session 80 finished **imaging part 2 (confocal)** on branch `phase-4/imaging-confocal` (PR #111, with this handover).
+Next: **imaging part 3 (light sheet and TIRF)**. `polarizer-types` stays blocked until the user is at the laptop with Chrome.
 
 ## State
-- New `src/physics/imaging/diffraction-psf.ts`: `airyIntensity(v)`, `lateralOpticalCoordinate`, `airyFirstZeroRadius`,
-  `airyFwhm`, `encircledEnergyAiry(v)`, `paraxialAxialIntensity(u)`, `axialOpticalCoordinate`, `axialIntensity(z, λ, n, NA)`
-  (Debye on-axis sinc²), `axialFirstZero`, `naFromFNumber`, `fNumberFromNa`, `thinLensNa`; constants
-  `BESSEL_J1_FIRST_ZERO`, `AIRY_HALF_MAX_V`, `SINC2_HALF_MAX_X`. Test: `tests/imaging-diffraction-psf.test.ts`.
-- `airy-disk`, `resolution`, `psf-calculator` (textbook) and `na-fnumber` (exact) are tiered.
-- 268 of 458 pages are tiered. There are 48 `knownIssue`s, all in imaging.
+- New `src/physics/imaging/confocal.ts`: `confocalFwhmCoefficients(P)` (numerical, ≈ 1–2 s), `CONFOCAL_FWHM_TABLE`
+  (0–5 AU step 0.1: [AU, lateral λ/NA, axial and section λ/(n − √(n² − NA²))]), `confocalLateralFwhm`,
+  `confocalAxialFwhm` (point), `confocalOpticalSectionFwhm` (plane), `pinholeAiryUnits`, `pinholeThroughput`,
+  `spinningDiskFrameRate`, `pinholeFillFactor`, `CONFOCAL_MAX_PINHOLE_AU`. Regenerate the table with
+  `npx tsx scripts/gen-confocal-table.ts` (≈ 1 min) if the model changes. Test: `tests/imaging-confocal.test.ts`.
+- New `src/physics/imaging/light-sheet.ts`: `gaussianSheetWaist` (λ/(π NA)), `gaussianSheetRayleighRange`,
+  `gaussianSheetFwhm`, `effectiveAxialFwhm` (reciprocal quadrature). Part 3 extends it.
+- `confocal-pin-hole`, `confocal-resolution`, `spinning-disk`, `3d-reconstruction` are tiered (textbook).
+  272 of 458 pages are tiered; 44 `knownIssue`s, all in imaging.
 - **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only when the user asks:
   `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set
   Vercel's Production Branch to `release` (not confirmed).
@@ -20,35 +23,34 @@ handover). Next: **imaging part 2 (confocal)**. `polarizer-types` stays blocked 
   CCD/CMOS presets. Keep dynamic-range, stimulated-raman-microscopy and resolution separate unless the user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: `imaging/airy-disk=0.353` (µm, default),
-   `imaging/psf-calculator=520` (axial FWHM nm), `imaging/na-fnumber=0.1786`, `imaging/resolution=289.5` (Abbe nm).
-   Don't release unless asked.
-2. Imaging part 2 (confocal): extend `optical-sectioning-thickness.ts`; `confocal-pin-hole`, `confocal-resolution`,
-   `spinning-disk`, `3d-reconstruction`. Reuse `encircledEnergyAiry` for pinhole throughput (v = j₁,₁ · AU).
-3. Later: the detectors part 7b leftovers, fiber and FSO open findings (ROADMAP), Chrome-only checks.
+1. `/ship` this branch. Values for a later release check: `imaging/confocal-pin-hole=457` (section nm),
+   `imaging/confocal-resolution=197.2` (lateral nm), `imaging/spinning-disk=1.12` (AU; section 1737 nm),
+   `imaging/3d-reconstruction=859` (axial nm); part 1: `imaging/airy-disk=0.353`, `imaging/psf-calculator=520`,
+   `imaging/na-fnumber=0.1786`, `imaging/resolution=289.5`. Don't release unless asked.
+2. Imaging part 3 (light sheet, TIRF, cleared tissue; merge `selective-plane` → `light-sheet` with a redirect).
+3. Later: the open finding on `optical-sectioning-thickness` (Wilhelm vs wave model), detectors 7b leftovers, fiber
+   and FSO open findings (ROADMAP), Chrome-only checks.
 
 ## Non-obvious facts
+- **Session 80:**
+  - Optical section (thin plane) ≠ axial PSF (point): at P → 0 they are 0.677 and 0.638 λ/(n − √(n² − NA²)). Wilhelm's
+    0.64 is the point value; his geometric √2 n PH/NA term overestimates the plane response (40 % at 1 AU).
+  - Lateral confocal FWHM at 1 AU is 0.502 λ/NA, only 2.4 % below widefield; it slightly overshoots (0.516) near 2 AU.
+  - The pinhole integral of a radial function is 1-D: ∫ f(ρ) θ(ρ; r, p) ρ dρ with θ the arc inside the disk.
+  - Grid v ≤ 80 step 0.1, 400 pupil points: within 0.05 % of a 2× finer grid and of v ≤ 120.
+  - CSU: 12 scans per revolution, consistent with Tanaami 2002's 1 frame/ms at 5000 rpm (title only, not the text).
 - **Session 79:**
   - A pinhole of x AU is a diameter: its edge sits at v = x · j₁,₁, so EE(1 AU) = 0.838 and EE(0.5 AU) = 0.588.
   - `axialPsfFwhm`'s 0.88 (Zeiss) rounds the Debye uniform-cos θ result 0.8859; the pages show 0.88 and plot the
     exact curve (0.7 % apart). Born & Wolf sections cited: §8.5.2, §8.6.2, §8.8, ch. 4 (not checked against the book).
   - React Compiler lint `preserve-manual-memoization` fires on a `useMemo` over clamped values: drop the `useMemo`.
 - **Session 78:**
-  - The registry test allows a `knownIssue` of 40–240 characters ending in a full stop, with no `{}`, and only on an
-    untiered page.
   - Reviewer stalls: when the shell hangs (dozens of leftover bash.exe or node.exe), every agent stalls with "no
     progress for 600s". Run reviewer batches of 7 pages, 2–3 at a time, with `timeout 60` on Bash and one page per Read.
     Each batch then takes 5–8 minutes.
   - Crossref returns 429 when hit too often. Space out the calls.
-  - One Opus safeguard false positive stopped a reviewer (req_011Cg5yPcFoLiDXcpkpNs3P7); a relaunch passed.
   - `npx tsx scripts/tier-status.ts imaging` takes more than 2 minutes; run it in the background.
   - Fix-part boxes in the ROADMAP hold the reviewer's golden values. Its section and equation numbers are unverified.
-- **Session 77:** Seib semi-infinite: η(f) = 1 − e^(−αW)/(1 + α L_f); subtract the MTF floor before integrating
-  line-spread shares. PDG PDFs: `pdg.lbl.gov/<year>/reviews/rpp<year>-rev-<name>.pdf`. Use `node --import tsx --test
-  <file>`: `npx tsx --test` stalled for > 2 min.
-- **Session 76:** EMVA 1288 PDFs download with curl: `emva.org/wp-content/uploads/EMVA1288-3.1a.pdf`. DSNU₁₂₈₈ is
-  absolute (e⁻), PRNU₁₂₈₈ relative; σ_q² = 1/12 DN². Random patterns in a client page must be seeded (module-level const).
-- **Session 74:** rect ⊗ rect is a trapezoid of FWHM max(a, b). Johnson noise of 50 Ω beats shot noise below ≈ 1 mA.
 - **Session 69:** `SimpleChart` maps `null` y to 0; use `NaN` for gaps. On log axes, y ≤ 0 is skipped.
 - **Session 68:** Registry text can't contain `{…}` (`tests/registry.test.ts`). Write `0 − x·expm1(…)` to avoid `-0`.
 - **Session 65:**
@@ -71,8 +73,8 @@ handover). Next: **imaging part 2 (confocal)**. `polarizer-types` stays blocked 
 - **NaN traps:** `q·exp(big)` with q = 0 gives NaN. Show NaN/∞ as "—" with a reason. Plotly can't draw Infinity.
 - **Hung checks:** wrap every chrome, ui-check and server command in `timeout <s>`. A `next start` can hold port 3100:
   `netstat -ano | grep :3100`, `taskkill //PID <pid> //T //F`.
-- **eslint:** about 665 pre-existing warnings. Lint only the changed files. JSX text needs `&apos;`.
+- **eslint:** about 570 pre-existing warnings. Lint only the changed files. JSX text needs `&apos;`.
 - **ui-check:** `MSYS_NO_PATHCONV=1 node scripts/ui-check.mjs http://localhost:3100 load /a "/b?x=1"`. Never
   `taskkill /IM chrome.exe`.
-- **Shell:** physics probes are scratchpad `.ts` files importing `"C:/dev/photonics-calculators/src/…"`. `python -`
+- **Shell:** physics probes are scratchpad `.ts` files, run from the repo directory (`node --import tsx <abs path>`), importing `"C:/dev/photonics-calculators/src/…"`. `python -`
   hangs. `git grep` skips untracked files. A bare `cat > file` with no heredoc hangs on stdin. Quote DOIs with `(`.
