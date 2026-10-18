@@ -66,8 +66,31 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "cleared-tissue",
     title: "Cleared Tissue Imaging Calculator",
-    description: "Optical clearing tissue imaging: resolution, transmission, ballistic photon fraction, and RI matching.",
-    knownIssue: "The maximum depth WD·NA/n and the (NA/n)⁴ index penalty are invented, transmission and ballistic fraction are the same expression, and the default µa and µs (100, 200 cm⁻¹) are uncleared values (T = 9e-14).",
+    description: "Cleared tissue imaging: ballistic light fraction with depth, resolution, and the focal shift from an index mismatch.",
+    tier: "textbook",
+    modelNote: "Beer–Lambert attenuation of ballistic light only (scattered light is not counted). Resolution assumes an index-matched objective; the mismatch focal shift is bounded by the paraxial and marginal-ray factors, and spherical aberration is not modelled. Default µa and µs are examples.",
+    references: [
+      {
+        citation: "Jacques S. L. (2013). Optical properties of biological tissues: a review. Phys. Med. Biol. 58, R37–R61. Absorption and scattering coefficients.",
+        url: "https://doi.org/10.1088/0031-9155/58/11/R37",
+      },
+      {
+        citation: "Richardson D. S., Lichtman J. W. (2015). Clarifying tissue clearing. Cell 162, 246–257. Refractive-index matching and scattering in cleared tissue.",
+        url: "https://doi.org/10.1016/j.cell.2015.06.067",
+      },
+      {
+        citation: "Hell S., Reiner G., Cremer C., Stelzer E. H. K. (1993). Aberrations in confocal fluorescence microscopy induced by mismatches in refractive index. J. Microsc. 169, 391–405. Focal shift.",
+        url: "https://doi.org/10.1111/j.1365-2818.1993.tb03315.x",
+      },
+      {
+        citation: "Diel E. E., Lichtman J. W., Richardson D. S. (2020). Tutorial: avoiding and correcting sample-induced spherical aberration artifacts in 3D fluorescence microscopy. Nat. Protoc. 15, 2773–2784. Paraxial and marginal-ray focal-shift factors.",
+        url: "https://doi.org/10.1038/s41596-020-0360-2",
+      },
+      {
+        citation: "Born M., Wolf E. (2019). Principles of Optics, 7th ed., §8.8. Cambridge University Press. Axial PSF of a uniformly filled pupil.",
+        url: "https://doi.org/10.1017/9781108769914",
+      },
+    ],
   },
   {
     slug: "coherent-raman",
@@ -242,9 +265,23 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "light-sheet",
     title: "Light Sheet Microscopy Calculator",
-    description: "Light sheet thickness, resolution, and Rayleigh range for LSFM/SPIM.",
-    keywords: ["Light Sheet Microscopy Design", "Light Sheet Thickness"],
-    knownIssue: "The effective axial resolution adds the sheet thickness and the detection depth of field in quadrature, 3.71 µm at the defaults. The system PSF is their product, about 1.21 µm as Gaussian FWHMs.",
+    description: "Gaussian light sheet thickness, Rayleigh range and field of view, and the effective axial resolution of LSFM/SPIM.",
+    keywords: ["Light Sheet Microscopy Design", "Light Sheet Thickness", "Selective Plane Illumination"],
+    tier: "textbook",
+    modelNote: "Paraxial Gaussian sheet from a cylindrical lens (NA_ill ≤ 0.3). The effective axial FWHM combines the sheet and the scalar detection PSF as Gaussians; Bessel and lattice sheets are not modelled.",
+    references: [
+      {
+        citation: "Engelbrecht C. J., Stelzer E. H. K. (2006). Resolution enhancement in a light-sheet-based microscope (SPIM). Opt. Lett. 31, 1477–1479. Axial resolution of sheet × detection PSF.",
+        url: "https://doi.org/10.1364/OL.31.001477",
+      },
+      {
+        citation: "Huisken J., Swoger J., Del Bene F., Wittbrodt J., Stelzer E. H. K. (2004). Optical sectioning deep inside live embryos by selective plane illumination microscopy. Science 305, 1007–1009.",
+        url: "https://doi.org/10.1126/science.1100035",
+      },
+      {
+        citation: "Siegman A. E. (1986). Lasers, ch. 17. University Science Books. Gaussian beam waist, Rayleigh range and divergence.",
+      },
+    ],
   },
   {
     slug: "low-coherence",
@@ -419,12 +456,6 @@ export const imaging: CalculatorEntry[] = [
         url: "https://doi.org/10.1038/nbt899",
       },
     ],
-  },
-  {
-    slug: "selective-plane",
-    title: "Selective Plane Illumination Calculator",
-    description: "SPIM illumination parameters: sheet thickness, beam waist, Rayleigh range, and confocal parameter.",
-    knownIssue: "The illumination term is twice the Rayleigh range, the sheet's length along the beam, so the result collapses to the detection depth of field (1.42 µm against about 1.03 µm). Light-sheet gives 6.37 µm on these inputs.",
   },
   {
     slug: "sensor-ccm",
@@ -602,8 +633,15 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "tirf",
     title: "TIRF Penetration Depth Calculator",
-    description: "Evanescent field penetration depth for Total Internal Reflection Fluorescence microscopy.",
-    knownIssue: "The depth uses λ/(2π√…), the field decay length; the intensity depth is λ/(4π√…), half as large (110 nm, not 221 nm, at 488 nm, 65°; Axelrod 2001). Angles past the objective's limit still show a depth.",
+    description: "Evanescent intensity penetration depth, critical angle, objective angle limit and interface intensity for TIRF microscopy.",
+    tier: "exact",
+    modelNote: "Plane-wave Fresnel optics at a single planar interface. Objective-type TIRF also carries scattered, non-evanescent light, so measured decays are often longer.",
+    references: [
+      {
+        citation: "Axelrod D. (2001). Total internal reflection fluorescence microscopy in cell biology. Traffic 2, 764–774. Penetration depth (eq. 2) and interface intensities for s and p polarisation (eqs. 4–5).",
+        url: "https://doi.org/10.1034/j.1600-0854.2001.21104.x",
+      },
+    ],
   },
   {
     slug: "two-photon-microscopy",

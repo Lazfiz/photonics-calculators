@@ -35,3 +35,15 @@ export function effectiveAxialFwhm(sheetFwhm: number, detectionAxialFwhm: number
     ? 1 / Math.hypot(1 / sheetFwhm, 1 / detectionAxialFwhm)
     : NaN;
 }
+
+/** Far-field half-angle divergence of the sheet in the medium, λ/(π n w₀) = NA/n, rad (paraxial). */
+export function gaussianSheetDivergence(NA: number, n: number): number {
+  return positive(NA) && Number.isFinite(n) && n >= 1 ? NA / n : NaN;
+}
+
+/** 1/e² half-thickness w(x) = w₀ √(1 + (x/z_R)²) at a distance x from the waist along the sheet, m. */
+export function gaussianSheetHalfThicknessAt(x: number, lambda: number, NA: number, n: number): number {
+  if (!Number.isFinite(x)) return NaN;
+  const zR = gaussianSheetRayleighRange(lambda, NA, n);
+  return gaussianSheetWaist(lambda, NA) * Math.hypot(1, x / zR);
+}
