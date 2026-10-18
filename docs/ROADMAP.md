@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 80, 2026-10-16)
+## Status (session 81, 2026-10-18)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -17,14 +17,14 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | laser-safety | 40 / 40 | done (sessions 18, 23, 29–36) |
 | thin-film | 45 / 45 | done (sessions 25–28, 54–55); small findings below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
-| imaging | 17 / 65 | part 0 audit (session 78), parts 1–2 (79–80); 44 `knownIssue`s left; fix parts 3–15 below |
+| imaging | 20 / 64 | part 0 audit (session 78), parts 1–3 (79–81); 40 `knownIssue`s left; fix parts 4–15 below |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **272 / 458** | 44 `knownIssue`s (imaging) |
+| **total** | **275 / 457** | 40 `knownIssue`s (imaging) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -43,11 +43,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] **Imaging part 3: light sheet and TIRF** (extend `light-sheet.ts`, which has the sheet waist, z_R, FWHM and effectiveAxialFwhm since part 2; axial FWHM via `axialPsfFwhm`; new
-  `tirf.ts`: reuse fiber-sensors `evanescentDecay`, d_I = 1/(2γ)): `light-sheet` (merge `selective-plane` with redirect),
-  `tirf`, `cleared-tissue` (ballistic fraction, axialPsfFwhm, abbe). Golden: d_I(488, 1.518, 1.33, 65°) = 110.34 nm
-  (Axelrod 2001 10.1034/j.1600-0854.2001.21104.x); sheet t = 3.1067 µm, z_R = 20.660 µm (488, NA 0.1, n 1.33), eff.
-  axial 1.2065 µm (NA_det 0.8); selective-plane defaults 1.0301 µm; axialFwhm(680, 1.52, 1.2) = 1.0193 µm.
 - [ ] **Imaging part 4: super-resolution** (extend `super-resolution.ts`: `mortensenPrecision`, `nyquistResolution`,
   `smlmEffectiveResolution`, `simCutoff`, `simLateralFwhm`, `simRawImageCount`, `expansionEffectiveResolution`):
   `palm-storm`, `structured-illumination`, `expansion-microscopy`. Golden: SIM 1/(2NA/λem + 2NA/λex)(1.4, 488, 520) =
@@ -242,6 +237,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Imaging part 3 light sheet and TIRF (session 81, PR #112): new `imaging/tirf.ts` (d = λ/(4π√…) 110.34 nm, Axelrod I_s/I_p) and `cleared-tissue.ts` (ballistic exp(−µ_t z), paraxial/marginal focal shift); `selective-plane` → `light-sheet` (eff. axial 1.0301 µm); 3 pages tiered, 40 `knownIssue`s.
   - Imaging part 2 confocal (session 80, PR #111): new `imaging/confocal.ts` (scalar paraxial confocal PSF, FWHM table 0–5 AU: lateral 0.3693→0.5145 λ/NA, axial 0.638→0.886, section 0.677 at 0 AU, 0.877 at 1 AU) and `light-sheet.ts`; 4 pages tiered, 44 `knownIssue`s.
   - Imaging part 1 diffraction PSF (session 79, PR #110): new `imaging/diffraction-psf.ts` (Airy via besselJ, r₀ 0.6098 λ/NA, FWHM 0.5145 λ/NA, EE 1−J0²−J1² = 0.838 at 1 AU and 0.588 at 0.5 AU, Debye on-axis sinc² → paraxial sinc²(u/4), NA = 1/(2N)); `airy-disk`, `resolution`, `psf-calculator`, `na-fnumber` tiered, 3 knownIssues removed.
   - Detectors part 9a sensor noise (session 76, PR #107): new `detectors/sensor-noise.ts` (EMVA 1288 Eq. 48 temporal + DSNU + PRNU, PTC crossovers σ_r² and 1/P², seeded unit-rms PRNU map) and `antiblooming.ts` (spill, onset N_b); `photon-transfer` 547.81 e⁻, `uniformity` 547.84 e⁻ (DSNU in e⁻, key `dsnu`), `antiblooming` onset 1.04e6 e⁻.
