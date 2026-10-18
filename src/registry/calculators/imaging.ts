@@ -177,7 +177,18 @@ export const imaging: CalculatorEntry[] = [
     slug: "contrast-methods",
     title: "Phase Contrast & DIC Calculator",
     description: "Contrast calculations for phase contrast and differential interference contrast microscopy.",
-    knownIssue: "The DIC contrast ignores the shear and the phase gradient, and the phase-contrast 2·sinφ·sinδ is not Zernike's result (0.564 against 0.645 at the defaults). The medium index and the method selection are not used.",
+    tier: "textbook",
+    modelNote: "Ideal Zernike phase contrast (the ring passes all of the direct light and none of the diffracted light, so no halo or shade-off) and the DIC sin² law across a linear phase edge; blurring by the optics is not included.",
+    references: [
+      {
+        citation: "Zernike F. (1942). Phase contrast, a new method for the microscopic observation of transparent objects. Physica 9, 686–698. Direct and diffracted waves and the quarter-wave phase ring.",
+        url: "https://doi.org/10.1016/S0031-8914(42)80035-X",
+      },
+      {
+        citation: "Salmon E. D., Tran P. (2007). High-resolution video-enhanced differential interference contrast light microscopy. Methods Cell Biol. 81, 335–364. DIC intensity sin² of the bias plus the specimen retardation, with stray light.",
+        url: "https://doi.org/10.1016/S0091-679X(06)81016-2",
+      },
+    ],
   },
   {
     slug: "deconvolution",
@@ -230,7 +241,22 @@ export const imaging: CalculatorEntry[] = [
     slug: "fcs",
     title: "FCS Calculator",
     description: "Fluorescence Correlation Spectroscopy — diffusion time, concentration, and confocal volume.",
-    knownIssue: "Molecular brightness is labelled kHz but used in Hz, so the default reads 30 MHz per molecule. The SNR chart falls as 1/√c, whereas Koppel's SNR does not depend on the number of molecules, and the triplet term should be T/(1 − T).",
+    tier: "textbook",
+    modelNote: "3D Gaussian detection volume with free diffusion and one triplet state. The SNR is Koppel's shot-noise limit at the shortest lag; background, afterpulsing and non-Gaussian confocal volumes are not included.",
+    references: [
+      {
+        citation: "Hess S. T., Webb W. W. (2002). Focal volume optics and experimental artifacts in confocal fluorescence correlation spectroscopy. Biophys. J. 83, 2300–2317. Effective volume π^(3/2) w₀² z₀ and the 3D Gaussian G(τ).",
+        url: "https://doi.org/10.1016/S0006-3495(02)73990-8",
+      },
+      {
+        citation: "Widengren J., Mets Ü., Rigler R. (1995). Fluorescence correlation spectroscopy of triplet states in solution: a theoretical and experimental study. J. Phys. Chem. 99, 13368–13379. Triplet factor 1 + T/(1 − T)·e^(−τ/τ_T).",
+        url: "https://doi.org/10.1021/j100036a009",
+      },
+      {
+        citation: "Koppel D. E. (1974). Statistical accuracy in fluorescence correlation spectroscopy. Phys. Rev. A 10, 1938–1945. SNR set by the counts per molecule, independent of N.",
+        url: "https://doi.org/10.1103/PhysRevA.10.1938",
+      },
+    ],
   },
   {
     slug: "fluorescence-spectra",
@@ -247,7 +273,18 @@ export const imaging: CalculatorEntry[] = [
     slug: "frap",
     title: "FRAP Diffusion Coefficient Calculator",
     description: "Calculate diffusion coefficients from Fluorescence Recovery After Photobleaching data.",
-    knownIssue: "The unsourced τ = τ½/3.7723 gives D 4.2× too high (0.47 against 0.112 µm²/s for w = 1 µm, τ½ = 2 s; Soumpasis 1983). The recovery series diverges at short times and always recovers to 1, ignoring the mobile fraction.",
+    tier: "textbook",
+    modelNote: "Free 2D diffusion after an instantaneous bleach, with an immobile fraction. Bleaching during the pulse, flow, binding and the finite size of the cell are not included.",
+    references: [
+      {
+        citation: "Soumpasis D. M. (1983). Theoretical analysis of fluorescence photobleaching recovery experiments. Biophys. J. 41, 95–97. Closed-form recovery of a uniformly bleached disk, D = 0.224 w²/τ½.",
+        url: "https://doi.org/10.1016/S0006-3495(83)84410-5",
+      },
+      {
+        citation: "Axelrod D., Koppel D. E., Schlessinger J., Elson E., Webb W. W. (1976). Mobility measurement by analysis of fluorescence photobleaching recovery kinetics. Biophys. J. 16, 1055–1069. Gaussian-beam series in the bleach depth K and the mobile fraction.",
+        url: "https://doi.org/10.1016/S0006-3495(76)85755-4",
+      },
+    ],
   },
   {
     slug: "hyperspectral-microscopy",
