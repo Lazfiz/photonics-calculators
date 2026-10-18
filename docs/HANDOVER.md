@@ -1,23 +1,21 @@
-# Handover — 2026-10-18 (session 88 → session 89)
+# Handover — 2026-10-18 (session 89 → session 90)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-PR #118 (part 9) was already merged. Session 88 finished **imaging part 10a (microscope)** on branch
-`phase-4/imaging-microscope` (with this handover; PR #119 expected). Next: **imaging part 10b (field of view and telecentricity)**.
+PR #119 (part 10a) was merged. Session 89 finished **imaging part 10b (field of view, telecentricity)** on branch
+`phase-4/imaging-field-of-view` (with this handover; PR #120 expected). Next: **imaging part 11 (MTF and wavefront)**.
 
 ## State
-- New `src/physics/imaging/microscope.ts` (SI): `objectiveMag(f_obj, f_TL)`, `totalMag(M_obj, M_relay)`,
-  `apertureDiameter(f, NA)` = 2fNA (objective back aperture or condenser iris), `exitPupilDiameter(NA, M_visual)` =
-  2·0.25 m·NA/M, `usefulMagRange(NA)` → {500NA, 1000NA}, `abbePeriodLimit(λ, NA_o, NA_c)` = λ/(NA_o + min(NA_c, NA_o)),
-  `rayleighCondenserResolution` = 1.22× that (a rule of thumb, Rayleigh only at NA_c = NA_o).
-- New `src/physics/imaging/field-of-view.ts`: `objectFieldDiameter(FN, M)` = FN/M. Part 10b extends it.
-- `optical-sectioning-thickness.ts` gains `inoueDepthOfField(λ₀, n, NA, e, M)` → {wave, detector, total} and
-  `quarterWaveDepth(λ₀, n, NA)` = λ₀/(2(n − √(n² − NA²))).
-- Test: `tests/imaging-microscope.test.ts` (5 tests). 299 of 456 pages are tiered; 16 `knownIssue`s, all imaging.
-- URL keys: `magnification` (`camFocal` dropped; new `adapterMag` 0.5, `eyepieceMag` 10, `na` 0.4); `pupil-matching`
-  (`tubeLensFL` dropped, it cancels); `dof` (`n` is now the immersion index, default 1 instead of 1.52); `illumination`
-  (`fieldDiaphragm` dropped, new `fieldNumber` 20 and `wavelength` 550; `tubeFocal` is the tube lens focal length, default
-  200; `condenserFocal` default 12).
+- `src/physics/imaging/field-of-view.ts` (SI) now has `objectFov(w, h, M)` → {width, height, diagonal},
+  `pixelFootprint(p, M, b)`, `subtendedAngle(s, f)` = 2·atan(s/2f), `pixelIfov(p, f, b)`, `nyquistFrequency(p)` = 1/(2p),
+  `nyquistPixel(λ, NA)` = λ/(4NA), plus `objectFieldDiameter`.
+- New `src/physics/imaging/telecentric.ts`: `chiefRayAngle(h, s_EP)`, `magnificationChange(Δz, s_EP)` = −Δz/(s_EP + Δz)
+  (0 for s_EP = ∞, NaN if the object crosses the pupil), `pupilDistanceFromSlope(h, θ_t)` = h/tan θ_t.
+  The telecentric depth reuses `inoueDepthOfField` with n = 1.
+- Test: `tests/imaging-field-of-view.test.ts` (6 tests). 302 of 456 pages are tiered; 15 `knownIssue`s, all imaging.
+- URL keys: `fov-calculator` gains `na` 0.75, `wavelength` 550, `fieldNumber` 22; `pixel-fov` gains `pixels` 2048;
+  `telecentricity` keeps `magnification` 0.5 and drops `objectDistance`, `pupilDiameter`, `maxFieldAngle` for `na` 0.025,
+  `wavelength` 550, `blur` 10 µm, `fieldHeight` 5, `pupilDistance` 200, `dz` 10, `slope` 0.1°.
 - **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only when the user asks:
   `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set
   Vercel's Production Branch to `release` (not confirmed).
@@ -26,15 +24,19 @@ PR #118 (part 9) was already merged. Session 88 finished **imaging part 10a (mic
   dynamic-range, stimulated-raman-microscopy and resolution separate unless the user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 10a: `imaging/magnification=10.00`,
+1. `/ship` this branch. Values for a later release check: part 10b: `imaging/fov-calculator=0.6668`,
+   `imaging/pixel-fov=26.81`, `imaging/telecentricity=1.680`; part 10a: `imaging/magnification=10.00`,
    `imaging/pupil-matching=0.938`, `imaging/dof=3.4375`, `imaging/illumination=297.3`; part 9: `imaging/image-distance=66.67`,
    `imaging/afocal=-0.5`, `imaging/optical-power=58.63`; parts 1–8: `git show 5b242e6f:docs/HANDOVER.md`. Don't release
    unless asked.
-2. Imaging part 10b (field of view, telecentricity; goldens in ROADMAP).
+2. Imaging part 11 (MTF and wavefront; goldens in ROADMAP), including the `strehl-ratio` + `wavefront-error` merge.
 3. Later: open findings (part 8 leftovers, local `sinc` copies, `fluorophores.ts` cutoff, `optical-sectioning-thickness`,
    detectors 7b, fiber, FSO), `polarizer-types` (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
+- **Session 89:** the ROADMAP's telecentric −0.05 is the first-order −Δz/s_EP; the exact paraxial value with a fixed
+  sensor is −Δz/(s_EP + Δz) = −4.76 %. Its DoF 1.68 mm is Inoué's λ/NA² + e/(m·NA) at 550 nm, NA 0.025, e 10 µm, m 0.5.
+  The pages were not checked in a browser (no build this session); `/ship` runs the build.
 - **Session 88:** Inoué's and MicroscopyU's n in d = λ₀n/NA² + ne/(M·NA) is the **immersion** index (air for a dry
   objective), not the specimen's; the ROADMAP golden 5.8425 µm used n 1.52 with a dry 0.4 NA. 100×/1.4 at n 1.515 gives
   0.49547 µm (the ROADMAP's 0.4954 was truncated). MicroscopyU's resolution page gives 1.22λ/(NA_obj + NA_cond); the
@@ -46,10 +48,8 @@ PR #118 (part 9) was already merged. Session 88 finished **imaging part 10a (mic
   **Never put Markdown backticks in a `node -e "…"` string**: bash runs them. Use Write.
 - **Session 86:** Wang & Hu 2012 is readable at `pmc.ncbi.nlm.nih.gov/articles/PMC3322413/` with a full Chrome
   User-Agent. Boyd's SFG in SI: I₃ = 2d²ω₃² I₁I₂L²/(n₁n₂n₃ε₀c³); degenerate it is 4× the SHG formula.
-- **Session 85:** Choma 2003 is open at Caltech (`authors.library.caltech.edu/records/yx529-g3n22/files/CHOoe03.pdf`);
-  its SNR is a power ratio. Coherence length conventions differ by 2. A mutation probe on an untracked file can't be
-  undone with `git checkout`: copy the file first.
-- **Session 84:** FPbase's API needs a full Chrome User-Agent plus `Accept: application/json`.
+- **Sessions 84–85:** Choma 2003 is open at Caltech (`authors.library.caltech.edu/records/yx529-g3n22/files/CHOoe03.pdf`);
+  its SNR is a power ratio. A mutation probe: copy the file first. FPbase API: Chrome User-Agent + `Accept: application/json`.
 - **Session 83:** Koppel's SNR is the N → ∞ limit. With e^(−iωt), δ = −π/2 is positive phase contrast. A `positive()`
   guard rejects an `Infinity` default.
 - **Session 82:** `SimpleChart` skips NaN points but joins the line across them; for real gaps split traces. A Git Bash
