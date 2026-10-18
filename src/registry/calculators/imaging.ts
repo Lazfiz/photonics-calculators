@@ -38,8 +38,15 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "afocal",
     title: "Afocal System Calculator",
-    description: "Design and analyze afocal (telescopic) relay systems — Keplerian and Galilean configurations.",
-    knownIssue: "Any negative focal length is called Galilean, even when the lens spacing would be negative. Away from the afocal spacing the angular magnification depends on ray height but is shown as one number, and f₂ = 0 shows −Infinity.",
+    description: "Two-lens afocal (telescope and beam expander) systems: afocal spacing, angular magnification, beam size and the ray-transfer matrix, Keplerian or Galilean, and the focal distances when the spacing is off.",
+    tier: "textbook",
+    modelNote: "Paraxial thin lenses in air, from the two-lens ray-transfer matrix. Aberrations, lens thickness and apertures (vignetting) are not included.",
+    references: [
+      {
+        citation: "Greivenkamp J. E. (2004). Field Guide to Geometrical Optics. SPIE Press. Two-lens systems, afocal systems and ray-transfer matrices.",
+        url: "https://doi.org/10.1117/3.547461",
+      },
+    ],
   },
   {
     slug: "airy-disk",
@@ -345,8 +352,16 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "image-distance",
     title: "Thin Lens Image Distance",
-    description: "Calculate image distance, magnification, and conjugate ratio for a thin lens.",
-    knownIssue: "Virtual images (object inside the focal length) are refused with an error, so the virtual and upright branch never shows, and the conjugate ratio promised in the description isn't displayed.",
+    description: "Image distance, magnification and conjugate ratio of a thin lens, from the object distance or from the magnification, for real and virtual images.",
+    keywords: ["Working Distance"],
+    tier: "textbook",
+    modelNote: "Paraxial thin lens in air with real-is-positive signs. Distances are from the lens's principal planes, so an objective's working distance, from its front lens, is shorter than the object distance.",
+    references: [
+      {
+        citation: "Greivenkamp J. E. (2004). Field Guide to Geometrical Optics. SPIE Press. Gaussian imaging equation, transverse magnification and Newtonian equations.",
+        url: "https://doi.org/10.1117/3.547461",
+      },
+    ],
   },
   {
     slug: "light-field",
@@ -456,8 +471,18 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "optical-power",
     title: "Optical Power (Diopters)",
-    description: "Convert between focal length and optical power, with an eye model reference.",
-    knownIssue: "The refractive error is the eye's power minus a fixed 60 D with no axial length, so the default eye reads −1.1 D hyperopic, and its sign is the opposite of the clinical convention (−1.1 D shown next to a +1.1 D correcting lens).",
+    description: "Optical power in dioptres from focal length, and a two-element eye: total power by Gullstrand's equation, refractive error from the axial length, and contact-lens and spectacle corrections.",
+    tier: "textbook",
+    modelNote: "Paraxial, unaccommodated eye of two thin elements in one medium, with Gullstrand's exact-eye powers as defaults. Thin elements shift the rear focal point about 0.1 mm forward of the thick-lens eye's, about 0.2 D of refraction.",
+    references: [
+      {
+        citation: "Greivenkamp J. E. (2004). Field Guide to Geometrical Optics. SPIE Press. Optical power and the two-lens (Gullstrand) equation.",
+        url: "https://doi.org/10.1117/3.547461",
+      },
+      {
+        citation: "Atchison D. A., Smith G. (2000). Optics of the Human Eye. Butterworth-Heinemann. Gullstrand number 1 schematic eye (appendix 1), refractive errors and spectacle-lens effectivity.",
+      },
+    ],
   },
   {
     slug: "optical-sectioning-thickness",
@@ -875,11 +900,5 @@ export const imaging: CalculatorEntry[] = [
     title: "Wavefront Error Analysis",
     description: "Analyze wavefront error in waves RMS, compute Strehl ratio, and check diffraction-limited condition.",
     knownIssue: "A large Zernike-term count in the URL throws and crashes the page, the Zernike chart just splits σ equally over N terms, and the default σ = 0.25λ is outside the Maréchal range (S 0.085 against 0.023 exact for defocus).",
-  },
-  {
-    slug: "working-distance",
-    title: "Working Distance Calculator",
-    description: "Calculate working distance from objective focal length and magnification.",
-    knownIssue: "The page labels the thin-lens object distance f(1 + 1/m) as the microscope working distance (10.5 mm for f = 10 mm at 20×), which is set by the objective's front-lens mechanics. It repeats image-distance.",
   },
 ];

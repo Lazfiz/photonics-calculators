@@ -34,6 +34,7 @@
   "/imaging/two-photon-excitation": "/imaging/two-photon-microscopy",
   "/imaging/wavefront-sensing": "/imaging/shack-hartmann",
   "/imaging/wavefront-sensor": "/imaging/shack-hartmann",
+  "/imaging/working-distance": "/imaging/image-distance",
   "/laser-safety/beam-divergence-hazards": "/laser-safety/nohd",
   "/laser-safety/corneal-limits": "/laser-safety/infrared-hazard",
   "/laser-safety/infrared-corneal": "/laser-safety/infrared-hazard",
