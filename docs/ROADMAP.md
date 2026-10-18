@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 82, 2026-10-18)
+## Status (session 83, 2026-10-18)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -17,14 +17,14 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | laser-safety | 40 / 40 | done (sessions 18, 23, 29–36) |
 | thin-film | 45 / 45 | done (sessions 25–28, 54–55); small findings below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
-| imaging | 23 / 64 | part 0 audit (session 78), parts 1–4 (79–82); 37 `knownIssue`s left; fix parts 5–15 below |
+| imaging | 26 / 64 | part 0 audit (session 78), parts 1–5 (79–83); 34 `knownIssue`s left; fix parts 6–15 below |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **278 / 457** | 37 `knownIssue`s (imaging) |
+| **total** | **281 / 457** | 34 `knownIssue`s (imaging) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -43,11 +43,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] **Imaging part 5: fluorescence dynamics and phase contrast** (new `fluorescence-dynamics.ts`: FCS V_eff, N, G(τ)
-  with Widengren triplet, Koppel SNR, FRAP Soumpasis and Axelrod; new `phase-contrast.ts`): `fcs`, `frap`,
-  `contrast-methods`. Golden: FCS w0 0.3, z0 1.5 µm, 50 nM, τD 0.05 ms → V_eff 0.7517 fL, N 22.63, G0 0.04418, D 450
-  µm²/s; triplet G(0+) 0.04909 at T 0.1; Koppel 94.9; FRAP τ½/τD 0.8946, D 0.112 µm²/s (Soumpasis 1983
-  10.1016/S0006-3495(83)84410-5); Axelrod γ_D(K 1) 1.097; Zernike PC 0.6445, φ 0.2856.
 - [ ] **Imaging part 6: fluorophores and unmixing** (new `fluorophores.ts`: sourced FPbase peaks, spectrum model,
   top-hat filter, bleed-through; new `linear-unmixing.ts`: OLS, NNLS Lawson–Hanson, FCLS, covariance σ²(EᵀE)⁻¹, seeded
   PRNG): `fluorescence-spectra`, `spectral-unmixing`, `simultaneous-multicolor`, `hyperspectral-microscopy` (reuse
@@ -232,6 +227,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Imaging part 5 fluorescence dynamics and phase contrast (session 83, PR #114): new `fluorescence-dynamics.ts` (V_eff 0.7517 fL, N 22.63, G(0⁺) 1/(N(1−T)) 0.04909, Koppel ε√(Δτ T)/√(1+1/N) 94.87 → 92.84 at N 22.6; Soumpasis γ 0.8946, D 0.1118 µm²/s; Axelrod γ(K 1) 1.0967) and `phase-contrast.ts` (Zernike 0.6445, reversal at tan(φ/2) = a; DIC sin² with bias and stray light); `fcs`, `frap`, `contrast-methods` tiered, 34 `knownIssue`s.
   - Imaging part 4 super-resolution (session 82, PR #113): `super-resolution.ts` gains Mortensen eqs. 5–6 (4.2857 nm LS, 3.6836 nm MLE), Nyquist 2/ρ^(1/D), Legant 61.79 nm, SIM 1/k_c 89.91 nm, raw images 3(2m+1), ExM pre 65.05 / post 62.66 nm (the reviewer's 63.79 follows from no consistent model); `palm-storm`, `structured-illumination`, `expansion-microscopy` tiered, 37 `knownIssue`s.
   - Imaging part 3 light sheet and TIRF (session 81, PR #112): new `imaging/tirf.ts` (d = λ/(4π√…) 110.34 nm, Axelrod I_s/I_p) and `cleared-tissue.ts` (ballistic exp(−µ_t z), paraxial/marginal focal shift); `selective-plane` → `light-sheet` (eff. axial 1.0301 µm); 3 pages tiered, 40 `knownIssue`s.
   - Imaging part 2 confocal (session 80, PR #111): new `imaging/confocal.ts` (scalar paraxial confocal PSF, FWHM table 0–5 AU: lateral 0.3693→0.5145 λ/NA, axial 0.638→0.886, section 0.677 at 0 AU, 0.877 at 1 AU) and `light-sheet.ts`; 4 pages tiered, 44 `knownIssue`s.
