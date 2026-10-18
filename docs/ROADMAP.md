@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 86, 2026-10-18)
+## Status (session 87, 2026-10-18)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -17,14 +17,14 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | laser-safety | 40 / 40 | done (sessions 18, 23, 29–36) |
 | thin-film | 45 / 45 | done (sessions 25–28, 54–55); small findings below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
-| imaging | 37 / 64 | part 0 audit (session 78), parts 1–8 (79–86); 23 `knownIssue`s left; fix parts 9–15 below |
+| imaging | 40 / 63 | part 0 audit (session 78), parts 1–9 (79–87); 19 `knownIssue`s left; fix parts 10a–15 below |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **292 / 457** | 23 `knownIssue`s (imaging) |
+| **total** | **295 / 456** | 19 `knownIssue`s (imaging) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -43,11 +43,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] **Imaging part 9: Gaussian optics** (new `gaussian-optics.ts`: thinLensImage real-is-positive with signed M = −i/o,
-  conjugatesFromMag, opticalPower, twoElementPower, twoLensABCD): `image-distance` (merge `working-distance` with
-  redirect), `afocal`, `optical-power` (eye: axial length or drop ametropia). Golden: afocal (100, 200, 300) M −0.5, C 0;
-  (100, 200, 250) EFL 400 mm; Galilean (100, −25, 75) M +4; f 100 mm → 10 D; Gullstrand ≈ 58.6 D; f 10, m 20 → o 10.5,
-  i 210 mm; f 50, o 200 → 66.667, −1/3; o 25 → −50 mm, +2 (Greivenkamp 10.1117/3.547461).
+- [x] **Imaging part 9: Gaussian optics** (session 87, `phase-4/imaging-gaussian-optics`): `gaussian-optics.ts`; `working-distance` merged into `image-distance` (o or M given, virtual images); `afocal` from the ABCD matrix (EFL 400 mm at 250 mm); `optical-power` two-element eye with axial length (Gullstrand 58.635 D, 24 mm → +0.80 D).
 - [ ] **Imaging part 10a: microscope** (new `microscope.ts`: objectiveMag, totalMag with adapter M, exitPupilDiameter
   500·NA/M, usefulMagRange; `inoueDepthOfField` in optical-sectioning-thickness.ts; new `field-of-view.ts`):
   `magnification`, `pupil-matching`, `dof`, `illumination`. Golden: f_obj 10, tube 200, adapter 0.5 → 10×; exitPupil(0.75,
