@@ -123,8 +123,19 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "computer-generated-holography",
     title: "Computer-Generated Holography",
-    description: "CGH fundamentals: SLM parameters, diffraction efficiency, hologram memory, and reconstruction geometry.",
-    knownIssue: "The FOV shows the SLM aperture N·Δx (15.4 mm), not the replay field λz/Δx (39.6 mm at 500 mm), and the reconstruction distance and several other inputs are not used.",
+    description: "Replay field λz/Δx, diffraction angle, replay spot and first-order efficiency of a phase-quantised hologram on a pixelated SLM.",
+    tier: "textbook",
+    modelNote: "Scalar paraxial replay of a pixelated SLM at distance z, or in the focal plane of a lens of focal length z. The efficiency is the first-order efficiency of an L-level phase staircase with ideal levels; fringing fields, phase flicker, the dead-space zero order and algorithm error are not included.",
+    references: [
+      {
+        citation: "Swanson G. J. (1989). Binary optics technology: the theory and design of multi-level diffractive optical elements. MIT Lincoln Laboratory Technical Report 854. First-order efficiency sinc²(π/L) of an L-level phase profile.",
+        url: "https://apps.dtic.mil/sti/pdfs/ADA213404.pdf",
+      },
+      {
+        citation: "Schnars U., Jüptner W. P. O. (2002). Digital recording and numerical reconstruction of holograms. Meas. Sci. Technol. 13, R85–R101. Fresnel pixel λz/(NΔx) and the pitch-limited diffraction angle.",
+        url: "https://doi.org/10.1088/0957-0233/13/9/201",
+      },
+    ],
   },
   {
     slug: "confocal-pin-hole",
@@ -205,8 +216,15 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "digital-holography",
     title: "Digital Holography",
-    description: "Hologram recording, numerical reconstruction, resolution limits, and sampling criteria.",
-    knownIssue: "The axial resolution computes 2nλ/NA² but shows λ/NA² (106 against 53 µm), the lateral limit uses the incoherent λ/(2NA), and NA is a free input instead of following from sensor size and distance.",
+    description: "Fresnel reconstruction pixel λz/(NΔx), sensor NA, depth of focus, largest reference angle and the in-line sampling distance for a digital hologram.",
+    tier: "textbook",
+    modelNote: "Scalar paraxial Fresnel diffraction with a plane reference wave and an N × N sensor of square pixels with full fill factor. The reconstructed point is the sinc transform of the sensor aperture. Twin-image separation in off-axis holograms, noise and speckle are not included.",
+    references: [
+      {
+        citation: "Schnars U., Jüptner W. P. O. (2002). Digital recording and numerical reconstruction of holograms. Meas. Sci. Technol. 13, R85–R101. Fresnel reconstruction pixel λz/(NΔx) and the largest interference angle 2 arcsin(λ/(4Δx)).",
+        url: "https://doi.org/10.1088/0957-0233/13/9/201",
+      },
+    ],
   },
   {
     slug: "dof",
@@ -360,8 +378,19 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "low-coherence",
     title: "Low Coherence Interferometry",
-    description: "Interferogram modelling, coherence gating, fringe visibility, and depth scanning parameters.",
-    knownIssue: "The axial resolution has the same factor-2 error (3.33 µm instead of 6.66 µm at 1300 nm, 80 nm, n 1.4), and the interferogram chart samples every 20 µm, so the 1.3 µm fringes and the 19 µm envelope show as one aliased spike.",
+    description: "Time-domain OCT: interferogram of a reflector, fringe visibility, axial resolution, Doppler carrier 2v/λ, scan times and the shot-noise SNR.",
+    tier: "textbook",
+    modelNote: "Michelson interferometer with a Gaussian source (Δλ ≪ λ₀), matched dispersion, a 50/50 coupler and a reference mirror at constant speed with no flyback. The SNR is the shot-noise limit with a strong reference arm; excess intensity noise is not included.",
+    references: [
+      {
+        citation: "Fercher A. F., Drexler W., Hitzenberger C. K., Lasser T. (2003). Optical coherence tomography — principles and applications. Rep. Prog. Phys. 66, 239–303. Axial resolution (2 ln 2/π) λ₀²/Δλ.",
+        url: "https://doi.org/10.1088/0034-4885/66/2/204",
+      },
+      {
+        citation: "Choma M. A., Sarunic M. V., Yang C., Izatt J. A. (2003). Sensitivity advantage of swept source and Fourier domain optical coherence tomography. Opt. Express 11, 2183–2189. Time-domain SNR ρP_s/(2eB), eq. 9, with B = 2Δk v/π.",
+        url: "https://doi.org/10.1364/OE.11.002183",
+      },
+    ],
   },
   {
     slug: "magnification",
@@ -410,8 +439,19 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "optical-coherence",
     title: "Optical Coherence Theory",
-    description: "Temporal coherence, coherence length, axial resolution, and SNR estimation for OCT systems.",
-    knownIssue: "The axial resolution divides the round-trip coherence length (2 ln2/π)λ²/Δλ by 2n, so it is half the true value: 2.85 µm instead of 5.69 µm at 1310 nm, 100 nm, n 1.33. The SNR uses an arbitrary 1 nA noise floor and no reference-arm power.",
+    description: "Coherence time and length of a Gaussian source, OCT axial resolution 0.4413 λ²/(nΔλ), and the shot-noise-limited Fourier-domain SNR and sensitivity.",
+    tier: "textbook",
+    modelNote: "Gaussian source spectrum with Δλ ≪ λ₀ and matched dispersion; n is the group index. The SNR is the shot-noise limit of a spectrometer or swept-source system with a strong reference arm and the A-scan time as exposure; read noise, excess noise and the depth roll-off are not included.",
+    references: [
+      {
+        citation: "Fercher A. F., Drexler W., Hitzenberger C. K., Lasser T. (2003). Optical coherence tomography — principles and applications. Rep. Prog. Phys. 66, 239–303. Axial resolution (2 ln 2/π) λ₀²/Δλ, the round-trip coherence length.",
+        url: "https://doi.org/10.1088/0034-4885/66/2/204",
+      },
+      {
+        citation: "Choma M. A., Sarunic M. V., Yang C., Izatt J. A. (2003). Sensitivity advantage of swept source and Fourier domain optical coherence tomography. Opt. Express 11, 2183–2189. Fourier-domain SNR ρP_sΔt/(2e), eq. 10.",
+        url: "https://doi.org/10.1364/OE.11.002183",
+      },
+    ],
   },
   {
     slug: "optical-power",

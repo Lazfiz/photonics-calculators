@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 84, 2026-10-18)
+## Status (session 85, 2026-10-18)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -17,14 +17,14 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | laser-safety | 40 / 40 | done (sessions 18, 23, 29–36) |
 | thin-film | 45 / 45 | done (sessions 25–28, 54–55); small findings below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
-| imaging | 30 / 64 | part 0 audit (session 78), parts 1–6 (79–84); 30 `knownIssue`s left; fix parts 7–15 below |
+| imaging | 34 / 64 | part 0 audit (session 78), parts 1–7 (79–85); 26 `knownIssue`s left; fix parts 8–15 below |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **285 / 457** | 30 `knownIssue`s (imaging) |
+| **total** | **289 / 457** | 26 `knownIssue`s (imaging) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -43,11 +43,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] **Imaging part 7: OCT and holography** (new `oct.ts`: Δz = 0.4413λ²/(nΔλ), shot-noise SNR, visibility, Doppler;
-  new `holography.ts`): `optical-coherence`, `low-coherence`, `digital-holography`, `computer-generated-holography`.
-  Golden: octAxial(1310, 100, 1) = 7.5727 µm, n 1.33 → 5.6937, (840, 50) → 6.2272 µm; V(0.9, 0.004) = 0.132743;
-  Doppler 50 mm/s, 1300 nm → 76 923 Hz; DH pitch(532 nm, 0.1 m, 2048, 6.5 µm) = 3.99639 µm, sensor NA 0.06656; CGH
-  multilevel(8) = 0.949641, replay(633 nm, 0.5 m, 8 µm) = 39.5625 mm (Fercher 2003 10.1088/0034-4885/66/2/204).
 - [ ] **Imaging part 8: nonlinear and photoacoustic** (`srsShotNoiseSnr` in `coherent-raman.ts`; non-degenerate SFG in
   `second-harmonic-generation.ts`, which can also serve spectroscopy/sum-frequency-gen and wave-optics/sum-frequency;
   new `photoacoustic.ts`): `stimulated-raman-microscopy`, `sum-frequency-microscopy`, `photoacoustic`. Golden: SRS
@@ -176,6 +171,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 
 **Cross-cutting**
 - `erf` had three implementations. `src/physics/math.ts` replaced five pages' copies; others may remain.
+- `sinc` (sin x/x) is in `math.ts` since session 85; local copies remain in `detectors/sensor-mtf.ts`,
+  `imaging/diffraction-psf.ts`, `polarization/spectral-depolarization.ts` (exported) and `polarization/twisted-nematic.ts`.
 - `useURLState` only rejects non-finite values, so a crafted `?na=0` reaches the physics unclamped. Clamp in the page,
   or give `useURLState` an optional range.
 - Search returns unrelated pages for nonsense queries; it needs a relevance floor (Codex review, 2026-10-13).
@@ -224,6 +221,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Imaging part 7 OCT and holography (session 85, PR #116): new `oct.ts` (Δz 0.4413λ²/(nΔλ) 5.6937 µm, l_c = 2Δz, Choma eqs. 9–10 SNR 98.7 dB, V 0.132743, 2v/λ 76.92 kHz) and `holography.ts` (λz/(NΔx) 3.99639 µm, NA 0.06656, in-line z_min 168.8 mm, replay 39.5625 mm, sinc²(π/8) 0.949641); `sinc` in `math.ts`; 4 pages tiered, 26 `knownIssue`s.
   - Imaging part 6 fluorophores and unmixing (session 84, PR #115): new `fluorophores.ts` (8 FPbase FPs, Siano–Metzler bands fitted to FPbase spectra; R₀ EGFP→mCherry 5.05 nm vs 5.11 raw; prefactor 0.021084 nm) and `linear-unmixing.ts` (OLS/NNLS/FCLS, MATLAB lsqnonneg 0/0.6929, sandwich covariance, delta-method shares); multicolor SNR 21.16, hyperspectral 40.0 MiB / 32.0 s; 4 pages tiered, 30 `knownIssue`s.
   - Imaging part 5 fluorescence dynamics and phase contrast (session 83, PR #114): new `fluorescence-dynamics.ts` (V_eff 0.7517 fL, N 22.63, G(0⁺) 1/(N(1−T)) 0.04909, Koppel ε√(Δτ T)/√(1+1/N) 94.87 → 92.84 at N 22.6; Soumpasis γ 0.8946, D 0.1118 µm²/s; Axelrod γ(K 1) 1.0967) and `phase-contrast.ts` (Zernike 0.6445, reversal at tan(φ/2) = a; DIC sin² with bias and stray light); `fcs`, `frap`, `contrast-methods` tiered, 34 `knownIssue`s.
   - Imaging part 4 super-resolution (session 82, PR #113): `super-resolution.ts` gains Mortensen eqs. 5–6 (4.2857 nm LS, 3.6836 nm MLE), Nyquist 2/ρ^(1/D), Legant 61.79 nm, SIM 1/k_c 89.91 nm, raw images 3(2m+1), ExM pre 65.05 / post 62.66 nm (the reviewer's 63.79 follows from no consistent model); `palm-storm`, `structured-illumination`, `expansion-microscopy` tiered, 37 `knownIssue`s.

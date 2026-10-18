@@ -12,6 +12,11 @@ const SQRT_PI = Math.sqrt(Math.PI);
 const SERIES_LIMIT = 2;
 const CF_TERMS = 120; // backward CF depth; converged to < 1e-16 for x ≥ 2
 
+/** Unnormalised sinc, sin x / x, with the series 1 − x²/6 near 0. */
+export function sinc(x: number): number {
+  return Math.abs(x) < 1e-4 ? 1 - (x * x) / 6 : Math.sin(x) / x;
+}
+
 /** erf(x) for x ≥ 0 via erf x = (2/√π) e^(−x²) Σ 2ⁿ x^(2n+1) / (1·3·…·(2n+1)). */
 function erfSeries(x: number): number {
   const twoX2 = 2 * x * x;
