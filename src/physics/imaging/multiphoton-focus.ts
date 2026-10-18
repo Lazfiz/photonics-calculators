@@ -58,6 +58,24 @@ export function multiphotonFwhm(lambda: number, n: number, NA: number, order: nu
   };
 }
 
+/**
+ * Lateral and axial FWHM of a mixed-beam signal ∏ I(λᵢ)^kᵢ (SRS: I_p I_s, CARS: I_p² I_s, SFG: I₁ I₂), m. Each
+ * Gaussian I = exp(−2r²/wᵢ²) with wᵢ = 2ω_xy(λᵢ), so the product has FWHM √(2 ln 2/Σ kᵢ/wᵢ²) (and the same with w_z);
+ * one beam of order k gives `multiphotonFwhm`.
+ */
+export function mixedFocusFwhm(beams: readonly { lambda: number; order: number }[], n: number, NA: number) {
+  let lateral = 0, axial = 0;
+  for (const { lambda, order } of beams) {
+    const w = 2 * zipfelLateralRadius(lambda, NA), wz = 2 * zipfelAxialRadius(lambda, n, NA);
+    const k = Number.isFinite(order) && order > 0 ? order : NaN;
+    lateral += k / (w * w);
+    axial += k / (wz * wz);
+  }
+  return beams.length
+    ? { lateral: Math.sqrt((2 * Math.LN2) / lateral), axial: Math.sqrt((2 * Math.LN2) / axial) }
+    : { lateral: NaN, axial: NaN };
+}
+
 /** k-photon focal volume ∫I^k dV / I₀^k = (π/(2k))^(3/2) w² w_z, m³ (k = 2: π^(3/2) ω_xy² ω_z). */
 export function multiphotonVolume(lambda: number, n: number, NA: number, order: number): number {
   if (!(Number.isFinite(order) && order >= 1)) return NaN;

@@ -1,112 +1,137 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c } from "../../../physics/constants";
+import {
+  detectedPhotoelectrons, ramanShiftFrequency, srsShotNoiseSnr, stokesWavelength,
+} from "../../../physics/imaging/coherent-raman";
+import { mixedFocusFwhm } from "../../../physics/imaging/multiphoton-focus";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
+
+const FRAME_PIXELS = 512;
+
 export default function StimulatedRamanMicroscopyPage() {
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 800);
-  const [ramanShift, setRamanShift] = useURLState("ramanShift", 2850);
-  const [na, setNa] = useURLState("na", 1.0);
-  const [pumpPower, setPumpPower] = useURLState("pumpPower", 100);
-  const [stokesPower, setStokesPower] = useURLState("stokesPower", 80);
-  const [pixelDwell, setPixelDwell] = useURLState("pixelDwell", 1);
-  const [nPixel] = useState(512);
+  const [pumpRaw, setPump] = useURLState("pumpWavelength", 800); // nm
+  const [shiftRaw, setShift] = useURLState("ramanShift", 2850); // cm⁻¹ (CH₂ stretch)
+  const [naRaw, setNa] = useURLState("na", 1.0);
+  const [nRaw, setN] = useURLState("n", 1.33);
+  const [pumpPowerRaw, setPumpPower] = useURLState("pumpPower", 100); // mW at the sample
+  const [stokesPowerRaw, setStokesPower] = useURLState("stokesPower", 80); // mW at the sample
+  const [detectedBeam, setDetectedBeam] = useURLState("detectedBeam", "stokes"); // stokes = SRG, pump = SRL
+  const [deltaRaw, setDelta] = useURLState("modulationDepth", 10); // ppm
+  const [etaRaw, setEta] = useURLState("quantumEfficiency", 0.8);
+  const [dwellRaw, setDwell] = useURLState("pixelDwell", 1); // µs
 
-  const stokesWavelength = 1e7 / (1e7 / pumpWavelength - ramanShift);
-  const beatFreq = ramanShift * c * 100; // Hz
+  const pumpNm = clamp(pumpRaw, 600, 1100, 800);
+  const shift = clamp(shiftRaw, 200, 4000, 2850);
+  const na = clamp(naRaw, 0.1, 1.5, 1.0);
+  const n = clamp(nRaw, 1, 1.6, 1.33);
+  const pumpMw = clamp(pumpPowerRaw, 1, 500, 100);
+  const stokesMw = clamp(stokesPowerRaw, 1, 500, 80);
+  const srl = detectedBeam === "pump";
+  const deltaPpm = clamp(deltaRaw, 0.001, 1000, 10);
+  const eta = clamp(etaRaw, 0.01, 1, 0.8);
+  const dwellUs = clamp(dwellRaw, 0.1, 100, 1);
 
-  // SRS signal: SRS ∝ Im[χ³] × I_pump × I_stokes
-  const srsSignal = Math.pow(10, -12) * pumpPower * stokesPower;
+  const results = useMemo(() => {
+    const lambdaP = pumpNm * 1e-9;
+    const lambdaS = stokesWavelength(lambdaP, shift * 100);
+    const lambdaDet = srl ? lambdaP : lambdaS;
+    const powerDet = (srl ? pumpMw : stokesMw) * 1e-3;
+    const tau = dwellUs * 1e-6;
+    const N = detectedPhotoelectrons(powerDet, lambdaDet, tau, eta);
+    const fwhm = mixedFocusFwhm([{ lambda: lambdaP, order: 1 }, { lambda: lambdaS, order: 1 }], n, na);
+    return {
+      stokesNm: lambdaS * 1e9,
+      beatTHz: ramanShiftFrequency(shift * 100) / 1e12,
+      photoelectrons: N,
+      snr: srsShotNoiseSnr(deltaPpm * 1e-6, powerDet, lambdaDet, tau, eta),
+      minDeltaPpm: 1e6 / Math.sqrt(N),
+      lateralNm: fwhm.lateral * 1e9,
+      axialUm: fwhm.axial * 1e6,
+      frameS: FRAME_PIXELS * FRAME_PIXELS * tau,
+    };
+  }, [pumpNm, shift, na, n, pumpMw, stokesMw, srl, deltaPpm, eta, dwellUs]);
 
-  // Noise: shot noise limited by probe beam (SRL → pump detection → √P_pump)
-  const shotNoise = Math.sqrt(pumpPower) * 0.1;
-  const pixelDwellSec = pixelDwell * 1e-6;
-  const snr = srsSignal / (shotNoise * 1e-12) * Math.sqrt(pixelDwellSec);
-
-  // Spatial resolution
-  const lateralRes = 0.61 * pumpWavelength / na;
-  const axialRes = 2 * 1.33 * pumpWavelength / (na * na);
-
-  // Imaging time estimate
-  const frameTime = nPixel * nPixel * pixelDwell * 1e-6; // seconds
-
-  const snrChart = useMemo(() => {
-    const powers = Array.from({ length: 60 }, (_, i) => 5 + i * 5);
+  const snrPlot = useMemo(() => {
+    const lambdaP = pumpNm * 1e-9;
+    const lambdaS = stokesWavelength(lambdaP, shift * 100);
+    const dwells = Array.from({ length: 61 }, (_, i) => 10 ** (-1 + i / 20)); // 0.1–100 µs
+    const snr = (P: number, lambda: number) => dwells.map((t) => srsShotNoiseSnr(deltaPpm * 1e-6, P * 1e-3, lambda, t * 1e-6, eta));
     return [
-      { x: powers, y: powers.map(p => Math.pow(10, -12) * p * stokesPower / (Math.sqrt(p) * 0.1 * 1e-12) * Math.sqrt(pixelDwellSec)), type: "scatter", mode: "lines", name: "SNR (SRS)", line: { color: "#34d399" } },
-      { x: [pumpPower], y: [snr], type: "scatter", mode: "markers", name: "Current", marker: { color: "#f87171", size: 12 } },
+      { x: dwells, y: snr(stokesMw, lambdaS), name: "SRG (Stokes detected)", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
+      { x: dwells, y: snr(pumpMw, lambdaP), name: "SRL (pump detected)", line: { color: "#f87171" }, type: "scatter", mode: "lines" },
+      { x: [dwellUs], y: [results.snr], name: "Current", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" },
     ];
-  }, [pumpPower, stokesPower, pixelDwell, snr]);
+  }, [pumpNm, shift, stokesMw, pumpMw, deltaPpm, eta, dwellUs, results.snr]);
 
-  const depthChart = useMemo(() => {
-    const depths = Array.from({ length: 60 }, (_, i) => i * 20);
+  const limitPlot = useMemo(() => {
+    const lambdaDet = srl ? pumpNm * 1e-9 : stokesWavelength(pumpNm * 1e-9, shift * 100);
+    const powers = Array.from({ length: 61 }, (_, i) => 10 ** ((2.7 * i) / 60)); // 1–500 mW
+    const minDelta = (P: number) => 1e6 / Math.sqrt(detectedPhotoelectrons(P * 1e-3, lambdaDet, dwellUs * 1e-6, eta));
     return [
-      { x: depths, y: depths.map(d => Math.exp(-d / 200) * pumpPower), type: "scatter", mode: "lines", name: "Pump at depth", line: { color: "#60a5fa" } },
-      { x: depths, y: depths.map(d => Math.exp(-d / 180) * stokesPower), type: "scatter", mode: "lines", name: "Stokes at depth", line: { color: "#f472b6" } },
-      { x: depths, y: depths.map(d => Math.exp(-d / 200) * pumpPower * Math.exp(-d / 180) * stokesPower * 1e-4), type: "scatter", mode: "lines", name: "SRS Signal", line: { color: "#34d399" } },
+      { x: powers, y: powers.map(minDelta), name: "Shot-noise limit (SNR = 1)", line: { color: "#34d399" }, type: "scatter", mode: "lines" },
+      { x: [srl ? pumpMw : stokesMw], y: [results.minDeltaPpm], name: "Current", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" },
     ];
-  }, [pumpPower, stokesPower, pixelDwellSec]);
+  }, [srl, pumpNm, shift, dwellUs, eta, pumpMw, stokesMw, results.minDeltaPpm]);
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Pump λ (nm)" value={pumpWavelength} onChange={setPumpWavelength} min={600} max={1100} />
-        <ValidatedNumberInput label="Raman Shift (cm⁻¹)" value={ramanShift} onChange={setRamanShift} min={200} max={4000} />
-        <ValidatedNumberInput label="Numerical Aperture" value={na} onChange={setNa} min={0.1} max={1.7} step="0.01" />
-        <ValidatedNumberInput label="Pump Power (mW)" value={pumpPower} onChange={setPumpPower} min={1} max={500} />
-        <ValidatedNumberInput label="Stokes Power (mW)" value={stokesPower} onChange={setStokesPower} min={1} max={500} />
-        <ValidatedNumberInput label="Pixel Dwell (µs)" value={pixelDwell} onChange={setPixelDwell} min={0.1} max={100} />
-      </div>
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
+          <ValidatedNumberInput label="Pump wavelength (nm)" value={pumpRaw} onChange={setPump} min={600} max={1100} />
+          <ValidatedNumberInput label="Raman shift (cm⁻¹)" value={shiftRaw} onChange={setShift} min={200} max={4000} />
+          <ValidatedNumberInput label="Numerical aperture" value={naRaw} onChange={setNa} min={0.1} max={1.5} step="0.01" />
+          <ValidatedNumberInput label="Immersion / sample index n" value={nRaw} onChange={setN} min={1} max={1.6} step="0.01" />
+          <ValidatedNumberInput label="Pump power at the sample (mW)" value={pumpPowerRaw} onChange={setPumpPower} min={1} max={500} />
+          <ValidatedNumberInput label="Stokes power at the sample (mW)" value={stokesPowerRaw} onChange={setStokesPower} min={1} max={500} />
+          <div>
+            <label className="block text-sm text-gray-400 mb-1" htmlFor="srs-detected">Detected beam</label>
+            <select id="srs-detected" value={srl ? "pump" : "stokes"} onChange={(e) => setDetectedBeam(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white">
+              <option value="stokes">Stokes: stimulated Raman gain (SRG), pump modulated</option>
+              <option value="pump">Pump: stimulated Raman loss (SRL), Stokes modulated</option>
+            </select>
+          </div>
+          <ValidatedNumberInput label="SRS modulation depth ΔP/P (ppm)" value={deltaRaw} onChange={setDelta} min={0.001} max={1000} />
+          <ValidatedNumberInput label="Detector quantum efficiency η" value={etaRaw} onChange={setEta} min={0.01} max={1} step="0.01" />
+          <ValidatedNumberInput label="Pixel dwell = integration time (µs)" value={dwellRaw} onChange={setDwell} min={0.1} max={100} />
+        </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Stokes λ</p>
-          <p className="text-2xl font-bold text-blue-400">{stokesWavelength.toFixed(1)} nm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Lateral Resolution</p>
-          <p className="text-2xl font-bold text-green-400">{lateralRes.toFixed(0)} nm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Frame Time ({nPixel}×{nPixel})</p>
-          <p className="text-2xl font-bold text-yellow-400">{frameTime.toFixed(2)} s</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">SRS Signal (a.u.)</p>
-          <p className="text-2xl font-bold text-cyan-400">{srsSignal.toExponential(2)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">SNR</p>
-          <p className="text-2xl font-bold text-orange-400">{snr.toFixed(1)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Beat Frequency</p>
-          <p className="text-2xl font-bold text-purple-400">{(beatFreq / 1e12).toFixed(1)} THz</p>
-        </div>
-      </div>
-
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <h3 className="text-lg font-semibold mb-3">Key Formulas</h3>
-        <div className="space-y-2 text-gray-300 text-sm font-mono">
-          <p>S_SRS ∝ Im[χ⁽³⁾] × I_pump × I_stokes × L</p>
-          <p>SRG: pump gains energy at Raman resonance</p>
-          <p>SRL: Stokes loses energy at Raman resonance</p>
-          <p>SNR ∝ √(P_pump × P_stokes × τ_dwell) / shot_noise</p>
-          <p>No non-resonant background (unlike CARS)</p>
-          <p>Frame time = N² × τ_pixel (for N×N frame)</p>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
+          <h2 className="text-lg font-semibold">Results</h2>
+          {!Number.isFinite(results.axialUm) && (
+            <p className="text-sm text-yellow-300" role="status">The NA must be below the index n for the axial size.</p>
+          )}
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Stokes wavelength</span><span className="font-mono text-blue-400">{fmt(results.stokesNm, 1, "nm")}</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Beat frequency</span><span className="font-mono">{fmt(results.beatTHz, 2, "THz")}</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Photoelectrons per pixel ({srl ? "pump" : "Stokes"})</span><span className="font-mono">{Number.isFinite(results.photoelectrons) ? results.photoelectrons.toExponential(3) : "—"}</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Shot-noise-limited SNR</span><span className="font-mono text-orange-400">{fmt(results.snr, 3, "")}</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Smallest detectable ΔP/P (SNR = 1)</span><span className="font-mono text-green-400">{fmt(results.minDeltaPpm, 3, "ppm")}</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Lateral FWHM of I_p·I_S</span><span className="font-mono text-cyan-400">{fmt(results.lateralNm, 0, "nm")}</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Axial FWHM of I_p·I_S</span><span className="font-mono text-cyan-400">{fmt(results.axialUm, 2, "µm")}</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Frame time ({FRAME_PIXELS}×{FRAME_PIXELS})</span><span className="font-mono text-yellow-400">{fmt(results.frameS, 3, "s")}</span></div>
+          <div className="text-xs text-gray-500 mt-2 space-y-1">
+            <p>ν̃_S = ν̃_p − Ω̃; SRS ∝ Im χ⁽³⁾ · I_p · I_S, with no non-resonant background.</p>
+            <p>SRG: the Stokes beam gains (pump modulated, Stokes detected). SRL: the pump loses (Stokes modulated, pump detected).</p>
+            <p>SNR = δ·√N, N = ηPτλ/(hc), shot noise of the detected beam only (Ozeki et al., Opt. Express 17, 3651, 2009). Laser excess noise, detector noise and lock-in demodulation losses make real systems worse.</p>
+            <p>The modulation depth δ depends on the Raman cross-section, the concentration and both intensities: enter a measured or published value.</p>
+            <p>Focus: Gaussian fit to each beam (Zipfel et al. 2003), signal FWHM of the product I_p·I_S.</p>
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <ChartPanel data={snrChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af", size: 11 }, title: { text: "SNR vs Pump Power", font: { size: 13 } }, xaxis: { title: "Pump Power (mW)", gridcolor: "#374151" }, yaxis: { title: "SNR", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 40, b: 55 } }} />
+          <h2 className="text-lg font-semibold mb-4">Shot-noise SNR vs Pixel Dwell</h2>
+          <ChartPanel data={snrPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Pixel dwell (µs)", type: "log", gridcolor: "#333" }, yaxis: { title: "SNR", type: "log", gridcolor: "#333" }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <ChartPanel data={depthChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af", size: 11 }, title: { text: "Signal vs Tissue Depth", font: { size: 13 } }, xaxis: { title: "Depth (µm)", gridcolor: "#374151" }, yaxis: { title: "Signal (a.u.)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.2 }, margin: { t: 40, b: 55 } }} />
+          <h2 className="text-lg font-semibold mb-4">Detection Limit vs Detected Power</h2>
+          <ChartPanel data={limitPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Detected beam power (mW)", type: "log", gridcolor: "#333" }, yaxis: { title: "Smallest ΔP/P (ppm)", type: "log", gridcolor: "#333" }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
         </div>
       </div>
     </>

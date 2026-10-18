@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 85, 2026-10-18)
+## Status (session 86, 2026-10-18)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -17,14 +17,14 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | laser-safety | 40 / 40 | done (sessions 18, 23, 29–36) |
 | thin-film | 45 / 45 | done (sessions 25–28, 54–55); small findings below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
-| imaging | 34 / 64 | part 0 audit (session 78), parts 1–7 (79–85); 26 `knownIssue`s left; fix parts 8–15 below |
+| imaging | 37 / 64 | part 0 audit (session 78), parts 1–8 (79–86); 23 `knownIssue`s left; fix parts 9–15 below |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **289 / 457** | 26 `knownIssue`s (imaging) |
+| **total** | **292 / 457** | 23 `knownIssue`s (imaging) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -43,11 +43,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] **Imaging part 8: nonlinear and photoacoustic** (`srsShotNoiseSnr` in `coherent-raman.ts`; non-degenerate SFG in
-  `second-harmonic-generation.ts`, which can also serve spectroscopy/sum-frequency-gen and wave-optics/sum-frequency;
-  new `photoacoustic.ts`): `stimulated-raman-microscopy`, `sum-frequency-microscopy`, `photoacoustic`. Golden: SRS
-  SNR(1e-5, 80 mW, 1036.27 nm, 1 µs, η 1) = 6.460; SFG(1040, 800) = 452.1739 nm; PA p0(Γ 0.2, 500 m⁻¹, 200 J/m²) =
-  2.0e4 Pa, μ_eff(5, 10 cm⁻¹) = 15 cm⁻¹, R_ax(1540, 5 MHz) = 271.04 µm (Xu & Wang 2006 10.1063/1.2195024).
 - [ ] **Imaging part 9: Gaussian optics** (new `gaussian-optics.ts`: thinLensImage real-is-positive with signed M = −i/o,
   conjugatesFromMag, opticalPower, twoElementPower, twoLensABCD): `image-distance` (merge `working-distance` with
   redirect), `afocal`, `optical-power` (eye: axial length or drop ametropia). Golden: afocal (100, 200, 300) M −0.5, C 0;
@@ -151,6 +146,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   overlap `fiber-laser`; `fiber-coupler` vs `wave-optics/coupled-mode` unchecked.
 
 **Imaging / spectroscopy** (found in the detectors part 0, session 63)
+- Imaging part 8 (session 86): `photoacoustic` applies only the single-pulse and ≥ 10 s skin limits (`pulse-train.ts` has no skin rules); `sum-frequency-microscopy` withholds the power for L > b (no non-degenerate Boyd–Kleinman); SRS δ is an input (no cross-section model).
 - `spectroscopy/absorption-depth`: Si at 550 nm gives 12.8 µm; Green 2008 gives 1.56 µm. Use `silicon-absorption.ts`.
 - Detectors part 7b leftovers (session 74 review): `streak-camera` window ignores the usable screen length and reads one pixel (not 2, Nyquist); `intensified-ccd` puts each electron's light in one pixel (no spot spread); `vacuum-photodiode` has one φ for threshold and dark emission and no stray capacitance.
 - `imaging/optical-sectioning-thickness` (session 80): Wilhelm's geometric section √[(0.88 λ/d)² + (√2 n PH/NA)²] is 40 % above the scalar wave-optical plane response at 1 AU and 25 % at 2 AU (`confocal.ts`); show both there too.
@@ -221,6 +217,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Imaging part 8 nonlinear and photoacoustic (session 86, PR #117): `srsShotNoiseSnr` δ√(ηPτλ/hc) 6.460 (Ozeki 2009), `mixedFocusFwhm` (SRS 342.69 nm), thin-slab `sfgCoefficient` (Boyd 2.2.10, 4× SHG when degenerate; 452.1739 nm), new `photoacoustic.ts` (p₀ 2.0e4 Pa, μ_eff 15 cm⁻¹, R_A 0.88 v/Δf 271.04 µm, R_L 0.71 v/(NA f₀) 437.36 µm, ICNIRP skin 200 C_A); 3 pages tiered, 23 `knownIssue`s.
   - Imaging part 7 OCT and holography (session 85, PR #116): new `oct.ts` (Δz 0.4413λ²/(nΔλ) 5.6937 µm, l_c = 2Δz, Choma eqs. 9–10 SNR 98.7 dB, V 0.132743, 2v/λ 76.92 kHz) and `holography.ts` (λz/(NΔx) 3.99639 µm, NA 0.06656, in-line z_min 168.8 mm, replay 39.5625 mm, sinc²(π/8) 0.949641); `sinc` in `math.ts`; 4 pages tiered, 26 `knownIssue`s.
   - Imaging part 6 fluorophores and unmixing (session 84, PR #115): new `fluorophores.ts` (8 FPbase FPs, Siano–Metzler bands fitted to FPbase spectra; R₀ EGFP→mCherry 5.05 nm vs 5.11 raw; prefactor 0.021084 nm) and `linear-unmixing.ts` (OLS/NNLS/FCLS, MATLAB lsqnonneg 0/0.6929, sandwich covariance, delta-method shares); multicolor SNR 21.16, hyperspectral 40.0 MiB / 32.0 s; 4 pages tiered, 30 `knownIssue`s.
   - Imaging part 5 fluorescence dynamics and phase contrast (session 83, PR #114): new `fluorescence-dynamics.ts` (V_eff 0.7517 fL, N 22.63, G(0⁺) 1/(N(1−T)) 0.04909, Koppel ε√(Δτ T)/√(1+1/N) 94.87 → 92.84 at N 22.6; Soumpasis γ 0.8946, D 0.1118 µm²/s; Axelrod γ(K 1) 1.0967) and `phase-contrast.ts` (Zernike 0.6445, reversal at tan(φ/2) = a; DIC sin² with bias and stray light); `fcs`, `frap`, `contrast-methods` tiered, 34 `knownIssue`s.

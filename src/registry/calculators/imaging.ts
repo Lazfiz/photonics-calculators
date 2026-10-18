@@ -502,8 +502,23 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "photoacoustic",
     title: "Photoacoustic Imaging Calculator",
-    description: "Imaging depth, resolution, and signal estimation for photoacoustic microscopy/tomography.",
-    knownIssue: "The axial resolution uses the pulse-echo v/(2Δf), but detection is one-way (0.88·v/Δf). The ANSI note says 20 mJ/cm² at 750 nm (MPE ≈ 25), Γ defaults to 0.8 (tissue ≈ 0.2), and the laser inputs are unused.",
+    description: "Initial pressure, diffuse light penetration, acoustic resolution and the skin exposure limit for photoacoustic microscopy and tomography.",
+    tier: "textbook",
+    modelNote: "p₀ = Γμ_aF under stress confinement; fluence decays as exp(−μ_eff z) from diffusion theory, ignoring the build-up below the surface; one-way acoustic resolution of acoustic-resolution PAM and partial-view tomography. Skin limits are ICNIRP 2013 single-pulse and ≥ 10 s values, without the repetitive-pulse rules.",
+    references: [
+      {
+        citation: "Xu M., Wang L. V. (2006). Photoacoustic imaging in biomedicine. Rev. Sci. Instrum. 77, 041101. Thermal and stress confinement and the initial pressure p₀ = Γμ_aF.",
+        url: "https://doi.org/10.1063/1.2195024",
+      },
+      {
+        citation: "Wang L. V., Hu S. (2012). Photoacoustic tomography: in vivo imaging from organelles to organs. Science 335, 1458–1462. Axial resolution 0.88 v_s/Δf, lateral 0.71 v_s/(NA f₀), about 800 Pa per mK.",
+        url: "https://doi.org/10.1126/science.1216210",
+      },
+      {
+        citation: "ICNIRP (2013). Guidelines on limits of exposure to laser radiation of wavelengths between 180 nm and 1,000 µm. Health Phys. 105, 271–295. Table 7, skin limits.",
+        url: "https://doi.org/10.1097/HP.0b013e3182983fd4",
+      },
+    ],
   },
   {
     slug: "pixel-fov",
@@ -695,8 +710,23 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "stimulated-raman-microscopy",
     title: "Stimulated Raman Scattering Microscopy Calculator",
-    description: "Calculate SRS signal levels, SNR, resolution, and imaging speed for label-free chemical imaging.",
-    knownIssue: "The SNR 10·P_S·√(P_p·τ) has no physical basis (no modulation depth, no photon shot noise; Ozeki 2009), the SRG and SRL labels are swapped, and the depth chart uses invented attenuation lengths.",
+    description: "Shot-noise-limited SNR, detection limit, Stokes wavelength, resolution and frame time for stimulated Raman scattering microscopy.",
+    tier: "textbook",
+    modelNote: "SNR = δ√N from the shot noise of the detected beam alone; the modulation depth δ is an input. Laser excess noise, detector noise and lock-in losses are not modelled. Resolution is the FWHM of I_p·I_S on Zipfel's Gaussian focus.",
+    references: [
+      {
+        citation: "Ozeki Y. et al. (2009). Analysis and experimental assessment of the sensitivity of stimulated Raman scattering microscopy. Opt. Express 17, 3651–3658. Shot-noise-limited SRS sensitivity.",
+        url: "https://doi.org/10.1364/OE.17.003651",
+      },
+      {
+        citation: "Freudiger C. W. et al. (2008). Label-Free Biomedical Imaging with High Sensitivity by Stimulated Raman Scattering Microscopy. Science 322, 1857–1861. SRG and SRL detection with high-frequency modulation.",
+        url: "https://doi.org/10.1126/science.1165758",
+      },
+      {
+        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the focus at each wavelength.",
+        url: "https://doi.org/10.1038/nbt899",
+      },
+    ],
   },
   {
     slug: "stitching",
@@ -730,8 +760,18 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "sum-frequency-microscopy",
     title: "Sum-Frequency Generation Microscopy Calculator",
-    description: "Calculate SFG wavelengths, energies, and beam parameters for sum-frequency generation microscopy.",
-    knownIssue: "The power and pulse-width inputs are not used, so no signal is computed, and the Airy radius 0.61λ/NA is labelled as the beam waist w₀ (0.79 µm against λ/(πNA) = 0.41 µm at 1040 nm, NA 0.8).",
+    description: "SFG wavelength, focal spot, coherence lengths and thin-layer signal power for sum-frequency generation microscopy.",
+    tier: "textbook",
+    modelNote: "Wavelength from energy conservation (exact). Power: plane-wave L² sinc²(ΔkL/2) over the overlap of two Gaussian foci, valid for a uniform layer much thinner than the confocal parameter; synchronised Gaussian pulses of equal width. No walk-off or absorption, undepleted inputs.",
+    references: [
+      {
+        citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.2, eq. 2.2.10. Academic Press. Coupled-amplitude equation of sum-frequency generation.",
+      },
+      {
+        citation: "Zipfel W. R., Williams R. M., Webb W. W. (2003). Nonlinear magic: multiphoton microscopy in the biosciences. Nat. Biotechnol. 21, 1369–1377. Gaussian fit to the focus at each wavelength.",
+        url: "https://doi.org/10.1038/nbt899",
+      },
+    ],
   },
   {
     slug: "super-resolution",

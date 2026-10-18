@@ -1,24 +1,24 @@
-# Handover — 2026-10-18 (session 85 → session 86)
+# Handover — 2026-10-18 (session 86 → session 87)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 85 finished **imaging part 7 (OCT and holography)** on branch `phase-4/imaging-oct-holography` (PR #116, with
-this handover). Next: **imaging part 8 (nonlinear and photoacoustic)**; split it 8a/8b if it is too big.
-`polarizer-types` stays blocked until the user is at the laptop with Chrome.
+Session 86 merged PR #116 (part 7) and finished **imaging part 8 (nonlinear and photoacoustic)** on branch
+`phase-4/imaging-nonlinear-photoacoustic` (PR #117, with this handover). Next: **imaging part 9 (Gaussian optics)**.
 
 ## State
-- New `src/physics/imaging/oct.ts`: `OCT_GAUSSIAN_FACTOR` (2 ln2/π), `octAxialResolution(λ, Δλ, n)`, `spectralWidthHz`,
-  `coherenceTime`, `coherenceLength` (= 2Δz, FWHM of |γ| in path difference), `degreeOfCoherence(opd, λ, Δλ)`,
-  `fringeVisibility`, `dopplerFrequency(v, λ, n, θ)`, `tdSignalBandwidth` (2vΔλ/λ²), `fdOctSnr`, `tdOctSnr` (Choma 2003).
-- New `src/physics/imaging/holography.ts`: `fresnelReconstructionPitch`, `hologramNA` (paraxial NΔx/2z),
-  `maxInterferenceAngle`, `inlineMinDistance`, `depthOfFocus`, `fresnelNumber`, `slmMaxAngle`, `replayField`,
-  `phaseQuantizationEfficiency` (sinc²(π/L)), `BINARY_AMPLITUDE_EFFICIENCY`, `pixelEnvelope`. `math.ts` gained `sinc`.
-- Test: `tests/imaging-oct-holography.test.ts` (766 tests in all). 289 of 457 pages are tiered; 26 `knownIssue`s, all
-  in imaging.
-- URL keys: `optical-coherence` (`coherenceLengthMm` removed; new `aScanRateKhz`; `sourcePowerMw` is now the power on
-  the sample), `low-coherence` (new `sourcePowerMw`, `detectorResponsivity`), `digital-holography` (`sensorHeight`,
-  `refractiveIndex`, `numericalAperture` removed; default z 200 mm), `computer-generated-holography` (`objectPoints`,
-  `diffractionEfficiency` removed; new `modulation` = phase | amplitude; `bitDepth` is 1, 2, 3, 4, 6, 8 or 10).
+- `coherent-raman.ts`: `detectedPhotoelectrons(P, λ, τ, η)`, `srsShotNoiseSnr(δ, P, λ, τ, η)` = δ√N (Ozeki 2009).
+- `multiphoton-focus.ts`: `mixedFocusFwhm(beams[{lambda, order}], n, NA)`, FWHM of ∏ I(λᵢ)^kᵢ (SRS, CARS, SFG).
+- `second-harmonic-generation.ts`: `sumFrequencyWavelength`, `sfgCoefficient` (thin slab, P₃ = K P₁P₂, returns ξ = L/b_min),
+  `averageSfgPower`, `sfgCoherenceLengths`.
+- New `src/physics/imaging/photoacoustic.ts`: `initialPressure`, `effectiveAttenuation`, `transportMeanFreePath`,
+  `fluenceAtDepth`, `paAxialResolution` (0.88 v/Δf), `paLateralResolution` (0.71 v/(NA f₀)), `acousticLossDb`,
+  `stressConfinementTime`, `skinPulseLimit`, `skinLongExposureIrradianceLimit` (reuse `skin-exposure-limits.ts`).
+- Test: `tests/imaging-nonlinear-photoacoustic.test.ts` (771 tests in all). 292 of 457 pages are tiered; 23 `knownIssue`s,
+  all in imaging.
+- URL keys: `stimulated-raman-microscopy` (new `n`, `detectedBeam` = stokes | pump, `modulationDepth` ppm,
+  `quantumEfficiency`), `sum-frequency-microscopy` (new `n`, `repRate`, `deff`, `thickness`, `deltaN`), `photoacoustic`
+  (`pulseEnergy`, `scatteringCoeff` removed; new `backgroundAbsorption`, `reducedScattering`, `targetDepth`, `soundSpeed`,
+  `bandwidthPct`, `acousticNa`, `acousticAttenuation`; `repetitionRate` default 10 Hz, `gruneisen` 0.2).
 - **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only when the user asks:
   `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set
   Vercel's Production Branch to `release` (not confirmed).
@@ -27,8 +27,9 @@ this handover). Next: **imaging part 8 (nonlinear and photoacoustic)**; split it
   `light-sheet` done). Keep dynamic-range, stimulated-raman-microscopy and resolution separate unless the user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 7: `imaging/optical-coherence=5.694` (µm),
-   `imaging/low-coherence=6.658`, `imaging/digital-holography=7.993`, `imaging/computer-generated-holography=39.56`;
+1. `/ship` this branch (PR #117). Values for a later release check: part 8: `imaging/stimulated-raman-microscopy=5.778`,
+   `imaging/sum-frequency-microscopy=452.17`, `imaging/photoacoustic=271.0`; part 7: `imaging/optical-coherence=5.694`
+   (µm), `imaging/low-coherence=6.658`, `imaging/digital-holography=7.993`, `imaging/computer-generated-holography=39.56`;
    part 6: `imaging/fluorescence-spectra=5.05`, `imaging/simultaneous-multicolor=21.16`,
    `imaging/hyperspectral-microscopy=40.0`; part 5: `imaging/fcs=0.7517`, `imaging/frap=0.1118`,
    `imaging/contrast-methods=-80.3`; part 4: `imaging/palm-storm=41.3`, `imaging/structured-illumination=89.9`,
@@ -36,18 +37,18 @@ this handover). Next: **imaging part 8 (nonlinear and photoacoustic)**; split it
    `imaging/cleared-tissue=60.0`; part 2: `imaging/confocal-pin-hole=457`, `imaging/confocal-resolution=197.2`,
    `imaging/spinning-disk=1.12`, `imaging/3d-reconstruction=859`; part 1: `imaging/airy-disk=0.353`,
    `imaging/psf-calculator=520`, `imaging/na-fnumber=0.1786`, `imaging/resolution=289.5`. Don't release unless asked.
-2. Imaging part 8 (nonlinear and photoacoustic; goldens in ROADMAP).
-3. Later: open findings (local `sinc` copies, `fluorophores.ts` cutoff, `optical-sectioning-thickness`, detectors 7b,
-   fiber, FSO), Chrome.
+2. Imaging part 9 (Gaussian optics; goldens in ROADMAP).
+3. Later: open findings (part 8 leftovers, local `sinc` copies, `fluorophores.ts` cutoff, `optical-sectioning-thickness`,
+   detectors 7b, fiber, FSO), `polarizer-types` (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
-- **Session 85:**
-  - Choma 2003 (Opt. Express) is open at Caltech: `authors.library.caltech.edu/records/yx529-g3n22/files/CHOoe03.pdf`
-    downloads with `curl -A "Mozilla/5.0"`. Its SNR is a power ratio (dB = 20 log of peak/σ); its "126 dB" is the
-    sensitivity at R_s = 1 (500 µW, 3.5 ms ⇒ ρ ≈ 0.73 A/W), not the SNR behind 47 dB attenuation.
-  - Coherence length conventions differ by 2: l_c = cτ_c = (4 ln2/π)λ²/Δλ (FWHM of |γ| vs path difference); Fercher's
-    "round-trip coherence length" (2 ln2/π)λ²/Δλ is the axial resolution in air. The old pages mixed the two.
-  - A mutation probe on an untracked file can't be undone with `git checkout`: copy the file first or revert by hand.
+- **Session 86:**
+  - Wang & Hu 2012 (Science 335, 1458) is readable at `pmc.ncbi.nlm.nih.gov/articles/PMC3322413/` with a full Chrome
+    User-Agent (Europe PMC's fullTextXML returns 500). It gives R_L = 0.71 v/(NA f₀), R_A = 0.88 v/Δf and 800 Pa per mK.
+  - Boyd's SFG in SI with I = 2nε₀c|A|²: I₃ = 2d²ω₃² I₁I₂L²/(n₁n₂n₃ε₀c³); degenerate it is 4× the SHG formula.
+- **Session 85:** Choma 2003 is open at Caltech (`authors.library.caltech.edu/records/yx529-g3n22/files/CHOoe03.pdf`,
+  `curl -A "Mozilla/5.0"`); its SNR is a power ratio. Coherence length conventions differ by 2 (l_c = 2Δz). A mutation
+  probe on an untracked file can't be undone with `git checkout`: copy the file first or revert by hand.
 - **Session 84:** FPbase's API needs a full Chrome User-Agent plus `Accept: application/json`. A Siano–Metzler band is
   exactly 0 past its cutoff, so split integrals there. Förster prefactor 0.021084 nm (textbooks: 0.0211).
 - **Session 83:** Koppel's SNR is the N → ∞ limit (finite N: 1/√(1 + 1/N)). With e^(−iωt), δ = −π/2 is positive phase
@@ -75,5 +76,5 @@ this handover). Next: **imaging part 8 (nonlinear and photoacoustic)**; split it
   `netstat -ano | grep :3100`, `taskkill //PID <pid> //T //F`. Headless screenshot: chrome `--headless=new
   --screenshot=… --virtual-time-budget=6000` with a scratchpad `--user-data-dir`, crop with `sharp`.
 - **ui-check:** `MSYS_NO_PATHCONV=1 node scripts/ui-check.mjs http://localhost:3100 load /a "/b?x=1"`. Never `taskkill /IM chrome.exe`.
-- **Shell:** probes are scratchpad `.ts` files run from the repo (`node --import tsx <abs path>`). `python -` hangs.
+- **Shell:** probes are scratchpad `.ts` files run from the repo (`node --import tsx <abs path>`), importing `C:/dev/photonics-calculators/src/…` by absolute path. `python -` hangs.
   `git grep` skips untracked files. A bare `cat > file` hangs on stdin. Quote DOIs with `(`. CI ≈ 2–3 min.
