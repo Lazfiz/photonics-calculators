@@ -212,8 +212,19 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "expansion-microscopy",
     title: "Expansion Microscopy Calculator",
-    description: "ExM effective resolution, probe size reduction, and expansion trade-offs.",
-    knownIssue: "Probe and linker sizes are divided by the expansion factor and left out of the effective resolution, which falls to 12.5 nm at 20× instead of about 22 nm once the linkage error of pre-expansion labelling is included.",
+    description: "Expansion microscopy effective resolution with pre- or post-expansion labelling, field of view and expanded gel size.",
+    tier: "illustrative",
+    modelNote: "The microscope's resolution divided by the expansion factor, combined in quadrature with the label displacement, which only post-expansion labelling divides by E. Assumes isotropic expansion; distortion and labelling density are not included.",
+    references: [
+      {
+        citation: "Chen F., Tillberg P. W., Boyden E. S. (2015). Expansion microscopy. Science 347, 543–548. Physical expansion of the specimen, effective resolution d/E and the measured distortion.",
+        url: "https://doi.org/10.1126/science.1260088",
+      },
+      {
+        citation: "Wassie A. T., Zhao Y., Boyden E. S. (2019). Expansion microscopy: principles and uses in biological research. Nat. Methods 16, 33–41. Linkage error of pre- and post-expansion labelling.",
+        url: "https://doi.org/10.1038/s41592-018-0219-4",
+      },
+    ],
   },
   {
     slug: "fcs",
@@ -367,8 +378,23 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "palm-storm",
     title: "PALM/STORM Localization Calculator",
-    description: "Estimate effective resolution for single-molecule localization microscopy (PALM/STORM) based on localization precision and labeling density.",
-    knownIssue: "The localisation precision σ is combined with the Nyquist term instead of the FWHM 2.355σ: 44.7 nm against 61.8 nm at the defaults (Legant 2016). The pixel size input is not used.",
+    description: "Localization precision from photons, background and pixel size, and effective resolution with label density, for single-molecule localization microscopy (PALM/STORM).",
+    tier: "textbook",
+    modelNote: "Gaussian fit to the PSF (σ = 0.21 λ/NA), with Mortensen's pixelation and background terms, one localization per label, and the effective resolution as the localization FWHM and the Nyquist term in quadrature. Drift, label size and repeated blinking are not included.",
+    references: [
+      {
+        citation: "Mortensen K. I., Churchman L. S., Spudich J. A., Flyvbjerg H. (2010). Optimized localization analysis for single-molecule tracking and super-resolution microscopy. Nat. Methods 7, 377–381. Precision of maximum-likelihood (eq. 5) and least-squares (eq. 6) Gaussian fits; EMCCD excess noise doubles the variance.",
+        url: "https://doi.org/10.1038/nmeth.1447",
+      },
+      {
+        citation: "Shroff H., Galbraith C. G., Galbraith J. A., Betzig E. (2008). Live-cell photoactivated localization microscopy of nanoscale adhesion dynamics. Nat. Methods 5, 417–423. Nyquist resolution 2/ρ^(1/D).",
+        url: "https://doi.org/10.1038/nmeth.1202",
+      },
+      {
+        citation: "Legant W. R. et al. (2016). High-density three-dimensional localization microscopy across large volumes. Nat. Methods 13, 359–365. Localization FWHM and Nyquist resolution combined in quadrature.",
+        url: "https://doi.org/10.1038/nmeth.3797",
+      },
+    ],
   },
   {
     slug: "photoacoustic",
@@ -554,8 +580,19 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "structured-illumination",
     title: "Structured Illumination Microscopy",
-    description: "SIM resolution enhancement and OTF expansion via patterned illumination.",
-    knownIssue: "An NA or wavelength of 0 in the URL makes the OTF loop endless and hangs the tab. The SIM OTF is the widefield OTF stretched N× rather than a sum of shifted copies, and the SNR penalty √N/m has no source.",
+    description: "SIM cut-off frequency, lateral resolution and raw image count for linear and saturated structured illumination microscopy.",
+    tier: "textbook",
+    modelNote: "Frequency-support model: the cut-off is the detection cut-off 2NA/λem plus m times the pattern frequency. It gives the Abbe-type resolution 1/k_c and the number of raw images, not the noise or the reconstruction quality.",
+    references: [
+      {
+        citation: "Gustafsson M. G. L. (2000). Surpassing the lateral resolution limit by a factor of two using structured illumination microscopy. J. Microsc. 198, 82–87. Shifted passbands, k_c = 2NA/λem + k₀, three phases per angle.",
+        url: "https://doi.org/10.1046/j.1365-2818.2000.00710.x",
+      },
+      {
+        citation: "Gustafsson M. G. L. (2005). Nonlinear structured-illumination microscopy: wide-field fluorescence imaging with theoretically unlimited resolution. PNAS 102, 13081–13086. Harmonics m·k₀ of saturated SIM.",
+        url: "https://doi.org/10.1073/pnas.0406877102",
+      },
+    ],
   },
   {
     slug: "sum-frequency-microscopy",
