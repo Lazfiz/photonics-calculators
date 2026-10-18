@@ -1,184 +1,195 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { FLUOROPHORES, bandAtWavelength, fluorophoreByName, integrateSpectrum } from "../../../physics/imaging/fluorophores";
+import { conditionNumber, fcls, nnls, ols, olsCovariance, reconstruct, shareStdDev, simulateMixture } from "../../../physics/imaging/linear-unmixing";
+import { createRng } from "../../../physics/random";
+
+const COLORS = ["#34d399", "#fbbf24", "#f87171", "#a78bfa"];
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
+
+const row = (label: string, value: string, color = "") => (
+  <div className="flex justify-between border-b border-gray-800 pb-2">
+    <span className="text-gray-400">{label}</span>
+    <span className={`font-mono ${color}`}>{value}</span>
+  </div>
+);
+
 export default function SpectralUnmixingPage() {
-  const [numEndmembers, setNumEndmembers] = useURLState("numEndmembers", 3);
-  const [numBands, setNumBands] = useURLState("numBands", 32);
-  const [noiseLevel, setNoiseLevel] = useURLState("noiseLevel", 5);
-  const [method, setMethod] = useState<"nnls" | "cls" | "vertex">("nnls");
-  const [abundance1, setAbundance1] = useURLState("abundance1", 0.6);
-  const [abundance2, setAbundance2] = useURLState("abundance2", 0.3);
+  const [d1, setD1] = useURLState("dye1", "EGFP");
+  const [d2, setD2] = useURLState("dye2", "mVenus");
+  const [d3, setD3] = useURLState("dye3", "mCherry");
+  const [d4, setD4] = useURLState("dye4", "none");
+  const [a1Raw, setA1] = useURLState("abundance1", 0.5);
+  const [a2Raw, setA2] = useURLState("abundance2", 0.3);
+  const [a3Raw, setA3] = useURLState("abundance3", 0.2);
+  const [a4Raw, setA4] = useURLState("abundance4", 0.2);
+  const [bandsRaw, setBands] = useURLState("numBands", 32);
+  const [startRaw, setStart] = useURLState("startNm", 480);
+  const [endRaw, setEnd] = useURLState("endNm", 720);
+  const [photonsRaw, setPhotons] = useURLState("photons", 2000);
+  const [readRaw, setRead] = useURLState("readNoise", 1);
+  const [methodRaw, setMethod] = useURLState("method", "nnls");
+  const [seedRaw, setSeed] = useURLState("seed", 1);
 
-  const abundance3 = Math.max(0, 1 - abundance1 - abundance2);
-  const abundances = [abundance1, abundance2, abundance3, ...Array(6).fill(0)].slice(0, numEndmembers);
-  const totalAb = abundances.reduce((s, v) => s + v, 0);
-  const normalizedAbundances = totalAb > 0 ? abundances.map(a => a / totalAb) : abundances.map(() => 1 / abundances.length);
+  const method = methodRaw === "ols" || methodRaw === "fcls" ? methodRaw : "nnls";
+  const slots = [
+    { name: d1, set: setD1, aRaw: a1Raw, setA: setA1 },
+    { name: d2, set: setD2, aRaw: a2Raw, setA: setA2 },
+    { name: d3, set: setD3, aRaw: a3Raw, setA: setA3 },
+    { name: d4, set: setD4, aRaw: a4Raw, setA: setA4 },
+  ];
+  const active = slots.filter((s, i) => i < 2 || s.name !== "none");
+  const dyes = active.map((s) => fluorophoreByName(s.name));
+  const aIn = active.map((s) => clamp(s.aRaw, 0, 1, 0));
+  const aSum = aIn.reduce((s, v) => s + v, 0);
+  const aTrue = aSum > 0 ? aIn.map((v) => v / aSum) : aIn.map(() => 1 / aIn.length);
+  const bands = Math.round(clamp(bandsRaw, 4, 128, 32));
+  const start = Math.min(clamp(startRaw, 350, 950, 480), 1000 - bands);
+  const end = Math.max(start + bands, clamp(endRaw, 360, 1000, 720));
+  const photons = clamp(photonsRaw, 1, 1e8, 2000);
+  const readNoise = clamp(readRaw, 0, 100, 1);
+  const seed = Math.round(clamp(seedRaw, 0, 1e6, 1));
 
-  // Simulate endmember spectra (Gaussian peaks at different wavelengths)
-  const endmemberPeaks = [520, 580, 640, 700, 450, 750];
-  const endmemberWidths = [25, 20, 30, 25, 20, 25];
+  // E[b][j]: fraction of dye j's detected photons that fall in band b (columns sum to 1).
+  const step = (end - start) / bands;
+  const centres = Array.from({ length: bands }, (_, b) => start + (b + 0.5) * step);
+  const shapes = dyes.map((f) => (l: number) => bandAtWavelength(f.em, l));
+  const inRange = shapes.map((s) => integrateSpectrum(s, start * 1e-9, end * 1e-9));
+  const E = centres.map((c) => shapes.map((s, j) => integrateSpectrum(s, (c - step / 2) * 1e-9, (c + step / 2) * 1e-9) / inRange[j]));
 
-  const spectralData = useMemo(() => {
-    const wavelengths = Array.from({ length: numBands }, (_, i) => 400 + i * (320 / numBands));
-    const traces: any[] = [];
+  const xTrue = aTrue.map((a) => a * photons);
+  const { variance, y } = simulateMixture(E, xTrue, readNoise, createRng(seed));
+  const xHat = method === "ols" ? ols(E, y) : method === "fcls" ? fcls(E, y, y.reduce((s, v) => s + v, 0)) : nnls(E, y);
+  const xSum = xHat.reduce((s, v) => s + v, 0);
+  const fit = reconstruct(E, xHat);
+  const cov = olsCovariance(E, variance);
+  const shareSigma = shareStdDev(xTrue, cov);
+  const kappa = conditionNumber(E);
+  const resid = y.map((v, b) => v - fit[b]);
+  const rms = Math.sqrt(resid.reduce((s, r) => s + r * r, 0) / bands);
+  const chi2 = resid.reduce((s, r, b) => s + (r * r) / variance[b], 0) / Math.max(1, bands - dyes.length);
+  const solved = xHat.every(Number.isFinite);
 
-    // Endmember spectra
-    for (let e = 0; e < numEndmembers; e++) {
-      const peak = endmemberPeaks[e];
-      const width = endmemberWidths[e];
-      const sigma = width / 2.355;
-      const spectrum = wavelengths.map(w => Math.exp(-0.5 * ((w - peak) / sigma) ** 2));
-      traces.push({
-        x: wavelengths, y: spectrum, type: "scatter", mode: "lines" as const,
-        name: `EM${e + 1} (${peak}nm)`,
-        line: { color: ["#34d399", "#fbbf24", "#f87171", "#a78bfa", "#60a5fa", "#f472b6"][e], width: 2 },
-      });
-    }
+  const spectrum = [
+    { x: centres, y, type: "scatter" as const, mode: "markers" as const, name: "Measured", marker: { color: "#e5e7eb", size: 5 } },
+    { x: centres, y: fit, type: "scatter" as const, mode: "lines" as const, name: "Fit E·x̂", line: { color: "#ffffff", width: 2, dash: "dash" } },
+    ...dyes.map((f, j) => ({
+      x: centres, y: E.map((r) => r[j] * (solved ? xHat[j] : 0)), type: "scatter" as const, mode: "lines" as const, name: f.name, line: { color: COLORS[j], width: 2 },
+    })),
+  ];
+  // Relative error σ_j/x_j against the photon budget: band variance (E·x)_b + σ_r² with x ∝ N.
+  const budgets = Array.from({ length: 31 }, (_, i) => 10 ** (2 + (4 * i) / 30));
+  const errorCurves = dyes.map((f, j) => ({
+    x: budgets,
+    y: budgets.map((N) => {
+      if (!(aTrue[j] > 0)) return NaN;
+      const m = reconstruct(E, aTrue.map((a) => a * N));
+      const c = olsCovariance(E, m.map((v) => v + readNoise * readNoise));
+      return (100 * Math.sqrt(c[j][j])) / (aTrue[j] * N);
+    }),
+    type: "scatter" as const, mode: "lines" as const, name: f.name, line: { color: COLORS[j], width: 2 },
+  }));
 
-    // Mixed spectrum
-    const mixed = wavelengths.map((w, i) => {
-      let val = 0;
-      for (let e = 0; e < numEndmembers; e++) {
-        val += normalizedAbundances[e] * Math.exp(-0.5 * ((w - endmemberPeaks[e]) / (endmemberWidths[e] / 2.355)) ** 2);
-      }
-      return val + (noiseLevel / 100) * Math.sin(i * 1.7);
-    });
-    traces.push({
-      x: wavelengths, y: mixed, type: "scatter", mode: "lines" as const,
-      name: "Observed Mix", line: { color: "#ffffff", width: 2, dash: "dash" },
-    });
-
-    return traces;
-  }, [numEndmembers, numBands, noiseLevel, normalizedAbundances]);
-
-  const abundanceData = useMemo(() => {
-    const labels = normalizedAbundances.map((_, i) => `EM${i + 1}`);
-    const colors = ["#34d399", "#fbbf24", "#f87171", "#a78bfa", "#60a5fa", "#f472b6"];
-    const error = (method === "nnls" ? 0.02 : method === "cls" ? 0.05 : 0.08) * (1 + noiseLevel / 10);
-    const unmixed = normalizedAbundances.map((a, i) => Math.max(0, a + Math.sin(i * 2.3 + 1.7) * error));
-    const sum = unmixed.reduce((s, v) => s + v, 0);
-    const final = sum > 0 ? unmixed.map(a => a / sum) : unmixed;
-
-    return [{
-      x: labels, y: final, type: "bar" as const,
-      marker: { color: colors.slice(0, numEndmembers) },
-      name: "Estimated Abundance",
-    }, {
-      x: labels, y: normalizedAbundances, type: "scatter", mode: "markers+lines" as const,
-      name: "True Abundance", line: { color: "#ffffff", dash: "dot" },
-      marker: { color: "#ffffff", size: 8 },
-    }];
-  }, [numEndmembers, normalizedAbundances, method, noiseLevel]);
-
-  const errorData = useMemo(() => {
-    const noiseLevels = Array.from({ length: 20 }, (_, i) => i * 2.5);
-    const errors = noiseLevels.map(n => {
-      const base = method === "nnls" ? 0.5 : method === "cls" ? 1.2 : 2.5;
-      return base + n * (method === "nnls" ? 0.08 : method === "cls" ? 0.15 : 0.25);
-    });
-    return [{
-      x: noiseLevels, y: errors, type: "scatter", mode: "lines" as const,
-      name: "Unmixing Error (%)", line: { color: "#60a5fa", width: 2 },
-    }, {
-      x: [noiseLevel], y: [method === "nnls" ? 0.5 + noiseLevel * 0.08 : method === "cls" ? 1.2 + noiseLevel * 0.15 : 2.5 + noiseLevel * 0.25],
-      type: "scatter", mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 },
-    }];
-  }, [noiseLevel, method]);
-
-  const reconstructionError = method === "nnls" ? 0.5 + noiseLevel * 0.08 : method === "cls" ? 1.2 + noiseLevel * 0.15 : 2.5 + noiseLevel * 0.25;
+  const missing = dyes.filter((_, j) => !(inRange[j] > 0)).map((f) => f.name);
+  const duplicate = new Set(dyes.map((f) => f.name)).size < dyes.length;
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-4 mb-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Endmembers</p>
-          <p className="text-2xl font-bold text-blue-400">{numEndmembers}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Method</p>
-          <p className="text-xl font-bold text-green-400">{method === "nnls" ? "NNLS" : method === "cls" ? "CLS" : "Vertex"}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Recon. Error</p>
-          <p className="text-2xl font-bold text-yellow-400">{reconstructionError.toFixed(1)}%</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Noise Level</p>
-          <p className="text-2xl font-bold text-purple-400">{noiseLevel}%</p>
-        </div>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <ValidatedNumberInput label="Number of Endmembers" value={numEndmembers} onChange={setNumEndmembers} min={2} max={6} />
-        <ValidatedNumberInput label="Spectral Bands" value={numBands} onChange={setNumBands} min={8} max={256} />
-        <ValidatedNumberInput label="Noise Level (%)" value={noiseLevel} onChange={setNoiseLevel} min={0} max={30} />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Method</span>
-          <select value={method} onChange={e => setMethod(e.target.value as any)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            <option value="nnls">NNLS (Non-negative Least Squares)</option>
-            <option value="cls">CLS (Constrained Least Squares)</option>
-            <option value="vertex">Vertex Component Analysis</option>
-          </select>
-        </label>
-        <ValidatedNumberInput label="Abundance EM1 (fraction)" value={abundance1} onChange={setAbundance1} min={0} max={1} step="0.05" />
-        <ValidatedNumberInput label="Abundance EM2 (fraction)" value={Math.min(abundance2, 1 - abundance1)} onChange={setAbundance2} min={0} max={1} step="0.05" />
-      </div>
-
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-        <h3 className="text-sm font-semibold mb-3">Abundance Fractions (Σ = 1)</h3>
-        <div className="grid gap-2 sm:grid-cols-3">
-          {normalizedAbundances.slice(0, numEndmembers).map((a, i) => (
-            <div key={i} className="bg-gray-800 rounded p-3">
-              <p className="text-xs text-gray-400">EM{i + 1} ({endmemberPeaks[i]}nm)</p>
-              <div className="w-full bg-gray-700 rounded-full h-2 mt-1">
-                <div className="h-2 rounded-full" style={{ width: `${a * 100}%`, backgroundColor: ["#34d399", "#fbbf24", "#f87171", "#a78bfa", "#60a5fa", "#f472b6"][i] }} />
-              </div>
-              <p className="text-sm font-bold mt-1">{(a * 100).toFixed(1)}%</p>
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
+          {slots.map((s, i) => (
+            <div key={i} className="grid grid-cols-2 gap-3 items-end">
+              <label className="block text-sm text-gray-400">
+                Endmember {i + 1}
+                <select value={i >= 2 && s.name === "none" ? "none" : fluorophoreByName(s.name).name} onChange={(e) => s.set(e.target.value)}
+                  className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white">
+                  {i >= 2 && <option value="none">none</option>}
+                  {FLUOROPHORES.map((f) => <option key={f.name} value={f.name}>{f.name}</option>)}
+                </select>
+              </label>
+              <ValidatedNumberInput label="Share of photons" value={s.aRaw} onChange={s.setA} min={0} max={1} step="0.05" />
             </div>
           ))}
+          <div className="grid grid-cols-2 gap-3">
+            <ValidatedNumberInput label="Detected photons per pixel" value={photonsRaw} onChange={setPhotons} min={1} max={1e8} step="100" />
+            <ValidatedNumberInput label="Read noise per band (e⁻)" value={readRaw} onChange={setRead} min={0} max={100} step="0.1" />
+            <ValidatedNumberInput label="Spectral bands" value={bandsRaw} onChange={setBands} min={4} max={128} step="1" />
+            <ValidatedNumberInput label="Noise seed" value={seedRaw} onChange={setSeed} min={0} max={1e6} step="1" />
+            <ValidatedNumberInput label="Range start (nm)" value={startRaw} onChange={setStart} min={350} max={950} step="1" />
+            <ValidatedNumberInput label="Range end (nm)" value={endRaw} onChange={setEnd} min={360} max={1000} step="1" />
+          </div>
+          <label className="block text-sm text-gray-400">
+            Method
+            <select value={method} onChange={(e) => setMethod(e.target.value)} className="mt-1 w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white">
+              <option value="ols">OLS: unconstrained least squares</option>
+              <option value="nnls">NNLS: non-negative (Lawson–Hanson)</option>
+              <option value="fcls">FCLS: non-negative, sum = measured total</option>
+            </select>
+          </label>
+        </div>
+
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
+          <h2 className="text-lg font-semibold">Results</h2>
+          {missing.length > 0 && <p className="text-sm text-amber-400">{`No emission of ${missing.join(", ")} falls in the detected range: widen the range or drop the dye.`}</p>}
+          {duplicate && <p className="text-sm text-amber-400">Two endmembers are the same dye: E is rank deficient and the abundances are not identifiable.</p>}
+          <table className="w-full text-sm font-mono">
+            <thead>
+              <tr className="text-gray-400"><th className="text-left font-normal">Dye</th><th className="text-right font-normal">True</th><th className="text-right font-normal">Estimate</th><th className="text-right font-normal">±σ</th></tr>
+            </thead>
+            <tbody>
+              {dyes.map((f, j) => (
+                <tr key={j}>
+                  <td style={{ color: COLORS[j] }}>{f.name}</td>
+                  <td className="text-right">{fmt(aTrue[j] * 100, 1, " %")}</td>
+                  <td className="text-right text-green-400">{fmt((xHat[j] / xSum) * 100, 1, " %")}</td>
+                  <td className="text-right text-yellow-400">{fmt(shareSigma[j] * 100, 1, " %")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {row("Condition number κ(E)", kappa === Infinity ? "∞" : fmt(kappa, 2), "text-purple-400")}
+          {row("Residual rms", fmt(rms, 2, " e⁻/band"))}
+          {row("χ²/(B − K)", fmt(chi2, 2))}
+          {row("Band width", fmt(step, 2, " nm"))}
+          <p className="text-xs text-gray-500">The ±σ column is the OLS standard error of each share, from (EᵀE)⁻¹EᵀVE(EᵀE)⁻¹ by the delta method (FCLS errors are smaller); χ²/(B − K) ≈ 1 when the model fits within the noise.</p>
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 rounded-lg p-4">
-          <h3 className="text-sm font-semibold mb-2">Endmember Spectra & Observed Mix</h3>
-          <ChartPanel data={spectralData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-            xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151" },
-            margin: { t: 30, r: 20, b: 50, l: 50 }, legend: { font: { size: 9 } },
+          <h3 className="text-sm font-semibold mb-2">Measured spectrum and unmixed components</h3>
+          <ChartPanel data={spectrum} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+            xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "Photoelectrons per band", gridcolor: "#374151" },
+            margin: { t: 30, r: 20, b: 50, l: 60 }, showlegend: true,
           }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
-          <h3 className="text-sm font-semibold mb-2">Estimated vs True Abundances</h3>
-          <ChartPanel data={abundanceData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-            xaxis: { title: "Endmember" }, yaxis: { title: "Abundance (fraction)", gridcolor: "#374151", range: [0, 1] },
-            margin: { t: 30, r: 20, b: 50, l: 60 },
+          <h3 className="text-sm font-semibold mb-2">Relative error σ/x vs photon budget</h3>
+          <ChartPanel data={errorCurves} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+            xaxis: { title: "Detected photons per pixel", gridcolor: "#374151", type: "log" }, yaxis: { title: "σ/x (%)", gridcolor: "#374151", type: "log" },
+            margin: { t: 30, r: 20, b: 50, l: 60 }, showlegend: true,
           }} />
         </div>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <h3 className="text-sm font-semibold mb-2">Error vs Noise Level</h3>
-        <ChartPanel data={errorData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-          xaxis: { title: "Noise Level (%)", gridcolor: "#374151" }, yaxis: { title: "Unmixing Error (%)", gridcolor: "#374151" },
-          margin: { t: 30, r: 20, b: 50, l: 70 },
-        }} />
-      </div>
-
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-        <h3 className="text-lg font-semibold mb-3">Key Formulas</h3>
-        <div className="space-y-2 text-sm text-gray-300 font-mono">
-          <p><span className="text-blue-400">Linear mixing model:</span> r = E·a + n</p>
-          <p><span className="text-blue-400">Constraints:</span> aᵢ ≥ 0, Σ aᵢ = 1 (sum-to-one, non-negativity)</p>
-          <p><span className="text-blue-400">NNLS:</span> min‖r − E·a‖² s.t. aᵢ ≥ 0</p>
-          <p><span className="text-blue-400">CLS:</span> â = (EᵀE)⁻¹Eᵀr with constraint projection</p>
-          <p><span className="text-blue-400">Reconstruction error:</span> RMSE = √(Σ(rᵢ − r̂ᵢ)² / N)</p>
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="space-y-1 text-sm text-gray-300 font-mono">
+          <p>y = E·x + n, E_bj = ∫_band b F_j dλ / ∫_range F_j dλ, var(n_b) = (E·x)_b + σ_read²</p>
+          <p>OLS x̂ = (EᵀE)⁻¹Eᵀy; NNLS min‖y − Ex‖² with x ≥ 0; FCLS adds Σx = Σy</p>
+          <p>Cov(x̂) = (EᵀE)⁻¹ Eᵀ diag(var) E (EᵀE)⁻¹, κ(E) = √(λ_max/λ_min of EᵀE)</p>
         </div>
+        <p className="text-xs text-gray-500 mt-2">
+          Endmembers are the FPbase-fitted emission bands of the fluorescence-spectra page, binned into equal bands between
+          the range limits; x is the number of detected photons from each dye. One noisy pixel is simulated from a seeded
+          generator, with shot noise in its Gaussian limit and read noise in every band; change the seed for another noise
+          draw. Background, autofluorescence and errors in the reference spectra are not included: in practice those, not
+          shot noise, often limit unmixing.
+        </p>
       </div>
     </>
   );

@@ -1,192 +1,222 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-const COLORS = ["#f87171", "#34d399", "#60a5fa", "#fbbf24", "#a78bfa", "#f472b6"];
+import { cameraNoise } from "../../../physics/detectors/camera-snr";
+import { FLUOROPHORES, bandAtWavelength, fluorophoreByName, relativeSignal } from "../../../physics/imaging/fluorophores";
+
+const COLORS = ["#60a5fa", "#4ade80", "#f87171", "#a78bfa"];
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
+
+interface Channel { dye: string; laser: number; center: number; width: number }
+const DEFAULT_CHANNELS = ["EGFP,488,525,50", "mCherry,561,620,60", "miRFP670,640,700,75", "mTagBFP2,405,450,50"];
+
+/** "dye,laser nm,filter centre nm,filter width nm" from the URL, with each field clamped. */
+function parseChannel(raw: string, fallback: string): Channel {
+  const [dye, laser, center, width] = raw.split(",");
+  const [fd, fl, fc, fw] = fallback.split(",");
+  const num = (s: string | undefined) => (s?.trim() ? Number(s) : NaN);
+  return {
+    dye: fluorophoreByName(dye ?? fd).name,
+    laser: clamp(num(laser), 350, 800, Number(fl)),
+    center: clamp(num(center), 350, 900, Number(fc)),
+    width: clamp(num(width), 1, 300, Number(fw)),
+  };
+}
+const formatChannel = (c: Channel) => `${c.dye},${c.laser},${c.center},${c.width}`;
 
 export default function SimultaneousMulticolorPage() {
-  const [numChannels, setNumChannels] = useURLState("numChannels", 3);
-  const [excitationNm, setExcitationNm] = useState([488, 561, 640]);
-  const [emissionCenter, setEmissionCenter] = useState([525, 580, 680]);
-  const [emissionBW, setEmissionBW] = useState([30, 30, 30]);
-  const [crosstalk, setCrosstalk] = useURLState("crosstalk", 5);
-  const [frameRate, setFrameRate] = useURLState("frameRate", 30);
-  const [pixelSize, setPixelSize] = useURLState("pixelSize", 6.5);
-  const [binning, setBinning] = useURLState("binning", 1);
-  const [readNoise, setReadNoise] = useURLState("readNoise", 1.5);
-  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 0.01);
-  const [quantumEff, setQuantumEff] = useURLState("quantumEff", 90);
-  const [exposureMs, setExposureMs] = useURLState("exposureMs", 20);
+  const [numRaw, setNum] = useURLState("numChannels", 3);
+  const [ch1, setCh1] = useURLState("ch1", DEFAULT_CHANNELS[0]);
+  const [ch2, setCh2] = useURLState("ch2", DEFAULT_CHANNELS[1]);
+  const [ch3, setCh3] = useURLState("ch3", DEFAULT_CHANNELS[2]);
+  const [ch4, setCh4] = useURLState("ch4", DEFAULT_CHANNELS[3]);
+  const [fluxRaw, setFlux] = useURLState("photonFlux", 25000); // photons/pixel/s at the camera, own dye
+  const [exposureRaw, setExposure] = useURLState("exposureMs", 20);
+  const [readoutRaw, setReadout] = useURLState("readoutMs", 2);
+  const [pixelRaw, setPixel] = useURLState("pixelSize", 6.5); // µm
+  const [binningRaw, setBinning] = useURLState("binning", 1);
+  const [binMode, setBinMode] = useURLState("binMode", "charge");
+  const [readRaw, setRead] = useURLState("readNoise", 1.5); // e⁻ rms
+  const [darkRaw, setDark] = useURLState("darkCurrent", 0.01); // e⁻/pixel/s
+  const [qeRaw, setQe] = useURLState("quantumEff", 90); // %
 
-  const effectivePixel = pixelSize * binning;
-  const maxFramerate = 1000 / (exposureMs + 2);
-  const photonRate = 500; // photons/pixel/frame at reference conditions
-  const signalPerChannel = photonRate * (quantumEff / 100) * (exposureMs / 20) * binning * binning;
-  const darkE = darkCurrent * exposureMs / 1000 * binning * binning;
-  const snrPerChannel = signalPerChannel / Math.sqrt(signalPerChannel + readNoise ** 2 + darkE);
+  const num = Math.round(clamp(numRaw, 1, 4, 3));
+  const raws = [ch1, ch2, ch3, ch4];
+  const setters = [setCh1, setCh2, setCh3, setCh4];
+  const channels = raws.slice(0, num).map((r, i) => parseChannel(r, DEFAULT_CHANNELS[i]));
+  const flux = clamp(fluxRaw, 0, 1e9, 25000);
+  const exposure = clamp(exposureRaw, 0.01, 10000, 20) * 1e-3;
+  const readout = clamp(readoutRaw, 0, 1000, 2) * 1e-3;
+  const pixel = clamp(pixelRaw, 0.5, 50, 6.5);
+  const binning = [1, 2, 4].includes(binningRaw) ? binningRaw : 1;
+  const readNoise = clamp(readRaw, 0, 100, 1.5);
+  const dark = clamp(darkRaw, 0, 1e4, 0.01);
+  const qe = clamp(qeRaw, 1, 100, 90) / 100;
 
-  const spectralData = useMemo(() => {
-    const x = Array.from({ length: 300 }, (_, i) => 400 + i * 1.5);
-    const traces: any[] = [];
-    for (let c = 0; c < Math.min(numChannels, 6); c++) {
-      const em = emissionCenter[c] || 500;
-      const bw = emissionBW[c] || 30;
-      const sigma = bw / 2.355;
-      const y = x.map(v => Math.exp(-0.5 * ((v - em) / sigma) ** 2));
-      traces.push({
-        x, y, type: "scatter", mode: "lines" as const,
-        name: `Channel ${c + 1} (${em} nm)`,
-        line: { color: COLORS[c], width: 2 },
-        fill: "tozeroy", fillcolor: COLORS[c] + "20",
-      });
-    }
-    return traces;
-  }, [numChannels, emissionCenter, emissionBW]);
+  // Spillover L[i][j]: signal of dye j in channel i over its signal in its own channel j, all lasers on.
+  const lasers = channels.map((c) => c.laser * 1e-9);
+  const filterBand = (c: Channel) => [(c.center - c.width / 2) * 1e-9, (c.center + c.width / 2) * 1e-9] as const;
+  const R = channels.map((ci) => channels.map((cj) => relativeSignal(fluorophoreByName(cj.dye), lasers, ...filterBand(ci))));
+  const L = R.map((rowI) => rowI.map((v, j) => v / R[j][j]));
 
-  const crosstalkData = useMemo(() => {
-    const channels = Array.from({ length: Math.min(numChannels, 6) }, (_, i) => i + 1);
-    const crosstalkMatrix = channels.map((_, i) =>
-      channels.map((_, j) => {
-        if (i === j) return 100;
-        const em_i = emissionCenter[i] || 500;
-        const bw_i = emissionBW[i] || 30;
-        const em_j = emissionCenter[j] || 500;
-        const bw_j = emissionBW[j] || 30;
-        const sigma_i = bw_i / 2.355;
-        const sigma_j = bw_j / 2.355;
-        const overlap = Math.exp(-0.5 * (em_i - em_j) ** 2 / (sigma_i ** 2 + sigma_j ** 2));
-        return crosstalk * overlap;
-      })
-    );
-    const z = crosstalkMatrix;
-    return [{
-      z, x: channels.map(c => `Ch ${c}`), y: channels.map(c => `Ch ${c}`),
-      type: "heatmap" as const, colorscale: "YlOrRd", showscale: true,
-      colorbar: { title: "Signal %" },
-    }];
-  }, [numChannels, crosstalk]);
+  // Per-channel SNR: own-dye signal S, bleed-through from the other dyes as background.
+  const pixels = binning * binning;
+  const S = flux * exposure * qe * pixels;
+  const D = dark * exposure * pixels;
+  const sigmaRead = binMode === "digital" ? readNoise * binning : readNoise;
+  const snrOwn = S / cameraNoise({ signal: S, read: sigmaRead, dark: D });
+  const snr = L.map((rowI, i) => {
+    const background = rowI.reduce((s, l, j) => (j === i ? s : s + l * S), 0);
+    return S / cameraNoise({ signal: S, read: sigmaRead, dark: D + background });
+  });
 
-  const timingData = useMemo(() => {
-    const exposures = Array.from({ length: 20 }, (_, i) => 5 + i * 5);
-    const maxRates = exposures.map(e => 1000 / (e + 2));
-    return [{
-      x: exposures, y: maxRates, type: "scatter", mode: "lines" as const,
-      name: "Max Frame Rate", line: { color: "#60a5fa", width: 2 },
-    }, {
-      x: [exposureMs], y: [maxFramerate], type: "scatter", mode: "markers" as const,
-      name: "Current", marker: { color: "#f87171", size: 12 },
-    }];
-  }, [exposureMs, maxFramerate]);
+  const fpsSimultaneous = 1 / (exposure + readout);
+  const fpsSequential = 1 / (num * (exposure + readout));
 
-  const handleChannelChange = (idx: number, field: "exc" | "em" | "bw", value: number) => {
-    if (field === "exc") {
-      const n = [...excitationNm]; n[idx] = value; setExcitationNm(n.length < numChannels ? [...n, ...Array(numChannels - n.length).fill(500)] : n);
-    } else if (field === "em") {
-      const n = [...emissionCenter]; n[idx] = value; setEmissionCenter(n.length < numChannels ? [...n, ...Array(numChannels - n.length).fill(500)] : n);
-    } else {
-      const n = [...emissionBW]; n[idx] = value; setEmissionBW(n.length < numChannels ? [...n, ...Array(numChannels - n.length).fill(30)] : n);
-    }
-  };
+  const warnings: string[] = [];
+  channels.forEach((c, i) => {
+    if (!(R[i][i] > 0)) warnings.push(`Channel ${i + 1} detects none of its own dye ${c.dye}: no laser excites it or the filter misses its emission.`);
+    channels.forEach((d, j) => {
+      if (j > i && Math.abs(c.center - d.center) < (c.width + d.width) / 2) warnings.push(`Filters ${i + 1} and ${j + 1} overlap: a dichroic can't split the same band twice.`);
+    });
+    lasers.forEach((l, k) => {
+      if (Math.abs(l * 1e9 - c.center) <= c.width / 2) warnings.push(`Laser ${k + 1} (${l * 1e9} nm) lies inside filter ${i + 1}: it needs a notch filter.`);
+    });
+  });
+
+  const wl = Array.from({ length: 451 }, (_, i) => 380 + i);
+  const spectra = channels.flatMap((c, i) => {
+    const f = fluorophoreByName(c.dye);
+    return [
+      { x: wl, y: wl.map((l) => bandAtWavelength(f.em, l * 1e-9)), type: "scatter" as const, mode: "lines" as const, name: `${f.name} emission`, line: { color: COLORS[i], width: 2 } },
+      { x: wl, y: wl.map((l) => (Math.abs(l - c.center) <= c.width / 2 ? 1 : 0)), type: "scatter" as const, mode: "lines" as const, name: `Filter ${i + 1}`, line: { color: COLORS[i], width: 1, dash: "dot" } },
+    ];
+  });
+  const exposures = Array.from({ length: 100 }, (_, i) => 1 + i);
+  const timing = [
+    { x: exposures, y: exposures.map((e) => 1000 / (e + readout * 1e3)), type: "scatter" as const, mode: "lines" as const, name: "Simultaneous", line: { color: "#4ade80", width: 2 } },
+    { x: exposures, y: exposures.map((e) => 1000 / (num * (e + readout * 1e3))), type: "scatter" as const, mode: "lines" as const, name: `Sequential (${num} channels)`, line: { color: "#f87171", width: 2 } },
+    { x: [exposure * 1e3], y: [fpsSimultaneous], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#facc15", size: 10 } },
+  ];
+
+  const update = (i: number, patch: Partial<Channel>) => setters[i](formatChannel({ ...channels[i], ...patch }));
+  const field = "mt-1 w-full bg-gray-900 border border-gray-700 rounded px-2 py-1 text-white text-sm";
 
   return (
     <>
-            
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Effective Pixel</p>
-          <p className="text-2xl font-bold text-blue-400">{effectivePixel.toFixed(1)} µm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Max Frame Rate</p>
-          <p className="text-2xl font-bold text-green-400">{Math.min(frameRate, maxFramerate).toFixed(1)} fps</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">SNR per Channel</p>
-          <p className="text-2xl font-bold text-yellow-400">{snrPerChannel.toFixed(1)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Channels</p>
-          <p className="text-2xl font-bold text-purple-400">{numChannels}</p>
-        </div>
+        {[
+          ["Binned pixel", `${(pixel * binning).toFixed(1)} µm`, "text-blue-400"],
+          ["Frame rate, simultaneous", fmt(fpsSimultaneous, 1, " fps"), "text-green-400"],
+          ["Frame rate, sequential", fmt(fpsSequential, 1, " fps"), "text-red-400"],
+          ["SNR, own dye only", fmt(snrOwn, 2), "text-yellow-400"],
+        ].map(([label, value, color]) => (
+          <div key={label} className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <p className="text-sm text-gray-400">{label}</p>
+            <p className={`text-2xl font-bold ${color}`}>{value}</p>
+          </div>
+        ))}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 mb-6">
-        <ValidatedNumberInput label="Number of Channels (1–6)" value={numChannels} onChange={setNumChannels} min={1} max={6} />
-        <ValidatedNumberInput label="Base Crosstalk (%)" value={crosstalk} onChange={setCrosstalk} min={0} max={50} step="0.5" />
-        <ValidatedNumberInput label="Exposure Time (ms)" value={exposureMs} onChange={setExposureMs} min={1} step="1" />
-        <ValidatedNumberInput label="Target Frame Rate (fps)" value={frameRate} onChange={setFrameRate} min={1} max={1000} step="1" />
-        <ValidatedNumberInput label="Pixel Size (µm)" value={pixelSize} onChange={setPixelSize} min={1} step="0.1" />
+      <div className="grid gap-4 sm:grid-cols-3 mb-6">
+        <ValidatedNumberInput label="Number of channels (1–4)" value={numRaw} onChange={setNum} min={1} max={4} step="1" />
+        <ValidatedNumberInput label="Own-dye photon flux (photons/pixel/s)" value={fluxRaw} onChange={setFlux} min={0} max={1e9} step="1000" />
+        <ValidatedNumberInput label="Exposure (ms)" value={exposureRaw} onChange={setExposure} min={0.01} max={10000} step="1" />
+        <ValidatedNumberInput label="Readout time (ms)" value={readoutRaw} onChange={setReadout} min={0} max={1000} step="0.5" />
+        <ValidatedNumberInput label="Pixel size (µm)" value={pixelRaw} onChange={setPixel} min={0.5} max={50} step="0.1" />
         <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
           <span className="text-sm text-gray-300">Binning</span>
-          <select value={binning} onChange={e => setBinning(+e.target.value)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+          <select value={binning} onChange={(e) => setBinning(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
             <option value={1}>1×1</option><option value={2}>2×2</option><option value={4}>4×4</option>
           </select>
+          <select value={binMode} onChange={(e) => setBinMode(e.target.value)} className="mt-2 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            <option value="charge">Charge binning (CCD): one read</option>
+            <option value="digital">Digital sum (CMOS): B² reads</option>
+          </select>
         </label>
-        <ValidatedNumberInput label="Quantum Efficiency (%)" value={quantumEff} onChange={setQuantumEff} min={10} max={100} />
-        <ValidatedNumberInput label="Read Noise (e⁻)" value={readNoise} onChange={setReadNoise} min={0.1} step="0.1" />
-        <ValidatedNumberInput label="Dark Current (e⁻/pix/s)" value={darkCurrent} onChange={setDarkCurrent} min={0} step="0.001" />
+        <ValidatedNumberInput label="Quantum efficiency (%)" value={qeRaw} onChange={setQe} min={1} max={100} step="1" />
+        <ValidatedNumberInput label="Read noise (e⁻ rms)" value={readRaw} onChange={setRead} min={0} max={100} step="0.1" />
+        <ValidatedNumberInput label="Dark current (e⁻/pixel/s)" value={darkRaw} onChange={setDark} min={0} max={1e4} step="0.001" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-        <h3 className="text-lg font-semibold mb-3">Channel Configuration</h3>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {Array.from({ length: numChannels }, (_, i) => (
+        <h3 className="text-lg font-semibold mb-3">Channels</h3>
+        <div className="grid gap-3 sm:grid-cols-4">
+          {channels.map((c, i) => (
             <div key={i} className="bg-gray-800 rounded p-3" style={{ borderLeft: `3px solid ${COLORS[i]}` }}>
               <p className="text-sm font-medium mb-2">Channel {i + 1}</p>
-              <label className="block text-xs text-gray-400">Excitation (nm)
-                <input type="number" value={excitationNm[i] || 500} onChange={e => handleChannelChange(i, "exc", +e.target.value)}
-                  className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
+              <label className="block text-xs text-gray-400">Fluorophore
+                <select value={c.dye} onChange={(e) => update(i, { dye: e.target.value })} className={field}>
+                  {FLUOROPHORES.map((f) => <option key={f.name} value={f.name}>{f.name}</option>)}
+                </select>
               </label>
-              <label className="block text-xs text-gray-400 mt-1">Emission Center (nm)
-                <input type="number" value={emissionCenter[i] || 500} onChange={e => handleChannelChange(i, "em", +e.target.value)}
-                  className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
-              </label>
-              <label className="block text-xs text-gray-400 mt-1">Bandwidth (nm)
-                <input type="number" value={emissionBW[i] || 30} onChange={e => handleChannelChange(i, "bw", +e.target.value)}
-                  className="mt-1 w-full bg-gray-900 border border-gray-700 rounded px-2 py-1 text-white text-sm" />
-              </label>
+              <ValidatedNumberInput label="Laser (nm)" value={c.laser} onChange={(v) => update(i, { laser: v })} min={350} max={800} step="1" />
+              <ValidatedNumberInput label="Filter centre (nm)" value={c.center} onChange={(v) => update(i, { center: v })} min={350} max={900} step="1" />
+              <ValidatedNumberInput label="Filter width (nm)" value={c.width} onChange={(v) => update(i, { width: v })} min={1} max={300} step="1" />
             </div>
           ))}
         </div>
+        {warnings.length > 0 && (
+          <ul className="mt-3 text-sm text-amber-400 list-disc pl-5">{warnings.map((w) => <li key={w}>{w}</li>)}</ul>
+        )}
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 overflow-x-auto">
+        <h3 className="text-lg font-semibold mb-1">Spillover matrix (%)</h3>
+        <p className="text-xs text-gray-500 mb-3">Signal of each dye in each channel, as a percentage of its signal in its own channel, with all lasers on. A log-normal band is zero past its anti-Stokes cutoff, so spillover from those weak tails reads 0.</p>
+        <table className="text-sm font-mono">
+          <thead>
+            <tr className="text-gray-400">
+              <th className="text-left pr-4 font-normal">Channel ↓ / dye →</th>
+              {channels.map((c, j) => <th key={j} className="px-3 font-normal" style={{ color: COLORS[j] }}>{c.dye}</th>)}
+              <th className="px-3 font-normal text-yellow-400">SNR</th>
+            </tr>
+          </thead>
+          <tbody>
+            {L.map((rowI, i) => (
+              <tr key={i}>
+                <td className="pr-4" style={{ color: COLORS[i] }}>{`${i + 1}: ${channels[i].center}/${channels[i].width}`}</td>
+                {rowI.map((v, j) => <td key={j} className={`px-3 text-right ${i === j ? "text-gray-500" : v > 0.05 ? "text-red-400" : ""}`}>{fmt(v * 100, 2)}</td>)}
+                <td className="px-3 text-right text-yellow-400">{fmt(snr[i], 2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 rounded-lg p-4">
-          <h3 className="text-sm font-semibold mb-2">Emission Spectra & Separation</h3>
-          <ChartPanel data={spectralData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-            xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151" },
-            margin: { t: 30, r: 20, b: 50, l: 50 }, legend: { font: { size: 10 } },
+          <h3 className="text-sm font-semibold mb-2">Emission spectra and filters</h3>
+          <ChartPanel data={spectra} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+            xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "Normalised emission", gridcolor: "#374151", range: [0, 1.05] },
+            margin: { t: 30, r: 20, b: 50, l: 50 }, showlegend: true,
           }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
-          <h3 className="text-sm font-semibold mb-2">Crosstalk Matrix (%)</h3>
-          <ChartPanel data={crosstalkData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-            xaxis: { title: "Detector Channel" }, yaxis: { title: "Dye Channel" },
-            margin: { t: 30, r: 80, b: 50, l: 50 },
+          <h3 className="text-sm font-semibold mb-2">Frame rate vs exposure</h3>
+          <ChartPanel data={timing} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+            xaxis: { title: "Exposure (ms)", gridcolor: "#374151" }, yaxis: { title: "Frame rate (fps)", gridcolor: "#374151", type: "log" },
+            margin: { t: 30, r: 20, b: 50, l: 60 }, showlegend: true,
           }} />
         </div>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <h3 className="text-sm font-semibold mb-2">Frame Rate vs Exposure Time</h3>
-        <ChartPanel data={timingData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-          xaxis: { title: "Exposure (ms)", gridcolor: "#374151" }, yaxis: { title: "Max Frame Rate (fps)", gridcolor: "#374151" },
-          margin: { t: 30, r: 20, b: 50, l: 70 },
-        }} />
-      </div>
-
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-        <h3 className="text-lg font-semibold mb-3">Key Formulas</h3>
-        <div className="space-y-2 text-sm text-gray-300 font-mono">
-          <p><span className="text-blue-400">Effective pixel:</span> p_eff = p_pixel × binning</p>
-          <p><span className="text-blue-400">Max frame rate:</span> f_max = 1000 / (t_exp + t_read)</p>
-          <p><span className="text-blue-400">SNR:</span> SNR = S / √(S + σ_read² + I_dark × t_exp) × B²</p>
-          <p><span className="text-blue-400">Crosstalk:</span> CT(i,j) = exp(−Δλ²/(2(σᵢ²+σⱼ²))) × CT_base</p>
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="space-y-1 text-sm text-gray-300 font-mono">
+          <p>R_ij ∝ ε_j Σ_k f_ex,j(λ_k) Φ_j ∫_filter i F_j dλ / ∫F_j dλ, spillover L_ij = R_ij / R_jj</p>
+          <p>S = flux × t × QE × B², SNR_i = S / √(S + Σ_j≠i L_ij S + I_dark t B² + σ_read²)</p>
+          <p>σ_read² = σ² (charge binning) or B²σ² (digital sum); f = 1/(t + t_read), sequential 1/(N(t + t_read))</p>
         </div>
+        <p className="text-xs text-gray-500 mt-2">
+          Spectra are the FPbase-fitted log-normal bands of the fluorescence-spectra page. Every laser delivers the same photon
+          flux, filters are ideal top hats and each dye gives the same own-channel signal S; bleed-through photons count as
+          background shot noise, before any linear unmixing. Laser switching time and the camera&apos;s overlap readout
+          mode are not modelled.
+        </p>
       </div>
     </>
   );
