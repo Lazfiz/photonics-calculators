@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 83, 2026-10-18)
+## Status (session 84, 2026-10-18)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -17,14 +17,14 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | laser-safety | 40 / 40 | done (sessions 18, 23, 29–36) |
 | thin-film | 45 / 45 | done (sessions 25–28, 54–55); small findings below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
-| imaging | 26 / 64 | part 0 audit (session 78), parts 1–5 (79–83); 34 `knownIssue`s left; fix parts 6–15 below |
+| imaging | 30 / 64 | part 0 audit (session 78), parts 1–6 (79–84); 30 `knownIssue`s left; fix parts 7–15 below |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **281 / 457** | 34 `knownIssue`s (imaging) |
+| **total** | **285 / 457** | 30 `knownIssue`s (imaging) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -43,10 +43,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] **Imaging part 6: fluorophores and unmixing** (new `fluorophores.ts`: sourced FPbase peaks, spectrum model,
-  top-hat filter, bleed-through; new `linear-unmixing.ts`: OLS, NNLS Lawson–Hanson, FCLS, covariance σ²(EᵀE)⁻¹, seeded
-  PRNG): `fluorescence-spectra`, `spectral-unmixing`, `simultaneous-multicolor`, `hyperspectral-microscopy` (reuse
-  detectors/camera-snr.ts). Split 6a/6b if needed. Golden: multicolor SNR 21.16; hyperspectral 40.0 MiB, 32.0 s.
 - [ ] **Imaging part 7: OCT and holography** (new `oct.ts`: Δz = 0.4413λ²/(nΔλ), shot-noise SNR, visibility, Doppler;
   new `holography.ts`): `optical-coherence`, `low-coherence`, `digital-holography`, `computer-generated-holography`.
   Golden: octAxial(1310, 100, 1) = 7.5727 µm, n 1.33 → 5.6937, (840, 50) → 6.2272 µm; V(0.9, 0.004) = 0.132743;
@@ -163,6 +159,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `spectroscopy/absorption-depth`: Si at 550 nm gives 12.8 µm; Green 2008 gives 1.56 µm. Use `silicon-absorption.ts`.
 - Detectors part 7b leftovers (session 74 review): `streak-camera` window ignores the usable screen length and reads one pixel (not 2, Nyquist); `intensified-ccd` puts each electron's light in one pixel (no spot spread); `vacuum-photodiode` has one φ for threshold and dark emission and no stray capacitance.
 - `imaging/optical-sectioning-thickness` (session 80): Wilhelm's geometric section √[(0.88 λ/d)² + (√2 n PH/NA)²] is 40 % above the scalar wave-optical plane response at 1 AU and 25 % at 2 AU (`confocal.ts`); show both there too.
+- `imaging/fluorophores.ts` (session 84): log-normal bands are exactly 0 past their anti-Stokes cutoff (EGFP emission below 480 nm, mCherry excitation above 622 nm), so tail-only bleed-through reads 0; sampled FPbase spectra would fix it. Disclosed on the pages.
 - `detectors/gain-temperature` PMT branch: the −0.3 %/°C default is an entered value; source a typical dynode-gain coefficient in part 7 (Hamamatsu handbook §13.1.1 gives no number).
 **Materials**
 - `birefringent-crystals` lists the fused-silica Malitson set as quartz.
@@ -227,6 +224,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Imaging part 6 fluorophores and unmixing (session 84, PR #115): new `fluorophores.ts` (8 FPbase FPs, Siano–Metzler bands fitted to FPbase spectra; R₀ EGFP→mCherry 5.05 nm vs 5.11 raw; prefactor 0.021084 nm) and `linear-unmixing.ts` (OLS/NNLS/FCLS, MATLAB lsqnonneg 0/0.6929, sandwich covariance, delta-method shares); multicolor SNR 21.16, hyperspectral 40.0 MiB / 32.0 s; 4 pages tiered, 30 `knownIssue`s.
   - Imaging part 5 fluorescence dynamics and phase contrast (session 83, PR #114): new `fluorescence-dynamics.ts` (V_eff 0.7517 fL, N 22.63, G(0⁺) 1/(N(1−T)) 0.04909, Koppel ε√(Δτ T)/√(1+1/N) 94.87 → 92.84 at N 22.6; Soumpasis γ 0.8946, D 0.1118 µm²/s; Axelrod γ(K 1) 1.0967) and `phase-contrast.ts` (Zernike 0.6445, reversal at tan(φ/2) = a; DIC sin² with bias and stray light); `fcs`, `frap`, `contrast-methods` tiered, 34 `knownIssue`s.
   - Imaging part 4 super-resolution (session 82, PR #113): `super-resolution.ts` gains Mortensen eqs. 5–6 (4.2857 nm LS, 3.6836 nm MLE), Nyquist 2/ρ^(1/D), Legant 61.79 nm, SIM 1/k_c 89.91 nm, raw images 3(2m+1), ExM pre 65.05 / post 62.66 nm (the reviewer's 63.79 follows from no consistent model); `palm-storm`, `structured-illumination`, `expansion-microscopy` tiered, 37 `knownIssue`s.
   - Imaging part 3 light sheet and TIRF (session 81, PR #112): new `imaging/tirf.ts` (d = λ/(4π√…) 110.34 nm, Axelrod I_s/I_p) and `cleared-tissue.ts` (ballistic exp(−µ_t z), paraxial/marginal focal shift); `selective-plane` → `light-sheet` (eff. axial 1.0301 µm); 3 pages tiered, 40 `knownIssue`s.
