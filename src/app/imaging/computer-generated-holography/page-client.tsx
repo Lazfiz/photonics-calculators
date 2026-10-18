@@ -1,120 +1,142 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import {
+  BINARY_AMPLITUDE_EFFICIENCY, fresnelReconstructionPitch, phaseQuantizationEfficiency, pixelEnvelope, replayField, slmMaxAngle,
+} from "../../../physics/imaging/holography";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+
+const row = (label: string, value: string, color = "") => (
+  <div className="flex justify-between border-b border-gray-800 pb-2">
+    <span className="text-gray-400">{label}</span>
+    <span className={`font-mono ${color}`}>{value}</span>
+  </div>
+);
+
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toPrecision(digits)}${unit}` : "—");
+const BIT_DEPTHS = [1, 2, 3, 4, 6, 8, 10];
+
 export default function CGHPage() {
-  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 633);
-  const [pixelPitchUm, setPixelPitchUm] = useURLState("pixelPitchUm", 8);
-  const [slmWidth, setSlmWidth] = useURLState("slmWidth", 1920);
-  const [slmHeight, setSlmHeight] = useURLState("slmHeight", 1080);
-  const [reconstructionDistMm, setReconstructionDistMm] = useURLState("reconstructionDistMm", 500);
-  const [objectPoints, setObjectPoints] = useURLState("objectPoints", 1000);
-  const [bitDepth, setBitDepth] = useURLState("bitDepth", 8);
-  const [fillFactor, setFillFactor] = useURLState("fillFactor", 0.9);
-  const [diffractionEfficiency, setDiffractionEfficiency] = useURLState("diffractionEfficiency", 0.4);
+  const [lambdaRaw, setLambda] = useURLState("wavelengthNm", 633);
+  const [pitchRaw, setPitch] = useURLState("pixelPitchUm", 8);
+  const [nxRaw, setNx] = useURLState("slmWidth", 1920);
+  const [nyRaw, setNy] = useURLState("slmHeight", 1080);
+  const [zRaw, setZ] = useURLState("reconstructionDistMm", 500);
+  const [bitsRaw, setBits] = useURLState("bitDepth", 8);
+  const [fillRaw, setFill] = useURLState("fillFactor", 0.9);
+  const [typeRaw, setType] = useURLState("modulation", "phase");
+  const lambdaNm = clamp(lambdaRaw, 350, 1600, 633);
+  const pitchUm = clamp(pitchRaw, 1, 50, 8);
+  const Nx = Math.round(clamp(nxRaw, 64, 8192, 1920));
+  const Ny = Math.round(clamp(nyRaw, 64, 8192, 1080));
+  const zMm = clamp(zRaw, 10, 5000, 500);
+  const bits = BIT_DEPTHS.includes(bitsRaw) ? bitsRaw : 8;
+  const fill = clamp(fillRaw, 0.1, 1, 0.9);
+  const amplitude = typeRaw === "amplitude";
 
-  const lambda = wavelengthNm * 1e-9;
-  const lambdaUm = wavelengthNm * 1e-3;
-  const dx = pixelPitchUm * 1e-6;
-  const z = reconstructionDistMm * 1e-3;
-  const numPixels = slmWidth * slmHeight;
-  const memoryBytes = numPixels * (bitDepth / 8);
-  const fovX = slmWidth * pixelPitchUm;
-  const fovY = slmHeight * pixelPitchUm;
-  const angularRes = lambdaUm / (slmWidth * pixelPitchUm) * 1e3; // mrad
-  const maxDiffAngle = Math.asin(Math.min(lambda / (2 * dx), 1)) * 180 / Math.PI;
-  const hologramBandwidth = 1 / pixelPitchUm; // µm⁻¹
-  const zeroOrderEff = 1 - diffractionEfficiency;
-  const reconPixelPitch = (lambda * z) / (slmWidth * dx) * 1e6;
+  const lambda = lambdaNm * 1e-9;
+  const dx = pitchUm * 1e-6;
+  const z = zMm * 1e-3;
+  const levels = 2 ** bits;
+  const thetaMax = slmMaxAngle(lambda, dx);
+  const field = replayField(lambda, z, dx);
+  const spotX = fresnelReconstructionPitch(lambda, z, Nx, dx);
+  const spotY = fresnelReconstructionPitch(lambda, z, Ny, dx);
+  const angularRes = lambda / (Nx * dx);
+  const efficiency = amplitude ? BINARY_AMPLITUDE_EFFICIENCY : phaseQuantizationEfficiency(levels);
+  const edge = pixelEnvelope(1 / (2 * dx), dx, fill);
+  const memoryMB = (Nx * Ny * (amplitude ? 1 : bits)) / 8 / 1e6;
 
-  const fftComplexity = useMemo(() => {
-    const sizes = [256, 512, 1024, 2048, 4096];
-    const ops = sizes.map(n => n * n * Math.log2(n * n));
-    return [{ x: sizes, y: ops.map(o => o / 1e6), type: "bar" as const, name: "FFT Ops (M)", marker: { color: "#60a5fa" } }];
-  }, []);
+  const effChart = [
+    { x: BIT_DEPTHS, y: BIT_DEPTHS.map((b) => phaseQuantizationEfficiency(2 ** b)), type: "scatter" as const, mode: "lines+markers" as const, name: "Phase, 2^bits levels", line: { color: "#34d399" } },
+    { x: [1, 10], y: [BINARY_AMPLITUDE_EFFICIENCY, BINARY_AMPLITUDE_EFFICIENCY], type: "scatter" as const, mode: "lines" as const, name: "Binary amplitude", line: { color: "#f87171", dash: "dash" } },
+    { x: [amplitude ? 1 : bits], y: [efficiency], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#facc15", size: 10 } },
+  ];
 
-  const efficiencyChart = useMemo(() => {
-    const types = ["Binary Amplitude", "Binary Phase", "Kinoform", "Blazed Grating", "Multi-level (8)", "Ideal"];
-    const effs = [0.101, 0.405, 1.0, 1.0, 0.95, 1.0];
-    return [{ x: types, y: effs, type: "bar" as const, name: "Diff. Efficiency", marker: { color: effs.map(e => e > 0.9 ? "#34d399" : e > 0.3 ? "#fbbf24" : "#f87171") } }];
-  }, []);
+  const half = (field * 1e3) / 2; // mm
+  const xs = Array.from({ length: 201 }, (_, i) => -half + (i * 2 * half) / 200);
+  const freq = (xMm: number) => (xMm * 1e-3) / (lambda * z); // spatial frequency on the SLM for replay position x
+  const envChart = [
+    { x: xs, y: xs.map((x) => pixelEnvelope(freq(x), dx, fill)), type: "scatter" as const, mode: "lines" as const, name: `Fill factor ${fill}`, line: { color: "#60a5fa" } },
+    { x: xs, y: xs.map((x) => pixelEnvelope(freq(x), dx, 1)), type: "scatter" as const, mode: "lines" as const, name: "Fill factor 1", line: { color: "#a78bfa", dash: "dot" } },
+  ];
 
-  const fovChart = useMemo(() => {
-    const pitches = Array.from({ length: 30 }, (_, i) => 3 + i * 1);
-    const fvs = pitches.map(p => slmWidth * p / 1000);
-    return [
-      { x: pitches, y: fvs, type: "scatter", mode: "lines" as const, name: "FOV Width", line: { color: "#a78bfa", width: 2 } },
-      { x: [pixelPitchUm], y: [fovX / 1000], type: "scatter", mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
-    ];
-  }, [slmWidth, pixelPitchUm, fovX]);
+  const layout = (x: string, y: string, extra: object = {}) => ({
+    paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, margin: { l: 60, r: 20, t: 20, b: 60 },
+    xaxis: { title: x, gridcolor: "#333" }, yaxis: { title: y, gridcolor: "#333", ...extra }, showlegend: true,
+  });
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-4 mb-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Hologram Memory</p>
-          <p className="text-2xl font-bold text-blue-400">{(memoryBytes / 1e6).toFixed(1)} MB</p>
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
+          <ValidatedNumberInput label="Wavelength λ (nm)" value={lambdaRaw} onChange={setLambda} min={350} max={1600} step="1" />
+          <ValidatedNumberInput label="SLM pixel pitch Δx (µm)" value={pitchRaw} onChange={setPitch} min={1} max={50} step="0.1" />
+          <ValidatedNumberInput label="SLM width N_x (px)" value={nxRaw} onChange={setNx} min={64} max={8192} step="64" />
+          <ValidatedNumberInput label="SLM height N_y (px)" value={nyRaw} onChange={setNy} min={64} max={8192} step="64" />
+          <ValidatedNumberInput label="Replay distance or Fourier-lens focal length z (mm)" value={zRaw} onChange={setZ} min={10} max={5000} step="10" />
+          <ValidatedNumberInput label="Pixel fill factor (area)" value={fillRaw} onChange={setFill} min={0.1} max={1} step="0.05" />
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">Modulation</label>
+            <select value={amplitude ? "amplitude" : "phase"} onChange={(e) => setType(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white">
+              <option value="phase">Phase (kinoform)</option>
+              <option value="amplitude">Binary amplitude</option>
+            </select>
+          </div>
+          {!amplitude && (
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Phase bit depth</label>
+              <select value={bits} onChange={(e) => setBits(+e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white">
+                {BIT_DEPTHS.map((b) => (
+                  <option key={b} value={b}>{b} bit ({2 ** b} levels)</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">FOV (w × h)</p>
-          <p className="text-2xl font-bold text-green-400">{(fovX).toFixed(0)}×{(fovY).toFixed(0)} µm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Angular Resolution</p>
-          <p className="text-2xl font-bold text-yellow-400">{angularRes.toFixed(3)} mrad</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Max Diff. Angle</p>
-          <p className="text-2xl font-bold text-purple-400">{maxDiffAngle.toFixed(1)}°</p>
+
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
+          <h2 className="text-lg font-semibold">Results</h2>
+          {row("Largest diffraction angle arcsin(λ/2Δx)", fmt((thetaMax * 180) / Math.PI, 4, "°"), "text-purple-400")}
+          {row("Replay field λz/Δx", fmt(field * 1e3, 4, " mm"), "text-green-400")}
+          {row("Replay spot λz/(NΔx), x × y", `${fmt(spotX * 1e6, 4)} × ${fmt(spotY * 1e6, 4, " µm")}`, "text-green-400")}
+          {row("Resolvable spots N_x × N_y", `${Nx} × ${Ny}`)}
+          {row("Angular resolution λ/(N_xΔx)", fmt(angularRes * 1e3, 4, " mrad"))}
+          {row("First-order efficiency", fmt(efficiency * 100, 4, " %"), "text-yellow-400")}
+          {row("Pixel envelope at the field edge", fmt(edge, 3), "text-blue-400")}
+          {row("SLM aperture N_xΔx × N_yΔx", `${fmt(Nx * pitchUm * 1e-3, 4)} × ${fmt(Ny * pitchUm * 1e-3, 4, " mm")}`)}
+          {row("Hologram frame size", fmt(memoryMB, 4, " MB"))}
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={400} max={800} step="10" />
-        <ValidatedNumberInput label="Pixel Pitch (µm)" value={pixelPitchUm} onChange={setPixelPitchUm} min={1} max={20} step="0.5" />
-        <ValidatedNumberInput label="SLM Width (px)" value={slmWidth} onChange={setSlmWidth} min={256} max={4096} step="128" />
-        <ValidatedNumberInput label="SLM Height (px)" value={slmHeight} onChange={setSlmHeight} min={256} max={4096} step="128" />
-        <ValidatedNumberInput label="Reconstruction Distance (mm)" value={reconstructionDistMm} onChange={setReconstructionDistMm} min={10} max={5000} step="10" />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Bit Depth</span>
-          <select value={bitDepth} onChange={e => setBitDepth(+e.target.value)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            <option value={1}>1 (Binary)</option>
-            <option value={4}>4</option>
-            <option value={8}>8</option>
-            <option value={10}>10</option>
-          </select>
-        </label>
+      <div className="grid gap-6 md:grid-cols-2 mb-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <h2 className="text-lg font-semibold mb-4">First-order efficiency against bit depth</h2>
+          <ChartPanel data={effChart} layout={layout("Phase bit depth", "Efficiency", { range: [0, 1.05] })} />
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <h2 className="text-lg font-semibold mb-4">Pixel envelope across the replay field (x)</h2>
+          <ChartPanel data={envChart} layout={layout("Replay position (mm)", "Relative intensity", { range: [0, 1.05] })} />
+        </div>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-        <h3 className="text-lg font-semibold mb-2">Key Formulas</h3>
-        <div className="space-y-2 text-gray-300 text-sm font-mono">
-          <p>θ_max = arcsin(λ / 2Δx) — Maximum diffraction angle</p>
-          <p>FOV = N · Δx — Field of view per axis</p>
-          <p>Δθ = λ / (N · Δx) — Angular resolution</p>
-          <p>η_binary_amp ≈ 10.1%, η_binary_phase ≈ 40.5%, η_kinoform ≈ 100%</p>
-          <p>Memory = N_x · N_y · (bits / 8)</p>
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="text-sm text-gray-300 space-y-1 font-mono">
+          <p>θ_max = arcsin(λ/(2Δx)), replay field λz/Δx, spot λz/(NΔx)</p>
+          <p>η = sinc²(π/L) for L phase levels (4/π² = 40.5 % binary), 1/π² = 10.1 % binary amplitude</p>
+          <p>Envelope sinc²(π√F Δx f), f = x/(λz); at the field edge sinc²(π√F/2)</p>
         </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 mb-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h3 className="text-lg font-semibold mb-2">Diffraction Efficiency by Type</h3>
-          <ChartPanel data={efficiencyChart} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, yaxis: { title: "Efficiency", range: [0, 1.1] }, margin: { t: 20, b: 40, l: 50, r: 20 } }} />
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h3 className="text-lg font-semibold mb-2">FOV vs Pixel Pitch</h3>
-          <ChartPanel data={fovChart} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Pixel Pitch (µm)" }, yaxis: { title: "FOV Width (mm)" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} />
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h3 className="text-lg font-semibold mb-2">FFT Computational Cost</h3>
-          <ChartPanel data={fftComplexity} layout={{ paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" }, xaxis: { title: "Array Size (px)" }, yaxis: { title: "Operations (M)" }, margin: { t: 20, b: 40, l: 50, r: 20 } }} />
-        </div>
+        <p className="text-xs text-gray-500 mt-2">
+          Scalar paraxial replay of a pixelated SLM, either in the Fresnel region at distance z or in the focal plane of a
+          lens of focal length z. The replayed pattern repeats every λz/Δx; beyond it lie the higher orders. The
+          efficiency is the first-order efficiency of an L-level phase staircase (Swanson 1989) and assumes ideal phase
+          levels; fringing fields between pixels, phase flicker, the zero order from the dead space and the iterative
+          algorithm&apos;s own error are not included. The frame size counts the bits per pixel only.
+        </p>
       </div>
     </>
   );
