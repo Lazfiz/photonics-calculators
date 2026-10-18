@@ -1,102 +1,96 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { inoueDepthOfField, quarterWaveDepth } from "../../../physics/imaging/optical-sectioning-thickness";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const nm = 1e-9;
+const um = 1e-6;
+
+const row = (label: string, value: string, color = "") => (
+  <div className="flex justify-between border-b border-gray-800 pb-2">
+    <span className="text-gray-400">{label}</span>
+    <span className={`font-mono ${color}`}>{value}</span>
+  </div>
+);
+
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 
 export default function DepthOfFieldPage() {
-  const [na, setNa] = useURLState("na", 0.4);
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [magnification, setMagnification] = useURLState("magnification", 40);
-  const [pixelSize, setPixelSize] = useURLState("pixelSize", 6.5);
-  const [n, setN] = useURLState("n", 1.52);
+  const [naRaw, setNa] = useURLState("na", 0.4);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 550);
+  const [magRaw, setMag] = useURLState("magnification", 40);
+  const [pixelRaw, setPixel] = useURLState("pixelSize", 6.5);
+  const [nRaw, setN] = useURLState("n", 1);
+  const na = clamp(naRaw, 0.01, 1.7, 0.4);
+  const lambdaNm = clamp(wavelengthRaw, 200, 2000, 550);
+  const M = clamp(magRaw, 1, 200, 40);
+  const eUm = clamp(pixelRaw, 0.1, 50, 6.5);
+  const n = clamp(nRaw, 1, 2, 1);
 
-  const results = useMemo(() => {
-    const lambda_um = wavelength * 1e-3; // nm → µm
-    const diffraction = (lambda_um * n) / (na * na);
-    const detector = (n * pixelSize) / (magnification * na);
-    const total = diffraction + detector;
-    return { diffraction, detector, total };
-  }, [na, wavelength, magnification, pixelSize, n]);
+  const dof = inoueDepthOfField(lambdaNm * nm, n, na, eUm * um, M);
+  const exact = quarterWaveDepth(lambdaNm * nm, n, na);
 
-  const plotData = useMemo(() => {
-    const nas: number[] = [];
-    const diffs: number[] = [];
-    const dets: number[] = [];
-    const totals: number[] = [];
-    for (let x = 0.05; x <= 1.5; x += 0.01) {
-      nas.push(x);
-      const lam = wavelength * 1e-3;
-      const d = (lam * n) / (x * x);
-      const e = (n * pixelSize) / (magnification * x);
-      diffs.push(d);
-      dets.push(e);
-      totals.push(d + e);
-    }
-    return [
-      { x: nas, y: totals, type: "scatter" as const, mode: "lines" as const, name: "Total DOF", line: { color: "#60a5fa" } },
-      { x: nas, y: diffs, type: "scatter" as const, mode: "lines" as const, name: "Diffraction", line: { color: "#34d399", dash: "dash" } },
-      { x: nas, y: dets, type: "scatter" as const, mode: "lines" as const, name: "Detector", line: { color: "#fbbf24", dash: "dash" } },
-    ];
-  }, [wavelength, n, pixelSize, magnification]);
+  const naMax = Math.min(1.7, 0.99 * n);
+  const nas = Array.from({ length: 150 }, (_, k) => 0.05 + (k * (naMax - 0.05)) / 149);
+  const curves = nas.map((a) => inoueDepthOfField(lambdaNm * nm, n, a, eUm * um, M));
+  const chart = [
+    { x: nas, y: curves.map((c) => c.total / um), type: "scatter" as const, mode: "lines" as const, name: "Total", line: { color: "#60a5fa" } },
+    { x: nas, y: curves.map((c) => c.wave / um), type: "scatter" as const, mode: "lines" as const, name: "Wave term λ₀n/NA²", line: { color: "#34d399", dash: "dash" } },
+    { x: nas, y: curves.map((c) => c.detector / um), type: "scatter" as const, mode: "lines" as const, name: "Detector term ne/(M·NA)", line: { color: "#fbbf24", dash: "dash" } },
+    { x: nas, y: nas.map((a) => quarterWaveDepth(lambdaNm * nm, n, a) / um), type: "scatter" as const, mode: "lines" as const, name: "Wave term, non-paraxial", line: { color: "#a78bfa", dash: "dot" } },
+  ];
 
   return (
     <>
-            
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
-          <div>
-            <ValidatedNumberInput label="Numerical Aperture (NA)" value={na} onChange={setNa} min={0.01} max={1.8} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={2000} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Magnification (×)" value={magnification} onChange={setMagnification} min={1} max={200} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Pixel size (µm)" value={pixelSize} onChange={setPixelSize} min={0.1} max={50} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Refractive index (n)" value={n} onChange={setN} min={1} max={2} />
-          </div>
+          <ValidatedNumberInput label="Numerical aperture NA" value={naRaw} onChange={setNa} min={0.01} max={1.7} step="0.01" />
+          <ValidatedNumberInput label="Vacuum wavelength λ₀ (nm)" value={wavelengthRaw} onChange={setWavelength} min={200} max={2000} step="any" />
+          <ValidatedNumberInput label="Lateral magnification M (×)" value={magRaw} onChange={setMag} min={1} max={200} step="any" />
+          <ValidatedNumberInput label="Detector resolution e in the image plane (µm, e.g. pixel pitch)" value={pixelRaw} onChange={setPixel} min={0.1} max={50} step="any" />
+          <ValidatedNumberInput label="Immersion medium index n (air 1, water 1.333, oil 1.515)" value={nRaw} onChange={setN} min={1} max={2} step="0.001" />
         </div>
-
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
           <h2 className="text-lg font-semibold">Results</h2>
-          <div className="flex justify-between items-center border-b border-gray-800 pb-2">
-            <span className="text-gray-400">Diffraction contribution</span>
-            <span className="font-mono text-green-400">{results.diffraction.toFixed(3)} µm</span>
-          </div>
-          <div className="flex justify-between items-center border-b border-gray-800 pb-2">
-            <span className="text-gray-400">Detector contribution</span>
-            <span className="font-mono text-yellow-400">{results.detector.toFixed(3)} µm</span>
-          </div>
-          <div className="flex justify-between items-center border-b border-gray-800 pb-2">
-            <span className="text-gray-400">Total DOF</span>
-            <span className="font-mono text-blue-400 text-lg font-bold">{results.total.toFixed(3)} µm</span>
-          </div>
-          <div className="text-xs text-gray-500 mt-2 space-y-1">
-            <p>DOF = λn / NA² + ne / (M·NA)</p>
-            <p>λ = wavelength, n = refractive index, e = pixel size, M = magnification</p>
-          </div>
+          {Number.isFinite(dof.total) ? (
+            <>
+              {row("Wave term λ₀n/NA²", fmt(dof.wave / um, 4, " µm"), "text-green-400")}
+              {row("Detector term n·e/(M·NA)", fmt(dof.detector / um, 4, " µm"), "text-yellow-400")}
+              {row("Total depth of field", fmt(dof.total / um, 4, " µm"), "text-blue-400 text-lg font-bold")}
+              {row("Wave term without the paraxial step", fmt(exact / um, 4, " µm"), "text-purple-400")}
+            </>
+          ) : (
+            <p className="text-red-400">The NA must be smaller than the refractive index n.</p>
+          )}
         </div>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-        <h2 className="text-lg font-semibold mb-4">DOF vs NA</h2>
-        <ChartPanel data={plotData}
-          layout={{
-            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-            font: { color: "#ccc" },
-            xaxis: { title: "NA", gridcolor: "#333" },
-            yaxis: { title: "DOF (µm)", gridcolor: "#333" },
-            legend: { font: { size: 10 } },
-            margin: { l: 60, r: 20, t: 20, b: 40 },
-          }}
-         
-         
-        />
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
+        <h2 className="text-lg font-semibold mb-4">Depth of field vs NA</h2>
+        <ChartPanel data={chart} layout={{
+          paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" },
+          xaxis: { title: "NA", gridcolor: "#333" }, yaxis: { title: "Depth of field (µm)", type: "log", gridcolor: "#333" },
+          margin: { l: 60, r: 20, t: 20, b: 60 }, showlegend: true,
+        }} />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="text-sm text-gray-300 space-y-1 font-mono">
+          <p>d = λ₀n/NA² + n·e/(M·NA)  (Inoué &amp; Spring)</p>
+          <p>Non-paraxial wave term: λ₀/(2(n − √(n² − NA²)))</p>
+        </div>
+        <p className="text-xs text-gray-500 mt-2">
+          The wave term is the full depth over which defocus adds at most a quarter wave of path at the aperture edge
+          (paraxial), half the distance from focus to the first axial zero, 2nλ₀/NA². The detector term is the defocus
+          whose geometric blur spans the detector&apos;s resolution e referred to the object, e/M. Take e as the pixel
+          pitch, or twice it for Nyquist sampling. n is the index between the cover glass and the front lens, so d is the
+          range of focus travel; inside a specimen of index n_s the depth is about d·n_s/n (paraxial). At high NA the paraxial wave term overstates the depth: at NA 1.4 in
+          oil it reads 0.43 µm against 0.29 µm without the approximation.
+        </p>
       </div>
     </>
   );

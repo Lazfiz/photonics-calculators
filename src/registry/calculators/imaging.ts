@@ -236,7 +236,19 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "dof",
     title: "Depth of Field",
-    description: "Microscope depth of field including diffraction and detector contributions.",
+    description: "Microscope depth of field from Inoué's formula, λ₀n/NA² plus the detector term n·e/(M·NA), with the non-paraxial wave term for high NA.",
+    tier: "textbook",
+    modelNote: "Inoué's paraxial sum of a quarter-wave defocus term and a geometric detector term, n the immersion index. At high NA the paraxial wave term overstates the depth; the page also shows the term without that approximation.",
+    references: [
+      {
+        citation: "Inoué S., Spring K. R. (1997). Microscope Image Formation. In: Video Microscopy, 2nd ed., ch. 2, pp. 13–117. Plenum. Total depth of field d = λ₀n/NA² + n·e/(M·NA).",
+        url: "https://doi.org/10.1007/978-1-4615-5859-0_2",
+      },
+      {
+        citation: "Nikon MicroscopyU. Depth of Field and Depth of Focus. The same formula, with e the smallest distance a detector in the image plane resolves.",
+        url: "https://www.microscopyu.com/microscopy-basics/depth-of-field-and-depth-of-focus",
+      },
+    ],
   },
   {
     slug: "dynamic-range",
@@ -346,8 +358,23 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "illumination",
     title: "Köhler Illumination Calculator",
-    description: "Design parameters for Köhler illumination including conjugate planes, fill factor, and field of view.",
-    knownIssue: "The condenser magnification f_TL/f_c has no meaning in Köhler illumination, the field diaphragm is divided by M as if it were the field number, and three computed values are never shown.",
+    description: "Köhler illumination settings: field of view FN/M for the field diaphragm, condenser aperture against the objective's back aperture, and the resolution λ/(NA_obj + NA_c).",
+    tier: "textbook",
+    modelNote: "First-order Köhler layout with aberration-free optics. Pupil diameters follow the Abbe sine condition (2·f·NA). The resolution uses min(NA_c, NA_obj): Abbe's grating period, and 1.22× it as a rule of thumb that is Rayleigh's only at NA_c = NA_obj.",
+    references: [
+      {
+        citation: "Nikon MicroscopyU. Microscope Resolution: Concepts, Factors and Calculation. r = 1.22λ/(NA_obj + NA_cond).",
+        url: "https://www.microscopyu.com/microscopy-basics/resolution",
+      },
+      {
+        citation: "Nikon MicroscopyU. Field of View. Field of view = field number / objective magnification.",
+        url: "https://www.microscopyu.com/microscopy-basics/field-of-view",
+      },
+      {
+        citation: "Evident (Olympus). Microscope maintenance: Köhler illumination, upright microscope (2020). Condenser aperture set to about 0.7–0.8 of the objective NA.",
+        url: "https://adobeassets.evidentscientific.com/content/dam/pdf/file/landing-directory/microscope-maintenance/MicroscopeMaintenance_Koeher_Upright_Light_2020_04_12_Web.pdf",
+      },
+    ],
   },
   {
     slug: "image-distance",
@@ -410,8 +437,19 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "magnification",
     title: "Total Magnification Calculator",
-    description: "Calculate total system magnification from objective, tube lens, and camera adapter lens.",
-    knownIssue: "The camera adapter magnification is taken as f_cam/f_tube, so the tube lens cancels and the total is just f_cam/f_obj. A real C-mount adapter is a relay with its own magnification (0.5×, 0.63×, 1×), which the page cannot express.",
+    description: "Objective magnification f_TL/f_obj, camera magnification with a C-mount adapter, visual magnification with an eyepiece, and the useful range 500–1000 × NA.",
+    tier: "textbook",
+    modelNote: "Infinity-corrected microscope. The camera adapter is a relay with its own magnification; eyepiece power refers to a 250 mm viewing distance. The useful range 500–1000 × NA is a rule of thumb for the eye.",
+    references: [
+      {
+        citation: "Greivenkamp J. E. (2004). Field Guide to Geometrical Optics. SPIE Press. Microscopes: objective magnification and eyepiece power 250 mm/f.",
+        url: "https://doi.org/10.1117/3.547461",
+      },
+      {
+        citation: "Nikon MicroscopyU. Useful Magnification Range. Useful total magnification 500 to 1000 × NA.",
+        url: "https://www.microscopyu.com/microscopy-basics/useful-magnification-range",
+      },
+    ],
   },
   {
     slug: "mtf",
@@ -575,9 +613,20 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "pupil-matching",
     title: "Pupil Matching in Microscopy",
-    description: "Exit pupil = (2ftubeNA)/(MobjMeyepiece). Match to eye pupil (2-8mm) for optimal brightness.",
-    lede: "Exit pupil = (2·ftube·NA)/(Mobj·Meyepiece). Match to eye pupil (2-8mm) for optimal brightness.",
-    knownIssue: "The lede's formula uses the tube-lens focal length where the 250 mm eyepiece reference belongs, 20 % low (the computation itself is right). The tube-lens input does nothing, inputs have no limits, and the optimal NA can read 3.2.",
+    description: "Microscope exit pupil 500 mm · NA/(M_obj · M_eye) against the eye pupil, and the eyepieces that keep it in the useful 0.5–1 mm range.",
+    lede: "Exit pupil D = 2·(250 mm)·NA/(M_obj·M_eye). Between 0.5 and 1 mm the visual magnification is in the useful range 500–1000 × NA.",
+    tier: "textbook",
+    modelNote: "First-order optics: the objective's back aperture 2·f_obj·NA (Abbe sine condition) imaged to the eyepoint by f_eye/f_TL, with eyepiece power 250 mm/f_eye, so the tube lens cancels.",
+    references: [
+      {
+        citation: "Greivenkamp J. E. (2004). Field Guide to Geometrical Optics. SPIE Press. Microscopes: objective magnification, eyepiece power 250 mm/f, pupils.",
+        url: "https://doi.org/10.1117/3.547461",
+      },
+      {
+        citation: "Nikon MicroscopyU. Useful Magnification Range. Useful total magnification 500 to 1000 × NA.",
+        url: "https://www.microscopyu.com/microscopy-basics/useful-magnification-range",
+      },
+    ],
   },
   {
     slug: "registration",

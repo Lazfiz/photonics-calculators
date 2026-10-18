@@ -15,6 +15,12 @@
  * - Two-photon excitation: the axial 1/e radius of the squared illumination intensity is
  *     ω_z = (0.532 λ/√2) / (n − √(n² − NA²))  (fit for NA > 0.7),
  *   W. R. Zipfel, R. M. Williams, W. W. Webb, Nat. Biotechnol. 21, 1369 (2003); FWHM = 2√(ln 2) ω_z.
+ * - Total depth of field of a widefield microscope with a detector (Inoué & Spring, Video Microscopy, 2nd ed.,
+ *   Plenum 1997, ch. 2, doi:10.1007/978-1-4615-5859-0_2):
+ *     d = λ₀n/NA² + n·e/(M·NA),
+ *   λ₀ the vacuum wavelength, e the smallest distance the detector resolves in the image plane, M the lateral
+ *   magnification. The wave term is the paraxial quarter-wave (Rayleigh) depth, ±λ₀n/(2NA²), half the
+ *   focus-to-first-zero distance above; the geometric term is the defocus whose blur circle spans e/M.
  */
 
 const valid = (lambda: number, n: number, NA: number) =>
@@ -57,4 +63,29 @@ export function confocalSectionFwhmPointPinhole(lambda: number, n: number, NA: n
 export function twoPhotonAxialFwhm(lambdaExcitation: number, n: number, NA: number): number {
   if (!valid(lambdaExcitation, n, NA)) return NaN;
   return (2 * Math.sqrt(Math.LN2) * 0.532 * lambdaExcitation) / (Math.SQRT2 * axialDenominator(n, NA));
+}
+
+/** Inoué's total depth of field λ₀n/NA² + n·e/(M·NA) with its wave and detector terms, m (e in the image plane). */
+export function inoueDepthOfField(
+  lambda0: number,
+  n: number,
+  NA: number,
+  e: number,
+  M: number,
+): { wave: number; detector: number; total: number } {
+  if (!valid(lambda0, n, NA) || !(e >= 0) || !(M > 0) || !Number.isFinite(e / M)) {
+    return { wave: NaN, detector: NaN, total: NaN };
+  }
+  const wave = (lambda0 * n) / (NA * NA);
+  const detector = (n * e) / (M * NA);
+  return { wave, detector, total: wave + detector };
+}
+
+/**
+ * Quarter-wave (Rayleigh) depth of field without the paraxial step: defocus z adds the path n·z·(1 − cos θ) at the
+ * aperture edge, which reaches λ/4 at z = ±λ/(4(n − √(n² − NA²))), so the full depth is λ/(2(n − √(n² − NA²))), m.
+ * Reduces to Inoué's wave term λn/NA² at low NA.
+ */
+export function quarterWaveDepth(lambda0: number, n: number, NA: number): number {
+  return valid(lambda0, n, NA) ? lambda0 / (2 * axialDenominator(n, NA)) : NaN;
 }
