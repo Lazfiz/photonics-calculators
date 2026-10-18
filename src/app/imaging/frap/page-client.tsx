@@ -1,144 +1,110 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  axelrodPostBleach, axelrodRecovery, frapDiffusionCoefficient, frapHalfTimeRatio, soumpasisRecovery,
+} from "../../../physics/imaging/fluorescence-dynamics";
 
-// Modified Bessel function I_n(x) via series
-function besselIn(n: number, x: number): number {
-  if (x === 0) return n === 0 ? 1 : 0;
-  const hx = x / 2;
-  let term = Math.pow(hx, n);
-  let sum = term;
-  let nf = 1;
-  for (let i = 2; i <= n; i++) nf *= i;
-  term /= nf;
-  sum = term;
-  for (let k = 1; k <= 30; k++) {
-    term *= (hx * hx) / (k * (k + n));
-    sum += term;
-    if (Math.abs(term) < 1e-15 * Math.abs(sum)) break;
-  }
-  return sum;
-}
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 
-// Soumpasis 1983: fraction of bleach remaining (1=bleached, 0=recovered)
-function soumpasisFK(tau: number, t: number): number {
-  if (t <= 0) return 1;
-  const q = tau / t;
-  let fk = 0;
-  for (let n = 1; n <= 15; n++) {
-    const nq = n * q;
-    const sign = (n % 2 === 1) ? 1 : -1;
-    const In = besselIn(n, nq);
-    const term = sign * Math.pow(n, n) * Math.pow(q, n) * Math.exp(-nq) * In;
-    fk += term;
-  }
-  return Math.max(0, Math.min(1, fk));
-}
+const row = (label: string, value: string, color = "") => (
+  <div className="flex justify-between border-b border-gray-800 pb-2">
+    <span className="text-gray-400">{label}</span>
+    <span className={`font-mono ${color}`}>{value}</span>
+  </div>
+);
 
 export default function FRAPPage() {
-  const [w0, setW0] = useURLState("w0", 1.0); // µm, bleach spot radius
-  const [tauHalf, setTauHalf] = useURLState("tauHalf", 2.0); // s, half-recovery time
-  const [mobileFrac, setMobileFrac] = useURLState("mobileFrac", 0.7);
-  const [fitModel, setFitModel] = useState<"single" | "uniform">("single");
+  const [modelRaw, setModel] = useURLState("model", "disk");
+  const [wRaw, setW] = useURLState("w0", 1.0); // µm, disk radius or 1/e² beam radius
+  const [tHalfRaw, setTHalf] = useURLState("tauHalf", 2.0); // s
+  const [mobileRaw, setMobile] = useURLState("mobileFrac", 0.7);
+  const [f0Raw, setF0] = useURLState("postBleach", 0.3); // disk: F(0)/F_i
+  const [kRaw, setK] = useURLState("bleachK", 1); // Gaussian: bleach depth K
+  const model = modelRaw === "gaussian" ? "gaussian" : "disk";
+  const w = clamp(wRaw, 0.1, 50, 1);
+  const tHalf = clamp(tHalfRaw, 0.001, 10000, 2);
+  const mobile = clamp(mobileRaw, 0, 1, 0.7);
+  const K = clamp(kRaw, 0.01, 20, 1);
+  const F0 = model === "gaussian" ? axelrodPostBleach(K) : clamp(f0Raw, 0, 0.99, 0.3);
 
-  const results = useMemo(() => {
-    const gamma = 3.7723; // for Gaussian bleach profile
-    const tau = tauHalf / gamma;
-    const D = w0 * w0 * 1e-12 / (4 * tau); // m²/s
-    const D_um2s = D * 1e12; // µm²/s
-    return { D, D_um2s, tau };
-  }, [w0, tauHalf]);
+  const gamma = frapHalfTimeRatio(model, K);
+  const tauD = tHalf / gamma;
+  const D = frapDiffusionCoefficient(w * 1e-6, tHalf, gamma);
+  const Finf = F0 + mobile * (1 - F0);
+  const recovery = (t: number) => (model === "gaussian" ? axelrodRecovery(t / tauD, K) : soumpasisRecovery(t / tauD));
 
-  const plotData = useMemo(() => {
-    const times = [];
-    const recovery = [];
-    const tau = results.tau;
-    for (let t = 0; t <= 20; t += 0.1) {
-      times.push(t);
-      if (t === 0) {
-        recovery.push(1 - mobileFrac); // post-bleach baseline (immobile only)
-      } else {
-        let fRec: number;
-        if (fitModel === "single") {
-          // Soumpasis 1983 (Gaussian bleach profile)
-          const fk = soumpasisFK(tau, t); // bleach remaining (1→0)
-          fRec = 1 - fk; // recovered fraction (0→1)
-        } else {
-          // Axelrod uniform disk: exponential approximation
-          fRec = 1 - Math.exp(-t * Math.LN2 / tauHalf);
-        }
-        const F = (1 - mobileFrac) + mobileFrac * fRec;
-        recovery.push(Math.max(0, Math.min(1, F)));
-      }
-    }
-    return [
-      { x: times, y: recovery, name: "Recovery curve", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
-      { x: [0, 20], y: [1 - mobileFrac, 1 - mobileFrac], name: "Pre-bleach", line: { color: "#4ade80", dash: "dash" }, type: "scatter", mode: "lines" },
-      { x: [0, 20], y: [1, 1], name: "Full recovery", line: { color: "#f87171", dash: "dash" }, type: "scatter", mode: "lines" },
-    ];
-  }, [tauHalf, mobileFrac, fitModel, results.tau]);
+  const tMax = 10 * tHalf;
+  const ts = Array.from({ length: 201 }, (_, i) => (i * tMax) / 200);
+  const flat = (y: number) => ts.map(() => y);
+  const chart = [
+    { x: ts, y: ts.map((t) => F0 + mobile * (1 - F0) * recovery(t)), type: "scatter" as const, mode: "lines" as const, name: "F(t)/F_i", line: { color: "#60a5fa" } },
+    { x: ts, y: flat(Finf), type: "scatter" as const, mode: "lines" as const, name: "Plateau F(∞)", line: { color: "#4ade80", dash: "dash" } },
+    { x: ts, y: flat(1), type: "scatter" as const, mode: "lines" as const, name: "Pre-bleach F_i", line: { color: "#f87171", dash: "dot" } },
+    { x: [tHalf, tHalf], y: [0, 1], type: "scatter" as const, mode: "lines" as const, name: "τ½", line: { color: "#facc15", dash: "dash" } },
+  ];
 
-  const diffPlot = useMemo(() => {
-    const w0Range = [];
-    const dRange = [];
-    for (let w = 0.2; w <= 5; w += 0.1) {
-      w0Range.push(w);
-      const t = tauHalf / 3.7723;
-      dRange.push(w * w * 1e-12 / (4 * t) * 1e12);
-    }
-    return [
-      { x: w0Range, y: dRange, name: "D vs bleach radius", line: { color: "#c084fc" }, type: "scatter", mode: "lines" },
-    ];
-  }, [tauHalf]);
+  const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 
   return (
     <>
-            
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
           <div>
-            <ValidatedNumberInput label="Bleach spot radius w₀ (µm)" value={w0} onChange={setW0} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Half-recovery time τ₁/₂ (s)" value={tauHalf} onChange={setTauHalf} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Mobile fraction" value={mobileFrac} onChange={setMobileFrac} min={0} max={1} />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Fit model</label>
-            <select value={fitModel} onChange={e => setFitModel(e.target.value as "single" | "uniform")} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white">
-              <option value="single">Soumpasis (Gaussian bleach)</option>
-              <option value="uniform">Axelrod (uniform disk)</option>
+            <label className="block text-sm text-gray-400 mb-1">Bleach profile</label>
+            <select value={model} onChange={(e) => setModel(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white">
+              <option value="disk">Uniform disk (Soumpasis 1983)</option>
+              <option value="gaussian">Gaussian beam (Axelrod 1976)</option>
             </select>
           </div>
+          <ValidatedNumberInput label={model === "disk" ? "Bleach disk radius w (µm)" : "Beam 1/e² radius w (µm)"} value={wRaw} onChange={setW} min={0.1} max={50} step="0.1" />
+          <ValidatedNumberInput label="Half-recovery time τ½ (s)" value={tHalfRaw} onChange={setTHalf} min={0.001} max={10000} step="0.1" />
+          <ValidatedNumberInput label="Mobile fraction" value={mobileRaw} onChange={setMobile} min={0} max={1} step="0.05" />
+          {model === "disk" ? (
+            <ValidatedNumberInput label="Post-bleach intensity F(0)/F_i" value={f0Raw} onChange={setF0} min={0} max={0.99} step="0.05" />
+          ) : (
+            <ValidatedNumberInput label="Bleach depth K" value={kRaw} onChange={setK} min={0.01} max={20} step="0.1" />
+          )}
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
           <h2 className="text-lg font-semibold">Results</h2>
-          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Diffusion coefficient D</span><span className="font-mono text-green-400">{results.D.toExponential(2)} m²/s</span></div>
-          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">D</span><span className="font-mono text-blue-400">{results.D_um2s.toFixed(3)} µm²/s</span></div>
-          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Characteristic time τ</span><span className="font-mono">{results.tau.toFixed(3)} s</span></div>
-          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Immobile fraction</span><span className="font-mono text-red-400">{((1 - mobileFrac) * 100).toFixed(1)}%</span></div>
-          <div className="text-xs text-gray-500 mt-2 space-y-1">
-            <p>Soumpasis model: τ = τ₁/₂ / γ, γ ≈ 3.7723</p>
-            <p>D = w₀² / (4τ)</p>
-            <p>Typical: GFP in cytoplasm ~20 µm²/s, membrane proteins ~0.1-1 µm²/s</p>
-          </div>
+          {row("Diffusion coefficient D", Number.isFinite(D) ? `${(D * 1e12).toPrecision(4)} µm²/s` : "—", "text-green-400")}
+          {row("γ = τ½/τ_D", fmt(gamma, 4), "text-yellow-400")}
+          {row("Diffusion time τ_D = w²/(4D)", fmt(tauD, 3, " s"))}
+          {row("Post-bleach F(0)/F_i", fmt(F0, 3), "text-blue-400")}
+          {row("Plateau F(∞)/F_i", fmt(Finf, 3), "text-blue-400")}
+          {row("Immobile fraction", fmt((1 - mobile) * 100, 1, " %"), "text-red-400")}
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 mb-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-4">FRAP Recovery Curve</h2>
-          <ChartPanel data={plotData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Time (s)", gridcolor: "#333" }, yaxis: { title: "Normalized fluorescence", gridcolor: "#333", range: [0, 1.1] }, legend: { font: { size: 10 } }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
+        <h2 className="text-lg font-semibold mb-4">Recovery curve</h2>
+        <ChartPanel
+          data={chart}
+          layout={{
+            paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, margin: { l: 60, r: 20, t: 20, b: 60 },
+            xaxis: { title: "Time after the bleach (s)", gridcolor: "#333" }, yaxis: { title: "F(t)/F_i", gridcolor: "#333", range: [0, 1.05] }, showlegend: true,
+          }}
+        />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="text-sm text-gray-300 space-y-1 font-mono">
+          <p>F(t) = F(0) + M (F_i − F(0)) f(t), τ_D = w²/(4D), D = γ w²/(4τ½)</p>
+          <p>Disk: f(t) = e^(−2τ_D/t) [I₀(2τ_D/t) + I₁(2τ_D/t)], γ = 0.8946</p>
+          <p>Gaussian: F(t)/F_i = Σ (−K)ⁿ/n! / (1 + n(1 + 2t/τ_D)), F(0)/F_i = (1 − e^(−K))/K</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-4">D vs Bleach Radius (at fixed τ₁/₂)</h2>
-          <ChartPanel data={diffPlot} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" }, xaxis: { title: "Bleach radius w₀ (µm)", gridcolor: "#333" }, yaxis: { title: "D (µm²/s)", gridcolor: "#333" }, margin: { l: 60, r: 20, t: 20, b: 60 } }} />
-        </div>
+        <p className="text-xs text-gray-500 mt-2">
+          Free 2D diffusion after an instantaneous bleach, with an immobile fraction 1 − M that stays bleached. The
+          fluorescence is collected over the bleached disk (Soumpasis) or through the same Gaussian beam (Axelrod). Soumpasis
+          (1983) solved the uniformly bleached disk exactly (his D = 0.224 w²/τ½); Axelrod et al. (1976) the Gaussian beam,
+          where γ grows with the bleach depth K. Bleaching during the bleach pulse, flow, binding reactions and loss of
+          fluorescence during the recovery imaging are not included; the bleached area must be small next to the cell.
+        </p>
       </div>
     </>
   );
