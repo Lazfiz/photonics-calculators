@@ -403,6 +403,44 @@ export function largestSymmetricEigenvalue(A: readonly number[]): number {
   return q + 2 * p * Math.cos(Math.acos(r) / 3);
 }
 
+/**
+ * Eigenvalues of a small symmetric n×n matrix, ascending, by cyclic Jacobi rotations (Golub & Van Loan, Matrix
+ * Computations 4th ed. §8.5; rotation angle in the stable form of Numerical Recipes 3rd ed. §11.1). Stops when the
+ * off-diagonal norm falls below 1e-15 of the Frobenius norm, or after 50 sweeps.
+ */
+export function symmetricEigenvalues(A: readonly (readonly number[])[]): number[] {
+  const n = A.length;
+  const a = A.map((r) => r.slice());
+  const frob = Math.sqrt(a.reduce((s, r) => s + r.reduce((t, v) => t + v * v, 0), 0));
+  for (let sweep = 0; sweep < 50; sweep++) {
+    let off = 0;
+    for (let p = 0; p < n; p++) for (let q = p + 1; q < n; q++) off += a[p][q] ** 2;
+    if (Math.sqrt(off) <= 1e-15 * frob) break;
+    for (let p = 0; p < n; p++) {
+      for (let q = p + 1; q < n; q++) {
+        if (a[p][q] === 0) continue;
+        const theta = (a[q][q] - a[p][p]) / (2 * a[p][q]);
+        const t = Math.sign(theta || 1) / (Math.abs(theta) + Math.sqrt(theta * theta + 1));
+        const c = 1 / Math.sqrt(t * t + 1);
+        const s = t * c;
+        for (let k = 0; k < n; k++) {
+          const akp = a[k][p];
+          const akq = a[k][q];
+          a[k][p] = c * akp - s * akq;
+          a[k][q] = s * akp + c * akq;
+        }
+        for (let k = 0; k < n; k++) {
+          const apk = a[p][k];
+          const aqk = a[q][k];
+          a[p][k] = c * apk - s * aqk;
+          a[q][k] = s * apk + c * aqk;
+        }
+      }
+    }
+  }
+  return a.map((r, i) => r[i]).sort((x, y) => x - y);
+}
+
 /*
  * Gamma function and incomplete gamma, for probability distributions with real shape parameters.
  */

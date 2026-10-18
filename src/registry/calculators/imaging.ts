@@ -262,7 +262,22 @@ export const imaging: CalculatorEntry[] = [
     slug: "fluorescence-spectra",
     title: "Fluorescence Spectra Overlap Calculator",
     description: "Compare excitation/emission spectra, spectral overlap, and filter crosstalk.",
-    knownIssue: "Dye peaks, widths and quantum yields are unsourced, the spectral overlap J is not the Förster integral (no extinction coefficient, no λ⁴), a dye index past the list in the URL crashes the page, and the filter inputs produce no result.",
+    tier: "textbook",
+    modelNote: "Eight FPbase proteins, each spectrum a log-normal band fitted to FPbase data (R₀ within 2.5 % of the raw spectra); anti-Stokes tails are cut to 0. Ideal top-hat filter, equal concentration and photon flux.",
+    references: [
+      {
+        citation: "Lambert T. J. (2019). FPbase: a community-editable fluorescent protein database. Nat. Methods 16, 277–278. Peaks, extinction coefficients, quantum yields and spectra (read 2026-10-18).",
+        url: "https://doi.org/10.1038/s41592-019-0352-8",
+      },
+      {
+        citation: "Siano D. B., Metzler D. E. (1969). Band shapes of the electronic spectra of complex molecules. J. Chem. Phys. 51, 1856–1861. Log-normal band shape, fitted here to each FPbase spectrum.",
+        url: "https://doi.org/10.1063/1.1672270",
+      },
+      {
+        citation: "Lakowicz J. R. (2006). Principles of Fluorescence Spectroscopy, 3rd ed. Springer, §13.2. Overlap integral J and R₀ = 0.02108 (κ² Φ_D n⁻⁴ J)^(1/6) nm.",
+        url: "https://doi.org/10.1007/978-0-387-46312-4",
+      },
+    ],
   },
   {
     slug: "fov-calculator",
@@ -290,7 +305,18 @@ export const imaging: CalculatorEntry[] = [
     slug: "hyperspectral-microscopy",
     title: "Hyperspectral Microscopy",
     description: "Configure hyperspectral data cubes: spectral range, bands, data size, acquisition time, and SNR tradeoffs.",
-    knownIssue: "The SNR input only adds a constant 0.05·10^(−SNR/20) offset to the spectrum, so it changes nothing; the photon budget per band is not modelled; the data size is in MiB but labelled MB.",
+    tier: "textbook",
+    modelNote: "Band-sequential acquisition of a flat spectrum: each band collects Φ_λ·Δλ·t photons with shot, dark and read noise, and frames are summed. Bit-packed cube size; readout and band switching are not timed.",
+    references: [
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer. SPIE Press. Pixel SNR from shot, dark and read noise.",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+      {
+        citation: "Garini Y., Young I. T., McNamara G. (2006). Spectral imaging: principles and applications. Cytometry A 69A, 735–747. Band-sequential and other spectral-imaging schemes and their trade-offs.",
+        url: "https://doi.org/10.1002/cyto.a.20311",
+      },
+    ],
   },
   {
     slug: "illumination",
@@ -559,7 +585,22 @@ export const imaging: CalculatorEntry[] = [
     slug: "simultaneous-multicolor",
     title: "Simultaneous Multicolor Imaging",
     description: "Calculate spectral separation, crosstalk, timing budgets, and SNR for multi-channel fluorescence imaging.",
-    knownIssue: "The crosstalk heatmap doesn't update when a channel's centre or bandwidth changes. Crosstalk is symmetric and built from filter widths only, with no dye spectrum; excitation inputs are unused; the photon rate is a hard-coded 500.",
+    tier: "textbook",
+    modelNote: "Spillover L_ij = R_ij/R_jj from FPbase-fitted spectra, all lasers on at equal photon flux, top-hat filters. Bleed-through adds shot noise before unmixing; charge or digital binning sets the read noise.",
+    references: [
+      {
+        citation: "Roederer M. (2001). Spectral compensation for flow cytometry: visualization artifacts, limitations, and caveats. Cytometry 45, 194–205. Spillover as the signal in a secondary detector over that in the primary one.",
+        url: "https://doi.org/10.1002/1097-0320(20011101)45:3<194::AID-CYTO1163>3.0.CO;2-C",
+      },
+      {
+        citation: "Lambert T. J. (2019). FPbase: a community-editable fluorescent protein database. Nat. Methods 16, 277–278. Peaks, extinction coefficients, quantum yields and spectra (read 2026-10-18).",
+        url: "https://doi.org/10.1038/s41592-019-0352-8",
+      },
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer. SPIE Press. Pixel SNR from shot, dark and read noise.",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+    ],
   },
   {
     slug: "speckle-imaging",
@@ -571,7 +612,22 @@ export const imaging: CalculatorEntry[] = [
     slug: "spectral-unmixing",
     title: "Spectral Unmixing",
     description: "Decompose mixed spectral signals into constituent endmember abundances using linear unmixing methods.",
-    knownIssue: "No least-squares solve happens: the estimated abundances are the true values plus a fixed sine perturbation scaled by a per-method constant, and the unmixing-error curve and reconstruction error are hard-coded lines.",
+    tier: "textbook",
+    modelNote: "FPbase-fitted emission spectra in equal bands; one pixel with shot and read noise from a seeded generator, solved by OLS, NNLS or FCLS, with OLS error bars. Background and reference-spectrum errors are left out.",
+    references: [
+      {
+        citation: "Zimmermann T., Rietdorf J., Pepperkok R. (2003). Spectral imaging and its applications in live cell microscopy. FEBS Lett. 546, 87–92. Linear unmixing of fluorescent proteins.",
+        url: "https://doi.org/10.1016/S0014-5793(03)00521-0",
+      },
+      {
+        citation: "Lawson C. L., Hanson R. J. (1995). Solving Least Squares Problems. SIAM, ch. 23. The NNLS active-set algorithm.",
+        url: "https://doi.org/10.1137/1.9781611971217",
+      },
+      {
+        citation: "Heinz D. C., Chang C.-I (2001). Fully constrained least squares linear spectral mixture analysis. IEEE Trans. Geosci. Remote Sens. 39, 529–545.",
+        url: "https://doi.org/10.1109/36.911111",
+      },
+    ],
   },
   {
     slug: "spinning-disk",
