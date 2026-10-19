@@ -1,21 +1,16 @@
-# Handover — 2026-10-19 (session 95 → session 96)
+# Handover — 2026-10-19 (session 96 → session 97)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 95 finished **imaging part 15b (denoising, computational imaging)** on branch `phase-4/imaging-denoising`
-(PR #126 expected). **The imaging audit is complete (61/61).** Next: ask the user which category to audit next.
+Session 96 did the **spectroscopy audit, part 0** on branch `phase-4/spectroscopy-audit` (PR #127 expected): 49 pages,
+27 bugs / 15 questionable / 7 OK, 42 `knownIssue`s. Next: **spectroscopy fix part 1** (Beer-Lambert merge).
 
 ## State
-- New `src/physics/imaging/denoising.ts`: `boxNoiseRatio`, `gaussianKernel`/`gaussianNoiseRatio` (taps to ⌈3σ_s⌉),
-  `medianVarianceFactor(n)` (exact, Simpson over the order-statistic density) / `medianNoiseRatio(k)`, `snrGainDb`,
-  `boxTransfer`, `gaussianTransfer`, `halfResponseFrequency`, `visuShrinkThreshold`.
-- New `src/physics/imaging/computational-imaging.ts`: `singleViewSnr`/`fusedSnr` (`mode` perView | totalDose, on
-  `cameraSnr`), `syntheticNa`, `coherentCutoffPeriod`, `incoherentCutoffPeriod`, `spaceBandwidthGain`.
-- `denoising-algorithms`: filters box/Gaussian/median (URL `filter`), keys `inputNoise`, `filterSize`, `sigmaSpatial`,
-  new `imageSize`; bilateral/NLM/wavelet/deep and their keys dropped. `computational-imaging`: new `naIll`, `dose`;
-  `bgNoise` is now a mean background count; default NA 0.1.
-- Test: `tests/imaging-denoising.test.ts` (7 tests, incl. a seeded Monte Carlo median check). 316 of 454 pages
-  tiered; no `knownIssue`s left anywhere.
+- Registry only: 42 `knownIssue`s in `src/registry/calculators/spectroscopy.ts`; 9 descriptions with stripped Greek
+  symbols restored (7 ledes dropped because they then equalled the description: registry test). No physics changed.
+- The per-page findings, golden values and references are in the PR #127 description (`gh pr view 127`); read the
+  section for the part at hand instead of re-auditing. 316 of 454 pages tiered.
+- **User decisions (session 96):** merges with redirects. The parts are listed in ROADMAP "Spectroscopy fix parts".
 - **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only when the user asks:
   `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set
   Vercel's Production Branch to `release` (not confirmed).
@@ -23,16 +18,19 @@ Session 95 finished **imaging part 15b (denoising, computational imaging)** on b
   user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 15b: `imaging/denoising-algorithms=9.54`,
-   `imaging/computational-imaging=157.02`; part 15a: `imaging/registration=934.0`, `imaging/stitching=84.70`;
-   part 14: `imaging/light-field=7.50`, `imaging/plenoptic-camera=288`; earlier parts: `git show 04f88743:docs/HANDOVER.md`.
-   Don't release unless asked.
-2. Ask the user which category to audit next: wave-optics 2/49, materials 4/45 or spectroscopy 5/54 (ROADMAP).
+1. `/ship` this branch (no page values change; no release check needed). Values for a later release check: part 15b:
+   `imaging/denoising-algorithms=9.54`, `imaging/computational-imaging=157.02`; part 15a: `imaging/registration=934.0`,
+   `imaging/stitching=84.70`; earlier parts: `git show 04f88743:docs/HANDOVER.md`. Don't release unless asked.
+2. Spectroscopy part 1: concentration + extinction-coefficient merge into lambert-beer-law (redirects, see the session 65
+   slug-rename note), optical-density, absorption-cross-section. Goldens: σ/ε = 3.8235e-21 cm², ε 5e4 → 1.912e-16 cm²;
+   concentration defaults 1.000e-5 M, T 31.62 %; extinction defaults ε 50, specific 0.5.
 3. Later: open findings (FSO `adaptive-optics` actuators-as-modes, part 8 leftovers, local `sinc` copies,
    `fluorophores.ts` cutoff, `optical-sectioning-thickness`, detectors 7b, fiber, FSO), `polarizer-types` (needs the
    user at the laptop with Chrome). `simultaneous-multicolor` could use `binnedReadNoise` instead of its inline copy.
 
 ## Non-obvious facts
+- **Session 96:** `lede` defaults to `description`, and the registry test fails when they're equal: drop the lede. Seven
+  parallel `physics-reviewer` batches of 7 finish in ≈ 6 min; ask for a draft `knownIssue` per page.
 - **Session 95:** `SimpleChart` colours a markers-only trace from `line.color` (else the palette), not `marker.color`:
   give a "Current" marker trace both. Var(median of n normals): 3 → 0.448671, 5 → 0.286834, 9 → 0.166101,
   225 → 0.006968 (π/(2n) 0.006981). Section/equation numbers in book citations were not checked, so none are cited.
