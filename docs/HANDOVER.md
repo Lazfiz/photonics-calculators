@@ -1,20 +1,19 @@
-# Handover — 2026-10-19 (session 92 → session 93)
+# Handover — 2026-10-19 (session 93 → session 94)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-PR #122 (part 12) was merged. Session 92 finished **imaging part 13 (sensors)** on branch `phase-4/imaging-sensors`
-(with this handover; PR #123 expected). Next: **imaging part 14 (light field)**.
+PR #123 (part 13) was merged. Session 93 finished **imaging part 14 (light field)** on branch
+`phase-4/imaging-light-field` (with this handover; PR #124 expected). Next: **imaging part 15 (registration and
+computational imaging)**, the last imaging part.
 
 ## State
-- `sensor-ccm` is merged into `sensor-cmos` ("CCD and CMOS Sensor Design", redirect in `redirects.json`, merge codemod
-  run). Preset buttons write all inputs: air-cooled sCMOS (default: 6.5 µm, 25 ke⁻, 1.5 e⁻, 2 e⁻/s at 25 °C cooled to
-  0 °C, K 0.5 e⁻/DN, 16 bit, 100 ms) and deep-cooled CCD (16 µm, 80 ke⁻, 8 e⁻, 200 e⁻/s at 25 °C, −70 °C, K 1.2, 1 s).
-  New URL keys: photons 1000, sensorTemp, doublingTemp 6. Both presets are labelled representative, not a camera.
-- `camera-snr.ts`: `CameraSnrInputs.background` (shot noise only) and `binnedReadNoise(read, b, "charge"|"digital")`.
-  `dark-current.ts`: `darkReadCrossoverTemperature(read, D_ref·t, T_ref, T_d)` and `darkCurrentDensity(e⁻/s, pitch m)` A/m².
-- `dynamic-range`: prnu in % (default 1), DSNU in e⁻ under new key `dsnuE` 0.5 (old `dsnu` dropped), ADC full scale =
-  full well, σ_q = K/√12; DR is FW over the temporal dark noise. `signal-to-noise` adds key `binningMode` charge|digital.
-- Test: `tests/imaging-sensors.test.ts` (3 tests). 310 of 454 pages tiered; 6 `knownIssue`s, all imaging.
+- New `src/physics/imaging/light-field.ts`: `lightFieldMicroscope({na, magnification, n, lensletPitch, pixelPitch,
+  lambda})` (Levoy 2006 eqs. 1–5; N_u capped at W/(2p_px), flag `pixelLimited`) and `plenopticCamera({lensletPitch,
+  lensletFocal, pixelPitch, sensorWidthPx, sensorHeightPx, mainFNumber, mainFocal, focusDistance, lambda})` (Ng 2005).
+- `light-field`: new URL key `n` (medium index, default 1). `plenoptic-camera`: `mainLensNA` dropped for `mainFNumber`
+  (image-side f/#, default 4) and new `focusDistanceM` 1; defaults are Ng's prototype (140 mm, 125 µm, f_µ 0.5 mm, 9 µm,
+  4000 × 4000). Both pages link to each other.
+- Test: `tests/imaging-light-field.test.ts` (3 tests). 312 of 454 pages tiered; 4 `knownIssue`s, all imaging part 15.
 - **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only when the user asks:
   `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set
   Vercel's Production Branch to `release` (not confirmed).
@@ -22,15 +21,22 @@ PR #122 (part 12) was merged. Session 92 finished **imaging part 13 (sensors)** 
   user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 13: `imaging/sensor-cmos=84.44`,
-   `imaging/dynamic-range=83.22`, `imaging/signal-to-noise=56.391`; part 12: `imaging/adaptive-optics=0.2810`,
-   `imaging/speckle-imaging=21.28`; earlier parts: `git show 04f88743:docs/HANDOVER.md`. Don't release unless asked.
-2. Imaging part 14 (light field: `light-field`, `plenoptic-camera`; goldens in ROADMAP).
-3. Later: open findings (FSO `adaptive-optics` actuators-as-modes, part 8 leftovers, local `sinc` copies,
-   `fluorophores.ts` cutoff, `optical-sectioning-thickness`, detectors 7b, fiber, FSO), `polarizer-types` (needs the
-   user at the laptop with Chrome). `simultaneous-multicolor` could use `binnedReadNoise` instead of its inline copy.
+1. `/ship` this branch. Values for a later release check: part 14: `imaging/light-field=7.50`,
+   `imaging/plenoptic-camera=288`; part 13: `imaging/sensor-cmos=84.44`, `imaging/dynamic-range=83.22`,
+   `imaging/signal-to-noise=56.391`; part 12: `imaging/adaptive-optics=0.2810`, `imaging/speckle-imaging=21.28`; earlier
+   parts: `git show 04f88743:docs/HANDOVER.md`. Don't release unless asked.
+2. Imaging part 15 (`registration`, `stitching`, `denoising-algorithms`, `computational-imaging`; goldens in ROADMAP).
+   Four pages with fabricated outputs: consider splitting into 15a/15b before starting.
+3. Then ask the user which category to audit next (ROADMAP). Later: open findings (FSO `adaptive-optics`
+   actuators-as-modes, part 8 leftovers, local `sinc` copies, `fluorophores.ts` cutoff, `optical-sectioning-thickness`,
+   detectors 7b, fiber, FSO), `polarizer-types` (needs the user at the laptop with Chrome). `simultaneous-multicolor`
+   could use `binnedReadNoise` instead of its inline copy.
 
 ## Non-obvious facts
+- **Session 93:** Levoy 2006 PDF: `graphics.stanford.edu/papers/lfmicroscope/levoy-lfmicroscope-sig06.pdf` (the
+  plain name 404s); Ng 2005: `graphics.stanford.edu/papers/lfcamera/lfcamera-150dpi.pdf`. Levoy's 50×/1.3 row says
+  f/20 lenslets but M/(2NA) = 19.2, and Table 1's D_tot1 is rounded to 2 digits (test tolerance 1.2 %). Ng's
+  prototype reports 12 usable pixels across where floor(125/9) = 13; floor ratios with `+ 1e-9` (4000·9/125 = 288).
 - **Session 92:** the ROADMAP's sensorNoise(700, 1.5, 0.1) golden used dark 0.1 e⁻; the page's 0.011 e⁻ plus σ_q gives
   the same 26.50 / 26.41. With PRNU 1 % the SNR at half well is 77.45 (77.46 without DSNU and σ_q); flat-fielded 122.46.
   `useURLState` setters batch, so a preset button can call nine setters at once. `next start` exits 1 when killed.
