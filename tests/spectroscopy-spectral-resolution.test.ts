@@ -16,8 +16,9 @@ test("grating at the page defaults: slit-limited and diffraction-limited bandpas
   // Hand: sin β = 1 · 500 nm · 1200/mm − sin 10° = 0.6 − 0.173648 = 0.426352, cos β = 0.904557.
   const beta = gratingDiffractionAngle(500e-9, d, 1, alpha);
   close(Math.sin(beta), 0.426352, 1e-5);
-  // δλ = w d cos β/(m f) = 25 µm · 833.33 nm · 0.904557/(1 · 500 mm) = 0.037690 nm (Palmer & Loewen ch. 2).
-  close(gratingSlitBandpass(25e-6, d, 1, beta, 0.5), 0.037690e-9, 1e-4);
+  // Slit image r·w (r = cos α/cos β) times d cos β/(m f): δλ = w d cos α/(m f)
+  // = 25 µm · 833.33 nm · 0.984808/(1 · 500 mm) = 0.041034 nm (Palmer & Loewen ch. 2).
+  close(gratingSlitBandpass(25e-6, d, 1, alpha, 0.5), 0.041034e-9, 1e-4);
   // R = mN = 1 · 1200/mm · 50 mm = 60 000, δλ = 500 nm/60 000 = 8.333 pm.
   close(gratingDiffractionLimit(500e-9, 1, 0.05, d), 500e-9 / 60000, 1e-12);
 });
