@@ -5,11 +5,22 @@
  * the larger of the two; aberrations and detector pixels are not modelled).
  *
  * Grating equation mλ = d(sin α + sin β), α the incidence and β the diffraction angle from the grating normal,
- * both positive on the same side. Angular dispersion dβ/dλ = m/(d cos β). A slit of width w imaged at unit
- * magnification by optics of focal length f covers δλ_slit = w d cos β/(m f), the slit width times the
- * reciprocal linear dispersion. Diffraction by the illuminated width W (N = W/d grooves) limits the resolving
- * power to R = λ/δλ = mN (Rayleigh criterion). C. Palmer, E. Loewen, Diffraction Grating Handbook, 6th ed.
- * (Newport, 2005), ch. 2.
+ * both positive on the same side. Angular dispersion dβ/dλ = m/(d cos β); on a focal plane normal to the
+ * diffracted ray, camera focal length f, the reciprocal linear dispersion is d cos β/(m f). The grating widens the
+ * beam by the anamorphic magnification r = cos α/cos β, so with equal collimator and camera focal lengths a slit of
+ * width w is imaged r·w wide and covers δλ_slit = r w d cos β/(m f) = w d cos α/(m f). Diffraction by the
+ * illuminated width W (N = W/d grooves) limits the resolving power to R = λ/δλ = mN (Rayleigh criterion). Order m
+ * and order m + 1 overlap unless the band stays below λ_min (m + 1)/m (free spectral range λ_min/m).
+ * C. Palmer, E. Loewen, Diffraction Grating Handbook, 6th ed. (Newport, 2005), ch. 2.
+ *
+ * Blaze: a facet tilted by the blaze angle φ reflects specularly into β = 2φ − α, so order m is blazed at
+ * λ_b = d[sin α + sin(2φ − α)]/m, which in Littrow is 2d sin φ/m. Scalar efficiency envelope of a reflective
+ * sawtooth with a right-angle apex (R. Casini, P. G. Nelson, J. Opt. Soc. Am. A 31, 2179 (2014),
+ * doi:10.1364/JOSAA.31.002179, eqs. 18–25):
+ *   I = k sinc²(π d ρ [sin(α − φ) + sin(β − φ)]/λ),   ρ = cos α/cos(α − φ) for α ≥ φ, else cos φ,
+ *   k = min(1, cos β cos(α − φ)/(cos α cos(β − φ))) when α < β (shadowing), else 1.
+ * It peaks at 1 at the blaze wavelength; coating reflectance, polarization and the power lost to the other
+ * propagating orders are not included, so it is a relative envelope (fair for λ/d ≲ 0.2, small blaze angles).
  *
  * Any disperser with angular dispersion dθ/dλ and an emerging beam of width D resolves δθ = λ/D, so
  * δλ_diff = λ/(D dθ/dλ). For a grating D = W cos β and this is λ/(mN) again. For a prism at minimum deviation,
@@ -36,11 +47,131 @@ export function gratingAngularDispersion(grooveSpacing: number, order: number, b
   return order / (grooveSpacing * Math.cos(beta));
 }
 
-/** Slit-limited bandpass δλ = w d cos β/(m f), m. */
-export function gratingSlitBandpass(
-  slitWidth: number, grooveSpacing: number, order: number, beta: number, focalLength: number,
+/** Reciprocal linear dispersion dλ/dx = d cos β/(m f) on a focal plane normal to the diffracted ray, m/m. */
+export function gratingReciprocalLinearDispersion(grooveSpacing: number, order: number, beta: number, focalLength: number): number {
+  return (grooveSpacing * Math.cos(beta)) / (order * focalLength);
+}
+
+/**
+ * Reciprocal linear dispersion on a flat detector normal to the central ray β₀: x = f tan(β − β₀), so
+ * dλ/dx = d cos β cos²(β − β₀)/(m f), m/m.
+ */
+export function flatDetectorReciprocalDispersion(
+  grooveSpacing: number, order: number, beta: number, beta0: number, focalLength: number,
 ): number {
-  return (slitWidth * grooveSpacing * Math.cos(beta)) / (order * focalLength);
+  return gratingReciprocalLinearDispersion(grooveSpacing, order, beta, focalLength) * Math.cos(beta - beta0) ** 2;
+}
+
+/** Anamorphic magnification r = cos α/cos β (beam width out/in). */
+export function anamorphicMagnification(incidence: number, beta: number): number {
+  return Math.cos(incidence) / Math.cos(beta);
+}
+
+/** Slit-limited bandpass δλ = w d cos α/(m f): the slit image r·w times d cos β/(m f), equal focal lengths, m. */
+export function gratingSlitBandpass(
+  slitWidth: number, grooveSpacing: number, order: number, incidence: number, focalLength: number,
+): number {
+  return (slitWidth * grooveSpacing * Math.cos(incidence)) / (order * focalLength);
+}
+
+/** Lowest and highest propagating orders, |m λ/d − sin α| ≤ 1 (order 0 always propagates). */
+export function gratingOrderRange(lambda: number, grooveSpacing: number, incidence: number): { min: number; max: number } {
+  const s = Math.sin(incidence);
+  return { min: Math.ceil(((-1 + s) * grooveSpacing) / lambda), max: Math.floor(((1 + s) * grooveSpacing) / lambda) };
+}
+
+/** Upper end λ_min (m + 1)/m of the band free of overlap with order m + 1, m. */
+export function overlapFreeLimit(lambdaMin: number, order: number): number {
+  return (lambdaMin * (order + 1)) / order;
+}
+
+/** Blaze angle φ from the catalogue (first-order Littrow) blaze wavelength, sin φ = λ_B/(2d); NaN if λ_B > 2d. */
+export function blazeAngleFromLittrow(lambdaBlaze: number, grooveSpacing: number): number {
+  const s = lambdaBlaze / (2 * grooveSpacing);
+  return s >= 0 && s <= 1 ? Math.asin(s) : NaN;
+}
+
+/** Blaze wavelength of order m at incidence α, λ_b = d[sin α + sin(2φ − α)]/m (Casini & Nelson eq. 19), m. */
+export function blazeWavelength(grooveSpacing: number, order: number, blazeAngle: number, incidence: number): number {
+  return (grooveSpacing * (Math.sin(incidence) + Math.sin(2 * blazeAngle - incidence))) / order;
+}
+
+/**
+ * Scalar efficiency envelope of order m (Casini & Nelson 2014, eqs. 18, 21, 23, 25), 0 to 1; 0 when the order
+ * does not propagate.
+ */
+export function scalarBlazeEfficiency(
+  lambda: number, grooveSpacing: number, order: number, blazeAngle: number, incidence: number,
+): number {
+  const beta = gratingDiffractionAngle(lambda, grooveSpacing, order, incidence);
+  if (!Number.isFinite(beta)) return 0;
+  const rho = incidence >= blazeAngle ? Math.cos(incidence) / Math.cos(incidence - blazeAngle) : Math.cos(blazeAngle);
+  const x = (Math.PI * grooveSpacing * rho * (Math.sin(incidence - blazeAngle) + Math.sin(beta - blazeAngle))) / lambda;
+  const envelope = Math.abs(x) < 1e-8 ? 1 : (Math.sin(x) / x) ** 2;
+  const shadow = incidence < beta
+    ? Math.min(1, (Math.cos(beta) * Math.cos(incidence - blazeAngle)) / (Math.cos(incidence) * Math.cos(beta - blazeAngle)))
+    : 1;
+  return shadow * envelope;
+}
+
+/** Littrow angle θ of order m, sin θ = mλ/(2d); NaN beyond the cutoff mλ > 2d. */
+export function littrowAngle(lambda: number, grooveSpacing: number, order: number): number {
+  const s = (order * lambda) / (2 * grooveSpacing);
+  return s <= 1 ? Math.asin(s) : NaN;
+}
+
+/** Scalar efficiency in Littrow (α = β = θ at each wavelength); 0 beyond the cutoff. */
+export function littrowBlazeEfficiency(lambda: number, grooveSpacing: number, order: number, blazeAngle: number): number {
+  const theta = littrowAngle(lambda, grooveSpacing, order);
+  return Number.isFinite(theta) ? scalarBlazeEfficiency(lambda, grooveSpacing, order, blazeAngle, theta) : 0;
+}
+
+/**
+ * Littrow wavelengths where another order m' grazes the grating (Rayleigh anomalies), |m'λ/d − mλ/(2d)| = 1, i.e.
+ * λ = d/|m' − m/2|, longest first, down to lambdaMin. In first order, above the first one (2d/3) only orders 0 and 1 propagate.
+ */
+export function littrowRayleighWavelengths(grooveSpacing: number, order: number, lambdaMin: number): number[] {
+  const out: number[] = [];
+  for (let k = 1; k < 1000; k++) {
+    // |m' − m/2| takes the values (k − ½) for odd m, k for even m; skip the order m itself (|m − m/2| = m/2).
+    const offset = order % 2 === 1 ? k - 0.5 : k;
+    if (offset === order / 2) continue;
+    const l = grooveSpacing / offset;
+    if (l < lambdaMin) break;
+    out.push(l);
+  }
+  return out;
+}
+
+/**
+ * Wavelengths at the edges and centre of a flat detector of width W, normal to the central ray, in a
+ * spectrometer with deviation angle D_v = α − β fixed: the grating turns to ψ with mλ_c = 2d cos(D_v/2) sin ψ,
+ * α = ψ + D_v/2, β₀ = ψ − D_v/2, and the detector edges see β₀ ± atan(W/2f) (Palmer & Loewen ch. 2). λ is NaN
+ * where sin α + sin β < 0 (beyond the zero order) or the centre wavelength cannot be reached.
+ */
+export function detectorCoverage(
+  lambdaCentre: number, grooveSpacing: number, order: number, deviation: number, detectorWidth: number, focalLength: number,
+): { incidence: number; beta0: number; lambdaLow: number; lambdaHigh: number } {
+  const s = (order * lambdaCentre) / (2 * grooveSpacing * Math.cos(deviation / 2));
+  if (!(Math.abs(s) <= 1)) return { incidence: NaN, beta0: NaN, lambdaLow: NaN, lambdaHigh: NaN };
+  const psi = Math.asin(s);
+  const incidence = psi + deviation / 2;
+  const beta0 = psi - deviation / 2;
+  const at = (x: number) => detectorWavelength(x, grooveSpacing, order, incidence, beta0, focalLength);
+  return { incidence, beta0, lambdaLow: at(-detectorWidth / 2), lambdaHigh: at(detectorWidth / 2) };
+}
+
+/**
+ * Wavelength at position x on a flat detector normal to the central ray β₀ (x positive towards larger β):
+ * β = β₀ + atan(x/f), λ = d(sin α + sin β)/m; NaN past grazing or beyond the zero order, m.
+ */
+export function detectorWavelength(
+  x: number, grooveSpacing: number, order: number, incidence: number, beta0: number, focalLength: number,
+): number {
+  const beta = beta0 + Math.atan(x / focalLength);
+  if (Math.abs(beta) >= Math.PI / 2) return NaN;
+  const l = (grooveSpacing * (Math.sin(incidence) + Math.sin(beta))) / order;
+  return l > 0 ? l : NaN;
 }
 
 /** Diffraction-limited δλ = λ/(mN) with N = W/d grooves illuminated, m. */

@@ -92,7 +92,15 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "dispersive-element",
     title: "Dispersive Element Design",
     description: "Diffraction grating parameters: grating equation, angular/linear dispersion, blaze profile.",
-    knownIssue: "The blaze efficiency curve is a made-up triangle rather than scalar theory, and the linear dispersion assumes a focal plane normal to the grating at a fixed 100 mm focal length.",
+    tier: "textbook",
+    modelNote: "Grating equation and dispersion are exact geometry; the blaze efficiency is the scalar envelope of a right-angle sawtooth (relative, no coating reflectance or polarization, fair for λ/d below about 0.2).",
+    references: [
+      { citation: "Palmer C., Loewen E. (2005). Diffraction Grating Handbook, 6th ed., ch. 2. Newport." },
+      {
+        citation: "Casini R., Nelson P. G. (2014). On the intensity distribution function of blazed reflective diffraction gratings. J. Opt. Soc. Am. A 31, 2179–2184 (eqs. 18–25).",
+        url: "https://doi.org/10.1364/JOSAA.31.002179",
+      },
+    ],
   },
   {
     slug: "dual-comb-spectroscopy",
@@ -181,8 +189,20 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "grating-efficiency",
     title: "Grating Efficiency Calculator",
-    description: "Estimate diffraction grating efficiency based on groove density, blaze angle, and wavelength.",
-    knownIssue: "Efficiency is a made-up Gaussian centred on the blaze wavelength peaking at 100 percent, not a scalar or electromagnetic grating efficiency.",
+    description: "Scalar blaze efficiency of a ruled grating in Littrow versus wavelength, with the order cutoff and Rayleigh anomalies.",
+    tier: "textbook",
+    modelNote: "Scalar theory for a right-angle sawtooth in Littrow: a relative envelope peaking at 100 % at the blaze wavelength, without coating reflectance, polarization or the power in other orders. Fair for λ/d below about 0.2; above that TE and TM split.",
+    references: [
+      {
+        citation: "Casini R., Nelson P. G. (2014). On the intensity distribution function of blazed reflective diffraction gratings. J. Opt. Soc. Am. A 31, 2179–2184 (eqs. 18–25).",
+        url: "https://doi.org/10.1364/JOSAA.31.002179",
+      },
+      { citation: "Palmer C., Loewen E. (2005). Diffraction Grating Handbook, 6th ed., ch. 2. Newport." },
+      {
+        citation: "Lord Rayleigh (1907). On the dynamical theory of gratings. Proc. R. Soc. Lond. A 79, 399–416.",
+        url: "https://doi.org/10.1098/rspa.1907.0051",
+      },
+    ],
   },
   {
     slug: "infrared-spectroscopy",
@@ -416,7 +436,11 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "spectral-range",
     title: "Spectral Range Calculator",
     description: "Spectral coverage, resolution, and dispersion for a grating-based spectrometer.",
-    knownIssue: "Small central angles give negative wavelengths at the detector edge, the resolving power is computed but not shown, and order overlap inside the covered range is not flagged.",
+    tier: "textbook",
+    modelNote: "Exact grating geometry for a flat detector normal to the central ray at a fixed deviation angle; the resolution is the largest of the slit, two-pixel and diffraction limits, without aberrations or focal-plane tilt.",
+    references: [
+      { citation: "Palmer C., Loewen E. (2005). Diffraction Grating Handbook, 6th ed., ch. 2. Newport." },
+    ],
   },
   {
     slug: "spectral-resolution",

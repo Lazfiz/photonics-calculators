@@ -58,7 +58,7 @@ export default function SpectralResolutionPage() {
     const beta = gratingDiffractionAngle(lambda, d, order, incidence);
     const maxOrder = gratingMaxOrder(lambda, d, incidence);
     if (!Number.isFinite(beta)) return { kind: "unreachable" as const, res: NaN, slit: NaN, diff: NaN, beta, recipLinear: NaN, maxOrder };
-    const slit = gratingSlitBandpass(w, d, order, beta, f);
+    const slit = gratingSlitBandpass(w, d, order, incidence, f);
     const diff = gratingDiffractionLimit(lambda, order, gratingWidth * 1e-3, d);
     const recipLinear = 1 / (f * gratingAngularDispersion(d, order, beta)); // m of wavelength per m at the focal plane
     return { kind: "dispersive" as const, res: Math.max(slit, diff), slit, diff, beta, recipLinear, maxOrder };
@@ -156,12 +156,13 @@ export default function SpectralResolutionPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-sm text-gray-300 space-y-2">
         <h3 className="text-lg font-semibold">Model</h3>
-        <p className="font-mono">Grating: mλ = d(sin α + sin β),   δλ_slit = w·d·cos β / (m·f),   δλ_diff = λ / (mN)</p>
+        <p className="font-mono">Grating: mλ = d(sin α + sin β),   δλ_slit = w·d·cos α / (m·f),   δλ_diff = λ / (mN)</p>
         <p className="font-mono">Prism: δλ_slit = w / (f · dθ/dλ),   δλ_diff = λ / (D · dθ/dλ) = λ / (b·|dn/dλ|)</p>
         <p className="font-mono">Fabry-Pérot: δλ = FSR / ℱ,   T = 1 / [1 + (2ℱ/π)² sin²(π Δλ / FSR)]</p>
         <p>
-          The slit is imaged at unit magnification onto the detector, so its width times the reciprocal linear
-          dispersion is the slit-limited bandpass. Diffraction by the illuminated aperture sets a floor (Rayleigh
+          Collimator and camera have the same focal length f. A grating images the slit r = cos α/cos β times its
+          width (anamorphic magnification; r = 1 for a prism at minimum deviation), and the slit image times the
+          reciprocal linear dispersion d·cos β/(m·f) is the slit-limited bandpass. Diffraction by the illuminated aperture sets a floor (Rayleigh
           criterion: resolving power mN for a grating, b·|dn/dλ| for a prism of base b). The resolution shown is the
           larger of the two, an approximation: the real line shape is the slit image convolved with the diffraction
           pattern, broadened further by aberrations and detector pixels, which are not modelled. Widening the slit
