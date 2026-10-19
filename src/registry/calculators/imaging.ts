@@ -31,9 +31,29 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "adaptive-optics",
     title: "Adaptive Optics Calculator",
-    description: "AO correction performance, Strehl ratio, and deformable mirror requirements.",
-    keywords: ["Adaptive Optics in Microscopy"],
-    knownIssue: "The corrected residual σ₀√(1 − N/(N + 4)) is invented: 15 modes leave 21 % of the phase variance against Noll's 2.7 %, so the corrected Strehl reads 0.13, not about 0.76. Hudgin's 0.28 multiplies σ instead of σ².",
+    description: "Adaptive optics in Kolmogorov turbulence: Noll's residual after J corrected Zernike modes, deformable-mirror fitting error, the Strehl ratio and the stroke needed, from D/r₀.",
+    keywords: ["adaptive optics", "deformable mirror", "fitting error", "Fried parameter", "Zernike modes", "Noll"],
+    tier: "textbook",
+    modelNote: "Kolmogorov turbulence (infinite outer scale) with perfect correction of the chosen modes or by the mirror; servo lag, wavefront-sensor noise and anisoplanatism are left out. The Strehl ratio adds the Parenti–Sasiela seeing halo to the Maréchal core. Aberrations from a sample in microscopy do not follow Kolmogorov statistics.",
+    references: [
+      {
+        citation: "Noll R. J. (1976). Zernike polynomials and atmospheric turbulence. J. Opt. Soc. Am. 66, 207–211. Residual variance Δ_J after J corrected modes (Table IV).",
+        url: "https://doi.org/10.1364/JOSA.66.000207",
+      },
+      {
+        citation: "Hudgin R. H. (1977). Wave-front compensation error due to finite corrector-element size. J. Opt. Soc. Am. 67, 393–395. Fitting error κ(d/r₀)^(5/3).",
+        url: "https://doi.org/10.1364/JOSA.67.000393",
+      },
+      {
+        citation: "Parenti R. R., Sasiela R. J. (1994). Laser-guide-star systems for astronomical applications. J. Opt. Soc. Am. A 11, 288. Strehl ratio with the seeing halo.",
+        url: "https://doi.org/10.1364/JOSAA.11.000288",
+      },
+    ],
+    related: [
+      { href: "/free-space-comms/adaptive-optics" },
+      { href: "/imaging/shack-hartmann" },
+      { href: "/imaging/strehl-ratio" },
+    ],
   },
   {
     slug: "afocal",
@@ -773,8 +793,19 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "speckle-imaging",
     title: "Speckle Imaging",
-    description: "Speckle size, contrast, averaging strategies, and surface roughness effects.",
-    knownIssue: "The aperture diameter is unused (no subjective speckle size is computed), the speckle size λz/D is given without saying it is the correlation width (1.22λz/D is 22 % larger), and the beam chart is unrelated to the result.",
+    description: "Laser speckle: objective and subjective speckle size, contrast from the rms roughness of a Gaussian surface, and contrast reduction by averaging uncorrelated patterns.",
+    keywords: ["laser speckle", "speckle size", "speckle contrast", "surface roughness", "despeckle"],
+    tier: "textbook",
+    modelNote: "Uniformly lit circular spot or pupil (|2J₁(v)/v|² correlation). Gaussian surface phase in reflection at normal incidence with many correlation cells in the spot, contrast in the specular direction; averaged patterns uncorrelated and of equal mean.",
+    references: [
+      {
+        citation: "Goodman J. W. (2020). Speckle Phenomena in Optics: Theory and Applications, 2nd ed. SPIE Press. First-order statistics (ch. 3) and spatial structure of speckle (ch. 5).",
+        url: "https://doi.org/10.1117/3.2548484",
+      },
+    ],
+    related: [
+      { href: "/imaging/digital-holography" },
+    ],
   },
   {
     slug: "spectral-unmixing",

@@ -21,7 +21,13 @@
  *
  * Adaptive optics (a single turbulent layer moving at speed v):
  * - uncorrected phase variance 1.0299 (D/r₀)^(5/3), piston removed, and the residual after correcting the first
- *   J Zernike modes ≈ 0.2944 J^(−√3/2) (D/r₀)^(5/3) for large J (R. J. Noll, JOSA 66, 207 (1976));
+ *   J Zernike modes ≈ 0.2944 J^(−√3/2) (D/r₀)^(5/3) for large J (R. J. Noll, JOSA 66, 207 (1976)); for any J the
+ *   exact Δ_J (D/r₀)^(5/3) from Noll's diagonal covariance, ⟨a_j²⟩ ∝ (n + 1) Γ(n − 5/6)/Γ(n + 23/6) for radial
+ *   order n, scaled so that all modes sum to 1.0299 (his Table IV: Δ₃ 0.134, Δ₁₅ 0.0279, Δ₂₁ 0.0208);
+ * - fitting error of a deformable mirror with actuator pitch d, κ (d/r₀)^(5/3): κ 0.28 for a continuous facesheet
+ *   with Gaussian influence functions, 0.134 for piston-tip-tilt segments and 1.26 for piston-only segments
+ *   (R. H. Hudgin, JOSA 67, 393 (1977); tabulated in R. K. Tyson, Principles of Adaptive Optics, and J. W. Hardy,
+ *   Adaptive Optics for Astronomical Telescopes (Oxford, 1998));
  * - Greenwood frequency f_G = 0.427 v/r₀, servo-lag variance (f_G/f_3dB)^(5/3) for a first-order loop with
  *   closed-loop bandwidth f_3dB (D. P. Greenwood, JOSA 67, 390 (1977));
  * - Strehl ratio S ≈ e^(−σ²) + (1 − e^(−σ²))/(1 + (D/r₀)²), the Maréchal core plus the seeing halo, semi-empirical
@@ -381,6 +387,44 @@ export function uncorrectedPhaseVariance(diameter: number, r0: number): number {
 /** Residual phase variance after correcting the first J Zernike modes, 0.2944 J^(−√3/2) (D/r₀)^(5/3), rad². */
 export function fittingErrorVariance(modes: number, diameter: number, r0: number): number {
   return 0.2944 * modes ** (-Math.sqrt(3) / 2) * (diameter / r0) ** (5 / 3);
+}
+
+/** Radial order n of Zernike mode j in Noll's ordering (j = 1 piston, 2–3 tilt, 4–6 n = 2, …). */
+export function zernikeRadialOrder(j: number): number {
+  return Math.floor((Math.sqrt(8 * j - 7) - 1) / 2);
+}
+
+/** Highest J that `nollResidual` accepts. */
+export const NOLL_MAX_MODES = 5000;
+
+// Noll's diagonal covariance per mode of radial order n, up to a constant: (n + 1) Γ(n − 5/6)/Γ(n + 23/6).
+const nollModeShape = (n: number) => (n + 1) * Math.exp(lnGamma(n - 5 / 6) - lnGamma(n + 23 / 6));
+// Scale so that every mode beyond piston sums to Noll's 1.0299; the terms fall as n^(−14/3), so 2000 radial orders
+// (each holding n + 1 modes) leave a tail below 1e-9.
+const NOLL_SCALE = (() => {
+  let sum = 0;
+  for (let n = 2000; n >= 1; n--) sum += (n + 1) * nollModeShape(n);
+  return 1.0299 / sum;
+})();
+
+/**
+ * Noll's Δ_J: the residual phase variance after correcting the first J Zernike modes (piston included), in units of
+ * (D/r₀)^(5/3). Exact for Kolmogorov turbulence; Δ₁ = 1.0299. NaN outside 1 ≤ J ≤ NOLL_MAX_MODES or for a fractional J.
+ */
+export function nollResidual(modes: number): number {
+  if (!Number.isInteger(modes) || modes < 1 || modes > NOLL_MAX_MODES) return NaN;
+  let removed = 0;
+  for (let j = 2; j <= modes; j++) removed += NOLL_SCALE * nollModeShape(zernikeRadialOrder(j));
+  return 1.0299 - removed;
+}
+
+/** Fitting-error coefficients κ of σ² = κ (d/r₀)^(5/3) by deformable-mirror type (Hudgin 1977; Hardy 1998). */
+export const DM_FITTING_COEFFICIENT = { continuous: 0.28, segmentedTipTilt: 0.134, segmentedPiston: 1.26 } as const;
+
+/** Deformable-mirror fitting error κ (d/r₀)^(5/3), rad², for actuator pitch d (projected on the pupil). */
+export function dmFittingVariance(pitch: number, r0: number, kappa: number = DM_FITTING_COEFFICIENT.continuous): number {
+  if (!(pitch >= 0) || !(r0 > 0) || !(kappa >= 0)) return NaN;
+  return kappa * (pitch / r0) ** (5 / 3);
 }
 
 /** Greenwood frequency f_G = 0.427 v/r₀, Hz. */
