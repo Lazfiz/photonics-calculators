@@ -1,15 +1,17 @@
-# Handover — 2026-10-19 (session 96 → session 97)
+# Handover — 2026-10-19 (session 97 → session 98)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 96 did the **spectroscopy audit, part 0** on branch `phase-4/spectroscopy-audit` (PR #127 expected): 49 pages,
-27 bugs / 15 questionable / 7 OK, 42 `knownIssue`s. Next: **spectroscopy fix part 1** (Beer-Lambert merge).
+Session 97 did **spectroscopy fix part 1** (Beer-Lambert) on branch `phase-4/spectroscopy-beer-lambert`.
+Next: **spectroscopy fix part 2** (`line-broadening.ts`: Doppler, Lorentz, Voigt).
 
 ## State
-- Registry only: 42 `knownIssue`s in `src/registry/calculators/spectroscopy.ts`; 9 descriptions with stripped Greek
-  symbols restored (7 ledes dropped because they then equalled the description: registry test). No physics changed.
+- concentration + extinction-coefficient merged into lambert-beer-law (redirects; `solve` = A | c | eps in the URL,
+  molar mass input, a = ε/M). optical-density (`mode` in the URL, filter factor and stops) and absorption-cross-section
+  (`from` = eps | sigma, default 10 µM) tiered exact. Physics in `src/physics/spectroscopy/lambert-beer-law.ts`
+  (8 goldens). 318 of 452 pages tiered, 41 `knownIssue`s.
 - The per-page findings, golden values and references are in the PR #127 description (`gh pr view 127`); read the
-  section for the part at hand instead of re-auditing. 316 of 454 pages tiered.
+  section for the part at hand instead of re-auditing.
 - **User decisions (session 96):** merges with redirects. The parts are listed in ROADMAP "Spectroscopy fix parts".
 - **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only when the user asks:
   `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set
@@ -18,17 +20,18 @@ Session 96 did the **spectroscopy audit, part 0** on branch `phase-4/spectroscop
   user says otherwise.
 
 ## Next actions
-1. `/ship` this branch (no page values change; no release check needed). Values for a later release check: part 15b:
-   `imaging/denoising-algorithms=9.54`, `imaging/computational-imaging=157.02`; part 15a: `imaging/registration=934.0`,
+1. `/ship` this branch. Values for a later release check: part 1: `spectroscopy/lambert-beer-law=31.62`,
+   `spectroscopy/absorption-cross-section=1.912e-16`, `spectroscopy/optical-density=6.64`; imaging 15b:
+   `imaging/denoising-algorithms=9.54`, `imaging/computational-imaging=157.02`; 15a: `imaging/registration=934.0`,
    `imaging/stitching=84.70`; earlier parts: `git show 04f88743:docs/HANDOVER.md`. Don't release unless asked.
-2. Spectroscopy part 1: concentration + extinction-coefficient merge into lambert-beer-law (redirects, see the session 65
-   slug-rename note), optical-density, absorption-cross-section. Goldens: σ/ε = 3.8235e-21 cm², ε 5e4 → 1.912e-16 cm²;
-   concentration defaults 1.000e-5 M, T 31.62 %; extinction defaults ε 50, specific 0.5.
+2. Spectroscopy part 2 (ROADMAP item 2): spectral-line-broadening absorbs doppler-broadening and lineshape-fit; libs-analysis.
 3. Later: open findings (FSO `adaptive-optics` actuators-as-modes, part 8 leftovers, local `sinc` copies,
    `fluorophores.ts` cutoff, `optical-sectioning-thickness`, detectors 7b, fiber, FSO), `polarizer-types` (needs the
    user at the laptop with Chrome). `simultaneous-multicolor` could use `binnedReadNoise` instead of its inline copy.
 
 ## Non-obvious facts
+- **Session 97:** `no-inline-constants` flags any literal within 1 % of 299 792 (c in km/s), e.g. a slider max 3e5. Backticks
+  in `node -e` ran `git push origin main:release` (failed on a stray `\`): edit docs with Edit, never a shell string.
 - **Session 96:** `lede` defaults to `description`, and the registry test fails when they're equal: drop the lede. Seven
   parallel `physics-reviewer` batches of 7 finish in ≈ 6 min; ask for a draft `knownIssue` per page.
 - **Session 95:** `SimpleChart` colours a markers-only trace from `line.color` (else the palette), not `marker.color`:
