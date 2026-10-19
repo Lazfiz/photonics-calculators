@@ -32,6 +32,7 @@
   "/imaging/third-harmonic-generation": "/imaging/third-harmonic-microscopy",
   "/imaging/two-photon": "/imaging/two-photon-microscopy",
   "/imaging/two-photon-excitation": "/imaging/two-photon-microscopy",
+  "/imaging/wavefront-error": "/imaging/strehl-ratio",
   "/imaging/wavefront-sensing": "/imaging/shack-hartmann",
   "/imaging/wavefront-sensor": "/imaging/shack-hartmann",
   "/imaging/working-distance": "/imaging/image-distance",

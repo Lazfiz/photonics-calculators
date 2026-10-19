@@ -1,146 +1,93 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import {
+  cutoffFrequency, diffractionMtf, wienerGain, wienerHalfFrequency, wienerTransfer,
+} from "../../../physics/imaging/diffraction-mtf";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const um = 1e-6;
+const nm = 1e-9;
+
+const row = (label: string, value: string, color = "") => (
+  <div className="flex justify-between border-b border-gray-800 pb-2">
+    <span className="text-gray-400">{label}</span>
+    <span className={`font-mono ${color}`}>{value}</span>
+  </div>
+);
+
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
+
 export default function DeconvolutionPage() {
-  const [method, setMethod] = useState<"richardson" | "wiener" | "blind" | "tikhonov">("richardson");
-  const [na, setNa] = useURLState("na", 1.4);
-  const [wavelengthNm, setWavelengthNm] = useURLState("wavelengthNm", 550);
-  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.515);
-  const [numIterations, setNumIterations] = useURLState("numIterations", 15);
-  const [regularization, setRegularization] = useURLState("regularization", 0.01);
-  const [snrInput, setSnrInput] = useURLState("snrInput", 30);
-  const [imageSize, setImageSize] = useURLState("imageSize", 512);
-  const [numZSlices, setNumZSlices] = useURLState("numZSlices", 30);
+  const [naRaw, setNa] = useURLState("na", 1.4);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelengthNm", 550);
+  const [snrRaw, setSnr] = useURLState("snrInput", 30);
+  const na = clamp(naRaw, 0.1, 1.7, 1.4);
+  const wavelengthNm = clamp(wavelengthRaw, 200, 2000, 550);
+  const snrDb = clamp(snrRaw, 0, 80, 30);
+  const nsr = 10 ** (-snrDb / 10);
 
-  const lateralRes = 0.61 * wavelengthNm / na;
-  const axialRes = 2 * refractiveIndex * wavelengthNm / (na ** 2);
-  const psfVolume = Math.round((lateralRes * 2 / 0.05) ** 2 * (axialRes * 2 / 0.05));
+  const fc = cutoffFrequency(na, wavelengthNm * nm);
+  const nuHalf = wienerHalfFrequency(nsr);
+  const passbandPeriodNm = 1 / fc / nm;
+  const restoredPeriodNm = passbandPeriodNm / nuHalf;
+  const rayleighNm = (0.61 * wavelengthNm) / na;
+  const peakGain = 1 / (2 * Math.sqrt(nsr));
 
-  // OTF cutoff
-  const otfCutoff = 2 * na / wavelengthNm;
-
-  // Simulate MTF curves
-  const mtfData = useMemo(() => {
-    const freq = Array.from({ length: 100 }, (_, i) => i * otfCutoff / 100);
-    const otfIdeal = freq.map(f => {
-      if (f >= otfCutoff) return 0;
-      const nu = f / otfCutoff; // normalized frequency
-      return (2 / Math.PI) * (Math.acos(nu) - nu * Math.sqrt(Math.max(0, 1 - nu * nu)));
-    });
-    const otfMeasured = otfIdeal.map((v, i) => v * Math.exp(-0.5 * (freq[i] / (otfCutoff * 0.7)) ** 2) + (1 / Math.pow(10, snrInput / 20)) * 0.3);
-    const otfDeconv = otfIdeal.map((v, i) => {
-      const w = method === "wiener" ? Math.max(regularization, Math.pow(10, -snrInput / 10)) :
-                method === "tikhonov" ? regularization :
-                method === "blind" ? 0.005 : 0;
-      const h = otfMeasured[i];
-      if (h < 0.001) return 0;
-      return Math.min(1, (h * h) / (h * h + w));
-    });
-
+  const chart = useMemo(() => {
+    const nus = Array.from({ length: 201 }, (_, k) => k / 200);
+    const x = nus.map((v) => v * fc * um);
+    const h = nus.map(diffractionMtf);
     return [
-      { x: freq, y: otfIdeal, type: "scatter", mode: "lines" as const, name: "Diffraction-Limited OTF", line: { color: "#34d399", width: 2 } },
-      { x: freq, y: otfMeasured, type: "scatter", mode: "lines" as const, name: "Measured OTF", line: { color: "#fbbf24", width: 2 } },
-      { x: freq, y: otfDeconv, type: "scatter", mode: "lines" as const, name: "Restored OTF", line: { color: "#f87171", width: 2, dash: "dash" } },
+      { x, y: h, type: "scatter" as const, mode: "lines" as const, name: "Diffraction-limited MTF H", line: { color: "#60a5fa" } },
+      { x, y: h.map((v) => wienerTransfer(v, nsr)), type: "scatter" as const, mode: "lines" as const, name: "Wiener-restored H²/(H² + NSR)", line: { color: "#34d399" } },
+      { x, y: h.map((v) => wienerGain(v, nsr) * Math.sqrt(nsr)), type: "scatter" as const, mode: "lines" as const, name: "Filter gain × √NSR", line: { color: "#f87171", dash: "dash" } },
+      { x: [nuHalf * fc * um], y: [0.5], type: "scatter" as const, mode: "markers" as const, name: "Restored transfer ½", marker: { color: "#facc15", size: 10 } },
     ];
-  }, [otfCutoff, snrInput, method, regularization]);
-
-  // Convergence plot
-  const convergenceData = useMemo(() => {
-    const iters = Array.from({ length: 30 }, (_, i) => i + 1);
-    const residual = iters.map(i => {
-      const noise = 1 / Math.pow(10, snrInput / 20);
-      return method === "richardson"
-        ? noise * 0.3 + 0.7 * Math.exp(-0.15 * i) + 0.05 * (i > 10 ? (i - 10) * 0.02 : 0)
-        : method === "wiener"
-        ? noise * 0.2 + 0.8 * Math.exp(-0.3 * i)
-        : method === "tikhonov"
-        ? noise * 0.25 + 0.75 * Math.exp(-0.2 * i)
-        : noise * 0.4 + 0.6 * Math.exp(-0.1 * i);
-    });
-    return [
-      { x: iters, y: residual, type: "scatter", mode: "lines" as const, name: "Residual", line: { color: "#60a5fa", width: 2 } },
-      { x: [numIterations], y: [residual[numIterations - 1] || 0], type: "scatter", mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 } },
-    ];
-  }, [numIterations, snrInput, method]);
-
-  // Resolution improvement
-  const improvementFactor = method === "richardson" ? 1.6 : method === "wiener" ? 1.4 : method === "tikhonov" ? 1.3 : 1.5;
-  const improvedLateral = lateralRes / improvementFactor;
+  }, [fc, nsr, nuHalf]);
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-4 mb-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Lateral Resolution</p>
-          <p className="text-2xl font-bold text-blue-400">{lateralRes.toFixed(0)} nm</p>
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
+          <ValidatedNumberInput label="Numerical aperture NA" value={naRaw} onChange={setNa} min={0.1} max={1.7} step="any" />
+          <ValidatedNumberInput label="Emission wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={200} max={2000} step="any" />
+          <ValidatedNumberInput label="Signal-to-noise power ratio per frequency (dB)" value={snrRaw} onChange={setSnr} min={0} max={80} step="any" />
+          <p className="text-xs text-gray-500">
+            The Wiener filter G = H/(H² + NSR) assumes white noise and a flat object spectrum with a noise-to-signal
+            power ratio NSR = 10^(−dB/10). Tikhonov regularisation with the identity is the same filter with NSR as its
+            parameter. Richardson–Lucy and blind deconvolution are iterative and nonlinear: they have no transfer
+            function to plot, and they cannot restore frequencies above f_c either.
+          </p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">After Deconvolution</p>
-          <p className="text-2xl font-bold text-green-400">{improvedLateral.toFixed(0)} nm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Improvement Factor</p>
-          <p className="text-2xl font-bold text-yellow-400">{improvementFactor.toFixed(1)}×</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Method</p>
-          <p className="text-xl font-bold text-purple-400">{method === "richardson" ? "RL" : method === "wiener" ? "Wiener" : method === "tikhonov" ? "Tikhonov" : "Blind"}</p>
-        </div>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Method</span>
-          <select value={method} onChange={e => setMethod(e.target.value as any)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            <option value="richardson">Richardson-Lucy (Iterative)</option>
-            <option value="wiener">Wiener Filter</option>
-            <option value="tikhonov">Tikhonov (Regularized)</option>
-            <option value="blind">Blind Deconvolution</option>
-          </select>
-        </label>
-        <ValidatedNumberInput label="NA" value={na} onChange={setNa} min={0.1} max={1.7} step="0.05" />
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthNm} onChange={setWavelengthNm} min={400} max={800} />
-        <ValidatedNumberInput label="Refractive Index" value={refractiveIndex} onChange={setRefractiveIndex} min={1} max={1.8} step="0.01" />
-        <ValidatedNumberInput label="Iterations" value={numIterations} onChange={setNumIterations} min={1} max={100} />
-        <ValidatedNumberInput label="Regularization Parameter" value={regularization} onChange={setRegularization} min={0.0001} max={1} step="0.001" />
-        <ValidatedNumberInput label="Input SNR (dB)" value={snrInput} onChange={setSnrInput} min={1} max={60} />
-        <ValidatedNumberInput label="Image Size (px)" value={imageSize} onChange={setImageSize} min={64} max={4096} />
-        <ValidatedNumberInput label="Z-Slices" value={numZSlices} onChange={setNumZSlices} min={1} max={200} />
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 mb-6">
-        <div className="bg-gray-900 rounded-lg p-4">
-          <h3 className="text-sm font-semibold mb-2">OTF / MTF Analysis</h3>
-          <ChartPanel data={mtfData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-            xaxis: { title: "Spatial Frequency (cycles/nm)", gridcolor: "#374151" }, yaxis: { title: "MTF", gridcolor: "#374151", range: [0, 1.1] },
-            margin: { t: 30, r: 20, b: 50, l: 50 }, legend: { font: { size: 9 } },
-          }} />
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4">
-          <h3 className="text-sm font-semibold mb-2">Convergence (Residual vs Iterations)</h3>
-          <ChartPanel data={convergenceData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-            xaxis: { title: "Iteration", gridcolor: "#374151" }, yaxis: { title: "Residual", gridcolor: "#374151" },
-            margin: { t: 30, r: 20, b: 50, l: 60 },
-          }} />
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
+          <h2 className="text-lg font-semibold">Results</h2>
+          {row("OTF cutoff f_c = 2NA/λ", fmt(fc * um, 3, " lp/µm"))}
+          {row("Finest period passed, λ/(2NA)", fmt(passbandPeriodNm, 1, " nm"), "text-blue-400")}
+          {row("Rayleigh distance 0.61λ/NA", fmt(rayleighNm, 1, " nm"))}
+          {row("NSR", nsr.toExponential(2))}
+          {row("ν where H = √NSR (restored ½)", fmt(nuHalf, 4))}
+          {row("Finest period restored to ½", fmt(restoredPeriodNm, 1, " nm"), "text-green-400")}
+          {row("Largest filter gain 1/(2√NSR)", fmt(peakGain, 1, "×"))}
+          <p className="text-xs text-gray-500">
+            Deconvolution raises the contrast of frequencies the optics passed weakly; it does not pass anything above
+            f_c, so no method resolves a period below λ/(2NA). The filter gain peaks at H = √NSR and rolls off above it,
+            so the noise in the restored image is bounded.
+          </p>
         </div>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-        <h3 className="text-lg font-semibold mb-3">Key Formulas</h3>
-        <div className="space-y-2 text-sm text-gray-300 font-mono">
-          <p><span className="text-blue-400">PSF (Airy):</span> I(r) = [2J₁(2πrNA/λ) / (2πrNA/λ)]²</p>
-          <p><span className="text-blue-400">Richardson-Lucy:</span> ôₙ₊₁ = ôₙ · (g / (h ⊗ ôₙ)) ⊗ h*</p>
-          <p><span className="text-blue-400">Wiener:</span> Ô = (H* / (|H|² + Γ)) · G</p>
-          <p><span className="text-blue-400">Tikhonov:</span> min‖H·o − g‖² + λ‖L·o‖²</p>
-          <p><span className="text-blue-400">OTF cutoff:</span> f_c = 2NA / λ</p>
-          <p><span className="text-blue-400">Noise amplification:</span> |1/H| → ∞ as |H| → 0</p>
-        </div>
+        <h2 className="text-lg font-semibold mb-4">Transfer before and after Wiener restoration</h2>
+        <ChartPanel data={chart} layout={{
+          paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" },
+          xaxis: { title: "Spatial frequency (lp/µm)", gridcolor: "#333" },
+          yaxis: { title: "Transfer", gridcolor: "#333", range: [0, 1.05] },
+          margin: { l: 60, r: 20, t: 20, b: 50 }, showlegend: true,
+        }} />
       </div>
     </>
   );

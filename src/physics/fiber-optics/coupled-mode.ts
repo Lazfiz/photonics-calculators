@@ -25,7 +25,7 @@
  * (denominator: ∫ψ² dA/a², Gloge, Appl. Opt. 10, 2252 (1971)). Numerical integral, see lp01PowerBeyondPlane.
  */
 import { abs as cabs, complex, realPart, sqrt as csqrt, div as cdiv } from "../complex";
-import { besselJ, besselKScaled } from "../math";
+import { besselJ, besselKScaled, integrateSimpson as simpson } from "../math";
 import { lp01Mode, vNumber, type Lp01Mode, type StepIndexFiber } from "./macro-bending-loss";
 import { lp01Field } from "./step-index-modes";
 
@@ -81,14 +81,6 @@ export function criticalBendRadius(beta: number, pitch: number, deltaBeta: numbe
 /** Pair crosstalk XT = tanh(hL) (linear power ratio) from the coupled-power equations. */
 export function pairCrosstalk(h: number, L: number): number {
   return h >= 0 && L >= 0 ? Math.tanh(h * L) : NaN;
-}
-
-/** Composite Simpson rule on [a, b], n even. */
-function simpson(g: (x: number) => number, a: number, b: number, n: number): number {
-  const h = (b - a) / n;
-  let s = g(a) + g(b);
-  for (let i = 1; i < n; i++) s += (i % 2 ? 4 : 2) * g(a + i * h);
-  return (s * h) / 3;
 }
 
 /**

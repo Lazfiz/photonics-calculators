@@ -211,8 +211,17 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "deconvolution",
     title: "Image Deconvolution",
-    description: "Compare deconvolution algorithms: OTF analysis, convergence behavior, and resolution recovery.",
-    knownIssue: "A hard-coded gain per method claims 150 nm, below the passband limit λ/(2NA) = 196 nm at 550 nm, NA 1.4. The convergence curves are invented, also for the one-step Wiener filter, and the RL restored OTF is 1 everywhere.",
+    description: "Wiener deconvolution of a diffraction-limited image: the restored transfer H²/(H² + NSR), the largest filter gain and the finest period restored, against the passband limit λ/(2NA).",
+    tier: "textbook",
+    modelNote: "Linear Wiener filter for white noise and a flat object spectrum, applied to the in-focus diffraction-limited MTF of a circular pupil. Iterative methods (Richardson–Lucy, blind) are not modelled; no method restores frequencies above 2NA/λ.",
+    references: [
+      {
+        citation: "Goodman J. W. (2005). Introduction to Fourier Optics, 3rd ed., §6.3. Roberts & Company. Incoherent cutoff 2NA/λ and the diffraction-limited MTF of a circular pupil.",
+      },
+      {
+        citation: "Gonzalez R. C., Woods R. E. (2018). Digital Image Processing, 4th ed., §5.8. Pearson. Wiener filter H*/(|H|² + K) with a constant noise-to-signal ratio K.",
+      },
+    ],
   },
   {
     slug: "denoising-algorithms",
@@ -466,8 +475,18 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "mtf",
     title: "Modulation Transfer Function",
-    description: "Diffraction-limited incoherent MTF with defocus effects.",
-    knownIssue: "An NA or wavelength of 0 in the URL hangs the page. The defocus factor exp(−2(W·s)²) is invented: at NA 0.95, 0.5 µm defocus it gives 0.014 at half cutoff where the Hopkins OTF gives 0.156, with no contrast reversal.",
+    description: "Diffraction-limited incoherent MTF and cutoff 2NA/λ, and Hopkins' defocused OTF with contrast reversal, for a circular pupil.",
+    tier: "textbook",
+    modelNote: "Scalar incoherent imaging with a uniform circular pupil. Defocus is the paraxial W₀₂₀ = Δz·NA²/(2n); the OTF is Hopkins' pupil-overlap integral, evaluated numerically. At high NA the paraxial W₀₂₀ under-estimates the defocus (the page shows the exact edge path difference).",
+    references: [
+      {
+        citation: "Goodman J. W. (2005). Introduction to Fourier Optics, 3rd ed., §6.3. Roberts & Company. Incoherent cutoff 2NA/λ and the diffraction-limited MTF of a circular pupil.",
+      },
+      {
+        citation: "Hopkins H. H. (1955). The frequency response of a defocused optical system. Proc. R. Soc. Lond. A 231, 91–103. OTF of a defocused circular pupil.",
+        url: "https://doi.org/10.1098/rspa.1955.0158",
+      },
+    ],
   },
   {
     slug: "multiphoton-depth",
@@ -830,9 +849,25 @@ export const imaging: CalculatorEntry[] = [
   },
   {
     slug: "strehl-ratio",
-    title: "Strehl Ratio Calculator",
-    description: "Estimate the Strehl ratio from wavefront error using the Maréchal approximation.",
-    knownIssue: "The mode options say waves while the input is in nm, the PV/RMS ratio 3.55 is uncited, and the S ≥ 0.8 threshold disagrees with wavefront-error's λ/14 between σ = 0.0714λ and 0.0752λ.",
+    title: "Strehl Ratio and Wavefront Error",
+    description: "Strehl ratio from an RMS or peak-to-valley wavefront error: the Maréchal approximation against the exact value for defocus, astigmatism, coma or spherical aberration, with the λ/14 and S = 0.8 tolerances.",
+    keywords: ["Wavefront Error Analysis", "Maréchal criterion"],
+    tier: "exact",
+    modelNote: "Exact Strehl ratio for one Noll-normalised Zernike term on a uniform circular pupil (radial integral, numerical), shown with the extended Maréchal approximation exp(−(2πσ/λ)²). PV/RMS is the ratio of that single term.",
+    references: [
+      {
+        citation: "Noll R. J. (1976). Zernike polynomials and atmospheric turbulence. J. Opt. Soc. Am. 66, 207–211. Zernike normalisation: the coefficient is the RMS of the term.",
+        url: "https://doi.org/10.1364/JOSA.66.000207",
+      },
+      {
+        citation: "Mahajan V. N. (1982). Strehl ratio for primary aberrations: some analytical results for circular and annular pupils. J. Opt. Soc. Am. 72, 1258–1266. Strehl ratio of balanced primary aberrations.",
+        url: "https://doi.org/10.1364/JOSA.72.001258",
+      },
+      {
+        citation: "Mahajan V. N. (1983). Strehl ratio for primary aberrations in terms of their aberration variance. J. Opt. Soc. Am. 73, 860–861. The approximation exp(−(2πσ/λ)²).",
+        url: "https://doi.org/10.1364/JOSA.73.000860",
+      },
+    ],
   },
   {
     slug: "structured-illumination",
@@ -974,11 +1009,5 @@ export const imaging: CalculatorEntry[] = [
         citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed., §8.5. Cambridge University Press. Exact paraxial Airy pattern the fit was checked against.",
       },
     ],
-  },
-  {
-    slug: "wavefront-error",
-    title: "Wavefront Error Analysis",
-    description: "Analyze wavefront error in waves RMS, compute Strehl ratio, and check diffraction-limited condition.",
-    knownIssue: "A large Zernike-term count in the URL throws and crashes the page, the Zernike chart just splits σ equally over N terms, and the default σ = 0.25λ is outside the Maréchal range (S 0.085 against 0.023 exact for defocus).",
   },
 ];

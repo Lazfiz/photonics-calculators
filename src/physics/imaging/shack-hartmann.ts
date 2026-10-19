@@ -13,8 +13,8 @@
  * - Sensitivity: a one-pixel spot shift p is a tilt p/f, a wavefront step p·d/f across one lenslet.
  * - Photon-limited centroid precision σ_c = σ_spot/√N, with σ_spot = FWHM/(2√(2 ln 2)) of the Gaussian of the
  *   same FWHM (read noise, pixelation and the sinc²/Airy wings are neglected).
- * - Strehl ratio from the RMS wavefront error, extended Maréchal exp(−(2πσ/λ)²) (V. N. Mahajan, JOSA 73, 860
- *   (1983)); good to about 10 % down to S ≈ 0.3.
+ * - Strehl ratio from the RMS wavefront error: `marechalStrehl` in wavefront.ts, extended Maréchal exp(−(2πσ/λ)²)
+ *   (V. N. Mahajan, JOSA 73, 860 (1983)); good to about 10 % down to S ≈ 0.3.
  */
 
 export type LensletShape = "square" | "circular";
@@ -59,13 +59,6 @@ export function wavefrontPerPixel(pixel: number, f: number, d: number): number {
 export function centroidPrecision(lambda: number, f: number, d: number, shape: LensletShape, photons: number): number {
   if (!positive(photons)) return NaN;
   return spotFwhm(lambda, f, d, shape) / (2 * Math.sqrt(2 * Math.LN2) * Math.sqrt(photons));
-}
-
-/** Extended Maréchal Strehl ratio exp(−(2πσ/λ)²). */
-export function marechalStrehl(rmsWavefront: number, lambda: number): number {
-  if (!positive(lambda) || !(Number.isFinite(rmsWavefront) && rmsWavefront >= 0)) return NaN;
-  const phase = (2 * Math.PI * rmsWavefront) / lambda;
-  return Math.exp(-phase * phase);
 }
 
 export interface LensletCell {
