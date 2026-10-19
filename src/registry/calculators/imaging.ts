@@ -731,8 +731,23 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "registration",
     title: "Image Registration",
-    description: "Calculate transformation parameters, registration accuracy, and evaluate different registration approaches.",
-    knownIssue: "Nothing is computed from a model: the RMSE is the true displacement times a fixed per-method fraction plus noise, the error curves are hard-coded, and the displacement RMS uses the edge rotation (1067 against 934 nm).",
+    description: "Rigid, similarity and affine registration: the transform matrix, RMS displacement over the image, control-point target registration error (Fitzpatrick) and the Cramér–Rao bound for intensity-based alignment.",
+    keywords: ["image registration", "target registration error", "fiducial localization error", "Cramér-Rao bound", "affine transform"],
+    tier: "textbook",
+    modelNote: "First-order least squares: 2-D TRE² = (FLE²/N)(1 + m·d²/(2f²)) and FRE² = FLE²(1 − p/(2N)) for isotropic, independent fiducial errors and fiducials spread over the image. The translation bound assumes a noise-free reference and a Gaussian-correlated random texture. Elastic registration is not modelled.",
+    references: [
+      {
+        citation: "Fitzpatrick J. M., West J. B., Maurer C. R. (1998). Predicting error in rigid-body point-based registration. IEEE Trans. Med. Imaging 17(5), 694–702. TRE and FRE from linearised least squares (3-D; the page uses the 2-D analogue).",
+        url: "https://doi.org/10.1109/42.736021",
+      },
+      {
+        citation: "Robinson D., Milanfar P. (2004). Fundamental performance limits in image registration. IEEE Trans. Image Process. 13(9), 1185–1199. Section II-A: Fisher information of a translation.",
+        url: "https://doi.org/10.1109/TIP.2004.832923",
+      },
+    ],
+    related: [
+      { href: "/imaging/stitching" },
+    ],
   },
   {
     slug: "resolution",
@@ -938,8 +953,23 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "stitching",
     title: "Image Stitching",
-    description: "Calculate tile grid parameters, overlap, blending profiles, and stitching accuracy for large-area microscopy.",
-    knownIssue: "A negative grid size in the URL crashes the page and a huge one hangs it. The headline position error is a fixed 0.3 × the input error, and the feather weights cos and sin sum to √2 at mid-overlap, a 41 % bright seam.",
+    description: "Tiled-mosaic stitching: mosaic size and efficiency from the overlap, blend weights and seam gradient, and how tile position errors grow when chained versus after global optimisation.",
+    keywords: ["image stitching", "tile mosaic", "overlap", "global optimization", "blending"],
+    tier: "textbook",
+    modelNote: "Mosaic geometry is exact. Neighbouring tiles are registered with independent errors σ per axis; a chain adds them as √(i + j), the global least-squares fit has variance σ²·R_eff, the effective resistance of the unit tile grid (computed exactly). Linear and cos² blends; multiband blending is not modelled.",
+    references: [
+      {
+        citation: "Preibisch S., Saalfeld S., Tomancak P. (2009). Globally optimal stitching of tiled 3D microscopic image acquisitions. Bioinformatics 25(11), 1463–1465. Global optimisation of pairwise tile offsets.",
+        url: "https://doi.org/10.1093/bioinformatics/btp184",
+      },
+      {
+        citation: "Barooah P., Hespanha J. P. (2007). Estimation on graphs from relative measurements. IEEE Control Syst. Mag. 27(4), 57–74. Error covariance of the best linear estimate as an effective resistance.",
+        url: "https://doi.org/10.1109/MCS.2007.384125",
+      },
+    ],
+    related: [
+      { href: "/imaging/registration" },
+    ],
   },
   {
     slug: "strehl-ratio",
