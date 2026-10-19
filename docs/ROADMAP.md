@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 91, 2026-10-19)
+## Status (session 92, 2026-10-19)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -17,14 +17,14 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | laser-safety | 40 / 40 | done (sessions 18, 23, 29–36) |
 | thin-film | 45 / 45 | done (sessions 25–28, 54–55); small findings below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
-| imaging | 52 / 62 | part 0 audit (session 78), parts 1–12 (79–91); 9 `knownIssue`s left; fix parts 13–15 below |
+| imaging | 55 / 61 | part 0 audit (session 78), parts 1–13 (79–92); 6 `knownIssue`s left; fix parts 14–15 below |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **307 / 455** | 9 `knownIssue`s (imaging) |
+| **total** | **310 / 454** | 6 `knownIssue`s (imaging) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -43,10 +43,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] **Imaging part 13: sensors** (detectors/sensor-noise.ts, camera-snr.ts, dark-current.ts): `sensor-ccm` +
-  `sensor-cmos` merged with CCD/CMOS presets and redirect, `dynamic-range` (prnu 1 %), `signal-to-noise`. Golden:
-  DR(25000, 1.5) = 84.437 dB; sensorNoise(700, 1.5, 0.1) total 26.50, SNR 26.41; SNR(15000, 2, 0.005, prnu 0.01) =
-  77.46; doubling(−70, 25, 6) = 1.713e-5; SNR defaults 56.391 (Janesick 10.1117/3.725073).
 - [ ] **Imaging part 14: light field** (new `light-field.ts`): `light-field`, `plenoptic-camera`. Golden: NA 0.2, M 20,
   p_ML 150 µm, p_px 6.5 µm, 550 nm → lateral 7.5 µm, N_u 5.80, depth 53.6 µm (Levoy 2006 10.1145/1141911.1141976);
   plenoptic N 27, 37.81 arcmin, 729 views, 23.95 MB.
@@ -196,7 +192,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
-  - Imaging part 12 AO and speckle (session 91): `turbulence.ts` gains exact Noll `nollResidual` (Γ-function covariances scaled to 1.0299: Δ₃ 0.1343, Δ₁₅ 0.0279, Δ₂₁ 0.0207; fit 0.02821 at J 15) and Hudgin `dmFittingVariance` (0.28(d/r₀)^(5/3), default 0.040294); new `speckle.ts` (λz/D 21.28 µm, 1.22× first zero, λ(1 + M)N, C = √(1 − e^(−2σ_φ²)) 0.92987 / 0.62727); 2 pages textbook.
+  - Imaging part 13 sensors (session 92, `phase-4/imaging-sensors`, PR #123): `sensor-ccm` merged into `sensor-cmos` (sCMOS/CCD presets, redirect); DR 84.437 dB, SNR 26.41, 2^(−95/6) 1.713e-5, crossover 15.14 °C; `dynamic-range` PRNU 1 % → 77.45; `signal-to-noise` 56.391 with charge/digital binning.
+  - Imaging part 12 AO and speckle (session 91, PR #122): `turbulence.ts` gains exact Noll `nollResidual` (Γ-function covariances scaled to 1.0299: Δ₃ 0.1343, Δ₁₅ 0.0279, Δ₂₁ 0.0207; fit 0.02821 at J 15) and Hudgin `dmFittingVariance` (0.28(d/r₀)^(5/3), default 0.040294); new `speckle.ts` (λz/D 21.28 µm, 1.22× first zero, λ(1 + M)N, C = √(1 − e^(−2σ_φ²)) 0.92987 / 0.62727); 2 pages textbook.
   - Imaging part 11 MTF and wavefront (session 90, PR #121): new `diffraction-mtf.ts` (MTF(0.5) 0.39100, cutoff 3.4545 lp/µm, Hopkins OTF(0.5, kW₀₂₀ 2.578) 0.15592, Wiener ½ at H = √NSR) and `wavefront.ts` (Maréchal 0.9060 vs exact defocus 0.9051, σ(S 0.8) 0.0752λ, exact Strehl per Zernike term, PV/RMS per term); `wavefront-error` merged into `strehl-ratio` with a redirect; `integrateSimpson` shared in math.ts; 3 pages tiered.
   - Imaging part 10b field of view (session 89, PR #120): `field-of-view.ts` (sensor/M 0.6668 × 0.5008 mm, 325 nm, IFOV 26.81″/53.63″, λ/(4NA)) + new `telecentric.ts` (Δm/m = −Δz/(s_EP + Δz) = −4.76 %, first order −5 %; DoF 1.68 mm); 3 pages tiered.
   - Imaging part 10a microscope (session 88, PR #119): new `microscope.ts` (f_TL/f_obj, adapter 0.5 → 10×, exit pupil 500 mm·NA/M 0.9375 / 1.25 mm, useful 500–1000·NA, λ/(NA_o + NA_c) 297.3 nm) and `field-of-view.ts` (FN/M 500 µm); `inoueDepthOfField` (dry 40×/0.4 3.84375 µm, 100×/1.4 oil 0.49547 µm) and non-paraxial `quarterWaveDepth` (0.2938 µm); `magnification`, `pupil-matching`, `dof`, `illumination` tiered; dof n is now the immersion index (default 1).

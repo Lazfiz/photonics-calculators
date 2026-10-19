@@ -42,6 +42,21 @@ export function doublingLawRatio(T: number, Tref: number, doublingT: number): nu
 }
 
 /**
+ * Temperature at which the dark shot noise √(D_ref·t·2^((T − T_ref)/T_d)) equals the read noise σ_r:
+ * T* = T_ref + T_d·log₂(σ_r²/(D_ref·t)). Cooling below T* gains little. Same units for T, T_ref and T_d; NaN without dark charge.
+ */
+export function darkReadCrossoverTemperature(read: number, darkChargeRef: number, Tref: number, doublingT: number): number {
+  if (!(read > 0) || !(darkChargeRef > 0) || !Number.isFinite(Tref) || !(doublingT > 0)) return NaN;
+  return Tref + doublingT * Math.log2(read ** 2 / darkChargeRef);
+}
+
+/** Dark current density q·R/p² of a square pixel of pitch p (m) that collects R e⁻/s, A/m². */
+export function darkCurrentDensity(electronsPerSecond: number, pitch: number): number {
+  if (!(electronsPerSecond >= 0) || !(pitch > 0)) return NaN;
+  return (q * electronsPerSecond) / pitch ** 2;
+}
+
+/**
  * Local doubling temperature T_d = ln 2 / (d ln I_d/dT) of the n_i scaling at T, for a fixed gap (eV) or a Varshni gap.
  * d ln n_i/dT = 3/(2T) + (E_g − T·dE_g/dT)/(2k_B·T²); for Varshni E_g − T·dE_g/dT = E_g(0) + α·β·T²/(T + β)².
  * Diffusion current (∝ n_i²) doubles twice as fast.

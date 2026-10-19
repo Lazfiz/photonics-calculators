@@ -46,22 +46,35 @@ export interface CameraSnrInputs {
   dark?: number;
   /** Mean clock-induced charge, e⁻. */
   cic?: number;
+  /** Mean background photoelectrons under the signal, e⁻ (subtracted, so only its shot noise remains). */
+  background?: number;
   /** Mean gain ahead of the read noise (1 for a conventional sensor). */
   gain?: number;
   /** Excess noise factor F² of that gain (1 for a conventional sensor). */
   excessNoiseFactorSq?: number;
 }
 
-/** Total noise √(F²·(S + D + C) + (σ_r/G)²) referred to the input, e⁻ rms. */
-export function cameraNoise({ signal, read, dark = 0, cic = 0, gain = 1, excessNoiseFactorSq = 1 }: CameraSnrInputs): number {
-  if (!(signal >= 0) || !(read >= 0) || !(dark >= 0) || !(cic >= 0) || !(gain >= 1) || !(excessNoiseFactorSq >= 1)) return NaN;
-  return Math.sqrt(excessNoiseFactorSq * (signal + dark + cic) + (read / gain) ** 2);
+/** Total noise √(F²·(S + B + D + C) + (σ_r/G)²) referred to the input, e⁻ rms. */
+export function cameraNoise({ signal, read, dark = 0, cic = 0, background = 0, gain = 1, excessNoiseFactorSq = 1 }: CameraSnrInputs): number {
+  if (!(signal >= 0) || !(read >= 0) || !(dark >= 0) || !(cic >= 0) || !(background >= 0) || !(gain >= 1) || !(excessNoiseFactorSq >= 1)) {
+    return NaN;
+  }
+  return Math.sqrt(excessNoiseFactorSq * (signal + background + dark + cic) + (read / gain) ** 2);
 }
 
-/** SNR = S/√(F²·(S + D + C) + (σ_r/G)²); NaN when the noise is zero. */
+/** SNR = S/√(F²·(S + B + D + C) + (σ_r/G)²); NaN when the noise is zero. */
 export function cameraSnr(inputs: CameraSnrInputs): number {
   const noise = cameraNoise(inputs);
   return noise > 0 ? inputs.signal / noise : NaN;
+}
+
+/**
+ * Read noise of a b×b super-pixel, e⁻ rms. Charge binning (CCD) sums the charge before the amplifier, so it is read
+ * once: σ_r. Digital binning (CMOS) adds b² independent reads: b·σ_r (Janesick, Photon Transfer, ch. 5).
+ */
+export function binnedReadNoise(read: number, binning: number, mode: "charge" | "digital"): number {
+  if (!(read >= 0) || !(binning >= 1)) return NaN;
+  return mode === "charge" ? read : binning * read;
 }
 
 /** Largest input charge before a well fills: min(pixel well, register well/G), e⁻. */

@@ -28,6 +28,7 @@
   "/imaging/second-harmonic": "/imaging/second-harmonic-generation",
   "/imaging/second-harmonic-microscopy": "/imaging/second-harmonic-generation",
   "/imaging/selective-plane": "/imaging/light-sheet",
+  "/imaging/sensor-ccm": "/imaging/sensor-cmos",
   "/imaging/sted-resolution": "/imaging/super-resolution",
   "/imaging/third-harmonic-generation": "/imaging/third-harmonic-microscopy",
   "/imaging/two-photon": "/imaging/two-photon-microscopy",

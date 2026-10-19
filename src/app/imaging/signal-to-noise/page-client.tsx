@@ -1,158 +1,107 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { binnedReadNoise, cameraNoise } from "../../../physics/detectors/camera-snr";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
+const ROSE_SNR = 5;
 
 export default function SignalToNoisePage() {
-  const [signalPhotons, setSignalPhotons] = useURLState("signalPhotons", 5000);
-  const [backgroundPhotons, setBackgroundPhotons] = useURLState("backgroundPhotons", 500);
-  const [quantumEfficiency, setQuantumEfficiency] = useURLState("quantumEfficiency", 0.7);
-  const [readNoise, setReadNoise] = useURLState("readNoise", 1.5);
-  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 0.1);
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 100);
-  const [binning, setBinning] = useURLState("binning", 1);
-  const [numFrames, setNumFrames] = useURLState("numFrames", 1);
+  const [signalRaw, setSignalPhotons] = useURLState("signalPhotons", 5000);
+  const [backgroundRaw, setBackgroundPhotons] = useURLState("backgroundPhotons", 500);
+  const [qeRaw, setQuantumEfficiency] = useURLState("quantumEfficiency", 0.7);
+  const [readRaw, setReadNoise] = useURLState("readNoise", 1.5);
+  const [darkRaw, setDarkCurrent] = useURLState("darkCurrent", 0.1);
+  const [exposureRaw, setExposureTime] = useURLState("exposureTime", 100);
+  const [binningRaw, setBinning] = useURLState("binning", 1);
+  const [binModeRaw, setBinMode] = useURLState("binningMode", "charge");
+  const [framesRaw, setNumFrames] = useURLState("numFrames", 1);
 
-  const results = useMemo(() => {
-    const signalE = signalPhotons * quantumEfficiency * binning * binning;
-    const bgE = backgroundPhotons * quantumEfficiency * binning * binning;
-    const darkE = darkCurrent * exposureTime / 1000 * binning * binning;
-    const shotNoise = Math.sqrt(signalE + bgE);
-    const totalNoise = Math.sqrt(signalE + bgE + darkE + readNoise * readNoise);
-    const snr = signalE / totalNoise;
-    const snrSingle = snr;
-    const snrMulti = snr * Math.sqrt(numFrames);
-    const roseCriterion = snr >= 5;
+  const signalPhotons = clamp(signalRaw, 0, 1e7, 5000);
+  const backgroundPhotons = clamp(backgroundRaw, 0, 1e7, 500);
+  const qe = clamp(qeRaw, 0.01, 1, 0.7);
+  const read = clamp(readRaw, 0, 100, 1.5);
+  const darkRate = clamp(darkRaw, 0, 1e4, 0.1);
+  const exposureMs = clamp(exposureRaw, 0.01, 3.6e6, 100);
+  const binning = Math.round(clamp(binningRaw, 1, 8, 1));
+  const binMode = binModeRaw === "digital" ? "digital" : "charge";
+  const frames = Math.round(clamp(framesRaw, 1, 1e4, 1));
 
-    const bgLevels: number[] = [];
-    const snrVals: number[] = [];
-    const snrIdeal: number[] = [];
-    for (let bg = 0; bg <= 10000; bg += 50) {
-      bgLevels.push(bg);
-      const sE = signalPhotons * quantumEfficiency * binning * binning;
-      const bE = bg * quantumEfficiency * binning * binning;
-      const tNoise = Math.sqrt(sE + bE + darkE + readNoise * readNoise);
-      snrVals.push(sE / tNoise);
-      snrIdeal.push(Math.sqrt(sE));
-    }
-
-    return { signalE, bgE, darkE, shotNoise, totalNoise, snr, snrSingle, snrMulti, roseCriterion, bgLevels, snrVals, snrIdeal };
-  }, [signalPhotons, backgroundPhotons, quantumEfficiency, readNoise, darkCurrent, exposureTime, binning, numFrames]);
-
-  const plotData = useMemo(() => [
-    {
-      x: results.bgLevels, y: results.snrVals,
-      type: "scatter" as const, mode: "lines" as const,
-      name: "SNR (with background)", line: { color: "#60a5fa", width: 2 },
-    },
-    {
-      x: results.bgLevels, y: results.snrIdeal,
-      type: "scatter" as const, mode: "lines" as const,
-      name: "Shot-noise limit", line: { color: "#34d399", width: 1, dash: "dash" },
-    },
-    {
-      x: results.bgLevels, y: Array(results.bgLevels.length).fill(5),
-      type: "scatter" as const, mode: "lines" as const,
-      name: "Rose criterion (SNR=5)", line: { color: "#f87171", width: 1, dash: "dot" },
-    },
-  ], [results]);
-
-  const darkLayout: Partial<Plotly.Layout> = {
-    paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
-    font: { color: "#d1d5db" }, xaxis: { title: "Background (photons/pixel)", gridcolor: "#374151" },
-    yaxis: { title: "SNR", gridcolor: "#374151" },
-    legend: { x: 0.02, y: 0.95 }, margin: { t: 30, r: 30, b: 50, l: 60 },
+  // Per super-pixel and frame: b² pixels add their photoelectrons and dark charge.
+  const pixels = binning ** 2;
+  const readBinned = binnedReadNoise(read, binning, binMode);
+  const dark = ((darkRate * exposureMs) / 1000) * pixels;
+  const evaluate = (photons: number, bgPhotons: number) => {
+    const signal = qe * photons * pixels;
+    const noise = cameraNoise({ signal, background: qe * bgPhotons * pixels, dark, read: readBinned });
+    return { signal, noise, snr: noise > 0 ? signal / noise : NaN };
   };
+  const r = evaluate(signalPhotons, backgroundPhotons);
+  const snrAveraged = r.snr * Math.sqrt(frames);
+  const background = qe * backgroundPhotons * pixels;
+
+  const bgAxis = Array.from({ length: 201 }, (_, i) => 50 * i);
+  const chartData = [
+    {
+      x: bgAxis, y: bgAxis.map(bg => evaluate(signalPhotons, bg).snr * Math.sqrt(frames)),
+      type: "scatter" as const, mode: "lines" as const, name: "SNR", line: { color: "#60a5fa", width: 2 },
+    },
+    {
+      x: bgAxis, y: bgAxis.map(() => Math.sqrt(r.signal * frames)),
+      type: "scatter" as const, mode: "lines" as const, name: "Shot-noise limit √(S·N)", line: { color: "#34d399", width: 1, dash: "dash" },
+    },
+    {
+      x: [0, bgAxis[bgAxis.length - 1]], y: [ROSE_SNR, ROSE_SNR],
+      type: "scatter" as const, mode: "lines" as const, name: "Rose criterion (SNR = 5)", line: { color: "#f87171", width: 1, dash: "dot" },
+    },
+  ];
 
   return (
     <>
-            
-      <div className="grid gap-6 md:grid-cols-2 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
-          <div>
-            <ValidatedNumberInput label="Signal Photons (per pixel)" value={signalPhotons} onChange={setSignalPhotons} min={1} max={1000000} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Background Photons (per pixel)" value={backgroundPhotons} onChange={setBackgroundPhotons} min={0} max={100000} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Quantum Efficiency" value={quantumEfficiency} onChange={setQuantumEfficiency} min={0.01} max={1} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} min={0.1} max={100} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Dark Current (e⁻/s/pixel)" value={darkCurrent} onChange={setDarkCurrent} min={0} max={100} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Exposure Time (ms)" value={exposureTime} onChange={setExposureTime} min={1} max={60000} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Pixel Binning" value={binning} onChange={setBinning} min={1} max={8} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Number of Frames (averaged)" value={numFrames} onChange={setNumFrames} min={1} max={1000} />
-          </div>
-        </div>
-
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
-          <h3 className="font-semibold text-lg">Results</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">Signal Electrons</div>
-              <div className="text-xl font-mono text-green-400">{results.signalE.toFixed(0)} e⁻</div>
-            </div>
-            <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">Background Electrons</div>
-              <div className="text-xl font-mono text-yellow-400">{results.bgE.toFixed(0)} e⁻</div>
-            </div>
-            <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">Dark Electrons</div>
-              <div className="text-xl font-mono text-red-400">{results.darkE.toFixed(2)} e⁻</div>
-            </div>
-            <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">Shot Noise (σ)</div>
-              <div className="text-xl font-mono text-orange-400">{results.shotNoise.toFixed(2)} e⁻</div>
-            </div>
-            <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">Total Noise (σ)</div>
-              <div className="text-xl font-mono text-purple-400">{results.totalNoise.toFixed(2)} e⁻</div>
-            </div>
-            <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">Single-Frame SNR</div>
-              <div className="text-xl font-mono text-blue-400">{results.snrSingle.toFixed(2)}</div>
-            </div>
-            <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">Multi-Frame SNR</div>
-              <div className="text-xl font-mono text-blue-400">{results.snrMulti.toFixed(2)}</div>
-            </div>
-            <div className="bg-gray-800 rounded p-3 col-span-2">
-              <div className="text-xs text-gray-400">Rose Criterion (SNR ≥ 5)</div>
-              <div className="text-xl font-mono">{results.roseCriterion ? "✅ MET" : "❌ NOT MET"}</div>
-            </div>
-          </div>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Signal Photons (per pixel)" value={signalRaw} onChange={setSignalPhotons} min={0} max={10000000} />
+        <ValidatedNumberInput label="Background Photons (per pixel)" value={backgroundRaw} onChange={setBackgroundPhotons} min={0} max={10000000} />
+        <ValidatedNumberInput label="Quantum Efficiency" value={qeRaw} onChange={setQuantumEfficiency} min={0.01} max={1} step="0.01" />
+        <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readRaw} onChange={setReadNoise} min={0} max={100} step="0.1" />
+        <ValidatedNumberInput label="Dark Current (e⁻/s/pixel)" value={darkRaw} onChange={setDarkCurrent} min={0} max={10000} />
+        <ValidatedNumberInput label="Exposure Time (ms)" value={exposureRaw} onChange={setExposureTime} min={0.01} max={3600000} />
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Binning</span>
+          <select value={binning} onChange={(e) => setBinning(+e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(b => <option key={b} value={b}>{b}×{b}</option>)}
+          </select>
+          <select value={binMode} onChange={(e) => setBinMode(e.target.value)} className="mt-2 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            <option value="charge">Charge binning (CCD): one read</option>
+            <option value="digital">Digital sum (CMOS): B² reads</option>
+          </select>
+        </label>
+        <ValidatedNumberInput label="Number of Frames (averaged)" value={framesRaw} onChange={setNumFrames} min={1} max={10000} />
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <ChartPanel data={plotData} layout={darkLayout} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ResultCard label="Signal" value={`${fmt(r.signal, 1)} e⁻`} subtext={`Background ${fmt(background, 1)} e⁻, dark ${fmt(dark, 3)} e⁻`} tone="green" />
+        <ResultCard label="Read Noise per Super-Pixel" value={`${fmt(readBinned, 2)} e⁻`} subtext={binMode === "charge" ? "Charge binning: read once" : `Digital sum: ${binning}·σ_read`} tone="purple" />
+        <ResultCard label="Total Noise (one frame)" value={`${fmt(r.noise, 2)} e⁻`} subtext={`Shot noise of the signal ${fmt(Math.sqrt(r.signal), 2)} e⁻`} tone="orange" />
+        <ResultCard label="SNR (one frame)" value={fmt(r.snr, 3)} tone="blue" />
+        <ResultCard label={`SNR (${frames} frame${frames > 1 ? "s" : ""} averaged)`} value={fmt(snrAveraged, 3)} subtext="SNR·√N" tone="blue" />
+        <ResultCard
+          label="Rose Criterion"
+          value={snrAveraged >= ROSE_SNR ? "Detectable" : "Below SNR 5"}
+          subtext="SNR ≥ 5 to see a feature reliably"
+          tone={snrAveraged >= ROSE_SNR ? "green" : "red"}
+        />
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
-        <h3 className="font-semibold">Key Formulas</h3>
-        <div className="text-sm text-gray-300 space-y-2 font-mono">
-          <p>S = N_photons · QE · B² (B = binning)</p>
-          <p>σ²_total = S + B_sig + N_dark + σ²_read</p>
-          <p>SNR = S / σ_total</p>
-          <p>SNR_shot-limited = √S</p>
-          <p>SNR_multi = SNR_single · √N_frames</p>
-          <p>Rose criterion: SNR ≥ 5 for reliable detection</p>
-        </div>
-        <div className="text-sm text-gray-400 mt-4 space-y-1">
-          <p>In fluorescence microscopy, the three fundamental noise sources are shot noise (√N from Poisson statistics), read noise (sensor electronics), and dark noise (thermal electron generation). Background fluorescence from out-of-focus light, autofluorescence, or stray excitation often dominates the noise budget.</p>
-          <p>Binning improves SNR by combining charge from adjacent pixels (signal scales as B², shot noise as B), but reduces spatial resolution. Frame averaging improves SNR as √N at the cost of temporal resolution. The Rose criterion (SNR ≥ 5) is a practical threshold for reliable feature detection.</p>
-        </div>
+      <ChartPanel data={chartData} layout={{ xaxis: { title: "Background (photons/pixel)", gridcolor: "#374151" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} />
+
+      <div className="bg-gray-900 rounded-lg p-4 mt-8 text-sm text-gray-300 font-mono space-y-1">
+        <p>S = QE·N_signal·B², S_bg = QE·N_bg·B², D = R_dark·t·B²</p>
+        <p>SNR = S / √(S + S_bg + D + σ_read,B²); σ_read,B = σ_read (charge) or B·σ_read (digital)</p>
+        <p>N averaged frames: SNR_N = √N·SNR; Rose criterion SNR ≥ 5</p>
       </div>
     </>
   );
