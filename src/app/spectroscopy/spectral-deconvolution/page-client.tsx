@@ -29,6 +29,7 @@ const profileLabel: Record<Profile, string> = { gaussian: "Gaussian", lorentzian
 const DEFAULT_PEAKS = "480:25:0.7,520:35:1,570:30:0.5";
 const MAX_PEAKS = 5, X_LIM = 1e6, W_MIN = 1e-6, N_SAMPLES = 600, LINE_MIN = 100;
 const colors = ["#60a5fa", "#34d399", "#fbbf24", "#f87171", "#a78bfa"];
+const vibronicColors = ["#34d399", "#fbbf24", "#a78bfa", "#22d3ee"]; // 0–0 … 0–3, none blue or red like the two bands
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) =>
@@ -305,7 +306,7 @@ function VibronicModel(props: {
     .filter(({ w, k }) => k < 4 && w > 1e-3 && S > 0)
     .map(({ k }) => ({
       name: `Emission 0–${k}`,
-      color: colors[k + 1],
+      color: vibronicColors[k],
       dashed: true,
       points: lams.map((l) => ({ x: l, y: round6(vibronicSpectrumNm(l, band, "emission", weights.map((w, m) => (m === k ? w : 0))) / emNm.max) })),
     }));
