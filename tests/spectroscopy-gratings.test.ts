@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  anamorphicMagnification, blazeAngleFromLittrow, blazeWavelength, detectorCoverage, detectorWavelength, flatDetectorReciprocalDispersion,
+  anamorphicMagnification, blazeAngleFromLittrow, blazeEnvelope, blazeShadowFactor, blazeWavelength, detectorCoverage, detectorWavelength, flatDetectorReciprocalDispersion,
   gratingDiffractionAngle, gratingOrderRange, gratingReciprocalLinearDispersion, littrowBlazeEfficiency,
   littrowRayleighWavelengths, overlapFreeLimit, scalarBlazeEfficiency,
 } from "../src/physics/spectroscopy/spectral-resolution";
@@ -26,23 +26,36 @@ test("blaze wavelength: Casini & Nelson's echelle example and the grating-effici
   assert.ok(Number.isNaN(blazeAngleFromLittrow(1700e-9, d)), "λ_B > 2d has no blaze angle");
 });
 
-test("scalar efficiency (Casini & Nelson eqs. 18, 21, 25) in Littrow and off Littrow", () => {
+test("scalar envelope (Casini & Nelson eqs. 18, 21, 23) and its normalisation over orders", () => {
   const phi = 17.5 * DEG;
   const lb = 2 * d * Math.sin(phi);
-  // Hand at λ = 1.5 λ_B = 751.76 nm: sin θ = 0.451059, θ = 26.814°, ρ = cos θ/cos(θ − φ) = 0.904417,
-  // x = π d ρ · 2 sin(θ − φ)/λ = 1.019460, sinc² = (0.851962/1.019460)² = 0.69839.
-  close(littrowBlazeEfficiency(1.5 * lb, d, 1, phi), 0.69839, 2e-4);
-  close(littrowBlazeEfficiency(lb, d, 1, phi), 1, 1e-12);
+  const th = (l: number) => Math.asin(l / (2 * d));
+  // Hand at λ = 1.5 λ_B = 751.76 nm: sin θ = 0.451059, θ = 26.8115°, ρ = cos θ/cos(θ − φ) = 0.904427,
+  // x = π d ρ · 2 sin(θ − φ)/λ = 1.019175, sinc² = (0.851676/1.019175)² = 0.69832.
+  close(blazeEnvelope(1.5 * lb, d, 1, phi, th(1.5 * lb)), 0.69832, 1e-4);
+  close(blazeEnvelope(lb, d, 1, phi, th(lb)), 1, 1e-12);
+  // Normalised: η₁ = I₁/Σ I over the propagating orders (energy conservation across orders, as in Casini & Nelson's comparison with vector theory).
+  // At 1.5 λ_B orders 0 and 1 propagate, I₀ = 0.344902: η₁ = 0.698286/(0.344902 + 0.698286) = 0.66938.
+  close(littrowBlazeEfficiency(1.5 * lb, d, 1, phi), 0.66938, 1e-4);
+  // At λ_B orders −1 … 2 carry 0.039137, 0.009620, 1, 0.017239: η₁ = 1/1.065996 = 0.93809.
+  close(littrowBlazeEfficiency(lb, d, 1, phi), 0.93809, 1e-4);
+  // Near the cutoff (1650 nm) both envelopes tend to 1 (ρ → 0) and the light splits: 0.741048/1.740405 = 0.42579.
+  close(littrowBlazeEfficiency(1650e-9, d, 1, phi), 0.42579, 1e-4);
   // Order 1 stops at the Littrow cutoff λ = 2d.
   assert.equal(littrowBlazeEfficiency(1700e-9, d, 1, phi), 0);
   // α = 45°, φ = 19.2688°, λ = 550 nm: β = −2.700°, ρ = 0.784929, sin(α − φ) + sin(β − φ) = 0.060099,
-  // x = 0.224546, sinc² = 0.98331.
+  // x = 0.224546, sinc² = 0.98331; with I₀ = 0.319159 and I₂ = 0.013463, η₁ = 0.983333/1.315955 = 0.74724.
   const phiB = blazeAngleFromLittrow(550e-9, d);
   close(gratingDiffractionAngle(550e-9, d, 1, 45 * DEG) / DEG, -2.7000, 1e-4);
-  close(scalarBlazeEfficiency(550e-9, d, 1, phiB, 45 * DEG), 0.98331, 1e-4);
+  close(blazeEnvelope(550e-9, d, 1, phiB, 45 * DEG), 0.98331, 1e-4);
+  close(scalarBlazeEfficiency(550e-9, d, 1, phiB, 45 * DEG), 0.74724, 1e-4);
   // Shadowing (α < β): α = 0, λ = 700 nm, β = 57.140°, ρ = cos φ = 0.943990, x = 1.002289, sinc² = 0.70694,
-  // k = cos β cos(α − φ)/(cos α cos(β − φ)) = 0.648929 → 0.45875.
-  close(scalarBlazeEfficiency(700e-9, d, 1, phiB, 0), 0.45875, 3e-4);
+  // k = cos β cos(α − φ)/(cos α cos(β − φ)) = 0.648843; with I₋₁ = 0.046696, I₀ = 0.096891:
+  // η₁ = 0.648843 · 0.706922/0.850509 = 0.53930.
+  const b700 = gratingDiffractionAngle(700e-9, d, 1, 0);
+  close(blazeShadowFactor(b700, phiB, 0), 0.648843, 1e-5);
+  close(blazeEnvelope(700e-9, d, 1, phiB, 0), 0.70694, 1e-4);
+  close(scalarBlazeEfficiency(700e-9, d, 1, phiB, 0), 0.53930, 1e-4);
 });
 
 test("orders, Rayleigh anomalies and order overlap", () => {
@@ -51,6 +64,8 @@ test("orders, Rayleigh anomalies and order overlap", () => {
   assert.equal(ray.length, 2);
   close(ray[0], 555.556e-9, 1e-5);
   close(ray[1], 333.333e-9, 1e-5);
+  // Third order: the cutoff is 2d/3 = 555.6 nm, so the first anomaly is d/2.5 = 333.3 nm (orders 0 … 3 never graze below it).
+  close(littrowRayleighWavelengths(d, 3, 300e-9)[0], 333.333e-9, 1e-5);
   // Below 2d/3 four orders propagate (−1, 0, 1, 2); above it only 0 and 1.
   assert.deepEqual(gratingOrderRange(500e-9, d, Math.asin(500e-9 / (2 * d))), { min: -1, max: 2 });
   const r600 = gratingOrderRange(600e-9, d, Math.asin(600e-9 / (2 * d)));
@@ -81,4 +96,7 @@ test("dispersion, anamorphic magnification and flat-detector coverage", () => {
   // Edge cases: past the zero order there is no first-order light; λ_c beyond 2d cos(D_v/2)/m is unreachable.
   assert.ok(Number.isNaN(detectorCoverage(50e-9, d, 1, 0, 25.6e-3, 0.1).lambdaLow));
   assert.ok(Number.isNaN(detectorCoverage(1700e-9, d, 1, 0, 25.6e-3, 0.1).incidence));
+  // α must stay below 90°: mλ_c < d(1 + cos D_v) = 1555.02 nm at D_v = 30° (1580 nm would need α = 93.9°).
+  assert.ok(Number.isNaN(detectorCoverage(1580e-9, d, 1, 30 * DEG, 25.6e-3, 0.1).incidence));
+  assert.ok(detectorCoverage(1550e-9, d, 1, 30 * DEG, 25.6e-3, 0.1).incidence < Math.PI / 2);
 });

@@ -19,8 +19,9 @@
  * doi:10.1364/JOSAA.31.002179, eqs. 18–25):
  *   I = k sinc²(π d ρ [sin(α − φ) + sin(β − φ)]/λ),   ρ = cos α/cos(α − φ) for α ≥ φ, else cos φ,
  *   k = min(1, cos β cos(α − φ)/(cos α cos(β − φ))) when α < β (shadowing), else 1.
- * It peaks at 1 at the blaze wavelength; coating reflectance, polarization and the power lost to the other
- * propagating orders are not included, so it is a relative envelope (fair for λ/d ≲ 0.2, small blaze angles).
+ * The envelopes of all propagating orders are normalised to sum to 1 (energy conservation across orders, which
+ * Casini & Nelson apply when they compare with vector theory; the paper gives no explicit formula) before the
+ * shadowing loss k. Coating reflectance and polarization are not included (fair for λ/d ≲ 0.2, small blaze angles).
  *
  * Any disperser with angular dispersion dθ/dλ and an emerging beam of width D resolves δθ = λ/D, so
  * δλ_diff = λ/(D dθ/dλ). For a grating D = W cos β and this is λ/(mN) again. For a prism at minimum deviation,
@@ -97,21 +98,39 @@ export function blazeWavelength(grooveSpacing: number, order: number, blazeAngle
 }
 
 /**
- * Scalar efficiency envelope of order m (Casini & Nelson 2014, eqs. 18, 21, 23, 25), 0 to 1; 0 when the order
- * does not propagate.
+ * Unnormalised scalar envelope sinc²(π d ρ [sin(α − φ) + sin(β − φ)]/λ) of order m (Casini & Nelson eqs. 18, 21),
+ * 0 to 1; 0 when the order does not propagate.
+ */
+export function blazeEnvelope(lambda: number, grooveSpacing: number, order: number, blazeAngle: number, incidence: number): number {
+  const beta = gratingDiffractionAngle(lambda, grooveSpacing, order, incidence);
+  if (!Number.isFinite(beta)) return 0;
+  const rho = incidence >= blazeAngle ? Math.cos(incidence) / Math.cos(incidence - blazeAngle) : Math.cos(blazeAngle);
+  const x = (Math.PI * grooveSpacing * rho * (Math.sin(incidence - blazeAngle) + Math.sin(beta - blazeAngle))) / lambda;
+  return Math.abs(x) < 1e-8 ? 1 : (Math.sin(x) / x) ** 2;
+}
+
+/** Shadowing factor k = min(1, cos β cos(α − φ)/(cos α cos(β − φ))) when α < β, else 1 (Casini & Nelson eq. 23). */
+export function blazeShadowFactor(beta: number, blazeAngle: number, incidence: number): number {
+  return incidence < beta
+    ? Math.min(1, (Math.cos(beta) * Math.cos(incidence - blazeAngle)) / (Math.cos(incidence) * Math.cos(beta - blazeAngle)))
+    : 1;
+}
+
+/**
+ * Scalar efficiency of order m: its envelope divided by the sum of the envelopes of all propagating orders
+ * (energy conservation across orders, as Casini & Nelson apply in their comparison with vector theory), times the
+ * shadowing factor. 0 when the order does not propagate.
  */
 export function scalarBlazeEfficiency(
   lambda: number, grooveSpacing: number, order: number, blazeAngle: number, incidence: number,
 ): number {
   const beta = gratingDiffractionAngle(lambda, grooveSpacing, order, incidence);
   if (!Number.isFinite(beta)) return 0;
-  const rho = incidence >= blazeAngle ? Math.cos(incidence) / Math.cos(incidence - blazeAngle) : Math.cos(blazeAngle);
-  const x = (Math.PI * grooveSpacing * rho * (Math.sin(incidence - blazeAngle) + Math.sin(beta - blazeAngle))) / lambda;
-  const envelope = Math.abs(x) < 1e-8 ? 1 : (Math.sin(x) / x) ** 2;
-  const shadow = incidence < beta
-    ? Math.min(1, (Math.cos(beta) * Math.cos(incidence - blazeAngle)) / (Math.cos(incidence) * Math.cos(beta - blazeAngle)))
-    : 1;
-  return shadow * envelope;
+  const { min, max } = gratingOrderRange(lambda, grooveSpacing, incidence);
+  let total = 0;
+  for (let m = min; m <= max; m++) total += blazeEnvelope(lambda, grooveSpacing, m, blazeAngle, incidence);
+  const own = blazeEnvelope(lambda, grooveSpacing, order, blazeAngle, incidence);
+  return total > 0 ? (blazeShadowFactor(beta, blazeAngle, incidence) * own) / total : 0;
 }
 
 /** Littrow angle θ of order m, sin θ = mλ/(2d); NaN beyond the cutoff mλ > 2d. */
@@ -133,9 +152,10 @@ export function littrowBlazeEfficiency(lambda: number, grooveSpacing: number, or
 export function littrowRayleighWavelengths(grooveSpacing: number, order: number, lambdaMin: number): number[] {
   const out: number[] = [];
   for (let k = 1; k < 1000; k++) {
-    // |m' − m/2| takes the values (k − ½) for odd m, k for even m; skip the order m itself (|m − m/2| = m/2).
+    // |m' − m/2| takes the values (k − ½) for odd m, k for even m. Offsets up to m/2 (orders 0 … m) graze only
+    // beyond the cutoff 2d/m, where order m itself has gone.
     const offset = order % 2 === 1 ? k - 0.5 : k;
-    if (offset === order / 2) continue;
+    if (offset <= order / 2) continue;
     const l = grooveSpacing / offset;
     if (l < lambdaMin) break;
     out.push(l);
@@ -147,13 +167,15 @@ export function littrowRayleighWavelengths(grooveSpacing: number, order: number,
  * Wavelengths at the edges and centre of a flat detector of width W, normal to the central ray, in a
  * spectrometer with deviation angle D_v = α − β fixed: the grating turns to ψ with mλ_c = 2d cos(D_v/2) sin ψ,
  * α = ψ + D_v/2, β₀ = ψ − D_v/2, and the detector edges see β₀ ± atan(W/2f) (Palmer & Loewen ch. 2). λ is NaN
- * where sin α + sin β < 0 (beyond the zero order) or the centre wavelength cannot be reached.
+ * where sin α + sin β < 0 (beyond the zero order), and everything is NaN when the centre wavelength cannot be
+ * reached with α < 90°.
  */
 export function detectorCoverage(
   lambdaCentre: number, grooveSpacing: number, order: number, deviation: number, detectorWidth: number, focalLength: number,
 ): { incidence: number; beta0: number; lambdaLow: number; lambdaHigh: number } {
+  // α = ψ + D_v/2 < 90° needs sin ψ < cos(D_v/2), i.e. mλ_c < 2d cos²(D_v/2) = d(1 + cos D_v).
   const s = (order * lambdaCentre) / (2 * grooveSpacing * Math.cos(deviation / 2));
-  if (!(Math.abs(s) <= 1)) return { incidence: NaN, beta0: NaN, lambdaLow: NaN, lambdaHigh: NaN };
+  if (!(Math.abs(s) < Math.cos(deviation / 2))) return { incidence: NaN, beta0: NaN, lambdaLow: NaN, lambdaHigh: NaN };
   const psi = Math.asin(s);
   const incidence = psi + deviation / 2;
   const beta0 = psi - deviation / 2;
@@ -169,7 +191,7 @@ export function detectorWavelength(
   x: number, grooveSpacing: number, order: number, incidence: number, beta0: number, focalLength: number,
 ): number {
   const beta = beta0 + Math.atan(x / focalLength);
-  if (Math.abs(beta) >= Math.PI / 2) return NaN;
+  if (Math.abs(beta) >= Math.PI / 2 || Math.abs(incidence) >= Math.PI / 2) return NaN;
   const l = (grooveSpacing * (Math.sin(incidence) + Math.sin(beta))) / order;
   return l > 0 ? l : NaN;
 }

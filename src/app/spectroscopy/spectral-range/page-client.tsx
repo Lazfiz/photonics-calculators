@@ -97,14 +97,14 @@ export default function SpectralRangePage() {
       {!reachable ? (
         <div className="mb-8 rounded-lg border border-red-800 bg-red-950/40 p-4 text-sm text-red-200">
           The grating cannot send {centreNm} nm to the detector centre in order {order}: mλ must stay below
-          2d·cos(D_v/2) = {fmt(2 * d * Math.cos((deviation * DEG) / 2) * 1e9)} nm. Use fewer lines/mm, a lower order or a
+          d·(1 + cos D_v) = {fmt(d * (1 + Math.cos(deviation * DEG)) * 1e9)} nm, or the incidence angle passes 90°. Use fewer lines/mm, a lower order or a
           smaller deviation angle.
         </div>
       ) : (
         <>
           {(overlaps || !Number.isFinite(cov.lambdaLow) || !Number.isFinite(cov.lambdaHigh)) && (
             <div className="mb-6 rounded-lg border border-yellow-800 bg-yellow-950/40 p-4 text-sm text-yellow-100 space-y-1">
-              {!Number.isFinite(cov.lambdaLow) && <p>The short-wavelength edge of the detector lies beyond the zero order and gets no order-{order} light.</p>}
+              {!Number.isFinite(cov.lambdaLow) && <p>The short-wavelength edge of the detector lies beyond the zero order: it gets no order-{order} light, and the zero order and order {order + 1} fall on the detector.</p>}
               {!Number.isFinite(cov.lambdaHigh) && <p>The long-wavelength edge lies past grazing diffraction (β ≥ 90°).</p>}
               {overlaps && (
                 <p>

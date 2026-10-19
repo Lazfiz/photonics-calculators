@@ -93,7 +93,7 @@ export const spectroscopy: CalculatorEntry[] = [
     title: "Dispersive Element Design",
     description: "Diffraction grating parameters: grating equation, angular/linear dispersion, blaze profile.",
     tier: "textbook",
-    modelNote: "Grating equation and dispersion are exact geometry; the blaze efficiency is the scalar envelope of a right-angle sawtooth (relative, no coating reflectance or polarization, fair for λ/d below about 0.2).",
+    modelNote: "Grating equation and dispersion are exact geometry; the blaze efficiency is scalar theory for a right-angle sawtooth, shared over the propagating orders with facet shadowing (no coating reflectance or polarization; fair for λ/d below about 0.2).",
     references: [
       { citation: "Palmer C., Loewen E. (2005). Diffraction Grating Handbook, 6th ed., ch. 2. Newport." },
       {
@@ -191,7 +191,7 @@ export const spectroscopy: CalculatorEntry[] = [
     title: "Grating Efficiency Calculator",
     description: "Scalar blaze efficiency of a ruled grating in Littrow versus wavelength, with the order cutoff and Rayleigh anomalies.",
     tier: "textbook",
-    modelNote: "Scalar theory for a right-angle sawtooth in Littrow: a relative envelope peaking at 100 % at the blaze wavelength, without coating reflectance, polarization or the power in other orders. Fair for λ/d below about 0.2; above that TE and TM split.",
+    modelNote: "Scalar theory for a right-angle sawtooth in Littrow, with the envelopes of all propagating orders sharing the incident power; no coating reflectance or polarization. Fair for λ/d below about 0.2; above that TE and TM split.",
     references: [
       {
         citation: "Casini R., Nelson P. G. (2014). On the intensity distribution function of blazed reflective diffraction gratings. J. Opt. Soc. Am. A 31, 2179–2184 (eqs. 18–25).",
@@ -437,7 +437,7 @@ export const spectroscopy: CalculatorEntry[] = [
     title: "Spectral Range Calculator",
     description: "Spectral coverage, resolution, and dispersion for a grating-based spectrometer.",
     tier: "textbook",
-    modelNote: "Exact grating geometry for a flat detector normal to the central ray at a fixed deviation angle; the resolution is the largest of the slit, two-pixel and diffraction limits, without aberrations or focal-plane tilt.",
+    modelNote: "Exact grating geometry for a flat detector normal to the central ray at a fixed deviation angle (α < 90° needs mλ_c < d(1 + cos D_v)); the resolution is the largest of the slit, two-pixel and diffraction limits, without aberrations or focal-plane tilt.",
     references: [
       { citation: "Palmer C., Loewen E. (2005). Diffraction Grating Handbook, 6th ed., ch. 2. Newport." },
     ],

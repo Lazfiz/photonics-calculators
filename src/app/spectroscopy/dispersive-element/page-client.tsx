@@ -57,8 +57,8 @@ export default function DispersiveElementPage() {
     return {
       angle: [line(betas.map((b) => r6(b / DEG)), "β (°)", "#60a5fa")],
       dispersion: [
-        line(betas.map((b) => r6(gratingReciprocalLinearDispersion(d, order, b, f) * 1e6)), "Focal plane ⟂ each ray", "#34d399"),
-        line(betas.map((b) => r6(flatDetectorReciprocalDispersion(d, order, b, betaC, f) * 1e6)), "Flat detector ⟂ central ray", "#fbbf24", "dash"),
+        line(betas.map((b) => r6(gratingReciprocalLinearDispersion(d, order, b, f) * 1e6)), "Plane ⟂ ray", "#34d399"),
+        line(betas.map((b) => r6(flatDetectorReciprocalDispersion(d, order, b, betaC, f) * 1e6)), "Flat detector", "#fbbf24", "dash"),
       ],
       efficiency: Number.isFinite(phi)
         ? [line(wls.map((wl) => r6(100 * scalarBlazeEfficiency(wl * 1e-9, d, order, phi, alpha))), `Order ${order} (scalar)`, "#f87171")]
@@ -106,7 +106,7 @@ export default function DispersiveElementPage() {
         <ResultCard label={`Blaze Wavelength at α (order ${order})`} value={Number.isFinite(lambdaB) ? `${fmt(lambdaB * 1e9)} nm` : "—"}
           tone="purple" subtext="d[sin α + sin(2φ − α)] / m" />
         <ResultCard label="Scalar Efficiency (centre)" value={Number.isFinite(effC) ? `${(effC * 100).toFixed(1)} %` : "—"} tone="yellow"
-          subtext="relative; × coating reflectance" />
+          subtext="shared over orders; × coating reflectance" />
         <ResultCard label="Resolving Power per mm Width" value={(order * grooveDensity).toFixed(0)} tone="red"
           subtext="R = mN, N = grooves illuminated" />
       </div>
@@ -122,21 +122,23 @@ export default function DispersiveElementPage() {
       {charts.efficiency.length > 0 && (
         <div className="bg-gray-900 rounded-lg p-4 mb-6">
           <h3 className="text-lg font-semibold mb-3">Scalar Blaze Efficiency at α = {incidentAngle}°</h3>
-          <ChartPanel data={charts.efficiency} layout={chartLayout("Relative efficiency (%)", [0, 105])} />
+          <ChartPanel data={charts.efficiency} layout={chartLayout("Efficiency (%)", [0, 105])} />
         </div>
       )}
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-sm text-gray-300 space-y-2">
         <h3 className="text-lg font-semibold">Model</h3>
         <p className="font-mono">mλ = d(sin α + sin β),   dβ/dλ = m/(d·cos β),   dλ/dx = d·cos β/(m·f),   R = mN</p>
-        <p className="font-mono">η = sinc²(π·d·ρ·[sin(α − φ) + sin(β − φ)] / λ),   ρ = cos α / cos(α − φ)</p>
+        <p className="font-mono">I_m = sinc²(π·d·ρ·[sin(α − φ) + sin(β_m − φ)] / λ),   ρ = cos α / cos(α − φ) (α ≥ φ), cos φ (α &lt; φ)</p>
+        <p className="font-mono">η_m = k·I_m / Σ I_m′,   k = min(1, cos β·cos(α − φ) / (cos α·cos(β − φ))) when α &lt; β</p>
         <p>
           α and β are measured from the grating normal, positive on the same side. The reciprocal linear dispersion
           d·cos β/(m·f) holds on a focal plane normal to the diffracted ray; a flat detector normal to the central ray
           sees x = f·tan(β − β₀), which multiplies it by cos²(β − β₀). The blaze wavelength is entered as the catalogue
           value (first order, Littrow); at another incidence angle the facets reflect into β = 2φ − α, which moves the
-          peak. The efficiency is scalar theory for a sawtooth with a right-angle apex (with facet shadowing when
-          α &lt; β), a relative envelope without coating reflectance or polarization; it is fair for λ/d below about 0.2.
+          peak. The efficiency is scalar theory for a sawtooth with a right-angle apex: the envelopes of all propagating
+          orders share the incident power, and facet shadowing (α &lt; β) removes a fraction k. Coating reflectance and
+          polarization are not included; it is fair for λ/d below about 0.2.
           The free spectral range λ/m does not depend on the groove density.
         </p>
         <p className="text-gray-500">
