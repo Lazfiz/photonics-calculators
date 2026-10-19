@@ -544,3 +544,12 @@ export function integrateTanhSinh(f: (x: number) => number, a: number, b: number
   }
   return half * (Math.PI / 2) * h * sum;
 }
+
+/** ∫ₐᵇ g(x) dx by the composite Simpson rule with n panels (n is rounded up to even). Error O(h⁴) for smooth g. */
+export function integrateSimpson(g: (x: number) => number, a: number, b: number, n: number): number {
+  const m = 2 * Math.ceil(Math.max(2, n) / 2);
+  const h = (b - a) / m;
+  let s = g(a) + g(b);
+  for (let i = 1; i < m; i++) s += (i % 2 ? 4 : 2) * g(a + i * h);
+  return (s * h) / 3;
+}

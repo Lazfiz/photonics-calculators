@@ -3,9 +3,10 @@ import assert from "node:assert/strict";
 
 import { besselJ } from "../src/physics/math";
 import {
-  centroidPrecision, dynamicRangeAngle, dynamicRangeOverPupil, fresnelNumber, lensletsInPupil, marechalStrehl,
+  centroidPrecision, dynamicRangeAngle, dynamicRangeOverPupil, fresnelNumber, lensletsInPupil,
   spotFirstZeroRadius, spotFwhm, wavefrontPerPixel,
 } from "../src/physics/imaging/shack-hartmann";
+import { marechalStrehl } from "../src/physics/imaging/wavefront";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
   assert.ok(Math.abs(actual / expected - 1) < tol, `${label}: ${actual} vs ${expected}`);

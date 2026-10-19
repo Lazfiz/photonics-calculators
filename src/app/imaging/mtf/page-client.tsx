@@ -1,109 +1,94 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { cutoffFrequency, defocusW020, defocusedOtf, diffractionMtf } from "../../../physics/imaging/diffraction-mtf";
+import { defocusStrehlExact } from "../../../physics/imaging/wavefront";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const um = 1e-6;
+const nm = 1e-9;
+
+const row = (label: string, value: string, color = "") => (
+  <div className="flex justify-between border-b border-gray-800 pb-2">
+    <span className="text-gray-400">{label}</span>
+    <span className={`font-mono ${color}`}>{value}</span>
+  </div>
+);
+
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
 
 export default function MTFPage() {
-  const [na, setNa] = useURLState("na", 0.95);
-  const [wavelength, setWavelength] = useURLState("wavelength", 550);
-  const [defocus, setDefocus] = useURLState("defocus", 0);
+  const [naRaw, setNa] = useURLState("na", 0.95);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 550);
+  const [indexRaw, setIndex] = useURLState("n", 1);
+  const [defocusRaw, setDefocus] = useURLState("defocus", 0.5);
+  const [nuRaw, setNu] = useURLState("nu", 0.5);
+  const n = clamp(indexRaw, 1, 1.8, 1);
+  const na = clamp(naRaw, 0.01, n, Math.min(0.95, n));
+  const wavelengthNm = clamp(wavelengthRaw, 200, 2000, 550);
+  const defocusUm = clamp(defocusRaw, -20, 20, 0.5);
+  const nu = clamp(nuRaw, 0, 1, 0.5);
 
-  const mtfCurve = useMemo(() => {
-    const lambda_um = wavelength * 1e-3;
-    const fc = (2 * na) / lambda_um; // cutoff freq in lp/µm
-    const W = Math.PI * na * na * defocus / lambda_um; // defocus wave aberration (radians)
+  const fc = cutoffFrequency(na, wavelengthNm * nm);
+  const w020 = defocusW020(defocusUm * um, na, n) / (wavelengthNm * nm);
+  // Exact edge path difference n·Δz(1 − cos θ), sin θ = NA/n.
+  const edgeWaves = (n * defocusUm * um * (1 - Math.sqrt(1 - (na / n) ** 2))) / (wavelengthNm * nm);
+  const inFocus = diffractionMtf(nu);
+  const defocused = defocusedOtf(nu, w020);
+  const strehl = defocusStrehlExact(Math.abs(w020) / Math.sqrt(12));
 
-    const freqs: number[] = [];
-    const mtfVals: number[] = [];
-    for (let f = 0; f <= fc; f += fc / 500) {
-      freqs.push(f);
-      const fn = f / fc;
-      if (fn >= 1) {
-        mtfVals.push(0);
-      } else {
-        const incoherent = (2 / Math.PI) * (Math.acos(fn) - fn * Math.sqrt(1 - fn * fn));
-        // Apply defocus: simple Strehl-like attenuation
-        const defocusFactor = defocus === 0 ? 1 : Math.exp(-2 * (W * fn) * (W * fn));
-        mtfVals.push(incoherent * defocusFactor);
-      }
-    }
-    return { freqs, mtfVals, fc };
-  }, [na, wavelength, defocus]);
-
-  const plotData = useMemo(() => {
-    const lambda_um = wavelength * 1e-3;
-    const fc = (2 * na) / lambda_um;
-    const defocusValues = [0, 0.5, 1, 2, 5];
-    const colors = ["#60a5fa", "#34d399", "#fbbf24", "#f87171", "#c084fc"];
-
-    return defocusValues.map((df, i) => {
-      const W = Math.PI * na * na * df / lambda_um;
-      const freqs: number[] = [];
-      const vals: number[] = [];
-      for (let f = 0; f <= fc; f += fc / 500) {
-        freqs.push(f);
-        const fn = f / fc;
-        if (fn >= 1) { vals.push(0); continue; }
-        const incoherent = (2 / Math.PI) * (Math.acos(fn) - fn * Math.sqrt(1 - fn * fn));
-        const defocusFactor = df === 0 ? 1 : Math.exp(-2 * (W * fn) * (W * fn));
-        vals.push(incoherent * defocusFactor);
-      }
-      return {
-        x: freqs, y: vals, type: "scatter" as const, mode: "lines" as const,
-        name: `Δf = ${df} µm`, line: { color: colors[i] },
-      };
+  const chart = useMemo(() => {
+    const nus = Array.from({ length: 201 }, (_, k) => k / 200);
+    const curve = (w: number, name: string, color: string, dash?: string) => ({
+      x: nus.map((v) => (v * fc * um)), y: nus.map((v) => defocusedOtf(v, w)), type: "scatter" as const, mode: "lines" as const,
+      name, line: { color, dash },
     });
-  }, [na, wavelength]);
+    return [
+      curve(0, "In focus", "#60a5fa"),
+      curve(0.25, "W₀₂₀ = λ/4 (Rayleigh)", "#34d399", "dot"),
+      curve(w020, `Δz = ${defocusUm} µm, W₀₂₀ = ${fmt(w020, 3)}λ`, "#f87171"),
+      { x: [nu * fc * um, nu * fc * um], y: [inFocus, defocused], type: "scatter" as const, mode: "markers" as const, name: "Chosen ν", marker: { color: "#facc15", size: 10 } },
+    ];
+  }, [fc, w020, defocusUm, nu, inFocus, defocused]);
 
   return (
     <>
-            
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
-          <div>
-            <ValidatedNumberInput label="Numerical Aperture (NA)" value={na} onChange={setNa} min={0.01} max={1.8} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={2000} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Defocus (µm)" value={defocus} onChange={setDefocus} min={0} max={50} />
-          </div>
+          <ValidatedNumberInput label="Numerical aperture NA" value={naRaw} onChange={setNa} min={0.01} max={n} step="any" />
+          <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={200} max={2000} step="any" />
+          <ValidatedNumberInput label="Refractive index on the NA side, n" value={indexRaw} onChange={setIndex} min={1} max={1.8} step="any" />
+          <ValidatedNumberInput label="Defocus Δz on the NA side (µm)" value={defocusRaw} onChange={setDefocus} min={-20} max={20} step="any" />
+          <ValidatedNumberInput label="Normalised frequency ν = f/f_c" value={nuRaw} onChange={setNu} min={0} max={1} step="any" />
         </div>
-
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
           <h2 className="text-lg font-semibold">Results</h2>
-          <div className="flex justify-between items-center border-b border-gray-800 pb-2">
-            <span className="text-gray-400">Cutoff frequency</span>
-            <span className="font-mono text-blue-400">{mtfCurve.fc.toFixed(1)} lp/µm</span>
-          </div>
-          <div className="flex justify-between items-center border-b border-gray-800 pb-2">
-            <span className="text-gray-400">Cutoff (lp/mm)</span>
-            <span className="font-mono text-green-400">{(mtfCurve.fc * 1000).toFixed(0)} lp/mm</span>
-          </div>
-          <div className="text-xs text-gray-500 mt-2 space-y-1">
-            <p>f_c = 2·NA / λ</p>
-            <p>MTF(f) = (2/π)[arccos(f/f_c) − (f/f_c)√(1−(f/f_c)²)]</p>
-            <p>Defocus: Gaussian attenuation model</p>
-          </div>
+          {row("Cutoff f_c = 2NA/λ", fmt(fc * um, 4, " lp/µm"), "text-blue-400")}
+          {row("Cutoff", fmt(fc * 1e-3, 0, " lp/mm"))}
+          {row("Chosen frequency f = ν·f_c", fmt(nu * fc * 1e-3, 0, " lp/mm"))}
+          {row("In-focus MTF(ν)", fmt(inFocus, 5), "text-blue-400")}
+          {row("Paraxial W₀₂₀ = Δz·NA²/(2n)", fmt(w020, 4, " λ"))}
+          {row("Defocused OTF(ν), Hopkins", fmt(defocused, 4), defocused < 0 ? "text-yellow-400" : "text-red-400")}
+          {row("Strehl ratio of the defocus, sinc²(kW₀₂₀/2)", fmt(strehl, 4))}
+          {defocused < 0 && <p className="text-sm text-yellow-400">Negative OTF: the pattern is imaged with reversed contrast.</p>}
+          <p className="text-xs text-gray-500">
+            Scalar, uniform pupil. The paraxial W₀₂₀ under-estimates high-NA defocus: the exact path difference at the
+            pupil edge, n·Δz(1 − cos θ), is {fmt(edgeWaves, 3)}λ here, and the wavefront is no longer quadratic in ρ.
+          </p>
         </div>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-        <h2 className="text-lg font-semibold mb-4">MTF vs Spatial Frequency (multiple defocus values)</h2>
-        <ChartPanel data={plotData}
-          layout={{
-            paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-            font: { color: "#ccc" },
-            xaxis: { title: "Spatial Frequency (lp/µm)", gridcolor: "#333", range: [0, undefined] },
-            yaxis: { title: "MTF", gridcolor: "#333", range: [0, 1.05] },
-            legend: { font: { size: 10 } },
-            margin: { l: 60, r: 20, t: 20, b: 50 },
-          }}
-         
-         
-        />
+        <h2 className="text-lg font-semibold mb-4">OTF vs spatial frequency</h2>
+        <ChartPanel data={chart} layout={{
+          paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#ccc" },
+          xaxis: { title: "Spatial frequency (lp/µm)", gridcolor: "#333" },
+          yaxis: { title: "OTF", gridcolor: "#333", range: [-0.2, 1.05] },
+          margin: { l: 60, r: 20, t: 20, b: 50 }, showlegend: true,
+        }} />
       </div>
     </>
   );

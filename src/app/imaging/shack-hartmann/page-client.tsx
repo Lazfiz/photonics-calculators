@@ -7,8 +7,9 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
   type LensletShape, centroidPrecision, dynamicRangeAngle, dynamicRangeOverPupil, fresnelNumber, lensletsInPupil,
-  marechalStrehl, spotFirstZeroRadius, spotFwhm, wavefrontPerPixel,
+  spotFirstZeroRadius, spotFwhm, wavefrontPerPixel,
 } from "../../../physics/imaging/shack-hartmann";
+import { marechalStrehl } from "../../../physics/imaging/wavefront";
 
 const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
 const MAX_CELLS_DRAWN = 4096;
