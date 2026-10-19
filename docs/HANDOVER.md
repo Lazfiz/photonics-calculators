@@ -1,22 +1,19 @@
-# Handover — 2026-10-19 (session 100 → session 101)
+# Handover — 2026-10-19 (session 101 → session 102)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 100 did **spectroscopy fix part 4** (Raman) on branch `phase-4/spectroscopy-raman`.
-Next: **spectroscopy fix part 5** (gratings: dispersive-element, grating-efficiency, spectral-range on `spectral-resolution.ts`).
+Session 101 did **spectroscopy fix part 5** (gratings) on branch `phase-4/spectroscopy-gratings` (PR #132 after `/ship`).
+Next: **spectroscopy fix part 6** (stray light: merged page with order overlap + photometric error ΔA; spectral-calibration).
 
 ## State
-- New `src/physics/spectroscopy/raman.ts` (`ramanShiftOf`, `ramanShiftEnergy`, `antiStokesStokesRatio` with m = 3 photons /
-  4 power; re-exports the imaging Stokes/anti-Stokes wavelengths) and `sers.ts` (`silverPermittivity`, `sphereFactor`,
-  `sphereFieldEnhancement` pole/equator, `sersEnhancement` max and surface average 1/5, 8/15, 2/15, `silverSphereResonance`).
-  `imaging/coherent-raman.ts` gains `excitationBandwidth` (√2·0.4413/(cτ)), `srsFocusFactor` and `srsModulationDepth`.
-- Merged with redirects: raman-spectroscopy → raman-shift (band table kept, Si-O label replaced by shift standards),
-  stimulated-raman → imaging/stimulated-raman-microscopy (δ source: measured | from g_R with pulse width and rep rate),
-  coherent-anti-stokes-raman → imaging/coherent-raman (URL clamps added, excitation bandwidth vs line FWHM).
-  raman-shift tiered exact, surface-enhanced-raman textbook (default radius 10 nm, inside its own quasistatic limit).
-  324 of 446 pages tiered, 31 `knownIssue`s.
-- The per-page findings, golden values and references are in the PR #127 description (`gh pr view 127`); read the
-  section for the part at hand instead of re-auditing.
+- `src/physics/spectroscopy/spectral-resolution.ts` gains the grating set: `blazeAngleFromLittrow`, `blazeWavelength`
+  (d[sin α + sin(2φ − α)]/m), `blazeEnvelope` + `blazeShadowFactor` + `scalarBlazeEfficiency` (Casini & Nelson 2014,
+  JOSA A 31, 2179, normalised over the propagating orders), `littrowAngle`, `littrowBlazeEfficiency`,
+  `littrowRayleighWavelengths`, `gratingOrderRange`, `overlapFreeLimit`, dispersion, anamorphic r, `detectorCoverage`.
+  `gratingSlitBandpass` now takes the incidence angle: w·d·cos α/(m·f) (spectral-resolution page and test updated).
+- dispersive-element, grating-efficiency, spectral-range tiered textbook; 327 of 446 pages tiered, 28 `knownIssue`s.
+  spectral-range's URL params changed (`centralAngle` → `centreWL` + `deviation`, new `slitWidth`); no slug changes.
+- Per-page findings, goldens and references: PR #127 description (`gh pr view 127`); read the part at hand only.
 - **User decisions (session 96):** merges with redirects. The parts are listed in ROADMAP "Spectroscopy fix parts".
 - **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only when the user asks:
   `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set
@@ -25,17 +22,24 @@ Next: **spectroscopy fix part 5** (gratings: dispersive-element, grating-efficie
   user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 4: `spectroscopy/surface-enhanced-raman=1.15e+4` (405 nm,
-   pole EF), `spectroscopy/raman-shift=561.893`; part 3: `spectroscopy/stokes-shift=1602.6`,
+1. `/ship` this branch. Values for a later release check: part 5: `spectroscopy/grating-efficiency=501.2`
+   (λ_B), `spectroscopy/spectral-range=605.3` (long edge), `spectroscopy/dispersive-element=74.7` (η %); part 4:
+   `spectroscopy/surface-enhanced-raman=1.15e+4`, `spectroscopy/raman-shift=561.893`; part 3: `spectroscopy/stokes-shift=1602.6`,
    `spectroscopy/spectral-deconvolution=40.08`; part 2: `spectroscopy/spectral-line-broadening=0.3525`,
    `spectroscopy/libs-analysis=0.2128`; part 1: `spectroscopy/lambert-beer-law=31.62`; earlier parts:
    `git show 04f88743:docs/HANDOVER.md`. Don't release unless asked.
-2. Spectroscopy part 5 (ROADMAP item 5): gratings on `spectral-resolution.ts` + scalar blaze sinc².
+2. Spectroscopy part 6 (ROADMAP item 6): stray-light + stray-light-rejection merge, spectral-calibration; reuse
+   `overlapFreeLimit` and the grating equation from `spectral-resolution.ts`.
 3. Later: open findings (FSO `adaptive-optics` actuators-as-modes, part 8 leftovers, local `sinc` copies,
    `fluorophores.ts` cutoff, `optical-sectioning-thickness`, detectors 7b, fiber, FSO), `polarizer-types` (needs the
    user at the laptop with Chrome). Gold for SERS needs a gold dataset (none in `materials/`).
 
 ## Non-obvious facts
+- **Session 101:** the Casini–Nelson envelope tends to 1 for every order near grazing (ρ → 0), so unnormalised it shows
+  a false return to 100 % at the Littrow cutoff; normalised it steps at each Rayleigh anomaly (expected). |sin ψ| ≤ 1
+  isn't enough for a fixed-deviation mount: α = ψ + D_v/2 < 90° needs mλ_c < d(1 + cos D_v). eslint's
+  `preserve-manual-memoization` fires on `useMemo` over derived values: drop the `useMemo` (the compiler memoizes).
+  ar5iv HTML through WebFetch returns a paper's equations in LaTeX when `pdftotext` drops the Greek letters.
 - **Session 100:** a merge can leave a chained redirect (an older `/a → /b` when `/b` is now removed); the redirect test
   wants one hop, so point it at the final page. A trapezoid over z = Z tan u must add both end values (finite limits).
 - **Session 99:** `tests/calculator-pages.test.ts` has a page-count floor (now ≥ 440); a merge can trip it. The global
@@ -45,10 +49,6 @@ Next: **spectroscopy fix part 5** (gratings: dispersive-element, grating-efficie
 - **Session 98:** `SimpleLineChart` has no y-range prop and puts the axis minimum at the data minimum, so a Gaussian wing
   shows "5.6e-27" on the axis: round plotted values (6 decimals). A cm⁻³ density as a raw number input shows 17 digits;
   enter it in 10¹⁶ cm⁻³. TCH pseudo-Voigt deviates ≈ 1.2–1.3 % of the peak at Δ_L/Δ_G ≈ 0.6–0.9.
-- **Session 97:** `no-inline-constants` flags any literal within 1 % of 299 792 (c in km/s), e.g. a slider max 3e5. Backticks
-  in `node -e` ran `git push origin main:release` (failed on a stray `\`): edit docs with Edit, never a shell string.
-- **Session 96:** `lede` defaults to `description`, and the registry test fails when they're equal: drop the lede. Seven
-  parallel `physics-reviewer` batches of 7 finish in ≈ 6 min; ask for a draft `knownIssue` per page.
 - **Session 95:** `SimpleChart` colours a markers-only trace from `line.color` (else the palette), not `marker.color`:
   give a "Current" marker trace both. Section/equation numbers in book citations were not checked, so none are cited.
 - **Sessions 86–89:** devctl queues heavy commands when another project's build hogs the CPU: run gates with
