@@ -1,192 +1,154 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import {
+  type BlendProfile,
+  blendWeight,
+  globalStitchError,
+  sequentialStitchError,
+  tileGrid,
+} from "../../../physics/imaging/registration";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
+
+const card = (label: string, value: string, sub: string, color: string) => (
+  <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+    <p className="text-sm text-gray-400">{label}</p>
+    <p className={`text-2xl font-bold ${color}`}>{value}</p>
+    <p className="text-xs text-gray-500 mt-1">{sub}</p>
+  </div>
+);
+
+const buttonClass = (active: boolean) =>
+  `px-3 py-2 rounded text-sm font-medium ${active ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`;
+
+const PROFILES: BlendProfile[] = ["linear", "cosine"];
+const PROFILE_LABELS: Record<BlendProfile, string> = { linear: "Linear ramp", cosine: "Raised cosine (cos²)" };
+const MAX_SIDE = 50;
+const SQUARE_GRIDS = [1, 2, 3, 4, 5, 7, 10, 14, 20, 28, 40, 50];
+
+// The global solution costs (C·R)² operations (≈ 0.1 s at 50 × 50): cache it per grid size.
+const globalCache = new Map<string, ReturnType<typeof globalStitchError>>();
+const cachedGlobal = (cols: number, rows: number) => {
+  const key = `${cols}x${rows}`;
+  let r = globalCache.get(key);
+  if (!r) globalCache.set(key, (r = globalStitchError(cols, rows)));
+  return r;
+};
+
 export default function StitchingPage() {
-  const [gridCols, setGridCols] = useURLState("gridCols", 5);
-  const [gridRows, setGridRows] = useURLState("gridRows", 5);
-  const [tileWidth, setTileWidth] = useURLState("tileWidth", 512);
-  const [tileHeight, setTileHeight] = useURLState("tileHeight", 512);
-  const [overlapPercent, setOverlapPercent] = useURLState("overlapPercent", 10);
-  const [blendWidth, setBlendWidth] = useURLState("blendWidth", 50);
-  const [blendMethod, setBlendMethod] = useState<"linear" | "feather" | "multiband">("linear");
-  const [positionError, setPositionError] = useURLState("positionError", 5);
-  const [illuminationVar, setIlluminationVar] = useURLState("illuminationVar", 5);
+  const [colsRaw, setGridCols] = useURLState("gridCols", 5);
+  const [rowsRaw, setGridRows] = useURLState("gridRows", 5);
+  const [widthRaw, setTileWidth] = useURLState("tileWidth", 512);
+  const [heightRaw, setTileHeight] = useURLState("tileHeight", 512);
+  const [overlapRaw, setOverlapPercent] = useURLState("overlapPercent", 10);
+  const [blendRaw, setBlendWidth] = useURLState("blendWidth", 50);
+  const [profileRaw, setProfile] = useURLState("blendMethod", "linear");
+  const [sigmaRaw, setPositionError] = useURLState("positionError", 0.5);
+  const [gainRaw, setIlluminationVar] = useURLState("illuminationVar", 5);
+  const cols = Math.round(clamp(colsRaw, 1, MAX_SIDE, 5));
+  const rows = Math.round(clamp(rowsRaw, 1, MAX_SIDE, 5));
+  const tileWidth = Math.round(clamp(widthRaw, 16, 16384, 512));
+  const tileHeight = Math.round(clamp(heightRaw, 16, 16384, 512));
+  const overlapPercent = clamp(overlapRaw, 0, 90, 10);
+  const profile: BlendProfile = PROFILES.find((p) => p === profileRaw) ?? "linear";
+  const sigma = clamp(sigmaRaw, 0, 100, 0.5);
+  const gain = clamp(gainRaw, 0, 100, 5);
 
-  const overlapPx = Math.round(tileWidth * overlapPercent / 100);
-  const stitchedWidth = gridCols * tileWidth - (gridCols - 1) * overlapPx;
-  const stitchedHeight = gridRows * tileHeight - (gridRows - 1) * overlapPx;
-  const totalTiles = gridCols * gridRows;
-  const totalPixels = totalTiles * tileWidth * tileHeight;
-  const stitchedPixels = stitchedWidth * stitchedHeight;
-  const efficiency = (stitchedPixels / totalPixels * 100);
-  const effectiveBlend = Math.min(blendWidth, overlapPx);
+  const g = tileGrid({ cols, rows, tileWidth, tileHeight, overlap: overlapPercent / 100 });
+  const blend = Math.min(clamp(blendRaw, 0, 16384, 50), g.overlapX);
+  const chain = sequentialStitchError(cols, rows);
+  const globalErr = cachedGlobal(cols, rows);
+  // Worst-tile error in σ units for square grids: chained √(2n − 2) against the global least-squares solution.
+  const squares = SQUARE_GRIDS.map((n) => cachedGlobal(n, n).max);
 
-  // Position accuracy after stitching
-  const cumulativeError = positionError * Math.sqrt(Math.max(gridCols, gridRows));
-  const correctedError = positionError * 0.3; // After global optimization
+  // A gain step Δ blended over w: the slope is Δ/w for the ramp and peaks at (π/2)·Δ/w mid-seam for cos².
+  const seamSlope = ((profile === "cosine" ? Math.PI / 2 : 1) * gain) / blend;
 
-  // Overlap quality score
-  const overlapQuality = Math.max(0, 100 - positionError * 5 - illuminationVar * 2);
-
-  // Blend profile visualization
-  const blendProfile = useMemo(() => {
-    const x = Array.from({ length: 100 }, (_, i) => i);
-    let alpha1: number[], alpha2: number[];
-    
-    if (blendMethod === "linear") {
-      alpha1 = x.map(i => Math.max(0, Math.min(1, 1 - i / 100)));
-      alpha2 = x.map(i => Math.max(0, Math.min(1, i / 100)));
-    } else if (blendMethod === "feather") {
-      alpha1 = x.map(i => Math.max(0, Math.min(1, Math.cos((i / 100) * Math.PI / 2))));
-      alpha2 = x.map(i => Math.max(0, Math.min(1, Math.sin((i / 100) * Math.PI / 2))));
-    } else {
-      // Multiband - smoother transition
-      alpha1 = x.map(i => {
-        const t = i / 100;
-        return Math.max(0, Math.min(1, (1 - t) * (1 + 0.3 * Math.sin(t * Math.PI))));
-      });
-      alpha2 = x.map(i => {
-        const t = i / 100;
-        return Math.max(0, Math.min(1, t * (1 + 0.3 * Math.sin(t * Math.PI))));
-      });
-    }
-
-    return [
-      { x, y: alpha1, type: "scatter", mode: "lines" as const, name: "Tile A weight", line: { color: "#60a5fa", width: 2 }, fill: "tozeroy", fillcolor: "#60a5fa20" },
-      { x, y: alpha2, type: "scatter", mode: "lines" as const, name: "Tile B weight", line: { color: "#f87171", width: 2 }, fill: "tozeroy", fillcolor: "#f8717120" },
-    ];
-  }, [blendMethod]);
-
-  // Error accumulation across grid
-  const errorAccumulation = useMemo(() => {
-    const positions = Array.from({ length: Math.max(gridCols, gridRows) }, (_, i) => i + 1);
-    const uncorrected = positions.map(p => positionError * Math.sqrt(p));
-    const corrected = positions.map(() => correctedError);
-    return [
-      { x: positions, y: uncorrected, type: "scatter", mode: "lines" as const, name: "Uncorrected", line: { color: "#f87171", width: 2 } },
-      { x: positions, y: corrected, type: "scatter", mode: "lines" as const, name: "After Global Opt.", line: { color: "#34d399", width: 2 } },
-    ];
-  }, [gridCols, gridRows, positionError, correctedError]);
-
-  // Overlap vs efficiency tradeoff
-  const overlapTradeoff = useMemo(() => {
-    const overlaps = Array.from({ length: 20 }, (_, i) => 5 + i * 2.5);
-    const efficiencies = overlaps.map(o => {
-      const ovPx = Math.round(tileWidth * o / 100);
-      const sw = gridCols * tileWidth - (gridCols - 1) * ovPx;
-      const sh = gridRows * tileHeight - (gridRows - 1) * ovPx;
-      return (sw * sh) / (totalTiles * tileWidth * tileHeight) * 100;
-    });
-    const quality = overlaps.map(o => Math.min(100, o * 3 + 50));
-    return [
-      { x: overlaps, y: efficiencies, type: "scatter", mode: "lines" as const, name: "Efficiency (%)", line: { color: "#60a5fa", width: 2 }, yaxis: "y" },
-      { x: overlaps, y: quality, type: "scatter", mode: "lines" as const, name: "Registration Quality", line: { color: "#fbbf24", width: 2 }, yaxis: "y2" },
-      { x: [overlapPercent], y: [efficiency], type: "scatter", mode: "markers" as const, name: "Current Eff.", marker: { color: "#60a5fa", size: 10 } },
-    ];
-  }, [gridCols, gridRows, tileWidth, tileHeight, totalTiles, overlapPercent, efficiency]);
+  const ts = Array.from({ length: 101 }, (_, k) => k / 100);
+  const xs = ts.map((t) => (t - 0.5) * blend);
+  const wA = ts.map((t) => blendWeight(profile, t));
+  const blendChart = [
+    { x: xs, y: wA, type: "scatter" as const, mode: "lines" as const, name: "Tile A", line: { color: "#60a5fa", width: 2 } },
+    { x: xs, y: wA.map((w) => 1 - w), type: "scatter" as const, mode: "lines" as const, name: "Tile B", line: { color: "#f87171", width: 2 } },
+    { x: xs, y: wA.map((w) => 1 + gain / 100 * (1 - w) - gain / 100 / 2), type: "scatter" as const, mode: "lines" as const, name: "Blended", line: { color: "#fbbf24", width: 2, dash: "dash" } },
+  ];
+  const errorChart = [
+    { x: SQUARE_GRIDS, y: SQUARE_GRIDS.map((n) => sigma * Math.sqrt(2 * n - 2)), type: "scatter" as const, mode: "lines+markers" as const, name: "Chained", line: { color: "#f87171", width: 2 } },
+    { x: SQUARE_GRIDS, y: squares.map((r) => sigma * r), type: "scatter" as const, mode: "lines+markers" as const, name: "Global", line: { color: "#34d399", width: 2 } },
+    ...(cols === rows && Number.isFinite(globalErr.max)
+      ? [{ x: [cols], y: [sigma * globalErr.max], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#facc15", size: 10 } }]
+      : []),
+  ];
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-4 mb-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Stitched Size</p>
-          <p className="text-2xl font-bold text-blue-400">{stitchedWidth}×{stitchedHeight}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Total Tiles</p>
-          <p className="text-2xl font-bold text-green-400">{totalTiles}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Stitching Efficiency</p>
-          <p className="text-2xl font-bold text-yellow-400">{efficiency.toFixed(1)}%</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Position Error</p>
-          <p className="text-2xl font-bold text-purple-400">{correctedError.toFixed(1)} px</p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+        {card("Mosaic size", Number.isFinite(g.width) ? `${g.width} × ${g.height}` : "—", `${cols} × ${rows} = ${g.tiles} tiles, overlap ${g.overlapX} × ${g.overlapY} px`, "text-blue-400")}
+        {card("Stitching efficiency", fmt(g.efficiency * 100, 2, " %"), "Mosaic pixels / acquired pixels", "text-yellow-400")}
+        {card("Worst tile, global optimisation", fmt(sigma * globalErr.max, 2, " px"), `RMS over tiles ${fmt(sigma * globalErr.rms, 2, " px")}, per axis`, "text-green-400")}
+        {card("Worst tile, chained", fmt(sigma * chain.max, 2, " px"), `σ√(C + R − 2); RMS over tiles ${fmt(sigma * chain.rms, 2, " px")}`, "text-red-400")}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <ValidatedNumberInput label="Grid Columns" value={gridCols} onChange={setGridCols} min={1} max={50} />
-        <ValidatedNumberInput label="Grid Rows" value={gridRows} onChange={setGridRows} min={1} max={50} />
-        <ValidatedNumberInput label="Tile Width (px)" value={tileWidth} onChange={setTileWidth} min={64} max={4096} />
-        <ValidatedNumberInput label="Tile Height (px)" value={tileHeight} onChange={setTileHeight} min={64} max={4096} />
-        <ValidatedNumberInput label="Overlap (%)" value={overlapPercent} onChange={setOverlapPercent} min={0} max={50} />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Overlap (px)</span>
-          <p className="mt-1 text-lg text-gray-300">{overlapPx} px</p>
-        </label>
-        <ValidatedNumberInput label="Blend Width (px)" value={blendWidth} onChange={setBlendWidth} min={0} max={200} />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Blend Method</span>
-          <select value={blendMethod} onChange={e => setBlendMethod(e.target.value as any)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            <option value="linear">Linear</option>
-            <option value="feather">Feather (Cosine)</option>
-            <option value="multiband">Multiband</option>
-          </select>
-        </label>
-        <ValidatedNumberInput label="Position Error (px)" value={positionError} onChange={setPositionError} min={0} max={50} step="0.5" />
-        <ValidatedNumberInput label="Illumination Variation (%)" value={illuminationVar} onChange={setIlluminationVar} min={0} max={30} />
+      <div role="group" aria-label="Blend profile" className="flex flex-wrap gap-2 mb-4">
+        {PROFILES.map((p) => (
+          <button key={p} onClick={() => setProfile(p)} className={buttonClass(profile === p)}>{PROFILE_LABELS[p]}</button>
+        ))}
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+        <ValidatedNumberInput label="Grid columns C" value={colsRaw} onChange={setGridCols} min={1} max={MAX_SIDE} step="1" />
+        <ValidatedNumberInput label="Grid rows R" value={rowsRaw} onChange={setGridRows} min={1} max={MAX_SIDE} step="1" />
+        <ValidatedNumberInput label="Overlap (% of the tile)" value={overlapRaw} onChange={setOverlapPercent} min={0} max={90} step="any" />
+        <ValidatedNumberInput label="Tile width (px)" value={widthRaw} onChange={setTileWidth} min={16} max={16384} step="1" />
+        <ValidatedNumberInput label="Tile height (px)" value={heightRaw} onChange={setTileHeight} min={16} max={16384} step="1" />
+        <ValidatedNumberInput label="Blend width (px, at most the overlap)" value={blendRaw} onChange={setBlendWidth} min={0} max={16384} step="1" />
+        <ValidatedNumberInput label="Pairwise registration error σ (px, per axis)" value={sigmaRaw} onChange={setPositionError} min={0} max={100} step="any" />
+        <ValidatedNumberInput label="Gain mismatch between tiles (%)" value={gainRaw} onChange={setIlluminationVar} min={0} max={100} step="any" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Cumulative Error (uncorrected)</p>
-          <p className="text-xl font-bold text-red-400">{cumulativeError.toFixed(1)} px</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">After Global Optimization</p>
-          <p className="text-xl font-bold text-green-400">{correctedError.toFixed(1)} px</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Overlap Quality Score</p>
-          <p className="text-xl font-bold text-yellow-400">{overlapQuality.toFixed(0)}%</p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 mb-6">
+        {card("Seam without blending", fmt(gain, 1, " % step"), "A tile-to-tile gain mismatch shows as a sharp edge", "text-gray-200")}
+        {card("Seam with blending, peak gradient", blend > 0 ? fmt(seamSlope, 3, " %/px") : "—", blend > 0 ? `The same step spread over ${fmt(blend, 0, " px")}${profile === "cosine" ? " (cos² peaks at π/2 × the mean slope)" : ""}: weights sum to 1, so no bright or dark band` : "Blend width 0: hard seam", "text-gray-200")}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 rounded-lg p-4">
-          <h3 className="text-sm font-semibold mb-2">Blend Weight Profiles</h3>
-          <ChartPanel data={blendProfile} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-            xaxis: { title: "Position in overlap", gridcolor: "#374151" }, yaxis: { title: "Weight", gridcolor: "#374151", range: [0, 1.1] },
-            margin: { t: 30, r: 20, b: 50, l: 50 }, legend: { font: { size: 10 } },
+          <h3 className="text-sm font-semibold mb-2">Blend weights across the seam</h3>
+          <ChartPanel data={blendChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+            xaxis: { title: "Position from the seam centre (px)", gridcolor: "#374151" },
+            yaxis: { title: "Weight / relative intensity", gridcolor: "#374151", range: [0, 1.1 + gain / 200] },
+            margin: { t: 30, r: 20, b: 50, l: 60 },
           }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
-          <h3 className="text-sm font-semibold mb-2">Error Accumulation Across Grid</h3>
-          <ChartPanel data={errorAccumulation} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-            xaxis: { title: "Tile Position", gridcolor: "#374151" }, yaxis: { title: "Position Error (px)", gridcolor: "#374151" },
+          <h3 className="text-sm font-semibold mb-2">Worst-tile position error in an n × n grid</h3>
+          <ChartPanel data={errorChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+            xaxis: { title: "Tiles per side n", type: "log", gridcolor: "#374151" },
+            yaxis: { title: "Position error (px, per axis)", gridcolor: "#374151" },
             margin: { t: 30, r: 20, b: 50, l: 60 },
           }} />
         </div>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <h3 className="text-sm font-semibold mb-2">Overlap vs Efficiency Tradeoff</h3>
-        <ChartPanel data={overlapTradeoff} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-          xaxis: { title: "Overlap (%)", gridcolor: "#374151" },
-          yaxis: { title: "Efficiency (%)", gridcolor: "#374151", side: "left" },
-          yaxis2: { title: "Quality Score", overlaying: "y", side: "right", gridcolor: "#374151" },
-          margin: { t: 30, r: 60, b: 50, l: 60 }, legend: { font: { size: 9 } },
-        }} />
-      </div>
-
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-3">Key Formulas</h3>
         <div className="space-y-2 text-sm text-gray-300 font-mono">
-          <p><span className="text-blue-400">Stitched width:</span> W = N_col · w_tile − (N_col − 1) · overlap</p>
-          <p><span className="text-blue-400">Efficiency:</span> η = (W · H) / (N_tiles · w · h) × 100%</p>
-          <p><span className="text-blue-400">Linear blend:</span> I = (1 − t)·I_A + t·I_B, t ∈ [0,1]</p>
-          <p><span className="text-blue-400">Feather blend:</span> α_A = cos(θ), α_B = sin(θ), θ ∈ [0, π/2]</p>
-          <p><span className="text-blue-400">Cumulative error:</span> σ_cum = σ_stage · √N</p>
-          <p><span className="text-blue-400">Global optimization:</span> min Σᵢⱼ ‖T_i(x_i) − T_j(x_j)‖² for overlapping pairs</p>
+          <p><span className="text-blue-400">Mosaic width:</span> W = C·w − (C − 1)·round(o·w), and the same for the height with h</p>
+          <p><span className="text-blue-400">Efficiency:</span> η = W·H / (C·R·w·h)</p>
+          <p><span className="text-blue-400">Blend:</span> I = α·I_A + (1 − α)·I_B, α = 1 − t or cos²(πt/2), t ∈ [0, 1]</p>
+          <p><span className="text-blue-400">Chained:</span> σ_ij = σ·√(i + j) for tile (i, j) placed from tile (0, 0)</p>
+          <p><span className="text-blue-400">Global:</span> σ_ij = σ·√R_eff(00, ij), the effective resistance of the tile grid with unit edges</p>
         </div>
+        <p className="mt-3 text-xs text-gray-500">
+          Each pair of neighbouring tiles is registered with an independent error σ per axis, and the first tile is the
+          anchor. Chaining adds errors like a random walk; a global least-squares fit over all pairwise offsets (as in
+          Preibisch&apos;s stitching plugin) has the variance of an electrical network, which grows only logarithmically with
+          the grid size. The blend sum shows a gain mismatch spread across the blend; multiband blending is not modelled.
+        </p>
       </div>
     </>
   );

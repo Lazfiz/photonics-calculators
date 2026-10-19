@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 92, 2026-10-19)
+## Status (session 94, 2026-10-19)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -17,14 +17,14 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | laser-safety | 40 / 40 | done (sessions 18, 23, 29–36) |
 | thin-film | 45 / 45 | done (sessions 25–28, 54–55); small findings below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
-| imaging | 57 / 61 | part 0 audit (session 78), parts 1–14 (79–93); 4 `knownIssue`s left; fix part 15 below |
+| imaging | 59 / 61 | part 0 audit (session 78), parts 1–15a (79–94); 2 `knownIssue`s left; fix part 15b below |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **312 / 454** | 4 `knownIssue`s (imaging) |
+| **total** | **314 / 454** | 2 `knownIssue`s (imaging) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -43,11 +43,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] **Imaging part 15: registration and computational imaging** (new `registration.ts`: Fitzpatrick TRE,
-  Robinson–Milanfar bound, graph accumulation; new `denoising.ts`, label illustrative parts): `registration`,
-  `stitching`, `denoising-algorithms`, `computational-imaging`. Golden: t (5, 3) px, θ 2°, L 512, 100 nm/px → 934.0 nm;
-  stitching 5×5, 512², 10 % → overlap 51, 2356², η 84.70 %; box 3×3 → 1/3 (9.54 dB); CI SNR₁ 31.404, N 25 → 157.02
-  (Fitzpatrick 1998 10.1109/42.736021).
+- [ ] **Imaging part 15b: denoising and computational imaging** (new `denoising.ts`, label illustrative parts):
+  `denoising-algorithms`, `computational-imaging`. Golden: box 3×3 → 1/3 (9.54 dB); CI SNR₁ 31.404, N 25 → 157.02.
 - [ ] **Next category audit (ask the user which):** wave-optics 2/49, materials 4/45 or spectroscopy 5/54.
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
 - [ ] Rewrite each heuristic model, or label it illustrative, during its category's audit. Macro-bend and
@@ -189,6 +186,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Imaging part 15a registration and stitching (session 94, `phase-4/imaging-registration`, PR #125): new `registration.ts`; RMS displacement 934.0 nm (was 1067), 2-D Fitzpatrick TRE checked by Monte Carlo (3 %), Robinson–Milanfar bound ℓ/(SNR·√N_px); stitching 51 px, 2356², 84.70 %, global error √R_eff (2×2 → 1, 3×3 → √1.5, 5×5 → 1.46σ vs chained 2.83σ).
   - Imaging part 14 light field (session 93, `phase-4/imaging-light-field`, PR #124): new `light-field.ts`; Levoy 2006 Table 1 reproduced (40×/0.95: R_obj 10.59 µm, N_u 11.81, 4.09 / 41.91 µm), defaults 7.5 µm, N_u 5.80, 53.64 µm; plenoptic on Ng 2005 prototype (288², 13×13, ±36 µm, ±6.5 mm → 0.809–1.343 m).
   - Imaging part 13 sensors (session 92, `phase-4/imaging-sensors`, PR #123): `sensor-ccm` merged into `sensor-cmos` (sCMOS/CCD presets, redirect); DR 84.437 dB, SNR 26.41, 2^(−95/6) 1.713e-5, crossover 15.14 °C; `dynamic-range` PRNU 1 % → 77.45; `signal-to-noise` 56.391 with charge/digital binning.
   - Imaging part 12 AO and speckle (session 91, PR #122): `turbulence.ts` gains exact Noll `nollResidual` (Γ-function covariances scaled to 1.0299: Δ₃ 0.1343, Δ₁₅ 0.0279, Δ₂₁ 0.0207; fit 0.02821 at J 15) and Hudgin `dmFittingVariance` (0.28(d/r₀)^(5/3), default 0.040294); new `speckle.ts` (λz/D 21.28 µm, 1.22× first zero, λ(1 + M)N, C = √(1 − e^(−2σ_φ²)) 0.92987 / 0.62727); 2 pages textbook.

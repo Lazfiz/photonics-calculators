@@ -1,19 +1,21 @@
-# Handover — 2026-10-19 (session 93 → session 94)
+# Handover — 2026-10-19 (session 94 → session 95)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-PR #123 (part 13) was merged. Session 93 finished **imaging part 14 (light field)** on branch
-`phase-4/imaging-light-field` (with this handover; PR #124 expected). Next: **imaging part 15 (registration and
-computational imaging)**, the last imaging part.
+PR #124 (part 14) was merged. Session 94 split part 15 and finished **imaging part 15a (registration, stitching)** on
+branch `phase-4/imaging-registration` (with this handover; PR #125 expected). Next: **imaging part 15b
+(`denoising-algorithms`, `computational-imaging`)**, the last imaging part.
 
 ## State
-- New `src/physics/imaging/light-field.ts`: `lightFieldMicroscope({na, magnification, n, lensletPitch, pixelPitch,
-  lambda})` (Levoy 2006 eqs. 1–5; N_u capped at W/(2p_px), flag `pixelLimited`) and `plenopticCamera({lensletPitch,
-  lensletFocal, pixelPitch, sensorWidthPx, sensorHeightPx, mainFNumber, mainFocal, focusDistance, lambda})` (Ng 2005).
-- `light-field`: new URL key `n` (medium index, default 1). `plenoptic-camera`: `mainLensNA` dropped for `mainFNumber`
-  (image-side f/#, default 4) and new `focusDistanceM` 1; defaults are Ng's prototype (140 mm, 125 µm, f_µ 0.5 mm, 9 µm,
-  4000 × 4000). Both pages link to each other.
-- Test: `tests/imaging-light-field.test.ts` (3 tests). 312 of 454 pages tiered; 4 `knownIssue`s, all imaging part 15.
+- New `src/physics/imaging/registration.ts`: `transformMatrix(model, θ, s, φ)`, `displacementRms`/`displacementMax`,
+  `targetRegistrationError({model, n, fle, fiducialRms, targetDistance})`, `fiducialRegistrationError`,
+  `translationCrlb(snr, ℓ, N_px)`, `tileGrid`, `blendWeight` (linear, cos²), `sequentialStitchError`,
+  `globalStitchError` (exact R_eff via DCT modes, ≤ 2500 tiles, 0.1 s at 50 × 50; the page caches it per grid size).
+- `registration`: models rigid/similarity/affine (URL `transformation`, elastic dropped), new keys `pixelSizeNm`,
+  `fle`, `snr`, `featureSize`; `noiseLevel` and `interpolation` dropped; `numControlPoints` default 10.
+  `stitching`: `blendMethod` linear/cosine, `positionError` is now the pairwise σ per axis (default 0.5 px).
+- Test: `tests/imaging-registration.test.ts` (7 tests, incl. a seeded Monte Carlo Procrustes check). 314 of 454 pages
+  tiered; 2 `knownIssue`s, both part 15b.
 - **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only when the user asks:
   `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set
   Vercel's Production Branch to `release` (not confirmed).
@@ -21,22 +23,21 @@ computational imaging)**, the last imaging part.
   user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 14: `imaging/light-field=7.50`,
-   `imaging/plenoptic-camera=288`; part 13: `imaging/sensor-cmos=84.44`, `imaging/dynamic-range=83.22`,
-   `imaging/signal-to-noise=56.391`; part 12: `imaging/adaptive-optics=0.2810`, `imaging/speckle-imaging=21.28`; earlier
-   parts: `git show 04f88743:docs/HANDOVER.md`. Don't release unless asked.
-2. Imaging part 15 (`registration`, `stitching`, `denoising-algorithms`, `computational-imaging`; goldens in ROADMAP).
-   Four pages with fabricated outputs: consider splitting into 15a/15b before starting.
+1. `/ship` this branch. Values for a later release check: part 15a: `imaging/registration=934.0`,
+   `imaging/stitching=84.70`; part 14: `imaging/light-field=7.50`, `imaging/plenoptic-camera=288`; part 13:
+   `imaging/sensor-cmos=84.44`, `imaging/dynamic-range=83.22`, `imaging/signal-to-noise=56.391`; earlier parts:
+   `git show 04f88743:docs/HANDOVER.md`. Don't release unless asked.
+2. Imaging part 15b (`denoising-algorithms`, `computational-imaging`; goldens in ROADMAP).
 3. Then ask the user which category to audit next (ROADMAP). Later: open findings (FSO `adaptive-optics`
    actuators-as-modes, part 8 leftovers, local `sinc` copies, `fluorophores.ts` cutoff, `optical-sectioning-thickness`,
    detectors 7b, fiber, FSO), `polarizer-types` (needs the user at the laptop with Chrome). `simultaneous-multicolor`
    could use `binnedReadNoise` instead of its inline copy.
 
 ## Non-obvious facts
-- **Session 93:** Levoy 2006 PDF: `graphics.stanford.edu/papers/lfmicroscope/levoy-lfmicroscope-sig06.pdf` (the
-  plain name 404s); Ng 2005: `graphics.stanford.edu/papers/lfcamera/lfcamera-150dpi.pdf`. Levoy's 50×/1.3 row says
-  f/20 lenslets but M/(2NA) = 19.2, and Table 1's D_tot1 is rounded to 2 digits (test tolerance 1.2 %). Ng's
-  prototype reports 12 usable pixels across where floor(125/9) = 13; floor ratios with `+ 1e-9` (4000·9/125 = 288).
+- **Session 94:** Robinson & Milanfar 2004 is at `users.soe.ucsc.edu/~milanfar/publications/journal/MotionPerformanceFinal.pdf`
+  (equations are images; pdftotext loses them). No open Fitzpatrick 1998 PDF found; the 2-D TRE was derived and checked
+  by Monte Carlo. React Compiler is not enabled, so `useMemo` over clamped values only earns a lint warning: cache
+  heavy pure results in a module-level `Map` instead.
 - **Session 92:** the ROADMAP's sensorNoise(700, 1.5, 0.1) golden used dark 0.1 e⁻; the page's 0.011 e⁻ plus σ_q gives
   the same 26.50 / 26.41. With PRNU 1 % the SNR at half well is 77.45 (77.46 without DSNU and σ_q); flat-fielded 122.46.
   `useURLState` setters batch, so a preset button can call nine setters at once. `next start` exits 1 when killed.

@@ -1,195 +1,180 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import {
+  TRANSFORM_DOF,
+  type TransformModel,
+  displacementMax,
+  displacementRms,
+  fiducialRegistrationError,
+  minControlPoints,
+  targetRegistrationError,
+  transformMatrix,
+  translationCrlb,
+} from "../../../physics/imaging/registration";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const deg = Math.PI / 180;
+
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
+
+const card = (label: string, value: string, sub: string, color: string) => (
+  <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+    <p className="text-sm text-gray-400">{label}</p>
+    <p className={`text-2xl font-bold ${color}`}>{value}</p>
+    <p className="text-xs text-gray-500 mt-1">{sub}</p>
+  </div>
+);
+
+const buttonClass = (active: boolean) =>
+  `px-3 py-2 rounded text-sm font-medium ${active ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`;
+
+const MODELS: TransformModel[] = ["rigid", "similarity", "affine"];
+const MODEL_LABELS: Record<TransformModel, string> = {
+  rigid: "Rigid (rotation + shift)",
+  similarity: "Similarity (+ scale)",
+  affine: "Affine (+ shear)",
+};
+const MODEL_COLORS: Record<TransformModel, string> = { rigid: "#34d399", similarity: "#fbbf24", affine: "#f87171" };
+
 export default function RegistrationPage() {
-  const [transformation, setTransformation] = useState<"rigid" | "affine" | "elastic">("affine");
-  const [imageSize, setImageSize] = useURLState("imageSize", 512);
-  const [rotationDeg, setRotationDeg] = useURLState("rotationDeg", 2);
-  const [translationX, setTranslationX] = useURLState("translationX", 5);
-  const [translationY, setTranslationY] = useURLState("translationY", 3);
-  const [scaleFactor, setScaleFactor] = useURLState("scaleFactor", 1.02);
-  const [shearDeg, setShearDeg] = useURLState("shearDeg", 0.5);
-  const [noiseLevel, setNoiseLevel] = useURLState("noiseLevel", 5);
-  const [interpolation, setInterpolation] = useState<"linear" | "cubic" | "spline">("cubic");
-  const [numControlPoints, setNumControlPoints] = useURLState("numControlPoints", 100);
+  const [modelRaw, setModel] = useURLState("transformation", "rigid");
+  const [sizeRaw, setImageSize] = useURLState("imageSize", 512);
+  const [pixelRaw, setPixelSize] = useURLState("pixelSizeNm", 100);
+  const [rotationRaw, setRotationDeg] = useURLState("rotationDeg", 2);
+  const [txRaw, setTranslationX] = useURLState("translationX", 5);
+  const [tyRaw, setTranslationY] = useURLState("translationY", 3);
+  const [scaleRaw, setScaleFactor] = useURLState("scaleFactor", 1.02);
+  const [shearRaw, setShearDeg] = useURLState("shearDeg", 0.5);
+  const [pointsRaw, setNumControlPoints] = useURLState("numControlPoints", 10);
+  const [fleRaw, setFle] = useURLState("fle", 1);
+  const [snrRaw, setSnr] = useURLState("snr", 10);
+  const [featureRaw, setFeature] = useURLState("featureSize", 2);
+  const model: TransformModel = MODELS.find((m) => m === modelRaw) ?? "rigid";
+  const size = Math.round(clamp(sizeRaw, 16, 16384, 512));
+  const pixelNm = clamp(pixelRaw, 0.1, 1e6, 100);
+  const rotationDeg = clamp(rotationRaw, -180, 180, 2);
+  const tx = clamp(txRaw, -16384, 16384, 5);
+  const ty = clamp(tyRaw, -16384, 16384, 3);
+  const scale = clamp(scaleRaw, 0.5, 2, 1.02);
+  const shearDeg = clamp(shearRaw, -45, 45, 0.5);
+  const points = Math.round(clamp(pointsRaw, 1, 1000, 10));
+  const fle = clamp(fleRaw, 0, 100, 1);
+  const snr = clamp(snrRaw, 0.01, 1e4, 10);
+  const feature = clamp(featureRaw, 0.1, 1000, 2);
 
-  // Calculate RMSE and CC
-  const pixelSizeNm = 100;
-  const rotationRad = (rotationDeg * Math.PI) / 180;
-  const displacementRms = Math.sqrt(
-    (translationX * pixelSizeNm) ** 2 +
-    (translationY * pixelSizeNm) ** 2 +
-    (rotationRad * imageSize * pixelSizeNm / 2) ** 2
-  );
+  const a = transformMatrix(model, rotationDeg * deg, scale, shearDeg * deg);
+  const rms = displacementRms(a, tx, ty, size);
+  const max = displacementMax(a, tx, ty, size);
 
-  const baseAccuracy = transformation === "rigid" ? 0.02 : transformation === "affine" ? 0.05 : 0.08;
-  const rmseNm = displacementRms * baseAccuracy + noiseLevel * 2;
-  const cc = Math.min(1, Math.max(-1, 1 - (noiseLevel / 200) - (rmseNm / 10000)));
+  // Fiducials spread uniformly over the image: mean squared radius L²/6, as for targets averaged over the image.
+  const fiducialRms = size / Math.sqrt(6);
+  const tre = (m: TransformModel, n: number, d: number) => targetRegistrationError({ model: m, n, fle, fiducialRms, targetDistance: d });
+  const treRms = tre(model, points, fiducialRms);
+  const treCentre = tre(model, points, 0);
+  const treCorner = tre(model, points, size / Math.SQRT2);
+  const fre = fiducialRegistrationError(model, points, fle);
+  const tooFew = points < minControlPoints(model);
+  const crlb = translationCrlb(snr, feature, size * size);
 
-  // Transformation matrix
-  const transformMatrix = useMemo(() => {
-    const c = Math.cos(rotationRad);
-    const s = Math.sin(rotationRad);
-    const sh = Math.tan((shearDeg * Math.PI) / 180);
-    if (transformation === "rigid") {
-      return [[c.toFixed(4), (-s).toFixed(4), translationX.toFixed(1)],
-              [s.toFixed(4), c.toFixed(4), translationY.toFixed(1)],
-              ["0", "0", "1"]];
-    } else if (transformation === "affine") {
-      return [[(c * scaleFactor).toFixed(4), ((c * sh - s) * scaleFactor).toFixed(4), translationX.toFixed(1)],
-              [(s * scaleFactor).toFixed(4), ((s * sh + c) * scaleFactor).toFixed(4), translationY.toFixed(1)],
-              ["0", "0", "1"]];
-    } else {
-      // Elastic: position-dependent, cannot be represented by single matrix
-      // Shows linear initialization only; actual elastic uses x' = x + u(x)
-      return [[(c * scaleFactor).toFixed(4), ((c * sh - s) * scaleFactor).toFixed(4), translationX.toFixed(1)],
-              [(s * scaleFactor).toFixed(4), ((s * sh + c) * scaleFactor).toFixed(4), translationY.toFixed(1)],
-              ["0", "0", "1"]];
-    }
-  }, [rotationRad, scaleFactor, shearDeg, translationX, translationY, transformation]);
+  const counts = Array.from({ length: 61 }, (_, k) => Math.round(2 * 500 ** (k / 60))).filter((n, k, all) => k === 0 || n !== all[k - 1]);
+  const chart = [
+    ...MODELS.map((m) => {
+      const ns = counts.filter((n) => n >= minControlPoints(m));
+      return {
+        x: ns, y: ns.map((n) => tre(m, n, fiducialRms) * pixelNm),
+        type: "scatter" as const, mode: "lines" as const, name: m.charAt(0).toUpperCase() + m.slice(1), line: { color: MODEL_COLORS[m], width: 2 },
+      };
+    }),
+    ...(Number.isFinite(treRms)
+      ? [{ x: [points], y: [treRms * pixelNm], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#60a5fa", size: 10 } }]
+      : []),
+  ];
 
-  // Error vs number of control points
-  const errorVsPoints = useMemo(() => {
-    const points = Array.from({ length: 30 }, (_, i) => 10 + i * 20);
-    const errors = points.map(n => {
-      const base = transformation === "elastic" ? 50 : transformation === "affine" ? 20 : 10;
-      return base + (500 / Math.sqrt(n)) + noiseLevel * 1.5;
-    });
-    return [{
-      x: points, y: errors, type: "scatter", mode: "lines" as const,
-      name: "RMSE (nm)", line: { color: "#60a5fa", width: 2 },
-    }, {
-      x: [numControlPoints], y: [transformation === "elastic" ? 50 + 500 / Math.sqrt(numControlPoints) + noiseLevel * 1.5 :
-        transformation === "affine" ? 20 + 500 / Math.sqrt(numControlPoints) + noiseLevel * 1.5 :
-        10 + 500 / Math.sqrt(numControlPoints) + noiseLevel * 1.5],
-      type: "scatter", mode: "markers" as const, name: "Current", marker: { color: "#f87171", size: 12 },
-    }];
-  }, [transformation, numControlPoints, noiseLevel]);
-
-  // CC vs noise for different transforms
-  const ccVsNoise = useMemo(() => {
-    const noises = Array.from({ length: 30 }, (_, i) => i * 2);
-    const transforms = ["rigid", "affine", "elastic"] as const;
-    const colors = ["#34d399", "#fbbf24", "#f87171"];
-    return transforms.map((t, i) => ({
-      x: noises,
-      y: noises.map(n => {
-        const base = t === "rigid" ? 0.99 : t === "affine" ? 0.97 : 0.94;
-        return Math.max(-1, base - n * (t === "rigid" ? 0.003 : t === "affine" ? 0.005 : 0.008));
-      }),
-      type: "scatter", mode: "lines" as const,
-      name: t.charAt(0).toUpperCase() + t.slice(1),
-      line: { color: colors[i], width: 2 },
-    }));
-  }, []);
-
-  // Grid distortion visualization for elastic
-  const gridData = useMemo(() => {
-    if (transformation !== "elastic") return [];
-    const grid = Array.from({ length: 11 }, (_, i) => i * 50);
-    const lines = grid.map((y, idx) => ({
-      x: grid.map(x => x + 5 * Math.sin((x + y) * 0.05)),
-      y: grid.map(x => y + 3 * Math.cos((x + y) * 0.04)),
-      type: "scatter", mode: "lines" as const, name: `Row ${idx}`,
-      line: { color: "#60a5fa", width: 1 }, showlegend: false,
-    }));
-    return lines;
-  }, [transformation]);
+  const matrix = [
+    [a[0], a[1], tx],
+    [a[2], a[3], ty],
+  ];
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-4 mb-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Displacement RMS</p>
-          <p className="text-2xl font-bold text-blue-400">{displacementRms.toFixed(0)} nm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Registration RMSE</p>
-          <p className="text-2xl font-bold text-green-400">{rmseNm.toFixed(1)} nm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Correlation Coeff.</p>
-          <p className="text-2xl font-bold text-yellow-400">{cc.toFixed(4)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">DOF</p>
-          <p className="text-2xl font-bold text-purple-400">{transformation === "rigid" ? 3 : transformation === "affine" ? 6 : "∞"}</p>
-        </div>
+      <div role="group" aria-label="Transform model" className="flex flex-wrap gap-2 mb-4">
+        {MODELS.map((m) => (
+          <button key={m} onClick={() => setModel(m)} className={buttonClass(model === m)}>{MODEL_LABELS[m]} · {TRANSFORM_DOF[m]} DOF</button>
+        ))}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Transformation</span>
-          <select value={transformation} onChange={e => setTransformation(e.target.value as any)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            <option value="rigid">Rigid (3 DOF)</option>
-            <option value="affine">Affine (6 DOF)</option>
-            <option value="elastic">Elastic (B-spline)</option>
-          </select>
-        </label>
-        <ValidatedNumberInput label="Rotation (°)" value={rotationDeg} onChange={setRotationDeg} min={-180} max={180} step="0.5" />
-        <ValidatedNumberInput label="Translation X (px)" value={translationX} onChange={setTranslationX} step="0.5" />
-        <ValidatedNumberInput label="Translation Y (px)" value={translationY} onChange={setTranslationY} step="0.5" />
-        <ValidatedNumberInput label="Scale Factor" value={scaleFactor} onChange={setScaleFactor} min={0.9} max={1.1} step="0.01" />
-        <ValidatedNumberInput label="Shear (°)" value={shearDeg} onChange={setShearDeg} min={-10} max={10} step="0.5" />
-        <ValidatedNumberInput label="Noise Level (%)" value={noiseLevel} onChange={setNoiseLevel} min={0} max={30} />
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Interpolation</span>
-          <select value={interpolation} onChange={e => setInterpolation(e.target.value as any)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            <option value="linear">Bilinear</option>
-            <option value="cubic">Bicubic</option>
-            <option value="spline">B-spline</option>
-          </select>
-        </label>
-        <ValidatedNumberInput label="Control Points" value={numControlPoints} onChange={setNumControlPoints} min={10} max={1000} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+        {card("RMS displacement over the image", fmt(rms * pixelNm, 1, " nm"), `${fmt(rms, 2, " px")}; largest at a corner ${fmt(max * pixelNm, 1, " nm")}`, "text-blue-400")}
+        {card("Control-point TRE (RMS over the image)", fmt(treRms * pixelNm, 1, " nm"), `${fmt(treRms, 3, " px")}; centre ${fmt(treCentre * pixelNm, 1)}, corner ${fmt(treCorner * pixelNm, 1, " nm")}`, "text-green-400")}
+        {card("Expected fiducial residual FRE", fmt(fre * pixelNm, 1, " nm"), "The fit residual, not the target error: a small FRE does not mean a small TRE", "text-yellow-400")}
+        {card("Intensity registration bound (per axis)", fmt(crlb * pixelNm, 3, " nm"), `${fmt(crlb, 5, " px")}: Cramér–Rao bound for the translation`, "text-purple-400")}
+      </div>
+      {tooFew && (
+        <p className="mb-4 text-sm text-red-400">
+          A {model} transform needs at least {minControlPoints(model)} control-point pairs: the point-based results are blank.
+        </p>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+        <ValidatedNumberInput label="Image size L (px, square)" value={sizeRaw} onChange={setImageSize} min={16} max={16384} step="1" />
+        <ValidatedNumberInput label="Pixel size (nm, in the specimen)" value={pixelRaw} onChange={setPixelSize} min={0.1} max={1e6} step="any" />
+        <ValidatedNumberInput label="Rotation θ (°)" value={rotationRaw} onChange={setRotationDeg} min={-180} max={180} step="any" />
+        <ValidatedNumberInput label="Translation x (px)" value={txRaw} onChange={setTranslationX} min={-16384} max={16384} step="any" />
+        <ValidatedNumberInput label="Translation y (px)" value={tyRaw} onChange={setTranslationY} min={-16384} max={16384} step="any" />
+        {model !== "rigid" && (
+          <ValidatedNumberInput label="Scale factor s" value={scaleRaw} onChange={setScaleFactor} min={0.5} max={2} step="any" />
+        )}
+        {model === "affine" && (
+          <ValidatedNumberInput label="Shear φ (°)" value={shearRaw} onChange={setShearDeg} min={-45} max={45} step="any" />
+        )}
+        <ValidatedNumberInput label="Control-point pairs N" value={pointsRaw} onChange={setNumControlPoints} min={1} max={1000} step="1" />
+        <ValidatedNumberInput label="Fiducial localisation error FLE (px, 2-D rms)" value={fleRaw} onChange={setFle} min={0} max={100} step="any" />
+        <ValidatedNumberInput label="Texture SNR σ_s/σ_noise" value={snrRaw} onChange={setSnr} min={0.01} max={1e4} step="any" />
+        <ValidatedNumberInput label="Texture correlation length ℓ (px)" value={featureRaw} onChange={setFeature} min={0.1} max={1000} step="any" />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-        <h3 className="text-sm font-semibold mb-3">Transformation Matrix</h3>
+        <h3 className="text-sm font-semibold mb-3">Transform x&apos; = A·x + t (pixels, origin at the image centre)</h3>
         <div className="font-mono text-sm">
-          {transformMatrix.map((row, i) => (
+          {matrix.map((row, i) => (
             <div key={i} className="flex gap-4">
               {row.map((v, j) => (
-                <span key={j} className="w-24 text-right text-gray-300">{v}</span>
+                <span key={j} className={`w-24 text-right ${j === 2 ? "text-blue-300" : "text-gray-300"}`}>{fmt(v, j === 2 ? 2 : 5)}</span>
               ))}
             </div>
           ))}
+          <div className="flex gap-4 text-gray-500">
+            {["0", "0", "1"].map((v, j) => <span key={j} className="w-24 text-right">{v}</span>)}
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 mb-6">
-        <div className="bg-gray-900 rounded-lg p-4">
-          <h3 className="text-sm font-semibold mb-2">RMSE vs Control Points</h3>
-          <ChartPanel data={errorVsPoints} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-            xaxis: { title: "Control Points", gridcolor: "#374151" }, yaxis: { title: "RMSE (nm)", gridcolor: "#374151" },
-            margin: { t: 30, r: 20, b: 50, l: 70 },
-          }} />
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4">
-          <h3 className="text-sm font-semibold mb-2">CC vs Noise Level</h3>
-          <ChartPanel data={ccVsNoise} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-            xaxis: { title: "Noise (%)", gridcolor: "#374151" }, yaxis: { title: "Correlation Coefficient", gridcolor: "#374151" },
-            margin: { t: 30, r: 20, b: 50, l: 70 }, legend: { font: { size: 9 } },
-          }} />
-        </div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6">
+        <h3 className="text-sm font-semibold mb-2">Control-point TRE vs number of pairs (RMS over the image)</h3>
+        <ChartPanel data={chart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          xaxis: { title: "Control-point pairs N", type: "log", gridcolor: "#374151" },
+          yaxis: { title: "TRE (nm)", type: "log", gridcolor: "#374151" },
+          margin: { t: 30, r: 20, b: 50, l: 70 },
+        }} />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-3">Key Formulas</h3>
         <div className="space-y-2 text-sm text-gray-300 font-mono">
-          <p><span className="text-blue-400">Rigid:</span> x&apos; = R·x + t  (rotation + translation)</p>
-          <p><span className="text-blue-400">Affine:</span> x&apos; = A·x + t  (linear + translation)</p>
-          <p><span className="text-blue-400">Elastic:</span> x&apos; = x + u(x)  (displacement field)</p>
-          <p><span className="text-blue-400">NCC:</span> NCC(I₁,I₂) = Σ(I₁−μ₁)(I₂−μ₂) / √[Σ(I₁−μ₁)² · Σ(I₂−μ₂)²]</p>
-          <p><span className="text-blue-400">MI:</span> MI(I₁,I₂) = H(I₁) + H(I₂) − H(I₁,I₂)</p>
-          <p><span className="text-blue-400">RMSE:</span> RMSE = √(Σ(x̂ᵢ − xᵢ)² / N)</p>
+          <p><span className="text-blue-400">Displacement:</span> ⟨|d|²⟩ = |t|² + (L²/12)·‖A − I‖²_F over a centred L × L image</p>
+          <p><span className="text-blue-400">TRE:</span> TRE² = (FLE²/N)·(1 + m·d²/(2f²)), m = 1, 2, 4 for rigid, similarity, affine</p>
+          <p><span className="text-blue-400">FRE:</span> FRE² = FLE²·(1 − p/(2N)), p = 3, 4, 6 parameters</p>
+          <p><span className="text-blue-400">Cramér–Rao:</span> σ_t ≥ ℓ/(SNR·√N_px) per axis, from J = Σ∇f∇fᵀ/σ²</p>
         </div>
+        <p className="mt-3 text-xs text-gray-500">
+          The fiducials are spread uniformly over the image, so f² = L²/6 and the RMS target sits at d = f. The 2-D TRE and
+          FRE follow Fitzpatrick&apos;s first-order least-squares analysis with isotropic, independent localisation errors. The
+          bound assumes a noise-free reference, white Gaussian noise on the moving image, and a random texture whose gradient
+          variance is σ_s²/ℓ². Elastic (B-spline) registration has a displacement field instead of a matrix and is not modelled.
+        </p>
       </div>
     </>
   );
