@@ -4,8 +4,30 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "absorption-cross-section",
     title: "Absorption Cross-Section Calculator",
-    description: "σ = ε · 1000 · ln(10) / N_A — convert molar extinction coefficient to molecular cross-section.",
-    knownIssue: "The typical cross-section values quoted for atoms and biomolecules are off by orders of magnitude, and the default 1 mM at ε = 50 000 gives an unphysical absorbance of 50.",
+    description: "σ = ε · 1000 · ln(10) / N_A — convert the molar absorption (extinction) coefficient to the cross-section per molecule and back, with number density and Napierian absorption coefficient.",
+    related: [
+      { href: "/spectroscopy/lambert-beer-law" },
+      { href: "/spectroscopy/optical-density" },
+      { href: "/spectroscopy/absorption-depth" },
+    ],
+    tier: "exact",
+    modelNote: "Exact conversion σ = ln 10 · ε / N_A between the decadic molar coefficient and the Napierian cross-section, with α = σ·N_A·c. The typical values quoted are peak values for single absorbers in dilute solution or vapour.",
+    references: [
+      {
+        citation: "IUPAC Compendium of Chemical Terminology (Gold Book), entries “absorption cross section” and “molar (decadic) absorption coefficient”.",
+      },
+      {
+        citation: "Pace C. N., Vajdos F., Fee L., Grimsley G., Gray T. (1995). How to measure and predict the molar absorption coefficient of a protein. Protein Sci. 4, 2411–2423.",
+        url: "https://doi.org/10.1002/pro.5560041120",
+      },
+      {
+        citation: "Lambert T. J. (2019). FPbase: a community-editable fluorescent protein database. Nat. Methods 16, 277–278 (EGFP ε).",
+        url: "https://doi.org/10.1038/s41592-019-0352-8",
+      },
+      {
+        citation: "Foot C. J. (2005). Atomic Physics. Oxford University Press (resonant cross-section 3λ²/2π).",
+      },
+    ],
   },
   {
     slug: "absorption-depth",
@@ -74,11 +96,6 @@ export const spectroscopy: CalculatorEntry[] = [
     knownIssue: "The finesse card shows a fixed number unrelated to the inputs, étendue is labelled arbitrary units, and the Connes advantage in the description is not computed.",
   },
   {
-    slug: "concentration",
-    title: "Concentration from Absorbance",
-    description: "c = A / (ε·l) — determine concentration from measured absorbance using Beer-Lambert law.",
-  },
-  {
     slug: "dispersive-element",
     title: "Dispersive Element Design",
     description: "Diffraction grating parameters: grating equation, angular/linear dispersion, blaze profile.",
@@ -119,11 +136,6 @@ export const spectroscopy: CalculatorEntry[] = [
     title: "Etalon Free Spectral Range",
     description: "Fabry-Pérot etalon: FSR = λ²/(2nd cos θ). Transmission follows the Airy function.",
     knownIssue: "The transmission chart is sampled every 2 nm, so for gaps above about 50 micrometres the Airy fringes alias and the plotted peaks are wrong. The design wavelength is fixed at 1550 nm.",
-  },
-  {
-    slug: "extinction-coefficient",
-    title: "Extinction Coefficient",
-    description: "Calculate molar and specific extinction coefficients from absorbance measurements. Beer-Lambert law: ε = A / (c·l).",
   },
   {
     slug: "fluorescence-lifetime",
@@ -206,21 +218,21 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "lambert-beer-law",
     title: "Lambert-Beer Law Calculator",
-    description: "Beer-Lambert absorbance, optical density, and transmission with interactive parameter sweeps.",
-    lede: "Comprehensive Beer-Lambert law analysis with sliders, presets, and interactive parameter sweeps.",
-    keywords: ["absorbance", "optical density", "transmission", "Beer-Lambert Absorption"],
+    description: "Beer-Lambert law A = ε·c·l: solve for absorbance, concentration or the molar absorption (extinction) coefficient, with transmittance, mass concentration and mass absorption coefficient.",
+    lede: "Solve A = ε·c·l for absorbance, concentration or ε, and sweep concentration, path length or ε.",
+    keywords: ["absorbance", "optical density", "transmission", "Beer-Lambert Absorption", "Concentration from Absorbance", "Extinction Coefficient", "molar absorption coefficient", "mass absorption coefficient", "specific extinction coefficient"],
     priority: 94,
     related: [
+      { href: "/spectroscopy/optical-density" },
+      { href: "/spectroscopy/absorption-cross-section" },
+      { href: "/spectroscopy/absorption-depth" },
       { href: "/spectroscopy/infrared-spectroscopy" },
-      { href: "/spectroscopy/jacquinot" },
-      { href: "/spectroscopy/libs-analysis" },
-      { href: "/spectroscopy/lineshape-fit" },
     ],
     tier: "exact",
-    modelNote: "Exact for monochromatic light and a dilute solution of non-interacting absorbers. Not modelled: scattering, fluorescence and stray light; absorbers interact above about 10 mM and absorbance reads low above A ≈ 2.",
+    modelNote: "Exact for monochromatic light and a dilute solution of non-interacting absorbers; concentration and ε are A = ε·c·l solved for each, and a = ε/M. Not modelled: scattering, fluorescence and stray light; absorbers interact above about 10 mM and absorbance reads low above A ≈ 2.",
     references: [
       {
-        citation: "IUPAC Compendium of Chemical Terminology (Gold Book), entries “absorbance” and “molar (decadic) absorption coefficient”.",
+        citation: "IUPAC Compendium of Chemical Terminology (Gold Book), entries “absorbance”, “molar (decadic) absorption coefficient” and “mass absorption coefficient”.",
       },
     ],
   },
@@ -258,13 +270,20 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "optical-density",
     title: "Optical Density",
-    description: "Convert optical density, transmission, and attenuation with interactive presets and slider-based exploration.",
-    lede: "Convert optical density (OD), transmission, and attenuation with presets and interactive sliders.",
+    description: "Convert optical density, transmission, attenuation in dB and filter factor (photographic stops) with presets.",
+    lede: "Convert optical density (OD), transmission, dB attenuation and ND filter factor with presets.",
     related: [
-      { href: "/spectroscopy/microwave-spectroscopy" },
-      { href: "/spectroscopy/near-infrared" },
+      { href: "/spectroscopy/lambert-beer-law" },
+      { href: "/laser-safety/optical-density", note: "OD that laser eyewear needs for a given beam." },
+      { href: "/spectroscopy/absorption-cross-section" },
       { href: "/spectroscopy/optical-path-length" },
-      { href: "/spectroscopy/penetration-depth" },
+    ],
+    tier: "exact",
+    modelNote: "Exact definitions: OD = −log₁₀ T, attenuation 10·OD dB, filter factor 1/T and log₂(1/T) stops. For a sample, OD includes scattering losses as well as absorption.",
+    references: [
+      {
+        citation: "IUPAC Compendium of Chemical Terminology (Gold Book), entries “absorbance” and “transmittance”.",
+      },
     ],
   },
   {

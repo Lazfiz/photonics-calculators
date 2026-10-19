@@ -19,12 +19,12 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
 | imaging | 61 / 61 | done: part 0 audit (session 78), fix parts 1–15b (sessions 79–95) |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
-| spectroscopy | 5 / 54 | part 0 audit (session 96): 42 `knownIssue`s; fix parts 1–12 next |
+| spectroscopy | 7 / 52 | part 0 audit (session 96); fix part 1 (session 97); 41 `knownIssue`s; parts 2–12 next |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **316 / 454** | 42 `knownIssue`s (spectroscopy) |
+| **total** | **318 / 452** | 41 `knownIssue`s (spectroscopy) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -47,7 +47,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   in the PR description; every merge below is a user decision and gets a redirect; etalon-fsr vs
   wave-optics/etalon-finesse and sum-frequency-gen vs wave-optics/sum-frequency are decided in the wave-optics audit). About 4 pages each; every page: clamp URL values, physics into `src/physics/spectroscopy/`,
   golden test, tier + `modelNote` + references, drop the `knownIssue`.
-  1. Beer-Lambert: merge concentration + extinction-coefficient into lambert-beer-law; optical-density;
+  1. ✅ (session 97) Beer-Lambert: merge concentration + extinction-coefficient into lambert-beer-law; optical-density;
      absorption-cross-section (σ = 3.8235e-21 ε cm²; fix the typical values).
   2. `line-broadening.ts` (Doppler, Lorentz, Voigt: Olivero 1977 FWHM, TCH 1987 pseudo-Voigt or exact): spectral-line-broadening
      absorbs doppler-broadening and lineshape-fit (Voigt FWHM 0.3525 at the defaults); libs-analysis (Stark w ≈ 0.01 nm at 1e16 cm⁻³).
