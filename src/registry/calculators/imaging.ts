@@ -319,7 +319,19 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "fov-calculator",
     title: "Field of View Calculator",
-    description: "Calculate sample FOV from sensor dimensions and system magnification.",
+    description: "Object-side field of view and pixel footprint from sensor size and magnification, Nyquist sampling λ/(4NA) and the eyepiece field FN/M.",
+    tier: "exact",
+    modelNote: "First-order imaging without distortion: object sizes are sensor sizes divided by the magnification at the sensor. Nyquist uses the incoherent cutoff 2NA/λ; a pixel at that limit still loses contrast near the cutoff.",
+    references: [
+      {
+        citation: "Nikon MicroscopyU. Field of View. Field number divided by objective magnification; camera field from the sensor size.",
+        url: "https://www.microscopyu.com/microscopy-basics/field-of-view",
+      },
+      {
+        citation: "Pawley J. B. (2006). Points, Pixels, and Gray Levels: Digitizing Image Data. In: Handbook of Biological Confocal Microscopy, 3rd ed., ch. 4, pp. 59–79. Springer. Nyquist sampling of the optical cutoff.",
+        url: "https://doi.org/10.1007/978-0-387-45524-2_4",
+      },
+    ],
   },
   {
     slug: "frap",
@@ -586,7 +598,15 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "pixel-fov",
     title: "Pixel Field of View",
-    description: "Calculate the angular field of view per pixel from pixel size and focal length.",
+    description: "Angular field of view per pixel (IFOV) from pixel size, binning and focal length, with the Nyquist frequency and the full field across the sensor.",
+    tier: "exact",
+    modelNote: "Lens focused at infinity, on-axis pixel: IFOV = 2·atan(b·p/2f). Off-axis pixels subtend slightly less, and distortion is ignored.",
+    references: [
+      {
+        citation: "Holst G. C. (2017). Electro-Optical Imaging System Performance, 6th ed. SPIE Press. Detector angular subtense d/f and the Nyquist frequency 1/(2d).",
+        url: "https://doi.org/10.1117/3.2588947",
+      },
+    ],
   },
   {
     slug: "plenoptic-camera",
@@ -876,8 +896,19 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "telecentricity",
     title: "Telecentric Lens Design",
-    description: "Telecentric lenses maintain constant magnification regardless of object distance. Chief rays are parallel to optical axis.",
-    knownIssue: "The telecentric depth has no circle of confusion and a ×1000 factor (240 mm against about 1.7 mm). The chief ray uses tanθ/m and the magnification error |Δz|/(s_o·m²) instead of −Δz/s_EP.",
+    description: "Magnification change Δm/m = −Δz/(s_EP + Δz) of an ordinary lens against a telecentric lens with a residual chief-ray slope, and the depth of field λ/NA² + e/(m·NA).",
+    tier: "textbook",
+    modelNote: "Paraxial chief ray with the sensor fixed: the blur centroid follows the chief ray. A residual telecentric slope is treated as a distant entrance pupil. The depth of field is Inoué's sum of a wave and a geometric term in air.",
+    references: [
+      {
+        citation: "Greivenkamp J. E. (2004). Field Guide to Geometrical Optics. SPIE Press. Telecentricity: the entrance pupil at infinity keeps the chief ray parallel to the axis, so magnification does not change with focus.",
+        url: "https://doi.org/10.1117/3.547461",
+      },
+      {
+        citation: "Inoué S., Spring K. R. (1997). Microscope Image Formation. In: Video Microscopy, 2nd ed., ch. 2, pp. 13–117. Plenum. Total depth of field d = λ₀n/NA² + n·e/(M·NA).",
+        url: "https://doi.org/10.1007/978-1-4615-5859-0_2",
+      },
+    ],
   },
   {
     slug: "third-harmonic-microscopy",

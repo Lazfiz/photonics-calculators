@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 88, 2026-10-18)
+## Status (session 89, 2026-10-18)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -17,14 +17,14 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | laser-safety | 40 / 40 | done (sessions 18, 23, 29–36) |
 | thin-film | 45 / 45 | done (sessions 25–28, 54–55); small findings below |
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
-| imaging | 44 / 63 | part 0 audit (session 78), parts 1–10a (79–88); 16 `knownIssue`s left; fix parts 10b–15 below |
+| imaging | 47 / 63 | part 0 audit (session 78), parts 1–10b (79–89); 15 `knownIssue`s left; fix parts 11–15 below |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 5 / 54 | findings fixed (sessions 19–21); no full audit |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **299 / 456** | 16 `knownIssue`s (imaging) |
+| **total** | **302 / 456** | 15 `knownIssue`s (imaging) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -43,10 +43,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] **Imaging part 10b: field of view and telecentricity** (`field-of-view.ts`: objectFov, pixelFootprint, pixelIfov,
-  Nyquist, FN/M; new `telecentric.ts`): `fov-calculator`, `pixel-fov`, `telecentricity`. Golden: FOV 0.6668 × 0.5008 mm,
-  diag 0.8339, pixel 325 nm; IFOV 6.5 µm/50 mm = 26.81″, bin 2 53.63″; telecentric Δm/m = −0.05 (Δz 10, s_EP 200 mm),
-  DoF ≈ 1.68 mm.
 - [ ] **Imaging part 11: MTF and wavefront** (new `diffraction-mtf.ts`: cutoffFrequency, diffractionMtf, defocusW020,
   Hopkins defocusedOtf, wienerTransfer; new `wavefront.ts`: move `marechalStrehl` out of shack-hartmann.ts:65,
   pvFromRms, defocusStrehlExact): `mtf`, `deconvolution`, `strehl-ratio` + `wavefront-error` merged with redirect.
@@ -207,6 +203,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Imaging part 10b field of view (session 89, PR #120): `field-of-view.ts` (sensor/M 0.6668 × 0.5008 mm, 325 nm, IFOV 26.81″/53.63″, λ/(4NA)) + new `telecentric.ts` (Δm/m = −Δz/(s_EP + Δz) = −4.76 %, first order −5 %; DoF 1.68 mm); 3 pages tiered.
   - Imaging part 10a microscope (session 88, PR #119): new `microscope.ts` (f_TL/f_obj, adapter 0.5 → 10×, exit pupil 500 mm·NA/M 0.9375 / 1.25 mm, useful 500–1000·NA, λ/(NA_o + NA_c) 297.3 nm) and `field-of-view.ts` (FN/M 500 µm); `inoueDepthOfField` (dry 40×/0.4 3.84375 µm, 100×/1.4 oil 0.49547 µm) and non-paraxial `quarterWaveDepth` (0.2938 µm); `magnification`, `pupil-matching`, `dof`, `illumination` tiered; dof n is now the immersion index (default 1).
   - Imaging part 9 Gaussian optics (session 87, PR #118): `gaussian-optics.ts`; `working-distance` merged into `image-distance`; `afocal` from the ABCD matrix (EFL 400 mm at 250 mm); `optical-power` two-element eye (Gullstrand 58.635 D, 24 mm → +0.80 D).
   - Imaging part 8 nonlinear and photoacoustic (session 86, PR #117): `srsShotNoiseSnr` δ√(ηPτλ/hc) 6.460 (Ozeki 2009), `mixedFocusFwhm` (SRS 342.69 nm), thin-slab `sfgCoefficient` (Boyd 2.2.10, 4× SHG when degenerate; 452.1739 nm), new `photoacoustic.ts` (p₀ 2.0e4 Pa, μ_eff 15 cm⁻¹, R_A 0.88 v/Δf 271.04 µm, R_L 0.71 v/(NA f₀) 437.36 µm, ICNIRP skin 200 C_A); 3 pages tiered, 23 `knownIssue`s.
