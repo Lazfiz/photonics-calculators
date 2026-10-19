@@ -144,8 +144,19 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "computational-imaging",
     title: "Computational Imaging",
-    description: "Multi-view fusion, resolution scaling, and SNR improvement through computational techniques.",
-    knownIssue: "The background input is labelled as noise in electrons but used as a variance, so an rms value gives the wrong SNR, and the resolution outputs don't depend on any computational parameter.",
+    description: "SNR of N fused exposures at a fixed signal per view or a fixed total dose, and the synthetic NA, finest period and space-bandwidth gain of Fourier ptychography.",
+    tier: "textbook",
+    modelNote: "Independent exposures summed with equal weights after perfect registration; each adds the shot noise of its signal and mean background and one read noise. The synthetic aperture NA_obj + NA_ill is the coherent Fourier-ptychography cutoff; pupil overlap, phase-retrieval convergence and aberrations are not modelled.",
+    references: [
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer DN → λ. SPIE Press. Shot, background and read noise of a sensor pixel; N reads add N σ_r².",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+      {
+        citation: "Zheng G., Horstmeyer R., Yang C. (2013). Wide-field, high-resolution Fourier ptychographic microscopy. Nat. Photonics 7, 739–745. Synthetic NA = objective NA + illumination NA (0.08 + 0.42 = 0.5).",
+        url: "https://doi.org/10.1038/nphoton.2013.187",
+      },
+    ],
   },
   {
     slug: "computer-generated-holography",
@@ -246,8 +257,22 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "denoising-algorithms",
     title: "Denoising Algorithms",
-    description: "Compare denoising methods: noise reduction, detail preservation, and SNR improvement tradeoffs.",
-    knownIssue: "All outputs come from a hard-coded improvement table subtracted from σ, and the denoised trace is built from the clean signal. Only the linear and median filters have closed-form noise gains (a 3×3 box gives σ/3, 9.54 dB).",
+    description: "Output noise, SNR gain and transfer function of box, Gaussian and median filters on white Gaussian noise, plus the VisuShrink wavelet threshold σ√(2 ln N).",
+    tier: "textbook",
+    modelNote: "Additive white Gaussian noise without edge effects. Box and Gaussian filters are linear (σ_out² = σ² Σw²); the median's variance is that of the median of k² independent normals, by quadrature. Bilateral, non-local means, BM3D and learned denoisers depend on the image and are not modelled.",
+    references: [
+      {
+        citation: "Gonzalez R. C., Woods R. E. (2018). Digital Image Processing, 4th ed. Pearson. Box, Gaussian and median spatial filters.",
+      },
+      {
+        citation: "David H. A., Nagaraja H. N. (2003). Order Statistics, 3rd ed. Wiley. Distribution of the sample median; variance 1 − √3/π for n = 3 and π/(2n) for large n.",
+        url: "https://doi.org/10.1002/0471722162",
+      },
+      {
+        citation: "Donoho D. L., Johnstone I. M. (1994). Ideal spatial adaptation by wavelet shrinkage. Biometrika 81, 425–455. Universal threshold σ√(2 ln N).",
+        url: "https://doi.org/10.1093/biomet/81.3.425",
+      },
+    ],
   },
   {
     slug: "digital-holography",

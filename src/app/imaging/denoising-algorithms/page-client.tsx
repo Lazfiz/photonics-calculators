@@ -1,180 +1,131 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import {
+  boxNoiseRatio,
+  boxTransfer,
+  gaussianNoiseRatio,
+  gaussianRadius,
+  gaussianTransfer,
+  halfResponseFrequency,
+  medianNoiseRatio,
+  snrGainDb,
+  visuShrinkThreshold,
+} from "../../../physics/imaging/denoising";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+
+const fmt = (x: number, digits: number, unit = "") => (Number.isFinite(x) ? `${x.toFixed(digits)}${unit}` : "—");
+
+const card = (label: string, value: string, sub: string, color: string) => (
+  <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+    <p className="text-sm text-gray-400">{label}</p>
+    <p className={`text-2xl font-bold ${color}`}>{value}</p>
+    <p className="text-xs text-gray-500 mt-1">{sub}</p>
+  </div>
+);
+
+const buttonClass = (active: boolean) =>
+  `px-3 py-2 rounded text-sm font-medium ${active ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`;
+
+type Filter = "box" | "gaussian" | "median";
+const FILTERS: Filter[] = ["box", "gaussian", "median"];
+const FILTER_LABELS: Record<Filter, string> = { box: "Box (mean)", gaussian: "Gaussian", median: "Median" };
+const WINDOWS = [3, 5, 7, 9, 11, 13, 15];
+const CHART_WINDOWS = [1, ...WINDOWS];
+
+// The median quadrature costs a few ms per window size: cache it.
+const medianCache = new Map<number, number>();
+const cachedMedianRatio = (k: number) => {
+  let r = medianCache.get(k);
+  if (r === undefined) medianCache.set(k, (r = medianNoiseRatio(k)));
+  return r;
+};
+
 export default function DenoisingAlgorithmsPage() {
-  const [algorithm, setAlgorithm] = useState<"gaussian" | "median" | "bilateral" | "nlm" | "wavelet" | "deep">("nlm");
-  const [inputNoise, setInputNoise] = useURLState("inputNoise", 20);
-  const [filterSize, setFilterSize] = useURLState("filterSize", 3);
-  const [sigmaSpatial, setSigmaSpatial] = useURLState("sigmaSpatial", 2);
-  const [sigmaRange, setSigmaRange] = useURLState("sigmaRange", 10);
-  const [waveletLevel, setWaveletLevel] = useURLState("waveletLevel", 3);
-  const [threshold, setThreshold] = useURLState("threshold", 3);
-  const [patchSize, setPatchSize] = useURLState("patchSize", 7);
-  const [searchWindow, setSearchWindow] = useURLState("searchWindow", 21);
+  const [filterRaw, setFilter] = useURLState("filter", "box");
+  const [noiseRaw, setInputNoise] = useURLState("inputNoise", 20);
+  const [sizeRaw, setFilterSize] = useURLState("filterSize", 3);
+  const [sigmaRaw, setSigmaSpatial] = useURLState("sigmaSpatial", 2);
+  const [sideRaw, setImageSize] = useURLState("imageSize", 512);
+  const filter: Filter = FILTERS.find((f) => f === filterRaw) ?? "box";
+  const sigmaIn = clamp(noiseRaw, 1e-6, 1e9, 20);
+  const k = WINDOWS.includes(sizeRaw) ? sizeRaw : 3;
+  const sigmaS = clamp(sigmaRaw, 0.5, 10, 2);
+  const side = Math.round(clamp(sideRaw, 16, 16384, 512));
 
-  // Simulate SNR improvement for each method
-  const methodParams: Record<string, { base: number; scale: number; min: number }> = {
-    gaussian: { base: 3, scale: 0.1, min: 1 },
-    median: { base: 4, scale: 0.15, min: 2 },
-    bilateral: { base: 5, scale: 0.2, min: 3 },
-    nlm: { base: 6, scale: 0.25, min: 4 },
-    wavelet: { base: 5.5, scale: 0.22, min: 3.5 },
-    deep: { base: 7, scale: 0.3, min: 5 },
-  };
+  const ratio = filter === "box" ? boxNoiseRatio(k) : filter === "gaussian" ? gaussianNoiseRatio(sigmaS) : cachedMedianRatio(k);
+  const gainDb = snrGainDb(ratio);
+  const transfer = filter === "box" ? (f: number) => boxTransfer(k, f) : filter === "gaussian" ? (f: number) => gaussianTransfer(sigmaS, f) : null;
+  const f50 = transfer ? halfResponseFrequency(transfer) : NaN;
+  const hQuarter = transfer ? transfer(0.25) : NaN;
+  const threshold = visuShrinkThreshold(sigmaIn, side * side);
+  const r = gaussianRadius(sigmaS);
+  const windowLabel = filter === "gaussian" ? `σ_s = ${sigmaS} px, ${2 * r + 1} × ${2 * r + 1} taps` : `${k} × ${k} window`;
 
-  const params = methodParams[algorithm];
-  const paramVal = algorithm === "gaussian" ? filterSize :
-    algorithm === "median" ? filterSize :
-    algorithm === "bilateral" ? sigmaRange + sigmaSpatial * 0.5 :
-    algorithm === "nlm" ? searchWindow + patchSize * 0.3 :
-    algorithm === "wavelet" ? threshold + waveletLevel :
-    0.5;
+  const gainChart = [
+    { x: CHART_WINDOWS, y: CHART_WINDOWS.map((w) => snrGainDb(boxNoiseRatio(w))), type: "scatter" as const, mode: "lines+markers" as const, name: "Box", line: { color: "#60a5fa", width: 2 } },
+    { x: CHART_WINDOWS, y: CHART_WINDOWS.map((w) => snrGainDb(cachedMedianRatio(w))), type: "scatter" as const, mode: "lines+markers" as const, name: "Median", line: { color: "#f87171", width: 2 } },
+    ...(filter !== "gaussian"
+      ? [{ x: [k], y: [gainDb], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#facc15", size: 10 } }]
+      : []),
+  ];
 
-  const snrImprovement = Math.max(params.min, params.base + params.scale * paramVal);
-  const outputNoise = Math.max(1, inputNoise - snrImprovement);
-  const outputSnr = inputNoise === 0 ? 99 : 20 * Math.log10(inputNoise / outputNoise);
-  const detailLoss = algorithm === "gaussian" ? 0.3 : algorithm === "median" ? 0.1 : algorithm === "bilateral" ? 0.05 : algorithm === "nlm" ? 0.03 : algorithm === "wavelet" ? 0.08 : 0.02;
-
-  // Simulated 1D signal before/after denoising
-  const signalData = useMemo(() => {
-    const x = Array.from({ length: 100 }, (_, i) => i);
-    const clean = x.map(v => Math.sin(v * 0.1) + 0.5 * Math.sin(v * 0.25) + 0.3 * Math.sin(v * 0.5));
-    const noise = clean.map(v => v + (inputNoise / 100) * (Math.sin(v * 3.7) * 0.7 + Math.cos(v * 5.3) * 0.5 + (Math.sin(v * 11) * 0.3)));
-    const denoised = clean.map((v, i) => v * (1 - detailLoss) + (noise[i] - v) * (outputNoise / (inputNoise || 1)));
-    return [
-      { x, y: clean, type: "scatter", mode: "lines" as const, name: "Ground Truth", line: { color: "#34d399", width: 2 } },
-      { x, y: noise, type: "scatter", mode: "lines" as const, name: "Noisy Signal", line: { color: "#f87171", width: 1 } },
-      { x, y: denoised, type: "scatter", mode: "lines" as const, name: "Denoised", line: { color: "#60a5fa", width: 2, dash: "dash" } },
-    ];
-  }, [inputNoise, outputNoise, detailLoss]);
-
-  // SNR improvement vs input noise for all methods
-  const snrCompareData = useMemo(() => {
-    const noiseLevels = Array.from({ length: 30 }, (_, i) => 2 + i * 2);
-    const algos = ["gaussian", "median", "bilateral", "nlm", "wavelet", "deep"];
-    const colors = ["#f87171", "#fbbf24", "#34d399", "#60a5fa", "#a78bfa", "#f472b6"];
-    return algos.map((a, idx) => ({
-      x: noiseLevels,
-      y: noiseLevels.map(n => {
-        const p = methodParams[a];
-        return 20 * Math.log10(n / Math.max(1, n - (p.base + p.scale * 5)));
-      }),
-      type: "scatter", mode: "lines" as const,
-      name: a.charAt(0).toUpperCase() + a.slice(1),
-      line: { color: colors[idx], width: 2 },
-    }));
-  }, []);
-
-  // Tradeoff: detail preservation vs noise reduction
-  const tradeoffData = useMemo(() => {
-    const algos = ["Gaussian", "Median", "Bilateral", "NLM", "Wavelet", "Deep"];
-    const noiseReduction = [3, 4, 5, 6, 5.5, 7];
-    const detailPreservation = [70, 90, 95, 97, 92, 98];
-    return [{
-      x: noiseReduction, y: detailPreservation, type: "scatter", mode: "markers+text" as const,
-      text: algos, textposition: "top center", textfont: { color: "#d1d5db", size: 11 },
-      marker: { color: ["#f87171", "#fbbf24", "#34d399", "#60a5fa", "#a78bfa", "#f472b6"], size: 15 },
-      name: "Methods",
-    }];
-  }, []);
+  const fs = Array.from({ length: 101 }, (_, i) => i * 0.005);
+  const transferChart = [
+    { x: fs, y: fs.map((f) => boxTransfer(k, f)), type: "scatter" as const, mode: "lines" as const, name: `Box ${k}×${k}`, line: { color: "#60a5fa", width: filter === "box" ? 3 : 1.5 } },
+    { x: fs, y: fs.map((f) => gaussianTransfer(sigmaS, f)), type: "scatter" as const, mode: "lines" as const, name: `Gauss σ ${sigmaS}`, line: { color: "#34d399", width: filter === "gaussian" ? 3 : 1.5 } },
+  ];
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-4 mb-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Input Noise σ</p>
-          <p className="text-2xl font-bold text-red-400">{inputNoise}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Output Noise σ</p>
-          <p className="text-2xl font-bold text-green-400">{outputNoise.toFixed(1)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">SNR Improvement</p>
-          <p className="text-2xl font-bold text-blue-400">{outputSnr.toFixed(1)} dB</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Detail Loss</p>
-          <p className="text-2xl font-bold text-yellow-400">{(detailLoss * 100).toFixed(0)}%</p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+        {card("Output noise σ", fmt(sigmaIn * ratio, 3), `${fmt(ratio, 4)} × the input σ (${windowLabel})`, "text-green-400")}
+        {card("SNR gain", fmt(gainDb, 2, " dB"), filter === "median" ? `Box of the same size: ${fmt(snrGainDb(boxNoiseRatio(k)), 2, " dB")}` : "20 log₁₀(σ_in / σ_out) on white noise", "text-blue-400")}
+        {transfer
+          ? card("Half-response frequency f₅₀", Number.isFinite(f50) ? fmt(f50, 4, " cy/px") : "> 0.5 cy/px", `H(0.25 cy/px) = ${fmt(hQuarter, 3)} along one axis`, "text-yellow-400")
+          : card("Detail cost", "Nonlinear", "No transfer function: a median keeps step edges but removes features smaller than about half the window", "text-yellow-400")}
+        {card("VisuShrink threshold", fmt(threshold, 3), `σ√(2 ln N) for N = ${side} × ${side} coefficients`, "text-purple-400")}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <span className="text-sm text-gray-300">Algorithm</span>
-          <select value={algorithm} onChange={e => setAlgorithm(e.target.value as any)}
-            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-            <option value="gaussian">Gaussian Filter</option>
-            <option value="median">Median Filter</option>
-            <option value="bilateral">Bilateral Filter</option>
-            <option value="nlm">Non-Local Means (NLM)</option>
-            <option value="wavelet">Wavelet Thresholding</option>
-            <option value="deep">Deep Learning (DnCNN)</option>
-          </select>
-        </label>
-        <ValidatedNumberInput label="Input Noise Level (σ)" value={inputNoise} onChange={setInputNoise} min={1} max={100} />
-        {(algorithm === "gaussian" || algorithm === "median") && (
+      <div role="group" aria-label="Filter" className="flex flex-wrap gap-2 mb-4">
+        {FILTERS.map((f) => (
+          <button key={f} onClick={() => setFilter(f)} className={buttonClass(filter === f)}>{FILTER_LABELS[f]}</button>
+        ))}
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+        <ValidatedNumberInput label="Input noise σ (any unit: DN, e⁻)" value={noiseRaw} onChange={setInputNoise} min={1e-6} max={1e9} step="any" />
+        {filter === "gaussian" ? (
+          <ValidatedNumberInput label="Gaussian σ_s (px)" value={sigmaRaw} onChange={setSigmaSpatial} min={0.5} max={10} step="any" />
+        ) : (
           <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Kernel Size</span>
-            <select value={filterSize} onChange={e => setFilterSize(+e.target.value)}
+            <span className="text-sm text-gray-300">Window size</span>
+            <select value={k} onChange={(e) => setFilterSize(+e.target.value)}
               className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-              {[3, 5, 7, 9, 11].map(s => <option key={s} value={s}>{s}×{s}</option>)}
+              {WINDOWS.map((s) => <option key={s} value={s}>{s}×{s}</option>)}
             </select>
           </label>
         )}
-        {algorithm === "bilateral" && <>
-          <ValidatedNumberInput label="Spatial σ" value={sigmaSpatial} onChange={setSigmaSpatial} min={0.5} max={20} step="0.5" />
-          <ValidatedNumberInput label="Range σ" value={sigmaRange} onChange={setSigmaRange} min={1} max={100} />
-        </>}
-        {algorithm === "nlm" && <>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Patch Size</span>
-            <select value={patchSize} onChange={e => setPatchSize(+e.target.value)}
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-              {[3, 5, 7, 9, 11].map(s => <option key={s} value={s}>{s}×{s}</option>)}
-            </select>
-          </label>
-          <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <span className="text-sm text-gray-300">Search Window</span>
-            <select value={searchWindow} onChange={e => setSearchWindow(+e.target.value)}
-              className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
-              {[11, 15, 21, 25, 31].map(s => <option key={s} value={s}>{s}×{s}</option>)}
-            </select>
-          </label>
-        </>}
-        {algorithm === "wavelet" && <>
-          <ValidatedNumberInput label="Decomposition Level" value={waveletLevel} onChange={setWaveletLevel} min={1} max={6} />
-          <ValidatedNumberInput label="Threshold (σ multiples)" value={threshold} onChange={setThreshold} min={0.5} max={10} step="0.5" />
-        </>}
-      </div>
-
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <h3 className="text-sm font-semibold mb-2">1D Signal: Before & After Denoising</h3>
-        <ChartPanel data={signalData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-          xaxis: { title: "Sample", gridcolor: "#374151" }, yaxis: { title: "Intensity", gridcolor: "#374151" },
-          margin: { t: 30, r: 20, b: 50, l: 50 }, legend: { font: { size: 10 } },
-        }} />
+        <ValidatedNumberInput label="Image side (px, for VisuShrink)" value={sideRaw} onChange={setImageSize} min={16} max={16384} step="1" />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <div className="bg-gray-900 rounded-lg p-4">
-          <h3 className="text-sm font-semibold mb-2">SNR Improvement vs Input Noise</h3>
-          <ChartPanel data={snrCompareData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-            xaxis: { title: "Input Noise σ", gridcolor: "#374151" }, yaxis: { title: "SNR Improvement (dB)", gridcolor: "#374151" },
-            margin: { t: 30, r: 20, b: 50, l: 70 }, legend: { font: { size: 9 } },
+          <h3 className="text-sm font-semibold mb-2">SNR gain on white Gaussian noise</h3>
+          <ChartPanel data={gainChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+            xaxis: { title: "Window side k (k × k pixels)", gridcolor: "#374151" },
+            yaxis: { title: "SNR gain (dB)", gridcolor: "#374151" },
+            margin: { t: 30, r: 20, b: 50, l: 60 },
           }} />
         </div>
         <div className="bg-gray-900 rounded-lg p-4">
-          <h3 className="text-sm font-semibold mb-2">Noise Reduction vs Detail Preservation</h3>
-          <ChartPanel data={tradeoffData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-            xaxis: { title: "Noise Reduction (σ units)", gridcolor: "#374151" },
-            yaxis: { title: "Detail Preservation (%)", gridcolor: "#374151", range: [60, 100] },
-            margin: { t: 30, r: 20, b: 50, l: 70 },
+          <h3 className="text-sm font-semibold mb-2">Transfer function along one axis</h3>
+          <ChartPanel data={transferChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+            xaxis: { title: "Spatial frequency (cycles/pixel)", gridcolor: "#374151" },
+            yaxis: { title: "H(f)", gridcolor: "#374151", range: [-0.3, 1.05] },
+            margin: { t: 30, r: 20, b: 50, l: 60 },
           }} />
         </div>
       </div>
@@ -182,13 +133,19 @@ export default function DenoisingAlgorithmsPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-3">Key Formulas</h3>
         <div className="space-y-2 text-sm text-gray-300 font-mono">
-          <p><span className="text-blue-400">Gaussian:</span> G(x) = (1/2πσ²) exp(−|x|²/2σ²)</p>
-          <p><span className="text-blue-400">Bilateral:</span> BF(I) = (1/W) Σ G_s(‖p−q‖) · G_r(|I_p−I_q|) · I_q</p>
-          <p><span className="text-blue-400">NLM weight:</span> w(p,q) = exp(−‖P(p)−P(q)‖² / h²)</p>
-          <p><span className="text-blue-400">Wavelet threshold:</span> T = σ√(2 log N) (VisuShrink)</p>
-          <p><span className="text-blue-400">PSNR:</span> PSNR = 20·log₁₀(MAX_I / √MSE)</p>
-          <p><span className="text-blue-400">SSIM:</span> SSIM(x,y) = (2µ_xµ_y + c₁)(2σ_xy + c₂) / (µ_x² + µ_y² + c₁)(σ_x² + σ_y² + c₂)</p>
+          <p><span className="text-blue-400">Linear filter:</span> σ_out² = σ²·Σw², Σw = 1 (white noise)</p>
+          <p><span className="text-blue-400">Box k × k:</span> σ_out = σ/k, H(f) = sin(πkf) / (k·sin πf)</p>
+          <p><span className="text-blue-400">Gaussian:</span> g_i ∝ exp(−i²/2σ_s²), |i| ≤ ⌈3σ_s⌉; σ_out → σ/(2√π σ_s), H → exp(−2π²σ_s²f²)</p>
+          <p><span className="text-blue-400">Median of n = k²:</span> σ_out² = σ²·∫x² n!/(m!)² Φ^m (1−Φ)^m φ dx, m = (n−1)/2; → πσ²/(2n)</p>
+          <p><span className="text-blue-400">VisuShrink:</span> T = σ√(2 ln N)</p>
         </div>
+        <p className="mt-3 text-xs text-gray-500">
+          Additive white Gaussian noise, no edge effects; the box and the Gaussian are separable, so H is the same along x
+          and y. A negative H is contrast reversal. The median is about 2/π as efficient as the mean on Gaussian noise but
+          keeps edges and rejects impulse noise. Bilateral, non-local means, BM3D and learned denoisers adapt to the image
+          content and have no closed-form noise gain, so they are not modelled; VisuShrink only gives the soft-threshold
+          level, not the output noise.
+        </p>
       </div>
     </>
   );
