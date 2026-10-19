@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  antiStokesWavelength, carsLineshape, carsPeakDetuning, ramanShiftFrequency, srsLineshape, stokesWavelength,
+  antiStokesWavelength, carsLineshape, carsPeakDetuning, excitationBandwidth, ramanShiftFrequency, srsFocusFactor, srsLineshape,
+  srsModulationDepth, stokesWavelength,
 } from "../src/physics/imaging/coherent-raman";
 
 function assertRel(actual: number, expected: number, tol: number, label: string) {
@@ -56,4 +57,56 @@ test("domain guards", () => {
   assert.ok(Number.isNaN(antiStokesWavelength(800e-9, -1)));
   assert.ok(Number.isNaN(carsLineshape(0, 0, 0.3)));
   assert.ok(Number.isNaN(srsLineshape(0, -1)));
+});
+
+test("CARS from the pump and Stokes wavelengths: 532 nm and 630 nm give 2924 cm⁻¹ and a 460.4 nm signal", () => {
+  // Hand calculation: 10⁷/532 − 10⁷/630 = 18796.99 − 15873.02 = 2923.98 cm⁻¹; ν̃_aS = 2ν̃_p − ν̃_S = 21720.96 cm⁻¹
+  // → 460.385 nm (the audit value of spectroscopy/coherent-anti-stokes-raman, PR #127).
+  const shift = 1 / 532e-9 - 1 / 630e-9;
+  assertRel(shift / perCm, 2923.977, 1e-6, "shift");
+  assertRel(antiStokesWavelength(532e-9, shift) * 1e9, 460.3846, 1e-6, "λ_aS");
+});
+
+test("Excitation bandwidth of two 2 ps transform-limited Gaussian pulses is 10.41 cm⁻¹", () => {
+  // Δν = (2 ln 2/π)·√2/τ (time–bandwidth product 0.4413 of a Gaussian, envelope I_p I_S of FWHM τ/√2):
+  // 0.441271·1.414214/(2e-12 s · 2.99792458e10 cm/s) = 10.4081 cm⁻¹.
+  assertRel(excitationBandwidth(2e-12) / perCm, 10.4081, 1e-4, "2 ps");
+  // Scales as 1/τ.
+  assertRel(excitationBandwidth(200e-15) / excitationBandwidth(2e-12), 10, 1e-12, "1/τ");
+  assert.ok(Number.isNaN(excitationBandwidth(0)), "τ = 0");
+});
+
+test("SRS focus factor √2πn/√(λp² + λS²) matches a quadrature over the two Gaussian beams, at any NA", () => {
+  // Independent check: ∫ 2/(π(w_p(z)² + w_S(z)²)) dz with w_i² = w_i0²(1 + z²/z_Ri²), w_i0 = λ_i/(πnθ),
+  // z_Ri = πn w_i0²/λ_i, integrated with the substitution z = Z tan u (trapezoid, 20000 steps).
+  const lp = 800e-9, ls = 1036.27e-9, n = 1.33;
+  for (const theta of [0.05, 0.3]) {
+    const w0 = (l: number) => l / (Math.PI * n * theta);
+    const zr = (l: number) => (Math.PI * n * w0(l) ** 2) / l;
+    const Z = zr(lp);
+    const N = 20000;
+    // Both ends (u = ±π/2) tend to 1/(πθ²Z), half weight each in the trapezoid rule.
+    let sum = 1 / (Math.PI * theta ** 2 * Z);
+    for (let i = 1; i < N; i++) {
+      const u = -Math.PI / 2 + (Math.PI * i) / N;
+      const z = Z * Math.tan(u);
+      const w2 = (l: number) => w0(l) ** 2 * (1 + (z / zr(l)) ** 2);
+      sum += (2 / (Math.PI * (w2(lp) + w2(ls)))) * (Z / Math.cos(u) ** 2);
+    }
+    assertRel(srsFocusFactor(lp, ls, n), (sum * Math.PI) / N, 1e-6, `θ = ${theta}`);
+  }
+  // Equal wavelengths: πn/λ, the on-axis ∫dz/(πw²) of one beam (z_R/w0² = πn/λ).
+  assertRel(srsFocusFactor(1e-6, 1e-6, 1), Math.PI / 1e-6, 1e-12, "equal λ");
+});
+
+test("SRS modulation depth from g_R: SRG gR·F·P_p, SRL carries ω_p/ω_S, Gaussian pulses weight by 1/√2", () => {
+  // g_R = 1 cm/GW = 1e-11 m/W, F(800 nm, 1036.27 nm, n 1.33) = 4.5137e6 m⁻¹, P̂ = 1 W, CW: δ = 4.5137e-5.
+  const lp = 800e-9, ls = 1036.27e-9;
+  const F = srsFocusFactor(lp, ls, 1.33);
+  assertRel(F, 4.51367e6, 1e-5, "F");
+  assertRel(srsModulationDepth(1e-11, 1, lp, ls, 1.33, "stokes", "cw"), 1e-11 * F, 1e-12, "SRG cw");
+  assertRel(srsModulationDepth(1e-11, 1, lp, ls, 1.33, "pump", "cw"), (1e-11 * F * ls) / lp, 1e-12, "SRL cw");
+  assertRel(srsModulationDepth(1e-11, 1, lp, ls, 1.33, "stokes", "gaussian"), (1e-11 * F) / Math.SQRT2, 1e-12, "SRG pulsed");
+  assert.equal(srsModulationDepth(0, 1, lp, ls, 1.33, "stokes", "cw"), 0, "no gain");
+  assert.ok(Number.isNaN(srsModulationDepth(-1, 1, lp, ls, 1.33, "stokes", "cw")), "negative gain");
 });

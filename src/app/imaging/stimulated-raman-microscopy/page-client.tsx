@@ -5,9 +5,9 @@ import ChartPanel from "../../../components/chart-panel";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
-  detectedPhotoelectrons, ramanShiftFrequency, srsShotNoiseSnr, stokesWavelength,
+  detectedPhotoelectrons, ramanShiftFrequency, srsFocusFactor, srsModulationDepth, srsShotNoiseSnr, stokesWavelength,
 } from "../../../physics/imaging/coherent-raman";
-import { mixedFocusFwhm } from "../../../physics/imaging/multiphoton-focus";
+import { gaussianPulsePeakPower, mixedFocusFwhm } from "../../../physics/imaging/multiphoton-focus";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
@@ -22,7 +22,11 @@ export default function StimulatedRamanMicroscopyPage() {
   const [pumpPowerRaw, setPumpPower] = useURLState("pumpPower", 100); // mW at the sample
   const [stokesPowerRaw, setStokesPower] = useURLState("stokesPower", 80); // mW at the sample
   const [detectedBeam, setDetectedBeam] = useURLState("detectedBeam", "stokes"); // stokes = SRG, pump = SRL
+  const [deltaSource, setDeltaSource] = useURLState("deltaSource", "measured"); // measured | gain
   const [deltaRaw, setDelta] = useURLState("modulationDepth", 10); // ppm
+  const [gainRaw, setGain] = useURLState("ramanGain", 1); // cm/GW
+  const [pulseRaw, setPulse] = useURLState("pulseWidth", 6); // ps FWHM
+  const [repRaw, setRep] = useURLState("repRate", 80); // MHz
   const [etaRaw, setEta] = useURLState("quantumEfficiency", 0.8);
   const [dwellRaw, setDwell] = useURLState("pixelDwell", 1); // µs
 
@@ -33,9 +37,25 @@ export default function StimulatedRamanMicroscopyPage() {
   const pumpMw = clamp(pumpPowerRaw, 1, 500, 100);
   const stokesMw = clamp(stokesPowerRaw, 1, 500, 80);
   const srl = detectedBeam === "pump";
-  const deltaPpm = clamp(deltaRaw, 0.001, 1000, 10);
+  const fromGain = deltaSource === "gain";
+  const measuredPpm = clamp(deltaRaw, 0.001, 1000, 10);
+  const gainCmPerGW = clamp(gainRaw, 0, 100, 1);
+  const pulsePs = clamp(pulseRaw, 0.1, 100, 6);
+  const repMHz = clamp(repRaw, 1, 1000, 80);
   const eta = clamp(etaRaw, 0.01, 1, 0.8);
   const dwellUs = clamp(dwellRaw, 0.1, 100, 1);
+
+  // δ on the detected beam, ppm: the input, or g_R·F·P̂/√2 of the modulated beam (pulses identical and overlapped).
+  const deltaFor = (pumpDetected: boolean) => {
+    if (!fromGain) return measuredPpm;
+    const lambdaP = pumpNm * 1e-9;
+    const peak = gaussianPulsePeakPower((pumpDetected ? stokesMw : pumpMw) * 1e-3, repMHz * 1e6, pulsePs * 1e-12);
+    const delta = srsModulationDepth(gainCmPerGW * 1e-11, peak, lambdaP, stokesWavelength(lambdaP, shift * 100), n, pumpDetected ? "pump" : "stokes", "gaussian");
+    return delta * 1e6;
+  };
+  const srgPpm = deltaFor(false);
+  const srlPpm = deltaFor(true);
+  const deltaPpm = srl ? srlPpm : srgPpm;
 
   const results = useMemo(() => {
     const lambdaP = pumpNm * 1e-9;
@@ -54,6 +74,7 @@ export default function StimulatedRamanMicroscopyPage() {
       lateralNm: fwhm.lateral * 1e9,
       axialUm: fwhm.axial * 1e6,
       frameS: FRAME_PIXELS * FRAME_PIXELS * tau,
+      focusFactor: srsFocusFactor(lambdaP, lambdaS, n),
     };
   }, [pumpNm, shift, na, n, pumpMw, stokesMw, srl, deltaPpm, eta, dwellUs]);
 
@@ -61,13 +82,13 @@ export default function StimulatedRamanMicroscopyPage() {
     const lambdaP = pumpNm * 1e-9;
     const lambdaS = stokesWavelength(lambdaP, shift * 100);
     const dwells = Array.from({ length: 61 }, (_, i) => 10 ** (-1 + i / 20)); // 0.1–100 µs
-    const snr = (P: number, lambda: number) => dwells.map((t) => srsShotNoiseSnr(deltaPpm * 1e-6, P * 1e-3, lambda, t * 1e-6, eta));
+    const snr = (P: number, lambda: number, ppm: number) => dwells.map((t) => srsShotNoiseSnr(ppm * 1e-6, P * 1e-3, lambda, t * 1e-6, eta));
     return [
-      { x: dwells, y: snr(stokesMw, lambdaS), name: "SRG (Stokes detected)", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
-      { x: dwells, y: snr(pumpMw, lambdaP), name: "SRL (pump detected)", line: { color: "#f87171" }, type: "scatter", mode: "lines" },
+      { x: dwells, y: snr(stokesMw, lambdaS, srgPpm), name: "SRG (Stokes detected)", line: { color: "#60a5fa" }, type: "scatter", mode: "lines" },
+      { x: dwells, y: snr(pumpMw, lambdaP, srlPpm), name: "SRL (pump detected)", line: { color: "#f87171" }, type: "scatter", mode: "lines" },
       { x: [dwellUs], y: [results.snr], name: "Current", marker: { color: "#fbbf24", size: 11 }, type: "scatter", mode: "markers" },
     ];
-  }, [pumpNm, shift, stokesMw, pumpMw, deltaPpm, eta, dwellUs, results.snr]);
+  }, [pumpNm, shift, stokesMw, pumpMw, srgPpm, srlPpm, eta, dwellUs, results.snr]);
 
   const limitPlot = useMemo(() => {
     const lambdaDet = srl ? pumpNm * 1e-9 : stokesWavelength(pumpNm * 1e-9, shift * 100);
@@ -96,7 +117,22 @@ export default function StimulatedRamanMicroscopyPage() {
               <option value="pump">Pump: stimulated Raman loss (SRL), Stokes modulated</option>
             </select>
           </div>
-          <ValidatedNumberInput label="SRS modulation depth ΔP/P (ppm)" value={deltaRaw} onChange={setDelta} min={0.001} max={1000} />
+          <div>
+            <label className="block text-sm text-gray-400 mb-1" htmlFor="srs-delta-source">Modulation depth δ = ΔP/P</label>
+            <select id="srs-delta-source" value={fromGain ? "gain" : "measured"} onChange={(e) => setDeltaSource(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white">
+              <option value="measured">Enter a measured or published δ</option>
+              <option value="gain">Estimate from the Raman gain g_R of the sample</option>
+            </select>
+          </div>
+          {fromGain ? (
+            <>
+              <ValidatedNumberInput label="Raman gain coefficient g_R (cm/GW)" value={gainRaw} onChange={setGain} min={0} max={100} step="any" />
+              <ValidatedNumberInput label="Pulse width, both beams (ps FWHM)" value={pulseRaw} onChange={setPulse} min={0.1} max={100} step="0.1" />
+              <ValidatedNumberInput label="Repetition rate (MHz)" value={repRaw} onChange={setRep} min={1} max={1000} />
+            </>
+          ) : (
+            <ValidatedNumberInput label="SRS modulation depth ΔP/P (ppm)" value={deltaRaw} onChange={setDelta} min={0.001} max={1000} />
+          )}
           <ValidatedNumberInput label="Detector quantum efficiency η" value={etaRaw} onChange={setEta} min={0.01} max={1} step="0.01" />
           <ValidatedNumberInput label="Pixel dwell = integration time (µs)" value={dwellRaw} onChange={setDwell} min={0.1} max={100} />
         </div>
@@ -109,6 +145,9 @@ export default function StimulatedRamanMicroscopyPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Stokes wavelength</span><span className="font-mono text-blue-400">{fmt(results.stokesNm, 1, "nm")}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Beat frequency</span><span className="font-mono">{fmt(results.beatTHz, 2, "THz")}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Photoelectrons per pixel ({srl ? "pump" : "Stokes"})</span><span className="font-mono">{Number.isFinite(results.photoelectrons) ? results.photoelectrons.toExponential(3) : "—"}</span></div>
+          {fromGain && (
+            <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Estimated δ ({srl ? "SRL" : "SRG"}), F = {fmt(results.focusFactor * 1e-6, 2, "µm⁻¹")}</span><span className="font-mono text-purple-400">{fmt(deltaPpm, 2, "ppm")}</span></div>
+          )}
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Shot-noise-limited SNR</span><span className="font-mono text-orange-400">{fmt(results.snr, 3, "")}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Smallest detectable ΔP/P (SNR = 1)</span><span className="font-mono text-green-400">{fmt(results.minDeltaPpm, 3, "ppm")}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Lateral FWHM of I_p·I_S</span><span className="font-mono text-cyan-400">{fmt(results.lateralNm, 0, "nm")}</span></div>
@@ -118,7 +157,8 @@ export default function StimulatedRamanMicroscopyPage() {
             <p>ν̃_S = ν̃_p − Ω̃; SRS ∝ Im χ⁽³⁾ · I_p · I_S, with no non-resonant background.</p>
             <p>SRG: the Stokes beam gains (pump modulated, Stokes detected). SRL: the pump loses (Stokes modulated, pump detected).</p>
             <p>SNR = δ·√N, N = ηPτλ/(hc), shot noise of the detected beam only (Ozeki et al., Opt. Express 17, 3651, 2009). Laser excess noise, detector noise and lock-in demodulation losses make real systems worse.</p>
-            <p>The modulation depth δ depends on the Raman cross-section, the concentration and both intensities: enter a measured or published value.</p>
+            <p>The modulation depth δ depends on the Raman cross-section, the concentration and both intensities: enter a measured or published value, or estimate it from g_R.</p>
+            <p>Estimate: SRG δ = g_R·F·P̂_p/√2, SRL δ = (λ_S/λ_p)·g_R·F·P̂_S/√2 with F = √2πn/√(λ_p² + λ_S²) for paraxial Gaussian beams of the same far-field angle, a sample thicker than the focus (a liquid) and identical, overlapped Gaussian pulses of peak power P̂. g_R is the plane-wave Stokes gain dI_S/dz = g_R·I_p·I_S (Boyd, Nonlinear Optics, ch. 10); a dilute species scales it by its concentration.</p>
             <p>Focus: Gaussian fit to each beam (Zipfel et al. 2003), signal FWHM of the product I_p·I_S.</p>
           </div>
         </div>

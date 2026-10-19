@@ -1,97 +1,143 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c } from "../../../physics/constants";
+import { c, eV } from "../../../physics/constants";
+import {
+  antiStokesStokesRatio, antiStokesWavelength, ramanShiftEnergy, ramanShiftOf, stokesWavelength,
+} from "../../../physics/spectroscopy/raman";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
+const perCm = 100; // 1 cm⁻¹ in 1/m
+const SHIFT_MAX = 5000;
+
+// Shift standards (McCreery, Raman Spectroscopy for Chemical Analysis, 2000) and typical group frequencies (≈).
+const BANDS = [
+  { name: "Silicon, optical phonon", shift: 520.7, approx: false },
+  { name: "Cyclohexane, ring breathing", shift: 801.3, approx: false },
+  { name: "Diamond, optical phonon", shift: 1332, approx: false },
+  { name: "Graphite, G band", shift: 1580, approx: true },
+  { name: "C=O stretch", shift: 1700, approx: true },
+  { name: "CH₂ symmetric stretch", shift: 2850, approx: true },
+  { name: "O–H stretch, liquid water (broad)", shift: 3400, approx: true },
+];
+
 export default function RamanShiftPage() {
-  const [laserWavelength, setLaserWavelength] = useURLState("laserWavelength", 532);
-  const [ramanShiftCm, setRamanShiftCm] = useURLState("ramanShiftCm", 1000);
-  const [minShift, setMinShift] = useURLState("minShift", 100);
-  const [maxShift, setMaxShift] = useURLState("maxShift", 4000);
+  const [laserRaw, setLaser] = useURLState("laserWavelength", 532);
+  const [shiftRaw, setShift] = useURLState("ramanShiftCm", 1000);
+  const [tempRaw, setTemp] = useURLState("temperature", 295);
+  const [detection, setDetection] = useURLState("detection", "photon");
+  const [lineRaw, setLine] = useURLState("lineWavelength", 561.89);
+  const [minRaw, setMin] = useURLState("minShift", 100);
+  const [maxRaw, setMax] = useURLState("maxShift", 4000);
 
-  const laserWavenumber = 1e7 / laserWavelength; // cm⁻¹
-  const stokesWavenumber = laserWavenumber - ramanShiftCm;
-  const stokesWavelength = stokesWavenumber > 0 ? 1e7 / stokesWavenumber : NaN;
-  const antiStokesWavenumber = laserWavenumber + ramanShiftCm;
-  const antiStokesWavelength = 1e7 / antiStokesWavenumber;
+  const laserNm = clamp(laserRaw, 200, 2000, 532);
+  const shiftCm = clamp(shiftRaw, 0, SHIFT_MAX, 1000);
+  const temperature = clamp(tempRaw, 1, 2000, 295);
+  const power = detection === "power";
+  const lineNm = clamp(lineRaw, 150, 3000, 561.89);
+  const lo = clamp(minRaw, 0, SHIFT_MAX, 100);
+  const hiIn = clamp(maxRaw, 0, SHIFT_MAX, 4000);
+  const hi = hiIn > lo ? hiIn : Math.min(SHIFT_MAX, lo + 1000);
 
-  // Energy and frequency from Raman shift directly (not from Stokes photon)
-  const energyDiffEv = ramanShiftCm * 1.239842e-4; // hc ≈ 1.239842e-4 eV·cm
-  const frequencyDiffTHz = ramanShiftCm * c * 1e-10; // 1 cm⁻¹ = 29.979 GHz
+  const lambdaL = laserNm * 1e-9;
+  const shift = shiftCm * perCm;
+  const laserCm = 1e7 / laserNm;
+  const stokesNm = stokesWavelength(lambdaL, shift) * 1e9;
+  const antiStokesNm = antiStokesWavelength(lambdaL, shift) * 1e9;
+  const energyMeV = (ramanShiftEnergy(shift) / eV) * 1e3;
+  const freqTHz = (c * shift) / 1e12;
+  const ratio = antiStokesStokesRatio(lambdaL, shift, temperature, power ? "power" : "photon");
+  const lineShiftCm = ramanShiftOf(lambdaL, lineNm * 1e-9) / perCm;
+  const noStokes = !Number.isFinite(stokesNm);
 
-  const chartData = useMemo(() => {
-    const shifts = Array.from({ length: 500 }, (_, i) => minShift + i * (maxShift - minShift) / 500);
-    const stokesWL = shifts.map(s => {
-      const wn = laserWavenumber - s;
-      return wn > 0 ? 1e7 / wn : null; // skip non-positive wavenumbers
-    });
-    const antiStokesWL = shifts.map(s => 1e7 / (laserWavenumber + s));
-    return [
-      { x: shifts, y: stokesWL, type: "scatter" as const, mode: "lines" as const,
-        name: "Stokes", line: { color: "#34d399" } },
-      { x: shifts, y: antiStokesWL, type: "scatter" as const, mode: "lines" as const,
-        name: "Anti-Stokes", line: { color: "#f87171" } },
-      { x: [ramanShiftCm], y: [stokesWavelength], type: "scatter" as const, mode: "markers" as const,
-        name: "Selected", marker: { color: "#fbbf24", size: 12 } },
-    ];
-  }, [laserWavelength, ramanShiftCm, minShift, maxShift]);
-
-  // Energy difference
-  // const energyDiffEv = laserEnergyEv - stokesEnergyEv; // REMOVED: broke at high shifts
+  const n = 200;
+  const grid = Array.from({ length: n + 1 }, (_, i) => lo + ((hi - lo) * i) / n);
+  const curve = (f: (lambda: number, s: number) => number) =>
+    grid.map((s) => ({ x: s, y: f(lambdaL, s * perCm) * 1e9 })).filter((p) => Number.isFinite(p.y)).map((p) => ({ x: p.x, y: Math.round(p.y * 1e3) / 1e3 }));
+  const inRange = shiftCm >= lo && shiftCm <= hi;
+  const series = [
+    { name: "Stokes", color: "#34d399", points: curve(stokesWavelength) },
+    { name: "Anti-Stokes", color: "#f87171", points: curve(antiStokesWavelength) },
+    ...(inRange && !noStokes ? [{ name: "Current shift", color: "#fbbf24", showPoints: true, points: [{ x: shiftCm, y: stokesNm }, { x: shiftCm, y: antiStokesNm }] }] : []),
+  ];
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Laser Wavelength (nm)" value={laserWavelength} onChange={setLaserWavelength} min={200} max={2000} />
-        <ValidatedNumberInput label="Raman Shift (cm⁻¹)" value={ramanShiftCm} onChange={setRamanShiftCm} min={0} max={5000} />
-        <ValidatedNumberInput label="Plot Range Min (cm⁻¹)" value={minShift} onChange={setMinShift} />
-        <ValidatedNumberInput label="Plot Range Max (cm⁻¹)" value={maxShift} onChange={setMaxShift} />
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Stokes Wavelength</p>
-          <p className="text-xl font-bold text-green-400">{isNaN(stokesWavelength) ? "N/A (shift > laser)" : stokesWavelength.toFixed(2) + " nm"}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Anti-Stokes Wavelength</p>
-          <p className="text-xl font-bold text-red-400">{antiStokesWavelength.toFixed(2)} nm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Laser Wavenumber</p>
-          <p className="text-xl font-bold text-blue-400">{laserWavenumber.toFixed(2)} cm⁻¹</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Stokes Wavenumber</p>
-          <p className="text-xl font-bold text-green-400">{isNaN(stokesWavelength) ? "N/A (shift > laser)" : stokesWavenumber.toFixed(2) + " cm⁻¹"}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Energy Difference</p>
-          <p className="text-xl font-bold text-yellow-400">{energyDiffEv.toFixed(4)} eV</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Vibrational Frequency</p>
-          <p className="text-xl font-bold text-purple-400">{frequencyDiffTHz.toFixed(2)} THz</p>
+        <ValidatedNumberInput label="Laser wavelength λ_L (nm, vacuum)" value={laserRaw} onChange={setLaser} min={200} max={2000} />
+        <ValidatedNumberInput label="Raman shift Δν̃ (cm⁻¹)" value={shiftRaw} onChange={setShift} min={0} max={SHIFT_MAX} />
+        <ValidatedNumberInput label="Measured line wavelength (nm, vacuum)" value={lineRaw} onChange={setLine} min={150} max={3000} />
+        <ValidatedNumberInput label="Sample temperature (K)" value={tempRaw} onChange={setTemp} min={1} max={2000} />
+        <ValidatedNumberInput label="Chart from (cm⁻¹)" value={minRaw} onChange={setMin} min={0} max={SHIFT_MAX} />
+        <ValidatedNumberInput label="Chart to (cm⁻¹)" value={maxRaw} onChange={setMax} min={0} max={SHIFT_MAX} />
+        <div>
+          <label className="block text-sm text-gray-400 mb-1" htmlFor="raman-detection">Detector</label>
+          <select id="raman-detection" value={power ? "power" : "photon"} onChange={(e) => setDetection(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white">
+            <option value="photon">Photon counting (CCD, PMT): m = 3</option>
+            <option value="power">Power (thermal detector): m = 4</option>
+          </select>
         </div>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
-        <p>ν̃<sub>laser</sub> = 10⁷ / λ<sub>laser</sub>(nm) cm⁻¹</p>
-        <p><span className="text-green-400">Stokes:</span> ν̃<sub>s</sub> = ν̃<sub>laser</sub> − Δν̃ → λ<sub>s</sub> = 10⁷ / ν̃<sub>s</sub></p>
-        <p><span className="text-red-400">Anti-Stokes:</span> ν̃<sub>as</sub> = ν̃<sub>laser</sub> + Δν̃ → λ<sub>as</sub> = 10⁷ / ν̃<sub>as</sub></p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-4">
+        <ResultCard label="Stokes line λ_S" value={noStokes ? "—" : `${fmt(stokesNm, 3)} nm`} tone="green" subtext={noStokes ? "Shift ≥ laser wavenumber: no Stokes line" : `${fmt(laserCm - shiftCm, 2)} cm⁻¹`} />
+        <ResultCard label="Anti-Stokes line λ_aS" value={`${fmt(antiStokesNm, 3)} nm`} tone="red" subtext={`${fmt(laserCm + shiftCm, 2)} cm⁻¹`} />
+        <ResultCard label="Laser wavenumber ν̃_L" value={`${fmt(laserCm, 2)} cm⁻¹`} tone="blue" />
+        <ResultCard label="Vibrational energy hcΔν̃" value={`${fmt(energyMeV, 3)} meV`} tone="yellow" subtext={`Frequency cΔν̃ = ${fmt(freqTHz, 3)} THz`} />
+        <ResultCard label={`Anti-Stokes/Stokes ratio at ${fmt(temperature, 0)} K`} value={Number.isFinite(ratio) ? ratio.toPrecision(4) : "—"} tone="purple" subtext={power ? "Scattered power, m = 4" : "Photon counts, m = 3"} />
+        <ResultCard label={`Shift of a line at ${fmt(lineNm, 2)} nm`} value={`${fmt(lineShiftCm, 1)} cm⁻¹`} tone="cyan" subtext={lineShiftCm > 0 ? "Stokes side" : lineShiftCm < 0 ? "Anti-Stokes side" : "Rayleigh line"} />
+      </div>
+      <p className="mb-8 text-sm text-gray-400">
+        All wavelengths are vacuum values. Spectrometers calibrated in air read about 0.15 nm shorter at 532 nm
+        (n_air ≈ 1.00028), which moves a shift by under 1 cm⁻¹ when the laser and the line are read the same way.
+      </p>
+
+      <SimpleLineChart title="Scattered wavelength vs Raman shift" xLabel="Raman shift (cm⁻¹)" yLabel="Wavelength (nm)" series={series} />
+
+      <div className="bg-gray-900 rounded-lg p-4 mt-6 mb-6 overflow-x-auto">
+        <h3 className="text-lg font-semibold mb-2">Common Raman bands at {fmt(laserNm, 1)} nm</h3>
+        <table className="w-full text-sm text-gray-300">
+          <thead>
+            <tr className="text-left text-gray-400">
+              <th className="py-1 pr-4">Band</th>
+              <th className="py-1 pr-4">Shift (cm⁻¹)</th>
+              <th className="py-1 pr-4">Stokes λ (nm)</th>
+              <th className="py-1">Anti-Stokes λ (nm)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {BANDS.map((b) => (
+              <tr key={b.name} className="border-t border-gray-800">
+                <td className="py-1 pr-4">{b.name}</td>
+                <td className="py-1 pr-4 font-mono">{b.approx ? "≈ " : ""}{b.shift}</td>
+                <td className="py-1 pr-4 font-mono text-green-400">{fmt(stokesWavelength(lambdaL, b.shift * perCm) * 1e9, 2)}</td>
+                <td className="py-1 font-mono text-red-400">{fmt(antiStokesWavelength(lambdaL, b.shift * perCm) * 1e9, 2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="mt-2 text-xs text-gray-500">
+          Silicon, cyclohexane and diamond are shift-calibration standards; ≈ marks typical group frequencies, which move
+          with the molecule and its surroundings. The graphite D band near 1350 cm⁻¹ moves with the laser wavelength.
+        </p>
       </div>
 
-      <ChartPanel data={chartData} layout={{
-        paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-        font: { color: "#9ca3af" },
-        xaxis: { title: "Raman Shift (cm⁻¹)", gridcolor: "#374151" },
-        yaxis: { title: "Scattered Wavelength (nm)", gridcolor: "#374151" },
-        margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { bgcolor: "transparent" },
-      }} />
+      <div className="bg-gray-900 rounded-lg p-4 text-sm text-gray-300 space-y-1">
+        <p className="font-mono text-blue-400">ν̃_L = 10⁷/λ_L (cm⁻¹, λ in nm)</p>
+        <p className="font-mono text-green-400">Stokes: ν̃_S = ν̃_L − Δν̃, λ_S = 10⁷/ν̃_S</p>
+        <p className="font-mono text-red-400">Anti-Stokes: ν̃_aS = ν̃_L + Δν̃, λ_aS = 10⁷/ν̃_aS</p>
+        <p className="font-mono text-purple-400">I_aS/I_S = (ν̃_aS/ν̃_S)^m · exp(−hcΔν̃/k_BT), m = 3 (photons) or 4 (power)</p>
+        <p>
+          The shift is the vibrational wavenumber of the molecule, so it does not depend on the laser; the scattered
+          wavelengths do. The anti-Stokes line starts from the thermally populated excited level, which makes it weaker
+          and the ratio a thermometer. The ratio assumes a harmonic vibration and equal cross-sections on both sides,
+          which fails under resonance excitation.
+        </p>
+      </div>
     </>
   );
 }

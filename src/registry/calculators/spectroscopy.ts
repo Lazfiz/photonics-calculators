@@ -83,13 +83,6 @@ export const spectroscopy: CalculatorEntry[] = [
     knownIssue: "Sensitivity is advertised but not computed, and mirror reflectivity from the URL is not clamped, so values above 100 % give a growing decay.",
   },
   {
-    slug: "coherent-anti-stokes-raman",
-    title: "Coherent Anti-Stokes Raman Scattering (CARS)",
-    description: "Four-wave mixing process for label-free vibrational imaging with chemical specificity.",
-    keywords: ["Coherent Anti-Stokes Raman Spectroscopy (CARS)"],
-    knownIssue: "The Raman shift input is independent of the pump and Stokes wavelengths, so the spectrum and the results disagree, and the result cards have no labels.",
-  },
-  {
     slug: "conc-mirror",
     title: "Concave Mirror Throughput",
     description: "Connes advantage and throughput for concave mirror-based spectrometers (e.g., FTIR, concave grating).",
@@ -323,13 +316,21 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "raman-shift",
     title: "Raman Shift Calculator",
-    description: "Convert between Raman shift (cm⁻¹), scattered wavelength, and energy for any excitation laser.",
-    knownIssue: "The hc constant is written inline, wavelengths are treated as vacuum values, and a negative shift or zero laser wavelength from the URL is not guarded.",
-  },
-  {
-    slug: "raman-spectroscopy",
-    title: "Raman Spectroscopy",
-    description: "Stokes and anti-Stokes wavelength shift vs Raman shift. Inelastic scattering fundamentals.",
+    description: "Convert between Raman shift (cm⁻¹) and Stokes or anti-Stokes wavelength for any laser, with the vibrational energy and the anti-Stokes/Stokes ratio.",
+    keywords: ["Raman Spectroscopy", "Anti-Stokes Raman", "Raman Thermometry"],
+    related: [{ href: "/spectroscopy/surface-enhanced-raman" }, { href: "/imaging/coherent-raman" }, { href: "/imaging/stimulated-raman-microscopy" }],
+    tier: "exact",
+    modelNote: "Exact conversions by energy conservation, in vacuum wavelengths. The anti-Stokes/Stokes ratio assumes a harmonic vibration in thermal equilibrium and equal Raman cross-sections on both sides (not under resonance excitation).",
+    references: [
+      {
+        citation: "Long D. A. (2002). The Raman Effect: A Unified Treatment of the Theory of Raman Scattering by Molecules. Wiley. Stokes and anti-Stokes intensities and their temperature dependence.",
+        url: "https://doi.org/10.1002/0470845767",
+      },
+      {
+        citation: "McCreery R. L. (2000). Raman Spectroscopy for Chemical Analysis. Wiley. Raman shift standards (silicon, cyclohexane, diamond).",
+        url: "https://doi.org/10.1002/0471721646",
+      },
+    ],
   },
   {
     slug: "signal-to-noise",
@@ -429,12 +430,6 @@ export const spectroscopy: CalculatorEntry[] = [
     ],
   },
   {
-    slug: "stimulated-raman",
-    title: "Stimulated Raman Scattering (SRS)",
-    description: "Coherent Raman gain/loss process for high-speed chemical imaging without non-resonant background.",
-    knownIssue: "The SRS gain multiplies the Raman gain coefficient by pump power instead of intensity, so the gain, Stokes growth and SRG percentage are dimensionally wrong and far too small.",
-  },
-  {
     slug: "stokes-shift",
     title: "Stokes Shift Calculator",
     description: "Δν̃ = ν̃_abs − ν̃_em — energy difference between absorption and emission maxima.",
@@ -469,8 +464,29 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "surface-enhanced-raman",
     title: "Surface-Enhanced Raman Spectroscopy (SERS)",
-    description: "EM and chemical enhancement mechanisms, hotspots, and detection limit estimation.",
-    knownIssue: "The enhancement curve (r/gap)^6 and the Raman spectrum are made up, the radius and wavelength inputs are ignored, and the detection limit I/G has no physical meaning.",
+    description: "Electromagnetic SERS enhancement factor of a silver nanosphere: local field, |E|⁴ enhancement at the pole and over the surface, resonance and distance decay.",
+    keywords: ["SERS Enhancement Factor", "Plasmonic Enhancement", "Localized Surface Plasmon"],
+    related: [{ href: "/spectroscopy/raman-shift" }],
+    tier: "textbook",
+    modelNote: "Quasistatic (dipole) silver sphere with measured silver permittivity (Yang et al. 2015) and the |E|⁴ approximation, at the pole and averaged over the surface. Not modelled: retardation and radiation damping (spheres above about λ/10), surface damping in very small spheres, particle gaps (hot spots) and chemical enhancement.",
+    references: [
+      {
+        citation: "Bohren C. F., Huffman D. R. (1983). Absorption and Scattering of Light by Small Particles, ch. 5. Wiley. Field of a sphere small compared with the wavelength.",
+        url: "https://doi.org/10.1002/9783527618156",
+      },
+      {
+        citation: "Le Ru E. C., Etchegoin P. G. (2006). Rigorous justification of the |E|⁴ enhancement factor in Surface Enhanced Raman Spectroscopy. Chem. Phys. Lett. 423, 63–66.",
+        url: "https://doi.org/10.1016/j.cplett.2006.03.042",
+      },
+      {
+        citation: "Le Ru E. C., Blackie E., Meyer M., Etchegoin P. G. (2007). Surface Enhanced Raman Scattering Enhancement Factors: A Comprehensive Study. J. Phys. Chem. C 111, 13794–13803. Maximum and surface-averaged enhancement factors.",
+        url: "https://doi.org/10.1021/jp0687908",
+      },
+      {
+        citation: "Yang H. U. et al. (2015). Optical dielectric function of silver. Phys. Rev. B 91, 235137. Silver permittivity.",
+        url: "https://doi.org/10.1103/PhysRevB.91.235137",
+      },
+    ],
   },
   {
     slug: "terahertz-spectroscopy",
