@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 101, 2026-10-19)
+## Status (session 102, 2026-10-19)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -19,12 +19,12 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
 | imaging | 61 / 61 | done: part 0 audit (session 78), fix parts 1–15b (sessions 79–95) |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
-| spectroscopy | 16 / 46 | part 0 audit (session 96); fix parts 1–5 (sessions 97–101); 28 `knownIssue`s; parts 6–12 next |
+| spectroscopy | 18 / 45 | part 0 audit (session 96); fix parts 1–6 (sessions 97–102); 25 `knownIssue`s; parts 7–12 next |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **327 / 446** | 28 `knownIssue`s (spectroscopy) |
+| **total** | **329 / 445** | 25 `knownIssue`s (spectroscopy) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -59,7 +59,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   5. ✅ (session 101, `phase-4/spectroscopy-gratings`, PR #132) `spectral-resolution.ts`: Casini–Nelson scalar blaze (ρ, shadowing,
      normalised over orders: Littrow at λ_B 0.9381, dispersive defaults 0.7472), Rayleigh anomalies 2d/3; spectral-range Czerny–Turner
      (λ_c + D_v, α < 90°, defaults 394.0–605.3 nm, 0.208 nm pixel-limited); slit bandpass w·d·cos α/(m·f) (anamorphic). 13 goldens.
-  6. Stray light (merged page: order overlap + photometric error ΔA); spectral-calibration (grating-equation truth, quadratic fit).
+  6. ✅ (session 102, `phase-4/spectroscopy-stray-light`, PR #133) `stray-light.ts` + `spectral-calibration.ts`: stray-light absorbs
+     stray-light-rejection (A=3, s=10⁻³ → 2.69919; S/(1+S) form 2.69940; ΔA plot, A_max, s for tolerance, nλ′ = mλ); Czerny–Turner
+     calibration on NIST Hg lines (max error linear 0.623, quadratic 0.500, cubic 0.0051 nm: distortion is odd for small β₀). 5 tests.
   7. FTIR: ftir-resolution (Norton-Beer in `apodization-comparison.ts`, measured ILS factors), fourier-transform,
      michelson-interferometer, phase-correction (real Mertz/Forman on a shared interferogram/FFT module). Split 7a/7b if big.
   8. Throughput and cavities: jacquinot, conc-mirror, etalon-fsr, cavity-ring-down.

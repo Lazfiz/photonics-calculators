@@ -367,8 +367,13 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "spectral-calibration",
     title: "Spectral Calibration",
-    description: "Wavelength calibration using known emission lines and linear/polynomial fitting.",
-    knownIssue: "The true dispersion is linear by construction, so the linear fit only shows noise; the quadratic model is not computed, and empty list entries become 0 nm lines.",
+    description: "Wavelength calibration of a Czerny–Turner spectrograph from mercury lines: linear, quadratic and cubic fits against the grating-equation pixel map.",
+    tier: "textbook",
+    modelNote: "The true pixel-to-wavelength map is the grating equation on a flat detector normal to the central ray (no aberrations, tilt or focal-plane curvature); line centroids carry seeded Gaussian noise.",
+    references: [
+      { citation: "Palmer C., Loewen E. (2005). Diffraction Grating Handbook, 6th ed., ch. 2. Newport." },
+      { citation: "Kramida A., Ralchenko Yu., Reader J., NIST ASD Team. NIST Atomic Spectra Database (Hg I air wavelengths).", url: "https://doi.org/10.18434/T4W30F" },
+    ],
   },
   {
     slug: "spectral-deconvolution",
@@ -469,15 +474,16 @@ export const spectroscopy: CalculatorEntry[] = [
   },
   {
     slug: "stray-light",
-    title: "Grating Ghosts & Stray Light",
-    description: "Ghost order analysis and stray light estimation for grating-based spectrometers.",
-    knownIssue: "The stray-light curve is an invented 1/λ⁴ envelope with Gaussian bumps, and the order-overlap wavelengths are called grating ghosts; the groove-density input has no effect.",
-  },
-  {
-    slug: "stray-light-rejection",
-    title: "Stray Light Rejection",
-    description: "Impact of stray light on photometric accuracy. Critical for high-absorbance measurements.",
-    knownIssue: "The groove-density input has no effect, and the photometric error plot shows the relative transmittance error, which grows without bound at high absorbance.",
+    title: "Stray Light & Order Overlap Calculator",
+    description: "Absorbance error and highest readable absorbance from a spectrophotometer's stray light ratio, and the grating orders that overlap a set wavelength.",
+    keywords: ["Stray Light Rejection", "photometric error", "stray radiant power ratio", "order sorting filter", "grating ghosts"],
+    tier: "textbook",
+    modelNote: "Stray light is a fixed fraction s of the detected reference power, attenuated by one effective sample transmittance; its spectrum, the slit function and true ruling-error ghosts are not modelled. Order overlap is exact for a fixed grating angle.",
+    references: [
+      { citation: "ASTM E387-04 (reapproved 2022). Standard Test Method for Estimating Stray Radiant Power Ratio of Dispersive Spectrophotometers by the Opaque Filter Method. ASTM International.", url: "https://doi.org/10.1520/E0387-04R22" },
+      { citation: "Skoog D. A., Holler F. J., Crouch S. R. Principles of Instrumental Analysis, ch. 13 (stray radiation). Cengage." },
+      { citation: "Palmer C., Loewen E. (2005). Diffraction Grating Handbook, 6th ed., ch. 2. Newport." },
+    ],
   },
   {
     slug: "sum-frequency-gen",
