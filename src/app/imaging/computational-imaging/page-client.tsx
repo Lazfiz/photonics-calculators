@@ -63,14 +63,14 @@ export default function ComputationalImagingPage() {
   const snrChart = [
     { x: ns, y: ns.map((n) => fusedSnr({ ...fusion, views: n, mode: "perView" })), type: "scatter" as const, mode: "lines" as const, name: "Per view", line: { color: "#60a5fa", width: mode === "perView" ? 3 : 1.5 } },
     { x: ns, y: ns.map((n) => fusedSnr({ ...fusion, views: n, mode: "totalDose" })), type: "scatter" as const, mode: "lines" as const, name: "Total dose", line: { color: "#f87171", width: mode === "totalDose" ? 3 : 1.5 } },
-    ...(views <= 100 ? [{ x: [views], y: [snrN], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#facc15", size: 10 } }] : []),
+    ...(views <= 100 ? [{ x: [views], y: [snrN], type: "scatter" as const, mode: "markers" as const, name: "Current", line: { color: "#facc15" }, marker: { color: "#facc15", size: 10 } }] : []),
   ];
 
   const ills = Array.from({ length: 101 }, (_, i) => i * 0.01);
   const resolutionChart = [
     { x: ills, y: ills.map((a) => coherentCutoffPeriod(lambda_nm * nm, syntheticNa(na, a)) / nm), type: "scatter" as const, mode: "lines" as const, name: "Synthetic", line: { color: "#34d399", width: 2 } },
     { x: [0, 1], y: [pIncoherent, pIncoherent], type: "scatter" as const, mode: "lines" as const, name: "Incoherent", line: { color: "#a78bfa", width: 1.5, dash: "dash" } },
-    ...(naIll <= 1 ? [{ x: [naIll], y: [pSynthetic], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#facc15", size: 10 } }] : []),
+    ...(naIll <= 1 ? [{ x: [naIll], y: [pSynthetic], type: "scatter" as const, mode: "markers" as const, name: "Current", line: { color: "#facc15" }, marker: { color: "#facc15", size: 10 } }] : []),
   ];
 
   return (

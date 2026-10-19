@@ -69,7 +69,7 @@ export default function DenoisingAlgorithmsPage() {
     { x: CHART_WINDOWS, y: CHART_WINDOWS.map((w) => snrGainDb(boxNoiseRatio(w))), type: "scatter" as const, mode: "lines+markers" as const, name: "Box", line: { color: "#60a5fa", width: 2 } },
     { x: CHART_WINDOWS, y: CHART_WINDOWS.map((w) => snrGainDb(cachedMedianRatio(w))), type: "scatter" as const, mode: "lines+markers" as const, name: "Median", line: { color: "#f87171", width: 2 } },
     ...(filter !== "gaussian"
-      ? [{ x: [k], y: [gainDb], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#facc15", size: 10 } }]
+      ? [{ x: [k], y: [gainDb], type: "scatter" as const, mode: "markers" as const, name: "Current", line: { color: "#facc15" }, marker: { color: "#facc15", size: 10 } }]
       : []),
   ];
 
