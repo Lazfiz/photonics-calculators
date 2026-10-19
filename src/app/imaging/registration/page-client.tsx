@@ -85,7 +85,7 @@ export default function RegistrationPage() {
       const ns = counts.filter((n) => n >= minControlPoints(m));
       return {
         x: ns, y: ns.map((n) => tre(m, n, fiducialRms) * pixelNm),
-        type: "scatter" as const, mode: "lines" as const, name: MODEL_LABELS[m], line: { color: MODEL_COLORS[m], width: 2 },
+        type: "scatter" as const, mode: "lines" as const, name: m.charAt(0).toUpperCase() + m.slice(1), line: { color: MODEL_COLORS[m], width: 2 },
       };
     }),
     ...(Number.isFinite(treRms)

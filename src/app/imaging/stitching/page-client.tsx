@@ -73,13 +73,13 @@ export default function StitchingPage() {
   const xs = ts.map((t) => (t - 0.5) * blend);
   const wA = ts.map((t) => blendWeight(profile, t));
   const blendChart = [
-    { x: xs, y: wA, type: "scatter" as const, mode: "lines" as const, name: "Tile A weight", line: { color: "#60a5fa", width: 2 } },
-    { x: xs, y: wA.map((w) => 1 - w), type: "scatter" as const, mode: "lines" as const, name: "Tile B weight", line: { color: "#f87171", width: 2 } },
-    { x: xs, y: wA.map((w) => 1 + gain / 100 * (1 - w) - gain / 100 / 2), type: "scatter" as const, mode: "lines" as const, name: "Blended intensity (gain step)", line: { color: "#fbbf24", width: 2, dash: "dash" } },
+    { x: xs, y: wA, type: "scatter" as const, mode: "lines" as const, name: "Tile A", line: { color: "#60a5fa", width: 2 } },
+    { x: xs, y: wA.map((w) => 1 - w), type: "scatter" as const, mode: "lines" as const, name: "Tile B", line: { color: "#f87171", width: 2 } },
+    { x: xs, y: wA.map((w) => 1 + gain / 100 * (1 - w) - gain / 100 / 2), type: "scatter" as const, mode: "lines" as const, name: "Blended", line: { color: "#fbbf24", width: 2, dash: "dash" } },
   ];
   const errorChart = [
-    { x: SQUARE_GRIDS, y: SQUARE_GRIDS.map((n) => sigma * Math.sqrt(2 * n - 2)), type: "scatter" as const, mode: "lines+markers" as const, name: "Chained, worst tile", line: { color: "#f87171", width: 2 } },
-    { x: SQUARE_GRIDS, y: squares.map((r) => sigma * r), type: "scatter" as const, mode: "lines+markers" as const, name: "Global optimisation, worst tile", line: { color: "#34d399", width: 2 } },
+    { x: SQUARE_GRIDS, y: SQUARE_GRIDS.map((n) => sigma * Math.sqrt(2 * n - 2)), type: "scatter" as const, mode: "lines+markers" as const, name: "Chained", line: { color: "#f87171", width: 2 } },
+    { x: SQUARE_GRIDS, y: squares.map((r) => sigma * r), type: "scatter" as const, mode: "lines+markers" as const, name: "Global", line: { color: "#34d399", width: 2 } },
     ...(cols === rows && Number.isFinite(globalErr.max)
       ? [{ x: [cols], y: [sigma * globalErr.max], type: "scatter" as const, mode: "markers" as const, name: "Current", marker: { color: "#facc15", size: 10 } }]
       : []),
