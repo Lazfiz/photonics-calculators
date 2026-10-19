@@ -62,6 +62,7 @@
   "/spectroscopy/concentration": "/spectroscopy/lambert-beer-law",
   "/spectroscopy/difference-frequency-gen": "/wave-optics/difference-frequency",
   "/spectroscopy/doppler-broadening": "/spectroscopy/spectral-line-broadening",
+  "/spectroscopy/emission-spectra": "/spectroscopy/spectral-deconvolution",
   "/spectroscopy/extinction-coefficient": "/spectroscopy/lambert-beer-law",
   "/spectroscopy/fluorescence": "/spectroscopy/fluorescence-lifetime",
   "/spectroscopy/lineshape-fit": "/spectroscopy/spectral-line-broadening",

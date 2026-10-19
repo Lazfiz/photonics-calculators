@@ -121,12 +121,6 @@ export const spectroscopy: CalculatorEntry[] = [
     knownIssue: "The simulated XPS spectrum uses a fixed made-up peak list that ignores the inputs, and its Shirley-type background steps the wrong way, rising toward low binding energy.",
   },
   {
-    slug: "emission-spectra",
-    title: "Emission Spectra Fitting",
-    description: "Model photoluminescence emission with asymmetric Gaussian line shapes.",
-    knownIssue: "The line shape is an illustrative split Gaussian drawn on a fixed 350 to 750 nm window, so peaks centred above 750 nm fall off the chart. Nothing is fitted.",
-  },
-  {
     slug: "etalon-fsr",
     title: "Etalon Free Spectral Range",
     description: "Fabry-Pérot etalon: FSR = λ²/(2nd cos θ). Transmission follows the Airy function.",
@@ -240,7 +234,7 @@ export const spectroscopy: CalculatorEntry[] = [
     related: [
       { href: "/spectroscopy/spectral-line-broadening" },
       { href: "/spectroscopy/spectral-resolution" },
-      { href: "/spectroscopy/emission-spectra" },
+      { href: "/spectroscopy/spectral-deconvolution" },
     ],
     tier: "textbook",
     modelNote: "Isolated-line electron-impact Stark width linear in nₑ (w from tables, ion broadening neglected), Doppler and instrument Gaussians in quadrature, exact Voigt; Saha in LTE for single ionisation without ionisation-potential lowering. Not for hydrogen Balmer lines.",
@@ -357,9 +351,33 @@ export const spectroscopy: CalculatorEntry[] = [
   },
   {
     slug: "spectral-deconvolution",
-    title: "Spectral Deconvolution",
-    description: "Decompose overlapping spectral bands into individual Gaussian components.",
-    knownIssue: "No fit is performed: the curve labelled Fit (sum) is the sum of the user-entered Gaussian peaks, the same peaks that generate the simulated data.",
+    title: "Spectral Deconvolution & Band Model",
+    description: "Overlapping Gaussian, Lorentzian or pseudo-Voigt bands: areas, band width and centroid, whether neighbours resolve, and least-squares heights with standard errors from a simulated noisy spectrum; or a vibronic (Huang–Rhys) absorption and emission band with its Stokes shift.",
+    lede: "Build a spectrum from overlapping peaks and see how well their areas can be recovered, or model the vibronic shape of an emission band.",
+    keywords: ["Emission Spectra Fitting", "peak fitting", "band decomposition", "overlapping peaks", "Huang–Rhys factor", "vibronic progression", "Franck–Condon", "emission spectrum", "Jacobian conversion"],
+    related: [
+      { href: "/spectroscopy/spectral-line-broadening" },
+      { href: "/spectroscopy/stokes-shift" },
+    ],
+    tier: "textbook",
+    modelNote: "Sums of height-normalised Gaussian, Lorentzian or pseudo-Voigt peaks; the heights are fitted by linear least squares with the centres and widths held at their true values, so the errors are a best case. The vibronic band has one displaced harmonic mode at T ≈ 0 (Poisson Franck–Condon factors), ν̃ and ν̃³ frequency factors and the λ⁻² Jacobian for emission.",
+    references: [
+      {
+        citation: "Huang K., Rhys A. (1950). Theory of light absorption and non-radiative transitions in F-centres. Proc. R. Soc. Lond. A 204, 406–423.",
+        url: "https://doi.org/10.1098/rspa.1950.0184",
+      },
+      {
+        citation: "Strickler S. J., Berg R. A. (1962). Relationship between absorption intensity and fluorescence lifetime of molecules. J. Chem. Phys. 37, 814–822.",
+        url: "https://doi.org/10.1063/1.1733166",
+      },
+      {
+        citation: "Mooney J., Kambhampati P. (2013). Get the basics right: Jacobian conversion of wavelength and energy scales for quantitative analysis of emission spectra. J. Phys. Chem. Lett. 4, 3316–3318.",
+        url: "https://doi.org/10.1021/jz401508t",
+      },
+      {
+        citation: "Press W. H., Teukolsky S. A., Vetterling W. T., Flannery B. P. (2007). Numerical Recipes, 3rd ed. Cambridge University Press, ch. 15 (general linear least squares).",
+      },
+    ],
   },
   {
     slug: "spectral-line-broadening",
@@ -420,7 +438,15 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "stokes-shift",
     title: "Stokes Shift Calculator",
     description: "Δν̃ = ν̃_abs − ν̃_em — energy difference between absorption and emission maxima.",
-    knownIssue: "The plotted spectra stay at 350 to 750 nm while peak inputs go from 200 to 1500 nm, and zero peak or width values from the URL give Infinity or NaN.",
+    lede: "The Stokes shift between absorption and emission maxima in nm, cm⁻¹ and eV.",
+    related: [{ href: "/spectroscopy/spectral-deconvolution" }],
+    tier: "exact",
+    modelNote: "Exact conversion between the two maxima (vacuum wavelengths). The band shapes in the chart are Gaussians in wavelength, for illustration only.",
+    references: [
+      {
+        citation: "Lakowicz J. R. (2006). Principles of Fluorescence Spectroscopy, 3rd ed., ch. 1. Springer.",
+      },
+    ],
   },
   {
     slug: "stray-light",
