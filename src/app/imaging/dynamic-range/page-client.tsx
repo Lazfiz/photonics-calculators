@@ -1,138 +1,91 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { dynamicRangeDb } from "../../../physics/detectors/camera-snr";
+import { sensorNoise, shotPrnuCrossover, shotReadCrossover } from "../../../physics/detectors/sensor-noise";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
 
 export default function DynamicRangePage() {
-  const [fullWellCapacity, setFullWellCapacity] = useURLState("fullWellCapacity", 30000);
-  const [readNoise, setReadNoise] = useURLState("readNoise", 2);
-  const [darkCurrent, setDarkCurrent] = useURLState("darkCurrent", 0.05);
-  const [exposureTime, setExposureTime] = useURLState("exposureTime", 100);
-  const [bitDepth, setBitDepth] = useURLState("bitDepth", 14);
-  const [prnu, setPrnu] = useURLState("prnu", 0.01);
-  const [dsnu, setDsnu] = useURLState("dsnu", 0.005);
+  const [wellRaw, setFullWellCapacity] = useURLState("fullWellCapacity", 30000);
+  const [readRaw, setReadNoise] = useURLState("readNoise", 2);
+  const [darkRaw, setDarkCurrent] = useURLState("darkCurrent", 0.05);
+  const [exposureRaw, setExposureTime] = useURLState("exposureTime", 100);
+  const [bitsRaw, setBitDepth] = useURLState("bitDepth", 14);
+  const [prnuRaw, setPrnu] = useURLState("prnu", 1);
+  const [dsnuRaw, setDsnu] = useURLState("dsnuE", 0.5);
 
-  const results = useMemo(() => {
-    const prnuFrac = prnu / 100;
-    const dsnuFrac = dsnu / 100;
-    const darkElectrons = darkCurrent * exposureTime / 1000;
-    const totalReadNoise = Math.sqrt(readNoise * readNoise + darkElectrons + (dsnuFrac * darkElectrons) ** 2);
-    const drDB = 20 * Math.log10(fullWellCapacity / totalReadNoise);
-    const drStops = Math.log2(fullWellCapacity / totalReadNoise);
-    const drBits = drDB / 6.02;
-    const maxDN = Math.pow(2, bitDepth) - 1;
-    const systemDR = Math.min(drStops, bitDepth);
-    const adcLimited = bitDepth < drStops;
-    const snrAtHalf = (fullWellCapacity / 2) / Math.sqrt(fullWellCapacity / 2 + totalReadNoise * totalReadNoise + (prnuFrac * fullWellCapacity / 2) * (prnuFrac * fullWellCapacity / 2));
+  const well = clamp(wellRaw, 100, 1e6, 30000);
+  const read = clamp(readRaw, 0.1, 100, 2);
+  const darkRate = clamp(darkRaw, 0, 1e4, 0.05);
+  const exposureMs = clamp(exposureRaw, 0.01, 3.6e6, 100);
+  const bits = Math.round(clamp(bitsRaw, 8, 24, 14));
+  const prnu = clamp(prnuRaw, 0, 10, 1) / 100;
+  const dsnu = clamp(dsnuRaw, 0, 100, 0.5);
 
-    const signals: number[] = [];
-    const snrVals: number[] = [];
-    for (let s = 0.1; s <= fullWellCapacity; s += fullWellCapacity / 500) {
-      signals.push(s);
-      const noise = Math.sqrt(s + totalReadNoise * totalReadNoise + (prnuFrac * s) * (prnuFrac * s));
-      snrVals.push(s / noise);
-    }
+  // The ADC full scale is matched to the full well, so one DN is K = FW/(2^bits − 1) electrons.
+  const electronsPerDn = well / (2 ** bits - 1);
+  const dark = (darkRate * exposureMs) / 1000;
+  const noiseAt = (signal: number) => sensorNoise({ signal, read, dark, prnu, dsnu, electronsPerDn });
+  const floor = noiseAt(0).temporal;
+  const dr = dynamicRangeDb(well, floor);
+  const half = noiseAt(well / 2);
+  const floorDn = floor / electronsPerDn;
 
-    return { darkElectrons, totalReadNoise, drDB, drStops, drBits, maxDN, systemDR, adcLimited, snrAtHalf, signals, snrVals };
-  }, [fullWellCapacity, readNoise, darkCurrent, exposureTime, bitDepth, prnu, dsnu]);
-
-  const plotData = useMemo(() => [
+  const signalAxis = Array.from({ length: 201 }, (_, i) => well * 10 ** (-6 + (6 * i) / 200));
+  const chartData = [
     {
-      x: results.signals, y: results.snrVals,
-      type: "scatter" as const, mode: "lines" as const,
-      name: "SNR vs signal", line: { color: "#60a5fa", width: 2 },
+      x: signalAxis, y: signalAxis.map(s => s / noiseAt(s).total),
+      type: "scatter" as const, mode: "lines" as const, name: "SNR with fixed-pattern noise", line: { color: "#60a5fa", width: 2 },
     },
     {
-      x: [results.signals[0], results.signals[results.signals.length - 1]],
-      y: [1, 1], type: "scatter" as const, mode: "lines" as const,
-      name: "SNR = 1 (floor)", line: { color: "#f87171", width: 1, dash: "dash" },
+      x: signalAxis, y: signalAxis.map(s => s / noiseAt(s).temporal),
+      type: "scatter" as const, mode: "lines" as const, name: "After flat-field correction (temporal noise)", line: { color: "#34d399", width: 2, dash: "dash" },
     },
-  ], [results]);
-
-  const darkLayout: Partial<Plotly.Layout> = {
-    paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
-    font: { color: "#d1d5db" }, xaxis: { title: "Signal (e⁻)", gridcolor: "#374151" },
-    yaxis: { title: "SNR", gridcolor: "#374151" },
-    legend: { x: 0.02, y: 0.95 }, margin: { t: 30, r: 30, b: 50, l: 60 },
-  };
+    ...(prnu > 0
+      ? [{ x: [signalAxis[0], well], y: [1 / prnu, 1 / prnu], type: "scatter" as const, mode: "lines" as const, name: "PRNU limit 1/PRNU", line: { color: "#fbbf24", width: 1, dash: "dot" } }]
+      : []),
+    { x: [signalAxis[0], well], y: [1, 1], type: "scatter" as const, mode: "lines" as const, name: "SNR = 1", line: { color: "#f87171", width: 1, dash: "dot" } },
+  ];
 
   return (
     <>
-            
-      <div className="grid gap-6 md:grid-cols-2 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
-          <div>
-            <ValidatedNumberInput label="Full Well Capacity (e⁻)" value={fullWellCapacity} onChange={setFullWellCapacity} min={100} max={500000} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readNoise} onChange={setReadNoise} min={0.1} max={100} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Dark Current (e⁻/s/pixel)" value={darkCurrent} onChange={setDarkCurrent} min={0} max={100} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="Exposure Time (ms)" value={exposureTime} onChange={setExposureTime} min={1} max={60000} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="ADC Bit Depth" value={bitDepth} onChange={setBitDepth} min={8} max={24} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="PRNU (%)" value={prnu} onChange={setPrnu} min={0} max={10} />
-          </div>
-          <div>
-            <ValidatedNumberInput label="DSNU (%)" value={dsnu} onChange={setDsnu} min={0} max={10} />
-          </div>
-        </div>
-
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
-          <h3 className="font-semibold text-lg">Results</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">Total Read Noise</div>
-              <div className="text-xl font-mono text-red-400">{results.totalReadNoise.toFixed(2)} e⁻</div>
-            </div>
-            <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">Dark Electrons</div>
-              <div className="text-xl font-mono text-yellow-400">{results.darkElectrons.toFixed(3)} e⁻</div>
-            </div>
-            <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">Sensor DR</div>
-              <div className="text-xl font-mono text-green-400">{results.drDB.toFixed(1)} dB ({results.drStops.toFixed(1)} stops)</div>
-            </div>
-            <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">System DR (min)</div>
-              <div className="text-xl font-mono text-blue-400">{results.systemDR.toFixed(1)} stops</div>
-            </div>
-            <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">ADC Limited?</div>
-              <div className="text-xl font-mono text-purple-400">{results.adcLimited ? "YES ⚠️" : "No ✓"}</div>
-            </div>
-            <div className="bg-gray-800 rounded p-3">
-              <div className="text-xs text-gray-400">SNR at Half FWC</div>
-              <div className="text-xl font-mono text-yellow-400">{results.snrAtHalf.toFixed(1)}</div>
-            </div>
-          </div>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ValidatedNumberInput label="Full Well Capacity (e⁻)" value={wellRaw} onChange={setFullWellCapacity} min={100} max={1000000} />
+        <ValidatedNumberInput label="Read Noise (e⁻ rms)" value={readRaw} onChange={setReadNoise} min={0.1} max={100} step="0.1" />
+        <ValidatedNumberInput label="Dark Current (e⁻/s/pixel)" value={darkRaw} onChange={setDarkCurrent} min={0} max={10000} />
+        <ValidatedNumberInput label="Exposure Time (ms)" value={exposureRaw} onChange={setExposureTime} min={0.01} max={3600000} />
+        <ValidatedNumberInput label="ADC Bit Depth" value={bitsRaw} onChange={setBitDepth} min={8} max={24} />
+        <ValidatedNumberInput label="PRNU (% of signal)" value={prnuRaw} onChange={setPrnu} min={0} max={10} step="0.1" />
+        <ValidatedNumberInput label="DSNU (e⁻ rms)" value={dsnuRaw} onChange={setDsnu} min={0} max={100} step="0.1" />
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <ChartPanel data={plotData} layout={darkLayout} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ResultCard label="Dynamic Range" value={`${fmt(dr, 2)} dB`} subtext={`${fmt(Math.log2(well / floor), 2)} stops, FW/temporal dark noise`} tone="green" />
+        <ResultCard label="Temporal Noise Floor" value={`${fmt(floor, 3)} e⁻`} subtext={`√(σ_read² + D + σ_q²); dark charge ${fmt(dark, 4)} e⁻`} tone="red" />
+        <ResultCard label="ADC Step" value={`${fmt(electronsPerDn, 3)} e⁻/DN`} subtext={`Quantization noise ${fmt(half.quantization, 3)} e⁻`} tone="yellow" />
+        <ResultCard
+          label="Noise Floor in DN"
+          value={fmt(floorDn, 2)}
+          subtext={floorDn < 0.5 ? "Below 0.5 DN: the ADC step sets the floor, add bits" : "The ADC samples the noise floor"}
+          tone={floorDn < 0.5 ? "orange" : "purple"}
+        />
+        <ResultCard label="SNR at Half Full Well" value={fmt((well / 2) / half.total, 2)} subtext={`${fmt((well / 2) / half.temporal, 2)} after flat-field correction`} tone="blue" />
+        <ResultCard label="Shot = Read Noise at" value={`${fmt(shotReadCrossover(read), 2)} e⁻`} subtext="Read-noise-limited below" tone="cyan" />
+        <ResultCard label="Shot = PRNU Noise at" value={Number.isFinite(shotPrnuCrossover(prnu)) ? `${fmt(shotPrnuCrossover(prnu), 0)} e⁻` : "never (PRNU 0)"} subtext="PRNU-limited above; SNR → 1/PRNU" tone="cyan" />
+        <ResultCard label="Spatial Dark Noise (DSNU)" value={`${fmt(dsnu, 2)} e⁻`} subtext="Removed by dark-frame subtraction" tone="gray" />
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
-        <h3 className="font-semibold">Key Formulas</h3>
-        <div className="text-sm text-gray-300 space-y-2 font-mono">
-          <p>σ_total = √(σ²_read + N_dark + (DSNU·N_dark)²)</p>
-          <p>DR = 20·log₁₀(FWC / σ_total) [dB]</p>
-          <p>DR_stops = log₂(FWC / σ_total)</p>
-          <p>SNR = S / √(S + σ²_total + (PRNU·S)²)</p>
-          <p>System DR = min(DR_sensor, bit_depth)</p>
-        </div>
-        <div className="text-sm text-gray-400 mt-4 space-y-1">
-          <p>Dynamic range defines the ratio between the largest and smallest detectable signal. PRNU (photo response non-uniformity) and DSNU (dark signal non-uniformity) are fixed-pattern noise sources that can limit DR at high signal levels.</p>
-          <p>When ADC bit depth is less than the sensor DR in stops, the system is ADC-limited and loses information. High-end sCMOS sensors (~30,000 e⁻ FWC, ~1.5 e⁻ read noise) achieve ~84 dB, exceeding 14-bit ADC (84 dB) but fitting within 16-bit (96 dB).</p>
-        </div>
+      <ChartPanel data={chartData} layout={{ xaxis: { title: "Signal (e⁻)", gridcolor: "#374151", type: "log" }, yaxis: { title: "SNR", gridcolor: "#374151", type: "log" } }} />
+
+      <div className="bg-gray-900 rounded-lg p-4 mt-8 text-sm text-gray-300 font-mono space-y-1">
+        <p>σ_total² = σ_read² + D + σ_q² + S + DSNU² + (PRNU·S)², σ_q = K/√12, K = FW/(2^bits − 1)</p>
+        <p>DR = 20·log₁₀(FW/σ_floor), σ_floor = √(σ_read² + D + σ_q²)</p>
+        <p>Shot = read noise at S = σ_read²; shot = PRNU noise at S = 1/PRNU²</p>
       </div>
     </>
   );

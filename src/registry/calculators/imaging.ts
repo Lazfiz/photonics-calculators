@@ -284,7 +284,18 @@ export const imaging: CalculatorEntry[] = [
     title: "Dynamic Range Calculator",
     description: "Imaging system dynamic range, noise floor, and ADC-limited performance analysis.",
     keywords: ["Full Well Capacity vs SNR"],
-    knownIssue: "PRNU defaults to 0.01 on an input labelled %, i.e. 0.01 % instead of 1 %, so the SNR at half full well reads 122 instead of 77.5. DSNU is taken as a percentage of the tiny dark signal, so it has no effect; EMVA 1288 gives it in e⁻.",
+    tier: "textbook",
+    modelNote: "EMVA 1288 noise model: PRNU as a fraction of the signal, DSNU in e⁻ rms, quantization noise K/√12 with the ADC full scale matched to the full well. Dynamic range is the full well over the temporal dark noise; flat-field correction removes PRNU and DSNU. Nonlinearity near saturation is left out.",
+    references: [
+      {
+        citation: "EMVA Standard 1288, Release 3.1 (2016). Standard for Characterization of Image Sensors and Cameras, Eq. (45)–(48). DSNU in e⁻, PRNU relative to the signal and the total SNR with spatial noise.",
+        url: "https://www.emva.org/wp-content/uploads/EMVA1288-3.1a.pdf",
+      },
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press, ch. 5. Read, shot and fixed-pattern noise regimes of the photon transfer curve.",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+    ],
   },
   {
     slug: "expansion-microscopy",
@@ -735,16 +746,26 @@ export const imaging: CalculatorEntry[] = [
     ],
   },
   {
-    slug: "sensor-ccm",
-    title: "CCD/CCM Sensor Design",
-    description: "CCD sensor parameters, cooling requirements, dark current, and dynamic range analysis.",
-    knownIssue: "The QE and pixel-pitch inputs are unused, the default dark rate of 0.005 e⁻/s per pixel at 25 °C is about 10⁴× below a typical CCD, and the dark chart plots the dark signal on an axis labelled dark noise.",
-  },
-  {
     slug: "sensor-cmos",
-    title: "CMOS Sensor Design",
-    description: "Pixel design parameters, dynamic range, noise floor, and sensitivity calculations.",
-    knownIssue: "The SNR chart doesn't update when the QE changes, and it uses a hidden flux of 1000 photons/s per pixel, so the full-well clip can never trigger. The pixel pitch is unused.",
+    title: "CCD and CMOS Sensor Design",
+    description: "Pixel SNR, dark charge against cooling, ADC step and dynamic range of a camera sensor, with sCMOS and cooled-CCD presets.",
+    keywords: ["CMOS Sensor Design", "CCD Sensor Design", "CCD/CCM Sensor Design", "sCMOS"],
+    tier: "textbook",
+    modelNote: "Poisson signal and dark charge, Gaussian read noise and quantization noise K/√12 add in quadrature (EMVA 1288). Dark current follows the doubling law about 25 °C, the local form of the n_i scaling. Fixed-pattern noise and nonlinearity near full well are left out; the presets are representative, not a specific camera.",
+    references: [
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press, ch. 5. Read, dark and shot noise in quadrature, full well and dynamic range.",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+      {
+        citation: "EMVA Standard 1288, Release 3.1 (2016). Standard for Characterization of Image Sensors and Cameras, Eq. (11) and (48). Quantization noise σ_q² = 1/12 DN² and the total SNR.",
+        url: "https://www.emva.org/wp-content/uploads/EMVA1288-3.1a.pdf",
+      },
+      {
+        citation: "Janesick J. R. (2001). Scientific Charge-Coupled Devices. SPIE Press. Dark current temperature dependence and dark shot noise.",
+        url: "https://doi.org/10.1117/3.374903",
+      },
+    ],
   },
   {
     slug: "shack-hartmann",
@@ -767,7 +788,19 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "signal-to-noise",
     title: "Imaging Signal-to-Noise Ratio",
-    description: "Comprehensive SNR calculation for microscopy imaging systems.",
+    description: "Pixel SNR with background, dark charge, read noise, charge or digital binning and frame averaging.",
+    tier: "textbook",
+    modelNote: "CCD equation: Poisson signal, background and dark charge plus Gaussian read noise per binned super-pixel; charge binning reads once, a digital sum b² times. Averaging N frames gains √N. EM gain, fixed-pattern noise and error in the subtracted background are left out.",
+    references: [
+      {
+        citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press, ch. 5. Signal-to-noise ratio with read, dark and shot noise.",
+        url: "https://doi.org/10.1117/3.725073",
+      },
+      {
+        citation: "Rose A. (1948). The sensitivity performance of the human eye on an absolute scale. J. Opt. Soc. Am. 38, 196. An SNR of about 5 to detect a feature.",
+        url: "https://doi.org/10.1364/JOSA.38.000196",
+      },
+    ],
   },
   {
     slug: "simultaneous-multicolor",
