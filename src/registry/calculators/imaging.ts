@@ -445,8 +445,23 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "light-field",
     title: "Light Field Microscopy",
-    description: "Angular resolution, spatial-angular tradeoff, and synthetic aperture parameters.",
-    knownIssue: "An NA of 0 in the URL hangs the page. The lateral resolution shows 0.61λ/NA (1.68 µm) where a light-field microscope samples at the lenslet pitch over M (7.5 µm), and the angular count ignores diffraction (23 against 5.8).",
+    description: "Light-field microscope design: lateral sample, resolvable spots per lenslet, matched microlens f-number and the depth of field of refocused slices and single views (Levoy 2006).",
+    keywords: ["light field microscopy", "microlens array", "plenoptic microscope", "spatial-angular tradeoff", "synthetic refocusing"],
+    tier: "textbook",
+    modelNote: "Levoy's design equations: Sparrow limit 0.47λM/NA in the image, N_u = W/R_obj (capped at two pixels per spot) and depth of field (2 + N_u)λn/(2NA²) refocused or (2 + N_u²)λn/(2NA²) per view. Aberration-free objective; no 3D deconvolution.",
+    references: [
+      {
+        citation: "Levoy M., Ng R., Adams A., Footer M., Horowitz M. (2006). Light field microscopy. ACM Trans. Graph. 25(3), 924–934. Eqs. 1–5 and Table 1.",
+        url: "https://doi.org/10.1145/1141911.1141976",
+      },
+      {
+        citation: "Ng R., Levoy M., Brédif M., Duval G., Horowitz M., Hanrahan P. (2005). Light field photography with a hand-held plenoptic camera. Stanford Tech. Rep. CTSR 2005-02. Sections 3.1, 3.2 and 4.2.",
+        url: "https://graphics.stanford.edu/papers/lfcamera/",
+      },
+    ],
+    related: [
+      { href: "/imaging/plenoptic-camera" },
+    ],
   },
   {
     slug: "light-sheet",
@@ -661,8 +676,23 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "plenoptic-camera",
     title: "Plenoptic Camera Design",
-    description: "Light field camera parameters: spatial-angular tradeoff, refocusing range, and data budgets.",
-    knownIssue: "The depth chart disagrees with its own marker (0.375 against 10.125 mm), the microlens and main-lens f-numbers aren't matched (f/3.33 against f/2.5, so micro-images overlap), and two inputs are unused.",
+    description: "Plenoptic (light-field) camera design: lenslets and views, microlens f-number matching, refocusable object range, data size and assembly tolerance (Ng 2005).",
+    keywords: ["plenoptic camera", "light field camera", "microlens array", "digital refocusing", "Lytro"],
+    tier: "textbook",
+    modelNote: "Plenoptic 1.0 with the sensor one microlens focal length behind the array. Refocus range: geometric depth of field of an f/(N·N_w) aperture with the lenslet as circle of confusion, through a thin main lens; Ng's prototype reached about half of it.",
+    references: [
+      {
+        citation: "Ng R., Levoy M., Brédif M., Duval G., Horowitz M., Hanrahan P. (2005). Light field photography with a hand-held plenoptic camera. Stanford Tech. Rep. CTSR 2005-02. Sections 3.1, 3.2 and 4.2.",
+        url: "https://graphics.stanford.edu/papers/lfcamera/",
+      },
+      {
+        citation: "Levoy M., Ng R., Adams A., Footer M., Horowitz M. (2006). Light field microscopy. ACM Trans. Graph. 25(3), 924–934. Eqs. 1–5 and Table 1.",
+        url: "https://doi.org/10.1145/1141911.1141976",
+      },
+    ],
+    related: [
+      { href: "/imaging/light-field" },
+    ],
   },
   {
     slug: "psf-calculator",
