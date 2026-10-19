@@ -1,24 +1,22 @@
-# Handover — 2026-10-19 (session 90 → session 91)
+# Handover — 2026-10-19 (session 91 → session 92)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-PR #120 (part 10b) was merged. Session 90 finished **imaging part 11 (MTF and wavefront)** on branch
-`phase-4/imaging-mtf-wavefront` (with this handover; PR #121 expected). Next: **imaging part 12 (adaptive optics, speckle)**.
+PR #121 (part 11) was merged. Session 91 finished **imaging part 12 (adaptive optics, speckle)** on branch
+`phase-4/imaging-ao-speckle` (with this handover; PR expected). Next: **imaging part 13 (sensors)**.
 
 ## State
-- New `src/physics/imaging/diffraction-mtf.ts` (SI): `cutoffFrequency(NA, λ)` = 2NA/λ, `diffractionMtf(ν)`,
-  `defocusW020(Δz, NA, n)` = Δz·NA²/(2n) (paraxial), `defocusedOtf(ν, W₀₂₀ in waves)` (Hopkins overlap integral, Simpson),
-  `wienerGain`, `wienerTransfer` = H²/(H² + NSR), `wienerHalfFrequency(NSR)` (ν where MTF = √NSR).
-- New `src/physics/imaging/wavefront.ts`: `marechalStrehl` (moved out of shack-hartmann.ts), `marechalRms(S, λ)`,
-  `PV_RMS_RATIO`/`pvFromRms`/`rmsFromPv` per Zernike term, `defocusStrehlExact(σ/λ)` = sinc²(φ/2) with φ = 2√3·2πσ/λ,
-  `zernikeStrehl(mode, σ/λ)` for defocus/astigmatism/coma/spherical (radial integrals with J₀, ≤ 5 waves).
-- `integrateSimpson(g, a, b, n)` is now shared in `src/physics/math.ts` (coupled-mode.ts uses it).
-- `wavefront-error` merged into `strehl-ratio` (redirect; title "Strehl Ratio and Wavefront Error", tier exact).
-  `mtf`, `deconvolution` tier textbook. Test: `tests/imaging-mtf-wavefront.test.ts` (6 tests). 305 of 455 pages
-  tiered; 11 `knownIssue`s, all imaging.
-- URL keys: `mtf` na 0.95, wavelength 550, n 1, defocus 0.5 µm (was 0), nu 0.5; `deconvolution` keeps na 1.4,
-  wavelengthNm 550, snrInput 30 dB and drops method, refractiveIndex, iterations, regularization, imageSize, z-slices;
-  `strehl-ratio` keeps wavelengthNm 550, wfeNm 20, adds `input` rms|pv and `mode` defocus|astigmatism|coma|spherical.
+- `src/physics/free-space-comms/turbulence.ts` gains `zernikeRadialOrder(j)` (Noll ordering), `nollResidual(J)` (exact
+  Δ_J: Noll's diagonal covariances (n + 1)Γ(n − 5/6)/Γ(n + 23/6), scaled so that all modes sum to 1.0299; J ≤
+  `NOLL_MAX_MODES` 5000), `DM_FITTING_COEFFICIENT` (continuous 0.28, tip-tilt segments 0.134, piston segments 1.26) and
+  `dmFittingVariance(pitch, r0, κ)`. `fittingErrorVariance` (Noll's 0.2944 J^(−√3/2) fit) is unchanged.
+- New `src/physics/imaging/speckle.ts`: `objectiveSpeckleSize` λz/D, `subjectiveSpeckleSize` λ(1 + M)N,
+  `SPECKLE_FIRST_ZERO` j₁,₁/π, `surfacePhaseRms` 4πσ_h/λ, `speckleContrast` √(1 − e^(−2σ_φ²)), `averagedContrast` C/√N.
+- Test: `tests/imaging-ao-speckle.test.ts` (3 tests). Both pages tier textbook. 307 of 455 pages tiered; 9 `knownIssue`s, all imaging.
+- URL keys: `adaptive-optics` keeps wavelength 550, numZernike 15 (≤ 1000), dmActuators 32, dmStroke 5 µm; adds dr0 10 and
+  dmType continuous|segmentedTipTilt|segmentedPiston; drops rmsWavefront. `speckle-imaging` keeps wavelengthNm 532,
+  beamDiameterMm 5 (spot D), propagationDistMm 200, surfaceRoughnessUm 1, numAverages 10; adds fNumber 8, magnification 0.5;
+  drops apertureDiameterMm and speckleContrast.
 - **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only when the user asks:
   `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set
   Vercel's Production Branch to `release` (not confirmed).
@@ -27,21 +25,22 @@ PR #120 (part 10b) was merged. Session 90 finished **imaging part 11 (MTF and wa
   stimulated-raman-microscopy and resolution separate unless the user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 11: `imaging/mtf=3.4545`, `imaging/deconvolution=196.4`,
+1. `/ship` this branch. Values for a later release check: part 12: `imaging/adaptive-optics=0.2810`,
+   `imaging/speckle-imaging=21.28`; part 11: `imaging/mtf=3.4545`, `imaging/deconvolution=196.4`,
    `imaging/strehl-ratio=0.9491`; part 10b: `imaging/fov-calculator=0.6668`, `imaging/pixel-fov=26.81`,
-   `imaging/telecentricity=1.680`; part 10a: `imaging/magnification=10.00`, `imaging/pupil-matching=0.938`,
-   `imaging/dof=3.4375`, `imaging/illumination=297.3`; parts 1–9: `git show 847a0d20:docs/HANDOVER.md`. Don't release
-   unless asked.
-2. Imaging part 12 (adaptive optics and speckle; goldens in ROADMAP).
-3. Later: open findings (part 8 leftovers, local `sinc` copies, `fluorophores.ts` cutoff, `optical-sectioning-thickness`,
-   detectors 7b, fiber, FSO), `polarizer-types` (needs the user at the laptop with Chrome).
+   `imaging/telecentricity=1.680`; earlier parts: `git show 04f88743:docs/HANDOVER.md`. Don't release unless asked.
+2. Imaging part 13 (sensors: `sensor-ccm` + `sensor-cmos` merge; goldens in ROADMAP).
+3. Later: open findings (FSO `adaptive-optics` actuators-as-modes, part 8 leftovers, local `sinc` copies,
+   `fluorophores.ts` cutoff, `optical-sectioning-thickness`, detectors 7b, fiber, FSO), `polarizer-types` (needs the
+   user at the laptop with Chrome).
 
 ## Non-obvious facts
-- **Session 90:** the ROADMAP's φ 2.578 is kW₀₂₀ (paraxial, NA 0.95, Δz 0.5 µm); OTF(0.5) = 0.15592 matches a brute 2D
-  pupil-overlap integral. The defocused OTF first goes negative near W₀₂₀ = 0.65λ (λ/2 stays positive). Exact Strehl
-  (σ = 0.1λ): defocus 0.6626, astigmatism 0.6713, coma 0.6694, spherical 0.6664 vs Maréchal 0.6738. At Maréchal S 0.3
-  pure defocus is 21 % lower (0.247); the balanced terms stay within 10 % (shack-hartmann's note holds for those).
-  The pages were not checked in a browser; `/ship` runs the build.
+- **Session 91:** Noll's printed 0.0072 prefactor is rounded: the series then sums to 1.03075, not 1.0299, and Δ₁₅ drifts
+  to 0.0271; normalising to 1.0299 reproduces Table IV. His 0.2944 J^(−√3/2) fit is within 1.3 % for 10 ≤ J ≤ 100, but the
+  exact residual falls as J^(−5/6) (8 % above the fit at J 1000). The Rician speckle contrast √(1 + 2r)/(1 + r) with
+  r = e^(−σ²)/(1 − e^(−σ²)) simplifies to √(1 − e^(−2σ²)). Prerendered pages and ui-check pass (0 console errors).
+- **Session 90:** exact Strehl (σ = 0.1λ): defocus 0.6626 … spherical 0.6664 vs Maréchal 0.6738; the defocused OTF first
+  goes negative near W₀₂₀ = 0.65λ. ROADMAP φ 2.578 is kW₀₂₀ (paraxial).
 - **Sessions 86–89:** devctl queues heavy commands when another project's build hogs the CPU: run gates with
   `run_in_background` from the start. The merge codemod drops the last entry's trailing comma. **Never put Markdown
   backticks in a `node -e "…"` string**: bash runs them; use Write. spiedigitallibrary.org samples return HTML.
