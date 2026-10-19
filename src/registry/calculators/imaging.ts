@@ -123,9 +123,9 @@ export const imaging: CalculatorEntry[] = [
     slug: "coherent-raman",
     title: "Coherent Raman (CARS/SRS) Calculator",
     description: "Coherent Anti-Stokes Raman Scattering and Stimulated Raman Scattering signal estimation.",
-    keywords: ["CARS Imaging", "Coherent Raman Microscopy"],
+    keywords: ["CARS Imaging", "Coherent Raman Microscopy", "Coherent Anti-Stokes Raman Scattering (CARS)"],
     tier: "textbook",
-    modelNote: "Wavelengths follow from energy conservation (exact); lineshapes are a single Lorentzian Raman line; focal intensity uses Zipfel's Gaussian fit. Signal levels are relative, as they need χ⁽³⁾ and the detection chain.",
+    modelNote: "Wavelengths follow from energy conservation (exact); lineshapes are a single Lorentzian Raman line; the excitation bandwidth is that of identical transform-limited Gaussian pulses; focal intensity uses Zipfel's Gaussian fit. Signal levels are relative, as they need χ⁽³⁾ and the detection chain.",
     references: [
       {
         citation: "Cheng J.-X., Xie X. S. (2004). Coherent Anti-Stokes Raman Scattering Microscopy: Instrumentation, Theory, and Applications. J. Phys. Chem. B 108, 827–840. CARS and SRS signals and the Raman lineshape.",
@@ -958,12 +958,16 @@ export const imaging: CalculatorEntry[] = [
     slug: "stimulated-raman-microscopy",
     title: "Stimulated Raman Scattering Microscopy Calculator",
     description: "Shot-noise-limited SNR, detection limit, Stokes wavelength, resolution and frame time for stimulated Raman scattering microscopy.",
+    keywords: ["Stimulated Raman Scattering (SRS)"],
     tier: "textbook",
-    modelNote: "SNR = δ√N from the shot noise of the detected beam alone; the modulation depth δ is an input. Laser excess noise, detector noise and lock-in losses are not modelled. Resolution is the FWHM of I_p·I_S on Zipfel's Gaussian focus.",
+    modelNote: "SNR = δ√N from the shot noise of the detected beam alone; the modulation depth δ is an input or an estimate from the plane-wave Raman gain g_R over two paraxial Gaussian foci in a thick sample, with identical overlapped Gaussian pulses. Laser excess noise, detector noise and lock-in losses are not modelled. Resolution is the FWHM of I_p·I_S on Zipfel's Gaussian focus.",
     references: [
       {
         citation: "Ozeki Y. et al. (2009). Analysis and experimental assessment of the sensitivity of stimulated Raman scattering microscopy. Opt. Express 17, 3651–3658. Shot-noise-limited SRS sensitivity.",
         url: "https://doi.org/10.1364/OE.17.003651",
+      },
+      {
+        citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., ch. 10. Academic Press. Stimulated Raman gain dI_S/dz = g_R I_p I_S and the photon-number balance behind SRL.",
       },
       {
         citation: "Freudiger C. W. et al. (2008). Label-Free Biomedical Imaging with High Sensitivity by Stimulated Raman Scattering Microscopy. Science 322, 1857–1861. SRG and SRL detection with high-frequency modulation.",

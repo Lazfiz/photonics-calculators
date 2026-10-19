@@ -5,23 +5,33 @@ import ChartPanel from "../../../components/chart-panel";
 import { useURLState } from "../../../hooks/use-url-state";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import {
-  antiStokesWavelength, carsLineshape, carsPeakDetuning, ramanShiftFrequency, srsLineshape, stokesWavelength,
+  antiStokesWavelength, carsLineshape, carsPeakDetuning, excitationBandwidth, ramanShiftFrequency, srsLineshape, stokesWavelength,
 } from "../../../physics/imaging/coherent-raman";
 import { focalPeakIntensity, gaussianPulsePeakPower, pulseEnergy } from "../../../physics/imaging/multiphoton-focus";
 
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits: number, unit: string) => (Number.isFinite(x) ? `${x.toFixed(digits)} ${unit}` : "—");
 
 export default function CoherentRamanPage() {
   const [mode, setMode] = useURLState("mode", "CARS");
-  const [pumpWl, setPumpWl] = useURLState("pumpWl", 800); // nm
-  const [wavenumber, setWavenumber] = useURLState("wavenumber", 2850); // cm⁻¹ (CH₂ stretch)
-  const [pumpPower, setPumpPower] = useURLState("pumpPower", 50); // mW
-  const [stokesPower, setStokesPower] = useURLState("stokesPower", 50); // mW
-  const [pulseWidth, setPulseWidth] = useURLState("pulseWidth", 2); // ps
-  const [repRate, setRepRate] = useURLState("repRate", 80); // MHz
-  const [na, setNa] = useURLState("na", 1.0);
-  const [linewidth, setLinewidth] = useURLState("linewidth", 15); // HWHM, cm⁻¹
-  const [chiNR, setChiNR] = useURLState("chiNR", 0.3); // χ_NR / Im χ_R at resonance
+  const [pumpWlRaw, setPumpWl] = useURLState("pumpWl", 800); // nm
+  const [wavenumberRaw, setWavenumber] = useURLState("wavenumber", 2850); // cm⁻¹ (CH₂ stretch)
+  const [pumpPowerRaw, setPumpPower] = useURLState("pumpPower", 50); // mW
+  const [stokesPowerRaw, setStokesPower] = useURLState("stokesPower", 50); // mW
+  const [pulseWidthRaw, setPulseWidth] = useURLState("pulseWidth", 2); // ps
+  const [repRateRaw, setRepRate] = useURLState("repRate", 80); // MHz
+  const [naRaw, setNa] = useURLState("na", 1.0);
+  const [linewidthRaw, setLinewidth] = useURLState("linewidth", 15); // HWHM, cm⁻¹
+  const [chiNRRaw, setChiNR] = useURLState("chiNR", 0.3); // χ_NR / Im χ_R at resonance
+  const pumpWl = clamp(pumpWlRaw, 400, 2000, 800);
+  const wavenumber = clamp(wavenumberRaw, 100, 4000, 2850);
+  const pumpPower = clamp(pumpPowerRaw, 0, 500, 50);
+  const stokesPower = clamp(stokesPowerRaw, 0, 500, 50);
+  const pulseWidth = clamp(pulseWidthRaw, 0.01, 100, 2);
+  const repRate = clamp(repRateRaw, 0.01, 250, 80);
+  const na = clamp(naRaw, 0.1, 1.7, 1);
+  const linewidth = clamp(linewidthRaw, 1, 100, 15);
+  const chiNR = clamp(chiNRRaw, 0, 10, 0.3);
 
   const results = useMemo(() => {
     const lambdaP = pumpWl * 1e-9;
@@ -70,6 +80,7 @@ export default function CoherentRamanPage() {
   }, []);
 
   const peakShift = carsPeakDetuning(linewidth, chiNR);
+  const bandwidthCm = excitationBandwidth(pulseWidth * 1e-12) / 100;
 
   return (
     <>
@@ -82,15 +93,15 @@ export default function CoherentRamanPage() {
               <option value="SRS">SRS (Stimulated Raman Scattering)</option>
             </select>
           </div>
-          <ValidatedNumberInput label="Pump wavelength (nm)" value={pumpWl} onChange={setPumpWl} min={400} max={2000} />
-          <ValidatedNumberInput label="Raman shift (cm⁻¹)" value={wavenumber} onChange={setWavenumber} min={100} max={4000} />
-          <ValidatedNumberInput label="Pump power (mW)" value={pumpPower} onChange={setPumpPower} min={0} max={500} />
-          <ValidatedNumberInput label="Stokes power (mW)" value={stokesPower} onChange={setStokesPower} min={0} max={500} />
-          <ValidatedNumberInput label="Pulse width, FWHM (ps)" value={pulseWidth} onChange={setPulseWidth} min={0.01} max={100} step="0.1" />
-          <ValidatedNumberInput label="Rep rate (MHz)" value={repRate} onChange={setRepRate} min={0.01} max={250} />
-          <ValidatedNumberInput label="NA" value={na} onChange={setNa} min={0.1} max={1.7} step="0.01" />
-          <ValidatedNumberInput label="Raman linewidth Γ, HWHM (cm⁻¹)" value={linewidth} onChange={setLinewidth} min={1} max={100} />
-          <ValidatedNumberInput label="Non-resonant χ_NR (relative to peak Im χ_R)" value={chiNR} onChange={setChiNR} min={0} max={10} step="0.05" />
+          <ValidatedNumberInput label="Pump wavelength (nm)" value={pumpWlRaw} onChange={setPumpWl} min={400} max={2000} />
+          <ValidatedNumberInput label="Raman shift (cm⁻¹)" value={wavenumberRaw} onChange={setWavenumber} min={100} max={4000} />
+          <ValidatedNumberInput label="Pump power (mW)" value={pumpPowerRaw} onChange={setPumpPower} min={0} max={500} />
+          <ValidatedNumberInput label="Stokes power (mW)" value={stokesPowerRaw} onChange={setStokesPower} min={0} max={500} />
+          <ValidatedNumberInput label="Pulse width, FWHM (ps)" value={pulseWidthRaw} onChange={setPulseWidth} min={0.01} max={100} step="0.1" />
+          <ValidatedNumberInput label="Rep rate (MHz)" value={repRateRaw} onChange={setRepRate} min={0.01} max={250} />
+          <ValidatedNumberInput label="NA" value={naRaw} onChange={setNa} min={0.1} max={1.7} step="0.01" />
+          <ValidatedNumberInput label="Raman linewidth Γ, HWHM (cm⁻¹)" value={linewidthRaw} onChange={setLinewidth} min={1} max={100} />
+          <ValidatedNumberInput label="Non-resonant χ_NR (relative to peak Im χ_R)" value={chiNRRaw} onChange={setChiNR} min={0} max={10} step="0.05" />
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
@@ -106,11 +117,16 @@ export default function CoherentRamanPage() {
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Focal peak intensity, pump</span><span className="font-mono text-yellow-400">{fmt(results.intensityPump / 1e13, 1, "GW/cm²")}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Focal peak intensity, Stokes</span><span className="font-mono text-yellow-400">{fmt(results.intensityStokes / 1e13, 1, "GW/cm²")}</span></div>
           <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">CARS maximum (dispersive line)</span><span className="font-mono text-green-400">{fmt(peakShift, 1, "cm⁻¹")} from resonance</span></div>
+          <div className="flex justify-between border-b border-gray-800 pb-2"><span className="text-gray-400">Excitation bandwidth (transform-limited pulses)</span><span className="font-mono text-cyan-400">{fmt(bandwidthCm, 1, "cm⁻¹")} vs line FWHM {fmt(2 * linewidth, 0, "cm⁻¹")}</span></div>
+          {bandwidthCm > 2 * linewidth && (
+            <p className="text-sm text-yellow-300" role="status">The pulses are broader in frequency than the Raman line: they excite neighbouring bands too and the spectral resolution is set by the pulses. Picosecond pulses (or spectral focusing of chirped femtosecond pulses) resolve single bands.</p>
+          )}
           <div className="text-xs text-gray-500 mt-2 space-y-1">
             <p>ν̃_S = ν̃_P − Ω̃, ν̃_aS = ν̃_P + Ω̃ (energy conservation)</p>
             <p>CARS ∝ |χ_NR + χ_R|² · I_p² · I_S; SRS ∝ Im χ_R · I_p · I_S, χ_R = −Γ/(Δ + iΓ)</p>
             <p>CARS has a non-resonant background and a dispersive line; SRS is background-free and linear in concentration (Cheng &amp; Xie, J. Phys. Chem. B 108, 827, 2004; Freudiger et al., Science 322, 1857, 2008).</p>
             <p>Focal intensity P_peak/(2π ω_xy²), ω_xy from Zipfel et al. 2003 at each beam&apos;s wavelength; Gaussian pulses. Absolute signal levels need χ⁽³⁾ and the detection chain, so the charts are relative.</p>
+            <p>Excitation bandwidth √2·(2 ln 2/π)/(c·τ): the spectrum of the drive E_p·E_S* of two identical transform-limited Gaussian pulses, whose envelope I_p·I_S lasts τ/√2. The shift follows from the two wavelengths as 1/λ_p − 1/λ_S; the Raman shift page converts either way.</p>
             <p>Active mode: <span className="text-green-400">{mode}</span></p>
           </div>
         </div>

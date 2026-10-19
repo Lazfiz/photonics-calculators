@@ -74,3 +74,41 @@ export function srsShotNoiseSnr(modulationDepth: number, power: number, lambda: 
   if (!(Number.isFinite(modulationDepth) && modulationDepth >= 0)) return NaN;
   return modulationDepth * Math.sqrt(detectedPhotoelectrons(power, lambda, time, quantumEfficiency));
 }
+
+/**
+ * Spectral FWHM (as a wavenumber, 1/m) of the Raman drive E_p E_S* for two identical, transform-limited Gaussian
+ * pulses of intensity FWHM τ. The drive's intensity envelope I_p I_S has FWHM τ/√2, so its width is
+ * (2 ln 2/π)/(τ/√2) in frequency. A line narrower than this is not resolved by the pulses.
+ */
+export function excitationBandwidth(tauFwhm: number): number {
+  return positive(tauFwhm) ? (Math.SQRT2 * 2 * Math.LN2) / (Math.PI * c * tauFwhm) : NaN;
+}
+
+/**
+ * Gain-length factor F = ∫ 2 dz / (π(w_p² + w_S²)) (1/m) of two co-focused paraxial Gaussian beams with the same
+ * far-field angle θ (both fill the objective) in a sample of index n much thicker than the focus. ∫I_p I_S dA =
+ * 2P_p P_S/(π(w_p² + w_S²)); with w_i² = (λ_i/(πnθ))² + θ²z² the integral is √2 π n/√(λ_p² + λ_S²), independent of θ,
+ * i.e. of the NA (derivation; the test checks it by quadrature). Paraxial: only indicative at high NA.
+ */
+export function srsFocusFactor(lambdaPump: number, lambdaStokes: number, n: number): number {
+  if (!positive(lambdaPump) || !positive(lambdaStokes) || !positive(n)) return NaN;
+  return (Math.SQRT2 * Math.PI * n) / Math.hypot(lambdaPump, lambdaStokes);
+}
+
+/**
+ * Small-signal SRS modulation depth δ on the detected beam from the plane-wave Raman gain g_R (m/W, dI_S/dz =
+ * g_R I_p I_S; R. W. Boyd, Nonlinear Optics, 3rd ed., ch. 10) and the focus factor F above:
+ *   SRG (Stokes detected): δ = g_R F P_p,     SRL (pump detected): δ = (λ_S/λ_p) g_R F P_S,
+ * the SRL factor ω_p/ω_S because the pump loses one photon per Stokes photon gained. `power` is the peak power of the
+ * other (modulated) beam. For identical, overlapped Gaussian pulses the energy-weighted power is P̂/√2 ("gaussian");
+ * "cw" uses P as given. Undepleted beams (δ ≪ 1).
+ */
+export function srsModulationDepth(
+  ramanGain: number, power: number, lambdaPump: number, lambdaStokes: number, n: number,
+  detected: "stokes" | "pump", pulses: "gaussian" | "cw",
+): number {
+  if (!(Number.isFinite(ramanGain) && ramanGain >= 0) || !(Number.isFinite(power) && power >= 0)) return NaN;
+  const F = srsFocusFactor(lambdaPump, lambdaStokes, n);
+  const P = pulses === "gaussian" ? power / Math.SQRT2 : power;
+  return (detected === "pump" ? lambdaStokes / lambdaPump : 1) * ramanGain * F * P;
+}
