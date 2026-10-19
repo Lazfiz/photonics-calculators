@@ -1,21 +1,21 @@
-# Handover — 2026-10-19 (session 94 → session 95)
+# Handover — 2026-10-19 (session 95 → session 96)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-PR #124 (part 14) was merged. Session 94 split part 15 and finished **imaging part 15a (registration, stitching)** on
-branch `phase-4/imaging-registration` (with this handover; PR #125 expected). Next: **imaging part 15b
-(`denoising-algorithms`, `computational-imaging`)**, the last imaging part.
+Session 95 finished **imaging part 15b (denoising, computational imaging)** on branch `phase-4/imaging-denoising`
+(PR #126 expected). **The imaging audit is complete (61/61).** Next: ask the user which category to audit next.
 
 ## State
-- New `src/physics/imaging/registration.ts`: `transformMatrix(model, θ, s, φ)`, `displacementRms`/`displacementMax`,
-  `targetRegistrationError({model, n, fle, fiducialRms, targetDistance})`, `fiducialRegistrationError`,
-  `translationCrlb(snr, ℓ, N_px)`, `tileGrid`, `blendWeight` (linear, cos²), `sequentialStitchError`,
-  `globalStitchError` (exact R_eff via DCT modes, ≤ 2500 tiles, 0.1 s at 50 × 50; the page caches it per grid size).
-- `registration`: models rigid/similarity/affine (URL `transformation`, elastic dropped), new keys `pixelSizeNm`,
-  `fle`, `snr`, `featureSize`; `noiseLevel` and `interpolation` dropped; `numControlPoints` default 10.
-  `stitching`: `blendMethod` linear/cosine, `positionError` is now the pairwise σ per axis (default 0.5 px).
-- Test: `tests/imaging-registration.test.ts` (7 tests, incl. a seeded Monte Carlo Procrustes check). 314 of 454 pages
-  tiered; 2 `knownIssue`s, both part 15b.
+- New `src/physics/imaging/denoising.ts`: `boxNoiseRatio`, `gaussianKernel`/`gaussianNoiseRatio` (taps to ⌈3σ_s⌉),
+  `medianVarianceFactor(n)` (exact, Simpson over the order-statistic density) / `medianNoiseRatio(k)`, `snrGainDb`,
+  `boxTransfer`, `gaussianTransfer`, `halfResponseFrequency`, `visuShrinkThreshold`.
+- New `src/physics/imaging/computational-imaging.ts`: `singleViewSnr`/`fusedSnr` (`mode` perView | totalDose, on
+  `cameraSnr`), `syntheticNa`, `coherentCutoffPeriod`, `incoherentCutoffPeriod`, `spaceBandwidthGain`.
+- `denoising-algorithms`: filters box/Gaussian/median (URL `filter`), keys `inputNoise`, `filterSize`, `sigmaSpatial`,
+  new `imageSize`; bilateral/NLM/wavelet/deep and their keys dropped. `computational-imaging`: new `naIll`, `dose`;
+  `bgNoise` is now a mean background count; default NA 0.1.
+- Test: `tests/imaging-denoising.test.ts` (7 tests, incl. a seeded Monte Carlo median check). 316 of 454 pages
+  tiered; no `knownIssue`s left anywhere.
 - **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only when the user asks:
   `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set
   Vercel's Production Branch to `release` (not confirmed).
@@ -23,17 +23,19 @@ branch `phase-4/imaging-registration` (with this handover; PR #125 expected). Ne
   user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 15a: `imaging/registration=934.0`,
-   `imaging/stitching=84.70`; part 14: `imaging/light-field=7.50`, `imaging/plenoptic-camera=288`; part 13:
-   `imaging/sensor-cmos=84.44`, `imaging/dynamic-range=83.22`, `imaging/signal-to-noise=56.391`; earlier parts:
-   `git show 04f88743:docs/HANDOVER.md`. Don't release unless asked.
-2. Imaging part 15b (`denoising-algorithms`, `computational-imaging`; goldens in ROADMAP).
-3. Then ask the user which category to audit next (ROADMAP). Later: open findings (FSO `adaptive-optics`
-   actuators-as-modes, part 8 leftovers, local `sinc` copies, `fluorophores.ts` cutoff, `optical-sectioning-thickness`,
-   detectors 7b, fiber, FSO), `polarizer-types` (needs the user at the laptop with Chrome). `simultaneous-multicolor`
-   could use `binnedReadNoise` instead of its inline copy.
+1. `/ship` this branch. Values for a later release check: part 15b: `imaging/denoising-algorithms=9.54`,
+   `imaging/computational-imaging=157.02`; part 15a: `imaging/registration=934.0`, `imaging/stitching=84.70`;
+   part 14: `imaging/light-field=7.50`, `imaging/plenoptic-camera=288`; earlier parts: `git show 04f88743:docs/HANDOVER.md`.
+   Don't release unless asked.
+2. Ask the user which category to audit next: wave-optics 2/49, materials 4/45 or spectroscopy 5/54 (ROADMAP).
+3. Later: open findings (FSO `adaptive-optics` actuators-as-modes, part 8 leftovers, local `sinc` copies,
+   `fluorophores.ts` cutoff, `optical-sectioning-thickness`, detectors 7b, fiber, FSO), `polarizer-types` (needs the
+   user at the laptop with Chrome). `simultaneous-multicolor` could use `binnedReadNoise` instead of its inline copy.
 
 ## Non-obvious facts
+- **Session 95:** `SimpleChart` colours a markers-only trace from `line.color` (else the palette), not `marker.color`:
+  give a "Current" marker trace both. Var(median of n normals): 3 → 0.448671, 5 → 0.286834, 9 → 0.166101,
+  225 → 0.006968 (π/(2n) 0.006981). Section/equation numbers in book citations were not checked, so none are cited.
 - **Session 94:** Robinson & Milanfar 2004 is at `users.soe.ucsc.edu/~milanfar/publications/journal/MotionPerformanceFinal.pdf`
   (equations are images; pdftotext loses them). No open Fitzpatrick 1998 PDF found; the 2-D TRE was derived and checked
   by Monte Carlo. React Compiler is not enabled, so `useMemo` over clamped values only earns a lint warning: cache
@@ -41,8 +43,6 @@ branch `phase-4/imaging-registration` (with this handover; PR #125 expected). Ne
 - **Session 92:** the ROADMAP's sensorNoise(700, 1.5, 0.1) golden used dark 0.1 e⁻; the page's 0.011 e⁻ plus σ_q gives
   the same 26.50 / 26.41. With PRNU 1 % the SNR at half well is 77.45 (77.46 without DSNU and σ_q); flat-fielded 122.46.
   `useURLState` setters batch, so a preset button can call nine setters at once. `next start` exits 1 when killed.
-- **Session 90:** exact Strehl (σ = 0.1λ): defocus 0.6626 … spherical 0.6664 vs Maréchal 0.6738; the defocused OTF first
-  goes negative near W₀₂₀ = 0.65λ. ROADMAP φ 2.578 is kW₀₂₀ (paraxial).
 - **Sessions 86–89:** devctl queues heavy commands when another project's build hogs the CPU: run gates with
   `run_in_background` from the start. The merge codemod drops the last entry's trailing comma. **Never put Markdown
   backticks in a `node -e "…"` string**: bash runs them; use Write. spiedigitallibrary.org samples return HTML.
