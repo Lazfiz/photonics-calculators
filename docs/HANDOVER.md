@@ -1,17 +1,20 @@
-# Handover — 2026-10-19 (session 99 → session 100)
+# Handover — 2026-10-19 (session 100 → session 101)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 99 did **spectroscopy fix part 3** (peak model) on branch `phase-4/spectroscopy-peak-model` (PR #130).
-Next: **spectroscopy fix part 4** (Raman: raman-shift absorbs raman-spectroscopy; stimulated-raman and CARS → imaging; SERS).
+Session 100 did **spectroscopy fix part 4** (Raman) on branch `phase-4/spectroscopy-raman`.
+Next: **spectroscopy fix part 5** (gratings: dispersive-element, grating-efficiency, spectral-range on `spectral-resolution.ts`).
 
 ## State
-- New `src/physics/spectroscopy/peak-model.ts`: height-normalised Gaussian/Lorentzian/pseudo-Voigt `peakShape`,
-  `peakArea`, `bandSum`, seeded `gaussianNoise` (mulberry32 + Box–Muller), `fitHeights` (linear LSQ, Cholesky, SE and
-  correlation), `dipDepth` (Sparrow), `bandStats` (max, FWHM, centroid), Huang–Rhys `franckCondonWeights`,
-  `vibronicLineShape`/`vibronicSpectrum`/`vibronicSpectrumNm` (ν̃, ν̃³, λ⁻² Jacobian). New `stokes-shift.ts`. 8 goldens.
-- emission-spectra merged into spectral-deconvolution (redirect; `mode` = bands | vibronic; peaks in the URL as one
-  `peaks=c:w:h,…` string). stokes-shift tiered exact. 322 of 449 pages tiered, 35 `knownIssue`s.
+- New `src/physics/spectroscopy/raman.ts` (`ramanShiftOf`, `ramanShiftEnergy`, `antiStokesStokesRatio` with m = 3 photons /
+  4 power; re-exports the imaging Stokes/anti-Stokes wavelengths) and `sers.ts` (`silverPermittivity`, `sphereFactor`,
+  `sphereFieldEnhancement` pole/equator, `sersEnhancement` max and surface average 1/5, 8/15, 2/15, `silverSphereResonance`).
+  `imaging/coherent-raman.ts` gains `excitationBandwidth` (√2·0.4413/(cτ)), `srsFocusFactor` and `srsModulationDepth`.
+- Merged with redirects: raman-spectroscopy → raman-shift (band table kept, Si-O label replaced by shift standards),
+  stimulated-raman → imaging/stimulated-raman-microscopy (δ source: measured | from g_R with pulse width and rep rate),
+  coherent-anti-stokes-raman → imaging/coherent-raman (URL clamps added, excitation bandwidth vs line FWHM).
+  raman-shift tiered exact, surface-enhanced-raman textbook (default radius 10 nm, inside its own quasistatic limit).
+  324 of 446 pages tiered, 31 `knownIssue`s.
 - The per-page findings, golden values and references are in the PR #127 description (`gh pr view 127`); read the
   section for the part at hand instead of re-auditing.
 - **User decisions (session 96):** merges with redirects. The parts are listed in ROADMAP "Spectroscopy fix parts".
@@ -22,18 +25,19 @@ Next: **spectroscopy fix part 4** (Raman: raman-shift absorbs raman-spectroscopy
   user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 3: `spectroscopy/stokes-shift=1602.6`,
+1. `/ship` this branch. Values for a later release check: part 4: `spectroscopy/surface-enhanced-raman=1.15e+4` (405 nm,
+   pole EF), `spectroscopy/raman-shift=561.893`; part 3: `spectroscopy/stokes-shift=1602.6`,
    `spectroscopy/spectral-deconvolution=40.08`; part 2: `spectroscopy/spectral-line-broadening=0.3525`,
-   `spectroscopy/libs-analysis=0.2128`; part 1: `spectroscopy/lambert-beer-law=31.62`,
-   `spectroscopy/absorption-cross-section=1.912e-16`, `spectroscopy/optical-density=6.64`; earlier parts:
+   `spectroscopy/libs-analysis=0.2128`; part 1: `spectroscopy/lambert-beer-law=31.62`; earlier parts:
    `git show 04f88743:docs/HANDOVER.md`. Don't release unless asked.
-2. Spectroscopy part 4 (ROADMAP item 4): SERS quasistatic sphere with `materials/silver.ts`; reuse imaging
-   `srsLineshape` for the merged Raman pages.
+2. Spectroscopy part 5 (ROADMAP item 5): gratings on `spectral-resolution.ts` + scalar blaze sinc².
 3. Later: open findings (FSO `adaptive-optics` actuators-as-modes, part 8 leftovers, local `sinc` copies,
    `fluorophores.ts` cutoff, `optical-sectioning-thickness`, detectors 7b, fiber, FSO), `polarizer-types` (needs the
-   user at the laptop with Chrome). `simultaneous-multicolor` could use `binnedReadNoise` instead of its inline copy.
+   user at the laptop with Chrome). Gold for SERS needs a gold dataset (none in `materials/`).
 
 ## Non-obvious facts
+- **Session 100:** a merge can leave a chained redirect (an older `/a → /b` when `/b` is now removed); the redirect test
+  wants one hop, so point it at the final page. A trapezoid over z = Z tan u must add both end values (finite limits).
 - **Session 99:** `tests/calculator-pages.test.ts` has a page-count floor (now ≥ 440); a merge can trip it. The global
   minimum between two peak centres is often an endpoint, not the dip: `dipDepth` uses running maxima from both sides.
   devctl queues headless Chrome behind other projects' jobs (minutes): run screenshots in the background with a fresh
@@ -47,10 +51,6 @@ Next: **spectroscopy fix part 4** (Raman: raman-shift absorbs raman-spectroscopy
   parallel `physics-reviewer` batches of 7 finish in ≈ 6 min; ask for a draft `knownIssue` per page.
 - **Session 95:** `SimpleChart` colours a markers-only trace from `line.color` (else the palette), not `marker.color`:
   give a "Current" marker trace both. Section/equation numbers in book citations were not checked, so none are cited.
-- **Session 94:** React Compiler is not enabled, so `useMemo` over clamped values only earns a lint warning: cache
-  heavy pure results in a module-level `Map` instead.
-- **Session 92:** `useURLState` setters batch, so a preset button can call nine setters at once. `next start` exits 1
-  when killed.
 - **Sessions 86–89:** devctl queues heavy commands when another project's build hogs the CPU: run gates with
   `run_in_background` from the start. The merge codemod drops the last entry's trailing comma. **Never put Markdown
   backticks in a `node -e "…"` string**: bash runs them; use Write. spiedigitallibrary.org samples return HTML.
