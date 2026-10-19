@@ -1,17 +1,17 @@
-# Handover — 2026-10-19 (session 98 → session 99)
+# Handover — 2026-10-19 (session 99 → session 100)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 98 did **spectroscopy fix part 2** (line broadening) on branch `phase-4/spectroscopy-line-broadening` (PR #129).
-Next: **spectroscopy fix part 3** (peak model: spectral-deconvolution + emission-spectra merge, stokes-shift).
+Session 99 did **spectroscopy fix part 3** (peak model) on branch `phase-4/spectroscopy-peak-model` (PR #130).
+Next: **spectroscopy fix part 4** (Raman: raman-shift absorbs raman-spectroscopy; stimulated-raman and CARS → imaging; SERS).
 
 ## State
-- New `src/physics/spectroscopy/line-broadening.ts`: Faddeeva `w(z)` (Weideman N = 32, ≈ 1e-13 vs quadrature),
-  area-normalised Gaussian/Lorentzian/Voigt profiles, exact `voigtFwhm` (bisection), Olivero and TCH pseudo-Voigt,
-  Doppler fraction, v_p, natural width ↔ τ, Stark 2w·nₑ/1e22 m⁻³ and inverse, Saha ratio, McWhirter limit. 11 goldens.
-- doppler-broadening + lineshape-fit merged into spectral-line-broadening (redirects; `mode` = gas | widths). libs-analysis
-  rewritten (`solve` = width | ne, nₑ input in 10¹⁶ cm⁻³ as `ne16`, element presets set mass and χ). 320 of 450 pages
-  tiered, 38 `knownIssue`s.
+- New `src/physics/spectroscopy/peak-model.ts`: height-normalised Gaussian/Lorentzian/pseudo-Voigt `peakShape`,
+  `peakArea`, `bandSum`, seeded `gaussianNoise` (mulberry32 + Box–Muller), `fitHeights` (linear LSQ, Cholesky, SE and
+  correlation), `dipDepth` (Sparrow), `bandStats` (max, FWHM, centroid), Huang–Rhys `franckCondonWeights`,
+  `vibronicLineShape`/`vibronicSpectrum`/`vibronicSpectrumNm` (ν̃, ν̃³, λ⁻² Jacobian). New `stokes-shift.ts`. 8 goldens.
+- emission-spectra merged into spectral-deconvolution (redirect; `mode` = bands | vibronic; peaks in the URL as one
+  `peaks=c:w:h,…` string). stokes-shift tiered exact. 322 of 449 pages tiered, 35 `knownIssue`s.
 - The per-page findings, golden values and references are in the PR #127 description (`gh pr view 127`); read the
   section for the part at hand instead of re-auditing.
 - **User decisions (session 96):** merges with redirects. The parts are listed in ROADMAP "Spectroscopy fix parts".
@@ -22,17 +22,22 @@ Next: **spectroscopy fix part 3** (peak model: spectral-deconvolution + emission
   user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 2: `spectroscopy/spectral-line-broadening=0.3525`,
+1. `/ship` this branch. Values for a later release check: part 3: `spectroscopy/stokes-shift=1602.6`,
+   `spectroscopy/spectral-deconvolution=40.08`; part 2: `spectroscopy/spectral-line-broadening=0.3525`,
    `spectroscopy/libs-analysis=0.2128`; part 1: `spectroscopy/lambert-beer-law=31.62`,
-   `spectroscopy/absorption-cross-section=1.912e-16`, `spectroscopy/optical-density=6.64`; imaging 15b:
-   `imaging/denoising-algorithms=9.54`, `imaging/computational-imaging=157.02`; 15a: `imaging/registration=934.0`,
-   `imaging/stitching=84.70`; earlier parts: `git show 04f88743:docs/HANDOVER.md`. Don't release unless asked.
-2. Spectroscopy part 3 (ROADMAP item 3): peak model (illustrative, no fake fit) can reuse `line-broadening.ts` profiles.
+   `spectroscopy/absorption-cross-section=1.912e-16`, `spectroscopy/optical-density=6.64`; earlier parts:
+   `git show 04f88743:docs/HANDOVER.md`. Don't release unless asked.
+2. Spectroscopy part 4 (ROADMAP item 4): SERS quasistatic sphere with `materials/silver.ts`; reuse imaging
+   `srsLineshape` for the merged Raman pages.
 3. Later: open findings (FSO `adaptive-optics` actuators-as-modes, part 8 leftovers, local `sinc` copies,
    `fluorophores.ts` cutoff, `optical-sectioning-thickness`, detectors 7b, fiber, FSO), `polarizer-types` (needs the
    user at the laptop with Chrome). `simultaneous-multicolor` could use `binnedReadNoise` instead of its inline copy.
 
 ## Non-obvious facts
+- **Session 99:** `tests/calculator-pages.test.ts` has a page-count floor (now ≥ 440); a merge can trip it. The global
+  minimum between two peak centres is often an endpoint, not the dip: `dipDepth` uses running maxima from both sides.
+  devctl queues headless Chrome behind other projects' jobs (minutes): run screenshots in the background with a fresh
+  `--user-data-dir`. A wavenumber through `toPrecision(4)` prints "2.002e+4": use `toFixed(0)` for cm⁻¹.
 - **Session 98:** `SimpleLineChart` has no y-range prop and puts the axis minimum at the data minimum, so a Gaussian wing
   shows "5.6e-27" on the axis: round plotted values (6 decimals). A cm⁻³ density as a raw number input shows 17 digits;
   enter it in 10¹⁶ cm⁻³. TCH pseudo-Voigt deviates ≈ 1.2–1.3 % of the peak at Δ_L/Δ_G ≈ 0.6–0.9.
@@ -49,12 +54,8 @@ Next: **spectroscopy fix part 3** (peak model: spectral-deconvolution + emission
 - **Sessions 86–89:** devctl queues heavy commands when another project's build hogs the CPU: run gates with
   `run_in_background` from the start. The merge codemod drops the last entry's trailing comma. **Never put Markdown
   backticks in a `node -e "…"` string**: bash runs them; use Write. spiedigitallibrary.org samples return HTML.
-  Wang & Hu 2012 is at `pmc.ncbi.nlm.nih.gov/articles/PMC3322413/` with a full Chrome User-Agent.
-- **Sessions 84–85:** a mutation probe: copy the file first. FPbase API: Chrome User-Agent + `Accept: application/json`.
-- **Session 83:** With e^(−iωt), δ = −π/2 is positive phase contrast. A `positive()` guard rejects an `Infinity` default.
 - **Session 82:** `SimpleChart` skips NaN points but joins the line across them; for real gaps split traces. A Git Bash
   heredoc can drop a backslash: write scripts with Write.
-- **Sessions 79–81:** Lint `preserve-manual-memoization` fires on a `useMemo` over clamped values: drop it.
 - **Session 78:** reviewer stalls come from a hung shell: batches of 7 pages, `timeout 60`. Crossref returns 429 when
   hit too often. `tier-status.ts` takes > 2 min: run it in the background (or count `tier:` lines in the registry file).
 - **Session 65:** probe the module (scratchpad `.ts`) before writing the test; then mutate the code once to see

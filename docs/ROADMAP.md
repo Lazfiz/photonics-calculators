@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 98, 2026-10-19)
+## Status (session 99, 2026-10-19)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -19,12 +19,12 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
 | imaging | 61 / 61 | done: part 0 audit (session 78), fix parts 1–15b (sessions 79–95) |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
-| spectroscopy | 9 / 50 | part 0 audit (session 96); fix parts 1–2 (sessions 97–98); 38 `knownIssue`s; parts 3–12 next |
+| spectroscopy | 11 / 49 | part 0 audit (session 96); fix parts 1–3 (sessions 97–99); 35 `knownIssue`s; parts 4–12 next |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **320 / 450** | 38 `knownIssue`s (spectroscopy) |
+| **total** | **322 / 449** | 35 `knownIssue`s (spectroscopy) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -51,7 +51,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
      absorption-cross-section (σ = 3.8235e-21 ε cm²; fix the typical values).
   2. ✅ (session 98, PR #129) `line-broadening.ts` (exact Voigt via Weideman Faddeeva, Olivero, TCH): spectral-line-broadening
      absorbs doppler-broadening and lineshape-fit (Voigt 0.3525); libs-analysis (Stark 2w·nₑ, Saha, McWhirter). 11 goldens.
-  3. Peak model (spectral-deconvolution + emission-spectra, illustrative, no fake fit); stokes-shift.
+  3. ✅ (session 99, PR #130) `peak-model.ts`: spectral-deconvolution absorbs emission-spectra (real height LSQ fit,
+     Sparrow dips 0.849 w / 0.577 w, Huang–Rhys vibronic band with λ⁻² Jacobian); stokes-shift 1602.56 cm⁻¹. 8 goldens.
   4. Raman: raman-shift absorbs raman-spectroscopy; stimulated-raman → imaging/stimulated-raman-microscopy and
      coherent-anti-stokes-raman → imaging/coherent-raman (redirects, carry over anything missing); surface-enhanced-raman
      (quasistatic sphere with `materials/silver.ts`).
