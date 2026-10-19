@@ -102,11 +102,6 @@ export const spectroscopy: CalculatorEntry[] = [
     knownIssue: "The blaze efficiency curve is a made-up triangle rather than scalar theory, and the linear dispersion assumes a focal plane normal to the grating at a fixed 100 mm focal length.",
   },
   {
-    slug: "doppler-broadening",
-    title: "Doppler Broadening Calculator",
-    description: "Calculate Doppler (thermal) line broadening FWHM from gas temperature and atomic/molecular mass.",
-  },
-  {
     slug: "dual-comb-spectroscopy",
     title: "Dual-Comb Spectroscopy Calculator",
     description: "Model dual-comb spectroscopy parameters: resolution, bandwidth, update rate, and multi-heterodyne RF spectrum.",
@@ -239,14 +234,33 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "libs-analysis",
     title: "LIBS Analysis Calculator",
-    description: "Laser-Induced Breakdown Spectroscopy: model plasma line broadening (Stark + Doppler) and estimate plasma conditions.",
-    knownIssue: "The Stark width coefficient is about 100 times too large for typical lines, and the 7 eV ionization Boltzmann factor is not a Saha estimate.",
-  },
-  {
-    slug: "lineshape-fit",
-    title: "Lineshape Fitting",
-    description: "Voigt, Gaussian, and Lorentzian line profiles — compare convolution effects on spectral lines.",
-    knownIssue: "No fit is performed, the profiles are drawn from the inputs, and the pseudo-Voigt mixes peak-normalised components, which deviates up to about 1.4 percent from the true Voigt.",
+    description: "Laser-Induced Breakdown Spectroscopy: Stark width from electron density or electron density from a measured Stark width, Doppler and instrument widths, the Saha ionisation ratio and the McWhirter LTE check.",
+    lede: "Stark and Doppler widths of a LIBS plasma line, electron density from a Stark width, the Saha ratio and the McWhirter LTE limit.",
+    keywords: ["LIBS", "Stark broadening", "electron density", "Saha equation", "McWhirter criterion", "plasma temperature"],
+    related: [
+      { href: "/spectroscopy/spectral-line-broadening" },
+      { href: "/spectroscopy/spectral-resolution" },
+      { href: "/spectroscopy/emission-spectra" },
+    ],
+    tier: "textbook",
+    modelNote: "Isolated-line electron-impact Stark width linear in nₑ (w from tables, ion broadening neglected), Doppler and instrument Gaussians in quadrature, exact Voigt; Saha in LTE for single ionisation without ionisation-potential lowering. Not for hydrogen Balmer lines.",
+    references: [
+      {
+        citation: "Konjević N., Lesage A., Fuhr J. R., Wiese W. L. (2002). Experimental Stark widths and shifts for spectral lines of neutral and ionized atoms. J. Phys. Chem. Ref. Data 31, 819–927.",
+        url: "https://doi.org/10.1063/1.1486456",
+      },
+      {
+        citation: "Cristoforetti G., De Giacomo A., Dell'Aglio M., et al. (2010). Local thermodynamic equilibrium in laser-induced breakdown spectroscopy: beyond the McWhirter criterion. Spectrochim. Acta B 65, 86–95.",
+        url: "https://doi.org/10.1016/j.sab.2009.11.005",
+      },
+      {
+        citation: "Griem H. R. (1997). Principles of Plasma Spectroscopy. Cambridge University Press (Saha equation, Stark broadening).",
+      },
+      {
+        citation: "NIST Atomic Spectra Database, ionization energies.",
+        url: "https://physics.nist.gov/PhysRefData/ASD/ionEnergy.html",
+      },
+    ],
   },
   {
     slug: "michelson-interferometer",
@@ -350,8 +364,34 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "spectral-line-broadening",
     title: "Spectral Line Broadening",
-    description: "Doppler, collisional, natural, and Voigt broadening mechanisms.",
-    knownIssue: "The plotted Voigt profile mixes a Doppler Gaussian and a collisional Lorentzian of different widths and comes out narrower than either, so it disagrees with the Voigt FWHM shown.",
+    description: "Doppler, pressure and natural line widths and the exact Voigt profile, with the Olivero and pseudo-Voigt (TCH) approximations; or combine any Gaussian and Lorentzian widths.",
+    lede: "Doppler (Gaussian) and pressure plus natural (Lorentzian) widths of a gas line, combined into the exact Voigt profile.",
+    keywords: ["Doppler Broadening", "Doppler width", "Voigt profile", "Voigt FWHM", "pseudo-Voigt", "Lorentzian", "pressure broadening", "lineshape", "natural linewidth"],
+    related: [
+      { href: "/spectroscopy/libs-analysis" },
+      { href: "/spectroscopy/spectral-resolution" },
+      { href: "/spectroscopy/wavenumber-converter" },
+      { href: "/spectroscopy/absorption-cross-section" },
+    ],
+    tier: "exact",
+    modelNote: "Exact Voigt convolution (Faddeeva function, ≈ 1e-13) of a Maxwell-Doppler Gaussian and a Lorentzian from natural decay plus impact-approximation collisions, with γ entered at the gas temperature. Not modelled: Dicke narrowing, speed-dependent broadening, line mixing and pressure shifts.",
+    references: [
+      {
+        citation: "Demtröder W. (2014). Laser Spectroscopy 1: Basic Principles, 5th ed. Springer, ch. 3 (line widths and profiles).",
+      },
+      {
+        citation: "Olivero J. J., Longbothum R. L. (1977). Empirical fits to the Voigt line width: a brief review. J. Quant. Spectrosc. Radiat. Transfer 17, 233–236.",
+        url: "https://doi.org/10.1016/0022-4073(77)90161-3",
+      },
+      {
+        citation: "Thompson P., Cox D. E., Hastings J. B. (1987). Rietveld refinement of Debye–Scherrer synchrotron X-ray data from Al₂O₃. J. Appl. Cryst. 20, 79–83 (pseudo-Voigt).",
+        url: "https://doi.org/10.1107/S0021889887087090",
+      },
+      {
+        citation: "Weideman J. A. C. (1994). Computation of the complex error function. SIAM J. Numer. Anal. 31, 1497–1518.",
+        url: "https://doi.org/10.1137/0731077",
+      },
+    ],
   },
   {
     slug: "spectral-range",
