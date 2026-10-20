@@ -1,21 +1,24 @@
-# Handover — 2026-10-19 (session 102 → session 103)
+# Handover — 2026-10-20 (session 103 → session 104)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 102 did **spectroscopy fix part 6** (stray light + calibration) on branch `phase-4/spectroscopy-stray-light`
-(PR #133 after `/ship`). Next: **spectroscopy fix part 7** (FTIR: ftir-resolution, fourier-transform,
-michelson-interferometer, phase-correction; split 7a/7b if big).
+Session 103 did **spectroscopy fix part 7** (FTIR) on branch `phase-4/spectroscopy-ftir` (PR after `/ship`).
+Next: **spectroscopy fix part 8** (throughput and cavities: jacquinot, conc-mirror, etalon-fsr, cavity-ring-down).
 
 ## State
-- New `src/physics/spectroscopy/stray-light.ts`: `measuredTransmittance` ((1 − s)T + s·T_s), `absorbanceError`
-  (log1p), `measuredAbsorbance`, `apparentAbsorbanceLimit`, `maxStrayRatio`, `strayRatioFromPowerRatio` (S/(1+S)),
-  `overlappingOrders` (nλ′ = mλ), `orderSortingWindow`. s = stray share of the detected reference power.
-- New `src/physics/spectroscopy/spectral-calibration.ts`: `czernyTurner` (via `detectorCoverage`), `pixelToWavelength`,
-  `wavelengthToPixel`, `fitPolynomial` (pixels scaled to u ∈ [−1, 1], `ols` from `imaging/linear-unmixing.ts`),
-  `evalPolynomial`, `polynomialSlope`, `maxCalibrationError`. Tests: `tests/spectroscopy-stray-light.test.ts`.
-- stray-light-rejection merged into stray-light (redirect). spectral-calibration URL params: `pixelNoise` (nm) became
-  `centroidNoise` (px); new `grooveDensity`, `order`, `deviation`, `focalLength`, `pixelPitch`, `seed`, `lines` (string).
-- 329 of 445 pages tiered, 25 `knownIssue`s (all spectroscopy).
+- New `src/physics/fft.ts`: `nextPow2`, `fftRadix2` (in place, inverse includes 1/N), `dft` (any N via Bluestein).
+  Use it instead of O(N²) DFT loops (several old pages still have them).
+- New `src/physics/spectroscopy/ftir.ts`: `FTIR_APODIZATIONS` (boxcar, triangular, Happ–Genzel, Norton–Beer weak/medium/strong,
+  Blackman–Harris 3/4), `apodization`, `instrumentLineShape` (closed form; NB by Simpson), `ilsFwhm`, `ilsHighestSidelobe`,
+  `nominalResolution`, `singleSidedPoints`, `scanTime`, `modulationFrequency`, `lineInterferogram`, `halfVisibilityOpd`,
+  `cosineTransform`. `fourier-transform.ts`: `amplitudeSpectrum` (coherent gain), `aliasedFrequency`, `noiseFloorRms`.
+  `ftir-phase-correction.ts`: `synthesizeInterferogram`, `findZpd`, `lowResolutionPhase`, `phaseAt`, `mertz`, `forman`,
+  `uncorrectedSpectrum`, `magnitudeSpectrum`, `relativeRmsError`. Tests: `tests/spectroscopy-ftir.test.ts`.
+- URL params changed: fourier-transform `noise` is now RMS (was p-p), new `sampleRate`, `window`; ftir-resolution
+  `apodization` (URL now); michelson `sourceWidth` → `linewidth` (cm⁻¹), new `lineSpacing`, `apodization`, default
+  `nPoints` 512; phase-correction `opdPoints` = single-sided N (512–8192), new `doubleSided`, `zpdShift`,
+  `phaseOffset`, `dispersion`, `noise` (% of centreburst, replaces `phaseNoise`), `method` (mertz/forman/magnitude).
+- 333 of 445 pages tiered, 21 `knownIssue`s (all spectroscopy).
 - Per-page findings, goldens and references: PR #127 description (`gh pr view 127`); read the part at hand only.
 - **User decisions (session 96):** merges with redirects (ROADMAP "Spectroscopy fix parts"). **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only when the user asks:
   `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set
@@ -24,29 +27,25 @@ michelson-interferometer, phase-correction; split 7a/7b if big).
   user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 6: `spectroscopy/stray-light=2.699` (measured A),
-   `spectroscopy/spectral-calibration=0.0120` (cubic max error, nm); part 5: `spectroscopy/grating-efficiency=501.2`,
-   `spectroscopy/spectral-range=605.3`, `spectroscopy/dispersive-element=74.7`; part 4:
-   `spectroscopy/surface-enhanced-raman=1.15e+4`, `spectroscopy/raman-shift=561.893`; part 3: `spectroscopy/stokes-shift=1602.6`,
-   `spectroscopy/spectral-deconvolution=40.08`; part 2: `spectroscopy/spectral-line-broadening=0.3525`,
-   `spectroscopy/libs-analysis=0.2128`; part 1: `spectroscopy/lambert-beer-law=31.62`; earlier parts:
-   `git show 04f88743:docs/HANDOVER.md`. Don't release unless asked.
-2. Spectroscopy part 7 (ROADMAP item 7): FTIR on a shared interferogram/FFT module; Norton–Beer is in
-   `apodization-comparison.ts`.
+1. `/ship` this branch. Values for a later release check: part 7: `spectroscopy/ftir-resolution=0.6034` (boxcar ILS
+   FWHM, cm⁻¹), `spectroscopy/michelson-interferometer=220.6` (half-visibility OPD, µm), `spectroscopy/phase-correction=0.449`
+   (Mertz error, %); part 6: `spectroscopy/stray-light=2.699`, `spectroscopy/spectral-calibration=0.0120`; part 5:
+   `spectroscopy/grating-efficiency=501.2`, `spectroscopy/spectral-range=605.3`, `spectroscopy/dispersive-element=74.7`;
+   earlier parts: `git show 384d9995:docs/HANDOVER.md`. Don't release unless asked.
+2. Spectroscopy part 8 (ROADMAP item 8): jacquinot (golden 1000 cm⁻¹, 1 cm → 6.283e-3 sr), conc-mirror, etalon-fsr,
+   cavity-ring-down; PR #127 has the findings.
 3. Later: open findings (FSO `adaptive-optics` actuators-as-modes, part 8 leftovers, local `sinc` copies,
    `fluorophores.ts` cutoff, `optical-sectioning-thickness`, detectors 7b, fiber, FSO), `polarizer-types` (needs the
    user at the laptop with Chrome). Gold for SERS needs a gold dataset (none in `materials/`).
 
 ## Non-obvious facts
-- **Session 102:** with β₀ ≈ 3° the flat-detector distortion is nearly odd, so a quadratic calibration barely beats a
-  line; a cubic is needed. Fit polynomials in a scaled pixel u ∈ [−1, 1] (pixel⁶ ≈ 10²⁰ breaks the normal equations).
-  `assert.equal(-0, 0)` fails (Object.is): write `0 − x`. In `sed` replacements `&` is the match, so `&gt;` breaks:
-  use Edit. NIST ASD lines download as CSV (`lines1.pl?…&format=2`); its DOI 10.18434/T4W30F is DataCite, so
-  `crossref.mjs` says 404. astm.org returns 403; ASTM DOIs (10.1520/…) are in Crossref.
-- **Session 101:** the Casini–Nelson envelope tends to 1 for every order near grazing (ρ → 0), so unnormalised it shows
-  a false return to 100 % at the Littrow cutoff; normalised it steps at each Rayleigh anomaly (expected). |sin ψ| ≤ 1
-  isn't enough for a fixed-deviation mount: α = ψ + D_v/2 < 90° needs mλ_c < d(1 + cos D_v). eslint's
-  `preserve-manual-memoization` fires on `useMemo` over derived values: drop the `useMemo`. ar5iv HTML gives LaTeX.
+- **Session 103:** Norton–Beer coefficients (Naylor & Tahic 2007) give FWHM ratios 1.2/1.4/1.6 exactly: a good check. The
+  Mertz ramp makes Re(C) ≈ B cos φ; in the found-ZPD frame the phase is φ + 2πσ·shift·Δx (sign!). Numeric ILS for 8
+  windows took 0.5 s: use closed forms for cosine sums. devctl blocks a whole foreground command while a gate runs.
+- **Sessions 101–102:** fit polynomials in a scaled variable u ∈ [−1, 1]. `assert.equal(-0, 0)` fails (Object.is). In
+  `sed` replacements `&` is the match and a backslash-n a newline: use Edit. eslint's `preserve-manual-memoization` fires on
+  `useMemo` over derived values: drop the `useMemo`. NIST ASD DOI is DataCite (`crossref.mjs` 404); astm.org 403s,
+  ASTM DOIs (10.1520/…) are in Crossref. ar5iv HTML gives LaTeX.
 - **Session 100:** a merge can leave a chained redirect (`/a → /b` with `/b` removed): point it at the final page.
 - **Session 99:** `tests/calculator-pages.test.ts` has a page-count floor (now ≥ 440); a merge can trip it. The global
   minimum between two peak centres is often an endpoint, not the dip: `dipDepth` uses running maxima from both sides.
