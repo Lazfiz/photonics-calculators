@@ -1,155 +1,103 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
+import { airyPeakWidth } from "../../../physics/thin-film/interference";
+import {
+  regularRingIncidence, ringCoefficientOfFinesse, ringFinesse, ringFsr, ringPhotonLifetime, ringPlaneMode, ringResponse,
+  tiltedMirrorRadius,
+} from "../../../physics/wave-optics/ring-cavity";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
+
 export default function RingCavityPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [roundTripLength, setRoundTripLength] = useURLState("roundTripLength", 300); // mm
-  const [mirrorR, setMirrorR] = useURLState("mirrorR", 1000); // mm, curved mirror ROC
-  const [numMirrors, setNumMirrors] = useURLState("numMirrors", 3);
-  const [outputCouplerR, setOutputCouplerR] = useURLState("outputCouplerR", 0.95);
-  const [intracavityLoss, setIntracavityLoss] = useURLState("intracavityLoss", 0.01); // per round trip
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1064); // nm
+  const [lengthRaw, setLength] = useURLState("roundTripLength", 300); // mm
+  const [radiusRaw, setRadius] = useURLState("mirrorR", 1000); // mm, every mirror concave
+  const [mirrorsRaw, setMirrors] = useURLState("numMirrors", 3);
+  const [couplerRaw, setCoupler] = useURLState("outputCouplerR", 0.95);
+  const [lossRaw, setLoss] = useURLState("intracavityLoss", 0.01); // power, per round trip
 
-  const calc = useMemo(() => {
-    const lambda = wavelength * 1e-6; // mm
-    const L = roundTripLength; // mm
-    const R = mirrorR; // mm
-    const nMirrors = numMirrors;
-    const Rout = outputCouplerR;
-    const loss = intracavityLoss;
+  const wavelength = clamp(wavelengthRaw, 200, 11000, 1064);
+  const L_mm = clamp(lengthRaw, 10, 1e5, 300);
+  const R_mm = clamp(radiusRaw, 1, 1e7, 1000);
+  const N = Math.round(clamp(mirrorsRaw, 3, 8, 3));
+  const Roc = clamp(couplerRaw, 0.01, 0.9999, 0.95);
+  const loss = clamp(lossRaw, 0, 0.99, 0.01);
 
-    // Perimeter ≈ round trip length
-    // Segment length between mirrors
-    const segL = L / nMirrors;
+  const lambda = wavelength * 1e-9;
+  const L = L_mm * 1e-3;
+  const d = L / N;
+  const R = R_mm * 1e-3;
+  const alpha = regularRingIncidence(N);
+  const tan = ringPlaneMode(lambda, d, R, alpha, "tangential");
+  const sag = ringPlaneMode(lambda, d, R, alpha, "sagittal");
+  const stable = Number.isFinite(tan.w) && Number.isFinite(sag.w);
 
-    // ABCD for one curved mirror segment (mirror + free space)
-    // Mirror: [[1,0],[-2/R,1]], Free space: [[1,d],[0,1]]
-    const A = 1 - 2 * segL / R;
-    const B = segL;
-    const C = -2 / R * (1 - segL / R);
-    const D = 1 - 2 * segL / R;
+  const rho = Roc * (1 - loss);
+  const fsr = ringFsr(L);
+  const finesse = ringFinesse(rho);
+  const Fcoef = ringCoefficientOfFinesse(rho);
+  const fwhm = (fsr * airyPeakWidth(Fcoef)) / (2 * Math.PI); // exact Airy width; NaN when F < 1
+  const tau = ringPhotonLifetime(L, rho);
 
-    // Stability: trace of round-trip ABCD
-    const trace = nMirrors * (A + D); // simplified for symmetric
-    // For symmetric ring: stability if |A+D| < 2
-    const halfTrace = A + D;
-    const stable = Math.abs(halfTrace) < 2;
+  // Response over ±1.5 FSR, sampled densely near each resonance: Δν = k·FSR + (FSR/2ℱ) tan u.
+  const halfWidth = fsr / (2 * finesse);
+  const uMax = Math.atan(fsr / 2 / halfWidth);
+  const detunings = [-1, 0, 1].flatMap((k) =>
+    Array.from({ length: 121 }, (_, i) => k * fsr + halfWidth * Math.tan(-uMax + (2 * uMax * i) / 120)),
+  );
+  const response = [{
+    name: "Intracavity power / peak",
+    color: "#60a5fa",
+    points: detunings.map((nu) => ({ x: round6(nu / 1e6), y: round6(ringResponse(nu, fsr, Fcoef)) })),
+  }];
 
-    // Beam parameters (if stable)
-    let w0 = 0, zR = 0, divergence = 0, spotSize = 0;
-    if (stable) {
-      const cosTheta = halfTrace / 2;
-      const sinTheta = Math.sqrt(1 - cosTheta * cosTheta);
-      // Beam radius at reference plane
-      const wRef = Math.sqrt(Math.abs(lambda * B / Math.PI / sinTheta));
-      zR = Math.abs(B / sinTheta);
-      w0 = Math.sqrt(lambda * zR / Math.PI);
-      divergence = lambda / (Math.PI * w0) * 1000; // mrad
-      spotSize = wRef;
-    }
-
-    // Cavity properties
-    const fsr = c / (L * 1e-3); // Hz (c/L)
-    const finesse = Math.PI * Math.sqrt(Rout * (1 - loss)) / (1 - Rout * (1 - loss));
-    const linewidth = fsr / finesse;
-    const thresholdGain = loss + (1 - Rout);
-    const freeSpectralRangeWl = wavelength * wavelength / (L * 1e6); // nm (approx for large L)
-
-    // Mode spectrum
-    const modeSpacing = fsr;
-    const numModes = 7;
-    const modeFreqs = Array.from({ length: numModes }, (_, i) => -Math.floor(numModes / 2) + i);
-    const modeFreqHz = modeFreqs.map(q => q * modeSpacing);
-    const modeFreqRel = modeFreqHz.map(f => f / 1e9); // GHz
-
-    // Airy function for mode shape
-    const N = 200;
-    const detuning = Array.from({ length: N }, (_, i) => (-modeSpacing * 1.5 + 3 * modeSpacing * i) / (N - 1));
-    const Fcoeff = 4 * Rout * (1 - loss) / Math.pow(1 - Rout * (1 - loss), 2);
-    const cavityResponse = detuning.map(f => {
-      const delta = 2 * Math.PI * f * L * 1e-3 / c;
-      return 1 / (1 + Fcoeff * Math.sin(delta / 2) ** 2);
-    });
-
-    return { stable, halfTrace, w0, zR, divergence, spotSize, fsr, finesse, linewidth, thresholdGain, freeSpectralRangeWl, detuning, cavityResponse, modeFreqRel };
-  }, [wavelength, roundTripLength, mirrorR, numMirrors, outputCouplerR, intracavityLoss]);
+  const planeText = (m: typeof tan, plane: "tangential" | "sagittal") =>
+    Number.isFinite(m.w) ? `${fmt(m.w * 1e6)} µm` : `Unstable: d > 2R_${plane === "tangential" ? "t" : "s"}`;
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-        <ValidatedNumberInput label="Round-trip length (mm)" value={roundTripLength} onChange={setRoundTripLength} />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 mb-4">
-        <ValidatedNumberInput label="Mirror ROC (mm)" value={mirrorR} onChange={setMirrorR} />
-        <ValidatedNumberInput label="Number of mirrors" value={numMirrors} onChange={setNumMirrors} min={3} max={6} />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Output coupler R" value={outputCouplerR} onChange={setOutputCouplerR} min={0} max={0.999} step="0.01" />
-        <ValidatedNumberInput label="Intracavity loss (per round trip)" value={intracavityLoss} onChange={setIntracavityLoss} min={0} step="0.001" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Wavelength λ (nm)" value={wavelengthRaw} onChange={setWavelength} min={200} max={11000} />
+        <ValidatedNumberInput label="Round-trip length L (mm)" value={lengthRaw} onChange={setLength} min={10} max={1e5} step="any" />
+        <ValidatedNumberInput label="Mirror radius of curvature R (mm, concave)" value={radiusRaw} onChange={setRadius} min={1} max={1e7} step="any" />
+        <ValidatedNumberInput label="Number of mirrors N (regular polygon)" value={mirrorsRaw} onChange={setMirrors} min={3} max={8} step="1" />
+        <ValidatedNumberInput label="Output coupler reflectance R_oc" value={couplerRaw} onChange={setCoupler} min={0.01} max={0.9999} step="any" />
+        <ValidatedNumberInput label="Other loss per round trip (power fraction)" value={lossRaw} onChange={setLoss} min={0} max={0.99} step="any" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Stability</p>
-          <p className={`text-xl font-bold ${calc.stable ? "text-green-400" : "text-red-400"}`}>
-            {calc.stable ? "Stable" : "Unstable"}
-          </p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">FSR</p>
-          <p className="text-xl font-bold text-blue-400">{(calc.fsr / 1e6).toFixed(2)} MHz</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Finesse</p>
-          <p className="text-xl font-bold text-green-400">{calc.finesse.toFixed(1)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Threshold Loss</p>
-          <p className="text-xl font-bold text-orange-400">{calc.thresholdGain.toFixed(3)}</p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-4">
+        <ResultCard label="Free spectral range c/L" value={`${fmt(fsr / 1e6)} MHz`} tone="blue" />
+        <ResultCard label="Finesse ℱ = π ρ^¼/(1 − √ρ)" value={fmt(finesse)} subtext={`Round-trip power factor ρ = ${fmt(rho)}`} tone="green" />
+        <ResultCard label="Linewidth (FWHM)" value={`${fmt(fwhm / 1e6)} MHz`} subtext={`Q = ν/Δν = ${fmt(c / lambda / fwhm, 3)}`} tone="cyan" />
+        <ResultCard label="Photon lifetime" value={`${fmt(tau * 1e9)} ns`} subtext={`Threshold round-trip gain 1/ρ = ${fmt(1 / rho)}`} tone="orange" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard label="Angle of incidence on each mirror" value={`${fmt((alpha * 180) / Math.PI)}°`} subtext={`Segment d = L/N = ${fmt(d * 1e3)} mm`} tone="purple" />
+        <ResultCard label="Effective radius R_t / R_s" value={`${fmt(tiltedMirrorRadius(R_mm, alpha, "tangential"))} / ${fmt(tiltedMirrorRadius(R_mm, alpha, "sagittal"))} mm`} subtext="R cos α in the ring plane, R/cos α across it" tone="purple" />
+        <ResultCard label="Spot on mirrors: tangential / sagittal" value={`${planeText(tan, "tangential")} / ${planeText(sag, "sagittal")}`} tone="yellow" />
+        <ResultCard label="Waist mid-segment: tangential / sagittal" value={`${fmt(tan.w0 * 1e6)} / ${fmt(sag.w0 * 1e6)} µm`} subtext={`Ellipticity w_s/w_t on the mirrors ${fmt(sag.w / tan.w, 3)}`} tone="yellow" />
       </div>
 
-      {calc.stable && (
-        <div className="grid gap-4 sm:grid-cols-3 mb-8">
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <p className="text-sm text-gray-400">Beam Waist</p>
-            <p className="text-xl font-bold text-blue-400">{calc.w0.toFixed(2)} mm</p>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <p className="text-sm text-gray-400">Spot at Mirrors</p>
-            <p className="text-xl font-bold text-green-400">{calc.spotSize.toFixed(2)} mm</p>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <p className="text-sm text-gray-400">Divergence</p>
-            <p className="text-xl font-bold text-orange-400">{calc.divergence.toFixed(2)} mrad</p>
-          </div>
-        </div>
+      {!stable && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          No Gaussian mode: each plane needs 0 &lt; d/R<sub>eff</sub> &lt; 2. The tangential plane fails first, at d = 2R cos α.
+        </p>
       )}
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-8">
-        <p className="text-gray-300 text-sm mb-2 font-mono">
-          FSR = c/L  |  ℱ = π√(R(1−α))/(1−R(1−α))  |  |½Tr(M)| &lt; 2 → stable
-        </p>
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>ρ = R<sub>oc</sub>(1 − loss); intracavity power ∝ 1/(1 + F sin²(πΔν/FSR)), F = 4√ρ/(1 − √ρ)²; τ = (L/c)/(−ln ρ).</p>
+        <p>Period matrix free(d)·mirror(R<sub>eff</sub>): m = 1 − d/R<sub>eff</sub>, stable for |m| &lt; 1, spot on the mirror
+          w² = (λd/π)/√(1 − m²). α = 90° − 180°/N.</p>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4">
-        <ChartPanel data={[{
-          x: calc.detuning.map(f => f / 1e6), y: calc.cavityResponse,
-          type: "scatter" as const, mode: "lines" as const, name: "Cavity response",
-          line: { color: "#60a5fa" },
-        }]} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" }, xaxis: { title: "Detuning (MHz)", gridcolor: "#374151" },
-          yaxis: { title: "Transmission", gridcolor: "#374151", range: [0, 1.05] },
-          margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} />
-      </div>
+      <SimpleLineChart title="Cavity resonances over ±1.5 FSR" xLabel="Detuning Δν (MHz)" yLabel="Intracavity power / peak" series={response} />
     </>
   );
 }

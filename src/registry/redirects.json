@@ -83,6 +83,7 @@
   "/thin-film/stress": "/thin-film/coating-stress",
   "/wave-optics/beam-quality": "/wave-optics/m2-factor",
   "/wave-optics/beam-waist-matching": "/wave-optics/mode-matching",
+  "/wave-optics/cavity-stability": "/wave-optics/cavity-mode-spacing",
   "/wave-optics/dual-comb-spectroscopy": "/spectroscopy/dual-comb-spectroscopy",
   "/wave-optics/gouy-phase": "/wave-optics/gaussian-beam",
   "/wave-optics/laguerre-gaussian": "/wave-optics/hermite-gaussian",
