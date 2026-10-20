@@ -1,90 +1,78 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { beamRadius, divergenceHalfAngle, m2FromWaistDivergence, rayleighRange } from "../../../physics/wave-optics/gaussian-beam";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
+const COMPARE = [
+  { m2: 1, color: "#22c55e" },
+  { m2: 2, color: "#facc15" },
+  { m2: 5, color: "#f87171" },
+];
+
 export default function M2FactorPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [w0, setW0] = useURLState("w0", 0.5); // mm, measured waist
-  const [theta, setTheta] = useURLState("theta", 2); // mrad, measured divergence
-  const [targetM2, setTargetM2] = useURLState("targetM2", 1.5);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1064); // nm
+  const [w0Raw, setW0] = useURLState("w0", 0.5); // mm, second-moment waist radius
+  const [thetaRaw, setTheta] = useURLState("theta", 2); // mrad, full-angle divergence
 
-  const calc = useMemo(() => {
-    const lam = wavelength * 1e-6; // mm
-    const w0m = w0; // mm
-    const thetaRad = theta / 1000; // rad
-    const thetaHalf = thetaRad / 2; // half-angle divergence
+  const wavelength = clamp(wavelengthRaw, 100, 20000, 1064);
+  const w0_mm = clamp(w0Raw, 0.001, 100, 0.5);
+  const theta_mrad = clamp(thetaRaw, 0.001, 1000, 2);
 
-    // M² = (π * w0 * θ) / λ  (using half-angle divergence, w0 as 1/e² radius)
-    const M2 = (Math.PI * w0m * thetaHalf) / lam;
-    const M2dB = 10 * Math.log10(M2);
+  const lambda = wavelength * 1e-9;
+  const w0 = w0_mm * 1e-3;
+  const halfAngle = theta_mrad * 1e-3 / 2;
+  const m2 = m2FromWaistDivergence(lambda, w0, halfAngle);
+  const impossible = m2 < 1;
+  const tem00 = { lambda, w0 };
+  const thetaDL_mrad = 2 * divergenceHalfAngle(tem00) * 1e3; // full angle of a TEM₀₀ beam with this waist
+  const bpp = w0_mm * halfAngle * 1e3; // mm·mrad
+  const zR_mm = rayleighRange({ lambda, w0, m2: Math.max(m2, 1) }) * 1e3;
 
-    // Diffraction-limited full-angle divergence (consistent with input convention)
-    const thetaDL = 2 * lam / (Math.PI * w0m);
-    const w0DL = lam / (Math.PI * thetaHalf);
+  const zMax = 3 * rayleighRange(tem00) * 1e3;
+  const zs = Array.from({ length: 201 }, (_, i) => -zMax + (i * 2 * zMax) / 200);
+  const curve = (M: number) => zs.map((z) => ({ x: round6(z), y: round6(beamRadius({ lambda, w0, m2: M }, z * 1e-3) * 1e3) }));
+  const series = [
+    ...COMPARE.map(({ m2: M, color }) => ({ name: `M² = ${M}`, color, dashed: true, points: curve(M) })),
+    ...(impossible ? [] : [{ name: `This beam, M² = ${fmt(m2, 3)}`, color: "#60a5fa", points: curve(m2) }]),
+  ];
 
-    // Beam parameter product BPP = w0 * θ
-    const BPP = w0m * thetaHalf;
-
-    return { M2, M2dB, thetaDL, w0DL, BPP };
-  }, [wavelength, w0, theta]);
-
-  const chartData = useMemo(() => {
-    const lam = wavelength * 1e-6;
-    // Plot beam radius vs z for different M² values
-    const zR = Math.PI * w0 * w0 / lam;
-    const zs = Array.from({ length: 200 }, (_, i) => -3 * zR + i * 0.03 * zR);
-    const M2s = [1, 1.5, 2, 3];
-    const colors = ["#22c55e", "#60a5fa", "#facc15", "#f87171"];
-
-    const traces = M2s.map((M, idx) => {
-      const ws = zs.map(z => w0 * Math.sqrt(1 + (M * z / zR) ** 2));
-      return { x: zs, y: ws, type: "scatter" as const, mode: "lines" as const, name: `M² = ${M}`, line: { color: colors[idx] } };
-    });
-
-    return traces;
-  }, [wavelength, w0]);
+  const tone = impossible ? "red" : m2 <= 1.5 ? "green" : m2 <= 2 ? "yellow" : "orange";
 
   return (
     <>
-            
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} />
-        <ValidatedNumberInput label="Waist Radius w₀ (mm)" value={w0} onChange={setW0} min={0.001} step="any" />
-        <ValidatedNumberInput label="Divergence θ (mrad, full)" value={theta} onChange={setTheta} min={0.01} step="any" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={100} max={20000} />
+        <ValidatedNumberInput label="Waist radius w₀ (mm, second moment)" value={w0Raw} onChange={setW0} min={0.001} max={100} />
+        <ValidatedNumberInput label="Divergence θ (mrad, full angle)" value={thetaRaw} onChange={setTheta} min={0.001} max={1000} />
       </div>
 
-      <div className={`bg-gray-900 border ${calc.M2 <= 1.5 ? "border-green-800" : calc.M2 <= 2 ? "border-yellow-800" : "border-red-800"} rounded-lg p-6 mb-8`}>
-        <div className="grid gap-4 sm:grid-cols-4">
-          <div>
-            <p className="text-sm text-gray-400">M² Factor</p>
-            <p className={`text-3xl font-bold ${calc.M2 <= 1.5 ? "text-green-400" : calc.M2 <= 2 ? "text-yellow-400" : "text-red-400"}`}>{calc.M2.toFixed(2)}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-400">vs Ideal (dB)</p>
-            <p className="text-2xl font-bold text-blue-400">+{calc.M2dB.toFixed(1)} dB</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-400">DL Divergence</p>
-            <p className="text-2xl font-bold text-yellow-400">{(calc.thetaDL * 1000).toFixed(2)} mrad</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-400">BPP</p>
-            <p className="text-2xl font-bold text-green-400">{(calc.BPP * 1000).toFixed(2)} mm·mrad</p>
-          </div>
-        </div>
+      {impossible && (
+        <p className="mb-6 rounded-lg border border-red-700 bg-red-950/40 p-3 text-sm text-red-200">
+          M² below 1 is physically impossible: no beam diverges less than a TEM₀₀ Gaussian of the same waist. Check that
+          w₀ is a radius (not a diameter), that θ is the full angle, and that both are second-moment (D4σ) or 1/e² widths
+          measured as ISO 11146 describes.
+        </p>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
+        <ResultCard label="M² = π w₀ θ / (2λ)" value={fmt(m2)} subtext={impossible ? "Impossible: below 1" : "1 for a TEM₀₀ Gaussian"} tone={tone} />
+        <ResultCard label="Beam parameter product w₀θ/2" value={`${fmt(bpp)} mm·mrad`} subtext={`TEM₀₀: λ/π = ${fmt(wavelength / Math.PI / 1000)} mm·mrad`} tone="green" />
+        <ResultCard label="TEM₀₀ divergence (full angle)" value={`${fmt(thetaDL_mrad)} mrad`} subtext="2λ/(πw₀) for the same waist" tone="yellow" />
+        <ResultCard label="Rayleigh range πw₀²/(M²λ)" value={impossible ? "—" : `${fmt(zR_mm)} mm`} subtext={impossible ? "Not defined for M² < 1" : undefined} tone="blue" />
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4">
-        <ChartPanel data={chartData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" }, xaxis: { title: "z (mm)", gridcolor: "#374151" },
-          yaxis: { title: "Beam Radius w(z) (mm)", gridcolor: "#374151" },
-          margin: { t: 30, r: 30, b: 50, l: 70 }, legend: { x: 0.7, y: 0.05 },
-        }} />
-      </div>
+      <SimpleLineChart
+        title="Beam radius around the waist for the same w₀"
+        xLabel="Distance from waist z (mm)"
+        yLabel="Beam radius w(z) (mm)"
+        series={series}
+      />
     </>
   );
 }

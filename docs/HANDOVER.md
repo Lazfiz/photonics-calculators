@@ -1,41 +1,44 @@
-# Handover — 2026-10-20 (session 110 → session 111)
+# Handover — 2026-10-20 (session 111 → session 112)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 110 did the **wave-optics audit part 0** on branch `phase-4/wave-optics-audit` (PR #141 after `/ship`): 47 untiered
-pages, 28 bugs / 13 questionable / 6 OK, 41 `knownIssue`s. Next: **wave-optics fix part 1** (ROADMAP list, parts 1–13).
+Session 111: **wave-optics fix part 1**, branch `phase-4/wave-optics-fix-1`, PR #142. Next: **fix part 2** (ROADMAP).
 
 ## State
-- Registry only: `src/registry/calculators/wave-optics.ts` gains 41 `knownIssue`s; 6 stripped descriptions (cavity-stability,
-  difference-frequency, four-wave-mixing, gouy-phase, m2-factor, sum-frequency) restored from their ledes, ledes dropped.
-- **Per-page findings, golden values and DOIs are in the PR #141 description** (`gh pr view 141`). Read the section for
-  the part's pages at the start of each fix part instead of re-auditing.
-- **User decisions (session 110), 12 merges, each with a redirect:** mode-matching + beam-waist-matching;
+- New `src/physics/wave-optics/gaussian-beam.ts` (`rayleighRange`, `divergenceHalfAngle`, `beamParameterProduct`,
+  `beamRadius`, `wavefrontRadius`, `gouyPhase`, `m2FromWaistDivergence`; `GaussianBeam` takes an optional `m2`) and
+  `abcd.ts` (`AbcdElement`, `elementMatrix`, `systemMatrix`, `traceRay`, `expectedDeterminant`; real angles, det =
+  n_in/n_out). Test: `tests/wave-optics-gaussian-beam.test.ts`. Reuse both in parts 2–4 (mode matching, cavities).
+- gouy-phase merged into gaussian-beam (redirect; `z` input, ψ(z) chart). abcd-matrix keeps its elements in
+  `?elements=d100_f50_m_r200_n1x1.5` (`_` between elements, "0" = empty list).
+- 355 of 440 pages tiered, 40 `knownIssue`s. **Per-page findings for parts 2–13 are in the PR #141 description**
+  (`gh pr view 141`): read the part's section first, don't re-audit.
+- **User decisions (session 110), 12 merges with redirects:** mode-matching + beam-waist-matching;
   parametric-amplification → optical-parametric-amplifier; fiber-laser-resonator → fiber-optics/fiber-laser;
   etalon-finesse → spectroscopy/etalon-fsr; cavity-stability → cavity-mode-spacing; chirped-pulse + pulse-compression;
-  coupled-mode → fiber-optics/mode-coupling; cep-stabilization → optical-frequency-comb; gouy-phase → gaussian-beam;
+  coupled-mode → fiber-optics/mode-coupling; cep-stabilization → optical-frequency-comb; gouy-phase → gaussian-beam (done);
   hermite-gaussian + laguerre-gaussian; photonic-bandgap → thin-film/bragg-reflector; interferometer →
   spectroscopy/michelson-interferometer. No merge for sum-frequency vs spectroscopy/sum-frequency-gen (share the module).
-- 352 of 441 pages tiered. **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only
-  when the user asks: `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still
-  has to set Vercel's Production Branch to `release`.
-- **Earlier user decisions (session 96):** merges with redirects. **(session 78):** keep dynamic-range,
-  stimulated-raman-microscopy and resolution separate unless the user says otherwise.
+- **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only when the user asks:
+  `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`.
+- **Earlier user decisions:** (96) merges with redirects; (78) keep dynamic-range, stimulated-raman-microscopy, resolution apart.
 
 ## Next actions
-1. `/ship` this branch (registry text only, no new values to check). Values for a later release check: part 12b:
-   `spectroscopy/sum-frequency-gen=457.73`, `spectroscopy/blackbody=501.5`, `spectroscopy/wavenumber-converter=10000.00`;
-   earlier: `git show c31f1e96:docs/HANDOVER.md`. No release unless asked.
-2. Wave-optics fix part 1 (gouy-phase → gaussian-beam, m2-factor, abcd-matrix), then parts 2–13 in order.
+1. `/ship` this branch. Values for a later release check: `wave-optics/gaussian-beam=0.2027`,
+   `wave-optics/m2-factor=1.476`, `wave-optics/abcd-matrix=100.0000`; part 12b: `spectroscopy/sum-frequency-gen=457.73`,
+   `spectroscopy/blackbody=501.5`, `spectroscopy/wavenumber-converter=10000.00`. No release unless asked.
+2. Wave-optics fix part 2, then parts 3–13 in order. Part 2's merge drops the page count to 439: lower the floor in
+   `tests/calculator-pages.test.ts` (now ≥ 440).
 3. Later: open findings (ROADMAP), `polarizer-types` (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
+- **Session 111:** tiers.ts calls paraxial / Gaussian-beam models "textbook"; "exact" fits definitions (M², ISO 11146).
+  `chrome --headless=new --dump-dom <url> | grep -o "<label>[^<]*<?[^<]*"` reads a hydrated value without a screenshot.
+  Build screenshot paths in a variable (`out="$W\shot-$n.png"`); an `rm` on `"$W"/*.png` is blocked: use `${W:?}`.
 - **Session 110:** reviewer reports arrive as agent messages and vanish on compaction: save each to a scratchpad file at
   once. Values the reviewers quoted from memory, to verify before use: Yb:YAG σ_a ≈ 0.75e-20 cm² at 940 nm, HeNe g₀ ≈
   0.1 /m, CO₂ 0.5–1 /m, diode fast-axis divergence 30–40°, LCLS ρ ≈ 5e-4. Kerr thin lens checked: 1/f = 8n₂PL/(πw⁴).
-  Inserting `knownIssue`s into one registry file is a single-file node script (regex over entry blocks), not a codemod.
-- **Session 108:** `python -` with a heredoc also hangs (stop the task). The merge codemod adds the old title as a keyword; extend that
-  `keywords` array by hand afterwards.
+- **Session 108:** `python -` with a heredoc hangs. The merge codemod adds the old title as a keyword: extend it by hand.
 - **Session 107:** NIST WebBook keeps higher constants in footnotes: grep the saved HTML.
   Git Bash rewrites `/a/b` arguments to Windows paths: prefix `MSYS_NO_PATHCONV=1` (ui-check, chrome). Python has no Pillow:
   shrink screenshots with chrome `--force-device-scale-factor=0.5`. `npm run dev` touches `next-env.d.ts`: `git checkout` it.

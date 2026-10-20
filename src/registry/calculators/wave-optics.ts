@@ -5,6 +5,15 @@ export const waveOptics: CalculatorEntry[] = [
     slug: "abcd-matrix",
     title: "ABCD Matrix Calculator",
     description: "Build an optical system from sequential elements and compute the ray transfer matrix.",
+    tier: "textbook",
+    modelNote: "Paraxial ray matrices with real ray angles, so a flat interface gives det = n₁/n₂. Thin lenses, unfolded mirrors and no aberrations; valid for small angles and heights.",
+    references: [
+      {
+        citation: "Kogelnik H., Li T. (1966). Laser beams and resonators. Appl. Opt. 5, 1550–1567.",
+        url: "https://doi.org/10.1364/ao.5.001550",
+      },
+      { citation: "Gerrard A., Burch J. M. (1975). Introduction to Matrix Methods in Optics. Wiley." },
+    ],
   },
   {
     slug: "attosecond-pulse",
@@ -120,16 +129,26 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "gaussian-beam",
     title: "Gaussian Beam Propagation",
-    description: "Explore how wavelength and waist size shape Rayleigh range, divergence, and Gaussian beam envelope.",
-    lede: "Explore how wavelength and waist size shape Rayleigh range, divergence, and beam envelope.",
-    keywords: ["rayleigh range", "beam waist", "divergence"],
+    description: "Rayleigh range, divergence, beam radius, wavefront curvature and Gouy phase of a Gaussian beam at any distance from its waist.",
+    keywords: ["rayleigh range", "beam waist", "divergence", "Gouy Phase Shift", "wavefront curvature"],
+    tier: "textbook",
+    modelNote: "Paraxial TEM₀₀ beam with a 1/e² intensity radius, in air or vacuum: use the wavelength in the medium otherwise. Accurate while the divergence stays below about 0.1 rad.",
+    references: [
+      {
+        citation: "Kogelnik H., Li T. (1966). Laser beams and resonators. Appl. Opt. 5, 1550–1567.",
+        url: "https://doi.org/10.1364/ao.5.001550",
+      },
+      {
+        citation: "Feng S., Winful H. G. (2001). Physical origin of the Gouy phase shift. Opt. Lett. 26, 485–487.",
+        url: "https://doi.org/10.1364/ol.26.000485",
+      },
+    ],
     priority: 100,
     related: [
       {
         href: "/wave-optics/m2-factor",
         note: "Compare ideal Gaussian behavior with real beams.",
       },
-      { href: "/wave-optics/gouy-phase", note: "Phase evolution through focus." },
       {
         href: "/wave-optics/mode-matching",
         note: "Connect Gaussian beams to cavity/fiber coupling.",
@@ -149,11 +168,6 @@ export const waveOptics: CalculatorEntry[] = [
         url: "https://doi.org/10.1109/jqe.1986.1072855",
       },
     ],
-  },
-  {
-    slug: "gouy-phase",
-    title: "Gouy Phase Shift",
-    description: "Gouy phase ψ(z) = arctan(z/zᵣ) accumulated by Gaussian beam. Total π phase shift through focus.",
   },
   {
     slug: "hermite-gaussian",
@@ -189,8 +203,16 @@ export const waveOptics: CalculatorEntry[] = [
     slug: "m2-factor",
     title: "Beam Quality Factor M²",
     description: "M² = (π w₀ θ)/λ. M² = 1 for ideal Gaussian, higher for multimode beams.",
-    knownIssue: "Inputs that give M² below 1 are shown as a good beam instead of being flagged as physically impossible, and the dB value then reads with a wrong plus sign.",
     keywords: ["Beam Quality M² Measurement"],
+    tier: "exact",
+    modelNote: "M² from the second-moment waist radius and far-field half angle, as ISO 11146 defines it. The result is only as good as the widths: a 1/e² or knife-edge width of a non-Gaussian beam gives a different M².",
+    references: [
+      {
+        citation: "Siegman A. E. (1990). New developments in laser resonators. Proc. SPIE 1224, 2.",
+        url: "https://doi.org/10.1117/12.18425",
+      },
+      { citation: "ISO 11146-1:2021. Lasers and laser-related equipment: test methods for laser beam widths, divergence angles and beam propagation ratios, part 1." },
+    ],
   },
   {
     slug: "mode-locked-laser",
