@@ -18,8 +18,16 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "attosecond-pulse",
     title: "Attosecond Pulse Generation",
-    description: "High-harmonic generation and isolated attosecond pulse parameters.",
-    knownIssue: "The transform-limited pulse duration is about 15 times too short (2.4 as instead of about 35 as at default inputs), and the plotted spectrum ignores the computed cutoff and the pulse duration input.",
+    description: "High-harmonic generation in a gas: ponderomotive energy, cutoff photon energy I_p + 3.17 U_p, last odd harmonic, barrier-suppression intensity and the Fourier-limited attosecond pulse of the selected band.",
+    keywords: ["high harmonic generation", "HHG", "attosecond", "ponderomotive energy", "cutoff law", "three-step model", "XUV"],
+    tier: "textbook",
+    modelNote: "Three-step model cutoff I_p + 3.17 U_p, U_p = e²I/(2ε₀cmω²), ionization energies from NIST. The Fourier limit treats the band from its low edge to the cutoff as a Gaussian FWHM; attochirp, phase matching and ionization depletion are not modelled. Barrier suppression from the classical over-the-barrier field.",
+    references: [
+      { citation: "Corkum P. B. (1993). Plasma perspective on strong field multiphoton ionization. Phys. Rev. Lett. 71, 1994–1997.", url: "https://doi.org/10.1103/PhysRevLett.71.1994" },
+      { citation: "Krause J. L., Schafer K. J., Kulander K. C. (1992). High-order harmonic generation from atoms and ions in the high intensity regime. Phys. Rev. Lett. 68, 3535–3538.", url: "https://doi.org/10.1103/PhysRevLett.68.3535" },
+      { citation: "Augst S. et al. (1989). Tunneling ionization of noble gases in a high-intensity laser field. Phys. Rev. Lett. 63, 2212–2215.", url: "https://doi.org/10.1103/PhysRevLett.63.2212" },
+      { citation: "Krausz F., Ivanov M. (2009). Attosecond physics. Rev. Mod. Phys. 81, 163–234.", url: "https://doi.org/10.1103/RevModPhys.81.163" },
+    ],
   },
   {
     slug: "bessel-beam",
@@ -67,16 +75,17 @@ export const waveOptics: CalculatorEntry[] = [
     ],
   },
   {
-    slug: "cep-stabilization",
-    title: "Carrier-Envelope Phase (CEP)",
-    description: "CEP offset effects on few-cycle pulse electric field.",
-    knownIssue: "The phase-slip formula shown is wrong and the page computes no CEP stabilization quantity such as the offset frequency or phase slip per pulse. Only the period, cycle count and bandwidth are valid.",
-  },
-  {
     slug: "chirped-pulse",
     title: "Chirped Pulse Amplification (CPA)",
-    description: "Stretch, amplify, compress — bypassing damage thresholds.",
-    knownIssue: "Recompressed duration is fixed at 1.1 times the input, the grating line density has no effect, and the recompressed pulse plots as a single point. No stretcher or compressor dispersion is calculated.",
+    description: "Chirped pulse amplification: transform-limited duration of a bandwidth, stretcher GDD for a stretch ratio, Treacy grating-compressor separation, recompressed duration against a separation error, and peak powers.",
+    keywords: ["CPA", "pulse compression", "pulse stretcher", "grating compressor", "Treacy compressor", "group delay dispersion", "transform limit"],
+    tier: "textbook",
+    modelNote: "Gaussian pulses with quadratic spectral phase: τ = τ₀√(1 + (4 ln2 φ₂/τ₀²)²), τ₀ = 0.4413/Δν. Treacy double-pass grating-pair GDD and TOD in the first order; the stretcher is assumed to cancel the compressor TOD. Gain narrowing, the B-integral and material dispersion are not modelled.",
+    references: [
+      { citation: "Treacy E. B. (1969). Optical pulse compression with diffraction gratings. IEEE J. Quantum Electron. 5, 454–458.", url: "https://doi.org/10.1109/JQE.1969.1076303" },
+      { citation: "Strickland D., Mourou G. (1985). Compression of amplified chirped optical pulses. Opt. Commun. 56, 219–221.", url: "https://doi.org/10.1016/0030-4018(85)90120-8" },
+      { citation: "Diels J.-C., Rudolph W. (2006). Ultrashort Laser Pulse Phenomena, 2nd ed., ch. 1. Academic Press." },
+    ],
   },
   {
     slug: "coupled-mode",
@@ -311,8 +320,15 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "optical-frequency-comb",
     title: "Optical Frequency Comb",
-    description: "Precision spectroscopy and metrology using a train of equally spaced narrow spectral lines.",
-    knownIssue: "The plot draws a smooth envelope instead of separate comb teeth and ignores the carrier-envelope offset frequency, and a very large Comb Lines value can freeze or crash the page.",
+    description: "Optical frequency comb: tooth frequencies ν_n = n f_rep + f_ceo, the carrier-envelope phase slip per pulse, teeth in the spectrum, and the electric field of consecutive pulses.",
+    keywords: ["frequency comb", "carrier-envelope phase", "CEP", "carrier-envelope offset frequency", "f-to-2f", "comb equation", "repetition rate", "Carrier-Envelope Phase (CEP)"],
+    tier: "exact",
+    modelNote: "Comb equation ν_n = n f_rep + f_ceo with Δφ_CE = 2π f_ceo/f_rep, f_ceo taken in [0, f_rep). The tooth count assumes a transform-limited Gaussian pulse. Linewidths and comb stabilization loops are not modelled.",
+    references: [
+      { citation: "Telle H. R. et al. (1999). Carrier-envelope offset phase control: a novel concept for absolute optical frequency measurement and ultrashort pulse generation. Appl. Phys. B 69, 327–332.", url: "https://doi.org/10.1007/s003400050813" },
+      { citation: "Jones D. J. et al. (2000). Carrier-envelope phase control of femtosecond mode-locked lasers and direct optical frequency synthesis. Science 288, 635–639.", url: "https://doi.org/10.1126/science.288.5466.635" },
+      { citation: "Udem Th., Holzwarth R., Hänsch T. W. (2002). Optical frequency metrology. Nature 416, 233–237.", url: "https://doi.org/10.1038/416233a" },
+    ],
   },
   {
     slug: "optical-parametric-amplifier",
@@ -358,12 +374,6 @@ export const waveOptics: CalculatorEntry[] = [
     title: "Photonic Bandgap",
     description: "1D photonic crystal band structure and reflectivity.",
     knownIssue: "The transmission chart disagrees with the result cards: its stop band is about 20 % wide instead of 53 %, its centre transmission is 100 times too high, and it jumps at the band edges.",
-  },
-  {
-    slug: "pulse-compression",
-    title: "Pulse Compression",
-    description: "Transform-limited pulse compression via chirp compensation.",
-    knownIssue: "Output duration is the input divided by the compression ratio with no transform limit: the defaults give 10 fs, but a 10 nm bandwidth at 800 nm supports no less than about 94 fs.",
   },
   {
     slug: "q-switched-laser",

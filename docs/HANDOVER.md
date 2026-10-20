@@ -1,44 +1,44 @@
-# Handover — 2026-10-20 (session 117 → session 118)
+# Handover — 2026-10-20 (session 118 → session 119)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 117: **wave-optics fix part 7** (pulsed output), branch `phase-4/wave-optics-fix-7`, PR #148. Next: **fix part 8**
-(pulses: chirped-pulse + pulse-compression into one CPA page; cep-stabilization → optical-frequency-comb; attosecond-pulse).
+Session 118: **wave-optics fix part 8** (pulses), branch `phase-4/wave-optics-fix-8`, PR #149. Next: **fix part 9**
+(fibre solitons: shared `soliton.ts`, soliton split-step, supercontinuum).
 
 ## State
 - Wave-optics modules: gaussian-beam, abcd, mode-matching, spatial-filter, higher-order-modes, bessel-beam,
-  diffraction-integral, two-mirror-resonator, ring-cavity, laser-resonator (four-level + Rigrod), diode-laser, slab-laser,
-  quasi-three-level, and new this session:
-  - `pulsed-laser.ts`: `singlePassLoss`, `photonLifetime`, `qSwitchExtraction` (rη = −ln(1−η)), `qSwitchPeakPhotons`, `qSwitchPulse`,
-    `qSwitchWaveform` (RK4, aligned at the peak, FWHM), `roundTripTime`, `TIME_BANDWIDTH`, `transformLimitedBandwidth`,
-    `wavelengthWidth`, `cavityLengthForRepRate`.
-  - `free-electron-laser.ts`: `ALFVEN_CURRENT` (from CODATA), `lorentzFactor`, `resonanceWavelength`, `besselFactor` [JJ], `beamSize`,
-    `pierceParameter` (Huang–Kim eq. 5), `gainLength1D`, `xieDegradation` (19 coefficients), `freeElectronLaser`, `felPower`.
-    Test: `tests/wave-optics-pulsed.test.ts` (Xie 1995 table 1, LCLS table I).
-- `SimpleLineChart` now rounds pixel coordinates to 0.01 px (the 1-ulp Node/Chrome hydration mismatch is gone).
-- Page floor in `tests/calculator-pages.test.ts` is 436.
-- 372 of 436 pages tiered, 20 `knownIssue`s. **Per-page findings for parts 8–13 are in the PR #141 description**
+  diffraction-integral, two-mirror-resonator, ring-cavity, laser-resonator, diode-laser, slab-laser, quasi-three-level,
+  pulsed-laser (+ `frequencyWidth`, the inverse of `wavelengthWidth`), free-electron-laser, and new this session:
+  - `chirped-pulse.ts`: `chirpedGaussianDuration`, `gddForStretch`, `gratingDiffractionAngle`, `treacyCompressor` (GDD, TOD, N passes).
+  - `frequency-comb.ts`: `wrapOffset`, `combTooth`, `cePhaseSlip`; re-exports `nearestTooth`/`Comb` from spectroscopy/dual-comb.
+  - `high-harmonic.ts`: `ponderomotiveEnergy`, `hhgCutoff` (3.17), `IONIZATION_ENERGY_EV` (NIST), `highestOddHarmonic`,
+    `barrierSuppressionIntensity` (Augst), `fourierLimitDuration`. Test: `tests/wave-optics-pulses.test.ts`.
+- Merged with redirects: pulse-compression → chirped-pulse, cep-stabilization → optical-frequency-comb. Page floor 434.
+- 375 of 434 pages tiered, 15 `knownIssue`s. **Per-page findings for parts 9–13 are in the PR #141 description**
   (`gh pr view 141`): read the part's section first, don't re-audit.
-- **User decisions (session 110), merges with redirects, 5 of 12 done:** parametric-amplification → optical-parametric-amplifier;
-  etalon-finesse → spectroscopy/etalon-fsr; chirped-pulse + pulse-compression; coupled-mode → fiber-optics/mode-coupling;
-  cep-stabilization → optical-frequency-comb; photonic-bandgap → thin-film/bragg-reflector; interferometer →
-  spectroscopy/michelson-interferometer. sum-frequency and spectroscopy/sum-frequency-gen share a module. Session 78: keep
-  dynamic-range, stimulated-raman-microscopy, resolution apart.
+- **User decisions (session 110), merges with redirects, 7 of 12 done.** Left: parametric-amplification →
+  optical-parametric-amplifier; etalon-finesse → spectroscopy/etalon-fsr; coupled-mode → fiber-optics/mode-coupling;
+  photonic-bandgap → thin-film/bragg-reflector; interferometer → spectroscopy/michelson-interferometer. sum-frequency and
+  spectroscopy/sum-frequency-gen share a module. Session 78: keep dynamic-range, stimulated-raman-microscopy, resolution apart.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: `wave-optics/q-switched-laser=93.94`, `wave-optics/cavity-dumped=10.01`,
-   `wave-optics/mode-locked-laser=25.23`, `wave-optics/free-electron-laser=823.9`; part 6: `wave-optics/diode-laser-resonator=4.957`,
-   `wave-optics/slab-laser=72.23`, `wave-optics/thin-disk-laser=104.3`, `fiber-optics/fiber-laser=2.362`; part 5:
-   `wave-optics/solid-state-laser-resonator=9.093`, `wave-optics/dye-laser-resonator=0.5444`, `wave-optics/gas-laser-resonator=0.9399`;
-   part 4: `wave-optics/cavity-mode-spacing=0.6662`, `wave-optics/ring-cavity=102.4`; part 3: `wave-optics/hermite-gaussian=5.067`,
-   `wave-optics/bessel-beam=24.22`, `wave-optics/diffraction-integral=0.9075`; part 2: `wave-optics/mode-matching=36.22`,
-   `wave-optics/spatial-filter=67.74`; part 1: `wave-optics/gaussian-beam=0.2027`, `wave-optics/m2-factor=1.476`,
-   `wave-optics/abcd-matrix=100.0000`. No release unless asked.
-2. Wave-optics fix part 8 (pulses), then parts 9–13. Part 8 can reuse `TIME_BANDWIDTH`/`transformLimitedBandwidth` from `pulsed-laser.ts`.
+1. `/ship` this branch. Values for a later release check: `wave-optics/chirped-pulse=94.21`,
+   `wave-optics/optical-frequency-comb=193.414520000`, `wave-optics/attosecond-pulse=53.65`; part 7:
+   `wave-optics/q-switched-laser=93.94`, `wave-optics/cavity-dumped=10.01`, `wave-optics/mode-locked-laser=25.23`,
+   `wave-optics/free-electron-laser=823.9`; part 6: `wave-optics/diode-laser-resonator=4.957`, `wave-optics/slab-laser=72.23`,
+   `wave-optics/thin-disk-laser=104.3`, `fiber-optics/fiber-laser=2.362`; part 5: `wave-optics/solid-state-laser-resonator=9.093`,
+   `wave-optics/dye-laser-resonator=0.5444`, `wave-optics/gas-laser-resonator=0.9399`; part 4: `wave-optics/cavity-mode-spacing=0.6662`,
+   `wave-optics/ring-cavity=102.4`; part 3: `wave-optics/hermite-gaussian=5.067`, `wave-optics/bessel-beam=24.22`,
+   `wave-optics/diffraction-integral=0.9075`; part 2: `wave-optics/mode-matching=36.22`, `wave-optics/spatial-filter=67.74`;
+   part 1: `wave-optics/gaussian-beam=0.2027`, `wave-optics/m2-factor=1.476`, `wave-optics/abcd-matrix=100.0000`. No release unless asked.
+2. Wave-optics fix part 9 (solitons), then parts 10–13. Part 9 can reuse `chirpedGaussianDuration` for dispersion checks.
 3. Later: open findings (ROADMAP; diode and Yb:YAG default constants unsourced), `polarizer-types` (needs the user at
    the laptop with Chrome).
 
 ## Non-obvious facts
+- **Session 118:** a running `next dev` keeps the redirects it read at start: a new redirect 404s there until a restart
+  (`tests/redirects.test.ts` covers it). An edit made while `npm run check` runs may miss tsc: re-lint that file at least.
+  Treacy's φ₂ uses the **perpendicular** separation with cos³β (slant distance: cos²β).
 - **Session 117:** `next dev` refuses a second server in the repo (prints its PID and port; :3000 was up): ui-check that one.
   A cold page's first ui-check can fail "not hydrated" or ECONNREFUSED 9333: curl the page once, rerun.
 - **Session 116:** a background `(gate; echo exit $?)` always finishes "exit code 0": read the `exit` line in the log.

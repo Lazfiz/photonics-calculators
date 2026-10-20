@@ -1,79 +1,104 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { hc_eV_nm } from "../../../physics/constants";
+import { c, h, q } from "../../../physics/constants";
+import {
+  IONIZATION_ENERGY_EV, barrierSuppressionIntensity, fourierLimitDuration, hhgCutoff, highestOddHarmonic,
+  ponderomotiveEnergy, type HhgGas,
+} from "../../../physics/wave-optics/high-harmonic";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
+const GAS_NAMES: Record<HhgGas, string> = {
+  xenon: "Xenon", krypton: "Krypton", hydrogen: "Hydrogen (atomic)", argon: "Argon", neon: "Neon", helium: "Helium",
+};
+
 export default function AttosecondPulsePage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm, driving laser
-  const [duration, setDuration] = useURLState("duration", 5); // fs, driving pulse
-  const [intensity, setIntensity] = useURLState("intensity", 2e14); // W/cm²
-  const [cutoffOrder, setCutoffOrder] = useURLState("cutoffOrder", 50);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 800); // nm, driver
+  const [durationRaw, setDuration] = useURLState("duration", 5); // fs FWHM, driver
+  const [intensityRaw, setIntensity] = useURLState("intensity", 2e14); // W/cm²
+  const [gasRaw, setGas] = useURLState("gas", "argon");
+  const [edgeRaw, setEdge] = useURLState("filterEdge", 20); // eV
 
-  const photonEnergy = hc_eV_nm / wavelength; // eV
-  const cutoffEnergy = 3.17 * photonEnergy + 0; // Up = Ip negligible for display
-  const up = 9.33e-14 * intensity * Math.pow(wavelength * 1e-3, 2); // ponderomotive in eV (λ in µm)
-  const cutoffE = 3.17 * up + 13.6; // Ip of H
-  const shortestWavelength = hc_eV_nm / cutoffE; // nm
-  const minPulseDuration = 0.122 / cutoffE * 1000; // time-bandwidth limit in as (approx)
+  const lambda = clamp(wavelengthRaw, 200, 10000, 800) * 1e-9;
+  const tau = clamp(durationRaw, 1, 1000, 5) * 1e-15;
+  const intensityCm2 = clamp(intensityRaw, 1e12, 1e16, 2e14);
+  const gas: HhgGas = gasRaw in IONIZATION_ENERGY_EV ? (gasRaw as HhgGas) : "argon";
+  const edge = clamp(edgeRaw, 0, 1e4, 20) * q;
 
-  const chartData = useMemo(() => {
-    const harmonics = Array.from({ length: 100 }, (_, i) => i + 1);
-    const spectrum = harmonics.map(q => {
-      if (q < 3) return 0;
-      const decay = Math.exp(-(q - 3) / 15);
-      const cutoff = q < cutoffOrder ? 1 : Math.exp(-Math.pow(q - cutoffOrder, 2) / 20);
-      return decay * cutoff;
-    });
-    return [
-      { x: harmonics, y: spectrum, type: "scatter" as const, mode: "lines" as const, name: "HHG Spectrum", line: { color: "#60a5fa", width: 2 } },
-      { x: [cutoffOrder, cutoffOrder], y: [0, Math.max(...spectrum)], type: "scatter" as const, mode: "lines" as const, name: "Cutoff", line: { color: "#f87171", dash: "dash" } },
-    ];
-  }, [cutoffOrder]);
+  const ip = IONIZATION_ENERGY_EV[gas] * q;
+  const up = ponderomotiveEnergy(intensityCm2 * 1e4, lambda);
+  const cutoff = hhgCutoff(ip, up);
+  const photon = (h * c) / lambda;
+  const qMax = highestOddHarmonic(cutoff, photon);
+  const ibs = barrierSuppressionIntensity(ip) / 1e4; // W/cm²
+  const band = cutoff - edge;
+  const tl = fourierLimitDuration(band);
+  const period = lambda / c;
+
+  const lMax = Math.max(3000e-9, 1.5 * lambda);
+  const series = [
+    {
+      name: `Cutoff, ${GAS_NAMES[gas].toLowerCase()} at ${fmt(intensityCm2, 3)} W/cm²`,
+      color: "#60a5fa",
+      points: Array.from({ length: 161 }, (_, i) => {
+        const l = 200e-9 + (i / 160) * (lMax - 200e-9);
+        return { x: round6(l * 1e9), y: round6(hhgCutoff(ip, ponderomotiveEnergy(intensityCm2 * 1e4, l)) / q) };
+      }),
+    },
+    { name: "Set wavelength", color: "#f87171", showPoints: true, points: [{ x: round6(lambda * 1e9), y: round6(cutoff / q) }] },
+  ];
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Driving Wavelength λ (nm)" value={wavelength} onChange={setWavelength} />
-        <ValidatedNumberInput label="Pulse Duration (fs)" value={duration} onChange={setDuration} step="any" />
-        <ValidatedNumberInput label="Peak Intensity (W/cm²)" value={intensity} onChange={setIntensity} step="any" />
-        <ValidatedNumberInput label="Cutoff Harmonic Order" value={cutoffOrder} onChange={setCutoffOrder} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Driver wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={200} max={10000} step="any" />
+        <ValidatedNumberInput label="Driver duration, FWHM (fs)" value={durationRaw} onChange={setDuration} min={1} max={1000} step="any" />
+        <ValidatedNumberInput label="Peak intensity (W/cm²)" value={intensityRaw} onChange={setIntensity} min={1e12} max={1e16} step="any" />
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Gas</span>
+          <select value={gas} onChange={(e) => setGas(e.target.value)} className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            {(Object.keys(IONIZATION_ENERGY_EV) as HhgGas[]).map((g) => (
+              <option key={g} value={g}>{GAS_NAMES[g]}, I_p = {IONIZATION_ENERGY_EV[g]} eV</option>
+            ))}
+          </select>
+        </label>
+        <ValidatedNumberInput label="Low edge of the selected band (eV)" value={edgeRaw} onChange={setEdge} min={0} max={1e4} step="any" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Cutoff Energy (Ip + 3.17 Up)</p>
-          <p className="text-xl font-bold text-blue-400">{cutoffE.toFixed(1)} eV</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Shortest Wavelength</p>
-          <p className="text-xl font-bold text-green-400">{shortestWavelength.toFixed(1)} nm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Photon Energy (fundamental)</p>
-          <p className="text-xl font-bold text-orange-400">{photonEnergy.toFixed(3)} eV</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Min Pulse Duration (TL)</p>
-          <p className="text-xl font-bold text-purple-400">{minPulseDuration.toFixed(1)} as</p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard
+          label="Ponderomotive energy U_p"
+          value={`${fmt(up / q)} eV`}
+          subtext={intensityCm2 > ibs
+            ? `above the barrier-suppression intensity ${fmt(ibs, 3)} W/cm²: the gas ionizes within a cycle and the cutoff is not reached`
+            : `barrier-suppression intensity ${fmt(ibs, 3)} W/cm²`}
+          tone={intensityCm2 > ibs ? "red" : "orange"}
+        />
+        <ResultCard label="Cutoff photon energy" value={`${fmt(cutoff / q)} eV`} subtext={`I_p + 3.17 U_p; λ = ${fmt(((h * c) / cutoff) * 1e9)} nm, last odd harmonic ${qMax}`} tone="blue" />
+        <ResultCard
+          label="Fourier-limited pulse"
+          value={band > 0 ? `${fmt(tl * 1e18)} as` : "—"}
+          subtext={band > 0 ? `Gaussian, ΔE = ${fmt(band / q)} eV from the band edge to the cutoff` : "the band edge is at or above the cutoff"}
+          tone="purple"
+        />
+        <ResultCard label="Driver cycles in the FWHM" value={fmt(tau / period, 3)} subtext={`bursts every T/2 = ${fmt((period / 2) * 1e15)} fs; harmonics 2ħω = ${fmt((2 * photon) / q)} eV apart`} tone="cyan" />
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm mb-2 font-mono">E<sub>cutoff</sub> = I<sub>p</sub> + 3.17 · U<sub>p</sub> &nbsp;|&nbsp; U<sub>p</sub> = e²E₀²/(4mω²) &nbsp;|&nbsp; τ<sub>min</sub> ≈ 0.122/E<sub>cutoff</sub></p>
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>In the three-step model an electron tunnels out near a field peak, is driven by the laser field and recombines,
+          emitting up to I_p + 3.17 U_p, with U_p = e²I/(2ε₀cmω²) ∝ Iλ². A multi-cycle driver repeats this every half cycle,
+          giving a train of attosecond bursts and odd harmonics 2ħω apart; an isolated pulse needs a driver of about one cycle
+          or a gating scheme. The Fourier limit treats the selected band, from its low edge (a metal filter, say) to the cutoff,
+          as a Gaussian FWHM. The intrinsic attochirp makes real pulses longer, and above the barrier-suppression intensity
+          ionization depletes the gas before the peak.</p>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4">
-        <ChartPanel data={chartData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" }, xaxis: { title: "Harmonic Order q", gridcolor: "#374151" },
-          yaxis: { title: "Relative Intensity (a.u.)", gridcolor: "#374151" },
-          margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} />
-      </div>
+      <SimpleLineChart title="Cutoff energy against driver wavelength" xLabel="Driver wavelength (nm)" yLabel="Cutoff photon energy (eV)" series={series} />
     </>
   );
 }

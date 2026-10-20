@@ -22,9 +22,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
-| wave-optics | 22 / 44 | part 0 audit (session 110), fix parts 1–7 (sessions 111–117); 20 `knownIssue`s; parts 8–13 next |
+| wave-optics | 25 / 42 | part 0 audit (session 110), fix parts 1–8 (sessions 111–118); 15 `knownIssue`s; parts 9–13 next |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **372 / 436** | 20 `knownIssue`s (wave-optics) |
+| **total** | **375 / 434** | 15 `knownIssue`s (wave-optics) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -54,9 +54,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   5. ✓ Resonators a: solid-state, dye and gas laser resonators on `laser-resonator.ts` (session 115, PR #146).
   6. ✓ Resonators b: diode, slab, thin-disk; fiber-laser-resonator → fiber-optics/fiber-laser (session 116, PR #147).
   7. ✓ Pulsed output: q-switched, cavity-dumped, mode-locked, free-electron laser (session 117, PR #148).
-  8. Pulses: chirped-pulse + pulse-compression into one CPA page (Treacy GDD, transform-limit clamp 94.20 fs);
-     cep-stabilization → optical-frequency-comb (f_ceo, Δφ_CE = 2π f_ceo/f_rep, comb teeth; reuse dual-comb);
-     attosecond-pulse (0.441 h/ΔE, odd harmonics, gas Ip).
+  8. ✓ Pulses: CPA (pulse-compression merged), optical-frequency-comb (cep-stabilization merged), attosecond (session 118, PR #149).
   9. Fibre solitons: shared `soliton.ts` (sech T0, L_D, N); soliton (real FFT split-step); supercontinuum (units:
      N 53.3 at the defaults).
   10. Kerr: shared critical power; kerr-lens (1/f = 8n₂PL/(πw⁴)), self-phase-modulation (k₀, 2P/πw², φ ∝ I,
@@ -219,6 +217,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Wave-optics fix part 8 (session 118, `phase-4/wave-optics-fix-8`, PR #149): new `chirped-pulse.ts` (τ₀ 94.2067 fs, stretch 1000 → 3.20094 ps², Treacy 14.1916 ps²/m, G 225.55 mm, TOD = dφ₂/dω), `frequency-comb.ts` (Δφ_CE π/2 at 20/80 MHz, tooth 773658 at 193.414520 THz) and `high-harmonic.ts` (U_p 11.9517 eV, E_c(H) 51.485 eV, q 33, I_BS(H) 1.37e14 W/cm²); 2 merges with redirects.
   - Wave-optics fix part 7 (session 117, `phase-4/wave-optics-fix-7`, PR #148): new `pulsed-laser.ts` (Q-switch η(3) 0.94048, 2.635 mJ, FWHM 2.704 τ_c,
     146.9 kW; τ_RT 10.007 ns; Δλ 25.23 nm, L 1.8737 m) and `free-electron-laser.ts` (Huang–Kim ρ, Xie L_G: Xie 1995 table 1 3.12 m / 57.8 m,
     LCLS ρ 4.49e-4); `SimpleLineChart` 0.01 px rounding; 937 tests.

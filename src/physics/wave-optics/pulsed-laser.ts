@@ -181,6 +181,16 @@ export function wavelengthWidth(dnu: number, lambda0: number): number {
   return rho < 2 ? (lambda0 * rho) / (1 - (rho / 2) ** 2) : Infinity;
 }
 
+/**
+ * Frequency width of the band whose wavelength width is Δλ, the inverse of `wavelengthWidth` (band centred in frequency on
+ * c/λ₀): ρ = Δν λ₀/c = 2x/(1 + √(1 + x²)), x = Δλ/λ₀ (→ cΔλ/λ₀² for a narrow band). NaN for λ₀ ≤ 0 or Δλ < 0.
+ */
+export function frequencyWidth(dlambda: number, lambda0: number): number {
+  if (!(lambda0 > 0 && dlambda >= 0 && Number.isFinite(lambda0) && Number.isFinite(dlambda))) return NaN;
+  const x = dlambda / lambda0;
+  return ((2 * x) / (1 + Math.sqrt(1 + x * x)) * c) / lambda0;
+}
+
 /** Cavity length for repetition rate f (Hz), m: c/(2f) for a linear (standing-wave) cavity, c/f for a ring. */
 export function cavityLengthForRepRate(repRate: number, ring = false): number {
   if (!(repRate > 0 && Number.isFinite(repRate))) return NaN;
