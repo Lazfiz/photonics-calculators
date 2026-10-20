@@ -11,8 +11,8 @@ import {
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits) : "—");
-/** Positive values only, rounded for the log axis; others become gaps. */
-const logY = (x: number) => (Number.isFinite(x) && x > 1e-12 ? Number(x.toPrecision(6)) : NaN);
+/** Values above 1e-5 of the peak only, rounded for the log axis; others become gaps. */
+const logY = (x: number) => (Number.isFinite(x) && x > 1e-5 ? Number(x.toPrecision(6)) : NaN);
 const FWHM_TO_SIGMA = 1 / (2 * Math.sqrt(2 * Math.LN2));
 const ns = 1e-9;
 
@@ -61,10 +61,10 @@ export default function TimeResolvedPage() {
   const tNs = times.map((t) => Number((t / ns).toPrecision(6)));
 
   const chart = [
-    { x: tNs, y: single.map(logY), type: "scatter", mode: "lines", name: "Measured, one pulse (IRF ⊗ decay)", line: { color: "#60a5fa", width: 2 } },
-    { x: tNs, y: train.map(logY), type: "scatter", mode: "lines", name: `Measured at ${fmt(rep / 1e6, 3)} MHz (earlier pulses added)`, line: { color: "#a78bfa", width: 2, dash: "dash" } },
-    { x: tNs, y: intrinsic.map(logY), type: "scatter", mode: "lines", name: "Intrinsic decay from t₀", line: { color: "#f59e0b", dash: "dot" } },
-    ...(sigma > 0 ? [{ x: tNs, y: irfCurve.map(logY), type: "scatter", mode: "lines", name: "IRF (peak 1)", line: { color: "#f87171", dash: "dot" } }] : []),
+    { x: tNs, y: single.map(logY), type: "scatter", mode: "lines", name: "IRF ⊗ decay, one pulse", line: { color: "#60a5fa", width: 2 } },
+    { x: tNs, y: train.map(logY), type: "scatter", mode: "lines", name: `IRF ⊗ decay, ${fmt(rep / 1e6, 3)} MHz`, line: { color: "#a78bfa", width: 2, dash: "dash" } },
+    { x: tNs, y: intrinsic.map(logY), type: "scatter", mode: "lines", name: "Intrinsic decay", line: { color: "#f59e0b", dash: "dot" } },
+    ...(sigma > 0 ? [{ x: tNs, y: irfCurve.map(logY), type: "scatter", mode: "lines", name: "IRF", line: { color: "#f87171", dash: "dot" } }] : []),
   ];
 
   return (

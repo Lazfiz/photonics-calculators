@@ -53,7 +53,7 @@ export default function TwoDimensionalSpectroscopyPage() {
     {
       x: cm, y: cm, z: zNorm, type: "heatmap", zmin: -1, zmax: 1, name: "2D spectrum",
       colorscale: [[0, "#1d4ed8"], [0.35, "#60a5fa"], [0.5, "#f9fafb"], [0.65, "#fca5a5"], [1, "#b91c1c"]],
-      colorbar: { title: "S / |S|max" },
+      colorbar: { title: { text: "S / |S|max" } },
     },
     { x: [cm[0], cm[N - 1]], y: [cm[0], cm[N - 1]], type: "scatter", mode: "lines", name: "diagonal ω₁ = ω₃", line: { color: "#111827", dash: "dash", width: 1 } },
   ];
@@ -99,8 +99,8 @@ export default function TwoDimensionalSpectroscopyPage() {
         <ChartPanel data={map} layout={{
           paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
           title: { text: "Absorptive 2D Electronic Spectrum", font: { color: "white" } },
-          xaxis: { title: "Excitation ω₁ (cm⁻¹)", gridcolor: "#374151" },
-          yaxis: { title: "Detection ω₃ (cm⁻¹)", gridcolor: "#374151", scaleanchor: "x" },
+          xaxis: { title: { text: "Excitation ω₁ (cm⁻¹)" }, gridcolor: "#374151" },
+          yaxis: { title: { text: "Detection ω₃ (cm⁻¹)" }, gridcolor: "#374151", scaleanchor: "x" },
           margin: { t: 40, r: 20, b: 50, l: 70 }, showlegend: false,
         }} />
       </div>

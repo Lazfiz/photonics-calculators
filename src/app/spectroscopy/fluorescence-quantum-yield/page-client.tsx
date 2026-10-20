@@ -41,7 +41,7 @@ export default function FluorescenceQuantumYieldPage() {
   const As = Array.from({ length: 200 }, (_, i) => 0.005 + (i / 199) * 0.995);
   const ratio = (A: number) => absorptance(A) / (A * Math.LN10);
   const chart = [
-    { x: As, y: As.map((A) => r6(ratio(A))), type: "scatter", mode: "lines", name: "(1 − 10^(−A)) / (A ln 10)", line: { color: "#60a5fa", width: 2 } },
+    { x: As, y: As.map((A) => r6(ratio(A))), type: "scatter", mode: "lines", name: "f / (A ln 10)", line: { color: "#60a5fa", width: 2 } },
     ...(q.sampleAbsorbance > 0 ? [{ x: [q.sampleAbsorbance], y: [r6(ratio(q.sampleAbsorbance))], type: "scatter", mode: "markers", name: "Sample", line: { color: "#f87171" }, marker: { color: "#f87171", size: 10 } }] : []),
     ...(q.referenceAbsorbance > 0 ? [{ x: [q.referenceAbsorbance], y: [r6(ratio(q.referenceAbsorbance))], type: "scatter", mode: "markers", name: "Reference", line: { color: "#34d399" }, marker: { color: "#34d399", size: 10 } }] : []),
   ];
