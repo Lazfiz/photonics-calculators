@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 112, 2026-10-20)
+## Status (session 113, 2026-10-20)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -22,9 +22,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
-| wave-optics | 7 / 47 | part 0 audit (session 110), fix parts 1–2 (sessions 111–112); 37 `knownIssue`s; parts 3–13 next |
+| wave-optics | 10 / 46 | part 0 audit (session 110), fix parts 1–3 (sessions 111–113); 33 `knownIssue`s; parts 4–13 next |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **357 / 439** | 37 `knownIssue`s (wave-optics) |
+| **total** | **360 / 438** | 33 `knownIssue`s (wave-optics) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -49,8 +49,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `src/physics/wave-optics/`, golden test, tier + `modelNote` + references, drop the `knownIssue`. About 4 pages each.
   1. ✓ Gaussian beams (session 111, PR #142).
   2. ✓ Mode matching and spatial filter (session 112, PR #143).
-  3. Higher-order beams: hermite-gaussian + laguerre-gaussian into one HG/LG page (integer clamps, LG √2 norm);
-     bessel-beam (`besselJ`, beam-radius input); diffraction-integral (Fresnel Hankel integral or Fraunhofer only).
+  3. ✓ Higher-order beams, Bessel beam, Fresnel diffraction (session 113, PR #144).
   4. Cavities: new `two-mirror-resonator.ts` (g, w₀, waist position); cavity-stability → cavity-mode-spacing (Siegman
      sign branch: 0.6662 GHz); ring-cavity (ℱ = π ρ^¼/(1 − √ρ), unimodular period matrix, astigmatism).
   5. Resonators a: solid-state-laser-resonator, dye-laser-resonator, gas-laser-resonator on `two-mirror-resonator.ts` +
