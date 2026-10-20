@@ -565,3 +565,100 @@ export function integrateSimpson(g: (x: number) => number, a: number, b: number,
   for (let i = 1; i < m; i++) s += (i % 2 ? 4 : 2) * g(a + i * h);
   return (s * h) / 3;
 }
+
+/**
+ * J₀(x) from the polynomial approximations of A&S 9.4.1 (|x| ≤ 3, |ε| < 5e-8) and 9.4.3 (|x| > 3: J₀ = x^(−½) f₀ cos θ₀,
+ * |ε(f₀)| < 1.6e-8, |ε(θ₀)| < 7e-8), so |error| < 1e-7. About 20 flops against besselJ's 2|x| + 64 cosines: use it
+ * inside quadratures where J₀ is called millions of times.
+ */
+export function besselJ0Fast(x: number): number {
+  const ax = Math.abs(x);
+  if (!Number.isFinite(ax)) return NaN;
+  if (ax <= 3) {
+    const t = (ax / 3) * (ax / 3);
+    return 1 + t * (-2.2499997 + t * (1.2656208 + t * (-0.3163866 + t * (0.0444479 + t * (-0.0039444 + t * 0.00021)))));
+  }
+  const u = 3 / ax;
+  const f0 = 0.79788456 + u * (-0.00000077 + u * (-0.0055274 + u * (-0.00009512 + u * (0.00137237 + u * (-0.00072805 + u * 0.00014476)))));
+  const theta0 = ax - 0.78539816 + u * (-0.04166397 + u * (-0.00003954 + u * (0.00262573 + u * (-0.00054125 + u * (-0.00029333 + u * 0.00013558)))));
+  return (f0 * Math.cos(theta0)) / Math.sqrt(ax);
+}
+
+/**
+ * Fresnel integrals [C(x), S(x)] = ∫₀ˣ [cos, sin](π t²/2) dt (DLMF 7.2.7–8), odd in x, → ½ as x → ∞.
+ * |x| ≤ 1.5: the power series (DLMF 7.6.4–5); |x| > 1.5: C + iS = ½(1 + i)(1 − e^(iπx²/2) h), h from the continued
+ * fraction for erfc evaluated by the modified Lentz method (Numerical Recipes 3rd ed., §6.8). Relative error ~1e-15.
+ */
+export function fresnelIntegrals(x: number): [number, number] {
+  if (!Number.isFinite(x)) return Number.isNaN(x) ? [NaN, NaN] : [Math.sign(x) * 0.5, Math.sign(x) * 0.5];
+  const ax = Math.abs(x);
+  let c: number;
+  let s: number;
+  if (ax < 1e-150) {
+    c = ax;
+    s = 0;
+  } else if (ax <= 1.5) {
+    // C = Σ (−1)^k (π/2)^(2k) x^(4k+1) / ((2k)! (4k+1)),  S = Σ (−1)^k (π/2)^(2k+1) x^(4k+3) / ((2k+1)! (4k+3)).
+    const fact = (Math.PI / 2) * ax * ax;
+    let term = ax; // (π/2 x²)^j x / j!
+    c = ax;
+    s = 0;
+    // Term j (j = 2k → C, j = 2k + 1 → S) is (−1)^k term_j/(2j + 1): signs + + − − + + … for j = 0, 1, 2, …
+    let lastC = ax;
+    for (let j = 1; j < 60; j++) {
+      term *= fact / j;
+      const add = (Math.floor(j / 2) % 2 === 0 ? 1 : -1) * (term / (2 * j + 1));
+      if (j % 2 === 0) {
+        c += add;
+        lastC = add;
+      } else {
+        s += add;
+        if (Math.abs(add) < 1e-17 * Math.abs(s) && Math.abs(lastC) < 1e-17 * c) break;
+      }
+    }
+  } else {
+    const pix2 = Math.PI * ax * ax;
+    // Lentz on the complex continued fraction, b = 1 − iπx², a_n = −n(n + 1), b_n = b + 4n.
+    let bRe = 1;
+    const bIm = -pix2;
+    let ccRe = 1e300;
+    let ccIm = 0;
+    let dRe = bRe / (bRe * bRe + bIm * bIm);
+    let dIm = -bIm / (bRe * bRe + bIm * bIm);
+    let hRe = dRe;
+    let hIm = dIm;
+    let n = -1;
+    for (let k = 2; k < 200; k++) {
+      n += 2;
+      const a = -n * (n + 1);
+      bRe += 4;
+      // d = 1/(a d + b)
+      const tRe = a * dRe + bRe;
+      const tIm = a * dIm + bIm;
+      const tAbs2 = tRe * tRe + tIm * tIm;
+      dRe = tRe / tAbs2;
+      dIm = -tIm / tAbs2;
+      // cc = b + a/cc
+      const ccAbs2 = ccRe * ccRe + ccIm * ccIm;
+      ccRe = bRe + (a * ccRe) / ccAbs2;
+      ccIm = bIm - (a * ccIm) / ccAbs2;
+      const delRe = ccRe * dRe - ccIm * dIm;
+      const delIm = ccRe * dIm + ccIm * dRe;
+      const hr = hRe * delRe - hIm * delIm;
+      hIm = hRe * delIm + hIm * delRe;
+      hRe = hr;
+      if (Math.abs(delRe - 1) + Math.abs(delIm) < 1e-16) break;
+    }
+    // h ← h (x − i x); C + iS = ½(1 + i)(1 − (cos + i sin)(πx²/2) h)
+    const hr = hRe * ax + hIm * ax;
+    hIm = hIm * ax - hRe * ax;
+    hRe = hr;
+    const cs = Math.cos(pix2 / 2);
+    const sn = Math.sin(pix2 / 2);
+    const pRe = 1 - (cs * hRe - sn * hIm);
+    const pIm = -(cs * hIm + sn * hRe);
+    c = 0.5 * (pRe - pIm);
+    s = 0.5 * (pRe + pIm);
+  }
+  return x < 0 ? [-c, -s] : [c, s];
+}

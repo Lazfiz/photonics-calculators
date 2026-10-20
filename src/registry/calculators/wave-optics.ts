@@ -24,8 +24,20 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "bessel-beam",
     title: "Bessel Beam Calculator",
-    description: "Non-diffracting beam profiles and propagation.",
-    knownIssue: "Central Lobe Width is the radius to the first dark ring, not the full width. Max Propagation assumes a fixed 5 mm input beam that cannot be changed, and outer rings in the profile are a few percent off.",
+    description: "Core radius, FWHM and non-diffracting range of a Bessel beam from its cone angle and input beam radius, with J₀ and J₁ profiles.",
+    keywords: ["axicon", "non-diffracting beam", "J0 beam", "cone angle"],
+    tier: "textbook",
+    modelNote: "Ideal scalar Bessel beam from plane waves on a cone. The range z_max = R/tan θ is the geometric estimate for an input of radius R; the core intensity along z of a real axicon beam is not modelled.",
+    references: [
+      {
+        citation: "Durnin J., Miceli J. J., Eberly J. H. (1987). Diffraction-free beams. Phys. Rev. Lett. 58, 1499–1501.",
+        url: "https://doi.org/10.1103/physrevlett.58.1499",
+      },
+      {
+        citation: "McGloin D., Dholakia K. (2005). Bessel beams: diffraction in a new light. Contemp. Phys. 46, 15–28.",
+        url: "https://doi.org/10.1080/0010751042000275259",
+      },
+    ],
   },
   {
     slug: "cavity-dumped",
@@ -70,8 +82,17 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "diffraction-integral",
     title: "Diffraction Integral Calculator",
-    description: "Fresnel/Kirchhoff diffraction patterns.",
-    knownIssue: "The plot is always the far-field Airy or sinc squared pattern. When the Fresnel number is not small, including when the page says Fresnel regime, the pattern and first zero are not the near-field result.",
+    description: "Fresnel diffraction pattern of a circular aperture or slit at any distance, with the Fresnel number, on-axis intensity and the far-field Fraunhofer limit.",
+    keywords: ["fresnel diffraction", "fresnel number", "fraunhofer diffraction", "fresnel integrals", "circular aperture"],
+    tier: "textbook",
+    modelNote: "Scalar Fresnel (paraxial) diffraction of a plane wave, intensities relative to the incident one. Valid for z ≫ a and small angles; the circular aperture is computed up to N_F = 20.",
+    references: [
+      { citation: "Goodman J. W. (2005). Introduction to Fourier Optics, 3rd ed. Roberts & Company, ch. 4." },
+      {
+        citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed. Cambridge University Press, ch. 8.",
+        url: "https://doi.org/10.1017/cbo9781139644181",
+      },
+    ],
   },
   {
     slug: "diode-laser-resonator",
@@ -165,9 +186,29 @@ export const waveOptics: CalculatorEntry[] = [
   },
   {
     slug: "hermite-gaussian",
-    title: "Hermite-Gaussian Modes (TEMmn)",
-    description: "Rectangular higher-order Gaussian beam modes.",
-    knownIssue: "Mode indices from a shared link are not checked: a fractional or very large m or n gives a mislabelled mode or freezes the page.",
+    title: "Hermite-Gaussian and Laguerre-Gaussian Modes",
+    description: "Intensity of TEMmn and LGpl modes at any distance, with second-moment radius, M², Gouy phase, peak intensity and orbital angular momentum.",
+    keywords: ["TEMmn", "higher-order modes", "donut mode", "orbital angular momentum", "optical vortex"],
+    tier: "textbook",
+    modelNote: "Exact unit-power solutions of the paraxial wave equation, indices up to 10. Every mode shares the TEM₀₀ waist, Rayleigh range and w(z); the second-moment radius and M² follow from the indices.",
+    references: [
+      {
+        citation: "Kogelnik H., Li T. (1966). Laser beams and resonators. Appl. Opt. 5, 1550–1567.",
+        url: "https://doi.org/10.1364/ao.5.001550",
+      },
+      {
+        citation: "Carter W. H. (1980). Spot size and divergence for Hermite Gaussian beams of any order. Appl. Opt. 19, 1027.",
+        url: "https://doi.org/10.1364/ao.19.001027",
+      },
+      {
+        citation: "Phillips R. L., Andrews L. C. (1983). Spot size and divergence for Laguerre Gaussian beams of any order. Appl. Opt. 22, 643.",
+        url: "https://doi.org/10.1364/ao.22.000643",
+      },
+      {
+        citation: "Allen L., Beijersbergen M. W., Spreeuw R. J. C., Woerdman J. P. (1992). Orbital angular momentum of light and the transformation of Laguerre-Gaussian laser modes. Phys. Rev. A 45, 8185–8189.",
+        url: "https://doi.org/10.1103/physreva.45.8185",
+      },
+    ],
   },
   {
     slug: "injection-locking",
@@ -186,12 +227,6 @@ export const waveOptics: CalculatorEntry[] = [
     title: "Kerr Lens Mode Locking",
     description: "Self-focusing and Kerr-lens effect in nonlinear media for ultrashort pulse generation.",
     knownIssue: "The Kerr focal length is about 3.5 times the parabolic thin-lens value, and the beam waist vs power plot uses an invented formula. At the 1 W default every result is negligible.",
-  },
-  {
-    slug: "laguerre-gaussian",
-    title: "Laguerre-Gaussian Modes",
-    description: "Donut modes with orbital angular momentum.",
-    knownIssue: "The azimuthal index l is not limited to whole numbers from -5 to 5: fractional values show a non-physical OAM and large values blank or freeze the plot. Plotted intensity is half the normalised value.",
   },
   {
     slug: "m2-factor",
