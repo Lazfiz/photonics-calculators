@@ -10,6 +10,8 @@ import { aliasFreeBandwidth, beatNote, rfMapping } from "../../../physics/spectr
 
 const CHART_TEETH = 800;
 
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+
 const fmt = (x: number, digits = 4) =>
   !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e6 ? x.toPrecision(digits) : x.toExponential(3);
 
@@ -17,12 +19,19 @@ const fmt = (x: number, digits = 4) =>
 const toNm = (df: number, lambda_nm: number) => (lambda_nm ** 2 * df) / (c * 1e9);
 
 export default function DualCombSpectroscopyPage() {
-  const [repRate1, setRepRate1] = useURLState("repRate1", 100); // MHz
-  const [repRate2, setRepRate2] = useURLState("repRate2", 100.0002); // MHz
-  const [ceoFreq1, setCeoFreq1] = useURLState("ceoFreq1", 20); // MHz
-  const [ceoFreq2, setCeoFreq2] = useURLState("ceoFreq2", 20.1); // MHz
-  const [centerWavelength, setCenterWavelength] = useURLState("centerWavelength", 1550); // nm
-  const [numModes, setNumModes] = useURLState("numModes", 100000);
+  const [repRate1Raw, setRepRate1] = useURLState("repRate1", 100); // MHz
+  const [repRate2Raw, setRepRate2] = useURLState("repRate2", 100.0002); // MHz
+  const [ceoFreq1Raw, setCeoFreq1] = useURLState("ceoFreq1", 20); // MHz
+  const [ceoFreq2Raw, setCeoFreq2] = useURLState("ceoFreq2", 20.1); // MHz
+  const [centerRaw, setCenterWavelength] = useURLState("centerWavelength", 1550); // nm
+  const [numModesRaw, setNumModes] = useURLState("numModes", 100000);
+
+  const repRate1 = clamp(repRate1Raw, 1, 100000, 100);
+  const repRate2 = clamp(repRate2Raw, 1, 100000, 100.0002);
+  const ceoFreq1 = clamp(ceoFreq1Raw, 0, 100000, 20);
+  const ceoFreq2 = clamp(ceoFreq2Raw, 0, 100000, 20.1);
+  const centerWavelength = clamp(centerRaw, 200, 20000, 1550);
+  const numModes = clamp(numModesRaw, 2, 10000000, 100000);
 
   const calc = useMemo(() => {
     const comb1 = { frep: repRate1 * 1e6, fceo: ceoFreq1 * 1e6 };
@@ -60,12 +69,12 @@ export default function DualCombSpectroscopyPage() {
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Comb 1 rep rate f_r (MHz)" value={repRate1} onChange={setRepRate1} min={1} max={100000} step="0.1" />
-        <ValidatedNumberInput label="Comb 2 rep rate (MHz)" value={repRate2} onChange={setRepRate2} min={1} max={100000} step="0.0001" />
-        <ValidatedNumberInput label="Number of comb teeth N" value={numModes} onChange={setNumModes} min={2} max={10000000} step="10000" />
-        <ValidatedNumberInput label="f_CEO comb 1 (MHz)" value={ceoFreq1} onChange={setCeoFreq1} min={0} max={100000} step="0.1" />
-        <ValidatedNumberInput label="f_CEO comb 2 (MHz)" value={ceoFreq2} onChange={setCeoFreq2} min={0} max={100000} step="0.1" />
-        <ValidatedNumberInput label="Center wavelength (nm)" value={centerWavelength} onChange={setCenterWavelength} min={200} max={20000} />
+        <ValidatedNumberInput label="Comb 1 rep rate f_r (MHz)" value={repRate1Raw} onChange={setRepRate1} min={1} max={100000} step="0.1" />
+        <ValidatedNumberInput label="Comb 2 rep rate (MHz)" value={repRate2Raw} onChange={setRepRate2} min={1} max={100000} step="0.0001" />
+        <ValidatedNumberInput label="Number of comb teeth N" value={numModesRaw} onChange={setNumModes} min={2} max={10000000} step="10000" />
+        <ValidatedNumberInput label="f_CEO comb 1 (MHz)" value={ceoFreq1Raw} onChange={setCeoFreq1} min={0} max={100000} step="0.1" />
+        <ValidatedNumberInput label="f_CEO comb 2 (MHz)" value={ceoFreq2Raw} onChange={setCeoFreq2} min={0} max={100000} step="0.1" />
+        <ValidatedNumberInput label="Center wavelength (nm)" value={centerRaw} onChange={setCenterWavelength} min={200} max={20000} />
       </div>
 
       {dfr === 0 ? (

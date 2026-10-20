@@ -1,35 +1,38 @@
-# Handover — 2026-10-20 (session 107 → session 108)
+# Handover — 2026-10-20 (session 108 → session 109)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 107 did **spectroscopy fix part 11** (molecular) on branch `phase-4/spectroscopy-molecular` (PR #138 after `/ship`).
-Next: **spectroscopy fix part 12** (snr-averaging + signal-to-noise → imaging/signal-to-noise, fourier-self-comb → dual-comb,
-sum-frequency-gen, blackbody, wavenumber-converter; split 12a/12b if big). Then ask the user: wave-optics or materials audit.
+Session 108 did **spectroscopy fix part 12a** (SNR merges, fourier-self-comb → dual-comb) on branch `phase-4/spectroscopy-snr`
+(PR #139 after `/ship`). Next: **part 12b**: sum-frequency-gen (χ⁽²⁾ Lorentzian sum with NR phase), blackbody, wavenumber-converter.
+Then ask the user: wave-optics or materials audit.
 
 ## State
-- New `diatomic.ts` (wavenumbers in m⁻¹): `DIATOMICS` (CO, HCl: NIST constants incl. ω_e y_e, ω_e z_e; AME2020 masses,
-  IUPAC abundances, minor isotopologue), `reducedMass`, `rotationalConstant(V)`, `vibrationalTerm`, `isotopologue`,
-  `rotationalPartition` (NaN if not converged at the J cap), `rotationalLines` (HITRAN S per molecule in level v), `rovibrationalBand`.
-- New `terahertz.ts`: `waterPermittivity` (LHM double Debye), `lorentzPermittivity`, `constantPermittivity`, `complexIndex`,
-  `slabTransmission(Polar)`, `extractIndex`, `maxAbsorption` (Jepsen–Fischer, floored at 0).
-- New `photoemission.ts`: `kineticEnergy`, `imfpTpp2m` (E above E_F, NaN below 50 eV), `samplingDepth`, `TPP2M_MATERIALS`.
-- Tests: `tests/spectroscopy-molecular.test.ts` (5). 349 of 444 pages tiered, 4 `knownIssue`s (all spectroscopy, part 12).
-- Per-page findings, goldens and references: PR #127 description (`gh pr view 127`); read the part at hand only.
+- Merged with redirects: `spectroscopy/snr-averaging` + `spectroscopy/signal-to-noise` → `imaging/signal-to-noise` (target SNR input,
+  frames for target, variance budget table, SNR-vs-frames log chart, √N caveat in `modelNote`); `spectroscopy/fourier-self-comb` →
+  `spectroscopy/dual-comb-spectroscopy` (URL clamps on all six inputs, related links to optical-frequency-comb and fourier-transform).
+- New `framesForSnr(snr₁, target)` in `src/physics/detectors/camera-snr.ts` (⌈(t/s)²·(1 − 1e-12)⌉, ≥ 1, NaN if s ≤ 0); test in
+  `tests/imaging-sensors.test.ts`. 349 of 441 pages tiered; 1 `knownIssue` (sum-frequency-gen).
+- 12b notes (PR #127 batch 7): SFG reuse `sumFrequencyWavelength` (`src/physics/imaging/second-harmonic-generation.ts`), resolution
+  input hangs at 1e9 (drop it); blackbody reuse `src/physics/blackbody.ts` (`planckExitance`, `blackbodyBandFraction`), radiance = M/π,
+  "Total radiated power" → radiant exitance, clamp T; wavenumber-converter: duplicate "FTIR common" preset, `mode` not in URL,
+  "1240"/"3×10¹⁷" formula text, related links → raman-shift. Keep SFG separate from wave-optics/sum-frequency and
+  imaging/sum-frequency-microscopy (decided in the wave-optics audit).
 - **User decisions (session 96):** merges with redirects (ROADMAP "Spectroscopy fix parts"). **Release flow:** merges to `main`
   deploy nothing. Production deploys only from `release`, and only when the user asks: `git push origin main:release`, then
   `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set Vercel's Production Branch to `release`.
 - **User decisions (session 78):** keep dynamic-range, stimulated-raman-microscopy and resolution separate unless the user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 11: `spectroscopy/microwave-spectroscopy=115.2712` (GHz),
-   `spectroscopy/infrared-spectroscopy=2885.98` (cm⁻¹), `spectroscopy/terahertz-spectroscopy=2.070` (n at 1 THz, 20 °C),
-   `spectroscopy/electron-spectroscopy=1197.6` (eV; λ 3.08 nm); part 10: `spectroscopy/pump-probe=-2.752`,
-   `spectroscopy/time-resolved=12.50`, `spectroscopy/fluorescence-quantum-yield=0.6454`, `spectroscopy/two-dimensional=282.8`;
-   earlier parts: `git show db346912:docs/HANDOVER.md`. No release unless asked.
-2. Spectroscopy part 12 (ROADMAP item 12); PR #127 has the findings.
+1. `/ship` this branch. Values for a later release check: part 12a: `imaging/signal-to-noise=56.391` (SNR one frame),
+   `spectroscopy/dual-comb-spectroscopy=5.000` (update time 1/Δf_r, ms); part 11: `spectroscopy/microwave-spectroscopy=115.2712`,
+   `spectroscopy/infrared-spectroscopy=2885.98`, `spectroscopy/terahertz-spectroscopy=2.070`, `spectroscopy/electron-spectroscopy=1197.6`;
+   part 10: `git show efaa8120:docs/HANDOVER.md`. Redirects to check: the three removed hrefs. No release unless asked.
+2. Spectroscopy part 12b (ROADMAP item 12b).
 3. Later: open findings (ROADMAP), `polarizer-types` (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
+- **Session 108:** `python -` with a heredoc also hangs (stop the task). The merge codemod adds the old title as a keyword; extend that
+  `keywords` array by hand afterwards.
 - **Session 107:** NIST WebBook keeps higher constants in footnotes (CO ω_e y_e, ω_e z_e; HCl ω_e z_e): grep the saved HTML.
   Git Bash rewrites `/a/b` arguments to Windows paths: prefix `MSYS_NO_PATHCONV=1` (ui-check, chrome). Python has no Pillow:
   shrink screenshots with chrome `--force-device-scale-factor=0.5`. `npm run dev` touches `next-env.d.ts`: `git checkout` it.

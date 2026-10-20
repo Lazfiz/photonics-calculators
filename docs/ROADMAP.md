@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 107, 2026-10-20)
+## Status (session 108, 2026-10-20)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -19,12 +19,12 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
 | imaging | 61 / 61 | done: part 0 audit (session 78), fix parts 1–15b (sessions 79–95) |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
-| spectroscopy | 38 / 44 | part 0 audit (session 96); fix parts 1–11 (sessions 97–107); 4 `knownIssue`s; part 12 next |
+| spectroscopy | 38 / 41 | part 0 audit (session 96); fix parts 1–12a (sessions 97–108); 1 `knownIssue` (sum-frequency-gen); part 12b next |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **349 / 444** | 4 `knownIssue`s (spectroscopy) |
+| **total** | **349 / 441** | 1 `knownIssue` (spectroscopy) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -69,8 +69,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   9. ✅ (session 105, `phase-4/spectroscopy-depths`, PR #136) `water-absorption.ts` (Pope & Fry + Segelstein), `depth.ts` (d_p = λ/(4π Im√(N² − n₀²sin²θ))), `optical-path-length.ts` (n_g, Sellmeier glasses), `near-infrared.ts` (Morse, Scholkmann–Wolf DPF, 2-λ MBLL on Prahl Hb): Si 550 nm δ 1.565 µm, d_p 63.66 µm, OPL 0.0500 ns, DPF(24, 760) 6.122. 5 tests.
   10. ✅ (session 106, `phase-4/spectroscopy-kinetics`) `pump-probe.ts` (A→B→GS, bleach 0.742765 at 2 ps; IRF EMG), EMG/pile-up in `fluorescence-lifetime.ts` (+ `erfcx`), `quantum-yield.ts` (f = 1 − 10^(−A), 0.6454), `two-dimensional.ts` (dimer GSB/SE/ESA, ∫G·L·L via Faddeeva, Γ(200 fs) 53.088 cm⁻¹); transient-absorption merged. 6 tests.
   11. ✅ (session 107, `phase-4/spectroscopy-molecular`, PR #138) `diatomic.ts` (CO B_e 1.93128, JPL 1←0 115271.20 MHz, Q(300) 108.865, log I −5.0105; HCl ν₀ 2885.977 with ω_e z_e), `terahertz.ts` (LHM water, 1 THz 25 °C n 2.1097 α 225.5 cm⁻¹; Jepsen–Fischer), `photoemission.ts` (TPP-2M = SRD 71 Si₃N₄ ±0.006 Å). 5 tests.
-  12. SNR and the rest: snr-averaging + signal-to-noise → imaging/signal-to-noise; fourier-self-comb → dual-comb;
-      sum-frequency-gen; blackbody and wavenumber-converter (OK pages: clamps, tier). Split 12a/12b if big.
+  12a. ✅ (session 108, `phase-4/spectroscopy-snr`, PR #139) snr-averaging + signal-to-noise → imaging/signal-to-noise (noise budget, `framesForSnr` ⌈(100/10)²⌉ = 100, SNR-vs-N chart); fourier-self-comb → dual-comb (URL clamps). 1 test.
+  12b. sum-frequency-gen (|χ_NR e^{iφ} + Σ A_q/(ω − ω_q + iΓ_q)|², `sumFrequencyWavelength`, 532 nm + 3300 cm⁻¹ → 452.55 nm);
+      blackbody (reuse `src/physics/blackbody.ts`, radiant exitance, 5778 K λpk 501.5 nm, M 6.32e7) and wavenumber-converter (OK pages: clamps, tier).
 - [ ] **Next category audit after spectroscopy (ask the user):** wave-optics 2/49 or materials 4/45.
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
 - [ ] Rewrite each heuristic model, or label it illustrative, during its category's audit. Macro-bend and

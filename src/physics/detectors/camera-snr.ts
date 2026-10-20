@@ -69,6 +69,17 @@ export function cameraSnr(inputs: CameraSnrInputs): number {
 }
 
 /**
+ * Frames to average for an SNR target, ⌈(SNR_target/SNR₁)²⌉, at least 1. Averaging N frames adds the signal N times and
+ * independent noise √N times, so SNR_N = √N·SNR₁ (Janesick, Photon Transfer, ch. 5); drift and fixed-pattern noise,
+ * which are correlated between frames, don't average down. The (1 − 1e-12) factor keeps an exact square such as
+ * (100/10)² = 100 from rounding up. NaN if SNR₁ ≤ 0 or either value isn't finite.
+ */
+export function framesForSnr(snrSingle: number, target: number): number {
+  if (!(snrSingle > 0) || !Number.isFinite(snrSingle) || !Number.isFinite(target)) return NaN;
+  return Math.max(1, Math.ceil((target / snrSingle) ** 2 * (1 - 1e-12)));
+}
+
+/**
  * Read noise of a b×b super-pixel, e⁻ rms. Charge binning (CCD) sums the charge before the amplifier, so it is read
  * once: σ_r. Digital binning (CMOS) adds b² independent reads: b·σ_r (Janesick, Photon Transfer, ch. 5).
  */
