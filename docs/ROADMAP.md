@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 110, 2026-10-20)
+## Status (session 111, 2026-10-20)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -22,9 +22,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
-| wave-optics | 2 / 49 | part 0 audit (session 110): 41 `knownIssue`s; fix parts 1–13 next |
+| wave-optics | 5 / 48 | part 0 audit (session 110), fix part 1 (session 111); 40 `knownIssue`s; parts 2–13 next |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **352 / 441** | 41 `knownIssue`s (wave-optics) |
+| **total** | **355 / 440** | 40 `knownIssue`s (wave-optics) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -47,7 +47,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   the PR description; OK pages: gaussian-beam, gouy-phase, abcd-matrix, etalon-finesse, cavity-stability, coupled-mode). Every
   merge below is a user decision (session 110) and gets a redirect. Every page: clamp URL values, physics into
   `src/physics/wave-optics/`, golden test, tier + `modelNote` + references, drop the `knownIssue`. About 4 pages each.
-  1. Gaussian beams: gouy-phase → gaussian-beam (ψ(z) output); m2-factor (flag M² < 1); abcd-matrix (elements in the URL).
+  1. ✓ Gaussian beams (session 111, PR #142).
   2. Mode matching: mode-matching + beam-waist-matching into one page (Self 1983 closed form + exact Kogelnik overlap η;
      f 36.2177 mm, s 43.7215 mm); spatial-filter (T from the formula, 2.44λf/D, `besselJ`).
   3. Higher-order beams: hermite-gaussian + laguerre-gaussian into one HG/LG page (integer clamps, LG √2 norm);
@@ -218,6 +218,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Wave-optics fix part 1 (session 111, `phase-4/wave-optics-fix-1`, PR #142): new `gaussian-beam.ts` (z_R 0.202683 mm, ψ 7.71504°, M² 1.476312) and `abcd.ts` (2f–2f → [[−1, 0], [−1/f, −1]]); gouy-phase merged into gaussian-beam; M² < 1 flagged; ABCD elements in the URL; 3 pages tiered.
   - Wave-optics audit part 0 (session 110, `phase-4/wave-optics-audit`, PR #141): 47 untiered pages in 7 reviewer batches, 28 bugs / 13 questionable / 6 OK, 41 `knownIssue`s, 6 stripped descriptions restored; 12 merges decided; fix parts 1–13 planned.
   - Spectroscopy fix parts 1–12b (sessions 97–109, PRs #128–#140): 41/41 tiered, 0 `knownIssue`s; part 12b (`phase-4/spectroscopy-sfg`, PR #140) `sum-frequency.ts` (λ_SFG 452.550 nm, |χ_NR e^{iφ} + Σ A/(ν̃ − ν̃_q + iΓ)|², peak shift √89 − 8 cm⁻¹), blackbody exitance/radiance/band fraction (0.465261 in 380–780 nm at 5778 K), `wavenumber.ts`.
   - Spectroscopy audit part 0 (session 96, `phase-4/spectroscopy-audit`, PR #127): 49 untiered pages in 7 reviewer batches, 27 bugs / 15 questionable / 7 OK, 42 `knownIssue`s, 9 stripped descriptions restored; 10 merges decided; fix parts 1–12 planned.
