@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 108, 2026-10-20)
+## Status (session 109, 2026-10-20)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -19,12 +19,12 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
 | imaging | 61 / 61 | done: part 0 audit (session 78), fix parts 1–15b (sessions 79–95) |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
-| spectroscopy | 38 / 41 | part 0 audit (session 96); fix parts 1–12a (sessions 97–108); 1 `knownIssue` (sum-frequency-gen); part 12b next |
+| spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **349 / 441** | 1 `knownIssue` (spectroscopy) |
+| **total** | **352 / 441** | 0 `knownIssue`s |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -43,35 +43,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] Spectroscopy fix parts (part 0 audit, session 96, PR #127: per-page findings, golden values and references are
-  in the PR description; every merge below is a user decision and gets a redirect; etalon-fsr vs
-  wave-optics/etalon-finesse and sum-frequency-gen vs wave-optics/sum-frequency are decided in the wave-optics audit). About 4 pages each; every page: clamp URL values, physics into `src/physics/spectroscopy/`,
-  golden test, tier + `modelNote` + references, drop the `knownIssue`.
-  1. ✅ (session 97) Beer-Lambert: merge concentration + extinction-coefficient into lambert-beer-law; optical-density;
-     absorption-cross-section (σ = 3.8235e-21 ε cm²; fix the typical values).
-  2. ✅ (session 98, PR #129) `line-broadening.ts` (exact Voigt via Weideman Faddeeva, Olivero, TCH): spectral-line-broadening
-     absorbs doppler-broadening and lineshape-fit (Voigt 0.3525); libs-analysis (Stark 2w·nₑ, Saha, McWhirter). 11 goldens.
-  3. ✅ (session 99, PR #130) `peak-model.ts`: spectral-deconvolution absorbs emission-spectra (real height LSQ fit,
-     Sparrow dips 0.849 w / 0.577 w, Huang–Rhys vibronic band with λ⁻² Jacobian); stokes-shift 1602.56 cm⁻¹. 8 goldens.
-  4. ✅ (session 100, `phase-4/spectroscopy-raman`) `raman.ts` + `sers.ts`: raman-shift absorbs raman-spectroscopy (aS/S Si
-     0.09317); stimulated-raman → SRS microscopy (δ from g_R, F = √2πn/√(λp²+λS²)); CARS → coherent-raman (pulse
-     bandwidth 10.41 cm⁻¹ at 2 ps); SERS quasistatic Ag sphere (perfect conductor 81/16.2, water resonance 383.5 nm). 10 goldens.
-  5. ✅ (session 101, `phase-4/spectroscopy-gratings`, PR #132) `spectral-resolution.ts`: Casini–Nelson scalar blaze (ρ, shadowing,
-     normalised over orders: Littrow at λ_B 0.9381, dispersive defaults 0.7472), Rayleigh anomalies 2d/3; spectral-range Czerny–Turner
-     (λ_c + D_v, α < 90°, defaults 394.0–605.3 nm, 0.208 nm pixel-limited); slit bandpass w·d·cos α/(m·f) (anamorphic). 13 goldens.
-  6. ✅ (session 102, `phase-4/spectroscopy-stray-light`, PR #133) `stray-light.ts` + `spectral-calibration.ts`: stray-light absorbs
-     stray-light-rejection (A=3, s=10⁻³ → 2.69919; S/(1+S) form 2.69940; ΔA plot, A_max, s for tolerance, nλ′ = mλ); Czerny–Turner
-     calibration on NIST Hg lines (max error linear 0.623, quadratic 0.500, cubic 0.0051 nm: distortion is odd for small β₀). 5 tests.
-  7. ✅ (session 103, `phase-4/spectroscopy-ftir`) `fft.ts` (radix-2 + Bluestein), `ftir.ts`, `fourier-transform.ts`,
-     `ftir-phase-correction.ts`: ILS FWHM computed (NB weak/medium/strong 1.200/1.400/1.600 × boxcar 0.6034/L, HG 1.504, BH4 2.21);
-     Michelson Gaussian lines + Nyquist alias; DFT coherent gain, scalloping 3.92/1.42 dB; real Mertz/Forman (defaults 0.449/0.410 % vs 2.22 %). 6 tests.
-  8. ✅ (session 104, `phase-4/spectroscopy-throughput`, PR #135) `throughput.ts`, `etalon.ts`, `cavity-ring-down.ts`: Ω 6.283e-3 sr, Jacquinot π f/(h tan θ), ψ-grid Airy, CRDS α_min = (Δτ/τ)/(cτ₀). 4 tests.
-  9. ✅ (session 105, `phase-4/spectroscopy-depths`, PR #136) `water-absorption.ts` (Pope & Fry + Segelstein), `depth.ts` (d_p = λ/(4π Im√(N² − n₀²sin²θ))), `optical-path-length.ts` (n_g, Sellmeier glasses), `near-infrared.ts` (Morse, Scholkmann–Wolf DPF, 2-λ MBLL on Prahl Hb): Si 550 nm δ 1.565 µm, d_p 63.66 µm, OPL 0.0500 ns, DPF(24, 760) 6.122. 5 tests.
-  10. ✅ (session 106, `phase-4/spectroscopy-kinetics`) `pump-probe.ts` (A→B→GS, bleach 0.742765 at 2 ps; IRF EMG), EMG/pile-up in `fluorescence-lifetime.ts` (+ `erfcx`), `quantum-yield.ts` (f = 1 − 10^(−A), 0.6454), `two-dimensional.ts` (dimer GSB/SE/ESA, ∫G·L·L via Faddeeva, Γ(200 fs) 53.088 cm⁻¹); transient-absorption merged. 6 tests.
-  11. ✅ (session 107, `phase-4/spectroscopy-molecular`, PR #138) `diatomic.ts` (CO B_e 1.93128, JPL 1←0 115271.20 MHz, Q(300) 108.865, log I −5.0105; HCl ν₀ 2885.977 with ω_e z_e), `terahertz.ts` (LHM water, 1 THz 25 °C n 2.1097 α 225.5 cm⁻¹; Jepsen–Fischer), `photoemission.ts` (TPP-2M = SRD 71 Si₃N₄ ±0.006 Å). 5 tests.
-  12a. ✅ (session 108, `phase-4/spectroscopy-snr`, PR #139) snr-averaging + signal-to-noise → imaging/signal-to-noise (noise budget, `framesForSnr` ⌈(100/10)²⌉ = 100, SNR-vs-N chart); fourier-self-comb → dual-comb (URL clamps). 1 test.
-  12b. sum-frequency-gen (|χ_NR e^{iφ} + Σ A_q/(ω − ω_q + iΓ_q)|², `sumFrequencyWavelength`, 532 nm + 3300 cm⁻¹ → 452.55 nm);
-      blackbody (reuse `src/physics/blackbody.ts`, radiant exitance, 5778 K λpk 501.5 nm, M 6.32e7) and wavenumber-converter (OK pages: clamps, tier).
 - [ ] **Next category audit after spectroscopy (ask the user):** wave-optics 2/49 or materials 4/45.
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
 - [ ] Rewrite each heuristic model, or label it illustrative, during its category's audit. Macro-bend and
@@ -219,6 +190,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Spectroscopy fix parts 1–12b (sessions 97–109, PRs #128–#140): 41/41 tiered, 0 `knownIssue`s; part 12b (`phase-4/spectroscopy-sfg`, PR #140) `sum-frequency.ts` (λ_SFG 452.550 nm, |χ_NR e^{iφ} + Σ A/(ν̃ − ν̃_q + iΓ)|², peak shift √89 − 8 cm⁻¹), blackbody exitance/radiance/band fraction (0.465261 in 380–780 nm at 5778 K), `wavenumber.ts`.
   - Spectroscopy audit part 0 (session 96, `phase-4/spectroscopy-audit`, PR #127): 49 untiered pages in 7 reviewer batches, 27 bugs / 15 questionable / 7 OK, 42 `knownIssue`s, 9 stripped descriptions restored; 10 merges decided; fix parts 1–12 planned.
   - Imaging part 15b denoising and computational imaging (session 95, `phase-4/imaging-denoising`, PR #126): new `denoising.ts` (box 3×3 → 9.54 dB, f₅₀ 0.20978 cy/px; median var exact by quadrature, n = 3 → 1 − √3/π; VisuShrink 4.9953σ at 512²) and `computational-imaging.ts` (SNR₁ 31.404 → 157.02 at N 25; fixed dose 30.015; FPM NA 0.08 + 0.42); imaging 61/61, no `knownIssue`s left.
   - Imaging part 15a registration and stitching (session 94, `phase-4/imaging-registration`, PR #125): new `registration.ts`; RMS displacement 934.0 nm (was 1067), 2-D Fitzpatrick TRE checked by Monte Carlo (3 %), Robinson–Milanfar bound ℓ/(SNR·√N_px); stitching 51 px, 2356², 84.70 %, global error √R_eff (2×2 → 1, 3×3 → √1.5, 5×5 → 1.46σ vs chained 2.83σ).
