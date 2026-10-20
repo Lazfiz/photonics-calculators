@@ -42,8 +42,14 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "cavity-dumped",
     title: "Cavity-Dumped Laser",
-    description: "Energy extraction from a laser cavity using fast Q-switching or intracavity modulation.",
-    knownIssue: "The default 80 MHz dump rate is close to the 100 MHz round-trip rate of a 1.5 m cavity, which cavity dumping cannot reach, so the 800 W average power is unrealistic.",
+    description: "Cavity-dumped laser: round-trip pulse length 2L/c, peak and circulating power, average power and the highest possible dump rate.",
+    keywords: ["cavity dumping", "cavity dumper", "Pockels cell", "acousto-optic dumper", "round-trip time"],
+    tier: "textbook",
+    modelNote: "Ideal full dump with an instant switch: the energy stored in a linear cavity, P_circ × 2L/c, leaves as a flat pulse one round trip long. Partial dumps, the switch rise time and the build-up between dumps are not modelled; the page only flags dump rates at or above c/2L.",
+    references: [
+      { citation: "Siegman A. E. (1986). Lasers, ch. 26. University Science Books." },
+      { citation: "Koechner W. (2006). Solid-State Laser Engineering, 6th ed., ch. 8. Springer.", url: "https://doi.org/10.1007/0-387-29338-8" },
+    ],
   },
   {
     slug: "cavity-mode-spacing",
@@ -143,8 +149,14 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "free-electron-laser",
     title: "Free-Electron Laser",
-    description: "FEL resonance wavelength, Pierce parameter ρ, 1D gain length and saturation power from electron energy, undulator period, K and peak current.",
-    knownIssue: "The Pierce parameter ignores the transverse beam size, giving 1.4e-5 instead of about 6e-4 for LCLS-like inputs. The power growth plot is inverted and the energy spread input has no effect.",
+    description: "SASE free-electron laser: resonance wavelength, Pierce parameter ρ with the beam size, 3D gain length from Ming Xie's fit, saturation power and length, and the power along the undulator.",
+    keywords: ["FEL", "SASE", "Pierce parameter", "Ming Xie formula", "undulator", "gain length", "x-ray laser"],
+    tier: "textbook",
+    modelNote: "Planar undulator. ρ from Huang–Kim with the rms beam size √(βε_n/γ); the gain length includes diffraction, emittance and energy spread through Ming Xie's fit (within about 10 % of numerical solutions). Start-up from the 1D shot-noise power and Xie's empirical saturation power 1.6ρ(L_G0/L_G)²P_beam; the plot caps the exponential growth at P_sat. Checked against Xie's LCLS design table and the LCLS ρ = 4.5e-4. No helical undulators, taper or harmonics.",
+    references: [
+      { citation: "Huang Z., Kim K.-J. (2007). Review of x-ray free-electron laser theory. Phys. Rev. ST Accel. Beams 10, 034801.", url: "https://doi.org/10.1103/PhysRevSTAB.10.034801" },
+      { citation: "Xie M. (1995). Design optimization for an X-ray free electron laser driven by SLAC linac. Proc. 1995 Particle Accelerator Conference, 183–185.", url: "https://accelconf.web.cern.ch/p95/ARTICLES/TPG/TPG10.PDF" },
+    ],
   },
   {
     slug: "gas-laser-resonator",
@@ -265,8 +277,14 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "mode-locked-laser",
     title: "Mode-Locked Laser",
-    description: "Ultrashort pulse generation through passive or active mode-locking.",
-    knownIssue: "Only the cavity length c/(2 f_rep) is calculated. Pulse duration and wavelength change only the plot, and no bandwidth, peak power or mode count is given.",
+    description: "Mode-locked laser: cavity length for a repetition rate, transform-limited bandwidth of a sech² or Gaussian pulse, number of locked modes, pulse energy and peak power.",
+    keywords: ["mode locking", "ultrafast laser", "time-bandwidth product", "sech² pulse", "repetition rate", "femtosecond laser"],
+    tier: "textbook",
+    modelNote: "Transform-limited pulses: Δν·τ = 0.4413 (Gaussian) or 0.3148 (sech²), intensity FWHMs. The mode count is the number of modes f_rep apart inside Δν. Peak power from the shape factor, energy P/f_rep. Chirp, pedestals and the mode-locking mechanism itself are not modelled.",
+    references: [
+      { citation: "Haus H. A. (2000). Mode-locking of lasers. IEEE J. Sel. Top. Quantum Electron. 6, 1173–1185.", url: "https://doi.org/10.1109/2944.902165" },
+      { citation: "Diels J.-C., Rudolph W. (2006). Ultrashort Laser Pulse Phenomena, 2nd ed., ch. 1. Academic Press." },
+    ],
   },
   {
     slug: "mode-matching",
@@ -350,8 +368,16 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "q-switched-laser",
     title: "Q-Switched Laser",
-    description: "High-energy pulse generation through repetitive Q-switching of a laser cavity.",
-    knownIssue: "Peak power is shown 1000 times too high: 1 mJ in 10 ns reads 100000 kW instead of 100 kW. Average power and duty cycle are correct.",
+    description: "Q-switched laser: peak and average power and duty cycle of a pulse train, plus pulse energy, width and peak power from the Q-switch rate equations.",
+    keywords: ["Q-switching", "giant pulse", "Nd:YAG Q-switched", "extraction efficiency", "photon lifetime", "Degnan"],
+    tier: "textbook",
+    modelNote: "Pulse train: shape factor × E/τ for Gaussian, sech² or flat pulses. Cavity model: four-level rate equations with an instant switch and an empty lower level (Wagner–Lengyel, Degnan), top-hat mode, integrated numerically for the shape and FWHM. A slow lower-level decay, a finite switching time and transverse gain variation are not modelled. Nd:YAG σ default from Koechner.",
+    references: [
+      { citation: "Wagner W. G., Lengyel B. A. (1963). Evolution of the giant pulse in a laser. J. Appl. Phys. 34, 2040–2046.", url: "https://doi.org/10.1063/1.1729732" },
+      { citation: "Degnan J. J. (1989). Theory of the optimally coupled Q-switched laser. IEEE J. Quantum Electron. 25, 214–220.", url: "https://doi.org/10.1109/3.16265" },
+      { citation: "Svelto O. (2010). Principles of Lasers, 5th ed., ch. 8. Springer.", url: "https://doi.org/10.1007/978-1-4419-1302-9" },
+      { citation: "Koechner W. (2006). Solid-State Laser Engineering, 6th ed., ch. 2 and 8. Springer.", url: "https://doi.org/10.1007/0-387-29338-8" },
+    ],
   },
   {
     slug: "ring-cavity",
