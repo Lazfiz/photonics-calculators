@@ -22,12 +22,6 @@ export const waveOptics: CalculatorEntry[] = [
     knownIssue: "The transform-limited pulse duration is about 15 times too short (2.4 as instead of about 35 as at default inputs), and the plotted spectrum ignores the computed cutoff and the pulse duration input.",
   },
   {
-    slug: "beam-waist-matching",
-    title: "Beam Waist Matching",
-    description: "Find the optimal lens for coupling one Gaussian mode into another.",
-    knownIssue: "The mismatch chart compares beam radius only and ignores wavefront curvature, so it dips to near zero at wrong focal lengths. No warning appears when the lens lies outside the waist-to-waist distance.",
-  },
-  {
     slug: "bessel-beam",
     title: "Bessel Beam Calculator",
     description: "Non-diffracting beam profiles and propagation.",
@@ -223,8 +217,24 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "mode-matching",
     title: "Mode Matching",
-    description: "Find the optimal lens for coupling one Gaussian beam mode into another.",
-    knownIssue: "The listed lens solutions are wrong at the default inputs: they show near-zero overlap and miss the real solution near f = 36 mm, 44 mm from the input waist. A very large distance in a link can freeze the page.",
+    description: "The single lens, and its position, that couples one Gaussian beam waist into another, plus the best coupling of a lens you already have.",
+    keywords: ["Beam Waist Matching", "Gaussian beam coupling", "mode overlap", "fiber coupling lens"],
+    tier: "textbook",
+    modelNote: "Paraxial TEM₀₀ beams and a thin lens, closed-form solution. Coupling η is the exact overlap of the two Gaussian beams, including wavefront curvature; aberrations, tilt and lateral offset are ignored.",
+    references: [
+      {
+        citation: "Kogelnik H., Li T. (1966). Laser beams and resonators. Appl. Opt. 5, 1550–1567.",
+        url: "https://doi.org/10.1364/ao.5.001550",
+      },
+      {
+        citation: "Self S. A. (1983). Focusing of spherical Gaussian beams. Appl. Opt. 22, 658.",
+        url: "https://doi.org/10.1364/ao.22.000658",
+      },
+      {
+        citation: "Joyce W. B., DeLoach B. C. (1984). Alignment of Gaussian beams. Appl. Opt. 23, 4187.",
+        url: "https://doi.org/10.1364/ao.23.004187",
+      },
+    ],
   },
   {
     slug: "optical-frequency-comb",
@@ -328,8 +338,20 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "spatial-filter",
     title: "Spatial Filter Pinhole Sizing",
-    description: "Calculate optimal pinhole diameter for spatial filtering.",
-    knownIssue: "Throughput labels are wrong: the recommended pinhole passes about 57 % of the power, not 80 %, and the Airy value is a radius labelled as a diameter. The suggested pinhole is smaller than usual practice.",
+    description: "Focal spot, recommended pinhole diameter, throughput of any pinhole and the output beam profile of a lens–pinhole spatial filter.",
+    keywords: ["pinhole size", "spatial filter", "beam cleanup", "pinhole throughput"],
+    tier: "textbook",
+    modelNote: "Paraxial Gaussian beam focused by an ideal lens onto a centred pinhole. For M² > 1 the spot and throughput use the embedded Gaussian, an estimate. The output profile is the Fraunhofer pattern of the cut Gaussian.",
+    references: [
+      {
+        citation: "Uehara K., Kikuchi H. (1986). Transmission of a Gaussian beam through a circular aperture. Appl. Opt. 25, 4514.",
+        url: "https://doi.org/10.1364/ao.25.004514",
+      },
+      {
+        citation: "Kogelnik H., Li T. (1966). Laser beams and resonators. Appl. Opt. 5, 1550–1567.",
+        url: "https://doi.org/10.1364/ao.5.001550",
+      },
+    ],
   },
   {
     slug: "sum-frequency",
