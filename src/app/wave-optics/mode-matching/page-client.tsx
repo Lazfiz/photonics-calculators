@@ -1,216 +1,102 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { bestLensPosition, qAfterLens, singleLensModeMatch } from "../../../physics/wave-optics/mode-matching";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
+
 export default function ModeMatchingPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
-  const [w1, setW1] = useURLState("w1", 50); // µm input beam waist
-  const [w2, setW2] = useURLState("w2", 200); // µm target beam waist
-  const [d, setD] = useURLState("d", 200); // mm distance between waists
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [w1Raw, setW1] = useURLState("w1", 50); // µm, input waist
+  const [w2Raw, setW2] = useURLState("w2", 200); // µm, target waist
+  const [dRaw, setD] = useURLState("d", 200); // mm, waist to waist
+  const [fStockRaw, setFStock] = useURLState("f", 40); // mm, a lens you have
 
-  const lam = wavelength * 1e-3; // µm (nm → µm)
-  const zR1 = Math.PI * w1 * w1 / lam; // µm
-  const zR2 = Math.PI * w2 * w2 / lam; // µm
-  const d_mm = d; // mm
-  const d_um = d * 1000; // µm
+  const wavelength = clamp(wavelengthRaw, 200, 11000, 1550);
+  const w1_um = clamp(w1Raw, 1, 10000, 50);
+  const w2_um = clamp(w2Raw, 1, 10000, 200);
+  const d_mm = clamp(dRaw, 0.1, 1e5, 200);
+  const fStock_mm = clamp(fStockRaw, 0.1, 1e5, 40);
 
-  // Mode matching with thin lens
-  // f = 1/(1/(d + zR1²/(d - zR2²))) ... use the standard formula
-  // For a single thin lens mode matcher:
-  // s1 = d·zR2² / (d² + zR1² - zR2²)  (distance from input waist to lens)
-  // f = ... (focal length)
+  const lambda = wavelength * 1e-9;
+  const p = { lambda, w1: w1_um * 1e-6, w2: w2_um * 1e-6, d: d_mm * 1e-3 };
+  const sol = singleLensModeMatch(p);
+  const zR1_mm = ((Math.PI * p.w1 * p.w1) / lambda) * 1e3;
+  const zR2_mm = ((Math.PI * p.w2 * p.w2) / lambda) * 1e3;
+  const stock = bestLensPosition(p, fStock_mm * 1e-3);
 
-  // Using the standard result for mode matching with a single thin lens:
-  // f = (1/d²) * (d² - zR1² - zR2²) * ... let me use the direct formula
-  // 
-  // The ABCD matrix from waist 1 to waist 2 through a thin lens at distance s from waist 1:
-  // [1 s] [1 0] [1 d-s]   [1 + (d-s)(-1/f)    s - s(d-s)/f ]
-  // [0 1] [-1/f 1] [0 1 ] = [-1/f               1 - s/f     ]
-  //
-  // The imaging condition B = 0 gives: s - s(d-s)/f = 0 → f = d-s (not useful for mode matching)
-  // Instead, use the complex beam parameter approach.
-  //
-  // Simpler: use the magnification approach
-  // M = w2/w1
-  // For symmetric mode matching: s1 = s2 = d/2
-  // f = (d/2) / (1 + (w2/w1)² * (zR1/zR2)²)... 
-  //
-  // Let's just use the standard single-lens formulas:
-  // The Gaussian beam parameter q transforms through ABCD matrices.
-  // q1 = i*zR1, q2 = i*zR2 (at the waists)
-  // Through lens at position s from waist 1: propagation s, lens f, propagation d-s
-  // q_out = (A·q_in + B) / (C·q_in + D)
-  // Set Im(1/q_out) = -λ/(π·w2²) = -1/zR2
-  //
-  // Using the standard result for single-lens mode matching:
-  // f = (d² - zR1² - zR2²) / (2d)  ... no that's for imaging
-  //
-  // Correct formula from Self (1983):
-  // s = f ± (f² - f·d·(1 + (zR2/zR1)²) / (1 - (f/zR1)²) + ...)^(1/2)
-  //
-  // Simpler approach: given d, w1, w2, λ, find f and s.
-  // Using: f²·(d-zR2·zR1·...) ... let me just compute numerically.
+  // Best coupling over lens position for each focal length.
+  const fOpt_mm = sol.f * 1e3;
+  const fLo = Math.min(0.5 * sol.f0 * 1e3, 0.8 * fStock_mm);
+  const fHi = Math.max(4 * fOpt_mm, 1.25 * fStock_mm);
+  const fs = Array.from({ length: 161 }, (_, i) => fLo + (i * (fHi - fLo)) / 160);
+  const coupling = [
+    { name: "Best η at each focal length", color: "#60a5fa", points: fs.map((f) => ({ x: round6(f), y: round6(bestLensPosition(p, f * 1e-3).eta * 100) })) },
+    { name: "Matching lens (η = 100 %)", color: "#f87171", showPoints: true, points: [{ x: round6(fOpt_mm), y: 100 }] },
+    { name: "Your lens", color: "#facc15", showPoints: true, points: [{ x: round6(fStock_mm), y: round6(stock.eta * 100) }] },
+  ];
 
-  // Numerical approach: scan focal lengths and positions to find solutions
-  const solutions = useMemo(() => {
-    const sols: { f: number; s: number; overlap: number }[] = [];
-    // Scan s for each candidate f
-    for (let f_test = 5; f_test < 3000; f_test += 1) {
-      for (let s_test = 1; s_test < d_mm - 1; s_test += 0.5) {
-        // Complex q parameter approach (all in mm)
-        const zR1_mm = zR1 / 1000;
-        const zR2_mm = zR2 / 1000;
-        const w1_mm = w1 / 1000;
-        const w2_mm = w2 / 1000;
-        const lam_mm = wavelength * 1e-6;
-        
-        // q at waist 1: q = i*zR1
-        // Propagate s_test mm: q = s_test + i*zR1_mm
-        // Thin lens f_test: 1/q' = 1/q - 1/f_test
-        // q' = 1 / (1/(s_test + i*zR1_mm) - 1/f_test)
-        // = (f_test * (s_test + i*zR1_mm)) / (f_test - s_test - i*zR1_mm)
-        const num_r = f_test * s_test;
-        const num_i = f_test * zR1_mm;
-        const den_r = f_test - s_test;
-        const den_i = -zR1_mm;
-        const den_mag2 = den_r * den_r + den_i * den_i;
-        const qp_r = (num_r * den_r + num_i * den_i) / den_mag2;
-        const qp_i = (num_i * den_r - num_r * den_i) / den_mag2;
-        
-        // Propagate (d - s_test): q'' = qp + (d - s_test)
-        const qpp_r = qp_r + (d_mm - s_test);
-        const qpp_i = qp_i;
-        
-        // Beam at output: w = sqrt(-λ/(π·Im(1/q'')))
-        // Im(1/q'') = -qpp_i / (qpp_r² + qpp_i²)
-        const inv_q_im = -qpp_i / (qpp_r * qpp_r + qpp_i * qpp_i);
-        const w_out = Math.sqrt(-lam_mm / (Math.PI * inv_q_im)) * 1000; // back to µm
-        
-        // Mode overlap integral for Gaussian beams:
-        // η = 4/((w1/w2 + w2/w1)²) when waists coincide and phase fronts match
-        // For our case, we also need the wavefront curvature to match (qpp_r ≈ 0 at output waist)
-        // 
-        // Simplified: just check if w_out ≈ w2 and qpp_r ≈ 0 (output at waist)
-        if (Math.abs(w_out - w2) / w2 < 0.005 && Math.abs(qpp_r) / zR2_mm < 0.05) {
-          // Exact Gaussian mode overlap (Kogelnik & Li, 1966):
-          // η = 4·Im(q₁)·Im(q₂) / |q₁* - q₂|², target q₂ = i·zR2 (at its waist)
-          // q₁* - q₂ = qpp_r - i·(qpp_i + zR2)
-          const dq_r = qpp_r;
-          const dq_i = qpp_i + zR2_mm;
-          const eta = 4 * qpp_i * zR2_mm / (dq_r * dq_r + dq_i * dq_i);
-
-          // Avoid duplicates
-          if (!sols.some(s => Math.abs(s.f - f_test) < 5 && Math.abs(s.s - s_test) < 2)) {
-            sols.push({ f: f_test, s: s_test, overlap: eta });
-          }
-        }
-      }
-      if (sols.length >= 2) break;
-    }
-
-    return sols.slice(0, 2);
-  }, [wavelength, w1, w2, d]);
-
-  // Also compute the mode overlap as a function of focal length for the chart
-  const chartData = useMemo(() => {
-    const focalLengths = Array.from({ length: 300 }, (_, i) => 10 + i * (d * 2 - 10) / 300);
-    const overlaps = focalLengths.map(f_test => {
-      // For each f, find best s and compute overlap
-      let bestEta = 0;
-      const zR1_mm = zR1 / 1000;
-      const lam_mm = wavelength * 1e-6;
-      
-      for (let s_test = 1; s_test < d_mm - 1; s_test += 2) {
-        const num_r = f_test * s_test;
-        const num_i = f_test * zR1_mm;
-        const den_r = f_test - s_test;
-        const den_i = -zR1_mm;
-        const den_mag2 = den_r * den_r + den_i * den_i;
-        if (den_mag2 < 1e-10) continue;
-        const qp_r = (num_r * den_r + num_i * den_i) / den_mag2;
-        const qp_i = (num_i * den_r - num_r * den_i) / den_mag2;
-        const qpp_r = qp_r + (d_mm - s_test);
-        const qpp_i = qp_i;
-        const inv_q_im = -qpp_i / (qpp_r * qpp_r + qpp_i * qpp_i);
-        if (inv_q_im >= 0) continue;
-        const w_out = Math.sqrt(-lam_mm / (Math.PI * inv_q_im)) * 1000;
-        // Exact overlap: η = 4·Im(q_out)·Im(q_target) / |q_out* - q_target|²
-        // q_out* - q_target = qpp_r - i·(qpp_i + zR2), so Im parts add (η = 1 at a perfect match)
-        const q_target_i = zR2 / 1000;
-        const dq_r = qpp_r;
-        const dq_i = qpp_i + q_target_i;
-        const eta = 4 * qpp_i * q_target_i / (dq_r * dq_r + dq_i * dq_i);
-        if (eta > bestEta) bestEta = eta;
-      }
-      return bestEta;
-    });
-
-    const markers = solutions.map(s => ({
-      x: [s.f], y: [s.overlap], type: "scatter" as const, mode: "markers" as const,
-      name: `f=${s.f.toFixed(1)}mm`, marker: { color: "#facc15", size: 12 },
-    }));
-
-    return [
-      { x: focalLengths, y: overlaps, type: "scatter" as const, mode: "lines" as const, name: "Mode overlap η", line: { color: "#60a5fa" } },
-      ...markers,
-    ];
-  }, [wavelength, w1, w2, d, solutions, d_mm, zR1, zR2]);
+  // Beam radius along the axis: input beam up to the lens, then the beam the lens makes.
+  const radiusAfter = (f_mm: number, s_mm: number, z_mm: number) => {
+    const q = qAfterLens(lambda, p.w1, s_mm * 1e-3, f_mm * 1e-3, (z_mm - s_mm) * 1e-3);
+    return Math.sqrt((lambda * (q.re * q.re + q.im * q.im)) / (Math.PI * q.im)) * 1e6; // w² = λ|q|²/(π Im q)
+  };
+  const inputRadius = (z_mm: number) => w1_um * Math.hypot(1, z_mm / zR1_mm);
+  const zLo = Math.min(0, sol.s1 * 1e3);
+  const zHi = Math.max(d_mm, sol.s1 * 1e3);
+  const zs = Array.from({ length: 241 }, (_, i) => zLo + (i * (zHi - zLo)) / 240);
+  const profile = (f_mm: number, s_mm: number) =>
+    zs.map((z) => ({ x: round6(z), y: round6(z <= s_mm ? inputRadius(z) : radiusAfter(f_mm, s_mm, z)) }));
+  const beams = [
+    { name: "Matching lens", color: "#34d399", points: Number.isFinite(sol.f) ? profile(fOpt_mm, sol.s1 * 1e3) : [] },
+    { name: "Your lens at its best position", color: "#facc15", dashed: true, points: Number.isFinite(stock.s) ? profile(fStock_mm, stock.s * 1e3) : [] },
+    { name: "Target beam", color: "#f87171", dashed: true, points: zs.map((z) => ({ x: round6(z), y: round6(w2_um * Math.hypot(1, (z - d_mm) / zR2_mm)) })) },
+  ];
 
   return (
     <>
-            
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 font-mono text-sm text-gray-300">
-        <pre>{`q = z + i·z_R   (complex beam parameter)
-z_R = π·w₀² / λ
-
-Mode overlap: η = |∫ E₁·E₂* dA|² / (|E₁|²·|E₂|²)
-
-Single thin lens mode matcher: find f and s
-  s = distance from input waist to lens`}</pre>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Wavelength λ (nm)" value={wavelengthRaw} onChange={setWavelength} min={200} max={11000} />
+        <ValidatedNumberInput label="Input waist radius w₁ (µm, 1/e²)" value={w1Raw} onChange={setW1} min={1} max={10000} step="any" />
+        <ValidatedNumberInput label="Target waist radius w₂ (µm, 1/e²)" value={w2Raw} onChange={setW2} min={1} max={10000} step="any" />
+        <ValidatedNumberInput label="Waist-to-waist distance d (mm)" value={dRaw} onChange={setD} min={0.1} max={1e5} step="any" />
+        <ValidatedNumberInput label="Your lens focal length (mm)" value={fStockRaw} onChange={setFStock} min={0.1} max={1e5} step="any" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-        <ValidatedNumberInput label="Input waist w₁ (µm)" value={w1} onChange={setW1} step="any" />
-        <ValidatedNumberInput label="Target waist w₂ (µm)" value={w2} onChange={setW2} step="any" />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-4">
+        <ResultCard label="Matching lens focal length f" value={`${fmt(fOpt_mm)} mm`} subtext="The one positive lens that couples 100 %" tone="blue" />
+        <ResultCard label="Lens distance from input waist s₁" value={`${fmt(sol.s1 * 1e3)} mm`} tone="green" />
+        <ResultCard label="Lens distance to target waist s₂" value={`${fmt(sol.s2 * 1e3)} mm`} tone="green" />
+        <ResultCard label="Shortest usable focal length f₀ = πw₁w₂/λ" value={`${fmt(sol.f0 * 1e3)} mm`} tone="purple" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard label="Magnification w₂/w₁" value={fmt(w2_um / w1_um)} tone="orange" />
+        <ResultCard label="Rayleigh ranges z_R1 / z_R2" value={`${fmt(zR1_mm)} / ${fmt(zR2_mm)} mm`} tone="cyan" />
+        <ResultCard label="Your lens: best distance from input waist" value={`${fmt(stock.s * 1e3)} mm`} tone="yellow" />
+        <ResultCard label="Your lens: coupling η" value={`${fmt(stock.eta * 100)} %`} subtext="Best over positions between the waists" tone="yellow" />
       </div>
 
-      <label className="block mb-6"><span className="text-sm text-gray-300">Distance between waists d: {d} mm</span>
-        <input type="range" min={10} max={1000} step={1} value={d} onChange={e => setD(+e.target.value)} className="w-full mt-1" /></label>
+      {!sol.lensBetweenWaists && Number.isFinite(sol.f) && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          The matching lens would sit {sol.s1 < 0 ? "before the input waist" : "after the target waist"}: d is shorter than
+          one lens can bridge, so no single lens between the waists couples 100 %. Increase d or use two lenses.
+        </p>
+      )}
 
-      <div className="grid gap-4 sm:grid-cols-2 mb-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">z<sub>R1</sub> (input)</p>
-          <p className="text-xl font-bold text-blue-400">{(zR1/1000).toFixed(2)} mm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">z<sub>R2</sub> (target)</p>
-          <p className="text-xl font-bold text-green-400">{(zR2/1000).toFixed(2)} mm</p>
-        </div>
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>f₀ = πw₁w₂/λ; for f ≥ f₀: s₁ = f ± (w₁/w₂)√(f² − f₀²), s₂ = f ± (w₂/w₁)√(f² − f₀²), s₁ + s₂ = d.</p>
+        <p>Coupling of beams q₁, q₂ at one plane (q = z + iz<sub>R</sub>): η = 4 Im q₁ Im q₂ / |q₁ − q₂*|², which includes both
+          the size and the wavefront curvature mismatch.</p>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-        <p className="text-sm text-gray-400 mb-2">Solutions (single thin lens)</p>
-        {solutions.length === 0 && <p className="text-yellow-400">No solution found — try adjusting parameters</p>}
-        {solutions.map((sol, i) => (
-          <div key={i} className="flex gap-6 text-sm mb-1">
-            <span className="text-blue-400">f = {sol.f.toFixed(1)} mm</span>
-            <span className="text-green-400">s = {sol.s.toFixed(1)} mm from input waist</span>
-            <span className="text-yellow-400">η = {(sol.overlap * 100).toFixed(1)}%</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="bg-gray-900 rounded-lg p-4">
-        <ChartPanel data={chartData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" }, xaxis: { title: "Focal length f (mm)", gridcolor: "#374151" },
-          yaxis: { title: "Mode overlap η", gridcolor: "#374151", range: [0, 1.05] },
-          margin: { t: 30, r: 30, b: 50, l: 70 }, showlegend: true, legend: { x: 0, y: 1.15, orientation: "h" },
-        }} />
+      <div className="space-y-6">
+        <SimpleLineChart title="Best coupling versus lens focal length" xLabel="Focal length f (mm)" yLabel="Coupling η (%)" series={coupling} />
+        <SimpleLineChart title="Beam radius along the axis" xLabel="Distance from the input waist z (mm)" yLabel="Beam radius w (µm)" series={beams} />
       </div>
     </>
   );
