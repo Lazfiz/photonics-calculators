@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 117, 2026-10-20)
+## Status (session 119, 2026-10-20)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -22,9 +22,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
-| wave-optics | 25 / 42 | part 0 audit (session 110), fix parts 1–8 (sessions 111–118); 15 `knownIssue`s; parts 9–13 next |
+| wave-optics | 27 / 42 | part 0 audit (session 110), fix parts 1–9 (sessions 111–119); 13 `knownIssue`s; parts 10–13 next |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **375 / 434** | 15 `knownIssue`s (wave-optics) |
+| **total** | **377 / 434** | 13 `knownIssue`s (wave-optics) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -55,8 +55,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   6. ✓ Resonators b: diode, slab, thin-disk; fiber-laser-resonator → fiber-optics/fiber-laser (session 116, PR #147).
   7. ✓ Pulsed output: q-switched, cavity-dumped, mode-locked, free-electron laser (session 117, PR #148).
   8. ✓ Pulses: CPA (pulse-compression merged), optical-frequency-comb (cep-stabilization merged), attosecond (session 118, PR #149).
-  9. Fibre solitons: shared `soliton.ts` (sech T0, L_D, N); soliton (real FFT split-step); supercontinuum (units:
-     N 53.3 at the defaults).
+  9. ✓ Fibre solitons: `soliton.ts`, soliton (split-step NLS), supercontinuum (session 119, PR #150).
   10. Kerr: shared critical power; kerr-lens (1/f = 8n₂PL/(πw⁴)), self-phase-modulation (k₀, 2P/πw², φ ∝ I,
       `spmRmsBroadening`), filamentation (Marburger, NaN below P_cr).
   11. χ⁽²⁾: one plane-wave three-wave module (`sfgCoefficient`): sum-frequency (P₃ 9.06 µW), difference-frequency
@@ -217,6 +216,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Wave-optics fix part 9 (session 119, `phase-4/wave-optics-fix-9`, PR #150): new `soliton.ts` (sech T₀ 56.7296 fs; L_D 0.272042 m, P₁ 2827.62 W,
+    N 1.32976; SC N 53.2586, L_fiss 0.6043 cm; Ω = −3β₂/β₃ → 909.8 nm; split-step NLS checked against the exact N = 2 breather); 950 tests.
   - Wave-optics fix part 8 (session 118, `phase-4/wave-optics-fix-8`, PR #149): new `chirped-pulse.ts` (τ₀ 94.2067 fs, stretch 1000 → 3.20094 ps², Treacy 14.1916 ps²/m, G 225.55 mm, TOD = dφ₂/dω), `frequency-comb.ts` (Δφ_CE π/2 at 20/80 MHz, tooth 773658 at 193.414520 THz) and `high-harmonic.ts` (U_p 11.9517 eV, E_c(H) 51.485 eV, q 33, I_BS(H) 1.37e14 W/cm²); 2 merges with redirects.
   - Wave-optics fix part 7 (session 117, `phase-4/wave-optics-fix-7`, PR #148): new `pulsed-laser.ts` (Q-switch η(3) 0.94048, 2.635 mJ, FWHM 2.704 τ_c,
     146.9 kW; τ_RT 10.007 ns; Δλ 25.23 nm, L 1.8737 m) and `free-electron-laser.ts` (Huang–Kim ρ, Xie L_G: Xie 1995 table 1 3.12 m / 57.8 m,
