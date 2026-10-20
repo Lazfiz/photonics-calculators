@@ -59,8 +59,10 @@ export default function SimpleLineChart({
   const yMin = Math.min(...yVals);
   const yMax = Math.max(...yVals);
 
-  const xAt = (x: number) => margin.left + ((toScaled(x, xScale) - xMin) / Math.max(xMax - xMin, 1e-12)) * innerW;
-  const yAt = (y: number) => margin.top + innerH - ((toScaled(y, yScale) - yMin) / Math.max(yMax - yMin, 1e-12)) * innerH;
+  // Rounded to 0.01 px: Node (prerender) and Chrome can differ by 1 ulp, a hydration mismatch at full precision.
+  const px = (v: number) => Math.round(v * 100) / 100;
+  const xAt = (x: number) => px(margin.left + ((toScaled(x, xScale) - xMin) / Math.max(xMax - xMin, 1e-12)) * innerW);
+  const yAt = (y: number) => px(margin.top + innerH - ((toScaled(y, yScale) - yMin) / Math.max(yMax - yMin, 1e-12)) * innerH);
 
   const xTicks = Array.from({ length: 5 }, (_, i) => xMin + (i / 4) * (xMax - xMin)).map((v) => (xScale === "log" ? Math.pow(10, v) : v));
   const yTicks = Array.from({ length: 5 }, (_, i) => yMin + (i / 4) * (yMax - yMin)).map((v) => (yScale === "log" ? Math.pow(10, v) : v));

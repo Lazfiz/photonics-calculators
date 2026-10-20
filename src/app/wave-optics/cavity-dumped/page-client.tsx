@@ -1,69 +1,69 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c } from "../../../physics/constants";
+import { peakPower } from "../../../physics/laser-safety/peak-power";
+import { roundTripTime } from "../../../physics/wave-optics/pulsed-laser";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
+
 export default function CavityDumpedLaserPage() {
-  const [repRate, setRepRate] = useURLState("repRate", 80); // MHz
-  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 10); // μJ
-  const [cavityLength, setCavityLength] = useURLState("cavityLength", 1.5); // m
+  const [repRateRaw, setRepRate] = useURLState("repRate", 1); // MHz
+  const [energyRaw, setEnergy] = useURLState("pulseEnergy", 10); // µJ
+  const [lengthRaw, setLength] = useURLState("cavityLength", 1.5); // m, optical length
 
-  const roundTripNs = (2 * cavityLength) / c * 1e9; // ns
-  const avgPower = repRate * 1e6 * pulseEnergy * 1e-6; // W (MHz × μJ → W)
-  const peakPower = pulseEnergy * 1e-6 / (roundTripNs * 1e-9); // W (energy / duration)
+  const repRate = clamp(repRateRaw, 1e-6, 1e4, 1) * 1e6;
+  const energy = clamp(energyRaw, 1e-6, 1e9, 10) * 1e-6;
+  const L = clamp(lengthRaw, 1e-3, 1000, 1.5);
 
-  const chartData = useMemo(() => {
-    // Cavity-dumped pulse: extracted over ~1 round-trip time
-    const pulseWidthNs = roundTripNs; // pulse duration ≈ round-trip time
-    const tRange = pulseWidthNs * 6;
-    const t = Array.from({ length: 200 }, (_, i) => (tRange * i) / 199 - tRange * 0.3);
-    const centerT = tRange * 0.35;
-    const intensity = t.map(ti => {
-      const envelope = Math.exp(-(((ti - centerT) / (pulseWidthNs * 0.4)) ** 2));
-      return envelope;
-    });
-    return [
-      { x: t, y: intensity, type: "scatter" as const, mode: "lines" as const, name: "Cavity Dumped Pulse", line: { color: "#60a5fa" } },
-    ];
-  }, [roundTripNs, repRate, pulseEnergy]);
+  const tRT = roundTripTime(L);
+  const fsr = 1 / tRT;
+  const possible = repRate < fsr;
+  const peak = peakPower(energy, tRT, "rectangular");
+  const avg = energy * repRate;
+  const duty = tRT * repRate;
+
+  // Ideal dump: the output is one round trip long and flat (instant switch, uniform circulating power).
+  const tNs = tRT * 1e9;
+  const series = [{
+    name: "Dumped pulse",
+    color: "#60a5fa",
+    points: [[-0.5, 0], [0, 0], [0, peak], [1, peak], [1, 0], [1.5, 0]].map(([t, p]) => ({ x: round6(t * tNs), y: round6(p / 1e3) })),
+  }];
 
   return (
     <>
-
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Rep Rate (MHz)" value={repRate} onChange={setRepRate} step="1" />
-        <ValidatedNumberInput label="Pulse Energy (μJ)" value={pulseEnergy} onChange={setPulseEnergy} step="1" />
-        <ValidatedNumberInput label="Cavity Length (m)" value={cavityLength} onChange={setCavityLength} step="0.1" />
+        <ValidatedNumberInput label="Dump rate (MHz)" value={repRateRaw} onChange={setRepRate} min={1e-6} max={1e4} step="any" />
+        <ValidatedNumberInput label="Pulse energy (µJ)" value={energyRaw} onChange={setEnergy} min={1e-6} max={1e9} step="any" />
+        <ValidatedNumberInput label="Optical cavity length L (m)" value={lengthRaw} onChange={setLength} min={1e-3} max={1000} step="any" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-        <div className="bg-gray-900 rounded p-4">
-          <p className="text-sm text-gray-400">Round-trip time</p>
-          <p className="text-xl font-bold text-blue-400 font-mono">{roundTripNs.toFixed(2)} ns</p>
-        </div>
-        <div className="bg-gray-900 rounded p-4">
-          <p className="text-sm text-gray-400">Pulse Duration (≈ RT)</p>
-          <p className="text-xl font-bold text-green-400 font-mono">{roundTripNs.toFixed(2)} ns</p>
-        </div>
-        <div className="bg-gray-900 rounded p-4">
-          <p className="text-sm text-gray-400">Average Power</p>
-          <p className="text-xl font-bold text-orange-400 font-mono">{avgPower.toFixed(2)} W</p>
-        </div>
-        <div className="bg-gray-900 rounded p-4">
-          <p className="text-sm text-gray-400">Peak Power (est.)</p>
-          <p className="text-xl font-bold text-purple-400 font-mono">{(peakPower / 1e3).toFixed(1)} kW</p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard label="Round-trip time = pulse length" value={`${fmt(tNs)} ns`} subtext={`2L/c; one dump per round trip at most: ${fmt(fsr / 1e6)} MHz`} tone="cyan" />
+        <ResultCard label="Peak power" value={`${fmt(peak / 1e3)} kW`} subtext="E/τ_RT, equal to the circulating power before the dump" tone="purple" />
+        <ResultCard label="Average power" value={possible ? `${fmt(avg)} W` : "—"} subtext={possible ? "E × f" : "dump rate at or above c/2L"} tone="orange" />
+        <ResultCard label="Duty cycle" value={possible ? `${fmt(duty * 100)} %` : "—"} subtext="τ_RT × f" tone="green" />
       </div>
 
-      <ChartPanel data={chartData} layout={{
-        paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-        xaxis: { title: "Time (ns)", gridcolor: "#374151" },
-        yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151" },
-        margin: { t: 20, b: 40, l: 50, r: 20 }, autosize: true
-      }} />
+      {!possible && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          The dump rate is at or above the round-trip rate c/2L = {fmt(fsr / 1e6)} MHz. A dump empties the cavity, so it cannot repeat
+          faster than once per round trip; in practice the circulating power also needs many round trips to build up again.
+        </p>
+      )}
+
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>A linear cavity of optical length L stores E = P_circ × 2L/c in the one-way circulating power P_circ. A fast switch (Pockels
+          cell or acousto-optic dumper) that couples all of it out gives a pulse one round trip long, τ_RT = 2L/c, with peak power
+          P_circ = E/τ_RT, whatever the gain medium. A partial dump scales E down; a mode-locked cavity dumps one mode-locked pulse instead.</p>
+      </div>
+
+      <SimpleLineChart title="Ideal cavity-dumped pulse" xLabel="Time (ns)" yLabel="Output power (kW)" series={series} />
     </>
   );
 }
