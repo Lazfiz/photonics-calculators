@@ -858,9 +858,10 @@ export const imaging: CalculatorEntry[] = [
   {
     slug: "signal-to-noise",
     title: "Imaging Signal-to-Noise Ratio",
-    description: "Pixel SNR with background, dark charge, read noise, charge or digital binning and frame averaging.",
+    description: "Pixel SNR with background, dark charge, read noise and binning; noise budget, and the frames or co-added scans needed for a target SNR.",
+    keywords: ["SNR Improvement with Co-Adding", "signal averaging", "co-adding scans", "spectrometer SNR", "shot noise", "noise budget"],
     tier: "textbook",
-    modelNote: "CCD equation: Poisson signal, background and dark charge plus Gaussian read noise per binned super-pixel; charge binning reads once, a digital sum b² times. Averaging N frames gains √N. EM gain, fixed-pattern noise and error in the subtracted background are left out.",
+    modelNote: "CCD equation: Poisson signal, background and dark charge plus Gaussian read noise per binned super-pixel; charge binning reads once, a digital sum b² times. Averaging N frames (or co-adding N spectra) gains √N only for noise that is independent between frames; drift, 1/f and fixed-pattern noise don't average down. EM gain, fixed-pattern noise and error in the subtracted background are left out.",
     references: [
       {
         citation: "Janesick J. R. (2007). Photon Transfer: DN → λ. SPIE Press, ch. 5. Signal-to-noise ratio with read, dark and shot noise.",

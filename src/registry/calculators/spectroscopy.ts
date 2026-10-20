@@ -125,6 +125,11 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "dual-comb-spectroscopy",
     title: "Dual-Comb Spectroscopy Calculator",
     description: "Model dual-comb spectroscopy parameters: resolution, bandwidth, update rate, and multi-heterodyne RF spectrum.",
+    keywords: ["Fourier Self-Comb Spectroscopy", "microcomb dual-comb", "multi-heterodyne spectroscopy", "frequency comb"],
+    related: [
+      { href: "/wave-optics/optical-frequency-comb" },
+      { href: "/spectroscopy/fourier-transform" },
+    ],
     tier: "exact",
     modelNote: "Comb equation and sampling arithmetic. The mapping from optical tooth to RF beat is alias-free only if the band's image stays in one half-band, which needs Δν ≤ f_r²/(2|Δf_r|) and suitable offset frequencies.",
     references: [
@@ -185,12 +190,6 @@ export const spectroscopy: CalculatorEntry[] = [
       { citation: "Brouwer A. M. (2011). Standards for photoluminescence quantum yield measurements in solution (IUPAC Technical Report). Pure Appl. Chem. 83, 2213–2228.", url: "https://doi.org/10.1351/PAC-REP-10-09-31" },
       { citation: "Melhuish W. H. (1961). Quantum efficiencies of fluorescence of organic substances: effect of solvent and concentration of the fluorescent solute. J. Phys. Chem. 65, 229–235 (quinine sulfate 0.546).", url: "https://doi.org/10.1021/j100820a009" },
     ],
-  },
-  {
-    slug: "fourier-self-comb",
-    title: "Fourier Self-Comb Spectroscopy",
-    description: "Optical frequency comb from a single microresonator. Dual-comb spectroscopy without two separate lasers.",
-    knownIssue: "Plots up to millions of comb teeth with arbitrary CEO offsets scaled by a 0.3 fudge factor, can freeze the browser, and does not model dual-comb or microresonator physics.",
   },
   {
     slug: "fourier-transform",
@@ -452,18 +451,6 @@ export const spectroscopy: CalculatorEntry[] = [
         url: "https://doi.org/10.1002/0471721646",
       },
     ],
-  },
-  {
-    slug: "signal-to-noise",
-    title: "Signal-to-Noise Ratio",
-    description: "Detailed SNR model: shot noise, dark current, read noise, and detector noise contributions.",
-    knownIssue: "Signal photons are treated as photoelectrons with no quantum efficiency, dark current is entered as dark charge per exposure, and URL values are not range-checked.",
-  },
-  {
-    slug: "snr-averaging",
-    title: "SNR Improvement with Co-Adding",
-    description: "SNR improves as √N where N is the number of co-added scans. Signal adds linearly, noise as √N.",
-    knownIssue: "A zero or negative Max Scans value from the URL gives NaN results, the scan grid stops short of Max Scans, and the √N gain is shown without its white-noise assumption.",
   },
   {
     slug: "spectral-calibration",

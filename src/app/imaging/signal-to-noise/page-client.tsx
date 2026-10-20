@@ -4,7 +4,7 @@ import ChartPanel from "../../../components/chart-panel";
 import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { binnedReadNoise, cameraNoise } from "../../../physics/detectors/camera-snr";
+import { binnedReadNoise, cameraNoise, framesForSnr } from "../../../physics/detectors/camera-snr";
 
 const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 const fmt = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
@@ -20,6 +20,7 @@ export default function SignalToNoisePage() {
   const [binningRaw, setBinning] = useURLState("binning", 1);
   const [binModeRaw, setBinMode] = useURLState("binningMode", "charge");
   const [framesRaw, setNumFrames] = useURLState("numFrames", 1);
+  const [targetRaw, setTargetSnr] = useURLState("targetSnr", 100);
 
   const signalPhotons = clamp(signalRaw, 0, 1e7, 5000);
   const backgroundPhotons = clamp(backgroundRaw, 0, 1e7, 500);
@@ -30,6 +31,7 @@ export default function SignalToNoisePage() {
   const binning = Math.round(clamp(binningRaw, 1, 8, 1));
   const binMode = binModeRaw === "digital" ? "digital" : "charge";
   const frames = Math.round(clamp(framesRaw, 1, 1e4, 1));
+  const targetSnr = clamp(targetRaw, 1, 1e5, 100);
 
   // Per super-pixel and frame: b² pixels add their photoelectrons and dark charge.
   const pixels = binning ** 2;
@@ -43,6 +45,35 @@ export default function SignalToNoisePage() {
   const r = evaluate(signalPhotons, backgroundPhotons);
   const snrAveraged = r.snr * Math.sqrt(frames);
   const background = qe * backgroundPhotons * pixels;
+  const framesNeeded = framesForSnr(r.snr, targetSnr);
+
+  // Variance budget of one frame: each Poisson term adds its mean, the read noise its square.
+  const budget = [
+    { name: "Signal shot noise", variance: r.signal },
+    { name: "Background shot noise", variance: background },
+    { name: "Dark-charge shot noise", variance: dark },
+    { name: "Read noise", variance: readBinned ** 2 },
+  ];
+  const totalVariance = r.noise ** 2;
+  const dominant = budget.reduce((a, b) => (b.variance > a.variance ? b : a));
+
+  // SNR against the number of averaged frames, 1 to 10⁴ on a log grid.
+  const frameAxis = Array.from({ length: 41 }, (_, i) => 10 ** (i / 10));
+  const framesChart = [
+    {
+      x: frameAxis, y: frameAxis.map(n => r.snr * Math.sqrt(n)),
+      type: "scatter" as const, mode: "lines" as const, name: "SNR·√N", line: { color: "#60a5fa", width: 2 },
+    },
+    {
+      x: [1, 1e4], y: [targetSnr, targetSnr],
+      type: "scatter" as const, mode: "lines" as const, name: `Target SNR ${fmt(targetSnr, 0)}`, line: { color: "#fbbf24", width: 1, dash: "dash" },
+    },
+    {
+      x: [frames], y: [snrAveraged],
+      type: "scatter" as const, mode: "markers" as const, name: `${frames} frame${frames > 1 ? "s" : ""}`,
+      line: { color: "#f87171" }, marker: { color: "#f87171", size: 9 },
+    },
+  ];
 
   const bgAxis = Array.from({ length: 201 }, (_, i) => 50 * i);
   const chartData = [
@@ -80,6 +111,7 @@ export default function SignalToNoisePage() {
           </select>
         </label>
         <ValidatedNumberInput label="Number of Frames (averaged)" value={framesRaw} onChange={setNumFrames} min={1} max={10000} />
+        <ValidatedNumberInput label="Target SNR" value={targetRaw} onChange={setTargetSnr} min={1} max={100000} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -94,14 +126,52 @@ export default function SignalToNoisePage() {
           subtext="SNR ≥ 5 to see a feature reliably"
           tone={snrAveraged >= ROSE_SNR ? "green" : "red"}
         />
+        <ResultCard
+          label={`Frames for SNR ${fmt(targetSnr, 0)}`}
+          value={Number.isFinite(framesNeeded) ? framesNeeded.toLocaleString("en-US") : "—"}
+          subtext={Number.isFinite(framesNeeded) ? "⌈(SNR_target/SNR₁)²⌉, white noise" : "No signal: averaging can't reach any SNR"}
+          tone="yellow"
+        />
+        <ResultCard
+          label="Dominant Noise (one frame)"
+          value={totalVariance > 0 ? dominant.name : "—"}
+          subtext={totalVariance > 0 ? `${fmt((100 * dominant.variance) / totalVariance, 1)} % of the variance` : "No noise"}
+          tone="gray"
+        />
       </div>
 
       <ChartPanel data={chartData} layout={{ xaxis: { title: "Background (photons/pixel)", gridcolor: "#374151" }, yaxis: { title: "SNR", gridcolor: "#374151" } }} />
 
+      <div className="bg-gray-900 rounded-lg p-4 mt-8">
+        <h3 className="text-lg font-semibold mb-2">Noise Budget (one frame)</h3>
+        <table className="w-full text-sm text-gray-300">
+          <thead>
+            <tr className="text-left text-gray-400"><th className="py-1">Source</th><th className="py-1">σ (e⁻ rms)</th><th className="py-1">Share of variance</th></tr>
+          </thead>
+          <tbody className="font-mono">
+            {budget.map(b => (
+              <tr key={b.name}>
+                <td className="py-1 font-sans">{b.name}</td>
+                <td className="py-1">{fmt(Math.sqrt(b.variance), 2)}</td>
+                <td className="py-1">{totalVariance > 0 ? `${fmt((100 * b.variance) / totalVariance, 1)} %` : "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="text-sm text-gray-400 mt-2">Independent sources add in quadrature, so the largest share of the variance sets the SNR.</p>
+      </div>
+
+      <h3 className="text-lg font-semibold mt-8 mb-2">Averaging Frames or Co-adding Scans</h3>
+      <ChartPanel data={framesChart} layout={{ xaxis: { title: "Frames averaged N", type: "log", gridcolor: "#374151" }, yaxis: { title: "SNR", type: "log", gridcolor: "#374151" } }} />
+      <p className="text-sm text-gray-400 mt-2">
+        The same √N law holds for co-added spectra. It assumes noise that is independent from frame to frame; drift,
+        fixed-pattern noise and 1/f noise are correlated and set a floor that averaging can&apos;t lower.
+      </p>
+
       <div className="bg-gray-900 rounded-lg p-4 mt-8 text-sm text-gray-300 font-mono space-y-1">
         <p>S = QE·N_signal·B², S_bg = QE·N_bg·B², D = R_dark·t·B²</p>
         <p>SNR = S / √(S + S_bg + D + σ_read,B²); σ_read,B = σ_read (charge) or B·σ_read (digital)</p>
-        <p>N averaged frames: SNR_N = √N·SNR; Rose criterion SNR ≥ 5</p>
+        <p>N averaged frames: SNR_N = √N·SNR; frames for a target: N = ⌈(SNR_target/SNR)²⌉; Rose criterion SNR ≥ 5</p>
       </div>
     </>
   );

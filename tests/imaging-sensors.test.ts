@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { binnedReadNoise, cameraNoise, cameraSnr, dynamicRangeDb } from "../src/physics/detectors/camera-snr";
+import { binnedReadNoise, cameraNoise, cameraSnr, dynamicRangeDb, framesForSnr } from "../src/physics/detectors/camera-snr";
 import { darkCurrentDensity, darkReadCrossoverTemperature, doublingLawRatio } from "../src/physics/detectors/dark-current";
 import { sensorNoise } from "../src/physics/detectors/sensor-noise";
 
@@ -62,4 +62,14 @@ test("signal-to-noise: background, binning and the CCD equation", () => {
   assert.equal(cameraSnr({ signal: 0, read: 1.5 }), 0);
   assert.ok(Number.isNaN(cameraSnr({ signal: 0, read: 0 })));
   assert.ok(Number.isNaN(cameraNoise({ signal: 1, read: 1, background: -1 })));
+});
+
+test("signal-to-noise: frames to average for a target SNR", () => {
+  // √N gain: SNR₁ = 10 needs exactly (100/10)² = 100 frames for SNR 100, not 101.
+  assert.equal(framesForSnr(10, 100), 100);
+  // Page defaults: SNR₁ 56.391 → (100/56.391)² = 3.145 → 4 frames.
+  assert.equal(framesForSnr(56.39106, 100), 4);
+  // Already above the target: one frame. No signal: NaN.
+  assert.equal(framesForSnr(200, 100), 1);
+  assert.ok(Number.isNaN(framesForSnr(0, 100)));
 });
