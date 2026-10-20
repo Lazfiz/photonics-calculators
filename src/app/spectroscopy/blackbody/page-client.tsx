@@ -1,35 +1,42 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import InputSlider from "../../../components/input-slider";
 import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c, h, k_B, sigma_SB, b_Wien } from "../../../physics/constants";
+import { b_Wien, sigma_SB } from "../../../physics/constants";
+import { blackbodyBandFraction, planckExitance } from "../../../physics/blackbody";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const T_MIN = 100;
+const T_MAX = 40000;
 const temperaturePresets = [300, 1200, 3000, 5778];
 
 export default function BlackbodyPage() {
-  const [temperature, setTemperature] = useURLState("temperature", 5778);
+  const [tRaw, setTemperature] = useURLState("temperature", 5778);
+  const [band1Raw, setBand1] = useURLState("bandFromNm", 380);
+  const [band2Raw, setBand2] = useURLState("bandToNm", 780);
 
-  const series = useMemo(() => {
-    // Adaptive wavelength range: extends past Wien peak to show full spectrum shape
-    const wienPeak = b_Wien * 1e9 / temperature;
-    const wlMin = Math.max(10, Math.min(100, wienPeak * 0.05));
-    const wlMax = Math.max(15000, wienPeak * 5);
-    const numPoints = 500;
-    const wls = Array.from({ length: numPoints }, (_, i) => wlMin + i * (wlMax - wlMin) / (numPoints - 1));
-    const T = temperature;
-    const spectralRadiance = wls.map((wl) => {
-      const lam = wl * 1e-9;
-      const exp = h * c / (lam * k_B * T);
-      if (exp > 500) return 0;
-      return (2 * h * c * c) / (Math.pow(lam, 5) * (Math.exp(exp) - 1)) * 1e-9;
-    });
-    return [{ name: `${T} K`, color: "#f87171", points: wls.map((x, i) => ({ x, y: spectralRadiance[i] })) }];
-  }, [temperature]);
+  const T = clamp(tRaw, T_MIN, T_MAX, 5778);
+  const b1 = clamp(band1Raw, 1, 1e6, 380);
+  const b2In = clamp(band2Raw, 1, 1e6, 780);
+  const b2 = b2In > b1 ? b2In : b1 * 2;
 
-  const peakWavelength = b_Wien * 1e9 / temperature;
-  const totalPower = sigma_SB * Math.pow(temperature, 4);
+  const peakNm = (b_Wien / T) * 1e9;
+  // Radiance of a Lambertian emitter: L = M/π.
+  const radianceNm = (nm: number) => (planckExitance(nm * 1e-9, T) / Math.PI) * 1e-9;
+  const exitance = sigma_SB * T ** 4;
+  const bandFraction = blackbodyBandFraction(b1 * 1e-9, b2 * 1e-9, T);
+
+  const n = 400;
+  const wl = Array.from({ length: n + 1 }, (_, i) => 0.2 * peakNm * 100 ** (i / n));
+  const curve = (xs: number[]) => xs.map((x) => ({ x, y: radianceNm(x) })).filter((p) => p.y > 0);
+  const bandPts = curve(wl.filter((x) => x >= b1 && x <= b2));
+  const series = [
+    { name: `${T} K`, color: "#f87171", points: curve(wl) },
+    ...(bandPts.length >= 2 ? [{ name: `Band ${b1}–${b2} nm`, color: "#fbbf24", points: bandPts }] : []),
+  ];
 
   return (
     <>
@@ -38,37 +45,47 @@ export default function BlackbodyPage() {
           <button
             key={preset}
             onClick={() => setTemperature(preset)}
-            className={`rounded-full border px-3 py-1 text-sm transition ${temperature === preset ? "border-orange-400 bg-orange-500/15 text-orange-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}
+            className={`rounded-full border px-3 py-1 text-sm transition ${T === preset ? "border-orange-400 bg-orange-500/15 text-orange-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}
           >
             {preset} K
           </button>
         ))}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <InputSlider label="Temperature" value={temperature} onChange={setTemperature} min={100} max={40000} step={1} unit="K" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <InputSlider label="Temperature" value={T} onChange={setTemperature} min={T_MIN} max={T_MAX} step={1} unit="K" />
+        <ValidatedNumberInput label="Band from (nm)" value={band1Raw} onChange={setBand1} min={1} max={1e6} />
+        <ValidatedNumberInput label="Band to (nm)" value={band2Raw} onChange={setBand2} min={1} max={1e6} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
-        <ResultCard label="Peak wavelength (Wien)" value={`${peakWavelength.toFixed(1)} nm`} tone="yellow" />
-        <ResultCard label="Total radiated power" value={`${totalPower.toExponential(2)} W/m²`} tone="red" />
-        <ResultCard label="Temperature" value={`${temperature} K`} tone="blue" />
-        <ResultCard label="Spectral model" value="Planck + Wien + Stefan-Boltzmann" tone="purple" />
-      </div>
-
-      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
-        <p>Planck’s law gives spectral radiance as a function of wavelength and temperature.</p>
-        <p>Wien’s law sets the peak wavelength: λ<sub>peak</sub>T ≈ 2.898×10⁶ nm·K.</p>
-        <p>Stefan–Boltzmann gives total exitance: M = σT⁴.</p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ResultCard label="Peak wavelength (Wien)" value={`${peakNm.toFixed(1)} nm`} tone="yellow" subtext={`λ_peak T = ${(b_Wien * 1e6).toFixed(1)} µm·K`} />
+        <ResultCard label="Peak spectral radiance" value={`${radianceNm(peakNm).toExponential(3)} W/(m²·sr·nm)`} tone="red" />
+        <ResultCard label="Radiant exitance M = σT⁴" value={`${exitance.toExponential(3)} W/m²`} tone="blue" subtext="Power per unit area into the hemisphere" />
+        <ResultCard label="Radiance L = σT⁴/π" value={`${(exitance / Math.PI).toExponential(3)} W/(m²·sr)`} tone="purple" subtext="Same in every direction (Lambertian)" />
+        <ResultCard label={`Fraction in ${b1}–${b2} nm`} value={Number.isFinite(bandFraction) ? `${(bandFraction * 100).toFixed(2)} %` : "—"} tone="green" subtext={Number.isFinite(bandFraction) ? `${(bandFraction * exitance).toExponential(3)} W/m² in the band` : undefined} />
       </div>
 
       <SimpleLineChart
         title="Spectral radiance vs wavelength"
         xLabel="Wavelength (nm)"
         yLabel="Spectral radiance (W/m²/sr/nm)"
+        xScale="log"
         yScale="log"
         series={series}
       />
+
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mt-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p className="font-mono text-red-400">L_λ = 2hc² / (λ⁵ (e^(hc/λk_BT) − 1)),  M_λ = π L_λ</p>
+        <p className="font-mono text-yellow-400">λ_peak = b / T, b = 2.897772 × 10⁶ nm·K</p>
+        <p className="font-mono text-blue-400">M = σT⁴, σ = 5.670374 × 10⁻⁸ W m⁻² K⁻⁴</p>
+        <p>
+          These are the values for an ideal blackbody in vacuum; a real surface emits ε(λ) times as much. The peak of
+          the spectrum per unit frequency or per wavenumber lies at a longer wavelength than λ_peak (about 1.76 λ_peak),
+          because the curve&apos;s shape depends on the spectral variable. The band fraction uses the series form of
+          the blackbody function (Siegel &amp; Howell).
+        </p>
+      </div>
     </>
   );
 }

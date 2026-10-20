@@ -63,10 +63,16 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "blackbody",
     title: "Blackbody Radiation",
-    description: "Planck's law spectral radiance, Wien displacement, and Stefan-Boltzmann total power.",
-    lede: "Planck's law spectral radiance curve, Wien's displacement law, and Stefan-Boltzmann total power.",
-    keywords: ["planck", "wien", "stefan boltzmann", "thermal radiation"],
+    description: "Planck's law spectral radiance, Wien peak wavelength, Stefan-Boltzmann radiant exitance and radiance, and the fraction of power in any wavelength band.",
+    lede: "Planck's law spectral radiance curve, Wien's displacement law, Stefan-Boltzmann radiant exitance and the share of power in a wavelength band.",
+    keywords: ["planck", "wien", "stefan boltzmann", "thermal radiation", "radiant exitance", "blackbody band fraction"],
     priority: 96,
+    tier: "exact",
+    modelNote: "Exact Planck, Wien and Stefan–Boltzmann laws for an ideal blackbody (emissivity 1) radiating into vacuum, with CODATA constants; radiance is M/π. Real surfaces emit ε(λ) times these values.",
+    references: [
+      { citation: "Howell J. R., Mengüç M. P., Daun K., Siegel R. (2020). Thermal Radiation Heat Transfer, 7th ed. CRC Press. Blackbody functions and band fractions.", url: "https://doi.org/10.1201/9780429327308" },
+      { citation: "Mohr P. J., Newell D. B., Taylor B. N., Tiesinga E. (2025). CODATA recommended values of the fundamental physical constants: 2022. Rev. Mod. Phys. 97, 025002.", url: "https://doi.org/10.1103/RevModPhys.97.025002" },
+    ],
     related: [
       {
         href: "/spectroscopy/ftir-resolution",
@@ -576,8 +582,16 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "sum-frequency-gen",
     title: "Sum Frequency Generation Spectroscopy",
-    description: "Surface-specific vibrational probe. SFG is forbidden in centrosymmetric media — only surfaces and interfaces contribute.",
-    knownIssue: "The SFG spectrum is a fixed set of illustrative CH and OH Gaussians added without the χ(2) interference it states. Only the SFG wavelength is computed.",
+    description: "SFG vibrational spectrum of an interface: the SFG wavelength and |χ⁽²⁾|² of Lorentzian CH or OH resonances interfering with a non-resonant background of chosen amplitude and phase.",
+    keywords: ["SFG Spectroscopy", "Vibrational Sum Frequency", "Second-Order Susceptibility", "Interface Spectroscopy"],
+    related: [{ href: "/spectroscopy/raman-shift" }, { href: "/spectroscopy/infrared-spectroscopy" }, { href: "/spectroscopy/wavenumber-converter" }],
+    tier: "textbook",
+    modelNote: "Standard SFG lineshape: Lorentzian resonances plus a constant non-resonant term, added as complex amplitudes before squaring. Fresnel factors, beam geometry and polarisation combination are folded into the amplitudes, which (with the widths) are illustrative; the band assignments are from the literature. The SFG wavelength is exact.",
+    references: [
+      { citation: "Shen Y. R. (1989). Surface properties probed by second-harmonic and sum-frequency generation. Nature 337, 519–525.", url: "https://doi.org/10.1038/337519a0" },
+      { citation: "Lambert A. G., Davies P. B., Neivandt D. J. (2005). Implementing the Theory of Sum Frequency Generation Vibrational Spectroscopy: A Tutorial Review. Appl. Spectrosc. Rev. 40, 103–145. Lineshape model and CH stretch assignments.", url: "https://doi.org/10.1081/ASR-200038326" },
+      { citation: "Du Q., Superfine R., Freysz E., Shen Y. R. (1993). Vibrational spectroscopy of water at the vapor/water interface. Phys. Rev. Lett. 70, 2313–2316. OH stretch bands.", url: "https://doi.org/10.1103/PhysRevLett.70.2313" },
+    ],
   },
   {
     slug: "surface-enhanced-raman",
@@ -647,6 +661,12 @@ export const spectroscopy: CalculatorEntry[] = [
     title: "Wavenumber Converter",
     description: "Convert wavelength, wavenumber, frequency, and energy with sliders, presets, and range sweeps.",
     lede: "Convert wavelength, wavenumber, frequency, and energy with presets, sliders, and range sweeps.",
-    related: [{ href: "/spectroscopy/pump-probe" }, { href: "/spectroscopy/two-dimensional" }],
+    related: [{ href: "/spectroscopy/raman-shift" }, { href: "/spectroscopy/infrared-spectroscopy" }, { href: "/spectroscopy/blackbody" }],
+    tier: "exact",
+    modelNote: "Exact relations ν̃ = 1/λ, f = c/λ and E = hc/λ for vacuum wavelengths; c, h and e are exact in the SI. Air wavelengths must be converted to vacuum first.",
+    references: [
+      { citation: "BIPM (2019). The International System of Units (SI Brochure), 9th ed. Defining constants c, h and e.", url: "https://www.bipm.org/en/publications/si-brochure" },
+      { citation: "Mohr P. J., Newell D. B., Taylor B. N., Tiesinga E. (2025). CODATA recommended values of the fundamental physical constants: 2022. Rev. Mod. Phys. 97, 025002.", url: "https://doi.org/10.1103/RevModPhys.97.025002" },
+    ],
   },
 ];
