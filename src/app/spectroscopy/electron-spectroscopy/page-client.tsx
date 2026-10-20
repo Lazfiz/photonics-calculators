@@ -1,181 +1,143 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { imfpTpp2m, kineticEnergy, samplingDepth, TPP2M_MATERIALS, type Tpp2mMaterial } from "../../../physics/spectroscopy/photoemission";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits) : "—");
+const r6 = (x: number) => (Number.isFinite(x) ? Number(x.toPrecision(6)) : NaN);
+const nm = 1e-9;
+
+const SOURCES = [
+  { name: "He I (UPS)", energy: 21.22 },
+  { name: "He II (UPS)", energy: 40.81 },
+  { name: "Mg Kα", energy: 1253.6 },
+  { name: "Al Kα", energy: 1486.6 },
+  { name: "Ag Lα", energy: 2984.3 },
+];
+
 export default function ElectronSpectroscopyPage() {
-  const [photonEnergy, setPhotonEnergy] = useURLState("photonEnergy", 1486.6); // Al Kα
-  const [bindingEnergy, setBindingEnergy] = useURLState("bindingEnergy", 285); // C 1s
-  const [workFunction, setWorkFunction] = useURLState("workFunction", 4.2);
-  const [fwhm, setFwhm] = useURLState("fwhm", 1.2);
+  const [photonRaw, setPhoton] = useURLState("photonEnergy", 1486.6);
+  const [ebRaw, setEb] = useURLState("bindingEnergy", 284.5);
+  const [phiRaw, setPhi] = useURLState("workFunction", 4.5);
+  const [thetaRaw, setTheta] = useURLState("angle", 0);
+  const [material, setMaterial] = useURLState("material", "c");
+  const [rhoRaw, setRho] = useURLState("density", 2.2);
+  const [nvRaw, setNv] = useURLState("valenceElectrons", 4);
+  const [mRaw, setM] = useURLState("molarMass", 12.011);
+  const [egRaw, setEg] = useURLState("bandGap", 0);
 
-  // Einstein photoelectric equation: E_k = hν - E_B - φ (sample-analyzer aligned)
-  // If E_k ≤ 0, no photoelectron is emitted (below threshold)
-  const kineticEnergy = photonEnergy - bindingEnergy - workFunction;
-  const noEmission = kineticEnergy <= 0;
-  const maxBE = photonEnergy - workFunction;
+  const hv = clamp(photonRaw, 5, 20000, 1486.6);
+  const Eb = clamp(ebRaw, 0, 20000, 284.5);
+  const phi = clamp(phiRaw, 1, 7, 4.5);
+  const thetaDeg = clamp(thetaRaw, 0, 85, 0);
+  const theta = (thetaDeg * Math.PI) / 180;
+  const custom = !Object.hasOwn(TPP2M_MATERIALS, material);
+  const mat: Tpp2mMaterial = custom
+    ? { rho: clamp(rhoRaw, 0.1, 25, 2.2), Nv: clamp(nvRaw, 0.1, 500, 4), M: clamp(mRaw, 1, 5000, 12.011), Eg: clamp(egRaw, 0, 15, 0) }
+    : TPP2M_MATERIALS[material];
 
-  // IMFP (inelastic mean free path) — Seah-Dench universal curve (nm)
-  // λ = 143/E_k² + 0.054√E_k  (Seah & Dench, Surf. Interface Anal. 1979)
-  const imfp = kineticEnergy > 0 ? 143 / (kineticEnergy * kineticEnergy) + 0.054 * Math.sqrt(kineticEnergy) : NaN;
-  const infoDepth = imfp > 0 ? 3 * imfp : NaN;
+  const Ek = kineticEnergy(hv, Eb, phi);
+  const emitted = Ek > 0;
+  const lambda = emitted ? imfpTpp2m(hv - Eb, mat) : NaN; // TPP-2M energy is referred to the Fermi level
+  const depth95 = samplingDepth(lambda, theta);
+  const top1nm = -Math.expm1(-nm / (lambda * Math.cos(theta)));
+  const belowFit = emitted && hv - Eb < 50, aboveFit = emitted && hv - Eb > 2000;
+  const Ep = 28.8 * Math.sqrt((mat.Nv * mat.rho) / mat.M);
 
-  const spectrumData = useMemo(() => {
-    const bes = Array.from({ length: 800 }, (_, i) => 0 + (i / 800) * maxBE);
-    // Simulate XPS spectrum with peaks
-    const peaks = [
-      { name: "C 1s", center: 285, width: fwhm, amp: 100, color: "#60a5fa" },
-      { name: "C 1s (C-O)", center: 286.5, width: fwhm * 1.2, amp: 40, color: "#60a5fa" },
-      { name: "C 1s (C=O)", center: 288, width: fwhm * 1.3, amp: 25, color: "#60a5fa" },
-      { name: "O 1s", center: 532, width: fwhm * 1.1, amp: 70, color: "#f87171" },
-      { name: "N 1s", center: 400, width: fwhm * 1.2, amp: 30, color: "#34d399" },
-      { name: "Valence band", center: 10, width: 5, amp: 15, color: "#fbbf24" },
-    ];
-
-    // Pre-compute Gaussian intensities for Shirley-like background (smooth integral)
-    const gaussianIntensities = bes.map(be => {
-      let intensity = 0;
-      for (const p of peaks) {
-        intensity += p.amp * Math.exp(-4 * Math.LN2 * Math.pow((be - p.center) / p.width, 2));
-      }
-      return intensity;
-    });
-
-    // Asymmetric Doniach-Šunjić lineshape (simplified with Gaussian + exponential tail)
-    const spectrum = bes.map((be, idx) => {
-      let intensity = 0;
-      for (const p of peaks) {
-        const gauss = p.amp * Math.exp(-4 * Math.LN2 * Math.pow((be - p.center) / p.width, 2));
-        const asym = be < p.center ? 0 : p.amp * 0.3 * Math.exp(-(be - p.center) / (p.width * 2));
-        intensity += gauss + asym;
-      }
-      // Shirley-like background: smooth integral of peak intensity
-      // (integrated from high-BE side, normalized)
-      const totalIntegral = gaussianIntensities.reduce((sum, v) => sum + v, 0);
-      const integratedFromRight = gaussianIntensities.slice(idx).reduce((sum, v) => sum + v, 0);
-      intensity += 0.05 * (totalIntegral > 0 ? integratedFromRight : 0);
-      return intensity;
-    });
-
-    return [
-      { x: bes, y: spectrum, type: "scatter" as const, mode: "lines" as const, name: "XPS Spectrum", line: { color: "#e5e7eb", width: 1.5 } },
-      { x: bes, y: bes.map(be => {
-        const p = peaks[0];
-        return p.amp * Math.exp(-4 * Math.LN2 * Math.pow((be - p.center) / p.width, 2));
-      }), type: "scatter" as const, mode: "lines" as const, name: "C 1s fit", line: { color: "#60a5fa", dash: "dash" } },
-    ];
-  }, [photonEnergy, fwhm]);
-
-  const depthData = useMemo(() => {
-    const depths = Array.from({ length: 200 }, (_, i) => (i / 200) * 100); // nm
-    // IMFP (inelastic mean free path) — Seah-Dench universal curve (nm)
-    const ke = kineticEnergy;
-    const lambda = ke > 0 ? 143 / (ke * ke) + 0.054 * Math.sqrt(ke) : 1; // fallback for chart
-    const attenuation = depths.map(d => Math.exp(-d / lambda));
-    return [
-      { x: depths, y: attenuation.map(a => a * 100), type: "scatter" as const, mode: "lines" as const, name: "Signal", line: { color: "#60a5fa", width: 2 } },
-      { x: [lambda, lambda], y: [0, 100], type: "scatter" as const, mode: "lines" as const, name: "λ (IMFP)", line: { color: "#f87171", dash: "dash" } },
-    ];
-  }, [kineticEnergy]);
-
-
-  const xraySources = [
-    { name: "Al Kα", energy: 1486.6, ke: (1486.6 - bindingEnergy - workFunction).toFixed(1) },
-    { name: "Mg Kα", energy: 1253.6, ke: (1253.6 - bindingEnergy - workFunction).toFixed(1) },
-    { name: "Ag Lα", energy: 2984.3, ke: (2984.3 - bindingEnergy - workFunction).toFixed(1) },
-    { name: "He I (UPS)", energy: 21.22, ke: (21.22 - bindingEnergy - workFunction).toFixed(1) },
+  const energies = Array.from({ length: 200 }, (_, i) => 50 * 10 ** ((i / 199) * Math.log10(200))); // above E_F
+  const imfpChart = [
+    { x: energies.map(r6), y: energies.map((E) => r6(imfpTpp2m(E, mat) / nm)), type: "scatter", mode: "lines", name: "TPP-2M λ", line: { color: "#60a5fa", width: 2 } },
+    ...(Number.isFinite(lambda) && hv - Eb <= 10000 ? [{ x: [r6(hv - Eb)], y: [r6(lambda / nm)], type: "scatter", mode: "markers", name: `hν − E_B = ${fmt(hv - Eb, 5)} eV`, line: { color: "#f87171" }, marker: { color: "#f87171", size: 9 } }] : []),
   ];
+  const zMax = Number.isFinite(depth95) ? 1.5 * depth95 : 10 * nm;
+  const zs = Array.from({ length: 200 }, (_, i) => (zMax * i) / 199);
+  const depthChart = Number.isFinite(lambda) ? [
+    { x: zs.map((z) => r6(z / nm)), y: zs.map((z) => r6(100 * -Math.expm1(-z / (lambda * Math.cos(theta))))), type: "scatter", mode: "lines", name: "Signal from depth < z", line: { color: "#34d399", width: 2 } },
+    { x: [r6(depth95 / nm), r6(depth95 / nm)], y: [0, 95], type: "scatter", mode: "lines", name: "95 % depth, 3λ cos θ", line: { color: "#fbbf24", dash: "dash" } },
+  ] : [];
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Photon Energy (eV)" value={photonEnergy} onChange={setPhotonEnergy} min={10} max={10000} />
-        <ValidatedNumberInput label="Binding Energy of Interest (eV)" value={bindingEnergy} onChange={setBindingEnergy} min={0} max={2000} />
-        <ValidatedNumberInput label="Sample Work Function (eV)" value={workFunction} onChange={setWorkFunction} min={1} max={6} />
-        <ValidatedNumberInput label="Peak FWHM (eV)" value={fwhm} onChange={setFwhm} min={0.1} max={5} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+        <ValidatedNumberInput label="Photon Energy hν (eV)" value={photonRaw} onChange={setPhoton} min={5} max={20000} step="0.1" />
+        <ValidatedNumberInput label="Binding Energy E_B vs Fermi Level (eV)" value={ebRaw} onChange={setEb} min={0} max={20000} step="0.1" />
+        <ValidatedNumberInput label="Spectrometer Work Function φ_sp (eV)" value={phiRaw} onChange={setPhi} min={1} max={7} step="0.01" />
+        <ValidatedNumberInput label="Emission Angle θ from Normal (°)" value={thetaRaw} onChange={setTheta} min={0} max={85} />
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Material (TPP-2M)</span>
+          <select value={custom ? "custom" : material} onChange={(e) => setMaterial(e.target.value)}
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            {Object.entries(TPP2M_MATERIALS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+            <option value="custom">Custom material</option>
+          </select>
+        </label>
+        {custom && <>
+          <ValidatedNumberInput label="Density ρ (g/cm³)" value={rhoRaw} onChange={setRho} min={0.1} max={25} step="0.01" />
+          <ValidatedNumberInput label="Valence Electrons N_v (per atom/molecule)" value={nvRaw} onChange={setNv} min={0.1} max={500} />
+          <ValidatedNumberInput label="Atomic/Molecular Weight M (g/mol)" value={mRaw} onChange={setM} min={1} max={5000} step="0.01" />
+          <ValidatedNumberInput label="Band Gap E_g (eV)" value={egRaw} onChange={setEg} min={0} max={15} step="0.1" />
+        </>}
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+        <ResultCard label="Kinetic Energy E_k" value={emitted ? `${fmt(Ek, 6)} eV` : "not emitted"} tone={emitted ? "blue" : "red"}
+          subtext={emitted ? "hν − E_B − φ_sp" : `E_B above hν − φ_sp = ${fmt(hv - phi, 5)} eV: use a harder source`} />
+        <ResultCard label="Inelastic Mean Free Path λ" value={`${fmt(lambda / nm, 3)} nm`} tone={belowFit ? "red" : aboveFit ? "orange" : "green"}
+          subtext={belowFit ? "below 50 eV TPP-2M does not apply" : aboveFit ? "above the 50–2000 eV fit range: extrapolated" : `TPP-2M at hν − E_B, E_p = ${fmt(Ep, 3)} eV`} />
+        <ResultCard label="95 % Sampling Depth" value={`${fmt(depth95 / nm, 3)} nm`} tone="yellow" subtext={`3λ cos θ at θ = ${thetaDeg}°`} />
+        <ResultCard label="Signal from Top 1 nm" value={`${fmt(100 * top1nm, 3)} %`} tone="purple" subtext="1 − exp(−1 nm/(λ cos θ))" />
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <h3 className="text-lg font-semibold mb-2">Formulas</h3>
-        <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Einstein:</span> E<sub>k</sub> = hν − E<sub>B</sub> − ϕ</p>
-        <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">IMFP (Seah-Dench):</span> λ = 143/(E<sub>k</sub>²) + 0.054√E<sub>k</sub> nm</p>
-        <p className="text-gray-300 text-sm mb-1"><span className="text-blue-400 font-mono">Attenuation:</span> I(d) = I₀ exp(−d/λ)</p>
-        <p className="text-sm text-gray-300"><span className="text-blue-400 font-mono">Info depth:</span> ~3λ (95% signal from this depth)</p>
-        <p className="text-xs text-gray-500 mt-1">Note: φ_sample cancels for grounded conductors in XPS (Fermi level alignment). For UPS spectral cutoff, φ_sample is relevant.</p>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-                    <p className="text-xl font-bold text-blue-400">{kineticEnergy > 0 ? kineticEnergy.toFixed(1) + " eV" : "Below threshold"}</p>
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-                    <p className="text-xl font-bold text-green-400">{!isNaN(imfp) ? imfp.toFixed(1) + " nm" : "N/A"}</p>
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-                    <p className="text-xl font-bold text-yellow-400">{!isNaN(infoDepth) ? infoDepth.toFixed(1) + " nm" : "N/A"}</p>
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4 text-center">
-                    <p className="text-xl font-bold text-red-400">{!isNaN(infoDepth) ? (infoDepth < 30 ? "High" : infoDepth < 60 ? "Medium" : "Bulk") : "N/A"}</p>
+        <h3 className="text-lg font-semibold mb-2">Common Sources for E_B = {fmt(Eb, 5)} eV</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          {SOURCES.map((s) => {
+            const ek = kineticEnergy(s.energy, Eb, phi);
+            const l = ek > 0 ? imfpTpp2m(s.energy - Eb, mat) : NaN;
+            return (
+              <div key={s.name} className={`rounded p-2 text-sm ${ek > 0 ? "bg-gray-800" : "bg-red-900/30"}`}>
+                <p className="text-green-400 font-semibold">{s.name}, {s.energy} eV</p>
+                <p className="text-gray-300">{ek > 0 ? `E_k ${fmt(ek, 5)} eV` : "not reached"}</p>
+                <p className="text-gray-400">{ek > 0 ? (Number.isFinite(l) ? `λ ${fmt(l / nm, 3)} nm${s.energy - Eb > 2000 ? " (extrapolated)" : ""}` : "λ: below 50 eV") : ""}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <h3 className="text-lg font-semibold mb-2">Simulated XPS Spectrum</h3>
-        <ChartPanel data={spectrumData} layout={{
-          xaxis: { title: "Binding Energy (eV)", gridcolor: "#374151", color: "#9ca3af", autorange: "reversed" },
-          yaxis: { title: "Intensity (a.u.)", gridcolor: "#374151", color: "#9ca3af" },
-          paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#e5e7eb" }, margin: { t: 20 },
-          legend: { orientation: "h", y: -0.2 },
-        }} />
-      </div>
-
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <h3 className="text-lg font-semibold mb-2">Surface Sensitivity (IMFP Attenuation)</h3>
-        <ChartPanel data={depthData} layout={{
-          xaxis: { title: "Depth (nm)", gridcolor: "#374151", color: "#9ca3af" },
-          yaxis: { title: "Signal (%)", gridcolor: "#374151", color: "#9ca3af" },
-          paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#e5e7eb" }, margin: { t: 20 },
-          legend: { orientation: "h", y: -0.2 },
-        }} />
-      </div>
-
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <h3 className="text-lg font-semibold mb-2">X-ray Sources for E<sub>B</sub> = {bindingEnergy} eV</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {xraySources.map(s => (
-            <div key={s.name} className={`rounded p-2 ${parseFloat(s.ke) > 0 ? "bg-gray-800" : "bg-red-900/30"}`}>
-              <p className="text-green-400 text-sm font-semibold">{s.name}</p>
-                            <p className="text-blue-400 text-xs">E<sub>k</sub> = {s.ke} eV</p>
-            </div>
-          ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="bg-gray-900 rounded-lg p-4">
+          <ChartPanel data={imfpChart} layout={{
+            paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
+            title: { text: `IMFP in ${custom ? "Custom Material" : TPP2M_MATERIALS[material].label}`, font: { color: "white" } },
+            xaxis: { title: "Electron energy above E_F (eV)", type: "log", gridcolor: "#374151" },
+            yaxis: { title: "λ (nm)", type: "log", gridcolor: "#374151" },
+            margin: { t: 40, r: 20, b: 50, l: 60 },
+          }} />
+        </div>
+        <div className="bg-gray-900 rounded-lg p-4">
+          {depthChart.length ? <ChartPanel data={depthChart} layout={{
+            paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#d1d5db" },
+            title: { text: "Where the Signal Comes From", font: { color: "white" } },
+            xaxis: { title: "Depth z (nm)", gridcolor: "#374151" },
+            yaxis: { title: "Signal from depth < z (%)", gridcolor: "#374151", range: [0, 100] },
+            margin: { t: 40, r: 20, b: 50, l: 60 },
+          }} /> : <p className="text-sm text-gray-400">No photoelectrons at these energies.</p>}
         </div>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4">
-        <h3 className="text-lg font-semibold mb-2">XPS vs UPS</h3>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="text-blue-400 font-semibold mb-1">XPS (hν ~ 1–2 keV)</p>
-            <ul className="text-gray-300 space-y-1">
-              <li>• Core level electrons</li>
-              <li>• Elemental identification</li>
-              <li>• Chemical state analysis</li>
-              <li>• Quantitative composition</li>
-            </ul>
-          </div>
-          <div>
-            <p className="text-green-400 font-semibold mb-1">UPS (hν ~ 20–40 eV)</p>
-            <ul className="text-gray-300 space-y-1">
-              <li>• Valence band structure</li>
-              <li>• Work function measurement</li>
-              <li>• HOMO/LUMO levels</li>
-              <li>• Higher surface sensitivity</li>
-            </ul>
-          </div>
-        </div>
+      <div className="bg-gray-900 rounded-lg p-4 text-sm text-gray-300 space-y-1">
+        <p className="font-mono text-blue-400">{"E_k = hν − E_B − φ_sp,  λ = E/{E_p²[β ln(γE) − C/E + D/E²]} (TPP-2M),  I(z) ∝ e^(−z/(λ cos θ))"}</p>
+        <p>A conducting sample in contact with the spectrometer shares its Fermi level, so the measured kinetic energy depends on the
+          spectrometer&apos;s work function, not the sample&apos;s; E_B is referred to the Fermi level. In UPS the sample work function is
+          hν minus the spectrum width (secondary-electron cutoff to Fermi edge). Insulators charge, which shifts every peak.</p>
+        <p className="text-gray-400">TPP-2M (Tanuma, Powell &amp; Penn 1994) is fitted to IMFPs from optical data for 50–2000 eV, with an RMS deviation
+          of about 11 %; it takes the energy above the Fermi level, hν − E_B (E_k + φ_sp), and fails below 50 eV, where UPS electrons sit
+          (the universal curve puts their IMFP of order 0.5–1 nm). Elastic scattering makes the effective attenuation length 10–30 % shorter than λ, so the depths here are upper estimates.</p>
       </div>
     </>
   );
