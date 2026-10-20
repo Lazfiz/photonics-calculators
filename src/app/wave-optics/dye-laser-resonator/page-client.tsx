@@ -1,172 +1,175 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { c, h, N_A } from "../../../physics/constants";
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { gParameter, resonatorStability, twoMirrorMode } from "../../../physics/wave-optics/two-mirror-resonator";
+import {
+  fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, gaussianOverlapArea, laserOutput, roundTripLoss,
+  saturationIntensity, tripletGainFactor,
+} from "../../../physics/wave-optics/laser-resonator";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
 
 export default function DyeLaserResonatorPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 590); // nm (Rhodamine 6G peak)
-  const [dyeName, setDyeName] = useState("Rhodamine 6G");
-  const [cavityLength, setCavityLength] = useURLState("cavityLength", 150); // mm
-  const [R1, setR1] = useURLState("R1", 100); // mm (HR)
-  const [R2, setR2] = useURLState("R2", 100); // mm (OC)
-  const [R_oc, setR_oc] = useURLState("R_oc", 0.85);
-  const [flowSpeed, setFlowSpeed] = useURLState("flowSpeed", 5); // m/s
-  const [concentration, setConcentration] = useURLState("concentration", 1e-4); // M
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 532); // nm
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 590); // nm
+  const [pumpWavelengthRaw, setPumpWavelength] = useURLState("pumpWavelength", 532); // nm
+  const [pumpRaw, setPump] = useURLState("pump", 3); // W absorbed
+  const [etaRaw, setEta] = useURLState("etaP", 1);
+  const [wpRaw, setWp] = useURLState("pumpSpot", 30); // µm
+  const [sigmaRaw, setSigma] = useURLState("sigmaE", 2); // 1e-16 cm²
+  const [tauRaw, setTau] = useURLState("tau", 4); // ns
+  const [sigmaTRaw, setSigmaT] = useURLState("sigmaT", 1); // 1e-17 cm²
+  const [kstRaw, setKst] = useURLState("kST", 5); // 1e6 /s
+  const [tauTRaw, setTauT] = useURLState("tauT", 1); // µs
+  const [flowRaw, setFlow] = useURLState("flowSpeed", 5); // m/s
+  const [lRaw, setL] = useURLState("cavityLength", 99); // mm
+  const [r1Raw, setR1] = useURLState("R1", 50); // mm
+  const [r2Raw, setR2] = useURLState("R2", 50); // mm
+  const [rOcRaw, setROc] = useURLState("R_oc", 0.97);
+  const [lossRaw, setLoss] = useURLState("loss", 1); // % per pass
 
-  const dyeParams: Record<string, { sigma_em: number; tau: number; sigma_abs_peak: number; lambda_max: number; quantum_yield: number }> = {
-    "Rhodamine 6G": { sigma_em: 3e-20, tau: 3.5e-9, sigma_abs_peak: 4.5e-20, lambda_max: 590, quantum_yield: 0.95 },
-    "Coumarin 540A": { sigma_em: 2e-20, tau: 3.0e-9, sigma_abs_peak: 3.5e-20, lambda_max: 540, quantum_yield: 0.5 },
-    "Rhodamine B": { sigma_em: 2.5e-20, tau: 2.5e-9, sigma_abs_peak: 3.8e-20, lambda_max: 620, quantum_yield: 0.7 },
-    "Stilbene 3": { sigma_em: 1.5e-20, tau: 1.0e-9, sigma_abs_peak: 2.5e-20, lambda_max: 420, quantum_yield: 0.4 },
-  };
+  const lambda = clamp(wavelengthRaw, 300, 1200, 590) * 1e-9;
+  const lambdaP = clamp(pumpWavelengthRaw, 200, 1200, 532) * 1e-9;
+  const pump = clamp(pumpRaw, 0, 1e3, 3);
+  const etaP = clamp(etaRaw, 0.01, 1, 1);
+  const wp = clamp(wpRaw, 1, 1e4, 30) * 1e-6;
+  const sigmaE = clamp(sigmaRaw, 1e-3, 100, 2) * 1e-20; // 1e-16 cm² → m²
+  const tau = clamp(tauRaw, 0.01, 1e3, 4) * 1e-9;
+  const sigmaT = clamp(sigmaTRaw, 0, 1e3, 1) * 1e-21; // 1e-17 cm² → m²
+  const kST = clamp(kstRaw, 0, 1e4, 5) * 1e6;
+  const tauT = clamp(tauTRaw, 1e-3, 1e6, 1) * 1e-6;
+  const flow = clamp(flowRaw, 0.01, 100, 5);
+  const L = clamp(lRaw, 1, 1e4, 99) * 1e-3;
+  const R1_mm = clamp(r1Raw, -1e7, 1e7, 50);
+  const R2_mm = clamp(r2Raw, -1e7, 1e7, 50);
+  const R_oc = clamp(rOcRaw, 0.01, 0.9999, 0.97);
+  const internal = -Math.log(1 - clamp(lossRaw, 0, 50, 1) / 100); // single pass, nepers
 
-  const dp = dyeParams[dyeName] || dyeParams["Rhodamine 6G"];
-  const lambda_m = wavelength * 1e-9;
-  const L_m = cavityLength / 1000;
-  const R1m = R1 / 1000; const R2m = R2 / 1000;
+  const toRadius = (R_mm: number) => (R_mm === 0 ? Infinity : R_mm * 1e-3);
+  const g1 = gParameter(L, toRadius(R1_mm));
+  const g2 = gParameter(L, toRadius(R2_mm));
+  const stability = resonatorStability(g1, g2);
+  const mode = twoMirrorMode(lambda, L, g1, g2);
+  const statusTone = stability === "stable" ? "green" : stability === "marginal" ? "yellow" : "red";
 
-  // Cavity stability
-  const g1 = 1 - L_m / R1m;
-  const g2 = 1 - L_m / R2m;
-  const g1g2 = g1 * g2;
-  const isStable = g1g2 > 0 && g1g2 < 1;
+  // Jet at the waist: triplets live τ_eff while the flow carries them across the pump spot (transit 2wₚ/v).
+  const factorAt = (v: number) => tripletGainFactor(sigmaE, sigmaT, kST, tauT, (2 * wp) / v);
+  const factor = factorAt(flow);
+  const sigmaNet = sigmaE * factor;
+  const pumpArea = gaussianOverlapArea(mode.w0, wp);
+  const modeArea = (Math.PI * mode.w0 * mode.w0) / 2;
+  const delta = roundTripLoss(1, R_oc, internal);
+  const pTh = factor > 0 ? fourLevelThreshold(delta, lambdaP, sigmaNet, tau, pumpArea, etaP) : NaN;
+  const gainAt = (p: number) => (factor > 0 ? fourLevelGain(p, lambdaP, sigmaNet, tau, pumpArea, etaP) : NaN);
+  const g0l = gainAt(pump);
+  const iSat = saturationIntensity(lambda, sigmaE, tau);
+  const pSat = iSat * modeArea;
+  const pOut = laserOutput(g0l, 1, R_oc, internal, pSat);
+  // The gain grows with the net cross-section but saturates through σₑ, so triplets scale the slope by the same factor.
+  const slope = factor > 0 ? factor * fourLevelSlopeEfficiency(lambda, lambdaP, 1, R_oc, internal, modeArea, pumpArea, etaP) : NaN;
 
-  // Beam waist
-  let w0 = 0;
-  if (isStable) {
-    const numerator = lambda_m * L_m * Math.sqrt(g1 * g2 * (1 - g1 * g2));
-    const denominator = Math.PI * Math.abs(g1 + g2 - 2 * g1 * g2);
-    if (denominator > 0) w0 = Math.sqrt(numerator / denominator);
-  }
-  w0 = w0 || 50e-6;
-  const beamWaist_um = w0 * 1e6;
+  const pMax = Math.max(2 * pump, 1.5 * (Number.isFinite(pTh) ? pTh : 0), 0.1);
+  const powerSeries = [
+    {
+      name: "Output power",
+      color: "#60a5fa",
+      points: factor > 0 && Number.isFinite(pSat)
+        ? Array.from({ length: 101 }, (_, i) => {
+            const p = (pMax * i) / 100;
+            return { x: round6(p), y: round6(laserOutput(gainAt(p), 1, R_oc, internal, pSat)) };
+          })
+        : [],
+    },
+    { name: "Operating point", color: "#facc15", showPoints: true, points: Number.isFinite(pOut) ? [{ x: round6(pump), y: round6(pOut) }] : [] },
+  ];
 
-  // Dye gain
-  const dyeDensity = concentration * N_A * 1e3; // m^-3
-  const smallSignalGain = dp.sigma_em * dyeDensity * dp.quantum_yield * 0.3; // reduced by triplet losses
+  const vMax = Math.max(20, 2 * flow);
+  const flowSeries = [
+    {
+      name: "Gain left after triplet absorption",
+      color: "#f87171",
+      points: Array.from({ length: 101 }, (_, i) => {
+        const v = (vMax * (i + 1)) / 101;
+        return { x: round6(v), y: round6(factorAt(v) * 100) };
+      }),
+    },
+    { name: "This flow speed", color: "#facc15", showPoints: true, points: Number.isFinite(factor) ? [{ x: round6(flow), y: round6(factor * 100) }] : [] },
+  ];
 
-  // Saturation intensity
-  const Isat = h * c / (lambda_m * dp.sigma_em * dp.tau);
-
-  // Losses
-  const outputLoss = -Math.log(R_oc);
-  const tripletLoss = 0.05; // typical additional loss from triplet absorption
-  const totalLoss = outputLoss + tripletLoss + 0.01;
-
-  // Threshold
-  const g_th = totalLoss / (2 * L_m);
-  const isAboveThreshold = smallSignalGain > g_th;
-
-  // Output power
-  const A_beam = Math.PI * w0 * w0;
-  const P_out = isAboveThreshold ? Isat * A_beam * (2 * smallSignalGain * L_m - totalLoss) * outputLoss / totalLoss : 0;
-
-  // Triplet buildup: rate ratio k_ISC / (k_ISC + k_flow)
-  // k_flow = flowSpeed / L_char where L_char is the dye jet thickness
-  const L_char = 0.1e-3; // m — dye jet thickness
-  const k_flow = flowSpeed / L_char; // s⁻¹
-  const k_ISC = (1 - dp.quantum_yield) / dp.tau; // s⁻¹, as in the triplet chart below
-  const tripletFraction = k_ISC / (k_ISC + k_flow);
-
-  // Gain spectrum (simplified Gaussian)
-  const spectrumData = useMemo(() => {
-    const wls = Array.from({ length: 200 }, (_, i) => dp.lambda_max - 80 + i * 160 / 200);
-    const gain = wls.map(wl => {
-      const sigma = 25; // nm linewidth
-      const g = dp.sigma_em * dyeDensity * dp.quantum_yield * 0.3 * Math.exp(-Math.pow(wl - dp.lambda_max, 2) / (2 * sigma * sigma));
-      // Re-absorption
-      const abs_factor = Math.exp(-dp.sigma_abs_peak * dyeDensity * 0.001 * Math.exp(-Math.pow(wl - (dp.lambda_max - 50), 2) / (2 * 30 * 30)));
-      return g * abs_factor;
-    });
-    return [{ x: wls, y: gain, type: "scatter", mode: "lines", name: "Gain (m⁻¹)", line: { color: "#60a5fa", width: 2 } }];
-  }, [dyeDensity, dp]);
-
-  // Output vs pump (simplified linear model above threshold)
-  const piData = useMemo(() => {
-    const pumps = Array.from({ length: 100 }, (_, i) => i * 10 / 100); // W
-    const slopeEff = isAboveThreshold && totalLoss > 0 ? outputLoss / totalLoss * dp.quantum_yield : 0;
-    const Pth_W = isAboveThreshold ? 0 : 1; // arbitrary pump threshold for display
-    return [
-      { x: pumps, y: pumps.map(Pp => Pp > Pth_W ? slopeEff * (Pp - Pth_W) : 0), type: "scatter", mode: "lines", name: "Output (W)", line: { color: "#60a5fa", width: 2 } },
-    ];
-  }, [P_out, isAboveThreshold, outputLoss, totalLoss, dp]);
-
-  // Triplet fraction vs flow speed (uses rate model)
-  const tripletData = useMemo(() => {
-    const speeds = Array.from({ length: 100 }, (_, i) => 0.1 + i * 15 / 100);
-    const kISC = (1 - dp.quantum_yield) / dp.tau;
-    const Lc = 0.1e-3; // m — dye jet thickness
-    const tf = speeds.map(v => kISC / (kISC + v / Lc));
-    return [{ x: speeds, y: tf.map(f => f * 100), type: "scatter", mode: "lines", name: "Triplet Fraction (%)", line: { color: "#f87171", width: 2 } }];
-  }, [dp]);
-
-  // Beam size in dye jet — waist position depends on g-parameters
-  const beamSizeData = useMemo(() => {
-    if (!isStable || w0 === 0) return [];
-    const zR = Math.PI * w0 * w0 / lambda_m; // Rayleigh range (m)
-    // Waist position from mirror 1: z1 = L·g2·(1-g1) / (g1+g2-2g1g2)
-    const denom = g1 + g2 - 2 * g1 * g2;
-    const z1 = denom !== 0 ? L_m * g2 * (1 - g1) / denom : L_m / 2;
-    const zs = Array.from({ length: 200 }, (_, i) => i * L_m / 200);
-    const ws = zs.map(z => {
-      const dz = z - z1; // distance from waist
-      return w0 * Math.sqrt(1 + (dz * dz) / (zR * zR)) * 1e6; // µm
-    });
-    return [{ x: zs.map(z => z * 1000), y: ws, type: "scatter", mode: "lines", name: "Beam radius (µm)", line: { color: "#a78bfa", width: 2 } }];
-  }, [isStable, w0, lambda_m, L_m, g1, g2]);
-
-  const plotLayout: any = {
-    paper_bgcolor: "#111827", plot_bgcolor: "#1f2937", font: { color: "#e5e7eb" },
-    xaxis: { gridcolor: "#374151" }, yaxis: { gridcolor: "#374151" },
-    margin: { t: 40, r: 20, b: 50, l: 60 }, legend: { orientation: "h", y: -0.25 },
-  };
-  const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
+  const profileSeries = [
+    {
+      name: "TEM₀₀ radius w(z)",
+      color: "#a78bfa",
+      points: Number.isFinite(mode.w0)
+        ? Array.from({ length: 201 }, (_, i) => {
+            const z = (L * i) / 200;
+            return { x: round6(z * 1e3), y: round6(mode.w0 * Math.sqrt(1 + ((z - mode.z1) / mode.zR) ** 2) * 1e6) };
+          })
+        : [],
+    },
+  ];
 
   return (
     <>
-            
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Dye</label>
-          <select className={inputStyle} value={dyeName} onChange={e => setDyeName(e.target.value)}>
-            {Object.keys(dyeParams).map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Cavity Length (mm)" value={cavityLength} onChange={setCavityLength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="R₁ (mm)" value={R1} onChange={setR1} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="R₂ (mm)" value={R2} onChange={setR2} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="OC Reflectivity" value={R_oc} onChange={setR_oc} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Concentration (M)" value={concentration} onChange={setConcentration} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Flow Speed (m/s)" value={flowSpeed} onChange={setFlowSpeed} /></div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Laser wavelength λ (nm)" value={wavelengthRaw} onChange={setWavelength} min={300} max={1200} step="any" />
+        <ValidatedNumberInput label="Emission cross-section σₑ (10⁻¹⁶ cm²)" value={sigmaRaw} onChange={setSigma} min={1e-3} max={100} step="any" />
+        <ValidatedNumberInput label="Singlet lifetime τ (ns)" value={tauRaw} onChange={setTau} min={0.01} max={1000} step="any" />
+        <ValidatedNumberInput label="Triplet absorption σ_T at λ (10⁻¹⁷ cm²)" value={sigmaTRaw} onChange={setSigmaT} min={0} max={1000} step="any" />
+        <ValidatedNumberInput label="Intersystem crossing rate k_ST (10⁶ s⁻¹)" value={kstRaw} onChange={setKst} min={0} max={1e4} step="any" />
+        <ValidatedNumberInput label="Triplet lifetime τ_T (µs)" value={tauTRaw} onChange={setTauT} min={1e-3} max={1e6} step="any" />
+        <ValidatedNumberInput label="Pump wavelength λₚ (nm)" value={pumpWavelengthRaw} onChange={setPumpWavelength} min={200} max={1200} step="any" />
+        <ValidatedNumberInput label="Pump power absorbed in the jet (W)" value={pumpRaw} onChange={setPump} min={0} max={1000} step="any" />
+        <ValidatedNumberInput label="Pump efficiency ηₚ" value={etaRaw} onChange={setEta} min={0.01} max={1} step="any" />
+        <ValidatedNumberInput label="Pump spot radius wₚ in the jet (µm)" value={wpRaw} onChange={setWp} min={1} max={1e4} step="any" />
+        <ValidatedNumberInput label="Jet flow speed v (m/s)" value={flowRaw} onChange={setFlow} min={0.01} max={100} step="any" />
+        <ValidatedNumberInput label="Mirror spacing L (mm)" value={lRaw} onChange={setL} min={1} max={1e4} step="any" />
+        <ValidatedNumberInput label="Mirror 1 radius R₁ (mm; 0 = flat)" value={r1Raw} onChange={setR1} min={-1e7} max={1e7} step="any" />
+        <ValidatedNumberInput label="Mirror 2 radius R₂ (mm; 0 = flat)" value={r2Raw} onChange={setR2} min={-1e7} max={1e7} step="any" />
+        <ValidatedNumberInput label="Output coupler reflectance" value={rOcRaw} onChange={setROc} min={0.01} max={0.9999} step="any" />
+        <ValidatedNumberInput label="Other loss per pass (%: jet surfaces, scatter)" value={lossRaw} onChange={setLoss} min={0} max={50} step="any" />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">Stable</div><div className="text-xl font-bold">{isStable ? "YES" : "NO"}</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">Beam Waist</div><div className="text-xl font-bold text-blue-400">{beamWaist_um.toFixed(0)} µm</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">g₀ (small signal)</div><div className="text-xl font-bold text-green-400">{(smallSignalGain * L_m).toFixed(3)}</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">g_th</div><div className="text-xl font-bold text-red-400">{g_th.toFixed(3)}</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">P_out</div><div className="text-xl font-bold text-yellow-400">{P_out.toFixed(3)} W</div></div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-4">
+        <ResultCard label="g₁g₂" value={fmt(g1 * g2)} subtext={`g₁ = ${fmt(g1)}, g₂ = ${fmt(g2)}; ${stability}`} tone={statusTone} />
+        <ResultCard label="TEM₀₀ waist w₀ (in the jet)" value={`${fmt(mode.w0 * 1e6)} µm`} subtext={`${fmt(mode.z1 * 1e3)} mm from mirror 1`} tone="green" />
+        <ResultCard label="Gain left after triplet absorption" value={`${fmt(factor * 100)} %`} subtext={`Flow transit 2wₚ/v = ${fmt((2 * wp) / flow * 1e6)} µs`} tone={factor > 0 ? "cyan" : "red"} />
+        <ResultCard label="Round-trip loss δ" value={`${fmt(delta * 100)} %`} subtext="−ln R_OC + 2 × loss per pass" tone="orange" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard label="Threshold pump power" value={`${fmt(pTh)} W`} subtext={`Overlap area π(w₀² + wₚ²)/2 = ${fmt(pumpArea * 1e12)} µm²`} tone="red" />
+        <ResultCard label="Small-signal gain g₀l" value={fmt(g0l)} subtext={`Single pass at ${fmt(pump)} W; threshold δ/2 = ${fmt(delta / 2)}`} tone="blue" />
+        <ResultCard label="Output power" value={`${fmt(pOut)} W`} subtext={`I_sat = hc/(λσₑτ) = ${fmt(iSat / 1e7)} kW/cm²`} tone="yellow" />
+        <ResultCard label="Slope efficiency" value={`${fmt(slope * 100)} %`} subtext={`Quantum defect limit λₚ/λ = ${fmt((lambdaP / lambda) * 100)} %`} tone="purple" />
       </div>
 
-      <div className="bg-gray-800 rounded-lg p-4 mb-6">
-        <h3 className="font-semibold mb-3">Key Formulas</h3>
-        <div className="text-sm text-gray-300 space-y-1 font-mono">
-          <p>g₀ = σ_em · N_dye · Φ_f · f_triplet</p>
-          <p>I_sat = hc / (λ · σ_em · τ)</p>
-          <p>P_out = I_sat · A · (2g₀L - δ) · T_oc / δ</p>
-          <p>k_ISC = (1 - Φ_f) / τ</p>
-        </div>
+      {!(factor > 0) && (
+        <p className="mb-6 rounded-lg border border-red-700 bg-red-950/40 p-3 text-sm text-red-200">
+          Triplet absorption exceeds the singlet gain (σ_T k_ST τ_eff ≥ σₑ): the dye cannot lase CW. Flow faster, focus the pump
+          tighter or quench the triplets (shorter τ_T).
+        </p>
+      )}
+      {stability !== "stable" && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          The cavity is {stability === "unstable" ? "unstable" : "on the stability boundary"}: there is no TEM₀₀ mode, so no waist,
+          threshold or output.
+        </p>
+      )}
+
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>Gain cross-section net of triplets: σₑ − σ_T k_ST τ_eff, τ_eff = (1/τ_T + v/(2wₚ))⁻¹. The pumped jet (pump fully absorbed) gives
+          g₀l = ηₚ(σₑ − σ_T k_ST τ_eff)τPₚλₚ/(hcA), A = π(w₀² + wₚ²)/2, so the jet thickness cancels.</p>
+        <p>Threshold g₀l = δ/2; output from Rigrod with the saturation power I_sat πw₀²/2.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Gain Spectrum</h3><ChartPanel data={spectrumData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Wavelength (nm)" }, yaxis: { ...plotLayout.yaxis, title: "Gain (m⁻¹)" } }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Beam Radius in Cavity</h3><ChartPanel data={beamSizeData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Position (mm)" }, yaxis: { ...plotLayout.yaxis, title: "Beam Radius (µm)" } }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Triplet Fraction vs Flow Speed</h3><ChartPanel data={tripletData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Flow Speed (m/s)" }, yaxis: { ...plotLayout.yaxis, title: "Triplet (%)" } }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Output vs Pump</h3><ChartPanel data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output (W)" } }} /></div>
+      <div className="space-y-6">
+        {powerSeries[0].points.length > 0 && <SimpleLineChart title="Output power versus absorbed pump power" xLabel="Absorbed pump power (W)" yLabel="Output power (W)" series={powerSeries} />}
+        <SimpleLineChart title="Singlet gain left after triplet absorption versus flow speed (below 0 % no CW lasing)" xLabel="Flow speed (m/s)" yLabel="Gain left (%)" series={flowSeries} />
+        {profileSeries[0].points.length > 0 && <SimpleLineChart title="TEM₀₀ beam radius between the mirrors" xLabel="Position from mirror 1 (mm)" yLabel="Beam radius (µm)" series={profileSeries} />}
       </div>
     </>
   );
