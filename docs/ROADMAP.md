@@ -67,8 +67,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
      Michelson Gaussian lines + Nyquist alias; DFT coherent gain, scalloping 3.92/1.42 dB; real Mertz/Forman (defaults 0.449/0.410 % vs 2.22 %). 6 tests.
   8. ✅ (session 104, `phase-4/spectroscopy-throughput`, PR #135) `throughput.ts`, `etalon.ts`, `cavity-ring-down.ts`: Ω 6.283e-3 sr, Jacquinot π f/(h tan θ), ψ-grid Airy, CRDS α_min = (Δτ/τ)/(cτ₀). 4 tests.
   9. ✅ (session 105, `phase-4/spectroscopy-depths`, PR #136) `water-absorption.ts` (Pope & Fry + Segelstein), `depth.ts` (d_p = λ/(4π Im√(N² − n₀²sin²θ))), `optical-path-length.ts` (n_g, Sellmeier glasses), `near-infrared.ts` (Morse, Scholkmann–Wolf DPF, 2-λ MBLL on Prahl Hb): Si 550 nm δ 1.565 µm, d_p 63.66 µm, OPL 0.0500 ns, DPF(24, 760) 6.122. 5 tests.
-  10. Kinetics: pump-probe absorbs transient-absorption (sequential A→B→GS); time-resolved (closed-form IRF-convolved
-      decay in `fluorescence-lifetime.ts`); fluorescence-quantum-yield; two-dimensional.
+  10. ✅ (session 106, `phase-4/spectroscopy-kinetics`) `pump-probe.ts` (A→B→GS, bleach 0.742765 at 2 ps; IRF EMG), EMG/pile-up in `fluorescence-lifetime.ts` (+ `erfcx`), `quantum-yield.ts` (f = 1 − 10^(−A), 0.6454), `two-dimensional.ts` (dimer GSB/SE/ESA, ∫G·L·L via Faddeeva, Γ(200 fs) 53.088 cm⁻¹); transient-absorption merged. 6 tests.
   11. Molecular: microwave-spectroscopy (CO μ 6.856 → B 1.9324 cm⁻¹), terahertz-spectroscopy, infrared-spectroscopy,
       electron-spectroscopy.
   12. SNR and the rest: snr-averaging + signal-to-noise → imaging/signal-to-noise; fourier-self-comb → dual-comb;
