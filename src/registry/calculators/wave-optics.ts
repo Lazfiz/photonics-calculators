@@ -451,8 +451,15 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "soliton",
     title: "Soliton Propagation",
-    description: "Fundamental and higher-order soliton dynamics via split-step Fourier simulation.",
-    knownIssue: "The simulation never applies dispersion in the frequency domain, so the plotted peak power and width stay constant for any input. T0 uses the Gaussian, not the sech, conversion.",
+    description: "Fibre soliton order N, dispersion and nonlinear lengths, fundamental soliton power and soliton period, with a split-step Fourier simulation of a sech pulse along the fibre.",
+    keywords: ["optical soliton", "soliton order", "nonlinear Schrödinger equation", "split-step Fourier", "dispersion length", "higher-order soliton"],
+    tier: "textbook",
+    modelNote: "Scalar nonlinear Schrödinger equation with β₂ and the Kerr term, solved by the symmetric split-step Fourier method for a sech input (N ≤ 4, up to 10 L_D). Fibre loss, β₃, self-steepening and the Raman response are left out.",
+    references: [
+      { citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed. Academic Press. Dispersion and nonlinear lengths, soliton order, the normalised NLS.", url: "https://doi.org/10.1016/C2018-0-01168-8" },
+      { citation: "Satsuma J., Yajima N. (1974). Initial value problems of one-dimensional self-modulation of nonlinear waves in dispersive media. Prog. Theor. Phys. Suppl. 55, 284–306.", url: "https://doi.org/10.1143/PTPS.55.284" },
+      { citation: "Mollenauer L. F., Stolen R. H., Gordon J. P. (1980). Experimental observation of picosecond pulse narrowing and solitons in optical fibers. Phys. Rev. Lett. 45, 1095.", url: "https://doi.org/10.1103/PhysRevLett.45.1095" },
+    ],
   },
   {
     slug: "spatial-filter",
@@ -481,8 +488,15 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "supercontinuum",
     title: "Supercontinuum Generation",
-    description: "Broadband SC generation in photonic crystal fibers via soliton fission, SPM, and dispersive wave generation.",
-    knownIssue: "A unit error makes the dispersion length, soliton power, soliton number, fission length and bandwidth wrong by many orders of magnitude. N shows 0.0 instead of about 53 at default inputs.",
+    description: "Length scales of supercontinuum generation in a photonic crystal fibre: soliton number, dispersion length, soliton fission length and the dispersive-wave wavelength from β₂ and β₃.",
+    keywords: ["supercontinuum", "soliton fission", "photonic crystal fiber", "dispersive wave", "soliton number"],
+    tier: "textbook",
+    modelNote: "Sech² pump pulse. Fission length L_D/N and the leading-order dispersive-wave offset −3β₂/β₃ are scaling estimates. The spectrum needs a generalised NLS simulation and is not computed.",
+    references: [
+      { citation: "Dudley J. M., Genty G., Coen S. (2006). Supercontinuum generation in photonic crystal fiber. Rev. Mod. Phys. 78, 1135–1184.", url: "https://doi.org/10.1103/RevModPhys.78.1135" },
+      { citation: "Akhmediev N., Karlsson M. (1995). Cherenkov radiation emitted by solitons in optical fibers. Phys. Rev. A 51, 2602.", url: "https://doi.org/10.1103/PhysRevA.51.2602" },
+      { citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed. Academic Press. Dispersion and nonlinear lengths, soliton order, the normalised NLS.", url: "https://doi.org/10.1016/C2018-0-01168-8" },
+    ],
   },
   {
     slug: "thin-disk-laser",
