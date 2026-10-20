@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 104, 2026-10-20)
+## Status (session 107, 2026-10-20)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -19,12 +19,12 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
 | imaging | 61 / 61 | done: part 0 audit (session 78), fix parts 1–15b (sessions 79–95) |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
-| spectroscopy | 30 / 45 | part 0 audit (session 96); fix parts 1–9 (sessions 97–105); 13 `knownIssue`s; parts 10–12 next |
+| spectroscopy | 38 / 44 | part 0 audit (session 96); fix parts 1–11 (sessions 97–107); 4 `knownIssue`s; part 12 next |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **341 / 445** | 13 `knownIssue`s (spectroscopy) |
+| **total** | **349 / 444** | 4 `knownIssue`s (spectroscopy) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -68,8 +68,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   8. ✅ (session 104, `phase-4/spectroscopy-throughput`, PR #135) `throughput.ts`, `etalon.ts`, `cavity-ring-down.ts`: Ω 6.283e-3 sr, Jacquinot π f/(h tan θ), ψ-grid Airy, CRDS α_min = (Δτ/τ)/(cτ₀). 4 tests.
   9. ✅ (session 105, `phase-4/spectroscopy-depths`, PR #136) `water-absorption.ts` (Pope & Fry + Segelstein), `depth.ts` (d_p = λ/(4π Im√(N² − n₀²sin²θ))), `optical-path-length.ts` (n_g, Sellmeier glasses), `near-infrared.ts` (Morse, Scholkmann–Wolf DPF, 2-λ MBLL on Prahl Hb): Si 550 nm δ 1.565 µm, d_p 63.66 µm, OPL 0.0500 ns, DPF(24, 760) 6.122. 5 tests.
   10. ✅ (session 106, `phase-4/spectroscopy-kinetics`) `pump-probe.ts` (A→B→GS, bleach 0.742765 at 2 ps; IRF EMG), EMG/pile-up in `fluorescence-lifetime.ts` (+ `erfcx`), `quantum-yield.ts` (f = 1 − 10^(−A), 0.6454), `two-dimensional.ts` (dimer GSB/SE/ESA, ∫G·L·L via Faddeeva, Γ(200 fs) 53.088 cm⁻¹); transient-absorption merged. 6 tests.
-  11. Molecular: microwave-spectroscopy (CO μ 6.856 → B 1.9324 cm⁻¹), terahertz-spectroscopy, infrared-spectroscopy,
-      electron-spectroscopy.
+  11. ✅ (session 107, `phase-4/spectroscopy-molecular`, PR #138) `diatomic.ts` (CO B_e 1.93128, JPL 1←0 115271.20 MHz, Q(300) 108.865, log I −5.0105; HCl ν₀ 2885.977 with ω_e z_e), `terahertz.ts` (LHM water, 1 THz 25 °C n 2.1097 α 225.5 cm⁻¹; Jepsen–Fischer), `photoemission.ts` (TPP-2M = SRD 71 Si₃N₄ ±0.006 Å). 5 tests.
   12. SNR and the rest: snr-averaging + signal-to-noise → imaging/signal-to-noise; fourier-self-comb → dual-comb;
       sum-frequency-gen; blackbody and wavenumber-converter (OK pages: clamps, tier). Split 12a/12b if big.
 - [ ] **Next category audit after spectroscopy (ask the user):** wave-optics 2/49 or materials 4/45.
@@ -142,6 +141,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   overlap `fiber-laser`; `fiber-coupler` vs `wave-optics/coupled-mode` unchecked.
 
 **Imaging / spectroscopy** (found in the detectors part 0, session 63)
+- Spectroscopy part 11 (session 107): `infrared-spectroscopy` has no Herman–Wallis factor or absolute band strength; `electron-spectroscopy` graphite ρ 2.2 (SRD 71 table value) vs 2.26 g/cm³ crystal; LHM water ε₂ = 3.52 + 7.52θ kept (fits Table I with RMS 0.43, against 0.49 with −), and the page allows only −5 to 40 °C.
 - `spectroscopy/conc-mirror` and `jacquinot` (session 104) both show the Jacquinot ratio π f/(h tan θ) from `throughput.ts`;
   conc-mirror adds the mirror cone and slit étendue. Merge into jacquinot only if the user asks.
 - Imaging part 8 (session 86): `photoacoustic` applies only the single-pulse and ≥ 10 s skin limits (`pulse-train.ts` has no skin rules); `sum-frequency-microscopy` withholds the power for L > b (no non-degenerate Boyd–Kleinman); SRS δ is an input (no cross-section model).
