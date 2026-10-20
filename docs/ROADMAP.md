@@ -19,12 +19,12 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
 | imaging | 61 / 61 | done: part 0 audit (session 78), fix parts 1–15b (sessions 79–95) |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
-| spectroscopy | 18 / 45 | part 0 audit (session 96); fix parts 1–6 (sessions 97–102); 25 `knownIssue`s; parts 7–12 next |
+| spectroscopy | 22 / 45 | part 0 audit (session 96); fix parts 1–7 (sessions 97–103); 21 `knownIssue`s; parts 8–12 next |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **329 / 445** | 25 `knownIssue`s (spectroscopy) |
+| **total** | **333 / 445** | 21 `knownIssue`s (spectroscopy) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -62,8 +62,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   6. ✅ (session 102, `phase-4/spectroscopy-stray-light`, PR #133) `stray-light.ts` + `spectral-calibration.ts`: stray-light absorbs
      stray-light-rejection (A=3, s=10⁻³ → 2.69919; S/(1+S) form 2.69940; ΔA plot, A_max, s for tolerance, nλ′ = mλ); Czerny–Turner
      calibration on NIST Hg lines (max error linear 0.623, quadratic 0.500, cubic 0.0051 nm: distortion is odd for small β₀). 5 tests.
-  7. FTIR: ftir-resolution (Norton-Beer in `apodization-comparison.ts`, measured ILS factors), fourier-transform,
-     michelson-interferometer, phase-correction (real Mertz/Forman on a shared interferogram/FFT module). Split 7a/7b if big.
+  7. ✅ (session 103, `phase-4/spectroscopy-ftir`) `fft.ts` (radix-2 + Bluestein), `ftir.ts`, `fourier-transform.ts`,
+     `ftir-phase-correction.ts`: ILS FWHM computed (NB weak/medium/strong 1.200/1.400/1.600 × boxcar 0.6034/L, HG 1.504, BH4 2.21);
+     Michelson Gaussian lines + Nyquist alias; DFT coherent gain, scalloping 3.92/1.42 dB; real Mertz/Forman (defaults 0.449/0.410 % vs 2.22 %). 6 tests.
   8. Throughput and cavities: jacquinot, conc-mirror, etalon-fsr, cavity-ring-down.
   9. Depths: absorption-depth (`silicon-absorption.ts`, Hale & Querry water), penetration-depth (`tirf.ts`),
      optical-path-length, near-infrared.

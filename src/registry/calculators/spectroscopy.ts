@@ -159,13 +159,19 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "fourier-transform",
     title: "Fourier Transform Basics",
-    description: "Decompose a composite time-domain signal into its frequency components via DFT.",
-    knownIssue: "A large N Points value from a shared link is not clamped, and the direct O(N squared) DFT can freeze the page.",
+    description: "Sample two sinusoids plus white noise and read their amplitudes from a windowed FFT: bin spacing, Nyquist aliasing, scalloping and the noise floor.",
+    tier: "exact",
+    modelNote: "Discrete Fourier transform of the sampled record with coherent-gain correction; the signal is synthetic (two tones, Gaussian noise with a fixed seed).",
+    references: [
+      { citation: "Harris F. J. (1978). On the use of windows for harmonic analysis with the discrete Fourier transform. Proc. IEEE 66, 51–83.", url: "https://doi.org/10.1109/PROC.1978.10837" },
+      { citation: "Oppenheim A. V., Schafer R. W. (2010). Discrete-Time Signal Processing, 3rd ed., chs. 4 and 10. Pearson." },
+      { citation: "Cooley J. W., Tukey J. W. (1965). An algorithm for the machine calculation of complex Fourier series. Math. Comput. 19, 297–301.", url: "https://doi.org/10.1090/S0025-5718-1965-0178586-1" },
+    ],
   },
   {
     slug: "ftir-resolution",
     title: "FTIR Resolution Calculator",
-    description: "FTIR spectral resolution from maximum OPD, apodization, and scan parameters.",
+    description: "FTIR spectral resolution from maximum OPD, apodization (Norton–Beer, Happ–Genzel, Blackman–Harris) and scan parameters, with computed instrument line shapes.",
     lede: "Spectral resolution from maximum optical path difference (OPD) and apodization function.",
     keywords: ["interferometer", "opd", "apodization", "resolution"],
     priority: 96,
@@ -184,7 +190,14 @@ export const spectroscopy: CalculatorEntry[] = [
       },
       { href: "/spectroscopy/blackbody", note: "Source spectrum intuition for FTIR systems." },
     ],
-    knownIssue: "Apodization broadening factors are not the published values, the Norton-Beer Medium and Happ-Genzel windows are wrong, and the interferogram plot is aliased.",
+    tier: "exact",
+    modelNote: "Ideal interferometer: the instrument line shape is the cosine transform of the apodization over ±L, computed numerically; beam divergence and phase errors are not included.",
+    references: [
+      { citation: "Griffiths P. R., de Haseth J. A. (2007). Fourier Transform Infrared Spectrometry, 2nd ed., chs. 2 and 4. Wiley." },
+      { citation: "Norton R. H., Beer R. (1976). New apodizing functions for Fourier spectrometry. J. Opt. Soc. Am. 66, 259–264; errata 67, 419 (1977).", url: "https://doi.org/10.1364/JOSA.66.000259" },
+      { citation: "Naylor D. A., Tahic M. K. (2007). Apodizing functions for Fourier transform spectroscopy. J. Opt. Soc. Am. A 24, 3644–3648.", url: "https://doi.org/10.1364/JOSAA.24.003644" },
+      { citation: "Harris F. J. (1978). On the use of windows for harmonic analysis with the discrete Fourier transform. Proc. IEEE 66, 51–83.", url: "https://doi.org/10.1109/PROC.1978.10837" },
+    ],
   },
   {
     slug: "grating-efficiency",
@@ -272,9 +285,11 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "michelson-interferometer",
     title: "Michelson Interferometer",
-    description: "Interferogram spectrum via Fourier transform. Core of FTIR spectroscopy.",
+    description: "Interferogram of Gaussian spectral lines and the spectrum recovered by cosine transform: resolution 1/L, resolving power, Nyquist aliasing and fringe visibility.",
     lede: "Interferogram → spectrum via Fourier transform. Core of FTIR spectroscopy.",
-    knownIssue: "The synthetic lines sit at a fixed 0.3 µm spacing, so short central wavelengths give zero or negative lines and a blank NaN plot, and aliasing is not flagged when the sample step exceeds half the shortest wavelength.",
+    tier: "exact",
+    modelNote: "Ideal two-beam interferometer with Gaussian lines, sampled single-sided from zero path difference; no beam divergence, phase error or detector response.",
+    references: [{ citation: "Griffiths P. R., de Haseth J. A. (2007). Fourier Transform Infrared Spectrometry, 2nd ed., chs. 2 and 4. Wiley." }],
   },
   {
     slug: "microwave-spectroscopy",
@@ -324,8 +339,14 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "phase-correction",
     title: "Phase Correction Methods",
-    description: "Compare Mertz, Forman, and power spectrum methods for interferogram phase correction (FTIR).",
-    knownIssue: "The corrected phase is built partly from the noise-free ideal phase and scaled by arbitrary factors, so the residual and SNR improvement values are not from a real Mertz or Forman correction.",
+    description: "Mertz and Forman phase correction run on a simulated single-sided FTIR interferogram with ZPD offset, phase offset, dispersion and noise, compared with the magnitude spectrum.",
+    tier: "exact",
+    modelNote: "The algorithms run on a synthetic interferogram of a known spectrum, so the error against the truth is computed, not modelled; the instrument is ideal apart from the phase error and white noise.",
+    references: [
+      { citation: "Griffiths P. R., de Haseth J. A. (2007). Fourier Transform Infrared Spectrometry, 2nd ed., chs. 2 and 4. Wiley." },
+      { citation: "Mertz L. (1967). Auxiliary computation for Fourier spectrometry. Infrared Phys. 7, 17–23.", url: "https://doi.org/10.1016/0020-0891(67)90026-7" },
+      { citation: "Forman M. L., Steel W. H., Vanasse G. A. (1966). Correction of asymmetric interferograms obtained in Fourier spectroscopy. J. Opt. Soc. Am. 56, 59–63.", url: "https://doi.org/10.1364/JOSA.56.000059" },
+    ],
   },
   {
     slug: "pump-probe",
