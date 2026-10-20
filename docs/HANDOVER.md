@@ -1,45 +1,46 @@
-# Handover — 2026-10-20 (session 104 → session 105)
+# Handover — 2026-10-20 (session 105 → session 106)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 104 did **spectroscopy fix part 8** (throughput and cavities) on branch `phase-4/spectroscopy-throughput` (PR #135
-after `/ship`). Next: **spectroscopy fix part 9** (depths: absorption-depth, penetration-depth, optical-path-length, near-infrared).
+Session 105 did **spectroscopy fix part 9** (depths) on branch `phase-4/spectroscopy-depths` (PR #136 after `/ship`).
+Next: **spectroscopy fix part 10** (kinetics: pump-probe absorbs transient-absorption, time-resolved, fluorescence-quantum-yield, two-dimensional).
 
 ## State
-- New `src/physics/spectroscopy/throughput.ts`: `ftsMaxSolidAngle` (2πΔν̃/ν̃, the exact cone), `ftsMaxHalfAngle`,
-  `fieldStopDiameter`, `coneSolidAngle`, `projectedSolidAngle` (π sin²α), `mirrorRimHalfAngle` (with sag),
-  `slitResolvingPower`, `jacquinotRatio` (2π f cos α/(h(sin α + sin β)); Littrow π f/(h tan θ)).
-- New `etalon.ts`: `gapAngle` (Snell), `etalonOrder`, `fsrFrequency`, `fsrWavelength`, `fwhmFrequency`, `airyFringe`
-  (ψ-grid: tan(δ/2) = tan(ψ/2)/√(1+F) puts samples on the peaks, any finesse). Reuses `thin-film/interference.ts`
-  (`coefficientOfFinesse`, `reflectingFinesse`, `airyPeakNear`).
-- New `cavity-ring-down.ts`: `roundTripLoss` (log1p sums), `ringDownTime`, `cavityFinesse` (π√ρ/(1 − ρ)),
-  `absorptionFromRingDown`, `minDetectableAbsorption`, `noiseEquivalentAbsorption`. Tests: `tests/spectroscopy-throughput.test.ts`.
-- URL params added: jacquinot `focalLength`, `beamDiameter`, `gratingFocal`, `slitHeight`, `littrowAngle`; conc-mirror
-  `littrowAngle`; etalon-fsr `wavelength` (`theta` is now the incidence angle in air); cavity-ring-down `tauNoise`, `repRate`.
-- 337 of 445 pages tiered, 17 `knownIssue`s (all spectroscopy).
+- New `src/physics/materials/water-absorption.ts`: `waterAbsorption(λ)` (1/m, 200–2500 nm), `waterSource(λ)`; Pope & Fry 1997
+  for 380–727.5 nm, Segelstein 1981 elsewhere, one merged node list, ln α linear in λ. Steps 375→380 nm (Segelstein UV too high).
+- New `src/physics/spectroscopy/depth.ts`: `absorptionCoefficient` (4πk/λ), `absorptionDepth`, `absorbedFraction`,
+  `depthForAbsorbedFraction`, `penetrationDepth(λ, n₀, n, k, θ)` = λ/(4π Im√(N² − n₀² sin²θ)) (= 1/α at 0°, = tirf.ts under TIR).
+- New `optical-path-length.ts`: `slabPath(d, n, n_g, N, θ, n₀)` → θ_t, L, OPL, OPD vs vacuum, phase/group/extra delay.
+- New `near-infrared.ts`: Prahl Hb table 650–1000 nm (`hbExtinction`, m²/mol), `dpfFrontalHead` (Scholkmann–Wolf, 690–832 nm,
+  0–70 y), `mbllHaemoglobin` (2 × 2 Cramer), `morseTransition`/`morseMaxLevel`/`morseWellDepth`, `localMaxima`.
+- Tests: `tests/spectroscopy-depths.test.ts` (5). URL params added: absorption-depth `material`, `wavelength`, `thickness`;
+  penetration-depth `ambientIndex`; optical-path-length `material`, `groupIndex`, `wavelength`; near-infrared `pathMm` (replaces
+  `pathLength` cm), `omegaE`, `omegaExe`, `lambda1`, `lambda2`, `dOD1`, `dOD2`, `distance`, `dpfMode`, `age`, `dpf1`, `dpf2`
+  (`scatteringCoeff` dropped).
+- 341 of 445 pages tiered, 13 `knownIssue`s (all spectroscopy).
 - Per-page findings, goldens and references: PR #127 description (`gh pr view 127`); read the part at hand only.
-- **User decisions (session 96):** merges with redirects (ROADMAP "Spectroscopy fix parts"). **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only when the user asks:
-  `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set
-  Vercel's Production Branch to `release` (not confirmed).
-- **User decisions (session 78):** keep dynamic-range, stimulated-raman-microscopy and resolution separate unless the
-  user says otherwise.
+- **User decisions (session 96):** merges with redirects (ROADMAP "Spectroscopy fix parts"). **Release flow:** merges to `main`
+  deploy nothing. Production deploys only from `release`, and only when the user asks: `git push origin main:release`, then
+  `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set Vercel's Production Branch to `release`.
+- **User decisions (session 78):** keep dynamic-range, stimulated-raman-microscopy and resolution separate unless the user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 8: `spectroscopy/jacquinot=0.006283` (Ω, sr),
-   `spectroscopy/conc-mirror=28.10` (rim half-angle, °), `spectroscopy/etalon-fsr=120.1` (FSR, nm),
-   `spectroscopy/cavity-ring-down=33.35` (τ₀, µs); part 7: `spectroscopy/ftir-resolution=0.6034`,
-   `spectroscopy/michelson-interferometer=220.6`, `spectroscopy/phase-correction=0.449`; earlier parts:
-   `git show a3657cbc:docs/HANDOVER.md`. Don't release unless asked.
-2. Spectroscopy part 9 (ROADMAP item 9): absorption-depth (`silicon-absorption.ts`, Hale & Querry water), penetration-depth
-   (`tirf.ts`), optical-path-length, near-infrared; PR #127 has the findings.
+1. `/ship` this branch. Values for a later release check: part 9: `spectroscopy/absorption-depth=1.565` (δ, µm),
+   `spectroscopy/penetration-depth=63.66` (d_p, µm), `spectroscopy/optical-path-length=1.500` (OPL, cm),
+   `spectroscopy/near-infrared=1.003` (Δ[HbO₂], µM); part 8: `spectroscopy/jacquinot=0.006283`, `spectroscopy/conc-mirror=28.10`,
+   `spectroscopy/etalon-fsr=120.1`, `spectroscopy/cavity-ring-down=33.35`; earlier parts: `git show 4a918bb3:docs/HANDOVER.md`. No release unless asked.
+2. Spectroscopy part 10 (ROADMAP item 10); PR #127 batch 7 has the findings (time-resolved: closed-form EMG with erfc into
+   `fluorescence-lifetime.ts`; transient-absorption sequential A→B→GS).
 3. Later: open findings (conc-mirror/jacquinot overlap, FSO `adaptive-optics` actuators-as-modes, local `sinc` copies,
    `fluorophores.ts` cutoff, `optical-sectioning-thickness`, detectors 7b, fiber, FSO), `polarizer-types` (needs the
    user at the laptop with Chrome). Gold for SERS needs a gold dataset (none in `materials/`).
 
 ## Non-obvious facts
-- **Session 104:** Jacquinot's classic 2πf/h is the Littrow case 2 tan θ = 1 (θ = 26.57°); the general ratio is
-  2π f cos α/(h(sin α + sin β)). The FTS cone 1 − cos α = Δν̃/ν̃ gives Ω = 2πΔν̃/ν̃ exactly, not just paraxially. A
-  backup of an untracked file can't be restored with `git checkout`: copy it aside before a mutation test.
+- **Session 105:** Hale & Querry is tabulated every 200 nm in the NIR, so it misses the 1450/1940 nm water peaks (1.4 µm gives
+  12 /cm, the peak is 31.7): use Segelstein. Scholkmann–Wolf DPF coefficients were checked against two open implementations
+  (paper is paywalled). A command that starts a server in the background keeps devctl "busy": run later chrome jobs with
+  `run_in_background`.
+- **Session 104:** a backup of an untracked file can't be restored with `git checkout`: copy it aside before a mutation test.
 - **Session 103:** Norton–Beer coefficients (Naylor & Tahic 2007) give FWHM ratios 1.2/1.4/1.6 exactly: a good check. The
   Mertz ramp makes Re(C) ≈ B cos φ; in the found-ZPD frame the phase is φ + 2πσ·shift·Δx (sign!). Use closed forms for
   cosine-sum ILS. devctl blocks a whole foreground command while a gate runs.
