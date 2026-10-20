@@ -50,6 +50,18 @@ export function erfc(x: number): number {
   return x < SERIES_LIMIT ? 1 - erfSeries(x) : erfcContinuedFraction(x);
 }
 
+/**
+ * Scaled complementary error function erfcx(x) = e^(x²) erfc(x) for x ≥ 0, with no overflow in the tail
+ * (erfcx x → 1/(x√π)): the same series and continued fraction as erfc, without the e^(−x²) factor. NaN for x < 0.
+ */
+export function erfcx(x: number): number {
+  if (!(x >= 0)) return NaN;
+  if (x < SERIES_LIMIT) return Math.exp(x * x) * (1 - erfSeries(x));
+  let f = x;
+  for (let k = CF_TERMS; k >= 1; k--) f = x + k / 2 / f;
+  return 1 / (SQRT_PI * f);
+}
+
 /** Gaussian tail probability Q(x) = P(Z > x) = ½ erfc(x/√2), Z ~ N(0, 1). */
 export function qFunction(x: number): number {
   return 0.5 * erfc(x / Math.SQRT2);

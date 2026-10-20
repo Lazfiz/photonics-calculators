@@ -71,6 +71,7 @@
   "/spectroscopy/resolution": "/spectroscopy/spectral-resolution",
   "/spectroscopy/stimulated-raman": "/imaging/stimulated-raman-microscopy",
   "/spectroscopy/stray-light-rejection": "/spectroscopy/stray-light",
+  "/spectroscopy/transient-absorption": "/spectroscopy/pump-probe",
   "/thin-film/fresnel-equations": "/polarization/fresnel-polarization",
   "/thin-film/gradient-index-coating": "/thin-film/gradient-index",
   "/thin-film/long-pass": "/thin-film/edge-filter",

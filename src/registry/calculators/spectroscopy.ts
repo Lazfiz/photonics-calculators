@@ -170,9 +170,14 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "fluorescence-quantum-yield",
     title: "Fluorescence Quantum Yield",
-    description: "Φ = Φ_ref (I_s/I_ref) (A_ref/A_s) (n_s/n_ref)² — comparative method using a reference standard.",
-    lede: "Φ = Φ_ref · (I_s/I_ref) · (A_ref/A_s) · (n_s/n_ref)² — comparative method using a reference standard.",
-    knownIssue: "Divide-by-zero cases show 0 instead of an error, results above 1 are not flagged, and the absorbance ratio stands in for the absorbed-photon fraction, which is valid only for A below about 0.1.",
+    description: "Relative fluorescence quantum yield against a reference standard: Φ = Φ_ref (F_s/F_ref)(f_ref/f_s)(n_s/n_ref)² with absorbed fractions f = 1 − 10^−A, compared with the absorbance-ratio approximation.",
+    tier: "textbook",
+    modelNote: "Comparative method for dilute solutions measured under identical conditions: same excitation wavelength, geometry and detection, isotropic emission, no inner-filter effects or reabsorption.",
+    references: [
+      { citation: "Würth C., Grabolle M., Pauli J., Spieles M., Resch-Genger U. (2013). Relative and absolute determination of fluorescence quantum yields of transparent samples. Nat. Protoc. 8, 1535–1550.", url: "https://doi.org/10.1038/nprot.2013.087" },
+      { citation: "Brouwer A. M. (2011). Standards for photoluminescence quantum yield measurements in solution (IUPAC Technical Report). Pure Appl. Chem. 83, 2213–2228.", url: "https://doi.org/10.1351/PAC-REP-10-09-31" },
+      { citation: "Melhuish W. H. (1961). Quantum efficiencies of fluorescence of organic substances: effect of solvent and concentration of the fluorescent solute. J. Phys. Chem. 65, 229–235 (quinine sulfate 0.546).", url: "https://doi.org/10.1021/j100820a009" },
+    ],
   },
   {
     slug: "fourier-self-comb",
@@ -399,8 +404,14 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "pump-probe",
     title: "Pump-Probe Spectroscopy",
-    description: "Ultrafast dynamics via time-resolved differential transmission. GSB, SE, and ESA contributions.",
-    knownIssue: "Ground-state bleach recovers with the fast lifetime while the intermediate state is still populated, which breaks population balance; the band amplitudes are arbitrary.",
+    description: "Pump-probe and transient absorption with sequential A → B → ground-state kinetics: ΔA kinetic traces and spectra in mOD from the pump fluence and ε, with bleach, stimulated emission and excited-state absorption bands and the pump-probe cross-correlation.",
+    keywords: ["Transient Absorption Spectroscopy"],
+    tier: "textbook",
+    modelNote: "First-order sequential kinetics with Gaussian bands you choose and a Gaussian cross-correlation (closed form); excited fraction in the linear regime. No coherent artefact, anisotropy (magic angle assumed) or pump saturation.",
+    references: [
+      { citation: "van Stokkum I. H. M., Larsen D. S., van Grondelle R. (2004). Global and target analysis of time-resolved spectra. Biochim. Biophys. Acta 1657, 82–104.", url: "https://doi.org/10.1016/j.bbabio.2004.04.011" },
+      { citation: "Berera R., van Grondelle R., Kennis J. T. M. (2009). Ultrafast transient absorption spectroscopy: principles and application to photosynthetic systems. Photosynth. Res. 101, 105–118.", url: "https://doi.org/10.1007/s11120-009-9454-y" },
+    ],
   },
   {
     slug: "raman-shift",
@@ -596,27 +607,31 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "time-resolved",
     title: "Time-Resolved Spectroscopy",
-    description: "TCSPC and streak camera fundamentals. IRF convolution, temporal resolution, and decay analysis.",
-    knownIssue: "The IRF is centred at zero and is far narrower than the time step, so the IRF-convolved curve is identical to the plain decay and the resolution check always passes.",
-  },
-  {
-    slug: "transient-absorption",
-    title: "Transient Absorption Spectroscopy",
-    description: "A spectra vs delay time. Decompose into GSB, ESA, and SE contributions across the probe range.",
-    lede: "ΔA spectra vs delay time. Decompose into GSB, ESA, and SE contributions across the probe range.",
-    knownIssue: "The ΔA spectra use fixed hidden time constants and band shapes, the bleach recovers at a different rate than the excited state decays, and the kinetic trace ignores the SE centre.",
+    description: "Time-correlated single photon counting: one- or two-exponential decays convolved with a Gaussian IRF in closed form, the decay left over from earlier pulses at the repetition rate, the centroid shift and the laser's transform-limited bandwidth.",
+    tier: "textbook",
+    modelNote: "Gaussian IRF and exponential decays, convolved exactly; noiseless histogram without background or count-rate pile-up.",
+    references: [
+      { citation: "Grushka E. (1972). Characterization of exponentially modified Gaussian peaks in chromatography. Anal. Chem. 44, 1733–1738.", url: "https://doi.org/10.1021/ac60319a011" },
+      { citation: "Becker W. (2005). Advanced Time-Correlated Single Photon Counting Techniques. Springer.", url: "https://doi.org/10.1007/3-540-28882-1" },
+      { citation: "Lakowicz J. R. (2006). Principles of Fluorescence Spectroscopy, 3rd ed., ch. 4. Springer." },
+    ],
   },
   {
     slug: "two-dimensional",
     title: "Two-Dimensional (2D) Spectroscopy",
-    description: "Correlates excitation and detection frequencies via three-pulse photon echo. Reveals coupling, energy transfer, and homogeneous vs inhomogeneous broadening.",
-    knownIssue: "The 2D map is a sketch made of Gaussians: peaks are not stretched along the diagonal by inhomogeneous width, there are no negative ESA peaks, and coupling is used as the full state splitting.",
+    description: "Absorptive 2D electronic spectrum of a coupled dimer: exciton splitting √(Δ² + 4J²), bleach, stimulated-emission and excited-state-absorption peaks, energy transfer during the waiting time and homogeneous vs inhomogeneous lineshapes.",
+    tier: "textbook",
+    modelNote: "Excitonic dimer of two-level chromophores, population pathways only (coherences dephased), isotropic parallel polarisations, Lorentzian homogeneous and static correlated Gaussian inhomogeneous broadening.",
+    references: [
+      { citation: "Hamm P., Zanni M. (2011). Concepts and Methods of 2D Infrared Spectroscopy. Cambridge University Press.", url: "https://doi.org/10.1017/CBO9780511675935" },
+      { citation: "Jonas D. M. (2003). Two-dimensional femtosecond spectroscopy. Annu. Rev. Phys. Chem. 54, 425–463.", url: "https://doi.org/10.1146/annurev.physchem.54.011002.103907" },
+    ],
   },
   {
     slug: "wavenumber-converter",
     title: "Wavenumber Converter",
     description: "Convert wavelength, wavenumber, frequency, and energy with sliders, presets, and range sweeps.",
     lede: "Convert wavelength, wavenumber, frequency, and energy with presets, sliders, and range sweeps.",
-    related: [{ href: "/spectroscopy/transient-absorption" }, { href: "/spectroscopy/two-dimensional" }],
+    related: [{ href: "/spectroscopy/pump-probe" }, { href: "/spectroscopy/two-dimensional" }],
   },
 ];
