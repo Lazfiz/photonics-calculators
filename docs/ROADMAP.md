@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 114, 2026-10-20)
+## Status (session 115, 2026-10-20)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -22,9 +22,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
-| wave-optics | 12 / 45 | part 0 audit (session 110), fix parts 1–4 (sessions 111–114); 31 `knownIssue`s; parts 5–13 next |
+| wave-optics | 15 / 45 | part 0 audit (session 110), fix parts 1–5 (sessions 111–115); 28 `knownIssue`s; parts 6–13 next |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **362 / 437** | 31 `knownIssue`s (wave-optics) |
+| **total** | **365 / 437** | 28 `knownIssue`s (wave-optics) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -51,8 +51,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   2. ✓ Mode matching and spatial filter (session 112, PR #143).
   3. ✓ Higher-order beams, Bessel beam, Fresnel diffraction (session 113, PR #144).
   4. ✓ Cavities: two-mirror resonator, cavity-stability → cavity-mode-spacing, ring cavity (session 114, PR #145).
-  5. Resonators a: solid-state-laser-resonator, dye-laser-resonator, gas-laser-resonator on `two-mirror-resonator.ts` +
-     `rigrodOutput` (T/2 form) and a shared four-level threshold.
+  5. ✓ Resonators a: solid-state, dye and gas laser resonators on `laser-resonator.ts` (session 115, PR #146).
   6. Resonators b: diode-laser-resonator (Coldren N_th chain), slab-laser, thin-disk-laser (N_Yb σ_a absorption);
      fiber-laser-resonator → fiber-optics/fiber-laser.
   7. Pulsed output: q-switched-laser and cavity-dumped on `laser-safety/peak-power.ts`; mode-locked-laser (Δλ_TL, mode
@@ -82,6 +81,10 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   reviewer was unsure and the page uses R_b as given. Check Koshiba 2012 / Hayashi 2011 text, then add it or drop this note.
 - `bend-insensitive` (`g657.ts`): the physics review recalls a G.657.A3 category (2016) that shares the B3 limits. Unverified
   because the ITU PDF is blocked to scripts; check the ITU text in Chrome, then add A3 or drop the note.
+**Wave optics**
+- `dye-laser-resonator`: default σₑ 2e-16 cm², τ 4 ns, σ_T 1e-17 cm², k_ST 5e6 s⁻¹, τ_T 1 µs are Rh6G-order examples (page says so);
+  source them from Webb et al. 1970 (doi 10.1063/1.1673926, paywalled). `gas-laser-resonator`: g₀ 0.15 /m and I_sat 25 W/cm² come from one
+  HeNe course report (Ng et al. 2015); no sourced g₀/I_sat for Ar⁺ or CO₂, so the line buttons set λ only.
 **Free-space comms**
 - `diversity-reception`: for N ≥ 3 the Fenton–Wilkinson margin is 0.07–0.41 dB high at σ_I² ≤ 0.5 and ≈ 1–1.2 dB at σ_I² = 1, and MRC is capped at
   EGC (exact MRC 0.1–0.2 dB lower); the exact N = 3 nested integral (in the tests) is too slow for the chart (~40 ms per threshold).
@@ -215,6 +218,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Wave-optics fix part 5 (session 115, `phase-4/wave-optics-fix-5`, PR #146): new `laser-resonator.ts` (four-level P_th δhcA/(2ηστλₚ): audit 5.4604 W, 7.3254 W at 808 nm; Nd:YAG I_sat 2.899 kW/cm²; Rigrod slope K, K = 1 at R₁ = 1; low-loss T_opt 0.0247 within 2 %; dye triplet factor 0.76923; HeNe 0.94372 mW); 3 pages tiered.
   - Wave-optics fix part 4 (session 114, `phase-4/wave-optics-fix-4`, PR #145): new `two-mirror-resonator.ts` (w₀ 0.38295 mm; Δν_T 0.666205 / 0.333103 GHz on Siegman's sign branch; asymmetric z_R 0.3 m, z₁ 0.1 m), `ring-cavity.ts` (ℱ 102.422, τ 16.3129 ns, spot 0.278745 mm, R cos α / R/cos α astigmatism), `periodicEigenmode` in `abcd.ts`; cavity-stability merged; 437 pages.
   - Wave-optics fix part 2 (session 112, `phase-4/wave-optics-fix-2`, PR #143): new `mode-matching.ts` (closed form f 36.21766 mm, s₁ 43.72147 mm, η 1; 115.2041 / 169.1225 mm; overlap 4/4.25² 0.2214533) and `spatial-filter.ts` (w_f 33.86817 µm, T 0.8646647 / 0.9888910, far field checked by an incomplete-gamma series); beam-waist-matching merged into mode-matching (redirect); 357/439 tiered.
   - Wave-optics fix part 1 (session 111, `phase-4/wave-optics-fix-1`, PR #142): new `gaussian-beam.ts` (z_R 0.202683 mm, ψ 7.71504°, M² 1.476312) and `abcd.ts` (2f–2f → [[−1, 0], [−1/f, −1]]); gouy-phase merged into gaussian-beam; M² < 1 flagged; ABCD elements in the URL; 3 pages tiered.

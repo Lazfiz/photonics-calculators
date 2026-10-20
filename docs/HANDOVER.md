@@ -1,21 +1,20 @@
-# Handover — 2026-10-20 (session 114 → session 115)
+# Handover — 2026-10-20 (session 115 → session 116)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 114: **wave-optics fix part 4** (cavities), branch `phase-4/wave-optics-fix-4`, PR #145. Next: **fix part 5**
-(resonators a: solid-state, dye, gas laser resonators on `two-mirror-resonator.ts`).
+Session 115: **wave-optics fix part 5** (resonators a), branch `phase-4/wave-optics-fix-5`, PR #146. Next: **fix part 6**
+(resonators b: diode-laser-resonator, slab-laser, thin-disk-laser; fiber-laser-resonator → fiber-optics/fiber-laser).
 
 ## State
-- Wave-optics modules: `gaussian-beam.ts`, `abcd.ts` (+ `periodicEigenmode`: q, w, waist, Gouy per period of a
-  unimodular matrix); `mode-matching.ts`, `spatial-filter.ts`; `higher-order-modes.ts`, `bessel-beam.ts`,
-  `diffraction-integral.ts`; new `two-mirror-resonator.ts` (`gParameter` with R = Infinity for flat,
-  `resonatorStability` stable/marginal/unstable, `twoMirrorMode(λ, L, g₁, g₂, n)` → w₀, z_R, z₁, w₁, w₂, confocal limit;
-  `resonatorFsr`, `oneWayGouyPhase` (sign of g), `transverseModeSpacing`, `modeFrequency`) and `ring-cavity.ts`
-  (`ringFinesse`, `ringCoefficientOfFinesse`, `ringResponse`, `ringPhotonLifetime`, `regularRingIncidence`,
-  `tiltedMirrorRadius`, `ringPlaneMode`). Test: `tests/wave-optics-cavities.test.ts`. Part 5 reuses `twoMirrorMode`.
-- cavity-stability merged into cavity-mode-spacing (redirect; old `L`, `r1`, `r2` links keep their cavity at 1064 nm).
-  Mirror radius 0 means flat on that page.
-- 362 of 437 pages tiered, 31 `knownIssue`s. **Per-page findings for parts 5–13 are in the PR #141 description**
+- Wave-optics modules: gaussian-beam, abcd, mode-matching, spatial-filter, higher-order-modes, bessel-beam,
+  diffraction-integral, two-mirror-resonator (`twoMirrorMode`), ring-cavity, and new `laser-resonator.ts`: `roundTripLoss(R₁, R₂, L_i)`,
+  `gaussianOverlapArea(w₀, wₚ)`, `fourLevelGain`/`fourLevelThreshold(δ|P, λₚ, σ, τ, A, ηₚ)`, `saturationIntensity`,
+  `rigrodSlope(R₁, R₂)`, `laserOutput(g₀l, R₁, R₂, L_i, P_sat)` (wraps fiber-optics `rigrodOutput`),
+  `fourLevelSlopeEfficiency`, `tripletGainFactor` (dye), `meanSquareRadius`. Test: `tests/wave-optics-laser-resonators.test.ts`;
+  part 6 reuses it (slab, thin disk) and `optimumOutputCoupler`.
+- Solid-state page: crystal against the HR folds into L − l(1 − 1/n); R₁ now defaults to flat and is in the URL.
+  Gas page: pressure and gas select dropped (fabricated); line buttons set λ; g₀ and I_sat are inputs.
+- 365 of 437 pages tiered, 28 `knownIssue`s. **Per-page findings for parts 6–13 are in the PR #141 description**
   (`gh pr view 141`): read the part's section first, don't re-audit.
 - **User decisions (session 110), merges with redirects, 4 of 12 done:** parametric-amplification → optical-parametric-amplifier;
   fiber-laser-resonator → fiber-optics/fiber-laser; etalon-finesse → spectroscopy/etalon-fsr; chirped-pulse + pulse-compression;
@@ -24,30 +23,33 @@ Session 114: **wave-optics fix part 4** (cavities), branch `phase-4/wave-optics-
   spectroscopy/sum-frequency-gen share a module. Session 78: keep dynamic-range, stimulated-raman-microscopy, resolution apart.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: `wave-optics/cavity-mode-spacing=0.6662`,
-   `wave-optics/ring-cavity=102.4`; part 3: `wave-optics/hermite-gaussian=5.067`, `wave-optics/bessel-beam=24.22`,
-   `wave-optics/diffraction-integral=0.9075`; part 2: `wave-optics/mode-matching=36.22`, `wave-optics/spatial-filter=67.74`;
-   part 1: `wave-optics/gaussian-beam=0.2027`, `wave-optics/m2-factor=1.476`, `wave-optics/abcd-matrix=100.0000`. No release unless asked.
-2. Wave-optics fix part 5 (resonators a), then parts 6–13. Part 6's merge (fiber-laser-resonator) drops the floor in
+1. `/ship` this branch. Values for a later release check: `wave-optics/solid-state-laser-resonator=9.093`,
+   `wave-optics/dye-laser-resonator=0.5444`, `wave-optics/gas-laser-resonator=0.9399`; part 4:
+   `wave-optics/cavity-mode-spacing=0.6662`, `wave-optics/ring-cavity=102.4`; part 3: `wave-optics/hermite-gaussian=5.067`,
+   `wave-optics/bessel-beam=24.22`, `wave-optics/diffraction-integral=0.9075`; part 2: `wave-optics/mode-matching=36.22`,
+   `wave-optics/spatial-filter=67.74`; part 1: `wave-optics/gaussian-beam=0.2027`, `wave-optics/m2-factor=1.476`,
+   `wave-optics/abcd-matrix=100.0000`. No release unless asked.
+2. Wave-optics fix part 6 (resonators b), then parts 7–13. Part 6's merge (fiber-laser-resonator) drops the floor in
    `tests/calculator-pages.test.ts` to 436.
-3. Later: open findings (ROADMAP), `polarizer-types` (needs the user at the laptop with Chrome).
+3. Later: open findings (ROADMAP; new: dye/gas default constants), `polarizer-types` (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
+- **Session 115:** gas and dye gain constants are hard to source online: make them inputs, cite the defaults, log the gap.
+  `next dev` refuses a second server in the same repo (prints its PID and port): ui-check that one. ui-check flags
+  `Received NaN for the attribute` when a SimpleLineChart gets only empty series: render the chart only with data.
 - **Session 114:** a mutation test on an **untracked** file can't be undone with `git checkout`: `cp` it to the scratchpad
-  first. While `npm run check` runs, devctl queues other heavy commands (eslint) for minutes; `check` lints anyway.
-  A stick spectrum in SimpleLineChart: one series per family, points (x, 0), (x, h), (x, 0) along the baseline.
+  first. During `npm run check` devctl queues other heavy commands for minutes. A stick spectrum in SimpleLineChart: one series per family, points (x, 0), (x, h), (x, 0) along the baseline.
 - **Session 113:** Next redirects keep the query string, so `/wave-optics/laguerre-gaussian?l=3` arrives with `l=3`; the HG/LG
   page reads `p`/`l` with a NaN default to tell an old LG link from a bare one. `besselJ` costs 2|x| + 64 cosines: inside a
-  quadrature use `besselJ0Fast` (|err| < 1e-7). `cmd; echo exit $?` hides a failed gate:
-  use `(a && b); code=$?`.
+  quadrature use `besselJ0Fast` (|err| < 1e-7). `cmd; echo exit $?` hides a failed gate: use `(a && b); code=$?`.
 - **Session 112:** Crossref has only the first page of old Appl. Opt. papers: cite "Appl. Opt. 22, 658.". `node - <<'EOF'`
-  edits work (`python -` hangs). Chrome `--screenshot=` needs a `/` path; an `rm` on `"$W"/*.png` is blocked: use `${W:?}`.
+  edits work (`python -` hangs). Chrome `--screenshot=` needs a `C:/…` path (`/c/…` writes nothing); an `rm` on `"$W"/*.png` is blocked: use `${W:?}`.
   Simpson + `besselJ` is ~0.3 ms per point at 400 panels: scale panels with a/w and κa, cap the inputs that grow them.
 - **Session 111:** tiers.ts calls paraxial / Gaussian-beam models "textbook"; "exact" fits definitions (M², ISO 11146).
   `chrome --headless=new --dump-dom <url> | grep -o "<label>[^<]*<?[^<]*"` reads a hydrated value without a screenshot.
 - **Session 110:** reviewer reports arrive as agent messages and vanish on compaction: save each to a scratchpad file at
-  once. Values the reviewers quoted from memory, to verify before use: Yb:YAG σ_a ≈ 0.75e-20 cm² at 940 nm, HeNe g₀ ≈
-  0.1 /m, CO₂ 0.5–1 /m, diode fast-axis divergence 30–40°, LCLS ρ ≈ 5e-4. Kerr thin lens checked: 1/f = 8n₂PL/(πw⁴).
+  once. Unverified reviewer values: Yb:YAG σ_a ≈ 0.75e-20 cm² at 940 nm,
+  diode fast-axis divergence 30–40°, LCLS ρ ≈ 5e-4. Kerr thin lens checked: 1/f = 8n₂PL/(πw⁴).
 - **Session 107:** NIST WebBook keeps higher constants in footnotes: grep the saved HTML.
   Git Bash rewrites `/a/b` arguments to Windows paths: prefix `MSYS_NO_PATHCONV=1` (ui-check, chrome). Python has no Pillow:
   shrink screenshots with chrome `--force-device-scale-factor=0.5`. `npm run dev` touches `next-env.d.ts`: `git checkout` it.
@@ -57,9 +59,8 @@ Session 114: **wave-optics fix part 4** (cavities), branch `phase-4/wave-optics-
   colours a markers-only trace from `line.color`, not `marker.color`: give both. Book section numbers are not cited.
 - **Sessions 86–89:** run gates with `run_in_background` from the start. The merge codemod drops the last entry's trailing
   comma. **Never put Markdown backticks in a `node -e "…"` string**: bash runs them; use Write.
-- **Session 65:** probe the module (scratchpad `.ts`) before writing the test; then mutate the code once to see
-  `ℹ fail N`. A slug rename touching < 10 files: `git mv` the folder, change `href`, move the registry entry, add the
-  redirect, `rm -rf .next/types .next/dev/types`.
+- **Session 65:** probe the module before writing the test, then mutate it once to see `ℹ fail N`. A slug rename (< 10
+  files): `git mv` the folder, change `href`, move the registry entry, add the redirect, `rm -rf .next/types .next/dev/types`.
 - **Session 64:** per page, `xRaw` from `useURLState`, `x = clamp(xRaw, lo, hi, default)`, and pass `xRaw` to the input
   with the same `min`/`max`. `src/registry/calculators/detectors.ts` and `imaging.ts` are **LF**; scripts must keep line endings.
 - **Earlier:** registry/JSX text can't hold `{…}`. Reviewer numbers need a source. `useURLState` in `.map` breaks hooks.
