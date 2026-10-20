@@ -80,13 +80,25 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "cavity-ring-down",
     title: "Cavity Ring-Down Spectroscopy",
     description: "Model CRDS ring-down time, sensitivity, and finesse. Visualize exponential decay with and without sample absorption.",
-    knownIssue: "Sensitivity is advertised but not computed, and mirror reflectivity from the URL is not clamped, so values above 100 % give a growing decay.",
+    tier: "exact",
+    modelNote: "Exact decay envelope of a two-mirror cavity filled with the sample (single-mode excitation); the detection limit assumes the stated ring-down-time noise per decay and white-noise averaging.",
+    references: [
+      { citation: "O'Keefe A., Deacon D. A. G. (1988). Cavity ring-down optical spectrometer for absorption measurements using pulsed laser sources. Rev. Sci. Instrum. 59, 2544–2551.", url: "https://doi.org/10.1063/1.1139895" },
+      { citation: "Berden G., Peeters R., Meijer G. (2000). Cavity ring-down spectroscopy: experimental schemes and applications. Int. Rev. Phys. Chem. 19, 565–607.", url: "https://doi.org/10.1080/014423500750040627" },
+      { citation: "Siegman A. E. (1986). Lasers, ch. 11. University Science Books." },
+    ],
   },
   {
     slug: "conc-mirror",
     title: "Concave Mirror Throughput",
-    description: "Connes advantage and throughput for concave mirror-based spectrometers (e.g., FTIR, concave grating).",
-    knownIssue: "The finesse card shows a fixed number unrelated to the inputs, étendue is labelled arbitrary units, and the Connes advantage in the description is not computed.",
+    description: "Solid angle, f-number and slit étendue of a spherical-mirror spectrometer, with its slit-limited resolving power and the Jacquinot advantage of an FTIR of the same aperture.",
+    tier: "textbook",
+    modelNote: "Geometric optics: exact cone to the mirror rim including the sag, Lambertian slit filling the mirror, Littrow grating limited by the slit width, not by diffraction or aberrations.",
+    references: [
+      { citation: "Jacquinot P. (1954). The luminosity of spectrometers with prisms, gratings, or Fabry-Perot etalons. J. Opt. Soc. Am. 44, 761–765.", url: "https://doi.org/10.1364/JOSA.44.000761" },
+      { citation: "Smith W. J. (2008). Modern Optical Engineering, 4th ed., ch. 12 (radiometry and photometry). McGraw-Hill." },
+      { citation: "Palmer C., Loewen E. (2005). Diffraction Grating Handbook, 6th ed., ch. 2. Newport Corporation." },
+    ],
   },
   {
     slug: "dispersive-element",
@@ -125,7 +137,12 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "etalon-fsr",
     title: "Etalon Free Spectral Range",
     description: "Fabry-Pérot etalon: FSR = λ²/(2nd cos θ). Transmission follows the Airy function.",
-    knownIssue: "The transmission chart is sampled every 2 nm, so for gaps above about 50 micrometres the Airy fringes alias and the plotted peaks are wrong. The design wavelength is fixed at 1550 nm.",
+    tier: "exact",
+    modelNote: "Ideal etalon: lossless identical mirrors without reflection phase, non-dispersive gap, plane-wave illumination; absorption, flatness and beam divergence lower the real finesse.",
+    references: [
+      { citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed., §7.6.1. Cambridge University Press.", url: "https://doi.org/10.1017/CBO9781139644181" },
+      { citation: "Hecht E. (2017). Optics, 5th ed., §9.6.1. Pearson." },
+    ],
   },
   {
     slug: "fluorescence-lifetime",
@@ -227,8 +244,13 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "jacquinot",
     title: "Jacquinot Advantage",
     description: "Maximum solid angle of an FTIR interferometer, Ω = 2π/(ν̃·L) with L the maximum OPD, which sets its throughput advantage over a grating spectrometer.",
-    lede: "Maximum solid angle of an FTIR interferometer: Ω = 2π/(ν̃·L). True Jacquinot advantage = T_FT/T_G is the throughput ratio vs a grating spectrometer.",
-    knownIssue: "The value shown is the maximum solid angle 2π/(ν̃L), not the throughput advantage over a grating, and zero or negative inputs are not rejected.",
+    lede: "Field of view, field-stop size and étendue of an FTIR interferometer, and its throughput ratio to a grating spectrometer of the same resolving power.",
+    tier: "textbook",
+    modelNote: "Geometric optics: unapodized resolution 1/L, circular field stop, grating spectrometer in Littrow limited by its slit width; both instruments share the beam area.",
+    references: [
+      { citation: "Jacquinot P. (1954). The luminosity of spectrometers with prisms, gratings, or Fabry-Perot etalons. J. Opt. Soc. Am. 44, 761–765.", url: "https://doi.org/10.1364/JOSA.44.000761" },
+      { citation: "Griffiths P. R., de Haseth J. A. (2007). Fourier Transform Infrared Spectrometry, 2nd ed., ch. 7. Wiley." },
+    ],
   },
   {
     slug: "lambert-beer-law",

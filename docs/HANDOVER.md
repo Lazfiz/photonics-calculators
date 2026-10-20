@@ -1,24 +1,22 @@
-# Handover — 2026-10-20 (session 103 → session 104)
+# Handover — 2026-10-20 (session 104 → session 105)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 103 did **spectroscopy fix part 7** (FTIR) on branch `phase-4/spectroscopy-ftir` (PR after `/ship`).
-Next: **spectroscopy fix part 8** (throughput and cavities: jacquinot, conc-mirror, etalon-fsr, cavity-ring-down).
+Session 104 did **spectroscopy fix part 8** (throughput and cavities) on branch `phase-4/spectroscopy-throughput` (PR #135
+after `/ship`). Next: **spectroscopy fix part 9** (depths: absorption-depth, penetration-depth, optical-path-length, near-infrared).
 
 ## State
-- New `src/physics/fft.ts`: `nextPow2`, `fftRadix2` (in place, inverse includes 1/N), `dft` (any N via Bluestein).
-  Use it instead of O(N²) DFT loops (several old pages still have them).
-- New `src/physics/spectroscopy/ftir.ts`: `FTIR_APODIZATIONS` (boxcar, triangular, Happ–Genzel, Norton–Beer weak/medium/strong,
-  Blackman–Harris 3/4), `apodization`, `instrumentLineShape` (closed form; NB by Simpson), `ilsFwhm`, `ilsHighestSidelobe`,
-  `nominalResolution`, `singleSidedPoints`, `scanTime`, `modulationFrequency`, `lineInterferogram`, `halfVisibilityOpd`,
-  `cosineTransform`. `fourier-transform.ts`: `amplitudeSpectrum` (coherent gain), `aliasedFrequency`, `noiseFloorRms`.
-  `ftir-phase-correction.ts`: `synthesizeInterferogram`, `findZpd`, `lowResolutionPhase`, `phaseAt`, `mertz`, `forman`,
-  `uncorrectedSpectrum`, `magnitudeSpectrum`, `relativeRmsError`. Tests: `tests/spectroscopy-ftir.test.ts`.
-- URL params changed: fourier-transform `noise` is now RMS (was p-p), new `sampleRate`, `window`; ftir-resolution
-  `apodization` (URL now); michelson `sourceWidth` → `linewidth` (cm⁻¹), new `lineSpacing`, `apodization`, default
-  `nPoints` 512; phase-correction `opdPoints` = single-sided N (512–8192), new `doubleSided`, `zpdShift`,
-  `phaseOffset`, `dispersion`, `noise` (% of centreburst, replaces `phaseNoise`), `method` (mertz/forman/magnitude).
-- 333 of 445 pages tiered, 21 `knownIssue`s (all spectroscopy).
+- New `src/physics/spectroscopy/throughput.ts`: `ftsMaxSolidAngle` (2πΔν̃/ν̃, the exact cone), `ftsMaxHalfAngle`,
+  `fieldStopDiameter`, `coneSolidAngle`, `projectedSolidAngle` (π sin²α), `mirrorRimHalfAngle` (with sag),
+  `slitResolvingPower`, `jacquinotRatio` (2π f cos α/(h(sin α + sin β)); Littrow π f/(h tan θ)).
+- New `etalon.ts`: `gapAngle` (Snell), `etalonOrder`, `fsrFrequency`, `fsrWavelength`, `fwhmFrequency`, `airyFringe`
+  (ψ-grid: tan(δ/2) = tan(ψ/2)/√(1+F) puts samples on the peaks, any finesse). Reuses `thin-film/interference.ts`
+  (`coefficientOfFinesse`, `reflectingFinesse`, `airyPeakNear`).
+- New `cavity-ring-down.ts`: `roundTripLoss` (log1p sums), `ringDownTime`, `cavityFinesse` (π√ρ/(1 − ρ)),
+  `absorptionFromRingDown`, `minDetectableAbsorption`, `noiseEquivalentAbsorption`. Tests: `tests/spectroscopy-throughput.test.ts`.
+- URL params added: jacquinot `focalLength`, `beamDiameter`, `gratingFocal`, `slitHeight`, `littrowAngle`; conc-mirror
+  `littrowAngle`; etalon-fsr `wavelength` (`theta` is now the incidence angle in air); cavity-ring-down `tauNoise`, `repRate`.
+- 337 of 445 pages tiered, 17 `knownIssue`s (all spectroscopy).
 - Per-page findings, goldens and references: PR #127 description (`gh pr view 127`); read the part at hand only.
 - **User decisions (session 96):** merges with redirects (ROADMAP "Spectroscopy fix parts"). **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only when the user asks:
   `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set
@@ -27,21 +25,24 @@ Next: **spectroscopy fix part 8** (throughput and cavities: jacquinot, conc-mirr
   user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 7: `spectroscopy/ftir-resolution=0.6034` (boxcar ILS
-   FWHM, cm⁻¹), `spectroscopy/michelson-interferometer=220.6` (half-visibility OPD, µm), `spectroscopy/phase-correction=0.449`
-   (Mertz error, %); part 6: `spectroscopy/stray-light=2.699`, `spectroscopy/spectral-calibration=0.0120`; part 5:
-   `spectroscopy/grating-efficiency=501.2`, `spectroscopy/spectral-range=605.3`, `spectroscopy/dispersive-element=74.7`;
-   earlier parts: `git show 384d9995:docs/HANDOVER.md`. Don't release unless asked.
-2. Spectroscopy part 8 (ROADMAP item 8): jacquinot (golden 1000 cm⁻¹, 1 cm → 6.283e-3 sr), conc-mirror, etalon-fsr,
-   cavity-ring-down; PR #127 has the findings.
-3. Later: open findings (FSO `adaptive-optics` actuators-as-modes, part 8 leftovers, local `sinc` copies,
+1. `/ship` this branch. Values for a later release check: part 8: `spectroscopy/jacquinot=0.006283` (Ω, sr),
+   `spectroscopy/conc-mirror=28.10` (rim half-angle, °), `spectroscopy/etalon-fsr=120.1` (FSR, nm),
+   `spectroscopy/cavity-ring-down=33.35` (τ₀, µs); part 7: `spectroscopy/ftir-resolution=0.6034`,
+   `spectroscopy/michelson-interferometer=220.6`, `spectroscopy/phase-correction=0.449`; earlier parts:
+   `git show a3657cbc:docs/HANDOVER.md`. Don't release unless asked.
+2. Spectroscopy part 9 (ROADMAP item 9): absorption-depth (`silicon-absorption.ts`, Hale & Querry water), penetration-depth
+   (`tirf.ts`), optical-path-length, near-infrared; PR #127 has the findings.
+3. Later: open findings (conc-mirror/jacquinot overlap, FSO `adaptive-optics` actuators-as-modes, local `sinc` copies,
    `fluorophores.ts` cutoff, `optical-sectioning-thickness`, detectors 7b, fiber, FSO), `polarizer-types` (needs the
    user at the laptop with Chrome). Gold for SERS needs a gold dataset (none in `materials/`).
 
 ## Non-obvious facts
+- **Session 104:** Jacquinot's classic 2πf/h is the Littrow case 2 tan θ = 1 (θ = 26.57°); the general ratio is
+  2π f cos α/(h(sin α + sin β)). The FTS cone 1 − cos α = Δν̃/ν̃ gives Ω = 2πΔν̃/ν̃ exactly, not just paraxially. A
+  backup of an untracked file can't be restored with `git checkout`: copy it aside before a mutation test.
 - **Session 103:** Norton–Beer coefficients (Naylor & Tahic 2007) give FWHM ratios 1.2/1.4/1.6 exactly: a good check. The
-  Mertz ramp makes Re(C) ≈ B cos φ; in the found-ZPD frame the phase is φ + 2πσ·shift·Δx (sign!). Numeric ILS for 8
-  windows took 0.5 s: use closed forms for cosine sums. devctl blocks a whole foreground command while a gate runs.
+  Mertz ramp makes Re(C) ≈ B cos φ; in the found-ZPD frame the phase is φ + 2πσ·shift·Δx (sign!). Use closed forms for
+  cosine-sum ILS. devctl blocks a whole foreground command while a gate runs.
 - **Sessions 101–102:** fit polynomials in a scaled variable u ∈ [−1, 1]. `assert.equal(-0, 0)` fails (Object.is). In
   `sed` replacements `&` is the match and a backslash-n a newline: use Edit. eslint's `preserve-manual-memoization` fires on
   `useMemo` over derived values: drop the `useMemo`. NIST ASD DOI is DataCite (`crossref.mjs` 404); astm.org 403s,
@@ -49,13 +50,12 @@ Next: **spectroscopy fix part 8** (throughput and cavities: jacquinot, conc-mirr
 - **Session 100:** a merge can leave a chained redirect (`/a → /b` with `/b` removed): point it at the final page.
 - **Session 99:** `tests/calculator-pages.test.ts` has a page-count floor (now ≥ 440); a merge can trip it. The global
   minimum between two peak centres is often an endpoint, not the dip: `dipDepth` uses running maxima from both sides.
-  devctl queues headless Chrome behind other projects' jobs (minutes): run screenshots in the background with a fresh
-  `--user-data-dir`. A wavenumber through `toPrecision(4)` prints "2.002e+4": use `toFixed(0)` for cm⁻¹.
+  devctl queues headless Chrome behind other projects' jobs: run screenshots with a fresh `--user-data-dir`.
+  A wavenumber through `toPrecision(4)` prints "2.002e+4": use `toFixed(0)` for cm⁻¹.
 - **Sessions 95–98:** charts put the axis minimum at the data minimum, so round plotted values (6 decimals). `SimpleChart`
   colours a markers-only trace from `line.color`, not `marker.color`: give both. Book section numbers are not cited.
-- **Sessions 86–89:** devctl queues heavy commands when another project's build hogs the CPU: run gates with
-  `run_in_background` from the start. The merge codemod drops the last entry's trailing comma. **Never put Markdown
-  backticks in a `node -e "…"` string**: bash runs them; use Write. spiedigitallibrary.org samples return HTML.
+- **Sessions 86–89:** run gates with `run_in_background` from the start. The merge codemod drops the last entry's trailing
+  comma. **Never put Markdown backticks in a `node -e "…"` string**: bash runs them; use Write.
 - **Session 78:** reviewer batches of 7 pages, `timeout 60`. Crossref 429s if hit often. `tier-status.ts` > 2 min: background.
 - **Session 65:** probe the module (scratchpad `.ts`) before writing the test; then mutate the code once to see
   `ℹ fail N`. A slug rename touching < 10 files: `git mv` the folder, change `href`, move the registry entry, add the
