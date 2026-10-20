@@ -101,8 +101,13 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "diode-laser-resonator",
     title: "Diode Laser Resonator",
-    description: "Threshold gain and current, differential efficiency and far-field divergence of a Fabry–Pérot diode laser from cavity length and facet reflectivity.",
-    knownIssue: "Threshold current shows 0.0 mA because the formula uses modal gain in place of carrier density, and the fast-axis divergence is about 4 degrees instead of the usual 30 to 40.",
+    description: "Fabry–Pérot diode laser: threshold modal gain, carrier density and current, differential and slope efficiency, front-facet share, far-field divergence and mode spacing.",
+    keywords: ["laser diode threshold current", "semiconductor laser", "differential quantum efficiency", "confinement factor", "fast-axis divergence", "quantum well laser"],
+    tier: "textbook",
+    modelNote: "Γg_th = α_i + α_m with logarithmic gain g = g₀ ln(N/N_tr) and ABC recombination, uniform carriers in the active volume (no current spreading or leakage). Gain parameters and A, B, C are your epitaxy's; the defaults are typical InGaAs/GaAs values, not a datasheet. Far field from a Gaussian near field, paraxial.",
+    references: [
+      { citation: "Coldren L. A., Corzine S. W., Mašanović M. L. (2012). Diode Lasers and Photonic Integrated Circuits, 2nd ed., ch. 2 and 4. Wiley.", url: "https://doi.org/10.1002/9781118148167" },
+    ],
   },
   {
     slug: "dye-laser-resonator",
@@ -122,12 +127,6 @@ export const waveOptics: CalculatorEntry[] = [
     slug: "etalon-finesse",
     title: "Etalon / Fabry-Pérot Analysis",
     description: "Detailed etalon transmission, finesse, and spectral properties.",
-  },
-  {
-    slug: "fiber-laser-resonator",
-    title: "Fiber Laser Resonator",
-    description: "V-number, mode field diameter, threshold gain and slope efficiency of a fiber laser cavity from fiber length, core, NA and mirror reflectivities.",
-    knownIssue: "The threshold uses the signal saturation intensity with no pump absorption, and the default 10 µm core with NA 0.12 is multimode at 1064 nm (V = 3.5), outside the mode-field fit.",
   },
   {
     slug: "filamentation",
@@ -382,8 +381,16 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "slab-laser",
     title: "Zigzag Slab Laser",
-    description: "Bounce angle, temperature rise, optical path difference per bounce and slope efficiency of a zigzag slab laser from slab geometry and thermal load.",
-    knownIssue: "Slope efficiency is negative (about -42 %) at default settings, the bounce angle uses slab width instead of length, and the temperature chart peaks at 4 times the displayed rise.",
+    description: "Zigzag slab laser: bounce angle and total internal reflection, threshold and output power, slope efficiency, heat density, temperature profile and the thermal lens the zigzag cancels.",
+    keywords: ["zigzag slab", "Nd:YAG slab laser", "thermal lens", "conduction-cooled slab", "total internal reflection"],
+    tier: "textbook",
+    modelNote: "Four-level gain with uniform inversion over the slab, the zigzag beam filling the aperture W t cos θ, Rigrod output. Infinite-slab heat conduction with uniform heat density; the straight-through lens keeps only dn/dT (no stress-optic, end-bulging or edge effects). Heat fraction default from Fan (1993).",
+    references: [
+      { citation: "Eggleston J. M., Kane T. J., Kuhn K., Unternahrer J., Byer R. L. (1984). The slab geometry laser — Part I: Theory. IEEE J. Quantum Electron. 20, 289–301.", url: "https://doi.org/10.1109/JQE.1984.1072386" },
+      { citation: "Kane T. J., Eggleston J. M., Byer R. L. (1985). The slab geometry laser — Part II: Thermal effects in a finite slab. IEEE J. Quantum Electron. 21, 1195–1210.", url: "https://doi.org/10.1109/JQE.1985.1072799" },
+      { citation: "Fan T. Y. (1993). Heat generation in Nd:YAG and Yb:YAG. IEEE J. Quantum Electron. 29, 1457–1459.", url: "https://doi.org/10.1109/3.234394" },
+      { citation: "Koechner W. (2006). Solid-State Laser Engineering, 6th ed., ch. 2–3 and 7. Springer.", url: "https://doi.org/10.1007/0-387-29338-8" },
+    ],
   },
   {
     slug: "slow-light",
@@ -444,7 +451,16 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "thin-disk-laser",
     title: "Yb Thin-Disk Laser",
-    description: "Multipass pump absorption, threshold, slope efficiency, temperature rise and thermal lens of a Yb thin-disk laser from disk thickness and doping.",
-    knownIssue: "Pump absorption is about 20 times too low (15 % after 16 passes instead of over 90 %), the temperature chart is 10 000 times too high, and quasi-three-level reabsorption is ignored.",
+    description: "Yb:YAG thin-disk laser: quasi-three-level threshold inversion, multipass pump absorption with bleaching, threshold pump power, slope efficiency, output power and temperature rise through the disk.",
+    keywords: ["Yb:YAG", "thin disk laser", "quasi-three-level laser", "multipass pumping", "reabsorption", "pump bleaching"],
+    tier: "textbook",
+    modelNote: "Quasi-three-level rate equations with a top-hat pump and mode of equal area, inversion uniform through the disk and clamped above threshold; reabsorption and pump bleaching included, ASE and temperature-dependent cross-sections not. One-dimensional heat flow to the back face. Cross-section defaults are typical room-temperature Yb:YAG values: check them against your crystal.",
+    references: [
+      { citation: "Giesen A., Hügel H., Voss A., Wittig K., Brauch U., Opower H. (1994). Scalable concept for diode-pumped high-power solid-state lasers. Appl. Phys. B 58, 365–372.", url: "https://doi.org/10.1007/BF01081875" },
+      { citation: "Fan T. Y., Byer R. L. (1987). Modeling and CW operation of a quasi-three-level 946 nm Nd:YAG laser. IEEE J. Quantum Electron. 23, 605–612.", url: "https://doi.org/10.1109/JQE.1987.1073371" },
+      { citation: "Taira T., Tulloch W. M., Byer R. L. (1997). Modeling of quasi-three-level lasers and operation of cw Yb:YAG lasers. Appl. Opt. 36, 1867.", url: "https://doi.org/10.1364/AO.36.001867" },
+      { citation: "DeLoach L. D., Payne S. A., Chase L. L. et al. (1993). Evaluation of absorption and emission properties of Yb³⁺ doped crystals for laser applications. IEEE J. Quantum Electron. 29, 1179.", url: "https://doi.org/10.1109/3.214504" },
+      { citation: "Fan T. Y. (1993). Heat generation in Nd:YAG and Yb:YAG. IEEE J. Quantum Electron. 29, 1457–1459.", url: "https://doi.org/10.1109/3.234394" },
+    ],
   },
 ];

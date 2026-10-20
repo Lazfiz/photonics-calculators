@@ -1,138 +1,143 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { c, h } from "../../../physics/constants";
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, laserOutput, roundTripLoss, saturationIntensity,
+} from "../../../physics/wave-optics/laser-resonator";
+import { slabTemperatureRise, slabThermalLens, totalInternalReflection, zigzagAngle } from "../../../physics/wave-optics/slab-laser";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
+const DEG = 180 / Math.PI;
 
 export default function SlabLaserPage() {
-  const [slabWidth, setSlabWidth] = useURLState("slabWidth", 10); // mm
-  const [slabHeight, setSlabHeight] = useURLState("slabHeight", 2); // mm (thin direction)
-  const [slabLength, setSlabLength] = useURLState("slabLength", 50); // mm (propagation)
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [n_crystal, setN_crystal] = useURLState("n_crystal", 1.82);
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 808); // nm
-  const [R_oc, setR_oc] = useURLState("R_oc", 0.90);
-  const [alpha_scatter, setAlpha_scatter] = useURLState("alpha_scatter", 0.002); // cm^-1
-  const [bounces, setBounces] = useURLState("bounces", 8);
-  const [thermalLoad, setThermalLoad] = useURLState("thermalLoad", 5); // W/cm³
+  const [widthRaw, setWidth] = useURLState("slabWidth", 10); // mm
+  const [thicknessRaw, setThickness] = useURLState("slabHeight", 2); // mm, cooled direction
+  const [lengthRaw, setLength] = useURLState("slabLength", 50); // mm
+  const [bouncesRaw, setBounces] = useURLState("bounces", 8);
+  const [nRaw, setN] = useURLState("n_crystal", 1.82);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1064); // nm
+  const [pumpWavelengthRaw, setPumpWavelength] = useURLState("pumpWavelength", 808); // nm
+  const [pumpRaw, setPump] = useURLState("pump", 200); // W absorbed
+  const [etaPRaw, setEtaP] = useURLState("etaP", 0.8);
+  const [rOcRaw, setROc] = useURLState("R_oc", 0.9);
+  const [scatterRaw, setScatter] = useURLState("alpha_scatter", 0.002); // 1/cm
+  const [sigmaRaw, setSigma] = useURLState("sigma", 2.8); // 1e-19 cm²
+  const [tauRaw, setTau] = useURLState("tau", 230); // µs
+  const [heatRaw, setHeat] = useURLState("heatFraction", 0.32);
+  const [kappaRaw, setKappa] = useURLState("kappa", 14); // W/(m K)
+  const [dndTRaw, setDndT] = useURLState("dndT", 7.3); // 1e-6/K
 
-  const lambda_m = wavelength * 1e-9;
+  const W = clamp(widthRaw, 0.1, 1000, 10) * 1e-3;
+  const t = clamp(thicknessRaw, 0.05, 100, 2) * 1e-3;
+  const L = clamp(lengthRaw, 1, 2000, 50) * 1e-3;
+  const N = Math.round(clamp(bouncesRaw, 1, 1000, 8));
+  const n = clamp(nRaw, 1.01, 4, 1.82);
+  const lambda = clamp(wavelengthRaw, 300, 5000, 1064) * 1e-9;
+  const lambdaP = clamp(pumpWavelengthRaw, 200, 5000, 808) * 1e-9;
+  const pump = clamp(pumpRaw, 0, 1e6, 200);
+  const etaP = clamp(etaPRaw, 0.01, 1, 0.8);
+  const R_oc = clamp(rOcRaw, 0.01, 0.9999, 0.9);
+  const scatter = clamp(scatterRaw, 0, 10, 0.002) * 100; // 1/m
+  const sigma = clamp(sigmaRaw, 1e-4, 1e4, 2.8) * 1e-23; // m²
+  const tau = clamp(tauRaw, 1e-3, 1e6, 230) * 1e-6;
+  const heat = clamp(heatRaw, 0, 1, 0.32);
+  const kappa = clamp(kappaRaw, 0.1, 2000, 14);
+  const dndT = clamp(dndTRaw, -100, 100, 7.3) * 1e-6;
 
-  // Slab geometry - zigzag path
-  const totalPathLength = slabLength / Math.cos(Math.atan(slabHeight / (slabWidth / bounces)));
-  const bounceAngle = Math.atan(slabHeight / (slabWidth / bounces)) * 180 / Math.PI;
-  const totalBounces = bounces;
+  const theta = zigzagAngle(L, t, N);
+  const tir = totalInternalReflection(theta, n);
+  const pathLength = L / Math.cos(theta);
+  // Uniform inversion over the slab volume W t L, integrated along the zigzag L/cos θ: area A = W t cos θ.
+  const area = W * t * Math.cos(theta);
+  const internal = scatter * pathLength;
+  const delta = roundTripLoss(1, R_oc, internal);
+  const pTh = fourLevelThreshold(delta, lambdaP, sigma, tau, area, etaP);
+  const pSat = saturationIntensity(lambda, sigma, tau) * area;
+  const output = (p: number) => laserOutput(fourLevelGain(p, lambdaP, sigma, tau, area, etaP), 1, R_oc, internal, pSat);
+  const pOut = output(pump);
+  const slope = fourLevelSlopeEfficiency(lambda, lambdaP, 1, R_oc, internal, area, area, etaP);
 
-  // Thermal analysis
-  const kappa = 11; // W/(m·K) Nd:YAG
-  const dn_dT = 7.3e-6;
-  const alpha_T = 7.5e-6; // thermal expansion
-  const thickness_m = slabHeight * 1e-3;
-  const dT_avg = thermalLoad * 1e6 * thickness_m * thickness_m / (8 * kappa);
+  const Q = (heat * pump) / (W * t * L); // W/m³
+  const dTCentre = slabTemperatureRise(Q, t, kappa);
+  const lens = slabThermalLens(Q, kappa, dndT, L);
 
-  // Thermal lens power
-  const f_thermal = 1 / (dn_dT * dT_avg * totalBounces / slabLength * 0.001);
+  const pMax = Math.max(2 * pump, 1.5 * (Number.isFinite(pTh) ? pTh : 0), 1);
+  const powerCurve = Array.from({ length: 121 }, (_, i) => {
+    const p = (pMax * i) / 120;
+    return { x: round6(p), y: round6(output(p)) };
+  }).filter((p) => Number.isFinite(p.y));
+  const powerSeries = [
+    { name: "Output power", color: "#60a5fa", points: powerCurve },
+    { name: "This pump", color: "#facc15", showPoints: true, points: Number.isFinite(pOut) ? [{ x: round6(pump), y: round6(pOut) }] : [] },
+  ];
 
-  // Stress fracture limit
-  const sigma_max = 130e6; // Pa for YAG
-  const R_T = sigma_max * kappa / (alpha_T * n_crystal * dn_dT * (n_crystal - 1)); // thermal shock parameter
-  const P_max_sf = R_T * 8 * kappa * slabArea() / slabLength; // very rough
-
-  function slabArea() { return slabWidth * slabHeight * 1e-6; }
-
-  // Wavefront distortion per bounce (thermal)
-  const OPD_per_bounce = dn_dT * dT_avg * thickness_m * 1e9; // nm
-
-  // Gain
-  const sigma_em = 2.8e-23;
-  const tau_f = 230e-6;
-  const Isat = h * c / (lambda_m * sigma_em * tau_f);
-  const totalLoss = alpha_scatter * slabLength / 10 + Math.log(1 / R_oc);
-  const P_th = Isat * slabArea() * totalLoss / 2;
-
-  const eta_slope = (pumpWavelength / wavelength) * Math.log(R_oc) / totalLoss * 0.6;
-
-  // Extraction efficiency vs slab length
-  const extractVsL = useMemo(() => {
-    const Ls = Array.from({ length: 100 }, (_, i) => 10 + i * 100 / 100);
-    const etas = Ls.map(L => {
-      const loss = alpha_scatter * L / 10 + Math.log(1 / R_oc);
-      return (pumpWavelength / wavelength) * Math.log(R_oc) / loss * 0.6;
-    });
-    return [{ x: Ls, y: etas.map(e => e * 100), type: "scatter", mode: "lines", name: "η_slope (%)", line: { color: "#60a5fa", width: 2 } }];
-  }, [alpha_scatter, R_oc, pumpWavelength, wavelength]);
-
-  // Temperature profile across thin dimension
-  const tempProfile = useMemo(() => {
-    const y = Array.from({ length: 100 }, (_, i) => -1 + i * 2 / 100);
-    const T = y.map(yv => (thermalLoad * 1e6 * thickness_m * thickness_m / (2 * kappa)) * (1 - yv * yv));
-    return [{ x: y.map(yv => yv * slabHeight / 2), y: T, type: "scatter", mode: "lines", name: "ΔT (K)", line: { color: "#f87171", width: 2 } }];
-  }, [slabHeight, thermalLoad]);
-
-  // Output power vs pump
-  const piData = useMemo(() => {
-    const pumps = Array.from({ length: 100 }, (_, i) => i * 200 / 100);
-    return [
-      { x: pumps, y: pumps.map(Pp => Pp > P_th ? eta_slope * (Pp - P_th) : 0), type: "scatter", mode: "lines", name: "Output (W)", line: { color: "#60a5fa", width: 2 } },
-      { x: pumps, y: pumps.map(() => P_th), type: "scatter", mode: "lines", name: "P_th", line: { color: "#f87171", dash: "dash" } },
-    ];
-  }, [P_th, eta_slope]);
-
-  // Mode size vs bounces
-  const modeVsBounces = useMemo(() => {
-    const bs = Array.from({ length: 30 }, (_, i) => 2 + i);
-    const w_slab = bs.map(b => {
-      const angle = Math.atan(slabHeight / (slabWidth / b));
-      const effAperture = slabWidth / b;
-      return (lambda_m / (n_crystal * Math.sin(angle))) * effAperture * 1e3;
-    });
-    return [{ x: bs, y: w_slab, type: "scatter", mode: "lines", name: "Mode size (mm)", line: { color: "#a78bfa", width: 2 } }];
-  }, [slabHeight, slabWidth, wavelength, n_crystal]);
-
-  const plotLayout: any = {
-    paper_bgcolor: "#111827", plot_bgcolor: "#1f2937", font: { color: "#e5e7eb" },
-    xaxis: { gridcolor: "#374151" }, yaxis: { gridcolor: "#374151" },
-    margin: { t: 40, r: 20, b: 50, l: 60 }, legend: { orientation: "h", y: -0.25 },
-  };
-  const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
+  const profile = Number.isFinite(dTCentre)
+    ? Array.from({ length: 101 }, (_, i) => {
+        const y = (-t / 2) * (1 - (2 * i) / 100);
+        return { x: round6(y * 1e3), y: round6(slabTemperatureRise(Q, t, kappa, Math.max(-t / 2, Math.min(t / 2, y)))) };
+      })
+    : [];
+  const profileSeries = [{ name: "Temperature rise above the faces", color: "#f87171", points: profile }];
 
   return (
     <>
-            
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Slab Width (mm)" value={slabWidth} onChange={setSlabWidth} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Slab Height / Thin (mm)" value={slabHeight} onChange={setSlabHeight} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Slab Length (mm)" value={slabLength} onChange={setSlabLength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Bounces" value={bounces} onChange={setBounces} min={1} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="OC Reflectivity" value={R_oc} onChange={setR_oc} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Thermal Load (W/cm³)" value={thermalLoad} onChange={setThermalLoad} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Crystal Index" value={n_crystal} onChange={setN_crystal} /></div>
+      <h2 className="text-lg font-semibold mb-3">Slab and resonator</h2>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+        <ValidatedNumberInput label="Slab width W (mm)" value={widthRaw} onChange={setWidth} min={0.1} max={1000} step="any" />
+        <ValidatedNumberInput label="Slab thickness t (mm, cooled faces)" value={thicknessRaw} onChange={setThickness} min={0.05} max={100} step="any" />
+        <ValidatedNumberInput label="Slab length L (mm)" value={lengthRaw} onChange={setLength} min={1} max={2000} step="any" />
+        <ValidatedNumberInput label="Bounces N (crossings of t)" value={bouncesRaw} onChange={setBounces} min={1} max={1000} step="1" />
+        <ValidatedNumberInput label="Crystal index n" value={nRaw} onChange={setN} min={1.01} max={4} step="any" />
+        <ValidatedNumberInput label="Output coupler reflectance (HR = 1)" value={rOcRaw} onChange={setROc} min={0.01} max={0.9999} step="any" />
+        <ValidatedNumberInput label="Scatter loss (1/cm)" value={scatterRaw} onChange={setScatter} min={0} max={10} step="any" />
+        <ValidatedNumberInput label="Absorbed pump power (W)" value={pumpRaw} onChange={setPump} min={0} max={1e6} step="any" />
+        <ValidatedNumberInput label="Pump efficiency η_p (absorbed → upper level)" value={etaPRaw} onChange={setEtaP} min={0.01} max={1} step="any" />
+      </div>
+      <h2 className="text-lg font-semibold mb-3">Gain medium (defaults: Nd:YAG)</h2>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Laser wavelength λ (nm)" value={wavelengthRaw} onChange={setWavelength} min={300} max={5000} step="any" />
+        <ValidatedNumberInput label="Pump wavelength λ_p (nm)" value={pumpWavelengthRaw} onChange={setPumpWavelength} min={200} max={5000} step="any" />
+        <ValidatedNumberInput label="Emission cross-section σ (10⁻¹⁹ cm²)" value={sigmaRaw} onChange={setSigma} min={1e-4} max={1e4} step="any" />
+        <ValidatedNumberInput label="Upper-level lifetime τ (µs)" value={tauRaw} onChange={setTau} min={1e-3} max={1e6} step="any" />
+        <ValidatedNumberInput label="Heat fraction of the absorbed pump" value={heatRaw} onChange={setHeat} min={0} max={1} step="any" />
+        <ValidatedNumberInput label="Thermal conductivity κ (W/(m K))" value={kappaRaw} onChange={setKappa} min={0.1} max={2000} step="any" />
+        <ValidatedNumberInput label="dn/dT (10⁻⁶/K)" value={dndTRaw} onChange={setDndT} min={-100} max={100} step="any" />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">Bounce Angle</div><div className="text-xl font-bold text-blue-400">{bounceAngle.toFixed(1)}°</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">ΔT_avg</div><div className="text-xl font-bold text-red-400">{dT_avg.toFixed(1)} K</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">OPD/bounce</div><div className="text-xl font-bold text-green-400">{OPD_per_bounce.toFixed(1)} nm</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">η_slope</div><div className="text-xl font-bold text-yellow-400">{(eta_slope * 100).toFixed(1)}%</div></div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-4">
+        <ResultCard label="Zigzag angle θ" value={`${fmt(theta * DEG)}°`} subtext={`face incidence ${fmt(90 - theta * DEG)}°; critical ${fmt(Math.asin(1 / n) * DEG)}°`} tone={tir ? "blue" : "red"} />
+        <ResultCard label="Zigzag path L/cos θ" value={`${fmt(pathLength * 1e3)} mm`} subtext={`aperture W t cos θ = ${fmt(area * 1e6)} mm²`} tone="cyan" />
+        <ResultCard label="Threshold (absorbed pump)" value={`${fmt(pTh)} W`} subtext={`δ = ${fmt(delta * 100)} % round trip`} tone="orange" />
+        <ResultCard label="Output power" value={`${fmt(pOut)} W`} subtext={`slope ${fmt(slope * 100)} %; P_sat = ${fmt(pSat)} W`} tone="purple" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard label="Heat density Q" value={`${fmt(Q / 1e6)} W/cm³`} subtext={`heat fraction × pump / W t L`} tone="yellow" />
+        <ResultCard label="Centre temperature rise" value={`${fmt(dTCentre)} K`} subtext={`Q t²/(8κ); mean ${fmt((2 * dTCentre) / 3)} K`} tone="red" />
+        <ResultCard label="Straight-through thermal lens" value={`${fmt(lens)} m`} subtext="κ/((dn/dT) Q L); the zigzag cancels it to first order" tone="green" />
       </div>
 
-      <div className="bg-gray-800 rounded-lg p-4 mb-6">
-        <h3 className="font-semibold mb-3">Key Formulas</h3>
-        <div className="text-sm text-gray-300 space-y-1 font-mono">
-          <p>θ_bounce = arctan(t / (W/N))</p>
-          <p>ΔT(y) = (Q/t²κ) · (t²/4 - y²)  [parabolic]</p>
-          <p>OPD/bounce = (dn/dT) · ΔT · t</p>
-          <p>I_sat = hc / (λ·σ·τ)</p>
-        </div>
+      {!tir && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          The face incidence angle is below the critical angle: the beam leaks out of the faces instead of totally reflecting.
+          Use fewer bounces or a longer slab.
+        </p>
+      )}
+
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>θ = atan(N t/L). Four-level gain: P_th = δ h c A/(2η_p σ τ λ_p), A = W t cos θ, δ = −ln R_oc + 2α_s L/cos θ; output from Rigrod
+          with the mode filling the slab.</p>
+        <p>ΔT(y) = Q(t²/4 − y²)/(2κ). A straight-through ray sees n(y) = n₀ − (dn/dT)Qy²/(2κ), a lens f = κ/((dn/dT)QL); each zigzag
+          ray samples the whole profile, so this lens and its depolarisation cancel to first order (stress and end effects are not modelled).</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Temperature Profile (thin dimension)</h3><ChartPanel data={tempProfile} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "y (mm)" }, yaxis: { ...plotLayout.yaxis, title: "ΔT (K)" } }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Output Power vs Pump</h3><ChartPanel data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output (W)" } }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">η_slope vs Slab Length</h3><ChartPanel data={extractVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Length (mm)" }, yaxis: { ...plotLayout.yaxis, title: "η_slope (%)" } }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Mode Size vs Bounces</h3><ChartPanel data={modeVsBounces} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Bounces" }, yaxis: { ...plotLayout.yaxis, title: "Mode (mm)" } }} /></div>
+      <div className="space-y-6">
+        {powerCurve.length > 0 && <SimpleLineChart title="Output power versus absorbed pump power" xLabel="Absorbed pump power (W)" yLabel="Output power (W)" series={powerSeries} />}
+        {profile.length > 0 && <SimpleLineChart title="Temperature across the slab thickness" xLabel="Height y (mm)" yLabel="Temperature rise (K)" series={profileSeries} />}
       </div>
     </>
   );

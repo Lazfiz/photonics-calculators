@@ -1,144 +1,165 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { q, c, h } from "../../../physics/constants";
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { c } from "../../../physics/constants";
+import {
+  differentialEfficiency, facetShare, gaussianFarField, logGainCarrierDensity, mirrorLoss, modeSpacing, recombinationRate,
+  slopeEfficiency, thresholdCurrent, thresholdModalGain,
+} from "../../../physics/wave-optics/diode-laser";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
+const DEG = 180 / Math.PI;
 
 export default function DiodeLaserResonatorPage() {
-  const [cavityLength, setCavityLength] = useURLState("cavityLength", 300); // µm
-  const [stripeWidth, setStripeWidth] = useURLState("stripeWidth", 3); // µm
-  const [activeThickness, setActiveThickness] = useState(0.1); // µm
-  const [wavelength, setWavelength] = useURLState("wavelength", 980); // nm
-  const [n_eff, setN_eff] = useURLState("n_eff", 3.4);
-  const [alpha_i, setAlpha_i] = useURLState("alpha_i", 10); // cm^-1 internal loss
-  const [mirrorR1, setMirrorR1] = useURLState("mirrorR1", 0.32); // cleaved facet
-  const [mirrorR2, setMirrorR2] = useURLState("mirrorR2", 0.32);
+  const [lengthRaw, setLength] = useURLState("cavityLength", 300); // µm
+  const [stripeRaw, setStripe] = useURLState("stripeWidth", 3); // µm
+  const [thicknessRaw, setThickness] = useURLState("activeThickness", 24); // nm, total well thickness
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 980); // nm
+  const [alphaRaw, setAlpha] = useURLState("alpha_i", 10); // 1/cm
+  const [r1Raw, setR1] = useURLState("mirrorR1", 0.32); // rear facet
+  const [r2Raw, setR2] = useURLState("mirrorR2", 0.32); // front facet
+  const [gammaRaw, setGamma] = useURLState("gamma", 0.06);
+  const [etaIRaw, setEtaI] = useURLState("etaI", 0.8);
+  const [g0Raw, setG0] = useURLState("g0", 1800); // 1/cm
+  const [nTrRaw, setNTr] = useURLState("Ntr", 1.8); // 1e18 cm⁻³
+  const [aRaw, setA] = useURLState("A", 1e8); // 1/s
+  const [bRaw, setB] = useURLState("B", 1e-10); // cm³/s
+  const [cRaw, setC] = useURLState("C", 3.5e-30); // cm⁶/s
+  const [wPerpRaw, setWPerp] = useURLState("wPerp", 0.5); // µm
+  const [wParRaw, setWPar] = useURLState("wPar", 2); // µm
+  const [ngRaw, setNg] = useURLState("ng", 3.7);
 
-  const L_cm = cavityLength * 1e-4;
-  const lambda_m = wavelength * 1e-9;
-  const facetLoss1 = -Math.log(mirrorR1);
-  const facetLoss2 = -Math.log(mirrorR2);
-  const mirrorLoss = (facetLoss1 + facetLoss2) / 2;
-  const totalLoss = alpha_i + mirrorLoss / L_cm;
+  const L = clamp(lengthRaw, 20, 1e4, 300) * 1e-6;
+  const w = clamp(stripeRaw, 0.5, 500, 3) * 1e-6;
+  const d = clamp(thicknessRaw, 1, 1000, 24) * 1e-9;
+  const lambda = clamp(wavelengthRaw, 300, 3000, 980) * 1e-9;
+  const alphaI = clamp(alphaRaw, 0, 100, 10) * 100; // 1/m
+  const R1 = clamp(r1Raw, 0.001, 1, 0.32);
+  const R2 = clamp(r2Raw, 0.001, 1, 0.32);
+  const gamma = clamp(gammaRaw, 0.001, 1, 0.06);
+  const etaI = clamp(etaIRaw, 0.01, 1, 0.8);
+  const g0 = clamp(g0Raw, 1, 1e5, 1800) * 100; // 1/m
+  const nTr = clamp(nTrRaw, 0.01, 100, 1.8) * 1e24; // 1/m³
+  const A = clamp(aRaw, 0, 1e10, 1e8);
+  const B = clamp(bRaw, 0, 1e-8, 1e-10) * 1e-6; // m³/s
+  const C = clamp(cRaw, 0, 1e-27, 3.5e-30) * 1e-12; // m⁶/s
+  const wPerp = clamp(wPerpRaw, 0.05, 100, 0.5) * 1e-6;
+  const wPar = clamp(wParRaw, 0.05, 500, 2) * 1e-6;
+  const ng = clamp(ngRaw, 1, 6, 3.7);
 
-  // Threshold gain
-  const g_th = alpha_i + (1 / (2 * L_cm)) * Math.log(1 / (mirrorR1 * mirrorR2));
+  const alphaM = mirrorLoss(L, R1, R2);
+  const gTh = thresholdModalGain(alphaI, L, R1, R2);
+  const nTh = logGainCarrierDensity(gTh / gamma, g0, nTr);
+  const iTh = thresholdCurrent(w * d * L, nTh, A, B, C, etaI);
+  const jTh = iTh / (w * L); // A/m²
+  const tauN = nTh / recombinationRate(nTh, A, B, C);
+  const etaD = differentialEfficiency(etaI, alphaI, alphaM);
+  const slope = slopeEfficiency(etaD, lambda);
+  const front = facetShare(R1, R2);
+  const fast = gaussianFarField(lambda, wPerp);
+  const slow = gaussianFarField(lambda, wPar);
+  const dLambda = modeSpacing(lambda, ng, L);
 
-  // Threshold current density
-  const d_cm = activeThickness * 1e-4;
-  const eta_i = 0.8; // internal quantum efficiency
-  const Gamma = 0.02; // confinement factor
-  const tau_n = 2e-9; // carrier lifetime (s) — typical for GaAs
-  const J_th = q * d_cm * g_th / (Gamma * eta_i * tau_n); // A/cm²
+  const iMax = Number.isFinite(iTh) ? Math.max(5 * iTh, 1e-3) : 0;
+  const liTotal = iMax > 0
+    ? Array.from({ length: 121 }, (_, i) => {
+        const I = (iMax * i) / 120;
+        return { x: round6(I * 1e3), y: round6(Math.max(0, slope * (I - iTh)) * 1e3) };
+      })
+    : [];
+  const liSeries = [
+    { name: "Both facets", color: "#60a5fa", points: liTotal },
+    { name: "Front facet (R₂)", color: "#34d399", dashed: true, points: Number.isFinite(front) ? liTotal.map((p) => ({ x: p.x, y: round6(p.y * front) })) : [] },
+  ];
 
-  // Threshold current
-  const stripe_cm = stripeWidth * 1e-4;
-  const I_th = J_th * stripe_cm * cavityLength * 1e-4;
+  // I_th(L): the mirror loss falls as 1/L while the pumped volume grows as L, so the threshold current has a minimum.
+  const lengthCurve = Array.from({ length: 160 }, (_, i) => {
+    const Lc = (50 + (i * 3950) / 159) * 1e-6;
+    const N = logGainCarrierDensity(thresholdModalGain(alphaI, Lc, R1, R2) / gamma, g0, nTr);
+    return { x: round6(Lc * 1e6), y: round6(thresholdCurrent(w * d * Lc, N, A, B, C, etaI) * 1e3) };
+  }).filter((p) => Number.isFinite(p.y));
+  const lengthSeries = [
+    { name: "Threshold current", color: "#f97316", points: lengthCurve },
+    { name: "This cavity", color: "#facc15", showPoints: true, points: Number.isFinite(iTh) ? [{ x: round6(L * 1e6), y: round6(iTh * 1e3) }] : [] },
+  ];
 
-  // External differential quantum efficiency
-  const eta_d = eta_i * mirrorLoss / (alpha_i * L_cm + mirrorLoss);
-
-  // Slope efficiency (optical): dP/dI = η_d × hc/(qλ) [W/A]
-  const eta_slope = eta_d * (h * c / (q * lambda_m)); // P_opt / I in W/A
-
-  // Series resistance and thermal
-  const V_j = 1.1; // junction voltage
-  const P_elec = I_th * V_j;
-
-  // L-I curve
-  const liData = useMemo(() => {
-    const currents = Array.from({ length: 150 }, (_, i) => i * 200 / 150); // mA
-    const Popt = currents.map(I => I > I_th * 1000 ? eta_slope * (I - I_th * 1000) * 1e-3 * 1e3 : 0); // W/A × mA × 1e-3 → W, ×1e3 → mW
-    const Pmax = Math.max(...Popt);
-    return [
-      { x: currents, y: Popt, type: "scatter", mode: "lines", name: "Output Power (mW)", line: { color: "#60a5fa", width: 2 } },
-      { x: currents, y: currents.map(() => I_th * 1000), type: "scatter", mode: "lines", name: "I_th", line: { color: "#f87171", dash: "dash" } },
-    ];
-  }, [I_th, eta_slope]);
-
-  // Threshold gain vs cavity length
-  const gthVsL = useMemo(() => {
-    const Ls = Array.from({ length: 100 }, (_, i) => 50 + i * 1500 / 100);
-    const gths = Ls.map(L => {
-      const Lc = L * 1e-4;
-      return alpha_i + (1 / (2 * Lc)) * Math.log(1 / (mirrorR1 * mirrorR2));
-    });
-    return [{ x: Ls, y: gths, type: "scatter", mode: "lines", name: "g_th (cm⁻¹)", line: { color: "#34d399", width: 2 } }];
-  }, [alpha_i, mirrorR1, mirrorR2]);
-
-  // η_d vs cavity length
-  const etaVsL = useMemo(() => {
-    const Ls = Array.from({ length: 100 }, (_, i) => 50 + i * 1500 / 100);
-    const etas = Ls.map(L => {
-      const Lc = L * 1e-4;
-      const ml = (1 / (2 * Lc)) * Math.log(1 / (mirrorR1 * mirrorR2));
-      return eta_i * ml / (alpha_i + ml);
-    });
-    return [{ x: Ls, y: etas.map(e => e * 100), type: "scatter", mode: "lines", name: "η_d (%)", line: { color: "#a78bfa", width: 2 } }];
-  }, [alpha_i, mirrorR1, mirrorR2]);
-
-  // Far-field divergence: use effective mode size (active/Gamma for perpendicular)
-  const w_perp = activeThickness * 1e-6 / Gamma; // effective mode size in m (perpendicular)
-  const w_par = stripeWidth * 1e-6; // m (parallel)
-  const theta_perp = lambda_m / (Math.PI * w_perp) * (180 / Math.PI);
-  const theta_par = lambda_m / (Math.PI * w_par) * (180 / Math.PI);
-
-  // Far field pattern
-  const farFieldData = useMemo(() => {
-    const angles = Array.from({ length: 200 }, (_, i) => -45 + i * 90 / 200);
-    const I_perp = angles.map(a => Math.pow(Math.cos(a * Math.PI / 180), 2) * Math.exp(-Math.pow(a / (theta_perp / 2), 2)));
-    const I_par = angles.map(a => Math.pow(Math.cos(a * Math.PI / 180), 2) * Math.exp(-Math.pow(a / (theta_par / 2), 2)));
-    return [
-      { x: angles, y: I_perp, type: "scatter", mode: "lines", name: "⊥ (fast axis)", line: { color: "#60a5fa", width: 2 } },
-      { x: angles, y: I_par, type: "scatter", mode: "lines", name: "∥ (slow axis)", line: { color: "#fbbf24", width: 2 } },
-    ];
-  }, [theta_perp, theta_par]);
-
-  const plotLayout: any = {
-    paper_bgcolor: "#111827", plot_bgcolor: "#1f2937", font: { color: "#e5e7eb" },
-    xaxis: { gridcolor: "#374151" }, yaxis: { gridcolor: "#374151" },
-    margin: { t: 40, r: 20, b: 50, l: 60 }, legend: { orientation: "h", y: -0.25 },
-  };
-  const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
+  const farField = (half: number) =>
+    Number.isFinite(half)
+      ? Array.from({ length: 181 }, (_, i) => {
+          const t = (-90 + i) / DEG;
+          return { x: -90 + i, y: round6(Math.exp((-2 * t * t) / (half * half))) };
+        })
+      : [];
+  const farSeries = [
+    { name: "Fast axis (⊥)", color: "#60a5fa", points: farField(fast.halfAngle) },
+    { name: "Slow axis (∥)", color: "#fbbf24", points: farField(slow.halfAngle) },
+  ];
 
   return (
     <>
-            
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Cavity Length (µm)" value={cavityLength} onChange={setCavityLength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Stripe Width (µm)" value={stripeWidth} onChange={setStripeWidth} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Active Thickness (µm)" value={activeThickness} onChange={setActiveThickness} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Internal Loss (cm⁻¹)" value={alpha_i} onChange={setAlpha_i} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Facet R₁" value={mirrorR1} onChange={setMirrorR1} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Facet R₂" value={mirrorR2} onChange={setMirrorR2} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Effective Index" value={n_eff} onChange={setN_eff} /></div>
+      <h2 className="text-lg font-semibold mb-3">Cavity</h2>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+        <ValidatedNumberInput label="Cavity length L (µm)" value={lengthRaw} onChange={setLength} min={20} max={1e4} step="any" />
+        <ValidatedNumberInput label="Stripe width w (µm)" value={stripeRaw} onChange={setStripe} min={0.5} max={500} step="any" />
+        <ValidatedNumberInput label="Rear facet reflectance R₁" value={r1Raw} onChange={setR1} min={0.001} max={1} step="any" />
+        <ValidatedNumberInput label="Front facet reflectance R₂" value={r2Raw} onChange={setR2} min={0.001} max={1} step="any" />
+        <ValidatedNumberInput label="Internal loss α_i (1/cm)" value={alphaRaw} onChange={setAlpha} min={0} max={100} step="any" />
+        <ValidatedNumberInput label="Wavelength λ (nm)" value={wavelengthRaw} onChange={setWavelength} min={300} max={3000} step="any" />
+        <ValidatedNumberInput label="Group index n_g" value={ngRaw} onChange={setNg} min={1} max={6} step="any" />
+      </div>
+      <h2 className="text-lg font-semibold mb-3">Active region (your epitaxy; defaults: three 8 nm InGaAs wells)</h2>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+        <ValidatedNumberInput label="Active thickness d (nm, all wells)" value={thicknessRaw} onChange={setThickness} min={1} max={1000} step="any" />
+        <ValidatedNumberInput label="Confinement factor Γ" value={gammaRaw} onChange={setGamma} min={0.001} max={1} step="any" />
+        <ValidatedNumberInput label="Injection efficiency η_i" value={etaIRaw} onChange={setEtaI} min={0.01} max={1} step="any" />
+        <ValidatedNumberInput label="Gain coefficient g₀ (1/cm)" value={g0Raw} onChange={setG0} min={1} max={1e5} step="any" />
+        <ValidatedNumberInput label="Transparency density N_tr (10¹⁸ cm⁻³)" value={nTrRaw} onChange={setNTr} min={0.01} max={100} step="any" />
+        <ValidatedNumberInput label="Defect recombination A (1/s)" value={aRaw} onChange={setA} min={0} max={1e10} step="any" />
+        <ValidatedNumberInput label="Radiative B (cm³/s)" value={bRaw} onChange={setB} min={0} max={1e-8} step="any" />
+        <ValidatedNumberInput label="Auger C (cm⁶/s)" value={cRaw} onChange={setC} min={0} max={1e-27} step="any" />
+      </div>
+      <h2 className="text-lg font-semibold mb-3">Near field (1/e² intensity radius of the guided mode)</h2>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Fast-axis mode radius w⊥ (µm)" value={wPerpRaw} onChange={setWPerp} min={0.05} max={100} step="any" />
+        <ValidatedNumberInput label="Slow-axis mode radius w∥ (µm)" value={wParRaw} onChange={setWPar} min={0.05} max={500} step="any" />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">g_th</div><div className="text-xl font-bold text-blue-400">{g_th.toFixed(1)} cm⁻¹</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">I_th</div><div className="text-xl font-bold text-green-400">{(I_th * 1000).toFixed(1)} mA</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">η_d</div><div className="text-xl font-bold text-yellow-400">{(eta_d * 100).toFixed(1)}%</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">θ⊥ (FWHM)</div><div className="text-xl font-bold text-red-400">{theta_perp.toFixed(1)}°</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">θ∥ (FWHM)</div><div className="text-xl font-bold text-purple-400">{theta_par.toFixed(1)}°</div></div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-4">
+        <ResultCard label="Threshold modal gain Γg_th" value={`${fmt(gTh / 100)} 1/cm`} subtext={`α_i + α_m, mirror loss α_m = ${fmt(alphaM / 100)} 1/cm`} tone="blue" />
+        <ResultCard label="Threshold carrier density" value={`${fmt(nTh / 1e24)} × 10¹⁸ cm⁻³`} subtext={`material gain g_th = ${fmt(gTh / gamma / 100)} 1/cm; lifetime ${fmt(tauN * 1e9)} ns`} tone="cyan" />
+        <ResultCard label="Threshold current I_th" value={`${fmt(iTh * 1e3)} mA`} subtext={`J_th = ${fmt(jTh / 1e4)} A/cm²`} tone="green" />
+        <ResultCard label="Differential efficiency η_d" value={`${fmt(etaD * 100)} %`} subtext={`η_i α_m/(α_i + α_m), both facets`} tone="yellow" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard label="Slope efficiency" value={`${fmt(slope)} W/A`} subtext={`${fmt(front * 100)} % of it from the front facet`} tone="purple" />
+        <ResultCard label="Fast-axis divergence θ⊥" value={`${fmt(fast.fwhm * DEG)}° FWHM`} subtext={`1/e² half-angle ${fmt(fast.halfAngle * DEG)}°`} tone="red" />
+        <ResultCard label="Slow-axis divergence θ∥" value={`${fmt(slow.fwhm * DEG)}° FWHM`} subtext={`1/e² half-angle ${fmt(slow.halfAngle * DEG)}°`} tone="orange" />
+        <ResultCard label="Longitudinal mode spacing" value={`${fmt(dLambda * 1e9)} nm`} subtext={`λ²/(2n_gL); c/(2n_gL) = ${fmt(c / (2 * ng * L) / 1e9)} GHz`} tone="cyan" />
       </div>
 
-      <div className="bg-gray-800 rounded-lg p-4 mb-6">
-        <h3 className="font-semibold mb-3">Key Formulas</h3>
-        <div className="text-sm text-gray-300 space-y-1 font-mono">
-          <p>g_th = α_i + (1/2L)·ln(1/(R₁R₂))</p>
-          <p>J_th = q·d·g_th / (Γ·η_i)</p>
-          <p>η_d = η_i · α_m / (α_i·L + α_m), α_m = (1/2L)·ln(1/(R₁R₂))</p>
-          <p>θ ≈ λ / (π·w₀) [rad]</p>
-        </div>
+      {!Number.isFinite(nTh) && Number.isFinite(gTh) && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          The material gain needed, {fmt(gTh / gamma / 100)} 1/cm, is more than 20 g₀: the active region cannot reach threshold in
+          this cavity. Lengthen it, raise the facet reflectance or add wells.
+        </p>
+      )}
+
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>Γg_th = α_i + ln(1/(R₁R₂))/(2L); g = g₀ ln(N/N_tr) gives N_th = N_tr e^(g_th/g₀).</p>
+        <p>I_th = qwdL(AN_th + BN_th² + CN_th³)/η_i; above threshold P = η_d(hc/qλ)(I − I_th), η_d = η_i α_m/(α_i + α_m).</p>
+        <p>Front share (1 − R₂)√R₁/((1 − R₂)√R₁ + (1 − R₁)√R₂). Far field of a Gaussian near field: θ₀ = atan(λ/πw), FWHM = √(2 ln 2) θ₀;
+          for w⊥ below λ it underestimates the true fast-axis divergence.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">L-I Curve</h3><ChartPanel data={liData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Current (mA)" }, yaxis: { ...plotLayout.yaxis, title: "Power (mW)" } }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Far-Field Pattern</h3><ChartPanel data={farFieldData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Angle (°)" }, yaxis: { ...plotLayout.yaxis, title: "Intensity (a.u.)" } }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Threshold Gain vs Cavity Length</h3><ChartPanel data={gthVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "L (µm)" }, yaxis: { ...plotLayout.yaxis, title: "g_th (cm⁻¹)" } }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">η_d vs Cavity Length</h3><ChartPanel data={etaVsL} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "L (µm)" }, yaxis: { ...plotLayout.yaxis, title: "η_d (%)" } }} /></div>
+      <div className="space-y-6">
+        {liTotal.length > 0 && <SimpleLineChart title="Light–current curve" xLabel="Current (mA)" yLabel="Output power (mW)" series={liSeries} />}
+        {lengthCurve.length > 0 && <SimpleLineChart title="Threshold current versus cavity length" xLabel="Cavity length (µm)" yLabel="Threshold current (mA)" series={lengthSeries} />}
+        {farSeries[0].points.length > 0 && <SimpleLineChart title="Far-field intensity" xLabel="Angle (°)" yLabel="Relative intensity" series={farSeries} />}
       </div>
     </>
   );

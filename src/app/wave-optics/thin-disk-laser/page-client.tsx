@@ -1,131 +1,157 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { c, h } from "../../../physics/constants";
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { roundTripLoss } from "../../../physics/wave-optics/laser-resonator";
+import {
+  diskTemperatureRise, multipassAbsorption, pumpAbsorption, quasiThreeLevelSlope, quasiThreeLevelThreshold, thresholdInversion,
+} from "../../../physics/wave-optics/quasi-three-level";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
+
+// Yttrium sites in YAG, 1.38e22 cm⁻³: 1 at.% doping = 1.38e20 ions/cm³ (Koechner, Solid-State Laser Engineering, ch. 2).
+const YAG_SITES = 1.38e28;
 
 export default function ThinDiskLaserPage() {
-  const [diskThickness, setDiskThickness] = useURLState("diskThickness", 200); // µm
-  const [diskDiameter, setDiskDiameter] = useURLState("diskDiameter", 10); // mm
-  const [wavelength, setWavelength] = useURLState("wavelength", 1030); // nm
-  const [numPasses, setNumPasses] = useURLState("numPasses", 16);
-  const [pumpSpotDiameter, setPumpSpotDiameter] = useURLState("pumpSpotDiameter", 3); // mm
-  const [R_oc, setR_oc] = useURLState("R_oc", 0.97);
-  const [alpha_disk, setAlpha_disk] = useURLState("alpha_disk", 0.01); // cm^-1
-  const [pumpWavelength, setPumpWavelength] = useURLState("pumpWavelength", 940); // nm
-  const [Yb_concentration, setYb_concentration] = useURLState("Yb_concentration", 10); // at.%
-  const [T_disk, setT_disk] = useURLState("T_disk", 25); // °C surface temp rise
+  const [thicknessRaw, setThickness] = useURLState("diskThickness", 200); // µm
+  const [diameterRaw, setDiameter] = useURLState("diskDiameter", 10); // mm
+  const [spotRaw, setSpot] = useURLState("pumpSpotDiameter", 3); // mm
+  const [dopingRaw, setDoping] = useURLState("Yb_concentration", 10); // at.%
+  const [pumpPassesRaw, setPumpPasses] = useURLState("numPasses", 16);
+  const [laserPassesRaw, setLaserPasses] = useURLState("laserPasses", 2);
+  const [pumpRaw, setPump] = useURLState("pump", 200); // W incident
+  const [rOcRaw, setROc] = useURLState("R_oc", 0.97);
+  const [lossRaw, setLoss] = useURLState("loss", 1); // % per round trip
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1030); // nm
+  const [pumpWavelengthRaw, setPumpWavelength] = useURLState("pumpWavelength", 940); // nm
+  const [sigmaERaw, setSigmaE] = useURLState("sigmaE", 2.0); // 1e-20 cm² at λ
+  const [sigmaARaw, setSigmaA] = useURLState("sigmaA", 0.11); // at λ
+  const [sigmaAPRaw, setSigmaAP] = useURLState("sigmaAP", 0.75); // at λ_p
+  const [sigmaEPRaw, setSigmaEP] = useURLState("sigmaEP", 0.16); // at λ_p
+  const [tauRaw, setTau] = useURLState("tau", 0.95); // ms
+  const [heatRaw, setHeat] = useURLState("heatFraction", 0.11);
+  const [kappaRaw, setKappa] = useURLState("kappa", 14); // W/(m K)
 
-  const diskThick_cm = diskThickness * 1e-4;
-  const pumpArea = Math.PI * Math.pow(pumpSpotDiameter / 2 * 1e-3, 2);
-  const diskArea = Math.PI * Math.pow(diskDiameter / 2 * 1e-3, 2);
+  const d = clamp(thicknessRaw, 10, 5000, 200) * 1e-6;
+  const diskD = clamp(diameterRaw, 0.1, 1000, 10) * 1e-3;
+  const spotD = clamp(spotRaw, 0.01, 1000, 3) * 1e-3;
+  const N = clamp(dopingRaw, 0.01, 100, 10) * 0.01 * YAG_SITES;
+  const M = Math.round(clamp(pumpPassesRaw, 1, 100, 16));
+  const m = Math.round(clamp(laserPassesRaw, 1, 100, 2));
+  const pump = clamp(pumpRaw, 0, 1e6, 200);
+  const R_oc = clamp(rOcRaw, 0.01, 0.9999, 0.97);
+  const otherLoss = -Math.log(1 - clamp(lossRaw, 0, 50, 1) / 100); // nepers per round trip
+  const lambda = clamp(wavelengthRaw, 300, 5000, 1030) * 1e-9;
+  const lambdaP = clamp(pumpWavelengthRaw, 200, 5000, 940) * 1e-9;
+  const sigmaE = clamp(sigmaERaw, 1e-4, 1e4, 2.0) * 1e-24; // m²
+  const sigmaA = clamp(sigmaARaw, 0, 1e4, 0.11) * 1e-24;
+  const sigmaAP = clamp(sigmaAPRaw, 1e-4, 1e4, 0.75) * 1e-24;
+  const sigmaEP = clamp(sigmaEPRaw, 0, 1e4, 0.16) * 1e-24;
+  const tau = clamp(tauRaw, 1e-4, 1e4, 0.95) * 1e-3;
+  const heat = clamp(heatRaw, 0, 1, 0.11);
+  const kappa = clamp(kappaRaw, 0.1, 2000, 14);
 
-  // Absorption per pass (Bouguer-Lambert)
-  const alpha_abs = 0.05 * Yb_concentration; // rough: cm^-1 at peak
-  const singlePassAbs = 1 - Math.exp(-alpha_abs * diskThick_cm);
-  const totalAbsorption = 1 - Math.pow(1 - singlePassAbs, numPasses);
+  const area = Math.PI * (spotD / 2) ** 2;
+  const delta = roundTripLoss(1, R_oc, otherLoss / 2);
+  const beta = thresholdInversion(delta, m, d, N, sigmaE, sigmaA);
+  const betaTr = sigmaA / (sigmaA + sigmaE);
+  const betaBleach = sigmaAP / (sigmaAP + sigmaEP);
+  const alphaUnpumped = pumpAbsorption(N, sigmaAP, sigmaEP, 0);
+  const alphaTh = beta <= 1 ? pumpAbsorption(N, sigmaAP, sigmaEP, beta) : NaN;
+  const etaAbs = multipassAbsorption(alphaTh, d, M);
+  const pTh = quasiThreeLevelThreshold(N, d, beta, area, lambdaP, tau, etaAbs);
+  const slope = quasiThreeLevelSlope(etaAbs, lambdaP, lambda, R_oc, delta);
+  const pOut = Number.isFinite(pTh) ? Math.max(0, slope * (pump - pTh)) : NaN;
+  const absorbedIntensity = (etaAbs * pump) / area;
+  const dT = diskTemperatureRise(absorbedIntensity, heat, d, kappa);
+  const reachable = Number.isFinite(pTh);
 
-  // Saturation intensity
-  const sigma_em = 3e-25; // m² Yb:YAG at 1030nm
-  const tau = 0.95e-3;
-  const Isat = h * c / (wavelength * 1e-9 * sigma_em * tau);
+  const passCurve = (alpha: number) =>
+    Number.isFinite(alpha) ? Array.from({ length: 40 }, (_, i) => ({ x: i + 1, y: round6(multipassAbsorption(alpha, d, i + 1) * 100) })) : [];
+  const passSeries = [
+    { name: "At the threshold inversion", color: "#60a5fa", points: passCurve(alphaTh) },
+    { name: "Unpumped disk", color: "#9ca3af", dashed: true, points: passCurve(alphaUnpumped) },
+    { name: "This module", color: "#facc15", showPoints: true, points: Number.isFinite(etaAbs) ? [{ x: M, y: round6(etaAbs * 100) }] : [] },
+  ];
 
-  // Threshold (simplified)
-  const outputLoss = -Math.log(R_oc);
-  const P_th = Isat * pumpArea * outputLoss / (2 * totalAbsorption);
-
-  // Thermal lens
-  const dn_dT = 7.3e-6; // K^-1 Yb:YAG
-  const thermalLensPower = dn_dT * T_disk * diskThickness * 1e-6 / (pumpArea / Math.PI * 1e-6);
-
-  // Slope efficiency
-  const eta_quantum = pumpWavelength / wavelength;
-  const eta_absorption = totalAbsorption;
-  const eta_stokes = wavelength / pumpWavelength;
-  const eta_slope = eta_quantum * outputLoss / (outputLoss + alpha_disk * diskThick_cm + 0.02);
-
-  // Max extraction efficiency vs number of passes
-  const absVsPasses = useMemo(() => {
-    const passes = Array.from({ length: 50 }, (_, i) => 1 + i * 40 / 50);
-    const absorption = passes.map(n => (1 - Math.pow(1 - singlePassAbs, n)) * 100);
-    return [{ x: passes, y: absorption, type: "scatter", mode: "lines", name: "Total Absorption (%)", line: { color: "#60a5fa", width: 2 } }];
-  }, [singlePassAbs]);
-
-  // Output power vs pump
-  const piData = useMemo(() => {
-    const pumps = Array.from({ length: 100 }, (_, i) => i * 500 / 100);
-    return [
-      { x: pumps, y: pumps.map(Pp => Pp > P_th ? eta_slope * (Pp - P_th) : 0), type: "scatter", mode: "lines", name: "Output (W)", line: { color: "#60a5fa", width: 2 } },
-      { x: pumps, y: pumps.map(() => P_th), type: "scatter", mode: "lines", name: "Threshold", line: { color: "#f87171", dash: "dash" } },
-    ];
-  }, [P_th, eta_slope]);
-
-  // Temperature vs pump intensity
-  const tempData = useMemo(() => {
-    const intensities = Array.from({ length: 100 }, (_, i) => i * 20 / 100); // kW/cm²
-    const kappa = 11; // W/(m·K) YAG
-    const temps = intensities.map(I => I * 1e7 * diskThickness * 1e-6 / (2 * kappa) * 1e4);
-    return [{ x: intensities, y: temps, type: "scatter", mode: "lines", name: "ΔT (K)", line: { color: "#f87171", width: 2 } }];
-  }, [diskThickness]);
-
-  // Thermal lens vs pump power
-  const thermalLensData = useMemo(() => {
-    const powers = Array.from({ length: 100 }, (_, i) => i * 500 / 100);
-    const f_th = powers.map(P => {
-      const I = P / pumpArea;
-      const kappa = 11;
-      const dT = I * diskThickness * 1e-6 / (2 * kappa);
-      const f = pumpSpotDiameter * 1e-3 / (4 * dn_dT * dT * (1.5 - 1) * diskThickness * 1e-6 / (pumpSpotDiameter * 1e-3));
-      return f > 0 ? f : 0;
-    });
-    return [{ x: powers, y: f_th, type: "scatter", mode: "lines", name: "f_thermal (m)", line: { color: "#a78bfa", width: 2 } }];
-  }, [diskThickness, pumpSpotDiameter]);
-
-  const plotLayout: any = {
-    paper_bgcolor: "#111827", plot_bgcolor: "#1f2937", font: { color: "#e5e7eb" },
-    xaxis: { gridcolor: "#374151" }, yaxis: { gridcolor: "#374151" },
-    margin: { t: 40, r: 20, b: 50, l: 60 }, legend: { orientation: "h", y: -0.25 },
-  };
-  const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
+  const pMax = Math.max(2 * pump, reachable ? 1.5 * pTh : 0, 1);
+  const pumpGrid = Array.from({ length: 121 }, (_, i) => (pMax * i) / 120);
+  const powerSeries = [
+    { name: "Output power", color: "#a78bfa", points: reachable ? pumpGrid.map((p) => ({ x: round6(p), y: round6(Math.max(0, slope * (p - pTh))) })) : [] },
+    { name: "This pump", color: "#facc15", showPoints: true, points: Number.isFinite(pOut) ? [{ x: round6(pump), y: round6(pOut) }] : [] },
+  ];
+  const tempSeries = [
+    {
+      name: "Front-to-back temperature rise",
+      color: "#f87171",
+      points: Number.isFinite(etaAbs) ? pumpGrid.map((p) => ({ x: round6(p), y: round6(diskTemperatureRise((etaAbs * p) / area, heat, d, kappa)) })) : [],
+    },
+  ];
 
   return (
     <>
-            
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Disk Thickness (µm)" value={diskThickness} onChange={setDiskThickness} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Disk Diameter (mm)" value={diskDiameter} onChange={setDiskDiameter} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Laser λ (nm)" value={wavelength} onChange={setWavelength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Pump λ (nm)" value={pumpWavelength} onChange={setPumpWavelength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Number of Passes" value={numPasses} onChange={setNumPasses} min={1} max={64} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Pump Spot Ø (mm)" value={pumpSpotDiameter} onChange={setPumpSpotDiameter} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="OC Reflectivity" value={R_oc} onChange={setR_oc} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Yb Concentration (at.%)" value={Yb_concentration} onChange={setYb_concentration} /></div>
+      <h2 className="text-lg font-semibold mb-3">Disk, pump module and resonator</h2>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+        <ValidatedNumberInput label="Disk thickness d (µm)" value={thicknessRaw} onChange={setThickness} min={10} max={5000} step="any" />
+        <ValidatedNumberInput label="Disk diameter (mm)" value={diameterRaw} onChange={setDiameter} min={0.1} max={1000} step="any" />
+        <ValidatedNumberInput label="Pump spot diameter (mm, top hat)" value={spotRaw} onChange={setSpot} min={0.01} max={1000} step="any" />
+        <ValidatedNumberInput label="Yb doping (at.%)" value={dopingRaw} onChange={setDoping} min={0.01} max={100} step="any" />
+        <ValidatedNumberInput label="Pump passes through the disk M" value={pumpPassesRaw} onChange={setPumpPasses} min={1} max={100} step="1" />
+        <ValidatedNumberInput label="Laser passes per round trip m (2: disk as end mirror)" value={laserPassesRaw} onChange={setLaserPasses} min={1} max={100} step="1" />
+        <ValidatedNumberInput label="Incident pump power (W)" value={pumpRaw} onChange={setPump} min={0} max={1e6} step="any" />
+        <ValidatedNumberInput label="Output coupler reflectance" value={rOcRaw} onChange={setROc} min={0.01} max={0.9999} step="any" />
+        <ValidatedNumberInput label="Other loss per round trip (%)" value={lossRaw} onChange={setLoss} min={0} max={50} step="any" />
+      </div>
+      <h2 className="text-lg font-semibold mb-3">Gain medium (defaults: Yb:YAG at room temperature; check them for your crystal)</h2>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Laser wavelength λ (nm)" value={wavelengthRaw} onChange={setWavelength} min={300} max={5000} step="any" />
+        <ValidatedNumberInput label="Pump wavelength λ_p (nm)" value={pumpWavelengthRaw} onChange={setPumpWavelength} min={200} max={5000} step="any" />
+        <ValidatedNumberInput label="Emission σ_e at λ (10⁻²⁰ cm²)" value={sigmaERaw} onChange={setSigmaE} min={1e-4} max={1e4} step="any" />
+        <ValidatedNumberInput label="Absorption σ_a at λ (10⁻²⁰ cm²)" value={sigmaARaw} onChange={setSigmaA} min={0} max={1e4} step="any" />
+        <ValidatedNumberInput label="Absorption σ_ap at λ_p (10⁻²⁰ cm²)" value={sigmaAPRaw} onChange={setSigmaAP} min={1e-4} max={1e4} step="any" />
+        <ValidatedNumberInput label="Emission σ_ep at λ_p (10⁻²⁰ cm²)" value={sigmaEPRaw} onChange={setSigmaEP} min={0} max={1e4} step="any" />
+        <ValidatedNumberInput label="Upper-level lifetime τ (ms)" value={tauRaw} onChange={setTau} min={1e-4} max={1e4} step="any" />
+        <ValidatedNumberInput label="Heat fraction of the absorbed pump" value={heatRaw} onChange={setHeat} min={0} max={1} step="any" />
+        <ValidatedNumberInput label="Thermal conductivity κ (W/(m K))" value={kappaRaw} onChange={setKappa} min={0.1} max={2000} step="any" />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">Single-Pass Abs.</div><div className="text-xl font-bold text-blue-400">{(singlePassAbs * 100).toFixed(1)}%</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">Total Absorption</div><div className="text-xl font-bold text-green-400">{(totalAbsorption * 100).toFixed(1)}%</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">P_th</div><div className="text-xl font-bold text-red-400">{P_th.toFixed(1)} W</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">η_slope</div><div className="text-xl font-bold text-yellow-400">{(eta_slope * 100).toFixed(1)}%</div></div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-4">
+        <ResultCard label="Threshold inversion β_th" value={`${fmt(beta * 100)} %`} subtext={`transparency ${fmt(betaTr * 100)} %; pump bleaches at ${fmt(betaBleach * 100)} %`} tone="blue" />
+        <ResultCard label="Pump absorbed" value={`${fmt(etaAbs * 100)} %`} subtext={`${M} passes at β_th; unpumped ${fmt(multipassAbsorption(alphaUnpumped, d, M) * 100)} %`} tone="cyan" />
+        <ResultCard label="Threshold pump power" value={`${fmt(pTh)} W`} subtext={`${fmt(pTh / area / 1e7)} kW/cm² over the spot`} tone="orange" />
+        <ResultCard label="Output power" value={`${fmt(pOut)} W`} subtext={`slope ${fmt(slope * 100)} %; δ = ${fmt(delta * 100)} %`} tone="purple" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard label="Ion density" value={`${fmt(N / 1e26)} × 10²⁰ cm⁻³`} subtext="doping × 1.38 × 10²² Y sites/cm³" tone="green" />
+        <ResultCard label="Absorbed pump intensity" value={`${fmt(absorbedIntensity / 1e7)} kW/cm²`} tone="yellow" />
+        <ResultCard label="Temperature rise through the disk" value={`${fmt(dT)} K`} subtext="η_h I_abs d/(2κ), heat sink and solder not included" tone="red" />
       </div>
 
-      <div className="bg-gray-800 rounded-lg p-4 mb-6">
-        <h3 className="font-semibold mb-3">Key Formulas</h3>
-        <div className="text-sm text-gray-300 space-y-1 font-mono">
-          <p>A_single = 1 - exp(-α·d)</p>
-          <p>A_total = 1 - (1 - A_single)^N</p>
-          <p>I_sat = hc / (λ·σ·τ)</p>
-          <p>P_th = I_sat · A_pump · δ_oc / (2·A_total)</p>
-          <p>f_thermal ≈ r² / (4·dn/dT·ΔT·d·n₀)  (parabolic approximation)</p>
-        </div>
+      {!reachable && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          Threshold needs an inversion above {fmt(betaBleach * 100)} %, where the pump is no longer absorbed: the laser cannot reach
+          threshold. Lower the loss, add laser passes or use a thicker or more heavily doped disk.
+        </p>
+      )}
+      {spotD > diskD && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">The pump spot is larger than the disk.</p>
+      )}
+
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>Threshold: m d N(βσ_e − (1 − β)σ_a) = δ = −ln R_oc − ln(1 − loss). Pump absorption α_p = N(σ_ap − β(σ_ap + σ_ep)), clamped at β_th
+          above threshold: η_abs = 1 − e^(−M α_p d).</p>
+        <p>P_th = h c N d β_th A/(λ_p τ η_abs); P_out = η_abs(λ_p/λ)(−ln R_oc/δ)(P − P_th) for a top-hat pump and mode of equal area.
+          ΔT = η_h I_abs d/(2κ) for uniform heating with the back face cooled.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Absorption vs Number of Passes</h3><ChartPanel data={absVsPasses} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Number of Passes" }, yaxis: { ...plotLayout.yaxis, title: "Absorption (%)" } }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Output Power vs Pump</h3><ChartPanel data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output (W)" } }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">ΔT vs Pump Intensity</h3><ChartPanel data={tempData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Intensity (kW/cm²)" }, yaxis: { ...plotLayout.yaxis, title: "ΔT (K)" } }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Thermal Lens f vs Pump</h3><ChartPanel data={thermalLensData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "f_thermal (m)" } }} /></div>
+      <div className="space-y-6">
+        {powerSeries[0].points.length > 0 && <SimpleLineChart title="Output power versus incident pump power" xLabel="Pump power (W)" yLabel="Output power (W)" series={powerSeries} />}
+        {passSeries[0].points.length > 0 && <SimpleLineChart title="Pump absorption versus number of passes" xLabel="Pump passes" yLabel="Absorbed (%)" series={passSeries} />}
+        {tempSeries[0].points.length > 0 && <SimpleLineChart title="Temperature rise through the disk" xLabel="Pump power (W)" yLabel="Temperature rise (K)" series={tempSeries} />}
       </div>
     </>
   );

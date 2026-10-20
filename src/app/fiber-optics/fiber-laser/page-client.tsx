@@ -7,7 +7,8 @@ import { useURLState } from "../../../hooks/use-url-state";
 import {
   efficiencyBeyondStokes, optimumOutputCoupler, rigrodOutput, stokesEfficiency,
 } from "../../../physics/fiber-optics/doped-fiber-gain";
-import { DB_PER_NEPER } from "../../../physics/fiber-optics/macro-bending-loss";
+import { DB_PER_NEPER, lp11CutoffWavelength, vNumber } from "../../../physics/fiber-optics/macro-bending-loss";
+import { guidedModeCount, MAX_EXACT_MODE_V, petermannIIRadius } from "../../../physics/fiber-optics/step-index-modes";
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 
@@ -30,6 +31,8 @@ export default function FiberLaserCalculator() {
   const [gainRaw, setGain] = useURLState("smallSignalGain", 13); // dB, single pass
   const [couplingRaw, setCoupling] = useURLState("outputCoupling", 10); // %, transmission
   const [lossRaw, setLoss] = useURLState("cavityLoss", 0.5); // dB, round trip
+  const [coreRaw, setCore] = useURLState("coreDiameter", 10); // µm
+  const [naRaw, setNA] = useURLState("NA", 0.08);
 
   const pump = clamp(pumpRaw, 0, 1e5);
   const lp_nm = clamp(lpRaw, 400, 2200);
@@ -39,6 +42,12 @@ export default function FiberLaserCalculator() {
   const gain_dB = clamp(gainRaw, 0.01, 60);
   const T = clamp(couplingRaw, 0.01, 99.99) / 100;
   const loss_dB = clamp(lossRaw, 0, 30);
+  // Silica core index: V, the mode count and the LP01 field depend only on a, NA and λ in the weak-guidance limit.
+  const fiber = { a: (clamp(coreRaw, 1, 1000) * 1e-6) / 2, n1: 1.45, NA: clamp(naRaw, 0.01, 1) };
+  const V = vNumber(fiber, ll_nm * 1e-9);
+  const modes = V <= MAX_EXACT_MODE_V ? guidedModeCount(V) : NaN;
+  const mfd = 2 * petermannIIRadius(fiber, ll_nm * 1e-9);
+  const cutoff = lp11CutoffWavelength(fiber);
 
   const calc = useMemo(() => {
     const out = pump > threshold ? slope * (pump - threshold) : 0;
@@ -80,6 +89,8 @@ export default function FiberLaserCalculator() {
         <ValidatedNumberInput label="Small-Signal Single-Pass Gain (dB)" value={gainRaw} onChange={setGain} min={0.01} max={60} step="any" />
         <ValidatedNumberInput label="Output Coupler Transmission (%)" value={couplingRaw} onChange={setCoupling} min={0.01} max={99.99} step="any" />
         <ValidatedNumberInput label="Internal Round-Trip Loss (dB)" value={lossRaw} onChange={setLoss} min={0} max={30} step="any" />
+        <ValidatedNumberInput label="Signal Core Diameter (µm)" value={coreRaw} onChange={setCore} min={1} max={1000} step="any" />
+        <ValidatedNumberInput label="Core NA" value={naRaw} onChange={setNA} min={0.01} max={1} step="any" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4 mb-8">
@@ -97,6 +108,14 @@ export default function FiberLaserCalculator() {
           sub={belowThreshold ? undefined : `${calc.atT.toPrecision(4)} vs ${calc.optOut.toPrecision(4)} × P_sat`} tone="text-yellow-400" />
       </div>
 
+      <div className="grid gap-4 sm:grid-cols-4 mb-8">
+        <Card label="V Number at the Laser Wavelength" value={V.toFixed(3)} sub="2πa·NA/λ_l" tone={V < 2.405 ? "text-green-400" : "text-red-400"} />
+        <Card label="Guided Modes" value={Number.isFinite(modes) ? (V < 2.405 ? "single mode" : `${modes} modes`) : `≈ ${Math.round((V * V) / 2)} modes`}
+          sub={V < 2.405 ? "only LP01 (2 polarizations)" : "LP11 and higher are guided: the beam quality depends on bend and launch"} tone={V < 2.405 ? "text-green-400" : "text-red-400"} />
+        <Card label="LP01 Mode-Field Diameter" value={Number.isFinite(mfd) ? `${(mfd * 1e6).toFixed(2)} µm` : "—"} sub="Petermann II, exact step-index LP01" tone="text-blue-400" />
+        <Card label="Single-Mode Cutoff Wavelength" value={`${(cutoff * 1e9).toFixed(0)} nm`} sub="LP11 cutoff 2πa·NA/2.405" tone="text-blue-400" />
+      </div>
+
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
         <h3 className="text-lg font-semibold mb-3">Formulas</h3>
         <div className="text-sm text-gray-300 space-y-2 font-mono">
@@ -104,6 +123,7 @@ export default function FiberLaserCalculator() {
           <p>Stokes efficiency λ_p/λ_l; efficiency beyond Stokes = η_s/(λ_p/λ_l) ≤ 1</p>
           <p>Rigrod: P/P_sat = (1 − R₂)√R₁ (g₀L + ln√(R₁R₂)) / ((√R₁ + √R₂)(1 − √(R₁R₂)))</p>
           <p>R₂ = 1 − T, R₁ = 10^(−loss/10) (internal round-trip loss folded into the rear mirror), g₀L = gain/4.343</p>
+          <p>V = 2πa·NA/λ; single mode for V &lt; 2.405 (LP11 cutoff); LP01 Petermann II diameter from the exact step-index mode</p>
         </div>
         <p className="text-xs text-gray-400 mt-3">
           Rigrod (1965) treats a homogeneously broadened standing-wave laser with gain of any size, so it holds for
