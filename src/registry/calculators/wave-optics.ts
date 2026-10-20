@@ -47,14 +47,18 @@ export const waveOptics: CalculatorEntry[] = [
   },
   {
     slug: "cavity-mode-spacing",
-    title: "Cavity Mode Spacing",
-    description: "Axial and transverse mode structure of optical resonators.",
-    knownIssue: "For cavities with negative g-parameters, including the default 150 mm cavity with 100 mm mirrors, the transverse mode spacing uses the wrong branch: 0.333 GHz is shown where 0.666 GHz is correct.",
-  },
-  {
-    slug: "cavity-stability",
-    title: "Cavity Stability Diagram",
-    description: "Two-mirror cavity stability: g₁ = 1 - L/R₁, g₂ = 1 - L/R₂. Stable when 0 ≤ g₁g₂ ≤ 1.",
+    title: "Cavity Mode Spacing and Stability",
+    description: "Two-mirror resonator: g-parameters and stability diagram, free spectral range, transverse mode spacing, TEM₀₀ waist size and position, and spot sizes on the mirrors.",
+    keywords: ["Cavity Stability Diagram", "g-parameters", "resonator stability", "transverse mode spacing", "Gouy phase", "free spectral range"],
+    tier: "textbook",
+    modelNote: "Paraxial Gaussian modes of two spherical mirrors (Kogelnik–Li), with a medium of index n filling the cavity. The transverse spacing takes the Gouy phase on the branch set by the sign of g, so cavities with g < 0 space their modes by more than FSR/2. Aperture losses and mirror tilt are ignored.",
+    references: [
+      {
+        citation: "Kogelnik H., Li T. (1966). Laser beams and resonators. Appl. Opt. 5, 1550–1567.",
+        url: "https://doi.org/10.1364/ao.5.001550",
+      },
+      { citation: "Siegman A. E. (1986). Lasers, ch. 19. University Science Books." },
+    ],
   },
   {
     slug: "cep-stabilization",
@@ -337,8 +341,21 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "ring-cavity",
     title: "Ring Resonator Design",
-    description: "Ring cavity stability, modes, and spectral analysis.",
-    knownIssue: "Finesse is about half the correct value (51 instead of 102 for the defaults), so the linewidth is doubled. Stability and beam size use an incorrect mirror matrix, and tilted-mirror astigmatism is ignored.",
+    description: "Ring laser cavity of N curved mirrors: free spectral range, finesse, linewidth, photon lifetime, stability and the astigmatic mode sizes from the tilted mirrors.",
+    keywords: ["ring laser", "ring cavity finesse", "astigmatism", "tilted mirror", "travelling-wave resonator"],
+    tier: "textbook",
+    modelNote: "N identical concave mirrors on a regular polygon, one output coupler. Finesse and linewidth from the Airy response of a one-way ring; modes from the paraxial period matrix with R cos α and R/cos α for the tilted mirrors. Image rotation in non-planar rings and thermal lensing are not modelled.",
+    references: [
+      {
+        citation: "Kogelnik H., Ippen E. P., Dienes A., Shank C. V. (1972). Astigmatically compensated cavities for CW dye lasers. IEEE J. Quantum Electron. 8, 373–379.",
+        url: "https://doi.org/10.1109/jqe.1972.1076964",
+      },
+      {
+        citation: "Kogelnik H., Li T. (1966). Laser beams and resonators. Appl. Opt. 5, 1550–1567.",
+        url: "https://doi.org/10.1364/ao.5.001550",
+      },
+      { citation: "Siegman A. E. (1986). Lasers, ch. 11 and 21. University Science Books." },
+    ],
   },
   {
     slug: "self-phase-modulation",

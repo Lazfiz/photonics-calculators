@@ -28,7 +28,7 @@ function walk(node: ts.Node, visit: (node: ts.Node) => void) {
 
 test("calculator pages have a full set of page.tsx files", () => {
   // A floor that catches a lost page directory; planned merges (ROADMAP spectroscopy parts) lower the count.
-  assert.ok(pages.length >= 438, `only ${pages.length} pages found`);
+  assert.ok(pages.length >= 437, `only ${pages.length} pages found`);
 });
 
 test("each page.tsx passes its own href to calculatorMetadata and CalculatorShell, and no text", () => {

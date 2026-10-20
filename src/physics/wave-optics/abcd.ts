@@ -65,3 +65,35 @@ export const determinant = (M: Abcd) => M.A * M.D - M.B * M.C;
 export function traceRay(M: Abcd, y0: number, theta0: number): { y: number; theta: number } {
   return { y: M.A * y0 + M.B * theta0, theta: M.C * y0 + M.D * theta0 };
 }
+
+export interface PeriodicEigenmode {
+  /** Half-trace m = (A + D)/2; the system is stable for |m| < 1. */
+  m: number;
+  /** Beam radius w at the reference plane, m. */
+  w: number;
+  /** q = z + i z_R at the reference plane: z > 0 means the plane is past the waist (beam diverging), m. */
+  z: number;
+  zR: number;
+  /** Waist radius √(λ z_R/π), m. */
+  w0: number;
+  /** Gouy phase per period θ, cos θ = m, sin θ with the sign of B (0 < θ < π for B > 0), rad. */
+  gouy: number;
+}
+
+/**
+ * Self-reproducing Gaussian beam of a periodic system with unimodular matrix M (a resonator round trip, or one
+ * period of a lens guide), in a medium of wavelength λ: 1/q = (D − A)/(2B) − i sin θ/B with cos θ = (A + D)/2.
+ * NaN fields unless |m| < 1, B ≠ 0 and det M = 1. Kogelnik & Li (1966), section on resonator modes; Siegman,
+ * Lasers (1986), ch. 21.
+ */
+export function periodicEigenmode(M: Abcd, lambda: number): PeriodicEigenmode {
+  const m = (M.A + M.D) / 2;
+  const nan = { m, w: NaN, z: NaN, zR: NaN, w0: NaN, gouy: NaN };
+  if (!(Math.abs(m) < 1 && M.B !== 0 && Math.abs(determinant(M) - 1) < 1e-9 && lambda > 0)) return nan;
+  const sinTheta = Math.sign(M.B) * Math.sqrt(1 - m * m);
+  const a = (M.D - M.A) / (2 * M.B); // Re 1/q = 1/R
+  const b = sinTheta / M.B; // −Im 1/q = λ/(πw²) > 0
+  const den = a * a + b * b;
+  const zR = b / den;
+  return { m, w: Math.sqrt(lambda / (Math.PI * b)), z: a / den, zR, w0: Math.sqrt((lambda * zR) / Math.PI), gouy: Math.atan2(sinTheta, m) };
+}

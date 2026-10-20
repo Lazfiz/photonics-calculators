@@ -1,38 +1,41 @@
-# Handover — 2026-10-20 (session 113 → session 114)
+# Handover — 2026-10-20 (session 114 → session 115)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 113: **wave-optics fix part 3**, branch `phase-4/wave-optics-fix-3`, PR #144. Next: **fix part 4** (cavities).
+Session 114: **wave-optics fix part 4** (cavities), branch `phase-4/wave-optics-fix-4`, PR #145. Next: **fix part 5**
+(resonators a: solid-state, dye, gas laser resonators on `two-mirror-resonator.ts`).
 
 ## State
-- Wave-optics modules: `gaussian-beam.ts`, `abcd.ts` (part 1); `mode-matching.ts`, `spatial-filter.ts` (part 2); new
-  `higher-order-modes.ts` (`hermiteH`, `laguerreL`, `hgAmplitude1D`, `hgIntensity`, `lgIntensity`, second-moment radii,
-  `lgRingRadius`, `modeGouyPhase`), `bessel-beam.ts` (`radialWavenumber`, `coreRadius`, `coreFwhm`,
-  `maxPropagationDistance`), `diffraction-integral.ts` (Fresnel–Hankel quadrature, N_F ≤ 20; slit via Fresnel integrals;
-  Fraunhofer forms). `math.ts` gained `besselJ0Fast` and `fresnelIntegrals`. Test: `tests/wave-optics-modes.test.ts`.
-  Reuse `gaussianOverlap`/`qAfterLens` and `modeGouyPhase` for cavities (part 4: transverse-mode spacing).
-- laguerre-gaussian merged into hermite-gaussian (redirect; page `?family=lg`). bessel-beam has `?R=` (input radius, mm).
-  diffraction-integral has `?aperture=slit` and an observation-radius input.
-- 360 of 438 pages tiered, 33 `knownIssue`s. **Per-page findings for parts 4–13 are in the PR #141 description**
+- Wave-optics modules: `gaussian-beam.ts`, `abcd.ts` (+ `periodicEigenmode`: q, w, waist, Gouy per period of a
+  unimodular matrix); `mode-matching.ts`, `spatial-filter.ts`; `higher-order-modes.ts`, `bessel-beam.ts`,
+  `diffraction-integral.ts`; new `two-mirror-resonator.ts` (`gParameter` with R = Infinity for flat,
+  `resonatorStability` stable/marginal/unstable, `twoMirrorMode(λ, L, g₁, g₂, n)` → w₀, z_R, z₁, w₁, w₂, confocal limit;
+  `resonatorFsr`, `oneWayGouyPhase` (sign of g), `transverseModeSpacing`, `modeFrequency`) and `ring-cavity.ts`
+  (`ringFinesse`, `ringCoefficientOfFinesse`, `ringResponse`, `ringPhotonLifetime`, `regularRingIncidence`,
+  `tiltedMirrorRadius`, `ringPlaneMode`). Test: `tests/wave-optics-cavities.test.ts`. Part 5 reuses `twoMirrorMode`.
+- cavity-stability merged into cavity-mode-spacing (redirect; old `L`, `r1`, `r2` links keep their cavity at 1064 nm).
+  Mirror radius 0 means flat on that page.
+- 362 of 437 pages tiered, 31 `knownIssue`s. **Per-page findings for parts 5–13 are in the PR #141 description**
   (`gh pr view 141`): read the part's section first, don't re-audit.
-- **User decisions (session 110), merges with redirects, 3 of 12 done:** parametric-amplification → optical-parametric-amplifier;
-  fiber-laser-resonator → fiber-optics/fiber-laser; etalon-finesse → spectroscopy/etalon-fsr; cavity-stability →
-  cavity-mode-spacing; chirped-pulse + pulse-compression; coupled-mode → fiber-optics/mode-coupling; cep-stabilization →
-  optical-frequency-comb; photonic-bandgap → thin-film/bragg-reflector; interferometer → spectroscopy/michelson-interferometer.
-  sum-frequency and spectroscopy/sum-frequency-gen share a module. Session 78: keep dynamic-range, stimulated-raman-microscopy, resolution apart.
-- **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only when the user asks:
-  `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`.
+- **User decisions (session 110), merges with redirects, 4 of 12 done:** parametric-amplification → optical-parametric-amplifier;
+  fiber-laser-resonator → fiber-optics/fiber-laser; etalon-finesse → spectroscopy/etalon-fsr; chirped-pulse + pulse-compression;
+  coupled-mode → fiber-optics/mode-coupling; cep-stabilization → optical-frequency-comb; photonic-bandgap →
+  thin-film/bragg-reflector; interferometer → spectroscopy/michelson-interferometer. sum-frequency and
+  spectroscopy/sum-frequency-gen share a module. Session 78: keep dynamic-range, stimulated-raman-microscopy, resolution apart.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: `wave-optics/hermite-gaussian=5.067`,
-   `wave-optics/bessel-beam=24.22`, `wave-optics/diffraction-integral=0.9075`; part 2: `wave-optics/mode-matching=36.22`,
-   `wave-optics/spatial-filter=67.74`; part 1: `wave-optics/gaussian-beam=0.2027`, `wave-optics/m2-factor=1.476`,
-   `wave-optics/abcd-matrix=100.0000`. No release unless asked.
-2. Wave-optics fix part 4 (two-mirror-resonator.ts; cavity-stability → cavity-mode-spacing; ring-cavity), then parts 5–13.
-   Part 4's merge drops the page count to 437: lower the floor in `tests/calculator-pages.test.ts` (now ≥ 438).
+1. `/ship` this branch. Values for a later release check: `wave-optics/cavity-mode-spacing=0.6662`,
+   `wave-optics/ring-cavity=102.4`; part 3: `wave-optics/hermite-gaussian=5.067`, `wave-optics/bessel-beam=24.22`,
+   `wave-optics/diffraction-integral=0.9075`; part 2: `wave-optics/mode-matching=36.22`, `wave-optics/spatial-filter=67.74`;
+   part 1: `wave-optics/gaussian-beam=0.2027`, `wave-optics/m2-factor=1.476`, `wave-optics/abcd-matrix=100.0000`. No release unless asked.
+2. Wave-optics fix part 5 (resonators a), then parts 6–13. Part 6's merge (fiber-laser-resonator) drops the floor in
+   `tests/calculator-pages.test.ts` to 436.
 3. Later: open findings (ROADMAP), `polarizer-types` (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
+- **Session 114:** a mutation test on an **untracked** file can't be undone with `git checkout`: `cp` it to the scratchpad
+  first. While `npm run check` runs, devctl queues other heavy commands (eslint) for minutes; `check` lints anyway.
+  A stick spectrum in SimpleLineChart: one series per family, points (x, 0), (x, h), (x, 0) along the baseline.
 - **Session 113:** Next redirects keep the query string, so `/wave-optics/laguerre-gaussian?l=3` arrives with `l=3`; the HG/LG
   page reads `p`/`l` with a NaN default to tell an old LG link from a bare one. `besselJ` costs 2|x| + 64 cosines: inside a
   quadrature use `besselJ0Fast` (|err| < 1e-7). `cmd; echo exit $?` hides a failed gate:
@@ -50,10 +53,6 @@ Session 113: **wave-optics fix part 3**, branch `phase-4/wave-optics-fix-3`, PR 
   shrink screenshots with chrome `--force-device-scale-factor=0.5`. `npm run dev` touches `next-env.d.ts`: `git checkout` it.
 - **Session 106:** after a merge removes a page, tsc fails on stale `.next/types` validators: `rm -rf .next/types .next/dev/types`.
   Plotly 3 (heatmaps) ignores string axis/colorbar titles: use `title: { text }`. EMG for z > 0 must use erfcx.
-- **Sessions 101–102:** `assert.equal(-0, 0)` fails (Object.is). eslint's `preserve-manual-memoization` fires on `useMemo`
-  over derived values: drop the `useMemo`. NIST ASD DOI is DataCite (`crossref.mjs` 404); ASTM DOIs (10.1520/…) are in Crossref.
-- **Sessions 99–100:** point a chained redirect at the final page. Run headless Chrome with a fresh `--user-data-dir`.
-  A wavenumber through `toPrecision(4)` prints "2.002e+4": use `toFixed(0)` for cm⁻¹.
 - **Sessions 95–98:** charts put the axis minimum at the data minimum, so round plotted values (6 decimals). `SimpleChart`
   colours a markers-only trace from `line.color`, not `marker.color`: give both. Book section numbers are not cited.
 - **Sessions 86–89:** run gates with `run_in_background` from the start. The merge codemod drops the last entry's trailing
