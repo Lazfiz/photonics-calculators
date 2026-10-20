@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 109, 2026-10-20)
+## Status (session 110, 2026-10-20)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -22,9 +22,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
-| wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
+| wave-optics | 2 / 49 | part 0 audit (session 110): 41 `knownIssue`s; fix parts 1–13 next |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **352 / 441** | 0 `knownIssue`s |
+| **total** | **352 / 441** | 41 `knownIssue`s (wave-optics) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -43,7 +43,37 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] **Next category audit after spectroscopy (ask the user):** wave-optics 2/49 or materials 4/45.
+- [ ] Wave-optics fix parts (part 0 audit, session 110, PR #141: per-page findings, golden values and references are in
+  the PR description; OK pages: gaussian-beam, gouy-phase, abcd-matrix, etalon-finesse, cavity-stability, coupled-mode). Every
+  merge below is a user decision (session 110) and gets a redirect. Every page: clamp URL values, physics into
+  `src/physics/wave-optics/`, golden test, tier + `modelNote` + references, drop the `knownIssue`. About 4 pages each.
+  1. Gaussian beams: gouy-phase → gaussian-beam (ψ(z) output); m2-factor (flag M² < 1); abcd-matrix (elements in the URL).
+  2. Mode matching: mode-matching + beam-waist-matching into one page (Self 1983 closed form + exact Kogelnik overlap η;
+     f 36.2177 mm, s 43.7215 mm); spatial-filter (T from the formula, 2.44λf/D, `besselJ`).
+  3. Higher-order beams: hermite-gaussian + laguerre-gaussian into one HG/LG page (integer clamps, LG √2 norm);
+     bessel-beam (`besselJ`, beam-radius input); diffraction-integral (Fresnel Hankel integral or Fraunhofer only).
+  4. Cavities: new `two-mirror-resonator.ts` (g, w₀, waist position); cavity-stability → cavity-mode-spacing (Siegman
+     sign branch: 0.6662 GHz); ring-cavity (ℱ = π ρ^¼/(1 − √ρ), unimodular period matrix, astigmatism).
+  5. Resonators a: solid-state-laser-resonator, dye-laser-resonator, gas-laser-resonator on `two-mirror-resonator.ts` +
+     `rigrodOutput` (T/2 form) and a shared four-level threshold.
+  6. Resonators b: diode-laser-resonator (Coldren N_th chain), slab-laser, thin-disk-laser (N_Yb σ_a absorption);
+     fiber-laser-resonator → fiber-optics/fiber-laser.
+  7. Pulsed output: q-switched-laser and cavity-dumped on `laser-safety/peak-power.ts`; mode-locked-laser (Δλ_TL, mode
+     count, peak power); free-electron-laser (Huang–Kim ρ with σx and JJ, CODATA I_A).
+  8. Pulses: chirped-pulse + pulse-compression into one CPA page (Treacy GDD, transform-limit clamp 94.20 fs);
+     cep-stabilization → optical-frequency-comb (f_ceo, Δφ_CE = 2π f_ceo/f_rep, comb teeth; reuse dual-comb);
+     attosecond-pulse (0.441 h/ΔE, odd harmonics, gas Ip).
+  9. Fibre solitons: shared `soliton.ts` (sech T0, L_D, N); soliton (real FFT split-step); supercontinuum (units:
+     N 53.3 at the defaults).
+  10. Kerr: shared critical power; kerr-lens (1/f = 8n₂PL/(πw⁴)), self-phase-modulation (k₀, 2P/πw², φ ∝ I,
+      `spmRmsBroadening`), filamentation (Marburger, NaN below P_cr).
+  11. χ⁽²⁾: one plane-wave three-wave module (`sfgCoefficient`): sum-frequency (P₃ 9.06 µW), difference-frequency
+      (18.92 µW); parametric-amplification → optical-parametric-amplifier (GVM bandwidth 0.886/(GVM·L)).
+  12. Guided waves: four-wave-mixing (`fiber-nonlinear.ts`, κ = Δβ + 2γP); coupled-mode → fiber-optics/mode-coupling
+      (check fiber-coupler too); optical-waveguide (slab TE bisection); injection-locking (α asymmetry).
+  13. Interference: photonic-bandgap → thin-film/bragg-reflector; interferometer → spectroscopy/michelson-interferometer
+      (add Mach-Zehnder); etalon-finesse → spectroscopy/etalon-fsr; slow-light.
+- [ ] **Next category audit:** materials 4/45.
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
 - [ ] Rewrite each heuristic model, or label it illustrative, during its category's audit. Macro-bend and
   second-harmonic are done.
@@ -109,8 +139,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - Silica n₂, g_B, g_R are now `SILICA_*` in `fiber-nonlinear.ts`; other pages still inline them.
 - `v-number` (minor): it shows floor(V²/2) modes for V < 2.405; literal "&lt;" in the text.
 - 1.4682 is SMF-28's group index (fine for delay, OTDR, gyro); ≈ 20 pages also use it as the phase index (Fresnel, V, n_eff). Use ≈ 1.447.
-- Out of scope: `materials/brillouin-scattering` P_th = 21·1e-3/(g_B·L): 1e-3 in place of A_eff, L in place of L_eff (use `sbsThreshold`); `wave-optics/fiber-laser-resonator` may
-  overlap `fiber-laser`; `fiber-coupler` vs `wave-optics/coupled-mode` unchecked.
+- Out of scope: `materials/brillouin-scattering` P_th = 21·1e-3/(g_B·L): 1e-3 in place of A_eff, L in place of L_eff (use `sbsThreshold`).
 
 **Imaging / spectroscopy** (found in the detectors part 0, session 63)
 - Spectroscopy part 11 (session 107): `infrared-spectroscopy` has no Herman–Wallis factor or absolute band strength; `electron-spectroscopy` graphite ρ 2.2 (SRD 71 table value) vs 2.26 g/cm³ crystal; LHM water ε₂ = 3.52 + 7.52θ kept (fits Table I with RMS 0.43, against 0.49 with −), and the page allows only −5 to 40 °C.
@@ -126,8 +155,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `crystal-birefringence` has rutile at 2.454/2.493. Use `materials/uniaxial-data.ts`.
 - Registry descriptions with stripped Greek symbols (session 96 scan; the ledes are intact): materials abbe-number,
   absorption, crystal-birefringence, group-index, nonlinear-index, photoelastic, thermal-expansion, uv-materials,
-  verdet-constant, x-ray-optics; wave-optics cavity-stability, four-wave-mixing, gouy-phase, m2-factor. Fix in each
-  category's audit (drop the lede when it then equals the description: registry test).
+  verdet-constant, x-ray-optics (wave-optics done in session 110). Fix in the materials audit (drop the lede when it then equals the description: registry test).
 
 **Polarization**
 - `polarization-scrambling` multiplies the stage means, which holds only for incommensurate frequencies. Near-resonant
@@ -190,6 +218,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Wave-optics audit part 0 (session 110, `phase-4/wave-optics-audit`, PR #141): 47 untiered pages in 7 reviewer batches, 28 bugs / 13 questionable / 6 OK, 41 `knownIssue`s, 6 stripped descriptions restored; 12 merges decided; fix parts 1–13 planned.
   - Spectroscopy fix parts 1–12b (sessions 97–109, PRs #128–#140): 41/41 tiered, 0 `knownIssue`s; part 12b (`phase-4/spectroscopy-sfg`, PR #140) `sum-frequency.ts` (λ_SFG 452.550 nm, |χ_NR e^{iφ} + Σ A/(ν̃ − ν̃_q + iΓ)|², peak shift √89 − 8 cm⁻¹), blackbody exitance/radiance/band fraction (0.465261 in 380–780 nm at 5778 K), `wavenumber.ts`.
   - Spectroscopy audit part 0 (session 96, `phase-4/spectroscopy-audit`, PR #127): 49 untiered pages in 7 reviewer batches, 27 bugs / 15 questionable / 7 OK, 42 `knownIssue`s, 9 stripped descriptions restored; 10 merges decided; fix parts 1–12 planned.
   - Imaging part 15b denoising and computational imaging (session 95, `phase-4/imaging-denoising`, PR #126): new `denoising.ts` (box 3×3 → 9.54 dB, f₅₀ 0.20978 cy/px; median var exact by quadrature, n = 3 → 1 − √3/π; VisuShrink 4.9953σ at 512²) and `computational-imaging.ts` (SNR₁ 31.404 → 157.02 at N 25; fixed dose 30.015; FPM NA 0.08 + 0.42); imaging 61/61, no `knownIssue`s left.

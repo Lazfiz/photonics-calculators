@@ -1,56 +1,54 @@
-# Handover — 2026-10-20 (session 109 → session 110)
+# Handover — 2026-10-20 (session 110 → session 111)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 109 did **spectroscopy fix part 12b** (SFG, blackbody, wavenumber-converter) on branch `phase-4/spectroscopy-sfg`
-(PR #140 after `/ship`). **Spectroscopy is done: 41/41 tiered, 0 `knownIssue`s site-wide.** Next: ask the user which
-category to audit next, wave-optics (2/49) or materials (4/45); start with a part 0 audit (reviewer batches).
+Session 110 did the **wave-optics audit part 0** on branch `phase-4/wave-optics-audit` (PR #141 after `/ship`): 47 untiered
+pages, 28 bugs / 13 questionable / 6 OK, 41 `knownIssue`s. Next: **wave-optics fix part 1** (ROADMAP list, parts 1–13).
 
 ## State
-- New `src/physics/spectroscopy/sum-frequency.ts`: `sfgWavelength(λ_vis, ν̃_IR)` (reuses `sumFrequencyWavelength`),
-  `resonantSusceptibility`, `sfgSusceptibility`, `sfgIntensity` (A_NR e^{iφ} + Σ A_q/(ν̃ − ν̃_q + iΓ_q)),
-  `singleResonancePeakShift` (closed form, rationalised), `localMaxima` (parabolic refinement). SFG page: CH and air/water
-  OH presets (illustrative amplitudes), NR amplitude/phase inputs, apparent-peak table.
-- New `src/physics/spectroscopy/wavenumber.ts`: `photonFromWavelength`, `photonFromWavenumber`. Blackbody page reuses
-  `src/physics/blackbody.ts` (radiance M/π, band fraction, log-log chart). Test file `tests/spectroscopy-sfg.test.ts` (5 tests).
+- Registry only: `src/registry/calculators/wave-optics.ts` gains 41 `knownIssue`s; 6 stripped descriptions (cavity-stability,
+  difference-frequency, four-wave-mixing, gouy-phase, m2-factor, sum-frequency) restored from their ledes, ledes dropped.
+- **Per-page findings, golden values and DOIs are in the PR #141 description** (`gh pr view 141`). Read the section for
+  the part's pages at the start of each fix part instead of re-auditing.
+- **User decisions (session 110), 12 merges, each with a redirect:** mode-matching + beam-waist-matching;
+  parametric-amplification → optical-parametric-amplifier; fiber-laser-resonator → fiber-optics/fiber-laser;
+  etalon-finesse → spectroscopy/etalon-fsr; cavity-stability → cavity-mode-spacing; chirped-pulse + pulse-compression;
+  coupled-mode → fiber-optics/mode-coupling; cep-stabilization → optical-frequency-comb; gouy-phase → gaussian-beam;
+  hermite-gaussian + laguerre-gaussian; photonic-bandgap → thin-film/bragg-reflector; interferometer →
+  spectroscopy/michelson-interferometer. No merge for sum-frequency vs spectroscopy/sum-frequency-gen (share the module).
 - 352 of 441 pages tiered. **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only
   when the user asks: `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still
   has to set Vercel's Production Branch to `release`.
-- **User decisions (session 96):** merges with redirects. **(session 78):** keep dynamic-range, stimulated-raman-microscopy and
-  resolution separate unless the user says otherwise.
+- **Earlier user decisions (session 96):** merges with redirects. **(session 78):** keep dynamic-range,
+  stimulated-raman-microscopy and resolution separate unless the user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 12b: `spectroscopy/sum-frequency-gen=457.73` (SFG range low end,
-   nm), `spectroscopy/blackbody=501.5` (Wien peak, nm), `spectroscopy/wavenumber-converter=10000.00`; part 12a:
-   `imaging/signal-to-noise=56.391`, `spectroscopy/dual-comb-spectroscopy=5.000`; part 11 and earlier: `git show b649db59:docs/HANDOVER.md`.
-   Redirects to check: the three hrefs removed in 12a. No release unless asked.
-2. Ask the user: wave-optics or materials audit (ROADMAP "Next category audit").
+1. `/ship` this branch (registry text only, no new values to check). Values for a later release check: part 12b:
+   `spectroscopy/sum-frequency-gen=457.73`, `spectroscopy/blackbody=501.5`, `spectroscopy/wavenumber-converter=10000.00`;
+   earlier: `git show c31f1e96:docs/HANDOVER.md`. No release unless asked.
+2. Wave-optics fix part 1 (gouy-phase → gaussian-beam, m2-factor, abcd-matrix), then parts 2–13 in order.
 3. Later: open findings (ROADMAP), `polarizer-types` (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
-- **Session 109:** a Lorentzian tail falls only as A/Δ: a far-detuned "background only" check needs ≈ 1e-4 tolerance. Interfering
-  lines pull each other: the SFG d⁺ peak shows −0.2 cm⁻¹ next to r⁺ although its own background shift is positive.
+- **Session 110:** reviewer reports arrive as agent messages and vanish on compaction: save each to a scratchpad file at
+  once. Values the reviewers quoted from memory, to verify before use: Yb:YAG σ_a ≈ 0.75e-20 cm² at 940 nm, HeNe g₀ ≈
+  0.1 /m, CO₂ 0.5–1 /m, diode fast-axis divergence 30–40°, LCLS ρ ≈ 5e-4. Kerr thin lens checked: 1/f = 8n₂PL/(πw⁴).
+  Inserting `knownIssue`s into one registry file is a single-file node script (regex over entry blocks), not a codemod.
 - **Session 108:** `python -` with a heredoc also hangs (stop the task). The merge codemod adds the old title as a keyword; extend that
   `keywords` array by hand afterwards.
-- **Session 107:** NIST WebBook keeps higher constants in footnotes (CO ω_e y_e, ω_e z_e; HCl ω_e z_e): grep the saved HTML.
+- **Session 107:** NIST WebBook keeps higher constants in footnotes: grep the saved HTML.
   Git Bash rewrites `/a/b` arguments to Windows paths: prefix `MSYS_NO_PATHCONV=1` (ui-check, chrome). Python has no Pillow:
   shrink screenshots with chrome `--force-device-scale-factor=0.5`. `npm run dev` touches `next-env.d.ts`: `git checkout` it.
 - **Session 106:** after a merge removes a page, tsc fails on stale `.next/types` validators: `rm -rf .next/types .next/dev/types`.
-  Plotly 3 (heatmaps) ignores string axis/colorbar titles: use `title: { text }`. The 2D lineshape closed form loses ≈ 4e-8
-  when σ ≪ γ: Lorentzian product below σ = 1e-4 γ. EMG for z > 0 must use erfcx (e^(σ²/2τ²) overflows).
-- **Session 105:** Hale & Querry is tabulated every 200 nm in the NIR, so it misses the 1450/1940 nm water peaks (1.4 µm gives
-  12 /cm, the peak is 31.7): use Segelstein. Scholkmann–Wolf DPF coefficients were checked against two open implementations
-  (paper is paywalled). A command that starts a server in the background keeps devctl "busy": run later chrome jobs with
-  `run_in_background`.
-- **Session 103:** Norton–Beer coefficients (Naylor & Tahic 2007) give FWHM ratios 1.2/1.4/1.6 exactly: a good check. The
-  Mertz ramp makes Re(C) ≈ B cos φ; in the found-ZPD frame the phase is φ + 2πσ·shift·Δx (sign!). Use closed forms for
-  cosine-sum ILS. devctl blocks a whole foreground command while a gate runs.
+  Plotly 3 (heatmaps) ignores string axis/colorbar titles: use `title: { text }`. EMG for z > 0 must use erfcx.
+- **Session 105:** a command that starts a server in the background keeps devctl "busy": run later chrome jobs with
+  `run_in_background`. devctl blocks a whole foreground command while a gate runs.
 - **Sessions 101–102:** fit polynomials in a scaled variable u ∈ [−1, 1]. `assert.equal(-0, 0)` fails (Object.is). In
   `sed` replacements `&` is the match and a backslash-n a newline: use Edit. eslint's `preserve-manual-memoization` fires on
   `useMemo` over derived values: drop the `useMemo`. NIST ASD DOI is DataCite (`crossref.mjs` 404); astm.org 403s,
   ASTM DOIs (10.1520/…) are in Crossref. ar5iv HTML gives LaTeX.
-- **Sessions 99–100:** a merge can leave a chained redirect: point it at the final page. `tests/calculator-pages.test.ts` has a page-count floor (now ≥ 440); a merge can trip it. The global
-  minimum between two peak centres is often an endpoint, not the dip: `dipDepth` uses running maxima from both sides.
+- **Sessions 99–100:** a merge can leave a chained redirect: point it at the final page. `tests/calculator-pages.test.ts` has a
+  page-count floor (now ≥ 440); the 12 wave-optics merges will trip it, so lower it as pages go.
   devctl queues headless Chrome behind other projects' jobs: run screenshots with a fresh `--user-data-dir`.
   A wavenumber through `toPrecision(4)` prints "2.002e+4": use `toFixed(0)` for cm⁻¹.
 - **Sessions 95–98:** charts put the axis minimum at the data minimum, so round plotted values (6 decimals). `SimpleChart`
