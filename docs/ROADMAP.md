@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 113, 2026-10-20)
+## Status (session 114, 2026-10-20)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -22,9 +22,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
-| wave-optics | 10 / 46 | part 0 audit (session 110), fix parts 1–3 (sessions 111–113); 33 `knownIssue`s; parts 4–13 next |
+| wave-optics | 12 / 45 | part 0 audit (session 110), fix parts 1–4 (sessions 111–114); 31 `knownIssue`s; parts 5–13 next |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **360 / 438** | 33 `knownIssue`s (wave-optics) |
+| **total** | **362 / 437** | 31 `knownIssue`s (wave-optics) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -50,8 +50,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   1. ✓ Gaussian beams (session 111, PR #142).
   2. ✓ Mode matching and spatial filter (session 112, PR #143).
   3. ✓ Higher-order beams, Bessel beam, Fresnel diffraction (session 113, PR #144).
-  4. Cavities: new `two-mirror-resonator.ts` (g, w₀, waist position); cavity-stability → cavity-mode-spacing (Siegman
-     sign branch: 0.6662 GHz); ring-cavity (ℱ = π ρ^¼/(1 − √ρ), unimodular period matrix, astigmatism).
+  4. ✓ Cavities: two-mirror resonator, cavity-stability → cavity-mode-spacing, ring cavity (session 114, PR #145).
   5. Resonators a: solid-state-laser-resonator, dye-laser-resonator, gas-laser-resonator on `two-mirror-resonator.ts` +
      `rigrodOutput` (T/2 form) and a shared four-level threshold.
   6. Resonators b: diode-laser-resonator (Coldren N_th chain), slab-laser, thin-disk-laser (N_Yb σ_a absorption);
@@ -216,6 +215,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Wave-optics fix part 4 (session 114, `phase-4/wave-optics-fix-4`, PR #145): new `two-mirror-resonator.ts` (w₀ 0.38295 mm; Δν_T 0.666205 / 0.333103 GHz on Siegman's sign branch; asymmetric z_R 0.3 m, z₁ 0.1 m), `ring-cavity.ts` (ℱ 102.422, τ 16.3129 ns, spot 0.278745 mm, R cos α / R/cos α astigmatism), `periodicEigenmode` in `abcd.ts`; cavity-stability merged; 437 pages.
   - Wave-optics fix part 2 (session 112, `phase-4/wave-optics-fix-2`, PR #143): new `mode-matching.ts` (closed form f 36.21766 mm, s₁ 43.72147 mm, η 1; 115.2041 / 169.1225 mm; overlap 4/4.25² 0.2214533) and `spatial-filter.ts` (w_f 33.86817 µm, T 0.8646647 / 0.9888910, far field checked by an incomplete-gamma series); beam-waist-matching merged into mode-matching (redirect); 357/439 tiered.
   - Wave-optics fix part 1 (session 111, `phase-4/wave-optics-fix-1`, PR #142): new `gaussian-beam.ts` (z_R 0.202683 mm, ψ 7.71504°, M² 1.476312) and `abcd.ts` (2f–2f → [[−1, 0], [−1/f, −1]]); gouy-phase merged into gaussian-beam; M² < 1 flagged; ABCD elements in the URL; 3 pages tiered.
   - Wave-optics audit part 0 (session 110, `phase-4/wave-optics-audit`, PR #141): 47 untiered pages in 7 reviewer batches, 28 bugs / 13 questionable / 6 OK, 41 `knownIssue`s, 6 stripped descriptions restored; 12 merges decided; fix parts 1–13 planned.
