@@ -1,190 +1,159 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { c, h } from "../../../physics/constants";
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { gParameter, resonatorStability, twoMirrorMode } from "../../../physics/wave-optics/two-mirror-resonator";
+import {
+  fourLevelGain, fourLevelSlopeEfficiency, fourLevelThreshold, laserOutput, roundTripLoss, saturationIntensity,
+} from "../../../physics/wave-optics/laser-resonator";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
 
 export default function SolidStateLaserResonatorPage() {
-  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 10); // mm
-  const [crystalDiameter, setCrystalDiameter] = useURLState("crystalDiameter", 3); // mm
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm
-  const [R1, setR1] = useState(-100); // mm (HR, concave)
-  const [R2, setR2] = useURLState("R2", 200); // mm (OC, concave or flat=inf)
-  const [L_cav, setL_cav] = useURLState("L_cav", 150); // mm cavity length
-  const [R_oc, setR_oc] = useURLState("R_oc", 0.95);
-  const [R_hr, setR_hr] = useURLState("R_hr", 0.999);
-  const [alpha_c, setAlpha_c] = useURLState("alpha_c", 0.001); // cm^-1 crystal loss
-  const [n_crystal, setN_crystal] = useURLState("n_crystal", 1.82); // Nd:YAG
+  const [crystalLengthRaw, setCrystalLength] = useURLState("crystalLength", 10); // mm
+  const [crystalDiameterRaw, setCrystalDiameter] = useURLState("crystalDiameter", 3); // mm
+  const [nRaw, setN] = useURLState("n_crystal", 1.82);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1064); // nm
+  const [pumpWavelengthRaw, setPumpWavelength] = useURLState("pumpWavelength", 808); // nm
+  const [pumpRaw, setPump] = useURLState("pump", 20); // W absorbed
+  const [etaRaw, setEta] = useURLState("etaP", 1);
+  const [sigmaRaw, setSigma] = useURLState("sigma", 2.8); // 1e-19 cm²
+  const [tauRaw, setTau] = useURLState("tau", 230); // µs
+  const [r1Raw, setR1] = useURLState("R1", 0); // mm, 0 = flat
+  const [r2Raw, setR2] = useURLState("R2", 200); // mm
+  const [lCavRaw, setLCav] = useURLState("L_cav", 150); // mm
+  const [rOcRaw, setROc] = useURLState("R_oc", 0.95);
+  const [rHrRaw, setRHr] = useURLState("R_hr", 0.999);
+  const [alphaRaw, setAlpha] = useURLState("alpha_c", 0.001); // cm⁻¹
 
-  const L_crystal_cm = crystalLength / 10;
-  const n = n_crystal;
-  const thermalLensDiopters = 0; // simplified
-  const effectiveCavity = L_cav / 1000; // m
+  const l_mm = clamp(crystalLengthRaw, 0.1, 300, 10);
+  const d_mm = clamp(crystalDiameterRaw, 0.1, 50, 3);
+  const n = clamp(nRaw, 1, 4, 1.82);
+  const lambda_nm = clamp(wavelengthRaw, 300, 5000, 1064);
+  const lambdaP_nm = clamp(pumpWavelengthRaw, 200, 5000, 808);
+  const pump = clamp(pumpRaw, 0, 1e5, 20);
+  const etaP = clamp(etaRaw, 0.01, 1, 1);
+  const sigma = clamp(sigmaRaw, 1e-4, 1e4, 2.8) * 1e-23; // 1e-19 cm² → m²
+  const tau = clamp(tauRaw, 1e-3, 1e5, 230) * 1e-6;
+  const R1_mm = clamp(r1Raw, -1e7, 1e7, 0);
+  const R2_mm = clamp(r2Raw, -1e7, 1e7, 200);
+  const L_mm = clamp(lCavRaw, 0.1, 1e5, 150);
+  const R_oc = clamp(rOcRaw, 0.01, 0.9999, 0.95);
+  const R_hr = clamp(rHrRaw, 0.01, 1, 0.999);
+  const alpha = clamp(alphaRaw, 0, 10, 0.001); // cm⁻¹
 
-  // Gaussian beam in cavity
-  // Stability: 0 <= g1*g2 <= 1
-  const g1 = 1 - effectiveCavity / (R1 / 1000);
-  const g2 = 1 - effectiveCavity / (R2 / 1000);
-  const g1g2 = g1 * g2;
-  const isStable = g1g2 > 0 && g1g2 < 1;
+  // The crystal (index n, against the HR) shortens the cavity's effective length to L − l(1 − 1/n).
+  const l = l_mm * 1e-3;
+  const L = L_mm * 1e-3;
+  const fits = l < L;
+  const Leff = fits ? L - l * (1 - 1 / n) : NaN;
+  const toRadius = (R_mm: number) => (R_mm === 0 ? Infinity : R_mm * 1e-3);
+  const g1 = gParameter(Leff, toRadius(R1_mm));
+  const g2 = gParameter(Leff, toRadius(R2_mm));
+  const stability = resonatorStability(g1, g2);
+  const lambda = lambda_nm * 1e-9;
+  const lambdaP = lambdaP_nm * 1e-9;
+  const mode = twoMirrorMode(lambda, Leff, g1, g2);
+  const radiusAt = (u: number) => mode.w0 * Math.sqrt(1 + ((u - mode.z1) / mode.zR) ** 2); // u: reduced position
+  const toPhysical = (u: number) => (u <= l / n ? u * n : u + l * (1 - 1 / n));
+  const waistPos = toPhysical(mode.z1);
+  const rodSpot = Math.max(radiusAt(0), radiusAt(l / n)); // w(u) is convex: the largest spot in the rod is at a face
 
-  // Beam waist at center
-  const lambda_m = wavelength * 1e-9;
-  const R1m = R1 / 1000;
-  const R2m = R2 / 1000;
+  // Rod pumped uniformly over its cross-section, multimode output filling it.
+  const rodArea = Math.PI * (d_mm * 5e-4) ** 2;
+  const internal = alpha * 100 * l; // single-pass loss αl, nepers
+  const delta = roundTripLoss(R_hr, R_oc, internal);
+  const pTh = fourLevelThreshold(delta, lambdaP, sigma, tau, rodArea, etaP);
+  const g0l = fourLevelGain(pump, lambdaP, sigma, tau, rodArea, etaP);
+  const iSat = saturationIntensity(lambda, sigma, tau);
+  const pSat = iSat * rodArea;
+  const pOut = laserOutput(g0l, R_hr, R_oc, internal, pSat);
+  const slope = fourLevelSlopeEfficiency(lambda, lambdaP, R_hr, R_oc, internal, rodArea, rodArea, etaP);
+  const statusTone = stability === "stable" ? "green" : stability === "marginal" ? "yellow" : "red";
 
-  let beamWaist = 0;
-  let zR = 0;
-  if (isStable && R1m !== 0 && R2m !== 0) {
-    // Waist at position where d/dz(w²)=0
-    const d = effectiveCavity;
-    const t1 = d * (R2m - d) / (R2m + R1m - 2 * d);
-    const t2 = d * (R1m - d) / (R2m + R1m - 2 * d);
-    const w1_sq = (lambda_m / Math.PI) * Math.sqrt(R1m * t1 * (d - t1) / (R1m - d));
-    beamWaist = Math.sqrt(Math.max(0, w1_sq)) * 1e6; // µm
-    zR = Math.PI * Math.pow(beamWaist * 1e-3, 2) / (wavelength * 1e-6); // mm (µm²/nm = mm)
-  }
+  const pMax = Math.max(2 * pump, 1.5 * (Number.isFinite(pTh) ? pTh : 0), 1);
+  const outputCurve = Array.from({ length: 101 }, (_, i) => {
+    const p = (pMax * i) / 100;
+    return { x: round6(p), y: round6(laserOutput(fourLevelGain(p, lambdaP, sigma, tau, rodArea, etaP), R_hr, R_oc, internal, pSat)) };
+  });
+  const powerSeries = [
+    { name: "Output power", color: "#60a5fa", points: outputCurve },
+    { name: "Operating point", color: "#facc15", showPoints: true, points: Number.isFinite(pOut) ? [{ x: round6(pump), y: round6(pOut) }] : [] },
+  ];
 
-  // Threshold
-  const crystalLoss = alpha_c * L_crystal_cm;
-  const outputLoss = -Math.log(R_oc);
-  const totalLoss = crystalLoss + outputLoss + (1 - R_hr);
-  const sigma_em = 2.8e-23; // m² Nd:YAG
-  const tau_f = 230e-6; // s
-  const A_crystal = Math.PI * Math.pow(crystalDiameter / 2 * 1e-3, 2);
-  const P_th = totalLoss * h * c / (wavelength * 1e-9 * sigma_em * tau_f) * A_crystal / (2 * L_crystal_cm / 100);
-
-  // Slope efficiency
-  const eta_slope = 0.5 * outputLoss / totalLoss;
-
-  // Stability diagram
-  const stabilityData = useMemo(() => {
-    const gs = Array.from({ length: 100 }, (_, i) => -1 + i * 3 / 100);
-    const data: any[] = [];
-    // Fill stable region
-    const xStable: number[] = [];
-    const yStable: number[] = [];
-    for (const g1v of gs) {
-      for (const g2v of gs) {
-        if (g1v * g2v > 0 && g1v * g2v < 1) {
-          xStable.push(g1v);
-          yStable.push(g2v);
-        }
-      }
-    }
-    data.push({ x: xStable, y: yStable, type: "scatter", mode: "markers", marker: { color: "#34d39940", size: 3 }, name: "Stable" });
-    data.push({ x: [g1], y: [g2], type: "scatter", mode: "markers", marker: { color: "#f87171", size: 12 }, name: "This Cavity" });
-    return data;
-  }, [g1, g2]);
-
-  // Beam radius along cavity
-  const beamProfileData = useMemo(() => {
-    if (!isStable) return [];
-    const zs = Array.from({ length: 200 }, (_, i) => i * effectiveCavity / 200);
-    const ws = zs.map(z => {
-      const wz = beamWaist * 1e-6 * Math.sqrt(1 + Math.pow((z - effectiveCavity / 2) / (zR > 0 ? zR : 1), 2));
-      return wz * 1e6;
-    });
-    return [{ x: zs.map(z => z * 1000), y: ws, type: "scatter", mode: "lines", name: "Beam Radius", line: { color: "#60a5fa", width: 2 } }];
-  }, [isStable, beamWaist, zR, effectiveCavity]);
-
-  // Output power vs pump
-  const piData = useMemo(() => {
-    const pumps = Array.from({ length: 100 }, (_, i) => i * 10 / 100);
-    return [
-      { x: pumps, y: pumps.map(Pp => Pp > P_th ? eta_slope * (Pp - P_th) : 0), type: "scatter", mode: "lines", name: "Output (W)", line: { color: "#60a5fa", width: 2 } },
-      { x: pumps, y: pumps.map(() => P_th), type: "scatter", mode: "lines", name: "Threshold", line: { color: "#f87171", dash: "dash" } },
-    ];
-  }, [P_th, eta_slope]);
-
-  const plotLayout: any = {
-    paper_bgcolor: "#111827",
-    plot_bgcolor: "#1f2937",
-    font: { color: "#e5e7eb" },
-    xaxis: { gridcolor: "#374151" },
-    yaxis: { gridcolor: "#374151" },
-    margin: { t: 40, r: 20, b: 50, l: 60 },
-    legend: { orientation: "h", y: -0.2 },
-  };
-  const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
+  const profile = Number.isFinite(mode.w0)
+    ? Array.from({ length: 201 }, (_, i) => {
+        const z = (L * i) / 200;
+        const u = z <= l ? z / n : z - l * (1 - 1 / n);
+        return { x: round6(z * 1e3), y: round6(radiusAt(u) * 1e6) };
+      })
+    : [];
+  const rodEdge = (d_mm / 2) * 1e3;
+  const profileSeries = [
+    { name: "TEM₀₀ radius w(z)", color: "#34d399", points: profile },
+    { name: "Crystal (rod radius)", color: "#9ca3af", dashed: true, points: profile.length ? [{ x: 0, y: round6(rodEdge) }, { x: round6(l_mm), y: round6(rodEdge) }] : [] },
+  ];
 
   return (
     <>
-            
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4">
-          <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} />
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4">
-          <ValidatedNumberInput label="Crystal Diameter (mm)" value={crystalDiameter} onChange={setCrystalDiameter} />
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4">
-          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4">
-          <ValidatedNumberInput label="R₁ (HR mirror, mm)" value={R1} onChange={setR1} />
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4">
-          <ValidatedNumberInput label="R₂ (OC mirror, mm)" value={R2} onChange={setR2} />
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4">
-          <ValidatedNumberInput label="Cavity Length (mm)" value={L_cav} onChange={setL_cav} />
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4">
-          <ValidatedNumberInput label="OC Reflectivity" value={R_oc} onChange={setR_oc} />
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4">
-          <ValidatedNumberInput label="HR Reflectivity" value={R_hr} onChange={setR_hr} />
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4">
-          <ValidatedNumberInput label="Crystal Index" value={n_crystal} onChange={setN_crystal} />
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Crystal length l (mm)" value={crystalLengthRaw} onChange={setCrystalLength} min={0.1} max={300} step="any" />
+        <ValidatedNumberInput label="Crystal diameter (mm)" value={crystalDiameterRaw} onChange={setCrystalDiameter} min={0.1} max={50} step="any" />
+        <ValidatedNumberInput label="Crystal refractive index n" value={nRaw} onChange={setN} min={1} max={4} step="any" />
+        <ValidatedNumberInput label="Laser wavelength λ (nm)" value={wavelengthRaw} onChange={setWavelength} min={300} max={5000} step="any" />
+        <ValidatedNumberInput label="Emission cross-section σ (10⁻¹⁹ cm²)" value={sigmaRaw} onChange={setSigma} min={1e-4} max={1e4} step="any" />
+        <ValidatedNumberInput label="Upper-level lifetime τ (µs)" value={tauRaw} onChange={setTau} min={1e-3} max={1e5} step="any" />
+        <ValidatedNumberInput label="Pump wavelength λₚ (nm)" value={pumpWavelengthRaw} onChange={setPumpWavelength} min={200} max={5000} step="any" />
+        <ValidatedNumberInput label="Absorbed pump power (W)" value={pumpRaw} onChange={setPump} min={0} max={1e5} step="any" />
+        <ValidatedNumberInput label="Pump efficiency ηₚ (upper-level ions per absorbed photon)" value={etaRaw} onChange={setEta} min={0.01} max={1} step="any" />
+        <ValidatedNumberInput label="Cavity length L (mm)" value={lCavRaw} onChange={setLCav} min={0.1} max={1e5} step="any" />
+        <ValidatedNumberInput label="HR radius R₁ (mm; 0 = flat, < 0 convex)" value={r1Raw} onChange={setR1} min={-1e7} max={1e7} step="any" />
+        <ValidatedNumberInput label="Output coupler radius R₂ (mm; 0 = flat)" value={r2Raw} onChange={setR2} min={-1e7} max={1e7} step="any" />
+        <ValidatedNumberInput label="Output coupler reflectance" value={rOcRaw} onChange={setROc} min={0.01} max={0.9999} step="any" />
+        <ValidatedNumberInput label="HR reflectance" value={rHrRaw} onChange={setRHr} min={0.01} max={1} step="any" />
+        <ValidatedNumberInput label="Crystal loss α (cm⁻¹)" value={alphaRaw} onChange={setAlpha} min={0} max={10} step="any" />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">g₁·g₂</div>
-          <div className="text-xl font-bold">{g1g2.toFixed(4)}</div>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">Stable?</div>
-          <div className="text-xl font-bold">{isStable ? "YES" : "NO"}</div>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">Beam Waist</div>
-          <div className="text-xl font-bold text-blue-400">{beamWaist.toFixed(1)} µm</div>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
-          <div className="text-xs text-gray-400">Slope Efficiency</div>
-          <div className="text-xl font-bold text-yellow-400">{(eta_slope * 100).toFixed(1)}%</div>
-        </div>
+      {!fits && (
+        <p className="mb-6 rounded-lg border border-red-700 bg-red-950/40 p-3 text-sm text-red-200">
+          The crystal is longer than the cavity: shorten it or lengthen the cavity.
+        </p>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-4">
+        <ResultCard label="g₁g₂" value={fmt(g1 * g2)} subtext={`g₁ = ${fmt(g1)}, g₂ = ${fmt(g2)}; ${stability}`} tone={statusTone} />
+        <ResultCard label="TEM₀₀ waist w₀" value={`${fmt(mode.w0 * 1e6)} µm`} subtext={`${fmt(waistPos * 1e3)} mm from the HR`} tone="green" />
+        <ResultCard label="TEM₀₀ spot in the rod" value={`${fmt(rodSpot * 1e6)} µm`} subtext={`Rod radius ${fmt(rodEdge)} µm; spot on OC ${fmt(mode.w2 * 1e6)} µm`} tone="cyan" />
+        <ResultCard label="Effective cavity length" value={`${fmt(Leff * 1e3)} mm`} subtext="L − l(1 − 1/n)" tone="blue" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard label="Round-trip loss δ" value={`${fmt(delta * 100)} %`} subtext="−ln(R_HR R_OC) + 2αl" tone="orange" />
+        <ResultCard label="Threshold pump power" value={`${fmt(pTh)} W`} subtext={`Small-signal gain g₀l = ${fmt(g0l)} at ${fmt(pump)} W`} tone="red" />
+        <ResultCard label="Output power" value={`${fmt(pOut)} W`} subtext={`I_sat = ${fmt(iSat / 1e7)} kW/cm²`} tone="yellow" />
+        <ResultCard label="Slope efficiency" value={`${fmt(slope * 100)} %`} subtext={`Quantum defect limit λₚ/λ = ${fmt((lambdaP / lambda) * 100)} %`} tone="purple" />
       </div>
 
-      <div className="bg-gray-800 rounded-lg p-4 mb-6">
-        <h3 className="font-semibold mb-3">Key Formulas</h3>
-        <div className="text-sm text-gray-300 space-y-1 font-mono">
-          <p>g₁ = 1 - L/R₁, g₂ = 1 - L/R₂</p>
-          <p>Stable: 0 &lt; g₁g₂ &lt; 1</p>
-          <p>w²(z) = w₀²[1 + (z/z_R)²]</p>
-          <p>P_out = η_s · (P_pump - P_th)</p>
-          <p>δ_total = α·L_c + ln(1/R_oc) + (1 - R_hr)</p>
-        </div>
+      {stability !== "stable" && fits && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          The cavity is {stability === "unstable" ? "unstable" : "on the stability boundary"}: there is no TEM₀₀ mode. The threshold and
+          output still describe a multimode laser only if the cavity confines the light.
+        </p>
+      )}
+
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>Four-level rod pumped uniformly over its area A = πd²/4: g₀l = ηₚστPₚλₚ/(hcA), threshold Pₜₕ = δhcA/(2ηₚστλₚ), I_sat = hc/(λστ).</p>
+        <p>Rigrod output P = I_sat A (1 − R₂)√R₁′(g₀l + ln√(R₁′R₂))/((√R₁′ + √R₂)(1 − √(R₁′R₂))), R₁′ = R_HR e⁻²ᵅˡ; for small losses
+          P ≈ I_sat A (T/2)(2g₀l/δ − 1).</p>
+        <p>TEM₀₀ mode: Kogelnik–Li with the crystal (against the HR) folded into the effective length L − l(1 − 1/n).</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-800 rounded-lg p-4">
-          <h3 className="font-semibold mb-2">Stability Diagram</h3>
-          <ChartPanel data={stabilityData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "g₁", range: [-1, 2] }, yaxis: { ...plotLayout.yaxis, title: "g₂", range: [-1, 2] }, width: 450, height: 400 }} />
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4">
-          <h3 className="font-semibold mb-2">Beam Radius Along Cavity</h3>
-          <ChartPanel data={beamProfileData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Position (mm)" }, yaxis: { ...plotLayout.yaxis, title: "Beam Radius (µm)" } }} />
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4 md:col-span-2">
-          <h3 className="font-semibold mb-2">Output Power vs Pump Power</h3>
-          <ChartPanel data={piData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Pump (W)" }, yaxis: { ...plotLayout.yaxis, title: "Output (W)" } }} />
-        </div>
+      <div className="space-y-6">
+        <SimpleLineChart title="Output power versus absorbed pump power" xLabel="Absorbed pump power (W)" yLabel="Output power (W)" series={powerSeries} />
+        {profile.length > 0 && <SimpleLineChart title="TEM₀₀ beam radius along the cavity (crystal against the HR at z = 0)" xLabel="Position from the HR (mm)" yLabel="Beam radius (µm)" series={profileSeries} />}
       </div>
     </>
   );

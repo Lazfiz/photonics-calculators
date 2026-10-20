@@ -1,166 +1,148 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { c, h } from "../../../physics/constants";
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { gParameter, resonatorStability, twoMirrorMode } from "../../../physics/wave-optics/two-mirror-resonator";
+import { laserOutput, meanSquareRadius, roundTripLoss } from "../../../physics/wave-optics/laser-resonator";
+import { optimumOutputCoupler } from "../../../physics/fiber-optics/doped-fiber-gain";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
+
+const LINES = [
+  { label: "HeNe 632.8 nm", nm: 632.8 },
+  { label: "HeNe 3.39 µm", nm: 3391.3 },
+  { label: "Ar⁺ 514.5 nm", nm: 514.5 },
+  { label: "CO₂ 10.6 µm", nm: 10600 },
+];
 
 export default function GasLaserResonatorPage() {
-  const [tubeDiameter, setTubeDiameter] = useURLState("tubeDiameter", 6); // mm
-  const [tubeLength, setTubeLength] = useURLState("tubeLength", 500); // mm
-  const [wavelength, setWavelength] = useURLState("wavelength", 632.8); // nm (HeNe default)
-  const [R1, setR1] = useURLState("R1", 1000); // mm HR
-  const [R2, setR2] = useURLState("R2", 5000); // mm OC (high radius = low output coupling)
-  const [R_oc, setR_oc] = useURLState("R_oc", 0.99); // OC reflectivity
-  const [pressure, setPressure] = useURLState("pressure", 3); // Torr
-  const [gasType, setGasType] = useState("HeNe");
+  const [diameterRaw, setDiameter] = useURLState("tubeDiameter", 6); // mm bore
+  const [lengthRaw, setLength] = useURLState("tubeLength", 500); // mm, mirror spacing
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 632.8); // nm
+  const [r1Raw, setR1] = useURLState("R1", 1000); // mm
+  const [r2Raw, setR2] = useURLState("R2", 5000); // mm
+  const [rOcRaw, setROc] = useURLState("R_oc", 0.99);
+  const [rHrRaw, setRHr] = useURLState("R_hr", 0.999);
+  const [lossRaw, setLoss] = useURLState("loss", 1); // % per pass
+  const [g0Raw, setG0] = useURLState("g0", 0.15); // 1/m
+  const [iSatRaw, setISat] = useURLState("Isat", 25); // W/cm²
 
-  const gasParams: Record<string, { sigma: number; tau: number; I_sat: number; A_gain: number; alpha: number }> = {
-    HeNe: { sigma: 3e-17, tau: 100e-9, I_sat: 4.5, A_gain: 5e-5, alpha: 0.0005 },
-    CO2: { sigma: 1.5e-22, tau: 1e-3, I_sat: 50, A_gain: 0.01, alpha: 0.005 },
-    ArIon: { sigma: 2.5e-16, tau: 5e-9, I_sat: 500, A_gain: 0.002, alpha: 0.01 },
-  };
+  const d_mm = clamp(diameterRaw, 0.1, 100, 6);
+  const L = clamp(lengthRaw, 10, 1e5, 500) * 1e-3;
+  const lambda = clamp(wavelengthRaw, 100, 20000, 632.8) * 1e-9;
+  const R1_mm = clamp(r1Raw, -1e7, 1e7, 1000);
+  const R2_mm = clamp(r2Raw, -1e7, 1e7, 5000);
+  const R_oc = clamp(rOcRaw, 0.01, 0.9999, 0.99);
+  const R_hr = clamp(rHrRaw, 0.01, 1, 0.999);
+  const internal = -Math.log(1 - clamp(lossRaw, 0, 50, 1) / 100); // single pass, nepers
+  const g0 = clamp(g0Raw, 0, 100, 0.15);
+  const iSat = clamp(iSatRaw, 1e-3, 1e6, 25) * 1e4; // W/m²
 
-  const params = gasParams[gasType] || gasParams.HeNe;
-  const lambda_m = wavelength * 1e-9;
-  const L_m = tubeLength / 1000;
-  const L_cm = tubeLength / 10;
-  const R1m = R1 / 1000; const R2m = R2 / 1000;
+  const toRadius = (R_mm: number) => (R_mm === 0 ? Infinity : R_mm * 1e-3);
+  const g1 = gParameter(L, toRadius(R1_mm));
+  const g2 = gParameter(L, toRadius(R2_mm));
+  const stability = resonatorStability(g1, g2);
+  const mode = twoMirrorMode(lambda, L, g1, g2);
+  const statusTone = stability === "stable" ? "green" : stability === "marginal" ? "yellow" : "red";
+  const a = d_mm * 5e-4; // bore radius, m
+  const fresnel = (a * a) / (lambda * L);
+  const wMax = Math.max(mode.w1, mode.w2);
+  const clipLoss = Math.exp((-2 * a * a) / (wMax * wMax)); // power outside the bore at the larger mirror spot
 
-  // Stability
-  const g1 = 1 - L_m / R1m;
-  const g2 = 1 - L_m / R2m;
-  const g1g2 = g1 * g2;
-  const isStable = g1g2 > 0 && g1g2 < 1;
+  // Gain fills the tube: the mode saturates it over its mean-square radius, P_sat = I_sat π⟨w²⟩/2.
+  const g0l = g0 * L;
+  const pSat = (iSat * Math.PI * meanSquareRadius(mode.w0, mode.zR, mode.z1, L)) / 2;
+  const delta = roundTripLoss(R_hr, R_oc, internal);
+  const gTh = delta / (2 * L);
+  const pOut = laserOutput(g0l, R_hr, R_oc, internal, pSat);
+  const rearR = R_hr * Math.exp(-2 * internal);
+  const best = optimumOutputCoupler(g0l, rearR);
+  const pBest = best.output * pSat;
 
-  // Fresnel number
-  const Fresnel = Math.pow(tubeDiameter / 2 * 1e-3, 2) / (lambda_m * L_m);
+  const rLo = Math.max(0.5, Math.min(R_oc, Number.isFinite(best.R2) ? best.R2 : 1) - 0.02);
+  const curve = Number.isFinite(pSat)
+    ? Array.from({ length: 121 }, (_, i) => {
+        const r = rLo + ((0.9999 - rLo) * i) / 120;
+        return { x: round6(r), y: round6(laserOutput(g0l, R_hr, r, internal, pSat) * 1e3) };
+      })
+    : [];
+  const couplerSeries = [
+    { name: "Output power", color: "#a78bfa", points: curve },
+    { name: "Optimum coupler", color: "#34d399", showPoints: true, points: pBest > 0 ? [{ x: round6(best.R2), y: round6(pBest * 1e3) }] : [] },
+    { name: "This coupler", color: "#facc15", showPoints: true, points: Number.isFinite(pOut) ? [{ x: round6(R_oc), y: round6(pOut * 1e3) }] : [] },
+  ];
 
-  // Beam waist (TEM00)
-  let w0 = 0;
-  if (isStable && R1m !== R2m) {
-    const term = Math.pow(g1 + g2 - 2 * g1 * g2, 2) - 4 * g1 * g2 * (g1 * g2 - 1);
-    if (term > 0) {
-      w0 = Math.pow(lambda_m * L_m / Math.PI, 0.5) * Math.pow(g1 * g2 * (1 - g1 * g2) / Math.pow(g1 + g2 - 2 * g1 * g2, 2), 0.25);
-    }
-  } else if (Math.abs(R1m - R2m) < 1e-9) {
-    // Symmetric resonator: w₀ = (λL/π)^(1/2) · [(1+g)/(4(1-g))]^(1/4)
-    const g = g1;
-    if (g > 0 && g < 1) {
-      w0 = Math.sqrt(lambda_m * L_m / Math.PI) * Math.pow((1 + g) / (4 * (1 - g)), 0.25);
-    }
-  }
-  w0 = w0 || 0; // No fallback for unstable
-  const beamWaist_um = w0 * 1e6;
-
-  // Gain
-  const smallSignalGain = params.A_gain * Math.sqrt(pressure / 3);
-  const outputCouplingLoss = -Math.log(R_oc);
-  const internalLoss = params.alpha * L_cm;
-  const totalLoss = outputCouplingLoss + internalLoss;
-
-  // Threshold
-  const g_th = totalLoss / (2 * L_m);
-  const isAboveThreshold = smallSignalGain > g_th;
-
-  // Saturation
-  const Isat = params.I_sat * 1e4; // W/m²
-  const A_beam = Math.PI * w0 * w0;
-
-  // Output power (only for stable cavities above threshold)
-  const P_out = (isAboveThreshold && w0 > 0) ? Isat * A_beam * (smallSignalGain * 2 * L_m - totalLoss) * outputCouplingLoss / totalLoss : 0;
-
-  // Optimal OC: T_opt = -δ_i + √(2gL·δ_i), R_opt = exp(-T_opt) = exp(δ_i - √(2gL·δ_i))
-  const R_opt = Math.exp(internalLoss - Math.sqrt(2 * smallSignalGain * L_m * internalLoss));
-
-  // Gain saturation curve
-  const saturationData = useMemo(() => {
-    const gains = Array.from({ length: 100 }, (_, i) => i * 10 / 100); // m^-1
-    const P = gains.map(g => {
-      const gL = g * L_m;
-      if (gL <= totalLoss / 2) return 0;
-      return Isat * A_beam * (2 * gL - totalLoss) * outputCouplingLoss / totalLoss;
-    });
-    return [
-      { x: gains, y: P, type: "scatter", mode: "lines", name: "P_out (W)", line: { color: "#60a5fa", width: 2 } },
-      { x: gains, y: gains.map(() => g_th), type: "scatter", mode: "lines", name: "g_th", line: { color: "#f87171", dash: "dash" } },
-    ];
-  }, [totalLoss, L_m, Isat, A_beam, outputCouplingLoss, g_th]);
-
-  // Optimal OC vs gain
-  const optRData = useMemo(() => {
-    const gains = Array.from({ length: 100 }, (_, i) => 0.5 + i * 15 / 100);
-    const Rs = gains.map(g => {
-      const gL = g * L_m;
-      const val = internalLoss - Math.sqrt(Math.max(0, 2 * gL * internalLoss));
-      return Math.exp(val);
-    });
-    return [{ x: gains, y: Rs, type: "scatter", mode: "lines", name: "R_opt", line: { color: "#34d399", width: 2 } }];
-  }, [L_m, internalLoss]);
-
-  // P_out vs OC reflectivity
-  const poutVsR = useMemo(() => {
-    const Rs = Array.from({ length: 100 }, (_, i) => 0.5 + i * 0.5 / 100);
-    const P = Rs.map(r => {
-      const ocLoss = -Math.log(r);
-      const tLoss = ocLoss + internalLoss;
-      const gL = smallSignalGain * L_m;
-      if (2 * gL <= tLoss) return 0;
-      return Isat * A_beam * (2 * gL - tLoss) * ocLoss / tLoss;
-    });
-    return [{ x: Rs, y: P, type: "scatter", mode: "lines", name: "P_out", line: { color: "#a78bfa", width: 2 } }];
-  }, [smallSignalGain, L_m, Isat, A_beam, internalLoss]);
-
-  const plotLayout: any = {
-    paper_bgcolor: "#111827", plot_bgcolor: "#1f2937", font: { color: "#e5e7eb" },
-    xaxis: { gridcolor: "#374151" }, yaxis: { gridcolor: "#374151" },
-    margin: { t: 40, r: 20, b: 50, l: 60 }, legend: { orientation: "h", y: -0.25 },
-  };
-  const inputStyle = "bg-gray-800 border border-gray-600 rounded px-2 py-1 w-full text-white text-sm";
+  const profile = Number.isFinite(mode.w0)
+    ? Array.from({ length: 201 }, (_, i) => {
+        const z = (L * i) / 200;
+        return { x: round6(z * 1e3), y: round6(mode.w0 * Math.sqrt(1 + ((z - mode.z1) / mode.zR) ** 2) * 1e3) };
+      })
+    : [];
+  const profileSeries = [
+    { name: "TEM₀₀ radius w(z)", color: "#60a5fa", points: profile },
+    { name: "Bore radius", color: "#9ca3af", dashed: true, points: profile.length ? [{ x: 0, y: round6(a * 1e3) }, { x: round6(L * 1e3), y: round6(a * 1e3) }] : [] },
+  ];
 
   return (
     <>
-            
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-sm text-gray-400">Gas Type</label>
-          <select className={inputStyle} value={gasType} onChange={e => setGasType(e.target.value)}>
-            <option value="HeNe">HeNe (632.8 nm)</option>
-            <option value="CO2">CO₂ (10.6 µm)</option>
-            <option value="ArIon">Ar⁺ (488/514 nm)</option>
-          </select>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Tube Diameter (mm)" value={tubeDiameter} onChange={setTubeDiameter} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Tube Length (mm)" value={tubeLength} onChange={setTubeLength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="R₁ HR (mm)" value={R1} onChange={setR1} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="R₂ OC (mm)" value={R2} onChange={setR2} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="OC Reflectivity" value={R_oc} onChange={setR_oc} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><ValidatedNumberInput label="Pressure (Torr)" value={pressure} onChange={setPressure} /></div>
+      <div className="flex flex-wrap gap-2 mb-4">
+        {LINES.map((line) => (
+          <button
+            key={line.label}
+            type="button"
+            onClick={() => setWavelength(line.nm)}
+            className={`rounded-lg border px-3 py-1 text-sm ${Math.abs(wavelengthRaw - line.nm) < 1e-6 ? "border-blue-500 bg-blue-950/60 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}
+          >
+            {line.label}
+          </button>
+        ))}
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Wavelength λ (nm)" value={wavelengthRaw} onChange={setWavelength} min={100} max={20000} step="any" />
+        <ValidatedNumberInput label="Small-signal gain g₀ (1/m, measured for your tube)" value={g0Raw} onChange={setG0} min={0} max={100} step="any" />
+        <ValidatedNumberInput label="Saturation intensity I_sat (W/cm²)" value={iSatRaw} onChange={setISat} min={1e-3} max={1e6} step="any" />
+        <ValidatedNumberInput label="Mirror spacing = gain length L (mm)" value={lengthRaw} onChange={setLength} min={10} max={1e5} step="any" />
+        <ValidatedNumberInput label="Bore diameter (mm)" value={diameterRaw} onChange={setDiameter} min={0.1} max={100} step="any" />
+        <ValidatedNumberInput label="Other loss per pass (%: windows, scatter)" value={lossRaw} onChange={setLoss} min={0} max={50} step="any" />
+        <ValidatedNumberInput label="HR radius R₁ (mm; 0 = flat)" value={r1Raw} onChange={setR1} min={-1e7} max={1e7} step="any" />
+        <ValidatedNumberInput label="Output coupler radius R₂ (mm; 0 = flat)" value={r2Raw} onChange={setR2} min={-1e7} max={1e7} step="any" />
+        <ValidatedNumberInput label="HR reflectance" value={rHrRaw} onChange={setRHr} min={0.01} max={1} step="any" />
+        <ValidatedNumberInput label="Output coupler reflectance" value={rOcRaw} onChange={setROc} min={0.01} max={0.9999} step="any" />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">g₁g₂</div><div className="text-xl font-bold">{g1g2.toFixed(4)}</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">Beam Waist</div><div className="text-xl font-bold text-blue-400">{beamWaist_um.toFixed(0)} µm</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">Fresnel #</div><div className="text-xl font-bold text-green-400">{Fresnel.toFixed(2)}</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">R_opt</div><div className="text-xl font-bold text-yellow-400">{Math.min(1, R_opt).toFixed(4)}</div></div>
-        <div className="bg-gray-800 rounded-lg p-4 text-center"><div className="text-xs text-gray-400">P_out</div><div className="text-xl font-bold text-purple-400">{P_out.toFixed(3)} W</div></div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-4">
+        <ResultCard label="g₁g₂" value={fmt(g1 * g2)} subtext={`g₁ = ${fmt(g1)}, g₂ = ${fmt(g2)}; ${stability}`} tone={statusTone} />
+        <ResultCard label="TEM₀₀ waist w₀" value={`${fmt(mode.w0 * 1e6)} µm`} subtext={`${fmt(mode.z1 * 1e3)} mm from the HR`} tone="blue" />
+        <ResultCard label="Fresnel number a²/(λL)" value={fmt(fresnel)} subtext={`Largest mirror spot ${fmt(wMax * 1e6)} µm; bore radius ${fmt(a * 1e6)} µm`} tone="green" />
+        <ResultCard label="Power outside the bore" value={`${fmt(clipLoss * 100, 3)} %`} subtext="e^(−2a²/w²) at the larger mirror spot (not in the loss)" tone={clipLoss > 0.01 ? "red" : "cyan"} />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard label="Threshold gain g_th" value={`${fmt(gTh)} 1/m`} subtext={`δ/(2L), δ = ${fmt(delta * 100)} % round trip; g₀ = ${fmt(g0)} 1/m`} tone="orange" />
+        <ResultCard label="Output power" value={`${fmt(pOut * 1e3)} mW`} subtext={`P_sat = I_sat π⟨w²⟩/2 = ${fmt(pSat * 1e3)} mW`} tone="purple" />
+        <ResultCard label="Optimum coupler reflectance" value={fmt(best.R2, 5)} subtext={`Rigrod optimum for this gain and loss`} tone="yellow" />
+        <ResultCard label="Output at the optimum" value={`${fmt(pBest * 1e3)} mW`} tone="yellow" />
       </div>
 
-      <div className="bg-gray-800 rounded-lg p-4 mb-6">
-        <h3 className="font-semibold mb-3">Key Formulas</h3>
-        <div className="text-sm text-gray-300 space-y-1 font-mono">
-          <p>P_out = I_sat · A · (2gL - δ) · T_oc / δ</p>
-          <p>R_opt = exp(-2gL - δ_i + √(2gL·δ_i))</p>
-          <p>g_th = δ_total / (2L)</p>
-          <p>F = a² / (λL)</p>
-        </div>
+      {stability !== "stable" && (
+        <p className="mb-6 rounded-lg border border-yellow-700 bg-yellow-950/40 p-3 text-sm text-yellow-200">
+          The cavity is {stability === "unstable" ? "unstable" : "on the stability boundary"}: there is no TEM₀₀ mode, so no waist or
+          output power.
+        </p>
+      )}
+
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>Rigrod: P = P_sat (1 − R₂)√R₁′(g₀L + ln√(R₁′R₂))/((√R₁′ + √R₂)(1 − √(R₁′R₂))), R₁′ = R_HR(1 − loss)²; threshold g₀L = δ/2.
+          For small losses the optimum transmission is T ≈ √(2g₀L δᵢ) − δᵢ.</p>
+        <p>Mode: Kogelnik–Li, w₀² = (λ/π)L√(g₁g₂(1 − g₁g₂))/|g₁ + g₂ − 2g₁g₂|. Fresnel number N = a²/(λL).</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">Output Power vs Gain</h3><ChartPanel data={saturationData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "Gain (m⁻¹)" }, yaxis: { ...plotLayout.yaxis, title: "P_out (W)" } }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4"><h3 className="font-semibold mb-2">P_out vs OC Reflectivity</h3><ChartPanel data={poutVsR} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "R_oc" }, yaxis: { ...plotLayout.yaxis, title: "P_out (W)" } }} /></div>
-        <div className="bg-gray-800 rounded-lg p-4 md:col-span-2"><h3 className="font-semibold mb-2">Optimal OC vs Small-Signal Gain</h3><ChartPanel data={optRData} layout={{ ...plotLayout, xaxis: { ...plotLayout.xaxis, title: "g₀ (m⁻¹)" }, yaxis: { ...plotLayout.yaxis, title: "R_opt" } }} /></div>
+      <div className="space-y-6">
+        {curve.length > 0 && <SimpleLineChart title="Output power versus output-coupler reflectance" xLabel="Output coupler reflectance" yLabel="Output power (mW)" series={couplerSeries} />}
+        {profile.length > 0 && <SimpleLineChart title="TEM₀₀ beam radius along the tube" xLabel="Position from the HR (mm)" yLabel="Radius (mm)" series={profileSeries} />}
       </div>
     </>
   );

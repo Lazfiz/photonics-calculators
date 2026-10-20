@@ -107,8 +107,16 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "dye-laser-resonator",
     title: "Dye Laser Resonator",
-    description: "Cavity stability, beam waist, small-signal and threshold gain, triplet loss versus flow speed and output power of a Rhodamine or Coumarin dye laser.",
-    knownIssue: "Gain is taken over the whole cavity length instead of the dye jet, so the default output is about 9 kW, and the triplet fraction near 100 % and the output-vs-pump chart are not physical.",
+    description: "CW dye jet laser in a two-mirror cavity: TEM₀₀ waist, triplet loss versus flow speed, threshold pump power, small-signal gain, output power and slope efficiency.",
+    keywords: ["rhodamine 6G", "dye jet", "triplet absorption", "intersystem crossing", "CW dye laser threshold", "Rigrod"],
+    tier: "textbook",
+    modelNote: "Four-level dye with the pump fully absorbed in a jet at the cavity waist; the Gaussian pump and mode overlap over π(w₀² + wₚ²)/2. Triplets reduce the gain cross-section to σₑ − σ_T k_ST τ_eff, with τ_eff set by the triplet lifetime and the flow transit across the pump spot. Output from Rigrod's homogeneous plane-wave model. The default dye constants are example values of the Rhodamine 6G order, not measured data: enter your dye's values. Ground-state reabsorption and the gain spectrum are ignored.",
+    references: [
+      { citation: "Peterson O. G., Tuccio S. A., Snavely B. B. (1970). CW operation of an organic dye solution laser. Appl. Phys. Lett. 17, 245–247.", url: "https://doi.org/10.1063/1.1653384" },
+      { citation: "Webb J. P., McColgin W. C., Peterson O. G. et al. (1970). Intersystem crossing rate and triplet state lifetime for a lasing dye. J. Chem. Phys. 53, 4227–4229.", url: "https://doi.org/10.1063/1.1673926" },
+      { citation: "Svelto O. (2010). Principles of Lasers, 5th ed., ch. 6–7. Springer.", url: "https://doi.org/10.1007/978-1-4419-1302-9" },
+      { citation: "Rigrod W. W. (1965). Saturation effects in high-gain lasers. J. Appl. Phys. 36, 2487–2490.", url: "https://doi.org/10.1063/1.1714517" },
+    ],
   },
   {
     slug: "etalon-finesse",
@@ -142,8 +150,16 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "gas-laser-resonator",
     title: "Gas Laser Resonator",
-    description: "Stability g₁g₂, beam waist, Fresnel number, optimal output coupling and output power of a HeNe or CO₂ laser from tube size and mirror radii.",
-    knownIssue: "Built-in small-signal gains are 25 to 700 times below threshold, so every gas shows 0 W output at default settings, and choosing CO2 or Ar+ does not change the wavelength.",
+    description: "Stability g₁g₂, TEM₀₀ waist and spot sizes against the bore, Fresnel number, threshold gain, output power and the optimum output coupler of a HeNe, Ar⁺ or CO₂ laser.",
+    keywords: ["HeNe laser", "CO2 laser", "argon ion laser", "optimum output coupling", "Rigrod", "Fresnel number"],
+    tier: "textbook",
+    modelNote: "Kogelnik–Li TEM₀₀ mode; gain filling the whole mirror spacing; output and optimum coupler from Rigrod's homogeneous plane-wave model with the saturation power I_sat π⟨w²⟩/2 over the mode's mean-square radius. HeNe and Ar⁺ lines are Doppler (inhomogeneously) broadened, so the output is an estimate. The default g₀ = 0.15 /m and I_sat ≈ 25 W/cm² are values measured on one 3.2 mm-bore HeNe tube (Ng et al.); enter your tube's values for other lines. Bore clipping is shown but not added to the loss.",
+    references: [
+      { citation: "Rigrod W. W. (1965). Saturation effects in high-gain lasers. J. Appl. Phys. 36, 2487–2490.", url: "https://doi.org/10.1063/1.1714517" },
+      { citation: "Kogelnik H., Li T. (1966). Laser beams and resonators. Appl. Opt. 5, 1550–1567.", url: "https://doi.org/10.1364/ao.5.001550" },
+      { citation: "Siegman A. E. (1986). Lasers, ch. 12 and 19. University Science Books." },
+      { citation: "Ng E., Onodera T., Stansbury C., Zhang L. (2015). Light amplification and oscillation in the HeNe resonator. Stanford University course report.", url: "https://web.stanford.edu/~edwin98/HeNe.pdf" },
+    ],
   },
   {
     slug: "gaussian-beam",
@@ -378,8 +394,16 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "solid-state-laser-resonator",
     title: "Solid State Laser Resonator",
-    description: "Two-mirror resonator stability g₁g₂, beam waist and radius along the cavity, and slope efficiency and output power of a solid-state laser.",
-    knownIssue: "The default cavity shows a beam waist of NaN µm and an empty beam plot, the waist formula is wrong even for symmetric cavities, and the threshold is about 100 times too high.",
+    description: "Nd:YAG-type rod laser: two-mirror stability and TEM₀₀ mode with the crystal in the cavity, threshold pump power, small-signal gain, Rigrod output power and slope efficiency.",
+    keywords: ["Nd:YAG laser", "laser threshold", "slope efficiency", "four-level laser", "Rigrod", "saturation intensity"],
+    tier: "textbook",
+    modelNote: "Four-level rod pumped uniformly over its cross-section with a multimode output filling it: P_th = δhcA/(2ηₚστλₚ), output from Rigrod's homogeneous plane-wave model. The TEM₀₀ mode is Kogelnik–Li with the crystal (against the HR) folded into the effective length L − l(1 − 1/n). No thermal lens, no ground-state absorption (not for quasi-three-level media such as Yb:YAG).",
+    references: [
+      { citation: "Koechner W. (2006). Solid-State Laser Engineering, 6th ed., ch. 2–3. Springer.", url: "https://doi.org/10.1007/0-387-29338-8" },
+      { citation: "Svelto O. (2010). Principles of Lasers, 5th ed., ch. 6–7. Springer.", url: "https://doi.org/10.1007/978-1-4419-1302-9" },
+      { citation: "Rigrod W. W. (1965). Saturation effects in high-gain lasers. J. Appl. Phys. 36, 2487–2490.", url: "https://doi.org/10.1063/1.1714517" },
+      { citation: "Kogelnik H., Li T. (1966). Laser beams and resonators. Appl. Opt. 5, 1550–1567.", url: "https://doi.org/10.1364/ao.5.001550" },
+    ],
   },
   {
     slug: "soliton",
