@@ -1,22 +1,19 @@
-# Handover — 2026-10-20 (session 106 → session 107)
+# Handover — 2026-10-20 (session 107 → session 108)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 106 did **spectroscopy fix part 10** (kinetics) on branch `phase-4/spectroscopy-kinetics` (PR after `/ship`).
-Next: **spectroscopy fix part 11** (molecular: microwave-spectroscopy CO μ 6.856 → B 1.9324 cm⁻¹, terahertz-spectroscopy,
-infrared-spectroscopy, electron-spectroscopy).
+Session 107 did **spectroscopy fix part 11** (molecular) on branch `phase-4/spectroscopy-molecular` (PR #138 after `/ship`).
+Next: **spectroscopy fix part 12** (snr-averaging + signal-to-noise → imaging/signal-to-noise, fourier-self-comb → dual-comb,
+sum-frequency-gen, blackbody, wavenumber-converter; split 12a/12b if big). Then ask the user: wave-optics or materials audit.
 
 ## State
-- `src/physics/math.ts`: new `erfcx(x)` (x ≥ 0; series below 2, continued fraction above).
-- `fluorescence-lifetime.ts`: `emgDecay`, `convolvedDecay`, `periodicDecay` (pile-up of earlier pulses, geometric tail),
-  `gaussianPulseBandwidth` (0.4413, exact Δλ).
-- New `pump-probe.ts`: `sequentialPopulations` (A→B→GS, IRF-convolved), `excitationFraction` (depth-averaged),
-  `photonFluence`, `deltaA` (GSB/SE/ESA-A/ESA-B Gaussian bands), `deltaTOverT`.
-- New `quantum-yield.ts`: `relativeQuantumYield` (absorptance or absorbance form; NaN on bad input).
-- New `two-dimensional.ts` (wavenumbers in m⁻¹): `dimer`, `transferMatrix`, `dimerPeaks`, `absorptiveLineshape`
-  (∫G·L·L in closed form via Faddeeva), `spectrum2D`, `linearAbsorption`, `orientationalAverage`, `homogeneousFwhm`.
-- `transient-absorption` merged into `pump-probe` (redirect). URL param changes are listed in the PR description.
-- Tests: `tests/spectroscopy-kinetics.test.ts` (6). 345 of 445 pages tiered, 8 `knownIssue`s (all spectroscopy).
+- New `diatomic.ts` (wavenumbers in m⁻¹): `DIATOMICS` (CO, HCl: NIST constants incl. ω_e y_e, ω_e z_e; AME2020 masses,
+  IUPAC abundances, minor isotopologue), `reducedMass`, `rotationalConstant(V)`, `vibrationalTerm`, `isotopologue`,
+  `rotationalPartition` (NaN if not converged at the J cap), `rotationalLines` (HITRAN S per molecule in level v), `rovibrationalBand`.
+- New `terahertz.ts`: `waterPermittivity` (LHM double Debye), `lorentzPermittivity`, `constantPermittivity`, `complexIndex`,
+  `slabTransmission(Polar)`, `extractIndex`, `maxAbsorption` (Jepsen–Fischer, floored at 0).
+- New `photoemission.ts`: `kineticEnergy`, `imfpTpp2m` (E above E_F, NaN below 50 eV), `samplingDepth`, `TPP2M_MATERIALS`.
+- Tests: `tests/spectroscopy-molecular.test.ts` (5). 349 of 444 pages tiered, 4 `knownIssue`s (all spectroscopy, part 12).
 - Per-page findings, goldens and references: PR #127 description (`gh pr view 127`); read the part at hand only.
 - **User decisions (session 96):** merges with redirects (ROADMAP "Spectroscopy fix parts"). **Release flow:** merges to `main`
   deploy nothing. Production deploys only from `release`, and only when the user asks: `git push origin main:release`, then
@@ -24,16 +21,18 @@ infrared-spectroscopy, electron-spectroscopy).
 - **User decisions (session 78):** keep dynamic-range, stimulated-raman-microscopy and resolution separate unless the user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 10: `spectroscopy/pump-probe=-2.752` (mOD),
-   `spectroscopy/time-resolved=12.50` (ns), `spectroscopy/fluorescence-quantum-yield=0.6454`, `spectroscopy/two-dimensional=282.8`
-   (cm⁻¹); part 9: `spectroscopy/absorption-depth=1.565`, `spectroscopy/penetration-depth=63.66`, `spectroscopy/optical-path-length=1.500`,
-   `spectroscopy/near-infrared=1.003`; earlier parts: `git show db346912:docs/HANDOVER.md`. No release unless asked.
-2. Spectroscopy part 11 (ROADMAP item 11); PR #127 has the findings.
-3. Later: open findings (conc-mirror/jacquinot overlap, FSO `adaptive-optics` actuators-as-modes, local `sinc` copies,
-   `fluorophores.ts` cutoff, `optical-sectioning-thickness`, detectors 7b, fiber, FSO), `polarizer-types` (needs the
-   user at the laptop with Chrome). Gold for SERS needs a gold dataset (none in `materials/`).
+1. `/ship` this branch. Values for a later release check: part 11: `spectroscopy/microwave-spectroscopy=115.2712` (GHz),
+   `spectroscopy/infrared-spectroscopy=2885.98` (cm⁻¹), `spectroscopy/terahertz-spectroscopy=2.070` (n at 1 THz, 20 °C),
+   `spectroscopy/electron-spectroscopy=1197.6` (eV; λ 3.08 nm); part 10: `spectroscopy/pump-probe=-2.752`,
+   `spectroscopy/time-resolved=12.50`, `spectroscopy/fluorescence-quantum-yield=0.6454`, `spectroscopy/two-dimensional=282.8`;
+   earlier parts: `git show db346912:docs/HANDOVER.md`. No release unless asked.
+2. Spectroscopy part 12 (ROADMAP item 12); PR #127 has the findings.
+3. Later: open findings (ROADMAP), `polarizer-types` (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
+- **Session 107:** NIST WebBook keeps higher constants in footnotes (CO ω_e y_e, ω_e z_e; HCl ω_e z_e): grep the saved HTML.
+  Git Bash rewrites `/a/b` arguments to Windows paths: prefix `MSYS_NO_PATHCONV=1` (ui-check, chrome). Python has no Pillow:
+  shrink screenshots with chrome `--force-device-scale-factor=0.5`. `npm run dev` touches `next-env.d.ts`: `git checkout` it.
 - **Session 106:** after a merge removes a page, tsc fails on stale `.next/types` validators: `rm -rf .next/types .next/dev/types`.
   Plotly 3 (heatmaps) ignores string axis/colorbar titles: use `title: { text }`. The 2D lineshape closed form loses ≈ 4e-8
   when σ ≪ γ: Lorentzian product below σ = 1e-4 γ. EMG for z > 0 must use erfcx (e^(σ²/2τ²) overflows).
@@ -56,7 +55,6 @@ infrared-spectroscopy, electron-spectroscopy).
   colours a markers-only trace from `line.color`, not `marker.color`: give both. Book section numbers are not cited.
 - **Sessions 86–89:** run gates with `run_in_background` from the start. The merge codemod drops the last entry's trailing
   comma. **Never put Markdown backticks in a `node -e "…"` string**: bash runs them; use Write.
-- **Session 78:** reviewer batches of 7 pages, `timeout 60`. Crossref 429s if hit often. `tier-status.ts` > 2 min: background.
 - **Session 65:** probe the module (scratchpad `.ts`) before writing the test; then mutate the code once to see
   `ℹ fail N`. A slug rename touching < 10 files: `git mv` the folder, change `href`, move the registry entry, add the
   redirect, `rm -rf .next/types .next/dev/types`.

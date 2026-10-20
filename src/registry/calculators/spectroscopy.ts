@@ -137,8 +137,15 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "electron-spectroscopy",
     title: "Electron Spectroscopy (XPS/UPS)",
-    description: "Photoelectron spectroscopy for surface composition, chemical state, and electronic structure.",
-    knownIssue: "The simulated XPS spectrum uses a fixed made-up peak list that ignores the inputs, and its Shirley-type background steps the wrong way, rising toward low binding energy.",
+    description: "XPS and UPS photoelectrons: kinetic energy E_k = hν − E_B − φ_sp, inelastic mean free path from the TPP-2M equation, sampling depth 3λ cos θ and the kinetic energies from common X-ray and UV sources.",
+    tier: "textbook",
+    modelNote: "Fermi-level-referenced binding energy with the spectrometer work function; TPP-2M IMFP at the Fermi-referenced energy hν − E_B (fitted for 50–2000 eV, about 11 % RMS; not given below 50 eV, so not for UPS) and straight-line exponential attenuation, which ignores elastic scattering and so overestimates the sampling depth by 10–30 %.",
+    references: [
+      { citation: "Tanuma S., Powell C. J., Penn D. R. (1994). Calculations of electron inelastic mean free paths. V. Data for 14 organic compounds over the 50–2000 eV range. Surf. Interface Anal. 21, 165–176 (TPP-2M).", url: "https://doi.org/10.1002/sia.740210302" },
+      { citation: "Tanuma S., Powell C. J., Penn D. R. (2003). Calculation of electron inelastic mean free paths (IMFPs) VII. Reliability of the TPP-2M IMFP predictive equation. Surf. Interface Anal. 35, 268–275.", url: "https://doi.org/10.1002/sia.1526" },
+      { citation: "Powell C. J., Jablonski A. (2010). NIST Electron Inelastic-Mean-Free-Path Database, SRD 71, version 1.2: user's guide, Appendix A.", url: "https://www.nist.gov/srd/nist-standard-reference-database-71" },
+      { citation: "Hüfner S. (2003). Photoelectron Spectroscopy: Principles and Applications, 3rd ed. Springer." },
+    ],
   },
   {
     slug: "etalon-fsr",
@@ -249,8 +256,15 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "infrared-spectroscopy",
     title: "Infrared (IR) Spectroscopy",
-    description: "Molecular vibrational absorption in the mid-infrared region (400–4000 cm⁻¹).",
-    knownIssue: "The absorption bands and molar absorptivities are a made-up illustrative set summed into one spectrum, not data for any real molecule.",
+    description: "Vibration–rotation band of HCl or CO: anharmonic band origin, P and R branch lines, Boltzmann intensities at the instrument resolution, force constant and the isotope shift of H³⁷Cl or ¹³CO.",
+    tier: "textbook",
+    modelNote: "Anharmonic oscillator to (v + ½)⁴ plus vibrating rotor (B_v = B_e − α_e(v + ½), one distortion constant) with NIST constants (including ω_e y_e and ω_e z_e); relative line strengths from Hönl–London, Boltzmann and stimulated-emission factors, without Herman–Wallis factors, pressure broadening or absolute band strengths.",
+    references: [
+      { citation: "Herzberg G. (1950). Molecular Spectra and Molecular Structure I: Spectra of Diatomic Molecules, 2nd ed. Van Nostrand." },
+      { citation: "NIST Chemistry WebBook, SRD 69: constants of diatomic molecules (after Huber & Herzberg 1979).", url: "https://webbook.nist.gov/chemistry/" },
+      { citation: "Wang M., Huang W. J., Kondev F. G., Audi G., Naimi S. (2021). The AME 2020 atomic mass evaluation (II). Chin. Phys. C 45, 030003.", url: "https://doi.org/10.1088/1674-1137/abddaf" },
+      { citation: "Meija J. et al. (2016). Isotopic compositions of the elements 2013 (IUPAC Technical Report). Pure Appl. Chem. 88, 293–306.", url: "https://doi.org/10.1515/pac-2015-0503" },
+    ],
   },
   {
     slug: "jacquinot",
@@ -328,8 +342,15 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "microwave-spectroscopy",
     title: "Microwave / Rotational Spectroscopy",
-    description: "Pure rotational transitions for molecular structure determination (1–300 GHz).",
-    knownIssue: "The default reduced mass of 14 amu gives B about half that of CO, line intensities omit the frequency factor, and the symmetric-top option actually uses spherical-top degeneracy.",
+    description: "Pure rotational spectrum of a diatomic molecule: B from the masses and bond length, B_v with α_e, line frequencies 2B(J+1) − 4D(J+1)³, Boltzmann populations and absolute line intensities S in HITRAN units, with CO and HCl presets.",
+    tier: "textbook",
+    modelNote: "Linear ¹Σ rotor with first-order centrifugal distortion; intensities from the permanent dipole with exact Boltzmann and stimulated-emission factors. Intensities are per molecule in the chosen level v, not weighted by vibrational population or isotopic abundance. No hyperfine structure or nuclear-spin statistics. CO matches the JPL catalogue to 0.2 ppm in frequency and 0.001 in log intensity.",
+    references: [
+      { citation: "Gordy W., Cook R. L. (1984). Microwave Molecular Spectra, 3rd ed. Wiley." },
+      { citation: "Pickett H. M., Poynter R. L., Cohen E. A., Delitsky M. L., Pearson J. C., Müller H. S. P. (1998). Submillimeter, millimeter, and microwave spectral line catalog. JQSRT 60, 883–890.", url: "https://doi.org/10.1016/S0022-4073(98)00091-0" },
+      { citation: "NIST Chemistry WebBook, SRD 69: constants of diatomic molecules (after Huber & Herzberg 1979).", url: "https://webbook.nist.gov/chemistry/" },
+      { citation: "JPL Molecular Spectroscopy catalogue, entries 28001 (CO) and 36001 (HCl).", url: "https://spec.jpl.nasa.gov/" },
+    ],
   },
   {
     slug: "near-infrared",
@@ -601,8 +622,15 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "terahertz-spectroscopy",
     title: "Terahertz (THz) Spectroscopy",
-    description: "Probing low-energy excitations: phonon modes, hydrogen bonding, lattice vibrations (0.1–10 THz).",
-    knownIssue: "The absorption features and Debye parameters are fixed made-up values, α ∝ f² is a heuristic, transmission leaves out reflection losses, and the refractive index is shown but never used.",
+    description: "THz time-domain transmission of a slab: n and α of liquid water (double Debye), a phonon mode (Lorentz) or a constant medium, Fresnel losses, time delay, the extraction n = 1 + cφ/(ωd) and the dynamic-range limit on α.",
+    tier: "textbook",
+    modelNote: "Free-standing slab at normal incidence with the Fabry–Pérot echoes windowed out; extraction with a real Fresnel factor. The water model is the Liebe–Hufford–Manabe double Debye fit, fitted up to 1 THz to data from −4 to 40 °C (the page allows −5 to 40 °C); the dynamic range is taken as flat in frequency.",
+    references: [
+      { citation: "Liebe H. J., Hufford G. A., Manabe T. (1991). A model for the complex permittivity of water at frequencies below 1 THz. Int. J. Infrared Millim. Waves 12, 659–675.", url: "https://doi.org/10.1007/BF01008897" },
+      { citation: "Duvillaret L., Garet F., Coutaz J.-L. (1996). A reliable method for extraction of material parameters in terahertz time-domain spectroscopy. IEEE J. Sel. Top. Quantum Electron. 2, 739–746.", url: "https://doi.org/10.1109/2944.571775" },
+      { citation: "Jepsen P. U., Fischer B. M. (2005). Dynamic range in terahertz time-domain transmission and reflection spectroscopy. Opt. Lett. 30, 29–31.", url: "https://doi.org/10.1364/OL.30.000029" },
+      { citation: "Withayachumnankul W., Naftaly M. (2014). Fundamentals of measurement in terahertz time-domain spectroscopy. J. Infrared Millim. Terahertz Waves 35, 610–637.", url: "https://doi.org/10.1007/s10762-013-0042-z" },
+    ],
   },
   {
     slug: "time-resolved",
