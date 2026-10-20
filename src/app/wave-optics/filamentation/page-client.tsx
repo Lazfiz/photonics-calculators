@@ -1,156 +1,113 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import {
+  criticalPower, focusedCollapseDistance, pulsePeakPower, rayleighRangeInMedium, selfFocusingDistance,
+} from "../../../physics/wave-optics/kerr";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
+const fmtLength = (m: number) => !Number.isFinite(m)
+  ? "—"
+  : Math.abs(m) >= 1 ? `${fmt(m)} m` : Math.abs(m) >= 1e-3 ? `${fmt(m * 1e3)} mm` : `${fmt(m * 1e6)} µm`;
+
+/** Collapse distance against peak power from 1.05 P_cr to 3× the current power (at least 10 P_cr). */
+function collapseCurves(Pcr: number, zR: number, f: number, power: number) {
+  const pMax = Math.max(10, 3 * power / Pcr);
+  const ratios = Array.from({ length: 200 }, (_, i) => 1.05 * Math.pow(pMax / 1.05, i / 199));
+  const curve = (lens: number) => ratios.flatMap((r) => {
+    const z = focusedCollapseDistance(selfFocusingDistance(r, zR), lens);
+    return Number.isFinite(z) ? [{ x: round6(r * Pcr * 1e-6), y: round6(z * 1e3) }] : [];
+  });
+  return [
+    { name: "Collimated (Marburger)", color: "#60a5fa", points: curve(Infinity) },
+    ...(Number.isFinite(f) ? [{ name: `With the f = ${fmt(f * 1e3, 3)} mm lens`, color: "#f472b6", points: curve(f) }] : []),
+  ];
+}
+
 export default function FilamentationPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm
-  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 1000); // µJ
-  const [pulseDuration, setPulseDuration] = useURLState("pulseDuration", 50); // fs
-  const [beamWaist, setBeamWaist] = useURLState("beamWaist", 500); // µm
-  const [n2, setN2] = useURLState("n2", 3.2); // ×10⁻¹⁶ cm²/W (fused silica)
-  const [n0, setN0] = useURLState("n0", 1.45);
-  const [pressure, setPressure] = useURLState("pressure", 1); // atm
+  const [lambdaRaw, setLambda] = useURLState("wavelength", 800); // nm
+  const [energyRaw, setEnergy] = useURLState("pulseEnergy", 1); // µJ
+  const [fwhmRaw, setFwhm] = useURLState("pulseDuration", 100); // fs, Gaussian intensity FWHM
+  const [waistRaw, setWaist] = useURLState("beamWaist", 50); // µm
+  const [n2Raw, setN2] = useURLState("n2", 2.4); // 1e-16 cm²/W, fused silica (Dubietis et al. 2017, Table 1)
+  const [n0Raw, setN0] = useURLState("n0", 1.45);
+  const [lensRaw, setLens] = useURLState("lensFocal", 0); // mm, 0 = collimated
 
-  const k = 2 * Math.PI / (wavelength * 1e-9); // 1/m
-  const w0 = beamWaist * 1e-6; // m
-  const zR = Math.PI * w0 ** 2 * n0 / (wavelength * 1e-9); // Rayleigh range
-  const Pcr = 3.77 * (wavelength * 1e-9) ** 2 / (8 * Math.PI * n0 * n2 * 1e-20); // critical power W
-  const peakPower = pulseEnergy * 1e-6 / (pulseDuration * 1e-15); // W
-  const PoverPcr = peakPower / Pcr;
+  const lambda = clamp(lambdaRaw, 200, 20000, 800) * 1e-9;
+  const energy = clamp(energyRaw, 0, 1e7, 1) * 1e-6;
+  const fwhm = clamp(fwhmRaw, 1, 1e6, 100) * 1e-15;
+  const w = clamp(waistRaw, 1, 1e5, 50) * 1e-6;
+  const n2 = clamp(n2Raw, 1e-4, 1e6, 2.4) * 1e-20;
+  const n0 = clamp(n0Raw, 1, 5, 1.45);
+  const lensMm = clamp(lensRaw, -1e6, 1e6, 0);
+  const f = lensMm === 0 ? Infinity : lensMm * 1e-3;
 
-  // Self-focusing distance (Marburger formula): z_sf decreases with power
-  // z_sf = 0.367·zR / √((√(P/Pcr) - 0.852)² - 0.0219)
-  const sqrtRatio = Math.sqrt(PoverPcr);
-  const zFilArg = Math.max(0.001, (sqrtRatio - 0.852) ** 2 - 0.0219);
-  const zFil = 0.367 * zR / Math.sqrt(zFilArg); // Marburger self-focusing distance
-  const Lfil = 2 * zFil * Math.sqrt(PoverPcr); // approximate filament length
+  const Pcr = criticalPower(lambda, n0, n2);
+  const power = pulsePeakPower(energy, fwhm, "gaussian");
+  const ratio = power / Pcr;
+  const energyAtPcr = Pcr / pulsePeakPower(1, fwhm, "gaussian");
+  const zR = rayleighRangeInMedium(lambda, n0, w);
+  const zsf = selfFocusingDistance(ratio, zR);
+  const zLens = focusedCollapseDistance(zsf, f);
+  const collapses = Number.isFinite(zsf);
 
-  // Beam radius vs propagation (Marburger)
-  const beamData = useMemo(() => {
-    const z = Array.from({ length: 300 }, (_, i) => i * zFil * 3 / 300);
-    const wLinear = z.map(zi => w0 * Math.sqrt(1 + (zi / zR) ** 2) * 1e6); // linear diffraction
-    const wKerr = z.map(zi => {
-      const collapseArg = 1 + (zi / zR) ** 2 * (1 - PoverPcr);
-      if (collapseArg <= 0) {
-        // Inside filament: clamped at ~w_filament
-        return beamWaist * 0.02;
-      }
-      const w = w0 * Math.sqrt(collapseArg);
-      return Math.max(w * 1e6, wavelength / 2000); // floor at λ/2 in µm
-    });
-    return [
-      { x: z.map(v => v * 100), y: wLinear, type: "scatter", mode: "lines", name: "Linear", line: { color: "#374151", width: 1, dash: "dash" } },
-      { x: z.map(v => v * 100), y: wKerr, type: "scatter", mode: "lines", name: "With Kerr", line: { color: "#60a5fa", width: 2 } },
-    ];
-  }, [wavelength, beamWaist, n0, n2, pulseEnergy, pulseDuration]);
+  const zHere = Number.isFinite(f) ? zLens : zsf;
+  const curves = [
+    ...collapseCurves(Pcr, zR, f, power),
+    ...(Number.isFinite(zHere) ? [{ name: "This pulse", color: "#fbbf24", showPoints: true, points: [{ x: round6(power * 1e-6), y: round6(zHere * 1e3) }] }] : []),
+  ];
 
-  // Peak intensity vs z
-  const intensityData = useMemo(() => {
-    const z = Array.from({ length: 300 }, (_, i) => i * zFil * 3 / 300);
-    const I = z.map(zi => {
-      const zf = zFil;
-      const collapseArg = 1 + (zi / zR) ** 2 * (1 - PoverPcr);
-      if (collapseArg <= 0) {
-        return 5e17; // clamped intensity ~5×10¹³ W/cm² = 5×10¹⁷ W/m²
-      }
-      const w = w0 * Math.sqrt(collapseArg);
-      const area = Math.PI * w ** 2;
-      return 2 * peakPower / area; // Gaussian peak I = 2P/(πw²)
-    });
-    return [
-      { x: z.map(v => v * 100), y: I.map(v => v / 1e16), type: "scatter", mode: "lines", name: "Peak I(z)", line: { color: "#f472b6", width: 2 } },
-    ];
-  }, [wavelength, beamWaist, n0, n2, pulseEnergy, pulseDuration]);
-
-  const beamLayout = {
-    paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-    font: { color: "#9ca3af" },
-    xaxis: { title: "Propagation z (cm)", gridcolor: "#374151" },
-    yaxis: { title: "Beam radius (µm)", gridcolor: "#374151" },
-    margin: { t: 30, r: 30, b: 50, l: 70 },
-  };
-
-  const intLayout = {
-    paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-    font: { color: "#9ca3af" },
-    xaxis: { title: "Propagation z (cm)", gridcolor: "#374151" },
-    yaxis: { title: "Intensity (×10¹⁶ W/m²)", gridcolor: "#374151" },
-    margin: { t: 30, r: 30, b: 50, l: 70 },
-  };
-
-  // B-integral
-  const Iclamped = 5e17;
-  const Bintegral = (2 * Math.PI / (wavelength * 1e-9)) * n2 * 1e-20 * Iclamped * Lfil;
+  const lensNote = !Number.isFinite(f)
+    ? ""
+    : !collapses
+      ? `Below P_cr the lens focuses the beam at about f = ${fmtLength(f)}, but it doesn't collapse.`
+      : Number.isFinite(zLens)
+        ? `With the lens the collapse moves to ${fmtLength(zLens)}, before the geometric focus at ${fmtLength(f)}.`
+        : "The diverging lens outruns the Kerr lens: no collapse.";
 
   return (
     <>
-            
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
-        <p><span className="text-blue-400">P<sub>cr</sub></span> = 3.77 λ² / (8π n₀ n₂)</p>
-        <p><span className="text-blue-400">z<sub>sf</sub></span> ≈ 0.367 z<sub>R</sub> √(P/P<sub>cr</sub>) — Marburger formula</p>
-        <p><span className="text-blue-400">I<sub>clamped</sub></span> ≈ 5 × 10¹³ W/cm² — intensity clamping</p>
-        <p><span className="text-blue-400">B</span> = (2π/λ) n₂ ∫I dz — B-integral</p>
-        <p><span className="text-blue-400">Balance:</span> Kerr focus + plasma defocus + diffraction</p>
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-        <ValidatedNumberInput label="Pulse Energy (µJ)" value={pulseEnergy} onChange={setPulseEnergy} />
-        <ValidatedNumberInput label="Pulse Duration (fs)" value={pulseDuration} onChange={setPulseDuration} />
-        <ValidatedNumberInput label="Beam Waist (µm)" value={beamWaist} onChange={setBeamWaist} />
-        <ValidatedNumberInput label="n₀" value={n0} onChange={setN0} step="0.01" />
-        <ValidatedNumberInput label="n₂ (×10⁻¹⁶ cm²/W)" value={n2} onChange={setN2} step="0.1" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={lambdaRaw} onChange={setLambda} min={200} max={20000} step="any" />
+        <ValidatedNumberInput label="Pulse energy (µJ)" value={energyRaw} onChange={setEnergy} min={0} max={1e7} step="any" />
+        <ValidatedNumberInput label="Pulse duration, Gaussian FWHM (fs)" value={fwhmRaw} onChange={setFwhm} min={1} max={1e6} step="any" />
+        <ValidatedNumberInput label="Beam radius at the entrance, 1/e² (µm)" value={waistRaw} onChange={setWaist} min={1} max={1e5} step="any" />
+        <ValidatedNumberInput label="n₂ (×10⁻¹⁶ cm²/W)" value={n2Raw} onChange={setN2} min={1e-4} max={1e6} step="any" />
+        <ValidatedNumberInput label="Linear index n₀" value={n0Raw} onChange={setN0} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label="Lens focal length (mm, 0 = collimated)" value={lensRaw} onChange={setLens} min={-1e6} max={1e6} step="any" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Critical Power P<sub>cr</sub></p>
-          <p className="text-xl font-bold text-blue-400">{(Pcr / 1e6).toFixed(2)} MW</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Peak Power</p>
-          <p className="text-xl font-bold text-green-400">{(peakPower / 1e6).toFixed(1)} MW</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">P / P<sub>cr</sub></p>
-          <p className="text-xl font-bold text-orange-400">{PoverPcr.toFixed(1)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Self-focusing z</p>
-          <p className="text-xl font-bold text-purple-400">{(zFil * 100).toFixed(1)} cm</p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard label="Critical power P_cr" value={`${fmt(Pcr * 1e-6)} MW`} subtext={`3.77 λ²/(8π n₀ n₂); ${fmt(energyAtPcr * 1e6)} µJ at this duration`} tone="blue" />
+        <ResultCard label="Peak power" value={`${fmt(power * 1e-6)} MW`} subtext={`0.9394 E/FWHM; P/P_cr = ${fmt(ratio)}`} tone={collapses ? "green" : "red"} />
+        <ResultCard
+          label="Collapse distance"
+          value={collapses ? fmtLength(zHere) : "none"}
+          subtext={collapses
+            ? Number.isFinite(f) ? `collimated z_sf = ${fmtLength(zsf)}; 1/z′ = 1/z_sf + 1/f` : "Marburger, collimated beam"
+            : "P ≤ P_cr: Kerr focusing only slows diffraction"}
+          tone="purple"
+        />
+        <ResultCard label="Rayleigh range z_R" value={fmtLength(zR)} subtext="π n₀ w²/λ inside the medium" tone="cyan" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Rayleigh Range</p>
-          <p className="text-xl font-bold text-cyan-400">{(zR * 100).toFixed(1)} cm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Filament Length</p>
-          <p className="text-xl font-bold text-yellow-400">{(Lfil * 100).toFixed(1)} cm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">B-integral</p>
-          <p className="text-xl font-bold text-pink-400">{isFinite(Bintegral) ? Bintegral.toFixed(1) : "—"} rad</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Filamentation?</p>
-          <p className="text-xl font-bold text-red-400">{PoverPcr > 1 ? "Yes ✓" : "No ✗"}</p>
-        </div>
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>Above the critical power the Kerr lens beats diffraction and a Gaussian beam self-focuses. A collimated beam
+          collapses after z_sf = 0.367 z_R / √((√(P/P_cr) − 0.852)² − 0.0219), Dawes and Marburger&apos;s fit to numerical
+          solutions. Near the collapse the intensity climbs until multiphoton ionisation makes a plasma that defocuses the
+          beam and absorbs energy. The intensity then clamps, at about 5×10¹³ W/cm² in air (Kasparian et al.), and a
+          filament forms. The filament&apos;s length and plasma density need a full propagation model; this page gives the
+          threshold and where the filament starts. P uses the pulse&apos;s peak power, which self-focuses first. Far above
+          P_cr, small irregularities in the beam make it break into several filaments.</p>
+        {lensNote && <p className="text-yellow-400">{lensNote}</p>}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2 mb-8">
-        <div className="bg-gray-900 rounded-lg p-4">
-          <ChartPanel data={beamData} layout={beamLayout} />
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4">
-          <ChartPanel data={intensityData} layout={intLayout} />
-        </div>
-      </div>
+      <SimpleLineChart title="Collapse distance against peak power" xLabel="Peak power (MW)" yLabel="Collapse distance (mm)" series={curves} xScale="log" yScale="log" />
     </>
   );
 }

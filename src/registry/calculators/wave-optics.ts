@@ -146,8 +146,17 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "filamentation",
     title: "Filamentation Dynamics",
-    description: "Laser filamentation — balance of Kerr self-focusing, plasma defocusing, and diffraction.",
-    knownIssue: "Filament length and B-integral are rough guesses, a self-focusing distance is still shown below the critical power, and the beam-radius plot collapses at a different distance than the readout.",
+    description: "Where a femtosecond filament starts: critical power for self-focusing, peak power against it, and the Marburger collapse distance of a collimated or lens-focused Gaussian beam.",
+    keywords: ["self-focusing", "critical power", "Marburger formula", "collapse distance", "femtosecond filament", "intensity clamping"],
+    tier: "textbook",
+    modelNote: "Gaussian beam, instantaneous Kerr effect. P_cr = 3.77 λ²/(8π n₀ n₂) and the Dawes–Marburger fit z_sf = 0.367 z_R/√((√(P/P_cr) − 0.852)² − 0.0219), with a lens 1/z′ = 1/z_sf + 1/f. Only the onset: plasma defocusing, multiphoton absorption and the filament length aren't modelled. Default n₂ and n₀ are fused silica at 800 nm.",
+    references: [
+      { citation: "Fibich G., Gaeta A. L. (2000). Critical power for self-focusing in bulk media and in hollow waveguides. Opt. Lett. 25, 335–337.", url: "https://doi.org/10.1364/OL.25.000335" },
+      { citation: "Marburger J. H. (1975). Self-focusing: theory. Prog. Quantum Electron. 4, 35–110.", url: "https://doi.org/10.1016/0079-6727(75)90003-8" },
+      { citation: "Dubietis A., Tamošauskas G., Šuminas R., Jukna V., Couairon A. (2017). Ultrafast supercontinuum generation in bulk condensed media. Lith. J. Phys. 57(3). Lens-shifted collapse distance and n₂ of fused silica (Table 1).", url: "https://doi.org/10.3952/physics.v57i3.3541" },
+      { citation: "Couairon A., Mysyrowicz A. (2007). Femtosecond filamentation in transparent media. Phys. Rep. 441, 47–189.", url: "https://doi.org/10.1016/j.physrep.2006.12.005" },
+      { citation: "Kasparian J., Sauerbrey R., Chin S. L. (2000). The critical laser intensity of self-guided light filaments in air. Appl. Phys. B 71, 877–879.", url: "https://doi.org/10.1007/s003400000463" },
+    ],
   },
   {
     slug: "four-wave-mixing",
@@ -265,8 +274,15 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "kerr-lens",
     title: "Kerr Lens Mode Locking",
-    description: "Self-focusing and Kerr-lens effect in nonlinear media for ultrashort pulse generation.",
-    knownIssue: "The Kerr focal length is about 3.5 times the parabolic thin-lens value, and the beam waist vs power plot uses an invented formula. At the 1 W default every result is negligible.",
+    description: "Thin Kerr lens of a Gaussian beam, f = πw⁴/(8n₂PL), with the on-axis nonlinear phase, the critical power for self-focusing and the Rayleigh range in the crystal.",
+    keywords: ["Kerr lens", "KLM", "self-focusing", "nonlinear refractive index n2", "critical power", "Ti:sapphire"],
+    tier: "textbook",
+    modelNote: "Parabolic approximation of the Gaussian intensity near the axis, I ≈ I₀(1 − 2r²/w²), in a thin crystal: 1/f = 4n₂I₀L/w² with I₀ = 2P/(πw²). Holds for L below z_R and f and for P well below P_cr = 3.77 λ²/(8π n₀ n₂); the page warns outside that range. Cavity design (the stability-limit shift) isn't modelled.",
+    references: [
+      { citation: "Magni V., Cerullo G., De Silvestri S. (1993). ABCD matrix analysis of propagation of gaussian beams through Kerr media. Opt. Commun. 96, 348–355.", url: "https://doi.org/10.1016/0030-4018(93)90284-C" },
+      { citation: "Fibich G., Gaeta A. L. (2000). Critical power for self-focusing in bulk media and in hollow waveguides. Opt. Lett. 25, 335–337.", url: "https://doi.org/10.1364/OL.25.000335" },
+      { citation: "Boyd R. W. (2020). Nonlinear Optics, 4th ed. Academic Press. Self-focusing and the nonlinear index n₂.", url: "https://doi.org/10.1016/C2015-0-05510-1" },
+    ],
   },
   {
     slug: "m2-factor",
@@ -411,8 +427,16 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "self-phase-modulation",
     title: "Self-Phase Modulation (SPM)",
-    description: "Intensity-dependent phase shift and spectral broadening from the optical Kerr effect.",
-    knownIssue: "The nonlinear phase is wrong because it includes the refractive index and halves the Gaussian peak intensity. The default intensity shows as 0.00 and the spectrum is an illustrative shape.",
+    description: "Self-phase modulation of a Gaussian or sech² pulse: peak nonlinear phase k₀n₂I₀L, largest frequency shift, rms broadening and the SPM spectrum by FFT, with a self-focusing check.",
+    keywords: ["SPM", "nonlinear phase", "B-integral", "spectral broadening", "optical Kerr effect", "chirp"],
+    tier: "textbook",
+    modelNote: "Dispersion-free SPM on the beam axis: φ(T) = φ_max|U(T)|², φ_max = (2π/λ)n₂I₀L with I₀ = 2P₀/(πw²). The spectrum is the exact FFT of U(T)e^(iφ(T)); rms broadening √(1 + 4φ²/(3√3)) (Gaussian) or √(1 + 32φ²/35) (sech²). Dispersion, self-steepening, Raman and the beam's radial phase are left out.",
+    references: [
+      { citation: "Stolen R. H., Lin C. (1978). Self-phase-modulation in silica optical fibers. Phys. Rev. A 17, 1448–1453.", url: "https://doi.org/10.1103/PhysRevA.17.1448" },
+      { citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed. Academic Press. SPM phase, frequency chirp, rms broadening and the peak count φ_max ≈ (M − ½)π." },
+      { citation: "Fibich G., Gaeta A. L. (2000). Critical power for self-focusing in bulk media and in hollow waveguides. Opt. Lett. 25, 335–337.", url: "https://doi.org/10.1364/OL.25.000335" },
+      { citation: "Marburger J. H. (1975). Self-focusing: theory. Prog. Quantum Electron. 4, 35–110.", url: "https://doi.org/10.1016/0079-6727(75)90003-8" },
+    ],
   },
   {
     slug: "slab-laser",
