@@ -1,98 +1,126 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c } from "../../../physics/constants";
+import { groupIndex, inRange, refractiveIndex, type SellmeierModel } from "../../../physics/materials/sellmeier";
+import { MATERIALS, SCHOTT_GLASSES } from "../../../physics/materials/sellmeier-data";
+import { slabPath } from "../../../physics/spectroscopy/optical-path-length";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const r6 = (x: number) => (Number.isFinite(x) ? Number(x.toPrecision(6)) : NaN);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits) : "—");
+const fmtTime = (t: number) =>
+  !Number.isFinite(t) ? "—" : t >= 1e-6 ? `${fmt(t * 1e6)} µs` : t >= 1e-9 ? `${fmt(t * 1e9)} ns` : `${fmt(t * 1e12)} ps`;
+const DEG = Math.PI / 180;
+
+const GLASSES: Record<string, { name: string; model: SellmeierModel }> = {
+  fusedSilica: MATERIALS.fusedSilica,
+  "N-BK7": SCHOTT_GLASSES["N-BK7"],
+  "N-SF11": SCHOTT_GLASSES["N-SF11"],
+  caf2: MATERIALS.caf2,
+};
+
 export default function OpticalPathLengthPage() {
-  const [physicalLength, setPhysicalLength] = useURLState("physicalLength", 1);
-  const [refractiveIndex, setRefractiveIndex] = useURLState("refractiveIndex", 1.5);
-  const [numPasses, setNumPasses] = useURLState("numPasses", 1);
-  const [angleDeg, setAngleDeg] = useURLState("angleDeg", 0);
-  const [sweepParam, setSweepParam] = useState<"n" | "angle" | "passes">("n");
+  const [materialRaw, setMaterial] = useURLState("material", "custom");
+  const [lengthRaw, setPhysicalLength] = useURLState("physicalLength", 1); // cm
+  const [nRaw, setRefractiveIndex] = useURLState("refractiveIndex", 1.5);
+  const [ngRaw, setGroupIndex] = useURLState("groupIndex", 1.5);
+  const [wlRaw, setWavelength] = useURLState("wavelength", 800); // nm
+  const [passesRaw, setNumPasses] = useURLState("numPasses", 1);
+  const [angleRaw, setAngleDeg] = useURLState("angleDeg", 0);
 
-  const angleRad = (angleDeg * Math.PI) / 180;
-  // Internal angle via Snell's law: n_air·sin(θ_ext) = n·sin(θ_int)
-  const sinInternal = Math.sin(angleRad) / refractiveIndex;
-  const cosInternal = Math.sqrt(Math.max(0, 1 - sinInternal * sinInternal));
-  const opl = physicalLength * refractiveIndex * numPasses / Math.max(cosInternal, 1e-10);
-  const retTime = opl * 0.01 / c * 1e9; // OPL(cm)→m, /c(m/s), ×1e9→ns
+  const glass = GLASSES[materialRaw] ?? null;
+  const material = glass ? materialRaw : "custom";
+  const dCm = clamp(lengthRaw, 0, 1e5, 1);
+  const lambda = clamp(wlRaw, 100, 20000, 800) * 1e-9;
+  const passes = Math.round(clamp(passesRaw, 1, 1000, 1));
+  const thetaDeg = clamp(angleRaw, 0, 89, 0);
+  const theta = thetaDeg * DEG;
+  const glassOk = glass ? inRange(glass.model, lambda) : true;
+  const n = glass ? (glassOk ? refractiveIndex(glass.model, lambda) : NaN) : clamp(nRaw, 1, 5, 1.5);
+  const ng = glass ? (glassOk ? groupIndex(glass.model, lambda) : NaN) : clamp(ngRaw, 1, 5, 1.5);
 
-  const chartData = useMemo(() => {
-    const n = 200;
-    let xs: number[], ys: number[];
+  const p = slabPath(dCm / 100, n, ng, passes, theta);
+  const waves = p.opl / lambda;
 
-    if (sweepParam === "n") {
-      xs = Array.from({ length: n }, (_, i) => 1 + (i / n) * 1.5);
-      ys = xs.map(ni => {
-        const sinI = Math.sin(angleRad) / ni;
-        const cosI = Math.sqrt(Math.max(0, 1 - sinI * sinI));
-        return physicalLength * ni * numPasses / Math.max(cosI, 1e-10);
-      });
-    } else if (sweepParam === "angle") {
-      xs = Array.from({ length: n }, (_, i) => (i / n) * 80);
-      ys = xs.map(a => {
-        const sinI = Math.sin((a * Math.PI) / 180) / refractiveIndex;
-        const cosI = Math.sqrt(Math.max(0, 1 - sinI * sinI));
-        return physicalLength * refractiveIndex * numPasses / Math.max(cosI, 1e-10);
-      });
-    } else {
-      xs = Array.from({ length: n }, (_, i) => 1 + i);
-      ys = xs.map(p => physicalLength * refractiveIndex * p / Math.max(cosInternal, 1e-10));
-    }
+  const vsAngle = (() => {
+    const as = Array.from({ length: 90 }, (_, i) => i);
+    const ps = as.map((a) => slabPath(dCm / 100, n, ng, passes, a * DEG));
+    return [
+      { x: as, y: ps.map((q) => r6(q.opl * 100)), type: "scatter", mode: "lines", name: "OPL (cm)", line: { color: "#60a5fa", width: 2 } },
+      { x: as, y: ps.map((q) => r6(q.groupDelay * 1e9)), type: "scatter", mode: "lines", name: "Group delay (ns)", line: { color: "#f472b6", width: 2 }, yaxis: "y2" },
+    ];
+  })();
 
-    return [{ x: xs, y: ys, type: "scatter" as const, mode: "lines" as const, name: "OPL (cm)", line: { color: "#60a5fa" } }];
-  }, [physicalLength, refractiveIndex, numPasses, angleRad, sweepParam]);
+  const dispersion = (() => {
+    if (!glass) return [];
+    const [lo, hi] = glass.model.range;
+    const ls = Array.from({ length: 201 }, (_, i) => lo + (i / 200) * (hi - lo));
+    return [
+      { x: ls.map((l) => r6(l * 1e9)), y: ls.map((l) => r6(refractiveIndex(glass.model, l))), type: "scatter", mode: "lines", name: "Phase index n", line: { color: "#34d399", width: 2 } },
+      { x: ls.map((l) => r6(l * 1e9)), y: ls.map((l) => r6(groupIndex(glass.model, l))), type: "scatter", mode: "lines", name: "Group index n_g", line: { color: "#fbbf24", width: 2 } },
+    ];
+  })();
 
   return (
     <>
-            
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <ValidatedNumberInput label="Physical Length (cm)" value={physicalLength} onChange={setPhysicalLength} min={0} />
-        <ValidatedNumberInput label="Refractive Index (n)" value={refractiveIndex} onChange={setRefractiveIndex} min={1} />
-        <ValidatedNumberInput label="Number of Passes" value={numPasses} onChange={setNumPasses} min={1} />
-        <ValidatedNumberInput label="Angle of Incidence (°)" value={angleDeg} onChange={setAngleDeg} min={0} max={85} />
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Medium</span>
+          <select value={material} onChange={(e) => setMaterial(e.target.value)}
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            <option value="custom">Custom n and n_g</option>
+            {Object.entries(GLASSES).map(([id, g]) => <option key={id} value={id}>{g.name}</option>)}
+          </select>
+        </label>
+        <ValidatedNumberInput label="Vacuum Wavelength λ (nm)" value={wlRaw} onChange={setWavelength} min={100} max={20000} step="10" />
+        {!glass && <>
+          <ValidatedNumberInput label="Phase Index n" value={nRaw} onChange={setRefractiveIndex} min={1} max={5} step="0.01" />
+          <ValidatedNumberInput label="Group Index n_g" value={ngRaw} onChange={setGroupIndex} min={1} max={5} step="0.01" />
+        </>}
+        <ValidatedNumberInput label="Slab Thickness d (cm)" value={lengthRaw} onChange={setPhysicalLength} min={0} max={1e5} />
+        <ValidatedNumberInput label="Number of Passes N" value={passesRaw} onChange={setNumPasses} min={1} max={1000} step="1" />
+        <ValidatedNumberInput label="Angle of Incidence in Air (°)" value={angleRaw} onChange={setAngleDeg} min={0} max={89} />
       </div>
 
-      <div role="group" aria-label="Options" className="flex gap-2 mb-6">
-        {(["n", "angle", "passes"] as const).map(p => (
-          <button key={p} onClick={() => setSweepParam(p)}
-            className={`px-3 py-1 rounded text-sm ${sweepParam === p ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300"}`}>
-            {p === "n" ? "Sweep n" : p === "angle" ? "Sweep Angle" : "Sweep Passes"}
-          </button>
-        ))}
+      {glass && !glassOk && (
+        <p className="mb-6 text-sm text-yellow-400">
+          {fmt(lambda * 1e9)} nm is outside the {glass.name} formula range ({fmt(glass.model.range[0] * 1e9)}–{fmt(glass.model.range[1] * 1e9)} nm).
+        </p>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ResultCard label="Optical Path Length nL" value={`${fmt(p.opl * 100)} cm`} tone="blue" subtext={`${fmt(waves, 6)} waves at λ; geometric path L = ${fmt(p.geometric * 100)} cm`} />
+        <ResultCard label="Phase Delay OPL/c" value={fmtTime(p.phaseDelay)} tone="green" subtext={`n = ${fmt(n, 6)}; internal angle θ_t = ${fmt(p.thetaT / DEG)}°`} />
+        <ResultCard label="Group Delay n_g L/c" value={fmtTime(p.groupDelay)} tone="purple" subtext={`n_g = ${fmt(ng, 6)}: the transit time of a pulse`} />
+        <ResultCard label="Extra Delay vs Vacuum" value={fmtTime(p.extraGroupDelay)} tone="yellow" subtext={`(n_g − 1)L/c; OPD vs vacuum (n − 1)L = ${fmt(p.opdVacuum * 100)} cm`} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Optical Path Length</p>
-          <p className="text-xl font-bold text-blue-400">{opl.toFixed(4)} cm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">OPL / Physical</p>
-          <p className="text-xl font-bold text-green-400">{physicalLength > 0 ? (opl / physicalLength).toFixed(2) : "N/A"}×</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Retardation Time (ns)</p>
-          <p className="text-xl font-bold text-orange-400">{retTime.toFixed(4)}</p>
-        </div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
+        <p>sin θ = n sin θ_t,  L = N d / cos θ_t,  OPL = nL,  τ_φ = OPL/c,  τ_g = n_g L/c,  n_g = n − λ dn/dλ</p>
+        <p className="text-gray-400">The ray path inside a plane-parallel slab entered from air; reflections between the faces are ignored. The phase index sets fringe counts and interference; the group index sets when a pulse arrives.</p>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm font-mono text-blue-400">OPL = n · d · N / cos(θ)</p>
-        <p className="text-gray-300 text-sm font-mono text-green-400">Δt = OPL / c</p>
-        <p className="text-gray-500 text-xs mt-2">n = refractive index, d = physical length, N = number of passes, θ = external angle of incidence (converted to internal via Snell’s law).</p>
-      </div>
-
-      <div className="bg-gray-900 rounded-lg p-4">
-        <ChartPanel data={chartData} layout={{
+      <div className="grid gap-6 lg:grid-cols-2">
+        <ChartPanel data={vsAngle} layout={{
           paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
-          xaxis: { title: sweepParam === "n" ? "Refractive Index" : sweepParam === "angle" ? "Angle (°)" : "Passes", gridcolor: "#1f2937" },
-          yaxis: { title: "OPL (cm)", gridcolor: "#1f2937" },
-          margin: { t: 30 },
+          title: { text: "OPL and Group Delay vs Angle", font: { size: 13 } },
+          xaxis: { title: "Angle of incidence (°)", gridcolor: "#374151" },
+          yaxis: { title: "OPL (cm)", gridcolor: "#374151" },
+          yaxis2: { title: "Group delay (ns)", gridcolor: "#374151", overlaying: "y", side: "right" },
+          margin: { t: 40, r: 70, b: 50, l: 60 }, legend: { bgcolor: "transparent" },
         }} />
+        {glass && (
+          <ChartPanel data={dispersion} layout={{
+            paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+            title: { text: `${glass.name}: Phase and Group Index`, font: { size: 13 } },
+            xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
+            yaxis: { title: "Index", gridcolor: "#374151" },
+            margin: { t: 40, r: 20, b: 50, l: 60 }, legend: { bgcolor: "transparent" },
+          }} />
+        )}
       </div>
     </>
   );

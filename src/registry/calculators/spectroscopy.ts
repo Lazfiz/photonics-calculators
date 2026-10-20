@@ -32,8 +32,15 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "absorption-depth",
     title: "Absorption Depth Calculator",
-    description: "Calculate absorption depth δ = 1/α and explore spectral dependence for common optical materials.",
-    knownIssue: "The silicon absorption curve is invented and underestimates α several-fold (550 nm gives 12.8 µm instead of 1.56 µm), and the water curve wrongly makes water opaque at 200–240 nm.",
+    description: "Absorption depth δ = 1/α, the depth for 90 % absorption and the fraction absorbed in a layer, from measured α(λ) of silicon (Green 2008) and water (Pope & Fry, Segelstein) or your own α.",
+    tier: "exact",
+    modelNote: "Exact Beer–Lambert decay on measured absorption data, interpolated log-linearly between tabulated points: intrinsic silicon at 300 K (band-to-band only) and pure water at room temperature; surface reflection excluded.",
+    references: [
+      { citation: "Green M. A. (2008). Self-consistent optical parameters of intrinsic silicon at 300 K including temperature coefficients. Sol. Energy Mater. Sol. Cells 92, 1305–1310.", url: "https://doi.org/10.1016/j.solmat.2008.06.009" },
+      { citation: "Pope R. M., Fry E. S. (1997). Absorption spectrum (380–700 nm) of pure water. II. Integrating cavity measurements. Appl. Opt. 36, 8710–8723.", url: "https://doi.org/10.1364/AO.36.008710" },
+      { citation: "Segelstein D. J. (1981). The complex refractive index of water. M.S. thesis, University of Missouri–Kansas City; tabulated at omlc.org/spectra/water.", url: "https://omlc.org/spectra/water/" },
+      { citation: "Hale G. M., Querry M. R. (1973). Optical constants of water in the 200-nm to 200-μm wavelength region. Appl. Opt. 12, 555–563.", url: "https://doi.org/10.1364/AO.12.000555" },
+    ],
   },
   {
     slug: "apodization-comparison",
@@ -322,8 +329,17 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "near-infrared",
     title: "Near-Infrared (NIR) Spectroscopy",
-    description: "Overtone and combination band analysis for non-destructive composition measurement.",
-    knownIssue: "Band strengths, widths and the scattering baseline are illustrative placeholders, water bands are several times too weak, and the C-H combination band sits near 2100 nm instead of about 2300 nm.",
+    description: "NIR spectroscopy: measured water absorption bands and transmittance from 780 to 2500 nm, Morse overtone positions, and haemoglobin changes from the two-wavelength modified Beer–Lambert law with an age-dependent DPF.",
+    tier: "textbook",
+    modelNote: "Water spectrum is measured data (no scattering); overtones use the Morse oscillator, which drifts at high v; the modified Beer–Lambert law assumes homogeneous changes and a fixed DPF fitted for the adult frontal head (690–832 nm, 0–70 years).",
+    references: [
+      { citation: "Delpy D. T. et al. (1988). Estimation of optical pathlength through tissue from direct time of flight measurement. Phys. Med. Biol. 33, 1433–1442.", url: "https://doi.org/10.1088/0031-9155/33/12/008" },
+      { citation: "Scholkmann F., Wolf M. (2013). General equation for the differential pathlength factor of the frontal human head depending on wavelength and age. J. Biomed. Opt. 18, 105004.", url: "https://doi.org/10.1117/1.JBO.18.10.105004" },
+      { citation: "Prahl S. Tabulated molar extinction coefficient for hemoglobin in water (Gratzer and Kollias data).", url: "https://omlc.org/spectra/hemoglobin/summary.html" },
+      { citation: "Segelstein D. J. (1981). The complex refractive index of water. M.S. thesis, University of Missouri–Kansas City.", url: "https://omlc.org/spectra/water/" },
+      { citation: "Curcio J. A., Petty C. C. (1951). The near infrared absorption spectrum of liquid water. J. Opt. Soc. Am. 41, 302–304.", url: "https://doi.org/10.1364/JOSA.41.000302" },
+      { citation: "Banwell C. N., McCash E. M. (1994). Fundamentals of Molecular Spectroscopy, 4th ed., ch. 3. McGraw-Hill." },
+    ],
   },
   {
     slug: "optical-density",
@@ -347,16 +363,26 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "optical-path-length",
     title: "Optical Path Length Calculator",
-    description: "OPL = n·d·N/cos θ — optical path through a medium, with the internal angle from Snell's law.",
-    lede: "OPL = n·d·N/cos(θ_internal). External angle converted via Snell's law.",
-    knownIssue: "The time shown as retardation is the phase transit time OPL over c rather than the delay relative to vacuum, and group index is not modelled.",
+    description: "Optical path length nL through a slab crossed N times at any incidence angle, with the phase delay OPL/c, the group delay n_g L/c and the extra delay against vacuum; n and n_g from Sellmeier data for common glasses.",
+    lede: "OPL = nL and group delay n_g L/c along the refracted ray, L = N·d/cos θ_t, for a custom medium or a catalog glass.",
+    tier: "exact",
+    modelNote: "Exact ray path through a homogeneous plane-parallel slab entered from air, with multiple reflections between the faces ignored; glass indices from the Sellmeier formulas within their stated wavelength ranges.",
+    references: [
+      { citation: "Hecht E. (2017). Optics, 5th ed., chs. 4 and 7. Pearson." },
+      { citation: "Saleh B. E. A., Teich M. C. (2007). Fundamentals of Photonics, 2nd ed., ch. 5. Wiley." },
+    ],
   },
   {
     slug: "penetration-depth",
     title: "Optical Penetration Depth",
-    description: "Calculate optical penetration depth from complex refractive index ñ = n + ik. Includes oblique incidence via Snell's law.",
+    description: "Optical penetration depth from the complex index n + ik at any angle of incidence: d_p = λ₀/(4π Im √(N² − n₀² sin²θ)), covering absorbing media, metals (skin depth) and total internal reflection.",
     heading: "Penetration Depth Calculator",
-    knownIssue: "The angle of incidence does not change any displayed result, the 1/e intensity depth 1/alpha is mislabelled as skin depth, and k equal to zero shows a fake finite depth.",
+    tier: "exact",
+    modelNote: "Exact plane-wave result for one planar interface from a lossless medium: the depth is that of the transmitted (or evanescent) field; reflection at the surface is not included.",
+    references: [
+      { citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed., ch. 14 (optics of metals). Cambridge University Press." },
+      { citation: "Axelrod D. (2001). Total internal reflection fluorescence microscopy in cell biology. Traffic 2, 764–774 (eq. 2).", url: "https://doi.org/10.1034/j.1600-0854.2001.21104.x" },
+    ],
   },
   {
     slug: "phase-correction",

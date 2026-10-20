@@ -19,12 +19,12 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | polarization | 32 / 33 | parts 1–4 done (sessions 37–42); `polarizer-types` left |
 | imaging | 61 / 61 | done: part 0 audit (session 78), fix parts 1–15b (sessions 79–95) |
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
-| spectroscopy | 26 / 45 | part 0 audit (session 96); fix parts 1–8 (sessions 97–104); 17 `knownIssue`s; parts 9–12 next |
+| spectroscopy | 30 / 45 | part 0 audit (session 96); fix parts 1–9 (sessions 97–105); 13 `knownIssue`s; parts 10–12 next |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
 | wave-optics | 2 / 49 | OPO (19), Gires-Tournois (14) fixed; no full audit |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **337 / 445** | 17 `knownIssue`s (spectroscopy) |
+| **total** | **341 / 445** | 13 `knownIssue`s (spectroscopy) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -66,8 +66,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
      `ftir-phase-correction.ts`: ILS FWHM computed (NB weak/medium/strong 1.200/1.400/1.600 × boxcar 0.6034/L, HG 1.504, BH4 2.21);
      Michelson Gaussian lines + Nyquist alias; DFT coherent gain, scalloping 3.92/1.42 dB; real Mertz/Forman (defaults 0.449/0.410 % vs 2.22 %). 6 tests.
   8. ✅ (session 104, `phase-4/spectroscopy-throughput`, PR #135) `throughput.ts`, `etalon.ts`, `cavity-ring-down.ts`: Ω 6.283e-3 sr, Jacquinot π f/(h tan θ), ψ-grid Airy, CRDS α_min = (Δτ/τ)/(cτ₀). 4 tests.
-  9. Depths: absorption-depth (`silicon-absorption.ts`, Hale & Querry water), penetration-depth (`tirf.ts`),
-     optical-path-length, near-infrared.
+  9. ✅ (session 105, `phase-4/spectroscopy-depths`, PR #136) `water-absorption.ts` (Pope & Fry + Segelstein), `depth.ts` (d_p = λ/(4π Im√(N² − n₀²sin²θ))), `optical-path-length.ts` (n_g, Sellmeier glasses), `near-infrared.ts` (Morse, Scholkmann–Wolf DPF, 2-λ MBLL on Prahl Hb): Si 550 nm δ 1.565 µm, d_p 63.66 µm, OPL 0.0500 ns, DPF(24, 760) 6.122. 5 tests.
   10. Kinetics: pump-probe absorbs transient-absorption (sequential A→B→GS); time-resolved (closed-form IRF-convolved
       decay in `fluorescence-lifetime.ts`); fluorescence-quantum-yield; two-dimensional.
   11. Molecular: microwave-spectroscopy (CO μ 6.856 → B 1.9324 cm⁻¹), terahertz-spectroscopy, infrared-spectroscopy,
