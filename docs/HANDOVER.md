@@ -1,36 +1,35 @@
-# Handover — 2026-10-20 (session 108 → session 109)
+# Handover — 2026-10-20 (session 109 → session 110)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 108 did **spectroscopy fix part 12a** (SNR merges, fourier-self-comb → dual-comb) on branch `phase-4/spectroscopy-snr`
-(PR #139 after `/ship`). Next: **part 12b**: sum-frequency-gen (χ⁽²⁾ Lorentzian sum with NR phase), blackbody, wavenumber-converter.
-Then ask the user: wave-optics or materials audit.
+Session 109 did **spectroscopy fix part 12b** (SFG, blackbody, wavenumber-converter) on branch `phase-4/spectroscopy-sfg`
+(PR #140 after `/ship`). **Spectroscopy is done: 41/41 tiered, 0 `knownIssue`s site-wide.** Next: ask the user which
+category to audit next, wave-optics (2/49) or materials (4/45); start with a part 0 audit (reviewer batches).
 
 ## State
-- Merged with redirects: `spectroscopy/snr-averaging` + `spectroscopy/signal-to-noise` → `imaging/signal-to-noise` (target SNR input,
-  frames for target, variance budget table, SNR-vs-frames log chart, √N caveat in `modelNote`); `spectroscopy/fourier-self-comb` →
-  `spectroscopy/dual-comb-spectroscopy` (URL clamps on all six inputs, related links to optical-frequency-comb and fourier-transform).
-- New `framesForSnr(snr₁, target)` in `src/physics/detectors/camera-snr.ts` (⌈(t/s)²·(1 − 1e-12)⌉, ≥ 1, NaN if s ≤ 0); test in
-  `tests/imaging-sensors.test.ts`. 349 of 441 pages tiered; 1 `knownIssue` (sum-frequency-gen).
-- 12b notes (PR #127 batch 7): SFG reuse `sumFrequencyWavelength` (`src/physics/imaging/second-harmonic-generation.ts`), resolution
-  input hangs at 1e9 (drop it); blackbody reuse `src/physics/blackbody.ts` (`planckExitance`, `blackbodyBandFraction`), radiance = M/π,
-  "Total radiated power" → radiant exitance, clamp T; wavenumber-converter: duplicate "FTIR common" preset, `mode` not in URL,
-  "1240"/"3×10¹⁷" formula text, related links → raman-shift. Keep SFG separate from wave-optics/sum-frequency and
-  imaging/sum-frequency-microscopy (decided in the wave-optics audit).
-- **User decisions (session 96):** merges with redirects (ROADMAP "Spectroscopy fix parts"). **Release flow:** merges to `main`
-  deploy nothing. Production deploys only from `release`, and only when the user asks: `git push origin main:release`, then
-  `node scripts/post-merge-check.mjs <release sha> …`. The user still has to set Vercel's Production Branch to `release`.
-- **User decisions (session 78):** keep dynamic-range, stimulated-raman-microscopy and resolution separate unless the user says otherwise.
+- New `src/physics/spectroscopy/sum-frequency.ts`: `sfgWavelength(λ_vis, ν̃_IR)` (reuses `sumFrequencyWavelength`),
+  `resonantSusceptibility`, `sfgSusceptibility`, `sfgIntensity` (A_NR e^{iφ} + Σ A_q/(ν̃ − ν̃_q + iΓ_q)),
+  `singleResonancePeakShift` (closed form, rationalised), `localMaxima` (parabolic refinement). SFG page: CH and air/water
+  OH presets (illustrative amplitudes), NR amplitude/phase inputs, apparent-peak table.
+- New `src/physics/spectroscopy/wavenumber.ts`: `photonFromWavelength`, `photonFromWavenumber`. Blackbody page reuses
+  `src/physics/blackbody.ts` (radiance M/π, band fraction, log-log chart). Test file `tests/spectroscopy-sfg.test.ts` (5 tests).
+- 352 of 441 pages tiered. **Release flow:** merges to `main` deploy nothing. Production deploys only from `release`, and only
+  when the user asks: `git push origin main:release`, then `node scripts/post-merge-check.mjs <release sha> …`. The user still
+  has to set Vercel's Production Branch to `release`.
+- **User decisions (session 96):** merges with redirects. **(session 78):** keep dynamic-range, stimulated-raman-microscopy and
+  resolution separate unless the user says otherwise.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 12a: `imaging/signal-to-noise=56.391` (SNR one frame),
-   `spectroscopy/dual-comb-spectroscopy=5.000` (update time 1/Δf_r, ms); part 11: `spectroscopy/microwave-spectroscopy=115.2712`,
-   `spectroscopy/infrared-spectroscopy=2885.98`, `spectroscopy/terahertz-spectroscopy=2.070`, `spectroscopy/electron-spectroscopy=1197.6`;
-   part 10: `git show efaa8120:docs/HANDOVER.md`. Redirects to check: the three removed hrefs. No release unless asked.
-2. Spectroscopy part 12b (ROADMAP item 12b).
+1. `/ship` this branch. Values for a later release check: part 12b: `spectroscopy/sum-frequency-gen=457.73` (SFG range low end,
+   nm), `spectroscopy/blackbody=501.5` (Wien peak, nm), `spectroscopy/wavenumber-converter=10000.00`; part 12a:
+   `imaging/signal-to-noise=56.391`, `spectroscopy/dual-comb-spectroscopy=5.000`; part 11 and earlier: `git show b649db59:docs/HANDOVER.md`.
+   Redirects to check: the three hrefs removed in 12a. No release unless asked.
+2. Ask the user: wave-optics or materials audit (ROADMAP "Next category audit").
 3. Later: open findings (ROADMAP), `polarizer-types` (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
+- **Session 109:** a Lorentzian tail falls only as A/Δ: a far-detuned "background only" check needs ≈ 1e-4 tolerance. Interfering
+  lines pull each other: the SFG d⁺ peak shows −0.2 cm⁻¹ next to r⁺ although its own background shift is positive.
 - **Session 108:** `python -` with a heredoc also hangs (stop the task). The merge codemod adds the old title as a keyword; extend that
   `keywords` array by hand afterwards.
 - **Session 107:** NIST WebBook keeps higher constants in footnotes (CO ω_e y_e, ω_e z_e; HCl ω_e z_e): grep the saved HTML.
