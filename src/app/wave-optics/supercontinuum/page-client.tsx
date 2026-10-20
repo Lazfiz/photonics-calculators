@@ -1,146 +1,113 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import { c } from "../../../physics/constants";
+import {
+  dispersionLength, dispersiveWaveShift, fissionLength, fundamentalSolitonPower, sechPeakPower, sechT0, solitonOrder,
+} from "../../../physics/wave-optics/soliton";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
+
 export default function SupercontinuumPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1064); // nm pump
-  const [pulseEnergy, setPulseEnergy] = useURLState("pulseEnergy", 10); // nJ
-  const [pulseDuration, setPulseDuration] = useURLState("pulseDuration", 100); // fs
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // cm
-  const [coreDiameter, setCoreDiameter] = useURLState("coreDiameter", 2); // µm (PCF)
-  const [gamma, setGamma] = useURLState("gamma", 100); // W⁻¹km⁻¹
-  const [beta2, setBeta2] = useState(-10); // ps²/km (anomalous)
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1064); // nm
+  const [energyRaw, setEnergy] = useURLState("pulseEnergy", 10); // nJ
+  const [fwhmRaw, setFwhm] = useURLState("pulseDuration", 100); // fs, sech² FWHM
+  const [lengthRaw, setLength] = useURLState("fiberLength", 10); // cm
+  const [gammaRaw, setGamma] = useURLState("gamma", 100); // 1/(W·km)
+  const [beta2Raw, setBeta2] = useURLState("beta2", -10); // ps²/km
+  const [beta3Raw, setBeta3] = useURLState("beta3", 0.1); // ps³/km
 
-  const peakPower = pulseEnergy * 1e-9 / (pulseDuration * 1e-15); // W
-  const Lsoliton = pulseDuration * 1e-15 ** 2 / Math.abs(beta2 * 1e-3); // m
-  const P0soliton = Math.abs(beta2 * 1e-3) / (gamma * 1e-3 * (pulseDuration * 1e-15) ** 2); // W
-  const Nsoliton = Math.sqrt(peakPower / P0soliton);
-  const Lfibre = fiberLength * 1e-2;
-  const LD = Lfibre / Lsoliton;
+  const lambda = clamp(wavelengthRaw, 200, 5000, 1064) * 1e-9;
+  const energy = clamp(energyRaw, 0, 1e6, 10) * 1e-9;
+  const fwhm = clamp(fwhmRaw, 1, 1e5, 100) * 1e-15;
+  const fibre = clamp(lengthRaw, 0, 1e7, 10) * 1e-2;
+  const gamma = clamp(gammaRaw, 0.01, 1e5, 100) * 1e-3;
+  const beta2 = clamp(beta2Raw, -1000, 1000, -10) * 1e-27;
+  const beta3 = clamp(beta3Raw, -100, 100, 0.1) * 1e-39;
 
-  // Soliton fission distance
-  const Lfiss = Lsoliton / Nsoliton;
+  const t0 = sechT0(fwhm);
+  const peak = sechPeakPower(energy, t0);
+  const LD = dispersionLength(t0, beta2);
+  const P1 = fundamentalSolitonPower(beta2, gamma, t0);
+  const N = solitonOrder(peak, beta2, gamma, t0);
+  const Lfiss = fissionLength(t0, beta2, N);
+  const anomalous = beta2 < 0;
+  const omega0 = (2 * Math.PI * c) / lambda;
+  const shift = dispersiveWaveShift(beta2, beta3);
+  const lambdaDW = anomalous && omega0 + shift > 0 ? (2 * Math.PI * c) / (omega0 + shift) : NaN;
 
-  // Estimate SC bandwidth (empirical)
-  const scBandwidthNm = wavelength * Nsoliton * 1.5; // rough estimate
+  const regime = !anomalous
+    ? "Normal dispersion: no soliton fission; SPM and optical wave breaking broaden the spectrum."
+    : N < 1
+      ? "N < 1: dispersion dominates, little broadening."
+      : fibre < Lfiss
+        ? `The fibre ends before the fission point (L/L_fiss = ${fmt(fibre / Lfiss, 3)}): mainly SPM broadening and compression.`
+        : `Soliton fission inside the fibre (L/L_fiss = ${fmt(fibre / Lfiss, 3)}): ≈ N fundamental solitons, Raman self-frequency shift and dispersive waves.`;
 
-  // Dispersion length vs pulse duration
-  const dispData = useMemo(() => {
-    const durations = Array.from({ length: 200 }, (_, i) => 10 + i * 1000 / 200);
-    const LDs = durations.map(t => {
-      const ld = (t * 1e-15) ** 2 / Math.abs(beta2 * 1e-3);
-      return ld * 100; // cm
-    });
-    return [
-      { x: durations, y: LDs, type: "scatter", mode: "lines", name: "L_D", line: { color: "#60a5fa", width: 2 } },
-      { x: [pulseDuration, pulseDuration], y: [0, LDs[100] * 1.5], type: "scatter", mode: "lines", name: "Current", line: { color: "#f87171", dash: "dash" } },
-    ];
-  }, [pulseDuration, beta2]);
-
-  // SC spectrum estimate (qualitative)
-  const spectrumData = useMemo(() => {
-    const wavelengths = Array.from({ length: 400 }, (_, i) => 300 + i * 1500 / 400);
-    const omega0 = 2 * Math.PI * c / (wavelength * 1e-9);
-    const spectrum = wavelengths.map(w => {
-      const omega = 2 * Math.PI * c / (w * 1e-9);
-      const deltaOmega = omega - omega0;
-      const width = Nsoliton * 2 * Math.PI * c / (wavelength * 1e-9) / 20;
-      const solitonPart = Math.exp(-0.5 * (deltaOmega / width) ** 2);
-      const dispersivePart = 0.3 * Math.exp(-0.5 * ((deltaOmega + width * 3) / (width * 2)) ** 2);
-      const sfgPart = 0.2 * Math.exp(-0.5 * ((deltaOmega - width * 4) / (width * 1.5)) ** 2);
-      return Math.log10((solitonPart + dispersivePart + sfgPart) * 1000 + 1);
-    });
-    return [
-      { x: wavelengths, y: spectrum, type: "scatter", mode: "lines", name: "SC Spectrum", fill: "tozeroy", line: { color: "#34d399", width: 2 } },
-    ];
-  }, [wavelength, pulseDuration, gamma, beta2, fiberLength, Nsoliton]);
-
-  const dispLayout = {
-    paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-    font: { color: "#9ca3af" },
-    xaxis: { title: "Pulse duration (fs)", gridcolor: "#374151" },
-    yaxis: { title: "Dispersion length (cm)", gridcolor: "#374151" },
-    margin: { t: 30, r: 30, b: 50, l: 70 },
-  };
-
-  const spectrumLayout = {
-    paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-    font: { color: "#9ca3af" },
-    xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
-    yaxis: { title: "Spectral power (dB)", gridcolor: "#374151" },
-    margin: { t: 30, r: 30, b: 50, l: 70 },
-  };
+  // L_fiss = L_D/N = T₀^(3/2) √(2/(γE|β₂|)) at fixed energy: plot it across the duration range around the input.
+  const fiss = Number.isFinite(Lfiss) && Lfiss > 0 ? [
+    {
+      name: "Fission length",
+      color: "#60a5fa",
+      points: Array.from({ length: 121 }, (_, i) => {
+        const f = fwhm * 10 ** ((i - 60) / 60);
+        const t = sechT0(f);
+        return { x: round6(f * 1e15), y: round6(fissionLength(t, beta2, solitonOrder(sechPeakPower(energy, t), beta2, gamma, t)) * 100) };
+      }),
+    },
+    ...(fibre > 0 ? [{ name: "Fibre length", color: "#9ca3af", dashed: true, points: [{ x: round6(fwhm * 1e14), y: round6(fibre * 100) }, { x: round6(fwhm * 1e16), y: round6(fibre * 100) }] }] : []),
+    { name: "Input pulse", color: "#f87171", showPoints: true, points: [{ x: round6(fwhm * 1e15), y: round6(Lfiss * 100) }] },
+  ] : [];
 
   return (
     <>
-            
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
-        <p><span className="text-blue-400">N</span> = √(P<sub>peak</sub> / P<sub>0</sub>) — soliton number</p>
-        <p><span className="text-blue-400">L<sub>D</sub></span> = τ₀² / |β₂| — dispersion length</p>
-        <p><span className="text-blue-400">L<sub>NL</sub></span> = 1 / (γ P<sub>peak</sub>) — nonlinear length</p>
-        <p><span className="text-blue-400">L<sub>fiss</sub></span> ≈ L<sub>D</sub> / N — soliton fission distance</p>
-        <p><span className="text-blue-400">P<sub>0</sub></span> = |β₂| / (γ τ₀²) — soliton peak power</p>
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Pump λ (nm)" value={wavelength} onChange={setWavelength} />
-        <ValidatedNumberInput label="Pulse Energy (nJ)" value={pulseEnergy} onChange={setPulseEnergy} />
-        <ValidatedNumberInput label="Pulse Duration (fs)" value={pulseDuration} onChange={setPulseDuration} />
-        <ValidatedNumberInput label="Fiber Length (cm)" value={fiberLength} onChange={setFiberLength} />
-        <ValidatedNumberInput label="γ (W⁻¹km⁻¹)" value={gamma} onChange={setGamma} />
-        <ValidatedNumberInput label="β₂ (ps²/km)" value={beta2} onChange={setBeta2} step="1" />
+        <ValidatedNumberInput label="Pump wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={200} max={5000} step="any" />
+        <ValidatedNumberInput label="Pulse energy (nJ)" value={energyRaw} onChange={setEnergy} min={0} max={1e6} step="any" />
+        <ValidatedNumberInput label="Pulse FWHM, sech² (fs)" value={fwhmRaw} onChange={setFwhm} min={1} max={1e5} step="any" />
+        <ValidatedNumberInput label="Fibre length (cm)" value={lengthRaw} onChange={setLength} min={0} max={1e7} step="any" />
+        <ValidatedNumberInput label="γ (W⁻¹ km⁻¹)" value={gammaRaw} onChange={setGamma} min={0.01} max={1e5} step="any" />
+        <ValidatedNumberInput label="β₂ (ps²/km)" value={beta2Raw} onChange={setBeta2} min={-1000} max={1000} step="any" />
+        <ValidatedNumberInput label="β₃ (ps³/km)" value={beta3Raw} onChange={setBeta3} min={-100} max={100} step="any" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Peak Power</p>
-          <p className="text-xl font-bold text-blue-400">{peakPower.toExponential(2)} W</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Soliton Number N</p>
-          <p className="text-xl font-bold text-green-400">{Nsoliton.toFixed(1)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Dispersion Length</p>
-          <p className="text-xl font-bold text-orange-400">{(Lsoliton * 100).toFixed(2)} cm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Est. SC Bandwidth</p>
-          <p className="text-xl font-bold text-purple-400">{scBandwidthNm.toFixed(0)} nm</p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard label="Peak power" value={`${fmt(peak / 1e3)} kW`} subtext={`sech²: E/(2T₀), T₀ = FWHM/1.7627 = ${fmt(t0 * 1e15)} fs`} tone="blue" />
+        <ResultCard label="Soliton number N" value={fmt(N, 3)} subtext={`√(P/P₁), fundamental soliton P₁ = |β₂|/(γT₀²) = ${fmt(P1)} W`} tone="green" />
+        <ResultCard label="Dispersion length L_D" value={`${fmt(LD * 100)} cm`} subtext="T₀²/|β₂|" tone="orange" />
+        <ResultCard label="Fission length L_fiss" value={anomalous ? `${fmt(Lfiss * 100)} cm` : "—"} subtext={anomalous ? "≈ L_D/N" : "needs anomalous dispersion (β₂ < 0)"} tone="yellow" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 mb-6">
+        <ResultCard
+          label="Dispersive wave"
+          value={Number.isFinite(lambdaDW) ? `${fmt(lambdaDW * 1e9)} nm` : "—"}
+          subtext={!anomalous
+            ? "needs a soliton (β₂ < 0)"
+            : Number.isFinite(lambdaDW)
+              ? `Ω ≈ −3β₂/β₃ = 2π × ${fmt(shift / (2 * Math.PI * 1e12))} THz from the pump`
+              : beta3 === 0 ? "β₃ = 0: no phase-matched dispersive wave" : "Ω ≈ −3β₂/β₃ lies beyond zero frequency"}
+          tone="purple"
+        />
+        <ResultCard label="Regime" value={!anomalous ? "Normal dispersion" : N < 1 ? "Linear" : fibre < Lfiss ? "Before fission" : "Soliton fission"} subtext={regime} tone="cyan" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Soliton P₀</p>
-          <p className="text-xl font-bold text-cyan-400">{P0soliton.toExponential(2)} W</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Fission Distance</p>
-          <p className="text-xl font-bold text-yellow-400">{(Lfiss * 100).toFixed(2)} cm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">L / L<sub>D</sub></p>
-          <p className="text-xl font-bold text-pink-400">{LD.toFixed(1)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Regime</p>
-          <p className="text-xl font-bold text-red-400">{beta2 < 0 ? (Nsoliton > 10 ? "Strong SC" : Nsoliton > 1 ? "Soliton fission" : "Perturbative") : "Normal dispersion"}</p>
-        </div>
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>A femtosecond pulse in the anomalous dispersion of a photonic crystal fibre is a higher-order soliton of order
+          N = √(γP₀T₀²/|β₂|). Higher-order dispersion and the Raman response break it up near the fission length
+          L_fiss ≈ L_D/N into about N fundamental solitons. They shift to longer wavelengths, and each one radiates a
+          phase-matched dispersive wave on the other side of the zero-dispersion wavelength, offset by about
+          Ω ≈ −3β₂/β₃. The spectrum itself needs a generalised NLS simulation and isn&apos;t shown; these scales tell
+          whether the fibre is long enough for fission. Pulse shape: sech², so P₀ = E/(2T₀).</p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2 mb-8">
-        <div className="bg-gray-900 rounded-lg p-4">
-          <ChartPanel data={dispData} layout={dispLayout} />
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4">
-          <ChartPanel data={spectrumData} layout={spectrumLayout} />
-        </div>
-      </div>
+      {fiss.length > 0 && (
+        <SimpleLineChart title="Fission length against pulse duration, at fixed energy" xLabel="Pulse FWHM (fs)" yLabel="Length (cm)" series={fiss} xScale="log" yScale="log" />
+      )}
     </>
   );
 }
