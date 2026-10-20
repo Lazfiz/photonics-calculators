@@ -87,5 +87,6 @@
   "/wave-optics/dual-comb-spectroscopy": "/spectroscopy/dual-comb-spectroscopy",
   "/wave-optics/gouy-phase": "/wave-optics/gaussian-beam",
   "/wave-optics/laguerre-gaussian": "/wave-optics/hermite-gaussian",
-  "/wave-optics/optical-parametric": "/wave-optics/optical-parametric-amplifier"
+  "/wave-optics/optical-parametric": "/wave-optics/optical-parametric-amplifier",
+  "/wave-optics/fiber-laser-resonator": "/fiber-optics/fiber-laser"
 }

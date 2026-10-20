@@ -444,10 +444,15 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "fiber-laser",
     title: "Fiber Laser Output Power",
-    description: "Fiber laser output power, optical and Stokes efficiency, efficiency beyond the quantum defect, and the Rigrod optimum output coupling from gain and cavity loss.",
+    description: "Fiber laser output power, optical and Stokes efficiency, efficiency beyond the quantum defect, the Rigrod optimum output coupling from gain and cavity loss, and the signal core's V number, mode count and mode-field diameter.",
+    keywords: ["Fiber Laser Resonator", "fiber laser V number", "single-mode fiber laser", "mode field diameter"],
     tier: "textbook",
-    modelNote: "Output from your slope and threshold. Optimum coupler from Rigrod's standing-wave model (four-level saturation, g₀ fixed), internal loss lumped into the rear mirror; output relative to the optimum.",
+    modelNote: "Output from your slope and threshold. Optimum coupler from Rigrod's standing-wave model (four-level saturation, g₀ fixed), internal loss lumped into the rear mirror; output relative to the optimum. Core: weakly guiding step-index LP modes (Gloge), exact LP01 Petermann II diameter.",
     references: [
+      {
+        citation: "Gloge D. (1971). Weakly guiding fibers. Appl. Opt. 10, 2252. V number, LP mode cutoffs and the LP01 field.",
+        url: "https://doi.org/10.1364/ao.10.002252",
+      },
       {
         citation: "Rigrod W. W. (1965). Saturation effects in high-gain lasers. J. Appl. Phys. 36, 2487. Output power of a homogeneously broadened standing-wave laser against mirror reflectances.",
         url: "https://doi.org/10.1063/1.1714517",
