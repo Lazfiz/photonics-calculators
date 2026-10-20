@@ -1,62 +1,88 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { airyFringe, etalonOrder, fsrFrequency, fsrWavelength, fwhmFrequency, gapAngle } from "../../../physics/spectroscopy/etalon";
+import { airyPeakNear, coefficientOfFinesse, reflectingFinesse } from "../../../physics/thin-film/interference";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits) : "—");
+const DEG = Math.PI / 180;
+
+/** Frequency in Hz with a readable unit. */
+const fmtHz = (x: number) =>
+  !Number.isFinite(x) ? "—" : x >= 1e12 ? `${fmt(x / 1e12)} THz` : x >= 1e9 ? `${fmt(x / 1e9)} GHz` : `${fmt(x / 1e6)} MHz`;
+/** Wavelength interval in m as nm or pm. */
+const fmtLen = (x: number) => (!Number.isFinite(x) ? "—" : x >= 1e-10 ? `${fmt(x * 1e9)} nm` : `${fmt(x * 1e12)} pm`);
+
 export default function EtalonFSRPage() {
-  const [n, setN] = useURLState("n", 1.0); // refractive index of gap
-  const [d, setD] = useURLState("d", 10); // gap in μm
-  const [theta, setTheta] = useURLState("theta", 0); // angle in degrees
-  const [R, setR] = useURLState("R", 0.8); // mirror reflectance
+  const [nRaw, setN] = useURLState("n", 1.0); // gap index
+  const [dRaw, setD] = useURLState("d", 10); // gap, µm
+  const [thRaw, setTheta] = useURLState("theta", 0); // incidence angle in air, deg
+  const [rRaw, setR] = useURLState("R", 0.8); // mirror reflectance
+  const [wlRaw, setWavelength] = useURLState("wavelength", 1550); // design wavelength, nm
 
-  const chartData = useMemo(() => {
-    const wls = Array.from({ length: 500 }, (_, i) => 1.500 + i * 0.002); // μm range for FSR calc
-    // FSR = λ²/(2·n·d·cosθ) at wavelength λ
-    const cosT = Math.cos((theta * Math.PI) / 180);
-    const fsr = wls.map(wl => (wl * wl) / (2 * n * d * cosT));
-    // Also show Airy function for reference
-    const F = 4 * R / ((1 - R) * (1 - R));
-    const T = wls.map(wl => {
-      const delta = (4 * Math.PI * n * d * cosT) / wl;
-      return 1 / (1 + F * Math.sin(delta / 2) ** 2);
-    });
-    return [
-      { x: wls, y: fsr, type: "scatter" as const, mode: "lines" as const, name: "FSR (μm)", line: { color: "#f87171" }, yaxis: "y2" },
-      { x: wls, y: T, type: "scatter" as const, mode: "lines" as const, name: "Transmission", line: { color: "#60a5fa" } },
-    ];
-  }, [n, d, theta, R]);
+  const n = clamp(nRaw, 1, 5, 1);
+  const d = clamp(dRaw, 0.1, 1e5, 10) * 1e-6;
+  const theta0 = clamp(thRaw, 0, 80, 0) * DEG;
+  const R = clamp(rRaw, 0, 0.9999, 0.8);
+  const lambda = clamp(wlRaw, 100, 20000, 1550) * 1e-9;
 
-  const cosTheta = Math.cos((theta * Math.PI) / 180);
-  const designWl = 1.55; // μm
-  const fsrDesign = (designWl * designWl) / (2 * n * d * cosTheta);
-  const finesse = Math.PI * Math.sqrt(R) / (1 - R);
-  const FSR_nm = fsrDesign * 1000;
+  const cosT = Math.cos(gapAngle(theta0, n));
+  const ndCos = n * d * cosT;
+  const F = coefficientOfFinesse(R);
+  const finesse = reflectingFinesse(F);
+  const order = etalonOrder(n, d, cosT, lambda);
+  const fsrL = fsrWavelength(lambda, n, d, cosT);
+  const fsrNu = fsrFrequency(n, d, cosT);
+  const fwhmNu = fwhmFrequency(fsrNu, F);
+  const peak = airyPeakNear(ndCos, lambda, F);
+
+  const chart = (() => {
+    const { lambda: ls, T } = airyFringe(ndCos, lambda, F, 1, 240);
+    const pm = fsrL < 1e-10; // plot pm detuning for thick etalons
+    const scale = pm ? 1e12 : 1e9;
+    return {
+      unit: pm ? "pm" : "nm",
+      data: [{ x: ls.map((l) => Math.round((l - lambda) * scale * 1e6) / 1e6), y: T, type: "scatter", mode: "lines", name: "Transmission", line: { color: "#60a5fa", width: 2 } }],
+    };
+  })();
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="n (gap index)" value={n} onChange={setN} step="0.01" />
-        <ValidatedNumberInput label="Gap d (μm)" value={d} onChange={setD} step="0.1" />
-        <ValidatedNumberInput label="θ (degrees)" value={theta} onChange={setTheta} min={0} max={89} />
-        <ValidatedNumberInput label="Mirror R" value={R} onChange={setR} min={0} max={0.999} step="0.01" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-8">
+        <ValidatedNumberInput label="Gap Index n" value={nRaw} onChange={setN} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label="Gap d (µm)" value={dRaw} onChange={setD} min={0.1} max={100000} step="0.1" />
+        <ValidatedNumberInput label="Incidence Angle in Air θ₀ (°)" value={thRaw} onChange={setTheta} min={0} max={80} />
+        <ValidatedNumberInput label="Mirror Reflectance R" value={rRaw} onChange={setR} min={0} max={0.9999} step="0.01" />
+        <ValidatedNumberInput label="Design Wavelength (nm)" value={wlRaw} onChange={setWavelength} min={100} max={20000} />
       </div>
 
-      <div className="bg-gray-900 rounded p-4 mb-6">
-        <p className="text-gray-300">FSR at 1550 nm = <span className="text-blue-400 font-mono">{FSR_nm.toFixed(2)} nm</span></p>
-        <p className="text-gray-300">Finesse ℱ = <span className="text-blue-400 font-mono">{finesse.toFixed(1)}</span></p>
-        <p className="text-gray-300">Finesse coefficient F = <span className="text-blue-400 font-mono">{(4 * R / ((1 - R) ** 2)).toFixed(1)}</span></p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ResultCard label="FSR at λ: λ²/(2nd cos θ)" value={fmtLen(fsrL)} tone="blue" subtext={`order m = ${fmt(order)} at λ`} />
+        <ResultCard label="FSR in Frequency c/(2nd cos θ)" value={fmtHz(fsrNu)} tone="cyan" subtext="exact for a non-dispersive gap" />
+        <ResultCard label="Reflecting Finesse ℱ = π√R/(1 − R)" value={fmt(finesse)} tone="green" subtext={`coefficient F = 4R/(1 − R)² = ${fmt(F)}`} />
+        <ResultCard label="Fringe FWHM" value={fmtHz(fwhmNu)} tone="purple"
+          subtext={F >= 1 ? `exact 4 asin(1/√F); FSR/ℱ = ${fmtHz(fsrNu / finesse)}` : "F < 1: T never falls to ½"} />
+        <ResultCard label="Nearest Transmission Peak" value={`${fmt(peak.wavelength * 1e9, 7)} nm`} tone="yellow" subtext={`order ${peak.order}`} />
+        <ResultCard label="Peak FWHM (wavelength)" value={fmtLen(peak.fwhm)} tone="orange"
+          subtext={Number.isFinite(peak.fwhm) ? `resolving power λ/δλ = ${fmt(peak.wavelength / peak.fwhm)}` : undefined} />
+        <ResultCard label="Contrast T_max/T_min" value={fmt(1 + F)} tone="red" subtext="1 + F (lossless mirrors)" />
+        <ResultCard label="Gap Angle θ" value={`${fmt(Math.acos(cosT) / DEG, 3)}°`} tone="gray" subtext="sin θ = sin θ₀/n" />
       </div>
 
-      <ChartPanel data={chartData} layout={{
-        paper_bgcolor: "#111827", plot_bgcolor: "#111827", font: { color: "#9ca3af" },
-        xaxis: { title: "Wavelength (μm)", gridcolor: "#374151" },
-        yaxis: { title: "Transmission", gridcolor: "#374151", range: [0, 1.1] },
-        yaxis2: { title: "FSR (μm)", gridcolor: "#374151", overlaying: "y", side: "right" },
-        margin: { t: 20, b: 40, l: 60, r: 60 }, autosize: true, showlegend: true
+      <ChartPanel data={chart.data} layout={{
+        paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+        xaxis: { title: `λ − ${fmt(lambda * 1e9, 6)} nm (${chart.unit})`, gridcolor: "#374151" },
+        yaxis: { title: "Transmission", gridcolor: "#374151", range: [0, 1.05] },
+        margin: { t: 20, b: 50, l: 60, r: 20 }, legend: { bgcolor: "transparent" },
       }} />
+      <p className="text-sm text-gray-400 mt-3">
+        Three orders around the design wavelength, sampled densely at each peak so high-finesse fringes are not
+        aliased. Lossless mirrors without reflection phase; absorption, flatness and beam divergence lower the real finesse.
+      </p>
     </>
   );
 }
