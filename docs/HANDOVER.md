@@ -1,39 +1,41 @@
-# Handover — 2026-10-21 (session 127 → session 128)
+# Handover — 2026-10-21 (session 128 → session 129)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 127: **materials fix part 3** (uniaxial), branch `phase-4/materials-fix-3`, PR #158. crystal-birefringence →
-birefringent-crystals; calcite-properties, quartz-crystal, sapphire-properties → crystal-properties (new); diamond-optics
-rewritten (4 redirects, 421 → 418 pages). Next: **materials fix part 4** (field effects).
+Session 128: **materials fix part 4** (field effects), branch `phase-4/materials-fix-4`. verdet-constant → magneto-optic;
+brewster-tir → polarization/fresnel-polarization; photoelastic and acousto-optic rewritten (2 redirects, 418 → 416 pages).
+Next: **materials fix part 5** (Pockels and χ⁽²⁾/χ⁽³⁾ tables).
 
 ## State
-- `sellmeier.ts`: `SellmeierModel.K` (optional infrared term Kλ² of n²; derivatives included); `fromPoleForm(…, K)`.
-- `uniaxial-data.ts` gained `bbo` (Eimerl 1987, 0.22–1.06 µm) and `kdp` (Zernike 1964, 0.2138–1.529 µm, 24.8 °C); both negative.
-  They appear on every page that lists `CRYSTAL_IDS` (birefringent-crystals, the polarization pages, conoscopic).
-- `src/physics/materials/crystal-properties.ts`: `CRYSTAL_SHEETS` (calcite, quartz, sapphire, diamond: Crystran ∥/⊥ data),
-  `quartzRotatoryPower(λ)` (Chandrasekhar 1952, rad/m), `diamondIndex(λ)` (Peter ≤ 644 nm, Palik table to 20 µm, linear).
-- birefringent-crystals: `crystal` (any `CRYSTAL_IDS`), `wavelength` nm, `thickness` mm. crystal-properties: `crystal`
-  (calcite/quartz/sapphire), `wavelength` nm, `angle` °, `thickness` mm. diamond-optics: `wavelength` nm (226–20000).
-- `tests/materials-crystals.test.ts` (7 tests); `polarization-uniaxial.test.ts` formula 4 now has the c₉λ^c₁₀ term.
-- Materials 8 / 34 tiered, 24 `knownIssue`s; 391 / 418 total; page floor 418; 995 tests.
+- `src/physics/materials/faraday.ts`: `MAGNETO_OPTIC` (tgg, tsag, cef3, silica, yig), `singleTransitionVerdet`, `silicaVerdet`,
+  `verdetConstant(id, λ)` (NaN outside each fit range), `faradayRotation`, `fieldForRotation`, `lengthForRotation`. Sign:
+  Vojna (V < 0 = clockwise along B), paramagnets negative. YIG is a saturated 304 rad/m at 1550 nm only.
+- `stress-optic.ts`: `STRESS_OPTIC` (silica Jog 1957 3.55e-12 Pa⁻¹ + 12 Schott glasses), `stressForRetardance`; the
+  retardance itself is `photoelasticRetardance` from `polarization/photoelasticity.ts`.
+- `acousto-optic.ts`: `ACOUSTO_OPTIC` (teo2-shear, teo2-long, pbmoo4, silica: n, v, M₂ at 633 nm), `braggAngle`, `scanAngle`,
+  `kleinCookQ`, `braggEfficiency`, `fullEfficiencyPower`, `accessTime`.
+- URL params: magneto-optic `material`, `wavelength` nm, `fieldStrength` T, `length` mm; photoelastic `material` (or
+  `custom` + `C` ×10⁻¹² Pa⁻¹), `stress` MPa, `thickness` mm, `wavelength` nm; acousto-optic `material` (or `custom` + `n`,
+  `velocity`, `m2`), `wavelength`, `frequency` MHz, `power` W (default 0.02), `length`, `height`, `beam` mm, `bandwidth` MHz.
+- `tests/materials-field-effects.test.ts` (9 tests). Materials 11 / 32 tiered, 20 `knownIssue`s; 394 / 416 total; page floor 416.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: `materials/birefringent-crystals=1.67062`
-   (`?crystal=bbo&wavelength=589.3`, nₒ), `materials/crystal-properties=6.232` (default, walk-off °),
-   `materials/diamond-optics=2.4173`. Part 2: `materials/transparency-range=47.0` (`?material=ge&wavelength=10000`),
-   `materials/infrared-glass=2.4112` (`?material=as2s3`); older: PR #141–#157 descriptions. No release unless asked.
-2. Materials fix part 4 (ROADMAP item 4): read the PR #155 description for each page's findings first
-   (`gh pr view 155 --json body -q .body | grep -n -A3 "verdet"`). brewster-tir merges into polarization/fresnel-polarization;
-   its related links were retargeted to crystal-properties this session.
-3. Later: open findings (ROADMAP; new: old quartz/sapphire links, KDP angle source), `polarizer-types` (needs the user at the
-   laptop with Chrome).
+1. `/ship` this branch. Values for a later release check: `materials/magneto-optic=-130.6` (default, V at 633 nm),
+   `materials/acousto-optic=2.94` (`?wavelength=633&frequency=100`, θ_B °), `materials/photoelastic=3.55` (default C).
+   Part 3: `materials/birefringent-crystals=1.67062` (`?crystal=bbo&wavelength=589.3`), `materials/crystal-properties=6.232`,
+   `materials/diamond-optics=2.4173`; older: PR #141–#158 descriptions. No release unless asked.
+2. Materials fix part 5 (ROADMAP item 5): read the PR #155 findings first
+   (`gh pr view 155 --json body -q .body | grep -n -A3 "electro-optic"`). It may need splitting into a/b boxes.
+3. Later: open findings (ROADMAP; new: AO M₂ from secondary listings, CeF₃ range, Schott K wavelength), `polarizer-types`
+   (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
-- **Session 127:** the page tests list pages via git: `git add` a new page directory before the gate, or 3 tests fail on
-  counts. Crystran's "1.06 µm" sapphire values are at 1064 nm and quartz's "0.6 µm" values at 589 nm. refractiveindex.info
-  formula 4 is n² = c₀ + c₁λ^c₂/(λ² − c₃^c₄) + c₅λ^c₆/(λ² − c₇^c₈) + c₉λ^c₁₀ (BBO uses the last term: Sellmeier `K`). A redirect
-  can't add a query, so a merged preset page lands on the default. `walkoffAngle` is signed θ_S − θ (positive for negative
-  crystals).
+- **Session 128:** MDPI PDFs 403 to curl and WebFetch: try the Semantic Scholar cache (`pdfs.semanticscholar.org/…`).
+  Schott's per-glass sheets return HTML; refractiveindex.info hosts `schott_2017-01-20.pdf` (`pdftotext` puts each E, μ, K
+  value a line below its label). Crossref every DOI and article number; add no sign convention a source doesn't state.
+- **Session 127:** the page tests list pages via git: `git add` a new page directory before the gate. Crystran's "1.06 µm"
+  sapphire values are at 1064 nm, quartz's "0.6 µm" at 589 nm. refractiveindex.info formula 4's last term c₉λ^c₁₀ is Sellmeier
+  `K`. A redirect can't add a query, so a merged preset page lands on the default.
 - **Session 126:** sources that download: Crystran data sheets (`curl -L -A "Mozilla/5.0" https://www.crystran.com/optical-materials/<slug>`,
   slugs from that index page; its "reflection loss (2 surfaces)" is 1 − 2n/(n²+1), a free golden value); refractiveindex.info
   YAML via `gh api "repos/polyanskiy/refractiveindex.info-database/git/trees/main?recursive=1"` and raw.githubusercontent
@@ -41,10 +43,8 @@ rewritten (4 redirects, 421 → 418 pages). Next: **materials fix part 4** (fiel
   amorphousmaterials.com does not. A `const … as const satisfies Record<…>` table loses optional fields in its union type:
   export it as `Record<Id, Interface>` (TS2339 on `note`). Long floats in a `style` (`left: 53.40199…%`) fail hydration
   (server HTML shortens them): round to 3 decimals. Background `npm run check` "exit code 0" again hid a red tsc: read the log's `exit` line.
-- **Session 125:** a long `node - <<'EOF'` script with backticks and apostrophes fails: write the script to the scratchpad and
-  run `node <file>`. In a template-literal RegExp `\.` is a bare `.`: write `\\.`. The merge codemod dry run lists the keywords
-  it carries over; run it after editing `redirects.json` (append entries; don't re-sort the file).
-- **Session 124:** in the registry each entry ends with a `  },` line: scripts slice entries on that.
+- **Sessions 124–125:** registry entries end with a `  },` line (scripts slice on it). Long `node - <<'EOF'` scripts with
+  backticks fail: write them to the scratchpad. The merge codemod runs after appending to `redirects.json` (don't re-sort).
 - **Session 123:** devctl exit 75 skips the *whole* chained command, a `node - <<EOF` edit before it too: grep that the edit
   landed. A user `next dev` on :3000 rewrites `.next/dev/types` right after `rm -rf`, sometimes garbled (TS1002 in validator.ts):
   `rm -rf .next/dev/types` alone again, then rerun the gate. ui-check and `--dump-dom` that server; curl a cold page once first.

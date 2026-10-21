@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 127, 2026-10-21)
+## Status (session 128, 2026-10-21)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -21,10 +21,10 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
-| materials | 8 / 34 | part 0 audit (session 124): 39 `knownIssue`s, 18 merges decided; fix parts 1–3 done (sessions 125–127); parts 4–9 next |
+| materials | 11 / 32 | part 0 audit (session 124): 39 `knownIssue`s, 18 merges decided; fix parts 1–4 done (sessions 125–128); parts 5–9 next |
 | wave-optics | 37 / 37 | done: part 0 audit (session 110), fix parts 1–13 (sessions 111–123); open findings below |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **391 / 418** | 24 `knownIssue`s (materials) |
+| **total** | **394 / 416** | 20 `knownIssue`s (materials) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -46,10 +46,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - [ ] **Materials fix parts** (part 0 audit, session 124, PR #155: per-page findings, golden values and references are
   in the PR description; OK pages: brewster-tir, thermal-expansion). Every merge below is a user decision (session 124)
   and gets a redirect. Every page: clamp URL values, material in the URL, physics into `src/physics/materials/` (or reuse the named module), golden test, tier +
-  `modelNote` + references, drop the `knownIssue`. About 4 pages each; 45 → 27 pages (34 after part 3).
-  4. Field effects: verdet-constant → magneto-optic on a new `faraday.ts` (diamagnetic sign, TGG −134 rad/(T·m), garnets
-     saturate); brewster-tir → polarization/fresnel-polarization; photoelastic (`photoelasticity.ts`, C from p₁₁, p₁₂);
-     acousto-optic (mode and λ for M₂, efficiency).
+  `modelNote` + references, drop the `knownIssue`. About 4 pages each; 45 → 27 pages (32 after part 4).
   5. Pockels and χ⁽²⁾/χ⁽³⁾ tables: electro-optic + photorefractive on one `pockels.ts` EO table (KDP V_π 7.48 kV, Γ in
      cm⁻¹); nonlinear-crystals (length and power wired, d_eff fixes); nonlinear-index (`kerr.ts`, γ with A_eff).
   6. Scattering and TPA: brillouin-scattering (`fiber-nonlinear.ts`: ν_B 11.15 GHz, g_B 3.65e-11 m/W, `sbsThreshold`);
@@ -82,6 +79,11 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `crystal-properties`: old quartz-crystal and sapphire-properties links land on the calcite default (a redirect can't add
   `?crystal=`). `birefringent-crystals`: KDP type-I SHG 41.21° at 1064 nm is checked against the Dmitriev handbook value
   (≈ 41°) from memory, not a downloaded source.
+- `acousto-optic`: the 4 presets (TeO₂ shear/long, PbMoO₄, silica) take n, v and M₂ from secondary listings; the primary
+  tables (Uchida & Niizeki 1973, Dixon 1967) didn’t download. Ge, GaP and LiNbO₃ were dropped until they can be checked.
+- `magneto-optic`: the CeF₃ fit (Vojna Table 1) stops at 700 nm (39.5 against 46.3 rad/(T·m) measured at 1064 nm); Vojna’s
+  Ce:TAG, TSLAG, Ho₂O₃ and Pr/Ho:TGG fits don’t reproduce their own tabulated values, so they are left out.
+- `photoelastic`: the Schott sheet doesn’t state the wavelength of K, so the page claims none.
 **Wave optics**
 - `injection-locking`: default k_c/2π 10 GHz is an order-of-magnitude diode value, not sourced; k_c(R, τ_in) conventions differ
   by O(1) factors between Lang, Mogensen and Schunk, so it stays an input. `four-wave-mixing`: no fiber loss in the gain (lossless OPA).
@@ -208,6 +210,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Materials fix part 4 (session 128, `phase-4/materials-fix-4`): verdet-constant → magneto-optic (`faraday.ts`: Vojna fits, TGG −130.6 rad/(T·m) at 633 nm, silica Tran 2024, YIG saturated); brewster-tir → fresnel-polarization; photoelastic (`stress-optic.ts`, Schott K, silica 3.55); acousto-optic (`acousto-optic.ts`: mode, η, P₁₀₀, Q).
   - Materials fix part 3 (session 127, `phase-4/materials-fix-3`, PR #158): crystal-birefringence → birefringent-crystals (n(λ)/Δn of all `uniaxial-data` crystals, + BBO Eimerl with Sellmeier `K` term, KDP Zernike; SHG type I 22.88°/41.21°); calcite-properties, quartz-crystal, sapphire-properties → crystal-properties (`crystal-properties.ts`: walk-off 6.232° at 45°, quartz rotation 21.75 °/mm Chandrasekhar); diamond-optics (Peter 2.4173 + Palik IR, T 70.65 %); 421 → 418 pages, 995 tests.
   - Materials fix part 2 (session 126, `phase-4/materials-fix-2`, PR #157): chalcogenide-glass, fluoride-glass → infrared-glass; uv-materials → transparency-range (window page, Fresnel limit 2n/(n²+1), Ge 47.0 %); `window-materials.ts` (Crystran table), `TransmissionBands`; As₂S₃ Rodney, ZBLAN Gan, LiF/KBr/CsI Li in `sellmeier-data`; 988 tests.
   - Materials fix part 1 (session 125, `phase-4/materials-fix-1`, PR #156): gvd, group-index, sellmeier → chromatic-dispersion (presets, coefficients, n(λ) compare); abbe-number, thermal-dndt → optical-glass-catalog (V_d of glasses + crystals, FS 67.82; TIE-19 `schottDeltaN`, N-BK7 Δn 20→60 °C 6.997e-5); diamond range 644 nm + DOI; 983 tests.
