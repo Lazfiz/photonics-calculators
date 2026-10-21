@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 120, 2026-10-20)
+## Status (session 121, 2026-10-21)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -22,9 +22,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
-| wave-optics | 30 / 42 | part 0 audit (session 110), fix parts 1–10 (sessions 111–120); 10 `knownIssue`s; parts 11–13 next |
+| wave-optics | 33 / 41 | part 0 audit (session 110), fix parts 1–11 (sessions 111–121); 6 `knownIssue`s; parts 12–13 next |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **380 / 434** | 10 `knownIssue`s (wave-optics) |
+| **total** | **383 / 433** | 6 `knownIssue`s (wave-optics) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -57,8 +57,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   8. ✓ Pulses: CPA (pulse-compression merged), optical-frequency-comb (cep-stabilization merged), attosecond (session 118, PR #149).
   9. ✓ Fibre solitons: `soliton.ts`, soliton (split-step NLS), supercontinuum (session 119, PR #150).
   10. ✓ Kerr: `kerr.ts`, kerr-lens, self-phase-modulation (FFT spectrum), filamentation (session 120, PR #151).
-  11. χ⁽²⁾: one plane-wave three-wave module (`sfgCoefficient`): sum-frequency (P₃ 9.06 µW), difference-frequency
-      (18.92 µW); parametric-amplification → optical-parametric-amplifier (GVM bandwidth 0.886/(GVM·L)).
+  11. ✓ χ⁽²⁾: `three-wave.ts`, sum-frequency, difference-frequency, parametric-amplification → optical-parametric-amplifier (session 121, PR #152).
   12. Guided waves: four-wave-mixing (`fiber-nonlinear.ts`, κ = Δβ + 2γP); coupled-mode → fiber-optics/mode-coupling
       (check fiber-coupler too); optical-waveguide (slab TE bisection); injection-locking (α asymmetry).
   13. Interference: photonic-bandgap → thin-film/bragg-reflector; interferometer → spectroscopy/michelson-interferometer
@@ -76,6 +75,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `bend-insensitive` (`g657.ts`): the physics review recalls a G.657.A3 category (2016) that shares the B3 limits. Unverified
   because the ITU PDF is blocked to scripts; check the ITU text in Chrome, then add A3 or drop the note.
 **Wave optics**
+- χ⁽²⁾ pages (`sum-frequency`, `difference-frequency`, `optical-parametric-amplifier`): default d_eff 14 pm/V is a typical PPLN value, not
+  sourced; Shoji et al. 1997 (doi 10.1364/josab.14.002268) d₃₃ table is paywalled. Source it or keep it labelled as an input.
 - `dye-laser-resonator`: default σₑ 2e-16 cm², τ 4 ns, σ_T 1e-17 cm², k_ST 5e6 s⁻¹, τ_T 1 µs are Rh6G-order examples (page says so);
   source them from Webb et al. 1970 (doi 10.1063/1.1673926, paywalled). `gas-laser-resonator`: g₀ 0.15 /m and I_sat 25 W/cm² come from one
   HeNe course report (Ng et al. 2015); no sourced g₀/I_sat for Ar⁺ or CO₂, so the line buttons set λ only.
@@ -215,6 +216,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Wave-optics fix part 11 (session 121, `phase-4/wave-optics-fix-11`, PR #152): new `three-wave.ts` (SFG 9.0637 µW part 0, 91.87 µW PPLN default;
+    DFG 18.92 µW; OPA Γ 202.18 /m, G 813.7; GVM bandwidth 0.88589/(|δ|L) → Cerullo high gain, 616.16 GHz); PPLN defaults from Zelmon; 966 tests.
   - Wave-optics fix part 10 (session 120, `phase-4/wave-optics-fix-10`, PR #151): new `kerr.ts` (P_cr 3.77λ²/(8πn₀n₂) 1.7046 MW; f 9.8175 mm;
     φ 1.2025e-3 rad; Marburger 0.322376 z_R; lens 1/z′; SPM FFT spectrum matches rms √(1+4φ²/3√3), √(1+32φ²/35)); 958 tests.
   - Wave-optics fix part 9 (session 119, `phase-4/wave-optics-fix-9`, PR #150): new `soliton.ts` (sech T₀ 56.7296 fs; L_D 0.272042 m, P₁ 2827.62 W,
