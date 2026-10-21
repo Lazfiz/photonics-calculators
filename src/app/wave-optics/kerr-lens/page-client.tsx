@@ -1,97 +1,87 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c } from "../../../physics/constants";
+import {
+  criticalPower, gaussianPeakIntensity, kerrLensFocalLength, nonlinearPhase, rayleighRangeInMedium, selfFocusingDistance,
+} from "../../../physics/wave-optics/kerr";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
+const fmtLength = (m: number) => !Number.isFinite(m)
+  ? "∞"
+  : Math.abs(m) >= 1 ? `${fmt(m)} m` : Math.abs(m) >= 1e-3 ? `${fmt(m * 1e3)} mm` : `${fmt(m * 1e6)} µm`;
+
 export default function KerrLensPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 800); // nm
-  const [beamWaist, setBeamWaist] = useURLState("beamWaist", 50); // µm
-  const [n2, setN2] = useURLState("n2", 3.2); // ×10⁻¹⁶ cm²/W (Ti:Sapphire)
-  const [power, setPower] = useURLState("power", 1); // W
-  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 2); // mm
-  const [n0, setN0] = useURLState("n0", 1.76); // refractive index
+  const [lambdaRaw, setLambda] = useURLState("wavelength", 800); // nm
+  const [waistRaw, setWaist] = useURLState("beamWaist", 20); // µm
+  const [n0Raw, setN0] = useURLState("n0", 1.76);
+  const [n2Raw, setN2] = useURLState("n2", 3.2); // 1e-16 cm²/W = 1e-20 m²/W
+  const [powerRaw, setPower] = useURLState("peakPower", 100); // kW
+  const [lengthRaw, setLength] = useURLState("crystalLength", 2); // mm
 
-  const k = 2 * Math.PI / (wavelength * 1e-3); // 1/µm
-  const n2_um = n2 * 1e-8; // ×10⁻¹⁶ cm²/W → µm²/W (×10⁻¹⁶ × 10⁸)
-  const Pcr = 3.77 * Math.pow(wavelength * 1e-3, 2) / (8 * Math.PI * n0 * n2_um); // W
+  const lambda = clamp(lambdaRaw, 200, 20000, 800) * 1e-9;
+  const w = clamp(waistRaw, 1, 1e5, 20) * 1e-6;
+  const n0 = clamp(n0Raw, 1, 5, 1.76);
+  const n2 = clamp(n2Raw, 1e-4, 1e6, 3.2) * 1e-20;
+  const power = clamp(powerRaw, 0, 1e9, 100) * 1e3;
+  const L = clamp(lengthRaw, 0, 1e4, 2) * 1e-3;
 
-  // Effective focal length of Kerr lens
-  const fKerr = n0 * Math.PI * Math.pow(beamWaist, 4) / (4 * n2_um * power * crystalLength * 1e3);
+  const Pcr = criticalPower(lambda, n0, n2);
+  const ratio = power / Pcr;
+  const I0 = gaussianPeakIntensity(power, w);
+  const phi0 = nonlinearPhase(lambda, n2, I0, L);
+  const f = kerrLensFocalLength(n2, power, L, w);
+  const zR = rayleighRangeInMedium(lambda, n0, w);
+  const zsf = selfFocusingDistance(ratio, zR);
 
-  // Beam radius change vs power
-  const chartData = useMemo(() => {
-    const powers = Array.from({ length: 200 }, (_, i) => 0.01 + i * 5 / 200);
-    const wPerturbed = powers.map(P => {
-      const fk = n0 * Math.PI * Math.pow(beamWaist, 4) / (4 * n2_um * P * crystalLength * 1e3);
-      const lensEffect = 1 / (1 + Math.pow(crystalLength * 1e3 / (2 * fk), 2));
-      return beamWaist * (1 - 0.5 * lensEffect * n2_um * P * crystalLength * 1e3 / (n0 * Math.PI * Math.pow(beamWaist, 2)));
-    });
+  const warnings = [
+    ratio >= 1 && `P ≥ P_cr: a collimated beam would collapse after z_sf ≈ ${fmtLength(zsf)} (Marburger), so the thin-lens value no longer holds once the crystal approaches that length.`,
+    L > zR && `L > z_R (${fmtLength(zR)}): the beam changes size inside the crystal, so treat f as an estimate. A thick Kerr medium is modelled as a stack of thin Kerr lenses.`,
+    Number.isFinite(f) && f > 0 && f < 10 * L && "f is less than 10 L: the lens is not thin compared with the crystal.",
+  ].filter(Boolean) as string[];
 
+  const profile = phi0 > 0 ? (() => {
+    const r = Array.from({ length: 151 }, (_, i) => (i / 100) * w);
     return [
-      { x: powers, y: wPerturbed, type: "scatter", mode: "lines", name: "Beam waist w(P)", line: { color: "#60a5fa", width: 2 } },
-      { x: [Pcr, Pcr], y: [wPerturbed[0] * 0.95, wPerturbed[wPerturbed.length - 1] * 1.05], type: "scatter", mode: "lines", name: "P_crit", line: { color: "#f87171", dash: "dash" } },
+      { name: "Kerr phase k₀n₂I(r)L", color: "#60a5fa", points: r.map((ri) => ({ x: round6(ri * 1e6), y: round6(phi0 * Math.exp(-2 * ri ** 2 / w ** 2)) })) },
+      { name: "Parabolic (thin-lens) fit", color: "#f87171", dashed: true, points: r.map((ri) => ({ x: round6(ri * 1e6), y: round6(phi0 * (1 - 2 * ri ** 2 / w ** 2)) })) },
     ];
-  }, [wavelength, beamWaist, n2, crystalLength, n0, Pcr]);
-
-  // GDD from Kerr effect
-  const gdd = n2_um * power * crystalLength * 1e3 / (Math.PI * Math.pow(beamWaist, 2) * c); // fs²
-  // Self-phase: Δφ_NL = k₀ · n₂ · I₀ · L, with I₀ = 2P/(πw₀²) for Gaussian peak
-  const I0 = 2 * power / (Math.PI * Math.pow(beamWaist, 2)); // W/µm²
-  const selfPhase = k * n2_um * I0 * crystalLength * 1e3; // rad
-
-  const plotLayout = {
-    paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-    font: { color: "#9ca3af" },
-    xaxis: { title: "Power (W)", gridcolor: "#374151" },
-    yaxis: { title: "Beam waist (µm)", gridcolor: "#374151" },
-    margin: { t: 30, r: 30, b: 50, l: 70 },
-  };
+  })() : [];
 
   return (
     <>
-            
-      {/* Formulas */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
-        <p><span className="text-blue-400">n(I)</span> = n₀ + n₂ · I</p>
-        <p><span className="text-blue-400">P_crit</span> = 3.77 λ² / (8π n₀ n₂)</p>
-        <p><span className="text-blue-400">f_Kerr</span> ≈ n₀ π w₀⁴ / (4 n₂ P L)</p>
-        <p><span className="text-blue-400">Δφ_NL</span> = k · n₂ · I · L</p>
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-        <ValidatedNumberInput label="Beam Waist w₀ (µm)" value={beamWaist} onChange={setBeamWaist} step="any" />
-        <ValidatedNumberInput label="n₀ (linear index)" value={n0} onChange={setN0} step="0.01" />
-        <ValidatedNumberInput label="n₂ (×10⁻¹⁶ cm²/W)" value={n2} onChange={setN2} step="0.1" />
-        <ValidatedNumberInput label="Power (W)" value={power} onChange={setPower} step="any" />
-        <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} step="0.1" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={lambdaRaw} onChange={setLambda} min={200} max={20000} step="any" />
+        <ValidatedNumberInput label="Beam radius w, 1/e² (µm)" value={waistRaw} onChange={setWaist} min={1} max={1e5} step="any" />
+        <ValidatedNumberInput label="Linear index n₀" value={n0Raw} onChange={setN0} min={1} max={5} step="0.01" />
+        <ValidatedNumberInput label="n₂ (×10⁻¹⁶ cm²/W)" value={n2Raw} onChange={setN2} min={1e-4} max={1e6} step="any" />
+        <ValidatedNumberInput label="Peak power P (kW)" value={powerRaw} onChange={setPower} min={0} max={1e9} step="any" />
+        <ValidatedNumberInput label="Crystal length L (mm)" value={lengthRaw} onChange={setLength} min={0} max={1e4} step="any" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Critical Power P<sub>crit</sub></p>
-          <p className="text-xl font-bold text-blue-400">{(Pcr / 1e6).toFixed(2)} MW</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Kerr Focal Length</p>
-          <p className="text-xl font-bold text-green-400">{fKerr > 1e6 ? "∞" : (fKerr < 1e3 ? fKerr.toFixed(1) + " µm" : (fKerr / 1e3).toFixed(2) + " mm")}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Self-Phase Δφ<sub>NL</sub></p>
-          <p className="text-xl font-bold text-orange-400">{selfPhase.toFixed(4)} rad</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">P / P<sub>crit</sub></p>
-          <p className="text-xl font-bold text-purple-400">{(power / Pcr).toFixed(6)}</p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard label="Kerr focal length f" value={fmtLength(f)} subtext={`πw⁴/(8n₂PL); lens power ${fmt(1 / f)} m⁻¹`} tone="green" />
+        <ResultCard label="On-axis nonlinear phase" value={`${fmt(phi0)} rad`} subtext={`k₀n₂I₀L, peak intensity I₀ = 2P/(πw²) = ${fmt(I0 * 1e-4)} W/cm²`} tone="orange" />
+        <ResultCard label="Critical power P_cr" value={`${fmt(Pcr * 1e-6)} MW`} subtext={`3.77 λ²/(8π n₀ n₂); P/P_cr = ${fmt(ratio)}`} tone={ratio >= 1 ? "red" : "blue"} />
+        <ResultCard label="Rayleigh range in the crystal" value={fmtLength(zR)} subtext={`π n₀ w²/λ; L/z_R = ${fmt(L / zR)}`} tone="cyan" />
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-8">
-        <ChartPanel data={chartData} layout={plotLayout} />
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>The intensity raises the index, n = n₀ + n₂I. Near the axis a Gaussian beam&apos;s I(r) = I₀ e^(−2r²/w²) is a
+          parabola, I₀(1 − 2r²/w²), so a crystal of length L adds the phase of a thin lens with 1/f = 4n₂I₀L/w² =
+          8n₂PL/(πw⁴). In a Kerr-lens mode-locked laser the pulse peak sees this lens and the low-power continuous light
+          doesn&apos;t. An aperture or the gain spot then favours the pulse. The lens holds for L below z_R and f, and for P
+          well below P_cr. The plot shows how the real Gaussian phase leaves the parabola beyond r ≈ w/2.</p>
+        {warnings.map((msg) => <p key={msg} className="text-yellow-400">{msg}</p>)}
       </div>
+
+      {profile.length > 0 && (
+        <SimpleLineChart title="Nonlinear phase across the beam" xLabel="Radius r (µm)" yLabel="Phase (rad)" series={profile} />
+      )}
     </>
   );
 }
