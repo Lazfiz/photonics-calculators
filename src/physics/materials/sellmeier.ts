@@ -167,3 +167,19 @@ export function schottDnDt(model: SellmeierModel, k: SchottThermalCoefficients, 
   const dT = T_C - 20;
   return ((n * n - 1) / (2 * n)) * (D0 + 2 * D1 * dT + 3 * D2 * dT * dT + (E0 + 2 * E1 * dT) / (x * x - lambdaTK * lambdaTK));
 }
+
+/** Temperature range of the TIE-19 coefficients, °C. */
+export const SCHOTT_DNDT_RANGE_C = [-100, 140] as const;
+
+/**
+ * SCHOTT change of the absolute index from 20 °C to T (°C) at λ (TIE-19):
+ * Δn_abs = (n² − 1)/(2n) · (D₀ΔT + D₁ΔT² + D₂ΔT³ + (E₀ΔT + E₁ΔT²)/(λ² − λ_TK²)), n at 20 °C. Its T-derivative is
+ * `schottDnDt`.
+ */
+export function schottDeltaN(model: SellmeierModel, k: SchottThermalCoefficients, lambda: number, T_C: number): number {
+  const [D0, D1, D2, E0, E1, lambdaTK] = k;
+  const n = refractiveIndex(model, lambda);
+  const x = lambda * 1e6;
+  const dT = T_C - 20;
+  return ((n * n - 1) / (2 * n)) * (D0 * dT + D1 * dT * dT + D2 * dT ** 3 + (E0 * dT + E1 * dT * dT) / (x * x - lambdaTK * lambdaTK));
+}

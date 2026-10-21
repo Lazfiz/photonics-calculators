@@ -95,5 +95,10 @@
   "/wave-optics/coupled-mode": "/fiber-optics/mode-coupling",
   "/wave-optics/photonic-bandgap": "/thin-film/bragg-reflector",
   "/wave-optics/interferometer": "/spectroscopy/michelson-interferometer",
-  "/wave-optics/etalon-finesse": "/spectroscopy/etalon-fsr"
+  "/wave-optics/etalon-finesse": "/spectroscopy/etalon-fsr",
+  "/materials/gvd": "/materials/chromatic-dispersion",
+  "/materials/group-index": "/materials/chromatic-dispersion",
+  "/materials/sellmeier": "/materials/chromatic-dispersion",
+  "/materials/abbe-number": "/materials/optical-glass-catalog",
+  "/materials/thermal-dndt": "/materials/optical-glass-catalog"
 }

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   LAMBDA_D, abbeNumber, d2nDlambda2, dispersionParameter, dnDlambda, fromResonanceWavelengths, gvd, groupIndex,
-  inRange, refractiveIndex, schottDnDt, zeroDispersionWavelengths, type SellmeierModel,
+  inRange, refractiveIndex, schottDeltaN, schottDnDt, zeroDispersionWavelengths, type SellmeierModel,
 } from "../src/physics/materials/sellmeier";
 import { MATERIALS, SCHOTT_GLASSES } from "../src/physics/materials/sellmeier-data";
 
@@ -92,6 +92,23 @@ test("crystal sets agree with independent measurements", () => {
   // n_D (589.3 nm), CRC Handbook of Chemistry and Physics: NaCl 1.544, diamond 2.417.
   assertAbs(refractiveIndex(MATERIALS.nacl.model, 589.3e-9), 1.544, 1e-3, "NaCl n_D");
   assertAbs(refractiveIndex(MATERIALS.diamond.model, 589.3e-9), 2.417, 1e-3, "diamond n_D");
+  // Peter's formula (Z. Phys. 15, 358 (1923), doi:10.1007/BF01330487) at 589.3 nm: 2.4173. He measured 226–644 nm only.
+  assertAbs(refractiveIndex(MATERIALS.diamond.model, 589.3e-9), 2.4173, 1e-4, "diamond Peter 589.3 nm");
+  assert.equal(inRange(MATERIALS.diamond.model, 644e-9), true);
+  assert.equal(inRange(MATERIALS.diamond.model, 700e-9), false);
+});
+
+test("the merged dispersion pages' reviewer values (materials audit part 0, PR #155)", () => {
+  // Malitson 1965 (doi:10.1364/JOSA.55.001205): n_d 1.45846, V_d 67.82.
+  assertAbs(refractiveIndex(MATERIALS.fusedSilica.model, LAMBDA_D), 1.45846, 1e-5, "fused silica n_d");
+  assertAbs(abbeNumber(MATERIALS.fusedSilica.model), 67.82, 0.01, "fused silica V_d");
+  // β₂ = λ³n″/(2πc²) and n_g = n − λn′: N-BK7 at 800 nm 44.65 fs²/mm and 1.52665; fused silica at 1550 nm
+  // −27.95 ps²/km and 1.46260.
+  const bk7 = SCHOTT_GLASSES["N-BK7"].model;
+  assertAbs(gvd(bk7, 800e-9) * 1e27, 44.65, 0.01, "N-BK7 β₂ 800 nm");
+  assertAbs(groupIndex(bk7, 800e-9), 1.52665, 1e-5, "N-BK7 n_g 800 nm");
+  assertAbs(gvd(MATERIALS.fusedSilica.model, 1550e-9) * 1e27, -27.95, 0.01, "fused silica β₂ 1550 nm");
+  assertAbs(groupIndex(MATERIALS.fusedSilica.model, 1550e-9), 1.4626, 1e-4, "fused silica n_g 1550 nm");
 });
 
 test("the old pages' failures: Ge at 4 µm is 4.02, MgF₂ stays above 1", () => {
@@ -114,6 +131,10 @@ test("SCHOTT dn/dT: hand value at 20 °C and the derivative of the TIE-19 Δn", 
     return ((n * n - 1) / (2 * n)) * (D0 * d + D1 * d * d + D2 * d ** 3 + (E0 * d + E1 * d * d) / (x2 - lTK ** 2));
   };
   assertAbs(schottDnDt(g.model, g.thermal, l, 60), (dn(60.01) - dn(59.99)) / 0.02, 1e-13, "60 °C");
+  assertAbs(schottDeltaN(g.model, g.thermal, l, 60), dn(60), 1e-18, "Δn 20 → 60 °C");
+  // By hand: 0.43014 · (7.440e-5 + 2.096e-5 − 0.088e-5 + 1.8363e-5/0.26929) = 6.997e-5.
+  assertAbs(schottDeltaN(g.model, g.thermal, l, 60), 6.997e-5, 1e-8, "Δn 20 → 60 °C value");
+  assert.equal(schottDeltaN(g.model, g.thermal, l, 20), 0);
 });
 
 test("domain: outside the fit range and inside an absorption band", () => {
