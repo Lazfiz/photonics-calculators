@@ -630,9 +630,10 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "mode-coupling",
     title: "Coupled-Mode Power Transfer",
-    description: "Coupled-mode power transfer between two waveguides: coupled and through power, coupling efficiency and full-transfer length from κ and Δβ.",
+    description: "Coupled-mode power transfer between two waveguides: coupled and through power, maximum transfer κ²/ψ² and the length that reaches it, power along the coupler and the response to the mismatch Δβ.",
+    keywords: ["Coupled Mode Theory", "directional coupler", "coupling length", "phase mismatch"],
     tier: "textbook",
-    modelNote: "Lossless co-directional coupled-mode theory for two modes with constant κ and mismatch Δβ: P₂ = (κ/κ_eff)² sin²(κ_eff L). Not modelled: taper profile, κ(λ), polarization, excess loss.",
+    modelNote: "Lossless co-directional coupled-mode theory for two modes with constant κ and mismatch Δβ: P₂ = (κ/ψ)² sin²(ψL), ψ = √(κ² + (Δβ/2)²). Not modelled: taper profile, κ(λ), polarization, excess loss.",
     references: [
       { citation: "Yariv A. (1973). Coupled-mode theory for guided-wave optics. IEEE J. Quantum Electron. 9, 919. Two-mode co-directional coupling.", url: "https://doi.org/10.1109/JQE.1973.1077767" },
     ],

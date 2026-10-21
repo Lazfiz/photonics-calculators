@@ -88,11 +88,6 @@ export const waveOptics: CalculatorEntry[] = [
     ],
   },
   {
-    slug: "coupled-mode",
-    title: "Coupled Mode Theory",
-    description: "Power exchange between two coupled waveguides.",
-  },
-  {
     slug: "difference-frequency",
     title: "Difference Frequency Generation (DFG)",
     description: "Idler power, wavelength and quasi-phase-matching period of χ⁽²⁾ difference-frequency generation (ωp − ωs → ωi) from pump and signal powers, beam radius, d_eff, indices and phase mismatch.",
@@ -175,8 +170,15 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "four-wave-mixing",
     title: "Four-Wave Mixing (FWM)",
-    description: "Degenerate FWM with energy conservation 2ωp = ωs + ωi in fibers and waveguides.",
-    knownIssue: "The idler power chart is 1000 times too high for the stated 1 mW seed, and the idler wavelength can come out negative when the signal is below half the pump wavelength.",
+    description: "Degenerate four-wave mixing in a fiber (2ωp = ωs + ωi): parametric signal gain, idler wavelength and power, phase mismatch κ = Δβ + 2γP, gain spectrum and peak-gain detuning from pump power, n₂, A_eff, length, β₂ and β₄.",
+    keywords: ["FWM", "fiber optical parametric amplifier", "FOPA", "parametric gain", "idler", "phase matching", "highly nonlinear fiber"],
+    tier: "textbook",
+    modelNote: "Undepleted CW pump, co-polarized waves, lossless fiber: G_s = 1 + [(γP/g) sinh(gL)]², g² = (γP)² − (κ/2)², κ = β₂Ω² + β₄Ω⁴/12 + 2γP, and P_i = (λ_s/λ_i)(G_s − 1)P_s. Not modelled: fiber loss, pump depletion (flagged above 10 %), polarization, Raman gain, longitudinal dispersion fluctuations.",
+    references: [
+      { citation: "Stolen R. H., Bjorkholm J. E. (1982). Parametric amplification and frequency conversion in optical fibers. IEEE J. Quantum Electron. 18, 1062.", url: "https://doi.org/10.1109/JQE.1982.1071660" },
+      { citation: "Hansryd J., Andrekson P. A., Westlund M., Li J., Hedekvist P.-O. (2002). Fiber-based optical parametric amplifiers and their applications. IEEE J. Sel. Top. Quantum Electron. 8, 506.", url: "https://doi.org/10.1109/JSTQE.2002.1016354" },
+      { citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed., ch. 10. Academic Press. Four-wave mixing and parametric gain.", url: "https://doi.org/10.1016/C2018-0-01168-8" },
+    ],
   },
   {
     slug: "free-electron-laser",
@@ -276,8 +278,15 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "injection-locking",
     title: "Injection Locking",
-    description: "Phase-locking a slave laser to a master laser through optical injection.",
-    knownIssue: "The locking range is the entered bandwidth times the square root of the power ratio, with that bandwidth undefined and no diode-laser asymmetry from the linewidth enhancement factor.",
+    description: "Locking range of an injection-locked laser from the injection ratio, coupling rate and linewidth enhancement factor α: Adler's symmetric range and the asymmetric semiconductor-laser range, with a locking map.",
+    keywords: ["injection locking", "Adler", "locking range", "linewidth enhancement factor", "alpha factor", "master slave laser"],
+    tier: "textbook",
+    modelNote: "Static locking range −k_c√ρ√(1 + α²) ≤ Δω ≤ k_c√ρ of the single-mode rate equations, weak injection. The coupling rate k_c is an input (its expression from facet reflectivity and round-trip time varies between authors by factors of order unity). Dynamic instabilities inside the static range are not computed.",
+    references: [
+      { citation: "Adler R. (1946). A study of locking phenomena in oscillators. Proc. IRE 34, 351.", url: "https://doi.org/10.1109/JRPROC.1946.229930" },
+      { citation: "Lang R. (1982). Injection locking properties of a semiconductor laser. IEEE J. Quantum Electron. 18, 976.", url: "https://doi.org/10.1109/JQE.1982.1071632" },
+      { citation: "Mogensen F., Olesen H., Jacobsen G. (1985). Locking conditions and stability properties for a semiconductor laser with external light injection. IEEE J. Quantum Electron. 21, 784.", url: "https://doi.org/10.1109/JQE.1985.1072760" },
+    ],
   },
   {
     slug: "interferometer",
@@ -404,8 +413,13 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "optical-waveguide",
     title: "Optical Waveguide Modes",
-    description: "Slab waveguide mode analysis: V-number, NA, and effective index.",
-    knownIssue: "The effective-index curve is not a slab-waveguide solution and overstates the fundamental-mode index, most at small V. A cladding index above the core index gives NaN instead of a no-guidance warning.",
+    description: "Symmetric slab waveguide: V-number, number of TE and TM modes, exact effective indices, core power fraction, b–V diagram and TE mode fields.",
+    keywords: ["slab waveguide", "planar waveguide", "effective index", "V number", "TE mode", "TM mode", "b-V diagram"],
+    tier: "exact",
+    modelNote: "Exact eigenvalue equations of a symmetric step-index slab (TE and TM), solved by bisection. Asymmetric slabs, graded profiles and channel (2D) waveguides are not covered.",
+    references: [
+      { citation: "Kogelnik H., Ramaswamy V. (1974). Scaling rules for thin-film optical waveguides. Appl. Opt. 13, 1857.", url: "https://doi.org/10.1364/AO.13.001857" },
+    ],
   },
   {
     slug: "photonic-bandgap",

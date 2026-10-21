@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  averagePowerCoupling, couplingCoefficient, criticalBendRadius, evanescentIntensityRatio, hayashiPowerCoupling,
+  averagePowerCoupling, codirectionalPeak, codirectionalTransfer, couplingCoefficient, criticalBendRadius, evanescentIntensityRatio, hayashiPowerCoupling,
   lp01PowerBeyondPlane, pairCrosstalk, polishedCouplerPhase,
 } from "../src/physics/fiber-optics/coupled-mode";
 import { lp01Mode, vNumber } from "../src/physics/fiber-optics/macro-bending-loss";
@@ -131,4 +131,21 @@ test("Polished coupler: accumulated coupling tends to Digonnet–Shaw κ₀√(�
   const ratio = polishedCouplerPhase(smf, lambda, D, R, smfMode) / couplingCoefficient(smf, lambda, D, smfMode);
   assertRel(ratio / Math.sqrt((Math.PI * smf.a * R) / smfMode.W), 0.9526, 2e-3, "L_eff / Digonnet–Shaw");
   assert.ok(Number.isNaN(polishedCouplerPhase(smf, lambda, D, 0, smfMode)));
+});
+
+test("co-directional transfer (Yariv 1973): κ²/ψ² sin²(ψz)", () => {
+  // κ 0.5/mm, Δβ 1/mm: ψ = √(0.25 + 0.25) = 0.707107/mm, peak 0.25/0.5 = 0.5 at π/(2ψ) = 2.221441 mm.
+  const peak = codirectionalPeak(0.5, 1);
+  assertRel(peak.fraction, 0.5, 1e-12, "peak fraction");
+  assertRel(peak.length, 2.221441469, 1e-9, "peak length");
+  assertRel(codirectionalTransfer(0.5, 1, peak.length), 0.5, 1e-12, "transfer at the peak");
+  // Hand: κ 0.5, Δβ 0.1, z 1 mm: ψ = √0.2525 = 0.502494; (0.25/0.2525)·sin²(0.502494) = 0.990099·0.231951 = 0.229654.
+  assertRel(codirectionalTransfer(0.5, 0.1, 1), 0.229654, 1e-5, "mismatched, 1 mm");
+  // Phase-matched: full transfer at L_c = π/(2κ); a sign flip of Δβ changes nothing.
+  assertRel(codirectionalTransfer(0.5, 0, Math.PI), 1, 1e-12, "L_c");
+  assert.equal(codirectionalTransfer(0.5, -0.3, 2.7), codirectionalTransfer(0.5, 0.3, 2.7));
+  // Edge: no coupling → nothing transferred; negative length → NaN.
+  assert.equal(codirectionalTransfer(0, 0, 5), 0);
+  assert.equal(codirectionalPeak(0, 0).length, Infinity);
+  assert.ok(Number.isNaN(codirectionalTransfer(0.5, 0, -1)));
 });

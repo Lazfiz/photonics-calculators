@@ -1,94 +1,98 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
+import { slabEffectiveIndex, slabModeB, slabModeCount, slabTEConfinement, slabTEField, slabV } from "../../../physics/wave-optics/slab-waveguide";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
+const COLORS = ["#60a5fa", "#f472b6", "#34d399", "#fbbf24", "#a78bfa", "#f87171"];
+const MAX_PLOTTED = 6;
+
 export default function OpticalWaveguidePage() {
-  const [nCore, setNCore] = useURLState("nCore", 1.5);
-  const [nClad, setNClad] = useURLState("nClad", 1.45);
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [coreWidth, setCoreWidth] = useURLState("coreWidth", 10); // µm
+  const [nCoreRaw, setNCore] = useURLState("nCore", 1.5);
+  const [nCladRaw, setNClad] = useURLState("nClad", 1.45);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [widthRaw, setWidth] = useURLState("coreWidth", 10); // µm, full thickness
 
-  const NA = Math.sqrt(nCore * nCore - nClad * nClad);
-  const vNumber = Math.PI * (coreWidth * 1000) * NA / wavelength;
-  const acceptanceAngle = Math.asin(NA) * 180 / Math.PI;
-  const criticalAngle = Math.asin(nClad / nCore) * 180 / Math.PI;
+  const n1 = clamp(nCoreRaw, 1, 5, 1.5);
+  const n2 = clamp(nCladRaw, 1, 5, 1.45);
+  const lambda = clamp(wavelengthRaw, 100, 1e5, 1550) * 1e-9;
+  const d = clamp(widthRaw, 0.01, 1e4, 10) * 1e-6;
 
-  // Number of modes (symmetric slab)
-  const M = Math.floor(2 * vNumber / Math.PI) + 1;
+  const V = slabV(n1, n2, d, lambda);
+  const guided = Number.isFinite(V);
+  const NA = guided ? Math.sqrt(n1 * n1 - n2 * n2) : NaN;
+  const modes = guided ? slabModeCount(V) : 0;
+  const rTM = (n1 * n1) / (n2 * n2);
+  const bTE = slabModeB(V, 0);
+  const bTM = slabModeB(V, 0, rTM);
+  const neffTE = slabEffectiveIndex(bTE, n1, n2);
+  const neffTM = slabEffectiveIndex(bTM, n1, n2);
+  const confinement = slabTEConfinement(V, bTE, 0);
+  const criticalAngle = guided ? (Math.asin(n2 / n1) * 180) / Math.PI : NaN;
+  const acceptance = NA >= 1 ? 90 : (Math.asin(NA) * 180) / Math.PI;
+  const singleModeD = guided ? lambda / (2 * NA) : NaN; // V = π/2
 
-  const chartData = useMemo(() => {
-    const betaMax = 2 * Math.PI * nCore / wavelength;
-    const betaMin = 2 * Math.PI * nClad / wavelength;
-    const vs = Array.from({ length: 200 }, (_, i) => i / 200 * vNumber * 1.5 + 0.01);
-    // Effective index vs V number (approximate for slab)
-    const bParams = vs.map(v => {
-      if (v < 0.1) return 0;
-      return Math.pow(1 - Math.pow(1.1428 / (v + 0.996), 2), 0.5) * (v > 1 ? 1 : v / 1);
-    });
-    const neff = bParams.map(b => nClad + b * (nCore - nClad));
-    const betaArr = neff.map(n => 2 * Math.PI * n / wavelength);
+  const vMax = guided ? Math.max(1.5 * V, Math.PI) : 0;
+  const bvSeries = guided ? Array.from({ length: Math.min(slabModeCount(vMax), MAX_PLOTTED) }, (_, m) => {
+    const v0 = (m * Math.PI) / 2;
+    const points = Array.from({ length: 151 }, (_, i) => v0 + ((vMax - v0) * (i + 1)) / 151)
+      .map((v) => ({ x: round6(v), y: round6(slabModeB(v, m)) }));
+    return { name: `TE${m}`, color: COLORS[m % COLORS.length], points: [{ x: round6(v0), y: 0 }, ...points] };
+  }) : [];
+  const bvMarker = guided ? [{
+    name: "This guide", color: "#e5e7eb", showPoints: true,
+    points: Array.from({ length: Math.min(modes, MAX_PLOTTED) }, (_, m) => ({ x: round6(V), y: round6(slabModeB(V, m)) })),
+  }] : [];
 
-    // Mode profiles for fundamental
-    const x = Array.from({ length: 200 }, (_, i) => (i / 200 - 0.5) * coreWidth * 3);
-    const w = coreWidth / 2;
-    const kappa = Math.sqrt(Math.max(0.001, (2 * Math.PI * nCore / wavelength) ** 2 - (2 * Math.PI * (nCore + nClad) / 2 / wavelength) ** 2));
-    const gamma = Math.sqrt(Math.max(0.001, (2 * Math.PI * (nCore + nClad) / 2 / wavelength) ** 2 - (2 * Math.PI * nClad / wavelength) ** 2));
-    const mode0 = x.map(xi => {
-      if (Math.abs(xi) <= w) return Math.cos(kappa * xi);
-      return Math.cos(kappa * w) * Math.exp(-gamma * (Math.abs(xi) - w));
-    });
-    const maxMode = Math.max(...mode0);
-
-    return [
-      { x: vs, y: neff, type: "scatter" as const, mode: "lines" as const, name: "Fundamental n_eff", line: { color: "#60a5fa", width: 2 } },
-      { x: [0, vNumber * 1.5], y: Array(2).fill(nCore), type: "scatter" as const, mode: "lines" as const, name: "n_core", line: { color: "#f87171", dash: "dash" } },
-      { x: [0, vNumber * 1.5], y: Array(2).fill(nClad), type: "scatter" as const, mode: "lines" as const, name: "n_clad", line: { color: "#4ade80", dash: "dash" } },
-    ];
-  }, [nCore, nClad, wavelength, coreWidth, vNumber]);
+  const a = d / 2;
+  const xs = Array.from({ length: 301 }, (_, i) => ((i - 150) / 100) * d);
+  const fieldSeries = guided ? Array.from({ length: Math.min(modes, 4) }, (_, m) => {
+    const b = slabModeB(V, m);
+    return { name: `TE${m}`, color: COLORS[m % COLORS.length], points: xs.map((x) => ({ x: round6(x * 1e6), y: round6(slabTEField(x, a, V, b, m)) })) };
+  }) : [];
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <ValidatedNumberInput label="Core Index n₁" value={nCore} onChange={setNCore} step="any" />
-        <ValidatedNumberInput label="Cladding Index n₂" value={nClad} onChange={setNClad} step="any" />
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-        <ValidatedNumberInput label="Core Width (µm)" value={coreWidth} onChange={setCoreWidth} step="any" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ValidatedNumberInput label="Core index n₁" value={nCoreRaw} onChange={setNCore} min={1} max={5} step="any" />
+        <ValidatedNumberInput label="Cladding index n₂" value={nCladRaw} onChange={setNClad} min={1} max={5} step="any" />
+        <ValidatedNumberInput label="Wavelength λ (nm)" value={wavelengthRaw} onChange={setWavelength} min={100} max={1e5} step="any" />
+        <ValidatedNumberInput label="Core thickness d (µm)" value={widthRaw} onChange={setWidth} min={0.01} max={1e4} step="any" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Numerical Aperture</p>
-          <p className="text-xl font-bold text-blue-400">{NA.toFixed(4)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">V-Number</p>
-          <p className="text-xl font-bold text-green-400">{vNumber.toFixed(3)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Approx. Mode Count (TE)</p>
-          <p className="text-xl font-bold text-orange-400">{M}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Critical Angle θ<sub>c</sub></p>
-          <p className="text-xl font-bold text-purple-400">{criticalAngle.toFixed(2)}°</p>
-        </div>
+      {!guided && (
+        <p className="mb-6 text-sm text-yellow-400">No guided modes: the core index must be higher than the cladding index (total internal reflection needs n₁ &gt; n₂).</p>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard label="V-number" value={fmt(V)} subtext={`(πd/λ)√(n₁² − n₂²); NA = ${fmt(NA)}`} tone="green" />
+        <ResultCard label="Guided modes" value={guided ? `${modes} TE + ${modes} TM` : "0"}
+          subtext={guided ? `⌊2V/π⌋ + 1; single-mode for d < λ/(2NA) = ${fmt(singleModeD * 1e6, 4)} µm` : "—"} tone="orange" />
+        <ResultCard label="TE₀ effective index" value={fmt(neffTE, 7)} subtext={`b = ${fmt(bTE, 5)}; TM₀: ${fmt(neffTM, 7)}`} tone="blue" />
+        <ResultCard label="TE₀ power in the core" value={`${fmt(confinement * 100, 4)} %`}
+          subtext={guided ? `θ_c = ${fmt(criticalAngle, 4)}°, acceptance ±${fmt(acceptance, 4)}° in air` : "—"} tone="purple" />
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-sm mb-2 font-mono">V = (πd/λ)√(n₁²-n₂²) &nbsp;|&nbsp; NA = √(n₁²-n₂²) &nbsp;|&nbsp; M ≈ 2V/π (slab)</p>
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6">
+        <p>A symmetric slab of thickness d and index n₁ between two claddings of index n₂. With u = V√(1 − b) and w = V√b, TE
+          mode m satisfies u = mπ/2 + arctan(w/u), and TM modes have w multiplied by n₁²/n₂². The page solves these exactly
+          by bisection. Mode m is cut off at V = mπ/2, so the fundamental TE₀ and TM₀ modes are always guided, and the
+          normalized index b = (n_eff² − n₂²)/(n₁² − n₂²) runs from 0 at cutoff towards 1. Here V uses the half-thickness,
+          so it is half the V of Kogelnik and Ramaswamy.</p>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4">
-        <ChartPanel data={chartData} layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" }, xaxis: { title: "V-Number", gridcolor: "#374151" },
-          yaxis: { title: "Effective Index n_eff", gridcolor: "#374151" },
-          margin: { t: 30, r: 30, b: 50, l: 70 },
-        }} />
+      <div className="grid gap-6 lg:grid-cols-2 mb-8">
+        {bvSeries.length > 0 && (
+          <SimpleLineChart title="Normalized index b vs V (TE modes)" xLabel="V" yLabel="b" series={[...bvSeries, ...bvMarker]} />
+        )}
+        {fieldSeries.length > 0 && (
+          <SimpleLineChart title="TE mode fields across the slab" xLabel="x (µm), core |x| ≤ d/2" yLabel="E_y (core-normalized)" series={fieldSeries} />
+        )}
       </div>
     </>
   );
