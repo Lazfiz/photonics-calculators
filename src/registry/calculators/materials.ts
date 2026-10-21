@@ -50,21 +50,15 @@ export const materials: CalculatorEntry[] = [
     knownIssue: "The ordinary and extraordinary indices come from a wrong formula, so calcite shows a birefringence of +0.03 instead of −0.17 and the walk-off angle is wrong.",
   },
   {
-    slug: "chalcogenide-glass",
-    title: "Chalcogenide Glass Properties",
-    description: "IR-transparent glasses for thermal imaging, sensing, and nonlinear optics",
-    knownIssue: "The dispersion formulas have a resonance inside the transmission window, so the index is wrong or undefined between about 3 and 6 µm.",
-  },
-  {
     slug: "chromatic-dispersion",
     title: "Material Dispersion (Sellmeier)",
-    description: "Refractive index, group index, GVD β₂ and dispersion D from published Sellmeier formulas for crystals, fused silica and SCHOTT glasses, with their coefficients and an n(λ) comparison.",
+    description: "Refractive index, group index, GVD β₂ and dispersion D from published Sellmeier formulas for crystals, fused silica, IR glasses and SCHOTT glasses, with their coefficients and an n(λ) comparison.",
     keywords: ["Group Velocity Dispersion (GVD)", "Group Index (ng)", "Sellmeier Equation"],
     tier: "exact",
     modelNote: "Exact for the published Sellmeier formula inside its fit range, with analytic derivatives. The formula is itself a fit to measurements (typically ±1e-5 to ±1e-4 in n) at the temperature of those measurements.",
     references: [
       {
-        citation: "refractiveindex.info database (CC0). Sellmeier data sets for fused silica and nine crystals, each with its original reference shown on the page.",
+        citation: "refractiveindex.info database (CC0). Sellmeier data sets for fused silica, As₂S₃ and ZBLAN glass and twelve crystals, each with its original reference shown on the page.",
       },
       {
         citation: "SCHOTT optical glass catalog (Zemax AGF 2017-01-20). Sellmeier coefficients of 10 glasses.",
@@ -120,12 +114,6 @@ export const materials: CalculatorEntry[] = [
     knownIssue: "The half-wave voltage is the retardation value λ/(2n³r) while the phase shift is for one polarization, so they disagree by 2. The electrode gap input is not used.",
   },
   {
-    slug: "fluoride-glass",
-    title: "Fluoride Glass (ZBLAN)",
-    description: "Heavy-metal fluoride glasses for mid-IR fiber optics and low-loss transmission",
-    knownIssue: "The dispersion formula has a resonance near 3 µm and does not reproduce the listed n_d, so the index shown is wrong across most of the range.",
-  },
-  {
     slug: "heat-capacity",
     title: "Heat Capacity of Optical Materials",
     description: "Specific heat and thermal energy storage",
@@ -140,18 +128,33 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "infrared-glass",
     title: "Infrared Optical Materials",
-    description: "Compare IR transmitting materials (Ge, Si, ZnSe, ZnS, fluorides, NaCl): refractive index at any wavelength and temperature, transmission range and thermal properties.",
-    lede: "Compare IR transmitting materials. n(λ, T) = n(λ, T₀) + (dn/dT)(T − T₀), with n(λ, T₀) from each material's published Sellmeier formula.",
-    keywords: ["Infrared Materials"],
+    description: "Compare IR materials (Ge, Si, ZnSe, ZnS, fluorides, alkali halides, KRS-5, As₂S₃ and ZBLAN glass): refractive index at any wavelength and temperature, Fresnel-limited transmission, transmission band, dn/dT, thermal conductivity and hardness.",
+    lede: "Compare IR transmitting materials and glasses. n(λ, T) = n(λ, T₀) + (dn/dT)(T − T₀), with n(λ, T₀) from each material's published Sellmeier formula.",
+    keywords: ["Infrared Materials", "Chalcogenide Glass Properties", "Fluoride Glass (ZBLAN)"],
     tier: "textbook",
-    modelNote: "Index from published Sellmeier fits inside their ranges, shifted linearly by one typical dn/dT. The dn/dT, thermal conductivity and Knoop hardness are data-sheet values not yet checked against sources.",
+    modelNote: "Index from published Sellmeier fits inside their ranges, shifted linearly by one room-temperature dn/dT; transmission is the lossless two-surface Fresnel limit 2n/(n² + 1). Bands, dn/dT, conductivity and hardness are Crystran data-sheet values; none are sourced yet for As₂S₃, ZBLAN and AMTIR-1.",
     references: [
       {
-        citation: "refractiveindex.info database (CC0). Sellmeier data sets, each with its original reference shown on the page. Used for Ge, Si, ZnSe, ZnS, CaF₂, BaF₂, MgF₂ and NaCl.",
+        citation: "refractiveindex.info database (CC0). Sellmeier data sets, each with its original reference shown on the page. Used for Ge, Si, ZnSe, ZnS, CaF₂, BaF₂, MgF₂, NaCl, KBr, CsI, As₂S₃ and ZBLAN.",
       },
       {
-        citation: "Crystran data sheet (KRS-5) and Amorphous Materials data sheet (AMTIR-1). Index at 10 µm, the only dispersion data for these two.",
+        citation: "Rodney W. S., Malitson I. H., King T. A. (1958). Refractive index of arsenic trisulfide. J. Opt. Soc. Am. 48, 633.",
+        url: "https://doi.org/10.1364/JOSA.48.000633",
       },
+      {
+        citation: "Gan F. (1995). Optical properties of fluoride glasses: a review. J. Non-Cryst. Solids 184, 9. ZBLAN dispersion formula.",
+        url: "https://doi.org/10.1016/0022-3093(94)00592-3",
+      },
+      {
+        citation: "Li H. H. (1976). Refractive index of alkali halides and its wavelength and temperature derivatives. J. Phys. Chem. Ref. Data 5, 329.",
+        url: "https://doi.org/10.1063/1.555536",
+      },
+      {
+        citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: transmission range, dn/dT, thermal conductivity, Knoop hardness; KRS-5 index at 10 µm.",
+        url: "https://www.crystran.com/optical-materials",
+      },
+      { citation: "Amorphous Materials AMTIR-1 data sheet. Index at 10 µm." },
+      { citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed. Cambridge University Press. Fresnel formulae at normal incidence." },
     ],
   },
   {
@@ -282,21 +285,39 @@ export const materials: CalculatorEntry[] = [
   },
   {
     slug: "transparency-range",
-    title: "Transparency Range",
-    description: "UV cutoff to IR cutoff for common optical materials",
-    knownIssue: "Transmission percentages come from an invented bell-shaped curve, not measured data, and exceed the Fresnel limit for high-index materials such as germanium.",
+    title: "Window Materials Transparency Range",
+    description: "Transmission bands of UV, visible and IR window materials (LiF, MgF₂, CaF₂, fused silica, sapphire, alkali halides, ZnSe, Si, Ge), with the refractive index and the Fresnel-limited transmission 2n/(n² + 1) at any wavelength.",
+    keywords: ["UV Optical Materials"],
+    tier: "textbook",
+    modelNote: "An uncoated, non-absorbing window at normal incidence, its two surfaces' multiple reflections added in intensity: T = 2n/(n² + 1), an upper bound inside the band. n from published Sellmeier fits (the ordinary ray for uniaxial crystals); the bands are Crystran data-sheet ranges, whose edges depend on thickness and grade.",
+    references: [
+      { citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed. Cambridge University Press. Fresnel formulae at normal incidence." },
+      {
+        citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: transmission ranges and two-surface reflection losses.",
+        url: "https://www.crystran.com/optical-materials",
+      },
+      {
+        citation: "refractiveindex.info database (CC0). Sellmeier data sets, each with its original reference shown on the page.",
+      },
+      {
+        citation: "Li H. H. (1976). Refractive index of alkali halides and its wavelength and temperature derivatives. J. Phys. Chem. Ref. Data 5, 329. LiF, NaCl, KBr, CsI.",
+        url: "https://doi.org/10.1063/1.555536",
+      },
+      {
+        citation: "Dodge M. J. (1984). Refractive properties of magnesium fluoride. Appl. Opt. 23, 1980.",
+        url: "https://doi.org/10.1364/AO.23.001980",
+      },
+      {
+        citation: "Malitson I. H. (1965). Interspecimen comparison of the refractive index of fused silica. J. Opt. Soc. Am. 55, 1205.",
+        url: "https://doi.org/10.1364/JOSA.55.001205",
+      },
+    ],
   },
   {
     slug: "two-photon-absorption",
     title: "Two-Photon Absorption",
     description: "Nonlinear absorption coefficient β₂PA and intensity-dependent transmission. TPA becomes significant at high peak intensities (pulsed lasers).",
     knownIssue: "β comes from an ad hoc (λg/λ)³ scaling that overestimates measured two-photon coefficients several-fold and jumps by 100× below λg/2.",
-  },
-  {
-    slug: "uv-materials",
-    title: "UV Optical Materials",
-    description: "Deep UV to near-UV materials comparison. Sellmeier: n² = 1 + Σ Biλ²/(λ² - Ci)",
-    knownIssue: "The LiF and CsI dispersion coefficients do not match published data, giving index errors near 0.1, and the MgF₂ curve deviates in the infrared.",
   },
   {
     slug: "verdet-constant",

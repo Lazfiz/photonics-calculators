@@ -63,6 +63,45 @@ export const MATERIALS = {
     reference: "H. H. Li, J. Phys. Chem. Ref. Data 5, 329 (1976)",
     temperature_C: 24,
   },
+  lif: {
+    name: "Lithium fluoride (LiF)",
+    model: fromResonanceWavelengths(1, [0.92549, 6.96747], [0.07376, 32.79], [0.1, 11]),
+    reference: "H. H. Li, J. Phys. Chem. Ref. Data 5, 329 (1976), doi:10.1063/1.555536",
+    temperature_C: 24,
+  },
+  kbr: {
+    name: "Potassium bromide (KBr)",
+    model: fromResonanceWavelengths(
+      1.39408, [0.79221, 0.01981, 0.15587, 0.17673, 2.06217], [0.146, 0.173, 0.187, 60.61, 87.72], [0.2, 42],
+    ),
+    reference: "H. H. Li, J. Phys. Chem. Ref. Data 5, 329 (1976), doi:10.1063/1.555536",
+    temperature_C: 24,
+  },
+  csi: {
+    name: "Caesium iodide (CsI)",
+    model: fromResonanceWavelengths(
+      1.27587,
+      [0.68689, 0.2609, 0.06256, 0.06527, 0.14991, 0.51818, 0.01918, 3.38229],
+      [0.13, 0.147, 0.163, 0.177, 0.185, 0.206, 0.218, 161.29],
+      [0.25, 67],
+    ),
+    reference: "H. H. Li, J. Phys. Chem. Ref. Data 5, 329 (1976), doi:10.1063/1.555536",
+    temperature_C: 24,
+  },
+  as2s3: {
+    name: "Arsenic trisulfide glass (As₂S₃)",
+    model: fromSquaredForm(
+      1, [1.8983678, 1.9222979, 0.8765134, 0.1188704, 0.9569903], [0.0225, 0.0625, 0.1225, 0.2025, 750], [0.57, 11.8],
+    ),
+    reference: "W. S. Rodney, I. H. Malitson, T. A. King, J. Opt. Soc. Am. 48, 633 (1958), doi:10.1364/JOSA.48.000633",
+    temperature_C: 25,
+  },
+  zblan: {
+    name: "ZBLAN fluoride glass",
+    model: fromResonanceWavelengths(1, [1.22514, 1.52898], [0.08969, 21.3825], [0.365, 3.5]),
+    reference: "F. Gan, J. Non-Cryst. Solids 184, 9 (1995), doi:10.1016/0022-3093(94)00592-3",
+    temperature_C: null,
+  },
   ge: {
     name: "Germanium (Ge)",
     model: fromSquaredForm(1, [0.4886331, 14.5142535, 0.0091224], [1.393959, 0.1626427, 752.19], [2, 14]),
