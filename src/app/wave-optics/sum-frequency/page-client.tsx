@@ -1,118 +1,114 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c, epsilon_0 } from "../../../physics/constants";
+import { gaussianMixingPower, mixingEfficiency, sumFrequencyWavelength } from "../../../physics/wave-optics/three-wave";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
+const fmtPower = (W: number) => !Number.isFinite(W)
+  ? "—"
+  : W >= 1 ? `${fmt(W)} W` : W >= 1e-3 ? `${fmt(W * 1e3)} mW` : W >= 1e-6 ? `${fmt(W * 1e6)} µW` : `${fmt(W * 1e9)} nW`;
+
 export default function SumFrequencyPage() {
-  const [lambda1, setLambda1] = useURLState("lambda1", 1064); // nm
-  const [lambda2, setLambda2] = useURLState("lambda2", 1550); // nm
-  const [deff, setDeff] = useURLState("deff", 2.0); // pm/V (KTP)
-  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 10); // mm
-  const [power1, setPower1] = useURLState("power1", 100); // mW
-  const [power2, setPower2] = useURLState("power2", 50); // mW
-  const [beamWaist, setBeamWaist] = useURLState("beamWaist", 30); // µm
+  const [lambda1Raw, setLambda1] = useURLState("lambda1", 1064); // nm
+  const [lambda2Raw, setLambda2] = useURLState("lambda2", 1550); // nm
+  const [deffRaw, setDeff] = useURLState("deff", 14); // pm/V
+  const [lengthRaw, setLength] = useURLState("crystalLength", 10); // mm
+  const [power1Raw, setPower1] = useURLState("power1", 100); // mW
+  const [power2Raw, setPower2] = useURLState("power2", 50); // mW
+  const [waistRaw, setWaist] = useURLState("beamWaist", 50); // µm
+  const [n1Raw, setN1] = useURLState("n1", 2.1555);
+  const [n2Raw, setN2] = useURLState("n2", 2.1376);
+  const [n3Raw, setN3] = useURLState("n3", 2.2027);
+  const [deltaKRaw, setDeltaK] = useURLState("deltaK", 0); // rad/mm
 
-  // Sum frequency: 1/λ_sum = 1/λ1 + 1/λ2
-  const lambdaSum = 1 / (1 / lambda1 + 1 / lambda2);
-  const omegaSum = 2 * Math.PI * c / (lambdaSum * 1e-9);
+  const lambda1 = clamp(lambda1Raw, 200, 20000, 1064) * 1e-9;
+  const lambda2 = clamp(lambda2Raw, 200, 20000, 1550) * 1e-9;
+  const deff = clamp(deffRaw, 0, 1000, 14) * 1e-12;
+  const L = clamp(lengthRaw, 0.01, 1000, 10) * 1e-3;
+  const P1 = clamp(power1Raw, 0, 1e9, 100) * 1e-3;
+  const P2 = clamp(power2Raw, 0, 1e9, 50) * 1e-3;
+  const w = clamp(waistRaw, 1, 1e5, 50) * 1e-6;
+  const n1 = clamp(n1Raw, 1, 5, 2.1555);
+  const n2 = clamp(n2Raw, 1, 5, 2.1376);
+  const n3 = clamp(n3Raw, 1, 5, 2.2027);
+  const deltaK = clamp(deltaKRaw, -1e4, 1e4, 0) * 1e3;
 
-  // Conversion efficiency (Boyd-Kleinman)
-  const n = 1.8;
-  const area = Math.PI * (beamWaist * 1e-6) ** 2;
-  const L = crystalLength * 1e-3;
-  const d = deff * 1e-12;
+  const lambda3 = sumFrequencyWavelength(lambda1, lambda2);
+  const power = (length: number, dk: number) =>
+    gaussianMixingPower(mixingEfficiency({ lambdaOut: lambda3, length, deff, n1, n2, nOut: n3, deltaK: dk }), P1, P2, w, w);
+  const P3 = power(L, deltaK);
+  const phase = (deltaK * L) / 2;
+  const sinc2 = phase === 0 ? 1 : (Math.sin(phase) / phase) ** 2;
+  const normalized = P1 > 0 && P2 > 0 ? P3 / (P1 * P2) : NaN;
+  // Index mismatch without phase matching: Δk = 2π(n₃/λ₃ − n₁/λ₁ − n₂/λ₂); first-order QPM period 2π/|Δk|.
+  const deltaKMaterial = 2 * Math.PI * (n3 / lambda3 - n1 / lambda1 - n2 / lambda2);
+  const qpmPeriod = (2 * Math.PI) / Math.abs(deltaKMaterial);
+  const bMin = Math.min((2 * Math.PI * n1 * w * w) / lambda1, (2 * Math.PI * n2 * w * w) / lambda2);
+  const xi = L / bMin;
+  // Fraction of the weaker input's photons converted: (P₃/hν₃) / min(P₁/hν₁, P₂/hν₂).
+  const photonFraction = P3 * lambda3 / Math.min(P1 * lambda1, P2 * lambda2);
 
-  // η ≈ (8π² d² L²) / (ε₀ c n³ λ²) × P/A — simplified plane-wave
-  const eta = (8 * Math.PI ** 2 * d ** 2 * L ** 2) / (epsilon_0 * c * n ** 3 * (lambdaSum * 1e-9) ** 2 * area) * (power1 * 1e-3 / area);
-  const pSum = power1 * 1e-3 * eta * power2 * 1e-3;
+  const warnings = [
+    xi > 0.5 && `L is ${fmt(xi, 3)} times the smaller confocal parameter 2πnw²/λ (${fmt(bMin * 1e3, 3)} mm): the beams change size in the crystal, so the plane-wave value overestimates P₃. Widen the beams or use a Boyd–Kleinman focusing model.`,
+    photonFraction > 0.1 && `${fmt(photonFraction * 100, 3)} % of the weaker beam's photons are converted: the inputs deplete and the undepleted-input result no longer holds.`,
+  ].filter(Boolean) as string[];
 
-  // Conversion efficiency vs crystal length
-  const lengthData = useMemo(() => {
-    const lengths = Array.from({ length: 200 }, (_, i) => 0.1 + i * 30 / 200);
-    const effs = lengths.map(l => {
-      return (8 * Math.PI ** 2 * d ** 2 * (l * 1e-3) ** 2) / (epsilon_0 * c * n ** 3 * (lambdaSum * 1e-9) ** 2 * area) * (power1 * 1e-3 / area) * 100;
-    });
-    return [
-      { x: lengths, y: effs, type: "scatter", mode: "lines", name: "η vs L", line: { color: "#60a5fa", width: 2 } },
-    ];
-  }, [lambda1, lambda2, deff, power1, power2, beamWaist]);
-
-  // SFG wavelength vs λ2
-  const tuningData = useMemo(() => {
-    const l2s = Array.from({ length: 200 }, (_, i) => 800 + i * 1500 / 200);
-    const lSums = l2s.map(l2 => {
-      const ls = 1 / (1 / lambda1 + 1 / l2);
-      return ls > 0 ? ls : NaN;
-    });
-    return [
-      { x: l2s, y: lSums, type: "scatter", mode: "lines", name: "λ_SFG", line: { color: "#f472b6", width: 2 } },
-    ];
-  }, [lambda1]);
-
-  const lengthLayout = {
-    paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-    font: { color: "#9ca3af" },
-    xaxis: { title: "Crystal length (mm)", gridcolor: "#374151" },
-    yaxis: { title: "Conversion efficiency (%)", gridcolor: "#374151" },
-    margin: { t: 30, r: 30, b: 50, l: 70 },
-  };
-
-  const tuningLayout = {
-    paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-    font: { color: "#9ca3af" },
-    xaxis: { title: "λ₂ (nm)", gridcolor: "#374151" },
-    yaxis: { title: "SFG wavelength (nm)", gridcolor: "#374151" },
-    margin: { t: 30, r: 30, b: 50, l: 70 },
-  };
+  const lengthCurve = Number.isFinite(P3) ? [{
+    name: "P₃(L)", color: "#60a5fa",
+    points: Array.from({ length: 201 }, (_, i) => (i / 100) * L).map((l) => ({ x: round6(l * 1e3), y: round6(power(l, deltaK) * 1e6) })),
+  }] : [];
+  const dkSpan = (4 * Math.PI) / L;
+  const mismatchCurve = Number.isFinite(P3) ? [{
+    name: "P₃(Δk)", color: "#f472b6",
+    points: Array.from({ length: 201 }, (_, i) => ((i - 100) / 100) * dkSpan).map((dk) => ({ x: round6(dk * 1e-3), y: round6(power(L, dk) * 1e6) })),
+  }] : [];
 
   return (
     <>
-            
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
-        <p><span className="text-blue-400">Energy:</span> 1/λ<sub>3</sub> = 1/λ<sub>1</sub> + 1/λ<sub>2</sub></p>
-        <p><span className="text-blue-400">Phase match:</span> Δk = k<sub>3</sub> − k<sub>1</sub> − k<sub>2</sub> = 0</p>
-        <p><span className="text-blue-400">η</span> = (8π² d<sub>eff</sub>² L²) / (ε₀ c n³ λ₃² A) × (P₁/A)</p>
-        <p><span className="text-blue-400">P<sub>3</sub></span> = η · P₁ · P₂</p>
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="λ₁ (nm)" value={lambda1} onChange={setLambda1} />
-        <ValidatedNumberInput label="λ₂ (nm)" value={lambda2} onChange={setLambda2} />
-        <ValidatedNumberInput label={<>d<sub>eff</sub> (pm/V)</>} value={deff} onChange={setDeff} step="0.1" />
-        <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} />
-        <ValidatedNumberInput label="P₁ (mW)" value={power1} onChange={setPower1} />
-        <ValidatedNumberInput label="P₂ (mW)" value={power2} onChange={setPower2} />
+        <ValidatedNumberInput label="λ₁ (nm)" value={lambda1Raw} onChange={setLambda1} min={200} max={20000} step="any" />
+        <ValidatedNumberInput label="λ₂ (nm)" value={lambda2Raw} onChange={setLambda2} min={200} max={20000} step="any" />
+        <ValidatedNumberInput label="d_eff (pm/V)" value={deffRaw} onChange={setDeff} min={0} max={1000} step="any" />
+        <ValidatedNumberInput label="P₁ (mW)" value={power1Raw} onChange={setPower1} min={0} max={1e9} step="any" />
+        <ValidatedNumberInput label="P₂ (mW)" value={power2Raw} onChange={setPower2} min={0} max={1e9} step="any" />
+        <ValidatedNumberInput label="Beam radius w, 1/e², both beams (µm)" value={waistRaw} onChange={setWaist} min={1} max={1e5} step="any" />
+        <ValidatedNumberInput label="Crystal length L (mm)" value={lengthRaw} onChange={setLength} min={0.01} max={1000} step="any" />
+        <ValidatedNumberInput label="n₁ at λ₁" value={n1Raw} onChange={setN1} min={1} max={5} step="any" />
+        <ValidatedNumberInput label="n₂ at λ₂" value={n2Raw} onChange={setN2} min={1} max={5} step="any" />
+        <ValidatedNumberInput label="n₃ at λ₃" value={n3Raw} onChange={setN3} min={1} max={5} step="any" />
+        <ValidatedNumberInput label="Residual Δk after phase matching (rad/mm)" value={deltaKRaw} onChange={setDeltaK} min={-1e4} max={1e4} step="any" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">SFG Wavelength</p>
-          <p className="text-xl font-bold text-blue-400">{lambdaSum.toFixed(1)} nm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Conversion Efficiency</p>
-          <p className="text-xl font-bold text-green-400">{(eta * 100).toExponential(2)} %</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">SFG Power</p>
-          <p className="text-xl font-bold text-orange-400">{(pSum * 1e6).toExponential(2)} µW</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">ω<sub>3</sub></p>
-          <p className="text-xl font-bold text-purple-400">{(omegaSum / 1e15).toFixed(2)} PHz</p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard label="SFG power P₃" value={fmtPower(P3)} subtext={`η·2P₁P₂/(π(w₁² + w₂²)), sinc²(ΔkL/2) = ${fmt(sinc2, 3)}`} tone="green" />
+        <ResultCard label="SFG wavelength λ₃" value={`${fmt(lambda3 * 1e9, 5)} nm`} subtext="1/λ₃ = 1/λ₁ + 1/λ₂" tone="blue" />
+        <ResultCard label="Normalized efficiency" value={`${fmt(normalized * 100, 3)} %/W`} subtext={`P₃/(P₁P₂); ${fmt(photonFraction * 100, 3)} % of the weaker beam's photons`} tone="orange" />
+        <ResultCard label="First-order QPM period" value={`${fmt(qpmPeriod * 1e6, 4)} µm`} subtext={`2π/|Δk| from the indices; coherence length ${fmt(qpmPeriod * 5e5, 4)} µm`} tone="cyan" />
+      </div>
+
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>Two beams at ω₁ and ω₂ drive a polarization at ω₃ = ω₁ + ω₂ in the χ⁽²⁾ crystal. With both inputs undepleted
+          and plane waves, I₃ = 8π² d_eff² L² sinc²(ΔkL/2) I₁I₂/(ε₀ c n₁n₂n₃ λ₃²). Integrated over two Gaussian beams of
+          equal radius w this gives P₃ = η P₁P₂/(πw²). Without phase matching Δk = 2π(n₃/λ₃ − n₁/λ₁ − n₂/λ₂) and the
+          power only oscillates over a coherence length π/|Δk|. Birefringent phase matching or a periodically poled crystal of
+          period 2π/|Δk| removes it. The residual Δk input is what is left after that, from tuning or temperature. The defaults
+          are a 1064 + 1550 nm → 631 nm mixer in periodically poled LiNbO₃: extraordinary indices from the Zelmon
+          Sellmeier (21 °C) and a typical d_eff.</p>
+        {warnings.map((msg) => <p key={msg} className="text-yellow-400">{msg}</p>)}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2 mb-8">
-        <div className="bg-gray-900 rounded-lg p-4">
-          <ChartPanel data={lengthData} layout={lengthLayout} />
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4">
-          <ChartPanel data={tuningData} layout={tuningLayout} />
-        </div>
+        {lengthCurve.length > 0 && (
+          <SimpleLineChart title="SFG power vs crystal length" xLabel="Crystal length (mm)" yLabel="P₃ (µW)" series={lengthCurve} />
+        )}
+        {mismatchCurve.length > 0 && (
+          <SimpleLineChart title="SFG power vs residual phase mismatch" xLabel="Δk (rad/mm)" yLabel="P₃ (µW)" series={mismatchCurve} />
+        )}
       </div>
     </>
   );

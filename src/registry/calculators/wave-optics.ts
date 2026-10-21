@@ -95,8 +95,22 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "difference-frequency",
     title: "Difference Frequency Generation (DFG)",
-    description: "Downconversion via χ⁽²⁾: ωp − ωs → ωi for mid-IR generation.",
-    knownIssue: "Beam radius (40 µm) and refractive index (2.2) are fixed and hidden, and when the signal wavelength is shorter than the pump the page still shows an efficiency and power for an invalid process.",
+    description: "Idler power, wavelength and quasi-phase-matching period of χ⁽²⁾ difference-frequency generation (ωp − ωs → ωi) from pump and signal powers, beam radius, d_eff, indices and phase mismatch.",
+    tier: "textbook",
+    modelNote: "Plane waves over two Gaussian beams of equal radius, both inputs undepleted, low parametric gain (ΓL ≪ 1), no focusing, walk-off or absorption. d_eff is an input: 14 pm/V is a typical periodically poled LiNbO₃ value, not a sourced constant.",
+    references: [
+      {
+        citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.2 and §2.8. Academic Press. Coupled-amplitude equations for sum- and difference-frequency generation and parametric amplification.",
+      },
+      {
+        citation: "Boyd G. D., Kleinman D. A. (1968). Parametric Interaction of Focused Gaussian Light Beams. J. Appl. Phys. 39, 3597–3639. Focusing limit of the plane-wave result.",
+        url: "https://doi.org/10.1063/1.1656831",
+      },
+      {
+        citation: "Zelmon D. E., Small D. L., Jundt D. (1997). Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol% magnesium oxide-doped lithium niobate. J. Opt. Soc. Am. B 14, 3319. Default extraordinary indices.",
+        url: "https://doi.org/10.1364/josab.14.003319",
+      },
+    ],
   },
   {
     slug: "diffraction-integral",
@@ -349,9 +363,23 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "optical-parametric-amplifier",
     title: "Optical Parametric Amplifier",
-    description: "Parametric power gain of an OPA from pump intensity, d_eff, refractive indices and crystal length, versus pump power, length and signal wavelength.",
-    knownIssue: "Gain assumes perfect phase matching at every signal wavelength, so the gain-versus-wavelength curve shows no phase-matching bandwidth; a signal at or below the pump wavelength gives NaN or Infinity.",
-    keywords: ["OPA / OPO Design"],
+    description: "Signal gain, idler output and gain bandwidth of an optical parametric amplifier from pump power and radius, d_eff, indices, phase mismatch and signal–idler group-velocity mismatch.",
+    tier: "textbook",
+    modelNote: "Plane-wave, undepleted-pump gain at the pump's on-axis intensity; the bandwidth comes from first-order group-velocity mismatch only (no group-velocity dispersion). No focusing, walk-off or pump depletion. d_eff is an input: 14 pm/V is a typical periodically poled LiNbO₃ value, not a sourced constant.",
+    references: [
+      {
+        citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.2 and §2.8. Academic Press. Coupled-amplitude equations for sum- and difference-frequency generation and parametric amplification.",
+      },
+      {
+        citation: "Cerullo G., De Silvestri S. (2003). Ultrafast optical parametric amplifiers. Rev. Sci. Instrum. 74, 1–18. Gain bandwidth from group-velocity mismatch.",
+        url: "https://doi.org/10.1063/1.1523642",
+      },
+      {
+        citation: "Zelmon D. E., Small D. L., Jundt D. (1997). Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol% magnesium oxide-doped lithium niobate. J. Opt. Soc. Am. B 14, 3319. Default extraordinary indices.",
+        url: "https://doi.org/10.1364/josab.14.003319",
+      },
+    ],
+    keywords: ["OPA / OPO Design", "Parametric Amplification"],
   },
   {
     slug: "optical-parametric-oscillator",
@@ -378,12 +406,6 @@ export const waveOptics: CalculatorEntry[] = [
     title: "Optical Waveguide Modes",
     description: "Slab waveguide mode analysis: V-number, NA, and effective index.",
     knownIssue: "The effective-index curve is not a slab-waveguide solution and overstates the fundamental-mode index, most at small V. A cladding index above the core index gives NaN instead of a no-guidance warning.",
-  },
-  {
-    slug: "parametric-amplification",
-    title: "Parametric Amplification",
-    description: "Optical parametric amplification (OPA) gain and bandwidth in χ⁽²⁾ nonlinear crystals.",
-    knownIssue: "The gain coefficient is twice the textbook value at a hidden 5 µm beam radius, and the bandwidth uses wrong units so it reads 0.0 nm; gain and bandwidth are not reliable.",
   },
   {
     slug: "photonic-bandgap",
@@ -506,8 +528,22 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "sum-frequency",
     title: "Sum Frequency Generation (SFG)",
-    description: "Upconversion via χ⁽²⁾: ω1 + ω2 → ω3 with phase matching.",
-    knownIssue: "Conversion efficiency and SFG power are divided by the beam area twice, so the defaults show 6.4 million percent and 321 W from 150 mW of input instead of about 0.018 % and 9 µW.",
+    description: "Sum-frequency power, wavelength and quasi-phase-matching period of χ⁽²⁾ upconversion (ω1 + ω2 → ω3) from the input powers, beam radius, d_eff, indices and phase mismatch.",
+    tier: "textbook",
+    modelNote: "Plane waves over two Gaussian beams of equal radius, both inputs undepleted, no focusing, walk-off or absorption. d_eff is an input: 14 pm/V is a typical periodically poled LiNbO₃ value, not a sourced constant.",
+    references: [
+      {
+        citation: "Boyd R. W. (2008). Nonlinear Optics, 3rd ed., §2.2 and §2.8. Academic Press. Coupled-amplitude equations for sum- and difference-frequency generation and parametric amplification.",
+      },
+      {
+        citation: "Boyd G. D., Kleinman D. A. (1968). Parametric Interaction of Focused Gaussian Light Beams. J. Appl. Phys. 39, 3597–3639. Focusing limit of the plane-wave result.",
+        url: "https://doi.org/10.1063/1.1656831",
+      },
+      {
+        citation: "Zelmon D. E., Small D. L., Jundt D. (1997). Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol% magnesium oxide-doped lithium niobate. J. Opt. Soc. Am. B 14, 3319. Default extraordinary indices.",
+        url: "https://doi.org/10.1364/josab.14.003319",
+      },
+    ],
   },
   {
     slug: "supercontinuum",

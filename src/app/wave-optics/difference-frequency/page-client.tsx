@@ -1,123 +1,118 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ResultCard from "../../../components/result-card";
 import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-import { c, epsilon_0 } from "../../../physics/constants";
+import { parametricGainCoefficient } from "../../../physics/wave-optics/optical-parametric-oscillator";
+import { gaussianMixingPower, idlerWavelength, mixingEfficiency } from "../../../physics/wave-optics/three-wave";
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const fmt = (x: number, digits = 4) => (Number.isFinite(x) ? x.toPrecision(digits).replace("e+", "e") : "—");
+const round6 = (x: number) => Number(x.toPrecision(6));
+const fmtPower = (W: number) => !Number.isFinite(W)
+  ? "—"
+  : W >= 1 ? `${fmt(W)} W` : W >= 1e-3 ? `${fmt(W * 1e3)} mW` : W >= 1e-6 ? `${fmt(W * 1e6)} µW` : `${fmt(W * 1e9)} nW`;
+
 export default function DifferenceFrequencyPage() {
-  const [lambdaPump, setLambdaPump] = useURLState("lambdaPump", 1064); // nm
-  const [lambdaSignal, setLambdaSignal] = useURLState("lambdaSignal", 1550); // nm
-  const [deff, setDeff] = useURLState("deff", 14.0); // pm/V (PPLN)
-  const [crystalLength, setCrystalLength] = useURLState("crystalLength", 20); // mm
-  const [pumpPower, setPumpPower] = useURLState("pumpPower", 500); // mW
-  const [signalPower, setSignalPower] = useURLState("signalPower", 10); // mW
-  const [beamWaist, setBeamWaist] = useURLState("beamWaist", 40); // µm
+  const [lambdaPumpRaw, setLambdaPump] = useURLState("lambdaPump", 1064); // nm
+  const [lambdaSignalRaw, setLambdaSignal] = useURLState("lambdaSignal", 1550); // nm
+  const [deffRaw, setDeff] = useURLState("deff", 14); // pm/V
+  const [lengthRaw, setLength] = useURLState("crystalLength", 20); // mm
+  const [pumpPowerRaw, setPumpPower] = useURLState("pumpPower", 500); // mW
+  const [signalPowerRaw, setSignalPower] = useURLState("signalPower", 10); // mW
+  const [waistRaw, setWaist] = useURLState("beamWaist", 100); // µm
+  const [nPumpRaw, setNPump] = useURLState("nPump", 2.1555);
+  const [nSignalRaw, setNSignal] = useURLState("nSignal", 2.1376);
+  const [nIdlerRaw, setNIdler] = useURLState("nIdler", 2.0814);
+  const [deltaKRaw, setDeltaK] = useURLState("deltaK", 0); // rad/mm
 
-  // DFG: 1/λ_DFG = 1/λ_pump - 1/λ_signal
-  const lambdaDFG = 1 / (1 / lambdaPump - 1 / lambdaSignal);
+  const lambdaP = clamp(lambdaPumpRaw, 200, 20000, 1064) * 1e-9;
+  const lambdaS = clamp(lambdaSignalRaw, 200, 20000, 1550) * 1e-9;
+  const deff = clamp(deffRaw, 0, 1000, 14) * 1e-12;
+  const L = clamp(lengthRaw, 0.01, 1000, 20) * 1e-3;
+  const Pp = clamp(pumpPowerRaw, 0, 1e9, 500) * 1e-3;
+  const Ps = clamp(signalPowerRaw, 0, 1e9, 10) * 1e-3;
+  const w = clamp(waistRaw, 1, 1e5, 100) * 1e-6;
+  const nP = clamp(nPumpRaw, 1, 5, 2.1555);
+  const nS = clamp(nSignalRaw, 1, 5, 2.1376);
+  const nI = clamp(nIdlerRaw, 1, 5, 2.0814);
+  const deltaK = clamp(deltaKRaw, -1e4, 1e4, 0) * 1e3;
 
-  // Idler-to-pump energy ratio: E_i/E_p = λ_p/λ_i
-  const idlerEnergyRatio = lambdaDFG > 0 ? (lambdaPump / lambdaDFG) * 100 : 0;
+  const lambdaI = idlerWavelength(lambdaP, lambdaS);
+  const valid = Number.isFinite(lambdaI);
+  const power = (length: number, dk: number) =>
+    gaussianMixingPower(mixingEfficiency({ lambdaOut: lambdaI, length, deff, n1: nP, n2: nS, nOut: nI, deltaK: dk }), Pp, Ps, w, w);
+  const Pi = power(L, deltaK);
+  const normalized = Pp > 0 && Ps > 0 ? Pi / (Pp * Ps) : NaN;
+  // Δk = 2π(n_p/λ_p − n_s/λ_s − n_i/λ_i) without phase matching; first-order QPM period 2π/|Δk|.
+  const deltaKMaterial = 2 * Math.PI * (nP / lambdaP - nS / lambdaS - nI / lambdaI);
+  const qpmPeriod = (2 * Math.PI) / Math.abs(deltaKMaterial);
+  // On-axis parametric gain ΓL at the Gaussian peak intensity 2P_p/(πw²): the low-gain law needs ΓL ≪ 1.
+  const gamma = parametricGainCoefficient(
+    { lambdaPump: lambdaP, lambdaSignal: lambdaS, dEff: Math.max(deff, 1e-30), nPump: nP, nSignal: nS, nIdler: nI },
+    (2 * Pp) / (Math.PI * w * w),
+  );
+  const gammaL = gamma * L;
+  const bMin = Math.min((2 * Math.PI * nP * w * w) / lambdaP, (2 * Math.PI * nS * w * w) / lambdaS);
+  const xi = L / bMin;
 
-  const n = 2.2;
-  const area = Math.PI * (beamWaist * 1e-6) ** 2;
-  const L = crystalLength * 1e-3;
-  const d = deff * 1e-12;
-  const lambdaOut = (lambdaDFG > 0 ? lambdaDFG : lambdaPump) * 1e-9;
+  const warnings = [
+    !valid && "The signal wavelength must be longer than the pump wavelength: the idler is at 1/λ_i = 1/λ_p − 1/λ_s.",
+    valid && gammaL > 0.5 && `On-axis gain ΓL = ${fmt(gammaL, 3)}: the signal is amplified as well (G = cosh²ΓL), so the low-gain law underestimates the idler. Use the optical parametric amplifier page.`,
+    valid && xi > 0.5 && `L is ${fmt(xi, 3)} times the smaller confocal parameter 2πnw²/λ (${fmt(bMin * 1e3, 3)} mm): the beams change size in the crystal, so the plane-wave value overestimates P_i.`,
+  ].filter(Boolean) as string[];
 
-  // Conversion efficiency (Boyd, Nonlinear Optics Ch.2): η = P_i/P_s
-  // η = (8π² d² L²) / (ε₀ c n³ λ_i² A) × P_p
-  const eta = (8 * Math.PI ** 2 * d ** 2 * L ** 2) / (epsilon_0 * c * n ** 3 * lambdaOut ** 2 * area) * (pumpPower * 1e-3);
-  const pDFG = signalPower * 1e-3 * eta;
-
-  // Tuning curve: DFG wavelength vs signal wavelength
-  const tuningData = useMemo(() => {
-    const lSignals = Array.from({ length: 200 }, (_, i) => lambdaPump * 1.02 + i * (lambdaPump * 3 - lambdaPump * 1.02) / 200);
-    const lDFGs = lSignals.map(ls => {
-      const ld = 1 / (1 / lambdaPump - 1 / ls);
-      return ld > 0 && ld < 20000 ? ld : NaN;
-    });
-    return [
-      { x: lSignals, y: lDFGs, type: "scatter", mode: "lines", name: "λ_DFG", line: { color: "#60a5fa", width: 2 } },
-      { x: [lambdaSignal, lambdaSignal], y: [0, (lambdaDFG > 0 ? lambdaDFG : 10000)], type: "scatter", mode: "lines", name: "Current", line: { color: "#f87171", dash: "dash" } },
-    ];
-  }, [lambdaPump, lambdaSignal]);
-
-  // Power vs crystal length
-  const powerData = useMemo(() => {
-    const lengths = Array.from({ length: 200 }, (_, i) => 0.1 + i * 40 / 200);
-    const powers = lengths.map(l => {
-      const e = (8 * Math.PI ** 2 * d ** 2 * (l * 1e-3) ** 2) / (epsilon_0 * c * n ** 3 * lambdaOut ** 2 * area) * (pumpPower * 1e-3);
-      return signalPower * 1e-3 * e * 1e6;
-    });
-    return [
-      { x: lengths, y: powers, type: "scatter", mode: "lines", name: "P_DFG", line: { color: "#34d399", width: 2 } },
-    ];
-  }, [lambdaPump, lambdaSignal, deff, pumpPower, signalPower, beamWaist, crystalLength]);
-
-  const tuningLayout = {
-    paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-    font: { color: "#9ca3af" },
-    xaxis: { title: "Signal wavelength (nm)", gridcolor: "#374151" },
-    yaxis: { title: "DFG wavelength (nm)", gridcolor: "#374151" },
-    margin: { t: 30, r: 30, b: 50, l: 70 },
-  };
-
-  const powerLayout = {
-    paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-    font: { color: "#9ca3af" },
-    xaxis: { title: "Crystal length (mm)", gridcolor: "#374151" },
-    yaxis: { title: "DFG power (µW)", gridcolor: "#374151" },
-    margin: { t: 30, r: 30, b: 50, l: 70 },
-  };
+  const lengthCurve = Number.isFinite(Pi) ? [{
+    name: "P_i(L)", color: "#34d399",
+    points: Array.from({ length: 201 }, (_, i) => (i / 100) * L).map((l) => ({ x: round6(l * 1e3), y: round6(power(l, deltaK) * 1e6) })),
+  }] : [];
+  const dkSpan = (4 * Math.PI) / L;
+  const mismatchCurve = Number.isFinite(Pi) ? [{
+    name: "P_i(Δk)", color: "#f472b6",
+    points: Array.from({ length: 201 }, (_, i) => ((i - 100) / 100) * dkSpan).map((dk) => ({ x: round6(dk * 1e-3), y: round6(power(L, dk) * 1e6) })),
+  }] : [];
 
   return (
     <>
-            
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6 text-sm text-gray-300 space-y-1">
-        <p><span className="text-blue-400">Energy:</span> 1/λ<sub>i</sub> = 1/λ<sub>p</sub> − 1/λ<sub>s</sub></p>
-        <p><span className="text-blue-400">Phase match:</span> Δk = k<sub>p</sub> − k<sub>s</sub> − k<sub>i</sub> = 0</p>
-        <p><span className="text-blue-400">η</span> = (8π² d<sub>eff</sub>² L²) / (ε₀ c n³ λ<sub>i</sub>² A) × P<sub>p</sub></p>
-        <p><span className="text-blue-400">Manley-Rowe:</span> P<sub>p</sub>/ω<sub>p</sub> + P<sub>i</sub>/ω<sub>i</sub> = const</p>
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        <ValidatedNumberInput label="Pump λ (nm)" value={lambdaPump} onChange={setLambdaPump} />
-        <ValidatedNumberInput label="Signal λ (nm)" value={lambdaSignal} onChange={setLambdaSignal} />
-        <ValidatedNumberInput label={<>d<sub>eff</sub> (pm/V)</>} value={deff} onChange={setDeff} step="0.1" />
-        <ValidatedNumberInput label="Crystal Length (mm)" value={crystalLength} onChange={setCrystalLength} />
-        <ValidatedNumberInput label="Pump Power (mW)" value={pumpPower} onChange={setPumpPower} />
-        <ValidatedNumberInput label="Signal Power (mW)" value={signalPower} onChange={setSignalPower} />
+        <ValidatedNumberInput label="Pump λ_p (nm)" value={lambdaPumpRaw} onChange={setLambdaPump} min={200} max={20000} step="any" />
+        <ValidatedNumberInput label="Signal λ_s (nm)" value={lambdaSignalRaw} onChange={setLambdaSignal} min={200} max={20000} step="any" />
+        <ValidatedNumberInput label="d_eff (pm/V)" value={deffRaw} onChange={setDeff} min={0} max={1000} step="any" />
+        <ValidatedNumberInput label="Pump power P_p (mW)" value={pumpPowerRaw} onChange={setPumpPower} min={0} max={1e9} step="any" />
+        <ValidatedNumberInput label="Signal power P_s (mW)" value={signalPowerRaw} onChange={setSignalPower} min={0} max={1e9} step="any" />
+        <ValidatedNumberInput label="Beam radius w, 1/e², both beams (µm)" value={waistRaw} onChange={setWaist} min={1} max={1e5} step="any" />
+        <ValidatedNumberInput label="Crystal length L (mm)" value={lengthRaw} onChange={setLength} min={0.01} max={1000} step="any" />
+        <ValidatedNumberInput label="n_p at λ_p" value={nPumpRaw} onChange={setNPump} min={1} max={5} step="any" />
+        <ValidatedNumberInput label="n_s at λ_s" value={nSignalRaw} onChange={setNSignal} min={1} max={5} step="any" />
+        <ValidatedNumberInput label="n_i at λ_i" value={nIdlerRaw} onChange={setNIdler} min={1} max={5} step="any" />
+        <ValidatedNumberInput label="Residual Δk after phase matching (rad/mm)" value={deltaKRaw} onChange={setDeltaK} min={-1e4} max={1e4} step="any" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">DFG Wavelength</p>
-          <p className="text-xl font-bold text-blue-400">{isFinite(lambdaDFG) && lambdaDFG > 0 ? lambdaDFG.toFixed(1) : "—"} nm</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Conversion Efficiency</p>
-          <p className="text-xl font-bold text-green-400">{(eta * 100).toExponential(2)} %</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">DFG Power</p>
-          <p className="text-xl font-bold text-orange-400">{(pDFG * 1e6).toExponential(2)} µW</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Idler/Pump Energy Ratio</p>
-          <p className="text-xl font-bold text-purple-400">{isFinite(idlerEnergyRatio) && idlerEnergyRatio > 0 ? idlerEnergyRatio.toFixed(1) : "—"} %</p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <ResultCard label="Idler power P_i" value={fmtPower(Pi)} subtext="η·2P_pP_s/(π(w_p² + w_s²)), low gain" tone="green" />
+        <ResultCard label="Idler wavelength λ_i" value={valid ? `${fmt(lambdaI * 1e9, 5)} nm` : "—"} subtext={valid ? `1/λ_i = 1/λ_p − 1/λ_s; ${fmt(1e-2 / lambdaI, 5)} cm⁻¹` : "needs λ_s > λ_p"} tone="blue" />
+        <ResultCard label="Normalized efficiency" value={`${fmt(normalized * 100, 3)} %/W`} subtext={`P_i/(P_pP_s); on-axis ΓL = ${fmt(gammaL, 3)}`} tone="orange" />
+        <ResultCard label="First-order QPM period" value={valid ? `${fmt(qpmPeriod * 1e6, 4)} µm` : "—"} subtext={valid ? `2π/|Δk| from the indices; coherence length ${fmt(qpmPeriod * 5e5, 4)} µm` : "needs λ_s > λ_p"} tone="cyan" />
+      </div>
+
+      <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 mb-6 text-sm text-gray-300 leading-6 space-y-1">
+        <p>A strong pump at ω_p and a weaker signal at ω_s generate the idler at ω_i = ω_p − ω_s, usually in the mid-infrared.
+          With both inputs undepleted and the signal not yet amplified, I_i = 8π² d_eff² L² sinc²(ΔkL/2) I_pI_s/(ε₀ c n_pn_sn_i λ_i²):
+          the sum-frequency law with the idler wavelength. Integrated over two Gaussian beams of equal radius w it gives
+          P_i = η P_pP_s/(πw²). Each idler photon also adds a signal photon. Once ΓL approaches 1 the signal grows too,
+          and the process becomes parametric amplification. The defaults are a 1064 nm − 1550 nm → 3.39 µm mixer in
+          periodically poled LiNbO₃: extraordinary indices from the Zelmon Sellmeier (21 °C) and a typical d_eff.</p>
+        {warnings.map((msg) => <p key={msg} className="text-yellow-400">{msg}</p>)}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2 mb-8">
-        <div className="bg-gray-900 rounded-lg p-4">
-          <ChartPanel data={tuningData} layout={tuningLayout} />
-        </div>
-        <div className="bg-gray-900 rounded-lg p-4">
-          <ChartPanel data={powerData} layout={powerLayout} />
-        </div>
+        {lengthCurve.length > 0 && (
+          <SimpleLineChart title="Idler power vs crystal length" xLabel="Crystal length (mm)" yLabel="P_i (µW)" series={lengthCurve} />
+        )}
+        {mismatchCurve.length > 0 && (
+          <SimpleLineChart title="Idler power vs residual phase mismatch" xLabel="Δk (rad/mm)" yLabel="P_i (µW)" series={mismatchCurve} />
+        )}
       </div>
     </>
   );
