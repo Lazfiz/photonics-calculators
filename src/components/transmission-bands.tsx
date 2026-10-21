@@ -25,7 +25,7 @@ export default function TransmissionBands({
           <div key={r.key} className="flex items-center gap-2">
             <div className={`w-28 shrink-0 truncate ${r.selected ? "font-semibold text-white" : ""}`}>{r.name}</div>
             <div className="relative h-4 flex-1 rounded bg-gray-800" role="img"
-              aria-label={`${r.name}: ${r.bands.length ? r.bands.map(([lo, hi]) => `${lo}–${hi} µm`).join(" and ") : "no sourced range"}`}>
+              aria-label={`${r.name}: ${r.bands.length ? r.bands.map(([lo, hi]) => `${+lo.toPrecision(4)}–${+hi.toPrecision(4)} µm`).join(" and ") : "no sourced range"}`}>
               {r.bands.map(([lo, hi]) => (
                 <div key={lo} className={`absolute top-0.5 bottom-0.5 rounded-sm ${r.selected ? "bg-blue-500" : "bg-gray-500"}`}
                   style={{ left: `${pos(lo)}%`, width: `${Math.max(pos(hi) - pos(lo), 0.5)}%` }} />

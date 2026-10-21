@@ -2,7 +2,7 @@ import CalculatorShell from "@/components/calculator-shell";
 import { calculatorMetadata } from "@/registry/metadata";
 import PageClient from "./page-client";
 
-const href = "/materials/calcite-properties";
+const href = "/materials/crystal-properties";
 
 export const metadata = calculatorMetadata(href);
 

@@ -39,7 +39,9 @@ test("uniaxial data: every set reproduces the refractiveindex.info coefficients 
   const types: Record<number, (c: number[], l: number) => number> = {
     1: formula1,
     2: (c, l) => Math.sqrt(1 + c[0] + c.slice(1).reduce((s, _, i, r) => (i % 2 ? s : s + (r[i] * l * l) / (l * l - r[i + 1])), 0)),
-    4: (c, l) => Math.sqrt(c[0] + (c[1] * l ** c[2]) / (l * l - c[3] ** c[4]) + (c[5] * l ** c[6]) / (l * l - c[7] ** c[8])),
+    4: (c, l) => Math.sqrt(
+      c[0] + (c[1] * l ** c[2]) / (l * l - c[3] ** c[4]) + (c[5] * l ** c[6]) / (l * l - c[7] ** c[8]) + (c.length > 9 ? c[9] * l ** c[10] : 0),
+    ),
   };
   const published: [keyof typeof X, "o" | "e", number, string][] = [
     ["quartz", "o", 2, "0.28604141 1.07044083 1.00585997e-2 1.10202242 100"],
@@ -56,6 +58,10 @@ test("uniaxial data: every set reproduces the refractiveindex.info coefficients 
     ["linbo3", "e", 2, "0 2.9804 0.02047 0.5981 0.0666 8.9543 416.08"],
     ["rutile", "o", 4, "5.913 0.2441 0 0.0803 1 0 0 0 1"],
     ["rutile", "e", 4, "7.197 0.3322 0 0.0843 1 0 0 0 1"],
+    ["bbo", "o", 4, "2.7405 0.0184 0 0.0179 1 0 0 0 1 -0.0155 2"],
+    ["bbo", "e", 4, "2.3730 0.0128 0 0.0156 1 0 0 0 1 -0.0044 2"],
+    ["kdp", "o", 4, "2.259276 13.00522 2 400 1 0.01008956 0 0.0129426 1"],
+    ["kdp", "e", 4, "2.132668 3.2279924 2 400 1 0.008637494 0 0.0122810 1"],
   ];
   for (const [id, ray, type, coeffs] of published) {
     const c = coeffs.split(" ").map(Number);
@@ -128,7 +134,7 @@ test("uniaxial data: rutile (DeVore 1951) within sample spread of Bond's measure
 });
 
 test("uniaxial data: sign of Δn and ranges", () => {
-  const negative = new Set(["calcite", "sapphire", "linbo3"]);
+  const negative = new Set(["calcite", "sapphire", "linbo3", "bbo", "kdp"]);
   for (const id of CRYSTAL_IDS) {
     const [lo, hi] = crystalRange(id);
     assert.ok(lo < 589e-9 && 1000e-9 < hi, `${id} covers 589–1000 nm`);

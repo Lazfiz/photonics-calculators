@@ -1,151 +1,171 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import { crystalNote } from "../../../components/crystal-select";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { CRYSTAL_IDS, UNIAXIAL_CRYSTALS, crystalIndices, crystalRange, type CrystalId } from "../../../physics/materials/uniaxial-data";
 
-interface Crystal {
-  name: string;
-  // Sellmeier coefficients for ordinary ray
-  B1o: number; B2o: number; B3o: number;
-  C1o: number; C2o: number; C3o: number;
-  // Sellmeier coefficients for extraordinary ray
-  B1e: number; B2e: number; B3e: number;
-  C1e: number; C2e: number; C3e: number;
-  dnTypical: number; // typical birefringence at 589nm
+const DEFAULT_CRYSTAL: CrystalId = "quartz";
+const WAVELENGTH_MIN_NM = 150;
+const WAVELENGTH_MAX_NM = 7000;
+const THICKNESS_MIN_MM = 0.001;
+const THICKNESS_MAX_MM = 100;
+const CHART_MIN_NM = 200;
+const CHART_MAX_NM = 2500;
+const CHART_POINTS = 160;
+const CHART_COLORS = ["#60a5fa", "#f87171", "#34d399", "#fbbf24", "#a78bfa", "#fb923c", "#f472b6", "#22d3ee", "#a3e635"];
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const round6 = (x: number) => Math.round(x * 1e6) / 1e6;
+const fmt = (x: number, digits: number) => (Number.isFinite(x) ? x.toFixed(digits) : "—");
+const shortName = (id: CrystalId) => UNIAXIAL_CRYSTALS[id].name.replace(/ \(.*\)$/, "");
+
+/** Wavelength grid (nm) over the crystal's fit range, inside the chart window. */
+function grid(id: CrystalId, minNm = CHART_MIN_NM, maxNm = CHART_MAX_NM) {
+  const [lo, hi] = crystalRange(id).map((x) => x * 1e9);
+  const a = Math.max(lo, minNm);
+  const b = Math.min(hi, maxNm);
+  return Array.from({ length: CHART_POINTS + 1 }, (_, k) => a + (k * (b - a)) / CHART_POINTS);
 }
 
-const crystals: Record<string, Crystal> = {
-  "Calcite": {
-    name: "Calcite (CaCO₃)",
-    B1o: 0.8559, B2o: 0.8359, B3o: 0.0033,
-    C1o: 0.005083, C2o: 0.014569, C3o: 0.010639,
-    B1e: 1.0856, B2e: 0.0988, B3e: 0.3174,
-    C1e: 0.006000, C2e: 0.021080, C3e: 0.097750,
-    dnTypical: -0.172,
-  },
-  "Quartz": {
-    name: "Quartz (SiO₂)",
-    B1o: 0.6961663, B2o: 0.4079426, B3o: 0.8974794,
-    C1o: 0.0684043, C2o: 0.1162414, C3o: 9.896161,
-    B1e: 0.7400480, B2e: 0.4199740, B3e: 0.8907644,
-    C1e: 0.0697253, C2e: 0.1153987, C3e: 10.53298,
-    dnTypical: 0.009,
-  },
-  "LiNbO3": {
-    name: "LiNbO₃",
-    B1o: 2.6734, B2o: 1.2290, B3o: 12.614,
-    C1o: 0.01354, C2o: 0.06200, C3o: 474.60,
-    B1e: 2.9804, B2e: 0.5981, B3e: 8.9543,
-    C1e: 0.01354, C2e: 0.02020, C3e: 416.08,
-    dnTypical: -0.082,
-  },
-  "BBO": {
-    name: "BBO (β-BaB₂O₄)",
-    B1o: 1.1318, B2o: 0.1875, B3o: 1.9030,
-    C1o: 0.007040, C2o: 0.011980, C3o: 760.00,
-    B1e: 1.0950, B2e: 0.2100, B3e: 1.6530,
-    C1e: 0.006000, C2e: 0.012000, C3e: 620.00,
-    dnTypical: -0.115,
-  },
-  "KDP": {
-    name: "KDP (KH₂PO₄)",
-    B1o: 1.4486, B2o: 0.3466, B3o: 5.8176,
-    C1o: 0.013100, C2o: 0.018000, C3o: 400.00,
-    B1e: 1.4410, B2e: 0.3427, B3e: 5.6452,
-    C1e: 0.012400, C2e: 0.017900, C3e: 380.00,
-    dnTypical: -0.044,
-  },
-  "Rutile": {
-    name: "Rutile (TiO₂)",
-    B1o: 4.2291, B2o: 3.5230, B3o: 0.0077,
-    C1o: 0.020370, C2o: 0.041100, C3o: 0.007004,
-    B1e: 4.5562, B2e: 3.4334, B3e: 0.0084,
-    C1e: 0.022000, C2e: 0.041600, C3e: 0.007500,
-    dnTypical: -0.287,
-  },
-};
-
-function sellmeier(B1: number, B2: number, B3: number, C1: number, C2: number, C3: number, lam: number) {
-  const l2 = lam * lam;
-  return Math.sqrt(1 + B1 * l2 / (l2 - C1) + B2 * l2 / (l2 - C2) + B3 * l2 / (l2 - C3));
+function indexChart(id: CrystalId, lambdaNm: number, no: number, ne: number) {
+  const nm = grid(id, 0, Infinity);
+  const v = nm.map((x) => crystalIndices(id, x * 1e-9));
+  const traces = [
+    { x: nm.map(round6), y: v.map((p) => round6(p.no)), type: "scatter", mode: "lines", name: "nₒ", line: { color: "#60a5fa", width: 2 } },
+    { x: nm.map(round6), y: v.map((p) => round6(p.ne)), type: "scatter", mode: "lines", name: "nₑ", line: { color: "#f87171", width: 2 } },
+  ];
+  if (!Number.isFinite(no)) return traces;
+  return [
+    ...traces,
+    { x: [round6(lambdaNm), round6(lambdaNm)], y: [round6(no), round6(ne)], type: "scatter", mode: "markers", name: "at λ",
+      line: { color: "#fbbf24" }, marker: { color: "#fbbf24", size: 8 } },
+  ];
 }
 
-const colors = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899"];
+function birefringenceChart(selected: CrystalId) {
+  return CRYSTAL_IDS.map((id, i) => {
+    const nm = grid(id);
+    return {
+      x: nm.map(round6),
+      y: nm.map((x) => { const v = crystalIndices(id, x * 1e-9); return round6(v.ne - v.no); }),
+      type: "scatter", mode: "lines", name: shortName(id),
+      line: { color: CHART_COLORS[i % CHART_COLORS.length], width: id === selected ? 3.5 : 1.5 },
+    };
+  });
+}
 
 export default function BirefringentCrystalsPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 589);
-  const [selected, setSelected] = useState("Quartz");
+  const [crystalParam, setCrystal] = useURLState("crystal", DEFAULT_CRYSTAL);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 589); // nm
+  const [thicknessRaw, setThickness] = useURLState("thickness", 1); // mm
+  const crystal = (CRYSTAL_IDS as string[]).includes(crystalParam) ? (crystalParam as CrystalId) : DEFAULT_CRYSTAL;
+  const wavelength = clamp(wavelengthRaw, WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM, 589);
+  const thickness = clamp(thicknessRaw, THICKNESS_MIN_MM, THICKNESS_MAX_MM, 1);
+  const lambda = wavelength * 1e-9;
 
-  const c = crystals[selected];
-  const no = useMemo(() => sellmeier(c.B1o, c.B2o, c.B3o, c.C1o, c.C2o, c.C3o, wavelength / 1000), [c, wavelength]);
-  const ne = useMemo(() => sellmeier(c.B1e, c.B2e, c.B3e, c.C1e, c.C2e, c.C3e, wavelength / 1000), [c, wavelength]);
+  const [lo, hi] = crystalRange(crystal);
+  const inRange = lambda >= lo && lambda <= hi;
+  const { no, ne } = inRange ? crystalIndices(crystal, lambda) : { no: NaN, ne: NaN };
   const dn = ne - no;
+  const waves = (Math.abs(dn) * thickness * 1e-3) / lambda;
+  const halfWave_um = (lambda / (2 * Math.abs(dn))) * 1e6;
+  const note = crystalNote(crystal, lambda);
 
-  const chartData = useMemo(() => {
-    const ws: number[] = [];
-    for (let w = 300; w <= 2500; w += 5) ws.push(w);
-    const entries = Object.entries(crystals);
-    return [
-      ...entries.map(([key, cr], i) => ({
-        x: ws,
-        y: ws.map(w => sellmeier(cr.B1o, cr.B2o, cr.B3o, cr.C1o, cr.C2o, cr.C3o, w / 1000)),
-        type: "scatter" as const, mode: "lines" as const,
-        name: `${cr.name} nₒ`, line: { color: colors[i % colors.length], width: key === selected ? 2.5 : 1, dash: "dot" },
-      })),
-      ...entries.map(([key, cr], i) => ({
-        x: ws,
-        y: ws.map(w => sellmeier(cr.B1e, cr.B2e, cr.B3e, cr.C1e, cr.C2e, cr.C3e, w / 1000)),
-        type: "scatter" as const, mode: "lines" as const,
-        name: `${cr.name} nₑ`, line: { color: colors[i % colors.length], width: key === selected ? 3 : 1.5 },
-      })),
-    ];
-  }, [selected]);
+  const nChart = useMemo(() => indexChart(crystal, wavelength, no, ne), [crystal, wavelength, no, ne]);
+  const dnChart = useMemo(() => birefringenceChart(crystal), [crystal]);
+  const rows = CRYSTAL_IDS.map((id) => {
+    const [a, b] = crystalRange(id);
+    const v = lambda >= a && lambda <= b ? crystalIndices(id, lambda) : { no: NaN, ne: NaN };
+    return { id, range: `${Math.round(a * 1e9)}–${Math.round(b * 1e9)}`, ...v };
+  });
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">Crystal</label>
-          <select value={selected} onChange={e => setSelected(e.target.value)}
+      <div className="grid gap-4 sm:grid-cols-3 mb-4">
+        <label className="block">
+          <span className="block text-sm text-gray-400 mb-1">Crystal</span>
+          <select value={crystal} onChange={(e) => setCrystal(e.target.value)}
             className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white">
-            {Object.entries(crystals).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
+            {CRYSTAL_IDS.map((id) => <option key={id} value={id}>{UNIAXIAL_CRYSTALS[id].name}</option>)}
           </select>
+        </label>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={WAVELENGTH_MIN_NM} max={WAVELENGTH_MAX_NM} step="1" />
+        <ValidatedNumberInput label="Plate thickness (mm)" value={thicknessRaw} onChange={setThickness} min={THICKNESS_MIN_MM} max={THICKNESS_MAX_MM} step="0.1" />
+      </div>
+      <p className={`text-xs mb-6 ${note.warn ? "text-yellow-400" : "text-gray-500"}`}>{note.text}</p>
+
+      <div className="grid gap-4 sm:grid-cols-3 mb-4">
+        <ResultCard label="nₒ (ordinary)" value={fmt(no, 5)} tone="blue" />
+        <ResultCard label="nₑ (extraordinary)" value={fmt(ne, 5)} tone="red" />
+        <ResultCard label="Δn = nₑ − nₒ" value={fmt(dn, 5)} tone="green"
+          subtext={Number.isFinite(dn) ? (dn > 0 ? "positive uniaxial" : "negative uniaxial") : "outside the fit range"} />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 mb-8">
+        <ResultCard label={`Retardance of ${thickness} mm`} value={Number.isFinite(waves) ? `${waves.toFixed(3)} waves` : "—"} tone="orange"
+          subtext={Number.isFinite(waves) ? `${(360 * (waves % 1)).toFixed(1)}° modulo one wave; optic axis in the plate face, normal incidence` : undefined} />
+        <ResultCard label="Zero-order half-wave thickness" value={Number.isFinite(halfWave_um) ? `${halfWave_um.toFixed(2)} µm` : "—"} tone="purple"
+          subtext="λ/(2|Δn|); a quarter-wave plate is half as thick" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="bg-gray-900 rounded-lg p-4">
+          <h3 className="text-lg font-semibold mb-3">{shortName(crystal)}: nₒ and nₑ</h3>
+          <ChartPanel data={nChart} layout={{
+            paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+            xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
+            yaxis: { title: "Refractive index", gridcolor: "#374151" },
+            margin: { t: 20, r: 20, b: 50, l: 60 }, height: 340,
+          }} />
         </div>
-        <div>
-          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={200} max={5000} />
+        <div className="bg-gray-900 rounded-lg p-4">
+          <h3 className="text-lg font-semibold mb-3">Birefringence Δn, all crystals</h3>
+          <ChartPanel data={dnChart} layout={{
+            paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+            xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
+            yaxis: { title: "Δn = nₑ − nₒ", gridcolor: "#374151" },
+            margin: { t: 20, r: 20, b: 50, l: 60 }, height: 340,
+          }} />
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">nₒ (ordinary)</p>
-          <p className="text-2xl font-bold text-blue-400 mt-1">{no.toFixed(6)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">nₑ (extraordinary)</p>
-          <p className="text-2xl font-bold text-red-400 mt-1">{ne.toFixed(6)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Δn = nₑ − nₒ</p>
-          <p className="text-2xl font-bold text-green-400 mt-1">{dn.toFixed(6)}</p>
-        </div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+        <h3 className="text-lg font-semibold mb-3">All crystals at {wavelength} nm</h3>
+        <table className="w-full text-sm">
+          <thead className="text-gray-400">
+            <tr><th className="text-left pr-4">Crystal</th><th className="text-right pr-4">nₒ</th><th className="text-right pr-4">nₑ</th><th className="text-right pr-4">Δn</th><th className="text-right">Fit range (nm)</th></tr>
+          </thead>
+          <tbody className="font-mono">
+            {rows.map((r) => (
+              <tr key={r.id} className={r.id === crystal ? "text-white" : "text-gray-300"}>
+                <td className="pr-4 font-sans">{UNIAXIAL_CRYSTALS[r.id].name}</td>
+                <td className="text-right pr-4">{fmt(r.no, 4)}</td>
+                <td className="text-right pr-4">{fmt(r.ne, 4)}</td>
+                <td className="text-right pr-4">{fmt(r.ne - r.no, 4)}</td>
+                <td className="text-right">{r.range}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="text-xs text-gray-500 mt-2">&ldquo;—&rdquo;: the wavelength is outside that crystal&apos;s fit range.</p>
       </div>
 
-      <ChartPanel data={chartData}
-        layout={{
-          paper_bgcolor: "transparent",
-          plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" },
-          xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
-          yaxis: { title: "Refractive Index", gridcolor: "#374151" },
-          margin: { t: 20, r: 20, b: 50, l: 60 },
-          legend: { orientation: "h", y: -0.3, font: { size: 9 } },
-        }}
-       
-       
-      />
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2">
+          <p className="font-mono">Δn = nₑ − nₒ,  retardance = |Δn|·d/λ waves,  d(λ/2) = λ/(2|Δn|)</p>
+          <p>
+            nₒ(λ) and nₑ(λ) come from each crystal&apos;s published Sellmeier formula (the same data sets as the polarization
+            calculators), only inside the wavelength range it was fitted over and at the temperature of its measurements.
+            Δn &gt; 0 marks a positive uniaxial crystal (quartz, MgF₂, YVO₄, rutile), Δn &lt; 0 a negative one. The retardance is
+            for light at normal incidence on a plate whose optic axis lies in its face; off-axis cuts and tilted beams are on
+            the Waveplate and Birefringent Polarizer calculators.
+          </p>
+        </div>
+      </div>
     </>
   );
 }
