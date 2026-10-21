@@ -269,7 +269,7 @@ export const polarization: CalculatorEntry[] = [
     title: "Fresnel Polarization Calculator",
     description: "Compute Fresnel reflection and transmission coefficients, their phases, and the Brewster and critical angles at an interface, including absorbing media and total internal reflection.",
     lede: "Fresnel reflection and transmission coefficients, their phases, and the Brewster and critical angles at an interface, including absorbing media and total internal reflection. r_p = −r_s at normal incidence (Born & Wolf; the thin-film pages use Macleod's opposite sign).",
-    keywords: ["Fresnel Equations"],
+    keywords: ["Fresnel Equations", "Brewster Angle & Total Internal Reflection"],
     tier: "exact",
     modelNote: "Plane wave at a flat interface from a lossless medium onto N₂ = n₂ − iκ₂; complex coefficients in total reflection; time factor e^i(ωt − kz), r_p = −r_s at normal incidence. Not modelled: films, roughness.",
     references: [bornWolfFresnel, goldsteinFresnel],

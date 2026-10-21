@@ -107,5 +107,7 @@
   "/materials/crystal-birefringence": "/materials/birefringent-crystals",
   "/materials/calcite-properties": "/materials/crystal-properties",
   "/materials/quartz-crystal": "/materials/crystal-properties",
-  "/materials/sapphire-properties": "/materials/crystal-properties"
+  "/materials/sapphire-properties": "/materials/crystal-properties",
+  "/materials/verdet-constant": "/materials/magneto-optic",
+  "/materials/brewster-tir": "/polarization/fresnel-polarization"
 }

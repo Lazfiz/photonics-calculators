@@ -1,120 +1,151 @@
 "use client";
 
-import { useState } from "react";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import ChartPanel from "../../../components/chart-panel";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { STRESS_OPTIC, stressForRetardance, type StressOpticId } from "../../../physics/materials/stress-optic";
+import { photoelasticRetardance } from "../../../physics/polarization/photoelasticity";
 
-interface Material {
-  name: string;
-  p11: number; // Brewster coefficients
-  p12: number;
-  p44: number;
-  type: string;
-  notes: string;
+const GLASS_IDS = Object.keys(STRESS_OPTIC) as StressOpticId[];
+const CUSTOM = "custom";
+const DEFAULT_MATERIAL: StressOpticId = "silica";
+const C_MIN = -100;
+const C_MAX = 100;
+const STRESS_MIN_MPA = -2000;
+const STRESS_MAX_MPA = 2000;
+const THICKNESS_MIN_MM = 0.01;
+const THICKNESS_MAX_MM = 1000;
+const WAVELENGTH_MIN_NM = 200;
+const WAVELENGTH_MAX_NM = 20000;
+const CHART_POINTS = 40;
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const round6 = (x: number) => Math.round(x * 1e6) / 1e6;
+const sig = (x: number, digits: number) => (Number.isFinite(x) ? String(+x.toPrecision(digits)) : "—");
+const layout = (x: string, y: string) => ({
+  paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+  xaxis: { title: x, gridcolor: "#374151" }, yaxis: { title: y, gridcolor: "#374151" },
+  margin: { t: 20, r: 20, b: 50, l: 60 }, height: 320,
+});
+
+function retardanceChart(C: number, d: number, sigma_MPa: number, R_nm: number, lambda_nm: number) {
+  const max_MPa = Math.max(2 * Math.abs(sigma_MPa), 1);
+  const s = Array.from({ length: CHART_POINTS + 1 }, (_, k) => (k * max_MPa) / CHART_POINTS);
+  return [
+    { x: s.map(round6), y: s.map((x) => round6(Math.abs(photoelasticRetardance(C, d, x * 1e6)) * 1e9)), type: "scatter", mode: "lines", name: "|R|", line: { color: "#60a5fa", width: 2 } },
+    { x: [0, round6(max_MPa)], y: [round6(lambda_nm / 2), round6(lambda_nm / 2)], type: "scatter", mode: "lines", name: "λ/2", line: { color: "#fbbf24", width: 1.5, dash: "dash" } },
+    { x: [round6(Math.abs(sigma_MPa))], y: [round6(Math.abs(R_nm))], type: "scatter", mode: "markers", name: "now", line: { color: "#f87171" }, marker: { color: "#f87171", size: 9 } },
+  ];
 }
 
-const materials: Material[] = [
-  { name: "Fused Silica", p11: 0.121, p12: 0.270, p44: -0.075, type: "Glass", notes: "Stress-optic coefficient C = -3.5×10⁻¹² Pa⁻¹" },
-  { name: "BK7", p11: 0.113, p12: 0.252, p44: -0.070, type: "Glass", notes: "Borosilicate crown" },
-  { name: "SF11", p11: 0.260, p12: 0.290, p44: -0.015, type: "Glass", notes: "High-index flint" },
-  { name: "Schott SF6", p11: 0.280, p12: 0.300, p44: -0.010, type: "Glass", notes: "Dense flint" },
-  { name: "Si", p11: -0.094, p12: 0.017, p44: -0.051, type: "Semiconductor", notes: "Silicon @ 1.15µm" },
-  { name: "Ge", p11: -0.151, p12: -0.083, p44: -0.034, type: "Semiconductor", notes: "Germanium @ 10.6µm" },
-  { name: "GaAs", p11: -0.165, p12: -0.140, p44: -0.058, type: "Semiconductor", notes: "@ 1.15µm" },
-  { name: "Quartz (SiO₂)", p11: 0.160, p12: 0.270, p44: -0.055, type: "Crystal", notes: "α-quartz" },
-  { name: "LiNbO₃", p11: -0.026, p12: 0.090, p44: 0.067, type: "Crystal", notes: "Lithium niobate" },
-  { name: "CaF₂", p11: 0.058, p12: 0.230, p44: -0.086, type: "Crystal", notes: "Calcium fluoride" },
-  { name: "BaF₂", p11: 0.100, p12: 0.280, p44: -0.090, type: "Crystal", notes: "Barium fluoride" },
-  { name: "Diamond", p11: -0.125, p12: 0.325, p44: -0.225, type: "Crystal", notes: "CVD diamond" },
-  { name: "ZnSe", p11: 0.028, p12: 0.076, p44: -0.024, type: "II-VI", notes: "Zinc selenide" },
-  { name: "Water", p11: 0.320, p12: 0.320, p44: 0.0, type: "Liquid", notes: "Isotropic, p11 = p12" },
-];
-
 export default function PhotoelasticPage() {
-  const [stress, setStress] = useURLState("stress", 100); // MPa
-  const [wavelength, setWavelength] = useURLState("wavelength", 633); // nm
-  const [selected, setSelected] = useState("Fused Silica");
+  const [materialParam, setMaterial] = useURLState("material", DEFAULT_MATERIAL as string);
+  const [CRaw, setC] = useURLState("C", 3); // 1e-12 Pa^-1
+  const [stressRaw, setStress] = useURLState("stress", 10); // MPa
+  const [thicknessRaw, setThickness] = useURLState("thickness", 10); // mm
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 633); // nm
+  const isCustom = materialParam === CUSTOM;
+  const glassId = (GLASS_IDS as string[]).includes(materialParam) ? (materialParam as StressOpticId) : DEFAULT_MATERIAL;
+  const C_custom = clamp(CRaw, C_MIN, C_MAX, 3);
+  const stress_MPa = clamp(stressRaw, STRESS_MIN_MPA, STRESS_MAX_MPA, 10);
+  const thickness_mm = clamp(thicknessRaw, THICKNESS_MIN_MM, THICKNESS_MAX_MM, 10);
+  const wavelength_nm = clamp(wavelengthRaw, WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM, 633);
 
-  const m = materials.find(x => x.name === selected)!;
-  // Stress-optic coefficient approximation: C ≈ (p11 - p12) / (2n³E) but simpler:
-  // Birefringence from stress: Δn = C × σ, where C is stress-optic coefficient
-  // For isotropic: Δn = n³/2 × (p11 - p12) × σ/E
-  // Let's use typical C values directly or estimate from Brewster coefficients
-  // For silica: C ≈ -3.5e-12 Pa⁻¹, for BK7: C ≈ -2.77e-12 Pa⁻¹
-  const C_values: Record<string, number> = {
-    "Fused Silica": -3.5e-12, "BK7": -2.77e-12, "SF11": -2.0e-12,
-    "Schott SF6": -1.8e-12, "Quartz (SiO₂)": -3.0e-12, "LiNbO₃": -4.0e-12,
-    "CaF₂": -1.0e-12, "Water": 1.5e-12,
-  };
-  const C = C_values[selected] ?? -3.0e-12;
-  const sigma = stress * 1e6; // Pa
-  const dn = C * sigma;
-  const phaseShift = 2 * Math.PI * dn / (wavelength * 1e-9); // rad/m
+  const C = isCustom ? C_custom * 1e-12 : STRESS_OPTIC[glassId].C;
+  const sigma = stress_MPa * 1e6;
+  const d = thickness_mm * 1e-3;
+  const lambda = wavelength_nm * 1e-9;
+
+  const deltaN = C * sigma;
+  const R_nm = photoelasticRetardance(C, d, sigma) * 1e9;
+  const R_nm_per_cm = photoelasticRetardance(C, 0.01, sigma) * 1e9;
+  const phase = (2 * Math.PI * R_nm) / wavelength_nm;
+  const order = R_nm / wavelength_nm;
+  const halfWave_MPa = stressForRetardance(lambda / 2, C, d) / 1e6;
+  const chart = C !== 0 ? retardanceChart(C, d, stress_MPa, R_nm, wavelength_nm) : [];
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">Material</label>
-          <select value={selected} onChange={e => setSelected(e.target.value)}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white">
-            {materials.map(m => <option key={m.name} value={m.name}>{m.name}</option>)}
+      <div className="grid gap-4 sm:grid-cols-2 mb-4">
+        <label className="block rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <span className="text-sm text-gray-300">Glass</span>
+          <select value={isCustom ? CUSTOM : glassId} onChange={(e) => setMaterial(e.target.value)}
+            className="mt-3 w-full bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white">
+            {GLASS_IDS.map((id) => <option key={id} value={id}>{STRESS_OPTIC[id].name}</option>)}
+            <option value={CUSTOM}>Custom</option>
           </select>
-        </div>
-        <div>
-          <ValidatedNumberInput label="Stress σ (MPa)" value={stress} onChange={setStress} />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-        </div>
+        </label>
+        {isCustom && (
+          <ValidatedNumberInput label="Stress-optic coefficient C (×10⁻¹² Pa⁻¹)" value={CRaw} onChange={setC} min={C_MIN} max={C_MAX} step="0.01" />
+        )}
+      </div>
+      <div className="grid gap-4 sm:grid-cols-3 mb-4">
+        <ValidatedNumberInput label="Stress difference σ₁ − σ₂ (MPa)" value={stressRaw} onChange={setStress} min={STRESS_MIN_MPA} max={STRESS_MAX_MPA} step="1" />
+        <ValidatedNumberInput label="Thickness d (mm)" value={thicknessRaw} onChange={setThickness} min={THICKNESS_MIN_MM} max={THICKNESS_MAX_MM} step="0.5" />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={WAVELENGTH_MIN_NM} max={WAVELENGTH_MAX_NM} step="1" />
+      </div>
+      <p className="text-xs mb-6 text-gray-500">For uniaxial stress (σ₂ = 0), a positive value is tension and a negative one compression.</p>
+
+      <div className="grid gap-4 sm:grid-cols-3 mb-4">
+        <ResultCard label="Stress-optic coefficient C" value={`${sig(C * 1e12, 4)} ×10⁻¹² Pa⁻¹`} tone="blue"
+          subtext={isCustom ? "custom value" : STRESS_OPTIC[glassId].source} />
+        <ResultCard label="Birefringence Δn = C·σ" value={Number.isFinite(deltaN) ? deltaN.toExponential(3) : "—"} tone="green" subtext="signed" />
+        <ResultCard label="Phase Γ = 2πR/λ" value={Number.isFinite(phase) ? `${sig(phase, 4)} rad` : "—"} tone="cyan"
+          subtext={Number.isFinite(order) ? `fringe order R/λ = ${sig(order, 4)}` : undefined} />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <ResultCard label={`Retardance R in ${thickness_mm} mm`} value={Number.isFinite(R_nm) ? `${sig(R_nm, 4)} nm` : "—"} tone="orange"
+          subtext="signed: flips between tension and compression" />
+        <ResultCard label="Retardance per cm" value={Number.isFinite(R_nm_per_cm) ? `${sig(R_nm_per_cm, 4)} nm/cm` : "—"} tone="purple"
+          subtext="the unit glass catalogs use for stress birefringence" />
+        <ResultCard label="Stress for half-wave retardance" value={Number.isFinite(halfWave_MPa) ? `${sig(halfWave_MPa, 4)} MPa` : "—"} tone="yellow"
+          subtext={Number.isFinite(halfWave_MPa) ? "R = λ/2 at this thickness and wavelength" : "C = 0: no birefringence at any stress"} />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">C (stress-optic)</p>
-          <p className="text-lg font-bold text-blue-400 mt-1">{C.toExponential(1)} Pa⁻¹</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Δn (birefringence)</p>
-          <p className="text-lg font-bold text-red-400 mt-1">{dn.toExponential(3)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Phase shift (per cm)</p>
-          <p className="text-lg font-bold text-green-400 mt-1">{(phaseShift * 0.01).toFixed(2)} rad</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Retardation</p>
-          <p className="text-lg font-bold text-amber-400 mt-1">{(phaseShift * 0.01 / (2 * Math.PI) * wavelength).toFixed(1)} nm</p>
-        </div>
+      <div className="bg-gray-900 rounded-lg p-4 mb-6">
+        <h3 className="text-lg font-semibold mb-3">Retardance against stress</h3>
+        {chart.length ? <ChartPanel data={chart} layout={layout("|σ₁ − σ₂| (MPa)", "|R| (nm)")} />
+          : <p className="text-sm text-gray-400">C = 0: the retardance is zero at every stress.</p>}
       </div>
 
-      <h2 className="text-xl font-bold mb-4">Brewster Photoelastic Coefficients</h2>
-      <div className="overflow-x-auto">
+      <div className="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+        <h3 className="text-lg font-semibold mb-3">Glasses at {sig(stress_MPa, 4)} MPa</h3>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-gray-400 border-b border-gray-800">
-              <th className="text-left py-2 px-3">Material</th>
-              <th className="text-left py-2 px-3">Type</th>
-              <th className="text-right py-2 px-3">p₁₁</th>
-              <th className="text-right py-2 px-3">p₁₂</th>
-              <th className="text-right py-2 px-3">p₄₄</th>
-              <th className="text-left py-2 px-3">Notes</th>
+            <tr className="text-left text-gray-400">
+              <th className="pr-4 py-1">Glass</th><th className="pr-4 py-1">C (×10⁻¹² Pa⁻¹)</th>
+              <th className="pr-4 py-1">R per cm (nm/cm)</th><th className="py-1">Source</th>
             </tr>
           </thead>
           <tbody>
-            {materials.map((m, i) => (
-              <tr key={i} className={`border-b border-gray-800/50 hover:bg-gray-900/50 cursor-pointer ${selected === m.name ? "bg-blue-900/20" : ""}`}
-                onClick={() => setSelected(m.name)}>
-                <td className="py-2 px-3 font-medium">{m.name}</td>
-                <td className="py-2 px-3 text-gray-400">{m.type}</td>
-                <td className="py-2 px-3 text-right font-mono">{m.p11.toFixed(3)}</td>
-                <td className="py-2 px-3 text-right font-mono">{m.p12.toFixed(3)}</td>
-                <td className="py-2 px-3 text-right font-mono">{m.p44.toFixed(3)}</td>
-                <td className="py-2 px-3 text-gray-500">{m.notes}</td>
+            {GLASS_IDS.map((id) => (
+              <tr key={id} onClick={() => setMaterial(id)} className={`cursor-pointer hover:bg-gray-800 ${!isCustom && id === glassId ? "bg-gray-800" : ""}`}>
+                <td className="pr-4 py-1">{STRESS_OPTIC[id].name}</td>
+                <td className="pr-4 py-1">{sig(STRESS_OPTIC[id].C * 1e12, 4)}</td>
+                <td className="pr-4 py-1">{sig(photoelasticRetardance(STRESS_OPTIC[id].C, 0.01, sigma) * 1e9, 4)}</td>
+                <td className="py-1 text-gray-400">{STRESS_OPTIC[id].source}</td>
               </tr>
             ))}
           </tbody>
         </table>
+        <p className="text-xs text-gray-500 mt-2">Click a row to select the glass.</p>
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2">
+          <p className="font-mono">R = C d (σ₁ − σ₂),  Γ = 2πR/λ</p>
+          <p>
+            The principal stress axes are the birefringence axes. C comes from the Schott data sheets (K in 10⁻⁶ mm²/N =
+            10⁻¹² Pa⁻¹; SF57&apos;s 0.02 is the near-zero-K lead glass used for polarization-preserving optics) and from Jog 1957
+            for fused silica (3.55 at 649.5 nm, rising to 3.75 at 460 nm). The sign of R flips between tension and compression.
+          </p>
+          <p>
+            Crystals are not listed because they have a stress-optic tensor, so their birefringence depends on the stress and
+            light directions. Liquids carry no static shear stress.
+          </p>
+        </div>
       </div>
     </>
   );
