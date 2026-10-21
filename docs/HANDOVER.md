@@ -1,34 +1,34 @@
-# Handover — 2026-10-21 (session 121 → session 122)
+# Handover — 2026-10-21 (session 122 → session 123)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 121: **wave-optics fix part 11** (χ⁽²⁾), branch `phase-4/wave-optics-fix-11`, PR #152. Next: **fix part 12**
-(guided waves: four-wave-mixing on `fiber-nonlinear.ts`; coupled-mode → fiber-optics/mode-coupling; optical-waveguide; injection-locking).
+Session 122: **wave-optics fix part 12** (guided waves), branch `phase-4/wave-optics-fix-12`, PR #153. Next: **fix part 13**
+(interference: photonic-bandgap → thin-film/bragg-reflector; interferometer → spectroscopy/michelson-interferometer with
+Mach-Zehnder; etalon-finesse → spectroscopy/etalon-fsr; slow-light). Read PR #141's batch 3/6 rows for these first.
 
 ## State
 - Wave-optics modules: gaussian-beam, abcd, mode-matching, spatial-filter, higher-order-modes, bessel-beam,
   diffraction-integral, two-mirror-resonator, ring-cavity, laser-resonator, diode-laser, slab-laser, quasi-three-level,
-  pulsed-laser, free-electron-laser, chirped-pulse, frequency-comb, high-harmonic, soliton, kerr,
+  pulsed-laser, free-electron-laser, chirped-pulse, frequency-comb, high-harmonic, soliton, kerr, three-wave,
   optical-parametric-oscillator; new this session:
-  - `three-wave.ts`: `mixingEfficiency` (η = 8π²d²L²sinc²(ΔkL/2)/(ε₀c n₁n₂n_g λ_g²), SFG and DFG), `gaussianMixingPower`
-    (η·2P₁P₂/(π(w₁²+w₂²))), `parametricGain` (1 + (Γ/g)² sinh²gL, overflow-free), `idlerPower`, `detunedMismatch`,
-    `gainBandwidth` (bisection, GVM only), `LOW_GAIN_BANDWIDTH_FACTOR` 0.88589; re-exports `sumFrequencyWavelength`
-    (imaging SHG module, also used by spectroscopy/sum-frequency) and `idlerWavelength` (OPO module). Test:
-    `tests/wave-optics-three-wave.test.ts` (also checks it against imaging `sfgCoefficient`).
-- Pages default to PPLN (1064 nm, 1550 nm; Zelmon n_e; d_eff 14 pm/V, flagged unsourced in ROADMAP). sum-frequency: n₁ n₂ n₃,
-  beam radius and residual Δk are inputs; difference-frequency: same plus a ΓL low-gain check; optical-parametric-amplifier:
-  URL `peakPower` (kW, replaces `pumpPower` in W), `seedPower` W, `deltaK` rad/mm, `gvm` fs/mm; parametric-amplification
-  merged there with a redirect (its old params are ignored).
-- 383 of 433 pages tiered, 6 `knownIssue`s. **Per-page findings for parts 12–13 are in the PR #141 description**
-  (`gh pr view 141`): read the part's section first, don't re-audit.
-- **User decisions (session 110), merges with redirects, 8 of 12 done.** Left: etalon-finesse → spectroscopy/etalon-fsr;
-  coupled-mode → fiber-optics/mode-coupling; photonic-bandgap → thin-film/bragg-reflector; interferometer →
-  spectroscopy/michelson-interferometer. Session 78: keep dynamic-range, stimulated-raman-microscopy, resolution apart.
+  - `four-wave-mixing.ts`: `fwmIdlerWavelength`, `fwmDetuning` (Ω = ω_s − ω_p), `fwmLinearMismatch` (β₂Ω² + β₄Ω⁴/12),
+    `fwmSignalGain` (three-wave `parametricGain` with Γ = γP, Δk = κ = Δβ + 2γP), `fwmGainCoefficient`, `fwmIdlerPower`
+    (photon count), `fwmPhaseMatchedDetuning` (κ = 0 quadratic). Lossless, undepleted.
+  - `slab-waveguide.ts`: `slabV` (half-thickness V), `slabModeCount`, `slabModeB` (TE r = 1, TM r = n₁²/n₂², bisection),
+    `slabEffectiveIndex`, `slabTEConfinement`, `slabTEField`. Test: `tests/wave-optics-guided-waves.test.ts` (RK4, quadrature).
+  - `injection-locking.ts`: `lockingRange(k_c, ρ, α)` → {lower −k_c√ρ√(1+α²), upper k_c√ρ}.
+  - fiber-optics `coupled-mode.ts` gained `codirectionalPsi`, `codirectionalTransfer`, `codirectionalPeak`.
+- New URL params: four-wave-mixing `seedPower` mW, `beta2` ps²/km, `beta4` ps⁴/km (n2 unit unchanged, now labelled ×10⁻²⁰ m²/W);
+  injection-locking `couplingRate` GHz, `alpha`, `detuning` GHz (old `lockingBW` and coupled-mode's params are ignored).
+- 386 of 432 pages tiered, 3 `knownIssue`s (photonic-bandgap, interferometer, slow-light). User merges (session 110): 9 of 12
+  done, the 3 left are part 13. Session 78: keep dynamic-range, stimulated-raman-microscopy, resolution apart.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: `wave-optics/sum-frequency=91.87`,
-   `wave-optics/difference-frequency=3.361`, `wave-optics/optical-parametric-amplifier=29.10`; part 10: `wave-optics/kerr-lens=9.817`, `wave-optics/self-phase-modulation=1.202`,
-   `wave-optics/filamentation=5.319`; part 9: `wave-optics/soliton=1.330`, `wave-optics/supercontinuum=53.3`;
+1. `/ship` this branch. Values for a later release check: `wave-optics/four-wave-mixing=27.09`,
+   `wave-optics/optical-waveguide=1.498429`, `wave-optics/injection-locking=-3.162`, `fiber-optics/mode-coupling=0.2297`;
+   part 11: `wave-optics/sum-frequency=91.87`, `wave-optics/difference-frequency=3.361`, `wave-optics/optical-parametric-amplifier=29.10`;
+   part 10: `wave-optics/kerr-lens=9.817`, `wave-optics/self-phase-modulation=1.202`, `wave-optics/filamentation=5.319`;
+   part 9: `wave-optics/soliton=1.330`, `wave-optics/supercontinuum=53.3`;
    part 8: `wave-optics/chirped-pulse=94.21`, `wave-optics/optical-frequency-comb=193.414520000`, `wave-optics/attosecond-pulse=53.65`;
    part 7: `wave-optics/q-switched-laser=93.94`, `wave-optics/cavity-dumped=10.01`, `wave-optics/mode-locked-laser=25.23`,
    `wave-optics/free-electron-laser=823.9`; part 6: `wave-optics/diode-laser-resonator=4.957`, `wave-optics/slab-laser=72.23`,
@@ -37,13 +37,13 @@ Session 121: **wave-optics fix part 11** (χ⁽²⁾), branch `phase-4/wave-opti
    `wave-optics/ring-cavity=102.4`; part 3: `wave-optics/hermite-gaussian=5.067`, `wave-optics/bessel-beam=24.22`,
    `wave-optics/diffraction-integral=0.9075`; part 2: `wave-optics/mode-matching=36.22`, `wave-optics/spatial-filter=67.74`;
    part 1: `wave-optics/gaussian-beam=0.2027`, `wave-optics/m2-factor=1.476`, `wave-optics/abcd-matrix=100.0000`. No release unless asked.
-2. Wave-optics fix part 12 (guided waves), then part 13. Part 12: check fiber-coupler before merging coupled-mode.
+2. Wave-optics fix part 13 (interference), which closes the wave-optics category.
 3. Later: open findings (ROADMAP), `polarizer-types` (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
-- **Session 121:** devctl exit 75 skips the *whole* command (a chained `rm -rf .next/types` never ran): clean up separately.
-  A merge lowers the page floor in `tests/calculator-pages.test.ts` (433). PPLN 1064 − 1550: QPM 29.95 µm, δ_si −97.7 fs/mm (Zelmon).
-- **Session 120:** Chrome dumps queue behind `npm run check` (devctl exit 75).
+- **Sessions 120–122:** a removed page breaks tsc (TS2307 in `.next/types/validator.ts`) until `rm -rf .next/types .next/dev/types`,
+  run on its own (devctl exit 75 skips a whole chained command). A merge lowers the page floor in `tests/calculator-pages.test.ts`
+  (432). Chrome dumps queue behind `npm run check`. PPLN 1064 − 1550: QPM 29.95 µm, δ_si −97.7 fs/mm (Zelmon).
 - **Session 119:** a `useMemo` whose callback calls a heavy function draws the React Compiler warning "Existing memoization
   could not be preserved" and the compiler skips the whole component: call a plain module-level function instead (the
   compiler memoizes it). Oscillating asymptotes (radiation beats) aren't golden values: test exact solutions instead.
