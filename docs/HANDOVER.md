@@ -1,43 +1,32 @@
-# Handover — 2026-10-21 (session 123 → session 124)
+# Handover — 2026-10-21 (session 124 → session 125)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 123: **wave-optics fix part 13** (interference), branch `phase-4/wave-optics-fix-13`, PR #154. **Wave-optics is done**
-(37/37 tiered, 0 `knownIssue`s site-wide). Next: **materials audit part 0** (4/45 tiered; reviewer batches like PR #141).
+Session 124: **materials audit part 0**, branch `phase-4/materials-audit`, PR #155. 41 untiered pages: 30 bugs, 9 questionable,
+2 OK; 39 `knownIssue`s. Next: **materials fix part 1** (dispersion redirects into chromatic-dispersion and optical-glass-catalog).
 
 ## State
-- New this session:
-  - `thin-film/photonic-crystal.ts`: `bilayerBlochCos` (half-trace of an H + L period), `blochPhase` (KΛ = re + i·im),
-    `quarterWavePeriod`, `quarterWaveGapMidgap` (2Δg), `quarterWaveDecayPerPeriod` (ln n_H/n_L). bragg-reflector shows
-    the band diagram; photonic-bandgap merged into it.
-  - `spectroscopy/two-beam.ts`: `michelsonBeams` (R T R₁, T R R₂), `machZehnderBeams` (outputs A, B), `twoBeamVisibility`,
-    `twoBeamIntensity`, `twoBeamOpd`, `gaussianLineCoherence`. michelson-interferometer gained a fringe section;
-    interferometer merged into it (params `type`, `armDiff`, `reflectivity`, `reflectivity2`, `splitR`, `splitR2`).
-  - `wave-optics/slow-light.ts`: `groupDelay`, `groupVelocity`, `groupIndexFromDelay`, `bandwidthHz`, `lorentzianDelay`
-    (G/Γ at centre), `lorentzianGain`. Page params `model` (index | resonance), `gainDb`, `resonanceWidth` MHz.
-  - etalon-finesse → spectroscopy/etalon-fsr (pure redirect). Test: `tests/wave-optics-interference.test.ts`.
-- 387 of 429 tiered; page floor 429. Session 78: keep dynamic-range, stimulated-raman-microscopy, resolution apart.
+- Registry only (`src/registry/calculators/materials.ts`): 39 `knownIssue`s; 13 descriptions restored from their ledes (ledes
+  dropped), titles of quartz-crystal, sapphire-properties and nonlinear-index restored (heading overrides dropped).
+- ROADMAP: fix parts 1–9 with the user's merge decisions (18 pages merge away, 45 → 27), golden values and modules to reuse.
+  The stale wave-optics findings block (FWM, SPM, mode-matching, abcd-matrix, filamentation, dye) is gone.
+- Per-page reviewer notes (findings, DOIs, golden values) go into the PR #155 description; they are not in the repo.
+- 387 of 429 tiered; page floor 429.
 
 ## Next actions
-1. `/ship` this branch. Values for a later release check: part 13: `thin-film/bragg-reflector=432.13`,
-   `spectroscopy/michelson-interferometer=0.8974`, `wave-optics/slow-light=33.36`;
-   part 12: `wave-optics/four-wave-mixing=27.09`, `wave-optics/optical-waveguide=1.498429`, `wave-optics/injection-locking=-3.162`,
-   `fiber-optics/mode-coupling=0.2297`; part 11: `wave-optics/sum-frequency=91.87`, `wave-optics/difference-frequency=3.361`,
-   `wave-optics/optical-parametric-amplifier=29.10`; part 10: `wave-optics/kerr-lens=9.817`, `wave-optics/self-phase-modulation=1.202`,
-   `wave-optics/filamentation=5.319`; part 9: `wave-optics/soliton=1.330`, `wave-optics/supercontinuum=53.3`;
-   part 8: `wave-optics/chirped-pulse=94.21`, `wave-optics/optical-frequency-comb=193.414520000`, `wave-optics/attosecond-pulse=53.65`;
-   part 7: `wave-optics/q-switched-laser=93.94`, `wave-optics/cavity-dumped=10.01`, `wave-optics/mode-locked-laser=25.23`,
-   `wave-optics/free-electron-laser=823.9`; part 6: `wave-optics/diode-laser-resonator=4.957`, `wave-optics/slab-laser=72.23`,
-   `wave-optics/thin-disk-laser=104.3`, `fiber-optics/fiber-laser=2.362`; part 5: `wave-optics/solid-state-laser-resonator=9.093`,
-   `wave-optics/dye-laser-resonator=0.5444`, `wave-optics/gas-laser-resonator=0.9399`; part 4: `wave-optics/cavity-mode-spacing=0.6662`,
-   `wave-optics/ring-cavity=102.4`; part 3: `wave-optics/hermite-gaussian=5.067`, `wave-optics/bessel-beam=24.22`,
-   `wave-optics/diffraction-integral=0.9075`; part 2: `wave-optics/mode-matching=36.22`, `wave-optics/spatial-filter=67.74`;
-   part 1: `wave-optics/gaussian-beam=0.2027`, `wave-optics/m2-factor=1.476`, `wave-optics/abcd-matrix=100.0000`. No release unless asked.
-2. Materials audit part 0: `npx tsx scripts/tier-status.ts materials`, physics-reviewer batches, user decisions on merges.
-   Prune the stale rows of the second "Wave optics" block in ROADMAP open findings (FWM, SPM, mode-matching are fixed).
+1. `/ship` this branch (no page values changed). Values for a later release check: part 13: `thin-film/bragg-reflector=432.13`,
+   `spectroscopy/michelson-interferometer=0.8974`, `wave-optics/slow-light=33.36`; part 12: `wave-optics/four-wave-mixing=27.09`,
+   `wave-optics/optical-waveguide=1.498429`, `wave-optics/injection-locking=-3.162`, `fiber-optics/mode-coupling=0.2297`; part 11:
+   `wave-optics/sum-frequency=91.87`, `wave-optics/difference-frequency=3.361`, `wave-optics/optical-parametric-amplifier=29.10`;
+   parts 1–10: see PR #141–#151 descriptions. No release unless asked.
+2. Materials fix part 1 (ROADMAP item 1): read the PR #155 description for each page's findings first
+   (`gh pr view 155 --json body -q .body | grep -n -A12 "materials/gvd"`).
 3. Later: open findings (ROADMAP), `polarizer-types` (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
+- **Session 124:** `node -e 'import("./src/…ts")'` with `--import tsx` needs a relative path (an absolute `C:/…` path fails the ESM
+  loader). In the registry each entry ends with a `  },` line:
+  scripts slice entries on that.
 - **Session 123:** devctl exit 75 skips the *whole* chained command, a `node - <<EOF` edit before it too: grep that the edit
   landed. A user `next dev` on :3000 rewrites `.next/dev/types` right after `rm -rf`, sometimes garbled (TS1002 in validator.ts):
   `rm -rf .next/dev/types` alone again, then rerun the gate. ui-check and `--dump-dom` that server

@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 123, 2026-10-21)
+## Status (session 124, 2026-10-21)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -21,10 +21,10 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
-| materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
+| materials | 4 / 45 | part 0 audit (session 124): 39 `knownIssue`s, 18 merges decided; fix parts 1–9 next |
 | wave-optics | 37 / 37 | done: part 0 audit (session 110), fix parts 1–13 (sessions 111–123); open findings below |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **387 / 429** | 0 `knownIssue`s |
+| **total** | **387 / 429** | 39 `knownIssue`s (materials) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -43,7 +43,34 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] **Next category audit:** materials 4/45.
+- [ ] **Materials fix parts** (part 0 audit, session 124, PR #155: per-page findings, golden values and references are
+  in the PR description; OK pages: brewster-tir, thermal-expansion). Every merge below is a user decision (session 124)
+  and gets a redirect. Every page: clamp URL values, material in the URL, physics into `src/physics/materials/` (or reuse the named module), golden test, tier +
+  `modelNote` + references, drop the `knownIssue`. About 4 pages each; 45 → 27 pages.
+  1. Dispersion redirects: gvd, group-index, sellmeier → chromatic-dispersion (move its compare chart and coefficient
+     table; fix the `sellmeier-data` diamond DOI 10.1007/BF01330487 and range ≤ 644 nm); abbe-number and thermal-dndt →
+     optical-glass-catalog (V_d, TIE-19 dn/dT already there; check its fused silica V_d 67.82).
+  2. Windows: chalcogenide-glass + fluoride-glass → infrared-glass (As₂S₃ Rodney 1958: n(4 µm) 2.4112; a sourced ZBLAN
+     set, n_d 1.499); uv-materials + transparency-range → one window page (LiF, CsI Li 1976, MgF₂ Dodge; Fresnel limit
+     2n/(n² + 1), Ge 47.0 %).
+  3. Uniaxial: birefringent-crystals + crystal-birefringence → one n(λ)/Δn page on `uniaxial-data` (+ BBO Eimerl, KDP
+     Zernike); calcite-properties + quartz-crystal + sapphire-properties → one crystal page (walk-off −6.23° at 45°,
+     quartz rotation 21.72°/mm); diamond-optics (Peter 2.4173, plate T 0.706, hardness 98 GPa).
+  4. Field effects: verdet-constant → magneto-optic on a new `faraday.ts` (diamagnetic sign, TGG −134 rad/(T·m), garnets
+     saturate); brewster-tir → polarization/fresnel-polarization; photoelastic (`photoelasticity.ts`, C from p₁₁, p₁₂);
+     acousto-optic (mode and λ for M₂, efficiency).
+  5. Pockels and χ⁽²⁾/χ⁽³⁾ tables: electro-optic + photorefractive on one `pockels.ts` EO table (KDP V_π 7.48 kV, Γ in
+     cm⁻¹); nonlinear-crystals (length and power wired, d_eff fixes); nonlinear-index (`kerr.ts`, γ with A_eff).
+  6. Scattering and TPA: brillouin-scattering (`fiber-nonlinear.ts`: ν_B 11.15 GHz, g_B 3.65e-11 m/W, `sbsThreshold`);
+     raman-scattering (gains, Lorentzian lines, `stokesWavelength`); two-photon-absorption (Sheik-Bahae F₂ scaling).
+  7. Absorption: oh-absorption → fiber-optics/low-water-peak (add the 0.945, 1.24, 2.2, 2.72 µm bands to
+     `silica-attenuation.ts`); absorption → spectroscopy/lambert-beer-law; rare-earth-absorption (`DOPANT_PRESETS`,
+     α in m⁻¹ and dB/m); color-centers (Stokes shift, drop η = σ_em/σ_abs).
+  8. Thermal and damage: heat-capacity (Debye scaled to Cp300; Si 0.7125 J/(g·K)); thermal-conductivity-optics (k300
+     table, slab ΔT 72.46 K); damage-threshold (ns label, Gaussian peak 2E/(πw²), √τ ≥ 20 ps); radiation-damage (mm,
+     power law A·D^f); aging-effects, contamination, humidity-effects → thin-film/environmental-stability.
+  9. Leftovers: polymer-optics (Sultanova PMMA 1.4906), x-ray-optics (δ, β from Henke f₁, f₂: Be 3.41e-6), thermal-expansion
+     (tier only).
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
 - [ ] Rewrite each heuristic model, or label it illustrative, during its category's audit. Macro-bend and
   second-harmonic are done.
@@ -86,18 +113,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `thermal-evaporation` (low): T_m for Ni, Ti and Pd is 1726, 1930 and 1825 K against CRC's 1728, 1941 and 1828 K
   (unchecked against Alcock's table).
 
-**Wave optics**
-- `filamentation`: Marburger's z_sf gives a finite collapse distance for P < P_cr.
-- `four-wave-mixing`: β₂ is fixed at 20 ps²/km and n₀ at 1.45 in χ³. Reuse `fiber-nonlinear.ts` (Inoue η, Δβ with β₃).
-- `self-phase-modulation`: rms broadening uses √(1 + (4 ln2/π)φ²); for an unchirped Gaussian it is √(1 + 4φ²/(3√3)) (`spmRmsBroadening`).
-- `dye-laser-resonator`: k_ISC = (1 − Φ_f)/τ counts all non-radiative decay as ISC.
-- `mode-matching`: the η conjugate sign was fixed in Phase 0 (0.64 for a 2× waist mismatch). It still needs a module
-  and a golden test. The single-lens search misses the exact solution: 1550 nm, w 50 → 200 µm over 1000 mm has
-  s ≈ 200.769 mm, f ≈ 160.872 mm, but the page reports 0.033 % and 0.053 % overlaps (Codex review, 2026-10-13). The
-  brute-force search also runs during render; solve it in closed form (Kogelnik & Li) in the module.
-- `abcd-matrix`: shared links drop the element list (it is in `useState`; only the input ray is in the URL), and the
-  per-element controls have no `<label>` or `aria-label` (Codex review, 2026-10-13).
-
 **Free-space comms**
 - `snow-attenuation` (low): the sources never define S (read as water-equivalent), and the 2005 ICTON origin of the law
   is unverified (joanneum PDF is an HTML wall). Check Awan et al. WOCN 2009 / ICTON 2005 in Chrome; tier could drop to illustrative.
@@ -123,7 +138,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - Silica n₂, g_B, g_R are now `SILICA_*` in `fiber-nonlinear.ts`; other pages still inline them.
 - `v-number` (minor): it shows floor(V²/2) modes for V < 2.405; literal "&lt;" in the text.
 - 1.4682 is SMF-28's group index (fine for delay, OTDR, gyro); ≈ 20 pages also use it as the phase index (Fresnel, V, n_eff). Use ≈ 1.447.
-- Out of scope: `materials/brillouin-scattering` P_th = 21·1e-3/(g_B·L): 1e-3 in place of A_eff, L in place of L_eff (use `sbsThreshold`).
 
 **Imaging / spectroscopy** (found in the detectors part 0, session 63)
 - Spectroscopy part 11 (session 107): `infrared-spectroscopy` has no Herman–Wallis factor or absolute band strength; `electron-spectroscopy` graphite ρ 2.2 (SRD 71 table value) vs 2.26 g/cm³ crystal; LHM water ε₂ = 3.52 + 7.52θ kept (fits Table I with RMS 0.43, against 0.49 with −), and the page allows only −5 to 40 °C.
@@ -134,13 +148,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `imaging/optical-sectioning-thickness` (session 80): Wilhelm's geometric section √[(0.88 λ/d)² + (√2 n PH/NA)²] is 40 % above the scalar wave-optical plane response at 1 AU and 25 % at 2 AU (`confocal.ts`); show both there too.
 - `imaging/fluorophores.ts` (session 84): log-normal bands are exactly 0 past their anti-Stokes cutoff (EGFP emission below 480 nm, mCherry excitation above 622 nm), so tail-only bleed-through reads 0; sampled FPbase spectra would fix it. Disclosed on the pages.
 - `detectors/gain-temperature` PMT branch: the −0.3 %/°C default is an entered value; source a typical dynode-gain coefficient in part 7 (Hamamatsu handbook §13.1.1 gives no number).
-**Materials**
-- `birefringent-crystals` lists the fused-silica Malitson set as quartz.
-- `crystal-birefringence` has rutile at 2.454/2.493. Use `materials/uniaxial-data.ts`.
-- Registry descriptions with stripped Greek symbols (session 96 scan; the ledes are intact): materials abbe-number,
-  absorption, crystal-birefringence, group-index, nonlinear-index, photoelastic, thermal-expansion, uv-materials,
-  verdet-constant, x-ray-optics (wave-optics done in session 110). Fix in the materials audit (drop the lede when it then equals the description: registry test).
-
 **Polarization**
 - `polarization-scrambling` multiplies the stage means, which holds only for incommensurate frequencies. Near-resonant
   stages (q·f_i ≈ p·f_j, p, q ≤ 4) only get a warning: locked 1 kHz stages give 0.5118 in the product but 0.8848 averaged
@@ -201,6 +208,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Materials audit part 0 (session 124, `phase-4/materials-audit`, PR #155): 41 untiered pages in 6 reviewer batches, 30 bugs / 9 questionable / 2 OK, 39 `knownIssue`s, 13 descriptions and 3 titles restored; 18 merges decided; fix parts 1–9 planned.
   - Wave-optics fix part 13 (session 123, `phase-4/wave-optics-fix-13`, PR #154): new `photonic-crystal.ts` (gap/midgap 52.68 %, κ ln(n_H/n_L), TMM tanh²(Nκ)),
     `two-beam.ts` (V 0.95831; MZ outputs A/B), `slow-light.ts` (τ 33.3564 ps, G/Γ 53.05 ns); 3 merges; wave-optics complete; 982 tests.
   - Wave-optics fix part 12 (session 122, `phase-4/wave-optics-fix-12`, PR #153): new `four-wave-mixing.ts` (FOPA G 512.10 = 27.09 dB, RK4-checked; peak cosh²γPL),
