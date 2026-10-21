@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 122, 2026-10-21)
+## Status (session 123, 2026-10-21)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -22,9 +22,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
 | materials | 4 / 45 | Sellmeier sets fixed (session 20), `semiconductor-bandgap` (68); no full audit |
-| wave-optics | 36 / 40 | part 0 audit (session 110), fix parts 1–12 (sessions 111–122); 3 `knownIssue`s; part 13 next |
+| wave-optics | 37 / 37 | done: part 0 audit (session 110), fix parts 1–13 (sessions 111–123); open findings below |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **386 / 432** | 3 `knownIssue`s (wave-optics) |
+| **total** | **387 / 429** | 0 `knownIssue`s |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -43,24 +43,6 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `light-sheet`, `working-distance` → `image-distance`, `strehl-ratio` + `wavefront-error` into one page, `sensor-ccm` +
   `sensor-cmos` into one page with CCD/CMOS presets. Not decided, so keep separate: dynamic-range vs
   detectors/well-capacity, stimulated-raman-microscopy vs coherent-raman, resolution vs airy-disk.
-- [ ] Wave-optics fix parts (part 0 audit, session 110, PR #141: per-page findings, golden values and references are in
-  the PR description; OK pages: gaussian-beam, gouy-phase, abcd-matrix, etalon-finesse, cavity-stability, coupled-mode). Every
-  merge below is a user decision (session 110) and gets a redirect. Every page: clamp URL values, physics into
-  `src/physics/wave-optics/`, golden test, tier + `modelNote` + references, drop the `knownIssue`. About 4 pages each.
-  1. ✓ Gaussian beams (session 111, PR #142).
-  2. ✓ Mode matching and spatial filter (session 112, PR #143).
-  3. ✓ Higher-order beams, Bessel beam, Fresnel diffraction (session 113, PR #144).
-  4. ✓ Cavities: two-mirror resonator, cavity-stability → cavity-mode-spacing, ring cavity (session 114, PR #145).
-  5. ✓ Resonators a: solid-state, dye and gas laser resonators on `laser-resonator.ts` (session 115, PR #146).
-  6. ✓ Resonators b: diode, slab, thin-disk; fiber-laser-resonator → fiber-optics/fiber-laser (session 116, PR #147).
-  7. ✓ Pulsed output: q-switched, cavity-dumped, mode-locked, free-electron laser (session 117, PR #148).
-  8. ✓ Pulses: CPA (pulse-compression merged), optical-frequency-comb (cep-stabilization merged), attosecond (session 118, PR #149).
-  9. ✓ Fibre solitons: `soliton.ts`, soliton (split-step NLS), supercontinuum (session 119, PR #150).
-  10. ✓ Kerr: `kerr.ts`, kerr-lens, self-phase-modulation (FFT spectrum), filamentation (session 120, PR #151).
-  11. ✓ χ⁽²⁾: `three-wave.ts`, sum-frequency, difference-frequency, parametric-amplification → optical-parametric-amplifier (session 121, PR #152).
-  12. ✓ Guided waves: four-wave-mixing, optical-waveguide, injection-locking; coupled-mode → fiber-optics/mode-coupling (session 122, PR #153).
-  13. Interference: photonic-bandgap → thin-film/bragg-reflector; interferometer → spectroscopy/michelson-interferometer
-      (add Mach-Zehnder); etalon-finesse → spectroscopy/etalon-fsr; slow-light.
 - [ ] **Next category audit:** materials 4/45.
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
 - [ ] Rewrite each heuristic model, or label it illustrative, during its category's audit. Macro-bend and
@@ -76,6 +58,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 **Wave optics**
 - `injection-locking`: default k_c/2π 10 GHz is an order-of-magnitude diode value, not sourced; k_c(R, τ_in) conventions differ
   by O(1) factors between Lang, Mogensen and Schunk, so it stays an input. `four-wave-mixing`: no fiber loss in the gain (lossless OPA).
+- `slow-light`: one isolated Lorentzian, no pulse distortion or saturation (a warning shows when the signal is wider than the line).
+  Old `/wave-optics/interferometer?wavelength=633` links land on michelson-interferometer's µm input (clamped to 50 µm).
 - χ⁽²⁾ pages (`sum-frequency`, `difference-frequency`, `optical-parametric-amplifier`): default d_eff 14 pm/V is a typical PPLN value, not
   sourced; Shoji et al. 1997 (doi 10.1364/josab.14.002268) d₃₃ table is paywalled. Source it or keep it labelled as an input.
 - `dye-laser-resonator`: default σₑ 2e-16 cm², τ 4 ns, σ_T 1e-17 cm², k_ST 5e6 s⁻¹, τ_T 1 µs are Rh6G-order examples (page says so);
@@ -217,6 +201,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Wave-optics fix part 13 (session 123, `phase-4/wave-optics-fix-13`, PR #154): new `photonic-crystal.ts` (gap/midgap 52.68 %, κ ln(n_H/n_L), TMM tanh²(Nκ)),
+    `two-beam.ts` (V 0.95831; MZ outputs A/B), `slow-light.ts` (τ 33.3564 ps, G/Γ 53.05 ns); 3 merges; wave-optics complete; 982 tests.
   - Wave-optics fix part 12 (session 122, `phase-4/wave-optics-fix-12`, PR #153): new `four-wave-mixing.ts` (FOPA G 512.10 = 27.09 dB, RK4-checked; peak cosh²γPL),
     `slab-waveguide.ts` (b 0.453753 at V 1, 0.791313 at 2.4), `injection-locking.ts` (−3.162 … +1 GHz), co-directional transfer (0.5 at 2.2214 mm); 973 tests.
   - Wave-optics fix part 11 (session 121, `phase-4/wave-optics-fix-11`, PR #152): new `three-wave.ts` (SFG 9.0637 µW part 0, 91.87 µW PPLN default;

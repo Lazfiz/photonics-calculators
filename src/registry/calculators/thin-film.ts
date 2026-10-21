@@ -159,12 +159,15 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "bragg-reflector",
     title: "Bragg Reflector",
-    description: "Dielectric distributed Bragg reflector — reflectance spectrum and stopband design.",
+    description: "Dielectric distributed Bragg reflector: reflectance spectrum, stop band and period, and the band structure of the 1D photonic crystal with its gap/midgap ratio and Bloch decay per period.",
+    keywords: ["Photonic Bandgap"],
     tier: "exact",
-    modelNote: "Transfer matrix of an (HL)^N quarter-wave stack at normal incidence with constant, lossless indices; back surface ignored. Peak R and the stop-band edges (of an infinite stack) are closed forms.",
+    modelNote: "Transfer matrix of an (HL)^N quarter-wave stack at normal incidence with constant, lossless indices; back surface ignored. Peak R, the stop-band edges, the gap/midgap ratio and the Bloch decay ln(n_H/n_L) are closed forms for the infinite stack; the band diagram is its exact Bloch dispersion.",
     references: [
       macleod("ch. 2 and ch. 6 (quarter-wave stack, high-reflectance zone)"),
       bornWolf("§1.6.5 (periodically stratified media)"),
+      { citation: "Yeh P., Yariv A., Hong C.-S. (1977). Electromagnetic propagation in periodic stratified media. I. General theory. J. Opt. Soc. Am. 67, 423–438.", url: "https://doi.org/10.1364/JOSA.67.000423" },
+      { citation: "Joannopoulos J. D., Johnson S. G., Winn J. N., Meade R. D. (2008). Photonic Crystals: Molding the Flow of Light, 2nd ed., ch. 4. Princeton University Press." },
     ],
   },
   {

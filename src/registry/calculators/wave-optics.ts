@@ -148,11 +148,6 @@ export const waveOptics: CalculatorEntry[] = [
     ],
   },
   {
-    slug: "etalon-finesse",
-    title: "Etalon / Fabry-Pérot Analysis",
-    description: "Detailed etalon transmission, finesse, and spectral properties.",
-  },
-  {
     slug: "filamentation",
     title: "Filamentation Dynamics",
     description: "Where a femtosecond filament starts: critical power for self-focusing, peak power against it, and the Marburger collapse distance of a collimated or lens-focused Gaussian beam.",
@@ -289,12 +284,6 @@ export const waveOptics: CalculatorEntry[] = [
     ],
   },
   {
-    slug: "interferometer",
-    title: "Interferometer Visibility",
-    description: "Michelson / Mach-Zehnder interferometer intensity vs path difference. Visibility limited by mirror reflectivity.",
-    knownIssue: "Switching between Michelson and Mach-Zehnder or changing mirror R2 does not update the fringes, phase, visibility or plot until another input changes. The current-point marker lies outside the plot.",
-  },
-  {
     slug: "kerr-lens",
     title: "Kerr Lens Mode Locking",
     description: "Thin Kerr lens of a Gaussian beam, f = πw⁴/(8n₂PL), with the on-axis nonlinear phase, the critical power for self-focusing and the Rayleigh range in the crystal.",
@@ -422,12 +411,6 @@ export const waveOptics: CalculatorEntry[] = [
     ],
   },
   {
-    slug: "photonic-bandgap",
-    title: "Photonic Bandgap",
-    description: "1D photonic crystal band structure and reflectivity.",
-    knownIssue: "The transmission chart disagrees with the result cards: its stop band is about 20 % wide instead of 53 %, its centre transmission is 100 times too high, and it jumps at the band edges.",
-  },
-  {
     slug: "q-switched-laser",
     title: "Q-Switched Laser",
     description: "Q-switched laser: peak and average power and duty cycle of a pulse train, plus pulse energy, width and peak power from the Q-switch rate equations.",
@@ -491,8 +474,16 @@ export const waveOptics: CalculatorEntry[] = [
   {
     slug: "slow-light",
     title: "Slow Light Structures",
-    description: "Group velocity reduction in photonic crystals and EIT media.",
-    knownIssue: "The wavelength input has no effect on any result, and the dispersion plot is an illustrative Lorentzian fixed at 193.4 THz. Delay per mm shows NaN when the structure length is 0.",
+    description: "Slow light: group delay τ = n_gL/c, group velocity and delay-bandwidth product from a group index, or from a Lorentzian resonance (Brillouin gain, EIT window) whose delay is G/Γ.",
+    keywords: ["group index", "group velocity", "Brillouin slow light", "EIT", "fast light", "optical buffer", "delay-bandwidth product"],
+    tier: "textbook",
+    modelNote: "τ = n_gL/c and v_g = c/n_g are exact. The resonance is one isolated Lorentzian line with a causal (Kramers–Kronig) phase, a lossless background and a signal narrower than the line; pulse distortion, saturation and the background's own dispersion are not modelled.",
+    references: [
+      { citation: "Okawachi Y., Bigelow M. S., Sharping J. E. et al. (2005). Tunable all-optical delays via Brillouin slow light in an optical fiber. Phys. Rev. Lett. 94, 153902.", url: "https://doi.org/10.1103/PhysRevLett.94.153902" },
+      { citation: "Tucker R. S., Ku P.-C., Chang-Hasnain C. J. (2005). Slow-light optical buffers: capabilities and fundamental limitations. J. Lightwave Technol. 23, 4046–4066.", url: "https://doi.org/10.1109/JLT.2005.853125" },
+      { citation: "Hau L. V., Harris S. E., Dutton Z., Behroozi C. H. (1999). Light speed reduction to 17 metres per second in an ultracold atomic gas. Nature 397, 594–598.", url: "https://doi.org/10.1038/17561" },
+      { citation: "Baba T. (2008). Slow light in photonic crystals. Nat. Photonics 2, 465–473.", url: "https://doi.org/10.1038/nphoton.2008.146" },
+    ],
   },
   {
     slug: "solid-state-laser-resonator",

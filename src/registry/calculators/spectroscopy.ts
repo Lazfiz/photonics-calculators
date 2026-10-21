@@ -162,6 +162,7 @@ export const spectroscopy: CalculatorEntry[] = [
     slug: "etalon-fsr",
     title: "Etalon Free Spectral Range",
     description: "Fabry-Pérot etalon: FSR = λ²/(2nd cos θ). Transmission follows the Airy function.",
+    keywords: ["Etalon / Fabry-Pérot Analysis"],
     tier: "exact",
     modelNote: "Ideal etalon: lossless identical mirrors without reflection phase, non-dispersive gap, plane-wave illumination; absorption, flatness and beam divergence lower the real finesse.",
     references: [
@@ -338,11 +339,16 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "michelson-interferometer",
     title: "Michelson Interferometer",
-    description: "Interferogram of Gaussian spectral lines and the spectrum recovered by cosine transform: resolution 1/L, resolving power, Nyquist aliasing and fringe visibility.",
+    description: "Interferogram of Gaussian spectral lines and the spectrum recovered by cosine transform: resolution 1/L, resolving power, Nyquist aliasing and fringe visibility. Two-beam fringes of a Michelson or Mach-Zehnder interferometer with their visibility.",
     lede: "Interferogram → spectrum via Fourier transform. Core of FTIR spectroscopy.",
+    keywords: ["Interferometer Visibility"],
     tier: "exact",
-    modelNote: "Ideal two-beam interferometer with Gaussian lines, sampled single-sided from zero path difference; no beam divergence, phase error or detector response.",
-    references: [{ citation: "Griffiths P. R., de Haseth J. A. (2007). Fourier Transform Infrared Spectrometry, 2nd ed., chs. 2 and 4. Wiley." }],
+    modelNote: "Ideal two-beam interferometer with Gaussian lines, sampled single-sided from zero path difference; no beam divergence, phase error or detector response. Fringes: lossless splitters and plane waves, visibility from the beam powers and the line's coherence.",
+    references: [
+      { citation: "Griffiths P. R., de Haseth J. A. (2007). Fourier Transform Infrared Spectrometry, 2nd ed., chs. 2 and 4. Wiley." },
+      { citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed., ch. 7 (two-beam interference) and ch. 10 (partial coherence). Cambridge University Press.", url: "https://doi.org/10.1017/CBO9781139644181" },
+      { citation: "Hariharan P. (2003). Optical Interferometry, 2nd ed., ch. 2. Academic Press." },
+    ],
   },
   {
     slug: "microwave-spectroscopy",
