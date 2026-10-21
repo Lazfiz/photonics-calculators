@@ -5,7 +5,7 @@ evidence and the logs of sessions 1–40. Don't read it at session start (≈ 50
 needs old evidence. When a stage is done, tick it here with one line (session, branch, PR, headline numbers). The detail
 goes in the PR description.
 
-## Status (session 125, 2026-10-21)
+## Status (session 126, 2026-10-21)
 - Phases 0–1 are done.
 - Phase 2: the registry, trust data and the duplicate merge are done. The physics modules grow with each Phase 4 stage.
 - Phase 3 hasn't started. Phase 4 is ongoing.
@@ -21,10 +21,10 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
-| materials | 4 / 40 | part 0 audit (session 124): 39 `knownIssue`s, 18 merges decided; fix part 1 done (session 125); parts 2–9 next |
+| materials | 5 / 37 | part 0 audit (session 124): 39 `knownIssue`s, 18 merges decided; fix parts 1–2 done (sessions 125–126); parts 3–9 next |
 | wave-optics | 37 / 37 | done: part 0 audit (session 110), fix parts 1–13 (sessions 111–123); open findings below |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **387 / 424** | 34 `knownIssue`s (materials) |
+| **total** | **388 / 421** | 30 `knownIssue`s (materials) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -46,10 +46,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - [ ] **Materials fix parts** (part 0 audit, session 124, PR #155: per-page findings, golden values and references are
   in the PR description; OK pages: brewster-tir, thermal-expansion). Every merge below is a user decision (session 124)
   and gets a redirect. Every page: clamp URL values, material in the URL, physics into `src/physics/materials/` (or reuse the named module), golden test, tier +
-  `modelNote` + references, drop the `knownIssue`. About 4 pages each; 45 → 27 pages (40 after part 1).
-  2. Windows: chalcogenide-glass + fluoride-glass → infrared-glass (As₂S₃ Rodney 1958: n(4 µm) 2.4112; a sourced ZBLAN
-     set, n_d 1.499); uv-materials + transparency-range → one window page (LiF, CsI Li 1976, MgF₂ Dodge; Fresnel limit
-     2n/(n² + 1), Ge 47.0 %).
+  `modelNote` + references, drop the `knownIssue`. About 4 pages each; 45 → 27 pages (37 after part 2).
   3. Uniaxial: birefringent-crystals + crystal-birefringence → one n(λ)/Δn page on `uniaxial-data` (+ BBO Eimerl, KDP
      Zernike); calcite-properties + quartz-crystal + sapphire-properties → one crystal page (walk-off −6.23° at 45°,
      quartz rotation 21.72°/mm); diamond-optics (Peter 2.4173, plate T 0.706, hardness 98 GPa).
@@ -82,6 +79,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 **Materials**
 - `optical-glass-catalog`: the TIE-19 limits (−100 to +140 °C; data sheets tabulate dn/dT 435.8–1060 nm) are from memory, since the
   TIE-19 PDF doesn't download to scripts. Check them in Chrome (SCHOTT TIE-19 or an N-BK7 data sheet), then drop this note.
+- `infrared-glass`: As₂S₃, ZBLAN and AMTIR-1 have no sourced transmission band, dn/dT, conductivity or hardness (Amorphous
+  Materials' site doesn't serve scripts); AMTIR-1 n(10 µm) 2.4981 is unchecked. Gan's ZBLAN formula gives n_d 1.5011, the audit's
+  1.499 is unverified (Gan 1995 is paywalled). Crystran's fused-silica "1.47012 at 4 µm" is n at 0.4 µm (Malitson).
 **Wave optics**
 - `injection-locking`: default k_c/2π 10 GHz is an order-of-magnitude diode value, not sourced; k_c(R, τ_in) conventions differ
   by O(1) factors between Lang, Mogensen and Schunk, so it stays an input. `four-wave-mixing`: no fiber loss in the gain (lossless OPA).
@@ -208,6 +208,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Materials fix part 2 (session 126, `phase-4/materials-fix-2`, PR #157): chalcogenide-glass, fluoride-glass → infrared-glass; uv-materials → transparency-range (window page, Fresnel limit 2n/(n²+1), Ge 47.0 %); `window-materials.ts` (Crystran table), `TransmissionBands`; As₂S₃ Rodney, ZBLAN Gan, LiF/KBr/CsI Li in `sellmeier-data`; 988 tests.
   - Materials fix part 1 (session 125, `phase-4/materials-fix-1`, PR #156): gvd, group-index, sellmeier → chromatic-dispersion (presets, coefficients, n(λ) compare); abbe-number, thermal-dndt → optical-glass-catalog (V_d of glasses + crystals, FS 67.82; TIE-19 `schottDeltaN`, N-BK7 Δn 20→60 °C 6.997e-5); diamond range 644 nm + DOI; 983 tests.
   - Materials audit part 0 (session 124, `phase-4/materials-audit`, PR #155): 41 untiered pages in 6 reviewer batches, 30 bugs / 9 questionable / 2 OK, 39 `knownIssue`s, 13 descriptions and 3 titles restored; 18 merges decided; fix parts 1–9 planned.
   - Wave-optics fix part 13 (session 123, `phase-4/wave-optics-fix-13`, PR #154): new `photonic-crystal.ts` (gap/midgap 52.68 %, κ ln(n_H/n_L), TMM tanh²(Nκ)),

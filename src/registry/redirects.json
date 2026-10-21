@@ -100,5 +100,8 @@
   "/materials/group-index": "/materials/chromatic-dispersion",
   "/materials/sellmeier": "/materials/chromatic-dispersion",
   "/materials/abbe-number": "/materials/optical-glass-catalog",
-  "/materials/thermal-dndt": "/materials/optical-glass-catalog"
+  "/materials/thermal-dndt": "/materials/optical-glass-catalog",
+  "/materials/chalcogenide-glass": "/materials/infrared-glass",
+  "/materials/fluoride-glass": "/materials/infrared-glass",
+  "/materials/uv-materials": "/materials/transparency-range"
 }
