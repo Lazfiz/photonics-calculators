@@ -18,7 +18,11 @@ export interface UniaxialCrystal {
 }
 
 // Ghosh writes n² = A + Bλ²/(λ² − C) + Dλ²/(λ² − E); Zelmon and Lomheim n² − 1 = Σ Bλ²/(λ² − C);
-// DeVore n² = A + B/(λ² − C); Dodge and Malitson n² − 1 = Σ Bλ²/(λ² − λᵢ²). λ in µm.
+// DeVore n² = A + B/(λ² − C); Dodge and Malitson n² − 1 = Σ Bλ²/(λ² − λᵢ²); Eimerl n² = A + B/(λ² − C) − Dλ²;
+// Zernike n² = A + B₁λ²/(λ² − C₁) + B₂/(λ² − C₂). λ in µm.
+const zernike = (A: number, B1: number, C1: number, B2: number, C2: number) =>
+  fromSquaredForm(A - B2 / C2, [B1, B2 / C2], [C1, C2], [0.2138, 1.529]);
+
 export const UNIAXIAL_CRYSTALS = {
   quartz: {
     name: "Crystal quartz (α-SiO₂)",
@@ -70,6 +74,20 @@ export const UNIAXIAL_CRYSTALS = {
     e: fromPoleForm(7.197, [0.3322], [0.0843], [0.43, 1.53]),
     reference: "J. R. DeVore, J. Opt. Soc. Am. 41, 416 (1951), doi:10.1364/JOSA.41.000416",
     temperature_C: null,
+  },
+  bbo: {
+    name: "β-barium borate (BBO)",
+    o: fromPoleForm(2.7405, [0.0184], [0.0179], [0.22, 1.06], -0.0155),
+    e: fromPoleForm(2.373, [0.0128], [0.0156], [0.22, 1.06], -0.0044),
+    reference: "D. Eimerl, L. Davis, S. Velsko, E. K. Graham, A. Zalkin, J. Appl. Phys. 62, 1968 (1987), doi:10.1063/1.339536",
+    temperature_C: null,
+  },
+  kdp: {
+    name: "Potassium dihydrogen phosphate (KDP)",
+    o: zernike(2.259276, 13.00522, 400, 0.01008956, 0.0129426),
+    e: zernike(2.132668, 3.2279924, 400, 0.008637494, 0.012281),
+    reference: "F. Zernike, J. Opt. Soc. Am. 54, 1215 (1964), doi:10.1364/JOSA.54.001215",
+    temperature_C: 24.8,
   },
 } as const satisfies Record<string, UniaxialCrystal>;
 

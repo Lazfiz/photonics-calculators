@@ -103,5 +103,9 @@
   "/materials/thermal-dndt": "/materials/optical-glass-catalog",
   "/materials/chalcogenide-glass": "/materials/infrared-glass",
   "/materials/fluoride-glass": "/materials/infrared-glass",
-  "/materials/uv-materials": "/materials/transparency-range"
+  "/materials/uv-materials": "/materials/transparency-range",
+  "/materials/crystal-birefringence": "/materials/birefringent-crystals",
+  "/materials/calcite-properties": "/materials/crystal-properties",
+  "/materials/quartz-crystal": "/materials/crystal-properties",
+  "/materials/sapphire-properties": "/materials/crystal-properties"
 }

@@ -1,111 +1,120 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import ChartPanel from "../../../components/chart-panel";
+import ResultCard from "../../../components/result-card";
+import TransmissionBands from "../../../components/transmission-bands";
+import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
-// Diamond Sellmeier: D. D. Duvvuri, et al.
-const sellmeierN = (wl_um: number) => {
-  const l2 = wl_um * wl_um;
-  return Math.sqrt(1 + 0.3306 * l2 / (l2 - 0.0) + 4.3356 * l2 / (l2 - 0.0) + 0.0);
-};
-// Simplified: n ≈ 2.38 + small dispersion. Use measured values instead.
-const diamondN = (wl_nm: number) => {
-  // Approximation from data
-  const wl_um = wl_nm / 1000;
-  return 2.38 + 0.03 / (wl_um * wl_um) - 0.0005;
-};
+import { CRYSTAL_SHEETS, DIAMOND_IR_SOURCE, DIAMOND_RANGE, diamondIndex } from "../../../physics/materials/crystal-properties";
+import { MATERIALS } from "../../../physics/materials/sellmeier-data";
+import { WINDOW_MATERIALS, fresnelLimitTransmission, transmits } from "../../../physics/materials/window-materials";
 
-const diamondData = {
-  n589: 2.4175, // at 589nm
-  n500: 2.4264,
-  n400: 2.4630,
-  n300: 2.5410,
-  n200: 2.7150,
-  n10600: 2.3819,
-  thermalCond: { value: 2200, unit: "W/(m·K)" }, // type IIa at RT
-  hardness: { value: 10000, unit: "kg/mm² (Vickers)" },
-  bandgap: 5.47, // eV
-  dn_dT: 1.0e-6, // ×10⁻⁶/K
-  thermalExpansion: 0.8e-6, // ×10⁻⁶/K
-  transmission: [0.225, 5000], // nm (UV cutoff to thermal)
-  lattice: 3.567, // Å
-  density: 3.515, // g/cm³
-};
+const WAVELENGTH_MIN_NM = 226;
+const WAVELENGTH_MAX_NM = 20000;
+const CHART_POINTS = 200;
+const BAND_GAP_EV = 5.47; // indirect, room temperature (Clark, Dean & Harris 1964)
+const sheet = CRYSTAL_SHEETS.diamond;
+const diamond = WINDOW_MATERIALS.diamond;
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const round6 = (x: number) => Math.round(x * 1e6) / 1e6;
+
+/** n(λ) on a log grid over 226 nm–20 µm, with a marker at the current λ. */
+function indexChart(lambdaUm: number, n: number) {
+  const [lo, hi] = DIAMOND_RANGE.map((x) => x * 1e6);
+  const um = Array.from({ length: CHART_POINTS + 1 }, (_, k) => lo * (hi / lo) ** (k / CHART_POINTS));
+  const traces = [{
+    x: um.map(round6), y: um.map((x) => round6(diamondIndex(x * 1e-6).n)), type: "scatter", mode: "lines", name: "n",
+    line: { color: "#60a5fa", width: 2 },
+  }];
+  if (!Number.isFinite(n)) return traces;
+  return [...traces, { x: [round6(lambdaUm)], y: [round6(n)], type: "scatter", mode: "markers", name: "λ", line: { color: "#f87171" }, marker: { color: "#f87171", size: 9 } }];
+}
 
 export default function DiamondOpticsPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 589);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 589); // nm
+  const wavelength = clamp(wavelengthRaw, WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM, 589);
+  const lambda = wavelength * 1e-9;
+  const { n, source } = diamondIndex(lambda);
+  const T = fresnelLimitTransmission(n);
+  const R = ((n - 1) / (n + 1)) ** 2;
+  const inBand = transmits(diamond, lambda);
 
-  const n = useMemo(() => diamondN(wavelength), [wavelength]);
-
-  const dispersionChart = useMemo(() => {
-    const wls = Array.from({ length: 300 }, (_, i) => 150 + i * 15);
-    const ns = wls.map(diamondN);
-    return {
-      data: [{ x: wls, y: ns, type: "scatter" as const, mode: "lines" as const, line: { color: "#60a5fa" } },
-        { x: [wavelength], y: [n], type: "scatter" as const, mode: "markers" as const, marker: { color: "#f87171", size: 12 } }],
-      layout: { ...baseLayout, xaxis: { ...baseLayout.xaxis, title: { text: "Wavelength (nm)", font: { color: "#9ca3af" } } }, yaxis: { ...baseLayout.yaxis, title: { text: "Refractive Index n", font: { color: "#9ca3af" } } }, title: { text: "Diamond Dispersion", font: { color: "#e5e7eb" } } }
-    };
-  }, [wavelength, n]);
-
-  const compareChart = useMemo(() => {
-    const materials = ["Diamond", "Sapphire", "SiC", "ZnSe", "Ge"];
-    const n_vals = [2.42, 1.77, 2.65, 2.40, 4.00];
-    const tc_vals = [2200, 35, 490, 18, 60];
-    return {
-      data: [
-        { x: materials, y: n_vals, type: "bar" as const, name: "n (at 589nm)", marker: { color: "#60a5fa" }, yaxis: "y" },
-        { x: materials, y: tc_vals, type: "bar" as const, name: "κ (W/m·K)", marker: { color: "#f87171" }, yaxis: "y2" },
-      ],
-      layout: { ...baseLayout, barmode: "group" as const, yaxis: { ...baseLayout.yaxis, title: { text: "n", font: { color: "#60a5fa" } } }, yaxis2: { title: { text: "W/(m·K)", font: { color: "#f87171" } }, overlaying: "y" as const, side: "right" as const, gridcolor: "rgba(0,0,0,0)" }, title: { text: "Diamond vs Other IR Materials", font: { color: "#e5e7eb" } } }
-    };
-  }, []);
-
-  // Two-photon absorption edge
-  const tpaChart = useMemo(() => {
-    const wls = Array.from({ length: 100 }, (_, i) => 200 + i * 10);
-    const T = wls.map(wl => {
-      if (wl < 225) return 0;
-      if (wl < 250) return ((wl - 225) / 25) ** 2;
-      return 0.99 - 0.03 * Math.exp(-(wl - 250) / 100);
-    });
-    return {
-      data: [{ x: wls, y: T.map(t => t * 100), type: "scatter" as const, mode: "lines" as const, fill: "tozeroy" as const, fillcolor: "rgba(96,165,250,0.15)", line: { color: "#60a5fa" } }],
-      layout: { ...baseLayout, xaxis: { ...baseLayout.xaxis, title: { text: "Wavelength (nm)", font: { color: "#9ca3af" } } }, yaxis: { ...baseLayout.yaxis, title: { text: "Transmission (%)", font: { color: "#9ca3af" } }, range: [0, 100] }, title: { text: "Diamond Transmission (1mm thick)", font: { color: "#e5e7eb" } } }
-    };
-  }, []);
+  const chart = useMemo(() => indexChart(wavelength / 1000, n), [wavelength, n]);
+  const bandRows = [{ key: "diamond", name: "Diamond", selected: true, bands: sheet.bands.map(([a, b]) => [a * 1e6, b * 1e6] as const) }];
+  const properties: [string, string][] = [
+    ["Indirect band gap", `${BAND_GAP_EV} eV (absorption edge ≈ 227 nm)`],
+    ["Thermal conductivity", `${sheet.conductivity.para} W/(m·K) at 273 K`],
+    ["dn/dT", `+${+(sheet.dnDT.para * 1e6).toPrecision(3)} ×10⁻⁶/K`],
+    ["Thermal expansion", `${+(sheet.expansion.para * 1e6).toPrecision(3)} ×10⁻⁶/K at 293 K`],
+    ["Knoop hardness", `${sheet.knoop} kg/mm² (with orientation)`],
+    ["Young's modulus", `${sheet.youngs_GPa.para} GPa`],
+    ["Density", `${sheet.density_g_cm3} g/cm³`],
+    ["Specific heat", `${sheet.specificHeat_J_kgK} J/(kg·K) at 273 K`],
+    ["Melting point", `${sheet.meltingPoint_C} °C (${sheet.meltingNote})`],
+  ];
 
   return (
     <>
-            
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 bg-gray-900 rounded-lg">
-        <div><div className="text-gray-400 text-xs">n at {wavelength}nm</div><div className="text-2xl font-bold text-blue-400">{n.toFixed(4)}</div></div>
-        <div><div className="text-gray-400 text-xs">Thermal Cond.</div><div className="text-2xl font-bold text-red-400">{diamondData.thermalCond.value} W/(m·K)</div></div>
-        <div><div className="text-gray-400 text-xs">Bandgap</div><div className="text-2xl font-bold">{diamondData.bandgap} eV</div></div>
-        <div><div className="text-gray-400 text-xs">Hardness</div><div className="text-xl font-bold">{(diamondData.hardness.value / 1000).toFixed(0)} GPa</div></div>
+      <div className="grid gap-4 sm:grid-cols-2 mb-6">
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={WAVELENGTH_MIN_NM} max={WAVELENGTH_MAX_NM} step="1" />
+        <div className="text-xs text-gray-500 self-end">
+          {source === "peter" ? MATERIALS.diamond.reference : source === "palik" ? `${DIAMOND_IR_SOURCE}, interpolated` : "Outside 226 nm–20 µm."}
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 bg-gray-900 rounded-lg">
-        <div><div className="text-gray-400 text-xs">Lattice Constant</div><div className="text-lg">{diamondData.lattice} Å</div></div>
-        <div><div className="text-gray-400 text-xs">Density</div><div className="text-lg">{diamondData.density} g/cm³</div></div>
-        <div><div className="text-gray-400 text-xs">dn/dT</div><div className="text-lg">{diamondData.dn_dT > 0 ? "+" : ""}{diamondData.dn_dT}×10⁻⁶/K</div></div>
-        <div><div className="text-gray-400 text-xs">CTE</div><div className="text-lg">{diamondData.thermalExpansion}×10⁻⁶/K</div></div>
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <ResultCard label={`n at ${wavelength} nm`} value={Number.isFinite(n) ? n.toFixed(4) : "—"} tone="blue"
+          subtext={source === "peter" ? "Peter's Sellmeier formula" : "Palik's values"} />
+        <ResultCard label="Reflectance per surface" value={Number.isFinite(R) ? `${(100 * R).toFixed(2)} %` : "—"} tone="orange"
+          subtext="((n − 1)/(n + 1))², normal incidence" />
+        <ResultCard label="Fresnel-limited transmission" value={Number.isFinite(T) ? `${(100 * T).toFixed(1)} %` : "—"} tone="green"
+          subtext={inBand ? "2n/(n² + 1): uncoated plate, both surfaces, no absorption" : "inside an absorption band (multiphonon 2.5–7 µm or the UV edge): lower"} />
       </div>
 
-      <div className="mb-4">
-        <label className="text-sm text-gray-400">Wavelength: {wavelength} nm</label>
-        <input type="range" aria-label="Wavelength: {wavelength} nm" min={200} max={10000} value={wavelength} onChange={e => setWavelength(+e.target.value)} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="bg-gray-900 rounded-lg p-4">
+          <h3 className="text-lg font-semibold mb-3">Refractive index</h3>
+          <ChartPanel data={chart} layout={{
+            paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+            xaxis: { title: "Wavelength (µm)", type: "log", gridcolor: "#374151" },
+            yaxis: { title: "n", gridcolor: "#374151" },
+            margin: { t: 20, r: 20, b: 50, l: 60 }, height: 320,
+          }} />
+        </div>
+        <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+          <h3 className="text-lg font-semibold mb-3">Properties</h3>
+          <table className="w-full text-sm">
+            <tbody>
+              {properties.map(([k, v]) => (
+                <tr key={k}><td className="pr-4 py-1 text-gray-400">{k}</td><td className="py-1 text-gray-200">{v}</td></tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="text-xs text-gray-500 mt-2">Crystran data sheet (type IIa); band gap from Clark, Dean &amp; Harris (1964).</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ChartPanel data={dispersionChart.data} layout={dispersionChart.layout} config={plotConfig} />
-        <ChartPanel data={tpaChart.data} layout={tpaChart.layout} config={plotConfig} />
-        <div className="lg:col-span-2">
-          <ChartPanel data={compareChart.data} layout={compareChart.layout} config={plotConfig} />
+      <div className="bg-gray-900 rounded-lg p-4 mb-6">
+        <h3 className="text-lg font-semibold mb-3">Transmission bands</h3>
+        <TransmissionBands rows={bandRows} markerUm={wavelength / 1000} />
+        <p className="text-xs text-gray-500 mt-2">Type IIa, Crystran: 0.3–2.5 µm and 7 to beyond 100 µm. Poorer samples may cut off at 350 nm.</p>
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2">
+          <p className="font-mono">n² = 1 + 0.3306 λ²/(λ² − 0.175²) + 4.3356 λ²/(λ² − 0.106²)  (λ in µm, 226–644 nm),  T_max = 2n/(n² + 1)</p>
+          <p>
+            Below 644 nm the index is Peter&apos;s Sellmeier formula, fitted to his own measurements; beyond it, Palik&apos;s
+            tabulated values (0.656–20 µm) interpolated linearly in wavelength. Diamond is cubic, so it has one index. An uncoated,
+            non-absorbing plate with both surfaces&apos; multiple reflections added in intensity transmits at most
+            T = 2n/(n² + 1): about 71 % in the visible. Absorption in the two- and three-phonon band (2.5–7 µm), near the UV
+            edge and from nitrogen impurities (type I diamond) lowers it.
+          </p>
         </div>
       </div>
     </>
   );
 }
-
-const baseLayout = { paper_bgcolor: "#030712", plot_bgcolor: "#111827", font: { color: "#d1d5db" }, xaxis: { gridcolor: "#1f2937", zerolinecolor: "#374151" }, yaxis: { gridcolor: "#1f2937", zerolinecolor: "#374151" }, margin: { t: 50, r: 20, b: 50, l: 60 }, legend: { font: { color: "#9ca3af" }, bgcolor: "rgba(0,0,0,0)" } };
-const plotConfig = { responsive: true, displayModeBar: false };

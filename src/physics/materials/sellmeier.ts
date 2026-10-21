@@ -6,9 +6,10 @@
  *
  * Form (λ in µm, Cᵢ in µm²): n² = A + Σ Bᵢ λ²/(λ² − Cᵢ). Data sets published as resonance wavelengths λᵢ
  * have Cᵢ = λᵢ²; sets written as n² = A′ + Σ Bᵢ′/(λ² − Cᵢ) convert with Bᵢ = Bᵢ′/Cᵢ, A = A′ − Σ Bᵢ′/Cᵢ
- * (since B′/(λ² − C) = (B′/C)(λ²/(λ² − C) − 1)).
+ * (since B′/(λ² − C) = (B′/C)(λ²/(λ² − C) − 1)). A few sets add an infrared term Kλ² (K < 0, a resonance far
+ * beyond the fit range), e.g. Eimerl's BBO n² = A′ + B′/(λ² − C) − Dλ²: K = −D.
  *
- * Derivatives, with f = n²: f′ = −Σ 2BᵢCᵢλ/(λ² − Cᵢ)², f″ = Σ 2BᵢCᵢ(3λ² + Cᵢ)/(λ² − Cᵢ)³,
+ * Derivatives, with f = n²: f′ = −Σ 2BᵢCᵢλ/(λ² − Cᵢ)² + 2Kλ, f″ = Σ 2BᵢCᵢ(3λ² + Cᵢ)/(λ² − Cᵢ)³ + 2K,
  * n′ = f′/(2n), n″ = (f″/2 − n′²)/n.
  * Group index n_g = n − λn′. Group-velocity dispersion β₂ = λ³ n″/(2πc²) and dispersion parameter
  * D = −(λ/c) n″ = −2πc β₂/λ² (Agrawal, Nonlinear Fiber Optics, §1.2.3; Saleh & Teich, Fundamentals of
@@ -27,6 +28,8 @@ export interface SellmeierModel {
   B: readonly number[];
   /** Resonance terms Cᵢ, µm². */
   C: readonly number[];
+  /** Coefficient K of an infrared term Kλ² of n², µm⁻² (absent: 0). */
+  K?: number;
   /** Wavelength range of the fit, m. */
   range: readonly [number, number];
 }
@@ -49,12 +52,13 @@ export function fromResonanceWavelengths(
   return { A, B, C: lambdas_um.map((l) => l * l), range: [range_um[0] * 1e-6, range_um[1] * 1e-6] };
 }
 
-/** Model from n² = A′ + Σ Bᵢ′/(λ² − Cᵢ) (λ in µm, Cᵢ in µm²). Range in µm. */
+/** Model from n² = A′ + Σ Bᵢ′/(λ² − Cᵢ) + Kλ² (λ in µm, Cᵢ in µm², K in µm⁻²). Range in µm. */
 export function fromPoleForm(
-  Aprime: number, Bprime: readonly number[], C: readonly number[], range_um: readonly [number, number],
+  Aprime: number, Bprime: readonly number[], C: readonly number[], range_um: readonly [number, number], K = 0,
 ): SellmeierModel {
   const B = Bprime.map((b, i) => b / C[i]);
-  return { A: Aprime - B.reduce((s, b) => s + b, 0), B, C, range: [range_um[0] * 1e-6, range_um[1] * 1e-6] };
+  const model = { A: Aprime - B.reduce((s, b) => s + b, 0), B, C, range: [range_um[0] * 1e-6, range_um[1] * 1e-6] as const };
+  return K === 0 ? model : { ...model, K };
 }
 
 /** Model from coefficients as printed: n² = A + Σ Bᵢλ²/(λ² − Cᵢ) with Cᵢ in µm². Range in µm. */
@@ -71,9 +75,10 @@ export function inRange(model: SellmeierModel, lambda: number): boolean {
 /** n², f′ and f″ at λ in µm (derivatives per µm). */
 function terms(model: SellmeierModel, x: number) {
   const x2 = x * x;
-  let f = model.A;
-  let f1 = 0;
-  let f2 = 0;
+  const K = model.K ?? 0;
+  let f = model.A + K * x2;
+  let f1 = 2 * K * x;
+  let f2 = 2 * K;
   for (let i = 0; i < model.B.length; i++) {
     const B = model.B[i];
     const C = model.C[i];

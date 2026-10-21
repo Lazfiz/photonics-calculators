@@ -22,8 +22,29 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "birefringent-crystals",
     title: "Birefringent Crystals",
-    description: "Ordinary (nₒ) and extraordinary (nₑ) refractive indices",
-    knownIssue: "The Sellmeier sets are mis-transcribed for most crystals: quartz uses fused-silica data, and the calcite, BBO, KDP, LiNbO₃ and rutile indices are wrong by up to 0.5.",
+    description: "Ordinary and extraordinary indices nₒ, nₑ and birefringence Δn = nₑ − nₒ versus wavelength for nine uniaxial crystals (quartz, calcite, MgF₂, sapphire, YVO₄, LiNbO₃, rutile, BBO, KDP) from published Sellmeier fits, with plate retardance.",
+    lede: "nₒ(λ) and nₑ(λ) from each crystal's published Sellmeier formula; Δn = nₑ − nₒ, and a plate of thickness d with the optic axis in its face retards by |Δn|·d/λ waves.",
+    keywords: ["Ordinary and Extraordinary Index", "Birefringence Δn", "BBO and KDP Refractive Index", "Crystal Birefringence Data"],
+    tier: "exact",
+    modelNote: "Exact for each published Sellmeier fit inside its wavelength range (outside it the page shows no value); the fits match measurements to about 1e-4 in n. Retardance assumes normal incidence with the optic axis in the plate face, at the fit's temperature.",
+    references: [
+      {
+        citation: "refractiveindex.info database (CC0). Sellmeier data sets, each with its original reference shown on the page.",
+        url: "https://refractiveindex.info",
+      },
+      {
+        citation: "Ghosh G. (1999). Dispersion-equation coefficients for the refractive index and birefringence of calcite and quartz crystals. Opt. Commun. 163, 95–102.",
+        url: "https://doi.org/10.1016/S0030-4018(99)00091-7",
+      },
+      {
+        citation: "Eimerl D., Davis L., Velsko S., Graham E. K., Zalkin A. (1987). Optical, mechanical, and thermal properties of barium borate. J. Appl. Phys. 62, 1968–1983.",
+        url: "https://doi.org/10.1063/1.339536",
+      },
+      {
+        citation: "Zernike F. (1964). Refractive indices of ammonium dihydrogen phosphate and potassium dihydrogen phosphate between 2000 Å and 1.5 µ. J. Opt. Soc. Am. 54, 1215–1220.",
+        url: "https://doi.org/10.1364/JOSA.54.001215",
+      },
+    ],
   },
   {
     slug: "brewster-tir",
@@ -34,7 +55,7 @@ export const materials: CalculatorEntry[] = [
       { href: "/materials/aging-effects" },
       { href: "/materials/birefringent-crystals" },
       { href: "/materials/brillouin-scattering" },
-      { href: "/materials/calcite-properties" },
+      { href: "/materials/crystal-properties" },
     ],
   },
   {
@@ -42,12 +63,6 @@ export const materials: CalculatorEntry[] = [
     title: "Brillouin Scattering",
     description: "Stimulated Brillouin scattering (SBS): frequency shift, gain coefficient, and power threshold in optical fibers and bulk materials.",
     knownIssue: "The Brillouin shift is shown 1000 times too large, the gain formula omits the acoustic velocity, and the SBS threshold uses fixed placeholders for the effective area and length.",
-  },
-  {
-    slug: "calcite-properties",
-    title: "Calcite (CaCO₃) Properties",
-    description: "Uniaxial negative crystal with the largest birefringence of common optical crystals. Δn ≈ 0.172 at 589nm.",
-    knownIssue: "The ordinary and extraordinary indices come from a wrong formula, so calcite shows a birefringence of +0.03 instead of −0.17 and the walk-off angle is wrong.",
   },
   {
     slug: "chromatic-dispersion",
@@ -90,10 +105,35 @@ export const materials: CalculatorEntry[] = [
     knownIssue: "Wavelength has no effect, repeated cleaning makes contamination decay toward zero, and the ppm-based scatter and absorption coefficients are invented rather than sourced.",
   },
   {
-    slug: "crystal-birefringence",
-    title: "Crystal Birefringence Data",
-    description: "Δn = |nₒ − nₑ| for uniaxial and birefringent crystals at selected wavelength",
-    knownIssue: "Rutile and YVO₄ indices are wrong and the BBO values are for 1064 nm, not 589 nm. The indices do not change with the wavelength you enter.",
+    slug: "crystal-properties",
+    title: "Calcite, Quartz & Sapphire Properties",
+    description: "Uniaxial crystal data for calcite, crystal quartz and sapphire: nₒ, nₑ and Δn at any wavelength from published Sellmeier fits, e-ray walk-off and beam displacement for a cut angle, quartz optical rotation, and thermal and mechanical properties.",
+    lede: "Walk-off tan ρ = (nₒ² − nₑ²) sin 2θ / (2(nₑ² cos²θ + nₒ² sin²θ)), with nₒ and nₑ from the crystal's Sellmeier fit; quartz rotation ρ = kλ²/(λ² − λ₀²)².",
+    keywords: ["Walk-off Angle", "Beam Displacer", "Quartz Optical Rotation", "Calcite (CaCO₃) Properties", "Quartz Crystal (SiO₂) Properties", "Sapphire (Al₂O₃) Properties"],
+    tier: "textbook",
+    modelNote: "Indices from published Sellmeier fits (exact for the fit, inside its range); walk-off from the uniaxial index ellipsoid (exact). Quartz rotation is Chandrasekhar's one-oscillator fit to Lowry & Coode-Adams' measurements, 0.2 % high at 589 nm. Thermal and mechanical values are single room-temperature data-sheet values.",
+    references: [
+      {
+        citation: "Ghosh G. (1999). Dispersion-equation coefficients for the refractive index and birefringence of calcite and quartz crystals. Opt. Commun. 163, 95–102.",
+        url: "https://doi.org/10.1016/S0030-4018(99)00091-7",
+      },
+      {
+        citation: "Malitson I. H., Dodge M. J. (1972). Refractive index and birefringence of synthetic sapphire. J. Opt. Soc. Am. 62, 1405 (abstract); formula in Dodge M. J., Handbook of Laser Science and Technology, vol. IV, part 2 (CRC Press, 1986).",
+      },
+      {
+        citation: "Chandrasekhar S. (1952). The optical rotatory power of quartz and its variation with temperature. Proc. Indian Acad. Sci. A 35, 103–113.",
+        url: "https://doi.org/10.1007/BF03172225",
+      },
+      {
+        citation: "Lowry T. M., Coode-Adams W. R. C. (1927). Optical rotatory dispersion. Part III: the rotatory dispersion of quartz in the infra-red, visible and ultra-violet regions of the spectrum. Phil. Trans. R. Soc. A 226, 391–466.",
+        url: "https://doi.org/10.1098/rsta.1927.0010",
+      },
+      { citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed. Cambridge University Press. Ch. 15, optics of crystals." },
+      {
+        citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: transmission range, dn/dT, thermal conductivity and expansion, hardness, density, specific heat, Young's modulus.",
+        url: "https://www.crystran.com/optical-materials",
+      },
+    ],
   },
   {
     slug: "damage-threshold",
@@ -104,8 +144,27 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "diamond-optics",
     title: "Diamond Optics",
-    description: "Diamond — the ultimate optical material. Bandgap: 5.47 eV. n ≈ 2.42.",
-    knownIssue: "The refractive index comes from an ad hoc fit that is 0.05 too high at 589 nm, and hardness, dn/dT and thermal expansion are shown with wrong values or units.",
+    description: "Refractive index of diamond from 226 nm to 20 µm (Peter's Sellmeier formula, Palik's infrared values), Fresnel-limited window transmission, transmission bands, and thermal and mechanical properties.",
+    lede: "n(λ) from Peter's Sellmeier formula to 644 nm and Palik's tabulated values beyond; an uncoated, non-absorbing plate transmits at most 2n/(n² + 1).",
+    keywords: ["Diamond Refractive Index", "CVD Diamond Window"],
+    tier: "textbook",
+    modelNote: "Peter's Sellmeier fit is exact for the fit over his 226–644 nm; beyond that the index is interpolated linearly between Palik's values (to 20 µm, changes of a few 1e-4). Transmission is the lossless two-surface Fresnel limit; the 2.5–7 µm multiphonon band and impurities lower it. Properties are room-temperature data-sheet values.",
+    references: [
+      {
+        citation: "Peter F. (1923). Über Brechungsindizes und Absorptionskonstanten des Diamanten zwischen 644 und 226 mμ. Z. Phys. 15, 358–368.",
+        url: "https://doi.org/10.1007/BF01330487",
+      },
+      { citation: "Palik E. D. (ed.) (1985). Handbook of Optical Constants of Solids, vol. 1. Academic Press. Diamond, as tabulated by Crystran." },
+      {
+        citation: "Clark C. D., Dean P. J., Harris P. V. (1964). Intrinsic edge absorption in diamond. Proc. R. Soc. A 277, 312–329. Indirect band gap.",
+        url: "https://doi.org/10.1098/rspa.1964.0025",
+      },
+      {
+        citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: diamond: transmission range, dn/dT, thermal conductivity and expansion, Knoop hardness, density, specific heat, Young's modulus.",
+        url: "https://www.crystran.com/optical-materials",
+      },
+      { citation: "Born M., Wolf E. (1999). Principles of Optics, 7th ed. Cambridge University Press. Fresnel formulae at normal incidence." },
+    ],
   },
   {
     slug: "electro-optic",
@@ -221,12 +280,6 @@ export const materials: CalculatorEntry[] = [
     knownIssue: "The 1300 and 1550 nm losses of PMMA, polycarbonate and polystyrene are far too low, and the index fits differ from the listed values by up to 0.02.",
   },
   {
-    slug: "quartz-crystal",
-    title: "Quartz Crystal (SiO₂) Properties",
-    description: "Uniaxial positive, optically active, piezoelectric. Sellmeier dispersion for o & e rays.",
-    knownIssue: "The Sellmeier formula is not the cited Ghosh fit: indices are off by about 0.001 and the birefringence is up to twice too large in the infrared.",
-  },
-  {
     slug: "radiation-damage",
     title: "Radiation Damage Effects",
     description: "Radiation-induced absorption and transmission loss in optical materials",
@@ -243,12 +296,6 @@ export const materials: CalculatorEntry[] = [
     title: "Rare Earth Absorption Spectra",
     description: "Absorption cross-sections for common rare-earth dopants in silica: Er³⁺, Nd³⁺, Yb³⁺, Tm³⁺, Ho³⁺.",
     knownIssue: "The absorption coefficient is displayed 100 times too large, the Nd 1064 nm emission line is counted as absorption, and the Yb 975 nm cross-section is about 6 times too low.",
-  },
-  {
-    slug: "sapphire-properties",
-    title: "Sapphire (Al₂O₃) Properties",
-    description: "Uniaxial crystal. Sellmeier equations for ordinary and extraordinary rays.",
-    knownIssue: "Two extraordinary-ray Sellmeier terms are mis-transcribed, so nₑ and the birefringence are off in the UV, and the temperature chart is flat because dn/dT is scaled twice.",
   },
   {
     slug: "semiconductor-bandgap",
