@@ -9,7 +9,8 @@ import calculatorRedirects from "../src/registry/redirects.json";
 import { CATEGORY_IDS } from "../src/registry/types";
 
 const HREF = new RegExp(`^/(${CATEGORY_IDS.join("|")})/[a-z0-9]+(-[a-z0-9]+)*$`);
-const ANY_HREF = new RegExp(`/(${CATEGORY_IDS.join("|")})/[a-z0-9-]+`, "g");
+// Not after "physics" or "..": src/physics/<category>/<module> import paths mirror the hrefs (physics/materials/sellmeier).
+const ANY_HREF = new RegExp(`(?<!physics|\\.\\.)/(${CATEGORY_IDS.join("|")})/[a-z0-9-]+`, "g");
 const entries = Object.entries(calculatorRedirects as Record<string, string>);
 
 test("each redirect goes from a removed page to a registered calculator, in one hop", () => {
