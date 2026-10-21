@@ -1,29 +1,31 @@
-# Handover — 2026-10-21 (session 124 → session 125)
+# Handover — 2026-10-21 (session 125 → session 126)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 124: **materials audit part 0**, branch `phase-4/materials-audit`, PR #155. 41 untiered pages: 30 bugs, 9 questionable,
-2 OK; 39 `knownIssue`s. Next: **materials fix part 1** (dispersion redirects into chromatic-dispersion and optical-glass-catalog).
+Session 125: **materials fix part 1**, branch `phase-4/materials-fix-1`, PR #156. gvd, group-index, sellmeier → chromatic-dispersion;
+abbe-number, thermal-dndt → optical-glass-catalog (5 redirects, 429 → 424 pages). Next: **materials fix part 2** (windows).
 
 ## State
-- Registry only (`src/registry/calculators/materials.ts`): 39 `knownIssue`s; 13 descriptions restored from their ledes (ledes
-  dropped), titles of quartz-crystal, sapphire-properties and nonlinear-index restored (heading overrides dropped).
-- ROADMAP: fix parts 1–9 with the user's merge decisions (18 pages merge away, 45 → 27), golden values and modules to reuse.
-  The stale wave-optics findings block (FWM, SPM, mode-matching, abcd-matrix, filamentation, dye) is gone.
-- Per-page reviewer notes (findings, DOIs, golden values) go into the PR #155 description; they are not in the repo.
-- 387 of 429 tiered; page floor 429.
+- `sellmeier.ts`: `schottDeltaN` (TIE-19 Δn_abs from 20 °C) and `SCHOTT_DNDT_RANGE_C` [−100, 140]. `sellmeier-data.ts`: diamond
+  (Peter 1923) range 226–644 nm with its DOI, so diamond has no V_d (C line 656 nm is outside).
+- chromatic-dispersion: wavelength presets, coefficient table (converted to A + ΣBλ²/(λ² − C)), n(λ) compare chart (log x).
+  optical-glass-catalog: glasses/material/glass/wavelength/baseTemp/deltaT in the URL; Abbe and TIE-19 sections.
+- `tests/redirects.test.ts`: the href regex skips matches after `physics` or `..` (import paths).
+- Materials 4 / 40 tiered, 34 `knownIssue`s; 387 / 424 total; page floor 424; 983 tests.
 
 ## Next actions
-1. `/ship` this branch (no page values changed). Values for a later release check: part 13: `thin-film/bragg-reflector=432.13`,
-   `spectroscopy/michelson-interferometer=0.8974`, `wave-optics/slow-light=33.36`; part 12: `wave-optics/four-wave-mixing=27.09`,
-   `wave-optics/optical-waveguide=1.498429`, `wave-optics/injection-locking=-3.162`, `fiber-optics/mode-coupling=0.2297`; part 11:
-   `wave-optics/sum-frequency=91.87`, `wave-optics/difference-frequency=3.361`, `wave-optics/optical-parametric-amplifier=29.10`;
-   parts 1–10: see PR #141–#151 descriptions. No release unless asked.
-2. Materials fix part 1 (ROADMAP item 1): read the PR #155 description for each page's findings first
-   (`gh pr view 155 --json body -q .body | grep -n -A12 "materials/gvd"`).
-3. Later: open findings (ROADMAP), `polarizer-types` (needs the user at the laptop with Chrome).
+1. `/ship` this branch. Values for a later release check: `materials/chromatic-dispersion=1.46260` (n_g, fused silica 1550 nm),
+   `materials/optical-glass-catalog=64.17` (N-BK7 V_d). Older: part 13 `thin-film/bragg-reflector=432.13`,
+   `spectroscopy/michelson-interferometer=0.8974`, `wave-optics/slow-light=33.36`; parts 1–12: PR #141–#153 descriptions. No release unless asked.
+2. Materials fix part 2 (ROADMAP item 2): read the PR #155 description for each page's findings first
+   (`gh pr view 155 --json body -q .body | grep -n -A3 "chalcogenide"`).
+3. Later: open findings (ROADMAP; new: TIE-19 limits unverified), `polarizer-types` (needs the user at the laptop with Chrome).
 
 ## Non-obvious facts
+- **Session 125:** a long `node - <<'EOF'` script with backticks and apostrophes failed with "unexpected EOF while looking
+  for matching `''": write the edit script to the scratchpad with Write and run `node <file>`. In a template-literal RegExp,
+  `\.` is a bare `.`: write `\\.`; check a regex from a probe file, not `node -e` (shell escaping lies). The merge codemod
+  dry run lists the keywords it carries over; run it after editing `redirects.json`.
 - **Session 124:** `node -e 'import("./src/…ts")'` with `--import tsx` needs a relative path (an absolute `C:/…` path fails the ESM
   loader). In the registry each entry ends with a `  },` line:
   scripts slice entries on that.
