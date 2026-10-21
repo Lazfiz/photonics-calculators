@@ -84,6 +84,30 @@ export function pairCrosstalk(h: number, L: number): number {
 }
 
 /**
+ * Lossless co-directional coupling of two modes with coupling κ and mismatch Δβ = β₁ − β₂ (1/m), light launched into
+ * guide 1 (A. Yariv, IEEE J. Quantum Electron. 9, 919 (1973), doi:10.1109/JQE.1973.1077767):
+ *   P₂(z)/P₁(0) = (κ²/ψ²) sin²(ψz),   ψ = √(κ² + (Δβ/2)²).
+ * The transfer peaks at κ²/ψ² after z = π/(2ψ); full transfer needs Δβ = 0.
+ */
+export function codirectionalPsi(kappa: number, deltaBeta: number): number {
+  return Math.hypot(kappa, deltaBeta / 2);
+}
+
+/** Fraction of the launched power in the second guide after length z. */
+export function codirectionalTransfer(kappa: number, deltaBeta: number, z: number): number {
+  if (!(Number.isFinite(kappa) && Number.isFinite(deltaBeta) && z >= 0)) return NaN;
+  const psi = codirectionalPsi(kappa, deltaBeta);
+  if (psi === 0) return 0;
+  return ((kappa * kappa) / (psi * psi)) * Math.sin(psi * z) ** 2;
+}
+
+/** Peak transfer κ²/ψ² and the length π/(2ψ) at which it is first reached (Infinity when κ = Δβ = 0). */
+export function codirectionalPeak(kappa: number, deltaBeta: number): { fraction: number; length: number } {
+  const psi = codirectionalPsi(kappa, deltaBeta);
+  return psi === 0 ? { fraction: 0, length: Infinity } : { fraction: (kappa * kappa) / (psi * psi), length: Math.PI / (2 * psi) };
+}
+
+/**
  * Simpson panels for the tail integrals. The integrands are smooth and decay like Gaussians, so the rule converges
  * spectrally: 100 panels agree with 3,200 to 3e-11 down to V = 0.83 (W = 0.08) and to 1e-15 at V ≈ 2.
  */

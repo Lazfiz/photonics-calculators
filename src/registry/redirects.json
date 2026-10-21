@@ -91,5 +91,6 @@
   "/wave-optics/fiber-laser-resonator": "/fiber-optics/fiber-laser",
   "/wave-optics/pulse-compression": "/wave-optics/chirped-pulse",
   "/wave-optics/cep-stabilization": "/wave-optics/optical-frequency-comb",
-  "/wave-optics/parametric-amplification": "/wave-optics/optical-parametric-amplifier"
+  "/wave-optics/parametric-amplification": "/wave-optics/optical-parametric-amplifier",
+  "/wave-optics/coupled-mode": "/fiber-optics/mode-coupling"
 }
