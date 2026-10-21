@@ -16,12 +16,39 @@ const DEFAULT_MATERIAL = "fusedSilica";
 const CHART_MIN_UM = 0.2;
 const CHART_MAX_UM = 20;
 const CHART_POINTS = 300;
+const COMPARE_POINTS = 160;
+const COMPARE_COLORS = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16", "#f97316", "#a855f7", "#e5e7eb"];
+const WAVELENGTH_PRESETS_NM = [486.1, 532, 589.3, 632.8, 800, 1064, 1310, 1550, 10600];
+const WAVELENGTH_MIN_NM = 100;
+const WAVELENGTH_MAX_NM = 30000;
+
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const coefficient = (x: number) => String(Number(x.toPrecision(9)));
+
+/** n(λ) of every crystal set (and the selected glass), each over its own fit range in the chart window. */
+function compareSeries(selectedId: string) {
+  const ids = selectedId in MATERIALS ? Object.keys(MATERIALS) : [...Object.keys(MATERIALS), selectedId];
+  return ids.map((id, i) => {
+    const { model, name } = OPTIONS[id];
+    const lo = Math.max(model.range[0] * 1e6, CHART_MIN_UM);
+    const hi = Math.min(model.range[1] * 1e6, CHART_MAX_UM);
+    const um = Array.from({ length: COMPARE_POINTS + 1 }, (_, k) => lo * (hi / lo) ** (k / COMPARE_POINTS));
+    const n = um.map((x) => refractiveIndex(model, x * 1e-6));
+    const keep = n.map(Number.isFinite);
+    const color = COMPARE_COLORS[i % COMPARE_COLORS.length];
+    return {
+      x: um.filter((_, k) => keep[k]).map((x) => Math.round(x * 1e6) / 1e6), y: n.filter((_, k) => keep[k]).map((v) => Math.round(v * 1e6) / 1e6),
+      type: "scatter", mode: "lines", name, line: { color, width: id === selectedId ? 3.5 : 1.5 },
+    };
+  });
+}
 
 const fmt = (x: number, digits = 4) =>
   !Number.isFinite(x) ? "—" : x === 0 ? "0" : Math.abs(x) >= 0.01 && Math.abs(x) < 1e5 ? x.toPrecision(digits) : x.toExponential(3);
 
 export default function ChromaticDispersionPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
+  const wavelength = clamp(wavelengthRaw, WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM, 1550);
   const [materialParam, setMaterial] = useURLState("material", DEFAULT_MATERIAL);
   const materialId = materialParam in OPTIONS ? materialParam : DEFAULT_MATERIAL;
   const material = OPTIONS[materialId];
@@ -63,10 +90,24 @@ export default function ChromaticDispersionPage() {
     };
   }, [model]);
 
+  const compare = compareSeries(materialId);
   const [lo_nm, hi_nm] = [model.range[0] * 1e9, model.range[1] * 1e9];
 
   return (
     <>
+      <div role="group" aria-label="Wavelength presets" className="mb-5 flex flex-wrap gap-2">
+        {WAVELENGTH_PRESETS_NM.map((preset) => (
+          <button
+            key={preset}
+            onClick={() => setWavelength(preset)}
+            aria-pressed={wavelength === preset}
+            className={`rounded-full border px-3 py-1 text-sm transition ${wavelength === preset ? "border-blue-400 bg-blue-500/15 text-blue-200" : "border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500"}`}
+          >
+            {preset} nm
+          </button>
+        ))}
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
         <div>
           <label htmlFor="material" className="block text-sm text-gray-400 mb-1">Material</label>
@@ -80,7 +121,7 @@ export default function ChromaticDispersionPage() {
             </optgroup>
           </select>
         </div>
-        <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={100} max={30000} />
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={WAVELENGTH_MIN_NM} max={WAVELENGTH_MAX_NM} />
       </div>
 
       {!calc.valid && (
@@ -127,6 +168,41 @@ export default function ChromaticDispersionPage() {
             yaxis: { title: "D (ps/(nm·km))", gridcolor: "#374151" },
             margin: { t: 20, r: 20, b: 50, l: 60 }, height: 320,
           }} />
+        </div>
+      </div>
+
+      <div className="bg-gray-900 rounded-lg p-4 mb-8">
+        <h3 className="text-lg font-semibold mb-3">Compare materials: n(λ)</h3>
+        <ChartPanel data={compare} layout={{
+          paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" },
+          xaxis: { title: "Wavelength (µm)", type: "log", gridcolor: "#374151" },
+          yaxis: { title: "Refractive index n", gridcolor: "#374151" },
+          margin: { t: 20, r: 20, b: 50, l: 60 }, height: 380,
+        }} />
+        <p className="mt-2 text-xs text-gray-400">Each curve covers its own fit range; the thick one is {material.name}.</p>
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
+        <h3 className="text-lg font-semibold mb-2">Coefficients: {material.name}</h3>
+        <p className="text-sm text-gray-400 mb-3">
+          n² = A + Σ Bᵢλ²/(λ² − Cᵢ), λ in µm. Sets published with resonance wavelengths λᵢ (Cᵢ = λᵢ²) or in the pole form
+          A′ + Σ Bᵢ′/(λ² − Cᵢ) are shown converted to this form.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="text-sm font-mono text-gray-300">
+            <thead><tr className="text-gray-400"><th className="pr-6 text-left">i</th><th className="pr-6 text-left">Bᵢ</th><th className="pr-6 text-left">Cᵢ (µm²)</th><th className="text-left">√Cᵢ (µm)</th></tr></thead>
+            <tbody>
+              <tr><td className="pr-6">A</td><td className="pr-6" colSpan={3}>{coefficient(model.A)}</td></tr>
+              {model.B.map((b, i) => (
+                <tr key={i}>
+                  <td className="pr-6">{i + 1}</td>
+                  <td className="pr-6">{coefficient(b)}</td>
+                  <td className="pr-6">{coefficient(model.C[i])}</td>
+                  <td>{model.C[i] >= 0 ? coefficient(Math.sqrt(model.C[i])) : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 

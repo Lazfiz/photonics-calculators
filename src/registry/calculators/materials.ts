@@ -2,12 +2,6 @@ import type { CalculatorEntry } from "../types";
 
 export const materials: CalculatorEntry[] = [
   {
-    slug: "abbe-number",
-    title: "Abbe Number (Vd)",
-    description: "Calculate the Abbe number V_d = (n_d − 1)/(n_F − n_C) from Sellmeier coefficients.",
-    knownIssue: "The fused silica entry uses unsquared resonance wavelengths, so its Abbe number reads 4.35 instead of 67.8. The other glasses are correct.",
-  },
-  {
     slug: "absorption",
     title: "Absorption Coefficient",
     description: "Wavelength-dependent absorption coefficient α(λ) and transmission through material thickness.",
@@ -64,7 +58,8 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "chromatic-dispersion",
     title: "Material Dispersion (Sellmeier)",
-    description: "Refractive index, group index, GVD β₂ and dispersion D from published Sellmeier formulas for crystals, fused silica and SCHOTT glasses.",
+    description: "Refractive index, group index, GVD β₂ and dispersion D from published Sellmeier formulas for crystals, fused silica and SCHOTT glasses, with their coefficients and an n(λ) comparison.",
+    keywords: ["Group Velocity Dispersion (GVD)", "Group Index (ng)", "Sellmeier Equation"],
     tier: "exact",
     modelNote: "Exact for the published Sellmeier formula inside its fit range, with analytic derivatives. The formula is itself a fit to measurements (typically ±1e-5 to ±1e-4 in n) at the temperature of those measurements.",
     references: [
@@ -78,6 +73,14 @@ export const materials: CalculatorEntry[] = [
         citation: "Agrawal G. P. Nonlinear Fiber Optics, §1.2.3. Group-velocity dispersion β₂ and dispersion parameter D.",
       },
       { citation: "Saleh B. E. A., Teich M. C. Fundamentals of Photonics, ch. 5. Dispersion parameter D." },
+      {
+        citation: "Malitson I. H. (1965). Interspecimen comparison of the refractive index of fused silica. J. Opt. Soc. Am. 55, 1205.",
+        url: "https://doi.org/10.1364/JOSA.55.001205",
+      },
+      {
+        citation: "Peter F. (1923). Über Brechungsindizes und Absorptionskonstanten des Diamanten zwischen 644 und 226 mµ. Z. Phys. 15, 358.",
+        url: "https://doi.org/10.1007/BF01330487",
+      },
     ],
   },
   {
@@ -121,18 +124,6 @@ export const materials: CalculatorEntry[] = [
     title: "Fluoride Glass (ZBLAN)",
     description: "Heavy-metal fluoride glasses for mid-IR fiber optics and low-loss transmission",
     knownIssue: "The dispersion formula has a resonance near 3 µm and does not reproduce the listed n_d, so the index shown is wrong across most of the range.",
-  },
-  {
-    slug: "group-index",
-    title: "Group Index (ng)",
-    description: "ng = n − λ · dn/dλ — the effective index seen by optical pulses",
-    knownIssue: "The sign of dn/dλ is reversed, so the group index comes out below the phase index. The germanium and diamond coefficients are also wrong.",
-  },
-  {
-    slug: "gvd",
-    title: "Group Velocity Dispersion (GVD)",
-    description: "Calculate d²n/dλ² and β₂ dispersion parameter from Sellmeier coefficients.",
-    knownIssue: "The β₂ formula uses λ²/(2πc) instead of λ³/(2πc²), so values are about 10¹⁴ times too large, and the fused silica coefficients are unsquared.",
   },
   {
     slug: "heat-capacity",
@@ -190,17 +181,21 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "optical-glass-catalog",
     title: "Optical Glass Catalog",
-    description: "Interactive glass map and dispersion curves for SCHOTT optical glasses, with catalog n_d, V_d, density and dn/dT.",
+    description: "Interactive glass map and dispersion curves for SCHOTT optical glasses, with catalog n_d, V_d, density and dn/dT, the Abbe number of glasses and crystals, and dn/dT and Δn over temperature.",
     lede: "Interactive glass map and dispersion curves. Sellmeier: n²(λ) = 1 + Σ Bᵢλ²/(λ² − Cᵢ), with SCHOTT catalog coefficients.",
-    keywords: ["Schott Glass Catalog"],
+    keywords: ["Schott Glass Catalog", "Abbe Number (Vd)", "Thermo-Optic Coefficient (dn/dT)"],
     tier: "exact",
-    modelNote: "SCHOTT catalog values: Sellmeier fits that reproduce each glass's catalog n_d to 1e-5 and V_d to 0.01, and the TIE-19 absolute dn/dT at 20 °C. Valid inside each fit's wavelength range.",
+    modelNote: "SCHOTT catalog values: Sellmeier fits that reproduce each glass's catalog n_d to 1e-5 and V_d to 0.01. V_d of the crystals and fused silica comes from their published formulas. dn/dT and Δn are TIE-19's absolute (vacuum) values for −100 to +140 °C; values relative to air are larger by about n × 0.9e-6 /K. Valid inside each fit's wavelength range.",
     references: [
       {
         citation: "SCHOTT optical glass catalog (Zemax AGF 2017-01-20). Sellmeier coefficients, n_d, V_d and density.",
       },
       {
         citation: "SCHOTT (2016). TIE-19, temperature coefficient of the absolute refractive index (D₀, D₁, D₂, E₀, E₁, λ_TK).",
+      },
+      {
+        citation: "Malitson I. H. (1965). Interspecimen comparison of the refractive index of fused silica. J. Opt. Soc. Am. 55, 1205. Fused silica V_d 67.82.",
+        url: "https://doi.org/10.1364/JOSA.55.001205",
       },
     ],
   },
@@ -253,21 +248,6 @@ export const materials: CalculatorEntry[] = [
     knownIssue: "Two extraordinary-ray Sellmeier terms are mis-transcribed, so nₑ and the birefringence are off in the UV, and the temperature chart is flat because dn/dT is scaled twice.",
   },
   {
-    slug: "sellmeier",
-    title: "Sellmeier Equation",
-    description: "Calculate refractive index from Sellmeier coefficients across wavelength.",
-    lede: "Interactive dispersion explorer using Sellmeier coefficients to compute refractive index versus wavelength.",
-    keywords: ["dispersion formula", "refractive index", "glass catalog"],
-    priority: 94,
-    related: [
-      { href: "/materials/sapphire-properties" },
-      { href: "/materials/optical-glass-catalog" },
-      { href: "/materials/semiconductor-bandgap" },
-      { href: "/materials/thermal-conductivity-optics" },
-    ],
-    knownIssue: "The germanium, zinc selenide and diamond coefficients are wrong, giving indices off by up to 0.9 and a false resonance near 1.5 µm.",
-  },
-  {
     slug: "semiconductor-bandgap",
     title: "Semiconductor Bandgap",
     description: "Bandgap energy and absorption edge vs temperature using the Varshni equation. Direct vs indirect gap materials.",
@@ -293,12 +273,6 @@ export const materials: CalculatorEntry[] = [
     title: "Thermal Conductivity for Optics",
     description: "Heat transport in optical substrates",
     knownIssue: "The k(T) fit does not reproduce its own room-temperature values (32 W/(m·K) for fused silica instead of 1.38), so k and the temperature rise are off by factors of 6 to 30.",
-  },
-  {
-    slug: "thermal-dndt",
-    title: "Thermo-Optic Coefficient (dn/dT)",
-    description: "Temperature-dependent refractive index change. Positive dn/dT means n increases with temperature.",
-    knownIssue: "dn/dT is one fixed value per material, with no wavelength or temperature dependence, and the base index n₀ does not follow the selected material.",
   },
   {
     slug: "thermal-expansion",

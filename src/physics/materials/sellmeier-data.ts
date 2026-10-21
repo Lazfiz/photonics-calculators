@@ -90,8 +90,9 @@ export const MATERIALS = {
   },
   diamond: {
     name: "Diamond (C)",
-    model: fromResonanceWavelengths(1, [0.3306, 4.3356], [0.175, 0.106], [0.226, 0.76]),
-    reference: "F. Peter, Z. Phys. 15, 358 (1923)",
+    // Peter measured 226–644 nm; the formula is not defined past that.
+    model: fromResonanceWavelengths(1, [0.3306, 4.3356], [0.175, 0.106], [0.226, 0.644]),
+    reference: "F. Peter, Z. Phys. 15, 358 (1923), doi:10.1007/BF01330487",
     temperature_C: null,
   },
 } as const satisfies Record<string, DispersionMaterial>;
