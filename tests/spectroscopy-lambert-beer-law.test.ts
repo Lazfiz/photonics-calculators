@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   absorbance,
+  absorbanceFromNapierian,
   absorbanceFromTransmittance,
   attenuationDb,
   concentrationForAbsorbance,
@@ -72,4 +73,15 @@ test("Napierian coefficient α = σ N_A c equals ln 10 · ε c, so α l = ln 10 
   const sigma = crossSectionFromEpsilon(5e4 * EPS_LAB);
   close(napierianAbsorptionCoefficient(sigma, 1e-5 * CONC_LAB) * CM, 1.151293, 1e-6);
   assert.equal(napierianAbsorptionCoefficient(sigma, 0), 0);
+});
+
+test("bulk slab: α = 1 cm⁻¹ over 10 mm gives T = e⁻¹ = 0.367879 and 4.3429 dB; α = 0.1 cm⁻¹ gives 0.904837", () => {
+  // Hand: α d = 1, A = 1/ln 10 = 0.4342945, T = e^(−1) = 0.3678794, 10 A = 4.342945 dB (Gold Book "absorption coefficient").
+  const A = absorbanceFromNapierian(100, 0.01);
+  close(A, 0.4342945, 1e-6);
+  close(transmittance(A), 0.3678794, 1e-6);
+  close(attenuationDb(A), 4.342945, 1e-6);
+  close(transmittance(absorbanceFromNapierian(10, 0.01)), 0.9048374, 1e-6);
+  assert.equal(absorbanceFromNapierian(0, 0.01), 0);
+  assert.ok(Number.isNaN(absorbanceFromNapierian(-1, 0.01)));
 });

@@ -2,12 +2,6 @@ import type { CalculatorEntry } from "../types";
 
 export const materials: CalculatorEntry[] = [
   {
-    slug: "absorption",
-    title: "Absorption Coefficient",
-    description: "Wavelength-dependent absorption coefficient α(λ) and transmission through material thickness.",
-    knownIssue: "The material absorption coefficients are invented and wrong by orders of magnitude, so the transmission is only a Beer–Lambert illustration.",
-  },
-  {
     slug: "acousto-optic",
     title: "Acousto-Optic Bragg Cell",
     description: "Acousto-optic Bragg cell design: Bragg and deflection angles, scan range, Klein–Cook Q, first-order diffraction efficiency from the figure of merit M₂ and acoustic power, access time and resolvable spots, for TeO₂, PbMoO₄ and fused silica.",
@@ -328,12 +322,6 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1016/C2015-0-05510-1",
       },
     ],
-  },
-  {
-    slug: "oh-absorption",
-    title: "OH Absorption in Silica",
-    description: "Hydroxyl (OH⁻) absorption peaks in silica fibers and bulk glass. The fundamental OH stretch at 2.72 µm and overtones at 1.38 µm and 0.94 µm dominate loss spectra.",
-    knownIssue: "The concentration input actually sets the fibre length, and Rayleigh scattering is about six times too high, so the 1550 nm loss is about 1 dB/km instead of 0.2 dB/km.",
   },
   {
     slug: "optical-glass-catalog",

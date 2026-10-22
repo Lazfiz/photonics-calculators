@@ -59,3 +59,12 @@ export function crossSectionFromEpsilon(epsilon: number): number {
 export function napierianAbsorptionCoefficient(crossSection: number, concentration: number): number {
   return crossSection * N_A * concentration;
 }
+
+/**
+ * Decadic absorbance of a slab with Napierian absorption coefficient α (m⁻¹) and thickness d (m): A = α d / ln 10,
+ * so the internal transmittance is 10^−A = e^(−α d) (Gold Book "absorption coefficient"). Surface reflections are
+ * not included. NaN for α < 0 or d < 0.
+ */
+export function absorbanceFromNapierian(alpha: number, thickness: number): number {
+  return alpha >= 0 && thickness >= 0 ? (alpha * thickness) / Math.LN10 : NaN;
+}

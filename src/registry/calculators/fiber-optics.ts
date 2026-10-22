@@ -22,8 +22,15 @@ export const fiberOptics: CalculatorEntry[] = [
         url: "https://doi.org/10.1049/el:19760418",
       },
       {
-        citation: "Humbach O., Fabian H., Grzesik U., Haken U., Heitmann W. (1996). Analysis of OH absorption bands in synthetic silica. J. Non-Cryst. Solids 203, 19. OH band strength (≈ 63 dB/km per ppm at the 1383 nm peak).",
+        citation: "Humbach O., Fabian H., Grzesik U., Haken U., Heitmann W. (1996). Analysis of OH absorption bands in synthetic silica. J. Non-Cryst. Solids 203, 19. OH band positions and the 1383 nm strength, 62.7 dB/km per ppm (as quoted in arXiv:2303.17814, Table I).",
         url: "https://doi.org/10.1016/0022-3093(96)00329-8",
+      },
+      {
+        citation: "Philen D. L. (1982). Measurements of OH diffusion in optical-fiber cores. Bell Syst. Tech. J. 61, 283. 10 ppm of OH adds about 12 dB/km at 0.95 µm.",
+        url: "https://doi.org/10.1002/j.1538-7305.1982.tb03407.x",
+      },
+      {
+        citation: "Hetherington G., Jack K. H. (1962). Water in vitreous silica. Part I. Influence of 'water' content on the properties of vitreous silica. Phys. Chem. Glasses 3, 129. Molar absorption coefficient 77.5 L·mol⁻¹·cm⁻¹ at 2.72 µm.",
       },
     ],
   },
@@ -558,9 +565,10 @@ export const fiberOptics: CalculatorEntry[] = [
   {
     slug: "low-water-peak",
     title: "Low Water Peak Fiber",
-    description: "Compare low-water-peak (G.652.D) and older single-mode fiber: loss at the 1383 nm OH peak, E-band average and the span loss of each CWDM channel.",
+    description: "Compare low-water-peak (G.652.D) and older single-mode fiber: loss at the 1383 nm OH peak, OH content, E-band average, the span loss of each CWDM channel, and the OH absorption bands of silica at 943, 1383 and 2722 nm.",
+    keywords: ["OH absorption", "water peak", "hydroxyl absorption in silica", "zero water peak fiber", "OH Absorption in Silica"],
     tier: "illustrative",
-    modelNote: "Shared silica loss model (Rayleigh, Keiser IR/UV tails) plus a Gaussian OH band at 1383 nm with an assumed 30 nm FWHM; the OH peak heights are inputs, not data for a particular fibre.",
+    modelNote: "Shared silica loss model (Rayleigh, Keiser IR/UV tails) plus Gaussian OH bands at 943, 1383 and 2722 nm scaled by the OH content (62.7, 1.2 and 1.0e4 dB/km per ppm); widths are assumed (30 nm FWHM at 1383 nm, the same in wavenumber elsewhere), the 1246 and 2212 nm bands are not modelled, and the OH peak heights are inputs, not data for a particular fibre.",
     references: [
       {
         citation: "Humbach O., Fabian H., Grzesik U., Haken U., Heitmann W. (1996). Analysis of OH absorption bands in synthetic silica. J. Non-Cryst. Solids 203, 19. OH band strength (≈ 63 dB/km per ppm at the 1383 nm peak).",

@@ -287,9 +287,9 @@ export const spectroscopy: CalculatorEntry[] = [
   {
     slug: "lambert-beer-law",
     title: "Lambert-Beer Law Calculator",
-    description: "Beer-Lambert law A = ε·c·l: solve for absorbance, concentration or the molar absorption (extinction) coefficient, with transmittance, mass concentration and mass absorption coefficient.",
-    lede: "Solve A = ε·c·l for absorbance, concentration or ε, and sweep concentration, path length or ε.",
-    keywords: ["absorbance", "optical density", "transmission", "Beer-Lambert Absorption", "Concentration from Absorbance", "Extinction Coefficient", "molar absorption coefficient", "mass absorption coefficient", "specific extinction coefficient"],
+    description: "Beer-Lambert law A = ε·c·l: solve for absorbance, concentration or the molar absorption (extinction) coefficient, with transmittance, mass concentration and mass absorption coefficient; and the transmittance of a bulk sample from its absorption coefficient α and thickness.",
+    lede: "Solve A = ε·c·l for absorbance, concentration or ε, sweep concentration, path length or ε, and find the internal transmittance e^(−α·d) of a bulk sample.",
+    keywords: ["absorbance", "optical density", "transmission", "Beer-Lambert Absorption", "Concentration from Absorbance", "Extinction Coefficient", "molar absorption coefficient", "mass absorption coefficient", "specific extinction coefficient", "internal transmittance", "Napierian absorption coefficient"],
     priority: 94,
     related: [
       { href: "/spectroscopy/optical-density" },
@@ -298,10 +298,10 @@ export const spectroscopy: CalculatorEntry[] = [
       { href: "/spectroscopy/infrared-spectroscopy" },
     ],
     tier: "exact",
-    modelNote: "Exact for monochromatic light and a dilute solution of non-interacting absorbers; concentration and ε are A = ε·c·l solved for each, and a = ε/M. Not modelled: scattering, fluorescence and stray light; absorbers interact above about 10 mM and absorbance reads low above A ≈ 2.",
+    modelNote: "Exact for monochromatic light and a dilute solution of non-interacting absorbers; concentration and ε are A = ε·c·l solved for each, and a = ε/M. The bulk sample uses the Napierian α: T = e^(−α·d), A = α·d/ln 10, without surface reflections. Not modelled: scattering, fluorescence and stray light; absorbers interact above about 10 mM and absorbance reads low above A ≈ 2.",
     references: [
       {
-        citation: "IUPAC Compendium of Chemical Terminology (Gold Book), entries “absorbance”, “molar (decadic) absorption coefficient” and “mass absorption coefficient”.",
+        citation: "IUPAC Compendium of Chemical Terminology (Gold Book), entries “absorbance”, “absorption coefficient”, “molar (decadic) absorption coefficient” and “mass absorption coefficient”.",
       },
     ],
   },

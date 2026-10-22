@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  CWDM_CHANNELS, OH_BAND_FWHM, OH_PEAK_WAVELENGTH, minimumLossWavelength, silicaLossDbPerKm,
+  CWDM_CHANNELS, OH_BAND_FWHM, OH_BANDS, OH_PEAK_WAVELENGTH, minimumLossWavelength, ohBandFwhm, ohContentPpm, ohDbPerKmPerPpm,
+  silicaLossDbPerKm,
 } from "../src/physics/fiber-optics/silica-attenuation";
 
 const assertRel = (actual: number, expected: number, tol: number, msg: string) =>
@@ -44,6 +45,24 @@ test("OH band: peak height at 1383 nm, half height at ± FWHM/2", () => {
   assertRel(silicaLossDbPerKm(p, OH_PEAK_WAVELENGTH).oh, 0.5, 1e-15, "peak");
   assertRel(silicaLossDbPerKm(p, OH_PEAK_WAVELENGTH + OH_BAND_FWHM / 2).oh, 0.25, 1e-12, "half max");
   assert.ok(silicaLossDbPerKm(p, 1550e-9).oh < 1e-30);
+});
+
+test("OH bands scale with the OH content: 1 ppm gives 62.7, 1.2 and ≈ 1.0e4 dB/km at 1383, 943 and 2722 nm", () => {
+  // Humbach 1996 (via arXiv:2303.17814 Table I): 62.7 dB/km per ppm at the first overtone. 0.5 dB/km → 0.5/62.7 ppm = 7.97 ppb.
+  assertRel(ohContentPpm(0.5), 7.9745e-3, 1e-4, "ppm from peak");
+  const onePpm = { ...smf, ohPeakDbPerKm: 62.7 };
+  // Philen, Bell Syst. Tech. J. 61, 283 (1982): 10 ppm adds ≈ 12 dB/km at 0.95 µm.
+  assertRel(silicaLossDbPerKm(onePpm, 943e-9).oh, 1.2, 1e-12, "943");
+  // Hetherington & Jack 1962: ε = 77.5 L mol⁻¹ cm⁻¹ at 2.72 µm. By hand, 1 ppm in silica of 2.201 g/cm³ is
+  // 2.201e-6/17.007 = 1.29417e-7 mol/cm³ = 1.29417e-4 mol/L; A = 77.5 · 1.29417e-4 = 0.0100298 per cm = 1002.98 per km → 10029.8 dB/km.
+  assertRel(ohDbPerKmPerPpm(7.75), 10029.8, 1e-5, "ε → dB/km/ppm");
+  assertRel(silicaLossDbPerKm(onePpm, 2722e-9).oh, 10029.8, 1e-5, "2722");
+  // Same width in wavenumber: FWHM 30 nm · (2722/1383)² = 116.21 nm; half height at ± FWHM/2.
+  assertRel(ohBandFwhm(2722e-9), 116.21e-9, 1e-4, "2722 FWHM");
+  assertRel(silicaLossDbPerKm(onePpm, 2722e-9 + ohBandFwhm(2722e-9) / 2).oh, 10029.8 / 2, 1e-5, "2722 half max");
+  // The 1246 and 2212 nm bands have no sourced strength and add nothing.
+  assert.deepEqual(OH_BANDS.filter((b) => Number.isNaN(b.dbPerKmPerPpm)).map((b) => Math.round(b.wavelength * 1e9)), [1246, 2212]);
+  assert.ok(silicaLossDbPerKm(onePpm, 1246e-9).oh < 1e-6);
 });
 
 test("CWDM grid is ITU-T G.694.2: 18 channels, 1271–1611 nm", () => {
