@@ -1,114 +1,122 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import Link from "next/link";
 import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
-import { c } from "../../../physics/constants";
+import ResultCard from "../../../components/result-card";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { brillouinShift, stokesWavelength } from "../../../physics/fiber-optics/fiber-nonlinear";
+import { FUSED_SILICA_BRILLOUIN, acousticWavelength, brillouinGain, phononLifetime } from "../../../physics/materials/brillouin";
 
-interface BrillouinMaterial { name: string; n: number; rho: number; vA: number; p12: number; color: string }
+const CHOICES = ["fused-silica", "custom"] as const;
+type Choice = (typeof CHOICES)[number];
+const DEFAULT_ID: Choice = "fused-silica";
+const WAVELENGTH_MIN_NM = 200;
+const WAVELENGTH_MAX_NM = 5000;
+const LINEWIDTH_MIN_MHZ = 0.1;
+const LINEWIDTH_MAX_MHZ = 1000;
 
-// Brillouin shift: ν_B = 2nV_A/λ
-// Gain coefficient: g_B = 2πn⁷p₁₂²/(cλ²ρV_AΓ_B)
-const MATERIALS: Record<string, BrillouinMaterial> = {
-  FusedSilica: { name: "Fused Silica", n: 1.45, rho: 2202, vA: 5960, p12: 0.27, color: "#60a5fa" },
-  SMF28: { name: "SMF-28 Fiber", n: 1.468, rho: 2202, vA: 5760, p12: 0.27, color: "#34d399" },
-  Ge_doped: { name: "Ge-doped Fiber", n: 1.47, rho: 2400, vA: 5550, p12: 0.29, color: "#f87171" },
-  As2S3: { name: "As₂S₃ Chalcogenide", n: 2.44, rho: 3190, vA: 2600, p12: 0.23, color: "#f59e0b" },
-  Bismuth: { name: "Bi₂O₃ Bismuth Fiber", n: 2.02, rho: 7100, vA: 3300, p12: 0.30, color: "#a78bfa" },
-  Tellurite: { name: "TeO₂ Tellurite Glass", n: 2.02, rho: 5900, vA: 3400, p12: 0.25, color: "#ec4899" },
-  PMMA: { name: "PMMA Polymer", n: 1.49, rho: 1190, vA: 2700, p12: 0.30, color: "#06b6d4" },
-  Diamond: { name: "Diamond", n: 2.42, rho: 3515, vA: 17540, p12: 0.12, color: "#84cc16" },
-};
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const sig = (x: number, digits: number) => (Number.isFinite(x) ? String(+x.toPrecision(digits)) : "—");
+const exp = (x: number, digits: number) => (Number.isFinite(x) ? x.toExponential(digits) : "—");
 
-function brillouinShift(n: number, vA: number, lambda_nm: number): number {
-  return 2 * n * vA * 1e3 / (lambda_nm * 1e-9) / 1e9; // GHz
-}
-
-function brillouinGain(mat: BrillouinMaterial, lambda_nm: number, linewidth_MHz: number): number {
-  const n = mat.n;
-  const lambda = lambda_nm * 1e-9;
-  const p12 = mat.p12;
-  const rho = mat.rho;
-  const vA = mat.vA;
-  const Gamma = linewidth_MHz * 1e6;
-  // Simplified gain coefficient (m/W)
-  const gB = 2 * Math.PI * Math.pow(n, 7) * p12 * p12 / (c * c * lambda * lambda * rho * Gamma) * 1e-3;
-  return gB;
+/** ν_B over 400–2000 nm for the chosen medium, GHz (rounded for the chart axis). */
+function shiftCurve(n: number, vA: number) {
+  const x = Array.from({ length: 161 }, (_, i) => 400 + i * 10);
+  return { x, y: x.map((l) => +(brillouinShift(l * 1e-9, vA, n) / 1e9).toFixed(6)) };
 }
 
 export default function BrillouinScatteringPage() {
-  const [material, setMaterial] = useState<keyof typeof MATERIALS>("SMF28");
-  const [wavelength, setWavelength] = useURLState("wavelength", 1550);
-  const [linewidth, setLinewidth] = useURLState("linewidth", 30); // MHz
-  const [pumpPower, setPumpPower] = useURLState("pumpPower", 10); // mW
-  const [fiberLength, setFiberLength] = useURLState("fiberLength", 10); // km
+  const [materialParam, setMaterial] = useURLState("material", DEFAULT_ID as string);
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 1550); // nm
+  const [linewidthRaw, setLinewidth] = useURLState("linewidth", 20); // MHz, Δν_B at the pump wavelength
+  const [nRaw, setN] = useURLState("n", FUSED_SILICA_BRILLOUIN.n);
+  const [vARaw, setVA] = useURLState("vA", FUSED_SILICA_BRILLOUIN.vA); // m/s
+  const [rhoRaw, setRho] = useURLState("rho", FUSED_SILICA_BRILLOUIN.rho); // kg/m³
+  const [p12Raw, setP12] = useURLState("p12", FUSED_SILICA_BRILLOUIN.p12);
+  const choice: Choice = (CHOICES as readonly string[]).includes(materialParam) ? (materialParam as Choice) : DEFAULT_ID;
+  const wavelength_nm = clamp(wavelengthRaw, WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM, 1550);
+  const linewidth_MHz = clamp(linewidthRaw, LINEWIDTH_MIN_MHZ, LINEWIDTH_MAX_MHZ, 20);
+  const medium = choice === "custom"
+    ? {
+      n: clamp(nRaw, 1, 5, FUSED_SILICA_BRILLOUIN.n),
+      vA: clamp(vARaw, 100, 20000, FUSED_SILICA_BRILLOUIN.vA),
+      rho: clamp(rhoRaw, 100, 20000, FUSED_SILICA_BRILLOUIN.rho),
+      p12: clamp(p12Raw, 0.001, 1, FUSED_SILICA_BRILLOUIN.p12),
+    }
+    : FUSED_SILICA_BRILLOUIN;
 
-  const mat = MATERIALS[material];
-  const vB = brillouinShift(mat.n, mat.vA, wavelength);
-  const gB = brillouinGain(mat, wavelength, linewidth);
-  const Pth = 21 * 1e-3 / gB / (fiberLength * 1000); // threshold power (W)
-  const Pth_mW = Pth * 1000;
-
-  const chartData = useMemo(() => {
-    const wls = Array.from({ length: 200 }, (_, i) => 1000 + i * 5);
-    return Object.entries(MATERIALS).map(([key, m]) => ({
-      x: wls, y: wls.map(wl => brillouinShift(m.n, m.vA, wl)),
-      type: "scatter" as const, mode: "lines" as const, name: m.name,
-      line: { color: m.color, width: key === material ? 3 : 1 }
-    }));
-  }, [material]);
-
-  const gainChart = useMemo(() => {
-    const wls = Array.from({ length: 200 }, (_, i) => 1000 + i * 5);
-    return Object.entries(MATERIALS).map(([key, m]) => ({
-      x: wls, y: wls.map(wl => brillouinGain(m, wl, linewidth) * 1e11),
-      type: "scatter" as const, mode: "lines" as const, name: m.name,
-      line: { color: m.color, width: key === material ? 3 : 1 }
-    }));
-  }, [material, linewidth]);
+  const lambda = wavelength_nm * 1e-9;
+  const linewidth = linewidth_MHz * 1e6;
+  const nuB = brillouinShift(lambda, medium.vA, medium.n);
+  const Lambda = acousticWavelength(lambda, medium.n);
+  const gB = brillouinGain(lambda, medium, linewidth);
+  const TB = phononLifetime(linewidth);
+  const lambdaS = stokesWavelength(lambda, nuB);
+  const curve = shiftCurve(medium.n, medium.vA);
 
   return (
     <>
-            
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">Material</label>
-          <select value={material} onChange={e => setMaterial(e.target.value as any)} className="w-full bg-gray-800 rounded px-3 py-2">
-            {Object.entries(MATERIALS).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
-          </select>
-        </div>
-        <div>
-          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Linewidth (MHz)" value={linewidth} onChange={setLinewidth} />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Fiber Length (km)" value={fiberLength} onChange={setFiberLength} />
-        </div>
+      <div className="grid grid-cols-2 gap-2 mb-6 max-w-md" role="group" aria-label="Medium">
+        {CHOICES.map((id) => (
+          <button key={id} onClick={() => setMaterial(id)} aria-pressed={choice === id}
+            className={`px-3 py-2 rounded text-sm ${choice === id ? "bg-blue-600" : "bg-gray-800 hover:bg-gray-700"}`}>
+            {id === "custom" ? "Custom" : FUSED_SILICA_BRILLOUIN.name}
+          </button>
+        ))}
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div><div className="text-xs text-gray-500">Brillouin Shift</div><div className="text-lg font-bold text-blue-400">{vB.toFixed(2)} GHz</div></div>
-        <div><div className="text-xs text-gray-500">Acoustic Wavelength</div><div className="text-lg font-bold text-green-400">{(mat.vA * 1e6 / (vB * 1e9)).toFixed(1)} µm</div></div>
-        <div><div className="text-xs text-gray-500">Gain Coefficient</div><div className="text-lg font-bold text-yellow-400">{(gB * 1e11).toFixed(1)} ×10⁻¹¹ m/W</div></div>
-        <div><div className="text-xs text-gray-500">SBS Threshold</div><div className="text-lg font-bold text-red-400">{Pth_mW.toFixed(1)} mW</div></div>
+      {choice === "custom" && (
+        <div className="grid gap-4 sm:grid-cols-4 mb-4">
+          <ValidatedNumberInput label="Refractive index n" value={nRaw} onChange={setN} min={1} max={5} step="0.01" />
+          <ValidatedNumberInput label="Acoustic velocity v_A (m/s)" value={vARaw} onChange={setVA} min={100} max={20000} step="10" />
+          <ValidatedNumberInput label="Density ρ (kg/m³)" value={rhoRaw} onChange={setRho} min={100} max={20000} step="10" />
+          <ValidatedNumberInput label="Elasto-optic coefficient p₁₂" value={p12Raw} onChange={setP12} min={0.001} max={1} step="0.001" />
+        </div>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2 mb-4">
+        <ValidatedNumberInput label="Pump wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={WAVELENGTH_MIN_NM} max={WAVELENGTH_MAX_NM} step="1" />
+        <ValidatedNumberInput label="Brillouin linewidth Δν_B, FWHM (MHz)" value={linewidthRaw} onChange={setLinewidth} min={LINEWIDTH_MIN_MHZ} max={LINEWIDTH_MAX_MHZ} step="any" />
       </div>
+      <p className="text-xs mb-6 text-gray-500">
+        n = {sig(medium.n, 4)}, v_A = {sig(medium.vA, 4)} m/s, ρ = {sig(medium.rho, 4)} kg/m³, p₁₂ = {sig(medium.p12, 3)}
+        {choice === "fused-silica" && `; ${FUSED_SILICA_BRILLOUIN.source}`}. Δν_B is the gain bandwidth at the pump wavelength: it scales as
+        λ_p⁻², so measure or scale it when you change λ.
+      </p>
+
+      <div className="grid gap-4 sm:grid-cols-3 mb-4">
+        <ResultCard label="Brillouin shift ν_B = 2nv_A/λ" value={`${sig(nuB / 1e9, 4)} GHz`} tone="blue" subtext={`Stokes wavelength ${sig(lambdaS * 1e9, 7)} nm`} />
+        <ResultCard label="Peak gain g_B" value={`${exp(gB, 3)} m/W`} tone="green" subtext={`= ${sig(gB * 1e11, 4)} cm/GW, Lorentzian of FWHM ${sig(linewidth_MHz, 4)} MHz`} />
+        <ResultCard label="Acoustic wavelength Λ = λ/(2n)" value={`${sig(Lambda * 1e6, 4)} µm`} tone="orange" subtext={`phonon lifetime T_B = 1/(πΔν_B) = ${sig(TB * 1e9, 4)} ns`} />
+      </div>
+      <p className="text-sm text-gray-400 mb-8">
+        The SBS threshold of a fibre (effective area, length, loss, polarization and source linewidth) is on the{" "}
+        <Link href="/fiber-optics/sbs-threshold" className="text-blue-400 hover:underline">SBS threshold calculator</Link>.
+      </p>
 
       <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <h3 className="text-sm font-bold mb-2">Brillouin Frequency Shift vs Wavelength</h3>
-        <ChartPanel data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "ν_B (GHz)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.3, font: { size: 9 } }, margin: { t: 20, b: 80, l: 60, r: 20 } }} />
+        <h3 className="text-sm font-bold mb-2">Brillouin shift vs pump wavelength</h3>
+        <ChartPanel
+          data={[{ x: curve.x, y: curve.y, type: "scatter" as const, mode: "lines" as const, name: "ν_B", line: { color: "#60a5fa", width: 2 } }]}
+          layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Pump wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "ν_B (GHz)", gridcolor: "#374151" }, margin: { t: 20, b: 50, l: 60, r: 20 } }}
+        />
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4">
-        <h3 className="text-sm font-bold mb-2">Brillouin Gain Coefficient vs Wavelength</h3>
-        <ChartPanel data={gainChart} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "g_B (×10⁻¹¹ m/W)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.3, font: { size: 9 } }, margin: { t: 20, b: 80, l: 60, r: 20 } }} />
-      </div>
-
-      <div className="mt-8 bg-gray-900 rounded-lg p-4 text-sm text-gray-400">
-        <p className="font-mono bg-gray-800 p-2 rounded mb-2">ν_B = 2nV_A / λ | g_B = 2πn⁷p₁₂² / (c²λ²ρΓ_B)</p>
-        <p className="font-mono bg-gray-800 p-2 rounded">P<sub>th</sub> ≈ 21·A<sub>eff</sub> / (g_B · L<sub>eff</sub>) | Γ_B = Brillouin linewidth</p>
-        <p className="mt-2 text-xs">Acoustic velocity: V_A = {mat.vA} m/s. SBS is a major power limit in narrow-linewidth fiber systems.</p>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-2">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2">
+          <p className="font-mono">ν_B = 2nv_A/λ_p,  g_B = 2πn⁷p₁₂² / (cλ_p²ρv_AΔν_B)</p>
+          <p>
+            Backward Brillouin scattering from one longitudinal acoustic wave of wavelength Λ = λ_p/(2n). The gain line is
+            Lorentzian with the phonon damping as its width; g_B is its peak for a pump much narrower than Δν_B. In a fibre the
+            mode index replaces n and acoustic guiding lowers the overlap, so measured fibre gains are below the bulk value.
+          </p>
+          <p>
+            Δν_B grows as λ_p⁻², which cancels the λ_p⁻² in g_B: the peak gain of silica stays near 3–5e-11 m/W at all pump
+            wavelengths, while a fixed Δν_B would make it look strongly wavelength dependent.
+          </p>
+        </div>
       </div>
     </>
   );

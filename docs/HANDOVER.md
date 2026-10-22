@@ -1,35 +1,39 @@
-# Handover — 2026-10-22 (session 130 → session 131)
+# Handover — 2026-10-22 (session 131 → session 132)
 
 **Start here:** read this file, then the first unchecked box in `docs/ROADMAP.md`. Don't read
 `docs/archive/roadmap-history.md` whole: `grep -n` it.
-Session 130: **materials fix part 5b** (nonlinear-index, nonlinear-crystals), branch `phase-4/materials-fix-5b`, PR #161 to
-open. Next: materials fix part 6 (brillouin, raman, two-photon-absorption). No merges, 416 pages.
+Session 131: **materials fix part 6** (brillouin-scattering, raman-scattering, two-photon-absorption), branch
+`phase-4/materials-fix-6`, PR #162 to open. Next: materials fix part 7 (absorption). No merges, 416 pages.
 
 ## State
-- `src/physics/materials/kerr-index.ts`: `KERR_MEDIA` (silica fibre 1550 nm: `SILICA_N2`, Malitson n₀; 12 media at 800 nm
-  from Dubietis 2017 Table 1, n₂ in 1e-16 cm²/W → m²/W), `kerrIndexChange`, `piPhaseIntensity`. The page reuses
-  `kerr.ts` `nonlinearPhase`/`criticalPower` and `fiber-nonlinear.ts` `nonlinearCoefficient`.
-- `src/physics/materials/nonlinear-crystals.ts`: `SHG_CRYSTALS` (bbo, lbo, ktp, bibo, mgo-ln, ppln; 1064 → 532 nm; d_eff,
-  n_ω, n_2ω, transparency), `typeIPhaseMatchingAngle`, `uniaxialWalkOff`, `xyPlaneIndex`, `focusedShg` (Boyd–Kleinman, Δk = 0),
-  `shgPrefactor`, `waistForXi`, `shgFigureOfMerit`, `BK_OPTIMUM`. User decision: lean SHG page, unsourced crystals dropped.
-- URL params: nonlinear-index `material`, `n2` (cm²/W, custom), `n0`, `intensity` W/cm², `wavelength` nm, `length` mm, `area` µm²;
-  nonlinear-crystals `material`, `length` mm, `pumpPower` W, `waist` µm, custom `pumpWavelength` nm, `deff` pm/V, `n`.
-- `tests/materials-nonlinear.test.ts` (7 tests), 1021 tests. Materials 15 / 32 tiered, 16 `knownIssue`s; 398 / 416 total.
+- `src/physics/materials/brillouin.ts`: `FUSED_SILICA_BRILLOUIN` (Agrawal n 1.45, v_A 5960, ρ 2210, p₁₂ 0.286), `brillouinGain`,
+  `acousticWavelength`, `phononLifetime`; the page reuses `fiber-nonlinear.ts` `brillouinShift`/`stokesWavelength` and links sbs-threshold.
+- `src/physics/materials/raman-gain.ts`: `RAMAN_LINES` (diamond: Savitski 2013 Table 1 at 6 pump λ; Ba(NO₃)₂ 532/1064; KGW 901/768;
+  fused silica from `fiber-nonlinear.ts`), `ramanGainAtPump` (measured / interpolated in 1/λ_p / scaled 1/λ_p), `lorentzianGain`,
+  `dephasingTime`, `ramanGainExponent`. Stokes λ from `coherent-raman.ts` (shift in 1/m).
+- `src/physics/materials/two-photon.ts`: `TPA_MEDIA` (Van Stryland 1985 OL Table 1: GaAs, CdTe, CdSe, ZnTe at 1064; ZnSe, CdS, ZnO
+  at 532), `tpaF2`, `scalingBeta` (Eq. 1, K 3100), `scaledBeta` (F₂ ratio), `tpaRegime`, `tpaTransmission`.
+- URL params: brillouin `material` (fused-silica|custom), `wavelength` nm, `linewidth` MHz, custom `n`, `vA`, `rho`, `p12`; raman
+  `material`, `pumpWl` nm, `intensity` GW/cm², `length` mm; TPA `material`, `wavelength` nm, `intensity` GW/cm², `thickness` mm,
+  custom `beta` cm/GW, `lambdaRef` nm, `bandGap` eV.
+- `tests/materials-scattering.test.ts` (8 tests), 1029 tests. Materials 18 / 32 tiered, 13 `knownIssue`s; 401 / 416 total.
 
 ## Next actions
-1. `/ship` this branch. Release-check values: `materials/nonlinear-index=10.54` (default φ rad),
-   `materials/nonlinear-crystals=12.11` (default BBO P_2ω mW); older ones in PR #141–#160. No release unless asked.
-2. Materials fix part 6 (ROADMAP item 6): brillouin-scattering, raman-scattering, two-photon-absorption. PR #155 batch-3
-   findings: `gh pr view 155 --json body -q .body | grep -n "brillouin\|raman\|two-photon"`. Split 6a/6b if needed.
-3. Later: open findings (ROADMAP; new: nonlinear-crystals and nonlinear-index dropped data), `polarizer-types` (needs the
-   user at the laptop with Chrome).
+1. `/ship` this branch. Release-check values: `materials/brillouin-scattering=11.15` (ν_B GHz), `materials/raman-scattering=1239.83`
+   (diamond Stokes nm), `materials/two-photon-absorption=30.3` (GaAs T %); older ones in PR #141–#161. No release unless asked.
+2. Materials fix part 7 (ROADMAP item 7): oh-absorption → fiber-optics/low-water-peak, absorption → spectroscopy/lambert-beer-law,
+   rare-earth-absorption, color-centers. PR #155 findings: `gh pr view 155 --json body -q .body | grep -n "oh-abs|absorption|rare-earth|color"`.
+   Two merges (redirect + codemod): split 7a/7b if needed.
+3. Later: open findings (ROADMAP; new: dropped data on the three part-6 pages), `polarizer-types` (needs the user at the laptop with Chrome).
+
 
 ## Non-obvious facts
+- **Session 131:** CREOL papers download (`curl -L -A "Mozilla/5.0" https://api.creol.ucf.edu/Publications/<n>.pdf`; 1790 = Van Stryland
+  1985 OL). Strathprints author PDFs download. A garbled `pdftotext -layout` table often reads column by column without `-layout`;
+  check each row against the paper's own predicted column. A `next start` left on :3100 serves the old build after a rebuild: kill it first.
 - **Session 130:** EKSMA data sheets download (`curl -L -A "Mozilla/5.0" https://eksmaoptics.com/out/media/EKSMA_Optics_<BBO|LBO|KTP>_Crystals.pdf`,
   `pdftotext` without `-layout`); castech-us.com serves HTML pages (`index.htm` lists them); findlight CASTECH PDFs return HTML.
   WebFetch of an Optica abstract page can read its tables (small model: cross-check the numbers).
-- **Session 129:** textbook tables and worked examples: FOSSEE notebooks (`tbc-python.fossee.in/convert-notebook/<book>/ChapterN.ipynb`,
-  WebFetch). Caltech authors' PDFs download, but their tables are OCR-garbled. Chrome exit 75 (another project's devctl job holds it): rerun in background.
 - **Session 128:** MDPI PDFs 403 to curl and WebFetch: try the Semantic Scholar cache (`pdfs.semanticscholar.org/…`).
   Schott's per-glass sheets return HTML; refractiveindex.info hosts `schott_2017-01-20.pdf` (`pdftotext` puts each E, μ, K
   value a line below its label). Crossref every DOI and article number; add no sign convention a source doesn't state.
@@ -51,15 +55,11 @@ open. Next: materials fix part 6 (brillouin, raman, two-photon-absorption). No m
   run on its own. A merge lowers the page floor in `tests/calculator-pages.test.ts`. Chrome dumps queue behind `npm run check`.
 - **Session 119:** a `useMemo` whose callback calls a heavy function draws the React Compiler warning "Existing memoization
   could not be preserved" and the compiler skips the whole component: call a plain module-level function instead.
-- **Session 118:** a running `next dev` keeps the redirects it read at start: a new redirect 404s there until a restart
-  (`tests/redirects.test.ts` covers it). An edit made while `npm run check` runs may miss tsc: re-lint that file at least.
 - **Sessions 114–115:** unsourceable constants: make them inputs, cite the defaults, log the gap. Render a SimpleLineChart only
   with data (empty series → NaN attributes). Mutating an **untracked** file: `cp` it to the scratchpad first.
 - **Session 113:** Next redirects keep the query string, so an old link's params arrive at the merged page: reuse their names
   and units. `besselJ` costs 2|x| + 64 cosines: inside a quadrature use `besselJ0Fast` (|err| < 1e-7).
-- **Session 111:** tiers.ts calls paraxial / Gaussian-beam models "textbook"; "exact" fits definitions (M², ISO 11146).
-  Chrome: `C:/Program Files/Google/Chrome/Application/chrome.exe`, `--dump-dom` reads hydrated values, `--screenshot=` needs `C:/…`.
-- **Session 107:** Git Bash rewrites `/a/b` arguments to Windows paths: prefix `MSYS_NO_PATHCONV=1` (ui-check, chrome). Python has no Pillow:
+- **Session 107:** Git Bash rewrites `/a/b` arguments to Windows paths: prefix `MSYS_NO_PATHCONV=1` (ui-check, chrome; `C:/Program Files/Google/Chrome/Application/chrome.exe`, `--dump-dom` reads hydrated values). Python has no Pillow:
   shrink screenshots with chrome `--force-device-scale-factor=0.5`. Registry/JSX text can't hold `{…}`. `npm run dev` touches `next-env.d.ts`: `git checkout` it.
 - **Sessions 95–98:** charts put the axis minimum at the data minimum, so round plotted values (6 decimals). `SimpleChart`
   colours a markers-only trace from `line.color`, not `marker.color`: give both. Book section numbers are not cited.
