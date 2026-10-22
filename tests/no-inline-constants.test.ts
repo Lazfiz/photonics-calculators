@@ -40,8 +40,12 @@ const GUARDS: Guard[] = [
 
 const srcDir = path.join(process.cwd(), "src");
 const constantsFile = path.join(srcDir, "physics", "constants.ts");
-// Measured data tables, copied verbatim: a value can sit near a constant by chance (the wavelength 8.308 µm in the Ag table vs R_gas).
-const dataTables = new Set([path.join(srcDir, "physics", "materials", "silver-yang-2015.ts")]);
+// Measured data tables, copied verbatim: a value can sit near a constant by chance (the wavelength 8.308 µm in the Ag table vs R_gas,
+// hydrogen's Henke f₂ 0.859897e-4 at 1313 eV vs k_B in eV/K).
+const dataTables = new Set([
+  path.join(srcDir, "physics", "materials", "silver-yang-2015.ts"),
+  path.join(srcDir, "physics", "materials", "henke-data.ts"),
+]);
 
 function inlineConstants(file: string): string[] {
   const sf = ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true);

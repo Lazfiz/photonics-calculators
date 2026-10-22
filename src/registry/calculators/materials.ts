@@ -420,8 +420,23 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "polymer-optics",
     title: "Polymer Optical Materials",
-    description: "Refractive index, dispersion, and loss data for optical polymers",
-    knownIssue: "The 1300 and 1550 nm losses of PMMA, polycarbonate and polystyrene are far too low, and the index fits differ from the listed values by up to 0.02.",
+    description: "Refractive index, group index and Abbe number of PMMA, polycarbonate, polystyrene, Zeonex, NOA 61 and SU-8 from published dispersion fits, with surface reflectance and the NA of a polymer core/cladding pair.",
+    tier: "textbook",
+    modelNote: "Published fits (Sellmeier, n² power series, Cauchy), each valid only in its measured range; Sultanova's fits match her data within 0.001. Grade, cure and temperature shift n by ~0.003, so V_d is good to ~10 %. No loss model: C–H overtones make these polymers lossy in the near infrared.",
+    references: [
+      {
+        citation: "Sultanova N., Kasarova S., Nikolov I. (2009). Dispersion properties of optical polymers. Acta Phys. Pol. A 116, 585–587. Table: measured indices (±0.001, 20 °C) and Abbe numbers of PMMA, PC, PS and Zeonex E48R.",
+        url: "https://doi.org/10.12693/APhysPolA.116.585",
+      },
+      {
+        citation: "Beadie G., Brindza M., Flynn R. A., Rosenberg A., Shirk J. S. (2015). Refractive index measurements of poly(methyl methacrylate) (PMMA) from 0.4–1.6 μm. Appl. Opt. 54, F139–F143.",
+        url: "https://doi.org/10.1364/AO.54.00F139",
+      },
+      {
+        citation: "Polyanskiy M. N. refractiveindex.info database: Sellmeier fits of Sultanova's data; Norland NOA 61 and MicroChem SU-8 2000 (uncured) Cauchy coefficients.",
+        url: "https://refractiveindex.info",
+      },
+    ],
   },
   {
     slug: "radiation-damage",
@@ -545,8 +560,20 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "thermal-expansion",
     title: "Thermal Expansion",
-    description: "ΔL = α · ΔT · L — dimensional change from temperature",
+    description: "Length change ΔL = α·L·ΔT, strain and the change in 633 nm waves, with room-temperature expansion coefficients of optical glasses, crystals and mount metals.",
     keywords: ["Coefficient of Thermal Expansion"],
+    tier: "textbook",
+    modelNote: "ΔL = αLΔT with one room-temperature α, good over tens of kelvin; α rises with temperature (Si: 2.6 to about 4.6 ×10⁻⁶/K from 300 to 1500 K). Crystal and glass values checked against Crystran; ULE, Zerodur, Pyrex, SF11 and the metals are typical values, not checked.",
+    references: [
+      {
+        citation: "Okada Y., Tokumaru Y. (1984). Precise determination of lattice parameter and thermal expansion coefficient of silicon between 300 and 1500 K. J. Appl. Phys. 56, 314–320.",
+        url: "https://doi.org/10.1063/1.333965",
+      },
+      {
+        citation: "Crystran. Handbook of Infrared and Ultraviolet Optical Materials, data sheets: thermal expansion of fused silica, N-BK7, sapphire, CaF₂, MgF₂, Si, Ge, ZnSe and diamond.",
+        url: "https://www.crystran.com/optical-materials",
+      },
+    ],
   },
   {
     slug: "transparency-range",
@@ -599,7 +626,22 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "x-ray-optics",
     title: "X-ray Optics Materials",
-    description: "X-ray refractive index: n = 1 - δ - iβ. For hard X-rays, δ,β ∝ λ² ∝ 1/E².",
-    knownIssue: "The tabulated δ values disagree with the listed f₁ by up to a factor of 2.3, and β is scaled as 1/E² instead of about 1/E⁴, so penetration depths are wrong away from 10 keV.",
+    description: "X-ray refractive index n = 1 − δ − iβ of Be, diamond, Si, Ni, Cu, Mo, Pt, Au, Kapton and Si₃N₄ from 1 to 30 keV, from the Henke scattering factors: critical angle, attenuation length, μ/ρ and transmission, with absorption edges.",
+    tier: "textbook",
+    modelNote: "δ, β = (r_e λ²/2π) Σ n_q f₁,₂ with the Henke f₁, f₂ of independent atoms (CXRO tables, interpolated within 0.2 %); θ_c = √(2δ), μ = 4πβ/λ. Approximate within ~50 eV of an edge. β is photoabsorption only: below CXRO's β by 22 % for Be and 6 % for C at 10 keV (Compton), < 1 % for Si and heavier.",
+    references: [
+      {
+        citation: "Henke B. L., Gullikson E. M., Davis J. C. (1993). X-ray interactions: photoabsorption, scattering, transmission, and reflection at E = 50–30,000 eV, Z = 1–92. At. Data Nucl. Data Tables 54, 181–342.",
+        url: "https://doi.org/10.1006/adnd.1993.1013",
+      },
+      {
+        citation: "CXRO X-ray Database (Lawrence Berkeley National Laboratory). Atomic scattering factor files (sf/<element>.nff) and index-of-refraction calculator; default densities.",
+        url: "https://henke.lbl.gov/optical_constants/",
+      },
+      {
+        citation: "Als-Nielsen J., McMorrow D. (2011). Elements of Modern X-ray Physics, 2nd ed., Wiley. Ch. 3: refractive index and critical angle.",
+        url: "https://doi.org/10.1002/9781119998365",
+      },
+    ],
   },
 ];

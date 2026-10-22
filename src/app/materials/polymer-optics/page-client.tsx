@@ -1,202 +1,158 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  POLYMERS,
+  corecladNA,
+  normalReflectance,
+  polymerAbbe,
+  polymerDnDlambda,
+  polymerGroupIndex,
+  polymerIndex,
+  polymerRange,
+  type PolymerId,
+} from "../../../physics/materials/polymer-optics";
 
-interface Polymer {
-  name: string;
-  abbreviation: string;
-  n589: number;
-  n633: number;
-  n1300: number;
-  n1550: number;
-  dn_dt: number;
-  Tg: number;
-  attenuation_1300: number; // dB/km
-  attenuation_1550: number;
-  transparencyMin: number; // μm
-  transparencyMax: number;
-  stress_optic: number; // stress-optic coefficient ×10⁻¹² Pa⁻¹
-  B1: number; B2: number; C1: number; C2: number;
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "—");
+const IDS = Object.keys(POLYMERS) as PolymerId[];
+const COLORS = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#06b6d4"];
+const NM = 1e-9;
+
+// Module level so the React Compiler keeps the page component: each fit over its own range, 5 nm steps.
+function curves() {
+  return IDS.map((k, i) => {
+    const d = POLYMERS[k].dispersion;
+    const [lo, hi] = polymerRange(d);
+    const points = [];
+    for (let w = Math.ceil(lo / NM / 5) * 5; w <= hi / NM; w += 5) points.push({ x: w, y: Number(polymerIndex(d, w * NM).toFixed(6)) });
+    return { name: POLYMERS[k].name, color: COLORS[i % COLORS.length], points };
+  });
 }
 
-const polymers: Record<string, Polymer> = {
-  "PMMA": {
-    name: "PMMA", abbreviation: "Poly(methyl methacrylate)",
-    n589: 1.491, n633: 1.489, n1300: 1.483, n1550: 1.481,
-    dn_dt: -105, Tg: 105,
-    attenuation_1300: 60, attenuation_1550: 150,
-    transparencyMin: 0.4, transparencyMax: 1.7,
-    stress_optic: -4.5,
-    B1: 1.4710, B2: 0.0080, C1: 0.0060, C2: 0.0180,
-  },
-  "Polycarbonate": {
-    name: "Polycarbonate", abbreviation: "PC (Bisphenol-A)",
-    n589: 1.586, n633: 1.585, n1300: 1.579, n1550: 1.577,
-    dn_dt: -107, Tg: 150,
-    attenuation_1300: 80, attenuation_1550: 200,
-    transparencyMin: 0.4, transparencyMax: 1.6,
-    stress_optic: -5.5,
-    B1: 1.5650, B2: 0.0120, C1: 0.0070, C2: 0.0200,
-  },
-  "Polystyrene": {
-    name: "Polystyrene", abbreviation: "PS",
-    n589: 1.592, n633: 1.590, n1300: 1.584, n1550: 1.582,
-    dn_dt: -120, Tg: 100,
-    attenuation_1300: 100, attenuation_1550: 250,
-    transparencyMin: 0.4, transparencyMax: 1.6,
-    stress_optic: -6.0,
-    B1: 1.5700, B2: 0.0140, C1: 0.0075, C2: 0.0220,
-  },
-  "CYTOP": {
-    name: "CYTOP", abbreviation: "Amorphous Fluoropolymer",
-    n589: 1.340, n633: 1.339, n1300: 1.336, n1550: 1.334,
-    dn_dt: -100, Tg: 108,
-    attenuation_1300: 10, attenuation_1550: 30,
-    transparencyMin: 0.2, transparencyMax: 2.0,
-    stress_optic: -3.0,
-    B1: 1.3250, B2: 0.0050, C1: 0.0050, C2: 0.0150,
-  },
-  "SU-8": {
-    name: "SU-8", abbreviation: "Epoxy-based photoresist",
-    n589: 1.575, n633: 1.573, n1300: 1.568, n1550: 1.566,
-    dn_dt: -90, Tg: 200,
-    attenuation_1300: 50, attenuation_1550: 120,
-    transparencyMin: 0.4, transparencyMax: 1.7,
-    stress_optic: -4.0,
-    B1: 1.5550, B2: 0.0100, C1: 0.0065, C2: 0.0190,
-  },
-  "Epoxy (NOA)": {
-    name: "NOA61", abbreviation: "Norland Optical Adhesive 61",
-    n589: 1.560, n633: 1.558, n1300: 1.553, n1550: 1.551,
-    dn_dt: -95, Tg: 70,
-    attenuation_1300: 40, attenuation_1550: 100,
-    transparencyMin: 0.4, transparencyMax: 1.8,
-    stress_optic: -4.2,
-    B1: 1.5400, B2: 0.0090, C1: 0.0062, C2: 0.0185,
-  },
-  "PDMS": {
-    name: "PDMS", abbreviation: "Polydimethylsiloxane",
-    n589: 1.411, n633: 1.410, n1300: 1.406, n1550: 1.404,
-    dn_dt: -80, Tg: -125,
-    attenuation_1300: 30, attenuation_1550: 80,
-    transparencyMin: 0.3, transparencyMax: 2.5,
-    stress_optic: -2.5,
-    B1: 1.3950, B2: 0.0060, C1: 0.0050, C2: 0.0160,
-  },
-  "OrmoComp": {
-    name: "OrmoComp", abbreviation: "Hybrid ORMOSIL polymer",
-    n589: 1.520, n633: 1.518, n1300: 1.513, n1550: 1.511,
-    dn_dt: -85, Tg: 120,
-    attenuation_1300: 15, attenuation_1550: 40,
-    transparencyMin: 0.35, transparencyMax: 2.0,
-    stress_optic: -3.5,
-    B1: 1.5000, B2: 0.0085, C1: 0.0058, C2: 0.0175,
-  },
+function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: string }) {
+  return (
+    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+      <p className="text-sm text-gray-400">{label}</p>
+      <p className={`text-xl font-bold ${tone}`}>{value}</p>
+      {sub && <p className="text-xs text-gray-400">{sub}</p>}
+    </div>
+  );
+}
+
+const rangeText = (k: PolymerId) => {
+  const [lo, hi] = polymerRange(POLYMERS[k].dispersion);
+  return `${Math.round(lo / NM)}–${Math.round(hi / NM)} nm`;
 };
 
-function cauchy(p: Polymer, lambdaUm: number): number {
-  return p.B1 + p.B2 / (lambdaUm * lambdaUm);
-}
-
-const colors = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4", "#f97316"];
-
 export default function PolymerOpticsPage() {
-  const [wavelength, setWavelength] = useURLState("wavelength", 633);
-  const [selected, setSelected] = useState("PMMA");
+  const [polymerRaw, setPolymer] = useURLState("polymer", "pmma");
+  const [claddingRaw, setCladding] = useURLState("cladding", "none");
+  const [wavelengthRaw, setWavelength] = useURLState("wavelength", 633); // nm
 
-  const p = polymers[selected];
-  const n = useMemo(() => cauchy(p, wavelength / 1000), [selected, wavelength]);
+  const id = IDS.find((k) => k === polymerRaw) ?? "pmma";
+  const cladId = IDS.find((k) => k === claddingRaw && k !== id);
+  const d = POLYMERS[id].dispersion;
+  const lambda = clamp(wavelengthRaw, 320, 1620, 633) * NM;
 
-  const chartData = useMemo(() => {
-    const ws: number[] = [];
-    for (let w = 400; w <= 1700; w += 5) ws.push(w);
-    return Object.entries(polymers).map(([key, poly], i) => ({
-      x: ws, y: ws.map(w => cauchy(poly, w / 1000)),
-      type: "scatter" as const, mode: "lines" as const, name: poly.name,
-      line: { color: colors[i % colors.length], width: key === selected ? 3 : 1.5 },
-    }));
-  }, [selected]);
-
-  const attenuationData = useMemo(() => {
-    const entries = Object.entries(polymers);
-    return [
-      {
-        x: entries.map(([, p]) => p.name),
-        y: entries.map(([, p]) => p.attenuation_1300),
-        type: "bar" as const, name: "1310 nm", marker: { color: "#3b82f6" },
-      },
-      {
-        x: entries.map(([, p]) => p.name),
-        y: entries.map(([, p]) => p.attenuation_1550),
-        type: "bar" as const, name: "1550 nm", marker: { color: "#ef4444" },
-      },
-    ];
-  }, []);
+  const n = polymerIndex(d, lambda);
+  const ng = polymerGroupIndex(d, lambda);
+  const dndl = polymerDnDlambda(d, lambda);
+  const vd = polymerAbbe(d);
+  const R = normalReflectance(n);
+  const n2 = cladId ? polymerIndex(POLYMERS[cladId].dispersion, lambda) : NaN;
+  const na = corecladNA(n, n2);
+  const outside = !Number.isFinite(n);
+  const naNote = !cladId ? "choose a cladding"
+    : !Number.isFinite(n2) ? `cladding fit covers ${rangeText(cladId)}`
+    : !(na > 0) && Number.isFinite(n) ? "cladding index ≥ core index: no guiding"
+    : `cladding n = ${n2.toFixed(5)}`;
 
   return (
     <>
-            
-      <div className="grid gap-4 sm:grid-cols-2 mb-6">
+      <div className="grid gap-4 sm:grid-cols-3 mb-6">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Polymer</label>
-          <select value={selected} onChange={e => setSelected(e.target.value)}
-            className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white">
-            {Object.entries(polymers).map(([k, v]) => <option key={k} value={k}>{v.name} — {v.abbreviation}</option>)}
+          <label htmlFor="polymer" className="block text-sm font-medium mb-2">Polymer (core)</label>
+          <select id="polymer" value={id} onChange={(e) => setPolymer(e.target.value)}
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none">
+            {IDS.map((k) => <option key={k} value={k}>{POLYMERS[k].name}</option>)}
           </select>
         </div>
         <div>
-          <ValidatedNumberInput label="Wavelength (nm)" value={wavelength} onChange={setWavelength} min={400} max={1700} />
+          <label htmlFor="cladding" className="block text-sm font-medium mb-2">Cladding</label>
+          <select id="cladding" value={cladId ?? "none"} onChange={(e) => setCladding(e.target.value)}
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none">
+            <option value="none">None</option>
+            {IDS.filter((k) => k !== id).map((k) => <option key={k} value={k}>{POLYMERS[k].name}</option>)}
+          </select>
         </div>
+        <ValidatedNumberInput label="Wavelength (nm)" value={wavelengthRaw} onChange={setWavelength} min={320} max={1620} step="any" />
+      </div>
+      {outside && (
+        <p className="text-sm text-amber-400 mb-6">
+          {POLYMERS[id].name}: the fit covers {rangeText(id)} only.
+        </p>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <Card label={`Refractive index n at ${(lambda / NM).toFixed(1)} nm`} value={show(n, () => n.toFixed(5))}
+          sub={`fit range ${rangeText(id)}`} tone="text-blue-400" />
+        <Card label="Group index n_g" value={show(ng, () => ng.toFixed(5))}
+          sub={show(dndl, () => `dn/dλ = ${(dndl * 1e-6).toFixed(5)} µm⁻¹`)} tone="text-green-400" />
+        <Card label="Abbe number V_d" value={show(vd, () => vd.toFixed(1))}
+          sub="(n_d − 1)/(n_F − n_C) from the fit" tone="text-amber-400" />
+        <Card label="Reflectance per surface" value={show(R, () => `${(R * 100).toFixed(3)} %`)}
+          sub="normal incidence, in air" tone="text-purple-400" />
+        <Card label="Numerical aperture" value={cladId ? show(na, () => (na >= 1 ? "≥ 1" : na.toFixed(4))) : "—"}
+          sub={naNote}
+          tone="text-red-400" />
+        <Card label="Acceptance half-angle" value={show(na, () => `${((Math.asin(Math.min(na, 1)) * 180) / Math.PI).toFixed(2)}°`)}
+          sub="arcsin(NA), launch from air" tone="text-cyan-400" />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">n at {wavelength} nm</p>
-          <p className="text-2xl font-bold text-blue-400 mt-1">{n.toFixed(4)}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">dn/dT (×10⁻⁶/K)</p>
-          <p className="text-2xl font-bold text-green-400 mt-1">{p.dn_dt}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">T<sub>g</sub> (°C)</p>
-          <p className="text-2xl font-bold text-amber-400 mt-1">{p.Tg}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400">Transparency</p>
-          <p className="text-lg font-bold text-purple-400 mt-1">{p.transparencyMin}–{p.transparencyMax} μm</p>
-        </div>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
+        <SimpleLineChart title="Refractive index over each fit's range" xLabel="Wavelength (nm)" yLabel="n" series={curves()} />
       </div>
 
-      <ChartPanel data={chartData}
-        layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" },
-          xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" },
-          yaxis: { title: "Refractive Index n", gridcolor: "#374151" },
-          margin: { t: 20, r: 20, b: 50, l: 60 },
-          legend: { orientation: "h", y: -0.25 },
-        }}
-       
-       
-      />
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8 overflow-x-auto">
+        <h2 className="text-lg font-semibold mb-3">Polymers</h2>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-gray-400 border-b border-gray-800">
+              <th className="text-left py-1">Polymer</th><th className="text-right py-1">n_d</th>
+              <th className="text-right py-1">V_d</th><th className="text-right py-1">Range</th>
+              <th className="text-left py-1 pl-4">Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            {IDS.map((k) => (
+              <tr key={k} className="border-b border-gray-800/50">
+                <td className="py-1">{POLYMERS[k].name}</td>
+                <td className="text-right py-1">{polymerIndex(POLYMERS[k].dispersion, 587.5618 * NM).toFixed(4)}</td>
+                <td className="text-right py-1">{polymerAbbe(POLYMERS[k].dispersion).toFixed(1)}</td>
+                <td className="text-right py-1 whitespace-nowrap">{rangeText(k)}</td>
+                <td className="py-1 pl-4 text-xs text-gray-400">{POLYMERS[k].reference}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      <h2 className="text-xl font-bold mt-8 mb-4">Optical Attenuation (dB/km)</h2>
-      <ChartPanel data={attenuationData}
-        layout={{
-          paper_bgcolor: "transparent", plot_bgcolor: "transparent",
-          font: { color: "#9ca3af" },
-          xaxis: { title: "Polymer", gridcolor: "#374151" },
-          yaxis: { title: "Attenuation (dB/km)", gridcolor: "#374151" },
-          margin: { t: 20, r: 20, b: 80, l: 60 },
-          legend: { orientation: "h", y: -0.3 },
-          barmode: "group",
-        }}
-       
-       
-      />
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-3">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2 font-mono">
+          <p>Sellmeier n² = 1 + Bλ²/(λ² − C); PMMA n² = A + Σ Bᵢλ^pᵢ; Cauchy n = A + B/λ² + C/λ⁴</p>
+          <p>n_g = n − λ dn/dλ,   R = ((n − 1)/(n + 1))²,   NA = √(n₁² − n₂²)</p>
+        </div>
+        <p className="text-xs text-gray-400 mt-3">
+          Each fit holds only inside its measured range. Indices vary by grade, cure and temperature: two PMMA
+          samples differ by up to 0.003. With index accuracy ±0.001 and n_F − n_C ≈ 0.01, the Abbe numbers from
+          these fits are good to about 10 %. Absorption and loss are not modelled; C–H vibrational overtones make
+          these polymers lossy in the near infrared.
+        </p>
+      </div>
     </>
   );
 }

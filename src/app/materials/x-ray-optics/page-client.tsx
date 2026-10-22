@@ -1,102 +1,151 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import ChartPanel from "../../../components/chart-panel";
-import { hc_eV_nm } from "../../../physics/constants";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import {
+  HENKE_E_MAX,
+  HENKE_E_MIN,
+  XRAY_MATERIALS,
+  xrayIndex,
+  xrayTransmission,
+  xrayWavelength,
+  type XRayMaterialId,
+} from "../../../physics/materials/x-ray-optics";
 
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "—");
+const IDS = Object.keys(XRAY_MATERIALS) as XRayMaterialId[];
+const COLORS = ["#60a5fa", "#f87171", "#34d399", "#fbbf24", "#a78bfa", "#fb923c", "#f472b6", "#22d3ee", "#a3e635", "#e5e7eb"];
+// 300 log-spaced energies, 1–30 keV (the range of the Henke tables)
+const CHART_E = Array.from({ length: 300 }, (_, i) => HENKE_E_MIN * (HENKE_E_MAX / HENKE_E_MIN) ** (i / 299));
+const round = (x: number) => Number(x.toPrecision(5));
 
-// Critical angle and refractive index for X-ray materials
-interface XRayMaterial {
-  name: string;
-  Z: number; // atomic number
-  rho: number; // density g/cm³
-  f1_10keV: number;
-  f2_10keV: number;
-  delta_10keV: number; // refractive index decrement
-  beta_10keV: number; // absorption
-  K_edge_keV: number;
+// Module level so the React Compiler keeps the page component: 10 materials × 300 energies, computed once.
+let curveCache: Record<XRayMaterialId, { delta: number[]; beta: number[]; L_um: number[] }> | null = null;
+function presetCurves() {
+  curveCache ??= Object.fromEntries(IDS.map((k) => {
+    const m = XRAY_MATERIALS[k];
+    const r = CHART_E.map((E) => xrayIndex(m.formula, m.rho_gcc * 1000, E));
+    return [k, { delta: r.map((x) => round(x.delta)), beta: r.map((x) => round(x.beta)), L_um: r.map((x) => round(x.attenuationLength * 1e6)) }];
+  })) as Record<XRayMaterialId, { delta: number[]; beta: number[]; L_um: number[] }>;
+  return curveCache;
 }
 
-const MATERIALS: Record<string, XRayMaterial> = {
-  Beryllium: { name: "Beryllium (Be)", Z: 4, rho: 1.85, f1_10keV: 4.0, f2_10keV: 0.003, delta_10keV: 1.42e-6, beta_10keV: 5.3e-9, K_edge_keV: 0.111 },
-  Diamond: { name: "Diamond (C)", Z: 6, rho: 3.52, f1_10keV: 6.0, f2_10keV: 0.009, delta_10keV: 4.65e-6, beta_10keV: 6.98e-9, K_edge_keV: 0.284 },
-  Silicon: { name: "Silicon (Si)", Z: 14, rho: 2.33, f1_10keV: 14.0, f2_10keV: 0.258, delta_10keV: 5.18e-6, beta_10keV: 9.55e-8, K_edge_keV: 1.839 },
-  Nickel: { name: "Nickel (Ni)", Z: 28, rho: 8.91, f1_10keV: 27.99, f2_10keV: 2.17, delta_10keV: 3.83e-5, beta_10keV: 2.96e-6, K_edge_keV: 8.333 },
-  Gold: { name: "Gold (Au)", Z: 79, rho: 19.32, f1_10keV: 76.78, f2_10keV: 13.05, delta_10keV: 5.32e-5, beta_10keV: 4.53e-6, K_edge_keV: 80.725 },
-  Platinum: { name: "Platinum (Pt)", Z: 78, rho: 21.45, f1_10keV: 75.78, f2_10keV: 12.5, delta_10keV: 5.86e-5, beta_10keV: 4.85e-6, K_edge_keV: 78.395 },
-  Molybdenum: { name: "Molybdenum (Mo)", Z: 42, rho: 10.22, f1_10keV: 39.93, f2_10keV: 4.91, delta_10keV: 4.04e-5, beta_10keV: 9.94e-7, K_edge_keV: 20.0 },
-  Copper: { name: "Copper (Cu)", Z: 29, rho: 8.96, f1_10keV: 28.99, f2_10keV: 2.53, delta_10keV: 3.95e-5, beta_10keV: 3.44e-6, K_edge_keV: 8.979 },
-  Kapton: { name: "Kapton (C₂₂H₁₀N₂O₅)", Z: 6.4, rho: 1.42, f1_10keV: 6.4, f2_10keV: 0.014, delta_10keV: 1.48e-6, beta_10keV: 3.22e-9, K_edge_keV: 0.284 },
-  SiliconNitride: { name: "Si₃N₄ Membrane", Z: 10.1, rho: 3.17, f1_10keV: 10.1, f2_10keV: 0.095, delta_10keV: 4.46e-6, beta_10keV: 4.2e-8, K_edge_keV: 1.839 },
-};
+function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: string }) {
+  return (
+    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+      <p className="text-sm text-gray-400">{label}</p>
+      <p className={`text-xl font-bold ${tone}`}>{value}</p>
+      {sub && <p className="text-xs text-gray-400">{sub}</p>}
+    </div>
+  );
+}
 
-// δ and β scale roughly as λ² for hard X-rays (away from edges)
-const deltaAtEnergy = (mat: XRayMaterial, E_keV: number) => {
-  const ratio = (10 / E_keV) ** 2;
-  return mat.delta_10keV * ratio;
-};
-const betaAtEnergy = (mat: XRayMaterial, E_keV: number) => {
-  const ratio = (10 / E_keV) ** 2;
-  return mat.beta_10keV * ratio;
-};
+function lengthText(L: number) {
+  if (L >= 1e-2) return `${(L * 1e3).toPrecision(4)} mm`;
+  if (L >= 1e-6) return `${(L * 1e6).toPrecision(4)} µm`;
+  return `${(L * 1e9).toPrecision(4)} nm`;
+}
 
 export default function XRayOpticsPage() {
-  const [selected, setSelected] = useState<string[]>(["Diamond", "Beryllium", "Silicon", "Gold"]);
-  const toggle = (k: string) => setSelected(p => p.includes(k) ? p.filter(x => x !== k) : [...p, k]);
+  const [materialRaw, setMaterial] = useURLState("material", "Be");
+  const [rhoRaw, setRho] = useURLState("density", 0); // g/cm³; 0 = the preset
+  const [energyRaw, setEnergy] = useURLState("energy", 10); // keV
+  const [thickRaw, setThick] = useURLState("thickness", 100); // µm
+  const [selected, setSelected] = useState<XRayMaterialId[]>(["Be", "diamond", "Si", "Au"]);
+  const toggle = (k: XRayMaterialId) => setSelected((p) => (p.includes(k) ? p.filter((x) => x !== k) : [...p, k]));
 
-  const energyRange = useMemo(() => Array.from({ length: 200 }, (_, i) => 0.5 + i * 0.5), []);
+  const id = IDS.find((k) => k === materialRaw) ?? "Be";
+  const mat = XRAY_MATERIALS[id];
+  const rhoInput = rhoRaw > 0 ? rhoRaw : mat.rho_gcc;
+  const rho = clamp(rhoInput, 0.01, 25, mat.rho_gcc) * 1000;
+  const E = clamp(energyRaw, HENKE_E_MIN / 1000, HENKE_E_MAX / 1000, 10) * 1000;
+  const t = clamp(thickRaw, 0, 1e5, 100) * 1e-6;
 
-  const deltaChart = useMemo(() => {
-    const colors = ["#60a5fa", "#f87171", "#34d399", "#fbbf24", "#a78bfa", "#fb923c"];
-    return {
-      data: selected.map((key, i) => {
-        const m = MATERIALS[key];
-        return { x: energyRange, y: energyRange.map(E => deltaAtEnergy(m, E)), type: "scatter" as const, mode: "lines" as const, name: m.name, line: { color: colors[i % colors.length] } };
-      }),
-      layout: { ...baseLayout, xaxis: { ...baseLayout.xaxis, title: { text: "Energy (keV)", font: { color: "#9ca3af" } } }, yaxis: { ...baseLayout.yaxis, title: { text: "δ (refractive index decrement)", font: { color: "#9ca3af" } }, type: "log" as const }, title: { text: "δ vs Energy", font: { color: "#e5e7eb" } } }
-    };
-  }, [selected]);
+  const r = xrayIndex(mat.formula, rho, E);
+  const lambda = xrayWavelength(E);
+  const T = xrayTransmission(t, r.attenuationLength);
+  const choose = (k: string) => { setMaterial(k); setRho(0); };
 
-  const betaChart = useMemo(() => {
-    const colors = ["#60a5fa", "#f87171", "#34d399", "#fbbf24", "#a78bfa", "#fb923c"];
-    return {
-      data: selected.map((key, i) => {
-        const m = MATERIALS[key];
-        return { x: energyRange, y: energyRange.map(E => betaAtEnergy(m, E)), type: "scatter" as const, mode: "lines" as const, name: m.name, line: { color: colors[i % colors.length] } };
-      }),
-      layout: { ...baseLayout, xaxis: { ...baseLayout.xaxis, title: { text: "Energy (keV)", font: { color: "#9ca3af" } } }, yaxis: { ...baseLayout.yaxis, title: { text: "β (absorption index)", font: { color: "#9ca3af" } }, type: "log" as const }, title: { text: "β vs Energy", font: { color: "#e5e7eb" } } }
-    };
-  }, [selected]);
-
-  const penetrationChart = useMemo(() => {
-    const colors = ["#60a5fa", "#f87171", "#34d399", "#fbbf24", "#a78bfa", "#fb923c"];
-    return {
-      data: selected.map((key, i) => {
-        const m = MATERIALS[key];
-        // Penetration depth L = λ/(4πβ) ∝ 1/(β·E)
-        return { x: energyRange, y: energyRange.map(E => {
-          const b = betaAtEnergy(m, E);
-          return (hc_eV_nm / (E * 1e3)) / (4 * Math.PI * b) * 1e-3; // λ(nm)/(4πβ) → nm, ×1e-3 → µm
-        }), type: "scatter" as const, mode: "lines" as const, name: m.name, line: { color: colors[i % colors.length] } };
-      }),
-      layout: { ...baseLayout, xaxis: { ...baseLayout.xaxis, title: { text: "Energy (keV)", font: { color: "#9ca3af" } } }, yaxis: { ...baseLayout.yaxis, title: { text: "Penetration Depth (µm)", font: { color: "#9ca3af" } }, type: "log" as const }, title: { text: "1/e Penetration Depth: L = λ/(4πβ)", font: { color: "#e5e7eb" } } }
-    };
-  }, [selected]);
+  const curves = presetCurves();
+  const xKeV = CHART_E.map((e) => round(e / 1000));
+  const chart = (key: "delta" | "beta" | "L_um", yTitle: string, title: string) => ({
+    data: IDS.filter((k) => selected.includes(k)).map((k) => ({
+      x: xKeV, y: curves[k][key], type: "scatter", mode: "lines", name: XRAY_MATERIALS[k].label,
+      line: { color: COLORS[IDS.indexOf(k)] },
+    })),
+    layout: {
+      ...baseLayout,
+      xaxis: { ...baseLayout.xaxis, type: "log", title: { text: "Energy (keV)", font: { color: "#9ca3af" } } },
+      yaxis: { ...baseLayout.yaxis, type: "log", title: { text: yTitle, font: { color: "#9ca3af" } } },
+      title: { text: title, font: { color: "#e5e7eb" } },
+    },
+  });
 
   return (
     <>
-                  <p className="text-gray-500 text-sm mb-6">Penetration depth: L = λ/(4πβ). Critical angle: θ<sub>c</sub> = √(2δ).</p>
+      <div className="mb-6">
+        <label htmlFor="material" className="block text-sm font-medium mb-2">Material</label>
+        <select id="material" value={id} onChange={(e) => choose(e.target.value)}
+          className="w-full sm:w-80 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none">
+          {IDS.map((k) => <option key={k} value={k}>{XRAY_MATERIALS[k].label}</option>)}
+        </select>
+        <p className="text-xs text-gray-400 mt-2">
+          Choosing a material fills its density. Thin films and membranes are often less dense than the bulk: enter
+          a measured value.
+        </p>
+      </div>
 
-      <div role="group" aria-label="Options" className="flex flex-wrap gap-2 mb-6">
-        {Object.keys(MATERIALS).map(key => (
-          <button key={key} onClick={() => toggle(key)} className={`px-3 py-1 rounded text-xs ${selected.includes(key) ? "bg-blue-600" : "bg-gray-800 hover:bg-gray-700"}`}>{MATERIALS[key].name.split("(")[0].trim()}</button>
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <ValidatedNumberInput label="Density (g/cm³)" value={rhoInput} onChange={setRho} min={0.01} max={25} step="any" />
+        <ValidatedNumberInput label="Photon Energy (keV)" value={energyRaw} onChange={setEnergy} min={1} max={30} step="any" />
+        <ValidatedNumberInput label="Thickness (µm)" value={thickRaw} onChange={setThick} min={0} max={100000} step="any" />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <Card label="Decrement δ" value={show(r.delta, () => r.delta.toExponential(4))}
+          sub={`n = 1 − δ − iβ at λ = ${(lambda * 1e9).toFixed(5)} nm`} tone="text-blue-400" />
+        <Card label="Absorption index β" value={show(r.beta, () => r.beta.toExponential(4))}
+          sub={show(r.beta, () => `β/δ = ${(r.beta / r.delta).toExponential(3)}`)} tone="text-red-400" />
+        <Card label="Critical angle θ_c" value={show(r.thetaC, () => `${(r.thetaC * 1e3).toFixed(4)} mrad`)}
+          sub={show(r.thetaC, () => `${((r.thetaC * 180) / Math.PI).toFixed(4)}° grazing, √(2δ)`)} tone="text-green-400" />
+        <Card label="Attenuation length" value={show(r.attenuationLength, () => lengthText(r.attenuationLength))}
+          sub="intensity 1/e, λ/(4πβ)" tone="text-yellow-400" />
+        <Card label="Mass attenuation μ/ρ" value={show(r.massAttenuation, () => `${(r.massAttenuation * 10).toPrecision(4)} cm²/g`)}
+          sub="photoabsorption" tone="text-purple-400" />
+        <Card label="Transmission" value={show(T, () => (T < 1e-4 ? T.toExponential(3) : `${(T * 100).toFixed(2)} %`))}
+          sub={`through ${(t * 1e6).toPrecision(4)} µm`} tone="text-orange-400" />
+      </div>
+
+      <div role="group" aria-label="Materials on the charts" className="flex flex-wrap gap-2 mb-6">
+        {IDS.map((k) => (
+          <button key={k} onClick={() => toggle(k)} aria-pressed={selected.includes(k)}
+            className={`px-3 py-1 rounded text-xs ${selected.includes(k) ? "bg-blue-600" : "bg-gray-800 hover:bg-gray-700"}`}>
+            {XRAY_MATERIALS[k].label.split(" (")[0]}
+          </button>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        <ChartPanel data={deltaChart.data} layout={deltaChart.layout} config={plotConfig} />
-        <ChartPanel data={betaChart.data} layout={betaChart.layout} config={plotConfig} />
-        <ChartPanel data={penetrationChart.data} layout={penetrationChart.layout} config={plotConfig} />
+      <div className="grid grid-cols-1 gap-6 mb-8">
+        <ChartPanel {...chart("delta", "δ", "δ vs energy (preset densities)")} config={plotConfig} />
+        <ChartPanel {...chart("beta", "β", "β vs energy: absorption edges")} config={plotConfig} />
+        <ChartPanel {...chart("L_um", "Attenuation length (µm)", "1/e attenuation length λ/(4πβ)")} config={plotConfig} />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-3">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2 font-mono">
+          <p>δ = (r_e λ²/2π) Σ n_q f₁,q,   β = (r_e λ²/2π) Σ n_q f₂,q</p>
+          <p>θ_c = √(2δ),   μ = 4πβ/λ,   T = exp(−μt)</p>
+        </div>
+        <p className="text-xs text-gray-400 mt-3">
+          f₁ and f₂ are the Henke scattering factors (CXRO tables, 1–30 keV) of independent atoms, so values within
+          about 50 eV of an absorption edge depend on the chemical state and are only approximate. β counts
+          photoabsorption only: Compton scattering adds about 28 % to the attenuation of beryllium and 6 % for carbon
+          at 10 keV, more at 30 keV, and under 1 % for silicon and heavier elements.
+        </p>
       </div>
     </>
   );
