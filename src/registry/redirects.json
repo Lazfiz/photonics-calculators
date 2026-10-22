@@ -111,5 +111,8 @@
   "/materials/verdet-constant": "/materials/magneto-optic",
   "/materials/brewster-tir": "/polarization/fresnel-polarization",
   "/materials/oh-absorption": "/fiber-optics/low-water-peak",
-  "/materials/absorption": "/spectroscopy/lambert-beer-law"
+  "/materials/absorption": "/spectroscopy/lambert-beer-law",
+  "/materials/aging-effects": "/thin-film/environmental-stability",
+  "/materials/contamination": "/thin-film/environmental-stability",
+  "/materials/humidity-effects": "/thin-film/environmental-stability"
 }

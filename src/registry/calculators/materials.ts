@@ -25,12 +25,6 @@ export const materials: CalculatorEntry[] = [
     ],
   },
   {
-    slug: "aging-effects",
-    title: "Aging of Optical Materials",
-    description: "Long-term degradation: transmission loss, solarization, compaction, stress relaxation",
-    knownIssue: "All degradation rates are invented placeholders, compaction multiplies a per-GPa·hour rate by pulse fluence, and transmission starts at 100 % with no Fresnel loss.",
-  },
-  {
     slug: "birefringent-crystals",
     title: "Birefringent Crystals",
     description: "Ordinary and extraordinary indices nₒ, nₑ and birefringence Δn = nₑ − nₒ versus wavelength for nine uniaxial crystals (quartz, calcite, MgF₂, sapphire, YVO₄, LiNbO₃, rutile, BBO, KDP) from published Sellmeier fits, with plate retardance.",
@@ -130,12 +124,6 @@ export const materials: CalculatorEntry[] = [
         url: "https://doi.org/10.1039/C5CP02093J",
       },
     ],
-  },
-  {
-    slug: "contamination",
-    title: "Contamination Effects",
-    description: "Particle contamination impact on optical surfaces",
-    knownIssue: "Wavelength has no effect, repeated cleaning makes contamination decay toward zero, and the ppm-based scatter and absorption coefficients are invented rather than sourced.",
   },
   {
     slug: "crystal-properties",
@@ -256,12 +244,6 @@ export const materials: CalculatorEntry[] = [
         url: "https://www.crystran.com/optical-materials",
       },
     ],
-  },
-  {
-    slug: "humidity-effects",
-    title: "Humidity Effects on Optics",
-    description: "Water absorption, refractive index changes, and surface degradation",
-    knownIssue: "The Relative Humidity field actually sets the exposure days, so humidity cannot be changed, and water uptake, index change and scatter come from invented coefficients.",
   },
   {
     slug: "infrared-glass",

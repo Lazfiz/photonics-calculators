@@ -21,10 +21,10 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
-| materials | 24 / 30 | part 0 audit (session 124): 39 `knownIssue`s, 18 merges decided; fix parts 1–8a done (sessions 125–134); parts 8b–9 next |
+| materials | 24 / 27 | part 0 audit (session 124): 39 `knownIssue`s, 18 merges decided; fix parts 1–8b done (sessions 125–135); part 9 next |
 | wave-optics | 37 / 37 | done: part 0 audit (session 110), fix parts 1–13 (sessions 111–123); open findings below |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
-| **total** | **407 / 414** | 5 `knownIssue`s (materials) |
+| **total** | **407 / 411** | 2 `knownIssue`s (materials) |
 
 ## Next (Phase 4, in order)
 - [ ] `polarizer-types`: sourced specs. **Blocked until the user is at the laptop with Chrome open** (session 43:
@@ -49,7 +49,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   `modelNote` + references, drop the `knownIssue`. About 4 pages each; 45 → 27 pages (32 after part 4).
   7. ~~7a merges~~ (session 132), ~~7b~~ (session 133): rare-earth-absorption (`DOPANT_PRESETS`, α in m⁻¹ and dB/m); color-centers (Stokes
      shift, drop η = σ_em/σ_abs).
-  8. ~~8a thermal and damage~~ (session 134). 8b merges: aging-effects, contamination, humidity-effects → thin-film/environmental-stability.
+  8. ~~8a thermal and damage~~ (session 134), ~~8b merges into thin-film/environmental-stability~~ (session 135).
   9. Leftovers: polymer-optics (Sultanova PMMA 1.4906), x-ray-optics (δ, β from Henke f₁, f₂: Be 3.41e-6), thermal-expansion
      (tier only).
 - [ ] Golden-value tests for the top 50 calculators by traffic (needs traffic data, e.g. Vercel Analytics).
@@ -64,6 +64,9 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `bend-insensitive` (`g657.ts`): the physics review recalls a G.657.A3 category (2016) that shares the B3 limits. Unverified
   because the ITU PDF is blocked to scripts; check the ITU text in Chrome, then add A3 or drop the note.
 **Materials**
+- `thin-film/environmental-stability` (session 135): the H-layer (TiO₂ film) dn/dT 20 and α 8 × 10⁻⁶/K defaults are unsourced
+  placeholders; free-film expansion ignores the substrate constraint and Poisson term. Peck's n and Eₐ (≈ 2.7, 0.79 eV in
+  secondary sources) are unverified: the IRPS PDF 403s, so the page defaults to n = 0.
 - `heat-capacity` (session 134): presets only for Si, Ge, CaF₂, LiF (θ_D from Råsander & Moram 2015 Table VII). Sapphire, MgF₂,
   ZnSe, BaF₂ and fused silica have Crystran c_p but no cited θ_D; NIST SRM 720 (Ditmars 1982, sapphire c_p 10–2250 K) could validate one.
   Diamond: θ_D 2250 K gives 266 vs 502 J/(kg·K) at 273 K. `damage-threshold` and `radiation-damage` have user inputs, no presets.
@@ -228,6 +231,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Materials fix part 8b (session 135, `phase-4/materials-fix-8b`, PR #166): aging-effects, contamination, humidity-effects → thin-film/environmental-stability
+    (`environmental-stability.ts`: Macleod 1988 packing-density laws, filled pores 15.32 nm; CC1246 obscuration vs Ma 1990 eq. 17a; Arrhenius–Peck AF 96.0).
   - Materials fix part 8a (session 134, `phase-4/materials-fix-8a`, PR #165): heat-capacity (`heat-capacity.ts`, Debye scaled, Si 200 K = Desai
     0.5569 J/(g·K)), thermal-conductivity-optics (`thermal-conduction.ts`, ΔT 72.46 K, lens 21.40 m), damage-threshold (`laser-damage.ts`), radiation-damage.
   - Materials fix part 7b (session 133, `phase-4/materials-fix-7b`, PR #164): rare-earth-absorption (`dopant-absorption.ts`, Yb 976 nm 1000 wt-ppm
