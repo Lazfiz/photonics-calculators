@@ -34,7 +34,7 @@ export default function ColorCentersPage() {
   const center = COLOR_CENTERS[id];
   const absInput = absRaw > 0 ? absRaw : Number(nm(center.absorptionPeak));
   const emInput = emRaw > 0 ? emRaw : Number(nm(center.emissionPeak));
-  const presetSigma = center.sigmaA / SIGMA_UNIT;
+  const presetSigma = Number((center.sigmaA / SIGMA_UNIT).toPrecision(6));
   const sigmaInput = sigmaRaw > 0 ? sigmaRaw : presetSigma;
   const absPeak = clamp(absInput, 100, 5000, 500) * 1e-9;
   const emPeak = clamp(emInput, 100, 5000, 600) * 1e-9;

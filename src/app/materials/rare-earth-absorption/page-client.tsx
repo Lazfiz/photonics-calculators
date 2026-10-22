@@ -44,7 +44,7 @@ export default function RareEarthAbsorptionPage() {
 
   const line = DOPANT_LINES.find((l) => l.id === lineId) ?? DOPANT_LINES[3];
   const ion = DOPANT_PRESETS.find((p) => p.id === line.ion) ?? DOPANT_PRESETS[0];
-  const presetSigma = line.sigmaA / SIGMA_UNIT;
+  const presetSigma = Number((line.sigmaA / SIGMA_UNIT).toPrecision(6));
   const sigmaInput = sigmaRaw > 0 ? sigmaRaw : presetSigma;
   const sigmaA = clamp(sigmaInput, 1e-3, 1000, presetSigma) * SIGMA_UNIT;
   const ppm = clamp(ppmRaw, 0, 50000, 1000);
