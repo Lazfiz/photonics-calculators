@@ -109,8 +109,27 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "color-centers",
     title: "Color Centers in Crystals",
-    description: "Point defects and impurity centers: absorption/emission spectra, cross-sections, and ZPL characteristics. Key for quantum emitters and tunable lasers.",
-    knownIssue: "Emission spectra are drawn at the absorption wavelength without the Stokes shift, the quantum-efficiency formula is wrong, and the concentration slider changes nothing.",
+    description: "Stokes shift, quantum defect and absorption of colour centres (NV⁻ in diamond, F₂ and F₂⁺ in LiF) from their absorption and emission band maxima, cross-section and density.",
+    tier: "textbook",
+    modelNote: "Stokes shift ΔE = hc(1/λ_abs − 1/λ_em) between room-temperature band maxima and quantum defect 1 − λ_abs/λ_em; α = σN, T = e^(−αd) without surface reflections. Band shapes, the Huang–Rhys factor (ΔE ≈ 2Sħω only approximately) and quantum yields are not modelled. Only NV⁻ has a cited cross-section (532 nm).",
+    references: [
+      {
+        citation: "Doherty M. W., Manson N. B., Delaney P., Jelezko F., Wrachtrup J., Hollenberg L. C. L. (2013). The nitrogen-vacancy colour centre in diamond. Phys. Rep. 528, 1–45. Table 9: NV⁻ absorption 2.180 eV, ZPL 1.945 eV, emission 1.760 eV (Davies & Hamer 1976).",
+        url: "https://doi.org/10.1016/j.physrep.2013.02.001",
+      },
+      {
+        citation: "Wee T.-L. et al. (2007). Two-photon excited fluorescence of nitrogen-vacancy centers in proton-irradiated type Ib diamond. J. Phys. Chem. A 111, 9379–9386. NV⁻ σ = (3.1 ± 0.8)e-17 cm² at 532 nm.",
+        url: "https://doi.org/10.1021/jp073938o",
+      },
+      {
+        citation: "Baldacchini G. (2002). Colored LiF: an optical material for all seasons. J. Lumin. 100, 333–343. F₂ 443 → 678 nm and F₂⁺ 645 → 910 nm, as tabulated in Guerrero Perez M. et al., arXiv:2412.21060 (2024), Table I.",
+        url: "https://doi.org/10.1016/S0022-2313(02)00460-X",
+      },
+      {
+        citation: "de Jong M., Seijo L., Meijerink A., Rabouw F. T. (2015). Resolving the ambiguity in the relation between Stokes shift and Huang–Rhys parameter. Phys. Chem. Chem. Phys. 17, 16959–16969.",
+        url: "https://doi.org/10.1039/C5CP02093J",
+      },
+    ],
   },
   {
     slug: "contamination",
@@ -437,9 +456,29 @@ export const materials: CalculatorEntry[] = [
   },
   {
     slug: "rare-earth-absorption",
-    title: "Rare Earth Absorption Spectra",
-    description: "Absorption cross-sections for common rare-earth dopants in silica: Er³⁺, Nd³⁺, Yb³⁺, Tm³⁺, Ho³⁺.",
-    knownIssue: "The absorption coefficient is displayed 100 times too large, the Nd 1064 nm emission line is counted as absorption, and the Yb 975 nm cross-section is about 6 times too low.",
+    title: "Rare-Earth Dopant Absorption",
+    keywords: ["Rare Earth Absorption Spectra"],
+    description: "Absorption coefficient of Er³⁺ or Yb³⁺ in silica from the cross-section and wt-ppm concentration: α in m⁻¹ and dB/m, absorption length and transmission over a path.",
+    tier: "textbook",
+    modelNote: "Small-signal absorption α = Γσ_aN of an unpumped sample (no bleaching or excited-state absorption) and T = e^(−αL) without surface reflections. N from wt-ppm in silica (2201 kg/m³). Preset cross-sections are typical values shared with the fibre amplifier pages: Yb 2.5e-24 m² at 976 nm is 4 % below Paschotta's 2.6e-24 m²; the Er values are not from one paper and vary with the host by tens of percent. Nd, Tm and Ho are not offered.",
+    references: [
+      {
+        citation: "Giles C. R., Desurvire E. (1991). Modeling erbium-doped fiber amplifiers. J. Lightwave Technol. 9, 271–283. Absorption α = Γσ_aN, eqs. (6)–(9).",
+        url: "https://doi.org/10.1109/50.65886",
+      },
+      {
+        citation: "Paschotta R., Nilsson J., Tropper A. C., Hanna D. C. (1997). Ytterbium-doped fiber amplifiers. IEEE J. Quantum Electron. 33, 1049–1056. Yb³⁺ germanosilicate σ_a ≈ 2.6e-24 m² at 975 nm.",
+        url: "https://doi.org/10.1109/3.594865",
+      },
+      {
+        citation: "Barnes W. L., Laming R. I., Tarbox E. J., Morkel P. R. (1991). Absorption and emission cross section of Er³⁺ doped silica fibers. IEEE J. Quantum Electron. 27, 1004–1010. Measured Er³⁺ spectra in several hosts.",
+        url: "https://doi.org/10.1109/3.83335",
+      },
+    ],
+    related: [
+      { href: "/fiber-optics/rare-earth-doped", note: "Pumped Er or Yb fibre: overlap, gain, saturation power and noise figure." },
+      { href: "/spectroscopy/lambert-beer-law", note: "Beer–Lambert absorbance from ε, concentration and path." },
+    ],
   },
   {
     slug: "semiconductor-bandgap",
