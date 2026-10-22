@@ -1,118 +1,132 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ChartPanel from "../../../components/chart-panel";
-import { useURLState } from "../../../hooks/use-url-state";import ValidatedNumberInput from "../../../components/validated-number-input";
+import SimpleLineChart from "../../../components/simple-line-chart";
+import ValidatedNumberInput from "../../../components/validated-number-input";
+import { useURLState } from "../../../hooks/use-url-state";
+import { DOPANT_PRESETS, SILICA_DENSITY, ionDensityFromWtPpm } from "../../../physics/fiber-optics/doped-fiber-gain";
+import { DOPANT_LINES, dopantAbsorption, type DopantLine } from "../../../physics/materials/dopant-absorption";
 
-// Rare earth ions: Er³⁺, Nd³⁺, Yb³⁺, Tm³⁺, Ho³⁺
-// Absorption cross-section data (simplified Gaussian peaks)
-interface REPeak { wl: number; sigma: number; fwhm: number; transition: string }
+const clamp = (x: number, lo: number, hi: number, fallback: number) => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
+const SIGMA_UNIT = 1e-25; // m², the unit of the cross-section input
+const show = (x: number, text: () => string) => (Number.isFinite(x) ? text() : "—");
+const COLORS = ["#60a5fa", "#f87171", "#34d399"];
+const lineLabel = (l: DopantLine) => `${l.ion} ${Math.round(l.lambda * 1e9)} nm (${l.role})`;
 
-const RARE_EARTHS: Record<string, { name: string; color: string; peaks: REPeak[] }> = {
-  Er3: { name: "Er³⁺", color: "#34d399", peaks: [
-    { wl: 980, sigma: 2.5e-25, fwhm: 30, transition: "⁴I₁₅/₂ → ⁴I₁₁/₂" },
-    { wl: 1530, sigma: 6.0e-25, fwhm: 50, transition: "⁴I₁₅/₂ → ⁴I₁₃/₂" },
-    { wl: 800, sigma: 0.5e-25, fwhm: 20, transition: "⁴I₁₅/₂ → ⁴I₉/₂" },
-    { wl: 520, sigma: 1.0e-25, fwhm: 25, transition: "⁴I₁₅/₂ → ²H₁₁/₂" },
-    { wl: 650, sigma: 0.8e-25, fwhm: 20, transition: "⁴I₁₅/₂ → ⁴F₉/₂" },
-  ]},
-  Nd3: { name: "Nd³⁺", color: "#60a5fa", peaks: [
-    { wl: 808, sigma: 3.0e-25, fwhm: 20, transition: "⁴I₉/₂ → ⁴F₅/₂" },
-    { wl: 880, sigma: 1.5e-25, fwhm: 25, transition: "⁴I₉/₂ → ⁴F₃/₂" },
-    { wl: 1064, sigma: 4.0e-25, fwhm: 30, transition: "⁴I₉/₂ → ⁴F₃/₂ (em)" },
-    { wl: 530, sigma: 1.0e-25, fwhm: 15, transition: "⁴I₉/₂ → ⁴G₇/₂" },
-    { wl: 750, sigma: 0.5e-25, fwhm: 15, transition: "⁴I₉/₂ → ⁴F₇/₂" },
-  ]},
-  Yb3: { name: "Yb³⁺", color: "#f59e0b", peaks: [
-    { wl: 975, sigma: 4.0e-25, fwhm: 35, transition: "²F₇/₂ → ²F₅/₂" },
-    { wl: 910, sigma: 0.5e-25, fwhm: 40, transition: "²F₇/₂ → ²F₅/₂ (side)" },
-  ]},
-  Tm3: { name: "Tm³⁺", color: "#a78bfa", peaks: [
-    { wl: 790, sigma: 3.0e-25, fwhm: 25, transition: "³H₆ → ³H₄" },
-    { wl: 1210, sigma: 1.0e-25, fwhm: 40, transition: "³H₆ → ³H₅" },
-    { wl: 1650, sigma: 1.5e-25, fwhm: 50, transition: "³H₆ → ³F₄" },
-  ]},
-  Ho3: { name: "Ho³⁺", color: "#f87171", peaks: [
-    { wl: 1150, sigma: 0.8e-25, fwhm: 30, transition: "⁵I₈ → ⁵I₆" },
-    { wl: 1950, sigma: 2.0e-25, fwhm: 60, transition: "⁵I₈ → ⁵I₇" },
-    { wl: 540, sigma: 1.5e-25, fwhm: 20, transition: "⁵I₈ → ⁵S₂" },
-    { wl: 640, sigma: 0.8e-25, fwhm: 20, transition: "⁵I₈ → ⁵F₅" },
-  ]},
-};
+function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: string }) {
+  return (
+    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+      <p className="text-sm text-gray-400">{label}</p>
+      <p className={`text-xl font-bold ${tone}`}>{value}</p>
+      {sub && <p className="text-xs text-gray-400">{sub}</p>}
+    </div>
+  );
+}
 
-function absorptionCrossSection(wl: number, peaks: REPeak[]): number {
-  let sigma = 0;
-  for (const p of peaks) {
-    const fwhm_sigma = p.fwhm / 2.355;
-    sigma += p.sigma * Math.exp(-0.5 * Math.pow((wl - p.wl) / fwhm_sigma, 2));
-  }
-  return sigma;
+// Transmission against path length for every line of one ion, the selected line with the entered σ_a.
+function transmissionSeries(line: DopantLine, sigmaA: number, N: number, overlap: number, length: number) {
+  return DOPANT_LINES.filter((l) => l.ion === line.ion).map((l, i) => ({
+    name: lineLabel(l) + (l.id === line.id ? ", entered σ_a" : ""),
+    color: COLORS[i % COLORS.length],
+    points: Array.from({ length: 101 }, (_, k) => {
+      const z = (length * k) / 100;
+      const t = dopantAbsorption(l.id === line.id ? sigmaA : l.sigmaA, N, z, overlap).transmission;
+      return { x: Number(z.toPrecision(6)), y: Number.isFinite(t) ? Math.round(t * 1e8) / 1e6 : null };
+    }),
+  }));
 }
 
 export default function RareEarthAbsorptionPage() {
-  const [selected, setSelected] = useState<string[]>(["Er3", "Nd3", "Yb3"]);
-  const [concentration, setConcentration] = useURLState("concentration", 1e25); // ions/m³
-  const [pumpWl, setPumpWl] = useURLState("pumpWl", 980);
+  const [lineId, setLineId] = useURLState("line", "Yb976");
+  const [sigmaRaw, setSigma] = useURLState("sigmaA", 0); // 1e-25 m²; 0 = the line's preset
+  const [ppmRaw, setPpm] = useURLState("dopantConcentration", 1000); // wt-ppm of the ion in silica
+  const [overlapRaw, setOverlap] = useURLState("overlap", 1);
+  const [lengthRaw, setLength] = useURLState("length", 0.1); // m
 
-  const chartData = useMemo(() => {
-    const wls = Array.from({ length: 400 }, (_, i) => 400 + i * 4);
-    const traces: any[] = [];
-    for (const key of selected) {
-      const re = RARE_EARTHS[key];
-      const sigmas = wls.map(wl => absorptionCrossSection(wl, re.peaks) * 1e25);
-      traces.push({ x: wls, y: sigmas, type: "scatter" as const, mode: "lines" as const, name: re.name, line: { color: re.color, width: 2 } });
-    }
-    return traces;
-  }, [selected]);
+  const line = DOPANT_LINES.find((l) => l.id === lineId) ?? DOPANT_LINES[3];
+  const ion = DOPANT_PRESETS.find((p) => p.id === line.ion) ?? DOPANT_PRESETS[0];
+  const presetSigma = line.sigmaA / SIGMA_UNIT;
+  const sigmaInput = sigmaRaw > 0 ? sigmaRaw : presetSigma;
+  const sigmaA = clamp(sigmaInput, 1e-3, 1000, presetSigma) * SIGMA_UNIT;
+  const ppm = clamp(ppmRaw, 0, 50000, 1000);
+  const overlap = clamp(overlapRaw, 0, 1, 1);
+  const length = clamp(lengthRaw, 1e-4, 1000, 0.1);
 
-  const toggleIon = (key: string) => {
-    setSelected(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
-  };
-
-  const activeAbs = selected.reduce((sum, key) => sum + absorptionCrossSection(pumpWl, RARE_EARTHS[key].peaks), 0);
-  const alpha = activeAbs * concentration;
-  const absorptionPerCm = 1 - Math.exp(-alpha * 0.01);
+  const N = ionDensityFromWtPpm(ppm, ion.molarMass);
+  const r = dopantAbsorption(sigmaA, N, length, overlap);
+  const series = transmissionSeries(line, sigmaA, N, overlap, length);
 
   return (
     <>
-            
       <div className="mb-6">
-        <div className="flex flex-wrap gap-2 mb-4">
-          {Object.entries(RARE_EARTHS).map(([key, re]) => (
-            <button key={key} onClick={() => toggleIon(key)} className={`px-3 py-1.5 rounded text-sm font-medium border ${selected.includes(key) ? "border-blue-500 bg-blue-500/20 text-blue-300" : "border-gray-700 text-gray-500"}`}>{re.name}</button>
-          ))}
-        </div>
+        <label htmlFor="line" className="block text-sm font-medium mb-2">Dopant and wavelength</label>
+        <select id="line" value={line.id} onChange={(e) => { setLineId(e.target.value); setSigma(0); }}
+          className="w-full sm:w-80 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none">
+          {DOPANT_LINES.map((l) => <option key={l.id} value={l.id}>{lineLabel(l)}</option>)}
+        </select>
+        <p className="text-xs text-gray-400 mt-2">
+          {ion.name} in {ion.host} glass, M = {(ion.molarMass * 1e3).toFixed(2)} g/mol, silica density{" "}
+          {SILICA_DENSITY} kg/m³. Choosing a line fills its typical cross-section; it varies with the host glass by
+          tens of percent, so enter your sample&apos;s own value where you have it.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div>
-          <ValidatedNumberInput label="Concentration (ions/m³)" value={concentration} onChange={setConcentration} />
-        </div>
-        <div>
-          <ValidatedNumberInput label="Probe Wavelength (nm)" value={pumpWl} onChange={setPumpWl} />
-        </div>
-        <div className="flex items-end">
-          <div className="bg-gray-900 rounded-lg p-3 w-full">
-            <div className="text-xs text-gray-500">α at {pumpWl} nm</div>
-            <div className="text-lg font-bold text-yellow-400">{(alpha * 100).toFixed(2)} m⁻¹</div>
-            <div className="text-xs text-gray-500">Absorption/cm: {(absorptionPerCm * 100).toFixed(2)}%</div>
-          </div>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <ValidatedNumberInput label="Absorption Cross-Section σ_a (×10⁻²⁵ m²)" value={sigmaInput} onChange={setSigma} min={0.001} max={1000} step="any" />
+        <ValidatedNumberInput label={`${ion.id} Concentration (wt-ppm)`} value={ppmRaw} onChange={setPpm} min={0} max={50000} step="any" />
+        <ValidatedNumberInput label="Overlap Γ (1 = bulk sample)" value={overlapRaw} onChange={setOverlap} min={0} max={1} step="any" />
+        <ValidatedNumberInput label="Path Length (m)" value={lengthRaw} onChange={setLength} min={0.0001} max={1000} step="any" />
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 mb-8">
-        <ChartPanel data={chartData} layout={{ paper_bgcolor: "transparent", plot_bgcolor: "transparent", font: { color: "#9ca3af" }, xaxis: { title: "Wavelength (nm)", gridcolor: "#374151" }, yaxis: { title: "σ_abs (×10⁻²⁵ m²)", gridcolor: "#374151" }, legend: { orientation: "h", y: -0.25 }, margin: { t: 30, b: 70, l: 60, r: 20 } }} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <Card label="Ion Density N" value={show(N, () => `${N.toExponential(3)} m⁻³`)} sub={`${ppm} wt-ppm`} tone="text-gray-200" />
+        <Card label="Absorption Coefficient α" value={show(r.alpha, () => `${r.alpha.toPrecision(4)} m⁻¹`)}
+          sub={show(r.alpha, () => `${(r.alpha / 100).toPrecision(4)} cm⁻¹`)} tone="text-yellow-400" />
+        <Card label="Absorption" value={show(r.dbPerM, () => `${r.dbPerM.toPrecision(4)} dB/m`)} sub="10·log₁₀(e)·α" tone="text-yellow-400" />
+        <Card label="Absorption Length 1/α" value={show(r.absorptionLength, () => `${r.absorptionLength.toPrecision(4)} m`)}
+          sub={r.alpha === 0 ? "no absorption at zero concentration or overlap" : "path for a 1/e (4.34 dB) drop"} tone="text-gray-200" />
+        <Card label="Loss over the Path" value={show(r.lossDb, () => `${r.lossDb.toPrecision(4)} dB`)} sub={`${length} m`} tone="text-red-400" />
+        <Card label="Transmitted" value={show(r.transmission, () => `${(r.transmission * 100).toPrecision(4)} %`)}
+          sub="e^(−αL), unpumped; no surface reflections" tone="text-green-400" />
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4">
-        <h2 className="text-xl font-bold mb-3">Transition Details</h2>
-        {selected.map(key => {
-          const re = RARE_EARTHS[key];
-          return <div key={key} className="mb-4"><h3 className="text-sm font-bold mb-2">{re.name}</h3>
-            <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-gray-500 border-b border-gray-800"><th className="text-left py-1">λ (nm)</th><th className="text-left py-1">Transition</th><th className="text-right py-1">σ (×10⁻²⁵ m²)</th><th className="text-right py-1">FWHM (nm)</th></tr></thead>
-              <tbody>{re.peaks.map(p => <tr key={p.wl} className="border-b border-gray-800/50"><td className="py-1">{p.wl}</td><td className="py-1">{p.transition}</td><td className="text-right py-1">{p.sigma * 1e25}</td><td className="text-right py-1">{p.fwhm}</td></tr>)}</tbody></table></div></div>;
-        })}
-        <div className="mt-4 text-sm text-gray-400 font-mono bg-gray-800 p-2 rounded">α = σ<sub>abs</sub>(λ) · N (m⁻¹) | Beer-Lambert: T = exp(−α · L)</div>
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
+        <SimpleLineChart title={`${ion.name}: transmission against path length`} xLabel="Path Length (m)" yLabel="Transmitted (%)" series={series} />
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8 overflow-x-auto">
+        <h2 className="text-lg font-semibold mb-3">Preset Cross-Sections</h2>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-gray-400 border-b border-gray-800">
+              <th className="text-left py-1">Line</th><th className="text-right py-1">σ_a (×10⁻²⁵ m²)</th>
+              <th className="text-right py-1">σ_e (×10⁻²⁵ m²)</th><th className="text-left py-1 pl-4">Host</th>
+            </tr>
+          </thead>
+          <tbody>
+            {DOPANT_LINES.map((l) => (
+              <tr key={l.id} className="border-b border-gray-800/50">
+                <td className="py-1">{lineLabel(l)}</td>
+                <td className="text-right py-1">{Number((l.sigmaA / SIGMA_UNIT).toPrecision(3))}</td>
+                <td className="text-right py-1">{Number((l.sigmaE / SIGMA_UNIT).toPrecision(3))}</td>
+                <td className="py-1 pl-4">{DOPANT_PRESETS.find((p) => p.id === l.ion)?.host}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-3">Model</h3>
+        <div className="text-sm text-gray-300 space-y-2 font-mono">
+          <p>N = ppm·10⁻⁶·ρ·N_A/M</p>
+          <p>α = Γσ_a N; α(dB/m) = 4.343·α</p>
+          <p>T = e^(−αL)</p>
+        </div>
+        <p className="text-xs text-gray-400 mt-3">
+          Small-signal absorption of an unpumped sample: every ion in the ground state. A strong pump bleaches the
+          absorption, and Er at 1550 nm turns into gain once inverted; the Rare-Earth-Doped Fiber Amplifier page models
+          that. Nd, Tm and Ho are not offered: their cross-sections need their own sourced data.
+        </p>
       </div>
     </>
   );

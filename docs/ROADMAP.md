@@ -21,7 +21,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 | free-space-comms | 26 / 26 | done: part 0 audit (session 56), fix parts 1–6 (sessions 57–62); open findings below |
 | spectroscopy | 41 / 41 | done: part 0 audit (session 96), fix parts 1–12b (sessions 97–109) |
 | fiber-optics | 47 / 47 | done: part 0 (session 43), fix parts 1–11 (sessions 44–53); open findings below |
-| materials | 18 / 30 | part 0 audit (session 124): 39 `knownIssue`s, 18 merges decided; fix parts 1–7a done (sessions 125–132); parts 7b–9 next |
+| materials | 20 / 30 | part 0 audit (session 124): 39 `knownIssue`s, 18 merges decided; fix parts 1–7b done (sessions 125–133); parts 8–9 next |
 | wave-optics | 37 / 37 | done: part 0 audit (session 110), fix parts 1–13 (sessions 111–123); open findings below |
 | detectors | 54 / 54 | done: part 0 audit (session 63), parts 1–9b (sessions 64–77); leftovers below |
 | **total** | **401 / 414** | 11 `knownIssue`s (materials) |
@@ -47,7 +47,7 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   in the PR description; OK pages: brewster-tir, thermal-expansion). Every merge below is a user decision (session 124)
   and gets a redirect. Every page: clamp URL values, material in the URL, physics into `src/physics/materials/` (or reuse the named module), golden test, tier +
   `modelNote` + references, drop the `knownIssue`. About 4 pages each; 45 → 27 pages (32 after part 4).
-  7. ~~7a merges~~ (session 132). 7b: rare-earth-absorption (`DOPANT_PRESETS`, α in m⁻¹ and dB/m); color-centers (Stokes
+  7. ~~7a merges~~ (session 132), ~~7b~~ (session 133): rare-earth-absorption (`DOPANT_PRESETS`, α in m⁻¹ and dB/m); color-centers (Stokes
      shift, drop η = σ_em/σ_abs).
   8. Thermal and damage: heat-capacity (Debye scaled to Cp300; Si 0.7125 J/(g·K)); thermal-conductivity-optics (k300
      table, slab ΔT 72.46 K); damage-threshold (ns label, Gaussian peak 2E/(πw²), √τ ≥ 20 ps); radiation-damage (mm,
@@ -73,6 +73,10 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
   acceptance and damage columns were dropped (no downloadable source; CASTECH/findlight PDFs return HTML). OP-GaAs QPM
   d_eff ≈ 69 needs d₁₄ ≈ 94 pm/V (Skauli, unread). d_eff spread: KTP d₂₄ 3.9 (EKSMA) vs 3.64 (United Crystals); LN d₃₃
   25.0 (Shoji, read via WebFetch of the Optica page) vs 27–34 (vendors). BiBO n from CASTECH's garbled Sellmeier table.
+- `rare-earth-absorption` (+ `fiber-optics/rare-earth-doped`, `fiber-amplifier`): the Er σ in `DOPANT_PRESETS` are unsourced
+  "typical" values (Barnes 1991, Miniscalco 1991 and Desurvire are closed; Southampton eprints blocks scripts); Yb 976 nm is
+  2.5e-24 vs Paschotta's 2.6e-24 m². Nd, Tm, Ho dropped. `color-centers`: F(KCl), Ti:sapphire, ruby and SiV⁻ dropped (no open
+  source read); LiF F₂/F₂⁺ have no cited σ.
 - `nonlinear-index`: Si, GaAs, AlGaAs, CS₂, air, chalcogenide and SF glasses were dropped (n₂ unsourced; audit: As₂S₃ 7× high).
   Candidates: Dinu 2003 / Bristow 2007 (Si), Sheik-Bahae 1991 (semiconductors), Milam 1998 (silica 1064 nm).
 - `brillouin-scattering` (session 131): SMF-28, Ge-doped, As₂S₃, Bi₂O₃, tellurite, PMMA and diamond were dropped (n, ρ, v_A,
@@ -223,6 +227,8 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - **Git:** `main` changes only through a PR, and merges need the user's yes.
 
 ## Done (one line each; detail in the archive and the PR descriptions)
+  - Materials fix part 7b (session 133, `phase-4/materials-fix-7b`): rare-earth-absorption (`dopant-absorption.ts`, Yb 976 nm 1000 wt-ppm
+    α 19.149 m⁻¹ = 83.16 dB/m), color-centers (`color-centers.ts`: NV⁻ Doherty Table 9, Stokes 0.420 eV; LiF F₂ 7824 cm⁻¹); 414 pages.
   - Materials fix part 7a (session 132, `phase-4/materials-fix-7a`): oh-absorption → fiber-optics/low-water-peak (OH bands 943/1383/2722 nm
     in `silica-attenuation.ts`: 1.2, 62.7, 10 030 dB/km/ppm), absorption → spectroscopy/lambert-beer-law (bulk slab T = e^(−αd)); 414 pages.
   - Materials fix part 6 (session 131, `phase-4/materials-fix-6`, PR #162): brillouin (`brillouin.ts`, ν_B 11.15 GHz, g_B 3.650e-11 m/W), raman (`raman-gain.ts`, Savitski diamond 17 cm/GW), two-photon (`two-photon.ts`, Van Stryland 1985 Table 1, GaAs T 30.3 %).
