@@ -73,6 +73,12 @@ Model tiers: `npx tsx scripts/tier-status.ts` (add `<category>` to list its unti
 - `electro-optic`, `photorefractive`: BaTiO₃, SBN, BSO, LiTaO₃ and KTP were dropped from the EO table (no downloadable
   source; Xie & Pfister arXiv:physics/0507123 confirms only KTP r₂₃ 15.7, r₃₃ 36.3 pm/V at 633 nm, and KTP needs n_y, n_z).
   Wilson & Hawkes Table 3.1 was read through a FOSSEE notebook of its examples; its edition is not cited.
+- `nonlinear-crystals` (user decision, session 130: lean SHG page): CLBO, KTA, AgGaS₂, ZGP, GaSe and OP-GaAs and the walk-off,
+  acceptance and damage columns were dropped (no downloadable source; CASTECH/findlight PDFs return HTML). OP-GaAs QPM
+  d_eff ≈ 69 needs d₁₄ ≈ 94 pm/V (Skauli, unread). d_eff spread: KTP d₂₄ 3.9 (EKSMA) vs 3.64 (United Crystals); LN d₃₃
+  25.0 (Shoji, read via WebFetch of the Optica page) vs 27–34 (vendors). BiBO n from CASTECH's garbled Sellmeier table.
+- `nonlinear-index`: Si, GaAs, AlGaAs, CS₂, air, chalcogenide and SF glasses were dropped (n₂ unsourced; audit: As₂S₃ 7× high).
+  Candidates: Dinu 2003 / Bristow 2007 (Si), Sheik-Bahae 1991 (semiconductors), Milam 1998 (silica 1064 nm).
 - `optical-glass-catalog`: the TIE-19 limits (−100 to +140 °C; data sheets tabulate dn/dT 435.8–1060 nm) are from memory, since the
   TIE-19 PDF doesn't download to scripts. Check them in Chrome (SCHOTT TIE-19 or an N-BK7 data sheet), then drop this note.
 - `infrared-glass`: As₂S₃, ZBLAN and AMTIR-1 have no sourced transmission band, dn/dT, conductivity or hardness (Amorphous

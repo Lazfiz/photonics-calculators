@@ -257,14 +257,62 @@ export const materials: CalculatorEntry[] = [
   {
     slug: "nonlinear-crystals",
     title: "Nonlinear Crystal Comparison",
-    description: "SHG, OPO, and frequency conversion crystal properties",
-    knownIssue: "Crystal length and pump power inputs have no effect, and some d_eff and walk-off values (bulk LiNbO₃, OP-GaAs, ZGP, GaSe) disagree with published data.",
+    description: "Second-harmonic generation of 1064 nm in BBO, LBO, KTP, BiBO, bulk MgO:LiNbO₃ and PPLN: d_eff of each phase-matched cut, and the focused-beam (Boyd–Kleinman) SH power and efficiency for a crystal length, pump power and waist.",
+    keywords: ["Second Harmonic Generation", "d_eff", "Boyd–Kleinman Focusing", "PPLN", "BBO"],
+    tier: "textbook",
+    modelNote: "Boyd–Kleinman focused Gaussian beam at exact phase matching (Δk = 0), undepleted pump, no walk-off or absorption. d_eff comes from each source's d_ij and cut at 1064 nm (BBO's angle from its indices); published values differ by tens of per cent between sources. Mid-IR crystals (AgGaS₂, ZGP, GaSe, OP-GaAs) and walk-off, acceptance and damage data are not included until sourced.",
+    references: [
+      {
+        citation: "Boyd G. D., Kleinman D. A. (1968). Parametric Interaction of Focused Gaussian Light Beams. J. Appl. Phys. 39, 3597–3639. Focusing function h(σ, ξ).",
+        url: "https://doi.org/10.1063/1.1656831",
+      },
+      {
+        citation: "Shoji I. et al. (1997). Absolute scale of second-order nonlinear-optical coefficients. J. Opt. Soc. Am. B 14, 2268. Table 10: 5 % MgO:LiNbO₃ d₃₃ = 25.0, d₃₁ = 4.4 pm/V at 1064 nm.",
+        url: "https://doi.org/10.1364/JOSAB.14.002268",
+      },
+      {
+        citation: "EKSMA Optics data sheets for BBO, LBO and KTP crystals: d_ij, indices at 1064 and 532 nm, cut angles, walk-off, transparency.",
+        url: "https://eksmaoptics.com/out/media/EKSMA_Optics_BBO_Crystals.pdf",
+      },
+      {
+        citation: "CASTECH. BiB₃O₆ (BiBO) properties: d_eff 3.0 pm/V and θ = 168.9° for SHG of 1064 nm, Sellmeier equations.",
+        url: "https://www.castech-us.com/casbib3o6.htm",
+      },
+      {
+        citation: "Zelmon D. E., Small D. L., Jundt D. (1997). Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol.% magnesium oxide–doped lithium niobate. J. Opt. Soc. Am. B 14, 3319.",
+        url: "https://doi.org/10.1364/JOSAB.14.003319",
+      },
+    ],
   },
   {
     slug: "nonlinear-index",
     title: "Nonlinear Refractive Index (n₂)",
-    description: "Kerr effect: Δn = n₂ · I, where I is the optical intensity",
-    knownIssue: "The n₂ input box actually sets the wavelength, there is no intensity input, and the γ value omits the effective area so its units are wrong.",
+    description: "Kerr effect n = n₀ + n₂I: index change, nonlinear phase over a length, fibre nonlinear coefficient γ = 2πn₂/(λA_eff) and the self-focusing critical power, with n₂ of silica fibre and 12 crystals, glasses and water.",
+    keywords: ["Kerr Effect", "Nonlinear Refractive Index", "B-Integral", "Self-Phase Modulation", "Critical Power"],
+    tier: "textbook",
+    modelNote: "Instantaneous electronic Kerr effect for linear polarization and uniform intensity over L. n₂ is fixed at the wavelength it was measured at (800 nm for the Dubietis table, 1550 nm for silica fibre); its dispersion is not modelled. P_cr is the Gaussian-beam value 3.77 λ²/(8π n₀ n₂).",
+    references: [
+      {
+        citation: "Dubietis A., Tamošauskas G., Šuminas R., Jukna V., Couairon A. (2017). Ultrafast supercontinuum generation in bulk condensed media. Lith. J. Phys. 57(3). Table 1: n₂ and n₀ at 800 nm.",
+        url: "https://doi.org/10.3952/physics.v57i3.3541",
+      },
+      {
+        citation: "Agrawal G. P. (2019). Nonlinear Fiber Optics, 6th ed. Academic Press. n₂ = 2.6e-20 m²/W for silica fibre and γ = 2πn₂/(λA_eff).",
+        url: "https://doi.org/10.1016/C2018-0-01168-8",
+      },
+      {
+        citation: "Fibich G., Gaeta A. L. (2000). Critical power for self-focusing in bulk media and in hollow waveguides. Opt. Lett. 25, 335–337.",
+        url: "https://doi.org/10.1364/OL.25.000335",
+      },
+      {
+        citation: "Malitson I. H. (1965). Interspecimen comparison of the refractive index of fused silica. J. Opt. Soc. Am. 55, 1205.",
+        url: "https://doi.org/10.1364/JOSA.55.001205",
+      },
+      {
+        citation: "Boyd R. W. (2020). Nonlinear Optics, 4th ed. Academic Press. The nonlinear index, its polarization dependence (⅔ for circular light, electronic response) and self-focusing.",
+        url: "https://doi.org/10.1016/C2015-0-05510-1",
+      },
+    ],
   },
   {
     slug: "oh-absorption",
