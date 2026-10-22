@@ -286,15 +286,30 @@ export const thinFilm: CalculatorEntry[] = [
   {
     slug: "environmental-stability",
     title: "Environmental Stability",
-    description: "How temperature and humidity shift a quarter-wave stack's spectrum through the layers' thermo-optic coefficient, thermal expansion and water uptake.",
-    lede: "Environmental factors shift thin-film spectral performance. Temperature changes the refractive index (thermo-optic effect, dn/dT) and the layer thickness (thermal expansion, CTE). Water adsorbed in porous layers (especially evaporated SiO₂) raises their index; this page models that index change only. Dense films (TiO₂, Ta₂O₅) are more stable.",
-    tier: "illustrative",
-    modelNote: "Coherent (HL)^N stack by transfer matrix. Temperature acts through assumed dn/dT and free-film expansion, humidity through an assumed linear Δn. Uncalibrated; no stress, hysteresis or dispersion.",
+    description: "How water in porous layers and temperature shift a quarter-wave stack's spectrum, how much area particles of an IEST-STD-CC1246 cleanliness level obscure, and the Arrhenius–Peck acceleration factor of an ageing test.",
+    lede: "Water filling the pores of a film of packing density p raises its index (n = p·n_s + (1 − p)·n_v, n_v = 1 + 0.333 f), temperature moves it by dn/dT and the thickness by α; a level-L surface carries N(≥x) = 10^(0.926(log²L − log²x)) particles per 0.1 m²; an ageing test at T_test stands for AF = (RH_test/RH_use)ⁿ·exp[(Eₐ/k_B)(1/T_use − 1/T_test)] times as long in use.",
+    keywords: ["Packing Density", "Vacuum-to-Air Shift", "CC1246 Cleanliness Level", "Percent Area Coverage", "Arrhenius Acceleration Factor", "Aging of Optical Materials", "Contamination Effects", "Humidity Effects on Optics"],
+    tier: "textbook",
+    modelNote: "Coherent (HL)^N stack by transfer matrix, quarter waves when dry at 25 °C. Water enters through Macleod's linear or Bragg–Pippard mixing law, temperature through dn/dT and free-film expansion (no substrate constraint, stress, hysteresis or dispersion); the H-layer thermal defaults are placeholders. Particles: the CC1246 0.926-slope distribution from 1 µm as face-on spheres (exact for that distribution). Ageing: one activation energy.",
     references: [
-      macleod("ch. 2 and ch. 12 (factors affecting layer and coating properties)"),
+      {
+        citation: "Macleod H. A. (1988). Moisture adsorption in optical coatings. NASA conference paper, NTRS 19890003956 (eqs. 3–5).",
+        url: "https://ntrs.nasa.gov/citations/19890003956",
+      },
       {
         citation: "Macleod H. A., Richmond D. (1976). Moisture penetration patterns in thin films. Thin Solid Films 37, 163–169.",
         url: "https://doi.org/10.1016/0040-6090(76)90179-6",
+      },
+      macleod("ch. 12 (factors affecting layer and coating properties)"),
+      { citation: "Crystran, fused silica (SiO₂) data sheet: dn/dT 12.9 × 10⁻⁶/K, expansion 0.55 × 10⁻⁶/K.", url: "https://www.crystran.com/optical-materials/fused-silica-glass-sio2" },
+      { citation: "IEST-STD-CC1246E (2013). Product Cleanliness Levels – Applications, Requirements, and Determination. Institute of Environmental Sciences and Technology." },
+      {
+        citation: "Ma P. T., Fong M. C., Lee A. L. (1990). Surface particle obscuration and BRDF predictions. Proc. SPIE 1165, 381.",
+        url: "https://doi.org/10.1117/12.962866",
+      },
+      {
+        citation: "Peck D. S. (1986). Comprehensive model for humidity testing correlation. 24th International Reliability Physics Symposium, 44–50.",
+        url: "https://doi.org/10.1109/IRPS.1986.362110",
       },
     ],
   },
