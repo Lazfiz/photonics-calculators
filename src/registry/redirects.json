@@ -109,5 +109,7 @@
   "/materials/quartz-crystal": "/materials/crystal-properties",
   "/materials/sapphire-properties": "/materials/crystal-properties",
   "/materials/verdet-constant": "/materials/magneto-optic",
-  "/materials/brewster-tir": "/polarization/fresnel-polarization"
+  "/materials/brewster-tir": "/polarization/fresnel-polarization",
+  "/materials/oh-absorption": "/fiber-optics/low-water-peak",
+  "/materials/absorption": "/spectroscopy/lambert-beer-law"
 }

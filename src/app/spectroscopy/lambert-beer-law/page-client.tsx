@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import SimpleLineChart from "../../../components/simple-line-chart";
 import ResultCard from "../../../components/result-card";
@@ -8,6 +9,8 @@ import ValidatedNumberInput from "../../../components/validated-number-input";
 import { useURLState } from "../../../hooks/use-url-state";
 import {
   absorbance,
+  absorbanceFromNapierian,
+  attenuationDb,
   concentrationForAbsorbance,
   epsilonForAbsorbance,
   massAbsorptionCoefficient,
@@ -18,6 +21,7 @@ import {
 // 1 L g⁻¹ cm⁻¹ = 100 m²/kg.
 const EPS_SI = 0.1, CONC_SI = 1000, CM = 0.01, G_MOL = 1e-3, MASS_LAB = 100;
 const C_MAX = 10, L_MIN = 0.1, L_MAX = 10, EPS_MAX = 4e5, A_MAX = 6, M_MIN = 1, M_MAX = 1e6;
+const ALPHA_MAX = 1e5, D_MIN = 0.001, D_MAX = 1000; // cm⁻¹, mm
 const concentrationPresets = [1e-6, 5e-6, 1e-5, 5e-5]; // mol/L
 const pathPresets = [0.1, 1, 5, 10];
 const epsilonPresets = [1000, 10000, 50000, 100000];
@@ -41,6 +45,8 @@ export default function LambertBeerLawPage() {
   const [extinctionCoeffRaw, setExtinctionCoeff] = useURLState("extinctionCoeff", 50000); // L mol⁻¹ cm⁻¹
   const [absorbanceRaw, setAbsorbance] = useURLState("absorbance", 0.5);
   const [molarMassRaw, setMolarMass] = useURLState("molarMass", 500); // g/mol
+  const [alphaRaw, setAlpha] = useURLState("alpha", 1); // Napierian, cm⁻¹
+  const [thicknessRaw, setThickness] = useURLState("thickness", 10); // mm
   const [plotVar, setPlotVar] = useState<"conc" | "path" | "epsilon">("conc");
 
   const solve: Solve = (SOLVE as readonly string[]).includes(solveRaw) ? (solveRaw as Solve) : "A";
@@ -49,6 +55,8 @@ export default function LambertBeerLawPage() {
   const extinctionCoeffIn = clamp(extinctionCoeffRaw, 0, EPS_MAX, 50000);
   const absorbanceIn = clamp(absorbanceRaw, 0, A_MAX, 0.5);
   const molarMass = clamp(molarMassRaw, M_MIN, M_MAX, 500);
+  const alpha = clamp(alphaRaw, 0, ALPHA_MAX, 1);
+  const thickness = clamp(thicknessRaw, D_MIN, D_MAX, 10);
 
   // Two of A, c, ε are inputs; the third follows from A = ε c l.
   const A = solve === "A" ? absorbance(extinctionCoeffIn * EPS_SI, concentrationIn * CONC_SI, pathLength * CM) : absorbanceIn;
@@ -77,6 +85,9 @@ export default function LambertBeerLawPage() {
   ];
   const xLabel = plotVar === "conc" ? "Concentration (mol/L)" : plotVar === "path" ? "Path Length (cm)" : "ε (L·mol⁻¹·cm⁻¹)";
   const tooHigh = A > 2;
+  // Bulk slab: α in cm⁻¹ → m⁻¹ (× 100), d in mm → m.
+  const slabA = absorbanceFromNapierian(alpha * 100, thickness * 1e-3);
+  const slabT = transmittance(slabA);
 
   return (
     <>
@@ -169,10 +180,29 @@ export default function LambertBeerLawPage() {
         <p className="text-sm text-gray-400">No sweep: {noSolution}.</p>
       )}
 
+      <section className="bg-gray-900 border border-gray-800 rounded-lg p-4 mt-6">
+        <h2 className="text-lg font-semibold mb-1">Bulk sample: absorption coefficient α and thickness</h2>
+        <p className="text-sm text-gray-400 mb-4">
+          For a solid or a pure liquid the Napierian absorption coefficient α replaces ε·c: T = e^(−α·d) inside the sample.
+          The <Link href="/spectroscopy/absorption-depth" className="underline hover:text-white">absorption depth</Link> calculator gives α(λ) for silicon and water.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2 mb-4">
+          <ValidatedNumberInput label="Absorption coefficient α (cm⁻¹, Napierian)" value={alphaRaw} onChange={setAlpha} min={0} max={ALPHA_MAX} step="any" />
+          <ValidatedNumberInput label="Thickness d (mm)" value={thicknessRaw} onChange={setThickness} min={D_MIN} max={D_MAX} step="any" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <ResultCard label="Internal transmittance" value={`${fmt(slabT * 100)} %`} tone="yellow" subtext="e^(−α·d); surface reflections not included" />
+          <ResultCard label="Absorbance (decadic)" value={fmt(slabA)} tone="blue" subtext="A = α·d / ln 10" />
+          <ResultCard label="Absorption loss" value={`${fmt(attenuationDb(slabA))} dB`} tone="red" subtext={`${fmt((10 * alpha) / Math.LN10)} dB/cm = 4.343·α`} />
+          <ResultCard label="1/e depth" value={alpha > 0 ? `${fmt(10 / alpha)} mm` : "—"} tone="green" subtext={alpha > 0 ? "δ = 1/α" : "α = 0: no absorption"} />
+        </div>
+      </section>
+
       <div className="bg-gray-900 rounded-lg p-4 mt-6 text-sm text-gray-300 space-y-1">
         <p className="font-mono text-blue-400">A = ε · c · l, so c = A / (ε · l) and ε = A / (c · l)</p>
         <p className="font-mono text-green-400">T = I/I₀ = 10⁻ᴬ</p>
         <p className="font-mono text-purple-400">a = ε / M, ρ = c · M</p>
+        <p className="font-mono text-red-400">bulk: T = e^(−α·d), α = ln 10 · ε · c</p>
         <p>
           ε is the molar decadic absorption coefficient (IUPAC; &quot;extinction coefficient&quot; is the older name),
           and a is the mass absorption coefficient (formerly &quot;specific extinction coefficient&quot;; for proteins at
